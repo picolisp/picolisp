@@ -1,10 +1,9 @@
-# 20dec02abu
+# 29jan03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Host *Port *Sock *MPartLim *MPartEnd *ContLen
 # *AppGate *AppPort *App *Apps *AppId *SesId *ConId *Top *Bar *Menu
-# *InND *OutN
-# *Frame *U1
+# *InND *OutN *Frame *U1 *Help *Css
 
 (default *HPorts 0  *APorts 0)
 
@@ -15,10 +14,14 @@
    (clk> . 4) (drg> . 4) )
 
 (de *Mimes
+   (`(chop ".css") "text/css")
    (`(chop ".gif") "image/gif")
    (`(chop ".jpg") "image/jpeg")
    (`(chop ".txt") "text/octet-stream")  #? 'T' -> Bug in MSIE 5.x
-   (`(chop ".pdf") "application/pdf")    #? ..
+   (`(chop ".wav") "audio/x-wav")
+   (`(chop ".mp3") "audio/x-mpeg")
+   (`(chop ".pdf") "application/pdf")
+   (`(chop ".zip") "application/zip")
    (`(chop ".jar") "application/java-archive") )
 
 
@@ -56,8 +59,9 @@
       *Port P
       *Home (cons H (chop H))
       P (port P) )
+   (gc)
    (use S
-      (do NIL
+      (loop
          (setq S (listen P))
          (NIL (fork) (close P))
          (close S) )
@@ -73,11 +77,8 @@
 (de https @
    (pass pack "https://" *Host "/" *Port "/" *SesId) )
 
-(de sesId @
-   (pass pack *SesId) )
-
 (de software-lab ()
-   (<right> "<A HREF=\"http://www.software-lab.de\">(c) Software Lab.</A>") )
+   (<p> T "<A HREF=\"http://www.software-lab.de\">(c) Software Lab.</A>") )
 
 # Init crypt
 (de rsa (N)
@@ -126,10 +127,12 @@
                (setq  X (car *Home)  @U (cdr *Home)) )
             (when
                (or
+                  (not *Allow)
                   (format X)
                   (tmp? X)
-                  (not *Allow)
-                  (find '((P) (pre? P X)) *Allow) )
+                  (member X *Allow)
+                  (unless (sub? "/../" X)
+                     (find '((P) (pre? P X)) *Allow) ) )
                (or (= *ConId *SesId) (throw "http"))
                (out S
                   (cond
@@ -354,7 +357,7 @@
 (de navi ()
    (<href> "<<<" "javascript:history.back()" (and *Frame "MAIN"))
    (if *U1
-      (<href> "---" (sesId *U1) (and *Frame "MAIN"))
+      (<href> "---" *U1 (and *Frame "MAIN"))
       (prin "---") )
    (<href> ">>>" "javascript:history.forward()" (and *Frame "MAIN")) )
 
@@ -395,6 +398,10 @@
    (prinl "<HEAD>")
    (prinl "<BASE HREF=\"" (baseHRef) "\">")
    (and "Ttl" (prinl "<TITLE>" "Ttl" "</TITLE>"))
+   (when *Css
+      (prinl
+         "<link rel=\"stylesheet\" type=\"text/css\" href=\""
+         *SesId *Css "\">" ) )
    (prinl "</HEAD>")
    (cond
       ((not (num? (car "Prg")))
@@ -432,22 +439,33 @@
          (setq  *Frame (cdddr "Prg")) ) )
    (prinl "</HTML>") )
 
-(de refresh (Url)
-   (setq Url (pack (baseHRef) *SesId Url))
-   (httpHead)
-   (prinl "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">")
-   (prinl "<HTML>")
-   (prinl "<HEAD>")
-   (prinl "<META http-equiv=\"refresh\" content=\"0; URL=" Url "\">")
-   (prinl "</HEAD>")
-   (prin "<BODY>")
-   (<href> Url Url)
-   (prinl "</BODY>")
-   (prinl "</HTML>") )
+### HTML Generators ###
+(de _htAlign (X)
+   (cond
+      ((not X))
+      ((=T X) " ALIGN=\"RIGHT\"")
+      ((=0 X) " ALIGN=\"CENTER\"")
+      (T X) ) )
 
-(de <head> (S N)
+(de _sesId (Url)
+   (if
+      (or
+         (pre? "http:" Url)
+         (pre? "https:" Url)
+         (pre? "mailto:" Url)
+         (pre? "javascript:" Url) )
+      Url
+      (pack *SesId Url) ) )
+
+(de <item> ("X")
+   (cond
+      ((atom "X") (prinl "X"))
+      ((=T (car "X")) (apply <href> (cdr "X")))
+      (T (eval "X")) ) )
+
+(de <head> (S N X)
    (if N
-      (prinl "<H" N ">" S "</H" N ">")
+      (prinl "<H" N (_htAlign X) ">" S "</H" N ">")
       (prin
          "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>"
          S
@@ -455,11 +473,18 @@
       (navi)
       (prinl "</TD></TR></TABLE>") ) )
 
-(de <item> ("X")
-   (cond
-      ((atom "X") (prinl "X"))
-      ((=T (car "X")) (apply <href> (cdr "X")))
-      (T (eval "X")) ) )
+(de <font> ("Col" "Siz" . "Prg")
+   (prin "<FONT")
+   (and "Col" (prin " COLOR=\"" "Col" "\""))
+   (and "Siz" (prin " SIZE=\"" "Siz" "\""))
+   (prin ">")
+   (prEval "Prg")
+   (prinl "</FONT>") )
+
+(de <b> "Prg"
+   (prin "<b>")
+   (prEval "Prg")
+   (prinl "</b>") )
 
 (de <br> @
    (when (args)
@@ -469,26 +494,31 @@
          (<item> (next)) ) )
    (prinl "<br>") )
 
-(de <center> (S N)
-   (default N 3)
-   (prinl "<H" N " ALIGN=\"CENTER\">" S "</H" N ">") )
+(de <center> "Prg"
+   (prin "<center>")
+   (prEval "Prg")
+   (prinl "</center>") )
 
-(de <right> (S)
-   (prinl "<P ALIGN=\"RIGHT\">" S) )
+(de <p> ("X" . "Prg")
+   (prin "<p" (_htAlign "X") ">")
+   (prEval "Prg")
+   (prinl "</p>") )
 
-(de <bold> (S)
-   (prinl "<B>" S "</B>") )
+(de <name> ("Name" . "Prg")
+   (prin "<a NAME=\"" "Name" "\">")
+   (prEval "Prg")
+   (prinl "</a>") )
 
 (de <href> (S Url Tar)
-   (prin "<A HREF=\"" Url)
+   (prin "<A HREF=\"" (_sesId Url))
    (cond
       (Tar (prin "\" TARGET=\"" Tar))
       (*Frame (prin "\" TARGET=\"MAIN\"")) )
    (prin "\">" S "</A>") )
 
-(de <img> (S A Url)
-   (and Url (prin "<A HREF=\"" Url  "\">"))
-   (prin "<IMG SRC=\"" *SesId S "\" ALT=\"" A "\">")
+(de <img> (S A Url X)
+   (and Url (prin "<A HREF=\"" (_sesId Url)  "\">"))
+   (prin "<IMG SRC=\"" (_sesId S) "\" ALT=\"" A "\"" (_htAlign X) ">")
    (and Url (prin "</A>")) )
 
 (de <list> @
@@ -504,9 +534,13 @@
    (prinl "</PRE>") )
 
 
-### Tables ###
-(de <table> ("Bord" "Ttl" "Head" . "Prg")
-   (prinl "<TABLE" (and "Bord" " BORDER=\"1\"") ">")
+# Tables
+(de <table> ("Body" "Ttl" "Head" . "Prg")
+   (prin "<TABLE")
+   (cond
+      ((=T "Body") (prin " BORDER=\"1\""))
+      ("Body" (prin " " "Body")) )
+   (prinl ">")
    (when "Ttl"
       (prinl "<CAPTION>" "Ttl" "</CAPTION>") )
    (when "Head"
@@ -520,6 +554,7 @@
                   (+ "RIGHT")
                   (T "CENTER") )
                (and (caddr L) (pack " WIDTH=" @))
+               (cadddr L)
                ">"
                (cadr L) )
             (prin "</TH>") )
@@ -558,28 +593,51 @@
       (while (args)
          (apply <row> (next)) ) ) )
 
+(de <th> "Prg"
+   (prinl "<TR>")
+   (while "Prg"
+      (prin "<TH")
+      (while (and (pair (car "Prg")) (=T (caar "Prg")))
+         (prin " " (eval (cdr (pop '"Prg")))) )
+      (prin ">")
+      (<item> (eval (pop '"Prg")))
+      (prinl "</TH>") )
+   (prinl "</TR>") )
+  
+(de <td> "Prg"
+   (prinl "<TR>")
+   (while "Prg"
+      (prin "<TD")
+      (while (and (pair (car "Prg")) (=T (caar "Prg")))
+         (prin " " (eval (cdr (pop '"Prg")))) )
+      (prin ">")
+      (<item> (eval (pop '"Prg")))
+      (prinl "</TD>") )
+   (prinl "</TR>") )
+
 
 ### HTML Form ###
 (de <post> ("S" . "Prg")
    (prinl
       "<FORM ENCTYPE=\"multipart/form-data\" ACTION=\""
-      (baseHRef) *SesId "S"
+      (_sesId "S")
       "\" METHOD=POST>" )
    (prEval "Prg")
    (prinl "</FORM>") )
 
 (de <get> ("S" . "Prg")
-   (prinl "<FORM ACTION=\""
-      (baseHRef) *SesId "S"
+   (prinl
+      "<FORM ACTION=\""
+      (_sesId "S")
       "\" METHOD=GET>" )
    (prEval "Prg")
    (prinl "</FORM>") )
 
-(de <field> (N S "Var" Url)
+(de <field> (N S "Var" Url X)
    (when S
       (if Url (<href> S Url) (prin S))
       (space) )
-   (prin "<INPUT TYPE=TEXT ")
+   (prin "<INPUT" (_htAlign X) " TYPE=\"TEXT\" ")
    (htmlVar "Var")
    (prinl " VALUE=\"" (htmlVal "Var") "\" SIZE=" N ">") )
 
@@ -671,8 +729,7 @@
             (or Tar (if *Frame "MAIN" "_self")) ) ) ) )
 
 (de url1 (Str)
-   (setq *U1 (chop Str))
-   Str )
+   (setq *U1 Str) )
 
 (de bar (Ttl X Y Prg)
    (prinl Ttl "<hr>")

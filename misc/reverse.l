@@ -1,9 +1,9 @@
-# 10apr01abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Port (port 6789))
 
-(do NIL
+(loop
    (setq *Sock (listen *Port))
    (NIL (fork) (close *Port))
    (close *Sock) )

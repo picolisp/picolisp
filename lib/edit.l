@@ -1,4 +1,4 @@
-# 27dec02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -11,7 +11,7 @@
 
 (de "edit" ("Lst")
    (let "N" 1
-      (do NIL
+      (loop
          (out "*F"
             (setq "*Lst"
                (make

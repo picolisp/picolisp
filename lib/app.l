@@ -1,4 +1,4 @@
-# 29aug02abu
+# 20jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Bye message
@@ -19,11 +19,11 @@
          (env) ) )
    (rollback)
    (when *Top
-      (alert "Sorry!"
+      (alert `(_ "Sorry!")
          (list
             (pack "(" *Msg ")")
-            "Es ist ein interner Fehler aufgetreten."
-            "Die Verbindung wird beendet." ) ) )
+            `(_ "An internal error occurred.")
+            `(_ "Connection will be closed.") ) ) )
    (bye) )
 
 # User identification

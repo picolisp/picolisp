@@ -1,4 +1,4 @@
-/* 23nov02abu
+/* 31jan03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -100,9 +100,7 @@ static int gateConnect(unsigned short port) {
    sd = gateSocket();
    addr.sin_family = AF_INET;
    addr.sin_port = htons(port);
-   if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-      exit(1);
-   return sd;
+   return connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0? -1 : sd;
 }
 
 int main(int ac, char *av[]) {
@@ -205,7 +203,9 @@ int main(int ac, char *av[]) {
                      return 1;
                }
 
-               srv = gateConnect((unsigned short)port);
+               if ((srv = gateConnect((unsigned short)port)) < 0  &&
+                              (srv = gateConnect((unsigned short)dflt)) < 0 )
+                  return 1;
                if (buf[0] == '@')
                   p = q + 1;
                else {

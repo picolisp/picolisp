@@ -1,4 +1,4 @@
-# 22oct02abu
+# 27jan03abu
 # (c) Software Lab. Alexander Burger
 
 (rsa 60)
@@ -49,8 +49,6 @@
 
 (html "Test"
    (<head> "Test")
-
-   (<href> "Help" "lib/help.l")
 
    (<post> "misc/htest.l"
       (<select> "Choice"
@@ -173,12 +171,12 @@
 
    (prinl "Hello!")
    <br>
-   (<bold> "Ok")
+   (<b> "Ok")
    <hr>
    (<table> T "Table"
       '((- "Left") (* "Center") (+ "Right"))
       (<row> 1 2 3)
-      (<row> 'a 'b 'c) )
+      (<row> "a" "b" "c") )
    <hr>
    (<list>
       'a

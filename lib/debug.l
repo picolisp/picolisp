@@ -1,4 +1,4 @@
-# 08jan03abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -64,7 +64,7 @@
 
 (de "nst1" ("Y")
    (let "Z" (setq "Y" (strip "Y"))
-      (do NIL
+      (loop
          (T (atom "Y") (and (sym? "Y") ("who" "Y")))
          (and (sym? (car "Y")) ("who" (car "Y")))
          (and (pair (car "Y")) ("nst1" (car "Y")))
@@ -72,7 +72,7 @@
 
 (de "nst2" ("Y")
    (let "Z" (setq "Y" (strip "Y"))
-      (do NIL
+      (loop
          (T (atom "Y") ("match" "Y"))
          (T (or ("match" (car "Y")) ("nst2" (car "Y")))
             T )
@@ -123,6 +123,7 @@
    (or
       (atom (car Lst))
       (num? (caar Lst))
+      (=T (caar Lst))
       (== '! (caar Lst))
       (set Lst (cons '! (car Lst))) ) )
 
@@ -143,10 +144,10 @@
                (map _dbg (cdr Lst)) ) )
          ((for use let)
             (map _dbg (cdr Lst)) )
-         (do NIL
+         ((loop do)
             (map
                '((L)
-                  (if (and (pair (car L)) (or (= T (caar L)) (not (caar L))))
+                  (if (and (pair (car L)) (or (=T (caar L)) (not (caar L))))
                      (map _dbg (cdar L))
                      (_dbg L) ) )
                Lst ) )

@@ -1,4 +1,4 @@
-# 04jan03abu
+# 29jan03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -378,7 +378,7 @@
                      (date Y M 31)
                      (- (date Y (+ M 1) 1) 1) ) ) ) )
          (<href> "PDF"
-            (sesId "@ustvor.pdf?" (htFmt Ums Frei USt VSt))
+            (pack "@ustvor.pdf?" (htFmt Ums Frei USt VSt))
             "PDF" ) ) ) )
 
 (de ustvor.pdf (Ums Frei USt VSt)
@@ -475,6 +475,7 @@
    (pool "tax.db") )
 
 (de go ()
+   (rollback)
    (server 8080 (url1 "@tax")) )
 
 # Check

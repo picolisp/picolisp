@@ -1,4 +1,4 @@
-# 27dec02abu
+# 29jan03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -242,10 +242,10 @@
 (de treeRep (Prs)
    (with Prs
       (prin "<LI>")
-      (<href> (: nm) (sesId (url> Prs)))
+      (<href> (: nm) (url> Prs))
       (when (: mate)
          (prin " -- ")
-         (<href> (: mate nm) (sesId (url> (: mate)))) )
+         (<href> (: mate nm) (url> (: mate))) )
       (prinl)
       (when (: kids)
          (prinl "<UL>")
@@ -262,4 +262,5 @@
       (commit) ) )
 
 (de go ()
+   (rollback)
    (server 8080 "@person") )

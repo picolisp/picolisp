@@ -1,4 +1,4 @@
-# 14jun02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -42,7 +42,7 @@
          (link (intern Tok))
          (let L
             (make
-               (do NIL
+               (loop
                   (NIL (skip))
                   (T (member @ '`(chop "/>")))
                   (NIL (setq X (intern (till "=" T))))
@@ -54,7 +54,7 @@
             (if (= "/" (char))
                (prog (char) (and L (link L)))
                (link L)
-               (do NIL
+               (loop
                   (NIL (skip))
                   (T (and (= "<" (setq X (char))) (= "/" (peek)))
                      (char)

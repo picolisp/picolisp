@@ -1,4 +1,4 @@
-# 20nov02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -14,12 +14,12 @@
                (fetch Tree (next))
                (pass _db @) )
             (let (Val (next)  Q (init Tree (cons Val) (cons Val T)))
-               (do NIL
+               (loop
                   (NIL (step Q T))
                   (T (pass _db @ Var Val) @) ) ) ) ) ) )
 
 (de _db (Obj . @)
-   (do NIL
+   (loop
       (NIL (next) Obj)
       (NIL (has> Obj (arg) (next))) ) )
 

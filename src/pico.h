@@ -1,4 +1,4 @@
-/* 23nov02abu
+/* 23jan03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -411,6 +411,7 @@ any doLstQ(any);
 any doLoad(any);
 any doLock(any);
 any doLookup(any);
+any doLoop(any);
 any doLowQ(any);
 any doLowc(any);
 any doLt(any);

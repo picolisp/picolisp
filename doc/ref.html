@@ -1089,6 +1089,7 @@ NIL
    <a href="#and">and</a>,
    <a href="#case">case</a>,
    <a href="#cond">cond</a>,
+   <a href="#loop">loop</a>,
    <a href="#do">do</a>,
    <a href="#for">for</a>,
    <a href="#if">if</a>,
@@ -1730,6 +1731,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#while">while</a>
    <a href="#whilst">whilst</a>
    <a href="#until">until</a>
+   <a href="#loop">loop</a>
    <a href="#do">do</a>
    <a href="#at">at</a>
    <a href="#for">for</a>
@@ -2779,14 +2781,15 @@ analog to a function definition.
    (mapc '((B) (start> B)) (: arrays)) )
 </code></pre>
 
-<p><dt><a name="do"><code>(do 'NIL|num .. [(NIL 'any . prg)] .. [(T 'any . prg)] ..) -> any</code></a>
-<dd>Counted loop with conditional exit: The body is executed at most
+<p><dt><a name="do"><code>(do 'NIL|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dd>Counted loop with multiple conditional exits: The body is executed at most
 <code>num</code> (or infinite, if the first argument is <code>NIL</code>) times.
 If a clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
 clause's second element is evaluated as a condition and - if the result is
 <code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
 executed and the result returned. Otherwise (if count drops to zero), the result
-of the last expression is returned.
+of the last expression is returned. See also <code><a
+href="#loop">loop</a></code>.
 
 <p><pre><code>
 : (do 4 (printsp 'Ok))
@@ -3565,6 +3568,25 @@ href="#unify">unify</a></code>.
 X = (1 2 3 4 5 6)
  @X=(1 2 3 4 5 6)
 -> NIL
+</code></pre>
+
+<p><dt><a name="loop"><code>(loop ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dd>Endless loop with multiple conditional exits: The body is executed an
+unlimited number of times. If a clause has <code>NIL</code> or <code>T</code> as
+its <code>CAR</code>, the clause's second element is evaluated as a condition
+and - if the result is <code>NIL</code> or non-<code>NIL</code>, respectively -
+the <code>prg</code> is executed and the result returned. See also <code><a
+href="#do">do</a></code>.
+
+<p><pre><code>
+: (let N 3
+   (loop
+      (prinl N)
+      (T (=0 (dec 'N)) 'done) ) )
+3
+2
+1
+-> done
 </code></pre>
 
 <p><dt><a name="lowQ"><code>(low? 'any) -> flg</code></a>
@@ -5151,7 +5173,7 @@ Ok
 <dd>Inter-Family communication: Send an executable list <code>(any any
 ..)</code> to all family members (i.e. all children of the current process, and
 all other children of the parent process, see <code><a
-href="#fork">fork</a></code>) for automatic execution . <code>tell</code> can
+href="#fork">fork</a></code>) for automatic execution. <code>tell</code> can
 also be used by <code><a href="#commit">commit</a></code> to notify about
 database changes.
 

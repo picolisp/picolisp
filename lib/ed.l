@@ -1,4 +1,4 @@
-# 25jun02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Structure Editor
@@ -18,7 +18,7 @@
 
 (de _ed (X)
    (use C
-      (do NIL
+      (loop
          (T "Done" X)
          (pretty (car X))
          (prinl)

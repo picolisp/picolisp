@@ -1,5 +1,5 @@
 #!/usr/abu/pico/bin/pico /usr/abu/pico/lib.l
-# 24sep02abu
+# 23jan03abu
 
 (de msg Lst
    (out *Sock
@@ -9,7 +9,7 @@
 
 (setq *Port (port 4004))
 
-(do NIL
+(loop
    (setq *Sock (listen *Port))
    (NIL (fork) (close *Port))
    (close *Sock) )

@@ -1,4 +1,4 @@
-# 14jun02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # *VisitedKey *VisitedLess *VisitedMore)
@@ -6,7 +6,7 @@
 # Fetch
 (de fetch (Tree Key)
    (setq Tree (cdr Tree))
-   (do NIL
+   (loop
       (NIL Tree)
       (T (= Key (car (val Tree)))
          (cdddr (val Tree)) )
@@ -178,13 +178,13 @@
             (setq Val (val Node))
             (if (>= (cdar Q) (caar Q))
                (when (setq Node (caddr Val))
-                  (do NIL
+                  (loop
                      (NIL (<= (caar Q) (car (val Node))))
                      (when (>= (cdar Q) (car (val Node)))
                         (con Q (cons Node (cdr Q))) )
                      (NIL (setq Node (cadr (val Node)))) ) )
                (when (setq Node (cadr Val))
-                  (do NIL
+                  (loop
                      (NIL (>= (caar Q) (car (val Node))))
                      (when (<= (cdar Q) (car (val Node)))
                         (con Q (cons Node (cdr Q))) )

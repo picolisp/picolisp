@@ -164,7 +164,7 @@ whole expression when the cursor is at a left parenthesis.
 duplicate lines are not entered into the history.
 
 <li>The history is stored in a file named ".picoHistory" in the Pico home
-directory. The length of the history is limited to 1000 lines.
+directory. The length of the history is limited to 4000 lines.
 
 </ul>
 
@@ -321,7 +321,7 @@ definition), and displays that definition in a formatted and indented way.
                   (<= (size (car X)) 12) ) )
             (space)
             (print (pop 'X)) )
-         (do NIL
+         (loop
             (NIL X)
             (T (== Z X) (prin " ."))
             (T (atom X) (prin " . ") (print X))

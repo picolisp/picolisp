@@ -48,16 +48,18 @@ might be bound to itself? For that reason it should be a convention to use only
 transient symbols (and not internal symbols)
 
 <ul>
+
 <li>for all parameters and locals, when functional arguments or executable lists
 are passed through the current dynamic scope.
 
 <li>for a parameter or local, when that symbol might possibly be bound to itself
+
 </ul>
 
 <p><dt>What happens when I locally bind a symbol which has a function definition?
 <dd>That's not a good idea. The next time that function gets executed within the
 dynamic context the system may crash. Therefore we have the convention to use an
-upper case first letter for variables and not for functions.
+upper case first letter for variables, and otherwise for functions.
 
 </dl>
 

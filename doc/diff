@@ -47,7 +47,7 @@ with `use' and `let'.
 
 There is also no `GO'.  Instead, there is a variety of control functions:
 
-   `if' `ifn' `when' `unless' `cond' `case' `while' `until' `do' `for'
+   if ifn when unless cond case while until loop do for
 
 `PUTPROP' is `put':
    `(PUTPROP 'sym 'any 'key)' is `(put 'sym 'key 'any)'

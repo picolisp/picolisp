@@ -1,4 +1,4 @@
-/* 08jan03abu
+/* 24jan03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -759,7 +759,32 @@ any doUntil (any x) {
    return Pop(c1);
 }
 
-// (do 'NIL|num .. [(NIL 'any . prg)] .. [(T 'any . prg)] ..) -> any
+// (loop ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
+any doLoop(any ex) {
+   any x, y;
+
+   for (;;) {
+      x = cdr(ex);
+      do {
+         if (isCell(y = car(x))) {
+            if (isNil(car(y))) {
+               y = cdr(y);
+               if (isNil(val(At) = EVAL(car(y))))
+                  return prog(cdr(y));
+            }
+            else if (car(y) == T) {
+               y = cdr(y);
+               if (!isNil(val(At) = EVAL(car(y))))
+                  return prog(cdr(y));
+            }
+            else
+               evList(y);
+         }
+      } while (isCell(x = cdr(x)));
+   }
+}
+
+// (do 'NIL|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doDo(any ex) {
    any x, y, z;
    cell c1;

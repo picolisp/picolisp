@@ -1,4 +1,4 @@
-# 27dec02abu
+# 30jan03abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -36,7 +36,7 @@
 # (Knuth Vol.2, p.442)
 (de ** (X N)  # N th power of X
    (let Y 1
-      (do NIL
+      (loop
          (when (bit? 1 N)
             (setq Y (* Y X)) )
          (T (=0 (setq N (>> 1 N)))
@@ -53,7 +53,10 @@
 (de align (N Val)
    (pack
       (need N
-         (chop (if (sym? Val) Val (format Val)))
+         (cond
+            ((num? Val) (chop (format Val)))
+            ((sym? Val) (chop Val))
+            (T Val) )
          " " ) ) )
 
 (de center (N Val)

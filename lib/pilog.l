@@ -1,4 +1,4 @@
-# 19dec02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -31,7 +31,7 @@
 (de rules @
    (while (args)
       (let (N 0  S (next)  L (get S T)  L1 L)
-         (do NIL
+         (loop
             (NIL L)
             (prin (inc 'N) " (be ")
             (print S)
@@ -75,7 +75,7 @@
 
 (de query ("Q" "Dbg")
    (let "R" (prove "Q" "Dbg")
-      (do NIL
+      (loop
          (NIL "R")
          (T (=T "R") T)
          (mapc
@@ -377,7 +377,7 @@
    (ifn Lst
       (step Q (= '(NIL) (caar Q)))
       (use (X)
-         (do NIL
+         (loop
             (T
                (cond
                   ((atom (car Lst))

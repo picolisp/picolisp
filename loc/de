@@ -45,3 +45,8 @@
 
 # lib/role.l
 "Permissions" "Berechtigungen"
+
+# lib/app.l
+"Sorry!" "Sorry!"
+"An internal error occurred." "Es ist ein interner Fehler aufgetreten."
+"Connection will be closed." "Die Verbindung wird beendet."

@@ -1,4 +1,4 @@
-# 20oct02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 (de task ("Key" . "Prg")
@@ -206,7 +206,7 @@
                   (<= (size (car X)) 12) ) )
             (space)
             (print (pop 'X)) )
-         (do NIL
+         (loop
             (NIL X)
             (T (== Z X) (prin " ."))
             (T (atom X) (prin " . ") (print X))

@@ -1,4 +1,4 @@
-# 26mar01abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Generate long random number
@@ -13,7 +13,7 @@
 # X power Y modulus N
 (de **Mod (X Y N)
    (let M 1
-      (do NIL
+      (loop
          (when (bit? 1 Y)
             (setq M (% (* M X) N)) )
          (T (=0 (setq Y (>> 1 Y)))
@@ -41,7 +41,7 @@
       (setq
          J 0
          Y (**Mod X Q N) )
-      (do NIL
+      (loop
          (T
             (or
                (and (=0 J) (= 1 Y))

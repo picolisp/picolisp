@@ -1,4 +1,4 @@
-# 20nov02abu
+# 28jan03abu
 # (c) Software Lab. Alexander Burger
 
 # *DbForms
@@ -142,7 +142,7 @@
             (head (: sel) (chop (: str)))
             (setq C (extra C)) )
          Q (goal (: hint) '@ H) )
-      (do NIL
+      (loop
          (NIL (prove Q) C)
          (T (pre? H (setq S (cdr (last @))))
             (pack (nth (chop S) (+ 1 (: sel)))) ) ) ) )
@@ -557,10 +557,10 @@
    (out (list "bin/lat1" (setq "*Rep" (tmp Nm ".txt")))
       (prinl (or Ttl Nm) "^M") )
    (<head> (or Ttl Nm))
-   (<href> "Download" (sesId "*Rep"))
+   (<href> "Download" "*Rep")
    (while (args)
       (prin " | ")
-      (<href> (next) (sesId "@" (next)) (next)) )
+      (<href> (next) (pack "@" (next)) (next)) )
    (<br>)
    (setq "*Rep" (list "bin/lat1" (pack "+" "*Rep"))) )
 
@@ -604,7 +604,7 @@
       ((= Obj "MAIL")
          (list T Val (pack "mailto:" Val) "MAIL") )
       ((and Obj (url> Obj))
-         (list T Val (sesId @)) )
+         (list T Val @) )
       (T Val) ) )
 
 # Text File Export

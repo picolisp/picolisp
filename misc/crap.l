@@ -1,4 +1,4 @@
-# 26apr02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 # Algorithm from Bengt Grahn (bengt@vikingsw.demon.co.uk)
 
@@ -20,7 +20,7 @@
 # Return next token from input stream
 (de token ()
    (when
-      (do NIL
+      (loop
          (NIL (setq *Char (char)))
          (T (or (low? *Char) (upp? *Char)) T) )
       (if (=0 *SentenceLength)
@@ -72,7 +72,7 @@
          (4 (frequentValue *4Words))
          (T
             (dec 'Len)
-            (do NIL
+            (loop
                (setq S (copy (frequentValue *BegQuads)))
                (while
                   (and
@@ -89,7 +89,7 @@
 (de crap (In)
    (learn In)
    (use (Len W)
-      (do NIL
+      (loop
          (setq
             Len (frequentValue *SentenceLengths)
             W (compose) )

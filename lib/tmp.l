@@ -1,4 +1,4 @@
-# 22oct01abu
+# 25jan03abu
 # (c) Software Lab. Alexander Burger
 
 (queue '*Bye
@@ -11,4 +11,4 @@
    (pass pack *Tmp) )
 
 (de tmp? (F)
-   (and *Tmp (pre? *Tmp F)) )
+   (and *Tmp (pre? *Tmp F) (not (sub? "/../" F))) )

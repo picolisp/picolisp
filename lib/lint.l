@@ -1,4 +1,4 @@
-# 10jun02abu
+# 23jan03abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (X)
@@ -55,8 +55,9 @@
                (mapc
                   '(("X") (mapc lint1 "X"))
                   (cdr "X") ) )
-            (do
-               (lint1 (cadr "X"))
+            ((loop do)
+               (when (== 'do (car "X"))
+                  (lint1 (cadr "X")) )
                (mapc
                   '(("X")
                      (if (and (pair "X") (or (=T (car "X")) (not (car "X"))))

@@ -1,3 +1,7 @@
+* 01feb03 picoLisp-2.0.3
+   Extension and redesign of the HTML API
+   Introduce 'loop' function as a synonym for 'do NIL'
+
 * 17jan03 picoLisp-2.0.2
    The example files for the tutorial were in the wrong directory
    Bind '*Key' in debug breakpoint

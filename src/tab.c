@@ -1,4 +1,4 @@
-/* 09dec02abu
+/* 23jan03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -131,6 +131,7 @@ static symInit Symbols[] = {
    {doLoad, "load"},
    {doLock, "lock"},
    {doLookup, "->"},
+   {doLoop, "loop"},
    {doLowQ, "low?"},
    {doLowc, "lowc"},
    {doLt, "<"},

@@ -1,4 +1,4 @@
-# 20dec02abu
+# 27jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -19,7 +19,7 @@
    "Found"     NIL      # Find stack
    "Complete"  NIL      # Input completion
 
-   "HistMax"    1000    # History limit
+   "HistMax"   4000     # History limit
 
    "History"            # History of input lines
    (and
@@ -91,7 +91,7 @@
       (posLine
          (if (>= 1 (setq N "LPos"))
             1
-            (do NIL
+            (loop
                (T (= 1 (dec 'N)) 1)
                (setq L (nth "Line" (- N 1)))
                (T (and (delim? (car L)) (not (delim? (cadr L))))
@@ -104,7 +104,7 @@
       (posLine
          (if (<= M (setq N "LPos"))
             M
-            (do NIL
+            (loop
                (T (= M (inc 'N)) M)
                (setq L (nth "Line" (- N 1)))
                (T (and (delim? (car L)) (not (delim? (cadr L))))
@@ -113,7 +113,7 @@
 # Match left parenthesis
 (de lPar ()
    (let (N 1  I (- "LPos" 1))
-      (do NIL
+      (loop
          (T (=0 I))
          (case (get "Line" I)
             (")" (inc 'N))
@@ -124,7 +124,7 @@
 # Match right parenthesis
 (de rPar ()
    (let (N 1  I (+ "LPos" 1))
-      (do NIL
+      (loop
          (T (> I (length "Line")))
          (case (get "Line" I)
             ("(" (inc 'N))
@@ -259,7 +259,7 @@
                (chgLine (remove (- "LPos" 1) "Line") (- "LPos" 1)) ) )
          ("^V" (insChar (key)))
          ("^["
-            (do NIL
+            (loop
                (NIL
                   (make
                      (while (and (setq C (key 50)) (<> C "^["))

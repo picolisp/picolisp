@@ -1,4 +1,4 @@
-# 22jul02abu
+# 29jan03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/xterm.l" "simul/lib.l")
@@ -48,9 +48,11 @@
    (pool "db/fokker")
    (unless (get *DB 'mdl)
       (with *DB
-         (=: mdl (model (load "simul/fokker.l"))) ) ) )
+         (=: mdl (model (load "simul/fokker.l"))) )
+      (commit) ) )
 
 (de go ()
+   (rollback)
    (out (setq *Sock (listen (port 8080) 120000))
       (pr 400 300) )
    (draw)

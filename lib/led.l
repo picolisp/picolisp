@@ -1,4 +1,4 @@
-# 27jan03abu
+# 20feb03abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -342,6 +342,9 @@
             (setq C (let *Dbg "Dbg" (key)))
             '("^J" "^M") )
          (or C (bye))
+         (when (= C "^X")
+            (prinl)
+            (quit) )
          ((if "Insert" insMode cmdMode) C) ) ) )
 
 # Function keys

@@ -1,4 +1,4 @@
-/* 23jan03abu
+/* 18feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -70,6 +70,11 @@ typedef struct outFrame {
    pid_t pid;
 } outFrame;
 
+typedef struct ctlFrame {
+   struct ctlFrame *link;
+   int fd;
+} ctlFrame;
+
 typedef struct parseFrame {
    any name;
    word dig;
@@ -84,6 +89,7 @@ typedef struct stkEnv {
    any make;
    inFrame *inFiles;
    outFrame *outFiles;
+   ctlFrame *ctlFiles;
    parseFrame *parser;
    void (*get)(void);
    void (*put)(int);
@@ -211,7 +217,7 @@ void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
-void closeFiles(inFrame*,outFrame*);
+void closeFiles(inFrame*,outFrame*,ctlFrame*);
 void cntError(any,any) __attribute__ ((noreturn));
 int compare(any,any);
 any cons(any,any);
@@ -245,6 +251,7 @@ bool hashed(any,long,any*);
 void heapAlloc(void);
 void initSymbols(void);
 bool isBlank(any);
+bool isLife(any);
 void lstError(any,any) __attribute__ ((noreturn));
 any load(any,int,any);
 any method(any);
@@ -344,6 +351,7 @@ any doCond(any);
 any doConnect(any);
 any doCons(any);
 any doCopy(any);
+any doCtl(any);
 any doCtty(any);
 any doCut(any);
 any doDate(any);

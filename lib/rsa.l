@@ -1,4 +1,4 @@
-# 23jan03abu
+# 12feb03abu
 # (c) Software Lab. Alexander Burger
 
 # Generate long random number
@@ -80,14 +80,13 @@
 
 # Encrypt a list of characters
 (de encrypt (Key Lst)
-   (let M (sqrt Key)
+   (let Siz (>> 1 (size Key))
       (make
          (while Lst
             (let N (char (pop 'Lst))
-               (while (< N M)
+               (while (> Siz (size N))
                   (setq N (>> -16 N))
-                  (when Lst
-                     (inc 'N (char (pop 'Lst))) ) )
+                  (inc 'N (char (pop 'Lst))) )
                (link (**Mod N 3 Key)) ) ) ) ) )
 
 # Decrypt a list of numbers

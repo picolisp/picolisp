@@ -1,4 +1,4 @@
-# 27jan03abu
+# 26feb03abu
 # (c) Software Lab. Alexander Burger
 
 (rsa 60)
@@ -54,7 +54,7 @@
       (<select> "Choice"
          (make
             (for (N 1 (< N 600) (+ 1 N))
-               (link (format N)) ) )
+               (link N) ) )
          '*N )
       (<select> "Ok" '("Ja" "Nein") '*Ok)
 

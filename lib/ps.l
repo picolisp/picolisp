@@ -1,4 +1,4 @@
-# 03dec02abu
+# 27feb03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -13,7 +13,7 @@
             (url "Pdf" "PDF") )
          ((=T "How")
             (_pdf)
-            (httpEcho "Pdf" "application/pdf") )  #? 'T' -> Bug in MSIE 5.x
+            (httpEcho "Pdf" "application/pdf" 1) )
          (T (call "lpr" (pack "-P" "How") "Ps")) ) ) )
 
 (de _pdf ()

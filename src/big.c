@@ -1,4 +1,4 @@
-/* 04oct02abu
+/* 28feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -935,16 +935,16 @@ any doShift(any ex) {
    return Pop(c1);
 }
 
-// (lt0 'num) -> flg
+// (lt0 'any) -> num | NIL
 any doLt0(any x) {
    x = cdr(x);
-   return isNum(x = EVAL(car(x))) && isNeg(x)? T : Nil;
+   return isNum(x = EVAL(car(x))) && isNeg(x)? x : Nil;
 }
 
-// (gt0 'num) -> flg
+// (gt0 'any) -> num | NIL
 any doGt0(any x) {
    x = cdr(x);
-   return isNum(x = EVAL(car(x))) && !isNeg(x) && !IsZero(x)? T : Nil;
+   return isNum(x = EVAL(car(x))) && !isNeg(x) && !IsZero(x)? x : Nil;
 }
 
 // (abs 'num) -> num

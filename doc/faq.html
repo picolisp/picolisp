@@ -26,7 +26,9 @@ structure. A compiler transforms it to another (physical) machine, with the
 result that many assumptions about the machine's behavior won't hold any more.
 Besides that, Pico's primitive functions evaluate their arguments independently
 and are not very much suited for being called from compiled code. Finally, the
-gain in execution speed would probably not be worth the effort.
+gain in execution speed would probably not be worth the effort. Typical Pico
+applications often use single-pass code which is loaded, executed and thrown
+away; a process that would be considerably slowed down by compilation.
 
 <p><dt>I cannot find the LAMBDA keyword in Pico.
 <dd>Because it isn't there. The reason is that it is redundant; it is equivalent

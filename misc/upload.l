@@ -1,4 +1,4 @@
-# 01dec01abu
+# 08feb03abu
 # (c) Software Lab. Alexander Burger
 
 (app)
@@ -19,4 +19,7 @@
 
    (<post> "misc/upload.l"
       (<submit> "Send")
-      (<upload> 30 "Filename" '*UpFile) ) )
+      (<upload> 30 "Filename" '*UpFile) )
+
+   #(new '(+Form) 120 30 '((gui '(+Label) "Dummy" "Label")))
+)

@@ -1,4 +1,4 @@
-# 13nov02abu
+# 19feb03abu
 # (c) Software Lab. Alexander Burger
 
 (de test1 (S N1)
@@ -10,6 +10,12 @@
 (de test2 (S N1 N2)
    (let (N (read)  X (eval (list S N1 N2)))
       (unless (= N X)
+         (prinl "^J" N ": (" S " " N1 " " N2 ") -> " X)
+         (bye) ) ) )
+
+(de cmp2 (S N1 N2)
+   (let (N (n0 (read))  X (eval (list S N1 N2)))
+      (unless (== N X)
          (prinl "^J" N ": (" S " " N1 " " N2 ") -> " X)
          (bye) ) ) )
 
@@ -30,6 +36,8 @@
          (test2 '% N1 N2)
          (test2 '/ N1 N2)
          (test2 '/ N1 2)
+         (cmp2 '>= N1 N2)
+         (cmp2 '> N1 N2)
          (test1 'sqrt (abs N1)) ) ) )
 
 (prinl)

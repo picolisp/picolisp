@@ -1,4 +1,4 @@
-# 29jan03abu
+# 02mar03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -14,15 +14,15 @@
    (clk> . 4) (drg> . 4) )
 
 (de *Mimes
-   (`(chop ".css") "text/css")
-   (`(chop ".gif") "image/gif")
-   (`(chop ".jpg") "image/jpeg")
-   (`(chop ".txt") "text/octet-stream")  #? 'T' -> Bug in MSIE 5.x
-   (`(chop ".wav") "audio/x-wav")
-   (`(chop ".mp3") "audio/x-mpeg")
-   (`(chop ".pdf") "application/pdf")
-   (`(chop ".zip") "application/zip")
-   (`(chop ".jar") "application/java-archive") )
+   (`(chop ".css") "text/css" 86400)
+   (`(chop ".gif") "image/gif" 86400)
+   (`(chop ".jpg") "image/jpeg" 86400)
+   (`(chop ".txt") "text/octet-stream" 1)
+   (`(chop ".wav") "audio/x-wav" 1)
+   (`(chop ".mp3") "audio/x-mpeg" 86400)
+   (`(chop ".pdf") "application/pdf" 1)
+   (`(chop ".zip") "application/zip" 1)
+   (`(chop ".jar") "application/java-archive" 86400) )
 
 
 ### HTTP-Client ###
@@ -31,7 +31,7 @@
       (out "Host"
          (prinl "GET /" "Name" " HTTP/1.1")
          (prinl "Connection: close")
-         (prinl "User-Agent: Pico")
+         (prinl "User-Agent: PicoLisp")
          (prinl "Host: " "Host" ":" "Port")
          (prinl "Accept:  text/html, text/plain")
          (prinl "Accept-Language: en")
@@ -66,8 +66,11 @@
          (NIL (fork) (close P))
          (close S) )
       (http S)
-      (task (or *Sock (bye))
-         (http (or (listen *Sock 60000) (quit "Bad Client"))) ) ) )
+      (or *Sock (bye))
+      (timeout `(* 15 60000))
+      (task *Sock
+         (http (or (listen *Sock 60000) (quit "Bad Client")))
+         (timeout `(* 15 60000)) ) ) )
 
 (de baseHRef ()
    (pack
@@ -90,7 +93,7 @@
 (de app ()
    (unless *Sock
       (setq
-         *SesId (pack (fmt64 (in "/dev/urandom" (rd 6))) "~")
+         *SesId (pack (% (in "/dev/urandom" (rd 5)) 100000000000) "~")
          *Sock (port *HPorts '*Port) ) ) )
 
 (de allow (F)
@@ -111,7 +114,7 @@
                   (off *MPartLim *MPartEnd)
                   (_htHead)
                   (and *MPartLim *MPartEnd (_htMultipart)) )
-               (T (quit ": Bad HTTP Request" L)) )
+               ((quit ": Bad HTTP Request" L)) )
             (setq
                L (split @U "?")
                @U (car L)
@@ -122,7 +125,6 @@
                         (_htSet (car L) (_htArg (cadr L)))
                         NIL ) )
                   (split (cadr L) "&") ) )
-            (timeout `(* 20 60000))
             (unless (setq X (htDecode @U))
                (setq  X (car *Home)  @U (cdr *Home)) )
             (when
@@ -133,9 +135,10 @@
                   (member X *Allow)
                   (unless (sub? "/../" X)
                      (find '((P) (pre? P X)) *Allow) ) )
-               (or (= *ConId *SesId) (throw "http"))
                (out S
                   (cond
+                     ((<> *ConId *SesId)
+                        (and (call "test" "-r" "void") (httpEcho "void" NIL 86400)) )
                      ((= X "0")
                         (html NIL
                            (prinl "<TABLE WIDTH=\"100%\"><TR>")
@@ -161,12 +164,12 @@
                      ((= '("." "l") (tail 2 @U))
                         (load X) )
                      ((= '("." "h" "t" "m" "l") (tail 5 @U))
-                        (httpEcho X) )
+                        (httpEcho X NIL 86400) )
                      ((assoc (tail 4 @U) *Mimes)
                         (apply httpEcho (cdr @) X) )
                      ((call "test" "-d" X)
                         (load (pack X "default")) )
-                     (T (httpEcho X "application/octet-stream" T T)) ) ) ) ) )
+                     (T (httpEcho X "application/octet-stream" 1 T)) ) ) ) ) )
       (close S) ) )
 
 (de _htHead ()
@@ -231,13 +234,17 @@
 
 (de _htSet ("Var" Val)
    (use (@V @N)
+      (off @N)
       (setq "Var"
          (intern
             (pack
-               (if (match '("*" @V "(" @N ")") "Var")
-                  (setq @N (_htArg @N)  @V (cons "*" @V))
-                  (off @N)
-                  "Var" ) ) ) )
+               (cond
+                  ((or (match '("*" @V "(" @N ")") "Var") (match '("%" "2" "A" @V "(" @N ")") "Var"))
+                     (setq @N (_htArg @N))
+                     (cons "*" @V) )
+                  ((match '("%" "2" "A" @V) "Var")
+                     (cons "*" (cdddr "Var")) )
+                  (T "Var") ) ) ) )
       (or
          (not *Allow)
          (memq "Var" *Allow)
@@ -253,7 +260,7 @@
       ((and (= "[" (car Lst)) (= "]" (last Lst)))
          (intern (htDecode (cdr (head -1 Lst)))) )
       ((and (= "{" (car Lst)) (= "}" (last Lst)))
-         (extern (pack (cdr (head -1 Lst)))) )
+         (extern (pack Lst)) )
       ((and (= "(" (car Lst)) (= ")" (last Lst)))
          (mapcar _htArg (split (cdr (head -1 Lst)) "_")) )
       (T (htDecode Lst)) ) )
@@ -331,14 +338,15 @@
 # Http Transfer Header
 (de _http (Typ Upd)
    (prinl "HTTP/1.1 200 OK")
-   (prinl "Server: Pico")
+   (prinl "Server: PicoLisp")
    (prinl "Connection: close")
-   (when Upd
+   (prinl "Cache-Control: max-age=" Upd)
+   (when (=0 Upd)
       (prinl "Cache-Control: no-cache") )
    (prinl "Content-Type: " (or Typ "text/html; charset=utf-8")) )
 
 (de httpHead (Typ)
-   (_http Typ T)
+   (_http Typ 0)
    (prinl) )
 
 # Http Echo
@@ -516,6 +524,11 @@
       (*Frame (prin "\" TARGET=\"MAIN\"")) )
    (prin "\">" S "</A>") )
 
+(de <button> @
+   (prin "[")
+   (pass <href>)
+   (prinl "]") )
+
 (de <img> (S A Url X)
    (and Url (prin "<A HREF=\"" (_sesId Url)  "\">"))
    (prin "<IMG SRC=\"" (_sesId S) "\" ALT=\"" A "\"" (_htAlign X) ">")
@@ -603,7 +616,7 @@
       (<item> (eval (pop '"Prg")))
       (prinl "</TH>") )
    (prinl "</TR>") )
-  
+
 (de <td> "Prg"
    (prinl "<TR>")
    (while "Prg"
@@ -625,14 +638,6 @@
    (prEval "Prg")
    (prinl "</FORM>") )
 
-(de <get> ("S" . "Prg")
-   (prinl
-      "<FORM ACTION=\""
-      (_sesId "S")
-      "\" METHOD=GET>" )
-   (prEval "Prg")
-   (prinl "</FORM>") )
-
 (de <field> (N S "Var" Url X)
    (when S
       (if Url (<href> S Url) (prin S))
@@ -645,6 +650,14 @@
    (prin "<INPUT TYPE=HIDDEN ")
    (htmlVar "Var")
    (prinl " VALUE=\"" "Val" "\">") )
+
+(de <passwd> (N S "Var" X)
+   (when S
+      (prin S)
+      (space) )
+   (prin "<INPUT" (_htAlign X) " TYPE=\"PASSWORD\" ")
+   (htmlVar "Var")
+   (prinl " VALUE=\"" (htmlVal "Var") "\" SIZE=" N ">") )
 
 (de <upload> (N S "Var" Url)
    (when S
@@ -684,12 +697,12 @@
    (prinl " VALUE=\"\">")
    (prin "<INPUT TYPE=CHECKBOX ")
    (htmlVar "Var")
-   (prinl " VALUE=\"T\"" (and (htmlVal "Var") " CHECKED") ">" S) )
+   (prinl " VALUE=\"T\"" (and (htmlVal "Var") " CHECKED") "> " S) )
 
 (de <radio> ("Var" Val S)
    (prin "<INPUT TYPE=RADIO ")
    (htmlVar "Var")
-   (prin " VALUE=\"" Val "\"" (and (= Val (htmlVal "Var")) " CHECKED") ">" S) )
+   (prin " VALUE=\"" Val "\"" (and (= Val (htmlVal "Var")) " CHECKED") "> " S) )
 
 (de <submit> (S)
    (prinl "<INPUT TYPE=SUBMIT VALUE=\"" S "\">") )
@@ -700,7 +713,7 @@
 
 ### Applets ###
 (de dispatch ()
-   (timeout `(* 20 60000))
+   (timeout `(* 15 60000))
    (in *App
       (let S (rd)
          (cond
@@ -1701,8 +1714,10 @@
    (pass extra) )
 
 (dm chg> ()
-   (extra)
-   (eval (: chg)) )
+   (let S (: str)
+      (extra)
+      (unless (= S (: str))
+         (eval (: chg)) ) ) )
 
 
 (class +Chk)

@@ -1,4 +1,4 @@
-# 11dec02abu
+# 22feb03abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -20,6 +20,7 @@ picoFiles = main.c gc.c io.c flow.c big.c sym.c subr.c apply.c tab.c net.c
 	-Wuninitialized -Wstrict-prototypes \
 	-pipe  -D "ID='G'"  $*.c
 
+$(picoFiles:.c=.o): pico.h
 
 $(bin)/pico: $(picoFiles:.c=.o)
 	rm -f ../pico

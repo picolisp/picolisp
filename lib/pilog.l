@@ -1,4 +1,4 @@
-# 23jan03abu
+# 25feb03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -160,6 +160,7 @@
          (if (isa '+Key (get Cls Var))
             (init Tree Val Val)
             (init Tree (cons Val) (cons Val T)) ) )
+      ((=T Val) (init Tree))
       (T
          (cond
             ((isa '+Key (get Cls Var))
@@ -247,11 +248,11 @@
 (be bool (@F . @L)
    (@ let F (-> @F)
       (or
-         (=0 F)
+         (not F)
          (let (L (-> @L)  X (pop 'L))
             (while L
                (setq X (get X (pop 'L))) )
-            (= F X) ) ) ) )
+            X ) ) ) )
 
 (be range (@N . @L)
    (@ let N (-> @N)

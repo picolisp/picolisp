@@ -1,4 +1,4 @@
-/* 21oct02abu
+/* 28feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -677,10 +677,10 @@ any doNEqual(any x) {
    return Nil;
 }
 
-// (=0 'any) -> flg
+// (=0 'any) -> num | NIL
 any doEqual0(any x) {
    x = cdr(x);
-   return isNum(x = EVAL(car(x))) && IsZero(x)? T : Nil;
+   return isNum(x = EVAL(car(x))) && IsZero(x)? x : Nil;
 }
 
 // (=T 'any) -> flg

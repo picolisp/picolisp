@@ -1,4 +1,4 @@
-# 29jan03abu
+# 01mar03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -409,7 +409,7 @@
          (ps "X") )
 
       (unless (=0 Frei)
-         (prUms 360 442 80 18 Frei) )  # Steuerfreie Umsaetze [48]
+         (prUms 352 448 80 18 Frei) )  # Steuerfreie Umsaetze [48]
       (prUms 352 507 80 18 Ums)        # Steuerpflichtige Umsaetze 16% [51]
       (prBetrag 494 507 100 18 USt)
       (prBetrag 494 790 100 18 USt)    # Uebertrag
@@ -420,7 +420,7 @@
       (prBetrag 466 202 100 18 (- VSt))   # Vorsteuer [66]
       (setq U (+ USt VSt))
       (prBetrag 466 334 100 18 U)         # Verbleibender Betrag
-      (prBetrag 466 428 100 18 (- U (% U 0.10)))   # Vorauszahlung [83]
+      (prBetrag 466 428 100 18 U)         # Vorauszahlung [83]
       (page) ) )
 
 # Gewinn/Verlust-Rechnung

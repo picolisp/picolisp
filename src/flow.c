@@ -1,4 +1,4 @@
-/* 24jan03abu
+/* 20feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -44,8 +44,7 @@ any doDef(any ex) {
    any x, y;
    cell c1, c2, c3;
 
-   x = cdr(ex);
-   Push(c1, EVAL(car(x)));
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedSym(ex,data(c1));
    CheckVar(ex,data(c1));
    x = cdr(x),  Push(c2, EVAL(car(x)));
@@ -902,7 +901,7 @@ any doThrow(any ex) {
                val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
             Env.bind = Env.bind->link;
          }
-         closeFiles(CatchPtr->env.inFiles, CatchPtr->env.outFiles);
+         closeFiles(CatchPtr->env.inFiles, CatchPtr->env.outFiles, CatchPtr->env.ctlFiles);
          Env = CatchPtr->env;
          longjmp(CatchPtr->rst, (int)x);
       }

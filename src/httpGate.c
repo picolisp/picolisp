@@ -1,10 +1,11 @@
-/* 31jan03abu
+/* 02mar03abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
@@ -27,8 +28,15 @@ typedef enum {NO,YES} bool;
 
 static struct {
    uint32_t adr[THROTTLE];
-   char cnt[THROTTLE];
+   int cnt[THROTTLE];
 } Throttle;
+
+static char Head[] =
+   "HTTP/1.1 200 OK\n"
+   "Server: PicoLisp\n"
+   "Connection: close\n"
+   "Cache-Control: max-age=86400\n"
+   "Content-Type: text/html; charset=utf-8\n";
 
 
 static void giveup(char *msg) {
@@ -41,7 +49,7 @@ static int incThrottle(uint32_t adr) {
 
    for (i = 0;  i < THROTTLE && Throttle.adr[i];  ++i)
       if (Throttle.adr[i] == adr)
-         return Throttle.cnt[i] == 60? 0 : ++Throttle.cnt[i];
+         return Throttle.cnt[i] == 600? 0 : ++Throttle.cnt[i];
    for (i = 0; i < THROTTLE; ++i)
       if (Throttle.cnt[i] == 0) {
          Throttle.adr[i] = adr;
@@ -104,9 +112,9 @@ static int gateConnect(unsigned short port) {
 }
 
 int main(int ac, char *av[]) {
-   int n, sd, dflt, port, cli, srv, dly;
+   int n, fd, sd, dflt, port, cli, srv, dly;
    struct sockaddr_in addr;
-   char *gate, *p, *q, buf[4096];
+   char *gate, *p, *q, buf[BUFSIZ];
    SSL_CTX *ctx;
    SSL *ssl;
    fd_set fdSet;
@@ -146,7 +154,7 @@ int main(int ac, char *av[]) {
       if (select(sd+1, &fdSet, NULL, NULL, &tv) < 0)
          return 1;
       if (tv.tv_sec == 0  &&  tv.tv_usec == 0) {
-         tv.tv_sec = 2;
+         tv.tv_sec = 3;
          for (n = 0;  n < THROTTLE && Throttle.adr[n];  ++n)
             if (Throttle.cnt[n] > 0)
                --Throttle.cnt[n];
@@ -167,7 +175,7 @@ int main(int ac, char *av[]) {
             else {
                close(sd);
 
-               if ((dly -= 30) > 0)
+               if ((dly -= 300) > 0)
                   sleep(dly);
 
                if (ssl) {
@@ -195,17 +203,31 @@ int main(int ac, char *av[]) {
                   p = buf + 6;
                else
                   return 1;
+
                if (*p == ' ')
                   port = dflt,  q = p;
                else {
                   port = (int)strtol(p, &q, 10);
-                  if (q == p || *q != ' ' && *q != '/')
+                  if (q == p  ||  *q != ' ' && *q != '/'  ||  port < 12300)
                      return 1;
                }
 
-               if ((srv = gateConnect((unsigned short)port)) < 0  &&
-                              (srv = gateConnect((unsigned short)dflt)) < 0 )
-                  return 1;
+               if ((srv = gateConnect((unsigned short)port)) < 0) {
+                  if (!memchr(q,'~', buf + n - q))
+                     return 1;
+                  if ((fd = open("void", O_RDONLY)) < 0)
+                     return 1;
+                  if (ssl)
+                     SSL_write(ssl, Head, strlen(Head));
+                  else
+                     wrBytes(cli, Head, strlen(Head));
+                  while ((n = read(fd, buf, sizeof(buf))) > 0)
+                     if (ssl)
+                        SSL_write(ssl, buf, n);
+                     else
+                        wrBytes(cli, buf, n);
+                  return 0;
+               }
                if (buf[0] == '@')
                   p = q + 1;
                else {

@@ -66,6 +66,7 @@ href="faq.html">Frequently Asked Questions</a>.
       <li><a href="#macro-io">Read-Macros</a>
       </ul>
    <li><a href="#ev">Evaluation</a>
+   <li><a href="#int">Interrupt</a>
    <li><a href="#err">Error Handling</a>
    <li><a href="#atres">@ Result</a>
    <li><a href="#cmp">Comparing</a>
@@ -1017,6 +1018,22 @@ bind all other arguments (unevaluated) to <code>Z</code>:
 
 
 <p><hr>
+<h3><a name="int">Interrupt</a></h3>
+
+<p>During the evaluation of an expression, the Pico interpreter can be
+interrupted at any time by hitting <code>Ctrl-C</code>. It will then enter the
+breakpoint routine, as if <code><a href="#!">!</a></code> were called.
+
+<p>Hitting <code>RETURN</code> at that point will continue evaluation, while
+<code>(<a href="#quit">quit</a>)</code> will abort evaluation and return the
+interpreter to the top level.
+
+See also <code><a href="#debug">debug</a></code>, <code><a
+href="#e">e</a></code>, <code><a href="#^">^</a></code> and <code><a
+href="#*Dbg">*Dbg</a></code>
+
+
+<p><hr>
 <h3><a name="err">Error Handling</a></h3>
 
 <p>When a runtime error occurs, execution is stopped and an error handler is
@@ -1413,7 +1430,7 @@ which was not the case in traditional Lisp systems.
 <dt><code>QUOTE</code>
 <dd>In traditional Lisp, the <code>QUOTE</code> function returns its
 <u>first</u> unevaluated argument. In Pico Lisp, on the other hand,
-<code>quote</code> returns the whole unevaluated argument <u>list</u>.
+<code>quote</code> returns <u>all</u> (unevaluated) argument(s).
 
 <dt><code>LAMBDA</code>
 <dd>The <code>LAMBDA</code> function, in some way at the heart of traditional
@@ -1461,7 +1478,7 @@ argument types and return values are described with the following abbreviations:
 <li><code>dat</code> - Date: Days since first of march in the year 0
 <li><code>tim</code> - Time: Seconds since midnight
 <li><code>obj</code> - Object/Class: A symbol with methods and/or classes
-<li><code>var</code> - Variable: Either a symbol's <code>VAL</code> or a cell's <code>CAR</code>
+<li><code>var</code> - Variable: Either a symbol or a cell
 <li><code>exe</code> - Executable: A list as executable expression (<code>eval</code>)
 <li><code>prg</code> - Prog-Body: A list of executable expressions (<code>run</code>)
 <li><code>foo</code> - Function: Either a number (code-pointer) or a list (lambda)
@@ -1774,6 +1791,7 @@ argument types and return values are described with the following abbreviations:
 <dd><code>
    <a href="#in">in</a>
    <a href="#out">out</a>
+   <a href="#ctl">ctl</a>
    <a href="#load">load</a>
    <a href="#str">str</a>
    <a href="#hear">hear</a>
@@ -2572,6 +2590,26 @@ copied, while atoms are returned unchanged.
 -> T
 </code></pre>
 
+<p><dt><a name="ctl"><code>(ctl 'sym . prg) -> any</code></a>
+<dd>Waits until a write (exclusive) lock (or a read (shared) lock if the first
+character of <code>sym</code> is "<code>+</code>") can be set on the file
+<code>sym</code>, then executes <code>prg</code> and releases the lock. If the
+files does not exist, it will be created. See also <code><a
+href="#in">in</a></code> and <code><a href="#out">out</a></code>.
+
+<p><pre><code>
+$ echo 9 >count                           # Write '9' to file "count"
+$ ./p dbg.l
+: (ctl "count"                            # Get exclusive control
+   (let Cnt (in "count" (read))           # Read '9'
+      (out "count"
+         (println (- Cnt 1)) ) ) )        # Write '8'
+-> 8
+:
+$ cat count                               # Check "count"
+8
+</code></pre>
+
 <p><dt><a name="ctty"><code>(ctty 'sym) -> flg</code></a>
 <dd>Changes the current TTY device to <code>sym</code>.
 
@@ -2659,9 +2697,10 @@ way to define a function.
 <dd>Inserts a <code><a href="#!">!</a></code> breakpoint function call at the
 beginning and all top-level expressions of the function or method body of
 <code>sym</code>, to allow a stepwise execution. Typing <code>(d)</code> at a
-breakpoint will also debug the current subexpression, and <code>(e)</code> will
-evaluate the current subexpression. The current subexpression is stored in the
-global variable <code><a href="#^">^</a></code>.
+breakpoint will also debug the current subexpression, and <code>(<a
+href="#e">e</a>)</code> will evaluate the current subexpression. The current
+subexpression is stored in the global variable <code><a href="#^">^</a></code>.
+See also <code><a href="#*Dbg">*Dbg</a></code>.
 
 <p><pre><code>
 : (de tst (N)                    # Define tst
@@ -2805,7 +2844,8 @@ Ok done -> done
 <p><dt><a name="e"><code>(e . prg) -> any</code></a>
 <dd>Used in a breakpoint. Evaluates <code>prg</code> in the exution environment,
 or the currently executed expression if <code>prg</code> is not given. See also
-<code><a href="#!">!</a></code> and <code><a href="#^">^</a></code>.
+<code><a href="#debug">debug</a></code>, <code><a href="#!">!</a></code>,
+<code><a href="#^">^</a></code> and <code><a href="#*Dbg">*Dbg</a></code>.
 
 <p><pre><code>
 : (! + 3 4)
@@ -2865,8 +2905,8 @@ evaluation, <code>any</code> is actually evaluated twice.
 </code></pre>
 
 <p><dt><a name="extQ"><code>(ext? 'any) -> flg</code></a>
-<dd>Returns <code>T</code> when the argument <code>any</code> is an external
-symbol.
+<dd>Returns <code>T</code> when the argument <code>any</code> is an existing
+external symbol.
 
 <p><pre><code>
 : (ext? 123)
@@ -2879,15 +2919,17 @@ symbol.
 -> T
 </code></pre>
 
-<p><dt><a name="extern"><code>(extern 'sym) -> sym</code></a>
+<p><dt><a name="extern"><code>(extern 'sym) -> sym|NIL</code></a>
 <dd>Converts a transient symbol to an external symbol. If the symbol is already
 extern, it is returned as it is. Otherwise, it is inserted into the external
-hash table. See also <code><a href="#intern">intern</a></code> and <code><a
-href="#====">====</a></code>.
+hash table. <code>NIL</code> is returned if <code>sym</code> does not exist. See
+also <code><a href="#intern">intern</a></code>.
 
 <p><pre><code>
-: (extern "A1b3")
--> {A1b3}
+: (extern "A1b")
+-> {A1b}
+: (extern "{A1b}")
+-> {A1b}
 </code></pre>
 
 <p><dt><a name="extra"><code>(extra ['any ..]) -> any</code></a>
@@ -3129,15 +3171,15 @@ See also <code><a href="#prove">prove</a></code>.
 -> (((1 (0) NIL ((likes @X @Y)) NIL ((0 . @X) 1 . John) T)))
 </code></pre>
 
-<p><dt><a name="gt0"><code>(gt0 'num) -> flg</code></a>
-<dd>Returns <code>T</code> when the <code>num</code> argument is greater than
-zero.
+<p><dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>
+<dd>Returns <code>num</code> when the argument is a number and greater than
+zero, otherwise <code>NIL</code>.
 
 <p><pre><code>
 : (gt0 -2)
 -> NIL
 : (gt0 3)
--> T
+-> 3
 </code></pre>
 
 
@@ -3220,8 +3262,8 @@ appropriately. If the argument is <code>NIL</code>, standard input is used. If
 the argument is a symbol, it is used as a file name. If it is a number, it is
 used as the descriptor of an open file. Otherwise (if it is a list), it is taken
 as a command with arguments, and a pipe is opened for input. See also <code><a
-href="#call">call</a></code>, <code><a href="#load">load</a></code> and <code><a
-href="#out">out</a></code>.
+href="#call">call</a></code>, <code><a href="#load">load</a></code>, <code><a
+href="#out">out</a></code> and <code><a href="#ctl">ctl</a></code>.
 
 <p><pre><code>
 : (in "a" (list (read) (read) (read)))    # Read three items from file "a"
@@ -3616,12 +3658,13 @@ as it is. Otherwise, a new transient symbol with all characters of
 -> "abc"
 </code></pre>
 
-<p><dt><a name="lt0"><code>(lt0 'num) -> flg</code></a>
-<dd>Returns <code>T</code> when the <code>num</code> argument is less than zero.
+<p><dt><a name="lt0"><code>(lt0 'any) -> num | NIL</code></a>
+<dd>Returns <code>num</code> when the argument is a number and less than zero,
+otherwise <code>NIL</code>.
 
 <p><pre><code>
 : (lt0 -2)
--> T
+-> -2
 : (lt0 3)
 -> NIL
 </code></pre>
@@ -4193,8 +4236,8 @@ the argument is a symbol, it is used as a file name (opened in "append" mode if
 the first character is "<code>+</code>"). If it is a number, it is used as the
 descriptor of an open file. Otherwise (if it is a list), it is taken as a
 command with arguments, and a pipe is opened for output. See also <code><a
-href="#call">call</a></code>, <code><a href="#in">in</a></code> and <code><a
-href="#load">load</a></code>.
+href="#call">call</a></code>, <code><a href="#in">in</a></code>, <code> <a
+href="#ctl">ctl</a></code> and <code><a href="#load">load</a></code>.
 
 <p><pre><code>
 : (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
@@ -5644,7 +5687,8 @@ environment. An empty input line terminates the read-eval-print-loop, the
 environment and I/O channels are restored, and the result of <code>prg</code> is
 returned. <code>!</code> is normally inserted into existing programs with the
 <code><a href="#debug">debug</a></code> function. See also <code><a
-href="#e">e</a></code> and <code><a href="#^">^</a></code>.
+href="#e">e</a></code>, <code><a href="#^">^</a></code> and <code><a
+href="#*Dbg">*Dbg</a></code>.
 
 <p><pre><code>
 : (de foo (N) (and (println 1) (! println N) (println 2)))
@@ -5772,11 +5816,11 @@ the program).
    +Person {3}
 -> {1}
 : (show '{P})
-{P} (+ObjRoot)
+{P} NIL
    nm (566 . {AhDx})
 -> {P}
 : (show '{3})
-{3} (+ObjRoot)
+{3} NIL
    tel (681376 . {Agyl})
    nm (1461322 . {2gu7})
 -> {3}
@@ -6007,12 +6051,12 @@ equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
 -> T
 </code></pre>
 
-<p><dt><a name="=0"><code>(=0 'any) -> flg</code></a>
-<dd>Returns <code>T</code> when <code>any</code> is a number with value zero.
+<p><dt><a name="=0"><code>(=0 'any) -> num | NIL</code></a>
+<dd>Returns <code>0</code> when <code>any</code> is a number with value zero.
 
 <p><pre><code>
 : (=0 (- 6 3 2 1))
--> T
+-> 0
 : (=0 'a)
 -> NIL
 </code></pre>
@@ -6154,7 +6198,8 @@ read-eval-print loop (see <code><a href="#atres">@ Result</a></code>).
 
 <dt><a name="^"><code>^</code></a>
 <dd>Holds the currently executed expression during a breakpoint or an error. See
-also <code><a href="#!">!</a></code> and <code><a href="#e">e</a></code>.
+also <code><a href="#debug">debug</a></code>, <code><a href="#!">!</a></code>,
+<code><a href="#e">e</a></code> and <code><a href="#*Dbg">*Dbg</a></code>.
 
 <p><pre><code>
 : (* (+ 3 4) (/ 7 0))

@@ -1,4 +1,4 @@
-/* 06dec02abu
+/* 02mar03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -20,11 +20,12 @@ static void (*putBin)(int);
 static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
-static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void openErr(char *s) {err(NULL, NULL, "%s: Open error", s);}
-static void closeErr(char *s) {err(NULL, NULL, "%s: Close error", s);}
+static void lockErr(void) {err(NULL, NULL, "File lock error");}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, sys_errlist[errno]);}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s error", s);}
+static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
+static void closeErr(char *s) {err(NULL, NULL, "%s: Close error", s);}
 
 static void doTermStop(int n __attribute__((unused))) {
    sigset_t mask;
@@ -546,6 +547,32 @@ static void wrOpen(any ex, any x, outFrame *f) {
    }
 }
 
+static void ctOpen(any ex, any x, ctlFrame *f) {
+   NeedSym(ex,x);
+   {
+      char nm[pathSize(x)];
+      struct flock fl;
+
+      pathString(x,nm);
+      if (nm[0] == '+') {
+         if ((f->fd = open(nm+1, O_CREAT|O_RDWR, 0666)) < 0)
+            openErr(nm);
+         fl.l_type = F_RDLCK;
+      }
+      else {
+         if ((f->fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0)
+            openErr(nm);
+         fl.l_type = F_WRLCK;
+      }
+      fl.l_whence = SEEK_SET;
+      fl.l_start = 0;
+      fl.l_len = 0;
+      while (fcntl(f->fd, F_SETLKW, &fl) < 0)
+         if (errno != EINTR)
+            close(f->fd),  lockErr();
+   }
+}
+
 /*** Reading ***/
 void getStdin(void) {
    if (InFile != stdin || !isCell(val(Led)))
@@ -581,6 +608,10 @@ static void pushOutFiles(outFrame *f) {
    f->link = Env.outFiles,  Env.outFiles = f;
 }
 
+static void pushCtlFiles(ctlFrame *f) {
+   f->link = Env.ctlFiles,  Env.ctlFiles = f;
+}
+
 static void popInFiles(void) {
    if (Env.inFiles->pid >= 0) {
       fclose(InFile);
@@ -604,11 +635,18 @@ static void popOutFiles(void) {
    OutFile = (Env.outFiles = Env.outFiles->link)? Env.outFiles->fp : stdout;
 }
 
-void closeFiles(inFrame *in, outFrame *out) {
+static void popCtlFiles(void) {
+   close(Env.ctlFiles->fd);
+   Env.ctlFiles = Env.ctlFiles->link;
+}
+
+void closeFiles(inFrame *in, outFrame *out, ctlFrame *ctl) {
    while (Env.inFiles != in)
       popInFiles();
    while (Env.outFiles != out)
       popOutFiles();
+   while (Env.ctlFiles != ctl)
+      popCtlFiles();
 }
 
 /* Skip White Space and Comments */
@@ -1366,6 +1404,19 @@ any doOut(any ex) {
    return x;
 }
 
+// (ctl 'sym . prg) -> any
+any doCtl(any ex) {
+   any x;
+   ctlFrame f;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   ctOpen(ex,x,&f);
+   pushCtlFiles(&f);
+   x = prog(cddr(ex));
+   popCtlFiles();
+   return x;
+}
+
 static void putString(int c) {
    if (StrSym)
       byteSym(c, &StrI, &StrSym);
@@ -1404,11 +1455,7 @@ any doOpen(any ex) {
       char nm[pathSize(x)];
 
       pathString(x, nm);
-      if ((fd = open(nm, O_RDWR)) >= 0)
-         return boxCnt(fd);
-      if (errno != ENOENT)
-         return Nil;
-      if ((fd = open(nm, O_CREAT|O_TRUNC|O_RDWR, 0666)) >= 0)
+      if ((fd = open(nm, O_CREAT|O_RDWR, 0666)) >= 0)
          return boxCnt(fd);
    }
    return Nil;
@@ -1428,7 +1475,7 @@ any doEcho(any ex) {
    x = cdr(ex),  y = EVAL(car(x));
    if (isNil(y) && !isCell(cdr(x))) {
       int n, dst = fileno(OutFile);
-      byte buf[8192];
+      byte buf[BUFSIZ];
 
       fflush(OutFile);
       if (Chr) {
@@ -1790,8 +1837,6 @@ static void setAdr(adr n, byte *p) {
    p[3] = (byte)(n >> 24),  p[4] = (byte)(n >> 32),  p[5] = (byte)(n >> 40);
 }
 
-static void lockErr(void) {err(NULL, NULL, "File lock error");}
-
 static any new64(adr n, any x) {
    int c;
    cell c1;
@@ -1910,6 +1955,21 @@ any newId(void) {
    n = newBlock();
    rwUnlock(1);
    return new64(n/BLKSIZE, At2);  // dirty
+}
+
+bool isLife(any x) {
+   adr n;
+   byte buf[BLK];
+
+   if (n = blk64(name(x))*BLKSIZE) {
+      blkPeek(BLK, buf, BLK);  // Get Next
+      if (n < getAdr(buf)) {
+         blkPeek(n, buf, BLK);
+         if ((getAdr(buf) & TAGMASK) == 1)
+            return YES;
+      }
+   }
+   return NO;
 }
 
 static void cleanUp(adr n) {

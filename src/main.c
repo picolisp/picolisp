@@ -1,4 +1,4 @@
-/* 27oct02abu
+/* 18feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -259,7 +259,7 @@ void err(any ex, any x, char *fmt, ...) {
    Line = Nil;
    Env.get = getStdin;
    Env.put = putStdout;
-   closeFiles(NULL,NULL);
+   closeFiles(NULL,NULL,NULL);
    if (ex)
       outString("!? "), print(val(Up) = ex), crlf();
    if (x)

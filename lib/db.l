@@ -1,4 +1,4 @@
-# 23jan03abu
+# 15feb03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -55,10 +55,6 @@
    (if (maxKey (tree Var Cls Hook) Min Max)
       (+ 1 @)
       (or Min 1) ) )
-
-
-### Root Objects ###
-(class +ObjRoot)
 
 
 ### Relations ###
@@ -368,12 +364,11 @@
 (de idxHook (Obj)
    (or (get Obj (: hook)) *DB) )
 
-(de idxRoot (Obj)
+(de idxTree (Obj)
    (let Root
       (or
-         (get (idxHook Obj) (: cls))
-         (put (idxHook Obj) (: cls) (new T '(+ObjRoot))) )
-      (touch Root)
+         (touch (get (idxHook Obj) (: cls)))
+         (put (idxHook Obj) (: cls) (new T)) )
       (or
          (get Root (: var))
          (put Root (: var) (cons 0) ) ) ) )
@@ -394,7 +389,7 @@
       (extra Val Obj) ) )
 
 (dm rel> (Obj Old New)
-   (let R (idxRoot Obj)
+   (let R (idxTree Obj)
       (and Old
          (= Obj (fetch R Old))
          (store R Old NIL) )
@@ -409,7 +404,7 @@
 (class +Ref +Index)
 
 (dm rel> (Obj Old New)
-   (let R (idxRoot Obj)
+   (let R (idxTree Obj)
       (when Old
          (store R (cons Old Obj) NIL) )
       (and New
@@ -427,7 +422,7 @@
    (super Var (cdr Lst)) )
 
 (dm rel> (Obj Old New)
-   (let R (idxRoot Obj)
+   (let R (idxTree Obj)
       (when Old
          (store R (cons Old Obj) NIL)
          (mapc
@@ -451,7 +446,7 @@
 (class +Sn)
 
 (dm rel> (Obj Old New)
-   (let R (idxRoot Obj)
+   (let R (idxTree Obj)
       (when Old
          (store R (cons (ext:Snx Old) (cons Obj T)) NIL) )
       (and New

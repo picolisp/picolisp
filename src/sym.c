@@ -1,4 +1,4 @@
-/* 25nov02abu
+/* 26feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -156,20 +156,30 @@ any doIntern(any ex) {
    return x;
 }
 
-// (extern 'sym) -> sym
+// (extern 'sym) -> sym|NIL
 any doExtern(any ex) {
-   any x, y, *h;
+   int c, i;
+   any x, y, *h, nm;
+   cell c1, c2;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
-   if (isNil(x))
+   if (!isNum(x = name(x)))
       return Nil;
-   y = name(x);
-   if (x = findHash(y, h = Extern + hash(y)))
-      return x;
-   x = extSym(consSym(Nil,y));
-   *h = cons(x,*h);
-   return x;
+   if (!(y = findHash(x, h = Extern + hash(x)))) {
+      Push(c1, x);
+      if ((c = symChar(x)) == '{')
+         c = symChar(NULL);
+      Push(c2, boxChar(c, &i, &nm));
+      while ((c = symChar(NULL)) && c != '}')
+         charSym(c, &i, &nm);
+      if (!(y = findHash(data(c2), h = Extern + hash(data(c2))))) {
+         y = extSym(consSym(Nil,data(c2)));
+         *h = cons(y,*h);
+      }
+      drop(c1);
+   }
+   return isLife(y)? y : Nil;
 }
 
 // (==== ['sym ..]) -> NIL
@@ -197,7 +207,7 @@ any doStrQ(any x) {
 // (ext? 'any) -> flg
 any doExtQ(any x) {
    x = cdr(x);
-   return isExt(EVAL(car(x)))? T : Nil;
+   return isExt(x = EVAL(car(x))) && isLife(x) ? T : Nil;
 }
 
 // (touch 'sym) -> sym
@@ -558,20 +568,23 @@ any doPop(any ex) {
 // (cut 'cnt 'var) -> lst
 any doCut(any ex) {
    long n;
-   any x, y, z;
+   any x, y;
+   cell c1, c2;
 
-   if (!(n = evCnt(ex, x = cdr(ex))))
+   if ((n = evCnt(ex, x = cdr(ex))) <= 0)
       return Nil;
-   x = cdr(x),  y = EVAL(car(x));
-   NeedVar(ex,y);
-   CheckVar(ex,y);
-   Touch(ex,y);
-   if (isCell(x = z = val(y))) {
-      while (--n  &&  isCell(cdr(z = cdr(z))));
-      val(y) = cdr(z);
-      cdr(z) = Nil;
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   if (isCell(val(data(c1)))) {
+      Touch(ex,data(c1));
+      Push(c2, y = cons(car(val(data(c1))), Nil));
+      while (isCell(val(data(c1)) = cdr(val(data(c1)))) && --n)
+         y = cdr(y) = cons(car(val(data(c1))), Nil);
+      drop(c1);
+      return data(c2);
    }
-   return x;
+   return val(Pop(c1));
 }
 
 // (queue 'var 'any) -> any

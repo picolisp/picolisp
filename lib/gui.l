@@ -1,4 +1,4 @@
-# 28jan03abu
+# 03mar03abu
 # (c) Software Lab. Alexander Burger
 
 # *DbForms
@@ -115,13 +115,8 @@
                         (newUrl (: objTyp) @ (eval (: objHook)))
                         (newUrl (: objTyp)) ) ) ) )
             (---- T)
-            (gui '(+/R +IndexChart)
-               (list
-                  (car "Rel")
-                  'get
-                  (if "Hook" (lit "Hook") '*DB)
-                  (lit (last "Rel")) )
-               8 NIL '((apply gui "Lst")) cons )
+            (gui '(+IndexChart) (list (car "Rel") (last "Rel") (lit "Hook"))
+               8 NIL '((apply gui "Lst")) )
             (----)
             (row (hotButton `(_ "Choose")) (quitButton)) ) ) ) )
 (====)
@@ -461,13 +456,17 @@
          (and V (memq V (eval (: mkObjLst))) V) ) ) )
 
 
-
 # Index Tree Chart
 (class +IndexChart +chart)
-# root
+# tree beg end
+
+# (.. tree rows lst prg [put])
+(dm T (Tree N Lst Prg Put)
+   (=: tree (tree (car Tree) (cadr Tree) (eval (caddr Tree))))
+   (super N Lst Prg (or Put cons)) )
 
 (dm put> ()
-   (let Node (init (: root))
+   (let Node (init (: tree) (: beg) (: end))
       (do (- (: ofs) 1)
          (step Node T) )
       (mapc
@@ -478,15 +477,26 @@
                ((: put) (step Node T)) ) )
          (: fields) ) ) )
 
+(dm upd> ()
+   (put> This)
+   (setScroll) )
+
 (dm get> ())
 
 (dm size> ()
-   (or (car (: root)) 0) )
+   (or (car (: tree)) 0) )
 
-(dm set> (Root)
-   (=: root Root)
+(dm set> (Beg End)
+   (=: beg Beg)
+   (=: end End)
    (put> This)
    (setScroll) )
+
+
+(class +RefChart +IndexChart)
+
+(dm upd> ()
+   (set> This (cons (: home obj)) (cons (: home obj) T)) )
 
 
 # DB Query Chart

@@ -1,4 +1,4 @@
-/* 23jan03abu
+/* 18feb03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -64,6 +64,7 @@ static symInit Symbols[] = {
    {doConnect, "connect"},
    {doCons, "cons"},
    {doCopy, "copy"},
+   {doCtl, "ctl"},
    {doCtty, "ctty"},
    {doCut, "cut"},
    {doDate, "date"},

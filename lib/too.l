@@ -1,4 +1,4 @@
-# 01dec02abu
+# 16feb03abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -68,8 +68,11 @@
    (mark 0) )
 
 (de _dbCheck (X)
-   (when (and (pair X) (isa '+ObjRoot (car X)) (not (mark (car X))))
+   (when (and (pair X) (= `(char "+") (char (cdr X))) (not (mark (car X))))
       (mark (car X) T)
+      (when (= '(+ObjRoot) (val (car X)))  #! Legacy
+         (set (car X))
+         (commit) )
       (println '== (cdr X) (car X))
       (maps
          '((X)

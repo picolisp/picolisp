@@ -1,4 +1,4 @@
-// 27jun02abu
+// 12feb03abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -224,7 +224,7 @@ public class Pico extends Applet {
 
    BigInteger[] outCiph(String s) {
       char chr[] = s.toCharArray();
-      int siz = OutN.bitLength()/16/2 + 1;
+      int siz = OutN.bitLength()/16/2;
       BigInteger[] res = new BigInteger[(chr.length + siz - 1) / siz];
 
       int pos = 0;

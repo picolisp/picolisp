@@ -1,4 +1,4 @@
-# 24sep02abu
+# 19feb03abu
 # (c) Software Lab. Alexander Burger
 
 (de rnd ()
@@ -27,6 +27,8 @@
    (prinl S1 N1 " % " S2 N2)
    (prinl S1 N1 " / " S2 N2)
    (prinl S1 N1 " / 2")
+   (prinl S1 N1 " >= " S2 N2)
+   (prinl S1 N1 " > " S2 N2)
    (prinl "sqrt(" N1 ")") )
 
 (bye)

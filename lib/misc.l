@@ -1,4 +1,4 @@
-# 30jan03abu
+# 12feb03abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -80,7 +80,10 @@
 (de pad (N Val)
    (pack
       (need N
-         (chop (if (sym? Val) Val (format Val)))
+         (cond
+            ((num? Val) (chop (format Val)))
+            ((sym? Val) (chop Val))
+            (T Val) )
          "0" ) ) )
 
 (de oct (X)

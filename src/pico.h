@@ -1,4 +1,4 @@
-/* 28may03abu
+/* 30jun03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -282,6 +282,7 @@ any put(any,any,any);
 void putStdout(int);
 any read1(int);
 bool rdBytes(int,byte*,int);
+void setRaw(void);
 int slow(int,byte*,int);
 void space(void);
 int symByte(any);

@@ -1,4 +1,4 @@
-/* 07jun03abu
+/* 30jul03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -9,7 +9,6 @@ enum {NIX, BEG, DOT, END};
 enum {NUMBER, INTERN, TRANSIENT, EXTERN};
 
 static char Delim[] = " \t\n\r\"'()[]`~";
-static struct termios RawTermio;
 static cell StrName, *StrSym;
 static int StrI, BinIx, BinCnt;
 static bool Sync;
@@ -22,34 +21,10 @@ static byte TBuf[] = {INTERN+4, 'T'};
 
 static void openErr(char *s) {err(NULL, NULL, "%s: Open error", s);}
 static void lockErr(void) {err(NULL, NULL, "File lock error");}
-static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, sys_errlist[errno]);}
+static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s error", s);}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void closeErr(char *s) {err(NULL, NULL, "%s: Close error", s);}
-
-static void doTermStop(int n __attribute__((unused))) {
-   sigset_t mask;
-
-   tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
-   sigemptyset(&mask);
-   sigaddset(&mask, SIGTSTP);
-   sigprocmask(SIG_UNBLOCK, &mask, NULL);
-   signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, doTermStop);
-   tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
-}
-
-static void setRaw(void) {
-   if (!Termio  &&  tcgetattr(STDIN_FILENO, &RawTermio) == 0) {
-      *(Termio = malloc(sizeof(struct termios))) = RawTermio;
-      RawTermio.c_iflag = 0;
-      RawTermio.c_lflag = ISIG;
-      RawTermio.c_cc[VMIN] = 1;
-      RawTermio.c_cc[VTIME] = 0;
-      tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
-      if (signal(SIGTSTP,SIG_IGN) == SIG_DFL)
-         signal(SIGTSTP, doTermStop);
-   }
-}
 
 int slow(int fd, byte *p, int cnt) {
    int n;
@@ -445,9 +420,28 @@ void consByteSym(int c, any x) {
 
 static void rdOpen(any ex, any x, inFrame *f) {
    if (isNum(x)) {
-      if (!(f->fp = fdopen(dup((int)unDig(x) / 2), "r")))
-         openErr("Read FD");
-      f->pid = 0;
+      int n = (int)unBox(x);
+
+      if (n < 0) {
+         inFrame *g = Env.inFiles;
+
+         for (;;) {
+            if (!(g = g->link)) {
+               f->fp = stdin;
+               break;
+            }
+            if (!++n) {
+               f->fp = g->fp;
+               break;
+            }
+         }
+         f->pid = -1;
+      }
+      else {
+         if (!(f->fp = fdopen(dup(n), "r")))
+            openErr("Read FD");
+         f->pid = 0;
+      }
    }
    else if (isNil(x))
       f->pid = -1,  f->fp = stdin;
@@ -492,9 +486,28 @@ static void rdOpen(any ex, any x, inFrame *f) {
 
 static void wrOpen(any ex, any x, outFrame *f) {
    if (isNum(x)) {
-      if (!(f->fp = fdopen(dup((int)unDig(x) / 2), "w")))
-         openErr("Write FD");
-      f->pid = 0;
+      int n = (int)unBox(x);
+
+      if (n < 0) {
+         outFrame *g = Env.outFiles;
+
+         for (;;) {
+            if (!(g = g->link)) {
+               f->fp = stdout;
+               break;
+            }
+            if (!++n) {
+               f->fp = g->fp;
+               break;
+            }
+         }
+         f->pid = -1;
+      }
+      else {
+         if (!(f->fp = fdopen(dup(n), "w")))
+            openErr("Write FD");
+         f->pid = 0;
+      }
    }
    else if (isNil(x))
       f->pid = -1,  f->fp = stdout;
@@ -936,7 +949,7 @@ long waitFd(any ex, int fd, long ms) {
       }
       while (select(m+1, &fdSet, NULL, NULL, tp) < 0)
          if (errno != EINTR)
-            err(ex, NULL, "Select error: %s", sys_errlist[errno]);
+            err(ex, NULL, "Select error: %s", strerror(errno));
       if (tp) {
          t -= tv.tv_sec*1000 + tv.tv_usec/1000;
          if (ms > 0  &&  (ms -= t) < 0)

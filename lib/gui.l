@@ -1,4 +1,4 @@
-# 04jun03abu
+# 27jul03abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -123,7 +123,7 @@
 # *Lay
 
 (class +Form +Applet)
-# init fields arrays focus focus2 hot able lock rv
+# url init fields arrays focus focus2 hot able lock rv
 
 (de form @
    (if (pair (next))
@@ -169,6 +169,7 @@
 
 (dm T (DX DY Prg)
    (super "Front" "java/pico.jar" DX DY)
+   (=: url *Url)
    (=: init Prg) )
 
 (dm init> ()
@@ -243,7 +244,20 @@
          '((L) (pr (car L) (eval (cadr L))))
          (setq *Menu Lst) ) ) )
 
-(dm help> ())
+(dm help> ()
+   (let (Url (chop (: url))  Lang (or *Lang "en"))
+      (if (= "@" (car Url))
+         (let S (intern (pack Lang "." (cdr Url)))
+            (when (getd S)
+               (prog1 (pack "@" S)
+                  (allow @) ) ) )
+         (let F
+            (ifn (member "/" Url)
+               (pack Lang "." Url)
+               (setq Url (reverse Url))
+               (set (member "/" Url) (list "/" Lang "."))
+               (pack (reverse Url)) )
+            (and (info F) (allow F)) ) ) ) )
 
 # Events
 # ix
@@ -1575,9 +1589,7 @@
    (set> This
       (=: org
          (let F (eval (: file))
-            (and F
-               (call "test" "-f" F)
-               (in F (till NIL T)) ) ) ) ) )
+            (and F (info F) (in F (till NIL T))) ) ) ) )
 
 (dm set> (Val)
    (and
@@ -2382,7 +2394,10 @@
 (dm put> ()
    (let Node
       (init
-         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree))))
+         (tree
+            (car (: tree))
+            (cadr (: tree))
+            (eval (cddr (: tree))) )
          (: beg) (: end) )
       (do (- (: ofs) 1)
          (step Node T) )
@@ -2401,10 +2416,11 @@
 (dm get> ())
 
 (dm size> ()
-   (or
-      (car
-         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree)))) )
-      0 ) )
+   (count
+      (tree
+         (car (: tree))
+         (cadr (: tree))
+         (eval (cddr (: tree))) ) ) )
 
 (dm set> (Beg End)
    (=: beg Beg)

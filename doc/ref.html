@@ -77,6 +77,7 @@ href="faq.html">Frequently Asked Questions</a>.
    <li><a href="#trad">Breaking Traditions</a>
    </ul>
 <li><a href="#foo">Function Reference</a>
+<li><a href="#down">Download</a>
 </ul>
 
 
@@ -485,7 +486,7 @@ href="#load">load</a></code>ed by the interpreter. If, however, the argument's
 first character is a hyphen '-', then that argument is taken as a function call
 (without the surrounding parentheses). A hyphen by itself as an argument stops
 evaluation of the rest of the command line (it may be processed later using the
-<code>argv</code> function).
+<code><a href="#argv">argv</a></code> function).
 
 <p>As a convention, Pico source files have the extension "<code>.l</code>".
 
@@ -1263,7 +1264,7 @@ href="#rel">rel</a></code> function. Predefined relation classes include
    <dt><code>+Link</code>
    <dd>A reference to some other entity
    <dt><code>+Hook</code>
-   <dd>A reference to an entity holding the index tree root
+   <dd>A reference to an entity holding object-local index trees
    <dt><code>+Joint</code>
    <dd>A bi-directional reference to some other entity
    </dl>
@@ -2021,15 +2022,27 @@ T
 -> T
 </code></pre>
 
-<p><dt><a name="argv"><code>(argv) -> lst</code></a>
-<dd>Returns a list of strings containing all remaining command line arguments. A
-hyphen "<code>-</code>" can be used to stop <code>load</code>ing further
-arguments.
+<p><dt><a name="argv"><code>(argv [sym ..] [. sym]) -> lst|sym</code></a>
+<dd>If called without arguments, <code>argv</code> returns a list of strings
+containing all remaining command line arguments. Otherwise, the <code>sym</code>
+arguments are subsequently bound to the command line arguments. A hyphen
+"<code>-</code>" can be used to stop <code>load</code>ing further arguments (see
+<a href="#invoc">Invocation</a>).
 
 <p><pre><code>
 $ ./p -"println 'Ok" - abc 123
 Ok
 : (argv)
+-> ("abc" "123")
+: (argv A B)
+-> "123"
+: A
+-> "abc"
+: B
+-> "123"
+: (argv . Lst)
+-> ("abc" "123")
+: Lst
 -> ("abc" "123")
 </code></pre>
 
@@ -2618,8 +2631,11 @@ $ cat count                               # Check "count"
 8
 </code></pre>
 
-<p><dt><a name="ctty"><code>(ctty 'any) -> flg</code></a>
-<dd>Changes the current TTY device to <code>any</code>.
+<p><dt><a name="ctty"><code>(ctty '[sym|pid]) -> flg</code></a>
+<dd>When called with a symbolic argument, <code>ctty</code> changes the current
+TTY device to <code>sym</code>. Otherwise, the local console is prepared for
+serving a remote Pico process (when called with a <code>pid</code> argument), or
+set to raw mode (when called without arguments).
 
 <p><pre><code>
 : (ctty "/dev/tty")
@@ -3071,7 +3087,7 @@ also <code><a href="#num-io">Numbers</a></code>.
 </code></pre>
 
 <p><dt><a name="from"><code>(from 'any ..) -> sym</code></a>
-<dd>Skips the current input channel until one of the patterns <code>any</code>
+<dd>Skips the current input channel until one of the strings <code>any</code>
 is found, and starts subsequent reading from that point. If none of
 <code>any</code> is found, <code>NIL</code> is returned. See also <code><a
 href="#till">till</a></code> and <code><a href="#echo">echo</a></code>.
@@ -3127,10 +3143,9 @@ megabytes of free cells is reserved, increasing the heap size if necessary.
 <p><dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..]) -> any</code></a>
 <dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
 list. From the first argument <code>sym1|lst</code>, values are retrieved in
-successive steps by either extracting a property value from a symbol (the next
-argument is a symbol, hence the current value must be a symbol) or by extracting
-an element from a list (the next argument is a number, hence the current value
-must be a list).
+successive steps by either extracting a property value from a symbol (if the
+next argument is a symbol), or an element from a list (if the next argument is a
+number). See also <code><a href="#put">put</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -3248,17 +3263,18 @@ also <code><a href="#*Adr">*Adr</a></code>.
 <p><hr>
 <h3><a name="i-foo">I</a></h3>
 
-<p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> flg<br>
-(idx 'var 'any) -> flg<br>
+<p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> lst<br>
+(idx 'var 'any) -> lst<br>
 (idx 'var) -> lst</code></a>
 <dd>Maintains an index tree structure in <code>var</code>, and checks for the
 existence of <code>any</code>. If <code>any</code> is contained in
-<code>var</code>, <code>T</code> is returned. In the first form,
-<code>any</code> is destructively inserted into the tree if <code>flg</code> is
-non-<code>NIL</code>, or deleted from the tree if <code>flg</code> is
-<code>NIL</code>. The second form only checks for existence, but does not change
-the index tree. In the third form (when called with a single <code>var</code>
-argument) the contents of the tree are returned as a sorted list.
+<code>var</code>, the corresponding subtree is returned, otherwise
+<code>NIL</code>. In the first form, <code>any</code> is destructively inserted
+into the tree if <code>flg</code> is non-<code>NIL</code>, or deleted from the
+tree if <code>flg</code> is <code>NIL</code>. The second form only checks for
+existence, but does not change the index tree. In the third form (when called
+with a single <code>var</code> argument) the contents of the tree are returned
+as a sorted list. See also <code><a href="#member">member</a></code>.
 
 <p><pre><code>
 : (idx 'X 'd T)                              # Insert data
@@ -3272,19 +3288,19 @@ argument) the contents of the tree are returned as a sorted list.
 : (idx 'X 'A T)
 -> NIL
 : (idx 'X 'd T)
--> T                                         # 'd' already existed
+-> (d (2 NIL 17 NIL A) (a b c))              # 'd' already existed
 : (idx 'X T T)
 -> NIL
 : X                                          # View the index tree
 -> (d (2 NIL 17 NIL A) (a b c) NIL T)
 : (idx 'X 'A)                                # Check for 'A'
--> T
+-> (A)
 : (idx 'X 'B)                                # Check for 'B'
 -> NIL
 : (idx 'X)
 -> (2 17 A d (a b c) T)                      # Get list
 : (idx 'X 17 NIL)                            # Delete '17'
--> T
+-> (17 NIL A)
 : X
 -> (d (2 NIL A) (a b c) NIL T)               # View it again
 : (idx 'X)
@@ -3320,11 +3336,13 @@ Ok
 <dd>Opens <code>any</code> as input channel during the execution of
 <code>prg</code>. The current input channel will be saved and restored
 appropriately. If the argument is <code>NIL</code>, standard input is used. If
-the argument is a symbol, it is used as a file name. If it is a number, it is
-used as the descriptor of an open file. Otherwise (if it is a list), it is taken
-as a command with arguments, and a pipe is opened for input. See also <code><a
-href="#call">call</a></code>, <code><a href="#load">load</a></code>, <code><a
-href="#out">out</a></code> and <code><a href="#ctl">ctl</a></code>.
+the argument is a symbol, it is used as a file name. If it is a positive number,
+it is used as the descriptor of an open file. If it is a negative number, the
+saved input channel such many levels above the current one is used. Otherwise
+(if it is a list), it is taken as a command with arguments, and a pipe is opened
+for input. See also <code><a href="#call">call</a></code>, <code><a
+href="#load">load</a></code>, <code><a href="#out">out</a></code> and <code><a
+href="#ctl">ctl</a></code>.
 
 <p><pre><code>
 : (in "a" (list (read) (read) (read)))    # Read three items from file "a"
@@ -3365,11 +3383,12 @@ href="#offset">offset</a></code>.
 -> 3
 </code></pre>
 
-<p><dt><a name="info"><code>(info 'any) -> (cnt dat . tim)</code></a>
+<p><dt><a name="info"><code>(info 'any) -> (cnt|T dat . tim)</code></a>
 <dd>Returns information about a file with the name <code>any</code>: The current
-size <code>cnt</code> in bytes, and the modification date and time. See also
-<code><a href="#date">date</a></code>, <code><a href="#time">time</a></code> and
-<code><a href="#lines">lines</a></code>.
+size <code>cnt</code> in bytes, and the modification date and time. For
+directories, <code>T</code> is returned instead of the a size. See also <code><a
+href="#date">date</a></code>, <code><a href="#time">time</a></code> and <code><a
+href="#lines">lines</a></code>.
 
 <p><pre><code>
 $ ls -l x.l
@@ -3869,7 +3888,7 @@ flg A
 <p><dt><a name="mark"><code>(mark 'sym|0 [NIL | T | 0]) -> flg</code></a>
 <dd>Test, set or reset a mark for <code>sym</code> in the database (for a second
 argument of <code>NIL</code>, <code>T</code> or <code>0</code>, respectively).
-If the first argument is zero, <u>all</u> marks are cleared.
+If the first argument is zero, all marks are cleared.
 
 <p><pre><code>
 : (pool "db")
@@ -3891,7 +3910,8 @@ must be equal, and sublists must match recursively. Symbols in the pattern list
 with names starting with an at-mark "<code>@</code>" (see <code><a
 href="#patQ">pat?</a></code>) are taken as wildcards. They can match zero, one
 or more elements, and are bound to the corresponding data. See also <code><a
-href="#fill">fill</a></code>.
+href="#chop">chop</a></code>, <code><a href="#split">split</a></code> and
+<code><a href="#fill">fill</a></code>.
 
 <p><pre><code>
 : (match '(@A is @B) '(This is a test))
@@ -3945,6 +3965,8 @@ href="#mini">mini</a></code>.
 <p><dt><a name="member"><code>(member 'any 'lst) -> any</code></a>
 <dd>Returns the tail of <code>lst</code> that starts with <code>any</code> when
 <code>any</code> is a member of <code>lst</code>, otherwise <code>NIL</code>.
+See also <code><a href="#memq">memq</a></code>, <code><a
+href="#assoc">assoc</a></code> and <code><a href="#idx">idx</a></code>.
 
 <p><pre><code>
 : (member 3 (1 2 3 4 5 6))
@@ -4301,11 +4323,13 @@ abc
 <code>prg</code>. The current output channel will be saved and restored
 appropriately. If the argument is <code>NIL</code>, standard output is used. If
 the argument is a symbol, it is used as a file name (opened in "append" mode if
-the first character is "<code>+</code>"). If it is a number, it is used as the
-descriptor of an open file. Otherwise (if it is a list), it is taken as a
-command with arguments, and a pipe is opened for output. See also <code><a
-href="#call">call</a></code>, <code><a href="#in">in</a></code>, <code> <a
-href="#ctl">ctl</a></code> and <code><a href="#load">load</a></code>.
+the first character is "<code>+</code>"). If it is a positve number, it is used
+as the descriptor of an open file. If it is a negative number, the saved output
+channel such many levels above the current one is used. Otherwise (if it is a
+list), it is taken as a command with arguments, and a pipe is opened for output.
+See also <code><a href="#call">call</a></code>, <code><a
+href="#in">in</a></code>, <code> <a href="#ctl">ctl</a></code> and <code><a
+href="#load">load</a></code>.
 
 <p><pre><code>
 : (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
@@ -5406,16 +5430,14 @@ when the value or properties of <code>sym</code> are indirectly modified.
 </code></pre>
 
 <p><dt><a name="trace"><code>(trace 'sym) -> sym<br>
-(trace 'sym 'cls) -> sym<br>
-(trace 'sym 'cnt) -> sym</code></a>
+(trace 'sym 'cls) -> sym</code></a>
 <dd>Inserts <code><a href="#$">$</a></code> trace function call at the beginning
 of the function or method body of <code>sym</code>, so that trace information
-will be printed before and after execution. For built-in Pico functions (a
-<code>C</code>-function pointer) the number of arguments <code>cnt</code> must
-be specified.
+will be printed before and after execution. Built-in Pico functions
+(<code>C</code>-function pointer) are automatically converted to Lisp functions.
 
 <p><pre><code>
-: (trace '+ 2)                # Trace '+' with 2 arguments
+: (trace '+)
 -> +
 : (+ 3 4)
  + : 3 4
@@ -6053,7 +6075,7 @@ following arguments.
 : (/ 60 3 2 2)
 </code></pre>
 
-<p><dt><a name=":"><code>(: sym [sym1|cnt .. sym2]) -> any</code></a>
+<p><dt><a name=":"><code>(: sym [sym1|cnt ..]) -> any</code></a>
 <dd>Fetches a value <code>any</code> for a property key <code>sym</code> or
 <code>sym2</code> from a symbol. That symbol is <code>This</code> (if no other
 arguments are given), or a symbol found by applying the <code><a
@@ -6306,6 +6328,13 @@ Div/0
 </code></pre>
 
 </dl>
+
+
+<p><hr>
+<h3><a name="down">Download</a></h3>
+
+<p>The <code>Pico Lisp</code> system can be downloaded from the <a
+href="http://software-lab.de/down.html">Pico Lisp Download</a> Page.
 
 </body>
 </html>

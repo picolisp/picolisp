@@ -1,4 +1,4 @@
-/* 06jun03abu
+/* 25jul03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -612,8 +612,8 @@ static void idx(any x, cell *p) {
       idx(cadr(x), p);
 }
 
-// (idx 'var 'any 'flg) -> flg
-// (idx 'var 'any) -> flg
+// (idx 'var 'any 'flg) -> lst
+// (idx 'var 'any) -> lst
 // (idx 'var) -> lst
 any doIdx(any ex) {
    any x, y, z, *p;
@@ -657,7 +657,7 @@ any doIdx(any ex) {
             }
          }
          drop(c1);
-         return T;
+         return x;
       }
       if (!isCell(cdr(x))) {
          if (flg > 0) {
@@ -908,7 +908,7 @@ any doSetCol(any ex) {
    return x;
 }
 
-// (: sym [sym1|cnt .. sym2]) -> any
+// (: sym [sym1|cnt ..]) -> any
 any doCol(any ex) {
    any x, y;
 
@@ -931,10 +931,11 @@ any doCol(any ex) {
 any doPropCol(any ex) {
    any x, y;
 
-   x = cdr(ex),  y = prop(val(This), car(x));
-   while (isCell(x = cdr(x))) {
-      if (isCell(y))
-         y = car(y);
+   x = cdr(ex),  y = val(This);
+   if (!isCell(cdr(x)))
+      return prop(y, car(x));
+   y = get(y,car(x));
+   while (isCell(cdr(x = cdr(x)))) {
       if (isCell(y)) {
          NeedNum(ex,car(x));
          y = car(nth(unDig(car(x))/2, y));
@@ -942,10 +943,10 @@ any doPropCol(any ex) {
       else {
          NeedSym(ex,y);
          Fetch(ex,y);
-         y = prop(y,car(x));
+         y = get(y,car(x));
       }
    }
-   return y;
+   return prop(y,car(x));
 }
 
 // (putl 'sym1|lst1 ['sym2|cnt ..] 'lst) -> lst

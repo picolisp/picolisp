@@ -1,11 +1,11 @@
-# 03jun03abu
+# 21jul03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
 # "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF"
 
 (de pdf ("Nm" . "Prg")
-   (let ("Ps" (tmp "Nm" ".ps") "Pdf" (pack "Nm" ".pdf"))
+   (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
       (out (list "bin/lat1" "Ps") (prEval "Prg"))
       (_pdf) ) )
 
@@ -16,6 +16,9 @@
          ((not "How")
             (_pdf)
             (url "Pdf" "PDF") )
+         ((=0 "How")
+            (_pdf)
+            (url "Pdf") )
          ((=T "How")
             (_pdf)
             (httpEcho "Pdf" "application/pdf" 1) )

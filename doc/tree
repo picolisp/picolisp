@@ -1,8 +1,8 @@
-   Tree:
+   Tree root:
       (cnt . node)
 
-   Node:
-      (key less more . value)  # 3 cells
+   Tree node:
+      External symbol with the value: (key less more . value)  # 3 cells
    e.g.
       (key {5555} {7777} . {1111})
 

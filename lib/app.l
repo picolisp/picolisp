@@ -1,4 +1,4 @@
-# 01apr03abu
+# 15jul03abu
 # (c) Software Lab. Alexander Burger
 
 # Bye message
@@ -12,7 +12,7 @@
       (show This)
       (mapc
          '(("X") (println "X" (val "X")))
-         '(*Gate *Host *Port *AppPort *SesId *ConId *InND *OutN) )
+         '(*Gate *Agent *Host *Port *Url *AppPort *SesId *ConId *InND *OutN) )
       (and (get *Top 'focus) (println 'focus (get @ 'ix)))
       (mapc
          '(("X") (println "X" (val "X")))

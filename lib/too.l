@@ -1,4 +1,4 @@
-# 22apr03abu
+# 27jul03abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -57,59 +57,50 @@
    (and (ext? X) (markExt X)) )
 
 
-### Rebuild tree ###
-(de rebuild (Lst Var Cls Hook)
-   (when (get (or Hook *DB) Cls)
-      (put @ Var NIL)
-      (commit) )
-   (mapc
-      '((Obj)
-         (and
-            (not (get Obj T))
-            (get Obj Var)
-            (let Val @
-               (put> Obj Var NIL)
-               (put> Obj Var Val)
-               (commit) ) ) )
-      Lst ) )
-
 ### Check tree structures ###
 (de dbCheck ()
-   (maps _dbCheck *DB)
+   (let Hook NIL
+      (mapc _dbCheck (getl *DB)) )
    (mark 0) )
 
 (de _dbCheck (X)
    (when (and (pair X) (= `(char "+") (char (cdr X))) (not (mark (car X))))
-      (mark (car X) T)
-      (when (= '(+ObjRoot) (val (car X)))    #! Legacy
-         (set (car X))                       #
-         (commit) )                          #
-      (println '== (cdr X) (car X))
-      (maps
-         '((X)
-            (when (and (pair X) (sym? (cdr X)) (pair (car X)) (num? (caar X)))
-               (println (cdr X) (cdar X) (caar X))
-               (unless (= (caar X) (check (cdar X)))
-                  (quit "Tree size mismatch") )
-               (iter (car X)
-                  '((Obj) (maps _dbCheck Obj)) )
-               (scan (car X)
-                  '((K V)
-                     (setq V (get V (cdr X)))
-                     (unless
-                        (or
-                           (member K V)
-                           (find '((L) (member K L)) V)
-                           (and (pair K)
-                              (or
-                                 (member (car K) V)
-                                 (find '((L) (member (car K) L)) V) ) ) )
-                        (quit "Bad Index" K) ) )
-                  NIL T T ) ) )
-         (car X) )
-      (wipe (car X)) ) )
+      (let (Base (car X)  Cls (cdr X))
+         (mark Base T)
+         (when (= '(+ObjRoot) (val Base))    #! Legacy
+            (set Base)                       #
+            (commit) )                       #
+         (println '== Cls Base)
+         (mapc
+            '((X)
+               (when (and (pair X) (sym? (cdr X)) (pair (car X)) (num? (caar X)))
+                  (println (cdr X) (cdar X) (caar X))
+                  (unless (= (caar X) (check (cdar X)))
+                     (quit "Tree size mismatch") )
+                  (iter (tree (cdr X) Cls Hook)
+                     '((Obj)
+                        (let Hook Obj
+                           (mapc _dbCheck (getl Obj)) ) ) )
+                  (scan (tree (cdr X) Cls Hook)
+                     '((K V)
+                        (unless (isa Cls V)
+                           (quit "Bad Type" V) )
+                        (setq V (get V (cdr X)))
+                        (unless
+                           (or
+                              (member K V)
+                              (find '((L) (member K L)) V)
+                              (and (pair K)
+                                 (or
+                                    (member (car K) V)
+                                    (find '((L) (member (car K) L)) V) ) ) )
+                           (quit "Bad Value" K) ) )
+                     NIL T T ) ) )
+            (getl Base) )
+         (wipe Base) ) ) )
 
-### Index References ###
+
+### Check Index References ###
 (de dangling (Var Cls Excl)
    (or
       (isa '+Index (get Cls Var))
@@ -181,3 +172,20 @@
                                  (list X) ) ) ) ) ) ) ) )
          (getl Obj) )
       (list (cons Obj @)) ) )
+
+
+### Rebuild tree ###
+(de rebuild (Lst Var Cls Hook)
+   (when (get (or Hook *DB) Cls)
+      (put @ Var NIL)
+      (commit) )
+   (mapc
+      '((Obj)
+         (and
+            (not (get Obj T))
+            (get Obj Var)
+            (let Val @
+               (put> Obj Var NIL)
+               (put> Obj Var Val)
+               (commit) ) ) )
+      Lst ) )

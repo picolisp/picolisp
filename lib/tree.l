@@ -1,37 +1,59 @@
-# 23jan03abu
+# 31jul03abu
 # (c) Software Lab. Alexander Burger
 
-# *VisitedKey *VisitedLess *VisitedMore)
+# *VisitedKey *VisitedLess *VisitedMore
+
+(de root (Tree)
+   (cond
+      ((not Tree) (val *DB))
+      ((atom Tree) (val Tree))
+      ((atom (cdr Tree))
+         (get *DB (cdr Tree) (car Tree)) )
+      (T (get (cddr Tree) (cadr Tree) (car Tree))) ) )
 
 # Fetch
 (de fetch (Tree Key)
-   (setq Tree (cdr Tree))
-   (loop
-      (NIL Tree)
-      (T (= Key (car (val Tree)))
-         (cdddr (val Tree)) )
-      (setq Tree
-         ((if (< Key (car (val Tree))) cadr caddr)
-            (val Tree) ) ) ) )
+   (let Node (cdr (root Tree))
+      (loop
+         (NIL Node)
+         (T (= Key (car (val Node)))
+            (cdddr (val Node)) )
+         (setq Node
+            ((if (< Key (car (val Node))) cadr caddr)
+               (val Node) ) ) ) ) )
 
 # Store
 (de store (Tree Key Val)
-   (cond
-      ((= Val (fetch Tree Key)))
-      (Val (con Tree (_put (cdr Tree))))
-      (T (con Tree (_del (cdr Tree)))) )
+   (if (atom Tree)
+      (let Base (or Tree *DB)
+         (_store (or (val Base) (set Base (cons 0)))) )
+      (let Base
+         (if (atom (cdr Tree))
+            (or
+               (get *DB (cdr Tree))
+               (put *DB (cdr Tree) (new T)) )
+            (or
+               (get (cddr Tree) (cadr Tree))
+               (put (cddr Tree) (cadr Tree) (new T)) ) )
+         (_store
+            (or
+               (get Base (car Tree))
+               (put Base (car Tree) (cons 0)) ) ) ) )
    Val )
+
+
+(de _store (Root)
+   (con Root ((if Val _put _del) (cdr Root))) )
 
 (de _put (Top)
    (ifn Top
       (let Node (new T)
-         (setq
-            *VisitedKey Key
-            *VisitedLess NIL
-            *VisitedMore NIL )
+         (setq *VisitedKey Key)
+         (off *VisitedLess *VisitedMore)
          (set Node
             (cons Key (cons NIL (cons NIL Val))) )
-         (inc Tree)
+         (touch Base)
+         (inc Root)
          Node )
       (use (Less More Node)
          (setq
@@ -73,7 +95,8 @@
    (when Top
       (cond
          ((= Key (car (val Top)))
-            (dec Tree)
+            (touch Base)
+            (dec Root)
             (_delR (cadr (val Top)) (caddr (val Top))) )
          ((< Key (car (val Top)))
             (use Node
@@ -110,9 +133,13 @@
             (_delR Less (cadr (val More))) ) )
       More ) )
 
+# Tree node count
+(de count (Tree)
+   (or (car (root Tree)) 0) )
+
 # Calculate tree depth
 (de depth (Tree)
-   (dpth (cdr Tree)) )
+   (dpth (cdr (root Tree))) )
 
 (de dpth (Top)
    (ifn Top
@@ -126,47 +153,44 @@
 
 # Key management
 (de maxKey (Tree Min Max)
-   (setq Tree (cdr Tree))
    (default Max T)
-   (let K NIL
-      (while Tree
-         (if (>= (car (val Tree)) Max)
-            (setq Tree (cadr (val Tree)))
-            (when (>= (car (val Tree)) Min)
-               (setq K (car (val Tree))) )
-            (setq Tree (caddr (val Tree))) ) )
+   (let (Node (cdr (root Tree))  K)
+      (while Node
+         (if (>= (car (val Node)) Max)
+            (setq Node (cadr (val Node)))
+            (when (>= (car (val Node)) Min)
+               (setq K (car (val Node))) )
+            (setq Node (caddr (val Node))) ) )
       K ) )
 
 (de minKey (Tree Min Max)
-   (setq Tree (cdr Tree))
    (default Max T)
-   (let K NIL
-      (while Tree
-         (if (> Min (car (val Tree)))
-            (setq Tree (caddr (val Tree)))
-            (when (>= Max (car (val Tree)))
-               (setq K (car (val Tree))) )
-            (setq Tree (cadr (val Tree))) ) )
+   (let (Node (cdr (root Tree))  K)
+      (while Node
+         (if (> Min (car (val Node)))
+            (setq Node (caddr (val Node)))
+            (when (>= Max (car (val Node)))
+               (setq K (car (val Node))) )
+            (setq Node (cadr (val Node))) ) )
       K ) )
 
 # Step
 (de init (Tree Beg End)
-   (setq Tree (cdr Tree))
    (or Beg End (on End))
-   (let Q NIL
+   (let (Node (cdr (root Tree))  Q)
       (if (>= End Beg)
-         (while Tree
-            (if (> Beg (car (val Tree)))
-               (setq Tree (caddr (val Tree)))
-               (when (>= End (car (val Tree)))
-                  (push 'Q Tree) )
-               (setq Tree (cadr (val Tree))) ) )
-         (while Tree
-            (if (< Beg (car (val Tree)))
-               (setq Tree (cadr (val Tree)))
-               (when (<= End (car (val Tree)))
-                  (push 'Q Tree) )
-               (setq Tree (caddr (val Tree))) ) ) )
+         (while Node
+            (if (> Beg (car (val Node)))
+               (setq Node (caddr (val Node)))
+               (when (>= End (car (val Node)))
+                  (push 'Q Node) )
+               (setq Node (cadr (val Node))) ) )
+         (while Node
+            (if (< Beg (car (val Node)))
+               (setq Node (cadr (val Node)))
+               (when (<= End (car (val Node)))
+                  (push 'Q Node) )
+               (setq Node (caddr (val Node))) ) ) )
       (cons (cons Beg End) Q) ) )
 
 (de step (Q F)
@@ -198,7 +222,8 @@
 (de scan ("Tree" "foo" "Beg" "End" "F")
    (default "foo" println)
    (or "Beg" "End" (on "End"))
-   ((if (>= "End" "Beg") _scan _nacs) (cdr "Tree")) )
+   ((if (>= "End" "Beg") _scan _nacs)
+      (cdr (root "Tree")) ) )
 
 (de _scan ("Node")
    (when "Node"
@@ -226,7 +251,8 @@
 (de iter ("Tree" "foo" "Beg" "End" "F")
    (default "foo" println)
    (or "Beg" "End" (on "End"))
-   ((if (>= "End" "Beg") _iter _reti) (cdr "Tree")) )
+   ((if (>= "End" "Beg") _iter _reti)
+      (cdr (root "Tree")) ) )
 
 (de _iter ("Node")
    (when "Node"

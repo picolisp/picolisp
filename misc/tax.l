@@ -1,4 +1,4 @@
-# 27may03abu
+# 28jul03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -224,7 +224,7 @@
 
 (de posYears ()
    (let (Tree (tree 'dat '+Pos)  Max (car (date (date))))
-      (ifn (cdr Tree)
+      (if (=0 (count Tree))
          (list (car (date (date))))
          (make
             (for (N (car (date (car (minKey Tree)))) (<= N Max) (+ 1 N))
@@ -324,9 +324,7 @@
                (gui '(+Button) "" " \^ " '(sort> (: home query) '(: kto nm))) ) ) ) ) )
 
 (de firm @
-   (if (args)
-      (pass get (fetch (val *DB) 'firm))
-      (fetch (val *DB) 'firm) ) )
+   (pass get (fetch NIL 'firm)) )
 
 (de brust (Val Proz)
    (default Val 0 Proz 0)
@@ -602,10 +600,7 @@
    (setq
       *QYear (car (date (date)))
       *QMonth 1
-      *MonMap (let N 0
-         (mapcar
-            '((M) (cons M (inc 'N)))
-            *MonFmt ) ) )
+      *MonMap (mapcar cons *MonFmt (1 2 3 4 5 6 7 8 9 10 11 12)) )
    (pool "tax.db") )
 
 (de go ()

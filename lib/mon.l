@@ -1,7 +1,7 @@
-# 13apr03abu
+# 10jul03abu
 # (c) Software Lab. Alexander Burger
 
-# *Vis *Mon
+# *Visitors *Monitor
 
 (?push '*Bye
    '(tell 'wentAway *Pid) )
@@ -12,25 +12,25 @@
 (de visited (Pid Vis . Lst)
    (let (Tim (time)  Txt (glue " " Lst))
       (when *Login
-         (if (assoc Pid *Vis)
+         (if (assoc Pid *Visitors)
             (let X @
                (set (cdr X) Vis)
                (and
                   (<> Txt (cdr (caddr X)))
                   (con (cdr X) (cons (cons Tim Txt) (cddr X))) ) )
-            (and *Mon (beep> *Mon))
-            (push '*Vis (list Pid Vis (cons Tim Txt))) )
-         (and *Mon (upd> *Mon)) ) ) )
+            (and *Monitor (beep> *Monitor))
+            (push '*Visitors (list Pid Vis (cons Tim Txt))) )
+         (and *Monitor (upd> *Monitor)) ) ) )
 
 (de wentAway (Pid)
    (when *Login
-      (setq *Vis (delete (assoc Pid *Vis) *Vis))
-      (and *Mon (upd> *Mon)) ) )
+      (setq *Visitors (delete (assoc Pid *Visitors) *Visitors))
+      (and *Monitor (upd> *Monitor)) ) )
 
 
 ### Monitor Form ###
 (class +MonForm +Form)
 
 (dm start> ()
-   (setq *Mon This)
+   (setq *Monitor This)
    (super) )

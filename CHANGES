@@ -1,3 +1,14 @@
+* 03aug03 picoLisp-2.0.7
+   Extended 'in' and 'out' for negative channel offset arguments
+   Changed internal database index tree function API
+   Changed 'info' to return 'T' for the directory size
+   Interrupt signal handling in 'ctty', 'psh' and "bin/psh"
+   Generic 'help>' method for '+Form' class in "lib/gui.l"
+   Fixed 'ht:Prin' bug (NULL-Bytes)
+   'argv' optional symbolic arguments
+   Changed 'idx' return value
+   Better tracing and profiling of C-functions
+
 * 08jun03 picoLisp-2.0.6
    Allowed '#' in symbol names
    Changed 'eps' in "lib/ps.l"

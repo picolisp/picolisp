@@ -1,4 +1,4 @@
-/* 28may03abu
+/* 22jul03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -20,8 +20,10 @@ any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
 any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Adr, Bye;
 
-static jmp_buf ErrRst;
+static int TtyPid;
 static bool Jam, Protect;
+static struct termios RawTermio;
+static jmp_buf ErrRst;
 
 
 /*** System ***/
@@ -41,7 +43,12 @@ void execError(byte *s) {
    exit(127);
 }
 
-static void doSigInt(int n __attribute__((unused))) {SigInt = YES;}
+static void doSigInt(int n __attribute__((unused))) {
+   if (TtyPid)
+      kill(TtyPid, SIGINT);
+   else
+      SigInt = YES;
+}
 
 static void doSigTerm(int n __attribute__((unused))) {
    int i;
@@ -53,6 +60,30 @@ static void doSigTerm(int n __attribute__((unused))) {
       if (Pipe[i] >= 0)
          return;
    signal(SIGTERM, SIG_DFL),  raise(SIGTERM);
+}
+
+static void doTermStop(int n __attribute__((unused))) {
+   sigset_t mask;
+
+   tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+   sigemptyset(&mask);
+   sigaddset(&mask, SIGTSTP);
+   sigprocmask(SIG_UNBLOCK, &mask, NULL);
+   signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, doTermStop);
+   tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
+}
+
+void setRaw(void) {
+   if (!Termio  &&  tcgetattr(STDIN_FILENO, &RawTermio) == 0) {
+      *(Termio = malloc(sizeof(struct termios))) = RawTermio;
+      RawTermio.c_iflag = 0;
+      RawTermio.c_lflag = ISIG;
+      RawTermio.c_cc[VMIN] = 1;
+      RawTermio.c_cc[VTIME] = 0;
+      tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
+      if (signal(SIGTSTP,SIG_IGN) == SIG_DFL)
+         signal(SIGTSTP, doTermStop);
+   }
 }
 
 void protect(bool flg) {
@@ -255,6 +286,8 @@ void err(any ex, any x, char *fmt, ...) {
    Env.get = getStdin;
    Env.put = putStdout;
    closeFiles(NULL,NULL,NULL);
+   while (*AV  &&  strcmp(*AV,"-") != 0)
+      ++AV;
    if (ex)
       outString("!? "), print(val(Up) = ex), crlf();
    if (x)
@@ -593,18 +626,25 @@ any doCd(any x) {
    }
 }
 
-// (ctty 'any) -> flg
-any doCtty(any x) {
-   x = evSym(cdr(x));
-   {
+// (ctty '[sym|pid]) -> flg
+any doCtty(any ex) {
+   any x;
+
+   if (isNil(x = EVAL(cadr(ex))))
+      setRaw();
+   else if (!isSym(x))
+      TtyPid = xCnt(ex,x);
+   else {
       byte tty[bufSize(x)];
 
       bufString(x, tty);
-      return freopen(tty, "r", stdin) && freopen(tty, "w", stdout)? T : Nil;
+      if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
+         return Nil;
    }
+   return T;
 }
 
-// (info 'any) -> (cnt dat . tim)
+// (info 'any) -> (cnt|T dat . tim)
 any doInfo(any x) {
    cell c1;
    struct tm *p;
@@ -620,13 +660,15 @@ any doInfo(any x) {
       p = localtime(&st.st_mtime);
       Push(c1, boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec));
       data(c1) = cons(mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday), data(c1));
-      data(c1) = cons(boxWord2((word2)st.st_size), data(c1));
+      data(c1) = cons(S_ISDIR(st.st_mode)? T :
+            boxWord2((word2)st.st_size), data(c1) );
       return Pop(c1);
    }
 }
 
-// (argv) -> lst
-any doArgv(any x) {
+// (argv [sym ..] [. sym]) -> lst|sym
+any doArgv(any ex) {
+   any x, y;
    char **p;
    cell c1;
 
@@ -636,10 +678,25 @@ any doArgv(any x) {
       ++p;
    if (!*p)
       return Nil;
-   Push(c1, x = cons(mkStr(*p++), Nil));
-   while (*p)
-      x = cdr(x) = cons(mkStr(*p++), Nil);
-   return Pop(c1);
+   if (isNil(x = cdr(ex))) {
+      Push(c1, x = cons(mkStr(*p++), Nil));
+      while (*p)
+         x = cdr(x) = cons(mkStr(*p++), Nil);
+      return Pop(c1);
+   }
+   do {
+      if (!isCell(x)) {
+         NeedSym(ex,x);
+         Push(c1, y = cons(mkStr(*p++), Nil));
+         while (*p)
+            y = cdr(y) = cons(mkStr(*p++), Nil);
+         return val(x) = Pop(c1);
+      }
+      y = car(x);
+      NeedSym(ex,y);
+      val(y) = *p? mkStr(*p++) : Nil;
+   } while (!isNil(x = cdr(x)));
+   return val(y);
 }
 
 /*** Main ***/

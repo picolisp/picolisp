@@ -1,4 +1,4 @@
-# 04jun03abu
+# 27jul03abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI ###
@@ -944,9 +944,7 @@
    (set> This
       (=: org
          (let F (eval (: file))
-            (and F
-               (call "test" "-f" F)
-               (in F (till NIL T)) ) ) ) ) )
+            (and F (info F) (in F (till NIL T))) ) ) ) )
 
 (dm set> (Val)
    (and
@@ -1441,7 +1439,10 @@
 (dm put> ()
    (let Node
       (init
-         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree))))
+         (tree
+            (car (: tree))
+            (cadr (: tree))
+            (eval (cddr (: tree))) )
          (: beg) (: end) )
       (do (- (: ofs) 1)
          (step Node T) )
@@ -1459,10 +1460,11 @@
 (dm get> ())
 
 (dm size> ()
-   (or
-      (car
-         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree)))) )
-      0 ) )
+   (count
+      (tree
+         (car (: tree))
+         (cadr (: tree))
+         (eval (cddr (: tree))) ) ) )
 
 (dm set> (Beg End)
    (=: beg Beg)

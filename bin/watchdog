@@ -1,18 +1,14 @@
 #!bin/pico lib.l
-# 30apr03abu
+# 24jun03abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
 (load "@lib/misc.l")
 
-# *MailHost *MailPort *MailTo *Beat *Watch
+# *MailHost *MailPort *MailFrom *MailTo *Beat *Watch
 
-(let A (argv)
-   (setq
-      *MailHost (car A)
-      *MailPort (format (cadr A))
-      "From" (caddr A)
-      *MailTo (cdddr A) ) )
+(argv *MailHost *MailPort *MailFrom .  *MailTo)
+(setq *MailPort (format *MailPort))
 
 (unless (call "test" "-p" "fifo/beat")
    (call "rm" "-f" "fifo/beat")
@@ -34,17 +30,20 @@
             ((not X) (bye))
             ((num? X)
                (setq *Watch (delete (assoc X *Watch) *Watch)) )
-            ((atom X)
-               (out X
-                  (mapc
-                     '((W)
-                        (prinl
-                           (align 5 (car W))
-                           " "
-                           (or (caddr W) "o")
-                           " "
-                           (cdddr W) ) )
-                     *Watch ) ) )
+            ((atom X)  # bin/pico -"out 'fifo/beat (pr '$(tty))" -bye
+               (let D (+ (time) (* 86400 (date)))
+                  (out X
+                     (mapc
+                        '((W)
+                           (prinl
+                              (align 5 (car W))
+                              " "
+                              (- (cadr W) D)
+                              " "
+                              (or (caddr W) "o")
+                              " "
+                              (cdddr W) ) )
+                        *Watch ) ) ) )
             ((assoc (car X) *Watch)    # X = (Pid Tim . Any)
                (let W @                # W = (Pid Tim Flg . Any)
                   (when (caddr W)
@@ -56,8 +55,8 @@
 
 (task -54321 54321
    (let D (+ (time) (* 86400 (date)))
-      (while (find '((X) (> D (cadr X))) *Watch)
-         (let W @
+      (mapc
+         '((W)
             (if (caddr W)
                (prog
                   (msg (car W) " " (stamp)
@@ -69,10 +68,11 @@
                   (msg (car W) " " (stamp))
                   (mapc
                      '((To)
-                        (unless (mail *MailHost *MailPort "From" To Sub)
-                           (msg (list *MailHost *MailPort "From" To Sub)
+                        (unless (mail *MailHost *MailPort *MailFrom To Sub)
+                           (msg (list *MailHost *MailPort *MailFrom To Sub)
                               " mail failed "
                               (stamp) ) ) )
-                     *MailTo ) ) ) ) ) ) )
+                     *MailTo ) ) ) )
+         (filter '((X) (> D (cadr X))) *Watch) ) ) )
 
 (wait)

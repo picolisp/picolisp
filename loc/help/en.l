@@ -1,8 +1,8 @@
-# 20jan03abu
+# 26jul03abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
-   (software-lab)
+   (<p> T (<href> "(c) Software Lab." "http://www.software-lab.de"))
    (<head> "Function Keys")
 
    (<pre>
@@ -60,5 +60,5 @@
             "only the day"
             "only day and month"
             "day, month, and two digits for the year" ) ) )
-   (software-lab)
+   (<p> T (<href> "(c) Software Lab." "http://www.software-lab.de"))
    <hr> )

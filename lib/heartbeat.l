@@ -1,7 +1,7 @@
-# 28apr03abu
+# 22jul03abu
 # (c) Software Lab. Alexander Burger
 
-(ifn (call "test" "-w" "fifo/beat")
+(ifn (info "fifo/beat")
    (de heartbeat ())
 
    (de heartbeat @
@@ -9,9 +9,9 @@
          (pr
             (cons *Pid
                (cons
-                  (+ 300 (time) (* 86400 (date)))
+                  (+ 300 (time) (* 86400 (date)))  # Busy period 5 minutes
                   (rest) ) ) ) ) )
 
-   (task -54321 54321 (heartbeat))
+   (task -54321 0 (heartbeat))
 
    (?push '*Bye '(out "fifo/beat" (pr *Pid))) )

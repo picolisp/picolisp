@@ -1310,7 +1310,7 @@ produced.
 
 <li>relations between entities, like <code>+Link</code> (uni-directional link),
 <code>+Joint</code> (bi-directional link) or <code>+Hook</code> (object-local
-index root)
+index trees)
 
 <li>relations that bundle other relations into a single unit (<code>+Bag</code>)
 
@@ -1419,17 +1419,9 @@ in a database.
 can be used directly. Though this is rarely done in a typical application, they
 form the base mechanisms of other access modes and should be understood first.
 
-<p>The function <code>tree</code> returns the tree for a given relation. For
-example, to get the index of birth dates in the family database:
-
-<p><pre><code>
-: (tree 'dat '+Person)
--> (71 . {CC})
-</code></pre>
-
-<p><code>71</code> is the number of nodes currently in that tree, and
-<code>{CC}</code> ist the current root node. To iterate over the whole tree, the
-functions <code>iter</code> and <code>scan</code> can be used:
+<p>The function <code>tree</code> returns the tree structure for a given
+relation. To iterate over the whole tree, the functions <code>iter</code> and
+<code>scan</code> can be used:
 
 <p><pre><code>
 (iter (tree 'dat '+Person) '((P) (println (datStr (get P 'dat)) (get P 'nm))))

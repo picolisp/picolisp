@@ -1,4 +1,4 @@
-/* 28may03abu
+/* 20jun03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -39,11 +39,10 @@ any Prin(any x) {
       if (isNum(y = EVAL(car(x))) || isExt(y))
          prin(y);
       else {
-         int len = bufSize(y);
-         byte *p, *q, nm[len];
+         byte *p, *q, nm[bufSize(y)];
 
          bufString(y, nm);
-         for (p = nm; p < nm + len;) {
+         for (p = nm; *p;) {
             if (findHtOK(p) && (q = strchr(p,'>')))
                do
                   Env.put(*p++);

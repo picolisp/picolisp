@@ -1,10 +1,12 @@
-# 04jun03abu
+# 02aug03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
 (de tree (Var Cls Hook)
-   (get (or Hook *DB) Cls Var) )
-
+   (cons Var
+      (if Hook
+         (cons Cls Hook)
+         Cls ) ) )
 
 # (db 'var 'cls ['hook] 'val ['var 'val ..])
 (de db (Var Cls . @)
@@ -357,17 +359,8 @@
    (=: hook (car Lst))
    (extra Var (cdr Lst)) )
 
-(de idxHook (Obj)
+(de _hook (Obj)
    (or (get Obj (: hook)) *DB) )
-
-(de idxTree (Obj)
-   (let Root
-      (or
-         (touch (get (idxHook Obj) (: cls)))
-         (put (idxHook Obj) (: cls) (new T)) )
-      (or
-         (get Root (: var))
-         (put Root (: var) (cons 0) ) ) ) )
 
 
 # (+Key) hook
@@ -379,20 +372,20 @@
          Val
          (<> Val (get Obj (: var)))
          (fetch
-            (tree (: var) (: cls) (idxHook Obj))
+            (tree (: var) (: cls) (_hook Obj))
             Val )
          `(_ "Not unique") )
       (extra Val Obj) ) )
 
 (dm rel> (Obj Old New)
-   (let R (idxTree Obj)
+   (let Tree (tree (: var) (: cls) (_hook Obj))
       (and Old
-         (= Obj (fetch R Old))
-         (store R Old NIL) )
+         (= Obj (fetch Tree Old))
+         (store Tree Old NIL) )
       (and New
          (not (get Obj T))
-         (not (fetch R New))
-         (store R New Obj) ) )
+         (not (fetch Tree New))
+         (store Tree New Obj) ) )
    (extra Obj Old New) )
 
 
@@ -400,12 +393,12 @@
 (class +Ref +Index)
 
 (dm rel> (Obj Old New)
-   (let R (idxTree Obj)
+   (let Tree (tree (: var) (: cls) (_hook Obj))
       (when Old
-         (store R (cons Old Obj) NIL) )
+         (store Tree (cons Old Obj) NIL) )
       (and New
          (not (get Obj T))
-         (store R (cons New Obj) Obj) ) )
+         (store Tree (cons New Obj) Obj) ) )
    (extra Obj Old New) )
 
 
@@ -418,21 +411,21 @@
    (super Var (cdr Lst)) )
 
 (dm rel> (Obj Old New)
-   (let R (idxTree Obj)
+   (let Tree (tree (: var) (: cls) (_hook Obj))
       (when Old
-         (store R (cons Old Obj) NIL)
+         (store Tree (cons Old Obj) NIL)
          (mapc
             '((S)
                (while (nth S (: min))
-                  (store R (list (pack S) Obj) NIL)
+                  (store Tree (list (pack S) Obj) NIL)
                   (pop 'S) ) )
             (split (cdr (chop Old)) " " "^J") ) )
       (when (and New (not (get Obj T)))
-         (store R (cons New Obj) Obj)
+         (store Tree (cons New Obj) Obj)
          (mapc
             '((S)
                (while (nth S (: min))
-                  (store R (list (pack S) Obj) Obj)
+                  (store Tree (list (pack S) Obj) Obj)
                   (pop 'S) ) )
             (split (cdr (chop New)) " " "^J") ) ) )
    (extra Obj Old New) )
@@ -442,12 +435,12 @@
 (class +Sn)
 
 (dm rel> (Obj Old New)
-   (let R (idxTree Obj)
+   (let Tree (tree (: var) (: cls) (_hook Obj))
       (when Old
-         (store R (cons (ext:Snx Old) (cons Obj T)) NIL) )
+         (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL) )
       (and New
          (not (get Obj T))
-         (store R (cons (ext:Snx New) (cons Obj T)) Obj) ) )
+         (store Tree (cons (ext:Snx New) (cons Obj T)) Obj) ) )
    (extra Obj Old New) )
 
 
@@ -539,18 +532,44 @@
          (wait 40) )
       (sync) ) )
 
+(de new! ("Sym" "Typ" . @)
+   (prog2
+      (dbSync)
+      (pass new T "Typ")
+      (commit "Sym") ) )
+
+(de set! (Obj Sym Val)
+   (unless (= Val (val Obj))
+      (dbSync)
+      (set Obj Val)
+      (commit Sym) )
+   Val )
+
+(de put! (Obj Sym Var Val)
+   (unless (= Val (get Obj Var))
+      (dbSync)
+      (put Obj Var Val)
+      (commit Sym) )
+   Val )
+
+(de inc! (Obj Sym Var)
+   (when (num? (get Obj Var))
+      (dbSync)
+      (touch Obj)
+      (inc (prop Obj Var))
+      (commit Sym) ) )
+
+(de blob! (Obj Sym Rel File)
+   (and
+      (call "mv" File (blob Obj Rel))
+      (put!> Obj Sym Rel T) ) )
+
 (dm T @
    (upd> This (val This))
    (while (args)
       (if (atom (next))
          (put> This (arg) (next))
          (put> This (car (arg)) (eval (cdr (arg)))) ) ) )
-
-(de new! ("Sym" "Typ" . @)
-   (prog2
-      (dbSync)
-      (pass new T "Typ")
-      (commit "Sym") ) )
 
 (dm zap> ()
    (mapc

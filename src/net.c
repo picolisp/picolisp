@@ -1,4 +1,4 @@
-/* 28may03abu
+/* 28jun03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,7 +10,7 @@
 #include <netinet/tcp.h>
 
 static void tcpErr(any ex, char *s) {
-   err(ex, NULL, "TCP %s error: %s", s, sys_errlist[errno]);
+   err(ex, NULL, "TCP %s error: %s", s, strerror(errno));
 }
 
 static int tcpSocket(any ex) {

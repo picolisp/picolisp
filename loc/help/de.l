@@ -1,8 +1,8 @@
-# 20jan03abu
+# 26jul03abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
-   (software-lab)
+   (<p> T (<href> "(c) Software Lab." "http://www.software-lab.de"))
    (<head> "Funktionstasten")
 
    (<pre>
@@ -60,5 +60,5 @@
             "nur Tag"
             "nur Tag und Monat"
             "Tag, Monat und zwei Jahresstellen" ) ) )
-   (software-lab)
+   (<p> T (<href> "(c) Software Lab." "http://www.software-lab.de"))
    <hr> )

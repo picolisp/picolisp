@@ -1,4 +1,4 @@
-# 03jun03abu
+# 10jul03abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook] [var val ..])
@@ -19,7 +19,9 @@
          (cons
             (or
                (car Vars)
-               (cdr (maxi caar (getl (get *DB Cls)))) ) ) )
+               (cdr
+                  (maxi caar
+                     (getl (get (or Hook *DB) Cls)) ) ) ) ) )
       (let Q
          (goal
             (cons
@@ -68,7 +70,7 @@
    (print Val) )
 
 (dm (print> . +Number) (Val)
-   (print (format Val (: scl))) )
+   (prin (format Val (: scl))) )
 
 (dm (print> . +Date) (Val)
    (print (datStr Val)) )

@@ -1,4 +1,4 @@
-# 05may03abu
+# 14jun03abu
 # (c) Software Lab. Alexander Burger
 
 (must `(_ "Role") RoleAdmin)
@@ -8,7 +8,9 @@
    <hr>
    (form '(+ObjForm) '(+Role) *ID 800 500
       (quote
-         (gui '(+E/R +TextField) '(nm : home obj) `(_ "Name") 40)
+         (row
+            (gui '(+E/R +TextField) '(nm : home obj) `(_ "Name") 40)
+            (stepButton 'nm '+Role) )
          (----)
          (gui '(+E/R +Array) '(perm : home obj) `(_ "Permissions") 4
             '((S) (gui '(+Checkbox) (val S)))

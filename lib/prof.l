@@ -1,4 +1,4 @@
-# 14jun02abu
+# 10jun03abu
 # (c) Software Lab. Alexander Burger
 
 # *Profile
@@ -22,17 +22,15 @@
       (con Lst (cddr (cadr Lst)))
       T ) )
 
-(de prof ("X" "N")
-   (let "C"
-      (cond
-         ((pair "X") (setq  "X" (car "X")) (cdr "X"))
-         ((num? "N") (expr "N" "X") NIL)
-         (T "N") )
-      (unless
-         (and
-            (_prf (if "C" (method "X" "C") (getd "X")))
-            (?push '*Profile (cons "X" "C")) )
-         (quit "Can't profile" "X") ) ) )
+(de prof ("X" "C")
+   (when (pair "X")
+      (setq  "C" (cdr "X")  "X" (car "X")) )
+   (and (not "C") (num? (getd "X")) (expr "X"))
+   (unless
+      (and
+         (_prf (if "C" (method "X" "C") (getd "X")))
+         (?push '*Profile (cons "X" "C")) )
+      (quit "Can't profile" "X") ) )
 
 (de unprof ("X" "C")
    (setq *Profile (delete (cons "X" "C")) *Profile)

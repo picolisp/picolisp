@@ -1,8 +1,8 @@
-# 05jun03abu
+# 30jul03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
-# *Url *SesId *ConId *InND *OutN *Frame *U1 *Help *Css
+# *Url *SesId *ConId *InND *OutN *Frame *U1 *Help *Meta *Css
 
 (default *HPorts 0)
 
@@ -20,21 +20,19 @@
 
 ### HTTP-Client ###
 (de client ("Host" "Port" "Name" . "Prg")
-   (when (connect "Host" (default "Port" 80))
+   (when (connect "Host" "Port")
       (let "H" @
-         (out "H"
-            (prinl "GET /" "Name" " HTTP/1.1")
-            (prinl "Connection: close")
-            (prinl "User-Agent: PicoLisp")
-            (prinl "Host: " "Host" ":" "Port")
-            (prinl "Accept:  text/html, text/plain")
-            (prinl "Accept-Language: en")
-            (prinl "Accept-Charset: utf-8")
-            (prinl)
-            (flush)
-            (prog1
-               (in "H" (run "Prg"))
-               (close "H") ) ) ) ) )
+         (prog1
+            (out "H"
+               (prinl "GET /" "Name" " HTTP/1.1")
+               (prinl "Connection: close")
+               (prinl "User-Agent: PicoLisp")
+               (prinl "Host: " "Host")
+               (prinl "Accept-Charset: utf-8")
+               (prinl)
+               (flush)
+               (in "H" (run "Prg")) )
+            (close "H") ) ) ) )
 
 # Local Password
 (de pw ()
@@ -42,10 +40,14 @@
 
 # Pico Shell
 (de psh (Pw Tty)
-   (when (and (= Pw (pw)) (in (list "ps" (pack "t" Tty)) (from "/psh ")))
-      (ctty Tty)
-      (out NIL (load "dbg.l" NIL))
-      (bye) ) )
+   (when
+      (and
+         (= Pw (pw))
+         (in (list "ps" (pack "t" Tty)) (from "/psh "))
+         (ctty Tty) )
+      (prinl *Pid)
+      (load "dbg.l")
+      (quit) ) )
 
 ### HTTP-Server ###
 (de server (P H)
@@ -74,8 +76,14 @@
 (de https @
    (pass pack "https://" *Host "/" *Port "/" *SesId) )
 
-(de software-lab ()
-   (<p> T "<A HREF=\"http://www.software-lab.de\">(c) Software Lab.</A>") )
+(de keywords (Lst)
+   (let Key '("NAME" . "keywords")
+      (if Lst
+         (let Val (list (cons "CONTENT" (glue ", " Lst)))
+            (if (assoc Key *Meta)
+               (con @ Val)
+               (push '*Meta (cons Key Val)) ) )
+         (and (assoc Key *Meta) (setq *Meta (delete @ *Meta))) ) ) )
 
 # Init crypt
 (de rsa (N)
@@ -100,7 +108,7 @@
 
 # Handle HTTP-Transaction
 (de http (S)
-   (use (L @U)
+   (use (L @U F)
       (catch "http"
          (in S
             (cond
@@ -122,12 +130,13 @@
                         (_htSet (car L) (_htArg (cadr L)))
                         NIL ) )
                   (split (cadr L) "&") ) )
-            (unless (setq *Url (ht:Pack @U))
-               (setq  *Url (car *Home)  @U (cdr *Home)) )
-            (when
+            (if (setq *Url (ht:Pack @U))
+               (setq F (format *Url))
+               (setq  *Url (car *Home)  @U (cdr *Home)  F) )
+            (if
                (or
+                  F
                   (not *Allow)
-                  (format *Url)
                   (tmp? *Url)
                   (idx *Allow *Url)
                   (unless (sub? "/../" *Url)
@@ -135,27 +144,22 @@
                (out S
                   (cond
                      ((<> *ConId *SesId)
-                        (and (call "test" "-r" "void") (httpEcho "void" NIL 86400)) )
-                     ((= *Url "0")
+                        (and (info "void") (httpEcho "void" NIL 86400)) )
+                     ((=0 F)
                         (html NIL
                            (prinl "<TABLE WIDTH=\"100%\"><TR>")
                            (let N 0
                               (mapc
                                  '((L)
-                                    (prin
-                                       "<TD ALIGN=\"CENTER\"><A HREF=\""
-                                       *SesId
-                                       (inc 'N)
-                                       "\" TARGET=\"MENU\">"
-                                       (cadr L) )
+                                    (prin "<TD ALIGN=\"CENTER\">")
                                     (when (car L)
                                        (prin "<IMG SRC=\"" *SesId (car L) "\">") )
-                                    (prinl "</A></TD>") )
+                                    (prinl
+                                       "<A HREF=\"" *SesId (inc 'N) "\" TARGET=\"MENU\">"
+                                       (cadr L) "</A></TD>" ) )
                                  *Frame ) )
                            (prinl "</TR></TABLE>") ) )
-                     ((<= "1" *Url "9")
-                        (html NIL
-                           (prEval (nth *Frame (format *Url) 3)) ) )
+                     (F (html NIL (prEval (nth *Frame F 3))))
                      ((member '@ @U)
                         (apply (val (intern (ht:Pack (cdr @)))) L) )
                      ((= '("." "l") (tail 2 @U))
@@ -164,9 +168,12 @@
                         (httpEcho *Url NIL 86400) )
                      ((assoc (tail 4 @U) *Mimes)
                         (apply httpEcho (cdr @) *Url) )
-                     ((call "test" "-d" *Url)
+                     ((=T (car (info *Url)))
                         (load (pack *Url "default")) )
-                     (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
+                     (T (httpEcho *Url "application/octet-stream" 1 T)) ) )
+               (or
+                  (= '("." "c" "l" "a" "s" "s") (tail 6 @U))
+                  (msg *Url " not allowed") ) ) ) )
       (close S) ) )
 
 (de _htHead ()
@@ -248,6 +255,7 @@
       (or
          (not *Allow)
          (idx *Allow "Var")
+         (msg *Url " not allowed")
          (throw "http") )
       (cond
          ((not @N) (set "Var" Val))
@@ -355,6 +363,14 @@
       (prin "<TITLE>")
       (ht:Prin "Ttl")
       (prinl "</TITLE>") )
+   (and *Lang (prinl "<META NAME=\"lang\" CONTENT=\"" *Lang "\">"))
+   (mapc
+      '((L)
+         (prin "<META")
+         (while L
+            (prin " " (caar L) "=\"" (cdr (pop 'L)) "\"") )
+         (prinl ">") )
+      *Meta )
    (when *Css
       (prinl
          "<link rel=\"stylesheet\" type=\"text/css\" href=\""
@@ -400,7 +416,7 @@
    (httpHead)
    (prinl "<HTML>")
    (prinl "<FRAMESET ROWS=\"100%,*\">")
-   (prinl "<FRAME NAME=\"BIZ\" SRC=\"" Url "\">")
+   (prinl "<FRAME SRC=\"" Url "\">")
    (prinl "</FRAMESET>")
    (prinl "</HTML>") )
 
@@ -425,7 +441,7 @@
 
 (de <item> ("X")
    (cond
-      ((atom "X") (ht:Prin "X") (prinl))
+      ((atom "X") (ht:Prin "X"))
       ((=T (car "X")) (apply <href> (cdr "X")))
       (T (eval "X")) ) )
 
@@ -497,7 +513,8 @@
    (prinl "<UL>")
    (while (args)
       (prin "<LI>")
-      (<item> (next)) )
+      (<item> (next))
+      (prinl) )
    (prinl "</UL>") )
 
 (de <pre> "Prg"

@@ -1,4 +1,4 @@
-# 06jun03abu
+# 28jul03abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -229,9 +229,19 @@
 (de _week (Dat)
    (/ (- Dat (% (+ Dat 1) 7)) 7) )
 
+# Last day of month
+(de ultimo (Y M)
+   (-
+      (if (= 12 M)
+         (date (+ 1 Y) 1 1)
+         (date Y (+ 1 M) 1) )
+      1 ) )
+
 # Month name
+(de *Mon . (jan feb mar apr may jun jul aug sep oct nov dec .))
+
 (de month (N)
-   (get '(jan feb mar apr may jun jul aug sep oct nov dec) N) )
+   (get *Mon N) )
 
 ### Time ###
 (de tim$ (Tim F)
@@ -276,59 +286,61 @@
    (while "Prg"
       ((if (atom (car "Prg")) prinl eval) (pop '"Prg")) ) )
 
+# Echo here-documents
+(de here (S)
+   (line)
+   (echo S) )
+
 # Send Mail
-(de mail (Host Port From To Sub Lst . @)
-   (when (connect Host Port)
-      (let (S @  B (pack "==" (date) "-" (time) "=="))
+(de mail ("Host" "Port" "From" "To" "Sub" "Att" . "Prg")
+   (when (connect "Host" "Port")
+      (let ("S" @  "B" (pack "==" (date) "-" (time) "=="))
          (prog1
             (and
-               (pre? "220 " (in S (line T)))
-               (out S (prinl "HELO " Host))
-               (pre? "250 " (in S (line T)))
-               (out S (prinl "MAIL FROM:" From))
-               (pre? "250 " (in S (line T)))
-               (out S (prinl "RCPT TO:" To))
-               (pre? "250 " (in S (line T)))
-               (out S (prinl "DATA"))
-               (pre? "354 " (in S (line T)))
-               (out S
-                  (prinl "From: " From)
-                  (prinl "To: " To)
-                  (prinl "Subject: " Sub)
+               (pre? "220 " (in "S" (line T)))
+               (out "S" (prinl "HELO " "Host"))
+               (pre? "250 " (in "S" (line T)))
+               (out "S" (prinl "MAIL FROM:" "From"))
+               (pre? "250 " (in "S" (line T)))
+               (out "S" (prinl "RCPT TO:" "To"))
+               (pre? "250 " (in "S" (line T)))
+               (out "S" (prinl "DATA"))
+               (pre? "354 " (in "S" (line T)))
+               (out "S"
+                  (prinl "From: " "From")
+                  (prinl "To: " "To")
+                  (prinl "Subject: " "Sub")
                   (prinl "User-Agent: PicoLisp")
                   (prinl "MIME-Version: 1.0")
-                  (when (args)
-                     (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"")
+                  (when "Att"
+                     (prinl "Content-Type: multipart/mixed; boundary=\"" "B" "\"")
                      (prinl)
-                     (prinl "--" B) )
+                     (prinl "--" "B") )
                   (prinl "Content-Type: text/plain; charset=utf-8")
                   (prinl "Content-Transfer-Encoding: 8bit")
                   (prinl)
-                  (mapc
-                     '((L)
-                        (prinl (and (= `(char ".") (char L)) ".") L) )
-                     Lst )
+                  (prEval "Prg")
                   (prinl)
-                  (when (args)
-                     (while (args)
-                        (let L (next)
-                           (prinl "--" B)
-                           (prinl
-                              "Content-Type: "
-                              (or (caddr L) "application/octet-stream")
-                              "; name=\""
-                              (cadr L)
-                              "\"" )
-                           (prinl "Content-Transfer-Encoding: x-uuencode")
-                           (prinl)
-                           (in (list "uuencode" (car L) (cadr L))
-                              (echo) )
-                           (prinl) ) )
-                     (prinl "--" B "--") )
+                  (when "Att"
+                     (loop
+                        (prinl "--" "B")
+                        (prinl
+                           "Content-Type: "
+                           (or (caddr "Att") "application/octet-stream")
+                           "; name=\""
+                           (cadr "Att")
+                           "\"" )
+                        (prinl "Content-Transfer-Encoding: x-uuencode")
+                        (prinl)
+                        (in (list "uuencode" (car "Att") (cadr "Att"))
+                           (echo) )
+                        (prinl)
+                        (NIL (setq "Att" (cdddr "Att"))) )
+                     (prinl "--" "B" "--") )
                   (prinl ".")
                   (prinl "QUIT") )
                T )
-            (close S) ) ) ) )
+            (close "S") ) ) ) )
 
 ### Base 64 ###
 (de fmt64 (X)

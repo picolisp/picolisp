@@ -1,4 +1,4 @@
-# 23jan03abu
+# 07jul03abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -186,14 +186,13 @@
          (quit "Can't unbug" "X") ) ) )
 
 # Tracing
-(de expr (N "F")
-   (let L (make (do N (link (new))))
-      (set "F"
-         (list L (cons (box (getd "F")) L)) ) ) )
+(de expr ("F")
+   (set "F"
+      (list '@ (list 'pass (box (getd "F")))) ) )
 
-(de subr ("X")
-   (set "X"
-      (getd (caadr (getd "X"))) ) )
+(de subr ("F")
+   (set "F"
+      (getd (cadr (cadr (getd "F")))) ) )
 
 (de traced? ("X" "C")
    (setq "X"
@@ -206,23 +205,21 @@
       (== '$ (caadr "X")) ) )
 
 # Convert ((X Y) A B) --> ((X Y) ($ foo (X Y) A B))
-(de trace ("X" "N")
+(de trace ("X" "C")
    (let *Dbg NIL
       (when (pair "X")
-         (setq  "N" (cdr "X")  "X" (car "X")) )
-      (if (and "N" (sym? "N"))
-         (unless (traced? "X" "N")
-            (or (method "X" "N") (quit "Can't trace" "X"))
+         (setq  "C" (cdr "X")  "X" (car "X")) )
+      (if "C"
+         (unless (traced? "X" "C")
+            (or (method "X" "C") (quit "Can't trace" "X"))
             (con @
                (cons
                   (conc
-                     (list '$ (cons "X" "N") (car @))
+                     (list '$ (cons "X" "C") (car @))
                      (cdr @) ) ) ) )
          (unless (traced? "X")
-            (if (sym? (getd "X"))
-               (quit "Can't trace" "X") )
-            (if (num? (getd "X"))
-               (expr "N" "X") )
+            (and (sym? (getd "X")) (quit "Can't trace" "X"))
+            (and (num? (getd "X")) (expr "X"))
             (set "X"
                (list
                   (car (getd "X"))
@@ -230,19 +227,24 @@
       "X" ) )
 
 # Convert ((X Y) ($ foo (X Y) A B)) --> ((X Y) A B)
-(de untrace ("X" "N")
+(de untrace ("X" "C")
    (let *Dbg NIL
       (when (pair "X")
-         (setq  "N" (cdr "X")  "X" (car "X")) )
-      (if (and "N" (sym? "N"))
-         (when (traced? "X" "N")
+         (setq  "C" (cdr "X")  "X" (car "X")) )
+      (if "C"
+         (when (traced? "X" "C")
             (con
-               (method "X" "N")
-               (cdddr (cadr (method "X" "N"))) ) )
+               (method "X" "C")
+               (cdddr (cadr (method "X" "C"))) ) )
          (when (traced? "X")
-            (set "X"
-               (cddr (cadr (getd "X"))) )
-            (if "N" (subr "X")) ) )
+            (let X (set "X" (cddr (cadr (getd "X"))))
+               (and
+                  (== '@ (pop 'X))
+                  (= 1 (length X))
+                  (= 2 (length (car X)))
+                  (== 'pass (caar X))
+                  (sym? (cdadr X))
+                  (subr "X") ) ) ) )
       "X" ) )
 
 (de *NoTrace

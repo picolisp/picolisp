@@ -1,4 +1,4 @@
-# 01dec02abu
+# 22apr03abu
 # (c) Software Lab. Alexander Burger
 
 # lib/http.l
@@ -25,6 +25,7 @@
 "Create" "Neuanlage"
 "Delete" "Löschen"
 "Next data record" "Nächster Datensatz"
+"Choose/Create" "Auswahl/Neuanlage"
 "Choose/Create (F4)" "Auswahl/Neuanlage (F4)"
 "New/Copy" "Neu/Muster"
 "Deletion" "Löschung"

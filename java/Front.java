@@ -1,4 +1,4 @@
-// 11oct02abu
+// 18mar03abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -514,7 +514,10 @@ public class Front extends Pico {
    void scrl(int fld) {
       int val = getNum();
       int vis = getNum();
-      SBars[fld-1].setValues(val, vis, 1, 2+Math.max(vis,getNum()));
+      if (SBars[fld-1] == null)
+         getNum();
+      else
+         SBars[fld-1].setValues(val, vis, 1, 2+Math.max(vis,getNum()));
    }
 
    // Signal field value change

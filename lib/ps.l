@@ -1,8 +1,13 @@
-# 27feb03abu
+# 04apr03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
 # "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF"
+
+(de pdf ("Nm" . "Prg")
+   (let ("Ps" (tmp "Nm" ".ps") "Pdf" (pack "Nm" ".pdf"))
+      (out (list "bin/lat1" "Ps") (prEval "Prg"))
+      (_pdf) ) )
 
 (de psOut ("How" "Nm" . "Prg")
    (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
@@ -48,6 +53,9 @@
 
 (de a4L ()
    ("head" 842 595) )
+
+(de a5 ()
+   ("head" 420 595) )
 
 (de _font ()
    (prinl "/" "*Font" " findfont  " "*Size" " scalefont  setfont") )
@@ -238,7 +246,6 @@
    (poly NIL 288 225  291 225  291 222)
    (poly NIL 50 114  291 114)              # Absender
    (window 60 102 220 10
-      (font (8 . "Times-Roman")
-         (ps "Abs") ) )
+      (font 8 (ps "Abs" 0)) )
    (window 65 125 210 90
       (psEval "Prg") ) )

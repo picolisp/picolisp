@@ -1,4 +1,4 @@
-# 22feb03abu
+# 13apr03abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -18,9 +18,10 @@ picoFiles = main.c gc.c io.c flow.c big.c sym.c subr.c apply.c tab.c net.c
 	gcc -c -O3 -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
-	-pipe  -D "ID='G'"  $*.c
+	-pipe  $*.c
 
-$(picoFiles:.c=.o): pico.h
+
+$(picoFiles:.c=.o) ext.o z3d.o: pico.h
 
 $(bin)/pico: $(picoFiles:.c=.o)
 	rm -f ../pico
@@ -40,6 +41,7 @@ $(bin)/pico: $(picoFiles:.c=.o)
 	gcc -shared -nostartfiles -nostdlib -export-dynamic \
 		-o ../z3d  z3d.o
 	strip ../z3d
+
 
 $(bin)/lat1: lat1.o
 	echo "  " link lat1:
@@ -63,7 +65,7 @@ $(bin)/httpGate: httpGate.o
 
 $(bin)/z3dClient: z3dClient.o
 	echo "  " link z3dClient:
-	gcc -o $(bin)/z3dClient z3dClient.o  -L/usr/X11/lib -lXext -lX11
+	gcc -o $(bin)/z3dClient z3dClient.o  -L/usr/X11R6/lib -lXext -lX11
 	strip $(bin)/z3dClient
 
 

@@ -1,4 +1,4 @@
-# 07feb02abu
+# 17mar03abu
 # (c) Software Lab. Alexander Burger
 
 (app)
@@ -6,7 +6,7 @@
 (html "Uhr"
    (<head> "Uhr")
    (setq *Uhr
-      (new '(+Form) 240 80
+      (form '(+Form) 240 80
          (quote
             (gui 'uhr '(+Mono +Label) "Zeit:" (stamp))
             (row

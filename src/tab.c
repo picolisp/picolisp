@@ -1,4 +1,4 @@
-/* 18feb03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -108,6 +108,8 @@ static symInit Symbols[] = {
    {doHeap, "heap"},
    {doHear, "hear"},
    {doHide, "===="},
+   {doHost, "host"},
+   {doIdx, "idx"},
    {doIf, "if"},
    {doIfn, "ifn"},
    {doIn, "in"},
@@ -184,7 +186,6 @@ static symInit Symbols[] = {
    {doPass, "pass"},
    {doPatQ, "pat?"},
    {doPeek, "peek"},
-   {doPeer, "peer"},
    {doPick, "pick"},
    {doPool, "pool"},
    {doPop, "pop"},
@@ -244,6 +245,7 @@ static symInit Symbols[] = {
    {doSuper, "super"},
    {doSymQ, "sym?"},
    {doSync, "sync"},
+   {doSys, "sys"},
    {doT, "t"},
    {doTail, "tail"},
    {doTell, "tell"},
@@ -286,7 +288,7 @@ any initSym(any v, char *s) {
 void initSymbols(void) {
    int i;
 
-   Nil = cellSym(Avail),  Avail = Avail->cdr->cdr;  // Allocate 2 cells for NIL
+   Nil = symPtr(Avail),  Avail = Avail->cdr->cdr;  // Allocate 2 cells for NIL
    val(Nil) = tail(Nil) = val(Nil+1) = tail(Nil+1) = Nil;
    Zero = box(0);
    for (i = 0; i < HASH; ++i)
@@ -309,6 +311,7 @@ void initSymbols(void) {
    Led   = initSym(Nil, "*Led");
    Err   = initSym(Nil, "*Err");
    Msg   = initSym(Nil, "*Msg");
+   Adr   = initSym(Nil, "*Adr");
    Bye   = initSym(Nil, "*Bye");
 
    val(DB) = DbVal = extSym(consStr(DbTail = box('1')));

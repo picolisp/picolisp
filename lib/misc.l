@@ -1,4 +1,4 @@
-# 12feb03abu
+# 22apr03abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -233,7 +233,7 @@
 (de tim$ (Tim F)
    (when Tim
       (setq Tim (time Tim))
-      (pack (car Tim) ":" (pad 2 (cadr Tim))
+      (pack (pad 2 (car Tim)) ":" (pad 2 (cadr Tim))
          (and F ":")
          (and F (pad 2 (caddr Tim))) ) ) )
 
@@ -251,17 +251,8 @@
          (or (format (pack (caddr S))) 0) ) ) )
 
 (de stamp (Dat Tim)
-   (default
-      Dat (date)
-      Tim (time) )
-   (setq Tim (time Tim))
-   (pack
-      (dat$ Dat "-")
-      " "
-      (pack
-         (pad 2 (car Tim)) ":"
-         (pad 2 (cadr Tim)) ":"
-         (pad 2 (caddr Tim)) ) ) )
+   (default  Dat (date)  Tim (time))
+   (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 
 ### I/O ###
 # Directory contents
@@ -282,9 +273,56 @@
       ((if (atom (car "Prg")) prinl eval) (pop '"Prg")) ) )
 
 # Send Mail
-(de mail (Addr Sub CC . "Prg")
-   (out (list "mail" "-s" Sub "-c" CC Addr)
-      (prEval "Prg") ) )
+(de mail (Host Port From To Sub Lst . @)
+   (when (connect Host Port)
+      (let (S @  B (pack "==" (date) "-" (time) "=="))
+         (prog1
+            (and
+               (pre? "220 " (in S (line T)))
+               (out S (prinl "HELO " Host))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "MAIL FROM:" From))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "RCPT TO:" To))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "DATA"))
+               (pre? "354 " (in S (line T)))
+               (out S
+                  (prinl "From: " From)
+                  (prinl "To: " To)
+                  (prinl "Subject: " Sub)
+                  (prinl "User-Agent: PicoLisp")
+                  (prinl "MIME-Version: 1.0")
+                  (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"")
+                  (prinl)
+                  (prinl "--" B)
+                  (prinl "Content-Type: text/plain; charset=utf-8")
+                  (prinl "Content-Transfer-Encoding: 8bit")
+                  (prinl)
+                  (mapc
+                     '((L)
+                        (prinl (and (= `(char ".") (char L)) ".") L) )
+                     Lst )
+                  (prinl)
+                  (while (args)
+                     (let L (next)
+                        (prinl "--" B)
+                        (prinl
+                           "Content-Type: "
+                           (or (caddr L) "application/octet-stream")
+                           "; name=\""
+                           (cadr L)
+                           "\"" )
+                        (prinl "Content-Transfer-Encoding: x-uuencode")
+                        (prinl)
+                        (in (list "uuencode" (car L) (cadr L))
+                           (echo) )
+                        (prinl) ) )
+                  (prinl "--" B "--")
+                  (prinl ".")
+                  (prinl "QUIT") )
+               T )
+            (close S) ) ) ) )
 
 ### Base 64 ###
 (de fmt64 (X)

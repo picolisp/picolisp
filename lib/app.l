@@ -1,14 +1,14 @@
-# 12feb03abu
+# 01apr03abu
 # (c) Software Lab. Alexander Burger
 
 # Bye message
-(push '*Bye
+(?push '*Bye
    '(and *Login (msg *Pid " - " (stamp))) )
 
 # Exit on error
 (de *Err
    (out NIL
-      (prinl *Pid " ! " (stamp))
+      (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "]")
       (show This)
       (mapc
          '(("X") (println "X" (val "X")))

@@ -1,9 +1,7 @@
-# 26feb03abu
+# 21mar03abu
 # (c) Software Lab. Alexander Burger
 
-(rsa 60)
-
-(app)
+(and (app) (rsa 60))
 
 (default
    *Radio '((7 . "a"))
@@ -59,7 +57,7 @@
       (<select> "Ok" '("Ja" "Nein") '*Ok)
 
       <hr>
-      (new '(+View +Form) NIL  800 700
+      (form '(+View +Form) NIL  800 700
          (quote
             (gui '(+IntField) "Zahlenfeld" 10)
             (----)

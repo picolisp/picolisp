@@ -1,4 +1,4 @@
-/* 20feb03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -511,7 +511,7 @@ any doLet(any x) {
       struct {  // bindFrame
          struct bindFrame *link;
          int cnt;
-         struct {any sym; any val;} bnd[length(y)/2];
+         struct {any sym; any val;} bnd[(length(y)+1)/2];
       } f;
 
       f.link = Env.bind,  Env.bind = (bindFrame*)&f;
@@ -783,21 +783,23 @@ any doLoop(any ex) {
    }
 }
 
-// (do 'NIL|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
-any doDo(any ex) {
-   any x, y, z;
+// (do 'flg|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
+any doDo(any x) {
+   any y, z;
    cell c1;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
    x = cdr(x);
-   z = Nil;
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   Save(c1);
    if (isNum(data(c1))) {
       if (isNeg(data(c1))) {
          drop(c1);
-         return z;
+         return Nil;
       }
       data(c1) = bigCopy(data(c1));
    }
+   x = cdr(x),  z = Nil;
    for (;;) {
       if (isNum(data(c1))) {
          if (IsZero(data(c1))) {
@@ -1005,6 +1007,27 @@ any doTrace(any x) {
    traceIndent(Trace--, foo, " = "),  print(data(c1)),  crlf();
    OutFile = oSave;
    return Pop(c1);
+}
+
+// (sys 'any ['any]) -> sym
+any doSys(any x) {
+   any y;
+
+   y = evSym(x = cdr(x));
+   {
+      char nm[bufSize(y)];
+
+      bufString(y,nm);
+      if (!isCell(x = cdr(x)))
+         return mkStr(getenv(nm));
+      y = evSym(x);
+      {
+         char val[bufSize(y)];
+
+         bufString(y,val);
+         return setenv(nm,val,1)? Nil : y;
+      }
+   }
 }
 
 // (call 'any ..) -> flg

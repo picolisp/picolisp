@@ -1,4 +1,4 @@
-/* 02mar03abu
+/* 31mar03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -114,7 +114,7 @@ static int gateConnect(unsigned short port) {
 int main(int ac, char *av[]) {
    int n, fd, sd, dflt, port, cli, srv, dly;
    struct sockaddr_in addr;
-   char *gate, *p, *q, buf[BUFSIZ];
+   char *gate, *p, *q, buf[BUFSIZ], buf2[64];
    SSL_CTX *ctx;
    SSL *ssl;
    fd_set fdSet;
@@ -126,7 +126,7 @@ int main(int ac, char *av[]) {
    sd = gatePort((int)atol(av[1]));  // e.g. 80 or 443 / 9090
    dflt = (int)atol(av[2]);  // e.g. 8080
    if (ac == 3)
-      ssl = NULL,  gate = "Gate: http\n";
+      ssl = NULL,  gate = "Gate: http %s\n";
    else {
       SSL_load_error_strings();
       OpenSSL_add_ssl_algorithms();
@@ -137,7 +137,7 @@ int main(int ac, char *av[]) {
          ERR_print_errors_fp(stderr);
          giveup("SSL init");
       }
-      ssl = SSL_new(ctx),  gate = "Gate: https\n";
+      ssl = SSL_new(ctx),  gate = "Gate: https %s\n";
    }
 
    signal(SIGCHLD,SIG_IGN);  /* Prevent zombies (Linux) */
@@ -239,7 +239,7 @@ int main(int ac, char *av[]) {
                      if (p >= buf + n)
                         return 1;
                   wrBytes(srv, q, p - q);
-                  wrBytes(srv, gate, strlen(gate));
+                  wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
                }
                wrBytes(srv, p, buf + n - p);
 

@@ -1,4 +1,4 @@
-# 25feb03abu
+# 26mar03abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -10,7 +10,7 @@
       (setq *Login @) ) )
 
 (de pwForm ()
-   (new '(+Form) 360 120
+   (form '(+Form) 360 120
       (quote
          (gui 'nm '(+TextField) "Name" 20)
          (gui 'pw '(+Chk +End +PwField)

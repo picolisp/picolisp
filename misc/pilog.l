@@ -1,4 +1,4 @@
-# 19apr02abu
+# 05apr03abu
 # (c) Software Lab. Alexander Burger
 
 (be sister (@X @Y) (parents @X @M @F) (parents @Y @M @F) (different @X @Y))
@@ -57,6 +57,28 @@
 (be _genlst (@X @C) (@X pop (-> @C)))
 (repeat)
 
+(be tree (@K (@K @V @L @R) @V)
+   T )
+
+(be tree (@K (@K1 @V1 @L @R) @V)
+   (@ < (-> @K) (-> @K1))
+   (tree @K @L @V) )
+
+(be tree (@K (@K1 @V1 @L @R) @V)
+   (@ >= (-> @K) (-> @K1))
+   (tree @K @R @V) )
+
+
+(be change (you I))
+(be change (are (am not)))
+(be change (french german))
+(be change (@X @X))
+
+(be mapcar (@ NIL NIL))
+(be mapcar (@P (@X . @L) (@Y . @M))
+   (call @P @X @Y)
+   (mapcar @P @L @M) )
+
 
 ### Tests ###
 (test NIL (solve '((equal A B))))
@@ -84,6 +106,10 @@
 
 (test '(T) (solve '((clause append ((NIL @X @X))))))
 
+(test
+   '(a b c d)
+   (solve '((@B box) (lst @X (a b c b c d)) (uniq @B @X)) @X) )
+
 
 (test
    '(((@B . Mia)) ((@B . Mona)))
@@ -96,3 +122,7 @@
 (test
    '(((@X . 1)) ((@X . 2)) ((@X . 3)) ((@X . 4)))
    (solve '((genlst @X))) )
+
+(test
+   '(((@Z I (am not) a computer)))
+   (solve '((mapcar change (you are a computer) @Z) T)) )

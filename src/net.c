@@ -1,4 +1,4 @@
-/* 11dec02abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,8 +8,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
-
-static int Peer;
 
 static void tcpErr(any ex, char *s) {
    err(ex, NULL, "TCP %s error: %s", s, sys_errlist[errno]);
@@ -67,48 +65,50 @@ any doPort(any ex) {
 // (listen 'cnt1 ['cnt2]) -> cnt | NIL
 any doListen(any ex) {
    any x;
-   int sd;
+   int sd, n;
+   struct sockaddr_in addr;
 
    sd = (int)evCnt(ex, cdr(ex));
    x = cddr(ex);
    if (!waitFd(ex, sd, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
       return Nil;
-   if ((Peer = accept(sd, NULL, 0)) < 0)
+   n = sizeof(addr);
+   if ((sd = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
       tcpErr(ex, "accept");
-   return boxCnt(Peer);
+   val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+   return boxCnt(sd);
 }
 
-// (peer ['cnt]) -> sym
-any doPeer(any ex) {
-   any x;
-   int len;
-   struct sockaddr_in addr;
+// (host 'any) -> sym
+any doHost(any x) {
+   struct in_addr in;
    struct hostent *p;
 
-   len = sizeof(addr);
-   if (getpeername(isNil(x = EVAL(cadr(ex)))? Peer : (int)xCnt(ex,x),
-                                          (struct sockaddr*)&addr, &len) < 0)
+   x = evSym(cdr(x));
+   {
+      char nm[bufSize(x)];
+
+      bufString(x, nm);
+      if (inet_aton(nm, &in) && (p = gethostbyaddr((char*)&in, sizeof(in), AF_INET)))
+         return mkStr(p->h_name);
       return Nil;
-   if (p = gethostbyaddr((char*)&addr.sin_addr, sizeof(addr.sin_addr), AF_INET))
-      return mkStr(p->h_name);
-   return mkStr(inet_ntoa(addr.sin_addr));
+   }
 }
 
-// (connect 'sym 'cnt) -> cnt
+// (connect 'any 'cnt) -> cnt
 any doConnect(any ex) {
-   any x, y;
+   any x;
    int sd;
    struct sockaddr_in addr;
    struct hostent *p;
 
-   x = cdr(ex),  y = EVAL(car(x));                             // host
-   NeedSym(ex,y);
+   x = evSym(cdr(ex));
    {
-      char nm[bufSize(y)];
+      char nm[bufSize(x)];
 
-      bufString(y, nm);
+      bufString(x, nm);
       bzero((char*)&addr, sizeof(addr));
-      if ((long)(addr.sin_addr.s_addr = inet_addr(nm)) == -1) {
+      if (!inet_aton(nm, &addr.sin_addr)) {
          if (!(p = gethostbyname(nm))  ||  p->h_length == 0)
             return Nil;
          addr.sin_addr.s_addr = ((struct in_addr*)p->h_addr_list[0])->s_addr;
@@ -116,7 +116,7 @@ any doConnect(any ex) {
    }
    sd = tcpSocket(ex);
    addr.sin_family = AF_INET;
-   addr.sin_port = htons((unsigned short)evCnt(ex, cdr(x)));   // port
+   addr.sin_port = htons((unsigned short)evCnt(ex, cddr(ex)));   // port
    if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
       close(sd);
       return Nil;

@@ -1,4 +1,4 @@
-/* 02mar03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,7 +10,7 @@ enum {NUMBER, INTERN, TRANSIENT, EXTERN};
 
 static char Delim[] = " \t\n\r\"#'()[]`~";
 static struct termios RawTermio;
-static cell Fin = {(any)(']'<<24 | ']'<<16 | ']'<<8 | ']'), cellNum(&Fin)};
+static cell Fin = {(any)(']'<<24 | ']'<<16 | ']'<<8 | ']'), numPtr(&Fin)};
 static cell StrName, *StrSym;
 static int StrI, BinIx, BinCnt;
 static bool Sync;
@@ -592,7 +592,7 @@ static void getParse(void) {
    Chr = Env.parser->dig & 0xFF;
    if ((Env.parser->dig >>= 8) == 0) {
       if (!isNum(Env.parser->name = cdr(numCell(Env.parser->name))))
-         Env.parser->name = cellNum(&Fin);
+         Env.parser->name = numPtr(&Fin);
       Env.parser->dig = unDig(Env.parser->name);
    }
 }
@@ -768,7 +768,7 @@ static any anonymous(any s) {
    h = Heaps;
    do
       if ((any)n > h->cells  &&  (any)n < h->cells + CELLS)
-         return cellSym(n);
+         return symPtr(n);
    while (h = h->next);
    return NULL;
 }
@@ -1179,14 +1179,13 @@ done:
    return res < 0? Nil : data(c[res]);
 }
 
-// (till 'sym ['flg]) -> lst|sym
+// (till 'any ['flg]) -> lst|sym
 any doTill(any ex) {
    any x;
    int i;
    cell c1;
 
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+   x = evSym(cdr(ex));
    {
       char buf[bufSize(x)];
 

@@ -1562,6 +1562,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#pop">pop</a>
    <a href="#cut">cut</a>
    <a href="#queue">queue</a>
+   <a href="#idx">idx</a>
 </code>
 
 <dt>Property Access
@@ -1694,6 +1695,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#pop">pop</a>
    <a href="#cut">cut</a>
    <a href="#queue">queue</a>
+   <a href="#idx">idx</a>
    <a href="#get">get</a>
    <a href="#fill">fill</a>
    <a href="#apply">apply</a>
@@ -1757,6 +1759,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#!">!</a>
    <a href="#e">e</a>
    <a href="#$">$</a>
+   <a href="#sys">sys</a>
    <a href="#call">call</a>
    <a href="#tick">tick</a>
    <a href="#kill">kill</a>
@@ -1824,8 +1827,8 @@ argument types and return values are described with the following abbreviations:
    <a href="#close">close</a>
    <a href="#port">port</a>
    <a href="#listen">listen</a>
-   <a href="#peer">peer</a>
    <a href="#connect">connect</a>
+   <a href="#host">host</a>
 </code>
 
 <dt>Database
@@ -1898,6 +1901,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#*Led">*Led</a>
    <a href="#*Err">*Err</a>
    <a href="#*Msg">*Msg</a>
+   <a href="#*Adr">*Adr</a>
    <a href="#*Bye">*Bye</a>
 </code>
 
@@ -2303,8 +2307,8 @@ returned.
 -> 999
 </code></pre>
 
-<p><dt><a name="cd"><code>(cd 'sym) -> flg</code></a>
-<dd>Changes the current directory to <code>sym</code>.
+<p><dt><a name="cd"><code>(cd 'any) -> flg</code></a>
+<dd>Changes the current directory to <code>any</code>.
 
 <p><pre><code>
 : (dir "src/*.c")
@@ -2548,9 +2552,9 @@ returned.
 -> 2
 </code></pre>
 
-<p><dt><a name="connect"><code>(connect 'sym 'cnt) -> cnt</code></a>
+<p><dt><a name="connect"><code>(connect 'any 'cnt) -> cnt</code></a>
 <dd>Tries to establish a TCP/IP connection to a server listening at host
-<code>sym</code>, port <code>cnt</code>. <code>sym</code> may be either a
+<code>any</code>, port <code>cnt</code>. <code>any</code> may be either a
 hostname or a standard internet address in numbers-and-dots notation. Returns a
 socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
 be established. See also <code><a href="#listen">listen</a></code>.
@@ -2610,8 +2614,8 @@ $ cat count                               # Check "count"
 8
 </code></pre>
 
-<p><dt><a name="ctty"><code>(ctty 'sym) -> flg</code></a>
-<dd>Changes the current TTY device to <code>sym</code>.
+<p><dt><a name="ctty"><code>(ctty 'any) -> flg</code></a>
+<dd>Changes the current TTY device to <code>any</code>.
 
 <p><pre><code>
 : (ctty "/dev/tty")
@@ -2820,10 +2824,11 @@ analog to a function definition.
    (mapc '((B) (start> B)) (: arrays)) )
 </code></pre>
 
-<p><dt><a name="do"><code>(do 'NIL|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<p><dt><a name="do"><code>(do 'flg|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
 <dd>Counted loop with multiple conditional exits: The body is executed at most
-<code>num</code> (or infinite, if the first argument is <code>NIL</code>) times.
-If a clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
+<code>num</code> times (or never (if the first argument is <code>NIL</code>), or
+an infinite number of times (if the first argument is <code>T</code>)). If a
+clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
 clause's second element is evaluated as a condition and - if the result is
 <code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
 executed and the result returned. Otherwise (if count drops to zero), the result
@@ -3226,9 +3231,61 @@ inter-family communication (see <code><a href="#tell">tell</a></code>),
 -> "fifo/cmd"
 </code></pre>
 
+<p><dt><a name="host"><code>(host 'any) -> sym</code></a>
+<dd>Returns the official hostname corresponding to the given IP address. See
+also <code><a href="#*Adr">*Adr</a></code>.
+
+<p><pre><code>
+: (host "217.160.106.89")
+-> "software-lab.biz"
+</code></pre>
+
 
 <p><hr>
 <h3><a name="i-foo">I</a></h3>
+
+<p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> flg<br>
+(idx 'var 'any) -> flg<br>
+(idx 'var) -> lst</code></a>
+<dd>Maintains an index tree structure in <code>var</code>, and checks for the
+existence of <code>any</code>. If <code>any</code> is contained in
+<code>var</code>, <code>T</code> is returned. In the first form,
+<code>any</code> is destructively inserted into the tree if <code>flg</code> is
+non-<code>NIL</code>, or deleted from the tree if <code>flg</code> is
+<code>NIL</code>. The second form only checks for existence, but does not change
+the index tree. In the third form (when called with a single <code>var</code>
+argument) the contents of the tree are returned as a sorted list.
+
+<p><pre><code>
+: (idx 'X 'd T)                              # Insert data
+-> NIL
+: (idx 'X 2 T)
+-> NIL
+: (idx 'X '(a b c) T)
+-> NIL
+: (idx 'X 17 T)
+-> NIL
+: (idx 'X 'A T)
+-> NIL
+: (idx 'X 'd T)
+-> T                                         # 'd' already existed
+: (idx 'X T T)
+-> NIL
+: X                                          # View the index tree
+-> (d (2 NIL 17 NIL A) (a b c) NIL T)
+: (idx 'X 'A)                                # Check for 'A'
+-> T
+: (idx 'X 'B)                                # Check for 'B'
+-> NIL
+: (idx 'X)
+-> (2 17 A d (a b c) T)                      # Get list
+: (idx 'X 17 NIL)                            # Delete '17'
+-> T
+: X
+-> (d (2 NIL A) (a b c) NIL T)               # View it again
+: (idx 'X)
+-> (2 A d (a b c) T)                         # '17' is deleted
+</code></pre>
 
 <p><dt><a name="if"><code>(if 'any1 'any2 . prg) -> any</code></a>
 <dd>Conditional execution: If the condition <code>any1</code> evaluates to
@@ -3304,8 +3361,8 @@ href="#offset">offset</a></code>.
 -> 3
 </code></pre>
 
-<p><dt><a name="info"><code>(info 'sym) -> (cnt dat . tim)</code></a>
-<dd>Returns information about a file with the name <code>sym</code>: The current
+<p><dt><a name="info"><code>(info 'any) -> (cnt dat . tim)</code></a>
+<dd>Returns information about a file with the name <code>any</code>: The current
 size <code>cnt</code> in bytes, and the modification date and time. See also
 <code><a href="#date">date</a></code>, <code><a href="#time">time</a></code> and
 <code><a href="#lines">lines</a></code>.
@@ -3353,11 +3410,12 @@ href="#type">type</a></code>.
 
 <p><dt><a name="job"><code>(job lst . prg) -> any</code></a>
 <dd>Executes a job within its own environment (as specified by
-symbol-values-pairs in <code>lst</code>. The current values of all symbols are
+symbol-values-pairs in <code>lst</code>). The current values of all symbols are
 saved, the symbols are bound to the values in <code>lst</code>, <code>prg</code>
 is executed, then the (possibly modified) symbol values are (destructively)
 stored in the environment list, and the symbols are restored to their original
-values. The return value is the result of <code>prg</code>. See also <code><a
+values. The return value is the result of <code>prg</code>. Typically used in a
+<code><a href="#*Key">*Key</a></code> task. See also <code><a
 href="#bind">bind</a></code>, <code><a href="#let">let</a></code> and <code><a
 href="#use">use</a></code>.
 
@@ -3551,16 +3609,20 @@ href="#pair">pair</a></code>.
 </code></pre>
 
 <p><dt><a name="listen"><code>(listen 'cnt1 ['cnt2]) -> cnt | NIL</code></a>
-<dd>Listens a socket descriptor <code>cnt1</code> (as recieved by <code><a
+<dd>Listens at a socket descriptor <code>cnt1</code> (as recieved by <code><a
 href="#port">port</a></code>) for an incoming connection, and returns the new
 socket descriptor <code>cnt</code>. If <code>cnt1</code> is
 non-<code>NIL</code>, that amount of milliseconds is waited maximally, and
-<code>NIL</code> is returned upon timeout. See also <code><a
-href="#connect">connect</a></code>.
+<code>NIL</code> is returned upon timeout. The global variable <code>*Adr</code>
+is set to the IP address of the client. See also <code><a
+href="#connect">connect</a></code> and <code><a href="#*Adr">*Adr</a></code>
 
 <p><pre><code>
-(setq *Socket
+: (setq *Socket
    (listen (port 6789)) )        # Listen at port 6789 for an indefinite time
+-> 4
+: *Adr
+-> "127.0.0.1"
 </code></pre>
 
 <p><dt><a name="load"><code>(load 'any ..) -> any</code></a>
@@ -3824,8 +3886,8 @@ the second <code>lst</code>, and returns <code>T</code> when successful. Atoms
 must be equal, and sublists must match recursively. Symbols in the pattern list
 with names starting with an at-mark "<code>@</code>" (see <code><a
 href="#patQ">pat?</a></code>) are taken as wildcards. They can match zero, one
-or more elements, and are then bound to the corresponding data. See also
-<code><a href="#fill">fill</a></code>.
+or more elements, and are bound to the corresponding data. See also <code><a
+href="#fill">fill</a></code>.
 
 <p><pre><code>
 : (match '(@A is @B) '(This is a test))
@@ -4321,21 +4383,6 @@ abcd
 $ p
 : (in "a" (list (peek) (char)))
 -> ("#" "#")
-</code></pre>
-
-<p><dt><a name="peer"><code>(peer ['cnt]) -> sym</code></a>
-<dd>Returns the name (or the address) of the peer connected to the socket
-descriptor <code>cnt</code>, or <code>NIL</code> when not successful. If
-<code>cnt</code> is <code>NIL</code>, the socket most recently connected by
-<code><a href="#listen">listen</a></code> is used.
-
-<p><pre><code>
-: (listen (port 4444))
--> 4
-: (peer)
--> "localhost"
-: (peer 4)
--> "localhost"
 </code></pre>
 
 <p><dt><a name="pick"><code>(pick 'foo 'lst ..) -> any</code></a>
@@ -5157,6 +5204,18 @@ href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
 -> T                       # (numeric process-id if lock failed)
 </code></pre>
 
+<p><dt><a name="sys"><code>(sys 'any ['any]) -> sym</code></a>
+<dd>Returns or sets a system environment variable.
+
+<p><pre><code>
+: (sys "TERM")                # Get current value
+-> "xterm"
+: (sys "TERM" "vt100")        # Set new value
+-> "vt100"
+: (sys "TERM")
+-> "vt100"
+</code></pre>
+
 
 <p><hr>
 <h3><a name="t-foo">T</a></h3>
@@ -5275,9 +5334,9 @@ profiling, <code>tick</code> is usually inserted into words with
 -> foo
 </code></pre>
 
-<p><dt><a name="till"><code>(till 'sym ['flg]) -> lst|sym</code></a>
+<p><dt><a name="till"><code>(till 'any ['flg]) -> lst|sym</code></a>
 <dd>Reads from the current input channel till a character contained in
-<code>sym</code> is found. If <code>flg</code> is <code>NIL</code>, a list of
+<code>any</code> is found. If <code>flg</code> is <code>NIL</code>, a list of
 single-character transient symbols is returned. Otherwise, a single string is
 returned. See also <code><a href="#from">from</a></code> and <code><a
 href="#line">line</a></code>.
@@ -5853,6 +5912,15 @@ A -- Number expected
 :
 : *Msg
 -> "Number expected"
+</code></pre>
+
+<p><dt><a name="*Adr"><code>*Adr</code></a>
+<dd>A global variable holding the IP address of last recently accepted client.
+See also <code><a href="#listen">listen</a></code>.
+
+<p><pre><code>
+: *Adr
+-> "127.0.0.1"
 </code></pre>
 
 <p><dt><a name="*Key"><code>*Key</code></a>

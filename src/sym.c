@@ -1,4 +1,4 @@
-/* 26feb03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -92,7 +92,7 @@ any mkName(byte *s) {
 }
 
 /* Make string */
-any mkStr(char *s) {return *s? consStr(mkName((byte*)s)) : Nil;}
+any mkStr(char *s) {return s && *s? consStr(mkName((byte*)s)) : Nil;}
 
 /* Get first byte of symbol name */
 int firstByte(any s) {
@@ -147,9 +147,8 @@ any doIntern(any ex) {
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
-   if (isNil(x))
+   if (!isNum(y = name(x)))
       return Nil;
-   y = name(x);
    if (y = findHash(y, h = Intern + hash(y)))
       return y;
    *h = cons(x,*h);
@@ -606,6 +605,95 @@ any doQueue(any ex) {
    }
    drop(c1);
    return x;
+}
+
+static void idx(any x, cell *p) {
+   if (isCell(cddr(x)))
+      idx(cddr(x), p);
+   data(*p) = cons(car(x), data(*p));
+   if (isCell(cadr(x)))
+      idx(cadr(x), p);
+}
+
+// (idx 'var 'any 'flg) -> flg
+// (idx 'var 'any) -> flg
+// (idx 'var) -> lst
+any doIdx(any ex) {
+   any x, y, z, *p;
+   int flg, n;
+   cell c1, c2;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   if (!isCell(x = cdr(x))) {
+      Push(c2, Nil);
+      idx(val(data(c1)), &c2);
+      drop(c1);
+      return data(c2);
+   }
+   Push(c2, EVAL(car(x)));
+   flg = !isCell(cdr(x))? 0 : isNil(EVAL(cadr(x)))? -1 : +1;
+   if (!isCell(x = val(data(c1)))) {
+      if (flg > 0) {
+         Touch(ex,data(c1));
+         val(data(c1)) = cons(data(c2),Nil);
+      }
+      drop(c1);
+      return Nil;
+   }
+   p = (any*)cellPtr(data(c1));
+   for (;;) {
+      if ((n = compare(data(c2), car(x))) == 0) {
+         if (flg < 0) {
+            Touch(ex,data(c1));
+            if (!isCell(cadr(x)))
+               *p = cddr(x);
+            else if (!isCell(y = cddr(x)))
+               *p = cadr(x);
+            else if (!isCell(z = cadr(y)))
+               car(x) = car(y),  cddr(x) = cddr(y);
+            else {
+               while (isCell(cadr(z)))
+                  z = cadr(y = z);
+               car(x) = car(z),  cadr(y) = cddr(z);
+            }
+         }
+         drop(c1);
+         return T;
+      }
+      if (!isCell(cdr(x))) {
+         if (flg > 0) {
+            Touch(ex,data(c1));
+            cdr(x) = n < 0?
+               cons(cons(data(c2),Nil), Nil) : cons(Nil, cons(data(c2),Nil));
+         }
+         drop(c1);
+         return Nil;
+      }
+      if (n < 0) {
+         if (!isCell(cadr(x))) {
+            if (flg > 0) {
+               Touch(ex,data(c1));
+               cadr(x) = cons(data(c2),Nil);
+            }
+            drop(c1);
+            return Nil;
+         }
+         x = *(p = &cadr(x));
+      }
+      else {
+         if (!isCell(cddr(x))) {
+            if (flg > 0) {
+               Touch(ex,data(c1));
+               cddr(x) = cons(data(c2),Nil);
+            }
+            drop(c1);
+            return Nil;
+         }
+         x = *(p = &cddr(x));
+      }
+   }
 }
 
 any put(any x, any key, any val) {

@@ -1,4 +1,4 @@
-/* 28feb03abu
+/* 04apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -873,7 +873,7 @@ any doIndex(any x) {
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  x = EVAL(car(x));
-   if (n = idx(Pop(c1), x))
+   if (n = indx(Pop(c1), x))
       return boxCnt(n);
    return Nil;
 }
@@ -1191,7 +1191,7 @@ any doProve(any x) {
          }
          else {
             if (data(dbg)  &&  !isNil(memq(caar(data(tp1)), data(dbg)))) {
-               outWord(idx(car(data(alt)), get(caar(data(tp1)), T)));
+               outWord(indx(car(data(alt)), get(caar(data(tp1)), T)));
                space();
                print(uniFill(car(data(tp1)))), crlf();
             }

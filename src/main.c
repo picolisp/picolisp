@@ -1,4 +1,4 @@
-/* 18feb03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,7 +18,7 @@ any TheKey, TheCls;
 any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Bye;
+any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Adr, Bye;
 
 static jmp_buf ErrRst;
 static bool Jam, Protect;
@@ -577,26 +577,20 @@ any doTime(any ex) {
    return boxCnt(h * 3600 + m * 60 + s);
 }
 
-// (cd 'sym) -> flg
-any doCd(any ex) {
-   any x;
-
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+// (cd 'any) -> flg
+any doCd(any x) {
+   x = evSym(cdr(x));
    {
-      char path[bufSize(x)];
+      char path[pathSize(x)];
 
-      bufString(x, path);
+      pathString(x, path);
       return chdir(path) < 0? Nil : T;
    }
 }
 
-// (ctty 'sym) -> flg
-any doCtty(any ex) {
-   any x;
-
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+// (ctty 'any) -> flg
+any doCtty(any x) {
+   x = evSym(cdr(x));
    {
       char tty[bufSize(x)];
 
@@ -605,15 +599,13 @@ any doCtty(any ex) {
    }
 }
 
-// (info 'sym) -> (cnt dat . tim)
-any doInfo(any ex) {
-   any x;
+// (info 'any) -> (cnt dat . tim)
+any doInfo(any x) {
    cell c1;
    struct tm *p;
    struct stat st;
 
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+   x = evSym(cdr(x));
    {
       char nm[bufSize(x)];
 

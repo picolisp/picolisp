@@ -1,4 +1,4 @@
-/* 04oct02abu
+/* 17apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -118,10 +118,9 @@ any consSym(any v, any x) {
       p = Avail;
    }
    Avail = p->cdr;
+   car(p) = v;
    cdr(p) = x;
-   p = cellSym(p);
-   val(p) = v;
-   return p;
+   return symPtr(p);
 }
 
 /* Construct a string */
@@ -138,7 +137,7 @@ any consStr(any x) {
    }
    Avail = p->cdr;
    cdr(p) = x;
-   p = cellSym(p);
+   p = symPtr(p);
    val(p) = p;
    return p;
 }
@@ -158,5 +157,5 @@ any consNum(word n, any x) {
    Avail = p->cdr;
    p->car = (any)n;
    p->cdr = x;
-   return cellNum(p);
+   return numPtr(p);
 }

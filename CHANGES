@@ -1,3 +1,9 @@
+* 23apr03 picoLisp-2.0.5
+   'mail' changed to direct SMTP
+   'sys' environment access function
+   Plain HTML-GUI "lib/htm.l" (experimental)
+   Semantics of 'do NIL' changed from enless- to zero-loop
+
 * 03mar03 picoLisp-2.0.4
    Changed and extended '+IndexChart'
    '=0', 'lt0' and 'gt0' return numeric argument instead of 'T'

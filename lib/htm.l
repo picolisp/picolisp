@@ -1,0 +1,1406 @@
+# 23apr03abu
+# (c) Software Lab. Alexander Burger
+
+### Plain HTML GUI ###
+# *ID *Fld *Apps *Top *PnlFld *PnlCnt *LayPnl *LayRow *Bar 
+
+(de act (App Ix)
+   (act> (get (cdr (assoc App *Apps)) 'fields Ix)) )
+
+(de url (Str Tar . @)
+   (when Str
+      (let (L (split (chop Str) "?")  U (car L))  ## -> lib/http.l
+         (setq
+            L (mapcan
+               '((L)
+                  (ifn (cdr (setq L (split L "=")))
+                     (cons (_htArg (car L)))
+                     (_htSet (car L) (_htArg (cadr L)))
+                     NIL ) )
+               (split (cadr L) "&") )
+            *Url (htDecode U) )
+         (cond
+            ((member '@ U)
+               (apply (val (intern (htDecode (cdr @)))) (conc L (rest))) )
+            ((= '("." "l") (tail 2 U))
+               (load *Url) )
+            ((= '("." "h" "t" "m" "l") (tail 5 U))
+               (httpEcho *Url NIL 86400) ) ) ) ) )
+
+(de bar (Ttl X Y Prg)
+   (prinl Ttl "<hr>")
+   (setq *Bar (form '(+Form) X Y Prg))
+   (navi) )
+
+(class +Form)
+# app dx dy fields arrays hot able lock rv
+
+(de form @
+   (when (atom (next))
+      (default *ID (arg))
+      (next) )
+   (let
+      (App (pack *Url "?*ID=" *ID)
+         F (if (assoc App *Apps)
+            (cdr @)
+            (prog1
+               (pass new (arg))
+               (put @ 'app App)
+               (push '*Apps (cons App @)) ) ) )
+      (init> F)
+      (off *ID *Fld)
+      (show> F)
+      F ) )
+
+(de gui @
+   (cond
+      ((pair (next)) (pass new (arg)))
+      ((and (not (: fields)) (get *Top (arg)))
+         (quit "Conflict" (arg)) )
+      (T (put *Top (arg) (pass new (next)))) )
+   (off *LayPnl)
+   (on *LayRow) )
+
+(de txt @
+   (while (next)
+      (new '(+txt) @)
+      (off *LayPnl)
+      (off *LayRow) )
+   (on *LayRow) )
+
+(de row "Prg"
+   (_row) )
+
+(de flow "Prg"
+   (on *LayPnl)
+   (_row)
+   (endPnl> *Fld 1) )
+
+(de _row ()
+   (eval (pop '"Prg"))
+   (while "Prg"
+      (off *LayRow *LayPnl)
+      (eval (pop '"Prg")) ) )
+
+(de ---- ()
+   (and *Fld (endPnl> *Fld *PnlCnt))
+   (on *PnlFld)
+   (on *LayPnl *LayRow) )
+
+(de -|- ()
+   (when *PnlFld
+      (inc '*PnlCnt)
+      (inc (prop *PnlFld '*))
+      (off *PnlFld) )
+   (endPnl> *Fld (- *PnlCnt 1))
+   (on *LayPnl)
+   (off *LayRow) )
+
+
+(dm T ("DX" "DY" "Prg")
+   (setq *Top This)
+   (=: dx "DX")
+   (=: dy "DY")
+   (let (I 0  *PnlFld T  *PnlCnt 0  *LayPnl T  *LayRow)
+      (mapc
+         '((F) (put F 'ix (inc 'I)))
+         (=: fields (make (run "Prg"))) )
+      (endPnl> (last (: fields)) *PnlCnt) ) )
+
+(dm init> ()
+   (mapc 'init> (: fields))
+   (mapc 'init> (: arrays))
+   (upd> This) )
+
+(dm upd> ()
+   (mapc 'upd> (: fields))
+   (mapc 'upd> (: arrays)) )
+
+(dm lock> (Flg)
+   (=: lock Flg)
+   (upd> This) )
+
+(dm show> ()
+   (let N 0
+      (map
+         '((F)
+            (with (car F)
+               (unless (=0 N)
+                  (prin (if (: +) "</TD></TR><TR><TD>" "</TD><TD>")) )
+               (do (: *)
+                  (inc 'N)
+                  (prin "<TABLE><TR><TD>") )
+               (show> This)
+               (do (: **)
+                  (dec 'N)
+                  (prin "</TD></TR></TABLE>") ) ) )
+         (: fields) ) ) )
+
+(dm help> ())
+
+
+### Form Prefix Classes ###
+(class +View)
+# "view"
+
+(dm T (Flg . @)
+   (=: "view" Flg)
+   (pass extra) )
+
+(dm init> ()
+   (extra)
+   (lock> This (: "view")) )
+
+
+### Dialogs ###
+(class +Dialog +Form)
+# top args
+
+(dm T ("Ttl" "Lst" "Args")
+   (=: top *Top)
+   (super 0 0 "Lst")
+   (=: args "Args") )
+
+(dm init> ()
+   (super)
+   (mapc
+      '((V F) (and V (set> F V)))
+      (if (lst? (: args))
+         (: args)
+         (car (val (: args))) )
+      (: fields) )
+   (unless (lst? (: args))
+      (mapc
+         '((L B)
+            (while L
+               (put B (caar L) (cdr (pop 'L))) ) )
+         (cdr (val (: args)))
+         (: arrays) ) ) )
+
+(dm show> ()
+   (prinl '<hr>)
+   (super)
+   (prinl '<hr>) )
+
+(dm stop> ()
+   (unless (lst? (: args))
+      (set (: args)
+         (cons
+            (mapcar 'val> (: fields))
+            (mapcar 'stat> (: arrays)) ) ) )
+   (show> (: top)) )
+
+
+(de alert (Ttl @X)
+   (html "Ttl"
+      (prinl '<hr>)
+      (<head> Ttl 3)
+      (if (pair @X)
+         (apply <br> @X)
+         (<br> @X) )
+      (prinl '<hr>) ) )
+
+(de dialog ("Ttl" "Args" "Lst")
+   (html "Ttl"
+      (form "Ttl" '(+Dialog) "Ttl" "Lst" "Args") ) )
+
+# Dialog Buttons
+(de okButton (@Exe S)
+   (gui '(+Button) "" (or S "Ok")
+      (cons 'prog
+         (ifn @Exe
+            '((=: home rv T) (stop> (: home)))
+            (list
+               (fill '(=: home rv @Exe))
+               '(stop> (: home)) ) ) ) ) )
+
+(de quitButton (S)
+   (gui '(+Rid +Button) "" (or S `(_ "Cancel"))
+      '(stop> (: home)) ) )
+
+
+### Field Prefix Classes ###
+(class +Sync)
+
+(dm T @
+   (pass extra) )
+
+
+(class +Map +Sync)
+# map
+
+(dm T (Lst . @)
+   (=: map Lst)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra
+      (if
+         (seek
+            '((X) (= Val (cdar X)))
+            (: map) )
+         (caar @)
+         Val ) ) )
+
+(dm val> ()
+   (let V (extra)
+      (if (assoc V (: map))
+         (cdr @)
+         V ) ) )
+
+(dm cho> ()
+   (let H (pack (head (: sel) (chop (: str))))
+      (mapcan
+         '((X)
+            (when (pre? H (car X))
+               (cons (mkCho (car X) (cdr X))) ) )
+         (: map) ) ) )
+
+
+(class +Mac)
+# mac
+
+(dm T (Lst . @)
+   (pass extra) )
+
+
+(class +Macro +Sync +Mac)
+
+
+# F2-Choice
+(class +Cho)
+# cho
+
+(dm T (Foo . @)
+   (=: cho Foo)
+   (pass extra) )
+
+(dm cho> ()
+   (mapcar
+      '((L)  # ("key" T  setFocus (quote . Obj))
+         (cons
+            ((: cho) (car L) (eval (cadddr L)))
+            (cdr L) ) )
+      (extra) ) )
+
+
+(class +Uppc)
+
+(dm set> (Str)
+   (extra (uppc Str)) )
+
+
+# Field enable/disable
+(class +Able)
+
+(dm T (Exe . @)
+   (=: able Exe)
+   (put *Top 'able
+      (cons This (get *Top 'able)) )
+   (pass extra) )
+
+(dm cho> ()
+   (when (eval (: able))
+      (extra) ) )
+
+
+(class +Lock +Able)
+
+(dm T @
+   (pass super NIL) )
+
+
+# Able prefix
+(class +Skip)
+
+
+# Escape from Form lock
+(class +Rid)
+
+(dm upd> ()
+   (extra)
+   (and
+      (: home lock)
+      (memq This (: home able)) ) )
+
+
+# Field display
+(class +Font)
+# fnt siz
+
+#? "Helvetica" "SansSerif" "serif" "Monospaced"
+(dm T (Name Size . @)
+   (=: fnt Name)
+   (=: siz Size)
+   (pass extra) )
+
+(class +Mono +Font)
+
+(dm T @
+   (pass super "Monospaced" 12) )
+
+
+(class +Align +Mono)
+
+(dm set> (Val)
+   (extra (and Val (align (: dx) Val))) )
+
+
+(class +Limit +Sync)
+# lim
+
+(dm T (N . @)
+   (=: lim N)
+   (pass super) )
+
+(dm chk> ()
+   (or
+      (and (> (length (: str)) (: lim)) `(_ "Text too long"))
+      (extra) ) )
+
+
+(class +Color)
+# bCol fCol
+
+(dm T (B F . @)
+   (=: bCol B)
+   (=: fCol F)
+   (pass extra) )
+
+
+(class +Radio)
+# radio
+
+(dm T (Lst . @)
+   (=: radio Lst)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra Val)
+   (when Val
+      (mapc
+         '(("X")
+            (clr> (field "X")) )
+         (: radio) ) ) )
+
+
+(class +Relay)
+# relay
+
+(dm T (Lst . @)
+   (=: relay Lst)
+   (pass extra) )
+
+(dm relay> (Val)
+   (mapc
+      '(("X")
+         (if (atom "X")
+            (set> (field "X") Val)
+            (set> (field (car "X"))
+               (if (or (atom (cdr "X")) (lst? (cadr "X")))
+                  ((cdr "X") Val)
+                  (with Val (eval (cdr "X"))) ) ) ) )
+      (: relay) ) )
+
+(dm upd> ()
+   (extra)
+   (relay> This (val> This)) )
+
+(dm set> (Val)
+   (let Old (val> This)
+      (extra Val)
+      (let Val (val> This)
+         (unless (= Old Val)
+            (relay> This Val) ) ) ) )
+
+(dm end> ()
+   (extra)
+   (relay> This (val> This)) )
+
+
+(class +Hot)
+# hot
+
+(dm T (Exe . @)
+   (=: hot Exe)
+   (pass extra)
+   (hotField) )
+
+(dm act> ()
+   (eval (: hot)) )
+
+
+(class +Init)
+# init
+
+(dm T (Exe . @)
+   (=: init Exe)
+   (pass extra) )
+
+(dm init> ()
+   (eval (: init))
+   (extra) )
+
+
+(class +Start)
+# start
+
+(dm T (Exe . @)
+   (=: start Exe)
+   (pass extra) )
+
+(dm start> ()
+   (eval (: start))
+   (extra) )
+
+
+(class +Set)
+# set
+
+(dm T (Foo . @)
+   (=: set Foo)
+   (pass extra) )
+
+(dm set> (Val)
+   ((: set) Val) )
+
+
+(class +Clr)
+# clr
+
+(dm T (Exe . @)
+   (=: clr Exe)
+   (pass extra) )
+
+(dm clr> ()
+   (eval (: clr)) )
+
+
+(class +Fmt)
+# set val
+
+(dm T (Foo1 Foo2 . @)
+   (=: set Foo1)
+   (=: val Foo2)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra ((: set) Val)) )
+
+(dm val> ()
+   ((: val) (extra)) )
+
+
+(class +Upd)
+# upd
+
+(dm T (Exe . @)
+   (=: upd Exe)
+   (pass extra) )
+
+(dm upd> ()
+   (eval (: upd)) )
+
+
+(class +Var)
+# var
+
+(dm T (Var . @)
+   (=: var Var)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra (set (: var) Val)) )
+
+(dm upd> ()
+   (extra)
+   (set> This (val (: var))) )
+
+
+(class +Beg)
+# beg
+
+(dm T (Exe . @)
+   (=: beg Exe)
+   (pass extra) )
+
+(dm beg> ()
+   (eval (: beg))
+   (extra) )
+
+
+(class +Chg)
+# chg
+
+(dm T (Exe . @)
+   (=: chg Exe)
+   (pass extra) )
+
+(dm chg> ()
+   (let S (: str)
+      (extra)
+      (unless (= S (: str))
+         (eval (: chg)) ) ) )
+
+
+(class +Chk)
+# chk
+
+(dm T (Exe . @)
+   (=: chk Exe)
+   (pass extra) )
+
+(dm chk> ()
+   (eval (: chk)) )
+
+
+(class +End)
+# end
+
+(dm T (Exe . @)
+   (=: end Exe)
+   (pass extra) )
+
+(dm end> ()
+   (eval (: end)) )
+
+
+### Form Field Classes ###
+(class +field)
+# home lay ix + * ** lbl str ign arr able
+
+(dm T ()
+   (setq *Fld This)
+   (when (=T *PnlFld)
+      (setq *PnlFld This) )
+   (=: home *Top)
+   (and *LayRow (=: + T))
+   (and *LayPnl (=: * 1) (inc '*PnlCnt))
+   (link This) )
+
+(dm endPnl> (N)
+   (dec '*PnlCnt N)
+   (if (:: **)
+      (inc @ N)
+      (=: ** N) ) )
+
+(dm init> ()
+   (when (assoc (: ix) *Fld)
+      (=: str (cdr @))
+      (cond
+         ((: ign) T)
+         ((or (chk> This) (and (: arr) (chk> (: arr))))
+            (let Err @
+               (or
+                  (nil
+                     (alert "Check"
+                        (if (: lbl)
+                           (cons
+                              (pack "*** " @ " ***")
+                              (if (pair Err) Err (cons Err)) )
+                           Err ) ) ) ) ) )
+         (T
+            (end> This)
+            (and (: arr) (end> @))
+            T ) ) ) )
+
+(dm upd> ())
+(dm chk> ())
+(dm end> ())
+(dm cho> ())
+
+(dm str> (Str)
+   (=: str Str) )
+
+(dm set> (Val)
+   (str> This Val) )
+
+(dm clr> ()
+   (set> This) )
+
+(dm val> ())
+
+(dm able?> ()
+   (or
+      (not (memq This (: home able)))
+      (eval (: able)) ) )
+
+(dm scr> (N)
+   (scr> (: arr) N) )
+
+
+# Mark hot link field (blue foreground)
+(de hotField ()
+   )  #?
+
+# Get field
+(de field (X)
+   (if (sym? X)
+      (get (: home) X)
+      (get (: home fields) (+ X (: ix))) ) )
+
+# Get current chart data row
+(de curr ()
+   (pick
+      '((F D) (and (memq This F) D))
+      (: arr fields)
+      (nth (: arr data) (: arr ofs)) ) )
+
+
+(class +txt +field)
+
+(dm T (Str)
+   (=: str Str)
+   (pass super) )
+
+(dm show> ()
+   (prin (: str)) )
+
+
+(class +Button +field)
+# exe
+
+(dm T (Lbl Str Exe . @)
+   (=: lbl Lbl)
+   (=: str Str)
+   (=: exe Exe)
+   (=: ign T)
+   (pass super) )
+
+(dm show> ()
+   (and (: lbl) (prin @ "</TD><TD>"))
+   (prinl
+      "[<A HREF=\""
+      *SesId "@act?" (htFmt (: home app) (: ix)) "\""
+      (and *Frame " TARGET=\"MAIN\"")
+      ">" (: str) "</A>"
+      "]") )
+
+(dm act> ()
+   (eval (: exe)) )
+
+(dm set> (Val)
+   (=: str Val)
+   (super Val) )
+
+(dm val> ()
+   (: str) )
+
+
+(class +SetButton +Button)
+
+(dm act> ()
+   (when (super)
+      (let (Val @  Fld (get (: home fields) (+ 1 (: ix))))
+         (if (=T Val)
+            (clr> Fld)
+            (set> Fld Val) ) ) ) )
+
+
+(class +ChgButton +Button)
+# chg
+
+(dm T (Lbl Str Foo . @)
+   (=: chg Foo)
+   (pass super Lbl Str
+      '(let
+         (Fld (get (: home fields) (+ 1 (: ix)))
+            Val ((: chg) (val> Fld)) )
+         (when Val
+            (if (=T Val)
+               (clr> Fld)
+               (set> Fld Val) ) ) ) ) )
+
+
+(class +ClrButton +Button)
+# clr
+
+(dm T (Lbl Str Lst . @)
+   (=: clr Lst)
+   (pass super Lbl Str
+      '(prog
+         (mapc
+            '((X)
+               (if (atom X)
+                  (clr> (get (: home) X))
+                  (set> (get (: home) (car X)) (eval (cdr X))) ) )
+            (: clr) ) ) ) )
+
+
+(class +Checkbox +field)
+
+(dm T (Lbl . @)
+   (=: lbl Lbl)
+   (pass super) )
+
+(dm show> ()
+   (and (: lbl) (prin @ "</TD><TD>"))
+   (prinl
+      "[<A HREF=\"" *SesId (: home app) "&*Fld(" (: ix) ")="
+      (if (: str) " " "X")
+      "\">"
+      (if (: str) "X" " ")
+      "</A>]" ) )
+
+(dm set> (Val)
+   (super (=: str (bool Val))) )
+
+(dm val> ()
+   (bool (: str)) )
+
+
+(class +Label +field)
+
+(dm T (Lbl Str . @)
+   (=: lbl Lbl)
+   (=: str Str)
+   (=: ign T)
+   (pass super) )
+
+(dm show> ()
+   (and (: lbl) (prin @ "</TD><TD>"))
+   (prin (: str)) )
+
+
+(class +DrawField +field)
+
+
+(class +PictField +field)
+
+(dm show> ())
+
+
+(class +TextField +field)
+# dx dy
+
+# (lbl dx [dy])
+# (lbl lst)
+(dm T (Lbl . @)
+   (=: lbl Lbl)
+   (=: dx (next))
+   (pass super) )
+
+(dm show> ()
+   (and (: lbl) (prin @ "</TD><TD>"))
+   (<post> (: home app)
+      (prinl
+         "<INPUT TYPE=TEXT NAME=\"*Fld("
+         (: ix)
+         ")\" VALUE=\""
+         (: str)
+         "\" SIZE=" (: dx) ">" ) ) )
+
+(dm end> ()
+   (set> This (val> This)) )
+
+(dm set> (Val)
+   (str> This Val) )
+
+(dm val> ()
+   (: str) )
+
+
+# Matchcode Field
+(class +McField +Uppc +TextField)
+
+
+# Secure Transmission Field Prefix
+(class +Rsa)
+
+
+# Password Field
+(class +PwField +Rsa +TextField)
+
+(dm show> ()
+   (and (: lbl) (prin @ "</TD><TD>"))
+   (<post> (: home app)
+      (prinl
+         "<INPUT TYPE="
+         (if (match '("w" "3" "m" . @) *Agent) "TEXT" "PASSWORD")
+         " NAME=\"*Fld("
+         (: ix)
+         ")\" SIZE=" (: dx) ">" ) ) )
+
+
+# Symbol Fields
+(class +SymField +TextField)
+
+(dm val> ()
+   (let S (super)
+      (and (<> "-" S) (intern S)) ) )
+
+
+# Class Fields
+(class +ClsField +Map +TextField)
+# cls
+
+(dm T (Exe Lbl Lst)
+   (=: cls Exe)
+   (super Lst Lbl (mapcar car Lst)) )
+
+(dm upd> ()
+   (set> This (val (eval (: cls)))) )
+
+(dm set> (Val)
+   (when (eval (: cls))
+      (set @ Val) )
+   (super Val) )
+
+
+(class +DigField +Align +TextField)
+
+
+(class +NumField +DigField)
+
+(dm set> (Val)
+   (super (format Val)) )
+
+(dm val> ()
+   (format (super)) )
+
+
+(class +IntField +NumField)
+
+
+(class +FixField  +Align +TextField)
+# scl
+
+(dm T (N . @)
+   (=: scl N)
+   (pass super) )
+
+(dm set> (Val)
+   (super (format Val (: scl) *Sep0 *Sep3)) )
+
+(dm val> ()
+   (let (S (super)  L (chop S))
+      (unless (member *Sep0 L)
+         (setq S (pack S *Sep0)) )
+      (format S (: scl) *Sep0 *Sep3) ) )
+
+
+(class +DateField +TextField)
+
+(dm cho> ()
+   (let (D (or (val> This) (date))  I (- D 8))
+      (make
+         (do 15
+            (link
+               (mkCho
+                  (pack
+                     (datStr (inc 'I))
+                     " ("
+                     (day I)
+                     ")"
+                     (and (= D I) " <--") )
+                  I ) ) ) ) ) )
+
+(dm set> (Val)
+   (super (datStr Val)) )
+
+(dm val> ()
+   (expDat (super)) )
+
+(dm chk> ()
+   (and
+      (: str)
+      (not (val> This))
+      `(_ "Bad date format") ) )
+
+
+(class +TimeField +TextField)
+
+(dm cho> ()
+   (let Tim (time)
+      (list (mkCho (tim$ Tim (> (: dx) 6)) Tim)) ) )
+
+(dm set> (Val)
+   (super (tim$ Val (> (: dx) 6))) )
+
+(dm val> ()
+   ($tim (super)) )
+
+(dm chk> ()
+   (and
+      (: str)
+      (not (val> This))
+      `(_ "Bad time format") ) )
+
+
+### Field Arrays ###
+(class +array)
+# home fields
+
+(dm T ()
+   (=: home *Top)
+   (put *Top 'arrays
+      (conc (get *Top 'arrays) (cons This)) ) )
+
+(dm init> ())
+
+(dm upd> ())
+
+(dm chk> ())
+(dm end> ())
+
+(dm set> ())
+(dm val> ())
+(dm stat> ())
+
+(dm clr> ()
+   (set> This) )
+
+
+(class +Array +array)
+# put get
+
+# (.. ttl cols foo lst [put [get]])
+(dm T ("Ttl" "N" "foo" "Lst" "Put" "Get")
+   (super)
+   (txt "Ttl")
+   (=: put (or "Put" prog1))
+   (=: get (or "Get" prog1))
+   (mapc
+      '((F) (link F) (put F 'arr This))
+      (=: fields
+         (make
+            (while "Lst"
+               (let *LayRow T
+                  (do "N"
+                     ("foo" (pop '"Lst"))
+                     (NIL "Lst")
+                     (off *LayRow) ) ) ) ) ) ) )
+
+
+(class +chart +array)
+# rows cols put get ofs lock
+
+# (.. rows lst prg [put [get]])
+(dm T ("N" "Lst" "Prg" "Put" "Get")
+   (super)
+   (=: rows "N")
+   (apply txt "Lst")
+   (=: cols (length "Prg"))
+   (=: ofs 1)
+   (=: put (or "Put" prog1))
+   (=: get (or "Get" prog1))
+   (mapc
+      '((L)
+         (mapc
+            '((F)
+               (link F)
+               (put F 'arr This) )
+            L ) )
+      (=: fields
+         (make
+            (do "N"
+               (let *LayRow T
+                  (link
+                     (make
+                        (mapc
+                           '((L) (eval L) (off *LayRow))
+                           "Prg" ) ) ) ) ) ) ) )
+   (=: lock
+      (not
+         (find
+            '((F) (not (isa '+Lock F)))
+            (: fields 1) ) ) ) )
+
+
+(class +Chart +chart)
+# data clip
+
+(dm put> ()
+   (mapc
+      '((F D)
+         (mapc 'set> F ((: put) D)) )
+      (: fields)
+      (nth (: data) (: ofs)) )  )
+
+(dm get> ()
+   (unless (: lock)
+      (map
+         '((F D)
+            (set D
+               (trim
+                  ((: get)
+                     (mapcar '((F) (val> F)) (car F))
+                     (car D) ) ) ) )
+         (: fields)
+         (nth
+            (=: data
+               (need
+                  (- 1 (: ofs) (: rows))
+                  (: data) ) )
+            (: ofs) ) )
+      (=: data (trim (: data))) ) )
+
+(dm size> ()
+   (length (: data)) )
+
+(dm end> ()
+   (set> This (val> This)) )
+
+(dm set> (Lst)
+   (unless (= Lst (: data))
+      (let N (- (length Lst) (: rows) -1)
+         (when (> (: ofs) N)
+            (=: ofs (max 1 N)) ) )
+      (=: data (copy Lst)) )
+   (put> This) )
+
+(dm val> ()
+   (get> This)
+   (: data) )
+
+(dm stat> ()
+   (list
+      (cons 'ofs (: ofs))
+      (cons 'data (: data)) ) )
+
+
+(class +ListChart +Chart)
+
+(dm set> (Lst)
+   (super (mapcar list Lst)) )
+
+(dm val> ()
+   (mapcar car (super)) )
+
+
+### DB GUI ###
+(de upd Lst
+   (wipe Lst) )
+
+(de newUrl ("Typ" . @)
+   (prog1
+      (pass new! 'upd "Typ")
+      (url (url> @)) ) )
+
+(de <id> (Ttl . Lst)
+   (with *ID
+      (prin
+         "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>"
+         (and (: T) "[")
+         Ttl
+         " --" )
+      (while Lst
+         (prin " " (eval (pop 'Lst))) )
+      (prin
+         (and (: T) "]")
+         "</H3></TD><TD ALIGN=\"RIGHT\">" )
+      (navi)
+      (prinl "</TD></TR></TABLE>") ) )
+
+
+### Dialog Components ###
+(de hotButton (Str)
+   (gui '(+Able +Button)
+      '(or
+         (isa '+Hot (: home focus2))
+         (isa '+Obj (: home focus2))
+         (isa '+ObjView (: home focus2)) )
+      "" Str
+      '(act> (: home focus2)) ) )
+
+(de clrButton (Str)
+   (gui '(+Button) "" Str
+      '(prog (=: home rv T) (stop> (: home))) ) )
+
+(de stepButton (Var Cls Hook)
+   (let
+      (Key
+         (if (isa '+Key (get Cls Var))
+            (get *Top 'obj Var)
+            (cons (get *Top 'obj Var) (get *Top 'obj)) )
+         Q (init (tree Var Cls Hook) Key T)
+         U (and (step Q) (step Q) (url> @)) )
+      (when U
+         (gui '(+Rid +Button) "" `(_ "Next data record")
+            (list 'url U) ) ) ) )
+
+(de choButton (Exe)
+   (gui 'hot '(+Rid +Button) "" `(_ "Choose/Create") Exe) )
+
+(de cloneButton ()
+   (gui '(+Button) "" `(_ "New/Copy")
+      '(url (url> (clone!> (: home obj) 'upd))) ) )
+
+# Delete object in +ObjForm
+(de delButton (Able)
+   (gui '(+Able +Button)
+      (ifn Able
+         '(and (: home obj) (not (: home obj T)))
+         (list 'and '(: home obj) '(not (: home obj T)) Able) )
+      "" `(_ "Delete")
+      '(when (ask `(_ "Deletion") `(_ "Delete this data record?"))
+         (lose!> (: home obj) 'upd)
+         (and (: home obj) (url> @) (url @)) ) ) )
+
+(de closeButton ()
+   (quitButton `(_ "Close")) )
+
+(====)
+# Choose object for +ObjForm
+# (choDialog Ttl Rel [Hook] [(+Obj +TextField) [pre [post]]])
+(de choDialog ("Ttl" "Rel" . @)
+   (let
+      ("Hook" (and (get (meta (cdr "Rel") (car "Rel")) 'hook) (next))
+         "Fld" (or (next) '(+Obj +TextField))
+         "Pre" (next)
+         "Post" (next)
+         "Lst" (make
+            (link (cons '+Lock "Fld"))
+            (and "Pre" (link "Pre"))
+            (link "Rel")
+            (and "Hook" (link (lit "Hook")))
+            (and "Post" (link "Post"))
+            (link "" 40) ) )
+      (dialog (pack "Ttl" `(_ "-Choice")) NIL
+         (quote
+            (row
+               (apply gui
+                  (make
+                     (link "Fld")
+                     (and "Pre" (link "Pre"))
+                     (link "Rel")
+                     (and "Hook" (link (lit "Hook")))
+                     (and "Post" (link "Post"))
+                     (link "Ttl" 40) ) )
+               (gui '(+Button) "" `(_ "Create")
+                  '(with (: home fields 1)
+                     (if (get (meta (: objTyp) (: objVar)) 'hook)
+                        (newUrl (: objTyp) @ (eval (: objHook)))
+                        (newUrl (: objTyp)) ) ) ) )
+            (---- T)
+            (gui '(+IndexChart)
+               (cons (car "Rel") (cons (last "Rel") (lit "Hook")))
+               8 NIL '((apply gui "Lst")) ) ) ) ) )
+(====)
+
+
+### Object Linkage ###
+(class +ObjForm +Form)
+# typ obj
+
+(dm T (Typ Obj DX DY Prg)
+   (=: typ Typ)
+   (=: obj (extern Obj))  #? (=: obj Obj)
+   (super DX DY Prg) )
+
+(dm set> (Obj)
+   (=: obj Obj) )
+
+(dm val> ()
+   (: obj) )
+
+
+(class +/R)
+# erVar erObj
+
+(dm T (Lst . @)
+   (=: erVar (car Lst))
+   (=: erObj (cdr Lst))
+   (pass extra) )
+
+(dm upd> ()
+   (set> This (get (eval (: erObj)) (: erVar))) )
+
+
+(class +E/R +/R)
+
+(dm set> (Val)
+   (when (eval (: erObj))
+      (put!> @ 'upd (: erVar) Val)
+      (extra Val) ) )
+
+(dm chk> ()
+   (or
+      (extra)
+      (and
+         (eval (: erObj))
+         (mis> @ (: erVar) (val> This)) ) ) )
+
+
+(class +Blob/R +/R)
+
+(dm set> (Val)
+   (when (eval (: erObj))
+      (put!> @ 'upd (: erVar) (bool Val))
+      (extra
+         (and Val
+            (allow (blob (eval (: erObj)) (: erVar))) ) ) ) )
+
+
+(class +ClassField +Map +TextField)
+# erObj
+
+(dm T (Exe Lbl Lst)
+   (=: erObj Exe)
+   (super Lst Lbl (mapcar car Lst)) )
+
+(dm upd> ()
+   (set> This (val (eval (: erObj)))) )
+
+(dm set> (Val)
+   (when (eval (: erObj))
+      (set!> @ 'upd Val) )
+   (super Val) )
+
+
+# Blue Background Prefix
+(class +Bg)
+
+
+(class +Obj +Sync)
+# objVar objTyp objHook obj
+
+(de objQuery (C)
+   (let V (val> This T)
+      (cond
+         ((sym? V)
+            (goal
+               (query> This
+                  (pack (head (: sel) (chop V)) C) ) ) )
+         (C)
+         ((num? V)
+            (goal (query> This V)) ) ) ) )
+
+(dm T (Rel . @)
+   (=: objVar (car Rel))
+   (=: objTyp (cdr Rel))
+   (when (get (meta (: objTyp) (: objVar)) 'hook)
+      (=: objHook (next)) )
+   (pass super)
+   (hotField) )
+
+(dm show> ()
+   (cond
+      ((able?> This) (extra))
+      ((and (val> This) (url> @))
+         (<href> (: str) @) )
+      (T (do (: dx) (prin '.))) ) )
+
+(dm set> (Obj)
+   (extra
+      (get (=: obj Obj) (: objVar)) ) )
+
+(dm val> (Flg)
+   (let V (extra)
+      (cond
+         (Flg V)
+         ((= V (get (: obj) (: objVar)))
+            (: obj) )
+         (T
+            (=: obj
+               (if (: objHook)
+                  (db (: objVar) (last (: objTyp)) (eval @) V)
+                  (db (: objVar) (last (: objTyp)) V) ) ) ) ) ) )
+
+(dm cho> ()
+   (let Q (objQuery)
+      (mapcar
+         '((R) (mkCho (get R (: objVar)) R))
+         (make
+            (while
+               (and
+                  (prove Q)
+                  (let S (cdar @)
+                     (or
+                        (member S (made))
+                        (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
+
+(dm act> ()
+   (if (and (val> This) (url> @))
+      (url @)
+      (beep> (: home)) ) )
+
+(dm chk> ()
+   (or
+      (extra)
+      (and
+         (: str)
+         (not (val> This))
+         (<> "-" (: str))
+         `(_ "Data not found") ) ) )
+
+(dm query> (X)
+   (if (num? X)
+      (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
+         (make
+            (link 'db (: objVar) (last (: objTyp)))
+            (when (: objHook)
+               (link (eval @)) )
+            (link (cons X T) '@Obj) )
+         (list 'isa (last (: objTyp)) '@Obj) )
+      (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
+         (make
+            (link 'db (: objVar) (last (: objTyp)))
+            (when (: objHook)
+               (link (eval @)) )
+            (link X '@Obj) )
+         (list 'isa (last (: objTyp)) '@Obj)
+         (list 'head X '@Obj (: objVar)) ) ) )
+
+
+(class +ObjView +Lock)
+# disp obj
+
+(dm T (Exe . @)
+   (=: disp Exe)
+   (pass super)
+   (hotField) )
+
+(dm set> (Obj)
+   (let Exe (: disp)
+      (extra
+         (with (=: obj Obj) (eval Exe)) ) ) )
+
+(dm val> ()
+   (: obj) )
+
+(dm act> ()
+   (if (and (: obj) (url> @))
+      (url @)
+      (beep> (: home)) ) )
+
+
+# Index Tree Chart
+(class +IndexChart +chart)
+# tree beg end
+
+# (.. tree rows lst prg [put])
+(dm T ("Tree" "N" "Lst" "Prg" "Put")
+   (=: tree "Tree")
+   (super "N" "Lst" "Prg" (or "Put" cons)) )
+
+(dm put> ()
+   (let Node
+      (init
+         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree))))
+         (: beg) (: end) )
+      (do (- (: ofs) 1)
+         (step Node T) )
+      (mapc
+         '((F)
+            (mapc
+               '((F D) (set> F D))
+               F
+               ((: put) (step Node T)) ) )
+         (: fields) ) ) )
+
+(dm upd> ()
+   (put> This) )
+
+(dm get> ())
+
+(dm size> ()
+   (or
+      (car
+         (tree (car (: tree)) (cadr (: tree)) (eval (cddr (: tree)))) )
+      0 ) )
+
+(dm set> (Beg End)
+   (=: beg Beg)
+   (=: end End)
+   (put> This) )

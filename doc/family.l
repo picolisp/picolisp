@@ -1,7 +1,7 @@
-# 29jan03abu
+# 23apr03abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/gui.l" "lib/ps.l")
+(load "lib/ps.l")
 
 ### DB ###
 (class +Person +Entity)
@@ -107,7 +107,7 @@
    (app)
    (html (get (default *ID (seq *DB)) 'nm)
       (<head> "Family")
-      (new '(+ObjForm) '(+Person) *ID 800 450
+      (form '(+ObjForm) '(+Person) *ID 800 450
          (quote
             (row
                (gui '(+E/R +TextField) '(nm : home obj) "Name" 40)
@@ -263,4 +263,12 @@
 
 (de go ()
    (rollback)
-   (server 8080 "@person") )
+   (server 8080 "@start") )
+
+(de start ()
+   (load "lib/gui.l")
+   (person) )
+
+(de htm ()
+   (load "lib/htm.l")
+   (person) )

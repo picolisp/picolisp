@@ -1,4 +1,4 @@
-# 16feb03abu
+# 22apr03abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -29,9 +29,20 @@
             (and (ntt? S) (zap> S))
             (zap S) ) )
       (mark 0)
-      (unless (=0 N)
-         (commit)
-         N ) ) )
+      (commit)
+      (when *Blob
+         (use (@S @R F)
+            (let Pat (conc (chop *Blob) '(@S "." @R))
+               (in (list "find" *Blob "-type" "f")
+                  (whilst (setq F (line))
+                     (when (match Pat F)
+                        (unless
+                           (and
+                              (extern (pack (replace @S "/")))
+                              (get @ (intern (pack @R))) )
+                           (inc 'N)
+                           (call "rm" (pack F)) ) ) ) ) ) ) )
+      (and (n0 N) N) ) )
 
 (de markExt (S)
    (unless (mark S)
@@ -70,9 +81,9 @@
 (de _dbCheck (X)
    (when (and (pair X) (= `(char "+") (char (cdr X))) (not (mark (car X))))
       (mark (car X) T)
-      (when (= '(+ObjRoot) (val (car X)))  #! Legacy
-         (set (car X))
-         (commit) )
+      (when (= '(+ObjRoot) (val (car X)))    #! Legacy
+         (set (car X))                       #
+         (commit) )                          #
       (println '== (cdr X) (car X))
       (maps
          '((X)
@@ -99,73 +110,74 @@
       (wipe (car X)) ) )
 
 ### Index References ###
-(de dangling (Var Cls Hook)
+(de dangling (Var Cls Excl)
    (or
       (isa '+Index (get Cls Var))
       (find '((B) (isa '+Ref B)) (get Cls Var 'bag))
       (quit "No Index" (cons Var Cls)) )
-   (mapcan
-      '((Obj)
-         (and
-            (mapcan
-               '((X)
-                  (and
-                     (pair X)
-                     (get Obj (cdr X))
-                     (let V (pop 'X)
-                        (cond
-                           ((isa '+Joint V)
-                              (if (isa '+List V)
-                                 (unless
-                                    (find
-                                       '((Y)
-                                          (if (atom (setq Y (get Y (get V 'slot))))
-                                             (== Obj Y)
-                                             (memq Obj Y) ) )
-                                       (get Obj X) )
-                                    (list X) )
-                                 (when (get Obj X)
-                                    (let Y (get @ (get V 'slot))
-                                       (if (atom Y)
-                                          (unless (== Obj Y) (list X))
-                                          (unless (memq Obj Y) (list X)) ) ) ) ) )
-                           ((isa '+Key V)
+   (when
+      (mapcan
+         '((Obj) (dangle Obj Excl))
+         (collect Var Cls) )
+      (println 'dangling Var Cls @) ) )
+
+(de dangle (Obj Excl)
+   (and
+      (mapcan
+         '((X)
+            (let V (or (atom X) (pop 'X))
+               (unless (memq X Excl)
+                  (with (meta Obj X)
+                     (cond
+                        ((isa '+Joint This)
+                           (if (isa '+List This)
+                              (unless
+                                 (find
+                                    '((Y)
+                                       (if (atom (setq Y (get Y (: slot))))
+                                          (== Obj Y)
+                                          (memq Obj Y) ) )
+                                    V )
+                                 (list X) )
+                              (let Y (get V (: slot))
+                                 (if (atom Y)
+                                    (unless (== Obj Y) (list X))
+                                    (unless (memq Obj Y) (list X)) ) ) ) )
+                        ((isa '+Key This)
+                           (and
+                              (<> Obj
+                                 (fetch
+                                    (tree X (: cls) (get Obj (: hook)))
+                                    V ) )
+                              (list X) ) )
+                        ((isa '+Ref This)
+                           (if (isa '+List This)
+                              (and
+                                 (find
+                                    '((Y)
+                                       (fetch
+                                          (tree Y (: cls) (get Obj (: hook)))
+                                          (cons V Obj) ) )
+                                    V )
+                                 (list X) )
                               (and
                                  (<> Obj
                                     (fetch
-                                       (tree X Cls (get Obj (get V 'hook)))
-                                       (get Obj X) ) )
-                                 (list X) ) )
-                           ((isa '+Ref V)
-                              (if (isa '+List V)
-                                 (and
-                                    (find
-                                       '((X)
-                                          (fetch
-                                             (tree X Cls (get Obj (get V 'hook)))
-                                             (cons (get Obj X) Obj) ) )
-                                       (get Obj X) )
-                                    (list X) )
-                                 (and
-                                    (<> Obj
-                                       (fetch
-                                          (tree X Cls (get Obj (get V 'hook)))
-                                          (cons (get Obj X) Obj) ) )
-                                    (list X) ) ) )
-                           ((find '((B) (isa '+Ref B)) (get V 'bag))
-                              (with @
-                                 (let N (index This (get V 'bag))
-                                    (when
-                                       (find
-                                          '((L)
-                                             (and
-                                                (get L N)
-                                                (<> Obj
-                                                   (fetch
-                                                      (tree (: var) (: cls) (: hook))
-                                                      (cons (get L N) Obj) ) ) ) )
-                                          (get Obj X) )
-                                       (list X) ) ) ) ) ) ) ) )
-               (getl Cls) )
-            (list (cons Obj @)) ) )
-      (collect Var Cls Hook) ) )
+                                       (tree X (: cls) (get Obj (: hook)))
+                                       (cons V Obj) ) )
+                                 (list X) ) ) )
+                        ((find '((B) (isa '+Ref B)) (: bag))
+                           (let (R @  N (index R (: bag)))
+                              (when
+                                 (find
+                                    '((L)
+                                       (and
+                                          (get L N)
+                                          (<> Obj
+                                             (fetch
+                                                (tree (get R 'var) (get R 'cls) (get R 'hook))
+                                                (cons (get L N) Obj) ) ) ) )
+                                    V )
+                                 (list X) ) ) ) ) ) ) ) )
+         (getl Obj) )
+      (list (cons Obj @)) ) )

@@ -1,4 +1,4 @@
-/* 18feb03abu
+/* 21apr03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -36,9 +36,8 @@ typedef enum {NO,YES} bool;
 typedef struct cell {            // Pico primary data type
    struct cell *car;
    struct cell *cdr;
-} cell;
+} cell, *any;
 
-typedef cell *any;
 typedef any (*fun)(any);
 
 typedef struct heap {
@@ -104,10 +103,11 @@ typedef struct catchFrame {
 
 /*** Macros ***/
 #define Free(p)         ((p)->cdr=Avail, Avail=(p))
+#define cellPtr(x)      ((any)(num(x) & ~7))
 
 /* Number access */
 #define num(x)          ((word)(x))
-#define cellNum(x)      ((any)(num(x)+2))
+#define numPtr(x)       ((any)(num(x)+2))
 #define numCell(n)      ((any)(num(n)-2))
 #define box(n)          (consNum(n,Nil))
 #define unDig(x)        num(car(numCell(x)))
@@ -117,8 +117,7 @@ typedef struct catchFrame {
 #define neg(x)          (unDig(x) ^= 1)
 
 /* Symbol access */
-#define cellSym(x)      ((any)(num(x)+4))
-#define cellPtr(x)      ((any)(num(x) & ~7))
+#define symPtr(x)       ((any)(num(x)+4))
 #define val(x)          (cellPtr(x)->car)
 #define tail(x)         (cellPtr(x)->cdr)
 #define extSym(s)       ((any)(num(s)|2))
@@ -172,7 +171,7 @@ typedef struct catchFrame {
 #define NeedLst(ex,x)   if (!isCell(x) && !isNil(x)) lstError(ex,x)
 #define NeedVar(ex,x)   if (isNum(x)) varError(ex,x)
 #define CheckNil(ex,x)  if (isNil(x)) protError(ex,x)
-#define CheckVar(ex,x)  if (x>=Nil && x<=T) protError(ex,x)
+#define CheckVar(ex,x)  if ((x)>=Nil && (x)<=T) protError(ex,x)
 
 /* External symbol access */
 #define Fetch(ex,x)     if (isExt(x)) db(ex,x,1)
@@ -196,7 +195,7 @@ extern any TheKey, TheCls;
 extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Bye;
+extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Adr, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -395,6 +394,8 @@ any doHead(any);
 any doHeap(any);
 any doHear(any);
 any doHide(any);
+any doHost(any);
+any doIdx(any);
 any doIf(any);
 any doIfn(any);
 any doIn(any);
@@ -472,7 +473,6 @@ any doPair(any);
 any doPass(any);
 any doPatQ(any);
 any doPeek(any);
-any doPeer(any);
 any doPick(any);
 any doPool(any);
 any doPop(any);
@@ -533,6 +533,7 @@ any doSum(any);
 any doSuper(any);
 any doSymQ(any);
 any doSync(any);
+any doSys(any);
 any doT(any);
 any doTail(any);
 any doTell(any);
@@ -589,7 +590,7 @@ static inline any memq(any x, any y) {
    return x == y? y : Nil;
 }
 
-static inline int idx(any x, any y) {
+static inline int indx(any x, any y) {
    int n;
 
    for (n = 1;  isCell(y);  ++n, y = cdr(y))

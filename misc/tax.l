@@ -1,4 +1,4 @@
-# 01mar03abu
+# 10apr03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -8,7 +8,7 @@
 (de *USt 0.0 7.0 16.0)
 
 (de *Kategorien
-   Betriebsausgaben Abschreibungen Sonderausgaben
+   Betriebsausgaben Sonderausgaben
    Betriebseinnahmen Privateinnahmen Leerbuchungen )
 
 
@@ -40,7 +40,6 @@
 (rel nm     (+Key +String))                     # Name
 (rel kat    (+Ref +Symbol))                     # Kategorie
 (rel pr     (+Number))                          # Anteil-% (default 100)
-(rel afa    (+Number))                          # AFA Dauer
 
 (dm url> ()
    (pack "@konto?" This) )
@@ -48,10 +47,13 @@
 
 (class +Pos +AD +Entity)
 (rel dat    (+Ref +Date))                       # Datum
+(rel kto    (+Need +Ref +Link) NIL (+Kto))      # Konto
 (rel val    (+Ref +Number) NIL 2)               # Wert (brutto)
 (rel ust    (+Number) 2)                        # USt
 (rel txt    (+Sn +Idx +String))                 # Text
-(rel kto    (+Need +Ref +Link) NIL (+Kto))      # Konto
+(rel afa    (+Ref +Number))                     # AFA Dauer
+(rel aus    (+Number))                          # Ausbuchungs-Jahr
+(rel info   (+String))                          # Info-Text
 
 (dm url> ()
    (pack "@position?" This) )
@@ -75,6 +77,20 @@
       (: ust)
       (or (: kto pr) 100)
       100 T ) )
+
+(dm afa> (Y)
+   (let V (- (net> This))
+      (if (=0 (: afa))
+         (cons V 0)
+         (let
+            (D (date (: dat))
+               N (/ V (: afa))
+               A (if (> (cadr D) 6) (/ N 2) N) )
+            (while (< (car D) Y)
+               (dec 'V A)
+               (setq A (min N (- V 100)))
+               (inc D) )
+            (cons V A) ) ) ) )
 
 
 (class +UStField +FixField)
@@ -141,10 +157,11 @@
          (quote
             (row
                (gui '(+E/R +TextField) '(nm : home obj) "Bezeichnung" 30)
-               (gui '(+E/R +SymField) '(kat : home obj) "Kategorie" *Kategorien) )
+               (stepButton 'nm '+Kto) )
             (----)
-            (gui '(+E/R +NumField) '(pr : home obj) "Anteil [%]" 3)
-            (gui '(+E/R +NumField) '(afa : home obj) "AFA Dauer" 3)
+            (gui '(+E/R +SymField) '(kat : home obj) "Kategorie" *Kategorien)
+            (----)
+               (gui '(+E/R +NumField) '(pr : home obj) "Anteil [%]" 3)
             (----)
             (row
                (choButton '(choDialog "Konto" '(nm +Kto)))
@@ -155,23 +172,29 @@
    (html "Position"
       (<head> "Position")
       <hr>
-      (new '(+ObjForm) '(+Pos) Pos 800 250
+      (new '(+ObjForm) '(+Pos) Pos 800 400
          (quote
-            (gui '(+E/R +DateField)
-               '(dat : home obj)
-               "Datum" 10 )
+            (row
+               (gui '(+E/R +DateField)
+                  '(dat : home obj)
+                  "Datum" 10 )
+               (stepButton 'dat '+Pos) )
+            (gui '(+E/R +Obj +TextField)
+               '(kto : home obj)
+               '(nm +Kto)
+               "Konto" 20 )
+            (----)
+            (gui '(+E/R +TextField) '(txt : home obj) "Text" 60)
+            (----)
+            (row
+               (gui '(+E/R +NumField) '(afa : home obj) "AFA" 3)
+               (gui '(+E/R +NumField) '(aus : home obj) "ausgebucht" 4) )
             (----)
             (row
                (gui '(+E/R +NegRed +FixField) '(val : home obj) 2 "Wert" 12)
                (gui 'ust '(+E/R +NegRed +UStField) '(ust : home obj) 2 "USt" 11) )
             (----)
-            (gui '(+E/R +TextField) '(txt : home obj) "Text" 60)
-            (----)
-            (row
-               (gui '(+E/R +Obj +TextField)
-                  '(kto : home obj)
-                  '(nm +Kto)
-                  "Konto" 20 ) )
+            (gui '(+E/R +TextField) '(info : home obj) "Info" 60 8)
             (----)
             (row
                (delButton)
@@ -326,13 +349,13 @@
          '((Pos)
             (with Pos
                (when (== "Sym" (: kto kat))
-                  (let (B (val> This)  N (net> This)  U (ust> This))
+                  (let (B (val> This)  N (if (: afa) 0 (net> This))  U (ust> This))
                      (inc 'SN N)
                      (inc 'SU U)
                      (record
                         (href This (datSym (: dat)))
                         (money B)
-                        (money N)
+                        (if (: afa) "+AFA+" (money N))
                         (money U)
                         (if (and (: kto pr) (<> @ 100))
                            (pack (: kto nm) " (" (: kto pr) "%)")
@@ -426,7 +449,7 @@
 # Gewinn/Verlust-Rechnung
 (de gewinn (Y)
    (let
-      (Ums 0  USt 0  Frei 0  Aus 0  VSt 0
+      (Ums 0  USt 0  Frei 0  Aus 0  VSt 0  Afa 0
          Lst (collect 'dat '+Pos (date Y 1 1) (date Y 12 31)) )
       (html "Gewinnermittlung"
          (report (pack "GV-" Y) (pack "Gewinn/Verlust " Y))
@@ -447,6 +470,35 @@
                   (inc 'VSt U) )
                Lst ) )
          <p>
+         (<table> NIL "Anlagevermögen"
+            (quote
+               (- "Datum")
+               (+ "Kauf")
+               (- "Text")
+               (+ "AFA")
+               (+ "Stand")
+               (+ "Abschreibung") )
+            (mapc
+               '((P)
+                  (with P
+                     (unless (and (: aus) (>= @ Y))
+                        (let A (afa> P Y)
+                           (dec 'Afa (cdr A))
+                           (record
+                              (href This (datSym (: dat)))
+                              (money (- (net> This)))
+                              (if (and (: kto pr) (<> @ 100))
+                                 (pack (: txt) " (" (: kto pr) "%)")
+                                 (: txt) )
+                              (: afa)
+                              (money (car A))
+                              (money (cdr A)) ) ) ) ) )
+               (sortBy
+                  '((P) (get P 'dat))
+                  (collect 'afa '+Pos) ) )
+            (<row> NIL NIL NIL NIL NIL '<hr>)
+            (record NIL NIL NIL NIL NIL (money Afa)) )
+         <p>
          (<table> NIL "Betriebsseinnahmen" '((-) (+))
             (<row> "Steuerpflichtige Umsätze (netto)" (money Ums))
             (<row> "Umsatzsteuer" (money USt))
@@ -456,11 +508,91 @@
          <p>
          (<table> NIL "Betriebsausgaben" '((-) (+))
             (<row> "Ausgaben (netto)" (money Aus))
+            (<row> "Abschreibungen" (money Afa))
             (<row> "Vorsteuer" (money VSt))
             (<row> '<hr> '-)
-            (<row> NIL (money (+ Aus VSt))) )
+            (<row> NIL (money (+ Aus Afa VSt))) )
          <p>
-         (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus VSt)) "***") ) ) )
+         (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus Afa VSt)) "***")
+         <p>
+         (let (U 0  YY (pad 2 (% Y 100)))
+            (<table> NIL "Umsatzsteuer-Vorauszahlungen"
+               '((- "Datum") (+ "USt") (- "Text"))
+               (mapc
+                  '((Mon)
+                     (with (db 'txt '+Pos (pack Mon YY) 'kto (db 'nm '+Kto "Umsatzsteuer"))
+                        (inc 'U (: val))
+                        (record
+                           (href This (datSym (: dat)))
+                           (money (: val))
+                           (: txt) ) ) )
+                  '("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec") )
+               (<row> NIL '<hr>)
+               (record NIL (money U)) )
+            <p>
+            (<br> "Umsatzsteuer + Vorsteuer:" (money (+ USt VSt)))
+            (<br> "*** noch zu entrichten:" (money (+ USt VSt U)) "***") )
+         <p>
+         (<table> NIL "Sonderausgaben" '((-) (+))
+            (<row> "Krankenversicherung"
+               (money
+                  (sum
+                     '((P)
+                        (with P
+                           (and (= "Krankenversicherung" (: txt)) (: val)) ) )
+                     Lst ) ) )
+            (<row> "Unfallversicherung"
+               (money
+                  (sum
+                     '((P)
+                        (with P
+                           (and (= "Unfallversicherung" (: txt)) (: val)) ) )
+                     Lst ) ) )
+            (<row> "Lebensversicherung"
+               (money
+                  (sum
+                     '((P)
+                        (with P
+                           (and (= "Lebensversicherung" (: txt)) (: val)) ) )
+                     Lst ) ) )
+            (<row> "Privathaftpflicht"
+               (money
+                  (sum
+                     '((P)
+                        (with P
+                           (and (= "Privathaftpflicht" (: txt)) (: val)) ) )
+                     Lst ) ) ) )
+         <p>
+         (let S 0
+            (<table> NIL "Spenden"
+               '((- "Datum") (- "Text") (+ "Betrag"))
+               (mapc
+                  '((P)
+                     (with P
+                        (when (= "Spenden" (: kto nm))
+                           (inc 'S (: val))
+                           (record
+                              (href This (datSym (: dat)))
+                              (: txt)
+                              (money (: val)) ) ) ) )
+                  Lst )
+               (<row> NIL NIL '<hr>)
+               (record NIL NIL (money S)) ) )
+         (let S 0
+            (<table> NIL "Eigenanteil Gesundheitskosten"
+               '((- "Datum") (- "Text") (+ "Betrag"))
+               (mapc
+                  '((P)
+                     (with P
+                        (when (= "Gesundheitskosten" (: kto nm))
+                           (inc 'S (: val))
+                           (record
+                              (href This (datSym (: dat)))
+                              (: txt)
+                              (money (: val)) ) ) ) )
+                  Lst )
+               (<row> NIL NIL '<hr>)
+               (record NIL NIL (money S)) ) ) ) ) )
 
 
 (de main ()
@@ -482,9 +614,8 @@
 (de chk ()
    (and (dbck) (quit 'dbck @))
    (dbCheck)
-   (or
-      (dangling 'nm '+Kto)
-      (dangling 'kat '+Kto)
-      (dangling 'dat '+Pos)
-      (dangling 'val '+Pos)
-      (dangling 'txt '+Pos) ) )
+   (dangling 'nm '+Kto)
+   (dangling 'kat '+Kto)
+   (dangling 'dat '+Pos)
+   (dangling 'val '+Pos)
+   (dangling 'txt '+Pos) )

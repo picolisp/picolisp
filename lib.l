@@ -1,4 +1,4 @@
-# 23jan03abu
+# 20apr03abu
 # (c) Software Lab. Alexander Burger
 
 (de task ("Key" . "Prg")
@@ -75,7 +75,9 @@
 (de msg (X . @)
    (out NIL
       (print X)
-      (prinl (rest)) ) )
+      (while (args)
+         (prin (next)) )
+      (prinl) ) )
 
 ### List ###
 (de ?push ("Var" "X")
@@ -100,17 +102,10 @@
 (de diff (Lst1 Lst2)
    (filter '((X) (not (member X Lst2))) Lst1) )
 
-(de union @
-   (make
-      (while (args)
-         (mapc
-            '((X) (or (member X (made)) (link X)))
-            (next) ) ) ) )
-
 (de uniq (Lst)
-   (make
-      (mapc
-         '((X) (or (member X (made)) (link X)))
+   (let R NIL
+      (filter
+         '((X) (not (idx 'R X T)))
          Lst ) ) )
 
 (de group (Lst)
@@ -187,10 +182,15 @@
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless whilst while until do case for with catch
-   ! quote setq let use =: in out new )
+   ! quote setq default let use =: in out new )
 
-(de pretty (X N)
+(de *PP1 let)
+(de *PP2 setq default)
+
+(de pretty (X N . @)
    (space (default N 0))
+   (while (args)
+      (printsp (next)) )
    (if (or (atom X) (<= (size X) 12))
       (print X)
       (while (== 'quote (car X))
@@ -198,14 +198,27 @@
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when
-            (and
-               (memq (print (pop 'X)) *PP)
-               (or
-                  (atom (car X))
-                  (<= (size (car X)) 12) ) )
-            (space)
-            (print (pop 'X)) )
+         (when (memq (print (pop 'X)) *PP)
+            (cond
+               ((memq (car Z) *PP1)
+                  (if (pair (car X))
+                     (when (<= (size (car X)) 12)
+                        (space)
+                        (print (pop 'X)) )
+                     (space)
+                     (print (pop 'X))
+                     (when (or (atom (car X)) (<= (size (car X)) 12))
+                        (space)
+                        (print (pop 'X)) ) ) )
+               ((memq (car Z) *PP2)
+                  (inc 'N 3)
+                  (loop
+                     (prinl)
+                     (pretty (cadr X) N (car X))
+                     (NIL (setq X (cddr X))) ) )
+               ((or (atom (car X)) (<= (size (car X)) 12))
+                  (space)
+                  (print (pop 'X)) ) ) )
          (loop
             (NIL X)
             (T (== Z X) (prin " ."))
@@ -220,31 +233,28 @@
       (when (pair "X")
          (setq "C" (cdr "X")) )
       (prin "(")
-      (print
-         (if "C"
-            'dm
-            (if (atom (val "X")) 'setq 'de) ) )
-      (space)
+      (printsp (if "C" 'dm 'de))
       (prog1
-         (print "X")
-         (space)
+         (printsp "X")
          (setq "X"
             (if "C"
                (method (if (pair "X") (car "X") "X") "C")
                (val "X") ) )
-         (if (atom "X")
-            (print
-               (if (or (not "X") (num? "X"))
-                  "X"
-                  (cons 'quote "X") ) )
-            (print (pop '"X"))
-            (while (pair "X")
-               (prinl)
-               (pretty (pop '"X") 3) )
-            (when "X"
-               (prin " . ")
-               (print "X") )
-            (space) )
+         (cond
+            ((atom "X") (print '. "X"))
+            ((atom (cdr "X"))
+               (if (cdr "X")
+                  (print (car "X") '. @)
+                  (print (car "X")) ) )
+            (T
+               (print (pop '"X"))
+               (while (pair "X")
+                  (prinl)
+                  (pretty (pop '"X") 3) )
+               (when "X"
+                  (prin " . ")
+                  (print "X") )
+               (space) ) )
          (prinl ")") ) ) )
 
 (de show ("X" . @)

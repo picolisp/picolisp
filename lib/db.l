@@ -1,4 +1,4 @@
-# 15feb03abu
+# 22apr03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -338,16 +338,11 @@
 # (+Blob)
 (class +Blob +Relation)
 
-(dm put> (Obj Old New)
-   (cond
-      (Old
-         (call "rm" "-f" (blob Obj (: var))) )
-      (New
-         (call "mkdir" "-p" (dirname (blob Obj (: var)))) ) )
-   (super Obj Old New) )
+(dm rel> (Obj Old New)
+   (and New (call "mkdir" "-p" (dirname (blob Obj (: var))))) )
 
 (dm zap> (Obj Val)
-   (put> This Obj T NIL) )
+   (and Val (call "rm" "-f" (blob Obj (: var)))) )
 
 (de blob (Obj Var)
    (pack *Blob (glue "/" (chop Obj)) "." Var) )
@@ -559,13 +554,8 @@
 (dm zap> ()
    (mapc
       '((X)
-         (if (atom X)
-            (and
-               (meta This X)
-               (zap> @ This T) )
-            (and
-               (meta This (cdr X))
-               (zap> @ This (car X)) ) ) )
+         (let V (or (atom X) (pop 'X))
+            (and (meta This X) (zap> @ This V)) ) )
       (getl This) ) )
 
 (dm dlg> ())

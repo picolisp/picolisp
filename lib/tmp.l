@@ -1,9 +1,8 @@
-# 25jan03abu
+# 01apr03abu
 # (c) Software Lab. Alexander Burger
 
-(queue '*Bye
-   '(when *Tmp
-      (call "rm" "-rf" *Tmp) ) )
+(?push '*Bye
+   '(and *Tmp (call "rm" "-rf" *Tmp)) )
 
 (de tmp @
    (unless *Tmp

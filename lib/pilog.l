@@ -1,4 +1,4 @@
-# 25feb03abu
+# 05apr03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -74,10 +74,10 @@
             (link @) ) ) ) )
 
 (de query ("Q" "Dbg")
-   (let "R" (prove "Q" "Dbg")
+   (use "R"
       (loop
-         (NIL "R")
-         (T (=T "R") T)
+         (NIL (prove "Q" "Dbg"))
+         (T (=T (setq "R" @)) T)
          (mapc
             '((X)
                (space)
@@ -85,8 +85,7 @@
                (print '=)
                (print (cdr X)) )
             "R" )
-         (T (line))
-         (setq "R" (prove "Q" "Dbg")) ) ) )
+         (T (line)) ) ) )
 
 (de ? "CL"
    (let "L"
@@ -103,6 +102,9 @@
 
 (be not @P (1 -> @P) T (fail))
 (be not @P)
+
+(be call (@P . @L)
+   (2 cons (cons (-> @P) (-> @L))) )
 
 (be or @L (@C box (-> @L)) (_or @C))
 (be _or (@C) (3 pop (-> @C)))
@@ -130,6 +132,9 @@
    (delete @X @L @D)
    (permute @D @Y) )
 
+(be uniq (@B @X)
+   (@ not (idx (-> @B) (-> @X) T)) )
+
 (be asserta (@C) (@ asserta (-> @C)))
 (be assertz (@C) (@ assertz (-> @C)))
 
@@ -139,9 +144,6 @@
 
 
 ### DB ###
-(be isa (@Typ @Obj) (@ isa (-> @Typ) (-> @Obj)))
-(be isa (@Typ @Obj) (@Typ val (-> @Obj)))
-
 (de initQuery (Var Cls Tree Val)
    (cond
       ((pair Val)
@@ -224,6 +226,14 @@
 (repeat)
 
 
+(be isa (@Typ . @L)
+   (@ or
+      (not (-> @Typ))
+      (let (L (-> @L)  X (pop 'L))
+         (while L
+            (setq X (get X (pop 'L))) )
+         (isa (-> @Typ) X) ) ) )
+
 (be same (@V . @L)
    (@ let V (-> @V)
       (or
@@ -246,13 +256,12 @@
          (find '((Y) (= V Y)) X) ) ) )
 
 (be bool (@F . @L)
-   (@ let F (-> @F)
-      (or
-         (not F)
-         (let (L (-> @L)  X (pop 'L))
-            (while L
-               (setq X (get X (pop 'L))) )
-            X ) ) ) )
+   (@ or
+      (not (-> @F))
+      (let (L (-> @L)  X (pop 'L))
+         (while L
+            (setq X (get X (pop 'L))) )
+         X ) ) )
 
 (be range (@N . @L)
    (@ let N (-> @N)
@@ -409,7 +418,6 @@
                ("select" (car L) T) ) )
          (cons NIL (cons L L)) ) )
    (_gen "@Obj")
-   (@ not (memq "*R" (car (val (-> "@C")))))
    (_sel) )
 
 (be _gen (@Obj)
@@ -423,12 +431,65 @@
 (be _sel ()
    (2 val (-> "@P" 2))
    (@ let C (val (-> "@C" 2))
-      (push C (-> "@Obj" 2))
-      (rot (cddr C) (offset (cadr C) (cddr C)))
-      (set (cdr C) (cddr C)) )
+      (unless (idx C "*R" T)
+         (rot (cddr C) (offset (cadr C) (cddr C)))
+         (set (cdr C) (cddr C)) ) )
    T )
 
 (be _sel ()
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
+
+# (select [var ..] cls [var val ..])
+(de select Lst
+   (let
+      (Vars
+         (make
+            (until (or (atom Lst) (isa '+Entity (car Lst)))
+               (link (pop 'Lst)) ) )
+         Cls (pop 'Lst) )
+      (default Lst
+         (cons
+            (or
+               (car Vars)
+               (cdr (maxi caar (getl (get *DB Cls)))) ) ) )
+      (let Q
+         (goal
+            (cons
+               (make
+                  (link
+                     'select
+                     '(@Obj)
+                     (make
+                        (for (L Lst L)
+                           (link
+                              (list
+                                 (pop 'L)
+                                 Cls
+                                 (if L (pop 'L) '(NIL . T)) ) ) ) ) )
+                  (while Lst
+                     (let (Var (pop 'Lst)  Val (if Lst (pop 'Lst) '(NIL . T)))
+                        (link
+                           (list
+                              (cond
+                                 ((pair Val) 'range)
+                                 ((or (num? Val) (ext? Val)) 'same)
+                                 ((=T Val) 'bool)
+                                 ((isa '+Sn (get Cls Var)) 'tolr)
+                                 (T 'head) )
+                              Val '@Obj Var ) ) ) ) ) ) )
+         (use Obj
+            (loop
+               (NIL (setq Obj (cdar (prove Q))))
+               (ifn Vars
+                  (show Obj)
+                  (mapc
+                     '((Var)
+                        (printsp
+                           (if (sym? Var)
+                              (get Obj Var)
+                              (apply get Var Obj) ) ) )
+                     Vars ) )
+                  (print Obj)
+               (T (line)) ) ) ) ) )

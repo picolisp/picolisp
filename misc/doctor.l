@@ -1,4 +1,4 @@
-# 27mar00abu
+# 28dec02abu
 # (c) Software Lab. Alexander Burger
 
 (de doctor ()
@@ -27,6 +27,6 @@
                   (println '(I am sorry our time is up))
                   NIL ) ) ) ) ) )
 
-(put 'hell T)
-(put 'shit T)
-(put 'fuck T)
+(put 'hell 'bad T)
+(put 'shit 'bad T)
+(put 'fuck 'bad T)

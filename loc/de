@@ -36,5 +36,12 @@
 "Permission denied" "Keine Berechtigung"
 "Password" "Passwort"
 "' logged in" "' ist angemeldet"
-"Role" "Rollen"
+"Role" "Rolle"
 "User" "Benutzer"
+
+# lib/user.l
+"Name" "Name"
+"Password" "Passwort"
+
+# lib/role.l
+"Permissions" "Berechtigungen"

@@ -1,4 +1,4 @@
-/* 27oct02abu
+/* 08jan03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -886,7 +886,8 @@ any doThrow(any ex) {
    err(ex, tag, "Tag not found");
 }
 
-static cell BrkKey, BrkAt;
+static cell BrkAt;
+static bindFrame BrkKey;
 
 void brkLoad(any x) {
    cell c1;
@@ -894,14 +895,14 @@ void brkLoad(any x) {
 
    if (!isNil(val(Dbg))) {
       Push(c1, val(Up)),  val(Up) = x;
-      Push(BrkKey, val(Key)),  val(Key) = Nil;
       Push(BrkAt, val(At));
+      Bind(Key,BrkKey),  val(Key) = Nil;
       oSave = OutFile,  OutFile = stdout;
       print(x), crlf();
       load(NULL, '!', Nil);
       OutFile = oSave;
+      Unbind(BrkKey);
       val(At) = data(BrkAt);
-      val(Key) = data(BrkKey);
       val(Up) = Pop(c1);
    }
 }
@@ -915,18 +916,21 @@ any doBreak(any ex) {
 // (e . prg) -> any
 any doE(any ex) {
    any x;
-   cell c1, key, at;
+   cell c1, at, key;
 
    if (!data(BrkAt))
       err(ex, NULL, "No Break");
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
-   Push(key, val(Key)),  val(Key) = data(BrkKey);
    Push(at, val(At)),  val(At) = data(BrkAt);
-   Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
+   Push(key, val(Key)),  val(Key) = BrkKey.bnd[0].val;
+   if (Env.inFiles && Env.inFiles->link)
+      Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
    x = isCell(cdr(ex))? run(cdr(ex)) : EVAL(val(Up));
-   Env.inFiles->next = Chr,  Chr = 0,  InFile = stdin;
-   val(At) = data(at);
+   if (Env.inFiles && Env.inFiles->link)
+      Env.inFiles->next = Chr,  Chr = 0;
+   InFile = stdin;
    val(Key) = data(key);
+   val(At) = data(at);
    val(Dbg) = Pop(c1);
    return x;
 }

@@ -1,4 +1,4 @@
-# 18dec02abu
+# 08jan03abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -201,6 +201,7 @@
          (getd "X") ) )
    (and
       (pair "X")
+      (pair (cadr "X"))
       (== '$ (caadr "X")) ) )
 
 # Convert ((X Y) A B) --> ((X Y) ($ foo (X Y) A B))
@@ -210,16 +211,12 @@
          (setq  "N" (cdr "X")  "X" (car "X")) )
       (if (and "N" (sym? "N"))
          (unless (traced? "X" "N")
-            (ifn (method "X" "N")
-               (quit "Can't trace" "X") )
-            (con
-               (method "X" "N")
-               (list
+            (or (method "X" "N") (quit "Can't trace" "X"))
+            (con @
+               (cons
                   (conc
-                     (list '$ (cons "X" "N"))
-                     (cons
-                        (car (method "X" "N"))
-                        (cdr (method "X" "N")) ) ) ) ) )
+                     (list '$ (cons "X" "N") (car @))
+                     (cdr @) ) ) ) )
          (unless (traced? "X")
             (if (sym? (getd "X"))
                (quit "Can't trace" "X") )

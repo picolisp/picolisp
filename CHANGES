@@ -1,3 +1,8 @@
+* 17jan03 picoLisp-2.0.2
+   The example files for the tutorial were in the wrong directory
+   Bind '*Key' in debug breakpoint
+   Localization bug in "misc/tax.l"
+
 * 27dec02 picoLisp-2.0.1
    Default locale 'NIL'
    Pilog documentation

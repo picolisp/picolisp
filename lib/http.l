@@ -956,7 +956,7 @@
 (dm F1> ()
    (if help
       (help This)
-      (url "lib/help.l") ) )
+      (url *Help) ) )
 
 # Choice
 (dm F2> ()

@@ -82,7 +82,7 @@
 
 (====)
 # Choose object for +ObjForm
-# (choDialog Ttl Rel [Hook] [(+Obj +TextField)] [pre] [post])
+# (choDialog Ttl Rel [Hook] [(+Obj +TextField) [pre [post]]])
 (de choDialog ("Ttl" "Rel" . @)
    (let
       ("Hook" (and (get (meta (cdr "Rel") (car "Rel")) 'hook) (next))

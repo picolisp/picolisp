@@ -1,4 +1,4 @@
-# 18dec02abu
+# 04jan03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -10,14 +10,6 @@
 (de *Kategorien
    Betriebsausgaben Abschreibungen Sonderausgaben
    Betriebseinnahmen Privateinnahmen Leerbuchungen )
-
-(setq
-   *QYear (car (date (date)))
-   *QMonth 1
-   *MonMap (let N 0
-      (mapcar
-         '((M) (cons M (inc 'N)))
-         *MonFmt ) ) )
 
 
 (class +AD)
@@ -473,6 +465,13 @@
 
 (de main ()
    (locale "DE" "de")
+   (setq
+      *QYear (car (date (date)))
+      *QMonth 1
+      *MonMap (let N 0
+         (mapcar
+            '((M) (cons M (inc 'N)))
+            *MonFmt ) ) )
    (pool "tax.db") )
 
 (de go ()

@@ -9,6 +9,7 @@
 (de *DateFmt @Y "-" @M "-" @D)
 (de *DayFmt Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
 (de *MonFmt January February March April May June July August September October November December)
+(de *Help "loc/help/en.l")
 
 (de _ Str
    (if (member (car Str) *Str)

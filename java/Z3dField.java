@@ -1,4 +1,4 @@
-// 21jun02abu
+// 02nov03abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -104,32 +104,6 @@ public class Z3dField extends Pico {
          text();
       else
          super.cmd(s);
-   }
-
-   void bad(String s) {
-      if (s.equals("draw")) {
-         int n;
-
-         getNum(); getNum(); getNum();
-         while ((n = getNum()) != 0) {
-            getNum(); getNum(); getNum(); getStr();
-            for (;;) {
-               getNum(); getNum(); getNum();
-               if (--n == 0)
-                  break;
-            }
-            getNum();  // Face color
-            if (getNum() != 32767)
-               getNum();
-         }
-      }
-      else if (s.equals("text")) {
-         int n = getNum();
-         while (--n >= 0)
-            {getNum(); getNum(); getStr();}
-      }
-      else
-         super.bad(s);
    }
 
    public void paint(Graphics g) {update(g);}

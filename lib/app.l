@@ -1,9 +1,5 @@
-# 15jul03abu
+# 01dec03abu
 # (c) Software Lab. Alexander Burger
-
-# Bye message
-(?push '*Bye
-   '(and *Login (msg *Pid " - " (stamp))) )
 
 # Exit on error
 (de *Err
@@ -12,7 +8,7 @@
       (show This)
       (mapc
          '(("X") (println "X" (val "X")))
-         '(*Gate *Agent *Host *Port *Url *AppPort *SesId *ConId *InND *OutN) )
+         '(*Gate *Agent *Host *Port *Url *SesId *ConId) )
       (and (get *Top 'focus) (println 'focus (get @ 'ix)))
       (mapc
          '(("X") (println "X" (val "X")))
@@ -27,14 +23,23 @@
    (bye) )
 
 # User identification
-(de user (Pid1 Pid2 Nm)
+(de user (Pid1 Pid2 Nm To)
    (cond
       ((not Pid1) (tell 'user *Pid))
       ((not Pid2)
          (tell 'user Pid1 *Pid
-            (with *Login (lit (cons (: nm) (: name)))) ) )
-      ((= *Pid Pid1) (println Pid2 Nm)) ) )
+            (with *Login (lit (cons (: nm) (: name))))
+            (/ (- *Timeout (cadr (assoc -1 *Key))) 60000) ) )
+      ((= *Pid Pid1) (println Pid2 Nm To)) ) )
 
 # Timestamp
 (msg *Pid " + " (stamp))
 (flush)
+
+# Extend 'app' function
+(conc (last app)
+   '((msg *Pid " + " (stamp))) )
+
+# Bye message
+(?push '*Bye
+   '(and *SesId (msg *Pid " - " (stamp))) )

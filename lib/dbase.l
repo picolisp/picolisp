@@ -1,8 +1,8 @@
-# 14jun02abu
+# 08nov03abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
-   (use (Cnt Hrd Siz Fld X)
+   (use (Cnt Hdr Siz Fld X)
       (in File
          (unless (= 3 (rd 1))    # Version
             (quit "dBASE Version") )
@@ -20,14 +20,15 @@
                (until (= 13 (setq X (rd 1)))
                   (link
                      (cons
-                        (pack                      # Name
-                           (char X)
-                           (make
-                              (for
-                                 (L (make (do 10 (link (rd 1))))
-                                    (n0 (car L))
-                                    (cdr L) )
-                                 (link (char (car L))) ) ) )
+                        (intern                    # Name
+                           (pack
+                              (char X)
+                              (make
+                                 (for
+                                    (L (make (do 10 (link (rd 1))))
+                                       (n0 (car L))
+                                       (cdr L) )
+                                    (link (char (car L))) ) ) ) )
                         (cons
                            (char (rd 1))           # Type
                            (cons
@@ -45,7 +46,16 @@
                         (mapcan
                            '((F)
                               (when (clip (cut (caddr F) 'X))
-                                 (let S (pack @)
+                                 (let S
+                                    (pack
+                                       (replace @  # DOS German Umlauts
+                                          `(char 132) `(char 228)       # ae
+                                          `(char 148) `(char 246)       # oe
+                                          `(char 129) `(char 252)       # ue
+                                          `(char 142) `(char 196)       # AE
+                                          `(char 153) `(char 214)       # OE
+                                          `(char 154) `(char 220)       # UE
+                                          `(char 225) `(char 223) ) )   # sz
                                     (cons
                                        (cons
                                           (car F)

@@ -1,4 +1,4 @@
-# 27may03abu
+# 03nov03abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
@@ -115,15 +115,16 @@
    (draw> (push '*Z3dFields This)) )
 
 (dm draw> "Prg"
-   (out *App
-      (pr (: id) "draw")
-      (z3d:Draw (: foc)
-         (: yaw) (: pitch)
-         (: x) (: y) (: z)
-         (: sky) (: gnd)
-         (: snx) (: sny) )
-      (run "Prg")
-      (=: snap (z3d:Draw)) ) )
+   (when (: app)
+      (out @
+         (pr "draw")
+         (z3d:Draw (: foc)
+            (: yaw) (: pitch)
+            (: x) (: y) (: z)
+            (: sky) (: gnd)
+            (: snx) (: sny) )
+         (run "Prg")
+         (=: snap (z3d:Draw)) ) ) )
 
 (dm do> ())
 
@@ -191,11 +192,12 @@
    (setq *Z3dFields (delq This *Z3dFields)) )
 
 (dm text> (Lst)
-   (out *App
-      (pr (: id) "text" (length Lst))
-      (mapc
-         '((L) (pr (car L) (cadr L) (cddr L)))  # (x y . str)
-         Lst ) ) )
+   (when (: app)
+      (out @
+         (pr "text" (length Lst))
+         (mapc
+            '((L) (pr (car L) (cadr L) (cddr L)))  # (x y . str)
+            Lst ) ) ) )
 
 
 ### Animation Primitives ###

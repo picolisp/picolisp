@@ -1,4 +1,4 @@
-# 22sep03abu
+# 13nov03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -233,7 +233,7 @@
 (de tax ()
    (app)
    (html "Software Lab"
-      (new '(+Form) 800 500
+      (new '(+Form) 800 600
          (quote
             (row
                (gui '(+Var +NumField) '*QYear "" (posYears))
@@ -259,10 +259,10 @@
                (gui '(+Able +Button)
                   '(and
                      (val> (: home dat))
-                     (row2> (: home query))
+                     (row> (: home query))
                      (val> (: home focus2)) )
                   " " "Kopie"
-                  '(when (get (: home query data) (row2> (: home query)))
+                  '(when (get (: home query data) (row> (: home query)))
                      (put!> (clone!> @) 'upd 'dat (val> (: home dat)))
                      (upd> (: home query))
                      (focus> (: home focus2)) ) )
@@ -274,7 +274,7 @@
                (gui 'sum '(+Skip +Lock +FixField) 2 "(+)" 12) )
             (---- T)
             (gui 'query '(+QueryChart) NIL
-               12 '("Datum" "Wert" "USt" "Text" "Konto")
+               15 '("Datum" "Wert" "USt" "Text" "Konto")
                (quote
                   (gui '(+Hot +DateField) '(and (curr) (url (url> @))) "" 10)
                   (gui '(+NegRed +FixField) 2 "" 12)

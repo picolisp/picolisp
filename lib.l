@@ -1,5 +1,8 @@
-# 08may03abu
+# 26nov03abu
 # (c) Software Lab. Alexander Burger
+
+(de macro "Prg"
+   (run (fill "Prg")) )
 
 (de task ("Key" . "Prg")
    (setq *Key
@@ -77,7 +80,8 @@
       (print X)
       (while (args)
          (prin (next)) )
-      (prinl) ) )
+      (prinl)
+      (flush) ) )
 
 ### List ###
 (de ?push ("Var" "X")

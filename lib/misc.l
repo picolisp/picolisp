@@ -1,4 +1,4 @@
-# 24sep03abu
+# 01dec03abu
 # (c) Software Lab. Alexander Burger
 
 (de *Day . (Mon Tue Wed Thu Fri Sat Sun .))
@@ -132,6 +132,14 @@
    (if Cur
       (pack (format N 2 *Sep0 *Sep3) " " Cur)
       (format N 2 *Sep0 *Sep3) ) )
+
+### Tree ###
+(de balance (Var Lst)
+   (when Lst
+      (let N (/ (+ 1 (length Lst)) 2)
+         (idx Var (nth Lst N 1) T)
+         (balance Var (head (- N 1) Lst))
+         (balance Var (nth Lst (+ 1 N))) ) ) )
 
 ### Telephone ###
 (de telStr (S)
@@ -298,11 +306,10 @@
 ### I/O ###
 # Directory contents
 (de dir (Dir)
-   (use L
-      (make
-         (in (list "sh" "-c" (pack "ls " Dir))
-            (until (=T (setq L (line T)))
-               (link L) ) ) ) ) )
+   (make
+      (in (list "sh" "-c" (pack "ls " Dir))
+         (until=T (line T)
+            (link @) ) ) ) )
 
 (de dirname (F)
    (pack
@@ -318,7 +325,7 @@
    (line)
    (echo S) )
 
-# Send Mail
+# Send mail
 (de mail ("Host" "Port" "From" "To" "Sub" "Att" . "Prg")
    (when (connect "Host" "Port")
       (let ("S" @  "B" (pack "==" (date) "-" (time) "=="))

@@ -1,8 +1,10 @@
-# 10oct03abu
+# 19nov03abu
 # (c) Software Lab. Alexander Burger
 
-### Plain HTML GUI ###
+### Plain HTML GUI (Preliminary, experimental) ###
 # *ID *Fld *Apps *Top *Fox *PnlFld *PnlCnt *LayPnl *LayRow *Bar
+
+(mapc allow '(*Fld "@act"))
 
 (de act (App Ix)
    (act> (get (cdr (assoc App *Apps)) 'fields Ix)) )
@@ -482,8 +484,8 @@
    (=: set Foo)
    (pass extra) )
 
-(dm set> (Val)
-   ((: set) Val) )
+(dm set> @
+   (pass (: set)) )
 
 
 (class +Clr)
@@ -1229,7 +1231,7 @@
          '(and (: home obj) (not (: home obj T)))
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
       "" `(_ "Delete")
-      '(when (ask `(_ "Deletion") `(_ "Delete this data record?"))
+      '(when (ask `(_ "Delete") `(_ "Delete this data record?"))
          (lose!> (: home obj) 'upd)
          (and (: home obj) (url> @) (url @)) ) ) )
 

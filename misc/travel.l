@@ -1,11 +1,14 @@
-# 15apr02abu
+# 22oct03abu
 # (c) Software Lab. Alexander Burger
 
 (de travel (A B)
-   (mini
-      '((L)
-         (and (assoc '@N L) (cdr @)) )
-      (solve (list (list 'path A B '@P '@N))) ) )
+   (mini car
+      (solve
+         (quote
+            @A A
+            @B B
+            (path @A @B @P @N) )
+         (cons @N @P) ) ) )
 
 
 (be path (@A @B @P @N) (path1 @A @B (@A) @P @N))
@@ -13,7 +16,7 @@
 (be path1 (@A @A @L (@A) 0))
 (be path1 (@A @B @L (@A . @P) @N)
    (edge @A @Z @X)
-   (@ not (member (-> @Z) (-> @L)))
+   (not (member @Z @L))
    (path1 @Z @B (@Z . @L) @P @Y)
    (@N + (-> @X) (-> @Y)) )
 
@@ -44,5 +47,5 @@
 (be vect (Ahlen Soest 27))
 
 (test
-   '((@P Rheine Muenster Warendorf Rheda Paderborn) (@N . 123))
+   '(123 Rheine Muenster Warendorf Rheda Paderborn)
    (travel 'Rheine 'Paderborn) )

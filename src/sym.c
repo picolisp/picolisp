@@ -1,4 +1,4 @@
-/* 18sep03abu
+/* 08nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -149,9 +149,9 @@ any doIntern(any ex) {
    NeedSym(ex,x);
    if (!isNum(y = name(x)))
       return Nil;
-   if (y = findHash(y, h = Intern + hash(y)))
-      return y;
-   *h = cons(x,*h);
+   if (x = findHash(y, h = Intern + hash(y)))
+      return x;
+   *h = cons(x = consSym(Nil,y), *h);
    return x;
 }
 
@@ -172,10 +172,8 @@ any doExtern(any ex) {
       Push(c2, boxChar(c, &i, &nm));
       while ((c = symChar(NULL)) && c != '}')
          charSym(c, &i, &nm);
-      if (!(y = findHash(data(c2), h = Extern + hash(data(c2))))) {
-         y = extSym(consSym(Nil,data(c2)));
-         *h = cons(y,*h);
-      }
+      if (!(y = findHash(data(c2), h = Extern + hash(data(c2)))))
+         *h = cons(y = extSym(consSym(Nil,data(c2))), *h);
       drop(c1);
    }
    return isLife(y)? y : Nil;

@@ -1,3 +1,9 @@
+* 06dec03 picoLisp-2.0.9
+   'Tele' java client
+   Closed leaking file descriptors in 'fork'
+   Changed Applet protocol to individual server connections
+   Decoupled Applet init from HTML page load
+
 * 14oct03 picoLisp-2.0.8b
    Bug in 'put>', 'rel>', 'lose>' and 'keep>' for '+List'
    Bug in 'lose>' and 'keep>' for '+Bag'
@@ -29,7 +35,7 @@
    Changed 'eps' in "lib/ps.l"
    Interactive DB tools in "lib/sq.l"
    'revise' line editor function
-   'circ'changed to individual arguments
+   'circ' changed to individual arguments
    Moved code-libraries to "lib/"
    Moved *.jar-files to "java/"
 

@@ -1,4 +1,4 @@
-/* 19aug03abu
+/* 28nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -16,6 +16,14 @@ static void redefine(any ex, any s, any x) {
 
 // (quote . any) -> any
 any doQuote(any x) {return cdr(x);}
+
+// (as 'any1 . any2) -> any2 | NIL
+any doAs(any x) {
+   x = cdr(x);
+   if (isNil(EVAL(car(x))))
+      return Nil;
+   return cdr(x);
+}
 
 // (eval 'any) -> any
 any doEval(any x) {
@@ -771,6 +779,18 @@ any doUntil (any x) {
    return Pop(c1);
 }
 
+// (until=T 'any . prg) -> any
+any doUntilT (any x) {
+   any cond;
+   cell c1;
+
+   cond = car(x = cdr(x)),  x = cdr(x);
+   Push(c1, Nil);
+   while ((val(At) = EVAL(cond)) != T)
+      data(c1) = prog(x);
+   return Pop(c1);
+}
+
 // (loop ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doLoop(any ex) {
    any x, y;
@@ -933,16 +953,20 @@ void brkLoad(any x) {
    FILE *oSave;
 
    if (!isNil(val(Dbg))) {
-      Push(c1, val(Up)),  val(Up) = x;
-      Push(BrkAt, val(At));
-      Bind(Key,BrkKey),  val(Key) = Nil;
-      oSave = OutFile,  OutFile = stdout;
-      print(x), crlf();
-      load(NULL, '!', Nil);
-      OutFile = oSave;
-      Unbind(BrkKey);
-      val(At) = data(BrkAt);
-      val(Up) = Pop(c1);
+      if (!isatty(STDIN_FILENO))
+         err(x, NULL, "BREAK");
+      else {
+         Push(c1, val(Up)),  val(Up) = x;
+         Push(BrkAt, val(At));
+         Bind(Key,BrkKey),  val(Key) = Nil;
+         oSave = OutFile,  OutFile = stdout;
+         print(x), crlf();
+         load(NULL, '!', Nil);
+         OutFile = oSave;
+         Unbind(BrkKey);
+         val(At) = data(BrkAt);
+         val(Up) = Pop(c1);
+      }
    }
 }
 
@@ -1147,10 +1171,17 @@ any doFork(any ex) {
       free(Termio),  Termio = NULL;
       if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(Mic[0]) < 0)
          pipeError(ex, "close");
-      PSize = 0,  free(Pipe);
-      Mic[0] = 0;
       Slot = i;
+      Mic[0] = 0;
+      for (i = 0; i < PSize; i += 2)
+         if (Pipe[i] >= 0)
+            close(Pipe[i]), close(Pipe[i+1]);
+      PSize = 0,  free(Pipe);
+      if (Hear)
+         close(Hear);
       Hear = hear[0];
+      if (Tell)
+         close(Tell);
       Tell = tell[1];
       val(Pid) = boxCnt(getpid());
       return Nil;

@@ -1,4 +1,4 @@
-/* 16sep03abu
+/* 28nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,6 +8,7 @@ typedef struct symInit {fun code; char *name;} symInit;
 
 static symInit Symbols[] = {
    {doAbs, "abs"},
+   {doAccept, "accept"},
    {doAdd, "+"},
    {doAll, "all"},
    {doAnd, "and"},
@@ -17,6 +18,7 @@ static symInit Symbols[] = {
    {doArg, "arg"},
    {doArgs, "args"},
    {doArgv, "argv"},
+   {doAs, "as"},
    {doAsoq, "asoq"},
    {doAssoc, "assoc"},
    {doAt, "at"},
@@ -263,6 +265,7 @@ static symInit Symbols[] = {
    {doUnify, "unify"},
    {doUnless, "unless"},
    {doUntil, "until"},
+   {doUntilT, "until=T"},
    {doUppQ, "upp?"},
    {doUppc, "uppc"},
    {doUse, "use"},

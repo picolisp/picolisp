@@ -1,7 +1,7 @@
-# 17sep03abu
+# 03dec03abu
 # (c) Software Lab. Alexander Burger
 
-(and (app) (rsa 60))
+(and (app) (rsa 40))
 
 (default
    *Radio '((7 . "a"))

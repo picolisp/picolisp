@@ -1,10 +1,10 @@
-/* 07oct03abu
+/* 19nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-// DB Tokens
+// I/O Tokens
 enum {NIX, BEG, DOT, END};
 enum {NUMBER, INTERN, TRANSIENT, EXTERN};
 
@@ -19,7 +19,7 @@ static void (*PutSave)(int);
 static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
-static void openErr(char *s) {err(NULL, NULL, "%s open: %s", s, strerror(errno));}
+static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
@@ -73,23 +73,36 @@ static int getBinary(int n) {
 }
 
 static any rdNum(int cnt) {
-   int i;
+   int n, i;
    any x;
    cell c1;
 
-   i = 0,  Push(c1, x = box(getBin(cnt)));
+   if ((n = getBin(cnt)) < 0)
+      return NULL;
+   i = 0,  Push(c1, x = box(n));
    if (--cnt == 62) {
-      do
-         byteSym(getBin(1), &i, &x);
-      while (--cnt);
-      while ((cnt = getBin(1)) == 255) {
-         do
-            byteSym(getBin(cnt), &i, &x);
-         while (--cnt);
+      do {
+         if ((n = getBin(1)) < 0)
+            return NULL;
+         byteSym(n, &i, &x);
+      } while (--cnt);
+      for (;;) {
+         if ((cnt = getBin(1)) < 0)
+            return NULL;
+         if (cnt != 255)
+            break;
+         do {
+            if ((n = getBin(cnt)) < 0)
+               return NULL;
+            byteSym(n, &i, &x);
+         } while (--cnt);
       }
    }
-   while (cnt)
-      byteSym(getBin(cnt--), &i, &x);
+   while (cnt) {
+      if ((n = getBin(cnt--)) < 0)
+         return NULL;
+      byteSym(n, &i, &x);
+   }
    return Pop(c1);
 }
 
@@ -99,15 +112,25 @@ static any binRead(void) {
    cell c1;
 
    if ((c = getBin(1)) < 0)
-      return Nil;
+      return NULL;
    if ((c & ~3) == 0) {
       if (c == NIX)
          return Nil;
       if (c == BEG) {
-         Push(c1, x = cons(binRead(), Nil));
+         if ((x = binRead()) == NULL)
+            return NULL;
+         Push(c1, x = cons(x,Nil));
          while ((y = binRead()) != (any)END) {
+            if (y == NULL) {
+               drop(c1);
+               return NULL;
+            }
             if (y == (any)DOT) {
-               cdr(x) = (y = binRead()) == (any)END? data(c1) : y;
+               if ((y = binRead()) == NULL) {
+                  drop(c1);
+                  return NULL;
+               }
+               cdr(x) = y == (any)END? data(c1) : y;
                break;
             }
             x = cdr(x) = cons(y,Nil);
@@ -116,7 +139,8 @@ static any binRead(void) {
       }
       return (any)c;  // NIX, DOT or END
    }
-   y = rdNum(c / 4);
+   if ((y = rdNum(c / 4)) == NULL)
+      return NULL;
    if ((c &= 3) == NUMBER)
       return y;
    if (c == TRANSIENT)
@@ -439,7 +463,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
       }
       else {
          if (!(f->fp = fdopen(dup(n), "r")))
-            openErr("Read FD");
+            openErr(ex, "Read FD");
          f->pid = 0;
       }
    }
@@ -450,7 +474,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
 
       pathString(x,nm);
       if (!(f->fp = fopen(nm,"r")))
-         openErr(nm);
+         openErr(ex, nm);
       f->pid = 0;
    }
    else {
@@ -480,7 +504,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
       setpgid(f->pid,0);
       close(pfd[1]);
       if (!(f->fp = fdopen(pfd[0], "r")))
-         openErr("Read pipe");
+         openErr(ex, "Read pipe");
    }
 }
 
@@ -505,7 +529,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
       }
       else {
          if (!(f->fp = fdopen(dup(n), "w")))
-            openErr("Write FD");
+            openErr(ex, "Write FD");
          f->pid = 0;
       }
    }
@@ -517,10 +541,10 @@ static void wrOpen(any ex, any x, outFrame *f) {
       pathString(x,nm);
       if (nm[0] == '+') {
          if (!(f->fp = fopen(nm+1, "a")))
-            openErr(nm);
+            openErr(ex, nm);
       }
       else if (!(f->fp = fopen(nm, "w")))
-         openErr(nm);
+         openErr(ex, nm);
       f->pid = 0;
    }
    else {
@@ -550,7 +574,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
       setpgid(f->pid,0);
       close(pfd[0]);
       if (!(f->fp = fdopen(pfd[1], "w")))
-         openErr("Write pipe");
+         openErr(ex, "Write pipe");
    }
 }
 
@@ -563,12 +587,12 @@ static void ctOpen(any ex, any x, ctlFrame *f) {
       pathString(x,nm);
       if (nm[0] == '+') {
          if ((f->fd = open(nm+1, O_CREAT|O_RDWR, 0666)) < 0)
-            openErr(nm);
+            openErr(ex, nm);
          fl.l_type = F_RDLCK;
       }
       else {
          if ((f->fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0)
-            openErr(nm);
+            openErr(ex, nm);
          fl.l_type = F_WRLCK;
       }
       fl.l_whence = SEEK_SET;
@@ -906,6 +930,7 @@ long waitFd(any ex, int fd, long ms) {
    char buf[1024];
    struct timeval *tp, tv;
 
+   Save(c1);
    do {
       if (ms >= 0)
          t = ms,  tp = &tv;
@@ -920,6 +945,16 @@ long waitFd(any ex, int fd, long ms) {
             m = Hear;
          FD_SET(Hear, &fdSet);
       }
+      for (x = data(c1) = val(Key); isCell(x); x = cdr(x))
+         if (isNeg(caar(x))) {
+            if ((n = (int)unDig(cadar(x)) / 2) < t)
+               tp = &tv,  t = n;
+         }
+         else {
+            if ((n = (int)unDig(caar(x)) / 2) > m)
+               m = n;
+            FD_SET(n, &fdSet);
+         }
       if (Mic[0]) {
          if (Mic[0] > m)
             m = Mic[0];
@@ -932,17 +967,6 @@ long waitFd(any ex, int fd, long ms) {
             FD_SET(Pipe[i], &fdSet);
          }
       }
-      for (Push(c1, x = val(Key)); isCell(x); x = cdr(x))
-         if (isNeg(caar(x))) {
-            tp = &tv;
-            if ((n = (int)unDig(cadar(x)) / 2) < t)
-               t = n;
-         }
-         else {
-            if ((n = (int)unDig(caar(x)) / 2) > m)
-               m = n;
-            FD_SET(n, &fdSet);
-         }
       if (tp) {
          tv.tv_sec = t / 1000;
          tv.tv_usec = t % 1000 * 1000;
@@ -955,20 +979,6 @@ long waitFd(any ex, int fd, long ms) {
          if (ms > 0  &&  (ms -= t) < 0)
             ms = 0;
       }
-      for (x = data(c1); isCell(x); x = cdr(x))
-         if (isNeg(caar(x))) {
-            if ((n = (int)unDig(cadar(x)) / 2 - t) > 0)
-               setDig(cadar(x), 2*n);
-            else {
-               setDig(cadar(x), unDig(caar(x)));
-               run(cddar(x));
-            }
-         }
-         else if ((n = (int)unDig(caar(x)) / 2) != fd) {
-            if (FD_ISSET(n, &fdSet))
-               run(cdar(x));
-         }
-      drop(c1);
       for (flg = NO, i = 0; i < PSize; i += 2) {
          if (Pipe[i] >= 0  &&  FD_ISSET(Pipe[i], &fdSet)) {
             if (!(n = slow(Pipe[i], buf, sizeof(buf))))
@@ -988,14 +998,29 @@ long waitFd(any ex, int fd, long ms) {
          close(Pipe[m]),  close(Pipe[m+1]),  Pipe[m] = -1;
       if (SigTerm)
          raise(SIGTERM);
+      for (x = data(c1); isCell(x); x = cdr(x))
+         if (isNeg(caar(x))) {
+            if ((n = (int)unDig(cadar(x)) / 2 - t) > 0)
+               setDig(cadar(x), 2*n);
+            else {
+               setDig(cadar(x), unDig(caar(x)));
+               run(cddar(x));
+            }
+         }
       if (Hear  &&  FD_ISSET(Hear, &fdSet))
-         if (isNil(x = rdHear()))
+         if ((x = rdHear()) == NULL)
             close(Hear),  Hear = 0;
          else if (x == T)
             Sync = YES;
          else
             evList(x);
+      for (x = data(c1); isCell(x); x = cdr(x))
+         if (!isNeg(caar(x)) && (n=(int)unDig(caar(x))/2)!=fd && FD_ISSET(n,&fdSet)) {
+            run(cdar(x));
+            break;
+         }
    } while (ms  &&  fd >= 0 && !FD_ISSET(fd, &fdSet));
+   drop(c1);
    return ms;
 }
 
@@ -1040,7 +1065,7 @@ any doHear(any ex) {
 
       pathString(x, nm);
       if ((fd = open(nm, O_RDONLY)) <= 0)
-         openErr(nm);
+         openErr(ex, nm);
       Hear = fd;
    }
    return x;
@@ -1308,7 +1333,7 @@ any doLines(any ex) {
 
          pathString(y, nm);
          if (!(fp = fopen(nm,"r")))
-            openErr(nm);
+            openErr(ex, nm);
          while ((c = getc(fp)) >= 0)
             if (c == '\n')
                ++cnt;
@@ -1816,7 +1841,7 @@ any doRd(any x) {
    x = cdr(x);
    if (!isNum(x = EVAL(car(x)))) {
       BinIx = BinCnt = 0,  getBin = getBinary;
-      return binRead();
+      return binRead() ?: Nil;
    }
    if ((cnt = unBox(x)) < 0) {
       byte buf[cnt = -cnt];

@@ -1,4 +1,4 @@
-/* 16sep03abu
+/* 28nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -295,6 +295,7 @@ any xSym(any);
 void zapZero(any);
 
 any doAbs(any);
+any doAccept(any);
 any doAdd(any);
 any doAll(any);
 any doAnd(any);
@@ -305,6 +306,7 @@ any doArg(any);
 any doArgs(any);
 any doArgv(any);
 any doAsoq(any);
+any doAs(any);
 any doAssoc(any);
 any doAt(any);
 any doAtom(any);
@@ -552,6 +554,7 @@ any doType(any);
 any doUnify(any);
 any doUnless(any);
 any doUntil(any);
+any doUntilT(any);
 any doUppQ(any);
 any doUppc(any);
 any doUse(any);

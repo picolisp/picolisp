@@ -1,16 +1,18 @@
-# 24sep03abu
+# 01dec03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
-# *Url *SesId *ConId *InND *OutN *Frame *U1 *Help *Meta *Css
+# *Url *Timeout *SesId *ConId *InND *Frame *U1 *Help *Meta *Css
 
-(default *HPorts 0)
+(default
+   *HPorts 0
+   *Timeout (* 15 60 1000) )
 
 (de *Mimes
    (`(chop ".css") "text/css" 86400)
    (`(chop ".gif") "image/gif" 86400)
    (`(chop ".jpg") "image/jpeg" 86400)
-   (`(chop ".txt") "text/octet-stream" 1)  # 'T' MSIE problem?
+   (`(chop ".txt") "text/octet-stream" 1 T)
    (`(chop ".wav") "audio/x-wav" 1)
    (`(chop ".mp3") "audio/x-mpeg" 86400)
    (`(chop ".pdf") "application/pdf" 1)
@@ -62,11 +64,11 @@
          (NIL (fork) (close P))
          (close S) )
       (http S)
-      (or *Sock (bye))
-      (timeout `(* 15 60000))
+      (or *SesId (bye))
+      (timeout *Timeout)
       (task *Sock
-         (http (or (listen *Sock 60000) (quit "Bad Client")))
-         (timeout `(* 15 60000)) ) ) )
+         (http (accept *Sock))
+         (timeout *Timeout) ) ) )
 
 (de baseHRef ()
    (pack
@@ -79,12 +81,11 @@
 # Init crypt
 (de rsa (N)
    (seed (in "/dev/urandom" (rd 20)))
-   (setq *InND (rsaKey N))
-   (off *OutN) )
+   (setq *InND (rsaKey N)) )
 
 # Application startup page
 (de app ()
-   (unless *Sock
+   (unless *SesId
       (setq
          *SesId (pack (% (in "/dev/urandom" (rd 5)) 100000000000) "~")
          *Sock (port *HPorts '*Port) ) ) )
@@ -246,7 +247,7 @@
       (or
          (not *Allow)
          (idx *Allow "Var")
-         (msg *Url " not allowed")
+         (msg "Var" " not allowed")
          (throw "http") )
       (cond
          ((not @N) (set "Var" Val))
@@ -296,28 +297,29 @@
 # Http Echo
 (de httpEcho (File Typ Upd Att)
    (_http Typ Upd)
-   (let (I (info File)  D (date (cadr I)))
-      (prinl "Content-Length: " (car I) "^M")
-      (prinl "Last-Modified: "
-         (day (cadr I) *Day) ", "
-         (pad 2 (caddr D)) " "
-         (get *Mon (cadr D)) " "
-         (car D) " "
-         (tim$ (cddr I)) " GMT^M" ) )
-   (when Att
-      (let F (chop File)
-         (while (member "/" F)
-            (setq F (cdr @)) )
-         (prinl "Content-Disposition: attachment; filename=\"" F "\"^M") ) )
-   (prinl "^M")
-   (in File (echo)) )
+   (when (info File)
+      (let D (date (cadr @))
+         (prinl "Content-Length: " (car @) "^M")
+         (prinl "Last-Modified: "
+            (day (cadr @) *Day) ", "
+            (pad 2 (caddr D)) " "
+            (get *Mon (cadr D)) " "
+            (car D) " "
+            (tim$ (cddr @)) " GMT^M" ) )
+      (when Att
+         (let F (chop File)
+            (while (member "/" F)
+               (setq F (cdr @)) )
+            (prinl "Content-Disposition: attachment; filename=\"" F "\"^M") ) )
+      (prinl "^M")
+      (in File (echo)) ) )
 
 # Ouput navigation links
 (de navi ()
    (<href> "<<<" "javascript:history.back()" (and *Frame "MAIN"))
    (if *U1
-      (<href> "---" *U1 (and *Frame "MAIN"))
-      (prin "---") )
+      (<href> "----" *U1 (and *Frame "MAIN"))
+      (prin "----") )
    (<href> ">>>" "javascript:history.forward()" (and *Frame "MAIN")) )
 
 (de url1 (Str)

@@ -1,4 +1,4 @@
-// 02sep03abu
+// 06dec03abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -19,9 +19,10 @@ public class Front extends Pico {
 
    public Front() {Parent = null;}
 
-   public Front(Pico p, String ttl) {
+   public Front(Pico p, int port, String gate, String sid, String ttl) {
       if ((Parent = p) != null) {
-         connect(p.getNum(), null, null);
+         Seed = p.Seed;
+         Host = p.Host;
          Container c = p.getParent();
          while (!(c instanceof Frame))
             c = c.getParent();
@@ -30,7 +31,13 @@ public class Front extends Pico {
          Dialog.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {stop();}
          } );
+         connect(0, port, gate, sid);
       }
+   }
+
+   public void start() {
+      Rdy = Fields != null;
+      super.start();
    }
 
    public void stop() {
@@ -42,6 +49,7 @@ public class Front extends Pico {
       if (Dialog != null) {
          Dialog.dispose();
          Dialog = null;
+         Parent.Seed ^= Seed;
          synchronized (Parent) {Parent.notify();}
       }
       super.done();
@@ -109,90 +117,6 @@ public class Front extends Pico {
          make();
       else
          super.cmd(s);
-   }
-
-   void bad(String s) {
-      int n;
-
-      if (s.equals("ack"))
-         Req = false;
-      else if (s.equals("focus"))
-         getNum();
-      else if (s.equals("next"))
-         ;
-      else if (s.equals("text"))
-         {getNum(); read();}
-      else if (s.equals("type"))
-         {getNum(); read();}
-      else if (s.equals("feed"))
-         {getNum(); getNum(); read();}
-      else if (s.equals("bCol"))
-         {getNum(); getNum();}
-      else if (s.equals("fCol"))
-         {getNum(); getNum();}
-      else if (s.equals("siz"))
-         {getNum(); getNum();}
-      else if (s.equals("set") || s.equals("tmp"))
-         getGraf();
-      else if (s.equals("img")) {
-         getNum();
-         if ((n = getNum()) != 0)
-            getBytes(n);
-      }
-      else if (s.equals("able"))
-         {getNum(); getStr();}
-      else if (s.equals("lock"))
-         getStr();
-      else if (s.equals("scrl"))
-         {getNum(); getNum(); getNum(); getNum();}
-      else if (s.equals("menu"))
-         {getNum(); Popup.bad(this);}
-      else if (s.equals("make")) {
-         while ((s = getStr()).length() != 0) {
-            if ("*/=:+-".indexOf(s.charAt(0)) < 0) {
-               if (s.equals("able"))
-                  ;
-               else if (s.equals("sync"))
-                  ;
-               else if (s.equals("bCol"))
-                  getNum();
-               else if (s.equals("fCol"))
-                  getNum();
-               else if (s.equals("rid"))
-                  ;
-               else if (s.equals("crypt"))
-                  ;
-               else if (s.equals("pw"))
-                  ;
-               else // Font name
-                  getNum();
-               continue;
-            }
-            getStr();
-            if ((n = getNum()) > 0) {
-               switch(n) {
-               case 'B':  // Button
-                  getStr();
-               case 'c':  // Check box
-                  break;
-               case 'C':  // Choice box
-                  n = getNum();
-                  while (--n >= 0)
-                     getStr();
-                  break;
-               case 'L':  // Label
-                  getStr();
-                  break;
-               case 'T':  // TextField
-               case 'P':  // PictField
-                  getNum(); getNum();
-                  break;
-               }
-            }
-         }
-      }
-      else
-         super.bad(s);
    }
 
    void make() {
@@ -362,9 +286,12 @@ public class Front extends Pico {
       fld.copyInto(Fields);
       SBars = new Scrollbar[sb.size()];
       sb.copyInto(SBars);
-      validate();
 
-      if (Parent != null) {
+      if (Parent == null) {
+         setSize(getPreferredSize());
+         validate();
+      }
+      else {
          Dialog.pack();
          Dimension d = Dialog.getToolkit().getScreenSize();
          Rectangle r = Dialog.getBounds();
@@ -416,7 +343,10 @@ public class Front extends Pico {
          ((Label)f).setText(txt);
       else {
          ((TextComponent)f).setText(txt);
-         ((TextComponent)f).select(0,0);
+         if (MiSt || Focus == 0)
+            ((TextComponent)f).select(0,0);
+         else if (Focus == fld)
+            ((TextComponent)f).selectAll();
       }
    }
 
@@ -441,12 +371,12 @@ public class Front extends Pico {
          int j = ((TextComponent)f).getSelectionEnd();
          String s = ((TextComponent)f).getText();
 
-         /*** Bug in Netscape VM? ***/
+         /*** JRE Bug ***/
          if (i > s.length())
             i = s.length();
          if (j > s.length())
             j = s.length();
-         /***************************/
+         /***************/
 
          ((TextComponent)f).setText(s.substring(0,i) + txt + s.substring(j));
          if (o instanceof String)
@@ -620,6 +550,8 @@ class PicoFocusListener implements FocusListener {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
       }
+      if (!Home.MiSt && Home.Fields[Ix-1] instanceof TextComponent)
+         ((TextComponent)Home.Fields[Ix-1]).selectAll();
    }
 
    public void focusLost(FocusEvent ev) {

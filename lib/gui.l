@@ -1,129 +1,127 @@
-# 01oct03abu
+# 04dec03abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *AppGate *AppPort *App *Apps *AppId *Top *Bar *Menu
+# *Apps *AppId *AppPort *AppGate *Top *Bar *Menu
+
+(allow "java/pico.jar")
 
 (default *APorts 0)
 
-(de *Events
-   (act> . 1) (cmd> . 1) (key> . 1) (nxt> . 1) (rsa> . 1)
-   (scr> . 2) (adv> . 2)
-   (chg> . 3) (log> . 3)
-   (clk> . 4) (dbl> . 4) (drg> . 4) )
-
-(de dispatch ()
-   (timeout `(* 15 60000))
-   (in *App
-      (let S (rd)
-         (cond
-            ((not S) (bye))
-            ((num? S))
-            ((pair S))
-            ((=T S) (push '*AppId (rd)))
-            ((<> meth (val S))
-               (out NIL (prinl ">> " S " <<")) )
-            ((get *Apps (rd))
-               (send S (setq *Top @)) )
-            ((assoc S *Events)
-               (do (cdr @) (rd)) ) ) ) ) )
-
 (de url (Str Tar . @)
    (when Str
-      (out *App
-         (pr
-            (get *Top 'id)
-            "url"
-            (pack
-               (baseHRef)
-               *SesId
-               Str
-               (and (args) (pack "?" (pass 'ht:Fmt))) )
-            (or Tar (if *Frame "MAIN" "_self")) ) ) ) )
+      (with *Top
+         (when (: app)
+            (out @
+               (pr "url"
+                  (pack
+                     (baseHRef)
+                     *SesId
+                     Str
+                     (and (args) (pack "?" (pass 'ht:Fmt))) )
+                  (or Tar (if *Frame "MAIN" "_self")) ) ) ) ) ) )
 
 (de bar (Ttl X Y Prg)
    (prinl Ttl "<hr>")
    (setq *Bar (new '(+Form) X Y Prg))
    (navi) )
 
-(de initAppId ()
-   (if *AppId
-      (set (nth *Apps (=: id (pop '*AppId))) This)
-      (=: id (+ 1 (length *Apps)))
-      (queue '*Apps This) ) )
-
 
 (class +Applet)
-# id run
+# url app outN
 
 (dm T (A J DX DY . @)
-   (unless *AppPort
+   (unless *Apps
+      (setq *AppId 1)
       (task (setq "Sok1" (port *APorts '*AppPort))
-         (task "Sok1")  # Only once
-         (task -40000 40000
-            (out *App (pr 0)) )
-         (task (setq *App (or (listen "Sok1" 60000) (quit "Bad Applet")))
-            (dispatch) ) ) )
-   (initAppId)
+         (let S (accept "Sok1")
+            (if
+               (in S
+                  (and
+                     (= *SesId (rd))
+                     (rd)
+                     (get *Apps (- *AppId @)) ) )
+               (push '*Key
+                  (list (put @ 'app S) (list 'ev> (lit @) S)) )
+               (close S) ) ) )
+      (task -40000 80000
+         (and *Top (ping> *Top)) ) )
    (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId J
       "\" WIDTH=" DX " HEIGHT=" DY ">" )
-   (prinl "<PARAM NAME=\"ID\" VALUE=\"" (: id) "\">")
+   (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
-   (when *AppGate
-      (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">") )
+   (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">")
+   (prinl "<PARAM NAME=\"sid\" VALUE=\"" *SesId "\">")
    (while (args)
       (prin "<PARAM NAME=\"" (next) "\" VALUE=\"")
       (ht:Prin (next))
       (prinl "\">") )
-   (prinl "</APPLET>") )
+   (prinl "</APPLET>")
+   (push '*Apps This)
+   (and (nth *Apps 40) (con @))
+   (inc '*AppId) )
 
-(dm close> ()
-   (set (nth *Apps (: id)))
-   (out *App
-      (pr (- (: id))) ) )
+(dm ev> (App)
+   (in App
+      (let S (rd)
+         (cond
+            ((not S)
+               (close App)
+               (task App)
+               (=: app)
+               (and (== This *Top) (off *Top)) )
+            ((num? S) (timeout *Timeout))
+            ((= meth (val S))
+               (send S (setq *Top This)) )
+            (T (msg S " -> " *Pid)) ) ) ) )
+
+(dm ping> ()
+   (when (: app)
+      (out @ (pr "ping")) ) )
 
 (dm init> ())
 
-(dm start> ()
-   (=: run T) )
+(dm start> ())
 
-(dm upd> ())
+(dm stop> ()
+   (when (: app)
+      (out @ (pr "done")) ) )
 
 (dm paint> ())
 
-(dm stop> ()
-   (=: run) )
+(dm upd> ())
 
 (dm esc> ()
    (beep> This) )
 
 (dm rsa> ()
-   (setq *OutN (rd)) )
+   (=: outN (rd)) )
 
 (dm cmd> ()
    (eval (nth *Menu (rd) 3)) )
 
 (dm beep> ()
-   (out *App
-      (pr (: id) "beep") ) )
+   (when (: app)
+      (out @ (pr "beep")) ) )
 
 (dm play> (X)
-   (out *App
-      (pr (: id) "play" X) ) )
+   (when (: app)
+      (out @ (pr "play" X)) ) )
 
 (dm menu> (Ttl Lst)
-   (out *App
-      (pr (: id) "menu" Ttl (length Lst))
-      (mapc
-         '((L) (pr (car L) (eval (cadr L))))
-         (setq *Menu Lst) ) ) )
+   (when (: app)
+      (out @
+         (pr "menu" Ttl (length Lst))
+         (mapc
+            '((L) (pr (car L) (eval (cadr L))))
+            (setq *Menu Lst) ) ) ) )
 
 
 ### Applet Form ###
 # *Lay
 
 (class +Form +Applet)
-# url init fields arrays focus focus2 hot able lock rv
+# init fields arrays focus focus2 hot able lock rv
 
 (de form @
    (if (pair (next))
@@ -169,23 +167,24 @@
 
 (dm T (DX DY Prg)
    (super "Front" "java/pico.jar" DX DY)
-   (=: url *Url)
    (=: init Prg) )
 
 (dm init> ()
    (super)
-   (out *App
-      (pr (: id) "make")
-      (let *Lay '*
-         (=: fields (make (run (: init)))) )
-      (pr NIL) )
-   (let I 0
-      (mapc
-         '((F)
-            (put F 'ix (inc 'I))
-            (init> F) )
-         (: fields) ) )
-   (mapc 'init> (: arrays)) )
+   (when (: app)
+      (out @
+         (pr "make")
+         (let *Lay '*
+            (=: fields (make (run (: init)))) )
+         (pr NIL) )
+      (let I 0
+         (mapc
+            '((F)
+               (put F 'ix (inc 'I))
+               (init> F) )
+            (: fields) ) )
+      (mapc 'init> (: arrays))
+      (start> This) ) )
 
 (dm start> ()
    (super)
@@ -224,25 +223,28 @@
       (mapc 'able> (: able)) ) )
 
 (dm lock> (Flg)
-   (out *App
-      (pr (: id) "lock" (bool (=: lock Flg))) )
-   (upd> This) )
+   (when (: app)
+      (out @
+         (pr "lock" (bool (=: lock Flg))) )
+      (upd> This) ) )
 
 (dm focus> (F)
-   (=: focus F)
-   (out *App
-      (pr (: id) "focus" (get F 'ix)) ) )
+   (when (: app)
+      (out @
+         (pr "focus" (get F 'ix)) )
+      (=: focus F) ) )
 
 (dm next> ()
-   (out *App
-      (pr (: id) "next") ) )
+   (when (: app)
+      (out @ (pr "next")) ) )
 
 (dm menu> (F Ttl Lst)
-   (out *App
-      (pr (: id) "menu" (get F 'ix) Ttl (length Lst))
-      (mapc
-         '((L) (pr (car L) (eval (cadr L))))
-         (setq *Menu Lst) ) ) )
+   (when (: app)
+      (out @
+         (pr "menu" (get F 'ix) Ttl (length Lst))
+         (mapc
+            '((L) (pr (car L) (eval (cadr L))))
+            (setq *Menu Lst) ) ) ) )
 
 (dm help> ()
    (let (Url (chop (: url))  Lang (or *Lang "en"))
@@ -276,8 +278,7 @@
 (dm act> ()
    (let F (get (: fields) (rd))
       (and (fieldEnd) (act> F))
-      (when (get *Apps (: id))
-         (out *App (pr (: id) "ack")) ) ) )
+      (and (: app) (out @ (pr "ack"))) ) )
 
 # sym
 (dm key> ()
@@ -439,7 +440,6 @@
 # Field end processing
 (de fieldEnd ()
    (cond
-      ((not (: run)))
       ((not (: focus)) T)
       ((: focus ign) T)
       ((or (chk> (: focus)) (and (: focus arr) (chk> (: focus arr))))
@@ -484,10 +484,22 @@
 (class +Dialog +Form)
 # top on args
 
+(de _dlg (Ttl)
+   (=: top *Top)
+   (use Port
+      (let Sock (port *APorts 'Port)
+         (when (: top app)
+            (out @
+               (pr "dialog" Port *AppGate *SesId Ttl) )
+            (let S (accept Sock)
+               (if (in S (= *SesId (rd)))
+                  (push '*Key
+                     (list (=: app S) (list 'ev> (lit This) S)) )
+                  (close S) ) ) )
+         (close Sock) ) ) )
+
 (dm T ("Ttl" "Lst" "Args")
-   (initAppId)
-   (out *App
-      (pr (get (=: top *Top) 'id) "dialog" "Ttl" (: id)) )
+   (_dlg "Ttl")
    (=: init "Lst")
    (=: args "Args")
    (wait NIL (: on)) )
@@ -518,7 +530,6 @@
             (mapcar 'stat> (: arrays)) ) ) )
    (=: on)
    (super)
-   (close> This)
    (setq *Top (: top)) )
 
 
@@ -969,8 +980,8 @@
    (=: set Foo)
    (pass extra) )
 
-(dm set> (Val)
-   ((: set) Val) )
+(dm set> @
+   (pass (: set)) )
 
 
 (class +Clr)
@@ -1105,12 +1116,14 @@
       (chg> This) ) )
 
 (dm text> (S)
-   (out *App
-      (pr (: home id) "text" (: ix) S) ) )
+   (when (: home app)
+      (out @
+         (pr "text" (: ix) S) ) ) )
 
 (dm type> (S)
-   (out *App
-      (pr (: home id) "type" (: ix) S) ) )
+   (when (: home app)
+      (out @
+         (pr "type" (: ix) S) ) ) )
 
 (dm str> (Str)
    (unless (= Str (: str))
@@ -1156,8 +1169,9 @@
    (beg> This) )
 
 (dm able> ()
-   (out *App
-      (pr (: home id) "able" (: ix) (bool (eval (: able)))) ) )
+   (when (: home app)
+      (out @
+         (pr "able" (: ix) (bool (eval (: able)))) ) ) )
 
 (dm able?> ()
    (or
@@ -1252,8 +1266,8 @@
          (mapc
             '((X)
                (if (atom X)
-                  (clr> (get (: home) X))
-                  (set> (get (: home) (car X)) (eval (cdr X))) ) )
+                  (clr> (field X))
+                  (set> (field (car X)) (eval (cdr X))) ) )
             (: clr) )
          (able> (: home))
          (focus1> (: home)) ) ) )
@@ -1296,20 +1310,23 @@
    (pass super) )
 
 (dm siz> (SX SY)
-   (out *App
-      (pr (: home id) "siz" (: ix) (=: sx SX) (=: sy SY)) ) )
+   (when (: home app)
+      (out @
+         (pr "siz" (: ix) (=: sx SX) (=: sy SY)) ) ) )
 
 (dm set> (Lst)
-   (out *App
-      (pr (: home id) "set" (: ix)
-         (sum 'len> (=: lst Lst)) )
-      (mapc 'pr> Lst) ) )
+   (when (: home app)
+      (out @
+         (pr "set" (: ix)
+            (sum 'len> (=: lst Lst)) )
+         (mapc 'pr> Lst) ) ) )
 
 (dm tmp> (Lst)
-   (out *App
-      (pr (: home id) "tmp" (: ix)
-         (sum 'len> (=: tmp Lst)) )
-      (mapc 'pr> Lst) ) )
+   (when (: home app)
+      (out @
+         (pr "tmp" (: ix)
+            (sum 'len> (=: tmp Lst)) )
+         (mapc 'pr> Lst) ) ) )
 
 (dm clk> (M X Y))
 (dm dbl> (M X Y))
@@ -1334,11 +1351,12 @@
    (pass super) )
 
 (dm set> (Img)
-   (out *App
-      (ifn (=: img Img)
-         (pr (: home id) "img" (: ix) 0)
-         (pr (: home id) "img" (: ix) (car (info Img)))
-         (in Img (echo)) ) ) )
+   (when (: home app)
+      (out @
+         (ifn (=: img Img)
+            (pr "img" (: ix) 0)
+            (pr "img" (: ix) (car (info Img)))
+            (in Img (echo)) ) ) ) )
 
 (dm val> ()
    (: img) )
@@ -1366,8 +1384,9 @@
    (pass super) )
 
 (dm feed> (N S)  # TextArea only
-   (out *App
-      (pr (: home id) "feed" (: ix) N S) ) )
+   (when (: home app)
+      (out @
+         (pr "feed" (: ix) N S) ) ) )
 
 (dm end> ()
    (set> This (val> This)) )
@@ -1410,10 +1429,11 @@
 (class +Rsa)
 
 (de outN ()
-   (unless *OutN
+   (unless (: home outN)
       (or *InND (quit "No keys"))
-      (out *App
-         (pr (: home id) "rsa" (car *InND)) ) ) )
+      (when (: home app)
+         (out @
+            (pr "rsa" (car *InND)) ) ) ) )
 
 (dm T @
    (pass extra)
@@ -1429,18 +1449,20 @@
 
 (dm text> (S)
    (outN)
-   (wait NIL *OutN)
-   (extra (encrypt *OutN (chop S))) )
+   (wait NIL (: home outN))
+   (extra (encrypt (: home outN) (chop S))) )
 
 (dm feed> (N S)  # TextArea only
    (outN)
-   (wait NIL *OutN)
-   (extra N (encrypt *OutN (chop S))) )
+   (wait NIL (: home outN))
+   (extra N (encrypt (: home outN) (chop S))) )
 
 (dm key> (Lst)
    (outN)
-   (wait NIL *OutN)
-   (encrypt *OutN (chop (extra (car (decrypt *InND Lst))))) )
+   (wait NIL (: home outN))
+   (encrypt
+      (: home outN)
+      (chop (extra (car (decrypt *InND Lst)))) ) )
 
 
 # Password Field
@@ -1526,9 +1548,10 @@
 (class +NegRed)
 
 (dm set> (Val)
-   (out *App
-      (pr (: home id) "fCol" (: ix)
-         (if (lt0 Val) `(hex "CC0000") 0) ) )
+   (when (: home app)
+      (out @
+         (pr "fCol" (: ix)
+            (if (lt0 Val) `(hex "CC0000") 0) ) ) )
    (extra Val) )
 
 
@@ -1558,10 +1581,8 @@
                   I ) ) ) ) ) )
 
 (dm act> ()
-   (if (val> This)
-      (beep> (: home))
-      (do> This
-         (set> This (date)) ) ) )
+   (do> This
+      (set> This (date)) ) )
 
 (dm set> (Val)
    (super (datStr Val)) )
@@ -1590,6 +1611,10 @@
 (dm cho> ()
    (let Tim (time)
       (list (mkCho (tim$ Tim (> (: dx) 6)) Tim)) ) )
+
+(dm act> ()
+   (do> This
+      (set> This (time)) ) )
 
 (dm set> (Val)
    (super (tim$ Val (> (: dx) 6))) )
@@ -1634,11 +1659,11 @@
 (dm act> ()
    (when (val> This)
       (let Val @
-         (out *App
-            (pr
-               (: home id) "url"
-               (if (sub? ":/" Val) Val (pack "http://" Val))
-               "HTTP" ) ) ) ) )
+         (when (: home app)
+            (out @
+               (pr "url"
+                  (if (sub? ":/" Val) Val (pack "http://" Val))
+                  "HTTP" ) ) ) ) ) )
 
 
 (class +MailField +TextField)
@@ -1648,9 +1673,10 @@
    (hotField) )
 
 (dm act> ()
-   (when (val> This)
-      (out *App
-         (pr (: home id) "url" (pack "mailto:" @) "MAIL") ) ) )
+   (let V (val> This)
+      (and V (: home app)
+         (out @
+            (pr "url" (pack "mailto:" V) "MAIL") ) ) ) )
 
 
 ### Field Arrays ###
@@ -1749,12 +1775,13 @@
    (setScroll) )
 
 (de setScroll ()
-   (out *App
-      (pr (: home id) "scrl"
-         (get (caar (: fields)) 'ix)
-         (: ofs)  # val
-         (: rows) # vis
-         (size> This) ) ) )  # max
+   (when (: home app)
+      (out @
+         (pr "scrl"
+            (get (caar (: fields)) 'ix)
+            (: ofs)  # val
+            (: rows) # vis
+            (size> This) ) ) ) )  # max
 
 # (.. rows lst prg [put [get]])
 (dm T ("N" "Lst" "Prg" "Put" "Get")
@@ -1794,17 +1821,10 @@
    (setScroll) )
 
 (dm row> (Fld)
-   (default Fld (: home focus))
+   (default Fld (: home focus2))
    (when
       (find
          '((L) (memq Fld L))
-         (: fields) )
-      (+ -1 (: ofs) (index @ (: fields))) ) )
-
-(dm row2> ()
-   (when
-      (find
-         '((L) (memq (: home focus2) L))
          (: fields) )
       (+ -1 (: ofs) (index @ (: fields))) ) )
 
@@ -1914,6 +1934,14 @@
       (put> This)
       (setScroll) ) )
 
+(de delRowButton (Chart Exe)
+   (gui '(+Able +Button)
+      (list 'row> Chart)
+      "" `(_ "Delete row")
+      (list 'when '(ask `(_ "Delete row") `(_ "Delete row?"))
+         Exe
+         (list 'upd> Chart) ) ) )
+
 
 (class +ListChart +Chart)
 
@@ -2019,7 +2047,7 @@
          '(and (: home obj) (not (: home obj T)))
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
       "" `(_ "Delete")
-      '(when (ask `(_ "Deletion") `(_ "Delete this data record?"))
+      '(when (ask `(_ "Delete") `(_ "Delete this data record?"))
          (lose!> (: home obj) 'upd)
          (and (: home obj) (url> @) (url @)) ) ) )
 
@@ -2120,6 +2148,8 @@
    (super)
    (setq *DbForms (delq This *DbForms)) )
 
+(dm has> (Lst))
+
 
 ### Object Linkage ###
 (class +ObjForm +DbForm)
@@ -2145,9 +2175,7 @@
 # top on
 
 (dm T ("Ttl" "Typ" "Obj" "Lst")
-   (initAppId)
-   (out *App
-      (pr (get (=: top *Top) 'id) "dialog" "Ttl" (: id)) )
+   (_dlg "Ttl")
    (=: typ "Typ")
    (=: obj "Obj")
    (=: init "Lst")
@@ -2161,7 +2189,6 @@
 (dm stop> ()
    (=: on)
    (super)
-   (close> This)
    (setq *Top (: top)) )
 
 (de objDialog ("Ttl" "Typ" "Obj" "Flg" "Lst")
@@ -2431,10 +2458,7 @@
          (step Node T) )
       (mapc
          '((F)
-            (mapc
-               '((F D) (set> F D))
-               F
-               ((: put) (step Node T)) ) )
+            (mapc 'set> F ((: put) (step Node T))) )
          (: fields) ) ) )
 
 (dm upd> ()
@@ -2487,7 +2511,10 @@
    (super "N" "Lst" "Prg" (or "Put" cons) (or "Get" car)) )
 
 (dm start> ()
-   (unless (: query)
+   (or
+      (: query)
+      (pair (: home args))
+      (cdr (val (: home args)))
       (=: query (eval (: iniq))) ) )
 
 (dm put> ()

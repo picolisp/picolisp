@@ -1,4 +1,4 @@
-# 29sep03abu
+# 03dec03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -256,16 +256,16 @@
 
 (====)
 
-(de brief ("F" "Abs" . "Prg")
+(de brief ("F" "Fnt" "Abs" . "Prg")
    (when "F"
-      (poly NIL 33 265  42 265)            # Faltmarken
-      (poly NIL 33 568  42 568) )
-   (poly NIL 50 106  50 103  53 103)       # Fenstermarken
+      (poly NIL 5 265  14 265)            # Faltmarken
+      (poly NIL 5 421  14 421) )
+   (poly NIL 50 106  50 103  53 103)      # Fenstermarken
    (poly NIL 50 222  50 225  53 225)
    (poly NIL 288 103  291 103  291 106)
    (poly NIL 288 225  291 225  291 222)
-   (poly NIL 50 114  291 114)              # Absender
+   (poly NIL 50 114  291 114)             # Absender
    (window 60 102 220 10
-      (font 8 (ps "Abs" 0)) )
+      (font "Fnt" (ps "Abs" 0)) )
    (window 65 125 210 90
       (psEval "Prg") ) )

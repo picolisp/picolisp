@@ -1,4 +1,4 @@
-/* 28jun03abu
+/* 04nov03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,6 +19,17 @@ static int tcpSocket(any ex) {
    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       tcpErr(ex, "socket");
    return sd;
+}
+
+static any tcpAccept(any ex, int sd) {
+   int n;
+   struct sockaddr_in addr;
+
+   n = sizeof(addr);
+   if ((sd = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
+      tcpErr(ex, "accept");
+   val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+   return boxCnt(sd);
 }
 
 // (port 'cnt|lst ['var]) -> cnt
@@ -65,18 +76,18 @@ any doPort(any ex) {
 // (listen 'cnt1 ['cnt2]) -> cnt | NIL
 any doListen(any ex) {
    any x;
-   int sd, n;
-   struct sockaddr_in addr;
+   int sd;
 
    sd = (int)evCnt(ex, cdr(ex));
    x = cddr(ex);
    if (!waitFd(ex, sd, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
       return Nil;
-   n = sizeof(addr);
-   if ((sd = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
-      tcpErr(ex, "accept");
-   val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
-   return boxCnt(sd);
+   return tcpAccept(ex,sd);
+}
+
+// (accept 'cnt) -> cnt
+any doAccept(any ex) {
+   return tcpAccept(ex, (int)evCnt(ex, cdr(ex)));
 }
 
 // (host 'any) -> sym

@@ -1119,6 +1119,7 @@ NIL
    <a href="#prog2">prog2</a>,
    <a href="#unless">unless</a>,
    <a href="#until">until</a>,
+   <a href="#untilT">until=T</a>,
    <a href="#when">when</a>,
    <a href="#while">while</a> and
    <a href="#whilst">whilst</a>
@@ -1713,6 +1714,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#rest">rest</a>
    <a href="#pass">pass</a>
    <a href="#quote">quote</a>
+   <a href="#as">as</a>
    <a href="#eval">eval</a>
    <a href="#run">run</a>
    <a href="#def">def</a>
@@ -1753,6 +1755,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#while">while</a>
    <a href="#whilst">whilst</a>
    <a href="#until">until</a>
+   <a href="#untilT">until=T</a>
    <a href="#loop">loop</a>
    <a href="#do">do</a>
    <a href="#at">at</a>
@@ -1832,8 +1835,9 @@ argument types and return values are described with the following abbreviations:
    <a href="#close">close</a>
    <a href="#port">port</a>
    <a href="#listen">listen</a>
-   <a href="#connect">connect</a>
+   <a href="#accept">accept</a>
    <a href="#host">host</a>
+   <a href="#connect">connect</a>
 </code>
 
 <dt>Database
@@ -1926,6 +1930,19 @@ argument types and return values are described with the following abbreviations:
 -> 7
 : (abs 7)
 -> 7
+</code></pre>
+
+<p><dt><a name="accept"><code>(accept 'cnt) -> cnt</code></a>
+<dd>Accepts at a connection of descriptor <code>cnt</code> (as recieved by
+<code><a href="#port">port</a></code>), and returns the new socket descriptor
+<code>cnt</code>. The global variable <code>*Adr</code> is set to the IP address
+of the client. See also <code><a href="#listen">listen</a></code>, <code><a
+href="#connect">connect</a></code> and <code><a href="#*Adr">*Adr</a></code>.
+
+<p><pre><code>
+: (setq *Socket
+   (accept (port 6789)) )        # Accept connection at port 6789
+-> 4
 </code></pre>
 
 <p><dt><a name="all"><code>(all 'foo) -> any</code></a>
@@ -2045,6 +2062,17 @@ Ok
 -> ("abc" "123")
 : Lst
 -> ("abc" "123")
+</code></pre>
+
+<p><dt><a name="as"><code>(as 'any1 . any2) -> any2 | NIL</code></a>
+<dd>Returns <code>any2</code> unevaluated when <code>any1</code> evaluates to
+non-<code>NIL</code>. Otherwise <code>NIL</code> is returned. <code>(as Flg A B
+C)</code> is equivalent to <code>(and Flg '(A B C))</code>. See also <code><a
+href="#quote">quote</a></code>.
+
+<p><pre><code>
+: (as (= 3 3) A B C)
+-> (A B C)
 </code></pre>
 
 <p><dt><a name="asoq"><code>(asoq 'any 'lst) -> lst</code></a>
@@ -2489,7 +2517,7 @@ href="#trim">trim</a></code>.
 
 <p><dt><a name="close"><code>(close 'cnt) -> T</code></a>
 <dd>Closes a file descriptor <code>cnt</code>. See also <code><a
-href="#open">open</a></code>, <code><a href="#listen">listen</a></code>,
+href="#open">open</a></code>, <code><a href="#listen">listen</a></code> and
 <code><a href="#connect">connect</a></code>.
 
 <p><pre><code>
@@ -2948,10 +2976,10 @@ external symbol.
 </code></pre>
 
 <p><dt><a name="extern"><code>(extern 'sym) -> sym|NIL</code></a>
-<dd>Converts a transient symbol to an external symbol. If the symbol is already
-extern, it is returned as it is. Otherwise, it is inserted into the external
-hash table. <code>NIL</code> is returned if <code>sym</code> does not exist. See
-also <code><a href="#intern">intern</a></code>.
+<dd>Creates or finds an external symbol. If a symbol with the name
+<code>sym</code> is already extern, it is returned. Otherwise, a new external
+symbol is returned. <code>NIL</code> is returned if <code>sym</code> does not
+exist in the database. See also <code><a href="#intern">intern</a></code>.
 
 <p><pre><code>
 : (extern "A1b")
@@ -3420,10 +3448,10 @@ $ p
 </code></pre>
 
 <p><dt><a name="intern"><code>(intern 'sym) -> sym</code></a>
-<dd>Converts a transient symbol to an internal symbol. If the symbol is already
-intern, it is returned as it is. Otherwise, it is inserted into the internal
-hash table. See also <code><a href="#extern">extern</a></code> and <code><a
-href="#====">====</a></code>.
+<dd>Creates or finds an internal symbol. If a symbol with the name
+<code>sym</code> is already intern, it is returned. Otherwise, a new internal
+symbol is returned. See also <code><a href="#extern">extern</a></code> and
+<code><a href="#====">====</a></code>.
 
 <p><pre><code>
 : (intern "abc")
@@ -3578,7 +3606,7 @@ Hello world
 <dd>Reads a line of characters from the current input channel. End of line is
 recognized either as return (hex "0D"), as linefeed (hex "0A"), or as a
 return-linefeed sequence (hex "0D0A"). If <code>flg</code> is <code>NIL</code>,
-it returns a list of single-character transient symbols. When <code>cnt</code>
+a list of single-character transient symbols is returned. When <code>cnt</code>
 arguments are given, subsequenct characters of the input line are grouped into
 sublists, to allow parsing of fixed field length records. If <code>flg</code> is
 non-<code>NIL</code>, strings are returned instead of single-character lists.
@@ -3657,11 +3685,12 @@ socket descriptor <code>cnt</code>. If <code>cnt1</code> is
 non-<code>NIL</code>, that amount of milliseconds is waited maximally, and
 <code>NIL</code> is returned upon timeout. The global variable <code>*Adr</code>
 is set to the IP address of the client. See also <code><a
-href="#connect">connect</a></code> and <code><a href="#*Adr">*Adr</a></code>
+href="#accept">accept</a></code>, <code><a href="#connect">connect</a></code>
+and <code><a href="#*Adr">*Adr</a></code>.
 
 <p><pre><code>
 : (setq *Socket
-   (listen (port 6789)) )        # Listen at port 6789 for an indefinite time
+   (listen (port 6789) 60000) )  # Listen at port 6789 for max 60 seconds
 -> 4
 : *Adr
 -> "127.0.0.1"
@@ -4049,8 +4078,8 @@ cannot be located in <code>obj</code>, its classes and superclasses,
 <code>NIL</code> is returned.
 
 <p><pre><code>
-: (method 'stop> '+Dialog)
--> (NIL (super) (close> This))
+: (method 'mis> '+Number)
+-> ((Val Obj) (and Val (not (num? Val)) "Numeric input expected"))
 </code></pre>
 
 <p><dt><a name="min"><code>(min 'any ..) -> any</code></a>
@@ -5224,9 +5253,9 @@ object <code>This</code>, this time starting the search for a method at the
 superclass(es) of the class where the current method was found.
 
 <p><pre><code>
-(dm stop> ()         # `stop>' method of the `+Dialog' class
-   (super)           # Call the `stop>' method of the `+Form' superclass
-   (close> This) )   # then close the connection
+(dm stop> ()         # `stop>' method of current class
+   (super)           # Call the `stop>' method of the superclass
+   ... )             # other things
 </code></pre>
 
 <p><dt><a name="sym"><code>(sym 'any) -> sym</code></a>
@@ -5520,11 +5549,30 @@ Strange result
 <dd>Conditional loop: While the condition <code>any</code> evaluates to
 <code>NIL</code>, <code>prg</code> is repeatedly executed. If <code>prg</code>
 is never executed, <code>NIL</code> is returned. Otherwise the result of
-<code>prg</code> is returned.
+<code>prg</code> is returned. See also <code><a href="#while">while</a></code>
+and <code><a href="#untilT">until=T</a></code>.
 
 <p><pre><code>
 : (until (=T (setq N (read)))
    (println 'square (* N N)) )
+4
+square 16
+9
+square 81
+T
+-> 81
+</code></pre>
+
+<p><dt><a name="untilT"><code>(until=T 'any . prg) -> any</code></a>
+<dd>Conditional loop: While the condition <code>any</code> does not evaluate to
+<code>T</code>, <code>prg</code> is repeatedly executed. If <code>prg</code> is
+never executed, <code>NIL</code> is returned. Otherwise the result of
+<code>prg</code> is returned. See also <code><a href="#until">until</a></code>
+and <code><a href="#whilst">whilst</a></code>.
+
+<p><pre><code>
+: (until=T (read)
+   (println 'square (* @ @)) )
 4
 square 16
 9
@@ -5648,7 +5696,8 @@ Good
 <dd>Conditional loop: While the condition <code>any</code> evaluates to
 non-<code>NIL</code>, <code>prg</code> is repeatedly executed. If
 <code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
-result of <code>prg</code> is returned.
+result of <code>prg</code> is returned. See also <code><a
+href="#whilst">whilst</a></code> and <code><a href="#until">until</a></code>.
 
 <p><pre><code>
 : (while (read)
@@ -5665,7 +5714,8 @@ NIL
 <dd>Conditional loop: While the condition <code>any</code> evaluates to a list
 (a pair or <code>NIL</code>), <code>prg</code> is repeatedly executed. If
 <code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
-result of <code>prg</code> is returned.
+result of <code>prg</code> is returned. See also <code><a
+href="#while">while</a></code> and <code><a href="#untilT">until=T</a></code>.
 
 <p><pre><code>
 : (whilst (read) (println 'got: @))
@@ -5978,7 +6028,8 @@ A -- Number expected
 
 <p><dt><a name="*Adr"><code>*Adr</code></a>
 <dd>A global variable holding the IP address of last recently accepted client.
-See also <code><a href="#listen">listen</a></code>.
+See also <code><a href="#listen">listen</a></code> and <code><a
+href="#accept">accept</a></code>.
 
 <p><pre><code>
 : *Adr

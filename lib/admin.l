@@ -1,4 +1,4 @@
-# 21may03abu
+# 28nov03abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -7,7 +7,14 @@
 (de login (Nm Pw)
    (and
       (db 'nm '+User Nm 'pw Pw)
-      (setq *Login @) ) )
+      (setq *Login @  *Timeout `(* 4 60 60 1000)) ) )
+
+(de logout ()
+   (off *Login)
+   (msg *Pid " / " (stamp))
+   (timeout (setq *Timeout `(* 15 60 1000)))
+   (upd> (: home msg))
+   (and *Bar (upd> *Bar)) )
 
 (de pwForm ()
    (form '(+Form) 360 120
@@ -18,18 +25,20 @@
                (msg *Pid " ?! " (val> (: home nm)))
                `(_ "Permission denied") )
             '(prog
-               (msg *Pid " + " (stamp) " " (val> (: home nm)))
+               (msg *Pid " * " (stamp) " " (val> (: home nm)))
                (flush)
                (upd> (: home msg))
-               (upd> *Bar) )
+               (and *Bar (upd> *Bar)) )
             `(_ "Password") 20 )
          (----)
-         (gui 'msg '(+Upd +Label)
+         (gui 'msg '(+Upd +Mono +Label)
             '(set> This
                (and *Login
                   (pack "'" (get *Login 'nm) `(_ "' logged in")) ) )
             ""
-            "                                        " ) ) ) )
+            "                                        " )
+         (gui '(+Able +Button) '*Login "" `(_ "logout")
+            '(logout) ) ) ) )
 
 
 ### Role ###

@@ -1,15 +1,5 @@
-# 22apr03abu
+# 27nov03abu
 # (c) Software Lab. Alexander Burger
-
-# lib/http.l
-"Text too long" "Text zu lang"
-"Cancel" "Abbruch"
-"No" "Nein"
-"Yes" "Ja"
-"F2-Choice" "F2-Auswahl"
-"Please wait" "Bitte warten"
-"Bad date format" "Falsches Datums-Format"
-"Bad time format" "Falsches Uhrzeit-Format"
 
 # lib/db.l
 "Input required" "Eingabe erforderlich"
@@ -20,20 +10,30 @@
 "Numeric input expected" "Zahleneingabe erforderlich"
 
 # lib/gui.l
-"Choose" "Auswahl"
-"-Choice" "-Auswahl"
-"Create" "Neuanlage"
-"Delete" "Löschen"
+"No" "Nein"
+"Yes" "Ja"
+"F2-Choice" "F2-Auswahl"
+"Cancel" "Abbruch"
+"Please wait" "Bitte warten"
+"Text too long" "Text zu lang"
+"Bad date format" "Falsches Datums-Format"
+"Bad time format" "Falsches Uhrzeit-Format"
+"Delete row" "Zeile löschen"
+"Delete row?" "Zeile löschen?"
 "Next data record" "Nächster Datensatz"
 "Choose/Create" "Auswahl/Neuanlage"
 "Choose/Create (F4)" "Auswahl/Neuanlage (F4)"
 "New/Copy" "Neu/Muster"
-"Deletion" "Löschung"
+"Delete" "Löschen"
 "Delete this data record?" "Bestehenden Datensatz löschen?"
-"Data not found" "Datensatz nicht gefunden"
 "Close" "Schließen"
+"-Choice" "-Auswahl"
+"Choose" "Auswahl"
+"Create" "Neuanlage"
+"Data not found" "Datensatz nicht gefunden"
 
 # lib/admin.l
+"logout" "abmelden"
 "Permission denied" "Keine Berechtigung"
 "Password" "Passwort"
 "' logged in" "' ist angemeldet"

@@ -22,7 +22,7 @@
 Pico Lisp system.
 
 <p>This is <u>not</u> a Lisp tutorial. For an introduction to Lisp, a
-traditional Lisp book, like "Lisp" by Winston/Horn (Addison-Wesley 1981) is
+traditional Lisp book like "Lisp" by Winston/Horn (Addison-Wesley 1981) is
 recommended. Note, however, that there are significant differences between Pico
 Lisp and Maclisp (and even greater differences to Common Lisp).
 
@@ -71,6 +71,7 @@ href="faq.html">Frequently Asked Questions</a>.
    <li><a href="#cmp">Comparing</a>
    <li><a href="#oop">OO Concepts</a>
    <li><a href="#dbase">Database</a>
+   <li><a href="#pilog">Pico Prolog</a>
    <li><a href="#conv">Naming Conventions</a>
    <li><a href="#trad">Breaking Traditions</a>
    </ul>
@@ -111,8 +112,8 @@ data structure is used to build all higher level constructs.
 <dt>Unlimited
 <dd>There are no limits imposed upon the language due to limitations of the
 virtual machine architecture. That is, there is no upper bound in symbol name
-length, number digit counts, or data structure and buffer sizes, except for the
-total memory size of the host machine.
+length, number digit counts, stack depth, or data structure and buffer sizes,
+except for the total memory size of the host machine.
 
 <dt>Dynamic
 <dd>Behavior should be as dynamic as possible ("run"-time vs. "compile"-time).
@@ -198,15 +199,15 @@ and all runtime data cannot consist of any other types than these three.
 the three base types and the symbol variations:
 
 <p><pre><code>
-              cell
-               |
-      +--------+--------+
-      |        |        |
-   Number    Symbol    Pair
-               |
-      +--------+--------+--------+
-      |        |        |        |
-  Internal Transient External   NIL
+                    cell
+                     |
+            +--------+--------+
+            |        |        |
+         Number    Symbol    List
+                     |
+   +--------+--------+--------+
+   |        |        |        |
+  NIL   Internal Transient External
 </code></pre>
 
 
@@ -258,8 +259,8 @@ no name or properties:
       +-----+-----+
 </code></pre>
 
-<p>That is, the symbol's tail is empty, or points to <code>NIL</code> (as
-indicated by the '/' character).
+<p>That is, the symbol's tail is empty (points to <code>NIL</code>, as indicated
+by the '/' character).
 
 <p>The pointer to a symbol points to the <code>CDR</code> of the cell, with an
 offset of 4 from the cell's start address. Therefore, the bit pattern of a
@@ -695,10 +696,10 @@ explicitly with the <code><a href="#====">====</a></code> function. With that
 mechanism, it is possible to create symbols with a local access scope, not
 accessible from other parts of the program.
 
-<p>It is possible to create transient symbols without a name (see <code><a
-href="#box">box</a></code> or <code><a href="#new">new</a></code>). These
-symbols print as a decimal digit string (actually their machine address)
-enclosed in double quotes.
+<p>A special case of transient symbols are <i>anonymous symbols</i>, symbols
+without name (see <code><a href="#box">box</a></code> or <code><a
+href="#new">new</a></code>). They print as a dollar sign (<code>$</code>)
+followed by a decimal digit string (actually their machine address).
 
 
 <p><hr>
@@ -1275,6 +1276,69 @@ href="#rel">rel</a></code> function. Predefined relation classes include
 
 
 <p><hr>
+<h3><a name="pilog">Pilog (Pico Prolog)</a></h3>
+
+<p>A declarative language is built on top of Pico Lisp, that has the semantics
+of Prolog, but uses the syntax of Lisp.
+
+<p>For an explanation of Prolog's declarative programming style, an introduction
+like "Programming in Prolog" by Clocksin/Mellish (Springer-Verlag 1981) is
+recommended.
+
+<p>Facts and rules can be declared with the <code><a href="#be">be</a></code>
+function. For example, a Prolog fact '<code>likes(john,mary).</code>' is written
+in Pilog as:
+
+<p><pre><code>
+(be likes (John Mary))
+</code></pre>
+
+<p>and a rule '<code>likes(john,X) :- likes(X,wine), likes(X,food).</code>' is
+in Pilog:
+
+<p><pre><code>
+(be likes (John @X) (likes @X wine) (likes @X food))
+</code></pre>
+
+<p>As in Prolog, the difference between facts and rules is that the latter ones
+contain variables. A variable in Pilog is any symbol starting with an at-mark
+("<code>@</code>").
+
+<p>The <i>cut</i> operator of Prolog (usually written as an exclamation mark
+(<code>!</code>)) is the symbol <code>T</code> in Pilog.
+
+<p>Pilog can be called from Lisp and vice versa:
+
+<ul>
+
+<li>The interface from Lisp is via the functions <code><a
+href="#goal">goal</a></code> (prepare a query from Lisp data) and <code><a
+href="#prove">prove</a></code> (return an association list of successful
+bindings).
+
+<li>When the <code>CAR</code> of a Pilog clause is a Pilog variable, the
+<code>CDR</code> is executed as a Lisp expression and the result unified with
+that variable.
+
+<li>Within such a Lisp expression in a Pilog clause, the current bindings of
+Pilog variables can be accessed with the <code><a href="#lookup">-&gt</a></code>
+function.
+
+</ul>
+
+<p>An interactive query can be done with the <code><a href="#quest">?</a></code>
+function:
+
+<p><pre><code>
+(? (likes John @X))
+</code></pre>
+
+<p>This will print all solutions, waiting for user input after each line. If a
+non-empty line (not just a <code>RETURN</code> key, but for example a dot
+(<code>.</code>) followed by <code>RETURN</code>) is entered, it will terminate.
+
+
+<p><hr>
 <h3><a name="conv">Naming Conventions</a></h3>
 
 <p>It was necessary to introduce - and adhere to - a set of conventions for Pico
@@ -1521,9 +1585,6 @@ argument types and return values are described with the following abbreviations:
    <a href="#>">&gt</a>
    <a href="#>=">&gt=</a>
    <a href="#match">match</a>
-   <a href="#prove">prove</a>
-   <a href="#lookup">-&gt</a>
-   <a href="#unify">unify</a>
 </code>
 
 <dt>Arithmetics
@@ -1760,6 +1821,16 @@ argument types and return values are described with the following abbreviations:
    <a href="#rel">rel</a>
 </code>
 
+<dt>Pilog
+<dd><code>
+   <a href="#be">be</a>
+   <a href="#goal">goal</a>
+   <a href="#prove">prove</a>
+   <a href="#lookup">-&gt</a>
+   <a href="#unify">unify</a>
+   <a href="#quest">?</a>
+</code>
+
 <dt>Debugging
 <dd><code>
    <a href="#stat">stat</a>
@@ -1931,7 +2002,7 @@ Ok
 <code>lst</code> with <code>any</code> as its <code>CAR</code>, or
 <code>NIL</code> if no match is found. <code><a href="#==">==</a></code> is used
 for comparison (pointer equality). See also <code><a
-href="#assoc">assoc</a></code>, <code><a href="#delq">delq</a></code>, <a
+href="#assoc">assoc</a></code>, <code><a href="#delq">delq</a></code>, <code><a
 href="#memq">memq</a></code> and <code><a href="#mmeq">mmeq</a></code>.
 
 <p><pre><code>
@@ -1984,7 +2055,25 @@ number or a symbol).
 <p><hr>
 <h3><a name="b-foo">B</a></h3>
 
-<dt><a name="begin"><code>(begin) -> T</code></a>
+<p><dt><a name="be"><code>(be sym . any) -> sym</code></a>
+<dd>Declares a <a href="#pilog">Pilog</a> fact or rule for the <code>sym</code>
+argument, by concatenating the <code>any</code> argument to the <code>T</code>
+property of <code>sym</code>. See also <code><a href="#goal">goal</a></code> and
+<code><a href="#prove">prove</a></code>.
+
+<p><pre><code>
+: (be likes (John Mary))
+-> likes
+: (be likes (John @X) (likes @X wine) (likes @X food))
+-> likes
+: (get 'likes T)
+-> (((John Mary)) ((John @X) (likes @X wine) (likes @X food)))
+: (? (likes John @X))
+ @X=Mary
+-> NIL
+</code></pre>
+
+<p><dt><a name="begin"><code>(begin) -> T</code></a>
 <dd>Opens a nested transaction. <u>Not</u> needed for normal single-level
 transaction processing with <code><a href="#commit">commit</a></code> and
 <code><a href="#rollback">rollback</a></code>.
@@ -2089,7 +2178,7 @@ $
 <p><hr>
 <h3><a name="c-foo">C</a></h3>
 
-<dt><a name="caaar"><code>(caaar 'lst) -> any</code></a>
+<p><dt><a name="caaar"><code>(caaar 'lst) -> any</code></a>
 <dd>List access shortcut: Equivalent to <code>(car (car (car 'lst)))</code>.
 
 <p><pre><code>
@@ -2295,7 +2384,7 @@ stream is returned as a single-character transient symbol, or <code>NIL</code>
 upon end of file. When called with a number <code>cnt</code>, a character with
 the corresponding unicode value is returned. As a special case, <code>T</code>
 is accepted to produce a byte value greater than any first byte in a unicode
-character (usable as a top value for comparisons). Otherwise, when called with a
+character (used as a top value in comparisons). Otherwise, when called with a
 symbol <code>sym</code>, the numeric unicode value of the first character of the
 name of that symbol is returned. See also <code><a href="#peek">peek</a></code>,
 <code><a href="#skip">skip</a></code>, <code><a href="#key">key</a></code>,
@@ -2308,7 +2397,7 @@ A                          # (typed `A' and a space/return)
 : (char 100)               # Convert unicode to symbol
 -> "d"
 : (char T)                 # Special case, catch all
--> "ÿ"
+-> # (not printable)
 : (char "d")               # Convert symbol to unicode
 -> 100
 </code></pre>
@@ -2506,7 +2595,7 @@ in <code>var</code>. See also <code><a href="#pop">pop</a></code>.
 <p><hr>
 <h3><a name="d-foo">D</a></h3>
 
-<dt><a name="date"><code>(date) -> dat<br>
+<p><dt><a name="date"><code>(date) -> dat<br>
 (date 'dat) -> (y m d)<br>
 (date 'y 'm 'd) -> dat | NIL<br>
 (date '(y m d)) -> dat | NIL</code></a>
@@ -2623,7 +2712,6 @@ If any of these values existed and was changed in the process, a "redefined"
 message is issued.
 
 <p><pre><code>
-</code>
 : (def 'b '((X Y) (* X (+ X Y))))
 -> b
 : (def 'b 999)
@@ -2667,7 +2755,7 @@ deleted.
 contained more than once in <code>lst</code>, only the first occurrence is
 deleted. <code><a href="#==">==</a></code> is used for comparison (pointer
 equality). See also <code><a href="#delete">delete</a></code>, <code><a
-href="#asoq">asoq</a></code>, <code><a href="#memq">memq</a></code> and <a
+href="#asoq">asoq</a></code>, <code><a href="#memq">memq</a></code> and <code><a
 href="#mmeq">mmeq</a></code>.
 
 <p><pre><code>
@@ -2711,7 +2799,7 @@ Ok done -> done
 <p><hr>
 <h3><a name="e-foo">E</a></h3>
 
-<dt><a name="e"><code>(e . prg) -> any</code></a>
+<p><dt><a name="e"><code>(e . prg) -> any</code></a>
 <dd>Used in a breakpoint. Evaluates <code>prg</code> in the exution environment,
 or the currently executed expression if <code>prg</code> is not given. See also
 <code><a href="#!">!</a></code> and <code><a href="#^">^</a></code>.
@@ -2814,7 +2902,7 @@ was found.
 <p><hr>
 <h3><a name="f-foo">F</a></h3>
 
-<dt><a name="fill"><code>(fill 'any) -> any</code></a>
+<p><dt><a name="fill"><code>(fill 'any) -> any</code></a>
 <dd>Fills a pattern <code>any</code>, by substituting each pattern symbol (see
 <code><a href="#patQ">pat?</a></code>) with its current value. See also <code><a
 href="#match">match</a></code>.
@@ -2965,7 +3053,7 @@ procedure, or the list of formal parameters for other functions.
 <p><hr>
 <h3><a name="g-foo">G</a></h3>
 
-<dt><a name="gc"><code>(gc ['cnt]) -> cnt | NIL</code></a>
+<p><dt><a name="gc"><code>(gc ['cnt]) -> cnt | NIL</code></a>
 <dd>Forces a garbage collection. When <code>cnt</code> is given, that number of
 megabytes of free cells is reserved, increasing the heap size if necessary.
 
@@ -3024,6 +3112,20 @@ by applying the <code><a href="#get">get</a></code> algorithm to
 -> (flg (2 . b) (1 . a))
 </code></pre>
 
+<p><dt><a name="goal"><code>(goal '([sym 'any ..] . lst) ['sym 'any ..]) ->
+lst</code></a> <dd>Constructs a <a href="#pilog">Pilog</a> query list from the
+list of clauses <code>lst</code>. The head of the argument list may consist of a
+sequence of symbols and expressions, which are used together with the optional
+<code>sym</code> and <code>any</code> arguments to form an initial environment.
+See also <code><a href="#prove">prove</a></code>.
+
+<p><pre><code>
+: (goal '((likes John @X)))
+-> (((1 (0) NIL ((likes John @X)) NIL T)))
+: (goal '(@X 'John (likes @X @Y)))
+-> (((1 (0) NIL ((likes @X @Y)) NIL ((0 . @X) 1 . John) T)))
+</code></pre>
+
 <p><dt><a name="gt0"><code>(gt0 'num) -> flg</code></a>
 <dd>Returns <code>T</code> when the <code>num</code> argument is greater than
 zero.
@@ -3039,7 +3141,7 @@ zero.
 <p><hr>
 <h3><a name="h-foo">H</a></h3>
 
-<dt><a name="head"><code>(head 'cnt 'lst) -> lst</code></a>
+<p><dt><a name="head"><code>(head 'cnt 'lst) -> lst</code></a>
 <dd>Returns a new list made of the <u>first</u> <code>cnt</code> elements of
 <code>lst</code>. See also <code><a href="#tail">tail</a></code>. If
 <code>cnt</code> is negative, it is added to the length of <code>lst</code>.
@@ -3083,7 +3185,7 @@ inter-family communication (see <code><a href="#tell">tell</a></code>),
 <p><hr>
 <h3><a name="i-foo">I</a></h3>
 
-<dt><a name="if"><code>(if 'any1 'any2 . prg) -> any</code></a>
+<p><dt><a name="if"><code>(if 'any1 'any2 . prg) -> any</code></a>
 <dd>Conditional execution: If the condition <code>any1</code> evaluates to
 non-<code>NIL</code>, <code>any2</code> is evaluated and returned. Otherwise,
 <code>prg</code> is executed and the result returned.
@@ -3204,7 +3306,7 @@ href="#type">type</a></code>.
 <p><hr>
 <h3><a name="j-foo">J</a></h3>
 
-<dt><a name="job"><code>(job lst . prg) -> any</code></a>
+<p><dt><a name="job"><code>(job lst . prg) -> any</code></a>
 <dd>Executes a job within its own environment (as specified by
 symbol-values-pairs in <code>lst</code>. The current values of all symbols are
 saved, the symbols are bound to the values in <code>lst</code>, <code>prg</code>
@@ -3241,7 +3343,7 @@ href="#use">use</a></code>.
 <p><hr>
 <h3><a name="k-foo">K</a></h3>
 
-<dt><a name="key"><code>(key ['cnt]) -> sym</code></a>
+<p><dt><a name="key"><code>(key ['cnt]) -> sym</code></a>
 <dd>Returns the next character from standard input as a single-character
 transient symbol. The console is set to raw mode. While waiting for a key press,
 a <code>select</code> system call is executed for all file descriptors and
@@ -3272,7 +3374,7 @@ abu@bse:/usr/abu/pico fg                        # Job control: Foreground
 <p><hr>
 <h3><a name="l-foo">L</a></h3>
 
-<dt><a name="last"><code>(last 'lst) -> any</code></a>
+<p><dt><a name="last"><code>(last 'lst) -> any</code></a>
 <dd>Returns the last element of <code>lst</code>.
 
 <p><pre><code>
@@ -3292,7 +3394,7 @@ href="#size">size</a></code>.
 <p><pre><code>
 : (length "abc")
 -> 3
-: (length "äbc")
+: (length "Ã¤bc")
 -> 3
 : (length 123)
 -> 3
@@ -3454,7 +3556,7 @@ href="#rollback">rollback</a></code>.
 
 <p><dt><a name="lookup"><code>(-&gt sym [num]) -> any</code></a>
 <dd>Searches for the current value of the pattern variable <code>sym</code> at
-top level (or level <code>num</code>) in the current Pico Prolog (Pilog)
+top level (or level <code>num</code>) in the current <a href="#pilog">Pilog</a>
 environment. See also <code><a href="#prove">prove</a></code> and <code><a
 href="#unify">unify</a></code>.
 
@@ -3506,7 +3608,7 @@ as it is. Otherwise, a new transient symbol with all characters of
 <p><hr>
 <h3><a name="m-foo">M</a></h3>
 
-<dt><a name="made"><code>(made ['lst1 ['lst2]]) -> lst</code></a>
+<p><dt><a name="made"><code>(made ['lst1 ['lst2]]) -> lst</code></a>
 <dd>Set a new initial list value for the current <code><a
 href="#make">make</a></code> environment. All list elements already produced
 with <code><a href="#chain">chain</a></code> and <code><a
@@ -3726,8 +3828,9 @@ href="#mini">mini</a></code>.
 <dd>Returns the tail of <code>lst</code> that starts with <code>any</code> when
 <code>any</code> is a member of <code>lst</code>, otherwise <code>NIL</code>.
 <code><a href="#==">==</a></code> is used for comparison (pointer equality). See
-also <code><a href="#member">member</a></code>, <a href="#mmeq">mmeq</a></code>,
-<code><a href="#asoq">asoq</a></code> and <code><a href="#delq">delq</a></code>.
+also <code><a href="#member">member</a></code>, <code><a
+href="#mmeq">mmeq</a></code>, <code><a href="#asoq">asoq</a></code> and <code><a
+href="#delq">delq</a></code>.
 
 <p><pre><code>
 : (memq 'c '(a b c d e f))
@@ -3780,7 +3883,6 @@ cannot be located in <code>obj</code>, its classes and superclasses,
 href="#cmp">Comparing</a>.
 
 <p><pre><code>
-</code>
 : (min 2 'a 'z 9)
 -> 2
 : (min (5) (2 3) 'X)
@@ -3833,7 +3935,7 @@ href="#delq">delq</a></code>.
 <p><hr>
 <h3><a name="n-foo">N</a></h3>
 
-<dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
+<p><dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when <u>not</u> all <code>any</code> arguments are
 the same (pointer equality). <code>(n== 'any ..)</code> is equivalent to
 <code>(not (== 'any ..))</code>.
@@ -3998,7 +4100,7 @@ the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
 <p><hr>
 <h3><a name="o-foo">O</a></h3>
 
-<dt><a name="off"><code>(off sym ..) -> NIL</code></a>
+<p><dt><a name="off"><code>(off sym ..) -> NIL</code></a>
 <dd>Stores <code>NIL</code> in the <code>VAL</code>'s of all argument symbols
 <code>sym</code>.
 
@@ -4081,7 +4183,7 @@ href="#load">load</a></code>.
 <p><hr>
 <h3><a name="p-foo">P</a></h3>
 
-<dt><a name="pack"><code>(pack 'any ..) -> sym</code></a>
+<p><dt><a name="pack"><code>(pack 'any ..) -> sym</code></a>
 <dd>Returns a transient symbol whose name is concatenated from all arguments
 <code>any</code>. A <code>NIL</code> arguments contributes nothing to the result
 string, a number is converted to a digit string, a symbol supplies the
@@ -4237,10 +4339,9 @@ channel in encoded binary format. See also <code><a href="#rd">rd</a></code>.
 <p><pre><code>
 : (out "x" (pr 7 "abc" (1 2 3) 'a))          # Print to "x"
 -> a
-:                                            # Exit Pico
-$ hd x                                       # Hexdump of "x"
-00000000  04 0e 0e 61 62 63 01 04 02 04 04 04 06 03 05 61  ...abc.........a
-00000010
+: (hd "x")
+00000000  04 0E 0E 61 62 63 01 04 02 04 04 04 06 03 05 61  ...abc.........a
+-> NIL
 </code></pre>
 
 <p><dt><a name="preQ"><code>(pre? 'sym1 'sym2) -> flg</code></a>
@@ -4370,12 +4471,14 @@ just its value) is returned, suitable for direct (destructive) manipulations.
 </code></pre>
 
 <p><dt><a name="prove"><code>(prove 'lst ['lst]) -> lst</code></a>
-<dd>The Pico Prolog (Pilog) interpreter. Tries to prove the query list in the
-first argument and returns the modified query, or <code>NIL</code> if not
-successful. The optional second argument may contain a list of symbols; in that
-case the successful matches of rules defined for these symbols will be traced.
-See also <code><a href="#lookup">-&gt</a></code> and <code><a
-href="#unify">unify</a></code>.
+<dd>The <a href="#pilog">Pilog</a> interpreter. Tries to prove the query list in
+the first argument, and returns an association list of symbol-value pairs, or
+<code>NIL</code> if not successful. The query list is modified as a side effect,
+allowing subsequent calls to <code>prove</code> for further results. The
+optional second argument may contain a list of symbols; in that case the
+successful matches of rules defined for these symbols will be traced. See also
+<code><a href="#goal">goal</a></code>, <code><a href="#lookup">-&gt</a></code>
+and <code><a href="#unify">unify</a></code>.
 
 <p><pre><code>
 : (prove (goal '((equal 3 3))))
@@ -4446,7 +4549,7 @@ properties for that symbol are lost.
 <p><hr>
 <h3><a name="q-foo">Q</a></h3>
 
-<dt><a name="quote"><code>(quote . any) -> any</code></a>
+<p><dt><a name="quote"><code>(quote . any) -> any</code></a>
 <dd>Returns <code>any</code> unevaluated. The reader recognizes the single quote
 char <code>'</code> as a macro for this function.
 
@@ -4499,7 +4602,7 @@ the error. See also <code><a href="#err">Error Handling</a></code>.
 <p><hr>
 <h3><a name="r-foo">R</a></h3>
 
-<dt><a name="rand"><code>(rand ['cnt1 'cnt2] | ['T]) -> cnt | flg</code></a>
+<p><dt><a name="rand"><code>(rand ['cnt1 'cnt2] | ['T]) -> cnt | flg</code></a>
 <dd>Returns a pseudo random number in the range cnt1 .. cnt2 (or -2147483648 ..
 +2147483647 if no arguments are given). If the argument is <code>T</code>, a
 boolean value <code>flg</code> is returned. See also <code><a
@@ -4672,7 +4775,7 @@ Ok
 <p><hr>
 <h3><a name="s-foo">S</a></h3>
 
-<dt><a name="seed"><code>(seed 'any) -> cnt</code></a>
+<p><dt><a name="seed"><code>(seed 'any) -> cnt</code></a>
 <dd>Initializes the random generator's seed, and returns a pseudo random number
 in the range -2147483648 .. +2147483647. See also <code><a
 href="#rand">rand</a></code>.
@@ -4760,7 +4863,7 @@ href="#length">length</a></code>.
 <p><pre><code>
 : (size "abc")
 -> 3
-: (size "äbc")
+: (size "Ã¤bc")
 -> 4
 : (size 123)
 -> 1
@@ -4978,7 +5081,7 @@ superclass(es) of the class where the current method was found.
 
 <p><dt><a name="sync"><code>(sync) -> flg</code></a>
 <dd>Waits for pending data from all family processes. While other processes are
-still sending data (via the <code><a href"#tell">tell</a></code> mechanism, a
+still sending data (via the <code><a href="#tell">tell</a></code> mechanism, a
 <code>select</code> system call is executed for all file descriptors and timers
 in the <code>VAL</code> of the global variable <code><a
 href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
@@ -4993,12 +5096,12 @@ href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
 <p><hr>
 <h3><a name="t-foo">T</a></h3>
 
-<dt><a name="T"><code>T</code></a>
+<p><dt><a name="T"><code>T</code></a>
 <dd>A global constant, evaluating to itself. <code>T</code> is commonly returned
 as the boolean value "true" (though any non-<code>NIL</code> values could be
-used). As a property key, it is used to store Pico Prolog (Pilog) clauses, and
-inside Pilog clauses it is the <i>cut</i> operator. See also <code><a
-href="#nilSym">NIL</a></code>.
+used). As a property key, it is used to store <a href="#pilog">Pilog</a>
+clauses, and inside Pilog clauses it is the <i>cut</i> operator. See also
+<code><a href="#nilSym">NIL</a></code>.
 
 <p><pre><code>
 : T
@@ -5111,7 +5214,7 @@ profiling, <code>tick</code> is usually inserted into words with
 <dd>Reads from the current input channel till a character contained in
 <code>sym</code> is found. If <code>flg</code> is <code>NIL</code>, a list of
 single-character transient symbols is returned. Otherwise, a single string is
-returned. See also <code><a href="#from">from</a> and <code><a
+returned. See also <code><a href="#from">from</a></code> and <code><a
 href="#line">line</a></code>.
 
 <p><pre><code>
@@ -5203,11 +5306,12 @@ href="#clip">clip</a></code>.
 <p><hr>
 <h3><a name="u-foo">U</a></h3>
 
-<dt><a name="unify"><code>(unify 'any) -> lst</code></a>
-<dd>Unifies <code>any</code> with the current Pico Prolog (Pilog) environment at
-the current level and with a value of <code>NIL</code>, and returns the new
-environment or <code>NIL</code> if not successful. See also <code><a
-href="#prove">prove</a></code> and <code><a href="#lookup">-&gt</a></code>.
+<p><dt><a name="unify"><code>(unify 'any) -> lst</code></a>
+<dd>Unifies <code>any</code> with the current <a href="#pilog">Pilog</a>
+environment at the current level and with a value of <code>NIL</code>, and
+returns the new environment or <code>NIL</code> if not successful. See also
+<code><a href="#prove">prove</a></code> and <code><a
+href="#lookup">-&gt</a></code>.
 
 <p><pre><code>
 : (? (@A unify '(@B @C)))
@@ -5298,7 +5402,7 @@ href="#job">job</a></code> and <code><a href="#let">let</a></code>.
 <p><hr>
 <h3><a name="v-foo">V</a></h3>
 
-<dt><a name="val"><code>(val 'var) -> any</code></a>
+<p><dt><a name="val"><code>(val 'var) -> any</code></a>
 <dd>Returns the current value of <code>var</code>.
 
 <p><pre><code>
@@ -5314,7 +5418,7 @@ href="#job">job</a></code> and <code><a href="#let">let</a></code>.
 <p><hr>
 <h3><a name="w-foo">W</a></h3>
 
-<dt><a name="wait"><code>(wait ['cnt] . prg) -> any</code></a>
+<p><dt><a name="wait"><code>(wait ['cnt] . prg) -> any</code></a>
 <dd>Waits for a condition. While the result of the execution of <code>prg</code>
 returns non-<code>NIL</code>, a <code>select</code> system call is executed for
 all file descriptors and timers in the <code>VAL</code> of the global variable
@@ -5433,7 +5537,7 @@ the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
 <p><hr>
 <h3><a name="x-foo">X</a></h3>
 
-<dt><a name="xchg"><code>(xchg 'var 'var ..) -> any</code></a>
+<p><dt><a name="xchg"><code>(xchg 'var 'var ..) -> any</code></a>
 <dd>Exchange the values of successive <code>var</code> argument pairs.
 
 <p><pre><code>
@@ -5468,7 +5572,7 @@ the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
 <h3><a name="z-foo">Z</a></h3>
 
 
-<dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
+<p><dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
 <dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
 remove it from the internal hash table, effectively transforming it to a
 transient symbol. For external symbols, it means to mark it as "deleted", so
@@ -5509,7 +5613,7 @@ car -- Undefined
 <p><hr>
 <h3><a name="pun-foo">Other</a></h3>
 
-<dt><a name="!"><code>(! . prg) -> any</code></a>
+<p><dt><a name="!"><code>(! . prg) -> any</code></a>
 <dd>Low level breakpoint function: The current execution environment is saved
 and the I/O channels are redirected to the console. Then <code>prg</code> is
 displayed, and a read-eval-print-loop is entered (with <code>!</code> as its
@@ -5989,9 +6093,10 @@ performed.
 -> -32
 </code></pre>
 
-<p><dt><a name="?"><code>"?"</code></a>
-<dd>Top-level function for Pico Prolog (Pilog) queries. It displays each result,
-waits for console input, and terminates when a non-empty line is entered.
+<p><dt><a name="quest"><code>(? [sym 'any ..] . lst) -> flg</code></a>
+<dd>Top-level function for <a href="#pilog">Pilog</a> queries. It displays each
+result, waits for console input, and terminates when a non-empty line is
+entered.
 
 <p><pre><code>
 : (? (append (a b c) (d e f) @X))

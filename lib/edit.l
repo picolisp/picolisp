@@ -1,4 +1,4 @@
-# 03dec02abu
+# 27dec02abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -33,7 +33,7 @@
                                        (prin "  # ")
                                        (print @) )
                                     ((<= 100000 "X" 999999)
-                                       (prin "  # " (datSym "X")) ) )
+                                       (prin "  # " (datStr "X")) ) )
                                  (prinl) ) )
                            (sort (getl This)) )
                         (prinl)
@@ -64,7 +64,3 @@
       ((pair "X")
          ("loc" (car "X"))
          ("loc" (cdr "X")) ) ) )
-
-# Documentation Viewer
-(de doc ("X")
-   (call "ww" (pack "file:doc/ref.html#" "X")) )

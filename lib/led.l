@@ -1,4 +1,4 @@
-# 12dec02abu
+# 20dec02abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -341,6 +341,7 @@
          (member
             (setq C (let *Dbg "Dbg" (key)))
             '("^J" "^M") )
+         (or C (bye))
          ((if "Insert" insMode cmdMode) C) ) ) )
 
 # Function keys
@@ -367,6 +368,5 @@
          (<> " " (car "Line"))
          (<> "Line" (car "History"))
          (push '"History" "Line") )
-      (if (nth "History" "HistMax")
-         (con (nth "History" "HistMax")) )
+      (and (nth "History" "HistMax") (con @))
       (prog1 (pack "Line") (off "Line")) ) )

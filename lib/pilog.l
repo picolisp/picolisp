@@ -1,4 +1,4 @@
-# 22sep02abu
+# 19dec02abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -49,14 +49,14 @@
       (while (args)
          (push 'Env
             (cons (cons 0 (next)) (cons 1 (next))) ) )
-      (while (and "CL" (sym? (car "CL")))
+      (while (and "CL" (pat? (car "CL")))
          (push 'Env
             (cons
                (cons 0 (pop '"CL"))
                (cons 1 (eval (pop '"CL"))) ) ) )
       (cons
          (cons
-            (conc (make (link 1 (0) NIL "CL" NIL)) Env) ) ) ) )
+            (conc (list 1 (0) NIL "CL" NIL) Env) ) ) ) )
 
 (de fail ()
    (goal '((NIL))) )

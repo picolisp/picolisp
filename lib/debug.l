@@ -1,4 +1,4 @@
-# 28nov02abu
+# 18dec02abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -284,7 +284,7 @@
                (mapc
                   '((N) (prin (pad 2 (hex N)) " "))
                   L )
-               (space (+ 2 (* 3 (- 16 (length L)))))
+               (space (+ 1 (* 3 (- 16 (length L)))))
                (mapc
                   '((N) (prin (if (<= 32 N 127) (char N) ".")))
                   L )

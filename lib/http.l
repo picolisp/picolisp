@@ -1,4 +1,4 @@
-# 12dec02abu
+# 20dec02abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -46,7 +46,7 @@
 # Pico Shell
 (de psh (Pw Tty)
    (when (and (= Pw (pw)) (in (list "ps" (pack "t" Tty)) (from "/psh ")))
-      (ctty (pack "/dev/" Tty))
+      (ctty Tty)
       (out NIL (load "dbg.l" NIL))
       (bye) ) )
 

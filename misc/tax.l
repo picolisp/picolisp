@@ -1,4 +1,4 @@
-# 06dec02abu
+# 18dec02abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -472,6 +472,7 @@
 
 
 (de main ()
+   (locale "DE" "de")
    (pool "tax.db") )
 
 (de go ()

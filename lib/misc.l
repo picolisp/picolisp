@@ -1,4 +1,4 @@
-# 03dec02abu
+# 27dec02abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -16,7 +16,7 @@
       (push '*Str (car Str)) ) )
 
 (de locale (Ctry Lang Dir)  # "DE" "de" ["app/loc/"]
-   (load (pack "loc/" (setq *Ctry Ctry)))
+   (load (if (setq *Ctry Ctry) (pack "loc/" @) "loc/NIL"))
    (ifn (setq *Lang Lang)
       (mapc '(("S") (set "S" "S")) *Str)
       (locStr (pack "loc/" Lang))

@@ -62,7 +62,6 @@ just jump anywhere you are interested in.
 <li><a href="#db">Database Progamming</a>
 <li><a href="#gui">User Interface Programming</a>
 <li><a href="#pilog">Pilog -- Pico Prolog</a>
-<li><a href="#pit">Pitfalls</a>
 <li><a href="#ref">References</a>
 </ul>
 
@@ -396,7 +395,7 @@ with <code>pp</code>:
 -> ((del> . +Relation) (del> . +Entity) (del> . +List))
 : (more (can 'del>) pp)                         # Inspect the methods with 'pp'
 (dm (del> . +Relation) (Obj Old Val)
-   (and (<> Old Val) Val) )
+   (and (&lt;&gt;> Old Val) Val) )
 
 (dm (del> . +Entity) (Var Val)
    (when
@@ -772,8 +771,6 @@ href="ref.html#stamp">stamp</a></code> system function.
          (pad 2 (cadr Tim)) ":"
          (pad 2 (caddr Tim)) ) ) )
 </code></pre>
-
-<p>
 
 <p><pre><code>
 : (debug 'stamp)                       # Debug it
@@ -1261,11 +1258,11 @@ entity/relation class framework (see also <a href="ref.html#dbase">Database</a>)
 which allows a close mapping of the application data structure to the database.
 
 <p>We provided a simple yet complete database and GUI demo application in
-<code><a href="famDb.l">doc/famDb.l</a></code>. We recommend to start it up for
-testing purposes in the following way:
+<code><a href="family.l">doc/family.l</a></code>. We recommend to start it up
+for test purposes in the following way:
 
 <p><pre><code>
-$ ./p dbg.l doc/famDb.l -main
+$ ./p dbg.l doc/family.l -main
 :
 </code></pre>
 
@@ -1280,12 +1277,12 @@ and two subclasses <code>+Man</code> and <code>+Woman</code>.
 </code></pre>
 
 <p><code>+Person</code> is a subclass of the <code>+Entity</code> system class.
-Usually all data in a database are a direct or indirect subclasses of
+Usually all data in a database are a direct or indirect subclass of
 <code>+Entity</code>. We can then define the relations to other data with the
 <code><a href="ref.html#rel">rel</a></code> function.
 
 <p><pre><code>
-(rel nm     (+Key +String))                     # Name
+(rel nm     (+Need +Sn +Idx +String))           # Name
 </code></pre>
 
 <p>This defines the name property (<code>nm</code>) of a person. The first
@@ -1331,9 +1328,10 @@ relations
 </ul>
 
 <p>In the case of the person's name (<code>nm</code>) above, the relation object
-is of type <code>(+Key +String)</code>. Thus, the name of each person in this
-demo database must be unique, and the person object can be located with a single
-index lookup.
+is of type <code>(+Need +Sn +Idx +String)</code>. Thus, the name of each person
+in this demo database is a mandatory attribute (<code>+Need</code>), searchable
+with the soundex algorithm (<code>+Sn</code>) and a full index
+(<code>+Idx</code>) of type <code>+String</code>.
 
 <p><pre><code>
 (rel pa     (+Joint) kids (+Man))               # Father
@@ -1370,28 +1368,15 @@ relations as <code>+Joint</code>s.
 <p>The last four attributes of person objects are just static data:
 
 <p><pre><code>
-(rel job    (+String))                          # Occupation
-(rel dat    (+Date))                            # Date of birth
-(rel fin    (+Date))                            # Date of death
+(rel job    (+Ref +String))                     # Occupation
+(rel dat    (+Ref +Date))                       # Date of birth
+(rel fin    (+Ref +Date))                       # Date of death
 (rel txt    (+String))                          # Info
 </code></pre>
 
-<p>Notes:
-<ol>
-<li>Date values in Pico are just numbers, representing the numbers of days since
-first of March in the year zero.
-
-<li>If want to search your database later for persons given their occupation
-or date of birth, you might also write:
-
-<p><pre><code>
-(rel job    (+Ref +String))                     # Occupation
-(rel dat    (+Ref +Date))                       # Date of birth
-</code></pre>
-
-<p>to create non-unique indices for these values.
-
-</ol>
+<p>They are all searchable via a non-unique index (<code>+Ref</code>). Date
+values in Pico are just numbers, representing the numbers of days since first of
+March in the year zero.
 
 <p>A method <code>url&gt;</code> is defined:
 
@@ -1419,6 +1404,103 @@ object.
 <code>ma</code> attribute of the child, depending on the parent's gender.
 
 <p>That's the whole data model for our demo database application.
+
+<p>A handful of access functions is provided, that knows about database
+relationships and thus allows higher-level access modes to the external symbols
+in a database.
+
+<p>For one thing, the binary trees created and maintained by the index daemons
+can be used directly. Though this is rarely done in a typical application, they
+form the base mechanisms of other access modes and should be understood first.
+
+<p>The function <code>tree</code> returns the tree for a given relation. For
+example, to get the index of birth dates in the family database:
+
+<p><pre><code>
+: (tree 'dat '+Person)
+-> (71 . {CC})
+</code></pre>
+
+<p><code>71</code> is the number of nodes currently in that tree, and
+<code>{CC}</code> ist the current root node. To iterate over the whole tree, the
+functions <code>iter</code> and <code>scan</code> can be used:
+
+<p><pre><code>
+(iter (tree 'dat '+Person) '((P) (println (datStr (get P 'dat)) (get P 'nm))))
+"1770-08-03" "Friedrich Wilhelm III"
+"1776-03-10" "Luise Augusta of Mecklenburg-Strelitz"
+"1797-03-22" "Wilhelm I"
+...
+</code></pre>
+
+<p>They take a function as the first argument. It will be applied to all objects
+found in the tree (to show only a part of the tree, an optional begin- and
+end-value can be supplied), producing a simple kind of report.
+
+<p>More useful is <code>collect</code>; it returns a list of all objects that
+fall into a range of index values:
+
+<p><pre><code>
+: (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31))
+-> ({1V} {1r} {2P})
+</code></pre>
+
+<p>This returns all persons born between 1982 and 1988. Let's look at them with
+<code>show</code>:
+
+<p><pre><code>
+: (more (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31)) show)
+{1V} (+Man)
+   nm "William"
+   dat 724023
+   ma {U}
+   pa {L}
+   job "Heir to the throne"
+
+{1r} (+Man)
+   nm "Henry"
+   dat 724840
+   ma {U}
+   pa {L}
+   job "Prince"
+
+{2P} (+Woman)
+   nm "Beatrice"
+   dat 726263
+   ma {1I}
+   job "Princess"
+   pa {1B}
+-> T
+</code></pre>
+
+<p>If you are only interested in a certain attribute, e.g. the name, you can
+return it directly:
+
+<p><pre><code>
+: (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31) 'nm)
+-> ("William" "Henry" "Beatrice")
+</code></pre>
+
+<p>To find a single object in the database, the function <code>db</code> is
+used:
+
+<p><pre><code>
+: (db 'nm '+Person "Edward")
+-> {2R}
+</code></pre>
+
+<p>If the key is not unique, additional arguments may be supplied:
+
+<p><pre><code>
+: (db 'nm '+Person "Edward"  'job "Prince"  'dat (date 1964 3 10))
+-> {2R}
+</code></pre>
+
+<p>The programmer must know which combination of keys will suffice to specify
+the object uniquely. The tree search is performed using the first value
+("Edward"), while all other attributes are used for filtering. Later, in the <a
+href="#pilog">Pilog</a> section, we will show how more general (and possibly
+more efficient) searches can be performed.
 
 
 <p><hr>
@@ -1449,16 +1531,16 @@ like. To terminate the server, you have to send it a TERM signal (e.g.
 
 <p>In our demo database application, a single function <code>person</code> is
 responsible for the whole GUI. Again, please look at <code><a
-href="famDb.l">doc/famDb.l</a></code>.
+href="family.l">doc/family.l</a></code>.
 
 <p>To start the database <i>and</i> the application server, call:
 
 <p><pre><code>
-$ ./p dbg.l doc/famDb.l -main -go
+$ ./p dbg.l doc/family.l -main -go
 </code></pre>
 
 <p>As before, the database is opened with <code>main</code>. The function
-<code>go</code> is also defined in <code>doc/famDb.l</code>:
+<code>go</code> is also defined in <code>doc/family.l</code>:
 
 <p><pre><code>
 (de go ()
@@ -1474,18 +1556,41 @@ invoked.
 href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'
 (please make sure that <code>Java</code> is enabled).
 
-<p>You should see a new browser window with the input form created by the
-function <code>person</code>. If you started the application for the first time,
-it should be empty (in fact, it displays the empty <code>+Man</code> object
-created by <code>main</code>). Please type a name into the first field, and
+<p>You should see a new browser window with an input form created by the
+function <code>person</code>. We provided an initial database in
+"doc/family.db". You can navigate through it by double-clicking on the blue
+fields (or with a single-click followed by <code>F3</code>).
+
+<p>The chart with the children data can be scrolled using the <code>PgUp</code>,
+<code>PgDown</code> and the <code>Up</code> and <code>Down</code> arrow keys.
+
+<p>A click on the button "Choose/Create" below (or a hit on <code>F4</code>)
+opens a search dialog. You can scroll through the chart <code>PgUp</code>,
+<code>PgDown</code> and the <code>Up</code> and <code>Down</code> arrow keys.
+Again, a double-click on a blue fields (or a single-click and a click on the
+"Choose"-button) will jump to that person. You can abort the dialog with the
+<code>ESC</code> key (or a click on the "Cancel"-button).
+
+<p>The search fields in the upper part of the dialog allow a conjunctive search.
+If you enter "Edward" in the "Name" field and hit <code>F4</code>, you'll see
+all persons having the string "Edward" in their name. If you also enter "Duke"
+in the "Occupation" field, the result list will reduce to only two entries.
+
+<p>To create a new person, press the "New Man" or "New Woman" button. A new
+empty form will be displayed. Please type a name into the first field, and
 perhaps also an occupation and birth date.
 
-<p>To assign a <i>father</i> attribute, you must first create a new person:
-Click on the "Man" button at the bottom of the page. A search dialog pops up, so
-click on "create" to get a new person. Again, enter a name and perhaps
-occupation and birth date. Then click on the first field in the "Children"
-chart. You can select the child by either typing the first char(s) of the name
-and/or by hitting <code>F2</code> for a selection list.
+<p>To assign a <i>father</i> attribute, you can either type a name directly into
+the field (if that person already exists in the database and you know the exact
+spelling), or use the "Set"-button (<code>-&gt;</code>) to the left of that
+field to open the search dialog. If you type in the name directly, your input
+must exactly match upper and lower case. You may use <code>F2</code> after the
+first few keys to see proposals from the database. With the search dialog, you
+may also assign a new person to the father attribute by hitting "New Man" and
+filling in the data.
+
+<p>Alternatively, you may create a new person and assign a child in the
+"Children" chart.
 
 <p>If you go back now to the first object (with browser navigation or with the
 '<code>&lt;&lt;&lt;</code>' link in the upper right corner), the "Father" field
@@ -1510,7 +1615,7 @@ interactively while it is running. For example, the global variable
 <p>A production application would be started in a slightly different way:
 
 <p><pre><code>
-$ ./p doc/famDb.l -main -go -wait
+$ ./p doc/family.l -main -go -wait
 </code></pre>
 
 <p>In that case, no debug prompt will appear. In both cases, however, two
@@ -1609,7 +1714,7 @@ the AWT <code>GridBagLayout</code> to arrange components in panels, so calling
    (---- T)
    (gui '(+E/R +Chart)
       '(kids : home obj)
-      5 '("Children" "born" "Father" "Mother")
+      4 '("Children" "born" "Father" "Mother")
       (quote
    ...
 </code></pre>
@@ -1628,17 +1733,203 @@ class. The above function <code>person</code> is fully functional as we present
 it and allows creation, modification and deletion of person objects in the
 database.
 
+<p>The two buttons on the bottom right generate simple reports:
+
+<p>The first one shows all contemporaries of the person that is currently
+displayed, i.e. all persons who did not die before, or were not born after that
+person. This is a typical Pico report, in that in addition to the report's
+<code>HTML</code> page, a temporary file is generated which is suitable for
+download (and import into a spread sheet), and from which a <code>PDF</code> can
+be produced for print-out.
+
+<p>In Pico, there is not a real difference between a plain <code>HTML</code> GUI
+and a report. Again, the function <code>html</code> is used to generate the
+page. By calling the function <code>report</code>, however, the temporary file
+and the links for download and <code>PDF</code> are created. A <code>HTML</code>
+table is then filled with the function <code>record</code> which takes care of
+all necessary output management.
+
+<p>The second report is much simpler. It produces a recursive structure of the
+family.
+
+<p>In both reports, links to the person objects are created which allow easy
+navigation through the database.
+
 
 <p><hr>
 <h3><a name="pilog">Pilog -- Pico Prolog</a></h3>
 
-<p>Work in progress ..
+<p>This sections explains some cases of using Pilog in typical application
+programming, in combination with persistent objects and databases. Please refer
+to the <a href="ref.html#pilog">Pilog</a> section of the Pico Lisp Reference for
+the basic usage of Pilog.
 
+<p>Again, we use our demo application <code><a
+href="family.l">doc/family.l</a></code> that was introduced in the <a
+href="#db">Database Progamming</a> section.
 
-<p><hr>
-<h3><a name="pit">Pitfalls</a></h3>
+<p>Normally, Pilog is used either interactively to query the database during
+debugging, or in applications to generate export data and reports. In the
+following examples we use the interactive query function <code><a
+href="ref.html#quest">?</a></code>. An application will use <code><a
+href="ref.html#goal">goal</a></code> and <code><a
+href="ref.html#prove">prove</a></code> directly, or use convenience functions
+like <code>pilog</code> or <code>solve</code>.
 
-<p>Work in progress ..
+<p>All Pilog access to external symbols is done via the two predicates
+<code>db</code> and <code>select</code>.
+
+<ul>
+
+<li><code>db</code> corresponds to the Lisp-level functions <code>db</code> and
+<code>collect</code>, as it derives its data from a single relation. It can be
+used for simple database queries.
+
+<li><code>select</code> has no corresponding Lisp function. It provides for
+self-optimizing parallel access to an arbitrary number of relations.
+
+</ul>
+
+<p>A predicate <code>show</code> is pre-defined for debugging purposes (a simple
+glue to the Lisp-level function <code>show</code>, see <a
+href="#brw">Browsing</a>). Searching with <code>db</code> for all persons having
+the string "Edward" in their name:
+
+<p><pre><code>
+: (? (db nm +Person "Edward" @P) (show @P))
+{2R} (+Man)
+   nm "Edward"
+   ma {2}
+   pa {C}
+   dat 717346
+   job "Prince"
+ @P={2R}
+{4f} (+Man)
+   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+   nm "Albert Edward"
+   job "Prince"
+   mate {4o}
+   fin 680370
+   dat 664554
+ @P={4f}
+...               # more results
+</code></pre>
+
+<p>To search for all persons with "Edward" in their name who are married to
+somebody with occupation "Queen":
+
+<p><pre><code>
+: (? (db nm +Person "Edward" @P) (val "Queen" @P mate job) (show @P))
+{4f} (+Man)
+   mate {4o}
+   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+   nm "Albert Edward"
+   job "Prince"
+   fin 680370
+   dat 664554
+ @P={4f}
+-> NIL            # only one result
+</code></pre>
+
+<p>If you are interested in the names of "Albert Edward"'s children:
+
+<p><pre><code>
+: (? (db nm +Person "Albert Edward" @P) (lst @K @P kids) (val @Kid @K nm))
+ @P={4f} @K={:z} @Kid="Beatrice Mary Victoria"
+ @P={4f} @K={:g} @Kid="Leopold George Duncan"
+ @P={4f} @K={:M} @Kid="Arthur William Patrick"
+ @P={4f} @K={:3} @Kid="Louise Caroline Alberta"
+ @P={4f} @K={9i} @Kid="Helena Augusta Victoria"
+ @P={4f} @K={9Q} @Kid="Alfred Ernest Albert"
+ @P={4f} @K={9D} @Kid="Alice Maud Mary"
+ @P={4f} @K={8e} @Kid="Victoria Adelaide Mary"
+ @P={4f} @K={4U} @Kid="Edward VII"
+-> NIL
+</code></pre>
+
+<p><code>db</code> can do a direct index access only for a single attribute
+(<code>nm</code> of <code>+Person</code> above). To search for several criteria
+at the same time, <code>select</code> has to be used:
+
+<p><pre><code>
+: (?
+   (select (@P)
+      ((nm +Person "Edward") (nm +Person "Augusta" pa))  # Generator clauses
+      (tolr "Edward" @P nm)                              # Filter clauses
+      (tolr "Augusta" @P kids nm) )
+   (show @P) )
+{4f} (+Man)
+   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+   nm "Albert Edward"
+   job "Prince"
+   mate {4o}
+   fin 680370
+   dat 664554
+ @P={4f}
+-> NIL
+</code></pre>
+
+<p><code>select</code> takes a list of generator clauses which are used to
+retrieve objects from the database, and a number of normal Pilog filter clauses.
+In the example above the generators are
+
+<ul>
+
+<li><code>(nm +Person "Edward")</code> to generate persons with "Edward" in
+their names, and
+
+<li><code>(nm +Person "Augusta" pa)</code> to find persons with "Augusta" in
+their names and generate persons using the <code>pa</code> ("father") attribute.
+
+</ul>
+
+<p>All persons generated are possible candidates for our selection. The
+<code>nm</code> index tree of <code>+Person</code> is traversed twice in
+parallel, optimizing the search in such a way that successful hits get higher
+priority in the search, depending on the filter clauses. The process will stop
+as soon as any one of the generators is exhausted. Note that this is different
+from the standard Prolog search algorithm.
+
+<p>The filter clauses in this example both use the pre-defined predicate
+<code>tolr</code> for <i>tolerant</i> string matches (according either to the
+soundex algorithm (see the section <a href="#db">Database Progamming</a>) or to
+substring matches), and filter objects that
+
+<ul>
+
+<li>match "Edward" in their name: <code>(tolr "Edward" @P nm)</code>, and
+
+<li>match "Augusta" in one of their kids' names: <code>(tolr "Augusta" @P kids nm)</code>
+
+</ul>
+
+<p>A more extensive example for the usage of <code>select</code> can be found in
+the <code>qPerson</code> function in <code><a
+href="family.l">doc/family.l</a></code>. It is used in the search dialog of the
+demo application, and searches for a person with the name, the parents' and
+partner's names, the occupation and a time range for the birth date.
+
+<p>In principle, <code>db</code> can be seen as a special case of
+<code>select</code>. The following two queries are equivalent:
+
+<p><pre><code>
+: (? (db nm +Person "Edward" @P))
+ @P={2R}
+ @P={4f}
+ @P={5y}
+ @P={89}
+ @P={4U}
+ @P={46}
+-> NIL
+: (? (select (@P) ((nm +Person "Edward")))) 
+ @P={2R}
+ @P={4f}
+ @P={5y}
+ @P={89}
+ @P={4U}
+ @P={46}
+-> NIL
+</code></pre>
 
 
 <p><hr>

@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 28may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -86,7 +86,7 @@ any doHost(any x) {
 
    x = evSym(cdr(x));
    {
-      char nm[bufSize(x)];
+      byte nm[bufSize(x)];
 
       bufString(x, nm);
       if (inet_aton(nm, &in) && (p = gethostbyaddr((char*)&in, sizeof(in), AF_INET)))
@@ -104,7 +104,7 @@ any doConnect(any ex) {
 
    x = evSym(cdr(ex));
    {
-      char nm[bufSize(x)];
+      byte nm[bufSize(x)];
 
       bufString(x, nm);
       bzero((char*)&addr, sizeof(addr));

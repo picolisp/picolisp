@@ -1,4 +1,4 @@
-/* 04apr03abu
+/* 26may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -173,16 +173,17 @@ any doConc(any x) {
    return Pop(c1);
 }
 
-// (circ 'lst) -> lst
+// (circ 'any ..) -> lst
 any doCirc(any x) {
-   x = cdr(x);
-   if (isCell(x = EVAL(car(x)))) {
-      any y;
+   any y;
+   cell c1;
 
-      for (y = x;  isCell(cdr(y));  y = cdr(y));
-      cdr(y) = x;
-   }
-   return x;
+   x = cdr(x);
+   Push(c1, y = cons(EVAL(car(x)),Nil));
+   while (isCell(x = cdr(x)))
+      y = cdr(y) = cons(EVAL(car(x)),Nil);
+   cdr(y) = data(c1);
+   return Pop(c1);
 }
 
 // (rot 'lst ['cnt]) -> lst
@@ -207,8 +208,7 @@ any doList(any x) {
    any y;
    cell c1;
 
-   if (!isCell(x = cdr(x)))
-      return x;
+   x = cdr(x);
    Push(c1, y = cons(EVAL(car(x)),Nil));
    while (isCell(x = cdr(x)))
       y = cdr(y) = cons(EVAL(car(x)),Nil);

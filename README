@@ -1,4 +1,4 @@
-17dec02abu
+21may03abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -87,6 +87,9 @@ application's data model. Because the application logic runs on the server,
 multiple users can view and modify the same database object without conflicts,
 everyone seeing changes done by other users on her screen immediately due to the
 internal process and database synchronization.
+
+A more deep explanation of the programming paradigms can be found at
+"http://software-lab.de/dbui.html".
 
 Pico Lisp compiles and runs only under Linux :-)
 

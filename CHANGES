@@ -1,3 +1,12 @@
+* 08jun03 picoLisp-2.0.6
+   Allowed '#' in symbol names
+   Changed 'eps' in "lib/ps.l"
+   Interactive DB tools in "lib/sq.l"
+   'revise' line editor function
+   'circ'changed to individual arguments
+   Moved code-libraries to "lib/"
+   Moved *.jar-files to "java/"
+
 * 23apr03 picoLisp-2.0.5
    'mail' changed to direct SMTP
    'sys' environment access function

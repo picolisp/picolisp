@@ -1,4 +1,4 @@
-# 23jan03abu
+# 27may03abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -32,7 +32,7 @@
                                     ((type "X")
                                        (prin "  # ")
                                        (print @) )
-                                    ((<= 100000 "X" 999999)
+                                    ((<= 666666 "X" 999999)
                                        (prin "  # " (datStr "X")) ) )
                                  (prinl) ) )
                            (sort (getl This)) )

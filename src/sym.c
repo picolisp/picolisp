@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 06jun03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -237,15 +237,14 @@ any doZap(any ex) {
    return x;
 }
 
-// (chop 'sym) -> lst
-any doChop(any ex) {
-   any x;
+// (chop 'any) -> lst
+any doChop(any x) {
    int c;
    cell c1, c2;
 
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
-   if (isNil(x)  ||  !(c = symChar(name(x))))
+   if (isCell(x = EVAL(cadr(x))))
+      return x;
+   if (!(c = symChar(name(x = xSym(x)))))
       return Nil;
    Push(c1, x);
    Push(c2, x = cons(mkChar(c), Nil));
@@ -296,9 +295,7 @@ any doPack(any x) {
    while (isCell(x = cdr(x)))
       pack(data(c1) = EVAL(car(x)), &i, &nm, &c2);
    drop(c1);
-   if (!nm)
-      return Nil;
-   return consStr(data(c2));
+   return nm? consStr(data(c2)) : Nil;
 }
 
 static bool subStr(word n1, any y, word n2, any x) {
@@ -387,7 +384,7 @@ any doUppc(any x) {
    cell c1, c2;
 
    x = cdr(x);
-   if (isNil(x = EVAL(car(x))) || !isSym(x) || !(c = symChar(name(x))))
+   if (!isSym(x = EVAL(car(x))) || !(c = symChar(name(x))))
       return x;
    Push(c1, x);
    if (isLowc(c))
@@ -409,7 +406,7 @@ any doLowc(any x) {
    cell c1, c2;
 
    x = cdr(x);
-   if (isNil(x = EVAL(car(x))) || !isSym(x) || !(c = symChar(name(x))))
+   if (!isSym(x = EVAL(car(x))) || !(c = symChar(name(x))))
       return x;
    Push(c1, x);
    if (isUppc(c))
@@ -833,14 +830,17 @@ any doPut(any ex) {
    return x;
 }
 
-// (get 'sym1|lst ['sym2|cnt ..] 'sym|cnt) -> any
+// (get 'sym1|lst ['sym2|cnt ..]) -> any
 any doGet(any ex) {
    any x, y;
    cell c1;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = EVAL(car(x));
-   while (isCell(x = cdr(x))) {
+   x = cdr(ex),  data(c1) = EVAL(car(x));
+   if (!isCell(x = cdr(x)))
+      return data(c1);
+   Save(c1);
+   do {
+      y = EVAL(car(x));
       if (isCell(data(c1))) {
          NeedNum(ex,y);
          data(c1) = car(nth(unDig(y)/2, data(c1)));
@@ -850,15 +850,8 @@ any doGet(any ex) {
          Fetch(ex,data(c1));
          data(c1) = get(data(c1), y);
       }
-      y = EVAL(car(x));
-   }
-   if (isCell(data(c1))) {
-      NeedNum(ex,y);
-      return car(nth(unDig(y)/2, Pop(c1)));
-   }
-   NeedSym(ex,data(c1));
-   Fetch(ex,data(c1));
-   return get(Pop(c1), y);
+   } while (isCell(x = cdr(x)));
+   return Pop(c1);
 }
 
 // (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym
@@ -1063,16 +1056,29 @@ static any meta(any x, any y) {
    return Nil;
 }
 
-// (meta 'obj|typ 'sym) -> any
+// (meta 'obj|typ 'sym ['sym2|cnt ..]) -> any
 any doMeta(any ex) {
-   any x;
+   any x, y;
    cell c1;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  x = EVAL(car(x));
+   x = cdr(x),  y = EVAL(car(x));
    if (isSym(data(c1))) {
       Fetch(ex,data(c1));
       data(c1) = val(data(c1));
    }
-   return meta(Pop(c1), x);
+   data(c1) = meta(data(c1), y);
+   while (isCell(x = cdr(x))) {
+      y = EVAL(car(x));
+      if (isCell(data(c1))) {
+         NeedNum(ex,y);
+         data(c1) = car(nth(unDig(y)/2, data(c1)));
+      }
+      else {
+         NeedSym(ex,data(c1));
+         Fetch(ex,data(c1));
+         data(c1) = get(data(c1), y);
+      }
+   }
+   return Pop(c1);
 }

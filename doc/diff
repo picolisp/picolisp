@@ -15,7 +15,7 @@ Quoting: 'x
    In Pico, this is is the same as `(quote . x)',
    while in Maclisp it is `(QUOTE X)'
 
-   If a list starts with a number, e.g. `(1 2 3)', it does not have to be
+   If a list starts with a number, e.g. `(1 2 3)', it does not need to be
    quoted.
 
 `SUBST' is `(replace 'lst 'old 'new)'
@@ -42,12 +42,12 @@ function instead:
    ((if (> 4 3) + *) 1 2 3)
 Depending on the result of `(> 4 3)', `+' or `*' is called (it's `+' here).
 
-`PROG' does not exist it Maclisp's form.  Local variables can be used
+`PROG' does not exist in Maclisp's form.  Local variables can be used
 with `use' and `let'.
 
 There is also no `GO'.  Instead, there is a variety of control functions:
 
-   if ifn when unless cond case while until loop do for
+   if ifn when unless cond case while whilst until loop do for
 
 `PUTPROP' is `put':
    `(PUTPROP 'sym 'any 'key)' is `(put 'sym 'key 'any)'

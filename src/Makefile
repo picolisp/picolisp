@@ -1,13 +1,14 @@
-# 13apr03abu
+# 21may03abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
 
 bin = ../bin
+lib = ../lib
 
 # all: pico gate x11
 
-pico: $(bin)/pico ../ext ../z3d $(bin)/lat1 $(bin)/utf2
+pico: $(bin)/pico $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
 
@@ -21,7 +22,7 @@ picoFiles = main.c gc.c io.c flow.c big.c sym.c subr.c apply.c tab.c net.c
 	-pipe  $*.c
 
 
-$(picoFiles:.c=.o) ext.o z3d.o: pico.h
+$(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 
 $(bin)/pico: $(picoFiles:.c=.o)
 	rm -f ../pico
@@ -30,17 +31,23 @@ $(bin)/pico: $(picoFiles:.c=.o)
 	gcc  -rdynamic  -o $(bin)/pico  $(picoFiles:.c=.o)  -lc -lm -ldl
 	strip $(bin)/pico
 
-../ext: ext.o
+$(lib)/ext: ext.o
 	echo "  " link ext:
 	gcc -shared -nostartfiles -nostdlib -export-dynamic \
-		-o ../ext  ext.o
-	strip ../ext
+		-o $(lib)/ext  ext.o
+	strip $(lib)/ext
 
-../z3d: z3d.o
+$(lib)/ht: ht.o
+	echo "  " link ht:
+	gcc -shared -nostartfiles -nostdlib -export-dynamic \
+		-o $(lib)/ht  ht.o
+	strip $(lib)/ht
+
+$(lib)/z3d: z3d.o
 	echo "  " link z3d:
 	gcc -shared -nostartfiles -nostdlib -export-dynamic \
-		-o ../z3d  z3d.o
-	strip ../z3d
+		-o $(lib)/z3d  z3d.o
+	strip $(lib)/z3d
 
 
 $(bin)/lat1: lat1.o

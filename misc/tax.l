@@ -1,4 +1,4 @@
-# 10apr03abu
+# 27may03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -372,7 +372,7 @@
       (html "Umsatzsteuer"
          (report "Ums" (pack "Umsätze " (get *MonFmt M) " " Y))
          (<table> T NIL
-            '((-) (- "Datum") (+ "Wert") (+ "USt") (- "Text"))
+            '((-) (- "Datum") (+ "Wert") (+ "USt")  (- "Konto") (- "Text"))
             (mapc
                '((Pos)
                   (with Pos
@@ -383,6 +383,7 @@
                                  (datSym (: dat))
                                  (money (: val))
                                  (money (: ust))
+                                 (: kto nm)
                                  (: txt) )
                               (if (or (not U) (=0 U))
                                  (inc 'Frei N)
@@ -393,6 +394,7 @@
                                  (datSym (: dat))
                                  (money (: val))
                                  (money (: ust))
+                                 (: kto nm)
                                  (: txt) )
                               (inc 'VSt U) ) ) ) ) )
                (collect 'dat '+Pos
@@ -401,7 +403,7 @@
                      (date Y M 31)
                      (- (date Y (+ M 1) 1) 1) ) ) ) )
          (<href> "PDF"
-            (pack "@ustvor.pdf?" (htFmt Ums Frei USt VSt))
+            (pack "@ustvor.pdf?" (ht:Fmt Ums Frei USt VSt))
             "PDF" ) ) ) )
 
 (de ustvor.pdf (Ums Frei USt VSt)

@@ -1,4 +1,4 @@
-# 20jan03abu
+# 05may03abu
 # (c) Software Lab. Alexander Burger
 
 (must `(_ "User") UserAdmin)
@@ -6,7 +6,7 @@
 (html `(_ "User")
    (<id> `(_ "User") (: nm))
    <hr>
-   (new '(+ObjForm) '(+User) *ID 800 120
+   (form '(+ObjForm) '(+User) *ID 800 120
       (quote
          (gui '(+E/R +TextField) '(nm : home obj)  `(_ "Name") 20)
          (row

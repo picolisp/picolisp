@@ -1,4 +1,4 @@
-/* 28feb03abu
+/* 20may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -576,21 +576,20 @@ any doFormat(any ex) {
    any x, y;
    cell c1;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x))),  x = cdr(x);
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedAtom(ex,data(c1));
-   scl = sep = ign = 0;
-   if (isCell(x)) {
-      scl = (int)evCnt(ex,x);
-      sep = '.';
+   x = cdr(x),  y = EVAL(car(x));
+   scl = isNil(y)? 0 : xCnt(ex, y);
+   sep = '.';
+   ign = 0;
+   if (isCell(x = cdr(x))) {
+      y = EVAL(car(x));
+      NeedSym(ex,y);
+      sep = symChar(name(y));
       if (isCell(x = cdr(x))) {
          y = EVAL(car(x));
          NeedSym(ex,y);
-         sep = symChar(name(y));
-         if (isCell(x = cdr(x))) {
-            y = EVAL(car(x));
-            NeedSym(ex,y);
-            ign = symChar(name(y));
-         }
+         ign = symChar(name(y));
       }
    }
    data(c1) = isNum(data(c1))?

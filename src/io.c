@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 07jun03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,15 +8,15 @@
 enum {NIX, BEG, DOT, END};
 enum {NUMBER, INTERN, TRANSIENT, EXTERN};
 
-static char Delim[] = " \t\n\r\"#'()[]`~";
+static char Delim[] = " \t\n\r\"'()[]`~";
 static struct termios RawTermio;
-static cell Fin = {(any)(']'<<24 | ']'<<16 | ']'<<8 | ']'), numPtr(&Fin)};
 static cell StrName, *StrSym;
 static int StrI, BinIx, BinCnt;
 static bool Sync;
 static byte *PipeBuf, *PipePtr;
 static int (*getBin)(int);
 static void (*putBin)(int);
+static void (*PutSave)(int);
 static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
@@ -71,17 +71,17 @@ bool rdBytes(int fd, byte *p, int cnt) {
    return YES;
 }
 
-bool wrBytes(int fd, byte *buf, int cnt) {
-   byte *p;
+bool wrBytes(int fd, byte *p, int cnt) {
    int n;
 
-   for (p = buf; p < buf+cnt; p += n)
-      while ((n = write(fd, p, buf+cnt-p)) <= 0) {
-         if (errno == EPIPE || errno == ECONNRESET)
-            return NO;
-         if (errno != EINTR)
-            writeErr("bytes");
-      }
+   do
+      if ((n = write(fd, p, cnt)) >= 0)
+         p += n, cnt -= n;
+      else if (errno == EPIPE || errno == ECONNRESET)
+         return NO;
+      else if (errno != EINTR)
+         writeErr("bytes");
+   while (cnt);
    return YES;
 }
 
@@ -359,16 +359,16 @@ int pathSize(any x) {
    return strlen(Home) + numBytes(name(x));
 }
 
-void bufString(any x, char *p) {
+void bufString(any x, byte *p) {
    int c = symByte(name(x));
 
    while (*p++ = c)
       c = symByte(NULL);
 }
 
-void pathString(any x, char *p) {
+void pathString(any x, byte *p) {
    int c;
-   char *h;
+   byte *h;
 
    if ((c = symByte(name(x))) != '@')
       while (*p++ = c)
@@ -452,7 +452,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
    else if (isNil(x))
       f->pid = -1,  f->fp = stdin;
    else if (isSym(x)) {
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
 
       pathString(x,nm);
       if (!(f->fp = fopen(nm,"r")))
@@ -462,23 +462,20 @@ static void rdOpen(any ex, any x, inFrame *f) {
    else {
       any y;
       int i, pfd[2], ac = length(x);
-      char *av[ac+1];
+      byte *av[ac+1];
 
       if (pipe(pfd) < 0)
          pipeError(ex, "read open");
-      for (i = 0;;) {
+      av[0] = alloc(NULL, pathSize(y = xSym(car(x)))),  pathString(y, av[0]);
+      for (i = 1; isCell(x = cdr(x)); ++i)
          av[i] = alloc(NULL, bufSize(y = xSym(car(x)))),  bufString(y, av[i]);
-         if (++i == ac)
-            break;
-         x = cdr(x);
-      }
       av[ac] = NULL;
       if ((f->pid = fork()) == 0) {
          setpgid(0,0);
          close(pfd[0]);
          if (pfd[1] != STDOUT_FILENO)
             dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
-         execvp(av[0], av);
+         execvp(av[0], (char**)av);
          execError(av[0]);
       }
       i = 0;  do
@@ -502,7 +499,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
    else if (isNil(x))
       f->pid = -1,  f->fp = stdout;
    else if (isSym(x)) {
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
 
       pathString(x,nm);
       if (nm[0] == '+') {
@@ -516,23 +513,20 @@ static void wrOpen(any ex, any x, outFrame *f) {
    else {
       any y;
       int i, pfd[2], ac = length(x);
-      char *av[ac+1];
+      byte *av[ac+1];
 
       if (pipe(pfd) < 0)
          pipeError(ex, "write open");
-      for (i = 0;;) {
+      av[0] = alloc(NULL, pathSize(y = xSym(car(x)))),  pathString(y, av[0]);
+      for (i = 1; isCell(x = cdr(x)); ++i)
          av[i] = alloc(NULL, bufSize(y = xSym(car(x)))),  bufString(y, av[i]);
-         if (++i == ac)
-            break;
-         x = cdr(x);
-      }
       av[ac] = NULL;
       if ((f->pid = fork()) == 0) {
          setpgid(0,0);
          close(pfd[1]);
          if (pfd[0] != STDIN_FILENO)
             dup2(pfd[0], STDIN_FILENO),  close(pfd[0]);
-         execvp(av[0], av);
+         execvp(av[0], (char**)av);
          execError(av[0]);
       }
       i = 0;  do
@@ -550,7 +544,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
 static void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
    {
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
       struct flock fl;
 
       pathString(x,nm);
@@ -589,11 +583,12 @@ void getStdin(void) {
 }
 
 static void getParse(void) {
-   Chr = Env.parser->dig & 0xFF;
-   if ((Env.parser->dig >>= 8) == 0) {
-      if (!isNum(Env.parser->name = cdr(numCell(Env.parser->name))))
-         Env.parser->name = numPtr(&Fin);
-      Env.parser->dig = unDig(Env.parser->name);
+   if ((Chr = Env.parser->dig & 0xFF) == 0xFF)
+      Chr = -1;
+   else if ((Env.parser->dig >>= 8) == 0) {
+      Env.parser->dig =
+         isNum(Env.parser->name = cdr(numCell(Env.parser->name))) ?
+            unDig(Env.parser->name) : Env.parser->eof;
    }
 }
 
@@ -835,8 +830,11 @@ static any read0(bool top) {
          return consSym(Nil,Nil);
       }
       i = 0,  Push(c1, y = box(Chr));
-      while (Env.get(), Chr != '}')
+      while (Env.get(), Chr != '}') {
+         if (Chr < 0)
+            eofErr();
          byteSym(Chr, &i, &y);
+      }
       y = Pop(c1),  Env.get();
       if (x = findHash(y, h = Extern + hash(y)))
          return x;
@@ -1004,7 +1002,7 @@ any doWait(any ex) {
 
 // (sync) -> flg
 any doSync(any ex) {
-   if (!Hear)
+   if (!Mic[1] || !Hear)
       return Nil;
    if (write(Mic[1], &Slot, sizeof(int)) != sizeof(int))
       writeErr("sync");
@@ -1025,7 +1023,7 @@ any doHear(any ex) {
       Hear = (int)xCnt(ex,x);
    else {
       int fd;
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
 
       pathString(x, nm);
       if ((fd = open(nm, O_RDONLY)) <= 0)
@@ -1137,7 +1135,7 @@ any doFrom(any ex) {
    any x;
    int res, i, j, ac = length(x = cdr(ex)), p[ac];
    cell c[ac];
-   char *av[ac];
+   byte *av[ac];
 
    if (ac == 0)
       return Nil;
@@ -1155,7 +1153,7 @@ any doFrom(any ex) {
    while (Chr >= 0) {
       for (i = 0; i < ac; ++i) {
          for (;;) {
-            if (av[i][p[i]] == (char)Chr) {
+            if (av[i][p[i]] == (byte)Chr) {
                if (av[i][++p[i]])
                   break;
                Env.get();
@@ -1187,7 +1185,7 @@ any doTill(any ex) {
 
    x = evSym(cdr(ex));
    {
-      char buf[bufSize(x)];
+      byte buf[bufSize(x)];
 
       bufString(x, buf);
       if (!Chr)
@@ -1293,7 +1291,7 @@ any doLines(any ex) {
       y = EVAL(car(x));
       NeedSym(ex,y);
       {
-         char nm[pathSize(y)];
+         byte nm[pathSize(y)];
 
          pathString(y, nm);
          if (!(fp = fopen(nm,"r")))
@@ -1317,6 +1315,7 @@ static any parse(any x, bool skp) {
       Push(c1, Env.parser->name);
    Env.parser = &parser;
    parser.dig = unDig(parser.name = name(x));
+   parser.eof = 0xFF00 | ']';
    getSave = Env.get,  Env.get = getParse,  c = Chr,  Chr = 0;
    if (skp)
       getParse();
@@ -1325,6 +1324,82 @@ static any parse(any x, bool skp) {
    if (Env.parser = save)
       drop(c1);
    return x;
+}
+
+static void putString(int c) {
+   if (StrSym)
+      byteSym(c, &StrI, &StrSym);
+   else
+      StrI = 0,  data(StrName) = StrSym = box(c);
+}
+
+void begString(void) {
+   StrSym = NULL;
+   Push(StrName,Nil);
+   PutSave = Env.put,  Env.put = putString;
+}
+
+any endString(void) {
+   Env.put = PutSave;
+   drop(StrName);
+   return StrSym? consStr(data(StrName)) : Nil;
+}
+
+// (any 'sym) -> any
+any doAny(any ex) {
+   any x;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   NeedSym(ex,x);
+   if (!isNil(x)) {
+      int c;
+      parseFrame *save, parser;
+      void (*getSave)(void);
+      cell c1;
+
+      if (save = Env.parser)
+         Push(c1, Env.parser->name);
+      Env.parser = &parser;
+      parser.dig = unDig(parser.name = name(x));
+      parser.eof = 0xFF00 | ' ';
+      getSave = Env.get,  Env.get = getParse,  c = Chr,  Chr = 0;
+      getParse();
+      x = read0(YES);
+      Chr = c,  Env.get = getSave;
+      if (Env.parser = save)
+         drop(c1);
+   }
+   return x;
+}
+
+// (sym 'any) -> sym
+any doSym(any x) {
+   cell c1;
+
+   begString();
+   Push(c1, EVAL(cadr(x)));
+   print(data(c1));
+   drop(c1);
+   return endString();
+}
+
+// (str 'sym) -> lst
+// (str 'lst) -> sym
+any doStr(any ex) {
+   any x;
+   cell c1;
+
+   x = cdr(ex);
+   if (isSym(x = EVAL(car(x))))
+      return isNil(x)? Nil : parse(x,NO);
+   NeedCell(ex,x);
+   begString();
+   Push(c1, x);
+   print(car(x));
+   while (isCell(x = cdr(x)))
+      space(),  print(car(x));
+   drop(c1);
+   return endString();
 }
 
 any load(any ex, int pr, any x) {
@@ -1416,33 +1491,6 @@ any doCtl(any ex) {
    return x;
 }
 
-static void putString(int c) {
-   if (StrSym)
-      byteSym(c, &StrI, &StrSym);
-   else
-      StrI = 0,  data(StrName) = StrSym = box(c);
-}
-
-// (str 'sym) -> lst
-// (str 'lst) -> sym
-any doStr(any ex) {
-   any x;
-   void (*putSave)(int);
-
-   x = cdr(ex);
-   if (isSym(x = EVAL(car(x))))
-      return isNil(x)? Nil : parse(x,NO);
-   NeedCell(ex,x);
-   StrSym = NULL;
-   Push(StrName,Nil);
-   putSave = Env.put,  Env.put = putString;
-   print(car(x));
-   while (isCell(x = cdr(x)))
-      space(),  print(car(x));
-   Env.put = putSave;
-   return consStr(Pop(StrName));
-}
-
 // (open 'sym) -> cnt | NIL
 any doOpen(any ex) {
    any x;
@@ -1451,7 +1499,7 @@ any doOpen(any ex) {
    NeedSym(ex,x);
    {
       int fd;
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
 
       pathString(x, nm);
       if ((fd = open(nm, O_CREAT|O_RDWR, 0666)) >= 0)
@@ -1491,7 +1539,7 @@ any doEcho(any ex) {
    if (isSym(y)) {
       int res, m, n, i, j, ac = length(x), p[ac], om, op;
       cell c[ac];
-      char *av[ac];
+      byte *av[ac];
 
       for (i = 0;;) {
          Push(c[i], y);
@@ -1509,7 +1557,7 @@ any doEcho(any ex) {
             op = p[m];
          for (i = 0; i < ac; ++i) {
             for (;;) {
-               if (av[i][p[i]] == (char)Chr) {
+               if (av[i][p[i]] == (byte)Chr) {
                   if (av[i][++p[i]]) {
                      if (m < 0  ||  p[i] > p[m])
                         m = i;
@@ -1573,7 +1621,7 @@ void outWord(word n) {
    Env.put('0' + n % 10);
 }
 
-void outString(char *s) {
+void outString(byte *s) {
    while (*s)
       Env.put(*s++);
 }
@@ -1596,7 +1644,7 @@ static void outStr(int c) {
    } while (c = symByte(NULL));
 }
 
-static void outName(any s) {outSym(symByte(name(s)));}
+void outName(any s) {outSym(symByte(name(s)));}
 
 /* Print one expression */
 void print(any x) {
@@ -1910,19 +1958,25 @@ static pid_t tryLock(adr n) {
 }
 
 static void blkPeek(adr pos, void *buf, size_t siz) {
-   if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
-      dbErr("seek");
-   while (read(BlkFile, buf, siz) != (ssize_t)siz)
+   for (;;) {
+      if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
+         dbErr("seek");
+      if (read(BlkFile, buf, siz) == (ssize_t)siz)
+         break;
       if (errno != EINTR)
          dbErr("read");
+   }
 }
 
 static void blkPoke(adr pos, void *buf, size_t siz) {
-   if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
-      dbErr("seek");
-   while (write(BlkFile, buf, siz) != (ssize_t)siz)
+   for (;;) {
+      if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
+         dbErr("seek");
+      if (write(BlkFile, buf, siz) == (ssize_t)siz)
+         break;
       if (errno != EINTR)
          dbErr("write");
+   }
 }
 
 static void rdBlock(adr n) {
@@ -2030,7 +2084,7 @@ any doPool(any ex) {
       BlkFile = 0;
    }
    if (!isNil(x)) {
-      char nm[pathSize(x)];
+      byte nm[pathSize(x)];
       byte buf[2*BLK];
 
       pathString(x, nm);

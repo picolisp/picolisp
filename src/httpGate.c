@@ -1,4 +1,4 @@
-/* 31mar03abu
+/* 30may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -65,14 +65,15 @@ static inline bool pre(char *p, char *s) {
    return YES;
 }
 
-static void wrBytes(int fd, char *buf, int cnt) {
-   char *p;
+static void wrBytes(int fd, char *p, int cnt) {
    int n;
 
-   for (p = buf; p < buf+cnt; p += n)
-      while ((n = write(fd, p, buf+cnt-p)) <= 0)
-         if (errno != EINTR)
-            exit(1);
+   do
+      if ((n = write(fd, p, cnt)) >= 0)
+         p += n, cnt -= n;
+      else if (errno != EINTR)
+         exit(1);
+   while (cnt);
 }
 
 static int gateSocket(void) {
@@ -208,7 +209,7 @@ int main(int ac, char *av[]) {
                   port = dflt,  q = p;
                else {
                   port = (int)strtol(p, &q, 10);
-                  if (q == p  ||  *q != ' ' && *q != '/'  ||  port < 12300)
+                  if (q == p  ||  *q != ' ' && *q != '/')
                      return 1;
                }
 

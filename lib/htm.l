@@ -1,4 +1,4 @@
-# 23apr03abu
+# 04jun03abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI ###
@@ -18,10 +18,10 @@
                      (_htSet (car L) (_htArg (cadr L)))
                      NIL ) )
                (split (cadr L) "&") )
-            *Url (htDecode U) )
+            *Url (ht:Pack U) )
          (cond
             ((member '@ U)
-               (apply (val (intern (htDecode (cdr @)))) (conc L (rest))) )
+               (apply (val (intern (ht:Pack (cdr @)))) (conc L (rest))) )
             ((= '("." "l") (tail 2 U))
                (load *Url) )
             ((= '("." "h" "t" "m" "l") (tail 5 U))
@@ -578,6 +578,9 @@
    (and *LayPnl (=: * 1) (inc '*PnlCnt))
    (link This) )
 
+(dm arr> ()
+   T )
+
 (dm endPnl> (N)
    (dec '*PnlCnt N)
    (if (:: **)
@@ -653,8 +656,10 @@
    (=: str Str)
    (pass super) )
 
+(dm arr> ())
+
 (dm show> ()
-   (prin (: str)) )
+   (ht:Prin (: str)) )
 
 
 (class +Button +field)
@@ -669,12 +674,13 @@
 
 (dm show> ()
    (and (: lbl) (prin @ "</TD><TD>"))
-   (prinl
+   (prin
       "[<A HREF=\""
-      *SesId "@act?" (htFmt (: home app) (: ix)) "\""
+      *SesId "@act?" (ht:Fmt (: home app) (: ix)) "\""
       (and *Frame " TARGET=\"MAIN\"")
-      ">" (: str) "</A>"
-      "]") )
+      ">" )
+   (ht:Prin (: str))
+   (prinl "</A>]") )
 
 (dm act> ()
    (eval (: exe)) )
@@ -783,12 +789,12 @@
 (dm show> ()
    (and (: lbl) (prin @ "</TD><TD>"))
    (<post> (: home app)
-      (prinl
+      (prin
          "<INPUT TYPE=TEXT NAME=\"*Fld("
          (: ix)
-         ")\" VALUE=\""
-         (: str)
-         "\" SIZE=" (: dx) ">" ) ) )
+         ")\" VALUE=\"" )
+      (ht:Prin (: str))
+      (prinl "\" SIZE=" (: dx) ">") ) )
 
 (dm end> ()
    (set> This (val> This)) )
@@ -927,6 +933,57 @@
       `(_ "Bad time format") ) )
 
 
+(class +FileField +TextField)
+# file org
+
+(dm T (Exe . @)
+   (=: file Exe)
+   (pass super) )
+
+(dm upd> ()
+   (set> This
+      (=: org
+         (let F (eval (: file))
+            (and F
+               (call "test" "-f" F)
+               (in F (till NIL T)) ) ) ) ) )
+
+(dm set> (Val)
+   (and
+      (<> Val (: org))
+      (eval (: file))
+      (out @ (prin Val)) )
+   (super Val) )
+
+
+(class +HttpField +TextField)
+
+(dm T @
+   (pass super)
+   (hotField) )
+
+#(dm act> ()
+#   (when (val> This)
+#      (let Val @
+#         (out *App
+#            (pr
+#               (: home id) "url"
+#               (if (sub? ":/" Val) Val (pack "http://" Val))
+#               "HTTP" ) ) ) ) )
+
+
+(class +MailField +TextField)
+
+(dm T @
+   (pass super)
+   (hotField) )
+
+#(dm act> ()
+#   (when (val> This)
+#      (out *App
+#         (pr (: home id) "url" (pack "mailto:" @) "MAIL") ) ) )
+
+
 ### Field Arrays ###
 (class +array)
 # home fields
@@ -960,9 +1017,12 @@
    (txt "Ttl")
    (=: put (or "Put" prog1))
    (=: get (or "Get" prog1))
-   (mapc
-      '((F) (link F) (put F 'arr This))
-      (=: fields
+   (=: fields
+      (mapcan
+         '((F)
+            (link F)
+            (put F 'arr This)
+            (and (arr> F) (cons F)) )
          (make
             (while "Lst"
                (let *LayRow T
@@ -984,14 +1044,15 @@
    (=: ofs 1)
    (=: put (or "Put" prog1))
    (=: get (or "Get" prog1))
-   (mapc
-      '((L)
-         (mapc
-            '((F)
-               (link F)
-               (put F 'arr This) )
-            L ) )
-      (=: fields
+   (=: fields
+      (mapcar
+         '((L)
+            (mapcan
+               '((F)
+                  (link F)
+                  (put F 'arr This)
+                  (and (arr> F) (cons F)) )
+               L ) )
          (make
             (do "N"
                (let *LayRow T
@@ -1069,9 +1130,6 @@
 
 
 ### DB GUI ###
-(de upd Lst
-   (wipe Lst) )
-
 (de newUrl ("Typ" . @)
    (prog1
       (pass new! 'upd "Typ")
@@ -1081,9 +1139,9 @@
    (with *ID
       (prin
          "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>"
-         (and (: T) "[")
-         Ttl
-         " --" )
+         (and (: T) "[") )
+      (ht:Prin Ttl)
+      (prin " --")
       (while Lst
          (prin " " (eval (pop 'Lst))) )
       (prin
@@ -1145,7 +1203,7 @@
 # (choDialog Ttl Rel [Hook] [(+Obj +TextField) [pre [post]]])
 (de choDialog ("Ttl" "Rel" . @)
    (let
-      ("Hook" (and (get (meta (cdr "Rel") (car "Rel")) 'hook) (next))
+      ("Hook" (and (meta (cdr "Rel") (car "Rel") 'hook) (next))
          "Fld" (or (next) '(+Obj +TextField))
          "Pre" (next)
          "Post" (next)
@@ -1169,12 +1227,16 @@
                      (link "Ttl" 40) ) )
                (gui '(+Button) "" `(_ "Create")
                   '(with (: home fields 1)
-                     (if (get (meta (: objTyp) (: objVar)) 'hook)
+                     (if (meta (: objTyp) (: objVar) 'hook)
                         (newUrl (: objTyp) @ (eval (: objHook)))
                         (newUrl (: objTyp)) ) ) ) )
             (---- T)
             (gui '(+IndexChart)
-               (cons (car "Rel") (cons (last "Rel") (lit "Hook")))
+               (cons
+                  (car "Rel")
+                  (cons
+                     (meta (cdr "Rel") (car "Rel") 'cls)
+                     (lit "Hook") ) )
                8 NIL '((apply gui "Lst")) ) ) ) ) )
 (====)
 
@@ -1269,7 +1331,7 @@
 (dm T (Rel . @)
    (=: objVar (car Rel))
    (=: objTyp (cdr Rel))
-   (when (get (meta (: objTyp) (: objVar)) 'hook)
+   (when (meta (: objTyp) (: objVar) 'hook)
       (=: objHook (next)) )
    (pass super)
    (hotField) )
@@ -1292,10 +1354,11 @@
          ((= V (get (: obj) (: objVar)))
             (: obj) )
          (T
-            (=: obj
-               (if (: objHook)
-                  (db (: objVar) (last (: objTyp)) (eval @) V)
-                  (db (: objVar) (last (: objTyp)) V) ) ) ) ) ) )
+            (let Cls (meta (: objTyp) (: objVar) 'cls)
+               (=: obj
+                  (if (: objHook)
+                     (db (: objVar) Cls (eval @) V)
+                     (db (: objVar) Cls V) ) ) ) ) ) ) )
 
 (dm cho> ()
    (let Q (objQuery)
@@ -1325,22 +1388,23 @@
          `(_ "Data not found") ) ) )
 
 (dm query> (X)
-   (if (num? X)
-      (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
-         (make
-            (link 'db (: objVar) (last (: objTyp)))
-            (when (: objHook)
-               (link (eval @)) )
-            (link (cons X T) '@Obj) )
-         (list 'isa (last (: objTyp)) '@Obj) )
-      (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
-         (make
-            (link 'db (: objVar) (last (: objTyp)))
-            (when (: objHook)
-               (link (eval @)) )
-            (link X '@Obj) )
-         (list 'isa (last (: objTyp)) '@Obj)
-         (list 'head X '@Obj (: objVar)) ) ) )
+   (let Cls (meta (: objTyp) (: objVar) 'cls)
+      (if (num? X)
+         (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
+            (make
+               (link 'db (: objVar) Cls)
+               (when (: objHook)
+                  (link (eval @)) )
+               (link (cons X T) '@Obj) )
+            (list 'isa Cls '@Obj) )
+         (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
+            (make
+               (link 'db (: objVar) Cls)
+               (when (: objHook)
+                  (link (eval @)) )
+               (link X '@Obj) )
+            (list 'isa Cls '@Obj)
+            (list 'head X '@Obj (: objVar)) ) ) ) )
 
 
 (class +ObjView +Lock)

@@ -1,4 +1,4 @@
-# 31mar03abu
+# 05jun03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -90,10 +90,13 @@
          *SesId (pack (% (in "/dev/urandom" (rd 5)) 100000000000) "~")
          *Sock (port *HPorts '*Port) ) ) )
 
-(de allow (F)
-   (if *Allow
-      (?push '*Allow F)
-      F ) )
+(de allowed Lst
+   (setq *Allow (cons NIL (car Lst)))
+   (mapc allow (cdr Lst)) )
+
+(de allow (X)
+   (and *Allow (idx *Allow X T))
+   X )
 
 # Handle HTTP-Transaction
 (de http (S)
@@ -119,16 +122,16 @@
                         (_htSet (car L) (_htArg (cadr L)))
                         NIL ) )
                   (split (cadr L) "&") ) )
-            (unless (setq *Url (htDecode @U))
+            (unless (setq *Url (ht:Pack @U))
                (setq  *Url (car *Home)  @U (cdr *Home)) )
             (when
                (or
                   (not *Allow)
                   (format *Url)
                   (tmp? *Url)
-                  (member *Url *Allow)
+                  (idx *Allow *Url)
                   (unless (sub? "/../" *Url)
-                     (find '((P) (pre? P *Url)) *Allow) ) )
+                     (find pre? (cdr *Allow) (circ *Url)) ) )
                (out S
                   (cond
                      ((<> *ConId *SesId)
@@ -154,7 +157,7 @@
                         (html NIL
                            (prEval (nth *Frame (format *Url) 3)) ) )
                      ((member '@ @U)
-                        (apply (val (intern (htDecode (cdr @)))) L) )
+                        (apply (val (intern (ht:Pack (cdr @)))) L) )
                      ((= '("." "l") (tail 2 @U))
                         (load *Url) )
                      ((= '("." "h" "t" "m" "l") (tail 5 @U))
@@ -181,11 +184,10 @@
                (setq *Agent @X) )
             ((match '(~(chop "Host: ") . @X) L)
                (setq *Host
-                  (pack
-                     (cond
-                        (*Gate @X)
-                        ((index ":" @X) (head (- @ 1) @X))
-                        (T @X) ) ) ) )
+                  (cond
+                     (*Gate @X)
+                     ((index ":" @X) (head (- @ 1) @X))
+                     (T @X) ) ) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)
@@ -245,7 +247,7 @@
                   (T (throw "http")) ) ) ) )
       (or
          (not *Allow)
-         (memq "Var" *Allow)
+         (idx *Allow "Var")
          (throw "http") )
       (cond
          ((not @N) (set "Var" Val))
@@ -257,75 +259,17 @@
       (cond
          ((format (pack Lst)) @)
          ((match '("[" @L "]") Lst)
-            (intern (htDecode @L)) )
+            (intern (ht:Pack @L)) )
          ((match '("{" @L "}") Lst)
             (extern (pack @L)) )
          ((match '("(" @L ")") Lst)
             (mapcar _htArg (split @L "_")) )
-         (T (htDecode Lst)) ) ) )
-
-(de _htFmt (X)
-   (cond
-      ((or (num? X) (ext? X))
-         X )
-      ((str? X)
-         (pack (htEncode X)) )
-      ((pair X)
-         (pack "("
-            (maplist
-               '((L)
-                  (cons
-                     (_htFmt (car L))
-                     (and (cdr L) "_") ) )
-               X )
-            ")" ) )
-      (T (pack "[" (htEncode X) "]")) ) )
-
-(de htEncode (X)
-   (mapcar
-      '((C)
-         (if (sub? C " \"%&()=?[]_{}")
-            (pack "%" (hex (char C)))
-            C ) )
-      (chop X) ) )
-
-(de htDecode (Lst)
-   (pack
-      (make
-         (while Lst
-            (link
-               (case (pop 'Lst)
-                  ("%"
-                     (let N (hex (cut 2 'Lst))
-                        (char
-                           (cond
-                              ((< N 128) N)
-                              ((< N 224)
-                                 (|
-                                    (>> -6 (& 31 N))
-                                    (_utf6bit) ) )
-                              (T
-                                 (|
-                                    (>> -12 (& 15 N))
-                                    (>> -6 (_utf6bit))
-                                    (_utf6bit) ) ) ) ) ) )
-                  (T @) ) ) ) ) ) )
-
-(de _utf6bit ()
-   (pop 'Lst)
-   (& 63 (hex (cut 2 'Lst))) )
-
-(de htFmt @
-   (pack
-      (make
-         (while (args)
-            (link (_htFmt (next)))
-            (and (args) (link "&")) ) ) ) )
+         (T (ht:Pack Lst)) ) ) )
 
 (de htmlVar ("Var")
    (prin "NAME=\"")
    (if (pair "Var")
-      (prin (car "Var") "(" (_htFmt (cdr "Var")) ")")
+      (prin (car "Var") "(" (ht:Fmt (cdr "Var")) ")")
       (prin "Var") )
    (prin "\"") )
 
@@ -407,7 +351,10 @@
    (prinl "<HTML>")
    (prinl "<HEAD>")
    (prinl "<BASE HREF=\"" (baseHRef) "\">")
-   (and "Ttl" (prinl "<TITLE>" "Ttl" "</TITLE>"))
+   (when "Ttl"
+      (prin "<TITLE>")
+      (ht:Prin "Ttl")
+      (prinl "</TITLE>") )
    (when *Css
       (prinl
          "<link rel=\"stylesheet\" type=\"text/css\" href=\""
@@ -449,6 +396,15 @@
          (setq  *Frame (cdddr "Prg")) ) )
    (prinl "</HTML>") )
 
+(de redirect (Url)
+   (httpHead)
+   (prinl "<HTML>")
+   (prinl "<FRAMESET ROWS=\"100%,*\">")
+   (prinl "<FRAME NAME=\"BIZ\" SRC=\"" Url "\">")
+   (prinl "</FRAMESET>")
+   (prinl "</HTML>") )
+
+
 ### HTML Generators ###
 (de _htAlign (X)
    (cond
@@ -469,17 +425,16 @@
 
 (de <item> ("X")
    (cond
-      ((atom "X") (prinl "X"))
+      ((atom "X") (ht:Prin "X") (prinl))
       ((=T (car "X")) (apply <href> (cdr "X")))
       (T (eval "X")) ) )
 
 (de <head> (S N X)
    (if N
       (prinl "<H" N (_htAlign X) ">" S "</H" N ">")
-      (prin
-         "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>"
-         S
-         "</H3></TD><TD ALIGN=\"RIGHT\">" )
+      (prin "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>")
+      (ht:Prin S)
+      (prin "</H3></TD><TD ALIGN=\"RIGHT\">")
       (navi)
       (prinl "</TD></TR></TABLE>") ) )
 
@@ -524,7 +479,9 @@
    (cond
       (Tar (prin "\" TARGET=\"" Tar))
       (*Frame (prin "\" TARGET=\"MAIN\"")) )
-   (prin "\">" S "</A>") )
+   (prin "\">")
+   (ht:Prin S)
+   (prin "</A>") )
 
 (de <button> @
    (prin "[")
@@ -557,7 +514,9 @@
       ("Body" (prin " " "Body")) )
    (prinl ">")
    (when "Ttl"
-      (prinl "<CAPTION>" "Ttl" "</CAPTION>") )
+      (prin "<CAPTION>")
+      (ht:Prin "Ttl")
+      (prinl "</CAPTION>") )
    (when "Head"
       (prin "<TR>")
       (mapc
@@ -570,8 +529,8 @@
                   (T "CENTER") )
                (and (caddr L) (pack " WIDTH=" @))
                (cadddr L)
-               ">"
-               (cadr L) )
+               ">" )
+            (ht:Prin (cadr L))
             (prin "</TH>") )
          "Head" )
       (prinl "</TR>") )
@@ -648,12 +607,16 @@
       (space) )
    (prin "<INPUT" (_htAlign X) " TYPE=TEXT ")
    (htmlVar "Var")
-   (prinl " VALUE=\"" (htmlVal "Var") "\" SIZE=" N ">") )
+   (prin " VALUE=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prinl "\" SIZE=" N ">") )
 
 (de <hidden> ("Var" "Val")
    (prin "<INPUT TYPE=HIDDEN ")
    (htmlVar "Var")
-   (prinl " VALUE=\"" "Val" "\">") )
+   (prin " VALUE=\"")
+   (ht:Prin "Val")
+   (prinl "\">") )
 
 (de <passwd> (N S "Var" X)
    (when S
@@ -661,7 +624,9 @@
       (space) )
    (prin "<INPUT" (_htAlign X) " TYPE=PASSWORD ")
    (htmlVar "Var")
-   (prinl " VALUE=\"" (htmlVal "Var") "\" SIZE=" N ">") )
+   (prin " VALUE=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prinl "\" SIZE=" N ">") )
 
 (de <upload> (N S "Var" Url)
    (when S
@@ -669,7 +634,9 @@
       (space) )
    (prin "<INPUT TYPE=FILE ")
    (htmlVar "Var")
-   (prinl " VALUE=\"" (htmlVal "Var") "\" SIZE=" N ">") )
+   (prin " VALUE=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prinl "\" SIZE=" N ">") )
 
 (de <area> (Cols Rows S "Var" Url)
    (when S
@@ -677,7 +644,8 @@
       (space) )
    (prin "<TEXTAREA ")
    (htmlVar "Var")
-   (prin " COLS=" Cols " ROWS=" Rows ">" (htmlVal "Var"))
+   (prin " COLS=" Cols " ROWS=" Rows ">")
+   (ht:Prin (htmlVal "Var"))
    (prinl "</TEXTAREA>") )
 
 (de <select> (S Lst "Var")
@@ -709,7 +677,11 @@
    (prin " VALUE=\"" Val "\"" (and (= Val (htmlVal "Var")) " CHECKED") "> " S) )
 
 (de <submit> (S)
-   (prinl "<INPUT TYPE=SUBMIT VALUE=\"" S "\">") )
+   (prin "<INPUT TYPE=SUBMIT VALUE=\"")
+   (ht:Prin S)
+   (prinl "\">") )
 
 (de <reset> (S)
-   (prinl "<INPUT TYPE=RESET VALUE=\"" S "\">") )
+   (prin "<INPUT TYPE=RESET VALUE=\"")
+   (ht:Prin S)
+   (prinl "\">") )

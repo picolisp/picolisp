@@ -13,14 +13,14 @@
 
 <dl>
 
-<p><dt>Why did you write yet another Lisp?
+<dt>Why did you write yet another Lisp?
 <dd>Simply because other Lisps are not the way I want them to be. The history of
 Pico goes back to 1988; at that time machine resources on PC's were limited and
 existing Lisp systems not very usable. Today's Lisps concentrate on efficient
 <u>compilation</u>, and lost the one-to-one relation of language and virtual
 machine of an <u>interpreted</u> system.
 
-<p><dt>Is there (or will be in the future) a compiler available?
+<dt>Is there (or will be in the future) a compiler available?
 <dd>No. That would contradict the idea of Pico's simple virtual machine
 structure. A compiler transforms it to another (physical) machine, with the
 result that many assumptions about the machine's behavior won't hold any more.
@@ -30,7 +30,7 @@ gain in execution speed would probably not be worth the effort. Typical Pico
 applications often use single-pass code which is loaded, executed and thrown
 away; a process that would be considerably slowed down by compilation.
 
-<p><dt>I cannot find the LAMBDA keyword in Pico.
+<dt>I cannot find the LAMBDA keyword in Pico.
 <dd>Because it isn't there. The reason is that it is redundant; it is equivalent
 to the <code>quote</code> function in all practical aspects. If you insist on
 it, you can define your own <code>lambda</code>:
@@ -44,7 +44,7 @@ it, you can define your own <code>lambda</code>:
 -> (2 3 4 5 6)
 </code></pre>
 
-<p><dt>Are there no problems caused by dynamic variable binding?
+<dt>Are there no problems caused by dynamic variable binding?
 <dd>You mean the <i>funarg</i> problem, or problems that arise when a variable
 might be bound to itself? For that reason it should be a convention to use only
 transient symbols (and not internal symbols)
@@ -58,7 +58,7 @@ are passed through the current dynamic scope.
 
 </ul>
 
-<p><dt>What happens when I locally bind a symbol which has a function definition?
+<dt>What happens when I locally bind a symbol which has a function definition?
 <dd>That's not a good idea. The next time that function gets executed within the
 dynamic context the system may crash. Therefore we have the convention to use an
 upper case first letter for variables, and otherwise for functions.

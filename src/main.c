@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 28may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -36,7 +36,7 @@ void giveup(char *msg) {
    bye(1);
 }
 
-void execError(char *s) {
+void execError(byte *s) {
    fprintf(stderr, "%s: can't exec\n", s);
    exit(127);
 }
@@ -56,13 +56,8 @@ static void doSigTerm(int n __attribute__((unused))) {
 }
 
 void protect(bool flg) {
-   if (flg)
-      Protect = YES;
-   else {
-      Protect = NO;
-      if (SigTerm)
-         raise(SIGTERM);
-   }
+   if (!(Protect = flg) && SigTerm)
+      raise(SIGTERM);
 }
 
 /* Allocate memory */
@@ -299,7 +294,7 @@ any doQuit(any x) {
    x = cdr(x),  Push(c1, evSym(x));
    x = isCell(x = cdr(x))?  EVAL(car(x)) : NULL;
    {
-      char msg[bufSize(data(c1))];
+      byte msg[bufSize(data(c1))];
 
       bufString(data(c1), msg);
       drop(c1);
@@ -384,40 +379,52 @@ any evExpr(any expr, any x) {
    return x;
 }
 
-static void undefined(any x, any ex) {
+void undefined(any x, any ex) {
    void *h;
-   char *p, nm[bufSize(x)];
+   byte *p, nm[bufSize(x)];
 
    bufString(x, nm);
    if (!(p = strchr(nm,':'))  ||  p == nm  ||  p[1] == '\0')
       err(ex, x, "Undefined");
    *p++ = '\0';
-   if (!(h = dlopen(nm, RTLD_LAZY | RTLD_GLOBAL))  ||  !(h = dlsym(h,p)))
-      err(ex, x, "%s", (char*)dlerror());
-   val(x) = box(num(h));
+   {
+      int n = Home? strlen(Home) : 0;
+      char buf[n + strlen(nm) + 4 + 1];
+
+      if (n)
+         memcpy(buf, Home, n);
+      if (strchr(nm,'/'))
+         strcpy(buf + n, nm);
+      else
+         strcpy(buf + n, "lib/"),  strcpy(buf + n + 4, nm);
+      if (!(h = dlopen(buf, RTLD_LAZY | RTLD_GLOBAL))  ||  !(h = dlsym(h,p)))
+         err(ex, x, "%s", (char*)dlerror());
+      val(x) = box(num(h));
+   }
 }
 
 /* Evaluate a list */
 any evList(any ex) {
-   any x, y;
+   any foo;
 
    if (SigInt)
       SigInt = NO,  brkLoad(ex);
-   if (!isSym(x = car(ex))) {
-      if (isNum(x))
+   if (!isSym(foo = car(ex))) {
+      if (isNum(foo))
          return ex;
-      if (isNum(x = evList(x)))
-         return evSubr(x,ex);
-      if (isCell(x))
-         return evExpr(x, cdr(ex));
+      if (isNum(foo = evList(foo)))
+         return evSubr(foo,ex);
+      if (isCell(foo))
+         return evExpr(foo, cdr(ex));
    }
-   for (y = val(x);  !isNum(y);  y = val(y)) {
-      if (isCell(y))
-         return evExpr(y, cdr(ex));
-      if (y == val(y))
-         undefined(y = x, ex);
+   while (!isNum(foo)) {
+      if (isCell(foo))
+         return evExpr(foo, cdr(ex));
+      if (isNil(val(foo)) || foo == val(foo))
+         undefined(foo,ex);
+      foo = val(foo);
    }
-   return evSubr(y,ex);
+   return evSubr(foo,ex);
 }
 
 /* Evaluate any to sym */
@@ -433,9 +440,7 @@ any xSym(any x) {
    Push(c1,x);
    nm = NULL,  pack(x, &i, &nm, &c2);
    drop(c1);
-   if (!nm)
-      return Nil;
-   return consStr(data(c2));
+   return nm? consStr(data(c2)) : Nil;
 }
 
 /* Evaluate count */
@@ -581,7 +586,7 @@ any doTime(any ex) {
 any doCd(any x) {
    x = evSym(cdr(x));
    {
-      char path[pathSize(x)];
+      byte path[pathSize(x)];
 
       pathString(x, path);
       return chdir(path) < 0? Nil : T;
@@ -592,7 +597,7 @@ any doCd(any x) {
 any doCtty(any x) {
    x = evSym(cdr(x));
    {
-      char tty[bufSize(x)];
+      byte tty[bufSize(x)];
 
       bufString(x, tty);
       return freopen(tty, "r", stdin) && freopen(tty, "w", stdout)? T : Nil;
@@ -607,7 +612,7 @@ any doInfo(any x) {
 
    x = evSym(cdr(x));
    {
-      char nm[bufSize(x)];
+      byte nm[bufSize(x)];
 
       bufString(x, nm);
       if (stat(nm, &st) < 0)
@@ -657,7 +662,7 @@ int main(int ac, char *av[]) {
    Line = Nil;
    InFile = stdin,  Env.get = getStdin;
    OutFile = stdout,  Env.put = putStdout;
-   ApplyArgs = cons(cons(cons(Quote, Nil), Nil), Nil);
+   ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
    signal(SIGINT, doSigInt);
    signal(SIGTERM, doSigTerm);

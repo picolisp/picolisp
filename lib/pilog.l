@@ -1,4 +1,4 @@
-# 05apr03abu
+# 18may03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -207,18 +207,14 @@
 
 
 (be val (@V . @L)
-   (@V let (L (-> @L)  X (pop 'L))
-      (while L
-         (setq X (get X (pop 'L))) )
-      X )
+   (@V let L (-> @L)
+      (apply get (cdr L) (car L)) )
    T )
 
 (be lst (@V . @L)
    (@Lst box
-      (let (L (-> @L)  X (pop 'L))
-         (while L
-            (setq X (get X (pop 'L))) )
-         X ) )
+      (let L (-> @L)
+         (apply get (cdr L) (car L)) ) )
    (_lst @V @Lst) )
 
 (be _lst (@Val @Lst) (@ not (val (-> @Lst))) T (fail))
@@ -229,10 +225,9 @@
 (be isa (@Typ . @L)
    (@ or
       (not (-> @Typ))
-      (let (L (-> @L)  X (pop 'L))
-         (while L
-            (setq X (get X (pop 'L))) )
-         (isa (-> @Typ) X) ) ) )
+      (isa (-> @Typ)
+         (let L (-> @L)
+            (apply get (cdr L) (car L)) ) ) ) )
 
 (be same (@V . @L)
    (@ let V (-> @V)
@@ -258,10 +253,8 @@
 (be bool (@F . @L)
    (@ or
       (not (-> @F))
-      (let (L (-> @L)  X (pop 'L))
-         (while L
-            (setq X (get X (pop 'L))) )
-         X ) ) )
+      (let L (-> @L)
+         (apply get (cdr L) (car L)) ) ) )
 
 (be range (@N . @L)
    (@ let N (-> @N)
@@ -440,56 +433,3 @@
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
-
-# (select [var ..] cls [var val ..])
-(de select Lst
-   (let
-      (Vars
-         (make
-            (until (or (atom Lst) (isa '+Entity (car Lst)))
-               (link (pop 'Lst)) ) )
-         Cls (pop 'Lst) )
-      (default Lst
-         (cons
-            (or
-               (car Vars)
-               (cdr (maxi caar (getl (get *DB Cls)))) ) ) )
-      (let Q
-         (goal
-            (cons
-               (make
-                  (link
-                     'select
-                     '(@Obj)
-                     (make
-                        (for (L Lst L)
-                           (link
-                              (list
-                                 (pop 'L)
-                                 Cls
-                                 (if L (pop 'L) '(NIL . T)) ) ) ) ) )
-                  (while Lst
-                     (let (Var (pop 'Lst)  Val (if Lst (pop 'Lst) '(NIL . T)))
-                        (link
-                           (list
-                              (cond
-                                 ((pair Val) 'range)
-                                 ((or (num? Val) (ext? Val)) 'same)
-                                 ((=T Val) 'bool)
-                                 ((isa '+Sn (get Cls Var)) 'tolr)
-                                 (T 'head) )
-                              Val '@Obj Var ) ) ) ) ) ) )
-         (use Obj
-            (loop
-               (NIL (setq Obj (cdar (prove Q))))
-               (ifn Vars
-                  (show Obj)
-                  (mapc
-                     '((Var)
-                        (printsp
-                           (if (sym? Var)
-                              (get Obj Var)
-                              (apply get Var Obj) ) ) )
-                     Vars ) )
-                  (print Obj)
-               (T (line)) ) ) ) ) )

@@ -14,7 +14,7 @@
 <i>(Antoine de Saint-Exupéry)</i><br>
 
 
-<h3>The Pico Lisp Reference</h3>
+<h2>The Pico Lisp Reference</h2>
 
 <p align=right>(c) Software Lab. Alexander Burger
 
@@ -37,8 +37,8 @@ href="faq.html">Frequently Asked Questions</a>.
    <li><a href="#cell">The Cell</a>
    <li><a href="#dat">Data Types</a>
       <ul>
-      <li><a href="#num">Numbers</a>
-      <li><a href="#sym">Symbols</a>
+      <li><a href="#number">Numbers</a>
+      <li><a href="#symbol">Symbols</a>
          <ul>
          <li><a href="#nilSym">NIL</a>
          <li><a href="#internal">Internal Symbols</a>
@@ -213,7 +213,7 @@ the three base types and the symbol variations:
 
 
 <p><hr>
-<h3><a name="num">Numbers</a></h3>
+<h3><a name="number">Numbers</a></h3>
 
 <p>A number can represent a signed integral value of arbitrary size. The
 <code>CAR</code> of one or more cells hold the number's "digits" (each in the
@@ -243,7 +243,7 @@ number will be:
 
 
 <p><hr>
-<h3><a name="sym">Symbols</a></h3>
+<h3><a name="symbol">Symbols</a></h3>
 
 <p>A symbol is more complex than a number. Each symbol has a value, and
 optionally a name and an arbitrary number of properties. The <code>CAR</code> of
@@ -1522,6 +1522,7 @@ argument types and return values are described with the following abbreviations:
 <dt>Symbol Functions
 <dd><code>
    <a href="#new">new</a>
+   <a href="#sym">sym</a>
    <a href="#str">str</a>
    <a href="#char">char</a>
    <a href="#spQ">sp?</a>
@@ -1795,8 +1796,10 @@ argument types and return values are described with the following abbreviations:
    <a href="#in">in</a>
    <a href="#out">out</a>
    <a href="#ctl">ctl</a>
-   <a href="#load">load</a>
+   <a href="#any">any</a>
+   <a href="#sym">sym</a>
    <a href="#str">str</a>
+   <a href="#load">load</a>
    <a href="#hear">hear</a>
    <a href="#tell">tell</a>
    <a href="#key">key</a>
@@ -1948,6 +1951,15 @@ abc  # User input
 -> abc
 : (and (= 3 4) (read))
 -> NIL
+</code></pre>
+
+<p><dt><a name="any"><code>(any 'sym) -> any</code></a>
+<dd>Parses <code>any</code> from the name of <code>sym</code>. See also <code><a
+href="#sym">sym</a></code> and <code><a href="#str">str</a></code>.
+
+<p><pre><code>
+: (any "\"A String\"")
+-> "A String"
 </code></pre>
 
 <p><dt><a name="append"><code>(append 'lst ..) -> lst</code></a>
@@ -2426,10 +2438,10 @@ A                          # (typed `A' and a space/return)
 -> 100
 </code></pre>
 
-<p><dt><a name="chop"><code>(chop 'sym) -> lst</code></a>
-<dd>Returns the name of <code>sym</code> as a list of single-character strings.
-If <code>sym</code> is <code>NIL</code> or has no name, <code>NIL</code> is
-returned.
+<p><dt><a name="chop"><code>(chop 'any) -> lst</code></a>
+<dd>Returns <code>any</code> as a list of single-character strings. If
+<code>any</code> is <code>NIL</code> or a symbol with no name, <code>NIL</code>
+is returned. A list argument is returned unchanged.
 
 <p><pre><code>
 : (chop 'car)
@@ -2438,23 +2450,15 @@ returned.
 -> ("H" "e" "l" "l" "o")
 </code></pre>
 
-<p><dt><a name="circ"><code>(circ 'lst) -> lst</code></a>
-<dd>Produces a circular list by (destructively) connecting <code>lst</code> to
-the <code>CDR</code> of its own last cell.
+<p><dt><a name="circ"><code>(circ 'any ..) -> lst</code></a>
+<dd>Produces a circular list of all <code>any</code> arguments by <code><a
+href="#cons">cons</a></code>ing them to a list and then connecting the
+<code>CDR</code> of the last cell to the first cell. See also <code><a
+href="#list">list</a></code>.
 
 <p><pre><code>
-: (circ '(a b c))
+: (circ 'a 'b 'c)
 -> (a b c .)
-: (setq  L1 '(a b c d e f)  L2 (1 2 3))
--> (1 2 3)
-: (mapc println L1 (circ L2))    # Produce an unlimited supply of L2
-a 1
-b 2
-c 3
-d 1
-e 2
-f 3
--> 3
 </code></pre>
 
 <p><dt><a name="clip"><code>(clip 'lst) -> lst</code></a>
@@ -3120,7 +3124,7 @@ megabytes of free cells is reserved, increasing the heap size if necessary.
 -> 534802
 </code></pre>
 
-<p><dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..] 'sym|cnt) -> any</code></a>
+<p><dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..]) -> any</code></a>
 <dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
 list. From the first argument <code>sym1|lst</code>, values are retrieved in
 successive steps by either extracting a property value from a symbol (the next
@@ -3638,8 +3642,8 @@ entered. In any case, <code>load</code> terminates upon end of file, or when
 <code>NIL</code> is read. The hash table for transient symbols is cleared before
 and after the load, so that all transient symbols in the file have a local
 scope. Returns the value of the last evaluated expression. See also <code><a
-href="#call">call</a></code>, <code><a href="#in">in</a></code> and <code><a
-href="#out">out</a></code>.
+href="#call">call</a></code>, <code><a href="#in">in</a></code>, <code><a
+href="#out">out</a></code> and <code><a href="#str">str</a></code>.
 
 <p><pre><code>
 : (load "lib/lib.l" "-* 1 2 3")
@@ -3966,10 +3970,12 @@ href="#delq">delq</a></code>.
 -> NIL
 </code></pre>
 
-<p><dt><a name="meta"><code>(meta 'obj|typ 'sym) -> any</code></a>
+<p><dt><a name="meta"><code>(meta 'obj|typ 'sym ['sym2|cnt ..]) -> any</code></a>
 <dd>Fetches a property value <code>any</code>, by searching the property lists
 of the classes and superclasses of <code>obj</code>, or the classes in
-<code>typ</code>, for the property key <code>sym</code>.
+<code>typ</code>, for the property key <code>sym</code>, and by applying the
+<code><a href="#get">get</a></code> algorithm to the following optional
+arguments.
 
 <p><pre><code>
 : (setq A '(B))            # Be `A' an object of class `B'
@@ -5095,8 +5101,10 @@ cells. See also <code><a href="#heap">heap</a></code>.
 
 <p><dt><a name="str"><code>(str 'sym) -> lst<br>
 (str 'lst) -> sym</code></a>
-<dd>In the first form, the string <code>sym</code> is parsed into a list. The
-second form does the reverse operation by building a string from a list.
+<dd>In the first form, the string <code>sym</code> is parsed into a list. This
+mechanism is also used by <code><a href="#load">load</a></code>. The second form
+does the reverse operation by building a string from a list. See also <code><a
+href="#any">any</a></code> and <code><a href="#sym">sym</a></code>.
 
 <p><pre><code>
 : (str "a (1 2) b")
@@ -5175,6 +5183,16 @@ superclass(es) of the class where the current method was found.
 (dm stop> ()         # `stop>' method of the `+Dialog' class
    (super)           # Call the `stop>' method of the `+Form' superclass
    (close> This) )   # then close the connection
+</code></pre>
+
+<p><dt><a name="sym"><code>(sym 'any) -> sym</code></a>
+<dd>Generate the printed representation of <code>any</code> into the name of a
+new symbol <code>sym</code>. See also <code><a href="#any">any</a></code> and
+<code><a href="#str">str</a></code>.
+
+<p><pre><code>
+: (sym '(abc "Hello" 123))
+-> "(abc \"Hello\" 123)"
 </code></pre>
 
 <p><dt><a name="symQ"><code>(sym? 'any) -> flg</code></a>

@@ -1,4 +1,4 @@
-# 17may02abu
+# 26may03abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -16,7 +16,7 @@
       (while Lst
          (let (N (rand 1 (length Lst))  L1 (head (- N 1) Lst)  L2 (nth Lst N))
             (link (pop 'L2))
-            (setq Lst (append L1 L2)) ) ) ) )
+            (setq Lst (conc L1 L2)) ) ) ) )
 
 (de samples (Cnt Lst)
    (make

@@ -1,4 +1,4 @@
-# 04apr03abu
+# 03jun03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -137,7 +137,7 @@
 (de ps ("X" "H" "V")
    (cond
       ((not "X") (inc '"*Pos" "*Size"))
-      ((num? "X") (_ps (chop (format "X"))))
+      ((num? "X") (_ps (chop "X")))
       ((pair "X") (_ps "X"))
       (T (mapc _ps (split (chop "X") "^J"))) ) )
 
@@ -229,8 +229,10 @@
       (run "*FF")
       (setq "*Lim" (pop '"*Pag")) ) )
 
-(de eps (X Y Eps)
-   (prinl "gsave " X " " (- "*PgY" Y) " translate")
+(de eps (Eps X Y DX DY)
+   (prinl "gsave " (or X 0) " " (- "*PgY" (or Y 0)) " translate")
+   (when DX
+      (prinl DX " 100. div " (or DY DX) " 100. div scale") )
    (in Eps (echo))
    (prinl "grestore") )
 

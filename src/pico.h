@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 28may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -76,7 +76,7 @@ typedef struct ctlFrame {
 
 typedef struct parseFrame {
    any name;
-   word dig;
+   word dig, eof;
 } parseFrame;
 
 typedef struct stkEnv {
@@ -178,8 +178,8 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Case conversion */
-#define isLowc(c) (c >= 'a' && c <= 'z' || c == 128 || c >= (byte)'à' && c < (byte)'ÿ')
-#define isUppc(c) (c >= 'A' && c <= 'Z' || c >= (byte)'À' && c < (byte)'ß')
+#define isLowc(c) (c >= 'a' && c <= 'z' || c == 128 || c >= (byte)224 && c < (byte)255)
+#define isUppc(c) (c >= 'A' && c <= 'Z' || c >= (byte)192 && c < (byte)223)
 
 /* Globals */
 extern bool SigInt, SigTerm;
@@ -202,6 +202,7 @@ void *alloc(void*,size_t);
 any apply(any,any,bool,int,cell*);
 void argError(any,any) __attribute__ ((noreturn));
 void atomError(any,any) __attribute__ ((noreturn));
+void begString(void);
 void bigAdd(any,any);
 int bigCompare(any,any);
 any bigCopy(any);
@@ -211,7 +212,7 @@ any boxCnt(long);
 any boxWord2(word2);
 void brkLoad(any);
 int bufSize(any);
-void bufString(any,char*);
+void bufString(any,byte*);
 void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
@@ -231,6 +232,7 @@ void digDiv2(any);
 void digMul2(any);
 void digSub1(any);
 any doubleToNum(double);
+any endString(void);
 bool equal(any,any);
 void err(any,any,char*,...) __attribute__ ((noreturn));
 any evExpr(any,any);
@@ -238,7 +240,7 @@ long evCnt(any,any);
 double evDouble(any,any);
 any evList(any);
 any evSym(any);
-void execError(char*);
+void execError(byte*);
 void extError(any,any) __attribute__ ((noreturn));
 any findHash(any,any*);
 int firstByte(any);
@@ -263,14 +265,15 @@ int numBytes(any);
 void numError(any,any) __attribute__ ((noreturn));
 double numToDouble(any);
 any numToSym(any,int,int,int);
-void outString(char*);
+void outName(any);
+void outString(byte*);
 void outWord(word);
 void pack(any,int*,any*,cell*);
 int pathSize(any);
-void pathString(any,char*);
+void pathString(any,byte*);
 void pipeError(any,char*);
 void pr(any);
-void prinl(any);
+void prin(any);
 void print(any);
 void prn(long);
 void protError(any,any) __attribute__ ((noreturn));
@@ -286,6 +289,7 @@ int symChar(any);
 void symError(any,any) __attribute__ ((noreturn));
 any symToNum(any,int,int,int);
 long unBox(any);
+void undefined(any,any);
 void varError(any,any) __attribute__ ((noreturn));
 long waitFd(any,int,long);
 bool wrBytes(int,byte*,int);
@@ -297,6 +301,7 @@ any doAbs(any);
 any doAdd(any);
 any doAll(any);
 any doAnd(any);
+any doAny(any);
 any doAppend(any);
 any doApply(any);
 any doArg(any);
@@ -531,6 +536,7 @@ any doSub(any);
 any doSubQ(any);
 any doSum(any);
 any doSuper(any);
+any doSym(any);
 any doSymQ(any);
 any doSync(any);
 any doSys(any);

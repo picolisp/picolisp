@@ -1,4 +1,4 @@
-/* 02mar03abu
+/* 29may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -20,6 +20,9 @@
 #include <openssl/err.h>
 
 typedef enum {NO,YES} bool;
+
+static char *File, *Data;
+static off_t Size;
 
 static char Get[] =
    "GET /%s HTTP 1.1\n"
@@ -92,6 +95,23 @@ static bool sslFile(SSL *ssl, char *file) {
    return n == 0;
 }
 
+static void doSigTerm(int n __attribute__((unused))) {
+   int fd1, fd2, cnt;
+   char buf[BUFSIZ];
+
+   if (Data  &&  (fd1 = open(File, O_RDWR)) >= 0) {
+      if (unlink(File) < 0)
+         giveup("Can't unlink back");
+      if ((fd2 = open(File, O_CREAT|O_WRONLY|O_TRUNC, 0666)) < 0)
+         giveup("Can't create back");
+      if (write(fd2, Data, Size) != Size)
+         giveup("Can't write back");
+      while ((cnt = read(fd1, buf, sizeof(buf))) > 0)
+         write(fd2, buf, cnt);
+   }
+   exit(0);
+}
+
 // ssl host port url
 // ssl host port url file
 // ssl host port url key file
@@ -102,7 +122,7 @@ int main(int ac, char *av[]) {
    int n, sec, getLen, fd, sd;
    struct stat st;
    struct flock fl;
-   char *p, get[1024], buf[BUFSIZ];
+   char get[1024], buf[BUFSIZ];
 
    if (ac < 4 || ac > 7)
       giveup("host port url [[key] file [sec]]");
@@ -135,11 +155,14 @@ int main(int ac, char *av[]) {
          write(STDOUT_FILENO, buf, n);
       return 0;
    }
+   File = av[5];
    sec = (int)atol(av[6]);
+   signal(SIGINT, doSigTerm);
+   signal(SIGTERM, doSigTerm);
    for (;;) {
-      if ((fd = open(av[5],O_RDWR)) < 0)
+      if ((fd = open(File, O_RDWR)) < 0)
          sleep(sec);
-      else if (fstat(fd,&st) < 0 || st.st_size == 0)
+      else if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
          close(fd),  sleep(sec);
       else {
          fl.l_type = F_WRLCK;
@@ -148,9 +171,9 @@ int main(int ac, char *av[]) {
          fl.l_len = 0;
          if (fcntl(fd, F_SETLKW, &fl) < 0)
             giveup("Can't lock");
-         if (fstat(fd,&st) < 0 || (p = malloc(st.st_size)) == NULL)
+         if (fstat(fd,&st) < 0 || (Data = malloc(Size)) == NULL)
             giveup("Can't copy");
-         if (read(fd, p, st.st_size) != st.st_size)
+         if (read(fd, Data, Size) != Size)
             giveup("Can't read");
          if (ftruncate(fd,0) < 0)
             errmsg("Can't truncate");
@@ -159,7 +182,7 @@ int main(int ac, char *av[]) {
             if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
                if (SSL_write(ssl, get, getLen) == getLen  &&
                         (!*av[4] || sslFile(ssl,av[4]))  &&
-                        SSL_write(ssl, p, st.st_size) == st.st_size  &&
+                        SSL_write(ssl, Data, Size) == Size  &&
                         SSL_write(ssl, NIL, sizeof(NIL)) == sizeof(NIL)  &&
                         SSL_read(ssl, buf, sizeof(NIL)) == sizeof(NIL)  &&
                                        memcmp(buf, NIL, sizeof(NIL)) == 0 ) {
@@ -170,7 +193,7 @@ int main(int ac, char *av[]) {
             }
             sleep(sec);
          }
-         free(p);
+         free(Data),  Data = NULL;
       }
    }
 }

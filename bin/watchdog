@@ -1,0 +1,78 @@
+#!bin/pico lib.l
+# 30apr03abu
+# (c) Software Lab. Alexander Burger
+# Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
+
+(load "@lib/misc.l")
+
+# *MailHost *MailPort *MailTo *Beat *Watch
+
+(let A (argv)
+   (setq
+      *MailHost (car A)
+      *MailPort (format (cadr A))
+      "From" (caddr A)
+      *MailTo (cdddr A) ) )
+
+(unless (call "test" "-p" "fifo/beat")
+   (call "rm" "-f" "fifo/beat")
+   (call "mkfifo" "fifo/beat") )
+
+(?push '*Bye '(call "rm" "fifo/beat"))
+
+(de *Err
+   (out NIL
+      (prin (stamp))
+      (space)
+      (println *Watch) )
+   (bye) )
+
+(task (setq *Beat (open "fifo/beat"))
+   (in *Beat
+      (let X (rd)
+         (cond
+            ((not X) (bye))
+            ((num? X)
+               (setq *Watch (delete (assoc X *Watch) *Watch)) )
+            ((atom X)
+               (out X
+                  (mapc
+                     '((W)
+                        (prinl
+                           (align 5 (car W))
+                           " "
+                           (or (caddr W) "o")
+                           " "
+                           (cdddr W) ) )
+                     *Watch ) ) )
+            ((assoc (car X) *Watch)    # X = (Pid Tim . Any)
+               (let W @                # W = (Pid Tim Flg . Any)
+                  (when (caddr W)
+                     (msg (car W) " " (stamp) " resumed") )
+                  (set (cdr W) (cadr X))
+                  (set (cddr W))
+                  (con (cddr W) (or (cddr X) (cdddr W))) ) )
+            (T (push '*Watch (list (car X) (cadr X) NIL (cddr X)))) ) ) ) )
+
+(task -54321 54321
+   (let D (+ (time) (* 86400 (date)))
+      (while (find '((X) (> D (cadr X))) *Watch)
+         (let W @
+            (if (caddr W)
+               (prog
+                  (msg (car W) " " (stamp)
+                     (if (kill (car W) 15) " killed" " gone") )
+                  (setq *Watch (delete W *Watch)) )
+               (inc (cdr W) 3600)
+               (set (cddr W) T)
+               (let Sub (pack "CRASH " (car W) " " (cdddr W))
+                  (msg (car W) " " (stamp))
+                  (mapc
+                     '((To)
+                        (unless (mail *MailHost *MailPort "From" To Sub)
+                           (msg (list *MailHost *MailPort "From" To Sub)
+                              " mail failed "
+                              (stamp) ) ) )
+                     *MailTo ) ) ) ) ) ) )
+
+(wait)

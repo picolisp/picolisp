@@ -1,4 +1,4 @@
-# 20jan03abu
+# 05may03abu
 # (c) Software Lab. Alexander Burger
 
 (must `(_ "Role") RoleAdmin)
@@ -6,7 +6,7 @@
 (html `(_ "Role")
    (<id> `(_ "Role") (: nm))
    <hr>
-   (new '(+ObjForm) '(+Role) *ID 800 500
+   (form '(+ObjForm) '(+Role) *ID 800 500
       (quote
          (gui '(+E/R +TextField) '(nm : home obj) `(_ "Name") 40)
          (----)

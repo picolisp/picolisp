@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 19may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -11,6 +11,7 @@ static symInit Symbols[] = {
    {doAdd, "+"},
    {doAll, "all"},
    {doAnd, "and"},
+   {doAny, "any"},
    {doAppend, "append"},
    {doApply, "apply"},
    {doArg, "arg"},
@@ -243,6 +244,7 @@ static symInit Symbols[] = {
    {doSubQ, "sub?"},
    {doSum, "sum"},
    {doSuper, "super"},
+   {doSym, "sym"},
    {doSymQ, "sym?"},
    {doSync, "sync"},
    {doSys, "sys"},

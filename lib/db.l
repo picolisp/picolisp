@@ -1,4 +1,4 @@
-# 22apr03abu
+# 04jun03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -6,6 +6,7 @@
    (get (or Hook *DB) Cls Var) )
 
 
+# (db 'var 'cls ['hook] 'val ['var 'val ..])
 (de db (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
       (let Tree (tree (: var) (: cls) (and (: hook) (next)))
@@ -277,10 +278,10 @@
             (and
                (pair X)
                (or
-                  (== (: var) (get (meta Obj (cdr X)) 'hook))
+                  (== (: var) (meta Obj (cdr X) 'hook))
                   (find
                      '((B) (== (: var) (get B 'hook)))
-                     (get (meta Obj (cdr X)) 'bag) ) ) ) )
+                     (meta Obj (cdr X) 'bag) ) ) ) )
          (getl Obj) )
       (put Obj (: var) Old)
       (mapc
@@ -751,6 +752,10 @@
       (clone> This)
       (commit Sym) ) )
 
+# Default syncronization function
+(de upd Lst
+   (wipe Lst) )
+
 
 ### Utilities ###
 # Define object variables as relations
@@ -761,7 +766,7 @@
 
 # Find or create object
 (de request (Typ Var . @)
-   (with (meta 'Typ Var)
+   (with (meta Typ Var)
       (or
          (pass db Var (: cls))
          (if (: hook)

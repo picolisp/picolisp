@@ -1,4 +1,4 @@
-# 25jun02abu
+# 27may03abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
@@ -98,7 +98,7 @@
 # foc yaw pitch x y z sky gnd snx sny snap
 
 (dm T (DX DY F Dir X Y Z Sky Gnd)
-   (super "Z3dField" "gl.jar" DX DY)
+   (super "Z3dField" "java/gl.jar" DX DY)
    (=: foc F)
    (=: yaw (car Dir))
    (=: pitch (cdr Dir))

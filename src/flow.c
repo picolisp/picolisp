@@ -1,4 +1,4 @@
-/* 21apr03abu
+/* 28may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1015,14 +1015,14 @@ any doSys(any x) {
 
    y = evSym(x = cdr(x));
    {
-      char nm[bufSize(y)];
+      byte nm[bufSize(y)];
 
       bufString(y,nm);
       if (!isCell(x = cdr(x)))
          return mkStr(getenv(nm));
       y = evSym(x);
       {
-         char val[bufSize(y)];
+         byte val[bufSize(y)];
 
          bufString(y,val);
          return setenv(nm,val,1)? Nil : y;
@@ -1035,7 +1035,7 @@ any doCall(any ex) {
    pid_t pid;
    any x, y;
    int res, i, ac = length(x = cdr(ex));
-   char *av[ac+1];
+   byte *av[ac+1];
 
    if (ac == 0)
       return Nil;
@@ -1046,7 +1046,7 @@ any doCall(any ex) {
    av[ac] = NULL;
    if ((pid = fork()) == 0) {
       setpgid(0,0);
-      execvp(av[0], av);
+      execvp(av[0], (char**)av);
       execError(av[0]);
    }
    i = 0;  do

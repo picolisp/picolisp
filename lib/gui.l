@@ -1,4 +1,4 @@
-# 22apr03abu
+# 04jun03abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -38,7 +38,7 @@
                (baseHRef)
                *SesId
                Str
-               (and (args) (pack "?" (pass htFmt))) )
+               (and (args) (pack "?" (pass 'ht:Fmt))) )
             (or Tar (if *Frame "MAIN" "_self")) ) ) ) )
 
 (de bar (Ttl X Y Prg)
@@ -72,7 +72,9 @@
    (when *AppGate
       (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">") )
    (while (args)
-      (prinl "<PARAM NAME=\"" (next) "\" VALUE=\"" (next) "\">") )
+      (prin "<PARAM NAME=\"" (next) "\" VALUE=\"")
+      (ht:Prin (next))
+      (prinl "\">") )
    (prinl "</APPLET>") )
 
 (dm close> ()
@@ -166,7 +168,7 @@
 
 
 (dm T (DX DY Prg)
-   (super "Front" "pico.jar" DX DY)
+   (super "Front" "java/pico.jar" DX DY)
    (=: init Prg) )
 
 (dm init> ()
@@ -677,9 +679,7 @@
       (=: mac
          (mapcar
             '((X)
-               (cond
-                  ((num? X) (setq X (chop (format X))))
-                  ((sym? X) (setq X (chop X))) )
+               (setq X (chop X))
                (when (> (length X) N)
                   (setq N (length X)) )
                X )
@@ -1677,7 +1677,9 @@
    (=: put (or "Put" prog1))
    (=: get (or "Get" prog1))
    (mapc
-      '((F) (link F) (put F 'arr This))
+      '((F)
+         (link F)
+         (put F 'arr This) )
       (=: fields
          (make
             (while "Lst"
@@ -1902,6 +1904,8 @@
 ### DB GUI ###
 # *DbForms
 
+(undef 'upd)
+
 (de upd Lst
    (wipe Lst)
    (mapc
@@ -1922,9 +1926,9 @@
    (with *ID
       (prin
          "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>"
-         (and (: T) "[")
-         Ttl
-         " --" )
+         (and (: T) "[") )
+      (ht:Prin Ttl)
+      (prin " --")
       (while Lst
          (prin " " (eval (pop 'Lst))) )
       (prin
@@ -1988,7 +1992,7 @@
 # (choDialog Ttl Rel [Hook] [(+Obj +TextField) [pre [post]]])
 (de choDialog ("Ttl" "Rel" . @)
    (let
-      ("Hook" (and (get (meta (cdr "Rel") (car "Rel")) 'hook) (next))
+      ("Hook" (and (meta (cdr "Rel") (car "Rel") 'hook) (next))
          "Fld" (or (next) '(+Obj +TextField))
          "Pre" (next)
          "Post" (next)
@@ -2014,12 +2018,16 @@
                   '(act> (: home fields 1)) )
                (gui '(+Button) "" `(_ "Create")
                   '(with (: home fields 1)
-                     (if (get (meta (: objTyp) (: objVar)) 'hook)
+                     (if (meta (: objTyp) (: objVar) 'hook)
                         (newUrl (: objTyp) @ (eval (: objHook)))
                         (newUrl (: objTyp)) ) ) ) )
             (---- T)
             (gui '(+IndexChart)
-               (cons (car "Rel") (cons (last "Rel") (lit "Hook")))
+               (cons
+                  (car "Rel")
+                  (cons
+                     (meta (cdr "Rel") (car "Rel") 'cls)
+                     (lit "Hook") ) )
                8 NIL '((apply gui "Lst")) )
             (----)
             (row (hotButton `(_ "Choose")) (quitButton)) ) ) ) )
@@ -2201,7 +2209,7 @@
 (dm T (Rel . @)
    (=: objVar (car Rel))
    (=: objTyp (cdr Rel))
-   (when (get (meta (: objTyp) (: objVar)) 'hook)
+   (when (meta (: objTyp) (: objVar) 'hook)
       (=: objHook (next)) )
    (pass super)
    (hotField) )
@@ -2217,10 +2225,11 @@
          ((= V (get (: obj) (: objVar)))
             (: obj) )
          (T
-            (=: obj
-               (if (: objHook)
-                  (db (: objVar) (last (: objTyp)) (eval @) V)
-                  (db (: objVar) (last (: objTyp)) V) ) ) ) ) ) )
+            (let Cls (meta (: objTyp) (: objVar) 'cls)
+               (=: obj
+                  (if (: objHook)
+                     (db (: objVar) Cls (eval @) V)
+                     (db (: objVar) Cls V) ) ) ) ) ) ) )
 
 (dm key> (C)
    (when (setq C (extra C))
@@ -2259,22 +2268,23 @@
          `(_ "Data not found") ) ) )
 
 (dm query> (X)
-   (if (num? X)
-      (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
-         (make
-            (link 'db (: objVar) (last (: objTyp)))
-            (when (: objHook)
-               (link (eval @)) )
-            (link (cons X T) '@Obj) )
-         (list 'isa (last (: objTyp)) '@Obj) )
-      (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
-         (make
-            (link 'db (: objVar) (last (: objTyp)))
-            (when (: objHook)
-               (link (eval @)) )
-            (link X '@Obj) )
-         (list 'isa (last (: objTyp)) '@Obj)
-         (list 'head X '@Obj (: objVar)) ) ) )
+   (let Cls (meta (: objTyp) (: objVar) 'cls)
+      (if (num? X)
+         (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
+            (make
+               (link 'db (: objVar) Cls)
+               (when (: objHook)
+                  (link (eval @)) )
+               (link (cons X T) '@Obj) )
+            (list 'isa Cls '@Obj) )
+         (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
+            (make
+               (link 'db (: objVar) Cls)
+               (when (: objHook)
+                  (link (eval @)) )
+               (link X '@Obj) )
+            (list 'isa Cls '@Obj)
+            (list 'head X '@Obj (: objVar)) ) ) ) )
 
 
 (class +ObjView +Lock)

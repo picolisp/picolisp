@@ -1,4 +1,4 @@
-# 22apr03abu
+# 06jun03abu
 # (c) Software Lab. Alexander Burger
 
 ### Locale ###
@@ -50,17 +50,27 @@
       (push Var (cons Key Val)) ) )
 
 ### String ###
-(de align (N Val)
+(de align (X . @)
    (pack
-      (need N
-         (cond
-            ((num? Val) (chop (format Val)))
-            ((sym? Val) (chop Val))
-            (T Val) )
-         " " ) ) )
+      (if (pair X)
+         (mapcar
+            '((X) (need X (chop (next)) " "))
+            X )
+         (need X (chop (next)) " ") ) ) )
 
-(de center (N Val)
-   (align (>> 1 (+ N (length Val))) Val) )
+(de center (X . @)
+   (pack
+      (if (pair X)
+         (let R 0
+            (mapcar
+               '((X)
+                  (let (S (chop (next))  N (>> 1 (+ X (length S))))
+                     (prog1
+                        (need (+ N R) S " ")
+                        (setq R (- X N)) ) ) )
+               X ) )
+         (let S (chop (next))
+            (need (>> 1 (+ X (length S))) S " ") ) ) ) )
 
 (de glue (Str Lst)
    (pack
@@ -78,13 +88,7 @@
 
 ### Number ###
 (de pad (N Val)
-   (pack
-      (need N
-         (cond
-            ((num? Val) (chop (format Val)))
-            ((sym? Val) (chop Val))
-            (T Val) )
-         "0" ) ) )
+   (pack (need N (chop Val) "0")) )
 
 (de oct (X)
    (if (num? X)
@@ -92,7 +96,7 @@
          (until (=0 (setq X (>> 3 X)))
             (push 'L (_oct X)) )
          (pack L) )
-      (and (sym? X) (setq X (chop X)))
+      (setq X (chop X))
       (let N 0
          (while X
             (setq N
@@ -110,7 +114,7 @@
          (until (=0 (setq X (>> 4 X)))
             (push 'L (_hex X)) )
          (pack L) )
-      (and (sym? X) (setq X (chop X)))
+      (setq X (chop X))
       (let N 0
          (while X
             (let C (- (char (pop 'X)) `(char "0"))
@@ -293,9 +297,10 @@
                   (prinl "Subject: " Sub)
                   (prinl "User-Agent: PicoLisp")
                   (prinl "MIME-Version: 1.0")
-                  (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"")
-                  (prinl)
-                  (prinl "--" B)
+                  (when (args)
+                     (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"")
+                     (prinl)
+                     (prinl "--" B) )
                   (prinl "Content-Type: text/plain; charset=utf-8")
                   (prinl "Content-Transfer-Encoding: 8bit")
                   (prinl)
@@ -304,21 +309,22 @@
                         (prinl (and (= `(char ".") (char L)) ".") L) )
                      Lst )
                   (prinl)
-                  (while (args)
-                     (let L (next)
-                        (prinl "--" B)
-                        (prinl
-                           "Content-Type: "
-                           (or (caddr L) "application/octet-stream")
-                           "; name=\""
-                           (cadr L)
-                           "\"" )
-                        (prinl "Content-Transfer-Encoding: x-uuencode")
-                        (prinl)
-                        (in (list "uuencode" (car L) (cadr L))
-                           (echo) )
-                        (prinl) ) )
-                  (prinl "--" B "--")
+                  (when (args)
+                     (while (args)
+                        (let L (next)
+                           (prinl "--" B)
+                           (prinl
+                              "Content-Type: "
+                              (or (caddr L) "application/octet-stream")
+                              "; name=\""
+                              (cadr L)
+                              "\"" )
+                           (prinl "Content-Transfer-Encoding: x-uuencode")
+                           (prinl)
+                           (in (list "uuencode" (car L) (cadr L))
+                              (echo) )
+                           (prinl) ) )
+                     (prinl "--" B "--") )
                   (prinl ".")
                   (prinl "QUIT") )
                T )
@@ -331,7 +337,7 @@
          (until (=0 (setq X (>> 6 X)))
             (push 'L (_fmt64 X)) )
          (pack L) )
-      (and (sym? X) (setq X (chop X)))
+      (setq X (chop X))
       (let N 0
          (while X
             (let C (- (char (pop 'X)) `(char "0"))

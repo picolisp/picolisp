@@ -1,4 +1,4 @@
-/* 04oct02abu
+/* 27may03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -119,20 +119,20 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
          }
          err(ex, o, "Bad object");
       }
-      if (foo == val(foo))
-         err(ex, foo, "Can't apply");
+      if (isNil(val(foo)) || foo == val(foo))
+         undefined(foo,ex);
       foo = val(foo);
    }
    if (--n < 0)
       cdr(ApplyBody) = Nil;
    else {
       any x = ApplyArgs;
-      cdaar(x) = cf? car(data(p[n])) : data(p[n]);
+      val(caar(x)) = cf? car(data(p[n])) : data(p[n]);
       while (--n >= 0) {
          if (!isCell(cdr(x)))
-            cdr(x) = cons(cons(cons(Quote, Nil), car(x)), Nil);
+            cdr(x) = cons(cons(consSym(Nil,Nil), car(x)), Nil);
          x = cdr(x);
-         cdaar(x) = cf? car(data(p[n])) : data(p[n]);
+         val(caar(x)) = cf? car(data(p[n])) : data(p[n]);
       }
       cdr(ApplyBody) = car(x);
    }

@@ -1,4 +1,4 @@
-# 27apr04abu
+# 27jul04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -31,7 +31,7 @@
 (class +Applet)
 # url app outN
 
-(dm T (A J DX DY . @)
+(dm T (A Lst DX DY . @)
    (unless *Apps
       (setq *AppId 1)
       (task (setq "Sok1" (port *APorts '*AppPort))
@@ -47,8 +47,10 @@
                (close S) ) ) )
       (task -40000 80000
          (and *Top (ping> *Top)) ) )
-   (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId J
-      "\" WIDTH=" DX " HEIGHT=" DY ">" )
+   (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
+   (while Lst
+      (prinl ","  *SesId (pop 'Lst)) )
+   (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
    (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
    (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
    (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
@@ -90,9 +92,8 @@
 
 (dm stop> ()
    (when (: app)
-      (out @ (pr "done")) ) )
-
-(dm paint> ())
+      (out @ (pr "done")) )
+   (=: outN) )
 
 (dm upd> ())
 
@@ -109,9 +110,10 @@
    (when (: app)
       (out @ (pr "beep")) ) )
 
-(dm play> (X)
+(dm play> (Url Flg)
    (when (: app)
-      (out @ (pr "play" X)) ) )
+      (out @
+         (pr "play" (and Url (pack (baseHRef) *SesId Url)) Flg) ) ) )
 
 (dm menu> (Ttl Lst)
    (when (: app)
@@ -171,7 +173,7 @@
 
 
 (dm T (DX DY Prg . @)
-   (super "Front" "java/pico.jar" DX DY)
+   (super "Front" '("java/pico.jar") DX DY)
    (=: init Prg)
    (set This
       (conc
@@ -204,13 +206,14 @@
    (focus1> This) )
 
 (dm focus1> ()
-   (find
-      '((F)
-         (and
-            (isa '+TextField F)
-            (able?> F)
-            (t (focus> F)) ) )
-      (: fields) ) )
+   (and
+      (or
+         (find
+            '((F)
+               (and (isa '+TextField F) (able?> F)) )
+            (: fields) )
+         (find 'able?> (: fields)) )
+      (focus> @) ) )
 
 (dm upd> ()
    (super)
@@ -355,10 +358,14 @@
    (_boxSend DN>) )
 
 (dm DEL> ()
-   (_boxSend DEL>) )
+   (if (: lock)
+      (beep> This)
+      (_boxSend DEL>) ) )
 
 (dm INS> ()
-   (_boxSend INS>) )
+   (if (: lock)
+      (beep> This)
+      (_boxSend INS>) ) )
 
 
 # Help
@@ -427,11 +434,6 @@
 (dm chg> ()  # Change string
    (=: "last")
    (chg> (get (: fields) (rd))) )
-
-# ix sym|flg sel
-(dm log> ()  # Change string and log state
-   (=: "last")
-   (log> (get (: fields) (rd))) )
 
 # ix
 (dm nxt> ()
@@ -1186,16 +1188,13 @@
 (dm beg> ())
 
 (dm chg> ()
-   (=: str (rd))
-   (=: sel (rd)) )
+   (do> This
+      (=: str (rd))
+      (=: sel (rd)) ) )
 
 (dm chk> ())
 (dm end> ())
 (dm cho> ())
-
-(dm log> ()
-   (do> This
-      (chg> This) ) )
 
 (dm text> (S)
    (when (: home app)
@@ -2174,14 +2173,7 @@
       ("Hook" (and (meta (cdr "Rel") (car "Rel") 'hook) (next))
          "Fld" (or (next) '(+Obj +TextField))
          "Pre" (next)
-         "Post" (next)
-         "Lst" (make
-            (link (cons '+Lock "Fld"))
-            (and "Pre" (link "Pre"))
-            (link "Rel")
-            (and "Hook" (link (lit "Hook")))
-            (and "Post" (link "Post"))
-            (link "" 40) ) )
+         "Post" (next) )
       (dialog (pack "Ttl" ,"-Choice") NIL
          (quote
             (row
@@ -2201,13 +2193,21 @@
                         (newUrl (: objTyp) @ (eval (: objHook)))
                         (newUrl (: objTyp)) ) ) ) )
             (---- T)
-            (gui '(+IndexChart)
-               (cons
-                  (car "Rel")
-                  (cons
-                     (meta (cdr "Rel") (car "Rel") 'cls)
-                     (lit "Hook") ) )
-               8 NIL '((apply gui "Lst")) )
+            (gui '(+QueryChart)
+               '(goal
+                  (list
+                     (list 'db (car "Rel") (last "Rel") "Hook" '@@) ) )
+               8 NIL
+               (list
+                  (make
+                     (link 'gui (lit (cons '+Lock "Fld")))
+                     (and "Pre" (link (lit "Pre")))
+                     (link (lit "Rel"))
+                     (and "Hook" (link (lit (lit "Hook"))))
+                     (and "Post" (link (lit "Post")))
+                     (link "" 40) ) )
+               cons
+               car )
             (----)
             (row (hotButton ,"Choose") (quitButton)) ) ) ) )
 (====)
@@ -2374,7 +2374,7 @@
 
 (dm T @
    (pass extra)
-   (pr "bCol" (=: bCol `(hex "A8A8FF"))) )
+   (pr "bCol" (=: bCol `(hex "E0E0FF"))) )
 
 
 (class +Obj +Sync)
@@ -2410,11 +2410,10 @@
          ((= V (get (: obj) (: objVar)))
             (: obj) )
          (T
-            (let Cls (meta (: objTyp) (: objVar) 'cls)
-               (=: obj
-                  (if (: objHook)
-                     (db (: objVar) Cls (eval @) V)
-                     (db (: objVar) Cls V) ) ) ) ) ) ) )
+            (=: obj
+               (if (: objHook)
+                  (db (: objVar) (last (: objTyp)) (eval @) V)
+                  (db (: objVar) (last (: objTyp)) V) ) ) ) ) ) )
 
 (dm key> (C)
    (when (setq C (extra C))
@@ -2613,8 +2612,23 @@
          (cons (pack (: str) @))
          (cons (pack (: str) @ `(char T)) T) ) ) )
 
-(dm act> ()
-   (key> This) )
+
+# Chart scroller
+(class +Scrl +Sync)
+# scrl
+
+(dm T (Foo . @)
+   (=: scrl Foo)
+   (pass super) )
+
+(dm key> (C)
+   (prog1 (extra C)
+      (let (S (pack (: str) @)  foo (: scrl))
+         (with (pick '((F) (get F 'arr)) (memq This (: home fields)))
+            (scrl
+               (if (find '((D) (foo S D)) (: data))
+                  (index @ (: data))
+                  1 ) ) ) ) ) )
 
 
 # DB Query Chart

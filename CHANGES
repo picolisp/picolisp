@@ -1,3 +1,12 @@
+* 03aug04 picoLisp-2.0.13
+   Changed rounding and argument policy of '*/'
+   Applet protocol revised
+   Extended 'head' and 'tail' to predicate functionality
+   Changed 'accu' default from 1 to 0
+   Dialog handling revised
+   Multiple JAR files per applet
+   Fixed "Last-Modified:" format in 'httpEcho'
+
 * 29may04 picoLisp-2.0.12
    Fixed 'boss' mechanism
    'del' delete-and-set function

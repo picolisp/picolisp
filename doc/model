@@ -1,4 +1,4 @@
-# 11feb01abu
+# 25jun04abu
 # (c) Software Lab. Alexander Burger
 
 Sym Val -> Model list:
@@ -17,8 +17,11 @@ Sym Val -> Model list:
    ..
 )
 
-col = NIL  -> Invisible side
-col2 = T   ->  Shadow
+<col> <col>    # Both sides visible
+<col>  NIL     # Backface culling
+ NIL  <col>    # Foreside culling
+ NIL   NIL     # Transparent
+ NIL    T      # Shadow
 
 
 Transmission format:
@@ -47,5 +50,5 @@ Polygon design rules:
 z3dField .graf
 ((x y . "string") ..)
 
-Transmit format:
+Transmission format:
    cnt  x y "string" ..

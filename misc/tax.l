@@ -1,4 +1,4 @@
-# 13may04abu
+# 31jul04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -65,7 +65,7 @@
    (*/
       (: val)
       (or (: kto pr) 100)
-      100 T ) )
+      100 ) )
 
 (dm net> ()
    (*/
@@ -73,13 +73,13 @@
          (- (: val) @)
          (: val) )
       (or (: kto pr) 100)
-      100 T ) )
+      100 ) )
 
 (dm ust> ()
    (*/
       (: ust)
       (or (: kto pr) 100)
-      100 T ) )
+      100 ) )
 
 (dm afa> (Y)
    (let V (- (net> This))
@@ -125,7 +125,7 @@
    (html "Firma"
       (<head> "Firma")
       <hr>
-      (new '(+ObjForm) '(+Firma) (firm) 800 400
+      (new '(+ObjForm) '(+Firma) (firm) 900 400
          (quote
             (gui '(+E/R +TextField) '(nm : home obj)  "Name" 40)
             (gui '(+E/R +TextField) '(nr : home obj)  "Steuernummer" 20)
@@ -156,7 +156,7 @@
    (html "Konto"
       (<head> "Konto")
       <hr>
-      (new '(+ObjForm) '(+Kto) Kto 800 200
+      (new '(+ObjForm) '(+Kto) Kto 900 200
          (quote
             (row
                (gui '(+E/R +TextField) '(nm : home obj) "Bezeichnung" 30)
@@ -175,7 +175,7 @@
    (html "Position"
       (<head> "Position")
       <hr>
-      (new '(+ObjForm) '(+Pos) Pos 800 400
+      (new '(+ObjForm) '(+Pos) Pos 900 400
          (quote
             (row
                (gui '(+E/R +DateField)
@@ -236,7 +236,7 @@
 (de tax ()
    (app)
    (html "Software Lab"
-      (new '(+Form) 800 600
+      (new '(+Form) 900 600
          (quote
             (row
                (gui '(+Var +NumField) '*QYear "" (posYears))
@@ -326,7 +326,7 @@
 
 (de brust (Val Proz)
    (default Val 0 Proz 0)
-   (*/ Val Proz (+ 100.00 Proz) T) )
+   (*/ Val Proz (+ 100.00 Proz)) )
 
 (de prUms (X Y DX DY N)
    (window X Y DX DY

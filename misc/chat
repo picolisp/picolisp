@@ -1,5 +1,5 @@
-#!/usr/abu/pico/bin/pico /usr/abu/pico/lib.l
-# 18dec03abu
+#!bin/pico lib.l
+# 18jun04abu
 
 # *Port *Sock *Name
 

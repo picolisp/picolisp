@@ -1,4 +1,4 @@
-# 21apr04abu
+# 30jul04abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -284,9 +284,7 @@
       (or
          (not V)
          (let L (-> @L)
-            ("same"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("same" (car L) (cdr L)) ) ) ) )
 
 (de "same" (X L)
    (if L
@@ -316,9 +314,7 @@
       (or
          (not N)
          (let L (-> @L)
-            ("range"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("range" (car L) (cdr L)) ) ) ) )
 
 (de "range" (X L)
    (if L
@@ -349,9 +345,7 @@
       (or
          (not S)
          (let L (-> @L)
-            ("head"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("head" (car L) (cdr L)) ) ) ) )
 
 (de "head" (X L)
    (if L
@@ -375,9 +369,7 @@
       (or
          (not S)
          (let L (-> @L)
-            ("fold"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("fold" (car L) (cdr L)) ) ) ) )
 
 (de "fold" (X L)
    (if L
@@ -404,9 +396,7 @@
       (or
          (not S)
          (let L (-> @L)
-            ("part"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("part" (car L) (cdr L)) ) ) ) )
 
 (de "part" (X L)
    (if L
@@ -430,9 +420,7 @@
       (or
          (not S)
          (let L (-> @L)
-            ("tolr"
-               (get (car L) (cadr L))
-               (cddr L) ) ) ) ) )
+            ("tolr" (car L) (cdr L)) ) ) ) )
 
 (de "tolr" (X L)
    (if L

@@ -1,7 +1,7 @@
-# 25jun02abu
+# 10jul04abu
 # (c) Software Lab. Alexander Burger
 
-# *Cts
+# *Cts *Room
 
 (de enter (Usr)
    (and (get *Cts 'cts) (add> @ Usr)) )
@@ -11,14 +11,17 @@
 
 (de hello (Usr)
    (and Usr (enter Usr))
-   (tell 'enter (lit *Login)) )
+   (when (get *Cts 'cts)
+      (tell 'enter (lit *Login)) ) )
 
-(de speak (Str)
+(de speak (Room Str)
    (feed> (get *Cts 'log 'log) 400 (pack "(" Str ")"))
-   (tell 'spoke (lit *Login) Str) )
+   (tell 'spoke (lit *Login) Room Str) )
 
-(de spoke (Usr Str)
-   (when *Cts
+(de spoke (Usr Room Str)
+   (and
+      *Cts
+      (== Room *Room)
       (feed> (get *Cts 'log 'log) 400
          (pack
             (with Usr (or (: name) (: nm)))
@@ -30,7 +33,7 @@
 
 (dm start> ()
    (super)
-   (wait NIL (get *Cts 'cts))
+   (add> (wait NIL (get *Cts 'cts)) *Login)
    (tell 'hello (lit *Login)) )
 
 (dm stop> ()
@@ -39,7 +42,7 @@
 
 (dm ret> ()
    (when (val> (: msg))
-      (speak @) )
+      (speak *Room @) )
    (clr> (: msg)) )
 
 
@@ -51,11 +54,11 @@
       (pack
          (maplist
             '((L)
-               (let (Usr (car L)  Nm (with Usr (or (: name) (: nm))))
+               (with (car L)
                   (pack
-                     (and (== Usr *Login) "(")
-                     Nm
-                     (and (== Usr *Login) ")")
+                     (and (== This *Login) "(")
+                     (or (: name) (: nm))
+                     (and (== This *Login) ")")
                      (and (cdr L) "^J") ) ) )
             (=: lst Lst) ) ) ) )
 

@@ -2667,9 +2667,10 @@ href="#in">in</a></code> and <code><a href="#out">out</a></code>.
 $ echo 9 >count                           # Write '9' to file "count"
 $ ./p dbg.l
 : (ctl "count"                            # Get exclusive control
-   (let Cnt (in "count" (read))           # Read '9'
-      (out "count"
-         (println (- Cnt 1)) ) ) )        # Write '8'
+   (in "count"
+      (let Cnt (read)                     # Read '9'
+         (out "count"
+            (println (- Cnt 1)) ) ) ) )   # Write '8'
 -> 8
 :
 $ cat count                               # Check "count"
@@ -2765,7 +2766,8 @@ way to define a function.
 </code></pre>
 
 <p><dt><a name="debug"><code>(debug 'sym) -> T<br>
-(debug 'sym 'cls) -> T</code></a>
+(debug 'sym 'cls) -> T<br>
+(debug '(sym . cls)) -> T</code></a>
 <dd>Inserts a <code><a href="#!">!</a></code> breakpoint function call at the
 beginning and all top-level expressions of the function or method body of
 <code>sym</code>, to allow a stepwise execution. Typing <code>(d)</code> at a
@@ -3291,10 +3293,13 @@ zero, otherwise <code>NIL</code>.
 <p><hr>
 <h3><a name="h-foo">H</a></h3>
 
-<p><dt><a name="head"><code>(head 'cnt 'lst) -> lst</code></a>
+<p><dt><a name="head"><code>(head 'cnt|lst 'lst) -> lst</code></a>
 <dd>Returns a new list made of the <u>first</u> <code>cnt</code> elements of
-<code>lst</code>. See also <code><a href="#tail">tail</a></code>. If
-<code>cnt</code> is negative, it is added to the length of <code>lst</code>.
+<code>lst</code>. If <code>cnt</code> is negative, it is added to the length of
+<code>lst</code>. If the first argument is a <code>lst</code>, <code>head</code>
+is a predicate function returning that argument list if it is <code>equal</code>
+to the head of the second argument, and <code>NIL</code> otherwise. See also
+<code><a href="#tail">tail</a></code>.
 
 <p><pre><code>
 : (head 3 '(a b c d e f))
@@ -4392,7 +4397,7 @@ the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
 </code></pre>
 
 <p><dt><a name="offset"><code>(offset 'lst1 'lst2) -> cnt | NIL</code></a>
-<dd>Returns the <code>cnt</code> position of the sublist <code>lst1</code> in
+<dd>Returns the <code>cnt</code> position of the tail list <code>lst1</code> in
 <code>lst2</code>, or <code>NIL</code> if it is not found. See also <code><a
 href="#index">index</a></code>.
 
@@ -5451,9 +5456,14 @@ Ok
 -> T
 </code></pre>
 
-<p><dt><a name="tail"><code>(tail 'cnt 'lst) -> lst</code></a>
+<p><dt><a name="tail"><code>(tail 'cnt|lst 'lst) -> lst</code></a>
 <dd>Returns a new list made of the <u>last</u> <code>cnt</code> elements of
-<code>lst</code>. See also <code><a href="#head">head</a></code>.
+<code>lst</code>. If <code>cnt</code> is negative, it is added to the length of
+<code>lst</code>. If the first argument is a <code>lst</code>, <code>tail</code>
+is a predicate function returning that argument list if it is <code>equal</code>
+to the tail of the second argument, and <code>NIL</code> otherwise. See also
+<code><a href="#head">head</a></code>. <code>(tail -2 Lst)</code> is equivalent
+to <code>(nth Lst 3)</code>.
 
 <p><pre><code>
 : (tail 3 '(a b c d e f))
@@ -5464,8 +5474,8 @@ Ok
 -> (a b c d e f)
 </code></pre>
 
-<p><dt><a name="tell"><code>(tell 'any ['any ..]) -> any</code></a>
-<dd>Inter-Family communication: Send an executable list <code>(any any
+<p><dt><a name="tell"><code>(tell 'sym ['any ..]) -> any</code></a>
+<dd>Inter-Family communication: Send an executable list <code>(sym any
 ..)</code> to all family members (i.e. all children of the current process, and
 all other children of the parent process, see <code><a
 href="#fork">fork</a></code>) for automatic execution. <code>tell</code> can
@@ -5582,7 +5592,8 @@ when the value or properties of <code>sym</code> are indirectly modified.
 </code></pre>
 
 <p><dt><a name="trace"><code>(trace 'sym) -> sym<br>
-(trace 'sym 'cls) -> sym</code></a>
+(trace 'sym 'cls) -> sym<br>
+(trace '(sym . cls)) -> sym</code></a>
 <dd>Inserts <code><a href="#$">$</a></code> trace function call at the beginning
 of the function or method body of <code>sym</code>, so that trace information
 will be printed before and after execution. Built-in Pico functions
@@ -6053,18 +6064,18 @@ arguments. The sign of the result is that of the first argument.
 -> 60
 </code></pre>
 
-<p><dt><a name="*/"><code>(*/ 'num 'num 'num ['flg]) -> num</code></a>
-<dd>Returns the product of the first two <code>num</code> arguments, divided by
-the third argument. If <code>flg</code> is non-<code>NIL</code>, the result is
-rounded to the nearest integer value.
+<p><dt><a name="*/"><code>(*/ 'num1 ['num2 ..] 'num3) -> num</code></a>
+<dd>Returns the product of <code>num1</code> with all following
+<code>num2</code> arguments, divided by the <code>num3</code> argument. The
+result is rounded to the nearest integer value.
 
 <p><pre><code>
 : (*/ 3 4 2)
 -> 6
 : (*/ 1234 2 10)
--> 246
-: (*/ 1234 2 10 T)
 -> 247
+: (*/ 100 6)    
+-> 17
 </code></pre>
 
 <p><dt><a name="*Bye"><code>*Bye</code></a>

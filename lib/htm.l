@@ -1,4 +1,4 @@
-# 13may04abu
+# 21jun04abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -24,9 +24,9 @@
          (cond
             ((member '@ U)
                (apply (val (intern (ht:Pack (cdr @)))) (conc L (rest))) )
-            ((= '("." "l") (tail 2 U))
+            ((tail '("." "l") U)
                (load *Url) )
-            ((= '("." "h" "t" "m" "l") (tail 5 U))
+            ((tail '("." "h" "t" "m" "l") U)
                (httpEcho *Url NIL 86400) ) ) ) ) )
 
 (de bar (Ttl X Y Prg)

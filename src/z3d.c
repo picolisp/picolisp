@@ -1,4 +1,4 @@
-/* 04oct02abu
+/* 12jul04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -136,6 +136,40 @@ any Arot(any ex) {
       xrot(&m, pt.z/n, pt.y/n);
    }
    putMatrix(&m, x);
+   return T;
+}
+
+// (z3d:Rotate 'X 'Y 'Z 'model 'varX 'varY 'varZ ['flg]) -> T
+any Rotate(any ex) {
+   any x;
+   double vx, vy, vz;
+   matrix m;
+   cell c1, c2, c3;
+
+   vx = evDouble(ex, x = cdr(ex)) / SCL;
+   vy = evDouble(ex, x = cdr(x)) / SCL;
+   vz = evDouble(ex, x = cdr(x)) / SCL;
+   x = cdr(x),  getMatrix(cdddr(val(EVAL(car(x)))), &m);
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   NeedVar(ex,data(c2));
+   CheckVar(ex,data(c2));
+   x = cdr(x),  Push(c3, EVAL(car(x)));
+   NeedVar(ex,data(c3));
+   CheckVar(ex,data(c3));
+   if (isNil(EVAL(cadr(x)))) {
+      val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.b.x + vz * m.c.x) * SCL);
+      val(data(c2)) = doubleToNum((vx * m.a.y + vy * m.b.y + vz * m.c.y) * SCL);
+      val(data(c3)) = doubleToNum((vx * m.a.z + vy * m.b.z + vz * m.c.z) * SCL);
+   }
+   else {
+      val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.a.y + vz * m.a.z) * SCL);
+      val(data(c2)) = doubleToNum((vx * m.b.x + vy * m.b.y + vz * m.b.z) * SCL);
+      val(data(c3)) = doubleToNum((vx * m.c.x + vy * m.c.y + vz * m.c.z) * SCL);
+   }
+   drop(c1);
    return T;
 }
 
@@ -332,20 +366,24 @@ static void doDraw(any ex, any mdl, matrix *r, double x, double y, double z) {
             nv.y = v.z * w.x - v.x * w.z;
             nv.z = v.x * w.y - v.y * w.x;
             pt1.x += dx,  pt1.y += dy,  pt1.z += dz;
-            if (pt1.x * nv.x + pt1.y * nv.y + pt1.z * nv.z >= 0.0) {
-               if (isNil(c1))
-                  continue;  /* Backface culling */
-               pix = unDig(c1) / 2;
-               n = 85 - num(15.0 * nv.z / sqrt(nv.x*nv.x + nv.y*nv.y + nv.z*nv.z));
-            }
+            if (isNil(c1) && isNil(c2))
+               pix = -1;  // Transparent
             else {
-               if (isNil(c2))
-                  continue;  /* Backface culling */
-               pix = unDig(c2) / 2;
-               n = 85 + num(15.0 * nv.z / sqrt(nv.x*nv.x + nv.y*nv.y + nv.z*nv.z));
-            }
-            pix = ((pix >> 16) & 255) * n / 100 << 16  |
+               if (pt1.x * nv.x + pt1.y * nv.y + pt1.z * nv.z >= 0.0) {
+                  if (isNil(c1))
+                     continue;  // Backface culling
+                  pix = unDig(c1) / 2;
+                  n = 80 - num(14.14 * (nv.z-nv.x) / sqrt(nv.x*nv.x + nv.y*nv.y + nv.z*nv.z));
+               }
+               else {
+                  if (isNil(c2))
+                     continue;  // Backface culling
+                  pix = unDig(c2) / 2;
+                  n = 80 + num(14.14 * (nv.z-nv.x) / sqrt(nv.x*nv.x + nv.y*nv.y + nv.z*nv.z));
+               }
+               pix = ((pix >> 16) & 255) * n / 100 << 16  |
                      ((pix >> 8) & 255) * n / 100 << 8  |  (pix & 255) * n / 100;
+            }
             n = length(face) / 3;
             prn(n+2);
             transPt(pt1.x, pt1.y, pt1.z);

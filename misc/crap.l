@@ -1,4 +1,4 @@
-# 23jan03abu
+# 21jun04abu
 # (c) Software Lab. Alexander Burger
 # Algorithm from Bengt Grahn (bengt@vikingsw.demon.co.uk)
 
@@ -37,21 +37,21 @@
          (zero *SentenceLength)
          (off *WordLengths *SentenceLengths)
          (while (setq Token (token))
-            (accu '*WordLengths (length Token))
+            (accu '*WordLengths (length Token) 1)
             (inc '*SentenceLength)
             (when (member *Char '`(chop "!?.:;"))
-               (accu '*SentenceLengths *SentenceLength)
+               (accu '*SentenceLengths *SentenceLength 1)
                (zero *SentenceLength) )
             (case (length Token)
-               (1 (accu '*1Words Token))
-               (2 (accu '*2Words Token))
-               (3 (accu '*3Words Token))
-               (4 (accu '*4Words Token))
+               (1 (accu '*1Words Token 1))
+               (2 (accu '*2Words Token 1))
+               (3 (accu '*3Words Token 1))
+               (4 (accu '*4Words Token 1))
                (T
-                  (accu '*BegQuads (head 4 Token))
+                  (accu '*BegQuads (head 4 Token) 1)
                   (while (< 4 (length (setq Token (cdr Token))))
-                     (accu '*MidQuads (head 4 Token)) )
-                  (accu '*EndQuads Token) ) ) ) ) ) )
+                     (accu '*MidQuads (head 4 Token) 1) )
+                  (accu '*EndQuads Token 1) ) ) ) ) ) )
 
 # Find continuation for a word under construction
 (de continuation (Lst Quads)
@@ -59,7 +59,7 @@
    (last
       (frequentValue
          (filter
-            '((L) (= Lst (head 3 (car L))))
+            '((L) (head Lst (car L)))
             Quads ) ) ) )
 
 # Compose an output word

@@ -1,4 +1,4 @@
-// 19apr04abu
+// 03aug04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -13,8 +13,8 @@ public class Pico extends Applet {
    String Host;
    Socket Sock;
    InOut IO;
-   boolean Rdy, MiSt;
-
+   boolean Rdy;
+   AudioClip Clip;
    long Seed;
    BigInteger InN, InD, OutN;
    static final BigInteger B1 = new BigInteger("1");
@@ -35,7 +35,6 @@ public class Pico extends Applet {
             seed(e.getY());
          }
       } );
-      MiSt = System.getProperty("java.vendor").startsWith("Microsoft");
       try {
          if (gate.length() == 0)
             Sock = new Socket(Host, port);
@@ -52,18 +51,18 @@ public class Pico extends Applet {
       Seed ^= IO.hashCode();
       if (!Rdy)
          msg1("init>");
-      msg1("start>");
       (new Thread() {
          public void run() {
             try {
                while (Sock != null) {
-                  cmd(getStr());
+                  cmd(IO.rdStr());
                   seed((int)System.currentTimeMillis());
                }
             }
             catch (Exception e) {done();}
          }
       } ).start();
+      msg1("start>");
    }
 
    public void init() {
@@ -82,9 +81,7 @@ public class Pico extends Applet {
 
    public void stop() {msg1("stop>");}
 
-   public void paint(Graphics g) {msg1("paint>");}
-
-   void done() {
+   synchronized void done() {
       if (Sock != null) {
          try {Sock.close();}
          catch (IOException f) {}
@@ -98,6 +95,20 @@ public class Pico extends Applet {
       catch (MalformedURLException e) {dbg(e.toString());}
    }
 
+   // Play audio
+   void play(String s, String f) {
+      if (Clip != null)
+         Clip.stop();
+      if (s.length() != 0)
+         try {
+            Clip = getAudioClip(new URL(s));
+            if (f.length() == 0)
+               Clip.play();
+            else
+               Clip.loop();
+         } catch (MalformedURLException e) {dbg(e.toString());}
+   }
+
    // Command dispatcher
    synchronized void cmd(String s) {
       if (s.equals("ping")) {
@@ -109,7 +120,7 @@ public class Pico extends Applet {
       else if (s.equals("beep"))
          getToolkit().beep();
       else if (s.equals("play"))
-         play(getCodeBase(), getStr());
+         {s = getStr(); play(s,getStr());}
       else if (s.equals("menu"))
          new Popup(this,this);
       else if (s.equals("url"))
@@ -147,10 +158,8 @@ public class Pico extends Applet {
    }
 
    String inCiph() {
-      Object[] lst = null;
+      Object[] lst = (Object[])read();
 
-      try {lst = (Object[])IO.read();}
-      catch (IOException e) {done();}
       if (lst == null)
          return "";
       StringBuffer str = new StringBuffer();
@@ -186,97 +195,77 @@ public class Pico extends Applet {
    // Write message
    synchronized void msg1(String s) {
       try {IO.prSym(s); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg2(String s, Object x2) {
       try {IO.prSym(s); IO.print(x2); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg2(String s, int n2) {
       try {IO.prSym(s); IO.print(n2); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg3(String s, Object x2, Object x3) {
       try {IO.prSym(s); IO.print(x2); IO.print(x3); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg3(String s, int n2, int n3) {
       try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg4(String s, int n2, int n3, int n4) {
       try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg4(String s, int n2, Object x3, int n4) {
       try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.print(n4); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    synchronized void msg5(String s, int n2, int n3, int n4, int n5) {
       try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.print(n5); IO.flush();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
    }
 
    // Read byte array
    byte[] getBytes(int cnt) {
-      try {
-         byte[] b;
-
-         if ((b = IO.rdBytes(cnt)) != null)
-            return b;
-      }
+      try {return IO.rdBytes(cnt);}
       catch (IOException e) {}
-      done();
-      return null;
+      return new byte[0];
    }
 
    // Read string
    String getStr() {
-      try {
-         String s;
-
-         if ((s = IO.rdStr()) != null)
-            return s;
-      }
+      try {return IO.rdStr();}
       catch (IOException e) {}
-      done();
-      return null;
+      return "";
    }
 
    // Read 32-bit number
    int getNum() {
       try {return IO.rdNum();}
       catch (IOException e) {}
-      done();
       return 0;
    }
 
    // Read BigInteger
    BigInteger getBig() {
-      try {
-         BigInteger b;
-
-         if ((b = IO.rdBig()) != null)
-            return b;
-      }
+      try {return IO.rdBig();}
       catch (IOException e) {}
-      done();
-      return null;
+      return BigInteger.ZERO;
    }
 
    // Read anything
    Object read() {
       try {return IO.read();}
       catch (IOException e) {}
-      done();
-      return null;
+      return "";
    }
 
    synchronized void dbg(String s) {

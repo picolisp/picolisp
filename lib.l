@@ -1,4 +1,4 @@
-# 19may04abu
+# 03aug04abu
 # (c) Software Lab. Alexander Burger
 
 (de macro "Prg"
@@ -50,6 +50,13 @@
          (set "C"
             (delq (asoq "X" (val "C")) (val "C")) ) ) ) )
 
+(de daemon ("X" . "Prg")
+   (prog1
+      (if (pair "X")
+         (method (car "X") (cdr "X"))
+         (val "X") )
+      (con @ (append "Prg" (cdr @))) ) )
+
 (de scl (*Scl . "Prg")
    (run "Prg") )
 
@@ -73,7 +80,8 @@
       (while (args)
          (prin (next)) )
       (prinl)
-      (flush) ) )
+      (flush) )
+   X )
 
 ### List ###
 (de ?push ("Var" "X")

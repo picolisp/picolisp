@@ -1,5 +1,13 @@
-# 27apr04abu
+# 27jul04abu
 # (c) Software Lab. Alexander Burger
+
+(allowed ("loc/help/")
+   *N *Ok *Dat *Radio *Area *Upload *Chk1 *Chk2 *Chk3
+   "misc/htest.l" "@psh" )
+
+(load "lib/gui.l")
+
+(setq *HPorts (8071 . 8079)  *APorts (8081 . 8089))
 
 (and (app) (rsa 40))
 
@@ -48,8 +56,8 @@
                   (list (val> (: home m1)) (val> (: home m2))) ) )
             (quitButton)
             (gui '(+Button) " " "Busy"
-               '(busy 100 "Busy counting"
-                   (do 100 (wait 100) (work)) ) ) ) ) ) )
+               '(busy 40 "Busy counting"
+                   (do 40 (wait 100) (work)) ) ) ) ) ) )
 
 (html "Test"
    (<head> "Test")
@@ -63,7 +71,7 @@
       (<select> "Ok" '("Ja" "Nein") '*Ok)
 
       <hr>
-      (form '(+View +Form) NIL  800 700
+      (form '(+View +Form) NIL  900 700
          (quote
             (gui '(+AtomField) "Atomfeld" 20)
             (----)
@@ -76,8 +84,14 @@
                   '((K V) (lowc K))
                   '(("A" . 1) ("B" . 2) ("C" . 3) ("D" . 4))
                   "Msg 3" 10 )
-               (gui '(+Button) " " "dlg"
-                  '(println (dlg)) ) )
+               (gui '(+Button) " " "dlg" '(dlg))
+               (gui '(+Button) "" "robots.txt"
+                  '(and
+                     (ask "robots.txt" "Download robots.txt?")
+                     (busy 3 "robots.txt"
+                        (do 3 (do 100000000) (work))
+                        T )
+                     (url (allow "robots.txt")) ) ) )
             (txt " " "Text 1" " " "Text 2")
             (row
                (gui '(+Relay +NumField)
@@ -96,15 +110,19 @@
             (-|-)
             (txt)
             (gui '(+ListTextField) " " "ListText" 30)
+            (gui '(+Scrl +TextField)
+               '((S D)
+                  (or
+                     (= (format S) (car D))
+                     (pre? S (cadr D)) ) )
+               "Scroll" 30 )
             (---- T)
             (gui '(+Chart)
-               4 '(" " "Nummer" "Text")
+               4 '("Nummer" "Text")
                (quote
-                  (gui '(+PictField) "" 20 20)
                   (gui '(+NumField)  "" 10)
                   (gui '(+TextField) "" 25) ) )
             (row
-               (txt " ")
                (flow
                   (gui '(+Button) "" "1" '(println 1))
                   (gui '(+Button) "" "2" '(println 2)) )
@@ -126,9 +144,7 @@
             (----)
             (row
                (gui '(+Button) "" "Ok"
-                  '(prog
-                     (prinl "Alles klar")
-                     ((if *Flg off on) *Flg) ) )
+                  '((if *Flg off on) *Flg) )
                (gui '(+Able +Button)
                   '*Flg
                   "" "Mist"
@@ -181,7 +197,7 @@
    (<b> "Ok")
    <hr>
    (<table> T "Table"
-      '((- "Left") (* "Center") (+ "Right"))
+      '((- "Left") (^ "TopLeft") (+ "Right"))
       (<row> 1 2 3)
       (<row> "a" "b" "c") )
    <hr>

@@ -1,4 +1,4 @@
-# 19may04abu
+# 21jun04abu
 # (c) Software Lab. Alexander Burger
 
 # *Tmp
@@ -46,10 +46,10 @@
          (setq X (* X X)) ) ) )
 
 (de accu (Var Key Val)
-   (default Val 1)
-   (if (assoc Key (val Var))
-      (con @ (+ Val (cdr @)))
-      (push Var (cons Key Val)) ) )
+   (when Val
+      (if (assoc Key (val Var))
+         (con @ (+ Val (cdr @)))
+         (push Var (cons Key Val)) ) ) )
 
 ### String ###
 (de align (X . @)
@@ -176,7 +176,7 @@
                         (link (if F '- " ")) ) ) ) ) ) ) )
    (cond
       ((= "+" (car S)) (pack (cdr S)))
-      ((= '("0" "0") (head 2 S))
+      ((head '("0" "0") S)
          (pack (cddr S)) )
       ((and *CtryCode (= "0" (car S)))
          (pack *CtryCode " " (cdr S)) ) ) )
@@ -328,7 +328,7 @@
    (pack
       (reverse (cdr (member "/" (reverse (chop F))))) ) )
 
-# Temporary
+# Temporary Files
 (?push '*Fork '(off *Tmp))
 (?push '*Bye '(and *Tmp (call "rm" "-r" *Tmp)))
 

@@ -1,4 +1,4 @@
-# 10mar04abu
+# 31jul04abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -19,7 +19,7 @@
    (let *Dbg NIL
       (let (F (heap)  H (heap T))
          (prinl
-            (format (*/ H 10 `(* 128 1024) T) 1)
+            (format (*/ H 10 `(* 128 1024)) 1)
             " "
             (- 100 (*/ 100 F H))
             "%" )

@@ -1,4 +1,4 @@
-# 13dec02abu
+# 31jul04abu
 # (c) Software Lab. Alexander Burger
 
 (class +Shape)
@@ -39,10 +39,10 @@
    (=: r R) )
 
 (dm area> ()
-   (*/ (* (: r) (: r)) 31415627 10000000 T) )
+   (*/ (: r) (: r) 31415627 10000000) )
 
 (dm perimeter> ()
-   (*/ (* 2 (: r)) 31415627 10000000 T) )
+   (*/ 2 (: r) 31415627 10000000) )
 
 (dm draw> ()
    (drawCircle (: x) (: y) (: r)) )       # Hypothetical function 'drawCircle'

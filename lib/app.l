@@ -1,10 +1,10 @@
-# 19may04abu
+# 10jun04abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
 (de *Err
    (out NIL
-      (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "]")
+      (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
       (show This)
       (mapc
          '(("X") (println "X" (val "X")))
@@ -38,7 +38,7 @@
 
 # Extend 'app' function
 (conc (last app)
-   '((msg *Pid " + " (stamp))) )
+   '((msg *Pid " + " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)) )
 
 # Bye message
 (?push '*Bye '(and *SesId (msg *Pid " - " (stamp))))

@@ -1,4 +1,4 @@
-/* 24apr04abu
+/* 24jun04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -563,13 +563,27 @@ any doClip(any x) {
    return x;
 }
 
-// (head 'cnt 'lst) -> lst
+// (head 'cnt|lst 'lst) -> lst
 any doHead(any ex) {
    long n;
-   any x;
+   any x, y;
    cell c1, c2;
 
-   if ((n = evCnt(ex, x = cdr(ex))) == 0)
+   x = cdr(ex);
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   if (isCell(data(c1))) {
+      Save(c1);
+      x = cdr(x);
+      if (isCell(x = EVAL(car(x)))) {
+         for (y = data(c1);  equal(car(y), car(x));  x = cdr(x))
+            if (!isCell(y = cdr(y)))
+               return Pop(c1);
+      }
+      drop(c1);
+      return Nil;
+   }
+   if ((n = xCnt(ex,data(c1))) == 0)
       return Nil;
    x = cdr(x);
    if (!isCell(x = EVAL(car(x))))
@@ -584,14 +598,35 @@ any doHead(any ex) {
    return data(c2);
 }
 
-// (tail 'cnt 'lst) -> lst
+// (tail 'cnt|lst 'lst) -> lst
 any doTail(any ex) {
    long n;
    any x, y;
+   cell c1;
 
-   n = evCnt(ex, x = cdr(ex));
-   x = cdr(x),  x = EVAL(car(x));
-   for (y = x;  --n >= 0;  y = cdr(y))
+   x = cdr(ex);
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   if (isCell(data(c1))) {
+      Save(c1);
+      x = cdr(x);
+      if (isCell(x = EVAL(car(x)))) {
+         do
+            if (equal(x,data(c1)))
+               return Pop(c1);
+         while (isCell(x = cdr(x)));
+      }
+      drop(c1);
+      return Nil;
+   }
+   if ((n = xCnt(ex,data(c1))) == 0)
+      return Nil;
+   x = cdr(x);
+   if (!isCell(x = EVAL(car(x))))
+      return x;
+   if (n < 0)
+      return nth(1 - n, x);
+   for (y = cdr(x);  --n;  y = cdr(y))
       if (!isCell(y))
          return x;
    while (isCell(y))

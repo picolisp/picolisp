@@ -1,4 +1,4 @@
-/* 19aug02abu
+/* 30jul04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -32,6 +32,7 @@ static int PixSize;
 static Colormap Cmap;
 static GC Gc;
 static Window Win;
+static long long Tim;
 
 /* 3D-Environment */
 static int SizX, SizY, OrgX, OrgY, SnapX, SnapY;
@@ -43,7 +44,7 @@ static XShmSegmentInfo Info;
 
 /* Error exit */
 static void giveup(char *msg) {
-   fprintf(stderr, "Z3d: %s\r\n", msg);
+   fprintf(stderr, "z3dClient: %s\r\n", msg);
    exit(1);
 }
 
@@ -117,6 +118,7 @@ static byte get1(void) {
          case KeyRelease:
             break;
          case ButtonPress:
+            prLong('c');  // clk
             prLong(((XButtonEvent*)&ev)->x - OrgX);
             prLong(((XButtonEvent*)&ev)->y - OrgY);
             break;
@@ -154,11 +156,9 @@ static void skipStr(void) {
       get1();
 }
 
-static long getColor(void) {
-   long c;
+static long getColor(long c) {
    XColor col;
 
-   c = getNum();
    col.red   = c >> 8  &  0xFF00;
    col.green = c & 0xFF00;
    col.blue  = (c & 0xFF) << 8;
@@ -246,6 +246,51 @@ static void mkEdge(int x1, int y1, int z1, int x2, int y2, int z2) {
    } while (++y1 < y2);
 }
 
+static void zDots(long i, long h, long h2, unsigned long z, unsigned long z2) {
+   byte *frame;
+   unsigned long *zbuff;
+
+   i = i * SizX + h;
+   frame = Img->data + i * PixSize;
+   zbuff = Zbuff + i;
+   i = h2 - h;
+   switch (PixSize) {
+   case 1:
+      if (z < *zbuff)
+         *zbuff = z,  *frame = (byte)0;
+      if (z2 < *(zbuff += i))
+         *zbuff = z2,  *(frame + i) = (byte)0;
+      break;
+   case 2:
+      if (z < *zbuff)
+         *zbuff = z,  *(short*)frame = (short)0;
+      if (z2 < *(zbuff += i))
+         *zbuff = z2,  *(short*)(frame + 2 * i) = (short)0;
+      break;
+   case 3:
+      if (z < *zbuff) {
+         *zbuff = z;
+         frame[0] = (byte)0;
+         frame[1] = (byte)0;
+         frame[2] = (byte)0;
+      }
+      if (z2 < *(zbuff += i)) {
+         *zbuff = z2;
+         frame += 3 * i;
+         frame[0] = (byte)0;
+         frame[1] = (byte)0;
+         frame[2] = (byte)0;
+      }
+      break;
+   case 4:
+      if (z < *zbuff)
+         *zbuff = z,  *(long*)frame = (long)0;
+      if (z2 < *(zbuff += i))
+         *zbuff = z2,  *(long*)(frame + 4 * i) = (long)0;
+      break;
+   }
+}
+
 static void zLine(long pix, long v, long h, long h2,
                                        unsigned long z, unsigned long z2) {
    byte *frame;
@@ -328,6 +373,8 @@ int main(int ac, char *av[]) {
    int n, i, x0, y0, z0, x1, y1, z1, x2, y2, z2;
    byte *frame;
    edge *e;
+   long long t;
+   struct timeval tv;
 
    if (ac != 3)
       giveup("Use: <host> <port>");
@@ -378,7 +425,7 @@ int main(int ac, char *av[]) {
    /* Create Window */
    Win = XCreateSimpleWindow(Disp, RootWindow(Disp,Scrn), 0, 0, SizX, SizY,
                         1, BlackPixel(Disp,Scrn), WhitePixel(Disp,Scrn) );
-   XStoreName(Disp, Win, "View");
+   XStoreName(Disp, Win, "Pico Lisp z3d");
    XSelectInput(Disp, Win,
       ExposureMask |
       KeyPressMask | KeyReleaseMask |
@@ -405,8 +452,8 @@ int main(int ac, char *av[]) {
    /* Main loop */
    for (;;) {
       hor = getNum() + OrgY;
-      sky = getColor();
-      gnd = getColor();
+      sky = getColor(getNum());
+      gnd = getColor(getNum());
       for (v = 0; v < SizY; ++v) {
          pix  =  v < hor? sky : gnd;
          frame = Img->data + v * SizX * PixSize;
@@ -456,15 +503,31 @@ int main(int ac, char *av[]) {
             x1 = x2,  y1 = y2,  z1 = z2;
          }
          mkEdge(x2, y2, z2, x0, y0, z0);
-         pix = getColor();  // Face color
          i = 0,  e = Edges;
-         do
-            if (e->h[1])
-               zLine(pix, i, e->h[0], e->h[1], e->z[0], e->z[1]);
-         while (++e, ++i < SizY);
+         if ((pix = getNum()) < 0) {
+            do  // Transparent
+               if (e->h[1])
+                  zDots(i, e->h[0], e->h[1], e->z[0], e->z[1]);
+            while (++e, ++i < SizY);
+         }
+         else {
+            pix = getColor(pix);  // Face color
+            do
+               if (e->h[1])
+                  zLine(pix, i, e->h[0], e->h[1], e->z[0], e->z[1]);
+            while (++e, ++i < SizY);
+         }
       }
       if ((SnapX = getNum()) != 32767)
          SnapY = getNum();
+      prLong('o');  // ok
       paint();
+      gettimeofday(&tv,NULL),  t = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
+      if (Tim > t) {
+         tv.tv_sec = 0,  tv.tv_usec = (Tim - t) * 1000;
+         select(0, NULL, NULL, NULL, &tv);
+         t = Tim;
+      }
+      Tim = t + 40;
    }
 }

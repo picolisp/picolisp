@@ -1,8 +1,8 @@
-# (cd java; ./mkJar)
-# 26mar04abu
+# (cd java; ./mkJar [-g])
+# 20jul04abu
 # (c) Software Lab. Alexander Burger
 
-javac -O *.java
+javac -O  ${1:--g:none}  -target 1.1  *.java
 
 jar cf pico.jar \
    Pico.class Pico\$?.class \

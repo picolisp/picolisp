@@ -1,4 +1,4 @@
-# 27may04abu
+# 29jul04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -10,12 +10,13 @@
 
 (de *Mimes
    (`(chop "html"))
+   (`(chop "au") "audio/basic" 86400)
+   (`(chop "wav") "audio/x-wav" 86400)
+   (`(chop "mp3") "audio/x-mpeg" 86400)
    (`(chop "css") "text/css" 86400)
    (`(chop "gif") "image/gif" 86400)
    (`(chop "jpg") "image/jpeg" 86400)
    (`(chop "txt") "text/octet-stream" 1 T)
-   (`(chop "wav") "audio/x-wav" 1)
-   (`(chop "mp3") "audio/x-mpeg" 86400)
    (`(chop "ps") "application/postscript" 1)
    (`(chop "pdf") "application/pdf" 1)
    (`(chop "zip") "application/zip" 1)
@@ -114,21 +115,37 @@
                   (off *MPartLim *MPartEnd)
                   (_htHead)
                   (and *MPartLim *MPartEnd (_htMultipart)) )
-               ((quit ": Bad HTTP Request" L)) )
-            (setq
-               L (split @U "?")
-               @U (car L)
-               L (mapcan
-                  '((L)
-                     (ifn (cdr (setq L (split L "=")))
-                        (cons (_htArg (car L)))
-                        (_htSet (car L) (_htArg (cadr L)))
-                        NIL ) )
-                  (split (cadr L) "&") ) )
-            (if (setq *Url (ht:Pack @U))
-               (setq F (format *Url))
-               (setq  *Url (car *Home)  @U (cdr *Home)  F) )
+               ((and
+                     (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
+                     (member @U
+                        (quote
+                           ("O" "P" "T" "I" "O" "N" "S")
+                           ("H" "E" "A" "D")
+                           ("P" "U" "T")
+                           ("D" "E" "L" "E" "T" "E")
+                           ("T" "R" "A" "C" "E")
+                           ("C" "O" "N" "N" "E" "C" "T") ) ) )
+                  (out S
+                     (httpStat 501 "Method Not Implemented"
+                        "Allow: GET, POST" ) )
+                  (throw "http") )
+               (T
+                  (out S (httpStat 400 "Bad Request"))
+                  (throw "http") ) )
             (out S
+               (setq
+                  L (split @U "?")
+                  @U (car L)
+                  L (mapcan
+                     '((L)
+                        (ifn (cdr (setq L (split L "=")))
+                           (cons (_htArg (car L)))
+                           (_htSet (car L) (_htArg (cadr L)))
+                           NIL ) )
+                     (split (cadr L) "&") ) )
+               (if (setq *Url (ht:Pack @U))
+                  (setq F (format *Url))
+                  (setq  *Url (car *Home)  @U (cdr *Home)  F) )
                (if
                   (or
                      F
@@ -157,16 +174,16 @@
                      (F (html NIL (prEval (nth *Frame F 3))))
                      ((member '@ @U)
                         (apply (val (intern (ht:Pack (cdr @)))) L) )
-                     ((= '("." "l") (tail 2 @U))
+                     ((tail '("." "l") @U)
                         (load *Url) )
                      ((assoc (stem @U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (load (pack *Url "default")) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) )
-               (unless (= '("." "c" "l" "a" "s" "s") (tail 6 @U))
-                  (msg *Url " not allowed")
-                  (http404) ) ) ) ) )
+                  (unless (tail '("." "c" "l" "a" "s" "s") @U)
+                     (msg *Url " not allowed")
+                     (http404) ) ) ) ) )
       (close S) ) )
 
 (de _htHead ()
@@ -231,23 +248,20 @@
                   (setq L (if (= "^J" C) *MPartLim *MPartEnd)) ) ) ) ) ) )
 
 (de _htSet ("Var" Val)
-   (use (@V @N)
+   (use (@N @V)
       (off @N)
       (setq "Var"
          (intern
-            (pack
-               (cond
-                  ((match '("*" @V "(" @N ")") "Var")
-                     (setq @N (_htArg @N))
-                     (cons "*" @V) )
-                  ((= "*" (car "Var"))
-                     "Var" )
-                  (T (throw "http")) ) ) ) )
-      (or
-         (not *Allow)
-         (idx *Allow "Var")
+            (ht:Pack
+               (ifn (match '(@V "(" @N ")") "Var")
+                  "Var"
+                  (setq @N (_htArg @N))
+                  @V ) ) ) )
+      (unless
+         (and
+            (= `(char '*) (char "Var"))
+            (or (not *Allow) (idx *Allow "Var")) )
          (msg "Var" " not allowed")
-         (http404)
          (throw "http") )
       (cond
          ((not @N) (set "Var" Val))
@@ -291,8 +305,9 @@
 
 # Http Echo
 (de httpEcho (File Typ Upd Att)
-   (_http Typ Upd)
-   (when (info File)
+   (ifn (info File)
+      (http404)
+      (_http Typ Upd)
       (let D (date (cadr @))
          (prinl "Content-Length: " (car @) "^M")
          (prinl "Last-Modified: "
@@ -300,7 +315,7 @@
             (pad 2 (caddr D)) " "
             (get *Mon (cadr D)) " "
             (car D) " "
-            (tim$ (cddr @)) " GMT^M" ) )
+            (tim$ (cddr @) T) " GMT^M" ) )
       (when Att
          (prinl
             "Content-Disposition: attachment; filename=\""
@@ -330,7 +345,7 @@
                (prin "<BASE HREF=\"" (baseHRef) "\"") )
             ("<HTeMpL>"
                (let S (till ">")
-                  (until (= (tail 8 S) '`(chop "</HTeMpL"))
+                  (until (tail '`(chop "</HTeMpL") S)
                      (conc S (cons (char)))
                      (if (till ">")
                         (conc S @)
@@ -418,16 +433,22 @@
    (prinl "</FRAMESET>")
    (prinl "</HTML>") )
 
-(de http404 (Url)
-   (prinl "HTTP/1.1 404 Not Found^M")
+(de httpStat (N Str . @)
+   (prinl "HTTP/1.1 " N " " Str "^M")
    (prinl "Server: PicoLisp^M")
+   (while (args)
+      (prinl (next) "^M") )
    (prinl "Connection: close^M")
    (prinl "Content-Type: text/html^M")
    (prinl "^M")
    (prinl "<HTML>")
-   (prinl "<HEAD><TITLE>404 Not Found</TITLE></HEAD>")
-   (prinl "<BODY><H1>Not Found</H1></BODY>")
+   (prinl "<HEAD><TITLE>" N " " Str "</TITLE></HEAD>")
+   (prinl "<BODY><H1>" Str "</H1></BODY>")
    (prinl "</HTML>") )
+
+
+(de http404 ()
+   (httpStat 404 "Not Found") )
 
 
 ### HTML Generators ###

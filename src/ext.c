@@ -1,4 +1,4 @@
-/* 18sep03abu
+/* 12jul04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -9,13 +9,13 @@ static int SnxTab[] = {
    '0', '1', '2', '3', '4', '5', '6', '7',  // 48
    '8', '9',   0,   0,   0,   0,   0,   0,
      0,   0, 'F', 'S', 'T',   0, 'F', 'S',  // 64
-     0,   0, 'S', 'S', 'L', 'N', 'N',   0, 
-   'F', 'S', 'R', 'S', 'T',   0, 'F', 'F', 
-   'S',   0, 'S',   0,   0,   0,   0,   0, 
+     0,   0, 'S', 'S', 'L', 'N', 'N',   0,
+   'F', 'S', 'R', 'S', 'T',   0, 'F', 'F',
+   'S',   0, 'S',   0,   0,   0,   0,   0,
      0,   0, 'F', 'S', 'T',   0, 'F', 'S',  // 96
      0,   0, 'S', 'S', 'L', 'N', 'N',   0,
-   'F', 'S', 'R', 'S', 'T',   0, 'F', 'F', 
-   'S',   0, 'S',   0,   0,   0,   0,   0, 
+   'F', 'S', 'R', 'S', 'T',   0, 'F', 'F',
+   'S',   0, 'S',   0,   0,   0,   0,   0,
      0,   0,   0,   0,   0,   0,   0,   0,  // 128
      0,   0,   0,   0,   0,   0,   0,   0,
      0,   0,   0,   0,   0,   0,   0,   0,
@@ -138,4 +138,23 @@ any Dist(any ex) {
    if (v > 0.0)
       v -= v1;
    return doubleToNum(sqrt(h*h + v*v));
+}
+
+/*** U-Law Encoding ***/
+#define BIAS   132
+#define CLIP   (32767-BIAS)
+
+// (ext:Ulaw 'cnt) -> cnt  # SEEEMMMM
+any Ulaw(any ex) {
+   int val, sign, tmp, exp;
+
+   val = (int)evCnt(ex,cdr(ex));
+   sign = 0;
+   if (val < 0)
+      val = -val,  sign = 0x80;
+   if (val > CLIP)
+      val = CLIP;
+   tmp = (val += BIAS) << 1;
+   for (exp = 7;  exp > 0  &&  !(tmp & 0x8000);  --exp, tmp <<= 1);
+   return boxCnt(~(sign  |  exp<<4  |  val >> exp+3 & 0x000F) & 0xFF);
 }

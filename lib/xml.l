@@ -1,10 +1,10 @@
-# 23jan03abu
+# 21jun04abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
 (de xml? ()
    (skip)
-   (= '("<" "?" "x" "m" "l") (head 5 (line))) )
+   (head '("<" "?" "x" "m" "l") (line)) )
 
 # Parse XML data
 (de xml (Lst N)

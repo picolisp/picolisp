@@ -1,4 +1,4 @@
-# 28apr04abu
+# 27jul04abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
@@ -52,8 +52,9 @@
 
    (<head> "General Notes")
    (<list>
-      "Usually upper and lower case is treated differently"
+      "Text input is case sensitive"
       "Blue font in text fields indicates a link to another object"
+      "Gray background indicates locked input fields"
       "Light blue background indicates a tolerant search field"
       '(prog
          (prinl "In date fields it is sufficient to input (with or without punctuation)")

@@ -1,4 +1,4 @@
-25may04abu
+22jun04abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -91,7 +91,8 @@ internal process and database synchronization.
 A deeper explanation of the programming paradigms can be found at
 "http://software-lab.de/dbui.html".
 
-Pico Lisp compiles and runs only under Linux :-)
+Pico Lisp compiles and runs only under Linux :-) (more precisely, on any
+Unix-like system where the 'select' system call modifies its timeout argument)
 
 --------------------------------------------------------------------------------
 Software Lab. Alexander Burger                               Tel +49-821-9907090

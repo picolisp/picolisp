@@ -1,4 +1,4 @@
-# 28apr04abu
+# 27jul04abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
@@ -54,6 +54,7 @@
    (<list>
       "Grundsätzlich wird zwischen Groß- und Kleinschreibung unterschieden"
       "Blaue Schrift zeigt eine Verknüpfung zu einem anderen Objekt an"
+      "Grauer Hintergrund zeigt gesperrte Eingabefelder an"
       "Hellblauer Hintergrund kennzeichnet ein tolerantes Suchfeld"
       '(prog
          (prinl "Bei Datumsfeldern reicht auch die Eingabe (mit oder ohne Punkte) von")

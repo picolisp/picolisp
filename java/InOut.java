@@ -1,4 +1,4 @@
-// 12sep01abu
+// 20jul04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -167,7 +167,7 @@ public class InOut {
 		byte[] b = new byte[cnt];
       for (i = 0;  cnt > 0;  i += n, cnt -= n)
          if ((n = In.read(b,i,cnt)) < 0)
-            return null;
+            throw new EOFException();
 		return b;
 	}
 
@@ -256,10 +256,10 @@ public class InOut {
    public String rdStr() throws IOException {
       int c;
 
-      if ((c = inByte1()) == NIX)
+      if ((c = inByte1()) < 0)
+         throw new EOFException();
+      if (c == NIX)
          return "";
-      if (c < 0)
-         return null;
       if (c <= END)
          throw new IOException("String expected");
       if ((c & 3) == NUMBER)
@@ -272,7 +272,7 @@ public class InOut {
       int c;
 
       if ((c = inByte1()) < 0)
-         return null;
+         throw new EOFException();
       if (c <= END  ||  (c & 3) != NUMBER)
          throw new IOException("Number expected");
       return getBig();
@@ -300,7 +300,7 @@ public class InOut {
       int c;
 
       if ((c = inByte1()) < 0)
-         return null;
+         throw new EOFException();
       return read1(c);
    }
 }

@@ -1,4 +1,4 @@
-// 02nov03abu
+// 03jul04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -12,6 +12,7 @@ public class Z3dField extends Pico {
    MemoryImageSource Source;
    Image Img;
    Z3dText Marks, Labels;
+   static long Tim;
 
    // Applet entry point
    public void init() {
@@ -97,7 +98,7 @@ public class Z3dField extends Pico {
       } );
    }
 
-   void cmd(String s) {
+   synchronized void cmd(String s) {
       if (s.equals("draw"))
          draw();
       else if (s.equals("text"))
@@ -114,8 +115,6 @@ public class Z3dField extends Pico {
 
       g.drawImage(Img,0,0,this);
       g.setPaintMode();
-      g.drawLine(OrgX-6, OrgY, OrgX+6, OrgY);
-      g.drawLine(OrgX, OrgY-6, OrgX, OrgY+6);
       for (t = Marks; t != null; t = t.Link)
          g.drawString(t.Text, t.X, t.Y);
       for (t = Labels; t != null; t = t.Link)
@@ -127,7 +126,7 @@ public class Z3dField extends Pico {
       }
    }
 
-   final void edge(int x1, int y1, int z1, int x2, int y2, int z2) {
+   final void mkEdge(int x1, int y1, int z1, int x2, int y2, int z2) {
       int a, dx, dy, dz, sx, xd, xe, sz, zd, ze;
 
       if (y2 < y1) {
@@ -202,6 +201,17 @@ public class Z3dField extends Pico {
       } while (++y1 < y2);
    }
 
+   final void zDots(int i, int x1, int x2, int z1, int z2) {
+      if (z1 < Zbuff[i = i * DX + x1]) {
+         Zbuff[i] = z1;
+         Frame[i] = 0xFF000000;
+      }
+      if (z2 < Zbuff[i += x2 - x1]) {
+         Zbuff[i] = z2;
+         Frame[i] = 0xFF000000;
+      }
+   }
+
    final void zLine(int c, int i, int x1, int x2, int z1, int z2) {
       int d, e, dx, dz, sz;
 
@@ -234,6 +244,7 @@ public class Z3dField extends Pico {
    void draw() {
       int n, c, i, x0, y0, z0, x1, y1, z1, x2, y2, z2;
       String s;
+      long t;
 
       if ((n = DX * (getNum() + OrgY)) > Frame.length)  // Horizon
          n = Frame.length;
@@ -262,21 +273,36 @@ public class Z3dField extends Pico {
             x2 = getNum();
             y2 = getNum();
             z2 = getNum();
-            edge(x1, y1, z1, x2, y2, z2);
+            mkEdge(x1, y1, z1, x2, y2, z2);
             if (--n == 0)
                break;
             x1 = x2;  y1 = y2;  z1 = z2;
          }
-         edge(x2, y2, z2, x0, y0, z0);
-         c = getNum() | 0xFF000000;  // Face color
-         for (i = 0; i < DY; ++i)
-            if (XMax[i] != 0)
-               zLine(c, i, XMin[i], XMax[i], ZMin[i], ZMax[i]);
+         mkEdge(x2, y2, z2, x0, y0, z0);
+         if ((c = getNum()) < 0) {
+            for (i = 0; i < DY; ++i)
+               if (XMax[i] != 0)
+                  zDots(i, XMin[i], XMax[i], ZMin[i], ZMax[i]);
+         }
+         else {
+            c |= 0xFF000000;  // Face color
+            for (i = 0; i < DY; ++i)
+               if (XMax[i] != 0)
+                  zLine(c, i, XMin[i], XMax[i], ZMin[i], ZMax[i]);
+         }
       }
       if ((SnapX = getNum()) != 32767)
          SnapY = getNum();
+      msg1("ok>");
       Source.newPixels();
       update(getGraphics());
+      t = System.currentTimeMillis();
+      if (Tim > t) {
+         try {Thread.currentThread().sleep(Tim - t);}
+         catch (InterruptedException e) {}
+         t = Tim;
+      }
+      Tim = t + 40;
    }
 
    void text() {

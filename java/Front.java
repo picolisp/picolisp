@@ -1,4 +1,4 @@
-// 07may04abu
+// 31jul04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -15,7 +15,8 @@ public class Front extends Pico {
    int Focus, Dirty;
    boolean Req;
    Dialog Dialog;
-   Front Parent, Child;
+   Front Parent;
+   static final Color Gray = new Color(0xE0,0xE0,0xE0);
 
    public Front() {}
 
@@ -35,30 +36,17 @@ public class Front extends Pico {
       connect(0, port, gate, sid);
    }
 
-   public void start() {
-      Rdy = Fields != null;
-      super.start();
-   }
-
    public void stop() {
       msg1("at>");
-      change("chg>");
+      change();
       super.stop();
    }
 
    synchronized void done() {
-      while (Child != null) {
-         try {wait();}
-         catch (InterruptedException e) {break;}
-      }
       if (Dialog != null) {
          Dialog.dispose();
          Dialog = null;
-         synchronized (Parent) {
-            Parent.Seed ^= Seed;
-            Parent.Child = null;
-            Parent.notifyAll();
-         }
+         Parent.Seed ^= Seed;
       }
       super.done();
    }
@@ -69,17 +57,7 @@ public class Front extends Pico {
          super.url(s,t);
       else {
          stop();
-         (new Thread() {
-            public void run() {
-               synchronized (Parent) {
-                  while (Parent.Child != null) {
-                     try {Parent.wait();}
-                     catch (InterruptedException e) {break;}
-                  }
-               }
-               Parent.url(s,t);
-            }
-         } ).start();
+         Parent.url(s,t);
       }
    }
 
@@ -88,7 +66,7 @@ public class Front extends Pico {
    }
 
    // Command dispatcher
-   void cmd(String s) {
+   synchronized void cmd(String s) {
       if (s.equals("ack"))
          {Req = false; relay();}
       else if (s.equals("focus"))
@@ -124,7 +102,7 @@ public class Front extends Pico {
       else if (s.equals("make"))
          make();
       else if (s.equals("dialog"))
-         Child = new Front(this, getNum(), getStr(), getStr(), getStr());
+         new Front(this, getNum(), getStr(), getStr(), getStr());
       else
          super.cmd(s);
    }
@@ -236,7 +214,7 @@ public class Front extends Pico {
                         getToolkit().beep();
                      else {
                         msg1("at>");
-                        change("log>");
+                        change();
                         Req = true;
                         msg2("act>", Integer.parseInt(ev.getActionCommand()));
                      }
@@ -270,6 +248,7 @@ public class Front extends Pico {
                   f = new TextArea("", n, m, flgs);
                }
                f.addMouseListener(new PicoMouseAdapter(this,i));
+               f.setBackground(Color.white);
                break;
             case 'D':  // DrawField
                f = new DrawField(this,i);
@@ -297,23 +276,18 @@ public class Front extends Pico {
       fld.copyInto(Fields);
       SBars = new Scrollbar[sb.size()];
       sb.copyInto(SBars);
+      validate();
 
-      if (Dialog == null) {
-         resize(getPreferredSize());
-         validate();
-      }
-      else {
+      if (Dialog != null) {
          Dialog.pack();
          Dimension d = Dialog.getToolkit().getScreenSize();
          Rectangle r = Dialog.getBounds();
          r.x = (d.width - r.width)/2;
          r.y = (d.height - r.height)/2;
          Dialog.setBounds(r);
-
-         (new Thread() {
-            public void run() {Dialog.setVisible(true);}
-         } ).start();
+         Dialog.show();
       }
+      Rdy = true;
    }
 
    // Add component to container
@@ -344,12 +318,13 @@ public class Front extends Pico {
       Component f = Fields[fld-1];
 
       String txt = Crypt.contains(f)? inCiph() : getStr();
+      int len = txt.length();
       if (f instanceof Button)
          ((Button)f).setLabel(txt);
       else if (f instanceof Choice)
          ((Choice)f).select(txt);
       else if (f instanceof Checkbox)
-         ((Checkbox)f).setState(txt.length() > 0);
+         ((Checkbox)f).setState(len > 0);
       else if (f instanceof Label) {
          ((Label)f).setText(txt);
          f.setSize(f.getPreferredSize());
@@ -358,10 +333,8 @@ public class Front extends Pico {
       }
       else {
          ((TextComponent)f).setText(txt);
-         if (MiSt  ||  Focus == 0  ||  f instanceof TextArea)
-            ((TextComponent)f).select(0,0);
-         else if (Focus == fld)
-            ((TextField)f).selectAll();
+         if (f instanceof TextField  &&  len <= ((TextField)f).getColumns())
+            ((TextField)f).select(len,len);
       }
    }
 
@@ -385,20 +358,12 @@ public class Front extends Pico {
          int i = ((TextComponent)f).getSelectionStart();
          int j = ((TextComponent)f).getSelectionEnd();
          String s = ((TextComponent)f).getText();
-
-         /*** JRE Bug ***/
-         if (i > s.length())
-            i = s.length();
-         if (j > s.length())
-            j = s.length();
-         /***************/
-
          ((TextComponent)f).setText(s.substring(0,i) + txt + s.substring(j));
          if (o instanceof String)
             ((TextComponent)f).select(i+1, i+txt.length());
          Dirty = fld;
          if (Sync.contains(Fields[fld-1]))
-            change("log>");
+            change();
       }
    }
 
@@ -440,11 +405,16 @@ public class Front extends Pico {
    void able(Component f, boolean a) {
       if (!(f instanceof TextComponent))
          f.setEnabled(a);
-      else if (!a)
+      else if (!a) {
          Skip.put(f,f);
-      else
+         if (f.getBackground() == Color.white)
+            f.setBackground(Gray);
+      }
+      else {
          Skip.remove(f);
-      repaint();
+         if (f.getBackground() == Gray)
+            f.setBackground(Color.white);
+      }
    }
 
    void lock(boolean a) {
@@ -464,7 +434,7 @@ public class Front extends Pico {
    }
 
    // Signal field value change
-   synchronized void change(String msg) {
+   synchronized void change() {
       if (Dirty != 0) {
          Component f = Fields[Dirty-1];
          String txt;
@@ -491,9 +461,9 @@ public class Front extends Pico {
             sel = ((TextComponent)f).getSelectionStart();
          }
          if (Crypt.contains(f)  &&  txt.length() != 0)
-            msg4(msg, Dirty, outCiph(txt), sel);
+            msg4("chg>", Dirty, outCiph(txt), sel);
          else
-            msg4(msg, Dirty, txt, sel);
+            msg4("chg>", Dirty, txt, sel);
          Dirty = 0;
          relay();
       }
@@ -561,18 +531,14 @@ class PicoFocusListener implements FocusListener {
    PicoFocusListener(Front h, int i) {Home = h; Ix = i+1;}
 
    public void focusGained(FocusEvent ev) {
-      if (Home.Focus != Ix) {
+      if (Home.Focus != 0  &&  Home.Focus != Ix) {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
       }
-      if (!Home.MiSt && Home.Fields[Ix-1] instanceof TextField)
-         ((TextField)Home.Fields[Ix-1]).selectAll();
    }
 
    public void focusLost(FocusEvent ev) {
-      Home.change("log>");
-      if (Home.Fields[Ix-1] instanceof TextComponent)
-         ((TextComponent)Home.Fields[Ix-1]).select(0,0);
+      Home.change();
    }
 }
 
@@ -584,7 +550,7 @@ class PicoAdjustmentListener implements AdjustmentListener {
 
    public void adjustmentValueChanged(AdjustmentEvent ev) {
       if (Val != ev.getValue()) {
-         Home.change("log>");
+         Home.change();
          Home.msg3("scr>", Ix, Val = ev.getValue());
          Home.relay();
       }
@@ -598,12 +564,12 @@ class PicoMouseAdapter extends MouseAdapter {
    PicoMouseAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void mousePressed(MouseEvent ev) {
-      Home.msg1("at>");
       if (ev.getClickCount() == 2) {
          if (Home.Req)
             Home.getToolkit().beep();
          else {
-            Home.change("log>");
+            Home.msg1("at>");
+            Home.change();
             Home.Req = true;
             Home.msg2("act>", Ix);
          }
@@ -622,12 +588,12 @@ class PicoKeyAdapter extends KeyAdapter {
 
    public void keyTyped(KeyEvent ev) {
       char c;
+      long t;
       Component f;
 
-      Home.msg1("at>");
       f = Home.Fields[Ix-1];
       if ((c = ev.getKeyChar()) == KeyEvent.VK_ENTER) {
-         Home.change("log>");
+         Home.change();
          if (!(f instanceof TextArea))
             Home.msg1("ret>");
          else if (Home.Skip.containsKey(f))
@@ -641,14 +607,15 @@ class PicoKeyAdapter extends KeyAdapter {
                c >= KeyEvent.VK_SPACE  &&  c != KeyEvent.VK_DELETE  &&
                !(f instanceof TextField  && ((TextField)f).getEchoChar()=='*') ) {
          if (Home.Sync.contains(f))
-            Home.change("chg>");
+            Home.change();
 
-         long n = System.currentTimeMillis();
-         if (Tim > n) {
-            try {Thread.currentThread().sleep(Tim - n);}
+         t = System.currentTimeMillis();
+         if (Tim > t) {
+            try {Thread.currentThread().sleep(Tim - t);}
             catch (InterruptedException e) {}
+            t = Tim;
          }
-         Tim = n + 100;
+         Tim = t + 100;
 
          char[] chr = {c};
          key(f, new String(chr));
@@ -687,7 +654,7 @@ class PicoKeyAdapter extends KeyAdapter {
             ((TextArea)f).select(i,j);
          }
          else {
-            Home.change("log>");
+            Home.change();
             Home.msg1("PGUP>");
             Home.relay();
          }
@@ -701,7 +668,7 @@ class PicoKeyAdapter extends KeyAdapter {
             ((TextArea)f).select(i,j);
          }
          else {
-            Home.change("log>");
+            Home.change();
             Home.msg1("PGDN>");
             Home.relay();
          }
@@ -709,7 +676,7 @@ class PicoKeyAdapter extends KeyAdapter {
          break;
       case KeyEvent.VK_END:
          if ((m & InputEvent.CTRL_MASK) != 0) {
-            Home.change("log>");
+            Home.change();
             Home.msg1("END>");
             Home.relay();
          }
@@ -723,7 +690,7 @@ class PicoKeyAdapter extends KeyAdapter {
          break;
       case KeyEvent.VK_HOME:
          if ((m & InputEvent.CTRL_MASK) != 0) {
-            Home.change("log>");
+            Home.change();
             Home.msg1("BEG>");
             Home.relay();
          }
@@ -752,7 +719,7 @@ class PicoKeyAdapter extends KeyAdapter {
             ((TextArea)f).select(i,j);
          }
          else {
-            Home.change("log>");
+            Home.change();
             Home.msg1("UP>");
             Home.relay();
          }
@@ -775,7 +742,7 @@ class PicoKeyAdapter extends KeyAdapter {
             ((TextArea)f).select(i,j);
          }
          else {
-            Home.change("log>");
+            Home.change();
             Home.msg1("DN>");
             Home.relay();
          }
@@ -787,7 +754,7 @@ class PicoKeyAdapter extends KeyAdapter {
             Home.getToolkit().beep();
          }
          else if ((m & InputEvent.CTRL_MASK) != 0) {
-            Home.change("log>");
+            Home.change();
             Home.msg1("DEL>");
             Home.relay();
             ev.consume();
@@ -806,7 +773,7 @@ class PicoKeyAdapter extends KeyAdapter {
             Home.getToolkit().beep();
          else {
             if ((m & InputEvent.CTRL_MASK) != 0) {
-               Home.change("log>");
+               Home.change();
                Home.msg1("INS>");
                Home.relay();
             }
@@ -819,7 +786,7 @@ class PicoKeyAdapter extends KeyAdapter {
          break;
       default:
          if (c >= KeyEvent.VK_F1  &&  c <= KeyEvent.VK_F12) {
-            Home.change("log>");
+            Home.change();
             Home.msg1("F" + (1 + c - KeyEvent.VK_F1) + ">");
             Home.relay();
             ev.consume();

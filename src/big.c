@@ -1,4 +1,4 @@
-/* 19feb04abu
+/* 02aug04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -780,11 +780,11 @@ any doMul(any ex) {
    return Pop(c1);
 }
 
-// (*/ 'num 'num 'num ['flg]) -> num
+// (*/ 'num1 ['num2 ..] 'num3) -> num
 any doMulDiv(any ex) {
    any x;
    bool sign;
-   cell c1, c2;
+   cell c1, c2, c3;
 
    x = cdr(ex);
    if (isNil(data(c1) = EVAL(car(x))))
@@ -792,32 +792,25 @@ any doMulDiv(any ex) {
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
    sign = isNeg(data(c1)),  pos(data(c1));
-   x = cdr(x),  Push(c2, EVAL(car(x)));
-   if (isNil(data(c2))) {
-      drop(c1);
-      return Nil;
+   Save(c2);
+   for (;;) {
+      x = cdr(x),  data(c2) = EVAL(car(x));
+      if (isNil(data(c2))) {
+         drop(c1);
+         return Nil;
+      }
+      NeedNum(ex,data(c2));
+      sign ^= isNeg(data(c2));
+      if (!isCell(cdr(x)))
+         break;
+      data(c1) = bigMul(data(c1),data(c2));
    }
-   NeedNum(ex,data(c2));
-   sign ^= isNeg(data(c2));
-   data(c1) = bigMul(data(c1),data(c2));
-   x = cdr(x),  data(c2) = EVAL(car(x));
-   if (isNil(data(c2))) {
-      drop(c1);
-      return Nil;
-   }
-   NeedNum(ex,data(c2));
-   sign ^= isNeg(data(c2));
    if (IsZero(data(c2)))
       divErr(ex);
+   Push(c3, bigCopy(data(c2)));
+   digDiv2(data(c3));
+   bigAdd(data(c1),data(c3));
    data(c2) = bigCopy(data(c2));
-   x = cdr(x);
-   if (!isNil(EVAL(car(x)))) {
-      cell c3;
-
-      Push(c3, bigCopy(data(c2)));
-      digDiv2(data(c3));
-      bigAdd(data(c1),data(c3));
-   }
    data(c1) = bigDiv(data(c1),data(c2),NO);
    if (sign && !IsZero(data(c1)))
       neg(data(c1));

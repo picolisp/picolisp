@@ -1,4 +1,4 @@
-# 10jun04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -6,13 +6,11 @@
    (out NIL
       (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
       (show This)
-      (mapc
-         '(("X") (println "X" (val "X")))
-         '(*Gate *Agent *Host *Port *Url *SesId *ConId *ID) )
+      (for "X" '(*Gate *Agent *Host *Port *Url *SesId *ConId *ID)
+         (println "X" (val "X")) )
       (and (get *Top 'focus) (println 'focus (get @ 'ix)))
-      (mapc
-         '(("X") (println "X" (val "X")))
-         (env) ) )
+      (for "X" (env)
+         (println "X" (val "X")) ) )
    (rollback)
    (when *Top
       (alert ,"Sorry!"

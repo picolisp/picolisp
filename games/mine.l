@@ -1,4 +1,4 @@
-# 25jun02abu
+# 29sep04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/xterm.l")
@@ -34,21 +34,17 @@
 # *Feld anzeigen
 (de anzeigen (Flg)
    (let (N 0 Y 0)
-      (mapc
-         '((L)
-            (prin (align 2 (inc 'Y)) " ")
-            (mapc
-               '((C)
-                  (prin
-                     " "
-                     (cond
-                        ((not C) (inc 'N) "-")
-                        (Flg C)
-                        ((=T C) "-")
-                        (T C) ) ) )
-               L )
-            (prinl) )
-         *Feld )
+      (for L *Feld
+         (prin (align 2 (inc 'Y)) " ")
+         (for C L
+            (prin
+               " "
+               (cond
+                  ((not C) (inc 'N) "-")
+                  (Flg C)
+                  ((=T C) "-")
+                  (T C) ) ) )
+         (prinl) )
       (prin "   ")
       (for (C 1 (<= C *FeldX) (+ 1 C))
          (prin " " (char (+ 64 C))) )
@@ -117,13 +113,13 @@
                   (when (=T (get *Feld Y X))
                      (anzeigen T)
                      (prinl "*** BUMM ***")
-                     (throw NIL) )
+                     (throw) )
                   (let *Visit NIL
                      (wertFeld X Y) )
                   (anzeigen)
                   (unless (find '((L) (memq NIL L)) *Feld)
                      (prinl ">>> Gewonnen! <<<")
-                     (throw NIL) )
+                     (throw) )
                   (xtUp (- *FeldY Y -3))
                   (xtRight (+ 2 (* 2 X))) ) ) )
          (xtLeft (+ 2 (* 2 X)))

@@ -1,4 +1,4 @@
-# 26may03abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -41,13 +41,11 @@
          Lst ) ) )
 
 (de par Lst
-   (mapc
-      (quote (L)
-         (when (setq L (make (eval L)))
-            (if (num? (car L))
-               (link L)
-               (mapc link L) ) ) )
-      Lst )
+   (for L Lst
+      (when (setq L (make (eval L)))
+         (if (num? (car L))
+            (link L)
+            (mapc link L) ) ) )
    (when (made)
       (made (made) (cdr (parMax 0 (made)))) ) )
 
@@ -59,11 +57,9 @@
             C Lst
             Lst (cdr Lst) ) )
       (push 'C N)
-      (mapc
-         (quote (X)
-            (when (< (car C) (car (setq X (parMax N X))))
-               (setq C X) ) )
-         Lst )
+      (for X Lst
+         (when (< (car C) (car (setq X (parMax N X))))
+            (setq C X) ) )
       C ) )
 
 # PET execution
@@ -78,20 +74,57 @@
       Lst ) )
 
 
+# Alpha-Beta tree search
+(de game ("Flg" "Cnt" "Pos" "moves" "move" "cost")
+   (_game "Flg" "Cnt" "Pos" '(T)) )
+
+(de _game ("Flg" "Cnt" "Pos" "Alpha" "Beta")
+   (let? "Lst"
+      (sort
+         (mapcar
+            '(("Mov")
+               (and
+                  ("move" "Flg" "Pos" "Mov")
+                  (cons ("cost" "Flg" @) (cons "Mov" @)) ) )
+            ("moves" "Flg" "Pos") ) )
+      (dec '"Cnt")
+      (use "Val"
+         (loop
+            (setq "Val"
+               (or
+                  (and
+                     (n0 "Cnt")
+                     (_game
+                        (not "Flg")
+                        "Cnt"
+                        (cddar "Lst")
+                        (cons (- "Beta"))
+                        (- (car "Alpha")) )
+                     (cons
+                        (- (car @))
+                        (cons (cdar "Lst") (cdr @)) ) )
+                  (cons (caar "Lst") (cons (cdar "Lst"))) ) )
+            (T (>= "Beta" (car "Val"))
+               (cons "Beta" (cons (cdar "Lst") (cdr "Alpha"))) )
+            (when (> (car "Alpha") (car "Val"))
+               (setq "Alpha" "Val") )
+            (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) ) ) )
+
+
 ### Genetic Algorithm ###
-(de gen ("Cnt" "Re" "Mu" "Se" . "Init")
+(de gen ("Cnt" "re" "mu" "se" . "Init")
    (use ("P" "X" "Y")
       (setq "P"
          (sort
             (make
                (do "Cnt"
-                  (setq "X" ("Mu" (run "Init")))
-                  (link (cons ("Se" "X") "X")) ) ) ) )
+                  (setq "X" ("mu" (run "Init")))
+                  (link (cons ("se" "X") "X")) ) ) ) )
       (do (* "Cnt" "Cnt")
          (setq "X" (get "P" (rand 1 "Cnt")))                   # Recombination
          (while (== "X" (setq "Y" (get "P" (rand 1 "Cnt")))))
-         (setq "X" ("Mu" ("Re" (cdr "X") (cdr "Y"))))          # Mutation
-         (when (> (setq "Y" ("Se" "X")) (caar "P"))            # Selection
+         (setq "X" ("mu" ("re" (cdr "X") (cdr "Y"))))          # Mutation
+         (when (> (setq "Y" ("se" "X")) (caar "P"))            # Selection
             (if (seek '((L) (>= (caadr L) "Y")) "P")
                (con @ (cons (cons "Y" "X") (cdr @)))
                (conc "P" (cons (cons "Y" "X"))) )

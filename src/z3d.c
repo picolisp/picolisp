@@ -1,4 +1,4 @@
-/* 12jul04abu
+/* 18aug04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -123,7 +123,7 @@ any Arot(any ex) {
    x = EVAL(cadr(x));
    Touch(ex,x);
    x = cdddr(val(x));
-   getVector(caddr(getMatrix(x, &m)), &pt);
+   getVector(cddar(getMatrix(x, &m)), &pt);
    n = sqrt(pt.x*pt.x + pt.y*pt.y + pt.z*pt.z);
    pt.x /= n,  pt.y /= n,  pt.z /= n;  // Axis unit vector
    if ((n = sqrt(pt.y*pt.y + pt.z*pt.z)) == 0.0)  // Axis parallel to x-axis
@@ -152,22 +152,25 @@ any Rotate(any ex) {
    x = cdr(x),  getMatrix(cdddr(val(EVAL(car(x)))), &m);
    x = cdr(x),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
-   CheckVar(ex,data(c1));
    x = cdr(x),  Push(c2, EVAL(car(x)));
    NeedVar(ex,data(c2));
-   CheckVar(ex,data(c2));
    x = cdr(x),  Push(c3, EVAL(car(x)));
    NeedVar(ex,data(c3));
-   CheckVar(ex,data(c3));
    if (isNil(EVAL(cadr(x)))) {
-      val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.b.x + vz * m.c.x) * SCL);
-      val(data(c2)) = doubleToNum((vx * m.a.y + vy * m.b.y + vz * m.c.y) * SCL);
-      val(data(c3)) = doubleToNum((vx * m.a.z + vy * m.b.z + vz * m.c.z) * SCL);
+      if (!isNil(data(c1)))
+         val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.b.x + vz * m.c.x) * SCL);
+      if (!isNil(data(c2)))
+         val(data(c2)) = doubleToNum((vx * m.a.y + vy * m.b.y + vz * m.c.y) * SCL);
+      if (!isNil(data(c3)))
+         val(data(c3)) = doubleToNum((vx * m.a.z + vy * m.b.z + vz * m.c.z) * SCL);
    }
    else {
-      val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.a.y + vz * m.a.z) * SCL);
-      val(data(c2)) = doubleToNum((vx * m.b.x + vy * m.b.y + vz * m.b.z) * SCL);
-      val(data(c3)) = doubleToNum((vx * m.c.x + vy * m.c.y + vz * m.c.z) * SCL);
+      if (!isNil(data(c1)))
+         val(data(c1)) = doubleToNum((vx * m.a.x + vy * m.a.y + vz * m.a.z) * SCL);
+      if (!isNil(data(c2)))
+         val(data(c2)) = doubleToNum((vx * m.b.x + vy * m.b.y + vz * m.b.z) * SCL);
+      if (!isNil(data(c3)))
+         val(data(c3)) = doubleToNum((vx * m.c.x + vy * m.c.y + vz * m.c.z) * SCL);
    }
    drop(c1);
    return T;

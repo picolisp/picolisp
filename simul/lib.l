@@ -1,4 +1,4 @@
-# 01jul04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
@@ -21,18 +21,16 @@
          (pop 'Lst)     # pos-x
          (- (pop 'Lst)) # pos-y
          (pop 'Lst) )   # pos-z
-      (mapc
-         '((L)
-            (link
-               (if (sym? (car L))
-                  (y-mirror L)
-                  (make
-                     (link (cadr L) (car L))
-                     (when (sym? (car (setq L (cddr L))))
-                        (link (pop 'L)) )
-                     (while L
-                        (link (pop 'L) (- (pop 'L)) (pop 'L)) ) ) ) ) )
-         Lst ) ) )
+      (for L Lst
+         (link
+            (if (sym? (car L))
+               (y-mirror L)
+               (make
+                  (link (cadr L) (car L))
+                  (when (sym? (car (setq L (cddr L))))
+                     (link (pop 'L)) )
+                  (while L
+                     (link (pop 'L) (- (pop 'L)) (pop 'L)) ) ) ) ) ) ) )
 
 # Create model
 (de model (Obj Lst)
@@ -68,11 +66,12 @@
                (nth (val Sym) 13) ) ) ) ) )
 
 # Reset orientation
-(de straight (Sym)
-   (mapc
-      '((V S) (set S V))
+(de straight (M)
+   (touch M)
+   (map
+      '((V L) (set L (car V)))
       *UMat
-      (cdddr (val Sym)) ) )
+      (cdddr (val M)) ) )
 
 # Movements
 (de z3d:dx (X M)

@@ -1,8 +1,10 @@
-# 03aug04abu
+# 27sep04abu
 # (c) Software Lab. Alexander Burger
 
 (de macro "Prg"
    (run (fill "Prg")) )
+
+(====)
 
 (de task ("Key" . "Prg")
    (cond
@@ -34,6 +36,8 @@
       (set (cdr @) (+ N))
       (push '*Key (list -1 (+ N) '(bye))) ) )
 
+(====)
+
 (de getd ("X")
    (and
       (sym? "X")
@@ -57,18 +61,30 @@
          (val "X") )
       (con @ (append "Prg" (cdr @))) ) )
 
+(====)
+
+(de cache ("Var" "Str" . "Prg")
+   (cond
+      ((not (setq "Var" (car (idx "Var" "Str" T))))
+         (set "Str" (run "Prg")) )
+      ((== "Var" (val "Var"))
+         (set "Var" (run "Prg")) )
+      (T (val "Var")) ) )
+
+(====)
+
 (de scl (*Scl . "Prg")
    (run "Prg") )
 
+(====)
+
 ### I/O ###
 (de tab (Lst . @)
-   (mapc
-      '((N)
-         (let V (next)
-            (and (gt0 N) (space (- N (length V))))
-            (prin V)
-            (and (lt0 N) (space (- 0 N (length V)))) ) )
-      Lst )
+   (for N Lst
+      (let V (next)
+         (and (gt0 N) (space (- N (length V))))
+         (prin V)
+         (and (lt0 N) (space (- 0 N (length V)))) ) )
    (prinl) )
 
 (de beep ()
@@ -85,20 +101,26 @@
 
 ### List ###
 (de ?push ("Var" "X")
-   (or
-      (car (member "X" (val "Var")))
+   (if (member "X" (val "Var"))
+      (car @)
       (push "Var" "X") ) )
 
 (de insert (N Lst X)
    (conc
-      (head (- N 1) Lst)
+      (cut (- N 1) 'Lst)
       (cons X)
-      (nth Lst N) ) )
+      Lst ) )
 
 (de remove (N Lst)
    (conc
-      (head (- N 1) Lst)
-      (nth Lst (+ N 1)) ) )
+      (cut (- N 1) 'Lst)
+      (cdr Lst) ) )
+
+(de place (N Lst X)
+   (conc
+      (cut (- N 1) 'Lst)
+      (cons X)
+      (cdr Lst) ) )
 
 (de sect (Lst1 Lst2)
    (filter '((X) (member X Lst2)) Lst1) )
@@ -163,15 +185,13 @@
             (asoq "X" (val "Env"))
             (push "Env" (cons "X" (new (ext? "X")))) ) )
       (set Obj (val "X"))
-      (mapc
-         '(("Y")
-            (if (atom "Y")
-               (put Obj "Y" (get "X" "Y"))
-               (put Obj (car "Y")
-                  (_clone
-                     (get "X" (car "Y"))
-                     (cdr "Y") ) ) ) )
-         Lst )
+      (for "Y" Lst
+         (if (atom "Y")
+            (put Obj "Y" (get "X" "Y"))
+            (put Obj (car "Y")
+               (_clone
+                  (get "X" (car "Y"))
+                  (cdr "Y") ) ) ) )
       Obj ) )
 
 ### OOP ###
@@ -192,10 +212,10 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless whilst while until until=T do case for with catch
-   ! quote setq default let let? use =: in out new )
+   T NIL if ifn when unless whilst while until until=T do case state
+   for with catch ! quote setq default job let let? use =: in out new )
 
-(de *PP1 let)
+(de *PP1 let for)
 (de *PP2 setq default)
 
 (de pretty (X N . @)
@@ -212,7 +232,7 @@
          (when (memq (print (pop 'X)) *PP)
             (cond
                ((memq (car Z) *PP1)
-                  (if (pair (car X))
+                  (if (and (pair (car X)) (pair (cdar X)))
                      (when (<= (size (car X)) 12)
                         (space)
                         (print (pop 'X)) )

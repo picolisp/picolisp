@@ -1,4 +1,4 @@
-/* 19may04abu
+/* 24sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -137,7 +137,7 @@ any doEnv(any x) {
    bindFrame *p;
    cell c1;
 
-   Push(c1,Nil);
+   Push(c1, Nil);
    for (p = Env.bind;  p;  p = p->link) {
       for (i = p->cnt;  --i >= 0;) {
          for (x = data(c1); ; x = cdr(x)) {
@@ -312,8 +312,8 @@ void err(any ex, any x, char *fmt, ...) {
          val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
       Env.bind = Env.bind->link;
    }
-   Env.next = 0;
    Env.meth = NULL;
+   Env.next = 0;
    Env.make = NULL;
    Env.parser = NULL;
    CatchPtr = NULL;
@@ -661,8 +661,7 @@ any doInfo(any x) {
       p = gmtime(&st.st_mtime);
       Push(c1, boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec));
       data(c1) = cons(mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday), data(c1));
-      data(c1) = cons(S_ISDIR(st.st_mode)? T :
-            boxWord2((word2)st.st_size), data(c1) );
+      data(c1) = cons(S_ISDIR(st.st_mode)? T : boxWord2((word2)st.st_size), data(c1));
       return Pop(c1);
    }
 }

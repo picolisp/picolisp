@@ -1,4 +1,4 @@
-# 29jan04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook] [var val ..])
@@ -58,17 +58,15 @@
                (NIL (setq Obj (cdr (asoq '@@ (prove Q)))))
                (ifn Vars
                   (show Obj)
-                  (mapc
-                     '((Var)
-                        (cond
-                           ((pair Var)
-                              (print (apply get Var Obj)) )
-                           ((meta Obj Var)
-                              (print> @ (get Obj Var)) )
-                           (T
-                              (print (get Obj Var)) ) )
-                        (space) )
-                     Vars )
+                  (for Var Vars
+                     (cond
+                        ((pair Var)
+                           (print (apply get Var Obj)) )
+                        ((meta Obj Var)
+                           (print> @ (get Obj Var)) )
+                        (T
+                           (print (get Obj Var)) ) )
+                     (space) )
                   (print Obj) )
                (T (line) Obj) ) ) ) ) )
 
@@ -90,9 +88,8 @@
          (_update (get Obj Var) Var)
          (set!> Obj 'upd
             (any (revise (sym (val Obj)))) )
-         (mapc
-            '((X) (_update (or (atom X) (pop 'X)) X))
-            (getl Obj) )
+         (for X (getl Obj)
+            (_update (or (atom X) (pop 'X)) X) )
          Obj ) ) )
 
 (de _update (Val Var)

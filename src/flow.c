@@ -1,4 +1,4 @@
-/* 19may04abu
+/* 25sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -264,7 +264,7 @@ any doNew(any ex) {
    if (y = method(data(c1)))
       evMethod(data(c1), y, cdr(x));
    else {
-      Save(c2);
+      Push(c2, Nil);
       while (isCell(x = cdr(x))) {
          data(c2) = EVAL(car(x)),  x = cdr(x);
          put(data(c1), data(c2), EVAL(car(x)));
@@ -459,7 +459,6 @@ any doWith(any ex) {
    if (isNil(x = EVAL(car(x))))
       return Nil;
    NeedSym(ex,x);
-   Fetch(ex,x);
    Bind(This,f),  val(This) = x;
    x = prog(cddr(ex));
    Unbind(f);
@@ -785,8 +784,33 @@ any doCase(any x) {
    return Nil;
 }
 
+// (state 'var ((sym|lst sym [. prg]) . prg) ..) -> any
+any doState(any ex) {
+   any x, y, z;
+   cell c1;
+
+   x = cdr(ex);
+   Push(c1, EVAL(car(x)));
+   NeedVar(ex,car(x));
+   CheckVar(ex,data(c1));
+   while (isCell(x = cdr(x))) {
+      y = caar(x),  z = car(y);
+      if (z==T || z==val(data(c1)) || isCell(z) && !isNil(memq(val(data(c1)),z))) {
+         y = cdr(y);
+         if (!isCell(cdr(y)) || !isNil(val(At) = prog(cdr(y)))) {
+            Touch(ex,data(c1));
+            val(data(c1)) = car(y);
+            drop(c1);
+            return prog(cdar(x));
+         }
+      }
+   }
+   drop(c1);
+   return Nil;
+}
+
 // (while 'any . prg) -> any
-any doWhile (any x) {
+any doWhile(any x) {
    any cond;
    cell c1;
 
@@ -798,7 +822,7 @@ any doWhile (any x) {
 }
 
 // (whilst 'any . prg) -> any
-any doWhilst (any x) {
+any doWhilst(any x) {
    any cond;
    cell c1;
 
@@ -810,7 +834,7 @@ any doWhilst (any x) {
 }
 
 // (until 'any . prg) -> any
-any doUntil (any x) {
+any doUntil(any x) {
    any cond;
    cell c1;
 
@@ -822,7 +846,7 @@ any doUntil (any x) {
 }
 
 // (until=T 'any . prg) -> any
-any doUntilT (any x) {
+any doUntilT(any x) {
    any cond;
    cell c1;
 
@@ -925,28 +949,132 @@ any doAt(any ex) {
    return prog(cddr(ex));
 }
 
-// (for (sym 'any1 'any2 [. prg1]) . prg2) -> any
+// (for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
+// (for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doFor(any ex) {
    any x, y, body, cond;
-   bindFrame f;
+   cell c1;
+   struct {  // bindFrame
+      struct bindFrame *link;
+      int cnt;
+      struct {any sym; any val;} bnd[2];
+   } f;
 
-   body = cdr(x = cdr(ex));
-   x = car(x);
-   NeedCell(ex,x);
-   NeedSym(ex,car(x));
-   Bind(car(x),f),  x = cdr(x);
-   val(f.bnd[0].sym) = EVAL(car(x));
-   x = cdr(x),  cond = car(x),  x = cdr(x);
-   y = Nil;
-   for (;;) {
-      if (isNil(val(At) = EVAL(cond))) {
-         Unbind(f);
-         return y;
+   f.link = Env.bind,  Env.bind = (bindFrame*)&f;
+   if (!isCell(y = car(x = cdr(ex))) || !isCell(cdr(y))) {
+      if (!isCell(y)) {
+         f.cnt = 1;
+         f.bnd[0].sym = y;
+         f.bnd[0].val = val(y);
       }
-      y = prog(body);
-      if (isCell(x))
-         val(f.bnd[0].sym) = prog(x);
+      else {
+         f.cnt = 2;
+         f.bnd[0].sym = cdr(y);
+         f.bnd[0].val = val(cdr(y));
+         f.bnd[1].sym = car(y);
+         f.bnd[1].val = val(car(y));
+         val(f.bnd[1].sym) = Zero;
+      }
+      y = Nil;
+      x = cdr(x),  Push(c1, EVAL(car(x)));
+      body = x = cdr(x);
+      while (isCell(data(c1))) {
+         val(f.bnd[0].sym) = car(data(c1)),  data(c1) = cdr(data(c1));
+         if (f.cnt == 2) {
+            val(f.bnd[1].sym) = bigCopy(val(f.bnd[1].sym));
+            digAdd(val(f.bnd[1].sym), 2);
+         }
+         do {
+            if (!isNum(y = car(x))) {
+               if (isSym(y))
+                  y = val(y);
+               else if (isNil(car(y))) {
+                  y = cdr(y);
+                  if (isNil(val(At) = EVAL(car(y)))) {
+                     y = prog(cdr(y));
+                     goto for1;
+                  }
+                  y = Nil;
+               }
+               else if (car(y) == T) {
+                  y = cdr(y);
+                  if (!isNil(val(At) = EVAL(car(y)))) {
+                     y = prog(cdr(y));
+                     goto for1;
+                  }
+                  y = Nil;
+               }
+               else
+                  y = evList(y);
+            }
+         } while (isCell(x = cdr(x)));
+         x = body;
+      }
+   for1:
+      drop(c1);
+      if (f.cnt == 2)
+         val(f.bnd[1].sym) = f.bnd[1].val;
+      val(f.bnd[0].sym) = f.bnd[0].val;
+      Env.bind = f.link;
+      return y;
    }
+   if (!isCell(car(y))) {
+      f.cnt = 1;
+      f.bnd[0].sym = car(y);
+      f.bnd[0].val = val(car(y));
+   }
+   else {
+      f.cnt = 2;
+      f.bnd[0].sym = cdar(y);
+      f.bnd[0].val = val(cdar(y));
+      f.bnd[1].sym = caar(y);
+      f.bnd[1].val = val(caar(y));
+      val(f.bnd[1].sym) = Zero;
+   }
+   y = cdr(y);
+   val(f.bnd[0].sym) = EVAL(car(y));
+   y = cdr(y),  cond = car(y),  y = cdr(y);
+   Push(c1,Nil);
+   body = x = cdr(x);
+   while (!isNil(val(At) = EVAL(cond))) {
+      if (f.cnt == 2) {
+         val(f.bnd[1].sym) = bigCopy(val(f.bnd[1].sym));
+         digAdd(val(f.bnd[1].sym), 2);
+      }
+      do {
+         if (!isNum(data(c1) = car(x))) {
+            if (isSym(data(c1)))
+               data(c1) = val(data(c1));
+            else if (isNil(car(data(c1)))) {
+               data(c1) = cdr(data(c1));
+               if (isNil(val(At) = EVAL(car(data(c1))))) {
+                  data(c1) = prog(cdr(data(c1)));
+                  goto for2;
+               }
+               data(c1) = Nil;
+            }
+            else if (car(data(c1)) == T) {
+               data(c1) = cdr(data(c1));
+               if (!isNil(val(At) = EVAL(car(data(c1))))) {
+                  data(c1) = prog(cdr(data(c1)));
+                  goto for2;
+               }
+               data(c1) = Nil;
+            }
+            else
+               data(c1) = evList(data(c1));
+         }
+      } while (isCell(x = cdr(x)));
+      if (isCell(y))
+         val(f.bnd[0].sym) = prog(y);
+      x = body;
+   }
+for2:
+   if (f.cnt == 2)
+      val(f.bnd[1].sym) = f.bnd[1].val;
+   val(f.bnd[0].sym) = f.bnd[0].val;
+   Env.bind = f.link;
+   return Pop(c1);
 }
 
 // (catch 'sym . prg) -> any

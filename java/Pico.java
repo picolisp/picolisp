@@ -1,4 +1,4 @@
-// 03aug04abu
+// 12aug04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -81,7 +81,7 @@ public class Pico extends Applet {
 
    public void stop() {msg1("stop>");}
 
-   synchronized void done() {
+   void done() {
       if (Sock != null) {
          try {Sock.close();}
          catch (IOException f) {}
@@ -110,9 +110,9 @@ public class Pico extends Applet {
    }
 
    // Command dispatcher
-   synchronized void cmd(String s) {
+   void cmd(String s) {
       if (s.equals("ping")) {
-         try {IO.print(0);}
+         try {synchronized (IO) {IO.print(0);}}
          catch (IOException e) {}
       }
       else if (s.equals("done"))
@@ -120,11 +120,11 @@ public class Pico extends Applet {
       else if (s.equals("beep"))
          getToolkit().beep();
       else if (s.equals("play"))
-         {s = getStr(); play(s,getStr());}
+         play(getStr(),getStr());
       else if (s.equals("menu"))
          new Popup(this,this);
       else if (s.equals("url"))
-         {s = getStr(); url(s,getStr());}
+         url(getStr(),getStr());
       else if (s.equals("rsa"))
          rsa();
       else {
@@ -193,44 +193,60 @@ public class Pico extends Applet {
    }
 
    // Write message
-   synchronized void msg1(String s) {
-      try {IO.prSym(s); IO.flush();}
-      catch (IOException e) {}
+   void msg1(String s) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg2(String s, Object x2) {
-      try {IO.prSym(s); IO.print(x2); IO.flush();}
-      catch (IOException e) {}
+   void msg2(String s, Object x2) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(x2); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg2(String s, int n2) {
-      try {IO.prSym(s); IO.print(n2); IO.flush();}
-      catch (IOException e) {}
+   void msg2(String s, int n2) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(n2); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg3(String s, Object x2, Object x3) {
-      try {IO.prSym(s); IO.print(x2); IO.print(x3); IO.flush();}
-      catch (IOException e) {}
+   void msg3(String s, Object x2, Object x3) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(x2); IO.print(x3); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg3(String s, int n2, int n3) {
-      try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.flush();}
-      catch (IOException e) {}
+   void msg3(String s, int n2, int n3) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg4(String s, int n2, int n3, int n4) {
-      try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.flush();}
-      catch (IOException e) {}
+   void msg4(String s, int n2, int n3, int n4) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg4(String s, int n2, Object x3, int n4) {
-      try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.print(n4); IO.flush();}
-      catch (IOException e) {}
+   void msg4(String s, int n2, Object x3, int n4) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.print(n4); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
-   synchronized void msg5(String s, int n2, int n3, int n4, int n5) {
-      try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.print(n5); IO.flush();}
-      catch (IOException e) {}
+   void msg5(String s, int n2, int n3, int n4, int n5) {
+      synchronized (IO) {
+         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.print(n5); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 
    // Read byte array
@@ -268,8 +284,10 @@ public class Pico extends Applet {
       return "";
    }
 
-   synchronized void dbg(String s) {
-      try {IO.print(s); IO.flush();}
-      catch (IOException e) {}
+   void dbg(String s) {
+      synchronized (IO) {
+         try {IO.print(s); IO.flush();}
+         catch (IOException e) {}
+      }
    }
 }

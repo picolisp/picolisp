@@ -1,4 +1,4 @@
-# 21jun04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -12,23 +12,19 @@
       (let Tag (pop 'Lst)
          (space (default N 0))
          (prin "<" Tag)
-         (mapc
-            '((X)
-               (prin " " (car X) "=\"")
-               (escXml (cdr X))
-               (prin "\"") )
-            (pop 'Lst) )
+         (for X (pop 'Lst)
+            (prin " " (car X) "=\"")
+            (escXml (cdr X))
+            (prin "\"") )
          (ifn Lst
             (prinl "/>")
             (prinl ">")
-            (mapc
-               '((X)
-                  (if (pair X)
-                     (xml X (+ 3 N))
-                     (space (+ 3 N))
-                     (escXml X)
-                     (prinl) ) )
-               Lst )
+            (for X Lst
+               (if (pair X)
+                  (xml X (+ 3 N))
+                  (space (+ 3 N))
+                  (escXml X)
+                  (prinl) ) )
             (space N)
             (prinl "</" Tag ">") ) )
       (skip)
@@ -88,22 +84,20 @@
                (setq L @Z) ) ) ) ) )
 
 (de escXml (X)
-   (mapc
-      '((C)
-         (if (member C '`(chop "\"&<"))
-            (prin "&#" (char C) ";")
-            (prin C) ) )
-      (chop X) ) )
+   (for C (chop X)
+      (if (member C '`(chop "\"&<"))
+         (prin "&#" (char C) ";")
+         (prin C) ) ) )
 
 # Access functions
 (de body (Lst . @)
-   (while (and (setq Lst (cddr Lst)) (next))
-      (setq Lst (assoc (arg) Lst)) )
+   (while (and (setq Lst (cddr Lst)) (args))
+      (setq Lst (assoc (next) Lst)) )
    Lst )
 
-(de attr (Lst . @)
-   (let Key (next)
-      (while (next)
-         (setq Lst (assoc Key (cddr Lst)))
-         (setq Key (arg)) )
-      (cdr (assoc Key (cadr Lst))) ) )
+(de attr (Lst Key . @)
+   (while (args)
+      (setq
+         Lst (assoc Key (cddr Lst))
+         Key (next) ) )
+   (cdr (assoc Key (cadr Lst))) )

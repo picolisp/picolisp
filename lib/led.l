@@ -1,4 +1,4 @@
-# 28jun04abu
+# 18aug04abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -258,7 +258,8 @@
                   (lMove) )
                (and
                   (assoc (pack "^[" @) "FKey")
-                  (run (cdr @)) )
+                  (let *Dbg "Dbg"
+                     (run (cdr @)) ) )
                (NIL "C") ) )
          (T
             (when (= "C" ")")

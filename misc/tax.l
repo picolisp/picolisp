@@ -1,4 +1,4 @@
-# 31jul04abu
+# 18sep04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -286,9 +286,8 @@
                      '((db txt +Pos @1 @P) (val @@ @P txt))
                      "" 40 )
                   (gui '(+Obj +TextField) '(nm +Kto) "" 20) )
-               '((P)
-                  (with P
-                     (list (: dat) (: val) (: ust) (: txt) (: kto)) ) )
+               '((This)
+                  (list (: dat) (: val) (: ust) (: txt) (: kto)) )
                '((L D)
                   (cond
                      (D
@@ -341,24 +340,21 @@
 (de recUms ("Sym" "foo" "Lst")
    (record "Sym" '-)
    (let (SN 0  SU 0)
-      (mapc
-         '((Pos)
-            (with Pos
-               (when (== "Sym" (: kto kat))
-                  (let (B (val> This)  N (if (: afa) 0 (net> This))  U (ust> This))
-                     (inc 'SN N)
-                     (inc 'SU U)
-                     (record
-                        (href This (datSym (: dat)))
-                        (money B)
-                        (if (: afa) "+AFA+" (money N))
-                        (money U)
-                        (if (and (: kto pr) (<> @ 100))
-                           (pack (: kto nm) " (" (: kto pr) "%)")
-                           (: kto nm) )
-                        (: txt) )
-                     ("foo" B N U) ) ) ) )
-         "Lst" )
+      (for This "Lst"
+         (when (== "Sym" (: kto kat))
+            (let (B (val> This)  N (if (: afa) 0 (net> This))  U (ust> This))
+               (inc 'SN N)
+               (inc 'SU U)
+               (record
+                  (href This (datSym (: dat)))
+                  (money B)
+                  (if (: afa) "+AFA+" (money N))
+                  (money U)
+                  (if (and (: kto pr) (<> @ 100))
+                     (pack (: kto nm) " (" (: kto pr) "%)")
+                     (: kto nm) )
+                  (: txt) )
+               ("foo" B N U) ) ) )
       (<row> NIL NIL '<hr> '-)
       (record NIL '- (money SN) (money SU)) ) )
 
@@ -375,29 +371,28 @@
          (<table> T NIL
             '((-) (- "Datum") (+ "Wert") (+ "USt")  (- "Konto") (- "Text"))
             (mapc
-               '((Pos)
-                  (with Pos
-                     (let (N (net> This)  U (ust> This))
-                        (case (: kto kat)
-                           (Betriebseinnahmen
-                              (record "U: "
-                                 (datSym (: dat))
-                                 (money (: val))
-                                 (money (: ust))
-                                 (: kto nm)
-                                 (: txt) )
-                              (if (or (not U) (=0 U))
-                                 (inc 'Frei N)
-                                 (inc 'Ums N)
-                                 (inc 'USt U) ) )
-                           (Betriebsausgaben
-                              (record "V: "
-                                 (datSym (: dat))
-                                 (money (: val))
-                                 (money (: ust))
-                                 (: kto nm)
-                                 (: txt) )
-                              (inc 'VSt U) ) ) ) ) )
+               '((This)
+                  (let (N (net> This)  U (ust> This))
+                     (case (: kto kat)
+                        (Betriebseinnahmen
+                           (record "U: "
+                              (datSym (: dat))
+                              (money (: val))
+                              (money (: ust))
+                              (: kto nm)
+                              (: txt) )
+                           (if (or (not U) (=0 U))
+                              (inc 'Frei N)
+                              (inc 'Ums N)
+                              (inc 'USt U) ) )
+                        (Betriebsausgaben
+                           (record "V: "
+                              (datSym (: dat))
+                              (money (: val))
+                              (money (: ust))
+                              (: kto nm)
+                              (: txt) )
+                           (inc 'VSt U) ) ) ) )
                (collect 'dat '+Pos
                   (date Y (if *Quartal (- M 2) M) 1)
                   (if (= 12 M)
@@ -494,20 +489,19 @@
                (+ "Stand")
                (+ "Abschreibung") )
             (mapc
-               '((P)
-                  (with P
-                     (unless (and (: aus) (>= @ Y))
-                        (let A (afa> P Y)
-                           (dec 'Afa (cdr A))
-                           (record
-                              (href This (datSym (: dat)))
-                              (money (- (net> This)))
-                              (if (and (: kto pr) (<> @ 100))
-                                 (pack (: txt) " (" (: kto pr) "%)")
-                                 (: txt) )
-                              (: afa)
-                              (money (car A))
-                              (money (cdr A)) ) ) ) ) )
+               '((This)
+                  (unless (and (: aus) (>= @ Y))
+                     (let A (afa> This Y)
+                        (dec 'Afa (cdr A))
+                        (record
+                           (href This (datSym (: dat)))
+                           (money (- (net> This)))
+                           (if (and (: kto pr) (<> @ 100))
+                              (pack (: txt) " (" (: kto pr) "%)")
+                              (: txt) )
+                           (: afa)
+                           (money (car A))
+                           (money (cdr A)) ) ) ) )
                (sortBy
                   '((P) (get P 'dat))
                   (collect 'afa '+Pos) ) )
@@ -534,15 +528,13 @@
          (let (U 0  YY (pad 2 (% Y 100)))
             (<table> NIL "Umsatzsteuer-Vorauszahlungen"
                '((- "Datum") (+ "USt") (- "Text"))
-               (mapc
-                  '((Mon)
-                     (with (db 'txt '+Pos (pack Mon YY) 'kto (db 'nm '+Kto "Umsatzsteuer"))
-                        (inc 'U (: val))
-                        (record
-                           (href This (datSym (: dat)))
-                           (money (: val))
-                           (: txt) ) ) )
-                  '("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec") )
+               (for Mon '("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec")
+                  (with (db 'txt '+Pos (pack Mon YY) 'kto (db 'nm '+Kto "Umsatzsteuer"))
+                     (inc 'U (: val))
+                     (record
+                        (href This (datSym (: dat)))
+                        (money (: val))
+                        (: txt) ) ) )
                (<row> NIL '<hr>)
                (record NIL (money U)) )
             <p>
@@ -553,60 +545,50 @@
             (<row> "Krankenversicherung"
                (money
                   (sum
-                     '((P)
-                        (with P
-                           (and (= "Krankenversicherung" (: txt)) (: val)) ) )
+                     '((This)
+                        (and (= "Krankenversicherung" (: txt)) (: val)) )
                      Lst ) ) )
             (<row> "Unfallversicherung"
                (money
                   (sum
-                     '((P)
-                        (with P
-                           (and (= "Unfallversicherung" (: txt)) (: val)) ) )
+                     '((This)
+                        (and (= "Unfallversicherung" (: txt)) (: val)) )
                      Lst ) ) )
             (<row> "Lebensversicherung"
                (money
                   (sum
-                     '((P)
-                        (with P
-                           (and (= "Lebensversicherung" (: txt)) (: val)) ) )
+                     '((This)
+                        (and (= "Lebensversicherung" (: txt)) (: val)) )
                      Lst ) ) )
             (<row> "Privathaftpflicht"
                (money
                   (sum
-                     '((P)
-                        (with P
-                           (and (= "Privathaftpflicht" (: txt)) (: val)) ) )
+                     '((This)
+                        (and (= "Privathaftpflicht" (: txt)) (: val)) )
                      Lst ) ) ) )
          <p>
          (let S 0
             (<table> NIL "Spenden"
                '((- "Datum") (- "Text") (+ "Betrag"))
-               (mapc
-                  '((P)
-                     (with P
-                        (when (= "Spenden" (: kto nm))
-                           (inc 'S (: val))
-                           (record
-                              (href This (datSym (: dat)))
-                              (: txt)
-                              (money (: val)) ) ) ) )
-                  Lst )
+               (for This Lst
+                  (when (= "Spenden" (: kto nm))
+                     (inc 'S (: val))
+                     (record
+                        (href This (datSym (: dat)))
+                        (: txt)
+                        (money (: val)) ) ) )
                (<row> NIL NIL '<hr>)
                (record NIL NIL (money S)) ) )
          (let S 0
             (<table> NIL "Eigenanteil Gesundheitskosten"
                '((- "Datum") (- "Text") (+ "Betrag"))
-               (mapc
-                  '((P)
-                     (with P
-                        (when (= "Gesundheitskosten" (: kto nm))
-                           (inc 'S (: val))
-                           (record
-                              (href This (datSym (: dat)))
-                              (: txt)
-                              (money (: val)) ) ) ) )
-                  Lst )
+               (for This Lst
+                  (when (= "Gesundheitskosten" (: kto nm))
+                     (inc 'S (: val))
+                     (record
+                        (href This (datSym (: dat)))
+                        (: txt)
+                        (money (: val)) ) ) )
                (<row> NIL NIL '<hr>)
                (record NIL NIL (money S)) ) ) ) ) )
 

@@ -1,3 +1,13 @@
+* XXjan05 picoLisp-2.0.15
+
+* 01oct04 picoLisp-2.0.14
+   '<tree>' HTML function
+   Finite 'state' automaton function
+   Extended 'for' functionality
+   'rcsim' toy RC flight simulator
+   Bug in 'sym', 'str' and '*/'
+   Extended 'dbck' return value
+
 * 03aug04 picoLisp-2.0.13
    Changed rounding and argument policy of '*/'
    Applet protocol revised

@@ -81,9 +81,9 @@
       Assumptions:
 
    - 8 bits per byte
-   - word: sizeof(void*) == sizeof(unsigned long) is 4
+   - word: sizeof(void*) == sizeof(unsigned long) == 4
    - gcc
-      "long long" integers
+      64-bit "long long" integers
       Zero- or variable-length arrays
       Conditionals with Omitted Operands
       Unused argument attributes

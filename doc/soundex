@@ -1,0 +1,38 @@
+         Unscharfe (tolerante) Suche
+
+Die "tolerante Suche" in der Datenbank erfolgt in zwei Schritten:
+
+- Zuerst werden alle "exakten" Treffer angezeigt, d.h. alle, die den Suchtext in
+  genau dieser Schreibweise (einschliesslich der Gross- und Kleinschreibung)
+  enthalten.
+
+- Dann werden alle "toleranten" Treffer angezeigt. Dazu wird der sogenannte
+  "Soundex-Algorithmus" verwendet.
+
+
+Der Soundex-Algorithmus geht folgendermassen vor:
+
+   1. Alle Leer- und Sonderzeichen werden entfernt, die Ziffern 0 bis 9 werden
+      jedoch beibehalten.
+
+   2. Alle Kleinbuchstaben werden in Grossbuchstaben gewandelt.
+
+   3. Der erste Buchstabe des Suchtextes wird beibehalten.
+
+   4. Alle Buchstaben A, E, H, I, O, U, W und Y werden entfernt.
+
+   5. Buchstaben werden gewandelt (auf bestimmte Buchstaben abgebildet):
+      F:  B, F, P, V
+      S:  C, G, J, K, Q, S, X, Z
+      T:  D, T
+      L:  L
+      N:  M, N
+      R:  R
+
+   6. Alle Wiederholungen von gleichen Buchstaben werden entfernt
+
+   7. Nur die ersten 24 Zeichen des Ergebnisses werden fuer die Suche
+      herangezogen.
+
+Nun werden alle Datenbanksaetze angezeight, die mit dem aus diesem Algorithmus
+resultierenden Muster beginnen.

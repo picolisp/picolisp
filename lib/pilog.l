@@ -1,4 +1,4 @@
-# 30jul04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -30,16 +30,16 @@
 
 (de rules @
    (while (args)
-      (let (N 0  S (next)  L (get S T)  L1 L)
-         (loop
-            (NIL L)
-            (prin (inc 'N) " (be ")
+      (let S (next)
+         (for ((N . L) (get S T) L)
+            (prin N " (be ")
             (print S)
-            (mapc
-               '((X) (space) (print X))
-               (pop 'L) )
+            (for X (pop 'L)
+               (space)
+               (print X) )
             (prinl ")")
-            (T (== L L1) (println '(repeat))) )
+            (T (== L (get S T))
+               (println '(repeat)) ) )
          S ) ) )
 
 ### Pilog Interpreter ###
@@ -77,13 +77,11 @@
       (loop
          (NIL (prove "Q" "Dbg"))
          (T (=T (setq "R" @)) T)
-         (mapc
-            '((X)
-               (space)
-               (print (car X))
-               (print '=)
-               (print (cdr X)) )
-            "R" )
+         (for X "R"
+            (space)
+            (print (car X))
+            (print '=)
+            (print (cdr X)) )
          (T (line)) ) ) )
 
 (de ? "CL"
@@ -287,21 +285,22 @@
             ("same" (car L) (cdr L)) ) ) ) )
 
 (de "same" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("same" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("same"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("same" (get Y (car L)) (cdr L)) )
-               X ) ) )
-      (if (atom X)
-         (= V X)
-         (find '((Y) (= V Y)) X) ) ) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (= V X)
+            (find '((Y) (= V Y)) X) ) )
+      ((or (atom X) (num? (car L)))
+         ("same" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("same"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
+            '((Y)
+               (and (sym? Y) ("same" (get Y (car L)) (cdr L))) )
+            X ) ) ) )
 
 (be bool (@F . @L)
    (@ or
@@ -317,27 +316,28 @@
             ("range" (car L) (cdr L)) ) ) ) )
 
 (de "range" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("range" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("range"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("range" (get Y (car L)) (cdr L)) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (or
+               (<= (car N) X (cdr N))
+               (>= (car N) X (cdr N)) )
+            (find
+               '((Y)
+                  (or
+                     (<= (car N) Y (cdr N))
+                     (>= (car N) Y (cdr N)) ) )
                X ) ) )
-      (if (atom X)
-         (or
-            (<= (car N) X (cdr N))
-            (>= (car N) X (cdr N)) )
-         (find
+      ((or (atom X) (num? (car L)))
+         ("range" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("range"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
             '((Y)
-               (or
-                  (<= (car N) Y (cdr N))
-                  (>= (car N) Y (cdr N)) ) )
+               (and (sym? Y) ("range" (get Y (car L)) (cdr L))) )
             X ) ) ) )
 
 (be head (@S . @L)
@@ -348,21 +348,22 @@
             ("head" (car L) (cdr L)) ) ) ) )
 
 (de "head" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("head" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("head"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("head" (get Y (car L)) (cdr L)) )
-               X ) ) )
-      (if (atom X)
-         (pre? S X)
-         (find '((Y) (pre? S Y)) X) ) ) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (pre? S X)
+            (find '((Y) (pre? S Y)) X) ) )
+      ((or (atom X) (num? (car L)))
+         ("head" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("head"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
+            '((Y)
+               (and (sym? Y) ("head" (get Y (car L)) (cdr L))) )
+            X ) ) ) )
 
 (be fold (@S . @L)
    (@ let S (-> @S)
@@ -372,24 +373,25 @@
             ("fold" (car L) (cdr L)) ) ) ) )
 
 (de "fold" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("fold" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("fold"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("fold" (get Y (car L)) (cdr L)) )
-               X ) ) )
-      (if (atom X)
-         (pre? (fold S) (fold X))
-         (let P (fold S)
-            (find
-               '((Y) (pre? P (fold Y)))
-               X ) ) ) ) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (pre? (fold S) (fold X))
+            (let P (fold S)
+               (find
+                  '((Y) (pre? P (fold Y)))
+                  X ) ) ) )
+      ((or (atom X) (num? (car L)))
+         ("fold" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("fold"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
+            '((Y)
+               (and (sym? Y) ("fold" (get Y (car L)) (cdr L))) )
+            X ) ) ) )
 
 (be part (@S . @L)
    (@ let S (-> @S)
@@ -399,21 +401,22 @@
             ("part" (car L) (cdr L)) ) ) ) )
 
 (de "part" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("part" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("part"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("part" (get Y (car L)) (cdr L)) )
-               X ) ) )
-      (if (atom X)
-         (sub? S X)
-         (find '((Y) (sub? S Y)) X) ) ) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (sub? S X)
+            (find '((Y) (sub? S Y)) X) ) )
+      ((or (atom X) (num? (car L)))
+         ("part" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("part"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
+            '((Y)
+               (and (sym? Y) ("part" (get Y (car L)) (cdr L))) )
+            X ) ) ) )
 
 (be tolr (@S . @L)
    (@ let S (-> @S)
@@ -423,25 +426,26 @@
             ("tolr" (car L) (cdr L)) ) ) ) )
 
 (de "tolr" (X L)
-   (if L
-      (cond
-         ((atom X)
-            ("tolr" (get X (car L)) (cdr L)) )
-         ((pair (car L))
-            ("tolr"
-               (apply get (cdar L) (assoc (caar L) X))
-               (cdr L) ) )
-         (T
-            (pick
-               '((Y) ("tolr" (get Y (car L)) (cdr L)) )
-               X ) ) )
-      (if (atom X)
-         (or (sub? S X) (pre? (ext:Snx S) (ext:Snx X)))
-         (let P (ext:Snx S)
-            (find
-               '((Y)
-                  (or (sub? S Y) (pre? P (ext:Snx Y))) )
-               X ) ) ) ) )
+   (cond
+      ((not L)
+         (if (atom X)
+            (or (sub? S X) (pre? (ext:Snx S) (ext:Snx X)))
+            (let P (ext:Snx S)
+               (find
+                  '((Y)
+                     (or (sub? S Y) (pre? P (ext:Snx Y))) )
+                  X ) ) ) )
+      ((or (atom X) (num? (car L)))
+         ("tolr" (get X (car L)) (cdr L)) )
+      ((pair (car L))
+         ("tolr"
+            (apply get (cdar L) (assoc (caar L) X))
+            (cdr L) ) )
+      (T
+         (pick
+            '((Y)
+               (and (sym? Y) ("tolr" (get Y (car L)) (cdr L))) )
+            X ) ) ) )
 
 
 (de "select" (Lst Flg)

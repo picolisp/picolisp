@@ -1,4 +1,4 @@
-/* 19may04abu
+/* 20sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -56,6 +56,15 @@ any name(any s) {
    while (isCell(s))
       s = cdr(s);
    return s;
+}
+
+// (name 'sym) -> sym
+any doName(any ex) {
+   any x;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   NeedSym(ex,x);
+   return isNum(x = name(x))? consStr(x) : Nil;
 }
 
 /* Find or create single-char symbol */
@@ -860,8 +869,8 @@ any doSetCol(any ex) {
    any x, y, z;
    cell c1;
 
-   x = cdr(ex);
-   y = val(This);
+   x = cdr(ex),  y = val(This);
+   Fetch(ex,y);
    if (z = car(x),  isCell(cdr(x = cdr(x)))) {
       y = get(y,z);
       while (z = car(x),  isCell(cdr(x = cdr(x)))) {
@@ -889,7 +898,9 @@ any doSetCol(any ex) {
 any doCol(any ex) {
    any x, y;
 
-   x = cdr(ex),  y = get(val(This), car(x));
+   x = cdr(ex),  y = val(This);
+   Fetch(ex,y);
+   y = get(y, car(x));
    while (isCell(x = cdr(x))) {
       if (isCell(y)) {
          NeedNum(ex,car(x));
@@ -909,6 +920,7 @@ any doPropCol(any ex) {
    any x, y;
 
    x = cdr(ex),  y = val(This);
+   Fetch(ex,y);
    if (!isCell(cdr(x)))
       return prop(y, car(x));
    y = get(y,car(x));

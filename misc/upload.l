@@ -1,4 +1,4 @@
-# 08feb03abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 (app)
@@ -8,9 +8,8 @@
 
    (when (dir (tmp))
       (<table> T "Übertragene Dateien" '((- "Dateiname") (+ "Dateigrösse"))
-         (mapc
-            '((F) (<row> F (car (info (tmp F)))))
-            (dir (tmp)) ) ) )
+         (for F (dir (tmp))
+            (<row> F (car (info (tmp F)))) ) ) )
 
    (when *UpFile
       (prinl "<p>")

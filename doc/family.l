@@ -1,4 +1,4 @@
-# 13may04abu
+# 18sep04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/ps.l")
@@ -92,9 +92,8 @@
                (gui '(+ObjView +TextField) '(: nm) "" 15)
                (gui '(+Lock +TextField) "" 15)
                (gui '(+Lock +DateField) "" 10) )
-            '((P)
-               (with P
-                  (list This (: pa) (: ma) (: mate) (: job) (: dat)) ) ) )
+            '((This)
+               (list This (: pa) (: ma) (: mate) (: job) (: dat)) ) )
          (----)
          (row
             (hotButton "Choose")
@@ -142,9 +141,8 @@
                   (gui '(+Skip +Lock +DateField) "" 10)
                   (gui '(+ObjView +TextField) '(: nm) "" 20)
                   (gui '(+ObjView +TextField) '(: nm) "" 20) )
-               '((P)
-                  (with P
-                     (list '-> This (: dat) (: pa) (: ma)) ) )
+               '((This)
+                  (list '-> This (: dat) (: pa) (: ma)) )
                cadr )
             (----)
             (gui '(+E/R +TextField) '(txt : home obj) "" 80 4)
@@ -175,18 +173,17 @@
                      (- "Name") (- "Occupation") (- "born") (- "died")
                      (- "Father") (- "Mother") (- "Partner") )
                   (mapc
-                     '((P)
-                        (with P
-                           (unless (or (== P Prs) (> Dat (: fin)) (< Fin (: dat)))
-                              (inc 'Cnt)
-                              (record
-                                 (href This (: nm))
-                                 (: job)
-                                 (datStr (: dat))
-                                 (datStr (: fin))
-                                 (href (: pa) (: pa nm))
-                                 (href (: ma) (: ma nm))
-                                 (href (: mate) (: mate nm)) ) ) ) )
+                     '((This)
+                        (unless (or (== This Prs) (> Dat (: fin)) (< Fin (: dat)))
+                           (inc 'Cnt)
+                           (record
+                              (href This (: nm))
+                              (: job)
+                              (datStr (: dat))
+                              (datStr (: fin))
+                              (href (: pa) (: pa nm))
+                              (href (: ma) (: ma nm))
+                              (href (: mate) (: mate nm)) ) ) )
                      (sortBy
                         '((P) (get P 'nm))
                         (collect 'dat '+Person (- Dat 36525) Fin) ) ) )

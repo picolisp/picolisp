@@ -1,4 +1,4 @@
-# 29jul04abu
+# 01oct04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -160,16 +160,14 @@
                      ((=0 F)
                         (html NIL
                            (prinl "<TABLE WIDTH=\"100%\"><TR>")
-                           (let N 0
-                              (mapc
-                                 '((L)
-                                    (prin "<TD ALIGN=\"CENTER\">")
-                                    (when (eval (car L))
-                                       (prin "<IMG SRC=\"" *SesId @ "\">") )
-                                    (prinl
-                                       "<A HREF=\"" *SesId (inc 'N) "\" TARGET=\"MENU\">"
-                                       (eval (cadr L)) "</A></TD>" ) )
-                                 *Frame ) )
+                           (for (N . L) *Frame
+                              (prin "<TD ALIGN=\"CENTER\">")
+                              (when (eval (car L))
+                                 (prin "<IMG SRC=\"" *SesId @ "\">") )
+                              (prinl
+                                 "<A HREF=\"" *SesId N "\" TARGET=\"MENU\">"
+                                 (eval (cadr L))
+                                 "</A></TD>" ) )
                            (prinl "</TR></TABLE>") ) )
                      (F (html NIL (prEval (nth *Frame F 3))))
                      ((member '@ @U)
@@ -377,13 +375,11 @@
       (prin "<TITLE>")
       (ht:Prin "Ttl")
       (prinl "</TITLE>") )
-   (mapc
-      '((L)
-         (prin "<META")
-         (while L
-            (prin " " (caar L) "=\"" (cdr (pop 'L)) "\"") )
-         (prinl ">") )
-      *Meta )
+   (for L *Meta
+      (prin "<META")
+      (while L
+         (prin " " (caar L) "=\"" (cdr (pop 'L)) "\"") )
+      (prinl ">") )
    (when *Css
       (prinl
          "<link rel=\"stylesheet\" type=\"text/css\" href=\""
@@ -506,7 +502,7 @@
    (when (args)
       (<item> (next))
       (while (args)
-         (prin " ")
+         (space)
          (<item> (next)) ) )
    (prinl "<br>") )
 
@@ -544,6 +540,11 @@
    (prin "<IMG SRC=\"" (_sesId S) "\" ALT=\"" A "\"" (_htAlign X) ">")
    (and Url (prin "</A>")) )
 
+(de <pre> "Prg"
+   (prinl "<PRE>")
+   (prEval "Prg")
+   (prinl "</PRE>") )
+
 (de <list> @
    (prinl "<UL>")
    (while (args)
@@ -552,10 +553,47 @@
       (prinl) )
    (prinl "</UL>") )
 
-(de <pre> "Prg"
-   (prinl "<PRE>")
-   (prEval "Prg")
-   (prinl "</PRE>") )
+(de <tree> ("Url" "Path" "Tree" "able?" "excl?" "expand" "format")
+   (when "Path"
+      (let (X "Tree"  F (pop '"Path"))
+         (loop
+            (and F
+               (not (cdr "Path"))
+               (map
+                  '((L)
+                     (when (pair (car L)) (set L (caar L))) )
+                  X ) )
+            (T (atom (car (setq X (nth X (pop '"Path"))))))
+            (NIL "Path")
+            (setq X (cdar X)) )
+         (set X
+            (if (atom (car X))
+               (cons (car X) ("expand" (car X)))
+               (caar X) ) ) ) )
+   (<_tree> "Tree")
+   "Tree" )
+
+(de <_tree> (Tree Lst)
+   (prinl "<UL>")
+   (for (N . X) Tree
+      (prin "<LI>")
+      (let L (append Lst (cons N))
+         (cond
+            ((pair X)
+               (<href> "[+]"
+                  (pack "Url" "?" (ht:Fmt (cons NIL L)))
+                  "_self" )
+               (space)
+               ("format" (car X))
+               (and (cdr X) (<_tree> @ L)) )
+            (("able?" X)
+               (<href> "[ ]"
+                  (pack "Url" "?" (ht:Fmt (cons ("excl?" X) L)))
+                  "_self" )
+               (space)
+               ("format" X) )
+            (T ("format" X)) ) ) )
+   (prinl "</UL>") )
 
 
 # Tables
@@ -571,20 +609,18 @@
       (prinl "</CAPTION>") )
    (when "Head"
       (prin "<TR>")
-      (mapc
-         '((L)
-            (prin
-               "<TH ALIGN="
-               (case (car L)
-                  ((- ^) "\"LEFT\"")
-                  (+ "\"RIGHT\"")
-                  (T "\"CENTER\"") )
-               (and (caddr L) (pack " WIDTH=" @))
-               (cadddr L)
-               ">" )
-            (<item> (cadr L))
-            (prin "</TH>") )
-         "Head" )
+      (for L "Head"
+         (prin
+            "<TH ALIGN="
+            (case (car L)
+               ((- ^) "\"LEFT\"")
+               (+ "\"RIGHT\"")
+               (T "\"CENTER\"") )
+            (and (caddr L) (pack " WIDTH=" @))
+            (cadddr L)
+            ">" )
+         (<item> (cadr L))
+         (prin "</TH>") )
       (prinl "</TR>") )
    (prEval "Prg")
    (prinl "</TABLE>") )
@@ -640,6 +676,62 @@
       (<item> (eval (pop '"Prg")))
       (prinl "</TD>") )
    (prinl "</TR>") )
+
+
+### Reporting ###
+(de report (Nm Ttl . @)
+   (out (list "bin/lat1" (setq "*Rep" (tmp Nm ".txt")))
+      (prinl (or Ttl Nm) "^M") )
+   (<head> (or Ttl Nm))
+   (<href> "Download" "*Rep")
+   (while (args)
+      (prin " | ")
+      (<href> (next) (pack '@ (next)) (next)) )
+   (<br>)
+   (setq "*Rep" (list "bin/lat1" (pack "+" "*Rep"))) )
+
+(de record @
+   (pass <row>)
+   (out "*Rep"
+      (map
+         '((L)
+            (prin
+               (cond
+                  ((== '- (car L)))
+                  ((atom (car L)) (car L))
+                  ((=T (caar L)) (cadar L)) ) )
+            (when
+               (seek
+                  '((L) (n== '- (car L)))
+                  (cdr L) )
+               (prin "^I") ) )
+         (filter nT (rest)) )
+      (prinl "^M") ) )
+
+(de record1 @
+   (pass <br>)
+   (out "*Rep"
+      (when (args)
+         (prin
+            (cond
+               ((atom (next)) (arg))
+               ((=T (car (arg))) (cadr (arg))) ) )
+         (while (args)
+            (prin " "
+               (cond
+                  ((atom (next)) (arg))
+                  ((=T (car (arg))) (cadr (arg))) ) ) ) )
+      (prinl "^M") ) )
+
+(de href (Obj Val)
+   (cond
+      ((= Obj "HTTP")
+         (list T Val (if (sub? ":/" Val) Val (pack "http://" Val)) "HTTP") )
+      ((= Obj "MAIL")
+         (list T Val (pack "mailto:" Val) "MAIL") )
+      ((and Obj (url> Obj))
+         (list T Val @) )
+      (T Val) ) )
 
 
 ### HTML Form ###
@@ -707,12 +799,10 @@
    (prin "<SELECT ")
    (htmlVar "Var")
    (prin ">")
-   (mapc
-      '((X)
-         (prin
-            (if (= X (htmlVal "Var")) "<OPTION SELECTED>" "<OPTION>")
-            X ) )
-      Lst )
+   (for X Lst
+      (prin
+         (if (= X (htmlVal "Var")) "<OPTION SELECTED>" "<OPTION>")
+         X ) )
    (prinl "</SELECT>") )
 
 (de <check> ("Var" S)

@@ -1,4 +1,4 @@
-# 18sep03abu
+# 18sep04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/draw.l")
@@ -59,17 +59,16 @@
 (dm clk> (M X Y)
    (ifn
       (pick
-         '((D)
-            (with D
-               (and
-                  (find
-                     '((B)
-                        (>= 8
-                           (ext:Dist X Y
-                              (+ (: box x) (cadr B))
-                              (+ (: box y) (cddr B)) ) ) )
-                     (: btn) )
-                  (cons D @) ) ) )
+         '((This)
+            (and
+               (find
+                  '((B)
+                     (>= 8
+                        (ext:Dist X Y
+                           (+ (: box x) (cadr B))
+                           (+ (: box y) (cddr B)) ) ) )
+                  (: btn) )
+               (cons This @) ) )
          (append (: tmp) (: lst)) )
       (super M X Y)
       (sel> This)

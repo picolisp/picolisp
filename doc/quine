@@ -1,0 +1,24 @@
+With lambda (= 'quote'):
+   : ('((X) (list (lit X) (lit X))) '((X) (list (lit X) (lit X))))
+   -> ('((X) (list (lit X) (lit X))) '((X) (list (lit X) (lit X))))
+
+
+With 'let':
+   : (let X '(list 'let 'X (lit X) X) (list 'let 'X (lit X) X))
+   -> (let X '(list 'let 'X (lit X) X) (list 'let 'X (lit X) X))
+
+
+Cheating:
+   : (de quine NIL
+      (pp 'quine) )
+   -> quine
+
+   : (quine)
+   (de quine NIL
+      (pp 'quine) )
+   -> quine
+
+
+Succinct:
+   : T
+   -> T

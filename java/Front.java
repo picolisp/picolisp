@@ -1,4 +1,4 @@
-// 31jul04abu
+// 19aug04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -40,9 +40,10 @@ public class Front extends Pico {
       msg1("at>");
       change();
       super.stop();
+      Rdy = false;
    }
 
-   synchronized void done() {
+   void done() {
       if (Dialog != null) {
          Dialog.dispose();
          Dialog = null;
@@ -66,7 +67,7 @@ public class Front extends Pico {
    }
 
    // Command dispatcher
-   synchronized void cmd(String s) {
+   void cmd(String s) {
       if (s.equals("ack"))
          {Req = false; relay();}
       else if (s.equals("focus"))
@@ -92,7 +93,7 @@ public class Front extends Pico {
       else if (s.equals("img"))
          img(getNum());
       else if (s.equals("able"))
-         able(getNum());
+         able(Fields[getNum()-1], getStr().length() != 0);
       else if (s.equals("lock"))
          lock(getStr().length() == 0);
       else if (s.equals("scrl"))
@@ -210,7 +211,7 @@ public class Front extends Pico {
                ((Button)f).setActionCommand(Integer.toString(i+1));
                ((Button)f).addActionListener(new ActionListener() {
                   public void actionPerformed(ActionEvent ev) {
-                     if (Req)
+                     if (Req || !Rdy)
                         getToolkit().beep();
                      else {
                         msg1("at>");
@@ -272,10 +273,8 @@ public class Front extends Pico {
       }
       constrain(this, panel, 0, p, 1, 1, GridBagConstraints.NONE,
                               GridBagConstraints.NORTHWEST, 4, 1.0, 1.0 );
-      Fields = new Component[fld.size()];
-      fld.copyInto(Fields);
-      SBars = new Scrollbar[sb.size()];
-      sb.copyInto(SBars);
+      fld.copyInto(Fields = new Component[fld.size()]);
+      sb.copyInto(SBars = new Scrollbar[sb.size()]);
       validate();
 
       if (Dialog != null) {
@@ -400,8 +399,6 @@ public class Front extends Pico {
    }
 
    // Enable or disable
-   void able(int fld) {able(Fields[fld-1], getStr().length() != 0);}
-
    void able(Component f, boolean a) {
       if (!(f instanceof TextComponent))
          f.setEnabled(a);
@@ -434,38 +431,42 @@ public class Front extends Pico {
    }
 
    // Signal field value change
-   synchronized void change() {
-      if (Dirty != 0) {
-         Component f = Fields[Dirty-1];
-         String txt;
-         int sel;
+   void change() {
+      int fld, sel;
+      Component f;
+      String txt;
 
-         if (f instanceof Choice) {
-            txt = ((Choice)f).getSelectedItem();
-            sel = 0;
-         }
-         else if (f instanceof Checkbox) {
-            txt = ((Checkbox)f).getState()? "T": "";
-            sel = 0;
-         }
-         else {
-            txt = ((TextComponent)f).getText();
-            if (f instanceof TextField)
-               txt = txt.trim();
-            else {
-               int i = txt.length();
-               while (i > 0  &&  txt.charAt(i-1) <= ' ')
-                  --i;
-               txt = txt.substring(0,i);
+      synchronized (Fields) {
+         if ((fld = Dirty) != 0) {
+            if (Rdy  &&  !Skip.containsKey(f = Fields[fld-1])) {
+               Dirty = 0;
+               if (f instanceof Choice) {
+                  txt = ((Choice)f).getSelectedItem();
+                  sel = 0;
+               }
+               else if (f instanceof Checkbox) {
+                  txt = ((Checkbox)f).getState()? "T": "";
+                  sel = 0;
+               }
+               else {
+                  txt = ((TextComponent)f).getText();
+                  if (f instanceof TextField)
+                     txt = txt.trim();
+                  else {
+                     int i = txt.length();
+                     while (i > 0  &&  txt.charAt(i-1) <= ' ')
+                        --i;
+                     txt = txt.substring(0,i);
+                  }
+                  sel = ((TextComponent)f).getSelectionStart();
+               }
+               if (Crypt.contains(f)  &&  txt.length() != 0)
+                  msg4("chg>", fld, outCiph(txt), sel);
+               else
+                  msg4("chg>", fld, txt, sel);
+               relay();
             }
-            sel = ((TextComponent)f).getSelectionStart();
          }
-         if (Crypt.contains(f)  &&  txt.length() != 0)
-            msg4("chg>", Dirty, outCiph(txt), sel);
-         else
-            msg4("chg>", Dirty, txt, sel);
-         Dirty = 0;
-         relay();
       }
    }
 
@@ -531,7 +532,7 @@ class PicoFocusListener implements FocusListener {
    PicoFocusListener(Front h, int i) {Home = h; Ix = i+1;}
 
    public void focusGained(FocusEvent ev) {
-      if (Home.Focus != 0  &&  Home.Focus != Ix) {
+      if (Home.Rdy  &&  Home.Focus != 0  &&  Home.Focus != Ix) {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
       }
@@ -549,7 +550,7 @@ class PicoAdjustmentListener implements AdjustmentListener {
    PicoAdjustmentListener(Front h, int i) {Home = h; Ix = i+1;}
 
    public void adjustmentValueChanged(AdjustmentEvent ev) {
-      if (Val != ev.getValue()) {
+      if (Home.Rdy  &&  Val != ev.getValue()) {
          Home.change();
          Home.msg3("scr>", Ix, Val = ev.getValue());
          Home.relay();
@@ -564,7 +565,7 @@ class PicoMouseAdapter extends MouseAdapter {
    PicoMouseAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void mousePressed(MouseEvent ev) {
-      if (ev.getClickCount() == 2) {
+      if (Home.Rdy  &&  ev.getClickCount() == 2) {
          if (Home.Req)
             Home.getToolkit().beep();
          else {
@@ -591,6 +592,8 @@ class PicoKeyAdapter extends KeyAdapter {
       long t;
       Component f;
 
+      if (!Home.Rdy)
+         return;
       f = Home.Fields[Ix-1];
       if ((c = ev.getKeyChar()) == KeyEvent.VK_ENTER) {
          Home.change();
@@ -627,6 +630,8 @@ class PicoKeyAdapter extends KeyAdapter {
       int m, c, i, j;
       Component f;
 
+      if (!Home.Rdy)
+         return;
       if (((m = ev.getModifiers()) & (InputEvent.META_MASK | InputEvent.ALT_MASK)) != 0) {
          ev.consume();
          return;
@@ -964,19 +969,23 @@ class GField extends Panel implements AdjustmentListener  {
 
       addMouseListener(new MouseAdapter() {
          public void mousePressed(MouseEvent ev) {
-            Home.msg1("at>");
-            Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
-                  ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
-            ev.consume();
+            if (Home.Rdy) {
+               Home.msg1("at>");
+               Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
+                     ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
+               ev.consume();
+            }
          }
       } );
 
       addMouseMotionListener(new MouseMotionAdapter() {
          public void mouseDragged(MouseEvent ev) {
-            Home.msg1("at>");
-            Home.msg5("drg>", Ix+1,
-               ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
-            ev.consume();
+            if (Home.Rdy) {
+               Home.msg1("at>");
+               Home.msg5("drg>", Ix+1,
+                  ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
+               ev.consume();
+            }
          }
       } );
    }

@@ -1,4 +1,4 @@
-# 31jul04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -44,13 +44,11 @@
    (unless (memq "Y" "Who")
       (push '"Who" "Y")
       (if (= `(char "+") (char "Y"))
-         (mapc
-            '(("Z")
-               (if (atom "Z")
-                  (and ("match" "Z") (link "Y"))
-                  (when ("nest" (cdr "Z"))
-                     (link (cons (car "Z") "Y")) ) ) )
-            (val "Y") )
+         (for "Z" (val "Y")
+            (if (atom "Z")
+               (and ("match" "Z") (link "Y"))
+               (when ("nest" (cdr "Z"))
+                  (link (cons (car "Z") "Y")) ) ) )
          (and
             (pair (val "Y"))
             ("nest" (val "Y"))
@@ -109,9 +107,8 @@
       "C" ) )
 
 (de dep1 (N "C")
-   (mapc
-      '(("X") (dep1 (+ 3 N) "X"))
-      (type "C") )
+   (for "X" (type "C")
+      (dep1 (+ 3 N) "X") )
    (space N)
    (println "C") )
 
@@ -137,13 +134,11 @@
       (case (pop 'Lst)
          (case
             (_dbg Lst)
-            (mapc
-               '((L) (map _dbg (cdr L)))
-               (cdr Lst) ) )
+            (for L (cdr Lst)
+               (map _dbg (cdr L)) ) )
          (cond
-            (mapc
-               '((L) (map _dbg L))
-               Lst ) )
+            (for L Lst
+               (map _dbg L) ) )
          (quote
             (when (fun? Lst)
                (map _dbg (cdr Lst)) ) )
@@ -286,11 +281,9 @@
             (let L @
                (prin (pad 8 (hex Pos)) "  ")
                (inc 'Pos 16)
-               (mapc
-                  '((N) (prin (pad 2 (hex N)) " "))
-                  L )
+               (for N L
+                  (prin (pad 2 (hex N)) " ") )
                (space (+ 1 (* 3 (- 16 (length L)))))
-               (mapc
-                  '((N) (prin (if (<= 32 N 127) (char N) ".")))
-                  L )
+               (for N L
+                  (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )

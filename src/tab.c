@@ -1,4 +1,4 @@
-/* 19may04abu
+/* 24sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -169,6 +169,7 @@ static symInit Symbols[] = {
    {doMmeq, "mmeq"},
    {doMul, "*"},
    {doMulDiv, "*/"},
+   {doName, "name"},
    {doNand, "nand"},
    {doNEq, "n=="},
    {doNEq0, "n0"},
@@ -243,6 +244,7 @@ static symInit Symbols[] = {
    {doSplit, "split"},
    {doSpQ, "sp?"},
    {doSqrt, "sqrt"},
+   {doState, "state"},
    {doStem, "stem"},
    {doStk, "stk"},
    {doStr, "str"},

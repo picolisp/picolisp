@@ -1,4 +1,4 @@
-# 23jan03abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (X)
@@ -48,22 +48,18 @@
                   (mapc lint1 (cddr "X")) ) )
             (case
                (lint1 (cadr "X"))
-               (mapc
-                  '(("X") (mapc lint1 (cdr "X")))
-                  (cddr "X") ) )
+               (for "X" (cddr "X")
+                  (mapc lint1 (cdr "X")) ) )
             (cond
-               (mapc
-                  '(("X") (mapc lint1 "X"))
-                  (cdr "X") ) )
+               (for "X" (cdr "X")
+                  (mapc lint1 "X") ) )
             ((loop do)
                (when (== 'do (car "X"))
                   (lint1 (cadr "X")) )
-               (mapc
-                  '(("X")
-                     (if (and (pair "X") (or (=T (car "X")) (not (car "X"))))
-                        (mapc lint1 (cdr "X"))
-                        (lint1 "X") ) )
-                  (cddr "X") ) )
+               (for "X" (cddr "X")
+                  (if (and (pair "X") (or (=T (car "X")) (not (car "X"))))
+                     (mapc lint1 (cdr "X"))
+                     (lint1 "X") ) ) )
             (=:
                (lint1 (last (cddr "X"))) )
             ((dec inc pop push queue val)

@@ -1,4 +1,4 @@
-# 27may03abu
+# 17sep04abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -15,29 +15,26 @@
          (out "*F"
             (setq "*Lst"
                (make
-                  (for ("L" "Lst" "L")
-                     (with (pop '"L")
-                        ("loc" (printsp This))
-                        ("loc" (val This))
-                        (pretty (val This))
-                        (prinl)
-                        (mapc
-                           '(("X")
-                              ("loc" "X")
-                              (if (atom "X")
-                                 (println "X" T)
-                                 (printsp (cdr "X"))
-                                 (pretty (setq "X" (car "X")))
-                                 (cond
-                                    ((type "X")
-                                       (prin "  # ")
-                                       (print @) )
-                                    ((<= 666666 "X" 999999)
-                                       (prin "  # " (datStr "X")) ) )
-                                 (prinl) ) )
-                           (sort (getl This)) )
-                        (prinl)
-                        (println '(********)) )
+                  (for "S" "Lst"
+                     ("loc" (printsp "S"))
+                     ("loc" (val "S"))
+                     (pretty (val "S"))
+                     (prinl)
+                     (for "X" (sort (getl "S"))
+                        ("loc" "X")
+                        (if (atom "X")
+                           (println "X" T)
+                           (printsp (cdr "X"))
+                           (pretty (setq "X" (car "X")))
+                           (cond
+                              ((type "X")
+                                 (prin "  # ")
+                                 (print @) )
+                              ((<= 666666 "X" 999999)
+                                 (prin "  # " (datStr "X")) ) )
+                           (prinl) ) )
+                     (prinl)
+                     (println '(********))
                      (prinl) ) ) ) )
          (call "vim"
             "+set iskeyword=@,33-34,36-38,42-90,92,94-95,97-125"

@@ -1,4 +1,4 @@
-/* 30jul04abu
+/* 30aug04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -451,6 +451,7 @@ int main(int ac, char *av[]) {
 
    /* Main loop */
    for (;;) {
+      prLong('o');  // ok
       hor = getNum() + OrgY;
       sky = getColor(getNum());
       gnd = getColor(getNum());
@@ -520,7 +521,6 @@ int main(int ac, char *av[]) {
       }
       if ((SnapX = getNum()) != 32767)
          SnapY = getNum();
-      prLong('o');  // ok
       paint();
       gettimeofday(&tv,NULL),  t = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
       if (Tim > t) {

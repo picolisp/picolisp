@@ -1,4 +1,4 @@
-# 20sep03abu
+# 29sep04abu
 # (c) Software Lab. Alexander Burger
 
 (de dump CL
@@ -46,7 +46,7 @@
                            (_dmp (: hook) T)
                            (space) )
                         (_dmp (car X) T)
-                        (throw NIL) ) ) )
+                        (throw) ) ) )
                Obj )
             (print (type Obj))
             (maps

@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 19may04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -33,17 +33,15 @@
             ((atom X)  # bin/pico -"out 'fifo/beat (pr '$(tty))" -bye
                (let D (+ (time T) (* 86400 (date T)))
                   (out X
-                     (mapc
-                        '((W)
-                           (prinl
-                              (align 5 (car W))
-                              " "
-                              (- (cadr W) D)
-                              " "
-                              (or (caddr W) "o")
-                              " "
-                              (cdddr W) ) )
-                        *Watch ) ) ) )
+                     (for W *Watch
+                        (prinl
+                           (align 5 (car W))
+                           " "
+                           (- (cadr W) D)
+                           " "
+                           (or (caddr W) "o")
+                           " "
+                           (cdddr W) ) ) ) ) )
             ((assoc (car X) *Watch)    # X = (Pid Tim . Any)
                (let W @                # W = (Pid Tim Flg . Any)
                   (when (caddr W)
@@ -55,24 +53,20 @@
 
 (task -54321 54321
    (let D (+ (time T) (* 86400 (date T)))
-      (mapc
-         '((W)
-            (if (caddr W)
-               (prog
-                  (msg (car W) " " (stamp)
-                     (if (kill (car W) 15) " killed" " gone") )
-                  (del W '*Watch) )
-               (inc (cdr W) 3600)
-               (set (cddr W) T)
-               (let Sub (pack "Timeout " (car W) " " (cdddr W))
-                  (msg (car W) " " (stamp))
-                  (mapc
-                     '((To)
-                        (unless (mail *MailHost *MailPort *MailFrom To Sub)
-                           (msg (list *MailHost *MailPort *MailFrom To Sub)
-                              " mail failed "
-                              (stamp) ) ) )
-                     *MailTo ) ) ) )
-         (filter '((X) (> D (cadr X))) *Watch) ) ) )
+      (for W (filter '((X) (> D (cadr X))) *Watch)
+         (if (caddr W)
+            (prog
+               (msg (car W) " " (stamp)
+                  (if (kill (car W) 15) " killed" " gone") )
+               (del W '*Watch) )
+            (inc (cdr W) 3600)
+            (set (cddr W) T)
+            (let Sub (pack "Timeout " (car W) " " (cdddr W))
+               (msg (car W) " " (stamp))
+               (for To *MailTo
+                  (unless (mail *MailHost *MailPort *MailFrom To Sub)
+                     (msg (list *MailHost *MailPort *MailFrom To Sub)
+                        " mail failed "
+                        (stamp) ) ) ) ) ) ) ) )
 
 (wait)

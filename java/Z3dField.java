@@ -1,10 +1,11 @@
-// 03jul04abu
+// 02sep04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import javax.sound.sampled.*;
 
 public class Z3dField extends Pico {
    int DX, DY, OrgX, OrgY, PosX, PosY, SnapX, SnapY;
@@ -13,6 +14,11 @@ public class Z3dField extends Pico {
    Image Img;
    Z3dText Marks, Labels;
    static long Tim;
+   int Amp, Freq;
+   byte[] Pcm;
+   SourceDataLine Line;
+   final static int Rate = 8000;
+   final static int MinFreq = 8;
 
    // Applet entry point
    public void init() {
@@ -28,6 +34,11 @@ public class Z3dField extends Pico {
       Source = new MemoryImageSource(DX, DY, Frame, 0, DX);
       Source.setAnimated(true);
       Img = createImage(Source);
+
+      addFocusListener(new FocusListener() {
+         public void focusGained(FocusEvent ev) {msg1("foc>");}
+         public void focusLost(FocusEvent ev) {msg1("nxt>");}
+      } );
 
       addKeyListener(new KeyAdapter() {
          public void keyPressed(KeyEvent ev) {
@@ -98,11 +109,13 @@ public class Z3dField extends Pico {
       } );
    }
 
-   synchronized void cmd(String s) {
+   void cmd(String s) {
       if (s.equals("draw"))
          draw();
+      else if (s.equals("tone"))
+         tone(getNum());
       else if (s.equals("text"))
-         text();
+         text(getNum());
       else
          super.cmd(s);
    }
@@ -246,6 +259,7 @@ public class Z3dField extends Pico {
       String s;
       long t;
 
+      msg1("ok>");
       if ((n = DX * (getNum() + OrgY)) > Frame.length)  // Horizon
          n = Frame.length;
       c = getNum() | 0xFF000000;  // Sky color
@@ -293,7 +307,6 @@ public class Z3dField extends Pico {
       }
       if ((SnapX = getNum()) != 32767)
          SnapY = getNum();
-      msg1("ok>");
       Source.newPixels();
       update(getGraphics());
       t = System.currentTimeMillis();
@@ -305,8 +318,42 @@ public class Z3dField extends Pico {
       Tim = t + 40;
    }
 
-   void text() {
-      int n = getNum();
+   void tone(int a) {
+      if ((Freq = getNum()) == 0)
+         Amp = 0;
+      else if (a == 0  ||  Amp != 0)
+         Amp = a;
+      else {
+         Pcm = new byte[Rate/MinFreq];
+         AudioFormat fmt = new AudioFormat((float)Rate, 8, 1, true, true);
+
+         try {
+            Line = (SourceDataLine)AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, fmt));
+            Line.open(fmt);
+            Line.start();
+            Amp = a;
+         } catch (LineUnavailableException e) {}
+
+         (new Thread() {
+            public void run() {
+               while (Amp != 0) {
+                  int a, n, i;
+
+                  a = 127 * Amp / 100;
+                  n = Rate / (Freq < MinFreq? MinFreq : Freq);
+                  for (i = 0; i < n/2; ++i)
+                     Pcm[i] = (byte)a;
+                  for (a = -a; i < n; ++i)
+                     Pcm[i] = (byte)a;
+                  Line.write(Pcm, 0, n);
+               }
+               Line.close();
+            }
+         } ).start();
+      }
+   }
+
+   void text(int n) {
       Marks = null;
       while (--n >= 0) {
          int x = OrgX + getNum();

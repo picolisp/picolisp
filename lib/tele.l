@@ -1,4 +1,4 @@
-# 26mar04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Remote Control ###
@@ -39,13 +39,11 @@
 
 (dm stop> ()
    (extra)
-   (mapc
-      '((L)
-         (let (Var (cadr L)  N (or (val Var) (cdddr L)))
-            (task N)
-            (close N)
-            (set Var) ) )
-      (: tele) )
+   (for L (: tele)
+      (let (Var (cadr L)  N (or (val Var) (cdddr L)))
+         (task N)
+         (close N)
+         (set Var) ) )
    (tele> This) )
 
 (dm tele> (Flg)

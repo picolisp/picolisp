@@ -1,4 +1,4 @@
-/* 28apr04abu
+/* 30sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -9,8 +9,8 @@ enum {NIX, BEG, DOT, END};
 enum {NUMBER, INTERN, TRANSIENT, EXTERN};
 
 static char Delim[] = " \t\n\r\"'()[]`~";
-static cell StrName, *StrSym;
 static int StrI, BinIx, BinCnt;
+static cell StrCell, *StrP;
 static bool Sync;
 static byte *PipeBuf, *PipePtr;
 static int (*getBin)(int);
@@ -1374,22 +1374,22 @@ static any parse(any x, bool skp) {
 }
 
 static void putString(int c) {
-   if (StrSym)
-      byteSym(c, &StrI, &StrSym);
+   if (StrP)
+      byteSym(c, &StrI, &StrP);
    else
-      StrI = 0,  data(StrName) = StrSym = box(c);
+      StrI = 0,  data(StrCell) = StrP = box(c);
 }
 
 void begString(void) {
-   StrSym = NULL;
-   Push(StrName,Nil);
+   StrP = NULL;
+   Push(StrCell,Nil);
    PutSave = Env.put,  Env.put = putString;
 }
 
 any endString(void) {
    Env.put = PutSave;
-   drop(StrName);
-   return StrSym? consStr(data(StrName)) : Nil;
+   drop(StrCell);
+   return StrP? consStr(data(StrCell)) : Nil;
 }
 
 // (any 'sym) -> any
@@ -1423,10 +1423,10 @@ any doAny(any ex) {
 any doSym(any x) {
    cell c1;
 
+   x = EVAL(cadr(x));
    begString();
-   Push(c1, EVAL(cadr(x)));
+   Push(c1,x);
    print(data(c1));
-   drop(c1);
    return endString();
 }
 
@@ -1441,11 +1441,10 @@ any doStr(any ex) {
       return isNil(x)? Nil : parse(x,NO);
    NeedCell(ex,x);
    begString();
-   Push(c1, x);
+   Push(c1,x);
    print(car(x));
    while (isCell(x = cdr(x)))
       space(),  print(car(x));
-   drop(c1);
    return endString();
 }
 
@@ -1561,7 +1560,7 @@ any doClose(any ex) {
    return T;
 }
 
-// (echo ['cnt|sym ..]) -> sym
+// (echo ['cnt ['cnt]] | ['sym ..]) -> sym
 any doEcho(any ex) {
    any x, y;
    long cnt;
@@ -1648,6 +1647,12 @@ any doEcho(any ex) {
    }
    if (!Chr)
       Env.get();
+   if (isCell(x = cdr(x))) {
+      for (cnt = xCnt(ex,y); --cnt >= 0; Env.get())
+         if (Chr < 0)
+            return Nil;
+      y = EVAL(car(x));
+   }
    for (cnt = xCnt(ex,y); --cnt >= 0; Env.get()) {
       if (Chr < 0)
          return Nil;
@@ -2073,7 +2078,7 @@ bool isLife(any x) {
    adr n;
    byte buf[BLK];
 
-   if (n = blk64(name(x))*BLKSIZE) {
+   if (BlkFile && (n = blk64(name(x))*BLKSIZE)) {
       blkPeek(BLK, buf, BLK);  // Get Next
       if (n < getAdr(buf)) {
          blkPeek(n, buf, BLK);
@@ -2162,27 +2167,35 @@ any doPool(any ex) {
    return T;
 }
 
-// (seq 'sym1 ['sym2]) -> sym | NIL
+// (seq 'sym1 ['sym2 ['num]]) -> sym | num | NIL
 any doSeq(any ex) {
-   adr n, n2, p, next;
+   adr n, n2, free, p, next;
    any x, y, z, *h;
    byte buf[BLK];
 
    x = cdr(ex),  y = EVAL(car(x));
    NeedExt(ex,y);
    if (n = blk64(name(y))*BLKSIZE) {
-      if (x = cdr(x),  isExt(x = EVAL(car(x)))) {
-         n2 = blk64(name(x))*BLKSIZE;
+      if (x = cdr(x),  isExt(y = EVAL(car(x)))) {
+         n2 = blk64(name(y))*BLKSIZE;
+         x = cdr(x),  free = blk64(EVAL(car(x)));
          while ((n += BLKSIZE) < n2) {
-            blkPeek(0, buf, BLK); // Get Free
-            blkPoke(n, buf, BLK); // Write Free|0
-            setAdr(n, buf),  blkPoke(0, buf, BLK); // Set new Free
+            if (free) {
+               setAdr(n, buf),  blkPoke(free, buf, BLK);
+               setAdr(0, buf),  blkPoke(n, buf, BLK);  // Set new Free tail
+            }
+            else {
+               blkPeek(0, buf, BLK); // Get Free
+               blkPoke(n, buf, BLK); // Write Free|0
+               setAdr(n, buf),  blkPoke(0, buf, BLK);  // Set new Free
+            }
+            free = n;
          }
          setAdr(1, IniBlk),  blkPoke(n, IniBlk, BLKSIZE);
          blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
          if (n >= next)
             setAdr(n+BLKSIZE, buf),  blkPoke(BLK, buf, BLK);  // Set new Next
-         return x;
+         return new64(free,Nil);
       }
       blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
       while ((n += BLKSIZE) < next) {
@@ -2480,18 +2493,24 @@ any doRollback(any x) {
    return T;
 }
 
-// (dbck) -> sym | NIL
-any doDbck(any ex __attribute__((unused))) {
+// (dbck 'flg) -> any
+any doDbck(any ex) {
+   bool flg;
    int i;
    adr next, p, cnt;
+   word2 blks, syms, offs;
    byte buf[2*BLK];
+   cell c1;
 
+   flg = !isNil(EVAL(cadr(ex)));
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    next = getAdr(buf+BLK);
    if ((p = lseek(BlkFile, 0, SEEK_END))  &&  p != next)  // Check size
       return mkStr("Size mismatch");
    cnt = BLKSIZE;
+   blks = syms = offs = 0;
    BlkLink = getAdr(buf);  // Check free list
+   protect(YES);
    while (BlkLink) {
       rdBlock(BlkLink);
       if ((cnt += BLKSIZE) > next)
@@ -2506,8 +2525,11 @@ any doDbck(any ex __attribute__((unused))) {
          setAdr(p, buf),  blkPoke(0, buf, BLK);
       }
       else if ((Block[0] & TAGMASK) == 1) {
+         ++blks, ++syms;
          cnt += BLKSIZE;
          for (i = 2;  BlkLink != 0;  cnt += BLKSIZE) {
+            ++blks;
+            offs += labs((long)((BlkLink - BlkIndex) * 64 / next));
             rdBlock(BlkLink);
             if ((Block[0] & TAGMASK) != i)
                return mkStr("Bad chain");
@@ -2522,5 +2544,13 @@ any doDbck(any ex __attribute__((unused))) {
       if (Block[0] & TAGMASK)
          Block[0] &= BLKMASK,  wrBlock();
    }
-   return cnt == next? Nil : mkStr("Bad count");
+   protect(NO);
+   if (cnt != next)
+      return  mkStr("Bad count");
+   if (!flg)
+      return Nil;
+   Push(c1, boxWord2(offs));
+   data(c1) = cons(boxWord2(syms), data(c1));
+   data(c1) = cons(boxWord2(blks), data(c1));
+   return Pop(c1);
 }

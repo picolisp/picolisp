@@ -1,4 +1,4 @@
-/* 02aug04abu
+/* 07sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -620,9 +620,13 @@ any doSub(any ex) {
    cell c1, c2;
 
    x = cdr(ex);
-   if (isNil(data(c1) = EVAL(car(x))))
-      return Nil;
-   NeedNum(ex,data(c1));
+   if (!isNum(data(c1) = EVAL(car(x)))) {
+      if (isNil(data(c1)))
+         return isCell(cdr(x))? Nil : T;
+      if (data(c1) == T  &&  !isCell(cdr(x)))
+         return Nil;
+      numError(ex,data(c1));
+   }
    if (!isCell(x = cdr(x)))
       return IsZero(data(c1))?
             data(c1) : consNum(unDig(data(c1)) ^ 1, cdr(numCell(data(c1))));
@@ -792,7 +796,7 @@ any doMulDiv(any ex) {
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
    sign = isNeg(data(c1)),  pos(data(c1));
-   Save(c2);
+   Push(c2, Nil);
    for (;;) {
       x = cdr(x),  data(c2) = EVAL(car(x));
       if (isNil(data(c2))) {

@@ -1,4 +1,4 @@
-22jun04abu
+27sep04abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -71,6 +71,9 @@ since 1984.
       Object linkage
       Java reflection
       Postscript/Printing
+
+Without documentation and examples all this would fit into a tarball of less
+than 150 kilobytes. That's really "pico"!
 
 Pico Lisp is not an IDE. All program development in Software Lab. is done using
 the console, bash, vim and the Lisp interpreter.

@@ -1,4 +1,4 @@
-/* 13may04abu
+/* 14aug04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -134,17 +134,21 @@ static void htFmt(any x) {
 
 // (ht:Fmt 'any ..) -> sym
 any Fmt(any x) {
-   cell c1;
+   int n, i;
+   cell c[length(x = cdr(x))];
 
+   for (n = 0;  isCell(x);  ++n, x = cdr(x))
+      Push(c[n], EVAL(car(x)));
    begString();
-   while (isCell(x = cdr(x))) {
-      Push(c1, EVAL(car(x)));
-      htFmt(data(c1));
-      if (isCell(cdr(x)))
+   for (i = 0; i < n;) {
+      htFmt(data(c[i]));
+      if (++i != n)
          Env.put('&');
-      drop(c1);
    }
-   return endString();
+   x = endString();
+   if (n)
+      drop(c[0]);
+   return x;
 }
 
 // (ht:Pack 'lst) -> sym
@@ -152,14 +156,14 @@ any Pack(any x) {
    int c;
    cell c1;
 
+   x = EVAL(cadr(x));
    begString();
-   Push(c1, x = EVAL(cadr(x)));
+   Push(c1,x);
    while (isCell(x)) {
       if ((c = symChar(name(car(x)))) == '%')
          x = cdr(x),  Env.put(getHex(&x));
       else
          outName(car(x)), x = cdr(x);
    }
-   drop(c1);
    return endString();
 }

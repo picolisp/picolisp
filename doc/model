@@ -1,4 +1,4 @@
-# 25jun04abu
+# 20aug04abu
 # (c) Software Lab. Alexander Burger
 
 Sym Val -> Model list:
@@ -36,6 +36,9 @@ Transmission size:
 
 
 Polygon design rules:
+
+- All polygons should be convex
+  (split concave polygons if necessary)
 
 - Points loop right when seen from the front side
   (if the two faces should have different colors)

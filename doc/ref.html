@@ -20,7 +20,7 @@
 <p align=right>(c) Software Lab. Alexander Burger</p>
 
 <p>This document describes the concepts, data types, and kernel functions of the
-Pico Lisp system.
+<a href="http://software-lab.de/down.html">Pico Lisp</a> system.
 
 <p>This is <u>not</u> a Lisp tutorial. For an introduction to Lisp, a
 traditional Lisp book like "Lisp" by Winston/Horn (Addison-Wesley 1981) is
@@ -1124,6 +1124,7 @@ NIL
    <a href="#or">or</a>,
    <a href="#prog1">prog1</a>,
    <a href="#prog2">prog2</a>,
+   <a href="#state">state</a>,
    <a href="#unless">unless</a>,
    <a href="#until">until</a>,
    <a href="#untilT">until=T</a>,
@@ -1764,6 +1765,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#unless">unless</a>
    <a href="#cond">cond</a>
    <a href="#case">case</a>
+   <a href="#state">state</a>
    <a href="#while">while</a>
    <a href="#whilst">whilst</a>
    <a href="#until">until</a>
@@ -2355,7 +2357,7 @@ successfully.
 <code>CAR</code> elements <code>anyN</code> of each clause. If one of them is a
 list, <code>any</code> is in turn compared to all elements of that list.
 <code>T</code> is a catch-all for any value. If a comparison succeeds,
-<code>exeN</code> is executed, and the result returned. Otherwise
+<code>prgN</code> is executed, and the result returned. Otherwise
 <code>NIL</code> is returned.
 
 <p><pre><code>
@@ -2601,7 +2603,7 @@ members. Returns <code>T</code> when the topmost transaction is closed. See also
 
 <p><dt><a name="cond"><code>(cond (('any1 . prg1) ('any2 . prg2) ..)) -> any</code></a>
 <dd>Multi-way conditional: If any of the <code>anyN</code> conditions evaluates
-to non-<code>NIL</code>, <code>exeN</code> is executed and the result returned.
+to non-<code>NIL</code>, <code>prgN</code> is executed and the result returned.
 Otherwise (all conditions evaluate to <code>NIL</code>), <code>NIL</code> is
 returned.
 
@@ -2733,9 +2735,10 @@ href="#time">time</a></code>.
 -> 163
 </code></pre>
 
-<p><dt><a name="dbck"><code>(dbck) -> sym | NIL</code></a>
+<p><dt><a name="dbck"><code>(dbck 'flg) -> any</code></a>
 <dd>Performs a low-level integrity check of the current database file, and
-returns <code>NIL</code> if everything seems correct. Otherwise, a string
+returns <code>NIL</code> (or a list of statistic values if <code>flg</code> is
+non-<code>NIL</code>) if everything seems correct. Otherwise, a string
 indicating an error is returned. As a side effect, possible unused blocks (as
 there might be when a <code><a href="#rollback">rollback</a></code> is done
 after allocating external symbols with <code><a href="#new">new</a></code>) are
@@ -2918,7 +2921,7 @@ clause's second element is evaluated as a condition and - if the result is
 <code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
 executed and the result returned. Otherwise (if count drops to zero), the result
 of the last expression is returned. See also <code><a
-href="#loop">loop</a></code>.
+href="#loop">loop</a></code> and <code><a href="#for">for</a></code>.
 
 <p><pre><code>
 : (do 4 (printsp 'Ok))
@@ -2944,13 +2947,15 @@ or the currently executed expression if <code>prg</code> is not given. See also
 -> 7
 </code></pre>
 
-<p><dt><a name="echo"><code>(echo ['cnt|sym ..]) -> sym</code></a>
+<p><dt><a name="echo"><code>(echo ['cnt ['cnt]] | ['sym ..]) -> sym</code></a>
 <dd>Reads the current input channel, and writes to the current output channel.
-If <code>cnt</code> is given, only that many bytes are actually echoed.
-Otherwise, if one or more <code>sym</code> arguments are given, the echo process
-stops as soon as one of the symbol's names is encountered in the input stream
-(in that case, the name will be read (and returned), but not written). Returns
-non-<code>NIL</code> if the operation was successfully completed.
+If <code>cnt</code> is given, only that many bytes are actually echoed. In case
+two <code>cnt</code> arguments, the first one specifies the number of bytes to
+skip in the input stream. Otherwise, if one or more <code>sym</code> arguments
+are given, the echo process stops as soon as one of the symbol's names is
+encountered in the input stream (in that case, the name will be read (and
+returned), but not written). Returns non-<code>NIL</code> if the operation was
+successfully completed.
 
 <p><pre><code>
 : (in "x.l" (echo))                    # Display file on console
@@ -3104,20 +3109,36 @@ href="#lowc">lowc</a></code>.
 -> "1a2"
 </code></pre>
 
-<p><dt><a name="for"><code>(for (sym 'any1 'any2 [. prg1]) . prg2) -> any</code></a>
-<dd>Conditional loop with local variable: The value of <code>sym</code> is
-saved, and <code>sym</code> is bound to <code>any1</code>. While the condition
-<code>any2</code> evaluates to non-<code>NIL</code>, <code>prg2</code> is
-repeatedly executed and, if <code>prg1</code> is given, the <code>sym</code> is
-re-bound to the result of its evaluation. If <code>prg2</code> is never
-executed, <code>NIL</code> is returned. Otherwise the result of
-<code>prg2</code> is returned.
+<p><dt><a name="for"><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any<br>
+(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dd>Conditional loop with local variable(s) and multiple conditional exits: In
+the first form, the value of <code>sym</code> is saved, <code>sym</code> is
+subsequently bound to the elements of <code>lst</code>, and the body is executed
+each time. In the second form, the value of <code>sym</code> is saved, and
+<code>sym</code> is bound to <code>any1</code>. If <code>sym2</code> is given,
+it is treated as a counter variable, first bound to 1 and then incremented for
+each execution of the body. While the condition <code>any2</code> evaluates to
+non-<code>NIL</code>, the body is repeatedly executed and, if <code>prg</code>
+is given, <code>sym</code> is re-bound to the result of its evaluation. If a
+clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
+clause's second element is evaluated as a condition and - if the result is
+<code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
+executed and the result returned. If the body is never executed,
+<code>NIL</code> is returned. See also <code><a href="#do">do</a></code> and
+<code><a href="#loop">loop</a></code>.
 
 <p><pre><code>
 : (for (N 1 (< N 9) (+ 1 N)) (printsp N))
 1 2 3 4 5 6 7 8 -> 8
 : (for (L (1 2 3 4 5 6 7 8) L) (printsp (pop 'L)))
 1 2 3 4 5 6 7 8 -> 8
+: (for (X (1 a 2 b)) (printsp X))
+1 a 2 b -> b
+: (for ((I . L) '(a b c d e f) L (cddr L)) (println I L))
+1 (a b c d e f)
+2 (c d e f)
+3 (e f)
+-> (e f)
 </code></pre>
 
 <p><dt><a name="fork"><code>(fork) -> pid | NIL</code></a>
@@ -3280,7 +3301,7 @@ See also <code><a href="#prove">prove</a></code>.
 
 <p><dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>
 <dd>Returns <code>num</code> when the argument is a number and greater than
-zero, otherwise <code>NIL</code>.
+zero, otherwise <code>NIL</code>. See also <code><a href="#lt0">lt0</a></code>.
 
 <p><pre><code>
 : (gt0 -2)
@@ -3830,7 +3851,7 @@ unlimited number of times. If a clause has <code>NIL</code> or <code>T</code> as
 its <code>CAR</code>, the clause's second element is evaluated as a condition
 and - if the result is <code>NIL</code> or non-<code>NIL</code>, respectively -
 the <code>prg</code> is executed and the result returned. See also <code><a
-href="#do">do</a></code>.
+href="#do">do</a></code> and <code><a href="#for">for</a></code>.
 
 <p><pre><code>
 : (let N 3
@@ -3873,7 +3894,7 @@ href="#uppc">uppc</a></code> and <code><a href="#fold">fold</a></code>.
 
 <p><dt><a name="lt0"><code>(lt0 'any) -> num | NIL</code></a>
 <dd>Returns <code>num</code> when the argument is a number and less than zero,
-otherwise <code>NIL</code>.
+otherwise <code>NIL</code>. See also <code><a href="#gt0">gt0</a></code>.
 
 <p><pre><code>
 : (lt0 -2)
@@ -4251,6 +4272,21 @@ zero. See also <a href="#=0">=0</a>.
 : (nT "T")
 -> T
 : (nT T)
+-> NIL
+</code></pre>
+
+<p><dt><a name="name"><code>(name 'sym) -> sym</code></a>
+<dd>Returns a new transient symbol with the name of <code>sym</code>. See also
+<code><a href="#str">str</a></code> and <code><a href="#sym">sym</a></code>.
+
+<p><pre><code>
+: (name 'abc)
+-> "abc"
+: (name "abc")
+-> "abc"
+: (name '{abc})
+-> "abc"
+: (name (new))
 -> NIL
 </code></pre>
 
@@ -5104,11 +5140,13 @@ message"</code> is issued.
 -> NIL
 </code></pre>
 
-<p><dt><a name="seq"><code>(seq 'sym1 ['sym2]) -> sym | NIL</code></a>
+<p><dt><a name="seq"><code>(seq 'sym1 ['sym2 ['num]]) -> sym | num | NIL</code></a>
 <dd>Sequential single step: Returns the next external symbol following
 <code>sym1</code> in the database, or <code>NIL</code> when the end of the
 database is reached. When <code>sym2</code> is given, the database is extended
-up to (including the creation of) <code>sym2</code> if necessary.
+up to (including the creation of) <code>sym2</code>. If <code>num</code> is
+given, it should be the return value of a previous call to <code>seq</code>, and
+is used as an internal free list link.
 
 <p><pre><code>
 : (pool "db")
@@ -5227,6 +5265,47 @@ and returns the resulting list of sublists.
 -> 100000000000000000000
 </code></pre>
 
+<p><dt><a name="state"><code>(state 'var ((sym|lst sym [. prg]) . prg) ..) -> any</code></a>
+<dd>Implements a finite state automaton. The variable <code>var</code> holds the
+current state as a symbolic value. When a clause is found that contains the
+current state in its CAAR <code>sym|lst</code> value, and either has no
+<code>prg</code> condition in its CDDAR, or that condition returns
+non-<code>NIL</code>, the current state will be set to the CADAR
+<code>sym</code> of the clause, the body <code>prg</code> in its CDR will be
+executed, and the result returned. <code>T</code> is a catch-all for any state.
+If no state-condition matches, <code>NIL</code> is returned. See also <code><a
+href="#case">case</a></code> and <code><a href="#job">job</a></code>.
+
+<p><pre><code>
+: (de tst ()
+   (job ((Cnt . 4))
+      (state '(start)
+         ((start run) (printsp 'start))
+         ((run run (gt0 (dec 'Cnt)))
+            (printsp 'run) )
+         ((run stop) (printsp 'run))
+         ((stop start) (setq Cnt 4) (println 'stop)) ) ) )
+-> tst
+: (do 12 (tst))
+start run run run run stop
+start run run run run stop
+-> stop
+:  (pp 'tst)   
+(de tst NIL
+   (job ((Cnt . 4))
+      (state '(start)
+      ...
+-> tst
+: (do 3 (tst))
+start run run -> run
+: (pp 'tst)
+(de tst NIL
+   (job ((Cnt . 2))
+      (state '(run)
+      ...
+-> tst
+</code></pre>
+
 <p><dt><a name="stem"><code>(stem 'lst 'any ..) -> lst</code></a>
 <dd>Returns the tail of <code>lst</code> that does not contain any of the
 <code>any</code> arguments. <code>(stem 'lst 'any ..)</code> is equivalent to
@@ -5284,7 +5363,8 @@ cells. See also <code><a href="#heap">heap</a></code>.
 <dd>In the first form, the string <code>sym</code> is parsed into a list. This
 mechanism is also used by <code><a href="#load">load</a></code>. The second form
 does the reverse operation by building a string from a list. See also <code><a
-href="#any">any</a></code> and <code><a href="#sym">sym</a></code>.
+href="#any">any</a></code>, <code><a href="#name">name</a></code> and <code><a
+href="#sym">sym</a></code>.
 
 <p><pre><code>
 : (str "a (1 2) b")
@@ -5367,8 +5447,8 @@ superclass(es) of the class where the current method was found.
 
 <p><dt><a name="sym"><code>(sym 'any) -> sym</code></a>
 <dd>Generate the printed representation of <code>any</code> into the name of a
-new symbol <code>sym</code>. See also <code><a href="#any">any</a></code> and
-<code><a href="#str">str</a></code>.
+new symbol <code>sym</code>. See also <code><a href="#any">any</a></code>,
+<code><a href="#name">name</a></code> and <code><a href="#str">str</a></code>.
 
 <p><pre><code>
 : (sym '(abc "Hello" 123))
@@ -5872,6 +5952,7 @@ restored to its previous value. The return value is the result of
 <code>prg</code>. Used typically to access the local data of <code>sym</code> in
 the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
 (and <code>NIL</code> is returned) when <code>sym</code> is <code>NIL</code>.
+<code>(with 'X . prg)</code> is equivalent to <code>(let? This 'X . prg)</code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -6065,16 +6146,16 @@ arguments. The sign of the result is that of the first argument.
 </code></pre>
 
 <p><dt><a name="*/"><code>(*/ 'num1 ['num2 ..] 'num3) -> num</code></a>
-<dd>Returns the product of <code>num1</code> with all following
-<code>num2</code> arguments, divided by the <code>num3</code> argument. The
-result is rounded to the nearest integer value.
+<dd>Returns the product of <code>num1</code> and all following <code>num2</code>
+arguments, divided by the <code>num3</code> argument. The result is rounded to
+the nearest integer value.
 
 <p><pre><code>
 : (*/ 3 4 2)
 -> 6
 : (*/ 1234 2 10)
 -> 247
-: (*/ 100 6)    
+: (*/ 100 6)
 -> 17
 </code></pre>
 

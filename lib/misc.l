@@ -1,4 +1,4 @@
-# 21jun04abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 # *Tmp
@@ -21,7 +21,7 @@
 (de locale (Ctry Lang Dir)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "loc/" @) "loc/NIL"))
    (ifn (setq *Lang Lang)
-      (mapc '(("S") (set "S" "S")) *Uni)
+      (for "S" *Uni (set "S" "S"))
       (locStr (pack "loc/" Lang))
       (and Dir (locStr (pack Dir Lang))) ) )
 
@@ -128,12 +128,10 @@
             (push 'L (_hex X)) )
          (pack L) )
       (let N 0
-         (mapc
-            '((C)
-               (setq C (- (char C) `(char "0")))
-               (and (> C 9) (dec 'C 7))
-               (setq N (+ C (>> -4 N))) )
-            (chop X) )
+         (for C (chop X)
+            (setq C (- (char C) `(char "0")))
+            (and (> C 9) (dec 'C 7))
+            (setq N (+ C (>> -4 N))) )
          N ) ) )
 
 (de _hex (N)
@@ -410,13 +408,11 @@
             (push 'L (_fmt64 X)) )
          (pack L) )
       (let N 0
-         (mapc
-            '((C)
-               (setq C (- (char C) `(char "0")))
-               (and (> C 42) (dec 'C 6))
-               (and (> C 11) (dec 'C 5))
-               (setq N (+ C (>> -6 N))) )
-            (chop X) )
+         (for C (chop X)
+            (setq C (- (char C) `(char "0")))
+            (and (> C 42) (dec 'C 6))
+            (and (> C 11) (dec 'C 5))
+            (setq N (+ C (>> -6 N))) )
          N ) ) )
 
 (de _fmt64 (N)

@@ -1,0 +1,41 @@
+#!bin/pico lib.l
+# 18sep04abu
+# (c) Software Lab. Alexander Burger
+
+# Must be run on a virtual console
+
+(load "lib/misc.l")
+
+### 'ioctl' glue function
+(gcc "tst" 'tone)
+
+#include <linux/kd.h> // KIOCSOUND
+
+// (tone 'freq) -> flg
+any tone(any ex) {
+   long amp = evCnt(ex,cdr(ex));
+   long freq = evCnt(ex,cddr(ex));
+
+   return ioctl(0, KIOCSOUND, amp==0 || freq==0? 0 : 1193180L/freq) < 0? Nil : T;
+}
+
+/**/
+
+### Create named pipe
+(call "mkdir" "-p" "fifo")
+(or
+   (call "test" "-p" "fifo/tone")
+   (call "mkfifo" "fifo/tone") )
+
+(?push '*Bye '(call "rm" "fifo/tone"))
+
+
+### Serve calls like:
+#  (setq *Tone (open "fifo/tone"))
+#  (out *Tone (pr 100 440))  # 440 Hz
+#  (out *Tone (pr 0 0))    # Off
+#  (close *Tone)
+(loop
+   (in "fifo/tone"
+      (while (rd)
+         (tone @ (rd)) ) ) )

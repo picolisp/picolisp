@@ -1,4 +1,4 @@
-# 21jun04abu
+# 17sep04abu
 # (c) Software Lab. Alexander Burger
 # Algorithm from Bengt Grahn (bengt@vikingsw.demon.co.uk)
 
@@ -95,7 +95,6 @@
             W (compose) )
          (prin (uppc (car W)) (cdr W))
          (until (=0 (dec 'Len))
-            (prin " ")
-            (prin (compose)) )
+            (prin " " (compose)) )
          (prin ". ")
          (flush) ) ) )

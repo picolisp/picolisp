@@ -1,4 +1,4 @@
-# 27jul04abu
+# 21sep04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -119,9 +119,8 @@
    (when (: app)
       (out @
          (pr "menu" Ttl (length Lst))
-         (mapc
-            '((L) (pr (car L) (eval (cadr L))))
-            (setq *Menu Lst) ) ) ) )
+         (for L (setq *Menu Lst)
+            (pr (car L) (eval (cadr L))) ) ) ) )
 
 
 ### Applet Form ###
@@ -179,7 +178,8 @@
       (conc
          (prog1
             (rest)
-            (mapc '((L) (def (car L) meth)) @) )
+            (for L @
+               (def (car L) meth) ) )
          (val This) ) ) )
 
 (dm init> ()
@@ -190,12 +190,9 @@
          (let *Lay '*
             (=: fields (make (run (: init)))) )
          (pr NIL) )
-      (let I 0
-         (mapc
-            '((F)
-               (put F 'ix (inc 'I))
-               (init> F) )
-            (: fields) ) )
+      (for (I . F) (: fields)
+         (put F 'ix I)
+         (init> F) )
       (mapc 'init> (: arrays)) ) )
 
 (dm start> ()
@@ -217,12 +214,8 @@
 
 (dm upd> ()
    (super)
-   (mapc
-      '((F) (or (get F 'touch) (upd> F)))
-      (: fields) )
-   (mapc
-      '((A) (or (get A 'touch) (upd> A)))
-      (: arrays) )
+   (mapc 'upd> (: fields))
+   (mapc 'upd> (: arrays))
    (able> This) )
 
 (dm stop> ()
@@ -260,9 +253,8 @@
    (when (: app)
       (out @
          (pr "menu" (get F 'ix) Ttl (length Lst))
-         (mapc
-            '((L) (pr (car L) (eval (cadr L))))
-            (setq *Menu Lst) ) ) ) )
+         (for L (setq *Menu Lst)
+            (pr (car L) (eval (cadr L))) ) ) ) )
 
 (dm help> ()
    (let (Url (chop (: url))  Lang (or *Lang "en"))
@@ -304,9 +296,7 @@
       (when (: focus)
          (ifn (key> (: focus) X)
             (beep> This)
-            (type> (: focus) @)
-            (=: focus touch T)
-            (and (: focus arr) (=: focus arr touch T)) ) ) ) )
+            (type> (: focus) @) ) ) ) )
 
 (dm ret> ()
    (use (B L)
@@ -452,9 +442,8 @@
 
 # Clear undo/redo
 (de zapUndo ()
-   (mapc
-      '((L) (mapc 'zapUndo> L))
-      (: fields) ) )
+   (for L (: fields)
+      (mapc 'zapUndo> L) ) )
 
 # Enter value into current focus field
 (de setFocus (Val)
@@ -489,8 +478,6 @@
       (T
          (end> (: focus))
          (and (: focus arr) (end> @))
-         (=: focus touch NIL)
-         (and (: focus arr) (=: focus arr touch NIL))
          T ) ) )
 
 
@@ -830,6 +817,7 @@
 
 # Field enable/disable
 (class +Able)
+# able
 
 (dm T (Exe . @)
    (=: able Exe)
@@ -929,10 +917,8 @@
 (dm set> (Val)
    (extra Val)
    (when Val
-      (mapc
-         '(("X")
-            (clr> (field "X")) )
-         (: radio) ) ) )
+      (for "X" (: radio)
+         (clr> (field "X")) ) ) )
 
 (de radio (N Rows Cols)
    (make
@@ -962,19 +948,17 @@
    (pass extra) )
 
 (dm relay> (Val)
-   (mapc
-      '(("X")
-         (cond
-            ((atom "X")
-               (and (field "X") (set> @ Val)) )
-            ((not (cdr "X"))
-               (and (field (car "X")) (upd> @)) )
-            ((field (car "X"))
-               (set> @
-                  (if (or (atom (cdr "X")) (lst? (cadr "X")))
-                     ((cdr "X") Val)
-                     (with Val (eval (cdr "X"))) ) ) ) ) )
-      (: relay) ) )
+   (for "X" (: relay)
+      (cond
+         ((atom "X")
+            (and (field "X") (set> @ Val)) )
+         ((not (cdr "X"))
+            (and (field (car "X")) (upd> @)) )
+         ((field (car "X"))
+            (set> @
+               (if (or (atom (cdr "X")) (lst? (cadr "X")))
+                  ((cdr "X") Val)
+                  (with Val (eval (cdr "X"))) ) ) ) ) ) )
 
 (dm upd> ()
    (extra)
@@ -1233,17 +1217,11 @@
 
 (dm undo> ()
    (=: redo (cons (: str) (: redo)))
-   (str> This (car (: undo)))
-   (unless (=: undo (cdr (: undo)))
-      (=: touch)
-      (and (: arr) (=: arr touch NIL)) ) )
+   (str> This (pop (:: undo))) )
 
 (dm redo> ()
    (=: undo (cons (: str) (: undo)))
-   (str> This (car (: redo)))
-   (=: redo (cdr (: redo)))
-   (=: touch T)
-   (and (: arr) (=: arr touch T)) )
+   (str> This (pop (:: redo))) )
 
 (dm focus> ()
    (focus> (: home) This)
@@ -1263,7 +1241,6 @@
    (scr> (: arr) N) )
 
 (dm zapUndo> ()
-   (=: touch)
    (=: undo)
    (=: redo) )
 
@@ -1297,7 +1274,8 @@
    (pass super) )
 
 (dm act> ()
-   (eval (: exe)) )
+   (when (or (not (: able)) (eval (: able)))
+      (eval (: exe)) ) )
 
 (dm set> (Val)
    (=: str Val)
@@ -1348,12 +1326,10 @@
    (=: clr Lst)
    (pass super Lbl Str
       '(prog
-         (mapc
-            '((X)
-               (if (atom X)
-                  (clr> (field X))
-                  (set> (field (car X)) (eval (cdr X))) ) )
-            (: clr) )
+         (for X (: clr)
+            (if (atom X)
+               (clr> (field X))
+               (set> (field (car X)) (eval (cdr X))) ) )
          (able> (: home))
          (focus1> (: home)) ) ) )
 
@@ -1893,20 +1869,17 @@
    (super)
    (=: rows 0)
    (pr (car "Lst") 0)
-   (mapc
-      '((S) (pr '- S 0))
-      (cdr "Lst") )
+   (for S (cdr "Lst")
+      (pr '- S 0) )
    (=: cols (length "Prg"))
    (=: ofs 1)
    (=: put (or "Put" prog1))
    (=: get (or "Get" prog1))
    (mapc
       '((L)
-         (mapc
-            '((F)
-               (link F)
-               (put F 'arr This) )
-            L ) )
+         (for F L
+            (link F)
+            (put F 'arr This) ) )
       (=: fields
          (make
             (do "N"
@@ -1914,9 +1887,9 @@
                (let *Lay '+
                   (link
                      (make
-                        (mapc
-                           '((L) (eval L) (setq *Lay '-))
-                           "Prg" ) ) ) ) ) ) ) )
+                        (for L "Prg"
+                           (eval L)
+                           (setq *Lay '-) ) ) ) ) ) ) ) )
    (=: lock
       (not
          (find
@@ -2089,9 +2062,8 @@
 
 (de upd Lst
    (wipe Lst)
-   (mapc
-      '((F) (and (has> F Lst) (upd> F)))
-      *DbForms ) )
+   (for F *DbForms
+      (and (has> F Lst) (upd> F)) ) )
 
 (de newDlg ("Typ" . @)
    (prog1
@@ -2571,10 +2543,8 @@
          (: beg) (: end) )
       (do (- (: ofs) 1)
          (step Node T) )
-      (mapc
-         '((F)
-            (mapc 'set> F ((: put) (step Node T))) )
-         (: fields) ) ) )
+      (for F (: fields)
+         (mapc 'set> F ((: put) (step Node T))) ) ) )
 
 (dm upd> ()
    (put> This)
@@ -2676,7 +2646,7 @@
          (list
             (list 'lst '@@
                (sortBy
-                  '((Obj) (with Obj (eval Exe)))
+                  '((This) (eval Exe))
                   (: data) ) ) ) ) ) )
 
 (dm clr> ()
@@ -2694,62 +2664,6 @@
 (dm INS> ()
    (super)
    (and (: clip) (keep!> @ 'upd)) )
-
-
-### Reporting ###
-(de report (Nm Ttl . @)
-   (out (list "bin/lat1" (setq "*Rep" (tmp Nm ".txt")))
-      (prinl (or Ttl Nm) "^M") )
-   (<head> (or Ttl Nm))
-   (<href> "Download" "*Rep")
-   (while (args)
-      (prin " | ")
-      (<href> (next) (pack "@" (next)) (next)) )
-   (<br>)
-   (setq "*Rep" (list "bin/lat1" (pack "+" "*Rep"))) )
-
-(de record @
-   (pass <row>)
-   (out "*Rep"
-      (map
-         '((L)
-            (prin
-               (cond
-                  ((== '- (car L)))
-                  ((atom (car L)) (car L))
-                  ((=T (caar L)) (cadar L)) ) )
-            (when
-               (seek
-                  '((L) (n== '- (car L)))
-                  (cdr L) )
-               (prin "^I") ) )
-         (filter nT (rest)) )
-      (prinl "^M") ) )
-
-(de record1 @
-   (pass <br>)
-   (out "*Rep"
-      (when (args)
-         (prin
-            (cond
-               ((atom (next)) (arg))
-               ((=T (car (arg))) (cadr (arg))) ) )
-         (while (args)
-            (prin " "
-               (cond
-                  ((atom (next)) (arg))
-                  ((=T (car (arg))) (cadr (arg))) ) ) ) )
-      (prinl "^M") ) )
-
-(de href (Obj Val)
-   (cond
-      ((= Obj "HTTP")
-         (list T Val (if (sub? ":/" Val) Val (pack "http://" Val)) "HTTP") )
-      ((= Obj "MAIL")
-         (list T Val (pack "mailto:" Val) "MAIL") )
-      ((and Obj (url> Obj))
-         (list T Val @) )
-      (T Val) ) )
 
 # Text File Export
 (de export ("Nm" . "Prg")

@@ -1,4 +1,4 @@
-/* 19may04abu
+/* 24sep04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -80,11 +80,10 @@ typedef struct parseFrame {
 } parseFrame;
 
 typedef struct stkEnv {
-   cell *stack;
+   cell *stack, *arg;
    bindFrame *bind;
    methFrame *meth;
    int next;
-   cell *arg;
    any make;
    inFrame *inFiles;
    outFrame *outFiles;
@@ -459,6 +458,7 @@ any doMix(any);
 any doMmeq(any);
 any doMul(any);
 any doMulDiv(any);
+any doName(any);
 any doNand(any);
 any doNEq(any);
 any doNEq0(any);
@@ -534,6 +534,7 @@ any doSpace(any);
 any doSplit(any);
 any doSpQ(any);
 any doSqrt(any);
+any doState(any);
 any doStem(any);
 any doStk(any);
 any doStr(any);

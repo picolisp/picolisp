@@ -1,4 +1,4 @@
-# 23aug03abu
+# 14sep04abu
 # (c) Software Lab. Alexander Burger
 
 ### 2D-Shapes ###
@@ -12,17 +12,13 @@
    (+ 1 (length (: link))) )
 
 (dm pr> ()
-   (mapc
-      '((X)
-         (pr `(char "L") (caadr X) (cdadr X) (caddr X) (cdddr X)) )
-      (: link) ) )
+   (for X (: link)
+      (pr `(char "L") (caadr X) (cdadr X) (caddr X) (cdddr X)) ) )
 
 (dm mov> (DX DY)
-   (mapc
-      '((X)
-         (inc (cadr X) DX)
-         (con (cadr X) (+ DY (cdadr X))) )
-      (: link) ) )
+   (for X (: link)
+      (inc (cadr X) DX)
+      (con (cadr X) (+ DY (cdadr X))) ) )
 
 (dm +link> (Obj P1 P2)
    (=: link
@@ -170,7 +166,8 @@
       (dist> @ X Y) ) )
 
 (dm mov> (DX DY)
-   (mapc '((D) (mov> D DX DY)) (: lst))
+   (for D (: lst)
+      (mov> D DX DY) )
    (super DX DY) )
 
 
@@ -207,59 +204,41 @@
 
 # Delete (non-selected) list of objects
 (dm del> (Lst)
-   (mapc
-      '((Obj)
-         (mapc
-            '((X) (-link> (car X) Obj))
-            (get Obj 'link) ) )
-      Lst )
+   (for Obj Lst
+      (for X (get Obj 'link)
+         (-link> (car X) Obj) ) )
    (set> This (diff (: lst) Lst)) )
 
 # Select (non-selected) list of objects
 (dm sel> (Lst)
-   (mapc
-      '((Tmp)
-         (mapc
-            '((X)
-               (unless (memq (car X) (: tmp))
-                  (+link> (car X) Tmp (cddr X) (cadr X)) ) )
-            (get Tmp 'link) ) )
-      (: tmp) )
-   (mapc
-      '((Obj)
-         (mapc
-            '((X)
-               (unless (memq (car X) Lst)
-                  (-link> (car X) Obj) ) )
-            (get Obj 'link) ) )
-      Lst )
+   (for Tmp (: tmp)
+      (for X (get Tmp 'link)
+         (unless (memq (car X) (: tmp))
+            (+link> (car X) Tmp (cddr X) (cadr X)) ) ) )
+   (for Obj Lst
+      (for X (get Obj 'link)
+         (unless (memq (car X) Lst)
+            (-link> (car X) Obj) ) ) )
    (set> This (append (: tmp) (diff (: lst) Lst)))
    (tmp> This Lst) )
 
 # Add object to selection
 (dm +sel> (Obj)
-   (mapc
-      '((X) (-link> (car X) Obj))
-      (get Obj 'link) )
-   (mapc
-      '((Tmp)
-         (mapc
-            '((X)
-               (when (== Obj (car X))
-                  (+link> Obj Tmp (cddr X) (cadr X)) ) )
-            (get Tmp 'link) ) )
-      (: tmp) )
+   (for X (get Obj 'link)
+      (-link> (car X) Obj) )
+   (for Tmp (: tmp)
+      (for X (get Tmp 'link)
+         (when (== Obj (car X))
+            (+link> Obj Tmp (cddr X) (cadr X)) ) ) )
    (set> This (delq Obj (: lst)))
    (tmp> This (cons Obj (: tmp))) )
 
 # Remove object from selection
 (dm -sel> (Obj)
-   (mapc
-      '((X)
-         (if (memq (car X) (: tmp))
-            (-link> Obj (car X))
-            (+link> (car X) Obj (cddr X) (cadr X)) ) )
-      (get Obj 'link) )
+   (for X (get Obj 'link)
+      (if (memq (car X) (: tmp))
+         (-link> Obj (car X))
+         (+link> (car X) Obj (cddr X) (cadr X)) ) )
    (set> This (cons Obj (: lst)))
    (tmp> This (delq Obj (: tmp))) )
 
@@ -310,9 +289,8 @@
                               (caadr L) (cdadr L) ) ) )
                      (get D 'link) ) )
                (: tmp) )
-            (mapc
-               '((Obj) (mov> Obj DX DY))
-               (: tmp) )
+            (for Obj (: tmp)
+               (mov> Obj DX DY) )
             (inc (cadr @) DX)
             (con (cadr @) (+ DY (cdadr @))) )
          (tmp> This (: tmp))

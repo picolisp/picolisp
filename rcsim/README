@@ -1,0 +1,112 @@
+27sep04abu
+(c) Software Lab. Alexander Burger
+
+
+         RC Flight Simulator
+         ===================
+
+The Pico Lisp RC Flight Simulator is a very simple toy simulator, allowing you
+to fly an airplane in a way similar to a radio controlled model plane.
+
+It is all implemented within the Pico Lisp system, so that no additional
+libraries like OpenGL or GL4Java are needed.
+
+The plane is similar to the German WW-I aircraft Fokker "D-VII" (and a bit to
+the British Sopwith Camel ;-). Though the user's position is that of a model
+plane's pilot (i.e. viewing the plane from a fixed position), all parameters
+like dimensions, mass, engine power and flight data are intended to be as close
+as possible to a "real" Fokker D-VII. Unfortunately, some of these parameters
+are not known exactly, but it is a fun project anyway, and I hope it comes
+close.
+
+
+The simulator comes with two different kinds of user interface. The "official"
+version runs in an Applet in any Java-enabled browser. To run it locally,
+start the Pico Lisp server with
+
+   $ ./p rcsim/main.l -main -go -wait
+
+or (to get an interactive Pico Lisp command line) with
+
+   $ ./p dbg.l rcsim/main.l -main -go
+
+and then point your browser to "http://localhost:8080".
+
+If you don't have Pico Lisp installed, you might want to try the online version
+at:
+
+   http://rcsim.software-lab.biz
+
+In both cases, click onto the image to set the keyboard focus.
+
+
+The second version uses the same graphical frontend, but written in 'C' instead
+of Java. This is much faster on older machines.
+
+Start the Pico Lisp server with
+
+   $ ./p dbg.l rcsim/xlib.main.l -main -go
+
+and the Z3d-Client from another X-terminal
+
+   $ bin/z3dClient localhost 8080
+
+Then make sure that your keyboard focus is on the first X-terminal (where you
+started the simulator from, _not_ the Z3d-Client window).
+
+Hitting ENTER at the Pico Lisp prompt (the colon ':') will terminate the
+simulation process and close the Z3d-Client window. As always, you can stop the
+Pico Lisp servers with 'killall pico'.
+
+
+The simulator runs in the background, so if it is started interactively (see
+above), the Lisp interpreter is fully available and lets you inspect or modify
+the environment. For example
+
+: (show *Model)
+
+shows the current state of the model.
+
+In the Z3d-Version, terminal output is interlaced with the simulator's output.
+If you see no ':' prompt, it is helpful to type a single dot '.' and ENTER, to
+avoid terminating the interpreter:
+
+...
+0 %  0 km/h  0 m/s  1 m  
+.
+-> NIL
+:  
+
+
+The simulator is controlled by the following 6 keys:
+
+- The cursor (arrow) keys UP and DOWN control the elevator
+- The LEFT and RIGHT cursor keys control the combined rudder/ailerons
+- The HOME key sets full throttle
+- The END key turns the engine off
+- PAGE UP/DOWN increase/decrease the throttle
+
+For a first flight, just hit the HOME key as the plane sits waiting on the
+runway, and watch it accelerate. After some time, when it starts to jump a bit
+nervously, give a little up-elevator (the DOWN arrow key) to gain height. Then
+hit the PAGE DOWN key once or twice to decrease the throttle, and cautiosly
+experiment with with the arrow keys.
+
+
+There is some rudimentary sound implemented. It is not inteded to be realistic
+(the graphic isn't either ;-) but to give some audible feedback to the user. It
+produces a simple square wave sound, depending on the engine's thrust, the
+airspeed, the distance, and the doppler effect.
+
+If you are using the Java/Applet version, you might simply click on the "Sound"
+checkbox. Be warned, however, that this induces another heavy load on the client
+side.
+
+In the Z3d-Client version, a console speaker interface is used. As the speaker
+can be accessed in Linux only from a virtual console (not from an X-terminal),
+log into a virtual console (typically tty1 .. tty6) _before_ you start the
+simulator, change to the 'pico' directory, and run the simple tone server:
+
+   $ rcsim/tone
+
+When done, you can stop it with 'killall tone'.

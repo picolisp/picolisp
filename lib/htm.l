@@ -1,4 +1,4 @@
-# 21jun04abu
+# 30sep04abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -107,10 +107,9 @@
    (=: dx "DX")
    (=: dy "DY")
    (set This (conc (rest) (val This)))
-   (let (I 0  *PnlFld T  *PnlCnt 0  *LayPnl T  *LayRow)
-      (mapc
-         '((F) (put F 'ix (inc 'I)))
-         (=: fields (make (run "Prg"))) )
+   (let (*PnlFld T  *PnlCnt 0  *LayPnl T  *LayRow)
+      (for (I . F) (=: fields (make (run "Prg")))
+         (put F 'ix I) )
       (endPnl> (last (: fields)) *PnlCnt) ) )
 
 (dm init> ()
@@ -229,6 +228,13 @@
 (de quitButton (S)
    (gui '(+Rid +Button) "" (or S ,"Cancel")
       '(stop> (: home)) ) )
+
+
+### Busy/Progress indicator ###
+(de busy ("Cnt" "Msg" . "Prg")
+   (run "Prg") )
+
+(de work ())
 
 
 ### Field Prefix Classes ###
@@ -396,10 +402,8 @@
 (dm set> (Val)
    (extra Val)
    (when Val
-      (mapc
-         '(("X")
-            (clr> (field "X")) )
-         (: radio) ) ) )
+      (for "X" (: radio)
+         (clr> (field "X")) ) ) )
 
 (de radio (N Rows Cols)
    (make
@@ -429,19 +433,17 @@
    (pass extra) )
 
 (dm relay> (Val)
-   (mapc
-      '(("X")
-         (cond
-            ((atom "X")
-               (and (field "X") (set> @ Val)) )
-            ((not (cdr "X"))
-               (and (field (car "X")) (upd> @)) )
-            ((field (car "X"))
-               (set> @
-                  (if (or (atom (cdr "X")) (lst? (cadr "X")))
-                     ((cdr "X") Val)
-                     (with Val (eval (cdr "X"))) ) ) ) ) )
-      (: relay) ) )
+   (for "X" (: relay)
+      (cond
+         ((atom "X")
+            (and (field "X") (set> @ Val)) )
+         ((not (cdr "X"))
+            (and (field (car "X")) (upd> @)) )
+         ((field (car "X"))
+            (set> @
+               (if (or (atom (cdr "X")) (lst? (cadr "X")))
+                  ((cdr "X") Val)
+                  (with Val (eval (cdr "X"))) ) ) ) ) ) )
 
 (dm upd> ()
    (extra)
@@ -793,12 +795,10 @@
    (=: clr Lst)
    (pass super Lbl Str
       '(prog
-         (mapc
-            '((X)
-               (if (atom X)
-                  (clr> (get (: home) X))
-                  (set> (get (: home) (car X)) (eval (cdr X))) ) )
-            (: clr) ) ) ) )
+         (for X (: clr)
+            (if (atom X)
+               (clr> (get (: home) X))
+               (set> (get (: home) (car X)) (eval (cdr X))) ) ) ) ) )
 
 
 (class +Checkbox +field)
@@ -1152,9 +1152,9 @@
                (let *LayRow T
                   (link
                      (make
-                        (mapc
-                           '((L) (eval L) (off *LayRow))
-                           "Prg" ) ) ) ) ) ) ) )
+                        (for L "Prg"
+                           (eval L)
+                           (off *LayRow) ) ) ) ) ) ) ) )
    (=: lock
       (not
          (find
@@ -1546,13 +1546,8 @@
          (: beg) (: end) )
       (do (- (: ofs) 1)
          (step Node T) )
-      (mapc
-         '((F)
-            (mapc
-               '((F D) (set> F D))
-               F
-               ((: put) (step Node T)) ) )
-         (: fields) ) ) )
+      (for F (: fields)
+         (mapc 'set> F ((: put) (step Node T))) ) ) )
 
 (dm upd> ()
    (put> This) )

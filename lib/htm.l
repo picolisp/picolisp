@@ -1,4 +1,4 @@
-# 27jul03abu
+# 20sep03abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI ###
@@ -382,6 +382,18 @@
          '(("X")
             (clr> (field "X")) )
          (: radio) ) ) )
+
+
+(class +Trigger)
+# trigger
+
+(dm T (Exe . @)
+   (=: trigger Exe)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra Val)
+   (and Val (eval (: trigger))) )
 
 
 (class +Relay)
@@ -806,6 +818,15 @@
    (: str) )
 
 
+(class +ListTextField +TextField)
+
+(dm set> (Val)
+   (super (glue " " Val)) )
+
+(dm val> ()
+   (mapcar pack (split (chop (super)) " ")) )
+
+
 # Matchcode Field
 (class +McField +Uppc +TextField)
 
@@ -1097,6 +1118,10 @@
 (dm size> ()
    (length (: data)) )
 
+(dm upd> ()
+   (get> This)
+   (put> This) )
+
 (dm end> ()
    (set> This (val> This)) )
 
@@ -1365,8 +1390,8 @@
          (make
             (while
                (and
-                  (prove Q)
-                  (let S (cdar @)
+                  (asoq '@@ (prove Q))
+                  (let S (cdr @)
                      (or
                         (member S (made))
                         (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
@@ -1388,21 +1413,21 @@
 (dm query> (X)
    (let Cls (meta (: objTyp) (: objVar) 'cls)
       (if (num? X)
-         (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
+         (list  # ((db var +Cls (<N> . T) @@) (isa +Cls @@))
             (make
                (link 'db (: objVar) Cls)
                (when (: objHook)
                   (link (eval @)) )
-               (link (cons X T) '@Obj) )
-            (list 'isa Cls '@Obj) )
-         (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
+               (link (cons X T) '@@) )
+            (list 'isa Cls '@@) )
+         (list  # ((db var +Cls "Str" @@) (isa +Cls @@) (head "Str" @@ var))
             (make
                (link 'db (: objVar) Cls)
                (when (: objHook)
                   (link (eval @)) )
-               (link X '@Obj) )
-            (list 'isa Cls '@Obj)
-            (list 'head X '@Obj (: objVar)) ) ) ) )
+               (link X '@@) )
+            (list 'isa Cls '@@)
+            (list 'head X '@@ (: objVar)) ) ) ) )
 
 
 (class +ObjView +Lock)

@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html>
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Pico Lisp Reference</title>
@@ -1371,8 +1371,8 @@ indicated by its name.
 the head of the programmer. Here are the most commonly used ones:
 
 <p><ul>
-<li>Functions start with a lower case letter
-<li>Variables start with an upper case letter
+<li>Functions (verbs) start with a lower case letter
+<li>Variables (nouns) start with an upper case letter
 <li>Globals start with an asterisk "<code>*</code>"
 <li>Classes start with a plus-sign "<code>+</code>"
 <li>Methods end with a right arrow "<code>></code>"
@@ -1543,10 +1543,11 @@ argument types and return values are described with the following abbreviations:
    <a href="#pack">pack</a>
    <a href="#preQ">pre?</a>
    <a href="#subQ">sub?</a>
-   <a href="#uppQ">upp?</a>
-   <a href="#uppc">uppc</a>
    <a href="#lowQ">low?</a>
+   <a href="#uppQ">upp?</a>
    <a href="#lowc">lowc</a>
+   <a href="#uppc">uppc</a>
+   <a href="#fold">fold</a>
    <a href="#val">val</a>
    <a href="#set">set</a>
    <a href="#setq">setq</a>
@@ -2659,17 +2660,19 @@ in <code>var</code>. See also <code><a href="#pop">pop</a></code>.
 <p><hr>
 <h3><a name="d-foo">D</a></h3>
 
-<p><dt><a name="date"><code>(date) -> dat<br>
+<p><dt><a name="date"><code>(date '[T]) -> dat<br>
 (date 'dat) -> (y m d)<br>
 (date 'y 'm 'd) -> dat | NIL<br>
 (date '(y m d)) -> dat | NIL</code></a>
 <dd>Calculates a calendar date, represented as the number of days since first of
 march in the year 0. When called without arguments, the current date is
-returned. When called with a single number <code>dat</code>, it is taken as a
-date and a list with the corresponding year, month and day is returned. When
-called with three numers (or a list of three numbers) for the year, month and
-day, the corresponding date is returned (or <code>NIL</code> if they do not
-represent a legal date). See also <code><a href="#time">time</a></code>.
+returned. When called with a <code>T</code> argument, the current Coordinated
+Universal Time (UTC) is returned. When called with a single number
+<code>dat</code>, it is taken as a date and a list with the corresponding year,
+month and day is returned. When called with three numers (or a list of three
+numbers) for the year, month and day, the corresponding date is returned (or
+<code>NIL</code> if they do not represent a legal date). See also <code><a
+href="#time">time</a></code>.
 
 <p><pre><code>
 : (date)                         # Today
@@ -3021,6 +3024,22 @@ also <code><a href="#rewind">rewind</a></code>.
 <p><pre><code>
 : (flush)
 -> T
+</code></pre>
+
+<p><dt><a name="fold"><code>(fold 'any ['cnt]) -> sym</code></a>
+<dd>Folding to a canonical form: If <code>any</code> is not a symbol,
+<code>NIL</code> is returned. Otherwise, a new transient symbol with all digits
+and all letters of <code>any</code>, converted to lower case, is returned. If
+the <code>cnt</code> argument is given, the result is truncated to that length
+(or not truncated if <code>cnt</code> is zero). Otherwise <code>cnt</code>
+defaults to 24. See also <code><a href="#uppc">uppc</a></code> and <code><a
+href="#lowc">lowc</a></code>.
+
+<p><pre><code>
+: (fold " 1A 2-b/3")
+-> "1a2b3"
+: (fold " 1A 2-B/3" 3)
+-> "1a2"
 </code></pre>
 
 <p><dt><a name="for"><code>(for (sym 'any1 'any2 [. prg1]) . prg2) -> any</code></a>
@@ -3385,7 +3404,7 @@ href="#offset">offset</a></code>.
 
 <p><dt><a name="info"><code>(info 'any) -> (cnt|T dat . tim)</code></a>
 <dd>Returns information about a file with the name <code>any</code>: The current
-size <code>cnt</code> in bytes, and the modification date and time. For
+size <code>cnt</code> in bytes, and the modification date and time (UTC). For
 directories, <code>T</code> is returned instead of the a size. See also <code><a
 href="#date">date</a></code>, <code><a href="#time">time</a></code> and <code><a
 href="#lines">lines</a></code>.
@@ -3734,7 +3753,8 @@ href="#do">do</a></code>.
 <p><dt><a name="lowc"><code>(lowc 'any) -> any</code></a>
 <dd>Lower case conversion: If <code>any</code> is not a symbol, it is returned
 as it is. Otherwise, a new transient symbol with all characters of
-<code>any</code>, converted to lower case, is returned.
+<code>any</code>, converted to lower case, is returned. See also <code><a
+href="#uppc">uppc</a></code> and <code><a href="#fold">fold</a></code>.
 
 <p><pre><code>
 : (lowc 123)
@@ -4816,7 +4836,7 @@ initialization.
 (rel adr    (+Joint) prs (+Address))            # Address
 
 (class +Address +Entity)
-(rel Cit    (+Need +Hook) (+City))              # City
+(rel Cit    (+Need +Hook +Link) (+City))        # City
 (rel str    (+Key +List +Ref +String) Cit)      # Street
 (rel prs    (+List +Joint) adr (+Person))       # Inhabitants
 
@@ -5392,18 +5412,19 @@ abc:def
 -> "abc"
 </code></pre>
 
-<p><dt><a name="time"><code>(time) -> tim<br>
+<p><dt><a name="time"><code>(time ['T]) -> tim<br>
 (time 'tim) -> (h m s)<br>
 (time 'h 'm ['s]) -> tim | NIL<br>
 (time '(h m [s])) -> tim | NIL</code></a>
 <dd>Calculates the time of day, represented as the number of seconds since
-midnight. When called without arguments, the current time is returned. When
-called with a single number <code>tim</code>, it is taken as a time value and a
-list with the corresponding hour, minute and second is returned. When called
-with two or three numers (or a list of two or three numbers) for the hour,
-minute (and optionally the second), the corresponding time value is returned (or
-<code>NIL</code> if they do not represent a legal time). See also <code><a
-href="#date">date</a></code>.
+midnight. When called without arguments, the current local time is returned.
+When called with a <code>T</code> argument, the current Coordinated Universal
+Time (UTC) is returned. When called with a single number <code>tim</code>, it is
+taken as a time value and a list with the corresponding hour, minute and second
+is returned. When called with two or three numers (or a list of two or three
+numbers) for the hour, minute (and optionally the second), the corresponding
+time value is returned (or <code>NIL</code> if they do not represent a legal
+time). See also <code><a href="#date">date</a></code>.
 
 <p><pre><code>
 : (time)                         # Now
@@ -5530,7 +5551,8 @@ T
 <p><dt><a name="uppc"><code>(uppc 'any) -> any</code></a>
 <dd>Upper case conversion: If <code>any</code> is not a symbol, it is returned
 as it is. Otherwise, a new transient symbol with all characters of
-<code>any</code>, converted to upper case, is returned.
+<code>any</code>, converted to upper case, is returned. See also <code><a
+href="#lowc">lowc</a></code> and <code><a href="#fold">fold</a></code>.
 
 <p><pre><code>
 : (uppc 123)

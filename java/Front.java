@@ -1,4 +1,4 @@
-// 18mar03abu
+// 02sep03abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -449,10 +449,8 @@ public class Front extends Pico {
          /***************************/
 
          ((TextComponent)f).setText(s.substring(0,i) + txt + s.substring(j));
-         if (o instanceof String) {
-            ((TextComponent)f).setSelectionStart(i + 1);
-            ((TextComponent)f).setSelectionEnd(i + txt.length());
-         }
+         if (o instanceof String)
+            ((TextComponent)f).select(i+1, i+txt.length());
          Dirty = fld;
          if (Sync.contains(Fields[fld-1]))
             change("log>");
@@ -1049,7 +1047,7 @@ class GField extends Panel implements AdjustmentListener  {
 
       addMouseListener(new MouseAdapter() {
          public void mousePressed(MouseEvent ev) {
-            Home.msg5("clk>", Ix+1,
+            Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
                ev.getModifiers(),
                ev.getX()-OrgX,
                ev.getY()-OrgY );

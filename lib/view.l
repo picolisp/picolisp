@@ -1,4 +1,4 @@
-# 22sep02abu
+# 18sep03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/draw.l")
@@ -111,7 +111,7 @@
       D ) )
 
 (de _viewBag (Lst Y)
-   (if (setq Lst (filter ntt? Lst))
+   (if (setq Lst (filter '((X) (isa '+Entity X)) Lst))
       (let (D (view> (car Lst) This X Y)  Y2 (+ Y (get D 'box 'dy)))
          (when (cdr Lst)
             (link> This

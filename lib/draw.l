@@ -1,4 +1,4 @@
-# 06jul02abu
+# 23aug03abu
 # (c) Software Lab. Alexander Burger
 
 ### 2D-Shapes ###
@@ -285,14 +285,36 @@
                (+sel> This D) )
             (T (sel> This (list D))) ) ) ) )
 
+(dm dbl> (M X Y)
+   (let D (mini '((D) (dist> D X Y)) (: tmp))
+      (when (isa '+GComp D)
+         (dialog "Detail" (list (get D 'lst))
+            (quote
+               (gui '(+SelectView +Mono +DrawField) "" 600 400)
+               (closeButton) ) )
+         (tmp> This (: tmp)) ) ) )
+
 # Movement
 (dm drg> (M X Y)
    (ifn (: clk)
       (clk> This M X Y)
       (let (DX (- X (car (: clk)))  DY (- Y (cdr (: clk))))
-         (mapc
-            '((Obj) (mov> Obj DX DY))
-            (: tmp) )
+         (ifn
+            (pick
+               '((D)
+                  (find
+                     '((L)
+                        (>= 3
+                           (ext:Dist
+                              (car (: clk)) (cdr (: clk))
+                              (caadr L) (cdadr L) ) ) )
+                     (get D 'link) ) )
+               (: tmp) )
+            (mapc
+               '((Obj) (mov> Obj DX DY))
+               (: tmp) )
+            (inc (cadr @) DX)
+            (con (cadr @) (+ DY (cdadr @))) )
          (tmp> This (: tmp))
          (set (: clk) X)
          (con (: clk) Y) ) ) )

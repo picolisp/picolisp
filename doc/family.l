@@ -1,4 +1,4 @@
-# 23apr03abu
+# 22sep03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/ps.l")
@@ -35,19 +35,19 @@
          @Mate Mate
          @Job Job
          @Dat (and (or Dat1 Dat2) (cons Dat1 (or Dat2 T)))
-         (select (@Prs)
+         (select (@@)
             ((nm +Person @Nm)
                (nm +Person @Pa kids)
                (nm +Person @Ma kids)
                (nm +Person @Mate mate)
                (job +Person @Job)
                (dat +Person @Dat) )
-            (tolr @Nm @Prs nm)
-            (tolr @Pa @Prs pa nm)
-            (tolr @Ma @Prs ma nm)
-            (tolr @Mate @Prs mate nm)
-            (head @Job @Prs job)
-            (range @Dat @Prs dat) ) ) ) )
+            (tolr @Nm @@ nm)
+            (tolr @Pa @@ pa nm)
+            (tolr @Ma @@ ma nm)
+            (tolr @Mate @@ mate nm)
+            (head @Job @@ job)
+            (range @Dat @@ dat) ) ) ) )
 
 
 ### GUI ###

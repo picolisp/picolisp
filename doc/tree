@@ -10,8 +10,10 @@
       <Link> BEG TRANSIENT <key> EXTERN <7> EXTERN <7> DOT EXTERN <7> NIX
       -> keyLen: 30  # 6+2+30+1+7+1+7+2+7+1 = 64
 
-
-   +Key  ("key" less more . {obj})
-   +Ref  (("key" . {obj}) less more . {obj})
-   +Idx  (("key" {obj}) less more . {obj})
-   +Sn  (("key" {obj} . T) less more . {obj})
+                                             1 GB    64 GB    4 TB     256 TB
+                                           ----------------------------------
+   +Key  ("key" less more . obj)             39       36       33       30
+   +Ref  (("key" . obj) less more . obj)     32       28       24       20
+   +Idx  (("key" obj) less more . obj)       32       28       24       20
+   +Sn  (("key" obj . T) less more . obj)    30       26       22       18
+                                                     ----

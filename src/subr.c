@@ -1,4 +1,4 @@
-/* 26may03abu
+/* 27sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -833,14 +833,18 @@ any doSymQ(any x) {
 
 // (member 'any 'lst) -> any
 any doMember(any x) {
-   any y;
+   any y, z;
    cell c1;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = EVAL(car(x));
-   for (x = Pop(c1);  isCell(y);  y = cdr(y))
+   x = cdr(x),  y = z = EVAL(car(x));
+   x = Pop(c1);
+   while (isCell(y)) {
       if (equal(x, car(y)))
          return y;
+      if (z == (y = cdr(y)))
+         return Nil;
+   }
    return equal(x,y)? y : Nil;
 }
 
@@ -1002,8 +1006,7 @@ bool match(any p, any d) {
          }
          return !isCell(d) && equal(p,d);
       }
-      x = car(p);
-      if (isSym(x)  &&  firstByte(x) == '@') {
+      if (isSym(x = car(p))  &&  firstByte(x) == '@') {
          if (!isCell(d)) {
             if (equal(d, cdr(p))) {
                val(x) = Nil;

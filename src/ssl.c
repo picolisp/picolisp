@@ -1,4 +1,4 @@
-/* 29may03abu
+/* 03sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,12 +25,11 @@ static char *File, *Data;
 static off_t Size;
 
 static char Get[] =
-   "GET /%s HTTP 1.1\n"
-   "Connection: close\n"
-   "User-Agent: PicoLisp\n"
-   "Host: %s:%s\n"
-   "Accept:  text/html, text/plain\n"
-   "Accept-Charset: utf-8\n\n";
+   "GET /%s HTTP 1.1\r\n"
+   "Connection: close\r\n"
+   "User-Agent: PicoLisp\r\n"
+   "Host: %s:%s\r\n"
+   "Accept-Charset: utf-8\r\n\r\n";
 
 static char NIL[] = {'N', 'I', 'L', '\n'};
 
@@ -84,6 +83,8 @@ static bool sslFile(SSL *ssl, char *file) {
    int fd, n;
    char buf[BUFSIZ];
 
+   if (file[0] == '-')
+      return SSL_write(ssl, file+1, strlen(file)-1) >= 0;
    if ((fd = open(file, O_RDONLY)) < 0)
       return NO;
    while ((n = read(fd, buf, sizeof(buf))) > 0)

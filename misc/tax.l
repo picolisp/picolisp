@@ -1,4 +1,4 @@
-# 28jul03abu
+# 22sep03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -210,17 +210,17 @@
          @Kto *QKto
          @Val *QVal
          @Ad (and *QAd (cons *QAd T))
-         (select (@Pos)
+         (select (@@)
             ((dat +Pos @Dat)
                (txt +Pos @Txt)
                (nm +Kto @Kto (kto +Pos))
                (val +Pos @Val)
                (ad +AD @Ad) )
-            (range @Dat @Pos dat)
-            (tolr @Txt @Pos txt)
-            (head @Kto @Pos kto nm)
-            (same @Val @Pos val)
-            (range @Ad @Pos ad) ) ) ) )
+            (range @Dat @@ dat)
+            (tolr @Txt @@ txt)
+            (head @Kto @@ kto nm)
+            (same @Val @@ val)
+            (range @Ad @@ ad) ) ) ) )
 
 (de posYears ()
    (let (Tree (tree 'dat '+Pos)  Max (car (date (date))))
@@ -240,11 +240,11 @@
                (gui '(+Var +Map +TextField) '*QMonth *MonMap "" *MonFmt)
                (gui 'txt '(+Var +Bg +Hint +TextField)
                   '*QTxt
-                  '((db txt +Pos @ @P) (val @T @P txt))
+                  '((db txt +Pos @1 @P) (val @@ @P txt))
                   "Text" 20 )
                (gui 'kto '(+Var +Hint +TextField)
                   '*QKto
-                  '((db nm +Kto @ @K) (val @T @K nm))
+                  '((db nm +Kto @1 @K) (val @@ @K nm))
                   "Konto" 15 )
                (gui 'val '(+Var +FixField) '*QVal 2 "Wert" 9)
                (gui 'ad '(+Var +DateField) '*QAd "AD" 10) )
@@ -280,7 +280,7 @@
                   (gui '(+NegRed +FixField) 2 "" 12)
                   (gui '(+NegRed +UStField) 2 "" 11)
                   (gui '(+Hint +TextField)
-                     '((db txt +Pos @ @P) (val @T @P txt))
+                     '((db txt +Pos @1 @P) (val @@ @P txt))
                      "" 40 )
                   (gui '(+Obj +TextField) '(nm +Kto) "" 20) )
                '((P)

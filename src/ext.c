@@ -1,4 +1,4 @@
-/* 04oct02abu
+/* 18sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -38,28 +38,32 @@ static int SnxTab[] = {
 #define SNXSIZE   ((int)(sizeof(SnxTab) / sizeof(int)))
 
 
-// (ext:Snx 'sym) -> sym
-any Snx(any x) {
-   int c, i, last;
-   any nm;
+// (ext:Snx 'any ['cnt]) -> sym
+any Snx(any ex) {
+   int n, c, i, last;
+   any x, nm;
    cell c1, c2;
 
-   x = cdr(x);
-   if (isNil(x = EVAL(car(x))) || !isSym(x) || !(c = symChar(name(x))))
+   x = cdr(ex);
+   if (!isSym(x = EVAL(car(x))) || !(c = symChar(name(x))))
       return Nil;
    while (c < SNXBASE)
       if (!(c = symChar(NULL)))
          return Nil;
    Push(c1, x);
-   if (isLowc(c))
+   n = isCell(x = cddr(ex))? evCnt(ex,x) : 24;
+   if (c >= 'a' && c <= 'z' || c == 128 || c >= (byte)224 && c < (byte)255)
       c &= ~0x20;
    Push(c2, boxChar(last = c, &i, &nm));
    while (c = symChar(NULL))
       if (c > ' ') {
          if ((c -= SNXBASE) < 0 || c >= SNXSIZE || !(c = SnxTab[c]))
             last = 0;
-         else if (c != last)
+         else if (c != last) {
+            if (!--n)
+               break;
             charSym(last = c, &i, &nm);
+         }
       }
    drop(c1);
    return consStr(data(c2));

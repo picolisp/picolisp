@@ -1,4 +1,4 @@
-/* 22jul03abu
+/* 26aug03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -537,7 +537,7 @@ static any mkDat(int y, int m, int d) {
    return boxCnt((4404*y+367*m-1094)/12 - 2*n + n/4 - n/100 + n/400 + d);
 }
 
-// (date) -> dat
+// (date '[T]) -> dat
 // (date 'dat) -> (y m d)
 // (date 'y 'm 'd) -> dat | NIL
 // (date '(y m d)) -> dat | NIL
@@ -566,9 +566,9 @@ any doDate(any ex) {
       data(c1) = cons(boxCnt(y), data(c1));
       return Pop(c1);
    }
-   if (isNil(z)) {
+   if (isNil(z)  || z == T) {
       time(&tim);
-      p = localtime(&tim);
+      p = isNil(z)? localtime(&tim) : gmtime(&tim);
       return mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday);
    }
    if (!isCell(z))
@@ -576,7 +576,7 @@ any doDate(any ex) {
    return mkDat(xCnt(ex, car(z)),  xCnt(ex, cadr(z)),  xCnt(ex, caddr(z)));
 }
 
-// (time) -> tim
+// (time ['T]) -> tim
 // (time 'tim) -> (h m s)
 // (time 'h 'm ['s]) -> tim | NIL
 // (time '(h m [s])) -> tim | NIL
@@ -595,9 +595,9 @@ any doTime(any ex) {
       data(c1) = cons(boxCnt(s / 3600), data(c1));
       return Pop(c1);
    }
-   if (isNil(z)) {
+   if (isNil(z) || z == T) {
       time(&tim);
-      p = localtime(&tim);
+      p = isNil(z)? localtime(&tim) : gmtime(&tim);
       return boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec);
    }
    if (!isCell(z)) {
@@ -657,7 +657,7 @@ any doInfo(any x) {
       bufString(x, nm);
       if (stat(nm, &st) < 0)
          return Nil;
-      p = localtime(&st.st_mtime);
+      p = gmtime(&st.st_mtime);
       Push(c1, boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec));
       data(c1) = cons(mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday), data(c1));
       data(c1) = cons(S_ISDIR(st.st_mode)? T :

@@ -1,9 +1,9 @@
-# 03mar02abu
+# 20sep03abu
 # (c) Software Lab. Alexander Burger
 
 (de dump CL
-   (for ("Q" (goal CL) (prove "Q"))
-      (let (Obj (cdr (last @))  Lst)
+   (for ("Q" (goal CL) (asoq '@@ (prove "Q")))
+      (let (Obj (cdr @)  Lst)
          (prin "(obj ")
          (_dmp Obj)
          (maps

@@ -1,4 +1,4 @@
-# 02aug03abu
+# 23sep03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -11,12 +11,17 @@
 # (db 'var 'cls ['hook] 'val ['var 'val ..])
 (de db (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
+      (when (find '((B) (isa '+Index B)) (: bag))
+         (setq This @) )
       (let Tree (tree (: var) (: cls) (and (: hook) (next)))
          (if (isa '+Key This)
             (and
                (fetch Tree (next))
                (pass _db @) )
-            (let (Val (next)  Q (init Tree (cons Val) (cons Val T)))
+            (let
+               (Val (next)
+                  Key (if (isa '+Fold This) (fold Val) Val)
+                  Q (init Tree (cons Key) (cons Key T)) )
                (loop
                   (NIL (step Q T))
                   (T (pass _db @ Var Val) @) ) ) ) ) ) )
@@ -30,6 +35,8 @@
 # (collect 'var 'cls ['hook] ['val|beg ['end [var ..]]])
 (de collect (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
+      (when (find '((B) (isa '+Index B)) (: bag))
+         (setq This @) )
       (let
          (Tree (tree (: var) (: cls) (and (: hook) (next)))
             X1 (next)
@@ -67,9 +74,6 @@
 (dm T (Var Lst)
    (=: cls *Class)
    (=: var Var) )
-
-# Default value
-(dm dflt> ())
 
 # Type check
 (dm mis> (Val Obj))  #> lst
@@ -112,22 +116,22 @@
          '((L)
             (prog1
                (new (car L) Var (cdr L))
-               (and
-                  (get @ 'hook)
-                  (=: hook @) ) ) )
+               (and (get @ 'hook) (=: hook T)) ) )
          Lst ) )
    (super Var) )
 
-(de misBag (Val Obj)
+(dm mis> (Val Obj)
    (or
       (ifn (lst? Val) "Not a Bag")
       (pick
-         '((X V) (mis> X V Obj))
+         '((X V)
+            (mis> X V Obj
+               (with X
+                  (get
+                     (if (sym? (: hook)) Obj Val)
+                     (: hook) ) ) ) )
          (: bag)
          Val ) ) )
-
-(dm mis> (Val Obj)
-   (misBag Val Obj) )
 
 (dm has> (Val X)
    (and Val
@@ -137,44 +141,33 @@
 
 (dm put> (Obj Old New)
    (trim
-      (if (and New (misBag New Obj))
-         (mapcar
-            '((X)
-               (if (mis> X New Obj)
-                  (dflt> X)
-                  (put> X Obj NIL New) ) )
-            (: bag) )
-         (mapcar
-            '((X O N) (put> X Obj O N))
-            (: bag)
-            Old
-            New ) ) ) )
+      (mapcar
+         '((X O N) (put> X Obj O N))
+         (: bag)
+         Old
+         New ) ) )
 
 (dm rel> (Obj Old New)
-   (if (and Old (misBag Old Obj))
+   (when Old
       (mapc
-         '((X)
-            (ifn (mis> X Old Obj)
-               (rel> X Obj Old NIL) ) )
-         (: bag) )
-      (when Old
-         (mapc
-            '((X O)
-               (rel> X Obj O NIL) )
-            (: bag)
-            Old ) ) )
-   (if (and New (misBag New Obj))
+         '((X O)
+            (rel> X Obj O NIL
+               (with X
+                  (get
+                     (if (sym? (: hook)) Obj Old)
+                     (: hook) ) ) ) )
+         (: bag)
+         Old ) )
+   (when New
       (mapc
-         '((X)
-            (ifn (mis> X New Obj)
-               (rel> X Obj NIL New) ) )
-         (: bag) )
-      (when New
-         (mapc
-            '((X N)
-               (rel> X Obj NIL N) )
-            (: bag)
-            New ) ) ) )
+         '((X N)
+            (rel> X Obj NIL N
+               (with X
+                  (get
+                     (if (sym? (: hook)) Obj New)
+                     (: hook) ) ) ) )
+         (: bag)
+         New ) ) )
 
 
 # (+Number) [num]
@@ -184,9 +177,6 @@
 (dm T (Var Lst)
    (=: scl (car Lst))
    (super Var (cdr Lst)) )
-
-(dm dflt> ()
-   0 )
 
 (dm mis> (Val Obj)
    (and
@@ -201,18 +191,12 @@
 (dm T (Var Lst)
    (super Var (cons NIL Lst)) )
 
-(dm dflt> ()
-   (date) )
-
 
 # (+Time)
 (class +Time +Number)
 
 (dm T (Var Lst)
    (super Var (cons NIL Lst)) )
-
-(dm dflt> ()
-   (time) )
 
 
 # (+Symbol)
@@ -270,34 +254,6 @@
       `(_ "Typ-Fehler") ) )
 
 
-# (+Hook) typ
-(class +Hook +Link)
-
-(dm rel> (Obj Old New)
-   (let L
-      (filter
-         '((X)
-            (and
-               (pair X)
-               (or
-                  (== (: var) (meta Obj (cdr X) 'hook))
-                  (find
-                     '((B) (== (: var) (get B 'hook)))
-                     (meta Obj (cdr X) 'bag) ) ) ) )
-         (getl Obj) )
-      (put Obj (: var) Old)
-      (mapc
-         '((X)
-            (rel> (meta Obj (cdr X)) Obj (car X)) )
-         L )
-      (put Obj (: var) New)
-      (mapc
-         '((X)
-            (rel> (meta Obj (cdr X)) Obj NIL (car X)) )
-         L ) )
-   (super Obj Old New) )
-
-
 # (+Joint) var typ
 (class +Joint +Link)
 # slot
@@ -338,6 +294,32 @@
          (put> (meta Val (: slot)) Obj (get Val (: slot)) Obj) ) ) )
 
 
+# +Link or +Joint prefix
+(class +Hook)
+
+(dm rel> (Obj Old New Hook)
+   (let L
+      (filter
+         '((X)
+            (and
+               (pair X)
+               (or
+                  (== (: var) (meta Obj (cdr X) 'hook))
+                  (find
+                     '((B) (== (: var) (get B 'hook)))
+                     (meta Obj (cdr X) 'bag) ) ) ) )
+         (getl Obj) )
+      (mapc
+         '((X)
+            (rel> (meta Obj (cdr X)) Obj (car X) NIL Old) )
+         L )
+      (mapc
+         '((X)
+            (rel> (meta Obj (cdr X)) Obj NIL (car X) New) )
+         L ) )
+   (extra Obj Old New Hook) )
+
+
 # (+Blob)
 (class +Blob +Relation)
 
@@ -359,26 +341,23 @@
    (=: hook (car Lst))
    (extra Var (cdr Lst)) )
 
-(de _hook (Obj)
-   (or (get Obj (: hook)) *DB) )
-
 
 # (+Key) hook
 (class +Key +Index)
 
-(dm mis> (Val Obj)
+(dm mis> (Val Obj Hook)
    (or
+      (extra Val Obj Hook)
       (and
          Val
-         (<> Val (get Obj (: var)))
+         (not (has> Obj (: var) Val))
          (fetch
-            (tree (: var) (: cls) (_hook Obj))
+            (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
             Val )
-         `(_ "Not unique") )
-      (extra Val Obj) ) )
+         `(_ "Not unique") ) ) )
 
-(dm rel> (Obj Old New)
-   (let Tree (tree (: var) (: cls) (_hook Obj))
+(dm rel> (Obj Old New Hook)
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
       (and Old
          (= Obj (fetch Tree Old))
          (store Tree Old NIL) )
@@ -386,23 +365,23 @@
          (not (get Obj T))
          (not (fetch Tree New))
          (store Tree New Obj) ) )
-   (extra Obj Old New) )
+   (extra Obj Old New Hook) )
 
 
 # (+Ref) hook
 (class +Ref +Index)
 
-(dm rel> (Obj Old New)
-   (let Tree (tree (: var) (: cls) (_hook Obj))
+(dm rel> (Obj Old New Hook)
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
       (when Old
          (store Tree (cons Old Obj) NIL) )
       (and New
          (not (get Obj T))
          (store Tree (cons New Obj) Obj) ) )
-   (extra Obj Old New) )
+   (extra Obj Old New Hook) )
 
 
-# (+Idx) hook
+# (+Idx) cnt hook
 (class +Idx +Ref)
 # min
 
@@ -410,8 +389,8 @@
    (=: min (or (car Lst) 3))
    (super Var (cdr Lst)) )
 
-(dm rel> (Obj Old New)
-   (let Tree (tree (: var) (: cls) (_hook Obj))
+(dm rel> (Obj Old New Hook)
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
       (when Old
          (store Tree (cons Old Obj) NIL)
          (mapc
@@ -428,20 +407,31 @@
                   (store Tree (list (pack S) Obj) Obj)
                   (pop 'S) ) )
             (split (cdr (chop New)) " " "^J") ) ) )
-   (extra Obj Old New) )
+   (extra Obj Old New Hook) )
 
 
 # (+Sn +Index) hook
 (class +Sn)
 
-(dm rel> (Obj Old New)
-   (let Tree (tree (: var) (: cls) (_hook Obj))
+(dm rel> (Obj Old New Hook)
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
       (when Old
          (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL) )
       (and New
          (not (get Obj T))
          (store Tree (cons (ext:Snx New) (cons Obj T)) Obj) ) )
-   (extra Obj Old New) )
+   (extra Obj Old New Hook) )
+
+
+# (+Fold +Index) hook
+(class +Fold)
+
+(dm has> (Val X)
+   (extra Val
+      (if (= Val (fold Val)) (fold X) X) ) )
+
+(dm rel> (Obj Old New Hook)
+   (extra Obj (fold Old) (fold New) Hook) )
 
 
 ### Relation prefix classes ###
@@ -452,20 +442,20 @@
    (=: dep (car Lst))
    (extra Var (cdr Lst)) )
 
-(dm rel> (Obj Old New)
+(dm rel> (Obj Old New Hook)
    (unless New
       (mapc
          '((Var) (del> Obj Var (get Obj Var)))
          (: dep) ) )
-   (extra Obj Old New) )
+   (extra Obj Old New Hook) )
 
 
 (class +List)
 
-(dm mis> (Val Obj)
+(dm mis> (Val Obj Hook)
    (or
       (ifn (lst? Val) "Not a List")
-      (pick '((V) (extra V Obj)) Val) ) )
+      (pick '((V) (extra V Obj Hook)) Val) ) )
 
 (dm has> (Val X)
    (and Val
@@ -474,42 +464,35 @@
          (find '((X) (extra Val X)) X) ) ) )
 
 (dm put> (Obj Old New)
-   (if (and New (mis> This New Obj))
-      (cons (extra Obj Old New) Old)
+   (if (lst? New)
       (mapcar
          '((N O) (extra Obj O N))
          New
-         Old ) ) )
+         Old )
+      (cons (extra Obj Old New) Old) ) )
 
 (dm del> (Obj Old Val)
    (delete Val Old) )
 
-(dm rel> (Obj Old New)
-   (if
-      (or
-         (and Old (mis> This Old Obj))
-         (and New (mis> This New Obj)) )
-      (extra Obj Old New)
+(dm rel> (Obj Old New Hook)
+   (ifn (and (lst? Old) (lst? New))
+      (extra Obj Old New Hook)
       (mapc
-         '((O) (extra Obj O NIL))
+         '((O) (extra Obj O NIL Hook))
          (diff Old New) )
       (mapc
-         '((N) (extra Obj NIL N))
+         '((N) (extra Obj NIL N Hook))
          New ) ) )
 
 (dm lose> (Obj Val)
-   (if (and Val (mis> This Val Obj))
-      (extra Obj Val)
-      (mapc
-         '((V) (extra Obj V))
-         Val ) ) )
+   (if (lst? Val)
+      (mapc '((V) (extra Obj V)) Val)
+      (extra Obj Val) ) )
 
 (dm keep> (Obj Val)
-   (if (and Val (mis> This Val Obj))
-      (extra Obj Val)
-      (mapc
-         '((V) (extra Obj V))
-         Val ) ) )
+   (if (lst? Val)
+      (mapc '((V) (extra Obj V)) Val)
+      (extra Obj Val) ) )
 
 
 (class +Need)
@@ -522,9 +505,6 @@
 
 ### Entities ###
 (class +Entity)
-
-(de ntt? (X)
-   (isa '+Entity X) )
 
 (de dbSync ()
    (let *Key NIL
@@ -560,9 +540,8 @@
       (commit Sym) ) )
 
 (de blob! (Obj Sym Rel File)
-   (and
-      (call "mv" File (blob Obj Rel))
-      (put!> Obj Sym Rel T) ) )
+   (put!> Obj Sym Rel T)
+   (call "mv" File (blob Obj Rel)) )
 
 (dm T @
    (upd> This (val This))
@@ -740,30 +719,47 @@
             (if (atom X)
                (ifn (meta This X)
                   (put Obj X T)
-                  (let M @
+                  (let Rel @
                      (put> Obj X T)
-                     (when (isa '+Blob M)
+                     (when (isa '+Blob Rel)
                         (in (blob This X)
                            (out (blob Obj X) (echo)) ) ) ) )
                (ifn (meta This (cdr X))
                   (put Obj (cdr X) (car X))
-                  (let M @
+                  (let Rel @
                      (cond
-                        ((isa '+Key M)
-                           (let H (get This (get M 'hook))
-                              (cond
-                                 ((isa '+Number M)
-                                    (put> Obj (cdr X)
-                                       (genKey (cdr X) (get M 'cls) H) ) )
-                                 ((isa '+String M)
-                                    (let S (pack "# " (car X))
-                                       (while (fetch (tree (cdr X) (get M 'cls) H) S)
-                                          (setq S (pack "# " S)) )
-                                       (put> Obj (cdr X) S) ) ) ) ) )
-                        ((or (not (isa '+Joint M)) (isa '+List (meta Obj (cdr X))))
+                        ((find '((B) (isa '+Key B)) (get Rel 'bag))
+                           (let (K @  H (get K 'hook))
+                              (put> Obj (cdr X)
+                                 (mapcar
+                                    '((Lst)
+                                       (mapcar
+                                          '((B Val)
+                                             (if (== B K)
+                                                (cloneKey B (cdr X) Val
+                                                   (get (if (sym? H) This Lst) H) )
+                                                Val ) )
+                                          (get Rel 'bag)
+                                          Lst ) )
+                                    (car X) ) ) ) )
+                        ((isa '+Key Rel)
+                           (put> Obj (cdr X)
+                              (cloneKey Rel (cdr X) (car X)
+                                 (get This (get Rel 'hook)) ) ) )
+                        ((or (not (isa '+Joint Rel)) (isa '+List (meta Obj (cdr X))))
                            (put> Obj (cdr X) (car X)) ) ) ) ) ) )
          (getl This) )
       Obj ) )
+
+(de cloneKey (Rel Var Val Hook)
+   (cond
+      ((isa '+Number Rel)
+         (genKey Var (get Rel 'cls) Hook) )
+      ((isa '+String Rel)
+         (let S (pack "# " Val)
+            (while (fetch (tree Var (get Rel 'cls) Hook) S)
+               (setq S (pack "# " S)) )
+            S ) ) ) )
 
 (dm clone!> (Sym)
    (prog2

@@ -1,3 +1,14 @@
+* 01oct03 picoLisp-2.0.8
+   '+Hook' handling in '+Bag'
+   Unicode case conversions
+   '+Hook' changed to prefix class
+   Telephone number locales
+   CR-LF in HTTP headers
+   'date' and 'time' return UTC for 'T' argument
+   'clk>' (doubleclick) for '+DrawField'
+   Improved Hook support in Pilog
+   Optional 'NIL' argument to 'html' for "no Cache-Control"
+
 * 03aug03 picoLisp-2.0.7
    Extended 'in' and 'out' for negative channel offset arguments
    Changed internal database index tree function API

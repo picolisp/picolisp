@@ -1,4 +1,4 @@
-# 21jul03abu
+# 29sep03abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -60,6 +60,9 @@
 (de a5 ()
    ("head" 420 595) )
 
+(de a5L ()
+   ("head" 595 420) )
+
 (de _font ()
    (prinl "/" "*Font" " findfont  " "*Size" " scalefont  setfont") )
 
@@ -84,14 +87,23 @@
 (de width ("N" . "Prg")
    (and "Prg" (prinl "currentlinewidth"))
    (prinl "N" " setlinewidth")
-   (psEval "Prg")
-   (and "Prg" (prinl "setlinewidth")) )
+   (when "Prg"
+      (psEval "Prg")
+      (prinl "setlinewidth") ) )
 
 (de gray ("N" . "Prg")
    (and "Prg" (prinl "currentgray"))
    (prinl (- 100 "N") " 100 div setgray")
-   (psEval "Prg")
-   (and "Prg" (prinl "setgray")) )
+   (when "Prg"
+      (psEval "Prg")
+      (prinl "setgray") ) )
+
+(de color ("R" "G" "B" . "Prg")
+   (and "Prg" (prinl "currentrgbcolor"))
+   (prinl "R" " 100 div " "G" " 100 div " "B" " 100 div setrgbcolor")
+   (when "Prg"
+      (psEval "Prg")
+      (prinl "setrgbcolor") ) )
 
 (de poly (F X Y . @)
    (prin "newpath " X " " (- "*PgY" Y) " moveto  ")
@@ -144,21 +156,21 @@
       ((pair "X") (_ps "X"))
       (T (mapc _ps (split (chop "X") "^J"))) ) )
 
-(de _ps (L)
+(de _ps ("L")
    ("?ff")
-   (setq L
+   (setq "L"
       (mapcan
          '((C)
             (if (sub? C "\\()")
                (list "\\" C)
                (list C) ) )
-         L ) )
+         "L" ) )
    (cond
       ((not "H")
          (prin 0) )
       ((=0 "H")
-         (prin "*DX" " (" L ") stringwidth pop sub 2 div") )
-      (T (prin "*DX" " (" L ") stringwidth pop sub")) )
+         (prin "*DX" " (" "L" ") stringwidth pop sub 2 div") )
+      (T (prin "*DX" " (" "L" ") stringwidth pop sub")) )
    (prin
       " "
       (-
@@ -170,7 +182,10 @@
                (setq "*Pos" (+ (/ "*Size" 4) (/ "*DY" 2))) )
             (T (setq "*Pos" "*DY")) ) ) )
    (prin " moveto ")
-   (prinl "(" L ") show") )
+   (ps+ "L") )
+
+(de ps+ (X)
+   (prinl "(" X ") show") )
 
 (de pos (N)
    (if N (+ N "*Pos") "*Pos") )

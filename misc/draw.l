@@ -1,4 +1,4 @@
-# 28jun02abu
+# 23aug03abu
 # (c) Software Lab. Alexander Burger
 
 # *D2dField
@@ -28,14 +28,23 @@
 (de go ()
    (server 8080 "@tstPage") )
 
-(de tst ()
-   (siz> (get *Top 'fields 1) 1200 800)
-   (line> (get *Top 'fields 1) 100 100 300 200)
-   (link> (get *Top 'fields 1)
-      (comp> (get *Top 'fields 1)
-         (list
-            (oval> (get *Top 'fields 1) 300 100 100 50)
-            (text> (get *Top 'fields 1) 312 130 "Hello world") ) )
-      350 150
-      (rect> (get *Top 'fields 1) 300 200 50 50)
-      350 200 ) )
+(de tst (N)
+   (siz> (get *Top 'draw) 1200 800)
+   (line> (get *Top 'draw) 100 100 300 200)
+   (let
+      (Oval (oval> (get *Top 'draw) 300 100 100 50)
+         Rect (rect> (get *Top 'draw) 300 200 50 50)
+         Text (text> (get *Top 'draw) 312 130 "Hello world") )
+      (case N
+         (1
+            (link> (get *Top 'draw)
+               (comp> (get *Top 'draw) (list Oval Text))
+               350 150
+               Rect 350 200 ) )
+         (2
+            (link> (get *Top 'draw) Oval 300 125 Text 312 130)
+            (link> (get *Top 'draw)
+               (comp> (get *Top 'draw) (list Oval Text))
+               350 150
+               Rect 350 200 ) )
+ ) ) )

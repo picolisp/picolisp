@@ -1,4 +1,4 @@
-/* 19may03abu
+/* 16sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -94,6 +94,7 @@ static symInit Symbols[] = {
    {doFilter, "filter"},
    {doFind, "find"},
    {doFlush, "flush"},
+   {doFold, "fold"},
    {doFor, "for"},
    {doFork, "fork"},
    {doFormat, "format"},

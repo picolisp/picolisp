@@ -1,4 +1,4 @@
-# 18may03abu
+# 24sep03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -144,50 +144,61 @@
 
 
 ### DB ###
-(de initQuery (Var Cls Tree Val)
-   (cond
-      ((pair Val)
-         (cond
-            ((isa '+Key (get Cls Var))
-               (init Tree (car Val) (cdr Val)) )
-            ((>= (cdr Val) (car Val))
-               (init Tree
-                  (cons (car Val))
-                  (cons (cdr Val) T) ) )
-            (T
-               (init Tree
-                  (cons (car Val) T)
-                  (cons (cdr Val)) ) ) ) )
-      ((or (num? Val) (ext? Val))
-         (if (isa '+Key (get Cls Var))
-            (init Tree Val Val)
-            (init Tree (cons Val) (cons Val T)) ) )
-      ((=T Val) (init Tree))
-      (T
-         (cond
-            ((isa '+Key (get Cls Var))
-               (init Tree Val (pack Val `(char T))) )
-            ((isa '+Idx (get Cls Var))
-               (let Q (init Tree (cons Val) (cons (pack Val `(char T)) T))
-                  (if (cdr Q)
-                     Q
-                     (setq Val (pack (car (split (chop Val) " "))))
-                     (init Tree (cons Val) (cons (pack Val `(char T)) T)) ) ) )
-            (T (init Tree (cons Val) (cons (pack Val `(char T)) T))) ) ) ) )
+(de initQuery (Var Cls Hook Val)
+   (let (Tree (tree Var Cls Hook)  Rel (get Cls Var))
+      (when (find '((B) (isa '+Index B)) (get Rel 'bag))
+         (setq Rel @) )
+      (cond
+         ((pair Val)
+            (cond
+               ((isa '+Key Rel)
+                  (init Tree (car Val) (cdr Val)) )
+               ((>= (cdr Val) (car Val))
+                  (init Tree
+                     (cons (car Val))
+                     (cons (cdr Val) T) ) )
+               (T
+                  (init Tree
+                     (cons (car Val) T)
+                     (cons (cdr Val)) ) ) ) )
+         ((or (num? Val) (ext? Val))
+            (if (isa '+Key Rel)
+               (init Tree Val Val)
+               (init Tree (cons Val) (cons Val T)) ) )
+         ((=T Val) (init Tree))
+         (T
+            (cond
+               ((isa '+Key Rel)
+                  (init Tree Val (pack Val `(char T))) )
+               ((isa '+Idx Rel)
+                  (let Q (init Tree (cons Val) (cons (pack Val `(char T)) T))
+                     (if (cdr Q)
+                        Q
+                        (setq Val (pack (car (split (chop Val) " "))))
+                        (init Tree (cons Val) (cons (pack Val `(char T)) T)) ) ) )
+               (T (init Tree (cons Val) (cons (pack Val `(char T)) T))) ) ) ) ) )
 
-(be db (@Var @Cls @Obj) (db @Var @Cls (NIL . T) @Obj))
+# (db var cls obj)
+(be db (@Var @Cls @Obj)
+   (@Q box
+      (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
+         (initQuery (: var) (: cls) NIL '(NIL . T)) ) )
+   (_db @Obj @Q) )
 
-(be db (@Var @Cls @Val @Obj) (db @Var @Cls NIL @Val @Obj))
+# (db var cls hook|val obj)
+(be db (@Var @Cls @X @Obj)
+   (@Q box
+      (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
+         (if (: hook)
+            (initQuery (: var) (: cls) (-> @X) '(NIL . T))
+            (initQuery (: var) (: cls) NIL (-> @X)) ) ) )
+   (_db @Obj @Q) )
 
+# (db var cls hook val obj)
 (be db (@Var @Cls @Hook @Val @Obj)
    (@Q box
-      (with
-         (or
-            (get (-> @Cls) (-> @Var))
-            (meta (-> @Cls) (-> @Var)) )
-         (initQuery (: var) (: cls)
-            (tree (: var) (: cls) (-> @Hook))
-            (-> @Val) ) ) )
+      (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
+         (initQuery (: var) (: cls) (-> @Hook) (-> @Val)) ) )
    (_db @Obj @Q) )
 
 (be _db (@Obj @Q)
@@ -240,12 +251,17 @@
 
 (de "same" (X L)
    (if L
-      (if (atom X)
-         ("same" (get X (car L)) (cdr L))
-         (pick
-            '((Y)
-               ("same" (get Y (car L)) (cdr L)) )
-            X ) )
+      (cond
+         ((atom X)
+            ("same" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("same"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("same" (get Y (car L)) (cdr L)) )
+               X ) ) )
       (if (atom X)
          (= V X)
          (find '((Y) (= V Y)) X) ) ) )
@@ -267,12 +283,17 @@
 
 (de "range" (X L)
    (if L
-      (if (atom X)
-         ("range" (get X (car L)) (cdr L))
-         (pick
-            '((Y)
-               ("range" (get Y (car L)) (cdr L)) )
-            X ) )
+      (cond
+         ((atom X)
+            ("range" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("range"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("range" (get Y (car L)) (cdr L)) )
+               X ) ) )
       (if (atom X)
          (or
             (<= (car N) X (cdr N))
@@ -295,15 +316,49 @@
 
 (de "head" (X L)
    (if L
-      (if (atom X)
-         ("head" (get X (car L)) (cdr L))
-         (pick
-            '((Y)
-               ("head" (get Y (car L)) (cdr L)) )
-            X ) )
+      (cond
+         ((atom X)
+            ("head" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("head"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("head" (get Y (car L)) (cdr L)) )
+               X ) ) )
       (if (atom X)
          (pre? S X)
          (find '((Y) (pre? S Y)) X) ) ) )
+
+(be fold (@S . @L)
+   (@ let S (-> @S)
+      (or
+         (not S)
+         (let L (-> @L)
+            ("fold"
+               (get (car L) (cadr L))
+               (cddr L) ) ) ) ) )
+
+(de "fold" (X L)
+   (if L
+      (cond
+         ((atom X)
+            ("fold" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("fold"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("fold" (get Y (car L)) (cdr L)) )
+               X ) ) )
+      (if (atom X)
+         (pre? (fold S) (fold X))
+         (let P (fold S)
+            (find
+               '((Y) (pre? P (fold Y)))
+               X ) ) ) ) )
 
 (be part (@S . @L)
    (@ let S (-> @S)
@@ -316,16 +371,20 @@
 
 (de "part" (X L)
    (if L
-      (if (atom X)
-         ("part" (get X (car L)) (cdr L))
-         (pick
-            '((Y)
-               ("part" (get Y (car L)) (cdr L)) )
-            X ) )
+      (cond
+         ((atom X)
+            ("part" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("part"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("part" (get Y (car L)) (cdr L)) )
+               X ) ) )
       (if (atom X)
          (sub? S X)
          (find '((Y) (sub? S Y)) X) ) ) )
-
 
 (be tolr (@S . @L)
    (@ let S (-> @S)
@@ -338,15 +397,24 @@
 
 (de "tolr" (X L)
    (if L
+      (cond
+         ((atom X)
+            ("tolr" (get X (car L)) (cdr L)) )
+         ((pair (car L))
+            ("tolr"
+               (apply get (cdar L) (assoc (caar L) X))
+               (cdr L) ) )
+         (T
+            (pick
+               '((Y) ("tolr" (get Y (car L)) (cdr L)) )
+               X ) ) )
       (if (atom X)
-         ("tolr" (get X (car L)) (cdr L))
-         (pick
-            '((Y)
-               ("tolr" (get Y (car L)) (cdr L)) )
-            X ) )
-      (if (atom X)
-         (tolr S X)
-         (find '((Y) (tolr S Y)) X) ) ) )
+         (or (sub? S X) (pre? (ext:Snx S) (ext:Snx X)))
+         (let P (ext:Snx S)
+            (find
+               '((Y)
+                  (or (sub? S Y) (pre? P (ext:Snx Y))) )
+               X ) ) ) ) )
 
 
 (de "select" (Lst Flg)
@@ -370,11 +438,17 @@
                               (and (get Cls Var 'hook) (pop 'Lst)) ) ) ) ) ) ) ) ) ) )
 
 (de "initSel" (Var Cls Hook)
-   (if (isa '+Sn (get Cls Var))
-      (conc
-         (initQuery Var Cls (tree Var Cls Hook) Val)
-         (initQuery Var Cls (tree Var Cls Hook) (ext:Snx Val)) )
-      (initQuery Var Cls (tree Var Cls Hook) Val) ) )
+   (let Rel (get Cls Var)
+      (when (find '((B) (isa '+Index B)) (get Rel 'bag))
+         (setq Rel @) )
+      (cond
+         ((isa '+Fold Rel)
+            (initQuery Var Cls Hook (fold Val)) )
+         ((isa '+Sn Rel)
+            (conc
+               (initQuery Var Cls Hook Val)
+               (initQuery Var Cls Hook (ext:Snx Val)) ) )
+         (T (initQuery Var Cls Hook Val)) ) ) )
 
 (de _gen (Lst Q)
    (ifn Lst
@@ -393,12 +467,20 @@
                @ )
             (NIL (setq X (_gen (cddr Lst) Q)))
             (set Lst
-               (if (atom (cadr Lst))
-                  (get X (cadr Lst))
-                  (init
-                     (apply tree (cadr Lst))
-                     (cons X)
-                     (cons X T) ) ) ) ) ) ) )
+               (cond
+                  ((atom (cadr Lst)) (get X (cadr Lst)))
+                  ((=T (caddr (cadr Lst)))
+                     (initQuery
+                        (caadr Lst)
+                        (cadr (cadr Lst))
+                        X
+                        (cadddr (cadr Lst)) ) )
+                  (T
+                     (initQuery
+                        (caadr Lst)
+                        (cadr (cadr Lst))
+                        (caddr (cadr Lst))
+                        X ) ) ) ) ) ) ) )
 
 (be select (("@Obj" . "@X") . "@Lst")
    (@ unify (-> "@X"))

@@ -1,4 +1,4 @@
-# 30jul03abu
+# 24sep03abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -10,7 +10,7 @@
    (`(chop ".css") "text/css" 86400)
    (`(chop ".gif") "image/gif" 86400)
    (`(chop ".jpg") "image/jpeg" 86400)
-   (`(chop ".txt") "text/octet-stream" 1)
+   (`(chop ".txt") "text/octet-stream" 1)  # 'T' MSIE problem?
    (`(chop ".wav") "audio/x-wav" 1)
    (`(chop ".mp3") "audio/x-mpeg" 86400)
    (`(chop ".pdf") "application/pdf" 1)
@@ -24,19 +24,19 @@
       (let "H" @
          (prog1
             (out "H"
-               (prinl "GET /" "Name" " HTTP/1.1")
-               (prinl "Connection: close")
-               (prinl "User-Agent: PicoLisp")
-               (prinl "Host: " "Host")
-               (prinl "Accept-Charset: utf-8")
-               (prinl)
+               (prinl "GET /" "Name" " HTTP/1.1^M")
+               (prinl "Connection: close^M")
+               (prinl "User-Agent: PicoLisp^M")
+               (prinl "Host: " "Host" "^M")
+               (prinl "Accept-Charset: utf-8^M")
+               (prinl "^M")
                (flush)
                (in "H" (run "Prg")) )
             (close "H") ) ) ) )
 
 # Local Password
 (de pw ()
-   (in ".pw" (read)) )
+   (in ".pw" (line T)) )
 
 # Pico Shell
 (de psh (Pw Tty)
@@ -75,15 +75,6 @@
 
 (de https @
    (pass pack "https://" *Host "/" *Port "/" *SesId) )
-
-(de keywords (Lst)
-   (let Key '("NAME" . "keywords")
-      (if Lst
-         (let Val (list (cons "CONTENT" (glue ", " Lst)))
-            (if (assoc Key *Meta)
-               (con @ Val)
-               (push '*Meta (cons Key Val)) ) )
-         (and (assoc Key *Meta) (setq *Meta (delete @ *Meta))) ) ) )
 
 # Init crypt
 (de rsa (N)
@@ -144,7 +135,7 @@
                (out S
                   (cond
                      ((<> *ConId *SesId)
-                        (and (info "void") (httpEcho "void" NIL 86400)) )
+                        (and (info "void") (httpEcho "void")) )
                      ((=0 F)
                         (html NIL
                            (prinl "<TABLE WIDTH=\"100%\"><TR>")
@@ -165,7 +156,7 @@
                      ((= '("." "l") (tail 2 @U))
                         (load *Url) )
                      ((= '("." "h" "t" "m" "l") (tail 5 @U))
-                        (httpEcho *Url NIL 86400) )
+                        (httpEcho *Url) )
                      ((assoc (tail 4 @U) *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
@@ -265,7 +256,8 @@
 (de _htArg (Lst)
    (use @L
       (cond
-         ((format (pack Lst)) @)
+         ((= "$" (car Lst))
+            (format (pack (cdr Lst))) )
          ((match '("[" @L "]") Lst)
             (intern (ht:Pack @L)) )
          ((match '("{" @L "}") Lst)
@@ -288,28 +280,36 @@
 
 # Http Transfer Header
 (de _http (Typ Upd)
-   (prinl "HTTP/1.1 200 OK")
-   (prinl "Server: PicoLisp")
-   (prinl "Connection: close")
-   (prinl "Cache-Control: max-age=" Upd)
-   (when (=0 Upd)
-      (prinl "Cache-Control: no-cache") )
-   (prinl "Content-Type: " (or Typ "text/html; charset=utf-8")) )
+   (prinl "HTTP/1.1 200 OK^M")
+   (prinl "Server: PicoLisp^M")
+   (prinl "Connection: close^M")
+   (when Upd
+      (prinl "Cache-Control: max-age=" Upd "^M")
+      (when (=0 Upd)
+         (prinl "Cache-Control: no-cache^M") ) )
+   (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M") )
 
-(de httpHead (Typ)
-   (_http Typ 0)
-   (prinl) )
+(de httpHead (Typ Upd)
+   (_http Typ Upd)
+   (prinl "^M") )
 
 # Http Echo
 (de httpEcho (File Typ Upd Att)
    (_http Typ Upd)
-   (prinl "Content-Length: " (car (info File)))
+   (let (I (info File)  D (date (cadr I)))
+      (prinl "Content-Length: " (car I) "^M")
+      (prinl "Last-Modified: "
+         (day (cadr I) *Day) ", "
+         (pad 2 (caddr D)) " "
+         (get *Mon (cadr D)) " "
+         (car D) " "
+         (tim$ (cddr I)) " GMT^M" ) )
    (when Att
       (let F (chop File)
          (while (member "/" F)
             (setq F (cdr @)) )
-         (prinl "Content-Disposition: attachment; filename=\"" F "\"") ) )
-   (prinl)
+         (prinl "Content-Disposition: attachment; filename=\"" F "\"^M") ) )
+   (prinl "^M")
    (in File (echo)) )
 
 # Ouput navigation links
@@ -351,19 +351,20 @@
 
 ### Html Output ###
 (de html ("Ttl" . "Prg")
-   (httpHead)
+   (httpHead NIL (if (car "Prg") 0 (pop '"Prg")))
    (prinl
       "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 "
       (if (num? (car "Prg")) "Frameset" "Transitional")
       "//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">" )
-   (prinl "<HTML>")
+   (if *Lang
+      (prinl "<HTML lang=\"" *Lang "\">")
+      (prinl "<HTML>") )
    (prinl "<HEAD>")
    (prinl "<BASE HREF=\"" (baseHRef) "\">")
    (when "Ttl"
       (prin "<TITLE>")
       (ht:Prin "Ttl")
       (prinl "</TITLE>") )
-   (and *Lang (prinl "<META NAME=\"lang\" CONTENT=\"" *Lang "\">"))
    (mapc
       '((L)
          (prin "<META")
@@ -445,14 +446,19 @@
       ((=T (car "X")) (apply <href> (cdr "X")))
       (T (eval "X")) ) )
 
+(de <item2> ("L" "R" "N")
+   (prin "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\">")
+   (and "N" (prin "<H" "N" ">"))
+   (<item> "L")
+   (and "N" (prin "</H" "N" ">"))
+   (prin "</TD><TD ALIGN=\"RIGHT\">")
+   (<item> "R")
+   (prinl "</TD></TR></TABLE>") )
+
 (de <head> (S N X)
    (if N
       (prinl "<H" N (_htAlign X) ">" S "</H" N ">")
-      (prin "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"LEFT\"><H3>")
-      (ht:Prin S)
-      (prin "</H3></TD><TD ALIGN=\"RIGHT\">")
-      (navi)
-      (prinl "</TD></TR></TABLE>") ) )
+      (<item2> S '(navi) 3) ) )
 
 (de <font> ("Col" "Siz" . "Prg")
    (prin "<FONT")

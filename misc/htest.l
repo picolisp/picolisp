@@ -1,4 +1,4 @@
-# 21mar03abu
+# 17sep03abu
 # (c) Software Lab. Alexander Burger
 
 (and (app) (rsa 60))
@@ -80,13 +80,16 @@
                (gui 'fix '(+FixField) 2 "Fix" 12) )
             (row
                (gui '(+DateField) "Date" 10)
-               (gui '(+Chk +TextField) "Mist" "+Chk" 12)
+               (gui '(+Chk +TextField) "Mist" "+Chk" 20)
                (gui 'cho '(+TextField) "Auswahlfeld" '("ABC" "DEF" "GHI"))
                (gui 'chk '(+Map +Checkbox) '((T . 1)  (NIL . 2)) "Checkbox") )
             (----)
             (gui 'arr '(+Array) "Array" 4
                '((S) (gui '(+TextField) S 10))
                '(A B C D E F G) )
+            (-|-)
+            (txt)
+            (gui '(+ListTextField) "ListText" 30)
             (---- T)
             (gui '(+Chart)
                4 '(" " "Nummer" "Text")

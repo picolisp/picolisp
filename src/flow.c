@@ -1,4 +1,4 @@
-/* 28may03abu
+/* 19aug03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -246,35 +246,48 @@ any doNew(any ex) {
 
 // (type 'any) -> lst
 any doType(any ex) {
-   any x, y;
+   any x, y, z;
 
    x = cdr(ex),  x = EVAL(car(x));
    if (isSym(x)) {
       Fetch(ex,x);
-      for (x = val(x); isCell(x); x = cdr(x))
+      z = x = val(x);
+      while (isCell(x)) {
          if (!isCell(car(x))) {
             y = x;
-            while (isSym(car(x)))
+            while (isSym(car(x))) {
                if (!isCell(x = cdr(x)))
                   return isNil(x)? y : Nil;
+               if (z == x)
+                  return Nil;
+            }
             return Nil;
          }
+         if (z == (x = cdr(x)))
+            return Nil;
+      }
    }
    return Nil;
 }
 
 static bool isa(any ex, any cls, any x) {
+   any z;
+
    Fetch(ex,x);
-   for (x = val(x); isCell(x); x = cdr(x))
+   z = x = val(x);
+   while (isCell(x)) {
       if (!isCell(car(x))) {
          while (isSym(car(x))) {
             if (cls == car(x) || isa(ex, cls, car(x)))
                return YES;
-            if (!isCell(x = cdr(x)))
+            if (!isCell(x = cdr(x)) || z == x)
                return NO;
          }
          return NO;
       }
+      if (z == (x = cdr(x)))
+         return NO;
+   }
    return NO;
 }
 

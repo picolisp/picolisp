@@ -1,4 +1,4 @@
-/* 30jun03abu
+/* 16sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -176,10 +176,6 @@ typedef struct catchFrame {
 /* External symbol access */
 #define Fetch(ex,x)     if (isExt(x)) db(ex,x,1)
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
-
-/* Case conversion */
-#define isLowc(c) (c >= 'a' && c <= 'z' || c == 128 || c >= (byte)224 && c < (byte)255)
-#define isUppc(c) (c >= 'A' && c <= 'Z' || c >= (byte)192 && c < (byte)223)
 
 /* Globals */
 extern bool SigInt, SigTerm;
@@ -385,6 +381,7 @@ any doFill(any);
 any doFilter(any);
 any doFind(any);
 any doFlush(any);
+any doFold(any);
 any doFor(any);
 any doFork(any);
 any doFormat(any);
@@ -582,6 +579,7 @@ static inline any nth(int n, any x) {
 /* List length calculation */
 static inline int length(any x) {
    int n;
+
    for (n = 0; isCell(x);  x = cdr(x))
       ++n;
    return n;
@@ -589,20 +587,28 @@ static inline int length(any x) {
 
 /* Membership */
 static inline any memq(any x, any y) {
+   any z = y;
+
    while (isCell(y)) {
       if (x == car(y))
          return y;
-      y = cdr(y);
+      if (z == (y = cdr(y)))
+         return Nil;
    }
    return x == y? y : Nil;
 }
 
 static inline int indx(any x, any y) {
-   int n;
+   int n = 1;
+   any z = y;
 
-   for (n = 1;  isCell(y);  ++n, y = cdr(y))
+   while (isCell(y)) {
       if (equal(x, car(y)))
          return n;
+      ++n;
+      if (z == (y = cdr(y)))
+         return 0;
+   }
    return 0;
 }
 

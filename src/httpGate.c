@@ -1,4 +1,4 @@
-/* 30may03abu
+/* 26aug03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,12 +31,22 @@ static struct {
    int cnt[THROTTLE];
 } Throttle;
 
-static char Head[] =
-   "HTTP/1.1 200 OK\n"
-   "Server: PicoLisp\n"
-   "Connection: close\n"
-   "Cache-Control: max-age=86400\n"
-   "Content-Type: text/html; charset=utf-8\n";
+static char Head_200[] =
+   "HTTP/1.1 200 OK\r\n"
+   "Server: PicoLisp\r\n"
+   "Connection: close\r\n"
+   "Content-Type: text/html; charset=utf-8\r\n";
+
+static char Response_404[] =
+   "HTTP/1.1 404 Not Found\r\n"
+   "Server: PicoLisp\r\n"
+   "Connection: close\r\n"
+   "Content-Type: text/html; charset=utf-8\r\n"
+   "\r\n"
+   "<HTML>\n"
+   "<HEAD><TITLE>404 Not Found</TITLE></HEAD>\n"
+   "<BODY><H1>Not Found</H1></BODY>\n"
+   "</HTML>\n";
 
 
 static void giveup(char *msg) {
@@ -127,7 +137,7 @@ int main(int ac, char *av[]) {
    sd = gatePort((int)atol(av[1]));  // e.g. 80 or 443 / 9090
    dflt = (int)atol(av[2]);  // e.g. 8080
    if (ac == 3)
-      ssl = NULL,  gate = "Gate: http %s\n";
+      ssl = NULL,  gate = "Gate: http %s\r\n";
    else {
       SSL_load_error_strings();
       OpenSSL_add_ssl_algorithms();
@@ -138,7 +148,7 @@ int main(int ac, char *av[]) {
          ERR_print_errors_fp(stderr);
          giveup("SSL init");
       }
-      ssl = SSL_new(ctx),  gate = "Gate: https %s\n";
+      ssl = SSL_new(ctx),  gate = "Gate: https %s\r\n";
    }
 
    signal(SIGCHLD,SIG_IGN);  /* Prevent zombies (Linux) */
@@ -209,8 +219,13 @@ int main(int ac, char *av[]) {
                   port = dflt,  q = p;
                else {
                   port = (int)strtol(p, &q, 10);
-                  if (q == p  ||  *q != ' ' && *q != '/')
-                     return 1;
+                  if (q == p  ||  *q != ' ' && *q != '/') {
+                     if (ssl)
+                        SSL_write(ssl, Response_404, strlen(Response_404));
+                     else
+                        wrBytes(cli, Response_404, strlen(Response_404));
+                     return 0;
+                  }
                }
 
                if ((srv = gateConnect((unsigned short)port)) < 0) {
@@ -219,9 +234,9 @@ int main(int ac, char *av[]) {
                   if ((fd = open("void", O_RDONLY)) < 0)
                      return 1;
                   if (ssl)
-                     SSL_write(ssl, Head, strlen(Head));
+                     SSL_write(ssl, Head_200, strlen(Head_200));
                   else
-                     wrBytes(cli, Head, strlen(Head));
+                     wrBytes(cli, Head_200, strlen(Head_200));
                   while ((n = read(fd, buf, sizeof(buf))) > 0)
                      if (ssl)
                         SSL_write(ssl, buf, n);

@@ -1,4 +1,4 @@
-# 27jul03abu
+# 01oct03abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -10,7 +10,7 @@
    (act> . 1) (cmd> . 1) (key> . 1) (nxt> . 1) (rsa> . 1)
    (scr> . 2) (adv> . 2)
    (chg> . 3) (log> . 3)
-   (clk> . 4) (drg> . 4) )
+   (clk> . 4) (dbl> . 4) (drg> . 4) )
 
 (de dispatch ()
    (timeout `(* 15 60000))
@@ -264,6 +264,9 @@
 (dm clk> ()
    (clk> (get (: fields) (rd)) (rd) (rd) (rd)) )
 
+(dm dbl> ()
+   (dbl> (get (: fields) (rd)) (rd) (rd) (rd)) )
+
 (dm drg> ()
    (drg> (get (: fields) (rd)) (rd) (rd) (rd)) )
 
@@ -272,7 +275,7 @@
 
 (dm act> ()
    (let F (get (: fields) (rd))
-      (and (fieldEnd) (= F (: focus)) (act> F))
+      (and (fieldEnd) (act> F))
       (when (get *Apps (: id))
          (out *App (pr (: id) "ack")) ) ) )
 
@@ -877,6 +880,18 @@
          (: radio) ) ) )
 
 
+(class +Trigger)
+# trigger
+
+(dm T (Exe . @)
+   (=: trigger Exe)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra Val)
+   (and Val (eval (: trigger))) )
+
+
 (class +Relay)
 # relay
 
@@ -1297,6 +1312,7 @@
       (mapc 'pr> Lst) ) )
 
 (dm clk> (M X Y))
+(dm dbl> (M X Y))
 (dm drg> (M X Y))
 
 (dm new> (Typ . @)
@@ -1328,6 +1344,7 @@
    (: img) )
 
 (dm clk> (M X Y))
+(dm dbl> (M X Y))
 (dm drg> (M X Y))
 
 
@@ -1368,6 +1385,15 @@
    (cons Key
       (cons T
          (list 'setFocus (lit (or Val Key))) ) ) )
+
+
+(class +ListTextField +TextField)
+
+(dm set> (Val)
+   (super (glue " " Val)) )
+
+(dm val> ()
+   (mapcar pack (split (chop (super)) " ")) )
 
 
 # Matchcode Field
@@ -1514,7 +1540,7 @@
 (dm key> (C)
    (and
       (setq C (super C))
-      (or (= C (cadr *DateFmt)) (sub? C "0123456789"))
+      (or (sub? C "0123456789") (member C *DateFmt))
       C ) )
 
 (dm cho> ()
@@ -1837,6 +1863,10 @@
 (dm size> ()
    (length (: data)) )
 
+(dm upd> ()
+   (get> This)
+   (put> This) )
+
 (dm end> ()
    (set> This (val> This)) )
 
@@ -1953,10 +1983,7 @@
 ### Dialog Components ###
 (de hotButton (Str)
    (gui '(+Able +Button)
-      '(or
-         (isa '+Hot (: home focus2))
-         (isa '+Obj (: home focus2))
-         (isa '+ObjView (: home focus2)) )
+      '(or (: home focus2 obj) (isa '+Hot (: home focus2)))
       "" Str
       '(act> (: home focus2)) ) )
 
@@ -2051,8 +2078,8 @@
 # hint
 
 (dm T (CL . @)
-   (=: hint CL)
-   (pass super) )
+   (pass super)
+   (=: hint (append CL '((@ pre? (-> @1) (-> @@))))) )
 
 (dm key> (C)
    (use (H Q S)
@@ -2060,14 +2087,14 @@
          H (pack
             (head (: sel) (chop (: str)))
             (setq C (extra C)) )
-         Q (goal (: hint) '@ H) )
+         Q (goal (: hint) '@1 H) )
       (loop
-         (NIL (prove Q) C)
-         (T (pre? H (setq S (cdr (last @))))
+         (NIL (asoq '@@ (prove Q)) C)
+         (T (pre? H (setq S (cdr @)))
             (pack (nth (chop S) (+ 1 (: sel)))) ) ) ) )
 
 (dm cho> ()
-   (let (H (pack (head (: sel) (chop (: str))))  Q (goal (: hint) '@ H))
+   (let (H (pack (head (: sel) (chop (: str))))  Q (goal (: hint) '@1 H))
       (mapcan
          '((S)
             (when (pre? H S)
@@ -2075,8 +2102,8 @@
          (make
             (while
                (and
-                  (prove Q)
-                  (let S (cdr (last @))
+                  (asoq '@@ (prove Q))
+                  (let S (cdr @)
                      (or
                         (member S (made))
                         (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
@@ -2245,11 +2272,11 @@
 
 (dm key> (C)
    (when (setq C (extra C))
-      (ifn (prove (objQuery C))
+      (ifn (asoq '@@ (prove (objQuery C)))
          C
          (pack
             (nth
-               (chop (get (=: obj (cdar @)) (: objVar)))
+               (chop (get (=: obj (cdr @)) (: objVar)))
                (+ 1 (: sel)) ) ) ) ) )
 
 (dm cho> ()
@@ -2259,8 +2286,8 @@
          (make
             (while
                (and
-                  (prove Q)
-                  (let S (cdar @)
+                  (asoq '@@ (prove Q))
+                  (let S (cdr @)
                      (or
                         (member S (made))
                         (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
@@ -2282,21 +2309,21 @@
 (dm query> (X)
    (let Cls (meta (: objTyp) (: objVar) 'cls)
       (if (num? X)
-         (list  # ((db var +Cls (<N> . T) @Obj) (isa +Cls @Obj))
+         (list  # ((db var +Cls (<N> . T) @@) (isa +Cls @@))
             (make
                (link 'db (: objVar) Cls)
                (when (: objHook)
                   (link (eval @)) )
-               (link (cons X T) '@Obj) )
-            (list 'isa Cls '@Obj) )
-         (list  # ((db var +Cls "Str" @Obj) (isa +Cls @Obj) (head "Str" @Obj var))
+               (link (cons X T) '@@) )
+            (list 'isa Cls '@@) )
+         (list  # ((db var +Cls "Str" @@) (isa +Cls @@) (head "Str" @@ var))
             (make
                (link 'db (: objVar) Cls)
                (when (: objHook)
                   (link (eval @)) )
-               (link X '@Obj) )
-            (list 'isa Cls '@Obj)
-            (list 'head X '@Obj (: objVar)) ) ) ) )
+               (link X '@@) )
+            (list 'isa Cls '@@)
+            (list 'head X '@@ (: objVar)) ) ) ) )
 
 
 (class +ObjView +Lock)
@@ -2364,22 +2391,23 @@
    ((: objQuery) Str) )
 
 
-(class +QueryObjLst +Query +Obj)
-# mkObjLst
+(class +HintObj +Query +Obj)
+# objHint
 
-(dm T (Exe . @)
-   (=: mkObjLst Exe)
+(dm T (CL . @)
    (pass super
       '((Str)
-         (list
-            (list 'lst '@Obj (eval (: mkObjLst)))
-            (list 'head Str '@Obj (: objVar)) ) ) ) )
+         (cons '@1 (cons Str (: objHint))) ) )
+   (=: objHint
+      (append CL
+         (cons (list 'head '@1 '@@ (: objVar))) ) ) )
 
 (dm val> (Flg)
    (if Flg
       (super T)
-      (let V (super)
-         (and V (memq V (eval (: mkObjLst))) V) ) ) )
+      (and
+         (= (extra) (get (: obj) (: objVar)))
+         (: obj) ) ) )
 
 
 # Index Tree Chart
@@ -2423,6 +2451,7 @@
          (eval (cddr (: tree))) ) ) )
 
 (dm set> (Beg End)
+   (=: ofs 1)
    (=: beg Beg)
    (=: end End)
    (put> This)
@@ -2433,6 +2462,19 @@
 
 (dm upd> ()
    (set> This (cons (: home obj)) (cons (: home obj) T)) )
+
+
+# IndexChart selector
+(class +Sel +Sync)
+
+(dm key> (C)
+   (prog1 (extra C)
+      (set> (pick '((F) (get F 'arr)) (memq This (: home fields)))
+         (cons (pack (: str) @))
+         (cons (pack (: str) @ `(char T)) T) ) ) )
+
+(dm act> ()
+   (key> This) )
 
 
 # DB Query Chart
@@ -2454,9 +2496,8 @@
          (>
             (: ofs)
             (- (length (: data)) (: rows)) )
-         (prove (: quer)) )
-      (=: data
-         (conc (: data) (cons (cdr (last @)))) ) )
+         (asoq '@@ (prove (: quer))) )
+      (=: data (conc (: data) (cons (cdr @)))) )
    (super) )
 
 (dm upd> ()
@@ -2476,7 +2517,7 @@
    (set> This
       (goal
          (list
-            (list 'lst '@Obj
+            (list 'lst '@@
                (sortBy
                   '((Obj) (with Obj (eval Exe)))
                   (: data) ) ) ) ) ) )

@@ -1,4 +1,4 @@
-# 21may03abu
+# 08sep03abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -12,7 +12,7 @@ pico: $(bin)/pico $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
 
-picoFiles = main.c gc.c io.c flow.c big.c sym.c subr.c apply.c tab.c net.c
+picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
 .c.o:
 	echo $*.c:

@@ -1,4 +1,4 @@
-/* 20jun03abu
+/* 23sep03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -100,7 +100,7 @@ static void htEncode(any x) {
 
    bufString(x, nm);
    for (p = nm; *p; ++p) {
-      if (strchr(" \"%&()=?[]_{}", *p))
+      if (strchr(" \"#$%&()=?[]_{}", *p))
          Env.put('%'), putHex(*p);
       else
          Env.put(*p);
@@ -110,7 +110,9 @@ static void htEncode(any x) {
 static void htFmt(any x) {
    any y;
 
-   if (isNum(x) || isExt(x))
+   if (isNum(x))
+      Env.put('$'),  prin(x);
+   else if (isExt(x))
       prin(x);
    else if (isCell(x)) {
       Env.put('(');
@@ -124,7 +126,7 @@ static void htFmt(any x) {
       Env.put(')');
    }
    else if (isNum(y = name(x))) {
-      if (findHash(y, Intern + hash(y)))
+      if (x == findHash(y, Intern + hash(y)))
          Env.put('['),  htEncode(x),  Env.put(']');
       else
          htEncode(x);

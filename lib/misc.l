@@ -1,11 +1,17 @@
-# 28jul03abu
+# 24sep03abu
 # (c) Software Lab. Alexander Burger
 
+(de *Day . (Mon Tue Wed Thu Fri Sat Sun .))
+(de *Mon . (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec .))
+(de *mon . (jan feb mar apr may jun jul aug sep oct nov dec .))
+
 ### Locale ###
-(off *Ctry *Lang)
+(de *Ctry)
+(de *Lang)
 (de *Str)
 (de *Sep0 . ".")
 (de *Sep3 . ",")
+(de *CtryCode)
 (de *DateFmt @Y "-" @M "-" @D)
 (de *DayFmt Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
 (de *MonFmt January February March April May June July August September October November December)
@@ -81,11 +87,6 @@
                (and (cdr L) Str) ) )
          Lst ) ) )
 
-(de tolr (P D)
-   (or
-      (sub? P D)
-      (pre? (ext:Snx P) (ext:Snx D)) ) )
-
 ### Number ###
 (de pad (N Val)
    (pack (need N (chop Val) "0")) )
@@ -132,6 +133,33 @@
       (pack (format N 2 *Sep0 *Sep3) " " Cur)
       (format N 2 *Sep0 *Sep3) ) )
 
+### Telephone ###
+(de telStr (S)
+   (cond
+      ((not S))
+      ((and *CtryCode (pre? (pack *CtryCode " ") S))
+         (pack 0 (cdddr (chop S))) )
+      (T (pack "+" S)) ) )
+
+(de expTel (S)
+   (setq S
+      (make
+         (for (L (chop S) L)
+            (ifn (sub? (car L) " -")
+               (link (pop 'L))
+               (let F NIL
+                  (loop
+                     (and (= '- (pop 'L)) (on F))
+                     (NIL L)
+                     (NIL (sub? (car L) " -")
+                        (link (if F '- " ")) ) ) ) ) ) ) )
+   (cond
+      ((= "+" (car S)) (pack (cdr S)))
+      ((= '("0" "0") (head 2 S))
+         (pack (cddr S)) )
+      ((and *CtryCode (= "0" (car S)))
+         (pack *CtryCode " " (cdr S)) ) ) )
+
 ### Date ###
 # ISO date
 (de dat$ (Dat C)
@@ -158,7 +186,10 @@
 (de datSym (Dat)
    (when Dat
       (setq Dat (date Dat))
-      (pack (pad 2 (caddr Dat)) (month (cadr Dat)) (pad 2 (% (car Dat) 100))) ) )
+      (pack
+         (pad 2 (caddr Dat))
+         (get *mon (cadr Dat))
+         (pad 2 (% (car Dat) 100)) ) ) )
 
 # Localized
 (de datStr (D F)
@@ -216,8 +247,10 @@
             @D ) ) ) )
 
 # Day of the week
-(de day (N)
-   (get *DayFmt (+ 1 (% (+ 1 N) 7))) )
+(de day (Dat Lst)
+   (get
+      (or Lst *DayFmt)
+      (+ 1 (% (+ 1 Dat) 7)) ) )
 
 # Week of the year
 (de week (Dat)
@@ -236,12 +269,6 @@
          (date (+ 1 Y) 1 1)
          (date Y (+ 1 M) 1) )
       1 ) )
-
-# Month name
-(de *Mon . (jan feb mar apr may jun jul aug sep oct nov dec .))
-
-(de month (N)
-   (get *Mon N) )
 
 ### Time ###
 (de tim$ (Tim F)
@@ -298,47 +325,48 @@
          (prog1
             (and
                (pre? "220 " (in "S" (line T)))
-               (out "S" (prinl "HELO " "Host"))
+               (out "S" (prinl "HELO " (cdr (member "@" (chop "From"))) "^M"))
                (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "MAIL FROM:" "From"))
+               (out "S" (prinl "MAIL FROM:" "From" "^M"))
                (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "RCPT TO:" "To"))
+               (out "S" (prinl "RCPT TO:" "To" "^M"))
                (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "DATA"))
+               (out "S" (prinl "DATA^M"))
                (pre? "354 " (in "S" (line T)))
                (out "S"
-                  (prinl "From: " "From")
-                  (prinl "To: " "To")
-                  (prinl "Subject: " "Sub")
-                  (prinl "User-Agent: PicoLisp")
-                  (prinl "MIME-Version: 1.0")
+                  (prinl "From: " "From" "^M")
+                  (prinl "To: " "To" "^M")
+                  (prinl "Subject: " "Sub" "^M")
+                  (prinl "User-Agent: PicoLisp^M")
+                  (prinl "MIME-Version: 1.0^M")
                   (when "Att"
-                     (prinl "Content-Type: multipart/mixed; boundary=\"" "B" "\"")
-                     (prinl)
-                     (prinl "--" "B") )
-                  (prinl "Content-Type: text/plain; charset=utf-8")
-                  (prinl "Content-Transfer-Encoding: 8bit")
-                  (prinl)
+                     (prinl "Content-Type: multipart/mixed; boundary=\"" "B" "\"^M")
+                     (prinl "^M")
+                     (prinl "--" "B" "^M") )
+                  (prinl "Content-Type: text/plain; charset=utf-8^M")
+                  (prinl "Content-Transfer-Encoding: 8bit^M")
+                  (prinl "^M")
                   (prEval "Prg")
-                  (prinl)
+                  (prinl "^M")
                   (when "Att"
                      (loop
-                        (prinl "--" "B")
+                        (prinl "--" "B" "^M")
                         (prinl
                            "Content-Type: "
                            (or (caddr "Att") "application/octet-stream")
                            "; name=\""
                            (cadr "Att")
-                           "\"" )
-                        (prinl "Content-Transfer-Encoding: x-uuencode")
-                        (prinl)
-                        (in (list "uuencode" (car "Att") (cadr "Att"))
-                           (echo) )
-                        (prinl)
+                           "\"^M" )
+                        (prinl "Content-Transfer-Encoding: base64^M")
+                        (prinl "^M")
+                        (in (list "uuencode" "-m" (car "Att") (cadr "Att"))
+                           (line)
+                           (echo '====) )
+                        (prinl "^M")
                         (NIL (setq "Att" (cdddr "Att"))) )
-                     (prinl "--" "B" "--") )
-                  (prinl ".")
-                  (prinl "QUIT") )
+                     (prinl "--" "B" "--^M") )
+                  (prinl ".^M")
+                  (prinl "QUIT^M") )
                T )
             (close "S") ) ) ) )
 

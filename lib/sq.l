@@ -1,4 +1,4 @@
-# 10jul03abu
+# 20sep03abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook] [var val ..])
@@ -14,7 +14,7 @@
                      (= `(char "+") (char (car Lst))) ) )
                (link (pop 'Lst)) ) )
          Cls (pop 'Lst)
-         Hook (and (ntt? (car Lst)) (pop 'Lst)) )
+         Hook (and (isa '+Entity (car Lst)) (pop 'Lst)) )
       (default Lst
          (cons
             (or
@@ -28,7 +28,7 @@
                (make
                   (link
                      'select
-                     '(@Obj)
+                     '(@@)
                      (make
                         (for (L Lst L)
                            (link
@@ -44,12 +44,13 @@
                                  ((pair Val) 'range)
                                  ((or (num? Val) (ext? Val)) 'same)
                                  ((=T Val) 'bool)
+                                 ((isa '+Fold (get Cls Var)) 'fold)
                                  ((isa '+Sn (get Cls Var)) 'tolr)
                                  (T 'head) )
-                              Val '@Obj Var ) ) ) ) ) ) )
+                              Val '@@ Var ) ) ) ) ) ) )
          (use Obj
             (loop
-               (NIL (setq Obj (cdar (prove Q))))
+               (NIL (setq Obj (cdr (asoq '@@ (prove Q)))))
                (ifn Vars
                   (show Obj)
                   (mapc
@@ -62,8 +63,8 @@
                            (T
                               (print (get Obj Var)) ) )
                         (space) )
-                     Vars ) )
-                  (print Obj)
+                     Vars )
+                  (print Obj) )
                (T (line)) ) ) ) ) )
 
 (dm (print> . +Relation) (Val)
@@ -120,28 +121,6 @@
       (revise
          (datStr Val)
          '((S) (list (datStr (expDat S)))) ) ) )
-
-(dm (revise> . +Link) (Obj)
-   (ifn
-      (mapcan
-         '((X)
-            (with (car X)
-               (when (isa '+Key This)
-                  (cons (list (: var) (: cls) (get Obj (: hook)))) ) ) )
-         (mapcan getl (: type)) )
-      (super Obj)
-      (printsp Obj)
-      (let (Max (maxi '((L) (apply tree L)) @)  Tree (apply tree Max))
-         (fetch Tree
-            (any
-               (revise
-                  (sym (get Obj (car Max)))
-                  '((S)
-                     (make
-                        (scan Tree
-                           '((K V) (link K))
-                           S
-                           (pack S `(char T)) ) ) ) ) ) ) ) ) )
 
 (dm (revise> . +List) (Val)
    (mapcar

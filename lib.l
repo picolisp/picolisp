@@ -1,4 +1,4 @@
-# 16jan04abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 (de macro "Prg"
@@ -7,7 +7,7 @@
 (de task ("Key" . "Prg")
    (cond
       ((not "Prg")
-         (setq *Key (delete (assoc "Key" *Key) *Key)) )
+         (del (assoc "Key" *Key) '*Key) )
       ((assoc "Key" *Key)
          (quit "Key conflict" "Key") )
       (T

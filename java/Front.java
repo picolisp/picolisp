@@ -1,4 +1,4 @@
-// 02apr04abu
+// 07may04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -15,24 +15,24 @@ public class Front extends Pico {
    int Focus, Dirty;
    boolean Req;
    Dialog Dialog;
-   final Front Parent;
+   Front Parent, Child;
 
-   public Front() {Parent = null;}
+   public Front() {}
 
    public Front(Front p, int port, String gate, String sid, String ttl) {
-      if ((Parent = p) != null) {
-         Seed = p.Seed;
-         Host = p.Host;
-         Container c = p.getParent();
-         while (!(c instanceof Frame))
-            c = c.getParent();
-         Dialog = new Dialog((Frame)c, ttl, false);
-         Dialog.add(this, BorderLayout.CENTER);
-         Dialog.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent ev) {stop();}
-         } );
-         connect(0, port, gate, sid);
-      }
+      Parent = p;
+      Seed = p.Seed;
+      Host = p.Host;
+      Container cont = p.getParent();
+      while (!(cont instanceof Frame))
+         cont = cont.getParent();
+      Dialog = new Dialog((Frame)cont, ttl, false);
+      Dialog.setFont(p.getFont());
+      Dialog.add(this, BorderLayout.CENTER);
+      Dialog.addWindowListener(new WindowAdapter() {
+         public void windowClosing(WindowEvent ev) {stop();}
+      } );
+      connect(0, port, gate, sid);
    }
 
    public void start() {
@@ -46,13 +46,18 @@ public class Front extends Pico {
       super.stop();
    }
 
-   void done() {
+   synchronized void done() {
+      while (Child != null) {
+         try {wait();}
+         catch (InterruptedException e) {break;}
+      }
       if (Dialog != null) {
          Dialog.dispose();
          Dialog = null;
          synchronized (Parent) {
             Parent.Seed ^= Seed;
-            Parent.notify();
+            Parent.Child = null;
+            Parent.notifyAll();
          }
       }
       super.done();
@@ -67,7 +72,7 @@ public class Front extends Pico {
          (new Thread() {
             public void run() {
                synchronized (Parent) {
-                  while (Dialog != null) {
+                  while (Parent.Child != null) {
                      try {Parent.wait();}
                      catch (InterruptedException e) {break;}
                   }
@@ -119,7 +124,7 @@ public class Front extends Pico {
       else if (s.equals("make"))
          make();
       else if (s.equals("dialog"))
-         new Front(this, getNum(), getStr(), getStr(), getStr());
+         Child = new Front(this, getNum(), getStr(), getStr(), getStr());
       else
          super.cmd(s);
    }
@@ -147,7 +152,7 @@ public class Front extends Pico {
          if (s.charAt(0) == '*' || s.charAt(0) == '/') {
             if (panel != null) {
                constrain(this, panel, 0, p++, 1, 1, GridBagConstraints.NONE,
-                     GridBagConstraints.NORTHWEST, 6, 1.0, 1.0 );
+                     GridBagConstraints.NORTHWEST, 4, 1.0, 1.0 );
             }
             panel = new Panel(Gridbag);
             j = k = k2 = 0;
@@ -287,14 +292,14 @@ public class Front extends Pico {
             k3 = k;
       }
       constrain(this, panel, 0, p, 1, 1, GridBagConstraints.NONE,
-                              GridBagConstraints.NORTHWEST, 0, 1.0, 1.0 );
+                              GridBagConstraints.NORTHWEST, 4, 1.0, 1.0 );
       Fields = new Component[fld.size()];
       fld.copyInto(Fields);
       SBars = new Scrollbar[sb.size()];
       sb.copyInto(SBars);
 
-      if (Parent == null) {
-         setSize(getPreferredSize());
+      if (Dialog == null) {
+         resize(getPreferredSize());
          validate();
       }
       else {
@@ -345,8 +350,12 @@ public class Front extends Pico {
          ((Choice)f).select(txt);
       else if (f instanceof Checkbox)
          ((Checkbox)f).setState(txt.length() > 0);
-      else if (f instanceof Label)
+      else if (f instanceof Label) {
          ((Label)f).setText(txt);
+         f.setSize(f.getPreferredSize());
+         f.invalidate();
+         validate();
+      }
       else {
          ((TextComponent)f).setText(txt);
          if (MiSt  ||  Focus == 0  ||  f instanceof TextArea)

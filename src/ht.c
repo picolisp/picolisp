@@ -1,4 +1,4 @@
-/* 23sep03abu
+/* 13may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -95,15 +95,12 @@ static int getHex(any *p) {
    return n << 4 | m;
 }
 
-static void htEncode(any x) {
-   byte *p, nm[bufSize(x)];
-
-   bufString(x, nm);
-   for (p = nm; *p; ++p) {
-      if (strchr(" \"#$%&()=?[]_{}", *p))
-         Env.put('%'), putHex(*p);
+static void htEncode(byte *p) {
+   while (*p) {
+      if (strchr(" \"#%&=?_", *p))
+         Env.put('%'), putHex(*p++);
       else
-         Env.put(*p);
+         Env.put(*p++);
    }
 }
 
@@ -111,25 +108,27 @@ static void htFmt(any x) {
    any y;
 
    if (isNum(x))
-      Env.put('$'),  prin(x);
-   else if (isExt(x))
-      prin(x);
-   else if (isCell(x)) {
-      Env.put('(');
-      for (;;) {
-         htFmt(car(x));
-         if (isCell(x = cdr(x)))
-            Env.put('_');
-         else
-            break;
-      }
-      Env.put(')');
-   }
+      Env.put('+'),  prin(x);
+   else if (isCell(x))
+      do
+         Env.put('_'),  htFmt(car(x));
+      while (isCell(x = cdr(x)));
    else if (isNum(y = name(x))) {
-      if (x == findHash(y, Intern + hash(y)))
-         Env.put('['),  htEncode(x),  Env.put(']');
-      else
-         htEncode(x);
+      if (isExt(x))
+         Env.put('.'),  outName(x);
+      else {
+         byte nm[bufSize(x)];
+
+         bufString(x, nm);
+         if (x == findHash(y, Intern + hash(y)))
+            Env.put('$'),  htEncode(nm);
+         else if (strchr("$+.", *nm)) {
+            Env.put('%'), putHex(*nm);
+            htEncode(nm+1);
+         }
+         else
+            htEncode(nm);
+      }
    }
 }
 

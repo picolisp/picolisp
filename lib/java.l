@@ -1,12 +1,13 @@
-# 26oct01abu
+# 21may04abu
 # (c) Software Lab. Alexander Burger
 
-(unless *Java
-   (call "mkfifo" (setq *Java (pack "fifo/" *Pid)))
-   (push '*Bye '(call "rm" *Java)) )
+# *Java
+
+(?push '*Fork '(off *Java))
+(?push '*Bye '(and *Java (call "rm" *Java))) )
 
 (de java (Cls Foo Arg)
-   (out "fifo/java"
-      (pr *Java Cls Foo Arg) )
-   (in *Java
-      (rd) ) )
+   (unless *Java
+      (call "mkfifo" (setq *Java (pack "fifo/java" *Pid))) )
+   (out "fifo/java" (pr *Java Cls Foo Arg))
+   (in *Java (rd)) )

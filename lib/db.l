@@ -1,4 +1,4 @@
-# 26feb04abu
+# 21apr04abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -27,9 +27,10 @@
                   (T (pass _db @ Var Val) @) ) ) ) ) ) )
 
 (de _db (Obj . @)
-   (loop
-      (NIL (next) Obj)
-      (NIL (has> Obj (arg) (next))) ) )
+   (when (isa Cls Obj)
+      (loop
+         (NIL (next) Obj)
+         (NIL (has> Obj (arg) (next))) ) ) )
 
 
 # (collect 'var 'cls ['hook] ['val|beg ['end [var ..]]])
@@ -44,7 +45,10 @@
          (make
             (if (isa '+Key This)
                (iter Tree
-                  '((X)  (link (if (args) (pass get X) X)))
+                  '((X)
+                     (ifn (args)
+                        (and (isa Cls X) (link X))
+                        (link (pass get X)) ) )
                   X1 X2 )
                (if (>= X2 X1)
                   (setq X1 (cons X1)  X2 (cons X2 T))
@@ -52,12 +56,19 @@
                (if (isa '+List This)
                   (iter Tree
                      '((X)
-                        (when (args)
-                           (setq X (pass get X)) )
-                        (or (memq X (made)) (link X)) )
+                        (ifn (args)
+                           (and
+                              (isa Cls X)
+                              (not (memq X (made)))
+                              (link X) )
+                           (setq X (pass get X))
+                           (or (memq X (made)) (link X)) ) )
                      X1 X2 )
                   (iter Tree
-                     '((X)  (link (if (args) (pass get X) X)))
+                     '((X)
+                        (ifn (args)
+                           (and (isa Cls X) (link X))
+                           (link (pass get X)) ) )
                      X1 X2 T ) ) ) ) ) ) )
 
 

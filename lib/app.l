@@ -1,4 +1,4 @@
-# 14jan04abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -8,7 +8,7 @@
       (show This)
       (mapc
          '(("X") (println "X" (val "X")))
-         '(*Gate *Agent *Host *Port *Url *SesId *ConId) )
+         '(*Gate *Agent *Host *Port *Url *SesId *ConId *ID) )
       (and (get *Top 'focus) (println 'focus (get @ 'ix)))
       (mapc
          '(("X") (println "X" (val "X")))
@@ -41,5 +41,4 @@
    '((msg *Pid " + " (stamp))) )
 
 # Bye message
-(?push '*Bye
-   '(and *SesId (msg *Pid " - " (stamp))) )
+(?push '*Bye '(and *SesId (msg *Pid " - " (stamp))))

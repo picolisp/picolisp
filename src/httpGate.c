@@ -1,4 +1,4 @@
-/* 18mar04abu
+/* 04may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,48 +24,15 @@
 
 typedef enum {NO,YES} bool;
 
-#define THROTTLE 1024
-
-static struct {
-   uint32_t adr[THROTTLE];
-   int cnt[THROTTLE];
-} Throttle;
-
 static char Head_200[] =
    "HTTP/1.1 200 OK\r\n"
    "Server: PicoLisp\r\n"
    "Connection: close\r\n"
    "Content-Type: text/html; charset=utf-8\r\n";
 
-static char Response_404[] =
-   "HTTP/1.1 404 Not Found\r\n"
-   "Server: PicoLisp\r\n"
-   "Connection: close\r\n"
-   "Content-Type: text/html; charset=utf-8\r\n"
-   "\r\n"
-   "<HTML>\n"
-   "<HEAD><TITLE>404 Not Found</TITLE></HEAD>\n"
-   "<BODY><H1>Not Found</H1></BODY>\n"
-   "</HTML>\n";
-
-
 static void giveup(char *msg) {
    fprintf(stderr, "httpGate: %s\n", msg);
    exit(2);
-}
-
-static int incThrottle(uint32_t adr) {
-   int i;
-
-   for (i = 0;  i < THROTTLE && Throttle.adr[i];  ++i)
-      if (Throttle.adr[i] == adr)
-         return Throttle.cnt[i] == 600? 0 : ++Throttle.cnt[i];
-   for (i = 0; i < THROTTLE; ++i)
-      if (Throttle.cnt[i] == 0) {
-         Throttle.adr[i] = adr;
-         return Throttle.cnt[i] = 1;
-      }
-   return 0;
 }
 
 static inline bool pre(char *p, char *s) {
@@ -123,13 +90,12 @@ static int gateConnect(unsigned short port) {
 }
 
 int main(int ac, char *av[]) {
-   int n, fd, sd, dflt, port, cli, srv, dly;
+   int n, fd, sd, dflt, port, cli, srv;
    struct sockaddr_in addr;
    char *gate, *p, *q, buf[BUFSIZ], buf2[64];
    SSL_CTX *ctx;
    SSL *ssl;
    fd_set fdSet;
-   struct timeval tv;
 
    if (ac < 3 || ac > 4)
       giveup("port dflt [pem]");
@@ -158,132 +124,116 @@ int main(int ac, char *av[]) {
       return 0;
    setsid();
 
-   tv.tv_sec = 3,  tv.tv_usec = 0;
    for (;;) {
       FD_ZERO(&fdSet);
       FD_SET(sd, &fdSet);
-      if (select(sd+1, &fdSet, NULL, NULL, &tv) < 0)
+      if (select(sd+1, &fdSet, NULL, NULL, NULL) < 0)
          return 1;
-      if (tv.tv_sec == 0  &&  tv.tv_usec == 0) {
-         tv.tv_sec = 3;
-         for (n = 0;  n < THROTTLE && Throttle.adr[n];  ++n)
-            if (Throttle.cnt[n] > 0)
-               --Throttle.cnt[n];
-         if (--n >= 0  &&  Throttle.cnt[n] == 0)
-            Throttle.adr[n] = 0;
-      }
       if (FD_ISSET(sd, &fdSet)) {
          n = sizeof(addr);
          if ((cli = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
             return 1;
-         if ((dly = incThrottle(addr.sin_addr.s_addr)) == 0)
+         if ((n = fork()) < 0)
+            return 1;
+         if (n)
             close(cli);
          else {
-            if ((n = fork()) < 0)
+            close(sd);
+
+            alarm(60);
+            if (ssl) {
+               SSL_set_fd(ssl, cli);
+               if (SSL_accept(ssl) < 0)
+                  return 1;
+               n = SSL_read(ssl, buf, sizeof(buf));
+            }
+            else
+               n = read(cli, buf, sizeof(buf));
+            alarm(0);
+            if (n < 6)
                return 1;
-            if (n)
-               close(cli);
-            else {
-               close(sd);
 
-               if ((dly -= 300) > 0)
-                  sleep(dly);
+            /* "@8080 "
+             * "GET /url HTTP/1.1"
+             * "GET /8080/url HTTP/1.1"
+             * "POST /url HTTP/1.1"
+             * "POST /8080/url HTTP/1.1"
+             */
+            if (buf[0] == '@')
+               p = buf + 1;
+            else if (pre(buf, "GET /"))
+               p = buf + 5;
+            else if (pre(buf, "POST /"))
+               p = buf + 6;
+            else
+               return 1;
 
-               if (ssl) {
-                  SSL_set_fd(ssl, cli);
-                  if (SSL_accept(ssl) < 0)
-                     return 1;
-                  n = SSL_read(ssl, buf, sizeof(buf));
-               }
-               else
-                  n = read(cli, buf, sizeof(buf));
-               if (n < 6)
+            port = (int)strtol(p, &q, 10);
+            if (q == p  ||  *q != ' ' && *q != '/')
+               port = dflt,  q = p;
+
+            if ((srv = gateConnect((unsigned short)port)) < 0) {
+               if (!memchr(q,'~', buf + n - q))
                   return 1;
-
-               /* "@8080 "
-                * "GET / HTTP/1.1"
-                * "GET /@foo HTTP/1.1"
-                * "GET /8080/file HTTP/1.1"
-                * "POST / HTTP/1.1"
-                * "POST /@foo HTTP/1.1"
-                * "POST /8080/file HTTP/1.1"
-                */
-               if (buf[0] == '@')
-                  p = buf + 1;
-               else if (pre(buf, "GET /"))
-                  p = buf + 5;
-               else if (pre(buf, "POST /"))
-                  p = buf + 6;
-               else
+               if ((fd = open("void", O_RDONLY)) < 0)
                   return 1;
-
-               if (*p == ' ' || *p == '?' || *p == '@')
-                  port = dflt,  q = p;
-               else {
-                  port = (int)strtol(p, &q, 10);
-                  if (q == p  ||  *q != ' ' && *q != '/') {
-                     if (ssl)
-                        SSL_write(ssl, Response_404, strlen(Response_404));
-                     else
-                        wrBytes(cli, Response_404, strlen(Response_404));
-                     return 0;
-                  }
-               }
-
-               if ((srv = gateConnect((unsigned short)port)) < 0) {
-                  if (!memchr(q,'~', buf + n - q))
-                     return 1;
-                  if ((fd = open("void", O_RDONLY)) < 0)
-                     return 1;
+               alarm(60);
+               if (ssl)
+                  SSL_write(ssl, Head_200, strlen(Head_200));
+               else
+                  wrBytes(cli, Head_200, strlen(Head_200));
+               alarm(0);
+               while ((n = read(fd, buf, sizeof(buf))) > 0) {
+                  alarm(60);
                   if (ssl)
-                     SSL_write(ssl, Head_200, strlen(Head_200));
+                     SSL_write(ssl, buf, n);
                   else
-                     wrBytes(cli, Head_200, strlen(Head_200));
-                  while ((n = read(fd, buf, sizeof(buf))) > 0)
-                     if (ssl)
-                        SSL_write(ssl, buf, n);
-                     else
-                        wrBytes(cli, buf, n);
-                  return 0;
+                     wrBytes(cli, buf, n);
+                  alarm(0);
                }
-               if (buf[0] == '@')
-                  p = q + 1;
-               else {
-                  wrBytes(srv, buf, p - buf);
-                  if (*q == '/')
-                     ++q;
-                  p = q;
-                  while (*p++ != '\n')
-                     if (p >= buf + n)
-                        return 1;
-                  wrBytes(srv, q, p - q);
-                  wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
-               }
-               wrBytes(srv, p, buf + n - p);
-
-               for (;;) {
-                  FD_ZERO(&fdSet);
-                  FD_SET(cli, &fdSet);
-                  FD_SET(srv, &fdSet);
-                  if (select((srv>cli? srv:cli)+1, &fdSet, NULL, NULL, NULL) < 0)
+               return 0;
+            }
+            if (buf[0] == '@')
+               p = q + 1;
+            else {
+               wrBytes(srv, buf, p - buf);
+               if (*q == '/')
+                  ++q;
+               p = q;
+               while (*p++ != '\n')
+                  if (p >= buf + n)
                      return 1;
-                  if (FD_ISSET(cli, &fdSet)) {
-                     if (ssl)
-                        n = SSL_read(ssl, buf, sizeof(buf));
-                     else
-                        n = read(cli, buf, sizeof(buf));
-                     if (n <= 0)
-                        return 0;
-                     wrBytes(srv, buf, n);
-                  }
-                  if (FD_ISSET(srv, &fdSet)) {
-                     if ((n = read(srv, buf, sizeof(buf))) <= 0)
-                        return 0;
-                     if (ssl)
-                        SSL_write(ssl, buf, n);
-                     else
-                        wrBytes(cli, buf, n);
-                  }
+               wrBytes(srv, q, p - q);
+               wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
+            }
+            wrBytes(srv, p, buf + n - p);
+
+            for (;;) {
+               FD_ZERO(&fdSet);
+               FD_SET(cli, &fdSet);
+               FD_SET(srv, &fdSet);
+               if (select((srv>cli? srv:cli)+1, &fdSet, NULL, NULL, NULL) < 0)
+                  return 1;
+               if (FD_ISSET(cli, &fdSet)) {
+                  alarm(60);
+                  if (ssl)
+                     n = SSL_read(ssl, buf, sizeof(buf));
+                  else
+                     n = read(cli, buf, sizeof(buf));
+                  alarm(0);
+                  if (n <= 0)
+                     return 0;
+                  wrBytes(srv, buf, n);
+               }
+               if (FD_ISSET(srv, &fdSet)) {
+                  if ((n = read(srv, buf, sizeof(buf))) <= 0)
+                     return 0;
+                  alarm(60);
+                  if (ssl)
+                     SSL_write(ssl, buf, n);
+                  else
+                     wrBytes(cli, buf, n);
+                  alarm(0);
                }
             }
          }

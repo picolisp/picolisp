@@ -1,4 +1,4 @@
-/* 03apr04abu
+/* 24apr04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -509,7 +509,7 @@ any doSplit(any x) {
          y = data(sub) = cons(car(data(c1)), Nil);
       else
          y = cdr(y) = cons(car(data(c1)), Nil);
-   spl1:
+   spl1: ;
    } while (isCell(data(c1) = cdr(data(c1))));
    y = cons(data(sub), Nil);
    drop(c1);

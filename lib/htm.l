@@ -1,4 +1,4 @@
-# 16jan04abu
+# 13may04abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -44,7 +44,7 @@
       (next) )
    (setq *Fox -1)
    (let
-      (App (pack *Url "?*ID=" *ID)
+      (App (pack *Url "?*ID=" (ht:Fmt *ID))
          F
          (if (assoc App *Apps)
             (cdr @)

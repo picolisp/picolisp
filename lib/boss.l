@@ -1,12 +1,15 @@
-# 26apr02abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
-(unless (num? "Boss")
-   (let F (pack "boss" *Pid)
-      (call "mkfifo" F)
-      (hear (setq "Boss" (open F)))
-      (call "rm" F) ) )
+# *Boss
+
+(unless *Boss
+   (call "mkfifo" (setq *Boss (pack "fifo/boss" *Pid)))
+   (hear (open *Boss)) )
+
+(?push '*Fork '(del '(call "rm" *Boss) '*Bye))
+(?push '*Bye '(call "rm" *Boss))
 
 # (boss 'sym ['any ..])
 (de boss @
-   (out "Boss" (pr (rest))) )
+   (out *Boss (pr (rest))) )

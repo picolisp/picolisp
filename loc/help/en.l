@@ -1,4 +1,4 @@
-# 26jul03abu
+# 28apr04abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
@@ -18,6 +18,7 @@
       "  F4                Form action, e.g. choose-dialog"
       "  F5                Undo"
       "  F6                Redo"
+      "  F7                Change Font and Size"
       NIL
       "  Left-Arrow        Character left"
       "  Shift-Left        Extend selection to the left"

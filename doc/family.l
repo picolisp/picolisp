@@ -1,4 +1,4 @@
-# 22sep03abu
+# 13may04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/ps.l")
@@ -15,7 +15,7 @@
 (rel txt    (+String))                          # Info
 
 (dm url> ()
-   (pack "@person?" This) )
+   (pack "@person?" (ht:Fmt This)) )
 
 
 (class +Man +Person)

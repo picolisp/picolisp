@@ -1,4 +1,4 @@
-# 03apr04abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 # *Tmp
@@ -329,8 +329,8 @@
       (reverse (cdr (member "/" (reverse (chop F))))) ) )
 
 # Temporary
-(?push '*Bye
-   '(and *Tmp (call "rm" "-r" *Tmp)) )
+(?push '*Fork '(off *Tmp))
+(?push '*Bye '(and *Tmp (call "rm" "-r" *Tmp)))
 
 (de tmp @
    (unless *Tmp

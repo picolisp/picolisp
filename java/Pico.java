@@ -1,4 +1,4 @@
-// 02apr04abu
+// 19apr04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -67,6 +67,7 @@ public class Pico extends Applet {
    }
 
    public void init() {
+      setFont(new Font(getParameter("font"), Font.PLAIN, Integer.parseInt(getParameter("size"))));
       Seed = System.currentTimeMillis() ^ Long.parseLong(getParameter("rand"));
       Host = getDocumentBase().getHost();
    }

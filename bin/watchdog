@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 17dec03abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -29,9 +29,9 @@
          (cond
             ((not X) (bye))
             ((num? X)
-               (setq *Watch (delete (assoc X *Watch) *Watch)) )
+               (del (assoc X *Watch) '*Watch) )
             ((atom X)  # bin/pico -"out 'fifo/beat (pr '$(tty))" -bye
-               (let D (+ (time) (* 86400 (date)))
+               (let D (+ (time T) (* 86400 (date T)))
                   (out X
                      (mapc
                         '((W)
@@ -54,14 +54,14 @@
             (T (push '*Watch (list (car X) (cadr X) NIL (cddr X)))) ) ) ) )
 
 (task -54321 54321
-   (let D (+ (time) (* 86400 (date)))
+   (let D (+ (time T) (* 86400 (date T)))
       (mapc
          '((W)
             (if (caddr W)
                (prog
                   (msg (car W) " " (stamp)
                      (if (kill (car W) 15) " killed" " gone") )
-                  (setq *Watch (delete W *Watch)) )
+                  (del W '*Watch) )
                (inc (cdr W) 3600)
                (set (cddr W) T)
                (let Sub (pack "Timeout " (car W) " " (cdddr W))

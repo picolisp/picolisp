@@ -1,4 +1,4 @@
-# 10jun03abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 # *Profile
@@ -33,7 +33,7 @@
       (quit "Can't profile" "X") ) )
 
 (de unprof ("X" "C")
-   (setq *Profile (delete (cons "X" "C")) *Profile)
+   (del (cons "X" "C") '*Profile)
    ("uprf" (if "C" (method "X" "C") (getd "X"))) )
 
 (de profile ()

@@ -1,4 +1,4 @@
-/* 19feb04abu
+/* 19may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -92,6 +92,7 @@ typedef struct stkEnv {
    parseFrame *parser;
    void (*get)(void);
    void (*put)(int);
+   bool brk;
 } stkEnv;
 
 typedef struct catchFrame {
@@ -113,8 +114,8 @@ typedef struct catchFrame {
 #define unDig(x)        num(car(numCell(x)))
 #define setDig(x,v)     num(car(numCell(x))=(any)(v))
 #define isNeg(x)        (unDig(x) & 1)
-#define pos(x)          (unDig(x) &= ~1)
-#define neg(x)          (unDig(x) ^= 1)
+#define pos(x)          (car(numCell(x)) = (any)(unDig(x) & ~1))
+#define neg(x)          (car(numCell(x)) = (any)(unDig(x) ^ 1))
 
 /* Symbol access */
 #define symPtr(x)       ((any)(num(x)+4))
@@ -191,7 +192,7 @@ extern any TheKey, TheCls;
 extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Bye;
+extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -278,6 +279,7 @@ any put(any,any,any);
 void putStdout(int);
 any read1(int);
 bool rdBytes(int,byte*,int);
+int secondByte(any);
 void setRaw(void);
 int slow(int,byte*,int);
 void space(void);
@@ -363,6 +365,7 @@ any doDe(any);
 any doDec(any);
 any doDef(any);
 any doDefault(any);
+any doDel(any);
 any doDelete(any);
 any doDelq(any);
 any doDiv(any);

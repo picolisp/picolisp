@@ -1,4 +1,4 @@
-31jan04abu
+25may04abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -88,7 +88,7 @@ multiple users can view and modify the same database object without conflicts,
 everyone seeing changes done by other users on her screen immediately due to the
 internal process and database synchronization.
 
-A more deep explanation of the programming paradigms can be found at
+A deeper explanation of the programming paradigms can be found at
 "http://software-lab.de/dbui.html".
 
 Pico Lisp compiles and runs only under Linux :-)

@@ -1,3 +1,14 @@
+* 29may04 picoLisp-2.0.12
+   Fixed 'boss' mechanism
+   'del' delete-and-set function
+   Introduce '*Fork' global variable
+   Changed URL encoding of Lisp objects
+   Removed traffic throttle from "httpGate"
+   Synchronized ".picoHistory" in "lib/led.l"
+   Fixed exception handling in debug breakpoint
+   Revised subclass handling in 'db' and 'collect'
+   Applet font/size parameters
+
 * 07apr04 picoLisp-2.0.11
    Bug in 'append'
    Modal dialogs revised

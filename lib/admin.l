@@ -1,4 +1,4 @@
-# 11feb04abu
+# 13may04abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -7,7 +7,7 @@
 (de login (Nm Pw)
    (and
       (db 'nm '+User Nm 'pw Pw)
-      (setq *Login @  *Timeout `(* 4 60 60 1000)) ) )
+      (timeout (setq *Login @  *Timeout `(* 4 60 60 1000))) ) )
 
 (de logout ()
    (off *Login)
@@ -17,7 +17,7 @@
    (and *Bar (upd> *Bar)) )
 
 (de pwForm Prg
-   (form '(+Form) 360 120
+   (form '(+Form) 450 150
       (append
          (quote
             (gui 'nm '(+TextField) ,"Name" 20)
@@ -38,9 +38,7 @@
             (gui 'msg '(+Upd +Mono +Label)
                '(set> This
                   (and *Login
-                     (pack "'" (get *Login 'nm) ,"' logged in") ) )
-               ""
-               "                                        " )
+                     (pack "'" (get *Login 'nm) ,"' logged in") ) ) )
             (gui '(+Able +Button) '*Login "" ,"logout"
                '(logout) ) ) ) ) )
 
@@ -53,7 +51,7 @@
 (rel usr    (+List +Joint) role (+User))        # Associated users
 
 (dm url> ()
-   (and (may T RoleAdmin) (pack "lib/role.l?*ID=" This)) )
+   (and (may T RoleAdmin) (pack "lib/role.l?*ID=" (ht:Fmt This))) )
 
 
 ### User ###
@@ -64,7 +62,7 @@
 (rel role   (+Joint) usr (+Role))               # User role
 
 (dm url> ()
-   (and (may T UserAdmin) (pack "lib/user.l?*ID=" This)) )
+   (and (may T UserAdmin) (pack "lib/user.l?*ID=" (ht:Fmt This))) )
 
 
 ### Permission management ###

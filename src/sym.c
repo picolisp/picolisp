@@ -1,4 +1,4 @@
-/* 14jan04abu
+/* 19may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -97,6 +97,10 @@ any mkStr(char *s) {return s && *s? consStr(mkName((byte*)s)) : Nil;}
 /* Get first byte of symbol name */
 int firstByte(any s) {
    return !isNum(s = name(s))? 0 : unDig(s) & 0xFF;
+}
+
+int secondByte(any s) {
+   return !isNum(s = name(s))? 0 : unDig(s) >> 8 & 0xFF;
 }
 
 bool isBlank(any x) {
@@ -524,6 +528,36 @@ any doCut(any ex) {
       return data(c2);
    }
    return val(Pop(c1));
+}
+
+// (del 'any 'var) -> any
+any doDel(any ex) {
+   any x, y;
+   cell c1, c2, c3;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   NeedVar(ex,data(c2));
+   CheckVar(ex,data(c2));
+   if (isCell(x = val(data(c2)))) {
+      if (equal(data(c1), car(x))) {
+         Touch(ex,data(c2));
+         drop(c1);
+         return val(data(c2)) = cdr(x);
+      }
+      Push(c3, y = cons(car(x), Nil));
+      while (isCell(x = cdr(x))) {
+         if (equal(data(c1), car(x))) {
+            cdr(y) = cdr(x);
+            Touch(ex,data(c2));
+            drop(c1);
+            return val(data(c2)) = data(c3);
+         }
+         y = cdr(y) = cons(car(x), Nil);
+      }
+   }
+   drop(c1);
+   return val(data(c2));
 }
 
 // (queue 'var 'any) -> any

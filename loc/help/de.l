@@ -1,4 +1,4 @@
-# 26jul03abu
+# 28apr04abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
@@ -18,6 +18,7 @@
       "  F4                Form-Aktion, z.B. Auswahl-Dialog"
       "  F5                Undo (Rückgängig)"
       "  F6                Redo (Wiederholen)"
+      "  F7                Schriftart und Größe ändern"
       NIL
       "  Pfeil-Links       Zeichen links"
       "  Shift-Links       Selektion nach links erweitern"

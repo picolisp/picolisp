@@ -1,4 +1,4 @@
-# 09dec03abu
+# 27apr04abu
 # (c) Software Lab. Alexander Burger
 
 (and (app) (rsa 40))
@@ -41,9 +41,15 @@
          (gui 'm1 '(+NumField) "Num" 20)
          (gui 'm2 '(+Fmt +TextField) uppc lowc "Msg" 20)
          (gui '(+DateField) "Date" 10)
+         (----)
          (row
-            (okButton '(list (val> (: home m1)) (val> (: home m2))))
-            (quitButton) ) ) ) )
+            (okButton
+               '(when (ask "Test" "Alles klar?")
+                  (list (val> (: home m1)) (val> (: home m2))) ) )
+            (quitButton)
+            (gui '(+Button) " " "Busy"
+               '(busy 100 "Busy counting"
+                   (do 100 (wait 100) (work)) ) ) ) ) ) )
 
 (html "Test"
    (<head> "Test")

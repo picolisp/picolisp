@@ -1,4 +1,4 @@
-# 03apr04abu
+# 13may04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -45,7 +45,7 @@
 (rel pr     (+Number))                          # Anteil-% (default 100)
 
 (dm url> ()
-   (pack "@konto?" This) )
+   (pack "@konto?" (ht:Fmt This)) )
 
 
 (class +Pos +AD +Entity)
@@ -59,7 +59,7 @@
 (rel info   (+String))                          # Info-Text
 
 (dm url> ()
-   (pack "@position?" This) )
+   (pack "@position?" (ht:Fmt This)) )
 
 (dm val> ()
    (*/
@@ -299,7 +299,7 @@
                         (put> D 'txt (cadddr L))
                         (put> D 'kto (get L 5))
                         (commit 'upd)
-                        D )
+                        (and (get D 'dat) D) )
                      ((car L)
                         (new! 'upd '(+Pos) 'dat (car L)) ) ) ) )
             (row

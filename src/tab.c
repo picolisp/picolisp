@@ -1,4 +1,4 @@
-/* 19feb04abu
+/* 19may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -76,6 +76,7 @@ static symInit Symbols[] = {
    {doDec, "dec"},
    {doDef, "def"},
    {doDefault, "default"},
+   {doDel, "del"},
    {doDelete, "delete"},
    {doDelq, "delq"},
    {doDiv, "/"},
@@ -324,6 +325,7 @@ void initSymbols(void) {
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");
    Adr   = initSym(Nil, "*Adr");
+   Fork  = initSym(Nil, "*Fork");
    Bye   = initSym(Nil, "*Bye");  // Last unremovable symbol
 
    val(DB) = DbVal = extSym(consStr(DbTail = box('1')));

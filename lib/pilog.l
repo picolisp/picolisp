@@ -1,4 +1,4 @@
-# 10mar04abu
+# 21apr04abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -215,7 +215,7 @@
    (@Q box
       (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
          (initQuery (: var) (: cls) NIL '(NIL . T)) ) )
-   (_db @Obj @Q) )
+   (_db @Obj) )
 
 # (db var cls hook|val obj)
 (be db (@Var @Cls @X @Obj)
@@ -224,24 +224,24 @@
          (if (: hook)
             (initQuery (: var) (: cls) (-> @X) '(NIL . T))
             (initQuery (: var) (: cls) NIL (-> @X)) ) ) )
-   (_db @Obj @Q) )
+   (_db @Obj) )
 
 # (db var cls hook val obj)
 (be db (@Var @Cls @Hook @Val @Obj)
    (@Q box
       (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
          (initQuery (: var) (: cls) (-> @Hook) (-> @Val)) ) )
-   (_db @Obj @Q) )
+   (_db @Obj) )
 
-(be _db (@Obj @Q)
-   (@ let Q (val (-> @Q))
-      (not
-         (setq "R"
-            (step Q (= '(NIL) (caar Q))) ) ) )
+(be _db (@Obj)
+   (@ let (Q (val (-> @Q 2))  Cls (-> @Cls 2))
+      (loop
+         (NIL (step Q (= '(NIL) (caar Q))) T)
+         (T (isa Cls (setq "R" @))) ) )
    T
    (fail) )
 
-(be _db (@Obj @Q) (@Obj . "R"))
+(be _db (@Obj) (@Obj . "R"))
 
 (repeat)
 
@@ -477,7 +477,7 @@
                               (and (get Cls Var 'hook) (pop 'Lst)) ) ) ) ) ) ) ) ) ) )
 
 (de "initSel" (Var Cls Hook)
-   (with (or (get Cls Var) (meta Cls Var))
+   (with (get Cls Var)
       (when (find '((B) (isa '+Index B)) (: bag))
          (setq This @) )
       (cond

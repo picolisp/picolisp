@@ -1,4 +1,4 @@
-/* 21jan04abu
+/* 19may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,7 +18,7 @@ any TheKey, TheCls;
 any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Bye;
+any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static bool Jam, Protect;
@@ -59,7 +59,7 @@ static void doSigTerm(int n __attribute__((unused))) {
    for (i = 0; i < PSize; i += 2)
       if (Pipe[i] >= 0)
          return;
-   signal(SIGTERM, SIG_DFL),  raise(SIGTERM);
+   doBye(Nil);
 }
 
 static void doTermStop(int n __attribute__((unused))) {
@@ -283,6 +283,7 @@ void err(any ex, any x, char *fmt, ...) {
    char msg[64];
 
    Line = Nil;
+   Env.brk = NO;
    Env.get = getStdin;
    Env.put = putStdout;
    closeFiles(NULL,NULL,NULL);

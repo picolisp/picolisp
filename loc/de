@@ -1,4 +1,4 @@
-# 15jan04abu
+# 28apr04abu
 # (c) Software Lab. Alexander Burger
 
 # lib/db.l
@@ -14,6 +14,8 @@
 # lib/gui.l
 "No" "Nein"
 "Yes" "Ja"
+"Font" "Schriftart"
+"Size" "Größe"
 "F2-Choice" "F2-Auswahl"
 "Cancel" "Abbruch"
 "Please wait" "Bitte warten"

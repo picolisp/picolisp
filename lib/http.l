@@ -1,4 +1,4 @@
-# 27feb04abu
+# 27may04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -128,15 +128,15 @@
             (if (setq *Url (ht:Pack @U))
                (setq F (format *Url))
                (setq  *Url (car *Home)  @U (cdr *Home)  F) )
-            (if
-               (or
-                  F
-                  (not *Allow)
-                  (tmp? *Url)
-                  (idx *Allow *Url)
-                  (unless (sub? "/../" *Url)
-                     (find pre? (cdr *Allow) (circ *Url)) ) )
-               (out S
+            (out S
+               (if
+                  (or
+                     F
+                     (not *Allow)
+                     (tmp? *Url)
+                     (idx *Allow *Url)
+                     (unless (sub? "/../" *Url)
+                        (find pre? (cdr *Allow) (circ *Url)) ) )
                   (cond
                      ((<> *ConId *SesId)
                         (and (info "void") (httpEcho "void")) )
@@ -163,10 +163,10 @@
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (load (pack *Url "default")) )
-                     (T (httpEcho *Url "application/octet-stream" 1 T)) ) )
-               (or
-                  (= '("." "c" "l" "a" "s" "s") (tail 6 @U))
-                  (msg *Url " not allowed") ) ) ) )
+                     (T (httpEcho *Url "application/octet-stream" 1 T)) )
+               (unless (= '("." "c" "l" "a" "s" "s") (tail 6 @U))
+                  (msg *Url " not allowed")
+                  (http404) ) ) ) ) )
       (close S) ) )
 
 (de _htHead ()
@@ -237,10 +237,8 @@
          (intern
             (pack
                (cond
-                  ((or (match '("*" @V "(" @N ")") "Var") (match '("%" "2" "A" @V "(" @N ")") "Var"))
+                  ((match '("*" @V "(" @N ")") "Var")
                      (setq @N (_htArg @N))
-                     (cons "*" @V) )
-                  ((match '("%" "2" "A" . @V) "Var")
                      (cons "*" @V) )
                   ((= "*" (car "Var"))
                      "Var" )
@@ -249,6 +247,7 @@
          (not *Allow)
          (idx *Allow "Var")
          (msg "Var" " not allowed")
+         (http404)
          (throw "http") )
       (cond
          ((not @N) (set "Var" Val))
@@ -256,17 +255,12 @@
          (T (queue "Var" (cons @N Val))) ) ) )
 
 (de _htArg (Lst)
-   (use @L
-      (cond
-         ((= "$" (car Lst))
-            (format (pack (cdr Lst))) )
-         ((match '("[" @L "]") Lst)
-            (intern (ht:Pack @L)) )
-         ((match '("{" @L "}") Lst)
-            (extern (pack @L)) )
-         ((match '("(" @L ")") Lst)
-            (mapcar _htArg (split @L "_")) )
-         (T (ht:Pack Lst)) ) ) )
+   (case (car Lst)
+      ("$" (intern (ht:Pack (cdr Lst))))
+      ("+" (format (pack (cdr Lst))))
+      ("." (extern (ht:Pack (cdr Lst))))
+      ("_" (mapcar _htArg (split (cdr Lst) "_")))
+      (T (ht:Pack Lst)) ) )
 
 (de htmlVar ("Var")
    (prin "NAME=\"")
@@ -382,7 +376,7 @@
    (prinl "</HEAD>")
    (cond
       ((not (num? (car "Prg")))
-         (prin "<BODY MARGINHEIGHT=\"0\"")
+         (prin "<BODY")
          (while (and (pair (car "Prg")) (=T (caar "Prg")))
             (prin " " (eval (cdr (pop '"Prg")))) )
          (prinl ">")
@@ -422,6 +416,17 @@
    (prinl "<FRAMESET ROWS=\"100%,*\">")
    (prinl "<FRAME SRC=\"" Url "\">")
    (prinl "</FRAMESET>")
+   (prinl "</HTML>") )
+
+(de http404 (Url)
+   (prinl "HTTP/1.1 404 Not Found^M")
+   (prinl "Server: PicoLisp^M")
+   (prinl "Connection: close^M")
+   (prinl "Content-Type: text/html^M")
+   (prinl "^M")
+   (prinl "<HTML>")
+   (prinl "<HEAD><TITLE>404 Not Found</TITLE></HEAD>")
+   (prinl "<BODY><H1>Not Found</H1></BODY>")
    (prinl "</HTML>") )
 
 

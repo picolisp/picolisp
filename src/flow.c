@@ -1,4 +1,4 @@
-/* 19feb04abu
+/* 19may04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -987,26 +987,27 @@ any doThrow(any ex) {
    err(ex, tag, "Tag not found");
 }
 
-static cell BrkAt;
-static bindFrame BrkKey;
+static bindFrame BrkAt, BrkKey;
 static FILE *OutSave;
 
 void brkLoad(any x) {
    cell c1;
 
-   if (!isNil(val(Dbg)) && !data(BrkAt)) {
+   if (!isNil(val(Dbg)) && !Env.brk) {
       if (!isatty(STDIN_FILENO))
          err(x, NULL, "BREAK");
+      Env.brk = YES;
       Push(c1, val(Up)),  val(Up) = x;
-      Push(BrkAt, val(At));
+      Bind(At, BrkAt);
       Bind(Key,BrkKey),  val(Key) = Nil;
       OutSave = OutFile,  OutFile = stdout;
       print(x), crlf();
       load(NULL, '!', Nil);
       OutFile = OutSave;
       Unbind(BrkKey);
-      val(At) = data(BrkAt),  data(BrkAt) = NULL;
+      Unbind(BrkAt);
       val(Up) = Pop(c1);
+      Env.brk = NO;
    }
 }
 
@@ -1021,10 +1022,10 @@ any doE(any ex) {
    any x;
    cell c1, at, key;
 
-   if (!data(BrkAt))
+   if (!Env.brk)
       err(ex, NULL, "No Break");
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
-   Push(at, val(At)),  val(At) = data(BrkAt);
+   Push(at, val(At)),  val(At) = BrkAt.bnd[0].val;
    Push(key, val(Key)),  val(Key) = BrkKey.bnd[0].val;
    if (Env.inFiles && Env.inFiles->link)
       Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
@@ -1225,6 +1226,7 @@ any doFork(any ex) {
          close(Tell);
       Tell = tell[1];
       val(Pid) = boxCnt(getpid());
+      run(val(Fork));
       return Nil;
    }
    if (close(hear[0]) < 0  ||  close(tell[1]) < 0)

@@ -12,11 +12,12 @@
 <i>not when there is nothing left to add</i><br>
 <i>but when there is nothing left to take away</i><br>
 <i>(Antoine de Saint-Exupéry)</i><br>
+</p>
 
 
 <h2>The Pico Lisp Reference</h2>
 
-<p align=right>(c) Software Lab. Alexander Burger
+<p align=right>(c) Software Lab. Alexander Burger</p>
 
 <p>This document describes the concepts, data types, and kernel functions of the
 Pico Lisp system.
@@ -1572,6 +1573,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#push">push</a>
    <a href="#pop">pop</a>
    <a href="#cut">cut</a>
+   <a href="#del">del</a>
    <a href="#queue">queue</a>
    <a href="#idx">idx</a>
 </code>
@@ -1924,6 +1926,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#*Msg">*Msg</a>
    <a href="#*Uni">*Uni</a>
    <a href="#*Adr">*Adr</a>
+   <a href="#*Fork">*Fork</a>
    <a href="#*Bye">*Bye</a>
 </code>
 
@@ -2686,7 +2689,8 @@ set to raw mode (when called without arguments).
 
 <p><dt><a name="cut"><code>(cut 'cnt 'var) -> lst</code></a>
 <dd>Pops the first <code>cnt</code> elements (<code>CAR</code>) from the stack
-in <code>var</code>. See also <code><a href="#pop">pop</a></code>.
+in <code>var</code>. See also <code><a href="#pop">pop</a></code> and <code><a
+href="#del">del</a></code>.
 
 <p><pre><code>
 : (setq S '(1 2 3 4 5 6 7 8))
@@ -2845,6 +2849,21 @@ optional arguments.
 -> (333 2)
 : (foo)                       # Called without arguments
 -> (1 2)
+</code></pre>
+
+<p><dt><a name="del"><code>(del 'any 'var) -> any</code></a>
+<dd>Deletes <code>any</code> from the list in the value of <code>var</code>.
+<code>(del 'any 'var)</code> is equivalent to <code>(set 'var (delete 'any
+var))</code>. See also <code><a href="#delete">delete</a></code>, <code><a
+href="#cut">cut</a></code> and <code><a href="#pop">pop</a></code>.
+
+<p><pre><code>
+: (setq S '((a b c) (d e f)))
+-> ((a b c) (d e f))
+: (del '(d e f) 'S)
+-> ((a b c))
+: (del 'b S)
+-> (a c)
 </code></pre>
 
 <p><dt><a name="delete"><code>(delete 'any 'lst) -> lst</code></a>
@@ -3101,7 +3120,9 @@ executed, <code>NIL</code> is returned. Otherwise the result of
 
 <p><dt><a name="fork"><code>(fork) -> pid | NIL</code></a>
 <dd>Forks a child process. Returns <code>NIL</code> in the child, and the
-child's process ID <code>pid</code> in the parent. See also <code><a
+child's process ID <code>pid</code> in the parent. In the child, the
+<code>VAL</code> of the global variable <code><a href="#*Fork">*Fork</a></code>
+(should be a <code>prg</code>) is executed. See also <code><a
 href="#tell">tell</a></code>.
 
 <p><pre><code>
@@ -4554,7 +4575,8 @@ Returns <code>T</code> when successful.
 
 <p><dt><a name="pop"><code>(pop 'var) -> any</code></a>
 <dd>Pops the first element (<code>CAR</code>) from the stack in
-<code>var</code>. See also <code><a href="#cut">cut</a></code>.
+<code>var</code>. See also <code><a href="#cut">cut</a></code> and <code><a
+href="#del">del</a></code>.
 
 <p><pre><code>
 : (setq S '((a b c) (1 2 3)))
@@ -6105,6 +6127,16 @@ Fatal error!
 $
 </code></pre>
 
+<p><dt><a name="*Fork"><code>*Fork</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body, to be
+executed after a call to <code><a href="#fork">fork</a></code> in the child
+process.
+
+<p><pre><code>
+: (push '*Fork '(off *Tmp))   # Clear '*Tmp' in child process
+-> (off *Tmp)
+</code></pre>
+
 <p><dt><a name="*Msg"><code>*Msg</code></a>
 <dd>A global variable holding the last recently issued error message. See also
 <code><a href="#err">Error Handling</a></code>.
@@ -6450,9 +6482,9 @@ performed.
 </code></pre>
 
 <p><dt><a name="quest"><code>(? [sym 'any ..] . lst) -> flg</code></a>
-<dd>Top-level function for <a href="#pilog">Pilog</a> queries. It displays each
-result, waits for console input, and terminates when a non-empty line is
-entered.
+<dd>Top-level function for interactive <a href="#pilog">Pilog</a> queries. It
+displays each result, waits for console input, and terminates when a non-empty
+line is entered.
 
 <p><pre><code>
 : (? (append (a b c) (d e f) @X))

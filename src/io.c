@@ -1,4 +1,4 @@
-/* 20feb04abu
+/* 28apr04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -351,7 +351,9 @@ int numBytes(any x) {
 int bufSize(any x) {return numBytes(name(x)) + 1;}
 
 int pathSize(any x) {
-   if (firstByte(x) != '@')
+   int c = firstByte(x);
+
+   if (c != '@'  &&  (c != '+' || secondByte(x) != '@'))
       return bufSize(x);
    if (!Home)
       return numBytes(name(x));
@@ -369,7 +371,9 @@ void pathString(any x, byte *p) {
    int c;
    byte *h;
 
-   if ((c = symByte(name(x))) != '@')
+   if ((c = symByte(name(x))) == '+')
+      *p++ = c,  c = symByte(NULL);
+   if (c != '@')
       while (*p++ = c)
          c = symByte(NULL);
    else {

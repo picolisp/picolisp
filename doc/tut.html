@@ -9,7 +9,7 @@
 
 <h3>A Pico Lisp Tutorial</h3>
 
-<p align=right>(c) Software Lab. Alexander Burger
+<p align=right>(c) Software Lab. Alexander Burger</p>
 
 <p>This document demonstrates some aspects of the Pico Lisp system in detail and
 example. For a general description of the Pico kernel please look at the <a
@@ -620,7 +620,7 @@ numeric arguments, each on a line followed by its incremented value:
 </code></pre>
 
 <p>Finally, it is possible to pass all these evaluated argument to another
-function, using <code><a href="ref.html#args">args</a></code>:
+function, using <code><a href="ref.html#pass">pass</a></code>:
 
 <p><pre><code>
 : (de foo @
@@ -1283,7 +1283,7 @@ and two subclasses <code>+Man</code> and <code>+Woman</code>.
 </code></pre>
 
 <p><code>+Person</code> is a subclass of the <code>+Entity</code> system class.
-Usually all data in a database are a direct or indirect subclass of
+Usually all objects in a database are of a direct or indirect subclass of
 <code>+Entity</code>. We can then define the relations to other data with the
 <code><a href="ref.html#rel">rel</a></code> function.
 
@@ -1388,7 +1388,7 @@ March in the year zero.
 
 <p><pre><code>
 (dm url> ()
-   (pack "@person?" This) )
+   (pack "@person?" (ht:Fmt This)) )
 </code></pre>
 
 <p>It is needed later in the GUI, to cause a double-click to switch to that

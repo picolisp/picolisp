@@ -1,10 +1,9 @@
-# 10jul03abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 # *Visitors *Monitor
 
-(?push '*Bye
-   '(tell 'wentAway *Pid) )
+(?push '*Bye '(tell 'wentAway *Pid))
 
 (de visit (Vis . @)
    (pass tell 'visited *Pid (lit Vis)) )
@@ -24,7 +23,7 @@
 
 (de wentAway (Pid)
    (when *Login
-      (setq *Visitors (delete (assoc Pid *Visitors) *Visitors))
+      (del (assoc Pid *Visitors) '*Visitors)
       (and *Monitor (upd> *Monitor)) ) )
 
 

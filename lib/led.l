@@ -1,4 +1,4 @@
-# 20feb04abu
+# 19may04abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -23,13 +23,10 @@
    "HistMax"   4000     # History limit
 
    "History"            # History of input lines
-   (and
-      (open "@.picoHistory")
-      (close @)
+   (ctl "+@.picoHistory"
       (in "@.picoHistory"
-         (make
-            (whilst (line)
-               (link @) ) ) ) ) )
+         (make (whilst (line) (link @))) ) )
+   "Hist0"     "History" )
 
 # Output character
 (de ledChr (C)
@@ -362,15 +359,29 @@
       (_led (chop "X") "tabFoo" "skipFoo")
       (pack "Line") ) )
 
+(de saveHistory ()
+   (ctl "@.picoHistory"
+      (let
+         (Old (in "@.picoHistory" (make (whilst (line) (link @))))
+            New "History"
+            Cnt "HistMax" )
+         (out "@.picoHistory"
+            (while (and New (n== New "Hist0"))
+               (prinl (pop 'New))
+               (dec 'Cnt) )
+            (setq "Hist0" "History")
+            (do Cnt
+               (NIL Old)
+               (prinl (pop 'Old)) ) ) ) ) )
+
+(?push '*Bye '(saveHistory))
+
 # Enable line editing
 (de *Led
    (let ("Dbg" *Dbg  *Dbg NIL)
-      (?push '*Bye
-         '(out "@.picoHistory"
-            (mapc prinl "History") ) )
       (_led)
       (and
-         (< 3 (length "Line"))
+         (> (length "Line") 3)
          (<> " " (car "Line"))
          (<> "Line" (car "History"))
          (push '"History" "Line") )

@@ -1,4 +1,4 @@
-# 04apr04abu
+# 27apr04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -7,6 +7,7 @@
 (allow "java/pico.jar")
 
 (default *APorts 0)
+(default *Font (12 . "SansSerif"))
 
 (de url (Str Tar . @)
    (when Str
@@ -48,10 +49,12 @@
          (and *Top (ping> *Top)) ) )
    (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId J
       "\" WIDTH=" DX " HEIGHT=" DY ">" )
+   (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
+   (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
+   (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
    (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">")
-   (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"sid\" VALUE=\"" *SesId "\">")
    (while (args)
       (prin "<PARAM NAME=\"" (next) "\" VALUE=\"")
@@ -395,7 +398,15 @@
       (beep> This) ) )
 
 (dm F7> ()
-   (beep> This) )
+   (dialog "Font" (list (car *Font) (cdr *Font))
+      (quote
+         (gui 'size '(+NumField) "Size" 3)
+         (gui 'font '(+TextField) "Font" '("Serif" "SansSerif" "Monospaced"))
+         (row
+            (okButton
+               '(setq *Font
+                  (cons (val> (: home size)) (val> (: home font))) ) )
+            (quitButton) ) ) ) )
 
 (dm F8> ()
    (beep> This) )
@@ -627,7 +638,7 @@
    (setq "Busy" This)
    (super Ttl Lst) )
 
-(dm paint> ()
+(dm start> ()
    (super)
    (=: rv (run (: prg)))
    (stop> This) )
@@ -651,7 +662,7 @@
                   (----)
                   (row
                      (quitButton)
-                     (gui 'cnt '(+Mono +Label) "->" (pack "Cnt" "        ")) ) ) )
+                     (gui 'cnt '(+Mono +Label) "->" "Cnt") ) ) )
             (wait NIL (not "Busy"))
             (: rv) ) ) ) )
 
@@ -659,7 +670,7 @@
    (when *Top
       (ifn "Busy"
          (throw "busy")
-         (with @
+         (with "Busy"
             (set> (: cnt)
                (format (abs (dec (:: work)))) ) )
          (while (poll (: app))
@@ -863,7 +874,7 @@
 # Field display
 (class +Font)
 
-# "Helvetica" "SansSerif" "serif" "Monospaced"
+# "Serif" "SansSerif" "Monospaced"
 (dm T (Name Size . @)
    (pass extra)
    (pr Name Size) )
@@ -871,7 +882,7 @@
 (class +Mono +Font)
 
 (dm T @
-   (pass super "Monospaced" 12) )
+   (pass super "Monospaced" (car *Font)) )
 
 
 (class +Align +Mono)
@@ -2442,23 +2453,20 @@
          ,"Data not found" ) ) )
 
 (dm query> (X)
-   (let Cls (meta (: objTyp) (: objVar) 'cls)
-      (if (num? X)
-         (list  # ((db var +Cls (<N> . T) @@) (isa +Cls @@))
-            (make
-               (link 'db (: objVar) Cls)
-               (when (: objHook)
-                  (link (eval @)) )
-               (link (cons X T) '@@) )
-            (list 'isa Cls '@@) )
-         (list  # ((db var +Cls "Str" @@) (isa +Cls @@) (head "Str" @@ var))
-            (make
-               (link 'db (: objVar) Cls)
-               (when (: objHook)
-                  (link (eval @)) )
-               (link X '@@) )
-            (list 'isa Cls '@@)
-            (list 'head X '@@ (: objVar)) ) ) ) )
+   (if (num? X)
+      (list  # ((db var +Cls (<N> . T) @@))
+         (make
+            (link 'db (: objVar) (last (: objTyp)))
+            (when (: objHook)
+               (link (eval @)) )
+            (link (cons X T) '@@) ) )
+      (list  # ((db var +Cls "Str" @@) (head "Str" @@ var))
+         (make
+            (link 'db (: objVar) (last (: objTyp)))
+            (when (: objHook)
+               (link (eval @)) )
+            (link X '@@) )
+         (list 'head X '@@ (: objVar)) ) ) )
 
 
 (class +ObjView +Lock)

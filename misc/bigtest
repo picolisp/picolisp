@@ -1,0 +1,4 @@
+# misc/bigtest <seed>
+# 24sep02abu
+
+nice bin/pico -"seed '$1" misc/bigtest1.l |nice bc |nice bin/pico misc/bigtest2.l

@@ -1,0 +1,40 @@
+# 01dec02abu
+# (c) Software Lab. Alexander Burger
+
+# lib/http.l
+"Text too long" "Text zu lang"
+"Cancel" "Abbruch"
+"No" "Nein"
+"Yes" "Ja"
+"F2-Choice" "F2-Auswahl"
+"Please wait" "Bitte warten"
+"Bad date format" "Falsches Datums-Format"
+"Bad time format" "Falsches Uhrzeit-Format"
+
+# lib/db.l
+"Input required" "Eingabe erforderlich"
+"Not unique" "Nicht eindeutig"
+"Bad type" "Falscher Daten-Typ"
+"Symbolic type expected" "Symbol-Type erwartet"
+"String type expected" "String-Type erwartet"
+"Numeric input expected" "Zahleneingabe erforderlich"
+
+# lib/gui.l
+"Choose" "Auswahl"
+"-Choice" "-Auswahl"
+"Create" "Neuanlage"
+"Delete" "Löschen"
+"Next data record" "Nächster Datensatz"
+"Choose/Create (F4)" "Auswahl/Neuanlage (F4)"
+"New/Copy" "Neu/Muster"
+"Deletion" "Löschung"
+"Delete this data record?" "Bestehenden Datensatz löschen?"
+"Data not found" "Datensatz nicht gefunden"
+"Close" "Schließen"
+
+# lib/admin.l
+"Permission denied" "Keine Berechtigung"
+"Password" "Passwort"
+"' logged in" "' ist angemeldet"
+"Role" "Rollen"
+"User" "Benutzer"

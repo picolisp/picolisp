@@ -1,0 +1,70 @@
+15dec02abu
+(c) Software Lab. Alexander Burger
+
+
+         Pico Lisp Installation
+         ======================
+
+There is no 'configure' procedure, but the Pico Lisp file structure is simple
+enough to get along without it (we hope). It should compile and run on any Linux
+system without problems.
+
+By default, Pico Lisp installs completely in a local directory. No need to touch
+any system locations, so you don't have to be root.
+
+
+Please follow these steps:
+
+1. Upack the distribution
+
+   $ tar xfz picoLisp-*.tgz
+
+2. Change the directory
+
+   $ cd picoLisp-*.tgz
+
+3. Compile the Pico Lisp interpreter
+
+   $ (cd src; make)
+
+
+         Invocation
+         ==========
+
+The shell script 'p' is usually called to start up Pico Lisp, typically with
+'dbg.l' to load the interactive debugging environment.
+
+$ ./p dbg.l
+:
+
+The colon ':' is Pico's prompt. You may enter some Lisp expression,
+
+: (+ 1 2 3)
+-> 6
+
+To exit the interpreter, you may enter
+
+: (bye)
+
+or simply type an empy line (Return).
+
+
+         Documentation
+         =============
+
+For further information, please read the Pico Lisp Reference Manual in
+'doc/ref.html', the Pico Lisp tutorial in 'doc/tut.html', and the frequently
+asked questions in 'doc/faq.html'.
+
+As always, the most accurate and complete documentation is the source code ;-)
+Included in the distribution are many utilities and pet projects, including
+stress tests, a chat server, 2D drawing, a family database, minesweeper game,
+tax accounting, genetic algorithm, GUI demos, 3D animation, and more.
+
+Any feedback is welcome!
+Hope you enjoy :-)
+
+--------------------------------------------------------------------------------
+Software Lab. Alexander Burger                               Tel +49-821-9907090
+Bahnhofstr. 24a                                              abu@software-lab.de
+D-86462 Langweid                                             www.software-lab.de

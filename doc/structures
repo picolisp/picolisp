@@ -1,0 +1,90 @@
+
+         Primary data types:
+
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx010 Number
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx1x0 Symbol
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000 Cell
+
+
+         Number
+         |
+         V
+      +-----+-----+     +-----+-----+     +-----+-----+
+      |'DIG'|  ---+---> |'DIG'|  ---+---> |'DIG'|  /  |
+      +-----+-----+     +-----+-----+     +-----+-----+
+
+
+      Cell
+      |
+      V
+      +-----+-----+
+      | CAR | CDR |
+      +-----+-----+
+
+
+            Symbol
+            |
+            V
+      +-----+-----+
+      | VAL |  ---+---+
+      +-----+-----+   | tail
+                      |
+         +------------+
+         |
+         V                                                      name
+         +-----+-----+     +-----+-----+     +-----+-----+     +-----+-----+
+         |  |  |  ---+---> | KEY |  ---+---> |  |  |  ---+---> |'cba'|  /  |
+         +--+--+-----+     +-----+-----+     +--+--+-----+     +-----+-----+
+            |                                   |
+            V                                   V
+            +-----+-----+                       +-----+-----+
+            | VAL | KEY |                       | VAL | KEY |
+            +-----+-----+                       +-----+-----+
+
+
+      NIL:  /
+            |
+            V
+      +-----+-----+-----+-----+
+      |  /  |  /  |  /  |  /  |
+      +-----+--+--+-----+-----+
+
+
+
+         External Symbols:
+
+                  +-----------+---+-----------+---+
+      Block 0:    |   Free    | 0 |   Next    | 0 |
+                  +-----------+---+-----------+---+
+                  0              BLK
+
+
+                  +-----------+---+
+      Free:       |   Link    | 0 |
+                  +-----------+---+
+                  0
+
+
+                  +-----------+---+----
+      ID-Block:   |   Link    | 1 | Data
+                  +-----------+---+----
+                  0              BLK
+
+
+                  +-----------+---+----
+      EXT-Block:  |   Link    | n | Data
+                  +-----------+---+----
+                  0              BLK
+
+
+
+      Assumptions:
+
+   - 8 bits per byte
+   - word: sizeof(void*) == sizeof(unsigned long) is 4
+   - gcc
+      "long long" integers
+      Zero- or variable-length arrays
+      Conditionals with Omitted Operands
+      Unused argument attributes
+      Noreturn attributes

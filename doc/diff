@@ -1,0 +1,84 @@
+   Differences to Maclisp (Winston/Horn)
+   =====================================
+
+Symbols
+   All symbol names in Pico are case sensitive (`car' is not `CAR')
+
+Numbers
+   All numbers in Pico are bignums (unlimited precision).
+   Floating point is not supported (But fixed point is supported for I/O).
+
+Arithmetic functions:
+   PLUS DIFFERENCE TIMES QUOTIENT  are  `+' `-' `*' `/'
+
+Quoting: 'x
+   In Pico, this is is the same as `(quote . x)',
+   while in Maclisp it is `(QUOTE X)'
+
+   If a list starts with a number, e.g. `(1 2 3)', it does not have to be
+   quoted.
+
+`SUBST' is `(replace 'lst 'old 'new)'
+
+Function definition
+   (DEFUN FOO (ARG)     (de foo (arg)
+      (BODY) )             (body) )
+
+`BOUNDP' does not exist.  In Pico, a symbol always has a value (but it
+is NIL initially).
+
+`EQUAL' is `='
+`EQ' is `=='
+
+`NULL' does not exist.  Use `not' instead.
+
+`NUMBERP' is `num?'
+`GREATERP' is `>', `LESSP' is `<' etc.
+`ZEROP' is `=0'
+`MINUSP' is `lt0'
+
+`FUNCALL' does not exist.  You can use any expression in place of a
+function instead:
+   ((if (> 4 3) + *) 1 2 3)
+Depending on the result of `(> 4 3)', `+' or `*' is called (it's `+' here).
+
+`PROG' does not exist it Maclisp's form.  Local variables can be used
+with `use' and `let'.
+
+There is also no `GO'.  Instead, there is a variety of control functions:
+
+   `if' `ifn' `when' `unless' `cond' `case' `while' `until' `do' `for'
+
+`PUTPROP' is `put':
+   `(PUTPROP 'sym 'any 'key)' is `(put 'sym 'key 'any)'
+
+`REMPROP' does not exist.  Use `(put 'sym 'key NIL) instead.
+
+ARRAY's do not exist.  We must use lists instead.
+
+`EXPLODE' and `IMPLODE' are `chop' and `pack'
+
+`LAMBDA' does not exist.  It is implied in the functional mechanism:
+      (mapcar '((X) (= X 'Apple)) Fruits)
+   or the identical form:
+      (mapcar (quote (X) (= X 'Apple)) Fruits)
+
+   ((quote (X) (= X 'Apple)) 'Apple)
+
+I/O is rather different.  It is explained in the Pico HTML reference.
+
+`GENSYM' is `new'
+
+A `FEXPR' can be defined by writing an atom in place of an argument list.
+Then the list of arguments will be bound to `Lst' without evaluation:
+
+   (de demonstrate Par
+      (println Par)
+      (length Par) )
+
+
+`MACRO's do not exist in Pico.
+
+`NCONC' is `conc'
+For `RPLACA' can `set' be used
+`RPLACD' is `con'

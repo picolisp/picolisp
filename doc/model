@@ -1,0 +1,51 @@
+# 11feb01abu
+# (c) Software Lab. Alexander Burger
+
+Sym Val -> Model list:
+(
+   pos.x pos.y pos.z                                              # Position
+   rot.a.x rot.a.y rot.a.z                                        # Orientation
+   rot.b.x rot.b.y rot.b.z
+   rot.c.x rot.c.y rot.c.z
+   sym                                                            # Submodel
+   ..
+   (col1 col2 ["text"]  p1.x p1.y p1.z  p2.x p2.y p2.z ..)        # Face
+   ..
+   sym                                                            # Submodel
+   ..
+   (col1 col2  p1.x p1.y p1.z  p2.x p2.y p2.z  p3.x p3.y p3.z ..) # Face
+   ..
+)
+
+col = NIL  -> Invisible side
+col2 = T   ->  Shadow
+
+
+Transmission format:
+   hor sky gnd
+   cnt  x y z  "text"  x y z  x y z  ..  col
+   cnt  x y z  NIL  x y z  x y z  x y z  ..  col
+   ..
+   0 32767 | 0 snx sny
+
+Transmission size:
+   (4 + 2 * polygons + 3 * points) * 4 bytes
+
+
+Polygon design rules:
+
+- Points loop right when seen from the front side
+  (if the two faces should have different colors)
+
+- The first three points must not be on a straight line
+  (to allow the calculation of the normal vector)
+
+- The first point cannot be the local origin
+  (if 'aRot' is to be used)
+
+
+z3dField .graf
+((x y . "string") ..)
+
+Transmit format:
+   cnt  x y "string" ..

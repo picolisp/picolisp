@@ -1,0 +1,1651 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Pico Lisp Tutorial</title>
+</head>
+<body>
+<a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
+
+<h3>A Pico Lisp Tutorial</h3>
+
+<p align=right>(c) Software Lab. Alexander Burger
+
+<p>This document demonstrates some aspects of the Pico Lisp system in detail and
+example. For a general description of the Pico kernel please look at the <a
+href="ref.html">Pico Lisp Reference</a>.
+
+<p>This is <u>not</u> a Lisp tutorial, as it assumes some working knowledge of
+Lisp (and programming in general). It concentrates on the specialities of Pico
+Lisp, and its differences to other Lisp dialects.
+
+<p>If not stated otherwise, all examples assume that Pico was started from the
+shell prompt as
+
+<p><pre><code>
+$ ./p dbg.l
+:
+</code></pre>
+
+<p>This loads the Pico base system and the debugging environment, and waits for
+you to enter input lines at the interpreter prompt (<code>:</code>). You can
+terminate the interpreter and return to the shell at any time, by either hitting
+the <code>RETURN</code> key (i.e. by entering an empty line), or by executing
+the function <code><a href="ref.html#bye">(bye)</a></code>.
+
+<p>It is very helpful - though not absolutely necessary - when you know how to
+use the <code>vi</code> editor.
+
+<p>We recommend that you have a terminal window open, and try the examples by
+yourself. You may either type them in directly to the Pico interpreter, or edit
+a separate source file (e.g. <code>"test.l"</code>) in a second terminal window
+and load it into Pico with
+
+<p><pre><code>
+: (load "test.l")
+</code></pre>
+
+<p>each time you have modified and saved it.
+
+
+<p>If you are new to Pico, you might want to read the following sections in the
+given order, as some of them assume knowledge about previous ones. Otherwise
+just jump anywhere you are interested in.
+
+<p><ul>
+<li><a href="#ledit">The Command Line Editor</a>
+<li><a href="#brw">Browsing</a>
+<li><a href="#fun">Defining Functions</a>
+<li><a href="#dbg">Debugging</a>
+<li><a href="#oop">Objects and Classes</a>
+<li><a href="#ext">Persistence (External Symbols)</a>
+<li><a href="#db">Database Progamming</a>
+<li><a href="#gui">User Interface Programming</a>
+<li><a href="#pilog">Pilog -- Pico Prolog</a>
+<li><a href="#pit">Pitfalls</a>
+<li><a href="#ref">References</a>
+</ul>
+
+
+<p><hr>
+<h3><a name="ledit">The Command Line Editor</a></h3>
+
+<p>Pico permanently reads input from the current input channel (i.e. the console
+in interactive mode), evaluates it, and prints the result to the current output
+channel.
+
+<p>To alleviate the task of manual line input, a command line editor is provided
+which is similar to (though much simpler than) the <code>readline</code> feature
+of the <code>bash</code>. Only a subset of the <code>vi</code> mode is
+supported, which is restricted to single-key commands (the "real"
+<code>vi</code> supports multi-key commands and the modification of most
+commands with count prefixes).
+
+<p>You can enter lines in the normal way, correcting mistypes with the
+<code>BACKSPACE</code> key, and terminating them with the <code>RETURN</code>
+key. This is the <i>Insert Mode</i>.
+
+<p>If you hit <code>ESC</code>, you get into <i>Command Mode</i>. Now you can
+navigate horizontally in the current input line, or vertically in the history of
+previously entered lines, with key commands borrowed from the <code>vi</code>
+editor. Note, however, that there is always only a single line visible.
+
+<p>Let's say you did some calculation
+
+<p><pre><code>
+: (* (+ 2 3) (- 7 2))
+-> 25
+:
+</code></pre>
+
+<p>If you want to repeat a modified version of this command, using
+<code>8</code> instead of <code>7</code>, you don't have to re-type the
+whole command, but type
+
+<p><ul>
+<li><code>ESC</code> to get into <i>Command Mode</i>
+<li><code>k</code> to get one line "up"
+<li><code>f</code> and <code>7</code> to "find" the character <code>7</code>
+<li><code>r</code> and <code>8</code> to "replace" with <code>8</code>
+</ul>
+
+<p>Then you hit <code>RETURN</code> to execute the modified line. Instead of
+jumping to the <code>7</code> with the "find" command, you may also type
+<code>l</code> (move "right") repeatedly till you reach the correct position.
+
+<p>The key commands in the <i>Command Mode</i> are listed below. Some commands
+change the mode back to <i>Insert Mode</i> as indicated in parentheses. Commands
+which operate on a "word" take either the current atom (number or symbol), or a
+whole expression when the cursor is at a left parenthesis.
+
+<p><ul>
+<li><code>k</code> - Go up one line
+<li><code>j</code> - Go down one line
+<li><code>l</code> - Go right one character
+<li><code>h</code> - Go left one character
+<li><code>w</code> - Go right one word
+<li><code>b</code> - Go back (left) one word
+<li><code>0</code> - Go to the beginning of the line
+<li><code>$</code> - Go to the end of the line
+<li><code>i</code> - Enter <i>Insert Mode</i> at the cursor position
+<li><code>a</code> - Append (<i>Insert Mode</i>) after the cursor position
+<li><code>A</code> - Append (<i>Insert Mode</i>) at the end of the line
+<li><code>I</code> - Insert (<i>Insert Mode</i>) at the beginning of the line
+<li><code>x</code> - Delete the character at the cursor position
+<li><code>X</code> - Delete the character left of the cursor position
+<li><code>r</code> - Replace the character at the cursor position with the next key
+<li><code>s</code> - Substitute the character at the cursor position (<i>Insert Mode</i>)
+<li><code>S</code> - Substitute the whole line (<i>Insert Mode</i>)
+<li><code>d</code> - Delete the word at the cursor position (<i>Insert Mode</i>)
+<li><code>D</code> - Delete the rest of the line
+<li><code>c</code> - Change the word at the cursor position (<i>Insert Mode</i>)
+<li><code>C</code> - Change the rest of the line (<i>Insert Mode</i>)
+<li><code>f</code> - Find next key in the rest of the current line
+<li><code>p</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> before the cursor position
+<li><code>P</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> after the cursor position
+<li><code>/</code> - Accept an input pattern and search the history for it
+<li><code>n</code> - Search for next occurrence of pattern (as entered with <code>/</code>)
+<li><code>N</code> - Search for previous occurrence of pattern
+<li><code>%</code> - Show matching paranthesis
+<li><code>~</code> - Convert character to opposite (lower or upper) case and move right
+<li><code>u</code> - Undo the last change (one level only)
+<li><code>U</code> - Undo all changes of the current line
+<li><code>g</code> - Display cut buffer (not in <code>vi</code>)
+</ul>
+
+<p>Notes:
+<ul>
+
+<li>The <code>d</code> command corresponds to the <code>dw</code> command of the
+<code>vi</code> editor, and <code>c</code> corresponds to <code>cw</code>.
+
+<li>Search patterns may contain "<code>@</code>" characters as wildcards.
+
+<li>Lines shorter than 3 characters, lines beginning with a space character, or
+duplicate lines are not entered into the history.
+
+<li>The history is stored in a file named ".picoHistory" in the Pico home
+directory. The length of the history is limited to 1000 lines.
+
+</ul>
+
+<p>In <i>Input Mode</i>, only the following keys have a special meaning:
+
+<p><ul>
+
+<li><code>BACKSPACE</code> (<code>Ctrl-H</code>) and <code>DEL</code> erase the
+character to the left
+
+<li><code>Ctrl-V</code> inserts the next key literally
+
+<li><code>TAB</code> performs symbol expansion: When a symbol name is entered
+partially and <code>TAB</code> is pressed subsequently, all internal symbols
+matching the partial input are shown in sequence.
+
+<li><code>ESC</code> terminates <i>Input Mode</i> and enters <i>Command Mode</i>
+
+</ul>
+
+<p>Please take some time to experiment and to get used to command line editing.
+It will make life much easier in the future :-)
+
+
+<p><hr>
+<h3><a name="brw">Browsing</a></h3>
+
+<p>Pico provides some functionality for inspecting pieces of data and code
+within the running system.
+
+<p>Most commonly used is probably the <code>show</code> function. It takes a
+symbolic argument, and shows the symbol's name (if any), followed by its value
+cell, and then the contents of the property list on the following lines.
+
+<p><pre><code>
+: (setq A '(This is the value))  # Set the value cell of 'A'
+-> (This is the value)
+: (put 'A 'key1 'val1)           # Store property 'key1'
+-> val1
+: (put 'A 'key2 'val2)           # and 'key2'
+-> val2
+: (show 'A)                      # Now 'show' the symbol 'A'
+A (This is the value)
+   key2 val2
+   key1 val1
+-> A
+</code></pre>
+
+<p><code>show</code> accepts an arbitrary number of aguments which are processed
+according to the rules of <code><a href="ref.html#get">get</a></code>, resulting
+in a symbol which is showed then.
+
+<p><pre><code>
+: (put 'B 'a 'A)        # Put 'A' under the 'a'-property of 'B'
+-> A
+: (setq Lst '(A B C))   # Create a list with 'B' as second argument
+-> (A B C)
+: (show Lst 2 'a)       # Show the property 'a" of the 2nd element of 'Lst'
+A (This is the value)   # (which is 'A' again)
+   key2 val2
+   key1 val1
+-> A
+</code></pre>
+
+<p>Similar to <code>show</code> is <code>edit</code>. It takes an arbitrary
+number of symbolic arguments, writes them to a temporary file in a format
+similar to <code>show</code>, and starts the <code>vi</code> editor with that
+file.
+
+<p><pre><code>
+: (edit 'A 'B)
+</code></pre>
+
+<p>The <code>vi</code> window will look like
+
+<p><pre><code>
+A (This is the value)
+key1 val111
+key2 val2
+
+(********)
+
+B NIL
+a A  # (This is the value)
+
+(********)
+</code></pre>
+
+<p>Now you can modify values or properties. You should not touch the
+parenthesized asterisks, as they serve as delimiters. If you position the cursor
+on the first char of a symbol name and hit <code>Ctrl-]</code> the editor will
+be restarted with that symbol added to the editor window (this is similar to the
+"tags"-feature of <code>vi</code>). <code>Ctrl-T</code> will bring you back to
+the previous view.
+
+<p><code>edit</code> is also very useful to browse in a database. You can follow
+the links between objects with <code>Ctrl-]</code>, and even modify the data if
+you are sure about what you are doing (and don't forget to <code><a
+href="ref.html#commit">commit</a></code> when you are done).
+
+<p><code>more</code> is a simple tool that displays the elements of a list one
+by one. It stops after each element and waits for input. If you just hit
+<code>RETURN</code>, <code>more</code> continues with the next element,
+otherwise (usually I type a dot (<code>.</code>) followed by
+<code>RETURN</code>) it terminates.
+
+<p><pre><code>
+: (more (1 2 3 4 5 6))
+1                          # Hit RETURN
+2.                         # Hit '.' and RETURN
+-> T                       # stopped
+</code></pre>
+
+<p>Optionally <code>more</code> takes a function as a second argument and
+applies that function to each element (instead of the default <code><a
+href="ref.html#print">print</a></code>). Here, often <code>show</code> or
+<code>pp</code> (see below) is used.
+
+<p><pre><code>
+: (more '(A B))            # Step through 'A' and 'B'
+A
+B-> T
+: (more '(A B) show)       # Step through 'A' and 'B' with 'show'
+A (This is the value)      # showing 'A'
+   key2 val2
+   key1 val111
+                           # Hit RETURN
+B NIL                      # showing 'B'
+   a A
+-> T
+</code></pre>
+
+<p>The <i>pretty-print</i> function <code>pp</code> takes a symbol that has a
+function defined (or two symbols that specify message and class for a method
+definition), and displays that definition in a formatted and indented way.
+
+<p><pre><code>
+: (pp 'pretty)
+(de pretty (X N)
+   (space (default N 0))
+   (if (or (atom X) (<= (size X) 12))
+      (print X)
+      (while (== 'quote (car X))
+         (prin "'")
+         (pop 'X) )
+      (let Z
+         X
+         (prin "(")
+         (when
+            (and
+               (memq (print (pop 'X)) *PP)
+               (or
+                  (atom (car X))
+                  (<= (size (car X)) 12) ) )
+            (space)
+            (print (pop 'X)) )
+         (do NIL
+            (NIL X)
+            (T (== Z X) (prin " ."))
+            (T (atom X) (prin " . ") (print X))
+            (prinl)
+            (pretty (pop 'X) (+ 3 N)) )
+         (space)
+         (prin ")") ) ) )
+-> pretty
+</code></pre>
+
+<p>The style is the same as we use in all our source files:
+<ul>
+
+<li>The Indentation level is three spaces
+
+<li>If a list ist too long, pretty-print the <code>CAR</code> on the current
+line, and each element of the <code>CDR</code> recursively on its own line.
+
+<li>A closing parenthesis a preceded by a space if the corresponding open
+parenthesis is not on the same line
+
+</ul>
+
+<p>The <code>what</code> function returns a list of all internal symbols in the
+system. If an optional pattern argument (with '<code>@</code>' wildcard
+characters ) is given, only symbols matching that pattern are returned.
+
+<p><pre><code>
+: (what "@Field")
+-> (+HttpField hotField +TimeField +PwField +DigField +FixField +IntField
++MailField +SymField +DateField +McField +TextField +DrawField +ClsField
++PictField +NumField +FileField)
+</code></pre>
+
+<p>The function <code>who</code> returns <i>"who contains that"</i>, i.e. a list
+of symbols that contain a given argument somewhere in their value or property
+list.
+
+<p><pre><code>
+: (who 'cdar)
+-> (step dbg ubg _scan (T . _sel) _gen _iter _reti (set> . +Map) _nacs)
+</code></pre>
+
+<p>A dotted pair indicates either a method definition or a property entry.
+
+<p><code>who</code> can be conveniently combined with <code>more</code> and
+<code>pp</code>:
+
+<p><pre><code>
+: (more (who 'cdar) pp)
+(de step (Q F)          # Pretty-print these functions one by one
+   ...
+</code></pre>
+
+<p>The argument to <code>who</code> may also be a pattern list (see <code><a
+href="ref.html#match">match</a></code>):
+
+<p><pre><code>
+: (more (who '(+ @ 1)) pp)
+(de _week (Dat)
+   (/ (- Dat (% (+ Dat 1) 7)) 7) )
+   ...
+</code></pre>
+
+<p>The function <code>can</code> returns a list which indicates which classes
+<i>can</i> accept a given message. Again, this list is suitable for iteration
+with <code>pp</code>:
+
+<p><pre><code>
+: (can 'del>)                                   # Which classes accept 'del>' ?
+-> ((del> . +Relation) (del> . +Entity) (del> . +List))
+: (more (can 'del>) pp)                         # Inspect the methods with 'pp'
+(dm (del> . +Relation) (Obj Old Val)
+   (and (<> Old Val) Val) )
+
+(dm (del> . +Entity) (Var Val)
+   (when
+      (and
+         Val
+         (has> (meta This Var) Val (get This Var)) )
+      (rel>
+         (meta This Var)
+         This
+         (get This Var)
+         (put
+            This
+            Var
+            (del> (meta This Var) This (get This Var) @) ) )
+      (upd> This Var) ) )
+
+(dm (del> . +List) (Obj Old Val)
+   (delete Val Old) )
+</code></pre>
+
+<p><code>dep</code> shows the dependencies in a class hierarchy. That is, for a
+given class it displays the tree of its (super)class(es) above it, and the tree
+of its subclasses below it.
+
+<p>To view the complete hierarchy of input fields, we start with the root class
+<code>+field</code>:
+
+<p><pre><code>
+: (dep '+field)
++field
+   +Button
+      +ChgButton
+      +ClrButton
+      +SetButton
+   +Label
+   +TextField
+      +HttpField
+      +TimeField
+      +PwField
+      +DigField
+         +NumField
+            +IntField
+      +FixField
+      +MailField
+      +SymField
+      +DateField
+      +McField
+      +ClsField
+      +FileField
+   +DrawField
+   +PictField
+   +Checkbox
+-> +field
+</code></pre>
+
+<p>If we are interested in <code>+DigField</code>:
+
+<p><pre><code>
+: (dep '+DigField)
+         +Font
+      +Mono
+   +Align
+      +field
+   +TextField
++DigField
+   +NumField
+      +IntField
+-> +DigField
+</code></pre>
+
+<p>This says for example that <code>+DigField</code> has two direct superclasses
+(<code>+Align</code> and <code>+TextField</code>) and one direct subclass
+(<code>+NumField</code>).
+
+
+<p><hr>
+<h3><a name="fun">Defining Functions</a></h3>
+
+<p>Most of the time during programming is spent defining functions (or methods).
+In the following we will concentrate on functions, but most will be true for
+methods as well except for using <code>dm</code> instead of <code>de</code>.
+
+<p>The notorious "Hello world" function must be defined:
+
+<p><pre><code>
+: (de hello ()
+   (prinl "Hello world") )
+-> hello
+</code></pre>
+
+<p>The <code>()</code> in the first line indicates a function without arguments.
+The body of the function is in the second line, consisting of a single
+statement. The last line is the return value of <code>de</code>. From now on we
+will omit the return values of examples when they are unimportant.
+
+<p>You'll know that you can call this function as
+
+<p><pre><code>
+: (hello)
+Hello world
+</code></pre>
+
+<p>A function with an argument might look this way:
+
+<p><pre><code>
+: (de hello (X)
+   (prinl "Hello " X) )
+hello redefined
+</code></pre>
+
+<p>Pico informs you that you have just redefined the function. This might be a
+useful warning in case you forgot that a bound symbol with that name already
+existed.
+
+<p><pre><code>
+: (hello "world")
+Hello world
+</code></pre>
+
+<p><pre><code>
+: (hello "Alex")
+Hello Alex
+</code></pre>
+
+<p>Normally Pico evaluates the arguments before it passes them to a function:
+
+<p><pre><code>
+: (hello (+ 1 2 3))
+Hello 6
+</code></pre>
+
+<p><pre><code>
+: (setq A 1  B 2)       # Set 'A' to 1 and 'B' to 2
+-> 2
+: (de foo (X Y)         # 'foo' returns the list of its arguments
+   (list X Y) )
+-> foo
+: (foo A B)             # Now call 'foo' with 'A' and 'B'
+-> (1 2)                # -> We get a list of 1 and 2, the values of 'A' and 'B'
+</code></pre>
+
+<p>In some cases you don't want that. For some functions (<code><a
+href="ref.html#setq">setq</a></code> for example) it is better if the function
+gets all arguments unevaluated, and can decide for itself what to do with them.
+
+<p>For such cases you do not define the function with a <i>list</i> of
+parameters, but give it a single atomic parameter instead. Pico will then bind
+all (unevaluated) arguments to that list.
+
+<p><pre><code>
+: (de foo X
+   (list (car X) (cadr X)) )        # 'foo' lists the first two arguments
+
+: (foo A B)                         # Now call it again
+-> (A B)                            # -> We don't get '(1 2)', but '(A B)'
+
+: (de foo X
+   (list (car X) (eval (cadr X))) ) # Now evaluate only the second argument
+
+: (foo A B)
+-> (A 2)                            # -> We get '(A 2)'
+</code></pre>
+
+<p>As a logical consequence, you can combine these principles. To define a
+function with 2 evaluated and an arbitrary number of unevaluated arguments:
+
+<p><pre><code>
+: (de foo (X Y . Z)     # Evaluate only the first two args
+   (list X Y Z) )
+
+: (foo A B C D E)
+-> (1 2 (C D E))        # -> Get the value of 'A' and 'B' and the remaining list
+</code></pre>
+
+<p>More common, in fact, is the case where you want to pass an arbitrary number
+of <i>evaluated</i> arguments to a function. For that, Pico recognizes the
+symbol <code>@</code> as a single atomic parameter and remembers all evaluated
+arguments in an internal list. This list can then be access sequentially with
+the <code><a href="ref.html#args">args</a></code>, <code><a
+href="ref.html#arg">arg</a></code> and <code><a
+href="ref.html#rest">rest</a></code> functions.
+
+<p><pre><code>
+: (de foo @
+   (list (next) (next)) )     # Get the first two arguments
+
+: (foo A B)
+-> (1 2)
+</code></pre>
+
+<p>Again, this can be combined:
+
+<p><pre><code>
+: (de foo (X Y . @)
+   (list X Y (next) (next)) ) # 'X' and 'Y' are fixed arguments
+
+: (foo A B (+ 3 4) (* 3 4))
+-> (1 2 7 12)                 # All arguments are evaluated
+</code></pre>
+
+<p>These examples are not very useful, because the advantage of a variable
+number of arguments is not used. A function that prints all its evaluated
+numeric arguments, each on a line followed by its incremented value:
+
+<p><pre><code>
+: (de foo @
+   (while (args)
+      (println (next) (+ 1 (arg))) ) )
+
+: (foo (+ 2 3) (- 7 1) 1234 (* 9 9))
+5 6
+6 7
+1234 1235
+81 82
+-> 82
+</code></pre>
+
+<p>Finally, it is possible to pass all these evaluated argument to another
+function, using <code><a href="ref.html#args">args</a></code>:
+
+<p><pre><code>
+: (de foo @
+   (pass println 9 8 7)       # First print all arguments preceded by 9, 8, 7
+   (pass + 9 8 7) )           # Then add all these values
+
+: (foo (+ 2 3) (- 7 1) 1234 (* 9 9))
+9 8 7 5 6 1234 81             # Printing ...
+-> 1350                       # Return the result
+</code></pre>
+
+
+<p><hr>
+<h3><a name="dbg">Debugging</a></h3>
+
+<p>There are two major ways to debug functions (and methods) at runtime:
+<i>Tracing</i> and <i>single-stepping</i>.
+
+<p><i>Tracing</i> means letting functions of interest print their name and arguments
+when they are entered, and their name again and the return value when they are
+exited.
+
+<p>For demonstration, let's define the unavoidable factorial function (or just
+<code><a href="ref.html#load">load</a></code> the file "<code><a
+href="fun.l">doc/fun.l</a></code>"):
+
+<p><pre><code>
+(de fact (N)
+   (if (=0 N)
+      1
+      (* N (fact (- N 1))) ) )
+</code></pre>
+
+<p>With <code><a href="ref.html#trace">trace</a></code> we can put it in trace
+mode:
+
+<p><pre><code>
+: (trace 'fact)
+-> fact
+</code></pre>
+
+<p>Calling <code>fact</code> now will display its execution trace.
+
+<p><pre><code>
+: (fact 3)
+ fact : 3
+  fact : 2
+   fact : 1
+    fact : 0
+    fact = 1
+   fact = 1
+  fact = 2
+ fact = 6
+-> 6
+</code></pre>
+
+<p>As can be seen here, each level of function call will indent by an additional
+space. Upon function entry, the name is separated from the arguments with a
+colon (<code>:</code>), and upon function exit with an equals sign
+(<code>=</code>) from the return value.
+
+<p>Trace works by modifying the function body, so generally only for functions
+defined as lists (lambda expressions, see <a href="ref.html#ev">Evaluation</a>).
+Tracing a <code>C</code>-function is possible, however, when it is a function
+that evaluates all its arguments, and when the number of arguments is known in
+advance. Then this number must be passed to trace.
+
+<p>The function <code><a href="ref.html#=0">=0</a></code> is a single-argument
+predicate. We'll trace it too (with '<code>1</code>' for one parameter):
+
+<p><pre><code>
+: (trace '=0 1)
+-> =0
+</code></pre>
+
+<p>If we call <code>fact</code> again, we see the additional output:
+
+<p><pre><code>
+: (fact 3)
+ fact : 3
+  =0 : 3
+  =0 = NIL
+  fact : 2
+   =0 : 2
+   =0 = NIL
+   fact : 1
+    =0 : 1
+    =0 = NIL
+    fact : 0
+     =0 : 0
+     =0 = T
+    fact = 1
+   fact = 1
+  fact = 2
+ fact = 6
+-> 6
+</code></pre>
+
+<p>To reset a function to its untraced state, call
+
+<p><pre><code>
+: (untrace 'fact)
+-> fact
+: (untrace '=0)
+-> =0
+</code></pre>
+
+<p>or simply
+
+<p><pre><code>
+: (mapc untrace '(fact =0))
+</code></pre>
+
+<p><i>Single-stepping</i> means to execute a function step by step, giving the
+programmer an opportunity to look more closely at what is happening. The
+function <code><a href="ref.html#debug">debug</a></code> inserts a breakpoint
+into each top-level expression of a function. When the function is called, it
+stops at each breakpoint, displays the expression it is about to execute next
+(this expression is also stored into the global variable <code><a
+href="ref.html#^">^</a></code>) and enters a read-eval-loop. The programmer can
+then
+
+<ul>
+
+<li>inspect the current environment by typing variable names or calling functions
+
+<li>execute <code>(d)</code> to recursively debug the next expression
+
+<li>execute <code>(e)</code> to evaluate the next expression, to see what will
+happen without actually advancing on
+
+<li>type <code>RETURN</code> (: enter an empty line) to leave the read-eval
+loop and continue with the next expression
+
+</ul>
+
+<p>Thus, in the simplest case, single-stepping consists of just hitting
+<code>RETURN</code> repeatedly to step through the function.
+
+<p>To try it out, let's look at the <code><a
+href="ref.html#stamp">stamp</a></code> system function.
+
+<p><pre><code>
+(de stamp (Dat Tim)
+   (default
+      Dat (date)
+      Tim (time) )
+   (setq Tim (time Tim))
+   (pack
+      (dat$ Dat "-")
+      " "
+      (pack
+         (pad 2 (car Tim)) ":"
+         (pad 2 (cadr Tim)) ":"
+         (pad 2 (caddr Tim)) ) ) )
+</code></pre>
+
+<p>
+
+<p><pre><code>
+: (debug 'stamp)                       # Debug it
+-> T
+: (stamp)                              # Call it again
+(default Dat (date) Tim (time))        # stopped at first expression
+!                                      # RETURN
+(setq Tim (time Tim))                  # stopped at second expression
+!                                      # RETURN
+(pack (dat$ Dat "-") " " (pack ...     # third expression
+! Tim                                  # inspect 'Tim' variable
+-> (11 22 35)
+!                                      # RETURN
+-> "2002-12-15 11:22:35"               # done, as there are only 3 expressions
+</code></pre>
+
+<p>Now we execute it again, but this time we want to look at what's happening
+inside the third expression.
+
+<p><pre><code>
+: (stamp)                              # Call it again
+(default Dat (date) Tim (time))
+!                                      # RETURN
+(setq Tim (time Tim))
+!                                      # RETURN
+(pack (dat$ Dat "-") " " (pack ...     # here we want to look closer
+! (d)                                  # debug this expression
+-> T
+!                                      # RETURN
+(dat$ Dat "-")                         # stopped at first subexpression
+! (e)                                  # evaluate it
+-> "2002-12-15"
+!                                      # RETURN
+(pack (pad 2 (car Tim)) ":" (pad ...   # stopped at second subexpression
+! (e)                                  # evaluate it
+-> "11:27:17"
+!                                      # RETURN
+-> "2002-12-15 11:27:17"               # done
+</code></pre>
+
+<p>The breakpoints still remain in the function body. We can see them when we
+pretty-print it:
+
+<p><pre><code>
+: (pp 'stamp)
+(de stamp (Dat Tim)
+   (! default Dat (date) Tim (time))
+   (! setq Tim (time Tim))
+   (! pack
+      (! dat$ Dat "-")
+      " "
+      (! pack
+         (pad 2 (car Tim))
+         ":"
+         (pad 2 (cadr Tim))
+         ":"
+         (pad 2 (caddr Tim)) ) ) )
+-> stamp
+</code></pre>
+
+<p>To reset the function to its normal state, call
+
+<p><pre><code>
+: (unbug 'stamp)
+</code></pre>
+
+<p>Often, you will not want to single-step a whole function. Just juse
+<code>edit</code> (see above) to insert a single breakpoint (the exclamation
+mark followed by a space) as <code>CAR</code> of an expression, and run your
+program. Execution will then stop there as described above; you can inspect the
+environment and continue execution with <code>RETURN</code> when you are done.
+
+
+<p><hr>
+<h3><a name="oop">Objects and Classes</a></h3>
+
+<p>The Pico Lisp object model is very simple, yet flexible and powerful. Objects
+as well as classes are both implemented as symbols. In fact, there is no formal
+difference between objects and classes in Pico; classes are more a conceptual
+design consideration in the head of the programmer than a physical reality.
+
+<p>Having said this, we declare:
+
+<ol>
+<li>A Class
+   <ul>
+   <li>Has a name
+   <li>Has method definitions and superclass(es) in the value cell
+   <li>May have class variables in the property list
+   </ul>
+<li>An Object
+   <ul>
+   <li>Is anonymous
+   <li>May have method definitions and class(es) in the value cell
+   <li>Has instance variables in the property list
+   </ul>
+</ol>
+
+<p>So the main difference between classes and objects is that the former ones
+usually have names. By convention, these names start with a '<code>+</code>'.
+Sometimes it makes sense, however, to create named objects (as global
+singletons, for example), or even anonymous classes.
+
+<p>Both classes and objects have a list in their value cell, consisting of
+method definitions (often empty for objects) and (super)class(es). And both
+classes and objects have local data in their property lists (often empty for
+classes). This implies, that any given object (as an instace of a class) may
+have private (object-local) methods defined.
+
+<p>It is rather difficult to contrive a simple OOP example. We constructed a
+hierarchy of geometric shapes, with a base class <code>+Shape</code> and two
+subclasses <code>+Rectangle</code> and <code>+Circle</code>.
+
+<p>The source code is included as "<code><a
+href="shape.l">doc/shape.l</a></code>" in the Pico Lisp distribution, so you
+don't have to type it in. Just <code><a href="ref.html#load">load</a></code> the
+file, or start it from the shell as:
+
+<p><pre><code>
+$ ./p dbg.l doc/shape.l
+</code></pre>
+
+<p>Let's look at it piece by piece. Here's the base class:
+
+<p><pre><code>
+(class +Shape)
+# x y
+
+(dm T (X Y)
+   (=: x X)
+   (=: y Y) )
+
+(dm move> (DX DY)
+   (inc (:: x) DX)
+   (inc (:: y) DY) )
+</code></pre>
+
+<p>The first line '<code>(class +Shape)</code>' defines the symbol
+<code>+Shape</code> as a class without superclasses. The following method
+definitions will go to that class.
+
+<p>The comment '<code># x y</code>' in the second line is just a convention, to
+indicate what instance variables (properties) that class uses. As Pico is a
+dynamic language, a class can be extended at runtime with any number of
+properties, and there is nothing like a fixed object size or structure. This
+comment is a hint of what the programmer thinks to be essential and typical for
+that class. In the case of <code>+Shape</code>, <code>x</code> and
+<code>y</code> are the coordinates of the shape's origin.
+
+<p>Then we have two method definitions, using the keyword <code><a
+href="ref.html#dm">dm</a></code> for "define method". The first method is
+special, in that its name is <code>T</code>. Each time a new object is created,
+and a method with that name is found in its class hierarchy, that method will be
+executed. Though this looks like a "constructor" in other programming languages,
+it should probably better be called "initializer". The <code>T</code> method of
+<code>+Shape</code> takes two arguments <code>X</code> and <code>Y</code>, and
+stores them in the object's property list.
+
+<p>The second method <code>move&gt;</code> changes the object's origin by adding
+the offset values <code>DX</code> and <code>DY</code> to the object's origin.
+
+<p>Now to the first derived class:
+
+<p><pre><code>
+(class +Rectangle +Shape)
+# dx dy
+
+(dm T (X Y DX DY)
+   (super X Y)
+   (=: dx DX)
+   (=: dy DY) )
+
+(dm area> ()
+   (* (: dx) (: dy)) )
+
+(dm perimeter> ()
+   (+ (* 2 (: dx)) (* 2 (: dy))) )
+
+(dm draw> ()
+   (drawRect (: x) (: y) (: dx) (: dy)) )
+</code></pre>
+
+<p><code>+Rectangle</code> is defined as a subclass of <code>+Shape</code>.
+The comment '<code># dx dy</code>' indicates that <code>+Rectangle</code> has a
+width and a height in addition to the origin coordinates inherited from
+<code>+Shape</code>.
+
+<p>The <code>T</code> method passes the origin coordinates <code>X</code> and
+<code>Y</code> to the <code>T</code> method of the superclass
+(<code>+Shape</code>), then stores the width and height parameters into
+<code>dx</code> and <code>dy</code>.
+
+<p>Next we define the methods <code>area&gt;</code> and
+<code>perimeter&gt;</code> which do some obvious calculations, and a method
+<code>draw&gt;</code> which is supposed to draw the shape on the screen by
+calling some hypothetical function <code>drawRect</code>.
+
+<p>Finally, we define a <code>+Circle</code> class in an analog way, postulating
+the hypothetical function <code>drawCircle</code>:
+
+<p><pre><code>
+(class +Circle +Shape)
+# r
+
+(dm T (X Y R)
+   (super X Y)
+   (=: r R) )
+
+(dm area> ()
+   (*/ (* (: r) (: r)) 31415627 10000000 T) )
+
+(dm perimeter> ()
+   (*/ (* 2 (: r)) 31415627 10000000 T) )
+
+(dm draw> ()
+   (drawCircle (: x) (: y) (: r)) )
+</code></pre>
+
+<p>Now we can experiment with geometrical shapes. We create a rectangle at point
+(0,0) with a width of 30 and a height of 20, and keep it in the variable
+<code>R</code>:
+
+<p><pre><code>
+: (setq R (new '(+Rectangle) 0 0 30 20))  # New rectangle
+-> $134432824                             # returned anonymous symbol
+: (show R)
+$134432824 (+Rectangle)                   # Show the rectangle
+   dy 20
+   dx 30
+   y 0
+   x 0
+</code></pre>
+
+<p>We see that the symbol <code>$134432824</code> has a list of classes
+'<code>(+Rectangle)</code>' in its value cell, and the coordinates, width and
+height in is property list.
+
+<p>Sending messages to that object
+
+<p><pre><code>
+: (area> R)                               # Calculate area
+-> 600
+: (perimeter> R)                          # and perimeter
+-> 100
+</code></pre>
+
+<p>will return the values for area and perimeter, respectively.
+
+<p>Then we move the object's origin:
+
+<p><pre><code>
+: (move> R 10 5)                          # Move 10 right and 5 down
+-> 5
+: (show R)
+$134432824 (+Rectangle)
+   y 5                                    # Origin changed (0,0) -> (10,5)
+   x 10
+   dy 20
+   dx 30
+</code></pre>
+
+<p>Though a method <code>move&gt;</code> wasn't defined for the
+<code>+Rectangle</code> class, it is inherited from the <code>+Shape</code>
+superclass.
+
+<p>Similarly, we create and use a circle object:
+
+<p><pre><code>
+: (setq C (new '(+Circle) 10 10 30))      # New circle
+-> $134432607                             # returned anonymous symbol
+: (show C)
+$134432607 (+Circle)                      # Show the circle
+   r 30
+   y 10
+   x 10
+-> $134432607
+: (area> C)                               # Calculate area
+-> 2827
+: (perimeter> C)                          # and perimeter
+-> 188
+: (move> C 10 5)                          # Move 10 right and 5 down
+-> 15
+: (show C)
+$134432607 (+Circle)                      # Origin changed (10,10) -> (20,15)
+   y 15
+   x 20
+   r 30
+</code></pre>
+
+<p>It is also easy to send messages to objects in a list:
+
+<p><pre><code>
+: (mapcar 'area> (list R C))              # Get list of areas
+-> (600 2827)
+: (mapc
+   '((Shape) (move> Shape 10 10))         # Move all 10 right and down
+   (list R C) )
+-> 20
+: (show R)
+$134431493 (+Rectangle)
+   y 15
+   x 20
+   dy 20
+   dx 30
+-> $134431493
+: (show C)
+$134431523 (+Circle)
+   y 25
+   x 30
+   r 30
+</code></pre>
+
+<p>Assume that we want to extend our shape system. From time to time, we need
+shapes that behave exactly like the ones above, but are tied to a fixed
+position. That is, they do not change their position even if they receive a
+<code>move&gt;</code> message.
+
+<p>One solution would be to modify the <code>move&gt;</code> method in the
+<code>+Shape</code> class to a no-operation. But this would require to duplicate
+the whole shape hierarchy (e.g. by defining <code>+FixedShape</code>,
+<code>+FixedRectangle</code> and <code>+FixedCircle</code> classes).
+
+<p>The Pico Way is the use of <u>Prefix Classes</u> through multiple
+inheritance. It uses the fact that searching for method definitions is a
+depth-first, left-to-right search of the class tree. We define a prefix class:
+
+<p><pre><code>
+: (class +Fixed)
+
+(dm move> (DX DY))      # Do-nothing method
+</code></pre>
+
+<p>We can now create a fixed rectangle, and try to move it:
+
+<p><pre><code>
+: (setq R (new '(+Fixed +Rectangle) 0 0 30 20))    # '+Fixed' prefix class
+-> $134432881
+: (move> R 10 5)                                   # Send 'move>' message
+-> NIL
+: (show R)
+$134432881 (+Fixed +Rectangle)
+   dy 20
+   dx 30
+   y 0                                             # Did not move!
+   x 0
+</code></pre>
+
+<p>We see, prefix classes can surgically change the inheritance tree for
+selected objects or classes.
+
+
+<p><hr>
+<h3><a name="ext">Persistence (External Symbols)</a></h3>
+
+<p>Pico Lisp has persistent objects built-in as a first class data type. They
+are, in fact, simply a special type of symbolic atoms (called "<a
+href="ref.html#external">External Symbols</a>"), that happen to be read from a
+pool file when accessed, and written back automatically when modified.
+
+<p>In all other aspects they are normal symbols. They have a value cell, a
+property list and a name.
+
+<p>The name cannot be directly controlled by the programmer, as it is assigned
+when the symbol is created. It is an encoded index of the symbol's location in
+the pool file ("database"). In its visual representation (output by the <code><a
+href="ref.html#print">print</a></code> functions and input by the <code><a
+href="ref.html#read">read</a></code> functions) it is surrounded by braces.
+
+<p>To make use of external symbols, you need to open a database file first:
+
+<p><pre><code>
+: (pool "test.db")
+</code></pre>
+
+<p>If a file with that name did not exist, it got created now. Also created at
+the same moment was <code>{1}</code>, the very first symbol in the file. This
+symbol is of great importance, and is handled especially by Pico. Therefore a
+global constant <code><a href="ref.html#*DB">*DB</a></code> exists, which points
+to that symbol <code>{1}</code>, which should be used exclusively to access the
+symbol <code>{1}</code>, and which should never be modified by the programmer.
+
+<p><pre><code>
+: *DB                   # The value of '*DB'
+-> {1}                  # is '{1}'
+: (show *DB)
+{1} NIL                 # Value of '{1}' is NIL, property list empty
+</code></pre>
+
+<p>Now let's put something into the value cell and property list of
+<code>{1}</code>.
+
+<p><pre><code>
+: (set *DB "Hello world")  # Set value of '{1}' to a transient symbol (string)
+-> "Hello world"
+: (put *DB 'a 1)           # Property 'a' to 1
+-> 1
+: (put *DB 'b 2)           # Property 'b' to 2
+-> 2
+: (show *DB)               # Now show the symbol '{1}'
+{1} "Hello world"
+   b 2
+   a 1
+</code></pre>
+
+<p>Note that instead of '<code>(set *DB "Hello world")</code>', we might also
+have written '<code>(setq {1} "Hello world")</code>', and instead of '<code>(put
+*DB 'a 1)</code>' we might have written '<code>(put '{1} 'a 1)</code>'. This
+would have the same effect, but as a rule external symbols should <u>never</u>
+be be accessed <u>literally</u> in application programs, because the garbage
+collector might not be able to free these symbols and all symbols connected to
+them (and that might well be the whole database). It is perfectly all right,
+however, to access external symbols literally during interactive debugging.
+
+<p>Now we can create own first own external symbol. This can be done with
+<code><a href="ref.html#new">new</a></code> when a <code>T</code> argument is
+supplied:
+
+<p><pre><code>
+: (new T)
+-> {2}               # Got a new symbol
+</code></pre>
+
+<p>We store it in the database root <code>{1}</code>:
+
+<p><pre><code>
+: (put *DB 'newSym '{2})   # Literal '{2}' (ok during debugging)
+-> {2}
+: (show *DB)
+{1} "Hello world"
+   newSym {2}              # '{2}' is now stored in '{1}'
+   b 2
+   a 1
+</code></pre>
+
+<p>Put some property value into '{2}'
+
+<p><pre><code>
+: (put *DB 'newSym 'x 777) # Put 777 as 'x'-property of '{2}'
+-> 777
+: (show *DB 'newSym)       # Show '{2}' (indirectly)
+{2} NIL
+   x 777
+-> {2}
+: (show '{2})              # Show '{2}' (directly)
+{2} NIL
+   x 777
+</code></pre>
+
+<p>All modifications to - and creations of - external symbols done so far are
+not written to the database yet. We could call <code><a
+href="ref.html#rollback">rollback</a></code> (or simply exit Pico) to undo all
+the changes. But as we want to keep them:
+
+<p><pre><code>
+: (commit)           # Commit all changes
+-> T
+: (bye)              # Exit pico
+$                    # back to the shell
+</code></pre>
+
+<p>So, the next time when ..
+
+<p><pre><code>
+$ ./p dbg.l             # .. we start Pico
+: (pool "test.db")      # and open the database file,
+-> T
+: (show *DB)            # our two symbols are there again
+{1} "Hello world"
+   newSym {2}
+   b 2
+   a 1
+-> {1}
+: (show *DB 'newSym)
+{2} NIL
+   x 777
+-> {2}
+</code></pre>
+
+
+<p><hr>
+<h3><a name="db">Database Progamming</a></h3>
+
+<p>To a database, there is more than just persistence. Pico Lisp includes an
+entity/relation class framework (see also <a href="ref.html#dbase">Database</a>)
+which allows a close mapping of the application data structure to the database.
+
+<p>We provided a simple yet complete database and GUI demo application in
+<code><a href="famDb.l">doc/famDb.l</a></code>. We recommend to start it up for
+testing purposes in the following way:
+
+<p><pre><code>
+$ ./p dbg.l doc/famDb.l -main
+:
+</code></pre>
+
+<p>This loads the source file, initializes the database by calling the
+<code>main</code> function, and prompts for user input.
+
+<p>The data model is small and simple. We define a class <code>+Person</code>
+and two subclasses <code>+Man</code> and <code>+Woman</code>.
+
+<p><pre><code>
+(class +Person +Entity)
+</code></pre>
+
+<p><code>+Person</code> is a subclass of the <code>+Entity</code> system class.
+Usually all data in a database are a direct or indirect subclasses of
+<code>+Entity</code>. We can then define the relations to other data with the
+<code><a href="ref.html#rel">rel</a></code> function.
+
+<p><pre><code>
+(rel nm     (+Key +String))                     # Name
+</code></pre>
+
+<p>This defines the name property (<code>nm</code>) of a person. The first
+argument to <code>rel</code> is always a list of relation classes (subclasses of
+<code>+Relation</code>), optionally followed by further arguments, causing
+relation daemon objects be created and stored in the class definition. These
+daemon objects control the entity's behavior later at runtime.
+
+<p>Relation daemons are a kind of <i>metadata</i>, controlling the interactions
+between entities, and maintaining database integrity. Like other classes,
+relation classes can be extended and refined, and in combination with proper
+prefix classes a fine-grained description of the application's structure can be
+produced.
+
+<p>Besides primitive relation classes, like <code>+Number</code>,
+<code>+String</code> or <code>+Date</code>, there are
+
+<ul>
+
+<li>relations between entities, like <code>+Link</code> (uni-directional link),
+<code>+Joint</code> (bi-directional link) or <code>+Hook</code> (object-local
+index root)
+
+<li>relations that bundle other relations into a single unit (<code>+Bag</code>)
+
+<li>a <code>+List</code> prefix class
+
+<li>a <code>+Blob</code> class for "binary large objects"
+
+<li>prefix classes that maintain index trees, like <code>+Key</code> (unique
+index), <code>+Ref</code> (non-unique index) or <code>+Idx</code> (full text
+index)
+
+<li>prefix classes which in turn modify index class behavior, like
+<code>+Sn</code> (soundex algorithm [<a href="#knuth73">knuth73</a>] for
+tolerant searches)
+
+<li>a <code>+Need</code> prefix class, for existence checks
+
+<li>a <code>+Dep</code> prefix class controlling dependencies between other
+relations
+
+</ul>
+
+<p>In the case of the person's name (<code>nm</code>) above, the relation object
+is of type <code>(+Key +String)</code>. Thus, the name of each person in this
+demo database must be unique, and the person object can be located with a single
+index lookup.
+
+<p><pre><code>
+(rel pa     (+Joint) kids (+Man))               # Father
+(rel ma     (+Joint) kids (+Woman))             # Mother
+(rel mate   (+Joint) mate (+Person))            # Partner
+</code></pre>
+
+<p>The attributes for <i>father</i> (<code>pa</code>), <i>Mother</i>
+(<code>ma</code>) and <i>partner</i> (<code>mate</code>) are all defined as
+<code>+Joint</code>s. A <code>+Joint</code> is probably the most powerful
+relation mechanism in Pico; it establishes a bi-directional link between two
+objects.
+
+<p>The above declarations say that the <i>father</i> (<code>pa</code>) attribute
+points to an object of type <code>+Man</code>, and is joined with that object's
+<code>kids</code> attribute (which is a list of joints back to all his
+children).
+
+<p>The consistency of <code>+Joint</code>s is maintained automatically by the
+relation daemons. These become active whenever a value is stored to a person's
+<code>pa</code>, <code>ma</code>, <code>mate</code> or <code>kids</code>
+property.
+
+<p>For example, interesting things happen when a person's <code>mate</code> is
+changed to a new value. Then the <code>mate</code> property of the old mate's
+object is cleared (she has no mate after that). Now when the person pointed to
+by the new value already has a mate, then that mate's <code>mate</code> property
+gets cleared, and the happy new two mates now get their joints both set
+correctly.
+
+<p>The programmer doesn't have to care about all that. He just declares these
+relations as <code>+Joint</code>s.
+
+<p>The last four attributes of person objects are just static data:
+
+<p><pre><code>
+(rel job    (+String))                          # Occupation
+(rel dat    (+Date))                            # Date of birth
+(rel fin    (+Date))                            # Date of death
+(rel txt    (+String))                          # Info
+</code></pre>
+
+<p>Notes:
+<ol>
+<li>Date values in Pico are just numbers, representing the numbers of days since
+first of March in the year zero.
+
+<li>If want to search your database later for persons given their occupation
+or date of birth, you might also write:
+
+<p><pre><code>
+(rel job    (+Ref +String))                     # Occupation
+(rel dat    (+Ref +Date))                       # Date of birth
+</code></pre>
+
+<p>to create non-unique indices for these values.
+
+</ol>
+
+<p>A method <code>url&gt;</code> is defined:
+
+<p><pre><code>
+(dm url> ()
+   (pack "@person?" This) )
+</code></pre>
+
+<p>It is needed later in the GUI, to cause a double-click to switch to that
+object.
+
+<p>The classes <code>+Man</code> and <code>+Woman</code> are subclasses of
+<code>+Person</code>:
+
+<p><pre><code>
+(class +Man +Person)
+(rel kids   (+List +Joint) pa (+Person))        # Children
+
+(class +Woman +Person)
+(rel kids   (+List +Joint) ma (+Person))        # Children
+</code></pre>
+
+<p>They inherit everything from <code>+Person</code>, except for the
+<code>kids</code> attribute. This attribute joins with the <code>pa</code> or
+<code>ma</code> attribute of the child, depending on the parent's gender.
+
+<p>That's the whole data model for our demo database application.
+
+
+<p><hr>
+<h3><a name="gui">User Interface Programming</a></h3>
+
+<p>The only type of GUI supported by the Pico application server framework is
+either dynamically generated (but static by nature) <code>HTML</code>, or an
+interactive applet frontend.
+
+<p>Before we explain the GUI of our demo database application, we present a
+minimal example for a plain <code>HTML</code> GUI in <code><a
+href="hello.l">doc/hello.l</a></code>. Start the application server as:
+
+<p><pre><code>
+$ ./p -'server 8080 "doc/hello.l"' -wait
+</code></pre>
+
+<p>Now point your browser to the address '<code><a
+href="http://localhost:8080">http://localhost:8080</a></code>'. You should see a
+very simple <code>HTML</code> page. You can come back here with normal browser
+navigation, or with the '<code>&lt;&lt;&lt;</code>' link in the upper right
+corner.
+
+<p>You can call the page repeatedly, or concurrently with many clients if you
+like. To terminate the server, you have to send it a TERM signal (e.g.
+'<code>killall pico</code>'), or type the <code>Quit</code> key (typically
+<code>Ctrl-\</code>) in the console window.
+
+<p>In our demo database application, a single function <code>person</code> is
+responsible for the whole GUI. Again, please look at <code><a
+href="famDb.l">doc/famDb.l</a></code>.
+
+<p>To start the database <i>and</i> the application server, call:
+
+<p><pre><code>
+$ ./p dbg.l doc/famDb.l -main -go
+</code></pre>
+
+<p>As before, the database is opened with <code>main</code>. The function
+<code>go</code> is also defined in <code>doc/famDb.l</code>:
+
+<p><pre><code>
+(de go ()
+   (server 8080 "@person") )
+</code></pre>
+
+<p>It starts the <code>HTTP</code> server listening on TCP port 8080 (we did a
+similar thing in our minimal GUI example above directly on the command line).
+Each connect to that port will cause the function <code>person</code> to be
+invoked.
+
+<p>Again, point your browser to the address '<code><a
+href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'
+(please make sure that <code>Java</code> is enabled).
+
+<p>You should see a new browser window with the input form created by the
+function <code>person</code>. If you started the application for the first time,
+it should be empty (in fact, it displays the empty <code>+Man</code> object
+created by <code>main</code>). Please type a name into the first field, and
+perhaps also an occupation and birth date.
+
+<p>To assign a <i>father</i> attribute, you must first create a new person:
+Click on the "Man" button at the bottom of the page. A search dialog pops up, so
+click on "create" to get a new person. Again, enter a name and perhaps
+occupation and birth date. Then click on the first field in the "Children"
+chart. You can select the child by either typing the first char(s) of the name
+and/or by hitting <code>F2</code> for a selection list.
+
+<p>If you go back now to the first object (with browser navigation or with the
+'<code>&lt;&lt;&lt;</code>' link in the upper right corner), the "Father" field
+of that object should be filled now (thanks to the <code>+Joint</code>
+relation).
+
+<p>On the console where you started Pico Lisp, there should a prompt have
+appeared just when the browser connected. You can debug the application
+interactively while it is running. For example, the global variable
+<code>*Top</code> always contains the top level GUI object:
+
+<p><pre><code>
+: (show *Top)
+</code></pre>
+
+<p>To take a look at the field with the current input current focus:
+
+<p><pre><code>
+: (show *Top 'focus)
+</code></pre>
+
+<p>A production application would be started in a slightly different way:
+
+<p><pre><code>
+$ ./p doc/famDb.l -main -go -wait
+</code></pre>
+
+<p>In that case, no debug prompt will appear. In both cases, however, two
+<code>pico</code> processes will be running now. One is the initial server
+process which will continue to run until it is killed. The other is a child
+process which is connected to the applet in the browser, it will terminate when
+the browser is closed, or when <code>(bye)</code> or a plain <code>RETURN</code>
+is entered at the Pico prompt.
+
+<p>Now back to the explanation of the GUI function <code>person</code>:
+
+<p><pre><code>
+(de person (*ID)
+   (app)
+   (html (get (default *ID (seq *DB)) 'nm)
+      (&lt;head&gt; "Family")
+      (new '(+ObjForm) '(+Person) *ID 800 500
+         (quote
+</code></pre>
+
+<p>It gets passed the object ID as a single argument. The function
+<code>(app)</code> must be called at least once when the GUI is initialized (it
+doesn't harm, though, if it is called each time as in this case).
+
+<p>The principal function to generate a <code>HTML</code> page is the function
+<code>html</code> (see also the previous minimal <code><a
+href="hello.l">doc/hello.l</a></code> example). <code>html</code> takes a page
+title as the first argument, and interprets all following arguments as a body
+description. Each item may be an atom (in that case it will be simply printed as
+"This is Pico" in <code><a href="hello.l">doc/hello.l</a></code>), or a list
+which is executed.
+
+<p>In this case the body consists only of three statements:
+
+<ul>
+
+<li>a call to <code>&lt;head&gt;</code>
+
+<li>a call to <code><a href="ref.html#new">new</a></code> to create the GUI
+<code>+ObjForm</code> component.
+
+<li>and an item <code>&lt;hr&gt;</code> for a horizontal line
+
+</ul>
+
+<p>All components like fields and buttons are passed to <code>(new '(+ObjForm)
+..)</code> as a quoted list. The function <code>gui</code> creates a single GUI
+component and takes the type (a list of classes) and a variable number of
+arguments depending on the needs of these classes.
+
+<p><pre><code>
+   (row
+      (gui '(+E/R +TextField) '(nm : home obj) "Name" 30)
+</code></pre>
+
+<p>This creates a <code>+TextField</code> with the label "Name" and a length of
+30 characters. The <code>+E/R</code> (: Entity/Relation) prefix class connects
+that field to a database object, the <code>nm</code> attribute of a person in
+this case, so that the person's name is displayed in that text field, and any
+changes entered into that field are propagated to the database automatically.
+
+<p>The call to <code>row</code> causes all argument fields to be arranged
+horizontally (normally, all components produced by <code>gui</code> are arranged
+vertically below each other).
+
+<p><pre><code>
+   (gui '(+Set +ClassField)
+      '((V)
+         (unless (= V (val (: home obj)))
+            (extra V)
+            (upd> (: home)) ) )
+      '(: home obj) "Sex"
+      '(("Male" +Man) ("Female" +Woman)) ) )
+   ...
+</code></pre>
+
+<p>A <code>+ClassField</code> displays and changes the class of an object, in
+this case the person's sex from <code>+Man</code> to <code>+Woman</code> and
+vice versa. The <code>+Set</code> prefix class is needed to call
+<code>upd&gt;</code> on the whole form, because setting the sex of a person may
+change the <code>kids</code> &lt;-&gt; <code>pa</code>/<code>ma</code> relations
+as a side effect, and thus require a refresh of the display.
+
+<p><pre><code>
+   ...
+   (----)
+   ...
+</code></pre>
+
+<p>This is a function that opens a new panel in the GUI layout. Pico applets use
+the AWT <code>GridBagLayout</code> to arrange components in panels, so calling
+<code>(----)</code> allows a certain degree of control.
+
+<p><pre><code>
+   ...
+   (---- T)
+   (gui '(+E/R +Chart)
+      '(kids : home obj)
+      5 '("Children" "born" "Father" "Mother")
+      (quote
+   ...
+</code></pre>
+
+<p>When <code>(---- T)</code> is called, the panel is equipped with a vertical
+scroll bar. A <code>+Chart</code> creates a two-dimensional array of fields,
+here it is to hold the list of children showing name, date of birth, and the
+names of the parents. Typing the name of a (previously created) child here can
+also be used to establish the <code>+Joint</code> (as opposed to set the
+<code>pa</code> or <code>ma</code> attribute in the child).
+
+<p>As you see, there is no place where explicit accesses to the database have to
+be programmed, no <code>select</code> or <code>update</code>. This is all
+encapsulated in the GUI components, mainly in the <code>+E/R</code> prefix
+class. The above function <code>person</code> is fully functional as we present
+it and allows creation, modification and deletion of person objects in the
+database.
+
+
+<p><hr>
+<h3><a name="pilog">Pilog -- Pico Prolog</a></h3>
+
+<p>Work in progress ..
+
+
+<p><hr>
+<h3><a name="pit">Pitfalls</a></h3>
+
+<p>Work in progress ..
+
+
+<p><hr>
+<h3><a name="ref">References</a></h3>
+
+<p><a name="knuth73">[knuth73]</a> Donald E. Knuth: ``The Art of Computer
+Programming'', Vol.3, Addison-Vesley, 1973, p. 392
+
+</body>
+</html>

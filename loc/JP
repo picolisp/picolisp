@@ -1,0 +1,6 @@
+(setq
+   *Sep0 "."
+   *Sep3 ","
+   *DateFmt '(@Y "/" @M "/" @D)
+   *DayFmt '(Getsuyoubi Kayoubi Suiyoubi Mokuyoubi Kinyoubi Doyoubi Nichiyoubi)
+   *MonFmt '(January February March April May June July August September October November December) )

@@ -1,0 +1,1 @@
+CLASSPATH=.:util.jar exec java Reflector fifo/java

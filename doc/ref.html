@@ -1,0 +1,6053 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Pico Lisp Reference</title>
+</head>
+<body>
+<a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
+
+<p align=right>
+<i>Perfection is attained</i><br>
+<i>not when there is nothing left to add</i><br>
+<i>but when there is nothing left to take away</i><br>
+<i>(Antoine de Saint-Exup√©ry)</i><br>
+
+
+<h3>The Pico Lisp Reference</h3>
+
+<p align=right>(c) Software Lab. Alexander Burger
+
+<p>This document describes the concepts, data types, and kernel functions of the
+Pico Lisp system.
+
+<p>This is <u>not</u> a Lisp tutorial. For an introduction to Lisp, a
+traditional Lisp book, like "Lisp" by Winston/Horn (Addison-Wesley 1981) is
+recommended. Note, however, that there are significant differences between Pico
+Lisp and Maclisp (and even greater differences to Common Lisp).
+
+<p>Please take a look at the <a href="tut.html">Pico Lisp Tutorial</a> for an
+explanation of some aspects of Pico Lisp, and scan through the list of <a
+href="faq.html">Frequently Asked Questions</a>.
+
+<p><ul>
+<li><a href="#intro">Introduction</a>
+<li><a href="#vm">The Pico Machine</a>
+   <ul>
+   <li><a href="#cell">The Cell</a>
+   <li><a href="#dat">Data Types</a>
+      <ul>
+      <li><a href="#num">Numbers</a>
+      <li><a href="#sym">Symbols</a>
+         <ul>
+         <li><a href="#nilSym">NIL</a>
+         <li><a href="#internal">Internal Symbols</a>
+         <li><a href="#transient">Transient Symbols</a>
+         <li><a href="#external">External Symbols</a>
+         </ul>
+      <li><a href="#lst">Lists</a>
+      </ul>
+   <li><a href="#mem">Memory Management</a>
+   </ul>
+<li><a href="#penv">Programming Environment</a>
+   <ul>
+   <li><a href="#invoc">Invocation</a>
+   <li><a href="#io">Input/Output</a>
+      <ul>
+      <li><a href="#num-io">Numbers</a>
+      <li><a href="#sym-io">Symbols</a>
+         <ul>
+         <li><a href="#nilSym-io">NIL</a>
+         <li><a href="#internal-io">Internal Symbols</a>
+         <li><a href="#transient-io">Transient Symbols</a>
+         <li><a href="#external-io">External Symbols</a>
+         </ul>
+      <li><a href="#lst-io">Lists</a>
+      <li><a href="#macro-io">Read-Macros</a>
+      </ul>
+   <li><a href="#ev">Evaluation</a>
+   <li><a href="#err">Error Handling</a>
+   <li><a href="#atres">@ Result</a>
+   <li><a href="#cmp">Comparing</a>
+   <li><a href="#oop">OO Concepts</a>
+   <li><a href="#dbase">Database</a>
+   <li><a href="#conv">Naming Conventions</a>
+   <li><a href="#trad">Breaking Traditions</a>
+   </ul>
+<li><a href="#foo">Function Reference</a>
+</ul>
+
+
+<p><hr>
+<h3><a name="intro">Introduction</a></h3>
+
+<p>Pico Lisp is the result of a language design study, trying to answer the
+question "What is a minimal but useful architecture for a virtual machine?".
+Because opinions differ about what is meant by "minimal" and "useful", there are
+many answers to that question, and people might consider other solutions more
+"minimal" or more "useful". But from a practical point of view, Pico proved to
+be a valuable answer to that question.
+
+<p>First of all, Pico Lisp is a virtual machine architecture, and then a
+programming language. It was designed in a "bottom up" way, and "bottom up" is
+also the most natural way to understand and to use it: <i>Form Follows
+Function</i>.
+
+<p>Pico was used in several commercial and research programming projects since
+1988. Its internal structures are simple enough, allowing an experienced
+programmer always to fully understand what's going on under the hood, and its
+language features, efficiency and extensibility make it suitable for almost any
+practical programming task.
+
+<p>In a nutshell, emphasis was put on four design objectives. The Pico system
+should be
+
+<p><dl>
+
+<dt>Simple
+<dd>The internal data structure should be as simple as possible. Only one single
+data structure is used to build all higher level constructs.
+
+<dt>Unlimited
+<dd>There are no limits imposed upon the language due to limitations of the
+virtual machine architecture. That is, there is no upper bound in symbol name
+length, number digit counts, or data structure and buffer sizes, except for the
+total memory size of the host machine.
+
+<dt>Dynamic
+<dd>Behavior should be as dynamic as possible ("run"-time vs. "compile"-time).
+All decisions are delayed till runtime where possible. This involves matters
+like memory management, dynamic symbol binding, and late method binding.
+
+<dt>Practical
+<dd>Pico is not just a toy of theoretical value. Pico is used since 1988 in
+actual application development, research and production.
+
+</dl>
+
+
+<p><hr>
+<h3><a name="vm">The Pico Machine</a></h3>
+
+<p>An important point in the Pico philosophy is the knowledge about the
+architecture and data structures of the internal machinery. The high-level
+constructs of the programming language directly map to that machinery, making
+the whole system both understandable and predictable.
+
+<p>This is similar to assembly language programming, where the programmer has
+complete control over the machine.
+
+
+<p><hr>
+<h3><a name="cell">The Cell</a></h3>
+
+<p>The Pico virtual machine is both simpler and more powerful than most current
+(hardware) processors. At the lowest level, it is constructed from a single data
+structure called "cell":
+
+<p><pre><code>
+         +-----+-----+
+         | CAR | CDR |
+         +-----+-----+
+</code></pre>
+
+<p>A cell is a pair of machine words, which traditionally are called
+<code>CAR</code> and <code>CDR</code> in the Lisp terminology. These words can
+represent either a numeric value (scalar) or the address of another cell
+(pointer). All higher level data structures are built out of cells.
+
+<p>The type information of higher level data is contained in the pointers to
+these data. Assuming the implementation on a byte-addressed physical machine,
+and a pointer size of typically 4 bytes, each cell has a size of 8 bytes.
+Therefore, the pointer to a cell must point to an 8-byte boundary, and its
+bit-representation will look like:
+
+<p><pre><code>
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000
+</code></pre>
+
+<p>(the <code>'x'</code> means "don't care"). For the individual data types, the
+pointer is adjusted to point to other parts of a cell, in effect setting some of
+the lower three bits to non-zero values. These bits are then used by the
+interpreter to determine the data type.
+
+<p>In any case, bit(0) - the least significant of these bits - is reserved as a
+mark bit for garbage collection.
+
+<p>Initially, all cells in the memory are unused (free), and linked together to
+form a "free list". To create higher level data types at runtime, cells are
+taken from that free list, and returned by the garbage collector when they are
+no longer needed. All memory management is done via that free list; there are no
+additional buffers, string spaces or special memory areas (With two exceptions:
+A certain fixed area of memory is set aside to contain the executable code and
+global variables of the interpreter itself, and a standard push down stack for
+return addresses and temporary storage. Both are not directly accessible by the
+programmer).
+
+
+<p><hr>
+<h3><a name="dat">Data Types</a></h3>
+
+<p>On the virtual machine level, Pico supports exactly <u>three</u> base data
+types (<u>Numbers, Symbols and Cons Pairs (Lists)</u>), the three variations of
+symbol types (<u>Internal, Transient and External</u>), and the special symbol
+<code><u>NIL</u></code>. They are all built from the single cell data structure,
+and all runtime data cannot consist of any other types than these three.
+
+<p>The following diagram shows the complete data type hierarchy, consisting of
+the three base types and the symbol variations:
+
+<p><pre><code>
+              cell
+               |
+      +--------+--------+
+      |        |        |
+   Number    Symbol    Pair
+               |
+      +--------+--------+--------+
+      |        |        |        |
+  Internal Transient External   NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="num">Numbers</a></h3>
+
+<p>A number can represent a signed integral value of arbitrary size. The
+<code>CAR</code> of one or more cells hold the number's "digits" (each in the
+machine's word size), to store the number's binary representation.
+
+<p><pre><code>
+         Number
+         |
+         V
+      +-----+-----+     +-----+-----+     +-----+-----+
+      |'DIG'|  ---+---> |'DIG'|  ---+---> |'DIG'|  /  |
+      +-----+-----+     +-----+-----+     +-----+-----+
+</code></pre>
+
+<p>The first cell holds the least significant digit. The least significant bit
+of that digit represents the sign.
+
+<p>The pointer to a number points into the middle of the <code>CAR</code>, with
+an offset of 2 from the cell's start address. Therefore, the bit pattern of a
+number will be:
+
+<p><pre><code>
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx010
+</code></pre>
+
+<p>Thus, a number is recognized by the interpreter when bit(1) is non-zero.
+
+
+<p><hr>
+<h3><a name="sym">Symbols</a></h3>
+
+<p>A symbol is more complex than a number. Each symbol has a value, and
+optionally a name and an arbitrary number of properties. The <code>CAR</code> of
+a symbol cell is also called <code>VAL</code>, and the <code>CDR</code> points
+to the symol's tail. As a minimum, a symbol consists of a single cell, and has
+no name or properties:
+
+<p><pre><code>
+            Symbol
+            |
+            V
+      +-----+-----+
+      | VAL |  /  |
+      +-----+-----+
+</code></pre>
+
+<p>That is, the symbol's tail is empty, or points to <code>NIL</code> (as
+indicated by the '/' character).
+
+<p>The pointer to a symbol points to the <code>CDR</code> of the cell, with an
+offset of 4 from the cell's start address. Therefore, the bit pattern of a
+symbol will be:
+
+<p><pre><code>
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx100
+</code></pre>
+
+<p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero. In
+addition, it is possible that bit(1) is also set for a symbol (This is the case
+for external symbols).
+
+<p>A property is a key-value-pair, represented as a cell in the symbol's tail.
+This is called a "property list". The property list may be terminated by a
+number representing the symbol's name. In the following example, a symbol with
+the name <code>"abc"</code> has three properties:
+
+<p><pre><code>
+            Symbol
+            |
+            V
+      +-----+-----+
+      | VAL |  ---+---+
+      +-----+-----+   | tail
+                      |
+         +------------+
+         |
+         V                                                      name
+         +-----+-----+     +-----+-----+     +-----+-----+     +-----+-----+
+         |  |  |  ---+---> | KEY |  ---+---> |  |  |  ---+---> |'cba'|  /  |
+         +--+--+-----+     +-----+-----+     +--+--+-----+     +-----+-----+
+            |                                   |
+            V                                   V
+            +-----+-----+                       +-----+-----+
+            | VAL | KEY |                       | VAL | KEY |
+            +-----+-----+                       +-----+-----+
+</code></pre>
+
+<p>Each property in a symbol's tail is either a symbol (then it represents a
+boolean value), or a cell with the property key in its <code>CDR</code> and the
+property value in its <code>CAR</code>. In both cases, the key should be a
+symbol, because searches in the property list are performed using pointer
+comparisons.
+
+<p>The name of a symbol is stored as a number at the end of the tail. It
+contains the characters of the name in UTF-8 encoding, using between one and
+three 8-bit-bytes per character. The first byte of the first character is stored
+in the lowest 8 bits of the number.
+
+<p>All symbols have the above structure, but depending on scope and
+accessibility there are actually four types of symbols:
+
+
+<p><hr>
+<h3><a name="nilSym">NIL</a></h3>
+
+<p><code>NIL</code> is a special symbol which exists exactly once in the whole
+system. It is used
+
+<p><ul>
+<li>as an end-of-list marker
+<li>to represent the empty list
+<li>to represent the boolean value "false"
+<li>to represent a string of length zero
+<li>to represent the value "Not a Number"
+<li>as the root of all class hierarchies
+</ul>
+
+<p>For that, <code>NIL</code> has a special structure:
+
+<p><pre><code>
+      NIL:  /
+            |
+            V
+      +-----+-----+-----+-----+
+      |  /  |  /  |  /  |  /  |
+      +-----+--+--+-----+-----+
+</code></pre>
+
+<p>The reason for that structure is <code>NIL</code>'s dual nature both as a
+symbol and as a list:
+
+<p><ul>
+<li>As a symbol, it should give <code>NIL</code> for its <code>VAL</code>, and
+be without properties
+
+<li>For the empty list, <code>NIL</code> should give <code>NIL</code> both for
+its <code>CAR</code> and for its <code>CDR</code>
+
+</ul>
+
+<p>These requirements are fulfilled by the above structure.
+
+
+<p><hr>
+<h3><a name="internal">Internal Symbols</a></h3>
+
+<p>Internal Symbols are all those "normal" symbols, as they are used for
+function definitions and variable names. They are "interned" into a hashed list
+structure, so that it is possible to find an internal symbol by searching for
+its name.
+
+<p>There cannot be two different internal symbols with the same name.
+
+<p>Initially, a new internal symbol's <code>VAL</code> is <code>NIL</code>.
+
+
+<p><hr>
+<h3><a name="transient">Transient Symbols</a></h3>
+
+<p>Transient symbols are only interned into a hashed list structure for a
+certain time (e.g. while reading the current source file), and are released
+after that. That means, a transient symbol cannot be accessed then by its name,
+and there may be several transient symbols in the system having the same name.
+
+<p>Transient symbols are used
+
+<p><ul>
+<li>as text strings
+
+<li>as identifiers with a limited access scope (like, for example,
+<code>static</code> identifiers in the <code>C</code> language family)
+
+<li>as anonymous, dynamically created objects (without a name)
+
+</ul>
+
+<p>Initially, a new transient symbol's <code>VAL</code> is that symbol itself.
+
+<p>A transient symbol without a name can be created with the <code><a
+href="#box">box</a></code> or <code><a href="#new">new</a></code> functions.
+
+
+<p><hr>
+<h3><a name="external">External Symbols</a></h3>
+
+<p>External symbols reside in a database file, and are loaded into memory - and
+written back to the file - dynamically as needed, and transparent to the
+programmer.
+
+<p>The interpreter recognizes external symbols, because in addition to the
+symbol bit(2), also bit(1) is set:
+
+<p><pre><code>
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx110
+</code></pre>
+
+<p>There cannot be two different external symbols with the same name. External
+symbols are maintained in hash structures while they are loaded into memory, and
+have their external location (disk block, network URL, etc.) directly coded into
+their names.
+
+<p>Initially, a new external symbol's <code>VAL</code> is <code>NIL</code>,
+unless otherwise specified at creation time.
+
+
+<p><hr>
+<h3><a name="lst">Lists</a></h3>
+
+<p>A list is a sequence of one or more cells, holding numbers, symbols, or
+lists. Lists are used in Pico to emulate composite data structures like arrays,
+trees, stacks or queues.
+
+<p>In contrast to lists, numbers and symbols are collectively called "Atoms".
+
+<p>Typically, the <code>CDR</code> of each cell in a list points to the
+following cell, except for the last cell which points <code>NIL</code>. If,
+however, the <code>CDR</code> of the last cell points to an atom, this cell is
+called a "dotted pair" (because of its I/O syntax with a dot '.' between the two
+values).
+
+
+<p><hr>
+<h3><a name="mem">Memory Management</a></h3>
+
+<p>The Pico interpreter has complete knowledge of all data in the system, due to
+the type information associated with every pointer. Therefore, an efficient
+garbage collector mechanism can easily be implemented. Pico employs a simple but
+fast mark-and-sweep garbage collector.
+
+<p>As the collection process is very fast (in the order of milliseconds per
+megabyte), it was not necessary to develop more complicated, time-consuming and
+error-prone garbage collection algorithms (e.g. incremental collection). A
+compacting garbage collector is also not necessary, because the single cell data
+type cannot cause heap fragmentation.
+
+
+<p><hr>
+<h3><a name="penv">Programming Environment</a></h3>
+
+<p>Lisp was chosen as the programming language, because of its clear and simple
+structure.
+
+<p>In some previous versions, a Forth-like syntax was also implemented on top of
+a similar virtual machine (Lifo). Though that language was more flexible and
+expressive, the traditional Lisp syntax proved easier to handle, and the virtual
+machine can be kept considerably simpler.
+
+Pico inherits the major advantages of classical Lisp systems like
+
+<p><ul>
+<li>Dynamic data types and structures
+<li>Formal equivalence of code and data
+<li>Functional programming style
+<li>An interactive environment
+</ul>
+
+<p>In the following, some concepts and peculiarities of the Pico language and
+environment are described.
+
+
+<p><hr>
+<h3><a name="invoc">Invocation</a></h3>
+
+<p>When Pico is invoked from the command line, an arbitrary number of arguments
+may follow the command name.
+
+<p>By default, each argument is the name of a file, to be <code><a
+href="#load">load</a></code>ed by the interpreter. If, however, the argument's
+first character is a hyphen '-', then that argument is taken as a function call
+(without the surrounding parentheses). A hyphen by itself as an argument stops
+evaluation of the rest of the command line (it may be processed later using the
+<code>argv</code> function).
+
+<p>As a convention, Pico source files have the extension "<code>.l</code>".
+
+<p>The simplest and shortest invocation of Pico does nothing, and exits
+immediately by calling <code>bye</code>:
+
+<p><pre><code>
+$ bin/pico -bye
+$
+</code></pre>
+
+<p>In interactive mode, the Pico interpreter (see <code><a
+href="#load">load</a></code>) will also exit when an empty line is entered:
+
+<p><pre><code>
+$ bin/pico
+:
+$
+</code></pre>
+
+<p>To start up the standard Pico environment, several files should be loaded.
+The most commonly used things are in "lib.l" and in a bunch of other files,
+which are in turn loaded by "ext.l". Thus, a typical call would be:
+
+<p><pre><code>
+$ bin/pico lib.l ext.l
+</code></pre>
+
+<p>The recommended way, however, is to call the "p" shell script, which includes
+"lib.l" and "ext.l". Given that your current project is loaded by some file
+"myProject.l" and your startup function is <code>main</code>, your invocation
+would look like:
+
+<p><pre><code>
+$ ./p myProject.l -main
+</code></pre>
+
+<p>For interactive development and debugging it is recommended also to load
+"dbg.l", to get the vi-style command line editor, single-stepping, tracing and
+other debugging utilities.
+
+<p><pre><code>
+$ ./p dbg.l myProject.l -main
+</code></pre>
+
+<p>In any case, the path name to the first command line file argument is
+remembered internally as the <i>Pico Home Directory</i>. This path is later
+automatically substituted for any leading "<code>@</code>" character in file
+name arguments to I/O functions.
+
+
+<p><hr>
+<h3><a name="io">Input/Output</a></h3>
+
+<p>In Lisp, each internal data structure has a well-defined external
+representation in human-readable format. All kinds of data can be written to a
+file, and restored later to their orignial form by reading that file.
+
+<p>In normal operation, the Pico interpreter continuously executes an infinite
+"read-eval-print loop". It reads one expression at a time, evaluates it, and
+prints the result to the console. Any input into the system, like data
+structures and function definitions, is done in a consistent way no matter
+whether it is entered at the console or read from a file.
+
+<p>Comments can be embedded in the input stream with the hash <code>#</code>
+character. Everything up to the end of that line will be ignored by the reader.
+
+<p><pre><code>
+: (* 1 2 3)  # This is a comment
+-> 6
+</code></pre>
+
+<p>Here is the I/O syntax for the individual Pico data types:
+
+
+<p><hr>
+<h3><a name="num-io">Numbers</a></h3>
+
+<p>A number consists of an arbitrary number of digits (<code>'0'</code> through
+<code>'9'</code>), optionally preceeded by a sign character (<code>'+'</code> or
+<code>'-'</code>). Legal number input is:
+
+<p><pre><code>
+: 7
+-> 7
+: -12345678901245678901234567890
+-> -12345678901245678901234567890
+</code></pre>
+
+<p>Fixed-point numbers can be input by embedding a decimal point
+<code>'.'</code>, and setting the global variable <code><a
+href="#*Scl">*Scl</a></code> appropriately:
+
+<p><pre><code>
+: *Scl
+-> 0
+
+: 123.45
+-> 123
+: 456.78
+-> 457
+
+: (setq *Scl 3)
+-> 3
+: 123.45
+-> 123450
+: 456.78
+-> 456780
+</code></pre>
+
+<p>Thus, fixed-point input simply scales the number to an integer value
+corresponding to the number of digits in <code><a href="#*Scl">*Scl</a></code>.
+
+<p>Formatted output of scaled fixed-point values can be done with the <code><a
+href="#format">format</a></code> function:
+
+<p><pre><code>
+: (format 1234567890 2)
+-> "12345678.90"
+: (format 1234567890 2 "." ",")
+-> "12,345,678.90"
+</code></pre>
+
+
+<p><hr>
+<h3><a name="sym-io">Symbols</a></h3>
+
+<p>The reader is able to recognize the individual symbol types from their
+syntactic form. A symbol name should - of course - <u>not</u> look like a legal
+number (see above).
+
+<p>In general, symbol names are case-sensitive. <code>car</code> is <u>not</u>
+the same as <code>CAR</code>.
+
+
+<p><hr>
+<h3><a name="nilSym-io">NIL</a></h3>
+
+<p>Besides for standard normal form, <code>NIL</code> is also recognized as
+<code>()</code>, <code>[]</code>, <code>""</code> or <code>{}</code>.
+
+<p><pre><code>
+: NIL
+-> NIL
+: ()
+-> NIL
+: ""
+-> NIL
+</code></pre>
+
+<p>Output will always be as <code>NIL</code>.
+
+
+<p><hr>
+<h3><a name="internal-io">Internal Symbols</a></h3>
+
+<p>Internal symbol names can consist of any printable (non-whitespace)
+character, except for the following meta characters:
+
+<p><pre><code>
+   "  #  '  (  )  [  ]  `  ~
+</code></pre>
+
+<p>As a rule, anything not recognized by the reader as another data type will be
+returned as an internal symbol.
+
+
+<p><hr>
+<h3><a name="transient-io">Transient Symbols</a></h3>
+
+<p>A transient symbol is anything surrounded by double quotes '<code>"</code>'.
+With that, it looks - and can be used - like a string constant in other
+languages. However, it is a real symbol, and may be assigned a value or a
+function definition, and properties.
+
+<p>Initially, a transient symbol's value is that symbol itself, so that it does
+not need to be quoted for evaluation:
+
+<p><pre><code>
+: "This is a string"
+-> "This is a string"
+</code></pre>
+
+<p>However, care must be taken when assigning a value to a transient symbol.
+This may cause unexpected behavior:
+
+<p><pre><code>
+: (setq "This is a string" 12345)
+-> 12345
+: "This is a string"
+-> 12345
+</code></pre>
+
+<p>The name of a transient symbol can contain any character. A double quote
+character can be escaped with a backslash '<code>\</code>', and a backslash
+itself has to be escaped with another backslash. Control characters can be
+written with a preceding hat '<code>^</code>' character.
+
+<p><pre><code>
+: "We^Ird\\Str\"ing"
+-> "We^Ird\\Str\"ing"
+: (chop @)
+-> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
+</code></pre>
+
+<p>The hash table for transient symbols is cleared automatically before and
+after <code><a href="#load">load</a></code>ing a source file, or it can be reset
+explicitly with the <code><a href="#====">====</a></code> function. With that
+mechanism, it is possible to create symbols with a local access scope, not
+accessible from other parts of the program.
+
+<p>It is possible to create transient symbols without a name (see <code><a
+href="#box">box</a></code> or <code><a href="#new">new</a></code>). These
+symbols print as a decimal digit string (actually their machine address)
+enclosed in double quotes.
+
+
+<p><hr>
+<h3><a name="external-io">External Symbols</a></h3>
+
+<p>External symbol names are surrounded by braces (<code>'{'</code> and
+<code>'}'</code>). The characters of the symbol's name itself identify the
+physical location of the external object. This is currently the number of the
+starting block in the database file, encoded in base-64 notation (characters
+'<code>0</code>' through '<code>9</code>', '<code>:</code>' through
+'<code>;</code>', '<code>A</code>' through '<code>Z</code>' and '<code>a</code>'
+through '<code>z</code>'). Later versions might include other formats like
+Internet URL's.
+
+
+<p><hr>
+<h3><a name="lst-io">Lists</a></h3>
+
+<p>Lists are surrounded by parentheses (<code>'('</code> and <code>')'</code>).
+
+<p><code>(A)</code> is a list consisting of a single cell, with the symbol
+<code>A</code> in its <code>CAR</code>, and <code>NIL</code> in its
+<code>CDR</code>.
+
+<p><code>(A B C)</code> is a list consisting of three cells, with the symbols
+<code>A</code>, <code>B</code> and <code>C</code> respectively in their
+<code>CAR</code>, and <code>NIL</code> in the last cell's <code>CDR</code>.
+
+<p><code>(A . B)</code> is a "dotted pair", a list consisting of a single cell,
+with the symbol <code>A</code> in its <code>CAR</code>, and <code>B</code> in
+its <code>CDR</code>.
+
+<p>Pico has built-in support for reading and printing simple circular lists. If
+the dot in a dotted-pair notation is immediately followed by a closing
+parenthesis, it indicates that the <code>CDR</code> of the last cell points back
+to the beginning of that list.
+
+<p><pre><code>
+: (let L '(a b c) (conc L L))
+-> (a b c .)
+: (cdr '(a b c .))
+-> (b c a .)
+: (cddddr '(a b c .))
+-> (b c a .)
+</code></pre>
+
+<p>A similar result can be achived with the function <code><a
+href="#circ">circ</a></code>. Such lists must be used with care, because many
+functions won't terminate or will crash when given such a list.
+
+
+<p><hr>
+<h3><a name="macro-io">Read-Macros</a></h3>
+
+<p>Read-macros in Pico are special forms that are recognized by the reader, and
+modify its behavior. Note that they take effect immediately while reading an
+expression, and are not seen by the <code>eval</code> in the main loop.
+
+<p>The most prominent read-macro in Lisp is the single quote character
+<code>'</code>, which expands to a call of the <code><a
+href="#quote">quote</a></code> function. Note that the single quote character is
+also printed instead of the full function name.
+
+<p><pre><code>
+: '(a b c)
+-> (a b c)
+: '(quote . a)
+-> 'a
+: (cons 'quote 'a)
+-> 'a
+</code></pre>
+
+<p>A single backquote character <code>`</code> will cause the reader to evaluate
+the following expression, and return the result.
+
+<p><pre><code>
+: '(a `(+ 1 2 3) z)
+-> (a 6 z)
+</code></pre>
+
+<p>A tilde character <code>~</code> inside a list will cause the reader to
+evaluate the following expression, and splice the result into the list.
+
+<p><pre><code>
+: '(a b c ~(list 'd 'e 'f) g h i)
+-> (a b c d e f g h i)
+</code></pre>
+
+<p>Brackets (<code>'['</code> and <code>']'</code>) can be used as super
+parentheses. A closing bracket will match the innermost opening bracket, or all
+currently open parentheses.
+
+<p><pre><code>
+: '(a (b (c (d]
+-> (a (b (c (d))))
+: '(a (b [c (d]))
+-> (a (b (c (d))))
+</code></pre>
+
+
+<p><hr>
+<h3><a name="ev">Evaluation</a></h3>
+
+<p>Pico tries to evaluate any expression encountered in the read-eval-print
+loop. Basically, it does so by applying the following three rules:
+
+<p><ul>
+<li>A <u>number</u> evaluates to <u>itself</u>.
+
+<li>A <u>symbol</u> evaluates to its <u>value</u> (<code>VAL</code>).
+
+<li>A <u>list</u> is evaluated as a <u>function call</u>, with the
+<code>CAR</code> as the function and the <code>CDR</code> the arguments to that
+function. These arguments are in turn evaluated according to these three rules.
+
+</ul>
+
+<p><pre><code>
+: 1234
+-> 1234        # Number evaluates to itself
+: *Pid
+-> 22972       # Symbol evalutes to its VAL
+: (+ 1 2 3)
+-> 6           # List is evaluated as a function call
+</code></pre>
+
+<p>For the third rule, however, things get a bit more involved. First - as a
+special case - if the <code>CAR</code> of the list is a number, the whole list
+is returned as it is:
+
+<p><pre><code>
+: (1 2 3 4 5 6)
+-> (1 2 3 4 5 6)
+</code></pre>
+
+<p>This is not really a function call but just a convenience to avoid having to
+quote simple data lists.
+
+<p>Otherwise, if the <code>CAR</code> is a symbol or a list, Pico it tries to
+obtain an executable function from that, by either using the symbol's value, or
+by evaluating the list.
+
+<p>What is an executable function? Or, said in another way, what can be applied
+to a list of arguments, to result in a function call? A legal function in Pico
+is
+
+<p><dl>
+<dt>either
+<dd>a <u>number</u>. When a number is used as a function, it is simply taken as
+a pointer to executable code that will be called with the list of (unevaluated)
+arguments as its single parameter. It is up to that code to evaluate the
+arguments, or not. Some functions do not evaluate their arguments (e.g.
+<code>quote</code>) or evaluate only some of their arguments (e.g.
+<code>setq</code>).
+
+<dt>or
+<dd>a <u>lambda expression</u>. A lambda expression is a list, whose
+<code>CAR</code> is either a symbol or a list of symbols, and whose
+<code>CDR</code> is a list of expressions. Note: In contrast to other Lisp
+implementations, the symbol LAMBDA itself does not exist in Pico but is implied
+from context.
+
+</dl>
+
+<p>A few examples should help to understand the practical consequences of these
+rules. In the most common case, the <code>CAR</code> will be a symbol defined as
+a function, like the <code>*</code> in:
+
+<p><pre><code>
+: (* 1 2 3)    # Call the function '*'
+-> 6
+</code></pre>
+
+<p>Inspecting the <code>VAL</code> of <code>*</code>, however, gives
+
+<p><pre><code>
+: *            # Get the VAL of the symbol '*'
+-> 67291944
+</code></pre>
+
+<p>The <code>VAL</code> of <code>*</code> is a number. In fact, it is the
+numeric representation of a <code>C</code>-function pointer, i.e. a pointer to
+executable code. This is the case for all built-in functions of Pico.
+
+<p>Other functions in turn are written as Lisp expressions:
+
+<p><pre><code>
+: (de foo (X Y)            # Define the function 'foo'
+   (* (+ X Y) (+ X Y)) )
+-> foo
+: (foo 2 3)                # Call the function 'foo'
+-> 25
+: foo                      # Get the VAL of the symbol 'foo'
+-> ((X Y) (* (+ X Y) (+ X Y)))
+</code></pre>
+
+<p>The <code>VAL</code> of <code>foo</code> is a list. It is the list that was
+assigned to <code>foo</code> with the <code>de</code> function. It would be
+perfectly legal to use <code>setq</code> instead of <code>de</code>:
+
+<p><pre><code>
+: (setq foo '((X Y) (* (+ X Y) (+ X Y))))
+-> ((X Y) (* (+ X Y) (+ X Y)))
+: (foo 2 3)
+-> 25
+</code></pre>
+
+<p>If the <code>VAL</code> of <code>foo</code> were another symbol, that
+symbol's <code>VAL</code> would be used instead to search for an executable
+function.
+
+<p>As we said above, if the <code>CAR</code> of the evaluated is not a symbol
+but a list, that list is evaluated to obtain an executable function.
+
+<p><pre><code>
+: ((intern (pack "c" "a" "r")) (1 2 3))
+-> 1
+</code></pre>
+
+<p>Here, the <code>intern</code> function returns the symbol <code>car</code>
+whose <code>VAL</code> is used then. It is also legal, though quite dangerous,
+to use the code-pointer directly:
+
+<p><pre><code>
+: car
+-> 67306152
+: ((* 2 33653076) (1 2 3))
+-> 1
+</code></pre>
+
+<p>When an executable function is defined in Lisp itself, we call it a <a
+name="lambda"><u>lambda expression</u></a>. A lambda expression always has a
+list of executable expressions as its <code>CDR</code>. The <code>CAR</code>,
+however, must be a either a list of symbols, or a single symbol, and it controls
+the evaluation of the arguments to the executable function according to the
+following rules:
+
+<p><dl>
+
+<dt>When the <code>CAR</code> is a list of symbols <dd>For each of these symols
+an argument is evaluated, then the symbols are bound simultaneously to the
+results. The body of the lambda expression is executed, then the
+<code>VAL</code>'s of the symols are restored to their original values. This is
+the most common case, a fixed number of arguments is passed to the function.
+
+<dt>Otherwise, when the <code>CAR</code> is the symbol <code>@</code> <dd>All
+arguments are evaluated and the results kept internally in a list. The body of
+the lambda expression is executed, and the evaluated arguments can be accessed
+sequentially with the <code><a href="#args">args</a></code>, <code><a
+href="#next">next</a></code>, <code><a href="#arg">arg</a></code> and <code><a
+href="#rest">rest</a></code> functions. This allows to define functions with a
+variable number of evaluated arguments.
+
+<dt>Otherwise, when the <code>CAR</code> is a single symbol <dd>The symbol is
+bound to the whole unevaluated argument list. The body of the lambda expression
+is executed, then the symol is restored to its original value. This allows to
+define functions with unevaluated arguments. Any kind of interpretation and
+evaluation of the argument list can be done inside the expression body.
+
+</dl>
+
+<p>In all cases, the return value is the result of the last expression in the
+body.
+
+<p><pre><code>
+: (de foo (X Y Z)                   # CAR is a list of symbols
+   (list X Y Z) )                   # Return a list of all arguments
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+-> (3 7 11)                         # all arguments are evaluated
+</code></pre>
+
+<p><pre><code>
+: (de foo X                         # CAR is a single symbol
+   X )                              # Return the argument
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+-> ((+ 1 2) (+ 3 4) (+ 5 6))        # the whole unevaluated list is returned
+</code></pre>
+
+<p><pre><code>
+: (de foo @                         # CAR is the symbol `@'
+   (list (next) (next) (next)) )    # Return the first three arguments
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+-> (3 7 11)                         # all arguments are evaluated
+</code></pre>
+
+<p>Note that these forms can also be combined. For example, to evaluate only the
+first two arguments, bind the results to <code>X</code> and <code>Y</code>, and
+bind all other arguments (unevaluated) to <code>Z</code>:
+
+<p><pre><code>
+: (de foo (X Y . Z)                 # CAR is a list with a dotted-pair tail
+   (list X Y Z) )                   # Return a list of all arguments
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+-> (3 7 ((+ 5 6)))                  # two argumens are evaluated
+</code></pre>
+
+<p>Or, a single argument followed by a variable number of arguments:
+
+<p><pre><code>
+: (de foo (X . @)                   # CAR is a dotted-pair with `@'
+   (println X)                      # print the first evaluated argument
+   (while (args)                    # while there are more arguments
+      (println (next)) ) )          # print the next one
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+3                                   # X
+7                                   # Next arg
+11
+-> 11
+</code></pre>
+
+
+<p><hr>
+<h3><a name="err">Error Handling</a></h3>
+
+<p>When a runtime error occurs, execution is stopped and an error handler is
+entered.
+
+<p>The error handler resets the I/O channels to the console, closes all files,
+displays the location of the error if possible and the reason of the error,
+followed by an error message. That message is also stored in the global <code><a
+href="#*Msg">*Msg</a></code>. If the <code>VAL</code> of the global <code><a
+href="#*Err">*Err</a></code> is non-<code>NIL</code> it is executed as a
+<code>prg</code> body. Then, if the standard input is not from a terminal, the
+interpreter terminates. Otherwise a read-eval-print loop (with a question mark
+"<code>?</code>" as prompt) is entered (the loop is exited when an empty line is
+input), and finally all variable bindings and the interpreter are reset to their
+top-level state.
+
+<p><pre><code>
+: (de foo (A B) (badFoo A B))       # `foo' calls an undefined symbol
+-> foo
+: (foo 3 4)                         # Call `foo'
+!? (badFoo A B)                     # Error handler entered
+badFoo -- Undefined
+? A                                 # Inspect `A'
+-> 3
+? B                                 # Inspect `B'
+-> 4
+?                                   # Empty line: Exit
+:
+</code></pre>
+
+
+<p><hr>
+<h3><a name="atres">@ Result</a></h3>
+
+<p>In certain situations, the result of the last evaluation is stored in the
+<code>VAL</code> of the symbol <code>@</code>. This can be very convenient,
+because it often makes the assignment to temporary variables unnecessary.
+
+<p><dl>
+
+<dt><code><a href="#load">load</a></code> <dd>In read-eval loops, the last three
+results which were printed at the console are available in <code>@@@</code>,
+<code>@@</code> and <code>@</code>, in that order (i.e the latest result is in
+<code>@</code>.
+
+<p><pre><code>
+: (+ 1 2 3)
+-> 6
+: (/ 128 4)
+-> 32
+: (- @ @@)        # Subtract the last two results
+-> 26
+</code></pre>
+
+<p><dt>Flow functions
+<dd>Flow functions store the result of evaluating their conditional expression
+in <code>@</code>.
+
+<p><pre><code>
+: (while (read) (println 'got: @))
+abc            # User input
+got: abc       # print result
+123            # User input
+got: 123       # print result
+NIL
+-> 123
+</code></pre>
+
+<p>These functions include
+   <a href="#and">and</a>,
+   <a href="#case">case</a>,
+   <a href="#cond">cond</a>,
+   <a href="#do">do</a>,
+   <a href="#for">for</a>,
+   <a href="#if">if</a>,
+   <a href="#ifn">ifn</a>,
+   <a href="#nand">nand</a>,
+   <a href="#nor">nor</a>,
+   <a href="#or">or</a>,
+   <a href="#prog1">prog1</a>,
+   <a href="#prog2">prog2</a>,
+   <a href="#unless">unless</a>,
+   <a href="#until">until</a>,
+   <a href="#when">when</a>,
+   <a href="#while">while</a> and
+   <a href="#whilst">whilst</a>
+
+</dl>
+
+<p><code>@</code> is generally local to functions and methods, its vaule is
+automatically saved upon function entry and restored at exit.
+
+
+<p><hr>
+<h3><a name="cmp">Comparing</a></h3>
+
+<p>In Pico, it is legal to compare data items of arbitrary type. Any two items
+are either
+
+<p><dl>
+
+<dt>Identical
+<dd>They are the same memory object (pointer equality). For example, two
+internal symbols with the same name are identical.
+
+<dt>Equal
+<dd>They are equal in every respect (structure equality), but need not to be
+identical. Examples are numbers with the same value, symbols with the same name
+or lists with equal elements.
+
+<dt>Or they have a well-defined ordinal relationship
+<dd>Numbers are comparable by their numeric value, strings by their name, and
+lists recursively by their elements (if the <code>CAR</code>'s are equal, their
+<code>CDR</code>'s are compared). For differing types, the following rule
+applies: Numbers are less than symbols, and symbols are less than lists. As
+special cases, <code>NIL</code> is always less than anything else, and
+<code>T</code> is always greater than anything else.
+
+</dl>
+
+<p>To demonstrate this, sort a list of mixed data types:
+
+<p><pre><code>
+: (sort '("abc" T (d e f) NIL 123 DEF))
+-> (NIL 123 DEF "abc" (d e f) T)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="oop">OO Concepts</a></h3>
+
+<p>Pico comes with built-in object oriented extensions. There seems to be a
+common aggreement upon three criteria for object orientation:
+
+<p><dl>
+<dt>Encapsulation
+<dd>Code and data are encapsulated into <u>objects</u>, giving them both a
+<u>behavior</u> and a <u>state</u>. Objects communicate by sending and receiving
+<u>messages</u>.
+
+<dt>Inheritance
+<dd>Objects are organized into <u>classes</u>. The behavior of an object is
+inherited from its class(es) and superclass(es).
+
+<dt>Polymorphism
+<dd>Objects of different classes may behave differently in response to the same
+message. For that, classes may define different methods for each message.
+
+</dl>
+
+<p>Pico implements both objects and classes with symbols. Object-local data are
+stored in the symbol's property list, while the code (methods) and links to the
+superclasses are stored in the symbol's <code>VAL</code> (encapsulation).
+
+<p>In fact, there is no formal difference between objects and classes (except
+that objects usually are anonymous symols containing mostly local data, while
+classes have names and an emphasis on method definitions). At any time, a class
+may be assigned its own local data (class variables), and any object can receive
+individual method definitions in addition to (or overriding) those inherited
+from its (super)classes.
+
+<p>Pico supports multiple inheritance. The <code>VAL</code> of each object is a
+(possibly empty) association list of message symbols and method bodies,
+concatenated with a list of classes. When a message is sent to an object, it is
+searched in the object's own method list, and then (with a left-to-right
+depth-first search) in the tree of its classes and superclasses. The first
+method found is executed and the search stops. The search may be explicitly
+continued with the <code><a href="#extra">extra</a></code> and <code><a
+href="#super">super</a></code> functions.
+
+<p>Thus, which method is actually executed when a message is sent to an object
+depends on the classes that the object is currently linked to (polymorphism). As
+the method search is fully dynamic (late binding), an object's type (i.e. its
+classes and method definitions) can be changed even at runtime!
+
+<p>While a method body is being executed, the global variable <code><a
+href="#This">This</a></code> is set to the current object, allowing the use of
+the short-cut property functions <code><a href="#::">::</a></code>, <code><a
+href="#:">:</a></code> and <code><a href="#=:">=:</a></code>.
+
+
+<p><hr>
+<h3><a name="dbase">Database</a></h3>
+
+<p>On the lowest level, a Pico database is simply a collection of <a
+href="#external">external symbols</a>. They reside in a database file, and are
+dynamically swapped in and out of memory. At a time, only one database file can
+be open (<code><a href="#pool">pool</a></code>).
+
+<p>The symbols in the database can be used to store arbitrary information
+structures. In typical use, some symbols represent nodes of a binary search
+tree, by holding a key, a value, and links to the left and right subtrees in
+their <code>VAL</code>'s. Such a binary tree in the database is called
+<u>index</u>.
+
+<p>For the most part, other symbols in the database are objects derived from the
+<code>+Entity</code> class.
+
+<p>Entities depend on objects of the <code>+Relation</code> class hierarchy.
+Relation-objects manage the property values of entities, they define the
+application database model and are responsible for the integrity of mutual
+object references and index trees.
+
+<p>Relations are stored as properties in the entity classes, their methods are
+invoked as daemons whenever property values in an entity are changed. When
+defining an <code>+Entity</code> class, relations are defined - in addition to
+the method definitions of a normal class - with the <code><a
+href="#rel">rel</a></code> function. Predefined relation classes include
+
+<p><ul>
+<li>Primitive types like
+   <dl>
+   <dt><code>+Symbol</code>
+   <dd>Symbolic data
+   <dt><code>+String</code>
+   <dd>Strings (just a general case of symbols)
+   <dt><code>+Number</code>
+   <dd>Integers and fixed-point numbers
+   <dt><code>+Date</code>
+   <dd>Calendar date values, represented by a number
+   <dt><code>+Time</code>
+   <dd>Time-of-the-day values, represented by a number
+   </dl>
+<li>Object-to-object relations
+   <dl>
+   <dt><code>+Link</code>
+   <dd>A reference to some other entity
+   <dt><code>+Hook</code>
+   <dd>A reference to an entity holding the index tree root
+   <dt><code>+Joint</code>
+   <dd>A bi-directional reference to some other entity
+   </dl>
+<li>Container prefix classes like
+   <dl>
+   <dt><code>+List</code>
+   <dd>A list of any of the other primitive or object relation types
+   <dt><code>+Bag</code>
+   <dd>A list containing a mixture of any of the other types
+   </dl>
+<li>Index prefix classes
+   <dl>
+   <dt><code>+Ref</code>
+   <dd>An index with other primitives or entities as key
+   <dt><code>+Key</code>
+   <dd>A unique index with other primitives or entities as key
+   <dt><code>+Idx</code>
+   <dd>A full-text index, typically for strings
+   <dt><code>+Sn</code>
+   <dd>Tolerant index, using the Soundex-Algorithm
+   </dl>
+<li>And a catch-all class
+   <dl>
+   <dt><code>+Any</code>
+   <dd>Not specified, may be any of the above relations
+   </dl>
+</ul>
+
+
+<p><hr>
+<h3><a name="conv">Naming Conventions</a></h3>
+
+<p>It was necessary to introduce - and adhere to - a set of conventions for Pico
+symbol names. Because all (internal) symbols have a global scope (no packages or
+name spaces), and each symbol can only have either a value or function
+definition, it would otherwise be very easy to introduce name conflicts. Besides
+this, source code readability is increased when the meaning of a symbol is
+indicated by its name.
+
+<p>These conventions are not hard-coded into the language, but should be so into
+the head of the programmer. Here are the most commonly used ones:
+
+<p><ul>
+<li>Functions start with a lower case letter
+<li>Variables start with an upper case letter
+<li>Globals start with an asterisk "<code>*</code>"
+<li>Classes start with a plus-sign "<code>+</code>"
+<li>Methods end with a right arrow "<code>></code>"
+<li>Local functions start with an underscore "<code>_</code>"
+</ul>
+
+<p>For example, a local variable could easily overshadow a function definition:
+
+<p><pre><code>
+: (de max-speed (car)
+   (.. (get car 'speeds) ..) )
+-> max-speed
+</code></pre>
+
+<p>Inside the body of <code>max-speed</code> (and all other functions called
+during that execution) the kernel function <code>car</code> is redefined to some
+other value, and will surely crash if something like <code>(car Lst)</code> is
+executed. Instead, it is safe to write:
+
+<p><pre><code>
+: (de max-speed (Car)            # `Car' with upper case first letter
+   (.. (get Car 'speeds) ..) )
+-> max-speed
+</code></pre>
+
+<p>Note that there are also some strict naming <u>rules</u> (as opposed to the
+voluntary conventions) that are required by the corresponding kernel
+functionalities, like:
+
+<p><ul>
+<li>Transient symbols are enclosed in double quotes (see <a href="#transient-io">Transient Symbols</a>)
+<li>External symbols are enclosed in braces (see <a href="#external-io">External Symbols</a>)
+<li>Pattern-Wildcards start with an at-mark "<code>@</code>" (see <a href="#match">match</a> and <a href="#fill">fill</a>)
+<li>Symbols referring to a shared library contain a colon "<code>lib:sym</code>"
+</ul>
+
+<p>With that, the last of the above conventions (local functions start with an
+underscore) is not really necessary, because true local scope can be enforced
+with transient symbols.
+
+
+<p><hr>
+<h3><a name="trad">Breaking Traditions</a></h3>
+
+<p>Pico Lisp does not try very hard to be compatibile with traditional Lisp
+systems. If you are used to some other Lisp dialects, you may notice the
+following differences:
+
+<p><dl>
+
+<dt>Case Sensitivity
+<dd>Pico Lisp distinguishes between upper case and lower case characters in
+symbol names. Thus, <code>CAR</code> and <code>car</code> are different symbols,
+which was not the case in traditional Lisp systems.
+
+<dt><code>QUOTE</code>
+<dd>In traditional Lisp, the <code>QUOTE</code> function returns its
+<u>first</u> unevaluated argument. In Pico Lisp, on the other hand,
+<code>quote</code> returns the whole unevaluated argument <u>list</u>.
+
+<dt><code>LAMBDA</code>
+<dd>The <code>LAMBDA</code> function, in some way at the heart of traditional
+Lisp, is completely missing (and <code>quote</code> is used instead).
+
+<dt><code>PROG</code>
+<dd>The <code>PROG</code> function of traditional Lisp, with its GOTO and RETURN
+functionality, is also missing. Pico's <code>prog</code> function is just a
+simple sequencer (as <code>PROGN</code> ins some Lisps).
+
+<dt>Function/Value
+<dd>In Pico Lisp, a symbol cannot have a value <u>and</u> a function definition
+at the same time. Though this is a disadvantage at first sight, it allows a
+completely uniform handling of functional data.
+
+</dl>
+
+
+<p><hr>
+<h3><a name="foo">Function Reference</a></h3>
+
+<p>This section provides a reference manual for the kernel functions, and some
+extensions. The first part is a thematically grouped list of indexes into the
+second part, which contains the function specifications in alphabetical order.
+
+<p>Though Pico is a dynamically typed language (resolved at runtime, as opposed
+to statically (compile-time) typed languages), most functions can only accept
+and/or return a certain set of data types. For each function, the expected
+argument types and return values are described with the following abbreviations:
+
+<p>The primary data types:
+
+<p><ul>
+<li><code>num</code> - Number
+<li><code>sym</code> - Symbol
+<li><code>lst</code> - List
+</ul>
+
+<p>Other (derived) data types
+
+<p><ul>
+<li><code>any</code> - Anything: Any primary data type
+<li><code>flg</code> - Flag: Boolean value (<code>NIL</code> or non-<code>NIL</code>
+<li><code>cnt</code> - A count or a small number
+<li><code>dat</code> - Date: Days since first of march in the year 0
+<li><code>tim</code> - Time: Seconds since midnight
+<li><code>obj</code> - Object/Class: A symbol with methods and/or classes
+<li><code>var</code> - Variable: Either a symbol's <code>VAL</code> or a cell's <code>CAR</code>
+<li><code>exe</code> - Executable: A list as executable expression (<code>eval</code>)
+<li><code>prg</code> - Prog-Body: A list of executable expressions (<code>run</code>)
+<li><code>foo</code> - Function: Either a number (code-pointer) or a list (lambda)
+<li><code>msg</code> - Message: A symbol sent to an object (to invoke a method)
+<li><code>cls</code> - Class: A symbol defined as an object's class
+<li><code>typ</code> - Type: A list of <code>cls</code> symbols
+<li><code>pid</code> - Process ID: A number, the ID of a Unix process
+</ul>
+
+<p>
+<a href="#a-foo">A</a>
+<a href="#b-foo">B</a>
+<a href="#c-foo">C</a>
+<a href="#d-foo">D</a>
+<a href="#e-foo">E</a>
+<a href="#f-foo">F</a>
+<a href="#g-foo">G</a>
+<a href="#h-foo">H</a>
+<a href="#i-foo">I</a>
+<a href="#j-foo">J</a>
+<a href="#k-foo">K</a>
+<a href="#l-foo">L</a>
+<a href="#m-foo">M</a>
+<a href="#n-foo">N</a>
+<a href="#o-foo">O</a>
+<a href="#p-foo">P</a>
+<a href="#q-foo">Q</a>
+<a href="#r-foo">R</a>
+<a href="#s-foo">S</a>
+<a href="#t-foo">T</a>
+<a href="#u-foo">U</a>
+<a href="#v-foo">V</a>
+<a href="#w-foo">W</a>
+<a href="#x-foo">X</a>
+<a href="#y-foo">Y</a>
+<a href="#z-foo">Z</a>
+<a href="#pun-foo">Other</a>
+
+<p><dl>
+
+<dt>Symbol Functions
+<dd><code>
+   <a href="#new">new</a>
+   <a href="#str">str</a>
+   <a href="#char">char</a>
+   <a href="#spQ">sp?</a>
+   <a href="#patQ">pat?</a>
+   <a href="#funQ">fun?</a>
+   <a href="#intern">intern</a>
+   <a href="#extern">extern</a>
+   <a href="#====">====</a>
+   <a href="#strQ">str?</a>
+   <a href="#extQ">ext?</a>
+   <a href="#touch">touch</a>
+   <a href="#zap">zap</a>
+   <a href="#length">length</a>
+   <a href="#size">size</a>
+   <a href="#format">format</a>
+   <a href="#chop">chop</a>
+   <a href="#pack">pack</a>
+   <a href="#preQ">pre?</a>
+   <a href="#subQ">sub?</a>
+   <a href="#uppQ">upp?</a>
+   <a href="#uppc">uppc</a>
+   <a href="#lowQ">low?</a>
+   <a href="#lowc">lowc</a>
+   <a href="#val">val</a>
+   <a href="#set">set</a>
+   <a href="#setq">setq</a>
+   <a href="#def">def</a>
+   <a href="#de">de</a>
+   <a href="#dm">dm</a>
+   <a href="#xchg">xchg</a>
+   <a href="#on">on</a>
+   <a href="#off">off</a>
+   <a href="#zero">zero</a>
+   <a href="#default">default</a>
+   <a href="#let">let</a>
+   <a href="#use">use</a>
+   <a href="#push">push</a>
+   <a href="#pop">pop</a>
+   <a href="#cut">cut</a>
+   <a href="#queue">queue</a>
+</code>
+
+<dt>Property Access
+<dd><code>
+   <a href="#put">put</a>
+   <a href="#get">get</a>
+   <a href="#prop">prop</a>
+   <a href="#=:">=:</a>
+   <a href="#:">:</a>
+   <a href="#::">::</a>
+   <a href="#putl">putl</a>
+   <a href="#getl">getl</a>
+   <a href="#wipe">wipe</a>
+   <a href="#meta">meta</a>
+</code>
+
+<dt>Predicates
+<dd><code>
+   <a href="#atom">atom</a>
+   <a href="#pair">pair</a>
+   <a href="#listQ">lst?</a>
+   <a href="#numQ">num?</a>
+   <a href="#symQ">sym?</a>
+   <a href="#spQ">sp?</a>
+   <a href="#patQ">pat?</a>
+   <a href="#funQ">fun?</a>
+   <a href="#strQ">str?</a>
+   <a href="#extQ">ext?</a>
+   <a href="#==">==</a>
+   <a href="#n==">n==</a>
+   <a href="#=">=</a>
+   <a href="#<>"><&gt</a>
+   <a href="#=0">=0</a>
+   <a href="#=T">=T</a>
+   <a href="#n0">n0</a>
+   <a href="#nT">nT</a>
+   <a href="#<"><</a>
+   <a href="#<="><=</a>
+   <a href="#>">&gt</a>
+   <a href="#>=">&gt=</a>
+   <a href="#match">match</a>
+   <a href="#prove">prove</a>
+   <a href="#lookup">-&gt</a>
+   <a href="#unify">unify</a>
+</code>
+
+<dt>Arithmetics
+<dd><code>
+   <a href="#+">+</a>
+   <a href="#-">-</a>
+   <a href="#*">*</a>
+   <a href="#/">/</a>
+   <a href="#%">%</a>
+   <a href="#*/">*/</a>
+   <a href="#inc">inc</a>
+   <a href="#dec">dec</a>
+   <a href="#>>">>></a>
+   <a href="#lt0">lt0</a>
+   <a href="#gt0">gt0</a>
+   <a href="#abs">abs</a>
+   <a href="#bitQ">bit?</a>
+   <a href="#&">&</a>
+   <a href="#|">|</a>
+   <a href="#sqrt">sqrt</a>
+   <a href="#seed">seed</a>
+   <a href="#rand">rand</a>
+   <a href="#max">max</a>
+   <a href="#min">min</a>
+   <a href="#length">length</a>
+   <a href="#size">size</a>
+   <a href="#format">format</a>
+</code>
+
+<dt>List Processing
+<dd><code>
+   <a href="#car">car</a>
+   <a href="#cdr">cdr</a>
+   <a href="#caar">caar</a>
+   <a href="#cadr">cadr</a>
+   <a href="#cdar">cdar</a>
+   <a href="#cddr">cddr</a>
+   <a href="#caaar">caaar</a>
+   <a href="#caadr">caadr</a>
+   <a href="#cadar">cadar</a>
+   <a href="#caddr">caddr</a>
+   <a href="#cdaar">cdaar</a>
+   <a href="#cdadr">cdadr</a>
+   <a href="#cddar">cddar</a>
+   <a href="#cdddr">cdddr</a>
+   <a href="#cadddr">cadddr</a>
+   <a href="#cddddr">cddddr</a>
+   <a href="#nth">nth</a>
+   <a href="#con">con</a>
+   <a href="#cons">cons</a>
+   <a href="#conc">conc</a>
+   <a href="#circ">circ</a>
+   <a href="#rot">rot</a>
+   <a href="#list">list</a>
+   <a href="#need">need</a>
+   <a href="#make">make</a>
+   <a href="#made">made</a>
+   <a href="#chain">chain</a>
+   <a href="#link">link</a>
+   <a href="#copy">copy</a>
+   <a href="#mix">mix</a>
+   <a href="#append">append</a>
+   <a href="#delete">delete</a>
+   <a href="#delq">delq</a>
+   <a href="#replace">replace</a>
+   <a href="#strip">strip</a>
+   <a href="#split">split</a>
+   <a href="#reverse">reverse</a>
+   <a href="#trim">trim</a>
+   <a href="#clip">clip</a>
+   <a href="#head">head</a>
+   <a href="#tail">tail</a>
+   <a href="#last">last</a>
+   <a href="#member">member</a>
+   <a href="#memq">memq</a>
+   <a href="#mmeq">mmeq</a>
+   <a href="#index">index</a>
+   <a href="#offset">offset</a>
+   <a href="#assoc">assoc</a>
+   <a href="#asoq">asoq</a>
+   <a href="#rank">rank</a>
+   <a href="#sort">sort</a>
+   <a href="#length">length</a>
+   <a href="#size">size</a>
+   <a href="#val">val</a>
+   <a href="#set">set</a>
+   <a href="#xchg">xchg</a>
+   <a href="#push">push</a>
+   <a href="#pop">pop</a>
+   <a href="#cut">cut</a>
+   <a href="#queue">queue</a>
+   <a href="#get">get</a>
+   <a href="#fill">fill</a>
+   <a href="#apply">apply</a>
+</code>
+
+<dt>Control Flow
+<dd><code>
+   <a href="#load">load</a>
+   <a href="#args">args</a>
+   <a href="#next">next</a>
+   <a href="#arg">arg</a>
+   <a href="#rest">rest</a>
+   <a href="#pass">pass</a>
+   <a href="#quote">quote</a>
+   <a href="#eval">eval</a>
+   <a href="#run">run</a>
+   <a href="#def">def</a>
+   <a href="#de">de</a>
+   <a href="#dm">dm</a>
+   <a href="#box">box</a>
+   <a href="#new">new</a>
+   <a href="#type">type</a>
+   <a href="#isa">isa</a>
+   <a href="#method">method</a>
+   <a href="#meth">meth</a>
+   <a href="#send">send</a>
+   <a href="#super">super</a>
+   <a href="#extra">extra</a>
+   <a href="#with">with</a>
+   <a href="#bind">bind</a>
+   <a href="#job">job</a>
+   <a href="#let">let</a>
+   <a href="#use">use</a>
+   <a href="#and">and</a>
+   <a href="#or">or</a>
+   <a href="#nand">nand</a>
+   <a href="#nor">nor</a>
+   <a href="#xor">xor</a>
+   <a href="#bool">bool</a>
+   <a href="#not">not</a>
+   <a href="#nil">nil</a>
+   <a href="#t">t</a>
+   <a href="#prog">prog</a>
+   <a href="#prog1">prog1</a>
+   <a href="#prog2">prog2</a>
+   <a href="#if">if</a>
+   <a href="#ifn">ifn</a>
+   <a href="#when">when</a>
+   <a href="#unless">unless</a>
+   <a href="#cond">cond</a>
+   <a href="#case">case</a>
+   <a href="#while">while</a>
+   <a href="#whilst">whilst</a>
+   <a href="#until">until</a>
+   <a href="#do">do</a>
+   <a href="#at">at</a>
+   <a href="#for">for</a>
+   <a href="#catch">catch</a>
+   <a href="#throw">throw</a>
+   <a href="#!">!</a>
+   <a href="#e">e</a>
+   <a href="#$">$</a>
+   <a href="#call">call</a>
+   <a href="#tick">tick</a>
+   <a href="#kill">kill</a>
+   <a href="#quit">quit</a>
+   <a href="#fork">fork</a>
+   <a href="#bye">bye</a>
+</code>
+
+<dt>Mapping
+<dd><code>
+   <a href="#apply">apply</a>
+   <a href="#pass">pass</a>
+   <a href="#all">all</a>
+   <a href="#maps">maps</a>
+   <a href="#map">map</a>
+   <a href="#mapc">mapc</a>
+   <a href="#maplist">maplist</a>
+   <a href="#mapcar">mapcar</a>
+   <a href="#mapcon">mapcon</a>
+   <a href="#mapcan">mapcan</a>
+   <a href="#filter">filter</a>
+   <a href="#seek">seek</a>
+   <a href="#find">find</a>
+   <a href="#pick">pick</a>
+   <a href="#cnt">cnt</a>
+   <a href="#sum">sum</a>
+   <a href="#maxi">maxi</a>
+   <a href="#mini">mini</a>
+</code>
+
+<dt>Input/Output
+<dd><code>
+   <a href="#in">in</a>
+   <a href="#out">out</a>
+   <a href="#load">load</a>
+   <a href="#str">str</a>
+   <a href="#hear">hear</a>
+   <a href="#tell">tell</a>
+   <a href="#key">key</a>
+   <a href="#peek">peek</a>
+   <a href="#char">char</a>
+   <a href="#skip">skip</a>
+   <a href="#from">from</a>
+   <a href="#till">till</a>
+   <a href="#line">line</a>
+   <a href="#format">format</a>
+   <a href="#read">read</a>
+   <a href="#print">print</a>
+   <a href="#println">println</a>
+   <a href="#printsp">printsp</a>
+   <a href="#prin">prin</a>
+   <a href="#prinl">prinl</a>
+   <a href="#space">space</a>
+   <a href="#flush">flush</a>
+   <a href="#rewind">rewind</a>
+   <a href="#rd">rd</a>
+   <a href="#pr">pr</a>
+   <a href="#wait">wait</a>
+   <a href="#sync">sync</a>
+   <a href="#echo">echo</a>
+   <a href="#info">info</a>
+   <a href="#lines">lines</a>
+   <a href="#open">open</a>
+   <a href="#close">close</a>
+   <a href="#port">port</a>
+   <a href="#listen">listen</a>
+   <a href="#peer">peer</a>
+   <a href="#connect">connect</a>
+</code>
+
+<dt>Database
+<dd><code>
+   <a href="#pool">pool</a>
+   <a href="#begin">begin</a>
+   <a href="#commit">commit</a>
+   <a href="#rollback">rollback</a>
+   <a href="#lock">lock</a>
+   <a href="#seq">seq</a>
+   <a href="#mark">mark</a>
+   <a href="#dbck">dbck</a>
+   <a href="#rel">rel</a>
+</code>
+
+<dt>Debugging
+<dd><code>
+   <a href="#stat">stat</a>
+   <a href="#debug">debug</a>
+   <a href="#trace">trace</a>
+</code>
+
+<dt>System Functions
+<dd><code>
+   <a href="#argv">argv</a>
+   <a href="#gc">gc</a>
+   <a href="#heap">heap</a>
+   <a href="#env">env</a>
+   <a href="#stk">stk</a>
+   <a href="#stat">stat</a>
+   <a href="#date">date</a>
+   <a href="#time">time</a>
+   <a href="#stamp">stamp</a>
+   <a href="#cd">cd</a>
+   <a href="#ctty">ctty</a>
+   <a href="#info">info</a>
+   <a href="#call">call</a>
+   <a href="#tick">tick</a>
+   <a href="#kill">kill</a>
+   <a href="#quit">quit</a>
+   <a href="#fork">fork</a>
+   <a href="#bye">bye</a>
+</code>
+
+<dt>Globals
+<dd><code>
+   <a href="#nilSym">NIL</a>
+   <a href="#*DB">*DB</a>
+   <a href="#^">^</a>
+   <a href="#@">@</a>
+   <a href="#@@">@@</a>
+   <a href="#@@@">@@@</a>
+   <a href="#This">This</a>
+   <a href="#T">T</a>
+   <a href="#*Pid">*Pid</a>
+   <a href="#*Scl">*Scl</a>
+   <a href="#*Class">*Class</a>
+   <a href="#*Key">*Key</a>
+   <a href="#*Dbg">*Dbg</a>
+   <a href="#*Led">*Led</a>
+   <a href="#*Err">*Err</a>
+   <a href="#*Msg">*Msg</a>
+   <a href="#*Bye">*Bye</a>
+</code>
+
+</dl>
+
+
+<p><hr>
+<h3><a name="a-foo">A</a></h3>
+
+<p><dl>
+
+<dt><a name="abs"><code>(abs 'num) -> num</code></a>
+<dd>Returns the absolute value of the <code>num</code> argument.
+
+<p><pre><code>
+: (abs -7)
+-> 7
+: (abs 7)
+-> 7
+</code></pre>
+
+<p><dt><a name="all"><code>(all 'foo) -> any</code></a>
+<dd>Applies <code>foo</code> to all internal symbols in the system. Returns the
+result of the last application.
+
+<p><pre><code>
+: (all printsp)  # Print the names of all internal symbols
+delWord +PwField +Fmt tail char cons month ..
+.. conc cond -> cond
+
+: (make (all '((X) (and (= "_" (car (chop X))) (link X)))))  # Find all symbols
+starting with an underscore charactoer
+-> (_ed _isa _delL _delR _dbg _del _clone _query _scan _hex _boxSend _put)
+</code></pre>
+
+<p><dt><a name="and"><code>(and 'any ..) -> any</code></a>
+<dd>Logical AND. The expressions <code>any</code> are evaluated from left to
+right. If <code>NIL</code> is encountered, <code>NIL</code> is returned
+immediately. Else the result of the last expression is returned.
+
+<p><pre><code>
+: (and (= 3 3) (read))
+abc  # User input
+-> abc
+: (and (= 3 4) (read))
+-> NIL
+</code></pre>
+
+<p><dt><a name="append"><code>(append 'lst ..) -> lst</code></a>
+<dd>Appends all argument lists.
+
+<p><pre><code>
+: (append '(a b c) (1 2 3))
+-> (a b c 1 2 3)
+: (append (1) (2) (3) 4)
+-> (1 2 3 . 4)
+</code></pre>
+
+<p><dt><a name="apply"><code>(apply 'foo 'lst ['any ..]) -> any</code></a>
+<dd>Applies <code>foo</code> to <code>lst</code>. If additional <code>any</code>
+arguments are given, they are applied as leading elements of <code>lst</code>.
+
+<p><pre><code>
+: (apply + (1 2 3))
+-> 6
+: (apply * (5 6) 3 4)
+-> 360
+: (apply '((X Y Z) (* X (+ Y Z))) (3 4 5))
+-> 27
+</code></pre>
+
+<p><dt><a name="arg"><code>(arg) -> any</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns the current argument from the internal list (the same
+that was returned with the last call to <code>next</code>). See also <code><a
+href="#args">args</a></code>, <code><a href="#next">next</a></code>, <code><a
+href="#rest">rest</a></code> and <code><a href="#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (next) (arg)))    # Print argument twice
+-> foo
+: (foo 123)
+123 123
+-> 123
+</code></pre>
+
+<p><dt><a name="args"><code>(args) -> flg</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns <code>T</code> when there are more arguments to be
+fetched from the internal list. See also <code><a href="#next">next</a></code>,
+<code><a href="#arg">arg</a></code>, <code><a href="#rest">rest</a></code> and
+<code><a href="#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (args)))       # Test for arguments
+-> foo
+: (foo)                             # No arguments
+NIL
+-> NIL
+: (foo NIL)                         # One argument
+T
+-> T
+: (foo 123)                         # One argument
+T
+-> T
+</code></pre>
+
+<p><dt><a name="argv"><code>(argv) -> lst</code></a>
+<dd>Returns a list of strings containing all remaining command line arguments. A
+hyphen "<code>-</code>" can be used to stop <code>load</code>ing further
+arguments.
+
+<p><pre><code>
+$ ./p -"println 'Ok" - abc 123
+Ok
+: (argv)
+-> ("abc" "123")
+</code></pre>
+
+<p><dt><a name="asoq"><code>(asoq 'any 'lst) -> lst</code></a>
+<dd>Searches an association list. Returns the first element from
+<code>lst</code> with <code>any</code> as its <code>CAR</code>, or
+<code>NIL</code> if no match is found. <code><a href="#==">==</a></code> is used
+for comparison (pointer equality). See also <code><a
+href="#assoc">assoc</a></code>, <code><a href="#delq">delq</a></code>, <a
+href="#memq">memq</a></code> and <code><a href="#mmeq">mmeq</a></code>.
+
+<p><pre><code>
+: (asoq 999 '((999 1 2 3) (b . 7) ("ok" "Hello")))
+-> NIL
+: (asoq 'b '((999 1 2 3) (b . 7) ("ok" "Hello")))
+-> (b . 7)
+</code></pre>
+
+<p><dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a>
+<dd>Searches an association list. Returns the first element from
+<code>lst</code> with its <code>CAR</code> equal to <code>any</code>, or
+<code>NIL</code> if no match is found.
+
+<p><pre><code>
+: (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> ("b" . 7)
+: (assoc 999 '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> (999 1 2 3)
+: (assoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> NIL
+</code></pre>
+
+<p><dt><a name="at"><code>(at '(num1 . num2) . prg) -> any</code></a>
+<dd>Increments <code>num1</code> (destructively), and returns <code>NIL</code>
+when it is less than <code>num2</code>. Otherwise, <code>prg</code> is executed
+and <code>num1</code> is reset to zero. Returns the result of <code>prg</code>.
+
+<p><pre><code>
+: (do 11 (prin ".") (at (0 . 3) (prin "!")))
+...!...!...!..-> NIL
+</code></pre>
+
+<p><dt><a name="atom"><code>(atom 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is an atom (a
+number or a symbol).
+
+<p><pre><code>
+: (atom 123)
+-> T
+: (atom 'a)
+-> T
+: (atom NIL)
+-> T
+: (atom (123))
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="b-foo">B</a></h3>
+
+<dt><a name="begin"><code>(begin) -> T</code></a>
+<dd>Opens a nested transaction. <u>Not</u> needed for normal single-level
+transaction processing with <code><a href="#commit">commit</a></code> and
+<code><a href="#rollback">rollback</a></code>.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (put '{1} 'str "Hello")        # Set property in first level
+-> "Hello"
+: (begin)                        # Start second level
+-> T
+: (put '{1} 'str "abc")          # Set another value
+-> "abc"
+: (get '{1} 'str)
+-> "abc"
+: (rollback)                     # Rollback second level
+-> NIL
+: (get '{1} 'str)                # Value is restored
+-> "Hello"
+: (rollback)                     # Rollback top level
+-> T
+: (get '{1} 'str)                # Value is cleared
+-> NIL
+</code></pre>
+
+<p><dt><a name="bind"><code>(bind 'sym|lst 'prg) -> any</code></a>
+<dd>Binds value(s) to symbol(s). The first argument <code>sym</code> must
+evaluate to a symbol, a list of symbols, or to a list of symbol-value pairs. The
+values of these symbols are saved (and bound to the values in the last case),
+<code>prg</code> is executed, then the symbols are restored to their original
+values. During execution of <code>prg</code>, the values of the symbols can be
+temporarily modified. The return value is the result of <code>prg</code>. See
+also <code><a href="#let">let</a></code>, <code><a href="#job">job</a></code>
+and <code><a href="#use">use</a></code>.
+
+<p><pre><code>
+: (setq X 123)                               # X is 123
+-> 123
+: (bind 'X '((setq X "Hello") (println X)))  # Set X to "Hello", print it
+"Hello"
+-> "Hello"
+: (bind '((X . 3) (Y . 4)) '((println X Y) (* X Y)))
+3 4
+-> 12
+: X
+-> 123                                       # X is restored to 123
+</code></pre>
+
+<p><dt><a name="bitQ"><code>(bit? 'num ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all bits which are 1 in the first
+<code>num</code> argument are also 1 in all following <code>num</code>
+arguments.
+
+<p><pre><code>
+: (bit? 1 2)
+-> NIL
+: (bit? 1 3)
+-> T
+: (bit? 7 15 255)
+-> T
+</code></pre>
+
+<p><dt><a name="bool"><code>(bool 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the evaluation of the <code>any</code> argument
+yields non-<code>NIL</code>. This function is only needed when <code>T</code> is
+strictly required for a "true" condition (Usually, any non-<code>NIL</code>
+value is considered to be "true").
+
+<p><pre><code>
+: (and 3 4)
+-> 4
+: (bool (and 3 4))
+-> T
+</code></pre>
+
+<p><dt><a name="box"><code>(box 'any) -> sym</code></a>
+<dd>Creates and returns a new anonymous symbol. The initial value is set to the
+<code>any</code> argument.
+
+<p><pre><code>
+: (show (box '(A B C)))
+$134425627 (A B C)
+-> $134425627
+</code></pre>
+
+<p><dt><a name="bye"><code>(bye 'cnt|NIL)</code></a>
+<dd>Executes the <code>VAL</code> of the global variable <code><a
+href="#*Bye">*Bye</a></code> (should be a <code>prg</code>), closes all open
+files, and exits Pico. The process return value is <code>cnt</code>, or 0 if the
+argument is missing or <code>NIL</code>.
+
+<p><pre><code>
+: (setq *Bye '((println 'Ok) (println 'bye)))
+-> ((println 'Ok) (println 'bye))
+: (bye)
+Ok
+bye
+$
+</code></pre>
+
+
+<p><hr>
+<h3><a name="c-foo">C</a></h3>
+
+<dt><a name="caaar"><code>(caaar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (car (car 'lst)))</code>.
+
+<p><pre><code>
+: (caaar '(((1 2) 3) 4))
+-> 1
+</code></pre>
+
+<p><dt><a name="caadr"><code>(caadr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (car (cdr 'lst)))</code>.
+
+<p><pre><code>
+: (caadr '(1 (2 3)))
+-> 2
+</code></pre>
+
+<p><dt><a name="caar"><code>(caar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (car 'lst))</code>.
+
+<p><pre><code>
+: (caar '((1 2) (3 4)))
+-> 1
+</code></pre>
+
+<p><dt><a name="cadar"><code>(cadar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (cdr (car 'lst)))</code>.
+
+<p><pre><code>
+: (cadar '((1 2 3)))
+-> 2
+</code></pre>
+
+<p><dt><a name="cadddr"><code>(cadddr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (cdr (cdr (cdr
+'lst))))</code>, or the fourth element of <code>lst</code>.
+
+<p><pre><code>
+: (cadddr (1 2 3 4 5 6))
+-> 4
+</code></pre>
+
+<p><dt><a name="caddr"><code>(caddr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (cdr (cdr 'lst)))</code>, or
+the third element of <code>lst</code>.
+
+<p><pre><code>
+: (caddr (1 2 3 4 5 6))
+-> 3
+</code></pre>
+
+<p><dt><a name="cadr"><code>(cadr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(car (cdr 'lst))</code>, or the
+second element of <code>lst</code>.
+
+<p><pre><code>
+: (cadr (1 2 3 4 5 6))
+-> 2
+</code></pre>
+
+<p><dt><a name="call"><code>(call 'any ..) -> flg</code></a>
+<dd>Calls an external system command. The <code>any</code> arguments specify the
+command and its arguments. Returns <code>T</code> if the command was executed
+successfully.
+
+<p><pre><code>
+: (when (call "test" "-r" "file.l") # Test if file exists and is readable
+   (load "file.l")                  # Load it
+   (call "rm" "file.l") )           # Remove it
+</code></pre>
+
+<p><dt><a name="car"><code>(car 'lst) -> any</code></a>
+<dd>List access: Returns the first element of <code>lst</code>.
+
+<p><pre><code>
+: (car (1 2 3 4 5 6))
+-> 1
+</code></pre>
+
+<p><dt><a name="case"><code>(case 'any (any1 . prg1) (any2 . prg2) ..) -> any</code></a>
+<dd>Multi-way branch: <code>any</code> is evaluated and compared to the
+<code>CAR</code> elements <code>anyN</code> of each clause. If one of them is a
+list, <code>any</code> is in turn compared to all elements of that list.
+<code>T</code> is a catch-all for any value. If a comparison succeeds,
+<code>exeN</code> is executed, and the result returned. Otherwise
+<code>NIL</code> is returned.
+
+<p><pre><code>
+: (case (char 66) ("A" (+ 1 2 3)) (("B" "C") "Bambi") ("D" (* 1 2 3)))
+-> "Bambi"
+</code></pre>
+
+<p><dt><a name="catch"><code>(catch 'sym . prg) -> any</code></a>
+<dd>Sets up the environment for a non-local jump with <code><a
+href="#throw">throw</a></code>. <code>sym</code> is used by <code>throw</code>
+as a jump label (with <code>T</code> being a catch-all for any label). If
+<code>throw</code> is called during the execution of <code>prg</code>, the value
+thrown is returned immediately. Otherwise, the result of <code>prg</code> is
+returned.
+
+<p><pre><code>
+: (catch 'Ok (println 1) (throw 'Ok 999) (println 2))
+1
+-> 999
+</code></pre>
+
+<p><dt><a name="cd"><code>(cd 'sym) -> flg</code></a>
+<dd>Changes the current directory to <code>sym</code>.
+
+<p><pre><code>
+: (dir "src/*.c")
+-> ("src/apply.c" "src/big.c" "src/flow.c" "src/gc.c" "src/io.c" "src/main.c" "src/net.c" "src/subr.c" "src/sym.c" "src/tab.c" "src/z3d.c" "src/z3dClient.c")
+: (cd "src")
+-> T
+: (dir "*.c")
+-> ("apply.c" "big.c" "flow.c" "gc.c" "io.c" "main.c" "net.c" "subr.c" "sym.c" "tab.c" "z3d.c" "z3dClient.c")
+</code></pre>
+
+<p><dt><a name="cdaar"><code>(cdaar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (car (car 'lst)))</code>.
+
+<p><pre><code>
+: (cdaar '(((1 2 3))))
+-> (2 3)
+</code></pre>
+
+<p><dt><a name="cdadr"><code>(cdadr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (car (cdr 'lst)))</code>.
+
+<p><pre><code>
+: (cdadr '((1 2) (3 4)))
+-> (4)
+</code></pre>
+
+<p><dt><a name="cdar"><code>(cdar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (car 'lst))</code>.
+
+<p><pre><code>
+: (cdar '((1 2) (3 4)))
+-> (2)
+</code></pre>
+
+<p><dt><a name="cddar"><code>(cddar 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (cdr (car 'lst)))</code>.
+
+<p><pre><code>
+: (cddar '((1 2 3 4)))
+-> (3 4)
+</code></pre>
+
+<p><dt><a name="cddddr"><code>(cddddr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (cdr (cdr (cdr
+'lst))))</code>. Returns all but the first four elements of <code>lst</code>.
+
+<p><pre><code>
+: (cddddr (1 2 3 4 5 6))
+-> (5 6)
+</code></pre>
+
+<p><dt><a name="cdddr"><code>(cdddr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (cdr (cdr 'lst)))</code>.
+Returns all but the first three elements of <code>lst</code>.
+
+<p><pre><code>
+: (cdddr (1 2 3 4 5 6))
+-> (4 5 6)
+</code></pre>
+
+<p><dt><a name="cddr"><code>(cddr 'lst) -> any</code></a>
+<dd>List access shortcut: Equivalent to <code>(cdr (cdr 'lst))</code>. Returns
+all but the first two elements of <code>lst</code>.
+
+<p><pre><code>
+: (cddr (1 2 3 4 5 6))
+-> (3 4 5 6)
+</code></pre>
+
+<p><dt><a name="cdr"><code>(cdr 'lst) -> any</code></a>
+<dd>List access: Returns all but the first element of <code>lst</code>.
+
+<p><pre><code>
+: (cdr (1 2 3 4 5 6))
+-> (2 3 4 5 6)
+</code></pre>
+
+<p><dt><a name="chain"><code>(chain 'lst ..) -> lst</code></a>
+<dd>Concatinates (destructively) one or several new list elements
+<code>lst</code> to the end of the list in the current <code><a
+href="#make">make</a></code> environment. This operation is efficient also for
+long lists, because a pointer to the last element of the list is maintained.
+<code>chain</code> returns the last linked argument. See also <code><a
+href="#link">link</a></code> and <code><a href="#made">made</a></code>.
+
+<p><pre><code>
+: (make (chain (list 1 2 3) NIL (cons 4)) (chain (list 5 6)))
+-> (1 2 3 4 5 6)
+</code></pre>
+
+<p><dt><a name="char"><code>(char) -> sym<br>
+(char 'cnt) -> sym<br>
+(char T) -> sym<br>
+(char 'sym) -> cnt</code></a>
+<dd>When called without arguments, the next character from the current input
+stream is returned as a single-character transient symbol, or <code>NIL</code>
+upon end of file. When called with a number <code>cnt</code>, a character with
+the corresponding unicode value is returned. As a special case, <code>T</code>
+is accepted to produce a byte value greater than any first byte in a unicode
+character (usable as a top value for comparisons). Otherwise, when called with a
+symbol <code>sym</code>, the numeric unicode value of the first character of the
+name of that symbol is returned. See also <code><a href="#peek">peek</a></code>,
+<code><a href="#skip">skip</a></code>, <code><a href="#key">key</a></code>,
+<code><a href="#line">line</a></code> and <code><a href="#till">till</a></code>.
+
+<p><pre><code>
+: (char)                   # Read character from console
+A                          # (typed `A' and a space/return)
+-> "A"
+: (char 100)               # Convert unicode to symbol
+-> "d"
+: (char T)                 # Special case, catch all
+-> "ˇ"
+: (char "d")               # Convert symbol to unicode
+-> 100
+</code></pre>
+
+<p><dt><a name="chop"><code>(chop 'sym) -> lst</code></a>
+<dd>Returns the name of <code>sym</code> as a list of single-character strings.
+If <code>sym</code> is <code>NIL</code> or has no name, <code>NIL</code> is
+returned.
+
+<p><pre><code>
+: (chop 'car)
+-> ("c" "a" "r")
+: (chop "Hello")
+-> ("H" "e" "l" "l" "o")
+</code></pre>
+
+<p><dt><a name="circ"><code>(circ 'lst) -> lst</code></a>
+<dd>Produces a circular list by (destructively) connecting <code>lst</code> to
+the <code>CDR</code> of its own last cell.
+
+<p><pre><code>
+: (circ '(a b c))
+-> (a b c .)
+: (setq  L1 '(a b c d e f)  L2 (1 2 3))
+-> (1 2 3)
+: (mapc println L1 (circ L2))    # Produce an unlimited supply of L2
+a 1
+b 2
+c 3
+d 1
+e 2
+f 3
+-> 3
+</code></pre>
+
+<p><dt><a name="clip"><code>(clip 'lst) -> lst</code></a>
+<dd>Returns a copy of <code>lst</code> with all white space characters or
+<code>NIL</code> elements removed from <u>both</u> sides. See also <code><a
+href="#trim">trim</a></code>.
+
+<p><pre><code>
+: (clip '(NIL 1 NIL 2 NIL))
+-> (1 NIL 2)
+: (clip '(" " a " " b " "))
+-> (a " " b)
+</code></pre>
+
+<p><dt><a name="close"><code>(close 'cnt) -> T</code></a>
+<dd>Closes a file descriptor <code>cnt</code>. See also <code><a
+href="#open">open</a></code>, <code><a href="#listen">listen</a></code>,
+<code><a href="#connect">connect</a></code>.
+
+<p><pre><code>
+: (close 2)                            # Close standard error
+-> T
+</code></pre>
+
+<p><dt><a name="cnt"><code>(cnt 'foo 'lst ..) -> cnt</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns the count of non-<code>NIL</code> values returned
+from <code>foo</code>.
+
+<p><pre><code>
+: (cnt cdr '((1 . T) (2) (3 4) (5)))
+-> 2
+</code></pre>
+
+<p><dt><a name="commit"><code>(commit ['flg]) -> flg</code></a>
+<dd>Closes a transaction, by writing all new or modified external symbols to the
+database, and by removing all deleted symbols from the database. For nested
+transactions, only the changes since the last call to <code><a
+href="#begin">begin</a></code> are taken into account. A non-<code>NIL</code>
+<code>flg</code> argument forces modifications of the current transaction level
+to be written out, even if this is not the top level. When <code>flg</code> is
+anything other than <code>T</code>, it is implicitly sent (with all modified
+objects) via the <code><a href="#tell">tell</a></code> mechanism to all family
+members. Returns <code>T</code> when the topmost transaction is closed. See also
+<code><a href="#rollback">rollback</a></code>.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (put '{1} 'str "Hello")
+-> "Hello"
+: (commit)
+-> T
+</code></pre>
+
+<p><dt><a name="con"><code>(con 'lst 'any) -> any</code></a>
+<dd>Connects <code>any</code> to the first cell of <code>lst</code>, by
+(destructively) storing <code>any</code> in the <code>CDR</code> of
+<code>lst</code>.
+
+<p><pre><code>
+: (setq C (1 . a))
+-> (1 . a)
+: (con C '(b c d))
+-> (b c d)
+: C
+-> (1 b c d)
+</code></pre>
+
+<p><dt><a name="conc"><code>(conc 'lst ..) -> lst</code></a>
+<dd>Concatenates all argument lists (destructively).
+
+<p><pre><code>
+: (setq  A (1 2 3)  B '(a b c))
+-> (a b c)
+: (conc A B)                        # Concatenate lists in `A' and `B'
+-> (1 2 3 a b c)
+: A
+-> (1 2 3 a b c)                    # Side effect: List in `A' is modified!
+</code></pre>
+
+<p><dt><a name="cond"><code>(cond (('any1 . prg1) ('any2 . prg2) ..)) -> any</code></a>
+<dd>Multi-way conditional: If any of the <code>anyN</code> conditions evaluates
+to non-<code>NIL</code>, <code>exeN</code> is executed and the result returned.
+Otherwise (all conditions evaluate to <code>NIL</code>), <code>NIL</code> is
+returned.
+
+<p><pre><code>
+: (cond
+   ((= 3 4) (println 1))
+   ((= 3 3) (println 2))
+   (T (println 3)) )
+2
+-> 2
+</code></pre>
+
+<p><dt><a name="connect"><code>(connect 'sym 'cnt) -> cnt</code></a>
+<dd>Tries to establish a TCP/IP connection to a server listening at host
+<code>sym</code>, port <code>cnt</code>. <code>sym</code> may be either a
+hostname or a standard internet address in numbers-and-dots notation. Returns a
+socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
+be established. See also <code><a href="#listen">listen</a></code>.
+
+<p><pre><code>
+: (connect "localhost" 4444)
+-> 3
+</code></pre>
+
+<p><dt><a name="cons"><code>(cons 'any 'any) -> lst</code></a>
+<dd>Constructs a new list cell with the first argument in the <code>CAR</code>
+and the second argument in the <code>CDR</code>.
+
+<p><pre><code>
+: (cons 1 2)
+-> (1 . 2)
+: (cons 'a '(b c d))
+-> (a b c d)
+: (cons '(a b) '(c d))
+-> ((a b) c d)
+</code></pre>
+
+<p><dt><a name="copy"><code>(copy 'any) -> any</code></a>
+<dd>Copies the argument <code>any</code>. For lists, the top level cells are
+copied, while atoms are returned unchanged.
+
+<p><pre><code>
+: (=T (copy T))               # Atoms are not copied
+-> T
+: (setq L (1 2 3))
+-> (1 2 3)
+: (== L L)
+-> T
+: (== L (copy L))             # The copy is not identical to the original
+-> NIL
+: (= L (copy L))              # But the copy is equal to the original
+-> T
+</code></pre>
+
+<p><dt><a name="ctty"><code>(ctty 'sym) -> flg</code></a>
+<dd>Changes the current TTY device to <code>sym</code>.
+
+<p><pre><code>
+: (ctty "/dev/tty")
+-> T
+</code></pre>
+
+<p><dt><a name="cut"><code>(cut 'cnt 'var) -> lst</code></a>
+<dd>Pops the first <code>cnt</code> elements (<code>CAR</code>) from the stack
+in <code>var</code>. See also <code><a href="#pop">pop</a></code>.
+
+<p><pre><code>
+: (setq S '(1 2 3 4 5 6 7 8))
+-> (1 2 3 4 5 6 7 8)
+: (cut 3 'S)
+-> (1 2 3)
+: S
+-> (4 5 6 7 8)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="d-foo">D</a></h3>
+
+<dt><a name="date"><code>(date) -> dat<br>
+(date 'dat) -> (y m d)<br>
+(date 'y 'm 'd) -> dat | NIL<br>
+(date '(y m d)) -> dat | NIL</code></a>
+<dd>Calculates a calendar date, represented as the number of days since first of
+march in the year 0. When called without arguments, the current date is
+returned. When called with a single number <code>dat</code>, it is taken as a
+date and a list with the corresponding year, month and day is returned. When
+called with three numers (or a list of three numbers) for the year, month and
+day, the corresponding date is returned (or <code>NIL</code> if they do not
+represent a legal date). See also <code><a href="#time">time</a></code>.
+
+<p><pre><code>
+: (date)                         # Today
+-> 730589
+: (date 2000 6 12)               # 12-06-2000
+-> 730589
+: (date 2000 22 5)               # Illegal date
+-> NIL
+: (date (date))                  # Today's year, month and day
+-> (2000 6 12)
+: (- (date) (date 2000 1 1))     # Number of days since first of January
+-> 163
+</code></pre>
+
+<p><dt><a name="dbck"><code>(dbck) -> sym | NIL</code></a>
+<dd>Performs a low-level integrity check of the current database file, and
+returns <code>NIL</code> if everything seems correct. Otherwise, a string
+indicating an error is returned. As a side effect, possible unused blocks (as
+there might be when a <code><a href="#rollback">rollback</a></code> is done
+after allocating external symbols with <code><a href="#new">new</a></code>) are
+appended to the free list.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (dbck)
+-> NIL
+</code></pre>
+
+<p><dt><a name="de"><code>(de sym . any) -> sym</code></a>
+<dd>Assigns a definition to the <code>sym</code> argument, by setting its
+<code>VAL</code> to the <code>any</code> argument. If the symbol has already
+another value, a "redefined" message is issued. <code>de</code> is the standard
+way to define a function.
+
+<p><pre><code>
+: (de foo (X Y) (* X (+ X Y)))  # Define a function
+-> foo
+: (foo 3 4)
+-> 21
+
+: (de *Var . 123)  # Define a variable value
+: *Var
+-> 123
+</code></pre>
+
+<p><dt><a name="debug"><code>(debug 'sym) -> T<br>
+(debug 'sym 'cls) -> T</code></a>
+<dd>Inserts a <code><a href="#!">!</a></code> breakpoint function call at the
+beginning and all top-level expressions of the function or method body of
+<code>sym</code>, to allow a stepwise execution. Typing <code>(d)</code> at a
+breakpoint will also debug the current subexpression, and <code>(e)</code> will
+evaluate the current subexpression. The current subexpression is stored in the
+global variable <code><a href="#^">^</a></code>.
+
+<p><pre><code>
+: (de tst (N)                    # Define tst
+   (println (+ 3 N)) )
+-> tst
+: (debug 'tst)                   # Set breakpoints
+-> T
+: (pp 'tst)
+(de tst (N)
+   (! println (+ 3 N)) )         # Breakpoint '!'
+-> tst
+: (tst 7)                        # Execute
+(println (+ 3 N))                # Stopped at beginning of 'tst'
+! (d)                            # Debug subexpression
+-> T
+!                                # Continue
+(+ 3 N)                          # Stopped in subexpression
+! N                              # Inspect variable 'N'
+-> 7
+!                                # Continue
+10                               # Output of print statement
+-> 10                            # Done
+: (unbug 'tst)
+-> T
+: (pp 'tst)                      # Restore to original
+(de tst (N)
+   (println (+ 3 N)) )
+-> tst
+</code></pre>
+
+<p><dt><a name="dec"><code>(dec 'var ['num]) -> num</code></a>
+<dd>Decrements the <code>VAL</code> of <code>var</code> by 1, or by
+<code>num</code>.
+
+<p><pre><code>
+: (setq N 7)
+-> 7
+: (dec 'N)
+-> 6
+: (dec 'N 3)
+-> 3
+</code></pre>
+
+<p><dt><a name="def"><code>(def 'sym 'any) -> sym<br>
+(def 'sym 'sym 'any) -> sym</code></a>
+<dd>The first form assigns a definition to the first <code>sym</code> argument,
+by setting its <code>VAL</code>'s to <code>any</code>. The second form defines a
+property value <code>any</code> for the second argument's <code>sym</code> key.
+If any of these values existed and was changed in the process, a "redefined"
+message is issued.
+
+<p><pre><code>
+</code>
+: (def 'b '((X Y) (* X (+ X Y))))
+-> b
+: (def 'b 999)
+b redefined
+-> b
+</code></pre>
+
+<p><dt><a name="default"><code>(default sym 'any ..) -> any</code></a>
+<dd>Stores new values <code>any</code> in the <code>sym</code> arguments only if
+their current values are <code>NIL</code>. Otherwise, their values are left
+unchanged. <code>default</code> is used typically in functions to initialize
+optional arguments.
+
+<p><pre><code>
+: (de foo (A B)               # Function with two optional arguments
+   (default  A 1  B 2)        # The default values are 1 and 2
+   (list A B) )
+-> foo
+: (foo 333 444)               # Called with two arguments
+-> (333 444)
+: (foo 333)                   # Called with one arguments
+-> (333 2)
+: (foo)                       # Called without arguments
+-> (1 2)
+</code></pre>
+
+<p><dt><a name="delete"><code>(delete 'any 'lst) -> lst</code></a>
+<dd>Deletes <code>any</code> from <code>lst</code>. If <code>any</code> is
+contained more than once in <code>lst</code>, only the first occurrence is
+deleted.
+
+<p><pre><code>
+: (delete 2 (1 2 3))
+-> (1 3)
+: (delete (3 4) '((1 2) (3 4) (5 6) (3 4)))
+-> ((1 2) (5 6) (3 4))
+</code></pre>
+
+<p><dt><a name="delq"><code>(delq 'any 'lst) -> lst</code></a>
+<dd>Deletes <code>any</code> from <code>lst</code>. If <code>any</code> is
+contained more than once in <code>lst</code>, only the first occurrence is
+deleted. <code><a href="#==">==</a></code> is used for comparison (pointer
+equality). See also <code><a href="#delete">delete</a></code>, <code><a
+href="#asoq">asoq</a></code>, <code><a href="#memq">memq</a></code> and <a
+href="#mmeq">mmeq</a></code>.
+
+<p><pre><code>
+: (delq 'b '(a b c))
+-> (a c)
+: (delq 2 (1 2 3))
+-> (1 2 3)
+</code></pre>
+
+<p><dt><a name="dm"><code>(dm sym . foo) -> sym<br>
+(dm (sym . cls) . foo) -> sym</code></a>
+<dd>Defines a method for the message <code>sym</code> in the current class,
+implicitly given by the value of the global variable <code>*Class</code>, or -
+in the second form - for the explicitly given class <code>cls</code>. This is
+analog to a function definition.
+
+<p><pre><code>
+: (dm start> ()
+   (super)
+   (mapc '((F) (start> F)) (: fields))
+   (mapc '((B) (start> B)) (: arrays)) )
+</code></pre>
+
+<p><dt><a name="do"><code>(do 'NIL|num .. [(NIL 'any . prg)] .. [(T 'any . prg)] ..) -> any</code></a>
+<dd>Counted loop with conditional exit: The body is executed at most
+<code>num</code> (or infinite, if the first argument is <code>NIL</code>) times.
+If a clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
+clause's second element is evaluated as a condition and - if the result is
+<code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
+executed and the result returned. Otherwise (if count drops to zero), the result
+of the last expression is returned.
+
+<p><pre><code>
+: (do 4 (printsp 'Ok))
+Ok Ok Ok Ok -> Ok
+: (do 4 (printsp 'Ok) (T (= 3 3) (printsp 'done)))
+Ok done -> done
+</code></pre>
+
+
+<p><hr>
+<h3><a name="e-foo">E</a></h3>
+
+<dt><a name="e"><code>(e . prg) -> any</code></a>
+<dd>Used in a breakpoint. Evaluates <code>prg</code> in the exution environment,
+or the currently executed expression if <code>prg</code> is not given. See also
+<code><a href="#!">!</a></code> and <code><a href="#^">^</a></code>.
+
+<p><pre><code>
+: (! + 3 4)
+(+ 3 4)
+! (e)
+-> 7
+</code></pre>
+
+<p><dt><a name="echo"><code>(echo ['cnt|sym ..]) -> sym</code></a>
+<dd>Reads the current input channel, and writes to the current output channel.
+If <code>cnt</code> is given, only that many bytes are actually echoed.
+Otherwise, if one or more <code>sym</code> arguments are given, the echo process
+stops as soon as one of the symbol's names is encountered in the input stream
+(in that case, the name will be read (and returned), but not written). Returns
+non-<code>NIL</code> if the operation was successfully completed.
+
+<p><pre><code>
+: (in "x.l" (echo))                    # Display file on console
+ ..
+
+: (out "x2.l" (in "x.l" (echo)))       # Copy file "x.l" to "x2.l"
+</code></pre>
+
+<p><dt><a name="env"><code>(env) -> lst</code></a>
+<dd>Return a list of all dynamically bound symbols. See also <code><a
+href="#stk">stk</a></code>.
+
+<p><pre><code>
+: (env)
+-> NIL
+: (de foo (A B C) (! println A B C))
+-> foo
+: (foo 1 2 3)
+(println A B C)
+! (env)
+-> (A B C)
+!
+1 2 3
+-> 3
+</code></pre>
+
+<p><dt><a name="eval"><code>(eval 'any) -> any</code></a>
+<dd>Evaluates <code>any</code>. Note that because of the standard argument
+evaluation, <code>any</code> is actually evaluated twice.
+
+<p><pre><code>
+: (eval (list '+ 1 2 3))
+-> 6
+: (setq X 'Y  Y 7)
+-> 7
+: X
+-> Y
+: Y
+-> 7
+: (eval X)
+-> 7
+</code></pre>
+
+<p><dt><a name="extQ"><code>(ext? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is an external
+symbol.
+
+<p><pre><code>
+: (ext? 123)
+-> NIL
+: (ext? 'abc)
+-> NIL
+: (ext? "abc")
+-> NIL
+: (ext? '{ABC})
+-> T
+</code></pre>
+
+<p><dt><a name="extern"><code>(extern 'sym) -> sym</code></a>
+<dd>Converts a transient symbol to an external symbol. If the symbol is already
+extern, it is returned as it is. Otherwise, it is inserted into the external
+hash table. See also <code><a href="#intern">intern</a></code> and <code><a
+href="#====">====</a></code>.
+
+<p><pre><code>
+: (extern "A1b3")
+-> {A1b3}
+</code></pre>
+
+<p><dt><a name="extra"><code>(extra ['any ..]) -> any</code></a>
+<dd>Can only be used inside methods. Sends the current message to the current
+object <code>This</code>, this time starting the search for a method at the
+remaining branches of the inheritance tree of the class where the current method
+was found.
+
+<p><pre><code>
+(dm key> (C)            # `key>' method of the `+Uppc' class
+   (uppc (extra C)) )   # Convert `key>' of extra classes to upper case
+</code></pre>
+
+
+<p><hr>
+<h3><a name="f-foo">F</a></h3>
+
+<dt><a name="fill"><code>(fill 'any) -> any</code></a>
+<dd>Fills a pattern <code>any</code>, by substituting each pattern symbol (see
+<code><a href="#patQ">pat?</a></code>) with its current value. See also <code><a
+href="#match">match</a></code>.
+
+<p><pre><code>
+: (setq  @X 1234  @Y (1 2 3 4))
+-> (1 2 3 4)
+: (fill '@X)
+-> 1234
+: (fill '(a b (c @X) ((@Y . d) e)))
+-> (a b (c 1234) (((1 2 3 4) . d) e))
+</code></pre>
+
+<p><dt><a name="filter"><code>(filter 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns a list of all elements of <code>lst</code> where
+<code>foo</code> returned non-<code>NIL</code>.
+
+<p><pre><code>
+: (filter num? (1 A 2 (B) 3 CDE))
+-> (1 2 3)
+</code></pre>
+
+<p><dt><a name="find"><code>(find 'foo 'lst ..) -> any</code></a>
+<dd>Applies <code>foo</code> to successive elements of <code>lst</code> until
+non-<code>NIL</code> is returned. Returns that <u>element</u>, or
+<code>NIL</code> if <code>foo</code> did not return non-<code>NIL</code> for any
+element of <code>lst</code>. When additional <code>lst</code> arguments are
+given, their elements are also passed to <code>foo</code>. See also <code><a
+href="#seek">seek</a></code>, <code><a href="#pick">pick</a></code>.
+
+<p><pre><code>
+: (find pair (1 A 2 (B) 3 CDE))
+-> (B)
+: (find '((A B) (> A B)) (1 2 3 4 5 6) (6 5 4 3 2 1))
+-> 4
+</code></pre>
+
+<p><dt><a name="flush"><code>(flush) -> flg</code></a>
+<dd>Flushes the current output stream by writing all buffered data. A call to
+<code>flush</code> for standard output is done automatically before a call to
+<code><a href="#key">key</a></code>. Returns <code>T</code> when successful. See
+also <code><a href="#rewind">rewind</a></code>.
+
+<p><pre><code>
+: (flush)
+-> T
+</code></pre>
+
+<p><dt><a name="for"><code>(for (sym 'any1 'any2 [. prg1]) . prg2) -> any</code></a>
+<dd>Conditional loop with local variable: The value of <code>sym</code> is
+saved, and <code>sym</code> is bound to <code>any1</code>. While the condition
+<code>any2</code> evaluates to non-<code>NIL</code>, <code>prg2</code> is
+repeatedly executed and, if <code>prg1</code> is given, the <code>sym</code> is
+re-bound to the result of its evaluation. If <code>prg2</code> is never
+executed, <code>NIL</code> is returned. Otherwise the result of
+<code>prg2</code> is returned.
+
+<p><pre><code>
+: (for (N 1 (< N 9) (+ 1 N)) (printsp N))
+1 2 3 4 5 6 7 8 -> 8
+: (for (L (1 2 3 4 5 6 7 8) L) (printsp (pop 'L)))
+1 2 3 4 5 6 7 8 -> 8
+</code></pre>
+
+<p><dt><a name="fork"><code>(fork) -> pid | NIL</code></a>
+<dd>Forks a child process. Returns <code>NIL</code> in the child, and the
+child's process ID <code>pid</code> in the parent. See also <code><a
+href="#tell">tell</a></code>.
+
+<p><pre><code>
+: (unless (fork) (do 5 (println 'Ok) (wait 1000)) (bye))
+-> NIL
+Ok                                              # Child's output
+: Ok
+Ok
+Ok
+Ok
+</code></pre>
+
+<p><dt><a name="format"><code>(format 'num ['cnt ['sym1 ['sym2]]]) -> sym<br>
+(format 'sym ['cnt ['sym1 ['sym2]]]) -> num</code></a>
+<dd>Converts a number <code>num</code> to a string, or a string <code>sym</code>
+to a number. In both cases, optionally a precision <code>cnt</code>, a
+decimal-separator <code>sym1</code> and a thousands-separator <code>sym2</code>
+can be supplied. Returns <code>NIL</code> if the conversion is unsuccessful. See
+also <code><a href="#num-io">Numbers</a></code>.
+
+<p><pre><code>
+: (format 123456789)                   # Integer conversion
+-> "123456789"
+: (format 123456789 2)                 # Fixed point
+-> "1234567.89"
+: (format 123456789 2 ",")             # Comma as decimal-separator
+-> "1234567,89"
+: (format 123456789 2 "," ".")         # and period as thousands-separator
+-> "1.234.567,89"
+:
+: (format "123456789")                 # String to number
+-> 123456789
+: (format "1234567.89" 4)              # scaled to four digits
+-> 12345678900
+: (format "1.234.567,89")              # separators not recognized
+-> NIL
+: (format "1234567,89" 4 ",")
+-> 12345678900
+: (format "1.234.567,89" 4 ",")        # thousands-separator not recognized
+-> NIL
+: (format "1.234.567,89" 4 "," ".")
+-> 12345678900
+</code></pre>
+
+<p><dt><a name="from"><code>(from 'any ..) -> sym</code></a>
+<dd>Skips the current input channel until one of the patterns <code>any</code>
+is found, and starts subsequent reading from that point. If none of
+<code>any</code> is found, <code>NIL</code> is returned. See also <code><a
+href="#till">till</a></code> and <code><a href="#echo">echo</a></code>.
+
+<p><pre><code>
+: (and (from "val='") (till "'" T))
+test val='abc'
+-> "abc"
+</code></pre>
+
+<p><dt><a name="funQ"><code>(fun? 'any) -> any</code></a>
+<dd>Returns <code>NIL</code> when the argument <code>any</code> is neither a
+number suitable for a code-pointer, nor a list suitable for a lambda expression.
+Otherwise <code>0</code> is returned for a code-pointer, <code>T</code> for a
+procedure, or the list of formal parameters for other functions.
+
+<p><pre><code>
+: (fun? 1000000000)              # Might be a code pointer
+-> 0
+: (fun? 100000000000000)         # Too big for a code pointer
+-> NIL
+: (fun? 1000000001)              # Cannot be a code pointer (odd)
+-> NIL
+: (fun? '((A B) (* A B)))        # Lambda expression
+-> (A B)
+: (fun? '(1 2 3 4))              # Not a lambda expression
+-> NIL
+: (fun? '((A 2 B) (* A B)))      # Not a lambda expression
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="g-foo">G</a></h3>
+
+<dt><a name="gc"><code>(gc ['cnt]) -> cnt | NIL</code></a>
+<dd>Forces a garbage collection. When <code>cnt</code> is given, that number of
+megabytes of free cells is reserved, increasing the heap size if necessary.
+
+<p><pre><code>
+: (gc)
+-> NIL
+: (stat)
+0.6 32%
+-> 54827
+: (gc 4)
+-> 4
+: (stat)
+4.3 5%
+-> 534802
+</code></pre>
+
+<p><dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..] 'sym|cnt) -> any</code></a>
+<dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
+list. From the first argument <code>sym1|lst</code>, values are retrieved in
+successive steps by either extracting a property value from a symbol (the next
+argument is a symbol, hence the current value must be a symbol) or by extracting
+an element from a list (the next argument is a number, hence the current value
+must be a list).
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (get 'X 'a)
+-> 1
+: (put 'Y 'link 'X)
+-> X
+: (get 'Y 'link)
+-> X
+: (get 'Y 'link 'a)
+-> 1
+: (get '(X Y Z) 2)
+-> Y
+: (get '(X Y Z) 2 'link 'a)
+-> 1
+</code></pre>
+
+<p><dt><a name="getl"><code>(getl 'sym1|lst1 ['sym2|cnt ..]) -> lst</code></a>
+<dd>Fetches the complete property list <code>lst</code> from a symbol. That
+symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
+by applying the <code><a href="#get">get</a></code> algorithm to
+<code>sym1|lst1</code> and the following arguments.
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (put 'X 'b 2)
+-> 2
+: (put 'X 'flg T)
+-> T
+: (getl 'X)
+-> (flg (2 . b) (1 . a))
+</code></pre>
+
+<p><dt><a name="gt0"><code>(gt0 'num) -> flg</code></a>
+<dd>Returns <code>T</code> when the <code>num</code> argument is greater than
+zero.
+
+<p><pre><code>
+: (gt0 -2)
+-> NIL
+: (gt0 3)
+-> T
+</code></pre>
+
+
+<p><hr>
+<h3><a name="h-foo">H</a></h3>
+
+<dt><a name="head"><code>(head 'cnt 'lst) -> lst</code></a>
+<dd>Returns a new list made of the <u>first</u> <code>cnt</code> elements of
+<code>lst</code>. See also <code><a href="#tail">tail</a></code>. If
+<code>cnt</code> is negative, it is added to the length of <code>lst</code>.
+
+<p><pre><code>
+: (head 3 '(a b c d e f))
+-> (a b c)
+: (head 0 '(a b c d e f))
+-> NIL
+: (head 10 '(a b c d e f))
+-> (a b c d e f)
+: (head -2 '(a b c d e f))
+-> (a b c d)
+</code></pre>
+
+<p><dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
+<dd>Returns the number of <u>free</u> cells currently available (if
+<code>flg</code> is <code>NIL</code>), or the <u>total</u> number of cells in
+the system (if <code>flg</code> is non-<code>NIL</code>).
+
+<p><pre><code>
+: (heap)
+-> 65948
+: (heap T)
+-> 131072
+</code></pre>
+
+<p><dt><a name="hear"><code>(hear 'num|sym) -> any</code></a>
+<dd>Uses the file descriptor <code>num</code>, or opens the file
+<code>sym</code>, as an asynchronous command input channel. Any executable list
+received via this channel will be executed. As this mechanism is also used for
+inter-family communication (see <code><a href="#tell">tell</a></code>),
+<code>hear</code> should only be called by a top level parent process.
+
+<p><pre><code>
+: (hear "fifo/cmd")
+-> "fifo/cmd"
+</code></pre>
+
+
+<p><hr>
+<h3><a name="i-foo">I</a></h3>
+
+<dt><a name="if"><code>(if 'any1 'any2 . prg) -> any</code></a>
+<dd>Conditional execution: If the condition <code>any1</code> evaluates to
+non-<code>NIL</code>, <code>any2</code> is evaluated and returned. Otherwise,
+<code>prg</code> is executed and the result returned.
+
+<p><pre><code>
+: (if (> 4 3) (println 'Ok) (println 'Bad))
+Ok
+-> Ok
+: (if (> 3 4) (println 'Ok) (println 'Bad))
+Bad
+-> Bad
+</code></pre>
+
+<p><dt><a name="ifn"><code>(ifn 'any1 'any2 . prg) -> any</code></a>
+<dd>Conditional execution ("If not"): If the condition <code>any1</code>
+evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
+Otherwise, <code>prg</code> is executed and the result returned.
+
+<p><pre><code>
+: (ifn (= 3 4) (println 'Ok) (println 'Bad))
+Ok
+-> Ok
+</code></pre>
+
+<p><dt><a name="in"><code>(in 'any . prg) -> any</code></a>
+<dd>Opens <code>any</code> as input channel during the execution of
+<code>prg</code>. The current input channel will be saved and restored
+appropriately. If the argument is <code>NIL</code>, standard input is used. If
+the argument is a symbol, it is used as a file name. If it is a number, it is
+used as the descriptor of an open file. Otherwise (if it is a list), it is taken
+as a command with arguments, and a pipe is opened for input. See also <code><a
+href="#call">call</a></code>, <code><a href="#load">load</a></code> and <code><a
+href="#out">out</a></code>.
+
+<p><pre><code>
+: (in "a" (list (read) (read) (read)))    # Read three items from file "a"
+-> (123 (a b c) def)
+</code></pre>
+
+<p><dt><a name="inc"><code>(inc 'var ['num]) -> num</code></a>
+<dd>Increments the <code>VAL</code> of <code>var</code> by 1, or by
+<code>num</code>.
+
+<p><pre><code>
+: (zero N)
+-> 0
+: (inc 'N)
+-> 1
+: (inc 'N 7)
+-> 8
+: N
+-> 8
+
+: (setq L (1 2 3 4))
+-> (1 2 3 4)
+: (inc (cdr L))
+-> 3
+: L
+-> (1 3 3 4)
+</code></pre>
+
+<p><dt><a name="index"><code>(index 'any 'lst) -> cnt | NIL</code></a>
+<dd>Returns the <code>cnt</code> position of <code>any</code> in
+<code>lst</code>, or <code>NIL</code> if it is not found. See also <code><a
+href="#offset">offset</a></code>.
+
+<p><pre><code>
+: (index 'c '(a b c d e f))
+-> 3
+: (index '(5 6) '((1 2) (3 4) (5 6) (7 8)))
+-> 3
+</code></pre>
+
+<p><dt><a name="info"><code>(info 'sym) -> (cnt dat . tim)</code></a>
+<dd>Returns information about a file with the name <code>sym</code>: The current
+size <code>cnt</code> in bytes, and the modification date and time. See also
+<code><a href="#date">date</a></code>, <code><a href="#time">time</a></code> and
+<code><a href="#lines">lines</a></code>.
+
+<p><pre><code>
+$ ls -l x.l
+-rw-r--r--   1 abu      users         208 Jun 17 08:58 x.l
+$ p
+: (info "x.l")
+-> (208 730594 . 32315)
+: (stamp 730594 32315)
+-> "2000-06-17 08:58:35"
+</code></pre>
+
+<p><dt><a name="intern"><code>(intern 'sym) -> sym</code></a>
+<dd>Converts a transient symbol to an internal symbol. If the symbol is already
+intern, it is returned as it is. Otherwise, it is inserted into the internal
+hash table. See also <code><a href="#extern">extern</a></code> and <code><a
+href="#====">====</a></code>.
+
+<p><pre><code>
+: (intern "abc")
+-> abc
+: (intern 'car)
+-> car
+: ((intern (pack "c" "a" "r")) (1 2 3))
+-> 1
+</code></pre>
+
+<p><dt><a name="isa"><code>(isa 'cls|typ 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is an object that inherits from
+<code>cls</code> or <code>type</code>. See also <code><a
+href="#type">type</a></code>.
+
+<p><pre><code>
+: (isa '+Address Obj)
+-> T
+: (isa '(+Male +Person) Obj)
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="j-foo">J</a></h3>
+
+<dt><a name="job"><code>(job lst . prg) -> any</code></a>
+<dd>Executes a job within its own environment (as specified by
+symbol-values-pairs in <code>lst</code>. The current values of all symbols are
+saved, the symbols are bound to the values in <code>lst</code>, <code>prg</code>
+is executed, then the (possibly modified) symbol values are (destructively)
+stored in the environment list, and the symbols are restored to their original
+values. The return value is the result of <code>prg</code>. See also <code><a
+href="#bind">bind</a></code>, <code><a href="#let">let</a></code> and <code><a
+href="#use">use</a></code>.
+
+<p><pre><code>
+: (de tst ()
+   (job
+      ((A . 0) (B . 0))
+      (println (inc 'A) (inc 'B 2)) ) )
+-> tst
+: (tst)
+1 2
+-> 2
+: (tst)
+2 4
+-> 4
+: (tst)
+3 6
+-> 6
+: (pp 'tst)
+(de tst NIL
+   (job
+      ((A . 3) (B . 6))
+      (println (inc 'A) (inc 'B 2)) ) )
+-> tst
+</code></pre>
+
+
+<p><hr>
+<h3><a name="k-foo">K</a></h3>
+
+<dt><a name="key"><code>(key ['cnt]) -> sym</code></a>
+<dd>Returns the next character from standard input as a single-character
+transient symbol. The console is set to raw mode. While waiting for a key press,
+a <code>select</code> system call is executed for all file descriptors and
+timers in the <code>VAL</code> of the global variable <code><a
+href="#*Key">*Key</a></code>. If <code>cnt</code> is non-<code>NIL</code>, that
+amount of milliseconds is waited maximally, and <code>NIL</code> is returned
+upon timeout. See also <code><a href="#wait">wait</a></code>.
+
+<p><pre><code>
+: (key)                    # Wait for a key
+-> "a"                     # `a' pressed
+</code></pre>
+
+<p><dt><a name="kill"><code>(kill 'pid 'cnt) -> flg</code></a>
+<dd>Sends a signal with the signal number <code>cnt</code> to the process with
+the ID <code>pid</code>. Returns <code>T</code> if successful.
+
+<p><pre><code>
+: (kill *Pid 20)                                # Stop current process
+
+[2]+  Stopped                 /usr/abu/pico/p   # Unix shell
+abu@bse:/usr/abu/pico fg                        # Job control: Foreground
+/usr/abu/pico/p
+-> T                                            # `kill' was successful
+</code></pre>
+
+
+<p><hr>
+<h3><a name="l-foo">L</a></h3>
+
+<dt><a name="last"><code>(last 'lst) -> any</code></a>
+<dd>Returns the last element of <code>lst</code>.
+
+<p><pre><code>
+: (last (1 2 3 4))
+-> 4
+: (last '((a b) c (d e f)))
+-> (d e f)
+</code></pre>
+
+<p><dt><a name="length"><code>(length 'any) -> cnt | T</code></a>
+<dd>Returns the "length" of <code>any</code>. For numbers this is the number of
+digits in the value (plus 1 for negative values), for symbols it is the number
+of characters in the name, and for lists it is the number of elements (or
+<code>T</code> for circular lists). See also <code><a
+href="#size">size</a></code>.
+
+<p><pre><code>
+: (length "abc")
+-> 3
+: (length "‰bc")
+-> 3
+: (length 123)
+-> 3
+: (length (1 (2) 3))
+-> 3
+: (length (1 2 3 .))
+-> T
+</code></pre>
+
+<p><dt><a name="let"><code>(let sym 'any . prg) -> any<br>
+(let (sym 'any ..) . prg) -> any</code></a>
+<dd>Defines local variables. The value of the symbol <code>sym</code> - or the
+values of the symbols <code>sym</code> in the list of the second form - are
+saved and bound to the evaluated <code>any</code> arguments. <code>prg</code> is
+executed, then the symbols are restored to their original values. The result of
+<code>prg</code> is returned. It is an error condition to pass <code>NIL</code>
+as a <code>sym</code> argument. See also <code><a href="#bind">bind</a></code>,
+<code><a href="#job">job</a></code> and <code><a href="#use">use</a></code>.
+
+<p><pre><code>
+: (setq  X 123  Y 456)
+-> 456
+: (let X "Hello" (println X))
+"Hello"
+-> "Hello"
+: (let (X "Hello" Y "world") (prinl X " " Y))
+Hello world
+-> "world"
+: X
+-> 123
+: Y
+-> 456
+</code></pre>
+
+<p><dt><a name="line"><code>(line 'flg ['cnt ..]) -> lst|sym</code></a>
+<dd>Reads a line of characters from the current input channel. End of line is
+recognized either as return (hex "0D"), as linefeed (hex "0A"), or as a
+return-linefeed sequence (hex "0D0A"). If <code>flg</code> is <code>NIL</code>,
+it returns a list of single-character transient symbols. When <code>cnt</code>
+arguments are given, subsequenct characters of the input line are grouped into
+sublists, to allow parsing of fixed field length records. If <code>flg</code> is
+non-<code>NIL</code>, strings are returned instead of single-character lists.
+<code>T</code> is returned upon end of file. See also <code><a
+href="#char">char</a></code> and <code><a href="#till">till</a></code>.
+
+<p><pre><code>
+: (line)
+abcdefghijkl
+-> ("a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l")
+: (line T)
+abcdefghijkl
+-> "abcdefghijkl"
+: (line NIL 1 2 3)
+abcdefghijkl
+-> (("a") ("b" "c") ("d" "e" "f") "g" "h" "i" "j" "k" "l")
+: (line T 1 2 3)
+abcdefghijkl
+-> ("a" "bc" "def" "g" "h" "i" "j" "k" "l")
+</code></pre>
+
+<p><dt><a name="lines"><code>(lines 'sym ..) -> cnt</code></a>
+<dd>Returns the number of lines in a file with the name <code>sym</code>. See
+also <code><a href="#info">info</a></code>.
+
+<p><pre><code>
+: (lines "x.l")
+-> 11
+</code></pre>
+
+<p><dt><a name="link"><code>(link 'any ..) -> any</code></a>
+<dd>Links one or several new elements <code>any</code> to the end of the list in
+the current <code><a href="#make">make</a></code> environment. This operation is
+efficient also for long lists, because a pointer to the last element of the list
+is maintained. <code>link</code> returns the last linked argument. See also
+<code><a href="#chain">chain</a></code> and <code><a
+href="#made">made</a></code>.
+
+<p><pre><code>
+: (make
+   (println (link 1))
+   (println (link 2 3)) )
+1
+3
+-> (1 2 3)
+</code></pre>
+
+<p><dt><a name="list"><code>(list 'any ..) -> lst</code></a>
+<dd>Returns a list of all <code>any</code> arguments.
+
+<p><pre><code>
+: (list 1 2 3 4)
+-> (1 2 3 4)
+: (list 'a (2 3) "Ok")
+-> (a (2 3) "Ok")
+</code></pre>
+
+<p><dt><a name="listQ"><code>(lst? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a (possibly
+empty) list (<code>NIL</code> or a cons pair cell). See also <code><a
+href="#pair">pair</a></code>.
+
+<p><pre><code>
+: (lst? NIL)
+-> T
+: (lst? (1 . 2))
+-> T
+: (lst? (1 2 3))
+-> T
+</code></pre>
+
+<p><dt><a name="listen"><code>(listen 'cnt1 ['cnt2]) -> cnt | NIL</code></a>
+<dd>Listens a socket descriptor <code>cnt1</code> (as recieved by <code><a
+href="#port">port</a></code>) for an incoming connection, and returns the new
+socket descriptor <code>cnt</code>. If <code>cnt1</code> is
+non-<code>NIL</code>, that amount of milliseconds is waited maximally, and
+<code>NIL</code> is returned upon timeout. See also <code><a
+href="#connect">connect</a></code>.
+
+<p><pre><code>
+(setq *Socket
+   (listen (port 6789)) )        # Listen at port 6789 for an indefinite time
+</code></pre>
+
+<p><dt><a name="load"><code>(load 'any ..) -> any</code></a>
+<dd>Loads all <code>any</code> arguments. Normally, the name of each argument is
+taken as a file to be executed in a read-eval loop. The argument semantics are
+identical to that of <code><a href="#in">in</a></code>, with the exception that
+if an argument is a symbol and its first character is a hyphen '-', then that
+argument is parsed as a function call (without the surrounding parentheses).
+When <code>any</code> is <code>NIL</code> and standard input is read, a prompt
+is issued before each read operation, the results are printed to standard output
+(read-eval-print loop), and <code>load</code> terminates when an empty line is
+entered. In any case, <code>load</code> terminates upon end of file, or when
+<code>NIL</code> is read. The hash table for transient symbols is cleared before
+and after the load, so that all transient symbols in the file have a local
+scope. Returns the value of the last evaluated expression. See also <code><a
+href="#call">call</a></code>, <code><a href="#in">in</a></code> and <code><a
+href="#out">out</a></code>.
+
+<p><pre><code>
+: (load "lib/lib.l" "-* 1 2 3")
+-> 6
+</code></pre>
+
+<p><dt><a name="lock"><code>(lock ['sym]) -> cnt | NIL</code></a>
+<dd>Write-locks an external symbol <code>sym</code> (file record locking), or
+the whole database if <code>sym</code> is <code>NIL</code>. Returns
+<code>NIL</code> if successful, or the ID of the process currently holding the
+lock. The lock is released at the next top level call to <code><a
+href="#commit">commit</a></code> or <code><a
+href="#rollback">rollback</a></code>.
+
+<p><pre><code>
+: (lock '{1})        # Lock single object
+-> NIL
+: (lock)             # Lock whole database
+-> NIL
+</code></pre>
+
+<p><dt><a name="lookup"><code>(-&gt sym [num]) -> any</code></a>
+<dd>Searches for the current value of the pattern variable <code>sym</code> at
+top level (or level <code>num</code>) in the current Pico Prolog (Pilog)
+environment. See also <code><a href="#prove">prove</a></code> and <code><a
+href="#unify">unify</a></code>.
+
+<p><pre><code>
+: (? (append (1 2 3) (4 5 6) @X) (@ println 'X '= (-> @X)))
+X = (1 2 3 4 5 6)
+ @X=(1 2 3 4 5 6)
+-> NIL
+</code></pre>
+
+<p><dt><a name="lowQ"><code>(low? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a string
+(symbol) that starts with a lowercase character.
+
+<p><pre><code>
+: (low? "a")
+-> T
+: (low? "A")
+-> NIL
+: (low? 123)
+-> NIL
+: (low? ".")
+-> NIL
+</code></pre>
+
+<p><dt><a name="lowc"><code>(lowc 'any) -> any</code></a>
+<dd>Lower case conversion: If <code>any</code> is not a symbol, it is returned
+as it is. Otherwise, a new transient symbol with all characters of
+<code>any</code>, converted to lower case, is returned.
+
+<p><pre><code>
+: (lowc 123)
+-> 123
+: (lowc "ABC")
+-> "abc"
+</code></pre>
+
+<p><dt><a name="lt0"><code>(lt0 'num) -> flg</code></a>
+<dd>Returns <code>T</code> when the <code>num</code> argument is less than zero.
+
+<p><pre><code>
+: (lt0 -2)
+-> T
+: (lt0 3)
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="m-foo">M</a></h3>
+
+<dt><a name="made"><code>(made ['lst1 ['lst2]]) -> lst</code></a>
+<dd>Set a new initial list value for the current <code><a
+href="#make">make</a></code> environment. All list elements already produced
+with <code><a href="#chain">chain</a></code> and <code><a
+href="#link">link</a></code> are discarded, and <code>lst1</code> is used
+instead. Optionally, <code>lst2</code> can be specified as the new linkage cell,
+otherwise the last cell of <code>lst1</code> is used. When called without
+arguments, <code>made</code> does not modify the environment. In any case, the
+current list is returned.
+
+<p><pre><code>
+: (make
+   (link 'a 'b 'c)         # Link three items
+   (println (made))        # Print current list (a b c)
+   (made (1 2 3))          # Discard it, start new with (1 2 3)
+   (link 4) )              # Link 4
+(a b c)
+-> (1 2 3 4)
+</code></pre>
+
+<p><dt><a name="make"><code>(make .. [(made 'lst ..)] .. [(link 'any ..)] ..) -> any</code></a>
+<dd>Initializes and executes a list-building process with the <code><a
+href="#made">made</a></code>, <code><a href="#chain">chain</a></code> and
+<code><a href="#link">link</a></code> functions, and returns the result list.
+For efficiency, pointers to the head and the tail of the list are maintained
+internally.
+
+<p><pre><code>
+: (make (link 1) (link 2 3) (link 4))
+-> (1 2 3 4)
+: (make (made (1 2 3)) (link 4))
+-> (1 2 3 4)
+</code></pre>
+
+<p><dt><a name="map"><code>(map 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to <code>lst</code> and all successive
+<code>CDR</code>'s. When additional <code>lst</code> arguments are given, they
+are passed to <code>foo</code> in the same way. Returns the result of the last
+application.
+
+<p><pre><code>
+: (map println (1 2 3 4) '(A B C))
+(1 2 3 4) (A B C)
+(2 3 4) (B C)
+(3 4) (C)
+(4) NIL
+-> NIL
+</code></pre>
+
+<p><dt><a name="mapc"><code>(mapc 'foo 'lst ..) -> any</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns the result of the last application.
+
+<p><pre><code>
+: (mapc println (1 2 3 4) '(A B C))
+1 A
+2 B
+3 C
+4 NIL
+-> NIL
+</code></pre>
+
+<p><dt><a name="mapcan"><code>(mapcan 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns a (destructively) concatenated list of all results.
+
+<p><pre><code>
+: (mapcan reverse '((a b c) (d e f) (g h i)))
+-> (c b a f e d i h g)
+</code></pre>
+
+<p><dt><a name="mapcar"><code>(mapcar 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns a list of all results.
+
+<p><pre><code>
+: (mapcar + (1 2 3) (4 5 6))
+-> (5 7 9)
+: (mapcar '((X Y) (+ X (* Y Y))) (1 2 3 4) (5 6 7 8))
+-> (26 38 52 68)
+</code></pre>
+
+<p><dt><a name="mapcon"><code>(mapcon 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to <code>lst</code> and all successive
+<code>CDR</code>'s. When additional <code>lst</code> arguments are given, they
+are passed to <code>foo</code> in the same way. Returns a (destructively)
+concatenated list of all results.
+
+<p><pre><code>
+: (mapcon copy '(1 2 3 4 5))
+-> (1 2 3 4 5 2 3 4 5 3 4 5 4 5 5)
+</code></pre>
+
+<p><dt><a name="maplist"><code>(maplist 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to <code>lst</code> and all successive
+<code>CDR</code>'s. When additional <code>lst</code> arguments are given, they
+are passed to <code>foo</code> in the same way. Returns a list of all results.
+
+<p><pre><code>
+: (maplist cons (1 2 3) '(A B C))
+-> (((1 2 3) A B C) ((2 3) B C) ((3) C))
+</code></pre>
+
+<p><dt><a name="maps"><code>(maps 'foo 'sym ['lst ..]) -> any</code></a>
+<dd>Applies <code>foo</code> to all properties of <code>sym</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns the result of the last application.
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (put 'X 'b 2)
+-> 2
+: (put 'X 'flg T)
+-> T
+: (getl 'X)
+-> (flg (2 . b) (1 . a))
+: (maps println 'X '(A B))
+flg A
+(2 . b) B
+(1 . a) NIL
+-> NIL
+</code></pre>
+
+<p><dt><a name="mark"><code>(mark 'sym|0 [NIL | T | 0]) -> flg</code></a>
+<dd>Test, set or reset a mark for <code>sym</code> in the database (for a second
+argument of <code>NIL</code>, <code>T</code> or <code>0</code>, respectively).
+If the first argument is zero, <u>all</u> marks are cleared.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (mark '{1} T)      # Mark
+-> T
+: (mark '{1})        # Test
+-> T                 # -> marked
+: (mark '{1} 0)      # Unmark
+-> NIL
+: (mark '{1})        # Test
+-> NIL               # -> unmarked
+</code></pre>
+
+<p><dt><a name="match"><code>(match 'lst 'lst) -> lst</code></a>
+<dd>Takes the first <code>lst</code> argument as a pattern to be matched against
+the second <code>lst</code>, and returns <code>T</code> when successful. Atoms
+must be equal, and sublists must match recursively. Symbols in the pattern list
+with names starting with an at-mark "<code>@</code>" (see <code><a
+href="#patQ">pat?</a></code>) are taken as wildcards. They can match zero, one
+or more elements, and are then bound to the corresponding data. See also
+<code><a href="#fill">fill</a></code>.
+
+<p><pre><code>
+: (match '(@A is @B) '(This is a test))
+-> T
+: @A
+-> (This)
+: @B
+-> (a test)
+: (match '(@X (d @Y) @Z) '((a b c) (d (e f) g) h i))
+-> T
+: @X
+-> ((a b c))
+: @Y
+-> ((e f) g)
+: @Z
+-> (h i)
+</code></pre>
+
+<p><dt><a name="max"><code>(max 'any ..) -> any</code></a>
+<dd>Returns the largest of all <code>any</code> arguments. See also <a
+href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (max 2 'a 'z 9)
+-> z
+: (max (5) (2 3) 'X)
+-> (5)
+</code></pre>
+
+<p><dt><a name="maxi"><code>(maxi 'foo 'lst ..) -> any</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns that element from <code>lst</code> for that
+<code>foo</code> returned a maximal value. See also <code><a
+href="#mini">mini</a></code>.
+
+<p><pre><code>
+: (setq A 1  B 2  C 3)
+-> 3
+: (maxi val '(A B C))
+-> C
+: (maxi                          # Symbol with largest list value
+   '((X)
+      (and
+         (pair (val X))
+         (size (val X)) ) )
+   (what) )
+-> *History
+</code></pre>
+
+<p><dt><a name="member"><code>(member 'any 'lst) -> any</code></a>
+<dd>Returns the tail of <code>lst</code> that starts with <code>any</code> when
+<code>any</code> is a member of <code>lst</code>, otherwise <code>NIL</code>.
+
+<p><pre><code>
+: (member 3 (1 2 3 4 5 6))
+-> (3 4 5 6)
+: (member 9 (1 2 3 4 5 6))
+-> NIL
+: (member '(d e f) '((a b c) (d e f) (g h i)))
+-> ((d e f) (g h i))
+</code></pre>
+
+<p><dt><a name="memq"><code>(memq 'any 'lst) -> any</code></a>
+<dd>Returns the tail of <code>lst</code> that starts with <code>any</code> when
+<code>any</code> is a member of <code>lst</code>, otherwise <code>NIL</code>.
+<code><a href="#==">==</a></code> is used for comparison (pointer equality). See
+also <code><a href="#member">member</a></code>, <a href="#mmeq">mmeq</a></code>,
+<code><a href="#asoq">asoq</a></code> and <code><a href="#delq">delq</a></code>.
+
+<p><pre><code>
+: (memq 'c '(a b c d e f))
+-> (c d e f)
+: (memq 3 (1 2 3 4 5 6))
+-> NIL
+</code></pre>
+
+<p><dt><a name="meta"><code>(meta 'obj|typ 'sym) -> any</code></a>
+<dd>Fetches a property value <code>any</code>, by searching the property lists
+of the classes and superclasses of <code>obj</code>, or the classes in
+<code>typ</code>, for the property key <code>sym</code>.
+
+<p><pre><code>
+: (setq A '(B))            # Be `A' an object of class `B'
+-> (B)
+: (put 'B 'a 123)
+-> 123
+: (meta 'A 'a)             # Fetch `a' from `B'
+-> 123
+</code></pre>
+
+<p><dt><a name="meth"><code>(meth 'obj ..) -> any</code></a>
+<dd>This function is usually not called directly, but is used by <code>dm</code>
+as a template to initialize the <code>VAL</code> of message symbols. It searches
+for itself in the methods of <code>obj</code> and its classes and superclasses,
+and executes that method. An error <code>"Bad message"</code> is issued if the
+search is unsuccessful.
+
+<p><pre><code>
+: meth
+-> 67283504    # Value of `meth'
+: stop>
+-> 67283504    # Value of any message
+</code></pre>
+
+<p><dt><a name="method"><code>(method 'msg 'obj) -> foo</code></a>
+<dd>Returns the function body of the method that would be executed upon sending
+the message <code>msg</code> to the object <code>obj</code>. If the message
+cannot be located in <code>obj</code>, its classes and superclasses,
+<code>NIL</code> is returned.
+
+<p><pre><code>
+: (method 'stop> '+Dialog)
+-> (NIL (super) (close> This))
+</code></pre>
+
+<p><dt><a name="min"><code>(min 'any ..) -> any</code></a>
+<dd>Returns the smallest of all <code>any</code> arguments. See also <a
+href="#cmp">Comparing</a>.
+
+<p><pre><code>
+</code>
+: (min 2 'a 'z 9)
+-> 2
+: (min (5) (2 3) 'X)
+-> X
+</code></pre>
+
+<p><dt><a name="mini"><code>(mini 'foo 'lst ..) -> any</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns that element from <code>lst</code> for that
+<code>foo</code> returned a minimal value. See also <code><a
+href="#maxi">maxi</a></code>.
+
+<p><pre><code>
+: (setq A 1  B 2  C 3)
+-> 3
+: (mini val '(A B C))
+-> A
+</code></pre>
+
+<p><dt><a name="mix"><code>(mix 'lst cnt|'any ..) -> lst</code></a>
+<dd>Builds a list from the elements of the argument <code>lst</code>, as
+specified by the following <code>cnt|'any</code> arguments. If such an argument
+is a number, the <code>cnt</code>'th element from <code>lst</code> is taken,
+otherwise that arguments is evaluated and the result is used.
+
+<p><pre><code>
+: (mix '(a b c d) 3 4 1 2)
+-> (c d a b)
+: (mix '(a b c d) 1 'A 4 'D)
+-> (a A d D)
+</code></pre>
+
+<p><dt><a name="mmeq"><code>(mmeq 'lst 'lst) -> any</code></a>
+<dd>Returns the tail of the second argument <code>lst</code> that starts with a
+member of the first argument <code>lst</code>, otherwise <code>NIL</code>.
+<code><a href="#==">==</a></code> is used for comparison (pointer equality). See
+also <code><a href="#member">member</a></code>, <code><a
+href="#memq">memq</a></code>, <code><a href="#asoq">asoq</a></code> and <code><a
+href="#delq">delq</a></code>.
+
+<p><pre><code>
+: (mmeq '(a b c) '(d e f))
+-> NIL
+: (mmeq '(a b c) '(d b x))
+-> (b x)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="n-foo">N</a></h3>
+
+<dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when <u>not</u> all <code>any</code> arguments are
+the same (pointer equality). <code>(n== 'any ..)</code> is equivalent to
+<code>(not (== 'any ..))</code>.
+
+<p><pre><code>
+: (n== 'a 'a)
+-> NIL
+: (n== 1 1)
+-> T
+</code></pre>
+
+<p><dt><a name="n0"><code>(n0 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is not a number with value
+zero. See also <a href="#=0">=0</a>.
+
+<p><pre><code>
+: (n0 (- 6 3 2 1))
+-> NIL
+: (n0 'a)
+-> T
+</code></pre>
+
+<p><dt><a name="nT"><code>(nT 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is not the symbol
+<code>T</code>. See also <a href="#=T">=T</a>.
+
+<p><pre><code>
+: (nT 0)
+-> T
+: (nT "T")
+-> T
+: (nT T)
+-> NIL
+</code></pre>
+
+<p><dt><a name="nand"><code>(nand 'any ..) -> flg</code></a>
+<dd>Logical NAND. The expressions <code>any</code> are evaluated from left to
+right. If <code>NIL</code> is encountered, <code>T</code> is returned
+immediately. Else <code>NIL</code> is returned. <code>(nand ..)</code> is
+equivalent to <code>(not (and ..))</code>.
+
+<p><pre><code>
+: (nand (lt0 7) (read))
+-> T
+: (nand (lt0 -7) (read))
+abc
+-> NIL
+: (nand (lt0 -7) (read))
+NIL
+-> T
+</code></pre>
+
+<p><dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
+<dd>Produces a list of <u>at least</u> <code>cnt</code> elements. When called
+without optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is
+returned. When <code>lst</code> is given, it is extended to the left (if
+<code>cnt</code> is positive) or to the right (if <code>cnt</code> is negative)
+with <code>any</code> elements.
+
+<p><pre><code>
+: (need 5)
+-> (NIL NIL NIL NIL NIL)            # Allocate 5 cells
+: (need 5 '(a b c))
+-> (NIL NIL a b c)
+: (need -5 '(a b c))
+-> (a b c NIL NIL)
+: (need 5 '(a b c) " ")             # String alignment
+-> (" " " " a b c)
+</code></pre>
+
+<p><dt><a name="new"><code>(new ['flg] ['typ ['any ..]]) -> sym</code></a>
+<dd>Creates and returns a new symbol. If <code>flg</code> is given and
+non-<code>NIL</code>, the new symbol will be an external symbol.
+<code>typ</code> (typically a list of classes) is assigned to the
+<code>VAL</code>, and the initial <code>T</code> message is sent with the
+arguments <code>any</code> to the new object.
+
+<p><pre><code>
+: (new)
+-> $134426427
+: (new T '(+Address))
+-> {1A;3}
+</code></pre>
+
+<p><dt><a name="next"><code>(next) -> any</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns the next argument from the internal list. See also
+<code><a href="#args">args</a></code>, <code><a href="#arg">arg</a></code>,
+<code><a href="#rest">rest</a></code>, and <code><a
+href="#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (next)))          # Print next argument
+-> foo
+: (foo)
+NIL
+-> NIL
+: (foo 123)
+123
+-> 123
+</code></pre>
+
+<p><dt><a name="nil"><code>(nil . prg) -> NIL</code></a>
+<dd>Executes <code>prg</code>, and returns <code>NIL</code>. See also <code><a
+href="#t">t</a></code>, <code><a href="#prog">prog</a></code>, <code><a
+href="#prog1">prog1</a></code> and <code><a href="#prog2">prog2</a></code>.
+
+<p><pre><code>
+: (nil (println 'Ok))
+Ok
+-> NIL
+</code></pre>
+
+<p><dt><a name="nor"><code>(nor 'any ..) -> flg</code></a>
+<dd>Logical NOR. The expressions <code>any</code> are evaluated from left to
+right. If a non-<code>NIL</code> value is encountered, <code>NIL</code> is
+returned immediately. Else <code>T</code> is returned. <code>(nor ..)</code> is
+equivalent to <code>(not (or ..))</code>.
+
+<p><pre><code>
+: (nor (lt0 7) (= 3 4))
+-> T
+</code></pre>
+
+<p><dt><a name="not"><code>(not 'any) -> flg</code></a>
+<dd>Logical negation. Returns <code>T</code> if <code>any</code> evaluates to
+<code>NIL</code>.
+
+<p><pre><code>
+: (not (== 'a 'a))
+-> NIL
+: (not (get 'a 'a))
+-> T
+</code></pre>
+
+<p><dt><a name="nth"><code>(nth 'lst 'cnt ..) -> lst</code></a>
+<dd>Returns the tail of <code>lst</code> starting from the <code>cnt</code>'th
+element of <code>lst</code>. Successive <code>cnt</code> arguments operate on
+the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
+<code>(cdr 'lst)</code>.
+
+<p><pre><code>
+: (nth '(a b c d) 2)
+-> (b c d)
+: (nth '(a (b c) d) 2 2)
+-> (c)
+: (cdadr '(a (b c) d))
+-> (c)
+</code></pre>
+
+<p><dt><a name="numQ"><code>(num? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a number.
+
+<p><pre><code>
+: (num? 123)
+-> T
+: (num? (1 2 3))
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="o-foo">O</a></h3>
+
+<dt><a name="off"><code>(off sym ..) -> NIL</code></a>
+<dd>Stores <code>NIL</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>.
+
+<p><pre><code>
+: (off A B)
+-> NIL
+: A
+-> NIL
+: B
+-> NIL
+</code></pre>
+
+<p><dt><a name="offset"><code>(offset 'lst1 'lst2) -> cnt | NIL</code></a>
+<dd>Returns the <code>cnt</code> position of the sublist <code>lst1</code> in
+<code>lst2</code>, or <code>NIL</code> if it is not found. See also <code><a
+href="#index">index</a></code>.
+
+<p><pre><code>
+: (offset '(c d e f) '(a b c d e f))
+-> 3
+: (offset '(c d e) '(a b c d e f))
+-> NIL
+</code></pre>
+
+<p><dt><a name="on"><code>(on sym ..) -> T</code></a>
+<dd>Stores <code>T</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>.
+
+<p><pre><code>
+: (on A B)
+-> T
+: A
+-> T
+: B
+-> T
+</code></pre>
+
+<p><dt><a name="open"><code>(open 'sym) -> cnt | NIL</code></a>
+<dd>Opens the file <code>sym</code> in read/write mode, and returns a file
+descriptor <code>cnt</code> (or <code>NIL</code> on error). If the file does not
+exist, it is created. The file descriptor can be used in subsequent calls to
+<code><a href="#in">in</a></code> and <code><a href="#out">out</a></code>. See
+also <code><a href="#close">close</a></code>.
+
+<p><pre><code>
+: (open "x")
+-> 3
+</code></pre>
+
+<p><dt><a name="or"><code>(or 'any ..) -> any</code></a>
+<dd>Logical OR. The expressions <code>any</code> are evaluated from left to
+right. If a non-<code>NIL</code> value is encountered, it is returned
+immediately. Else the result of the last expression is returned.
+
+<p><pre><code>
+: (or (= 3 3) (read))
+-> T
+: (or (= 3 4) (read))
+abc
+-> abc
+</code></pre>
+
+<p><dt><a name="out"><code>(out 'any . prg) -> any</code></a>
+<dd>Opens <code>any</code> as output channel during the execution of
+<code>prg</code>. The current output channel will be saved and restored
+appropriately. If the argument is <code>NIL</code>, standard output is used. If
+the argument is a symbol, it is used as a file name (opened in "append" mode if
+the first character is "<code>+</code>"). If it is a number, it is used as the
+descriptor of an open file. Otherwise (if it is a list), it is taken as a
+command with arguments, and a pipe is opened for output. See also <code><a
+href="#call">call</a></code>, <code><a href="#in">in</a></code> and <code><a
+href="#load">load</a></code>.
+
+<p><pre><code>
+: (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
+-> def
+</code></pre>
+
+
+<p><hr>
+<h3><a name="p-foo">P</a></h3>
+
+<dt><a name="pack"><code>(pack 'any ..) -> sym</code></a>
+<dd>Returns a transient symbol whose name is concatenated from all arguments
+<code>any</code>. A <code>NIL</code> arguments contributes nothing to the result
+string, a number is converted to a digit string, a symbol supplies the
+characters of its name, and for a list its elements are taken.
+
+<p><pre><code>
+: (pack 'car " is " 1 '(" symbol " name))
+-> "car is 1 symbol name"
+</code></pre>
+
+<p><dt><a name="pair"><code>(pair 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a list (a cons
+pair cell).
+
+<p><pre><code>
+: (pair NIL)
+-> NIL
+: (pair (1 . 2))
+-> T
+: (pair (1 2 3))
+-> T
+</code></pre>
+
+<p><dt><a name="pass"><code>(pass 'foo ['any ..]) -> any</code></a>
+<dd>Passes to <code>foo</code> all arguments <code>any</code>, and all remaining
+variable arguments (<code>@</code>) as they would be returned by <code><a
+href="#rest">rest</a></code>. <code>(pass 'foo 'any)</code> is equivalent to
+<code>(apply 'foo (cons 'any (rest)))</code>. See also <code><a
+href="#apply">apply</a></code>.
+
+<p><pre><code>
+: (de bar (A B . @)
+   (println 'bar A B (rest)) )
+-> bar
+: (de foo (A B . @)
+   (println 'foo A B)
+   (pass bar 1)
+   (pass bar 2) )
+-> foo
+: (foo 'a 'b 'c 'd 'e 'f)
+foo a b
+bar 1 c (d e f)
+bar 2 c (d e f)
+-> (d e f)
+</code></pre>
+
+<p><dt><a name="patQ"><code>(pat? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a symbol that
+starts with an at-mark "<code>@</code>".
+
+<p><pre><code>
+: (pat? '@)
+-> T
+: (pat? "@Abc")
+-> T
+: (pat? "ABC")
+-> NIL
+: (pat? 123)
+-> NIL
+</code></pre>
+
+<p><dt><a name="peek"><code>(peek) -> sym</code></a>
+<dd>Single character look-ahead: Returns the same character as the next call to
+<code><a href="#char">char</a></code> would return.
+
+<p><pre><code>
+$ cat a
+# Comment
+abcd
+$ p
+: (in "a" (list (peek) (char)))
+-> ("#" "#")
+</code></pre>
+
+<p><dt><a name="peer"><code>(peer ['cnt]) -> sym</code></a>
+<dd>Returns the name (or the address) of the peer connected to the socket
+descriptor <code>cnt</code>, or <code>NIL</code> when not successful. If
+<code>cnt</code> is <code>NIL</code>, the socket most recently connected by
+<code><a href="#listen">listen</a></code> is used.
+
+<p><pre><code>
+: (listen (port 4444))
+-> 4
+: (peer)
+-> "localhost"
+: (peer 4)
+-> "localhost"
+</code></pre>
+
+<p><dt><a name="pick"><code>(pick 'foo 'lst ..) -> any</code></a>
+<dd>Applies <code>foo</code> to successive elements of <code>lst</code> until
+non-<code>NIL</code> is returned. Returns that <u>value</u>, or <code>NIL</code>
+if <code>foo</code> did not return non-<code>NIL</code> for any element of
+<code>lst</code>. When additional <code>lst</code> arguments are given, their
+elements are also passed to <code>foo</code>. See also <code><a
+href="#seek">seek</a></code>, <code><a href="#find">find</a></code>.
+
+<p><pre><code>
+: (put 'D 'str "Hello")
+-> "Hello"
+: (pick '((X) (get X 'str)) '(A B C D E F))
+-> "Hello"
+</code></pre>
+
+<p><dt><a name="pool"><code>(pool ['sym]) -> flg</code></a>
+<dd>Opens the file <code>sym</code> as a database file in read/write mode. If
+the file does not exist, it is created. A currently open database is closed.
+Returns <code>T</code> when successful.
+
+<p><pre><code>
+: (pool "/dev/hda2")
+-> T
+</code></pre>
+
+<p><dt><a name="pop"><code>(pop 'var) -> any</code></a>
+<dd>Pops the first element (<code>CAR</code>) from the stack in
+<code>var</code>. See also <code><a href="#cut">cut</a></code>.
+
+<p><pre><code>
+: (setq S '((a b c) (1 2 3)))
+-> ((a b c) (1 2 3))
+: (pop S)
+-> a
+: (pop (cdr S))
+-> 1
+: (pop 'S)
+-> (b c)
+: S
+-> ((2 3))
+</code></pre>
+
+<p><dt><a name="port"><code>(port 'cnt|lst ['var]) -> cnt</code></a>
+<dd>Opens a TCP/IP-Port <code>cnt</code>, and returns a socket descriptor. If
+<code>cnt</code> is zero, some free port number is allocated. If a
+<code>lst</code> is given instead, it should be a list of numbers which are
+tried in turn. When <code>var</code> is given, it is bound to the port number.
+
+<p><pre><code>
+: (port 0 'A)                       # Allocate free port
+-> 4
+: A
+-> 1034                             # Got 1034
+: (port (4000 4001 4002 4008) 'A)   # Try one of these ports
+-> 5
+: A
+-> 4002
+</code></pre>
+
+<p><dt><a name="pr"><code>(pr 'any ..) -> any</code></a>
+<dd>Binary print: Prints all <code>any</code> arguments to the current output
+channel in encoded binary format. See also <code><a href="#rd">rd</a></code>.
+
+<p><pre><code>
+: (out "x" (pr 7 "abc" (1 2 3) 'a))          # Print to "x"
+-> a
+:                                            # Exit Pico
+$ hd x                                       # Hexdump of "x"
+00000000  04 0e 0e 61 62 63 01 04 02 04 04 04 06 03 05 61  ...abc.........a
+00000010
+</code></pre>
+
+<p><dt><a name="preQ"><code>(pre? 'sym1 'sym2) -> flg</code></a>
+<dd>Returns non-<code>NIL</code> when the name of the first symbol
+<code>sym1</code> is a prefix string of the name of the second symbol
+<code>sym2</code>. See also <code><a href="#subQ">sub?</a></code>.
+
+<p><pre><code>
+: (pre? "abc" "abcdef")
+-> T
+: (pre? "def" "abcdef")
+-> NIL
+: (pre? "" "abcdef")
+-> T
+</code></pre>
+
+<p><dt><a name="prin"><code>(prin 'any ..) -> any</code></a>
+<dd>Prints the string representation of all <code>any</code> arguments to the
+current output channel. No space or newline is printed between individual items,
+of after the last item. For lists, all elements are <code>prin</code>'ted
+recursively. See also <code><a href="#prinl">prinl</a></code>.
+
+<p><pre><code>
+: (prin 'abc 123 '(a 1 b 2))
+abc123a1b2-> (a 1 b 2)
+</code></pre>
+
+<p><dt><a name="prinl"><code>(prinl 'any ..) -> any</code></a>
+<dd>Prints the string representation of all <code>any</code> arguments to the
+current output channel, followed by a newline. No space or newline is printed
+between individual items. For lists, all elements are <code>prin</code>'ted
+recursively. See also <code><a href="#prin">prin</a></code>.
+
+<p><pre><code>
+: (prinl 'abc 123 '(a 1 b 2))
+abc123a1b2
+-> (a 1 b 2)
+</code></pre>
+
+<p><dt><a name="print"><code>(print 'any ..) -> any</code></a>
+<dd>Prints all <code>any</code> arguments to the current output channel. If
+there is more than one argument, a space is printed between successive
+arguments. No space or newline is printed after the last item. See also <code><a
+href="#println">println</a></code>, <code><a href="#printsp">printsp</a></code>.
+
+<p><pre><code>
+: (print 123)
+123-> 123
+: (print 1 2 3)
+1 2 3-> 3
+: (print '(a b c) 'def)
+(a b c) def-> def
+</code></pre>
+
+<p><dt><a name="println"><code>(println 'any ..) -> any</code></a>
+<dd>Prints all <code>any</code> arguments to the current output channel,
+followed by a newline. If there is more than one argument, a space is printed
+between successive arguments. See also <code><a href="#print">print</a></code>,
+<code><a href="#printsp">printsp</a></code>.
+
+<p><pre><code>
+: (println '(a b c) 'def)
+(a b c) def
+-> def
+</code></pre>
+
+<p><dt><a name="printsp"><code>(printsp 'any ..) -> any</code></a>
+<dd>Prints all <code>any</code> arguments to the current output channel,
+followed by a space. If there is more than one argument, a space is printed
+between successive arguments. See also <code><a href="#print">print</a></code>,
+<code><a href="#println">println</a></code>.
+
+<p><pre><code>
+: (printsp '(a b c) 'def)
+(a b c) def -> def
+</code></pre>
+
+<p><dt><a name="prog"><code>(prog . prg) -> any</code></a>
+<dd>Executes <code>prg</code>, and returns the result of the <u>last</u>
+expression. See also <code><a href="#nil">nil</a></code>, <code><a
+href="#t">t</a></code>, <code><a href="#prog1">prog1</a></code> and <code><a
+href="#prog2">prog2</a></code>.
+
+<p><pre><code>
+: (prog (print 1) (print 2) (print 3))
+123-> 3
+</code></pre>
+
+<p><dt><a name="prog1"><code>(prog1 'any1 . prg) -> any1</code></a>
+<dd>Executes all arguments, and returns the result of the <u>first</u>
+expression <code>any1</code>. See also <code><a href="#nil">nil</a></code>,
+<code><a href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and
+<code><a href="#prog2">prog2</a></code>.
+
+<p><pre><code>
+: (prog1 (print 1) (print 2) (print 3))
+123-> 1
+</code></pre>
+
+<p><dt><a name="prog2"><code>(prog2 'any1 'any2 . prg) -> any2</code></a>
+<dd>Executes all arguments, and returns the result of the <u>second</u>
+expression <code>any2</code>. See also <code><a href="#nil">nil</a></code>,
+<code><a href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and
+<code><a href="#prog1">prog1</a></code>.
+
+<p><pre><code>
+: (prog2 (print 1) (print 2) (print 3))
+123-> 2
+</code></pre>
+
+<p><dt><a name="prop"><code>(prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym</code></a>
+<dd>Fetches a property for a property key <code>sym</code> from a symbol. That
+symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
+by applying the <code><a href="#get">get</a></code> algorithm to
+<code>sym1|lst</code> and the following arguments. The property (the cell, not
+just its value) is returned, suitable for direct (destructive) manipulations.
+
+<p><pre><code>
+: (put 'X 'cnt 0)
+-> 0
+: (prop 'X 'cnt)
+-> (0 . cnt)
+: (inc (prop 'X 'cnt))        # Directly manipulate the propery value
+-> 1
+: (get 'X 'cnt)
+-> 1
+</code></pre>
+
+<p><dt><a name="prove"><code>(prove 'lst ['lst]) -> lst</code></a>
+<dd>The Pico Prolog (Pilog) interpreter. Tries to prove the query list in the
+first argument and returns the modified query, or <code>NIL</code> if not
+successful. The optional second argument may contain a list of symbols; in that
+case the successful matches of rules defined for these symbols will be traced.
+See also <code><a href="#lookup">-&gt</a></code> and <code><a
+href="#unify">unify</a></code>.
+
+<p><pre><code>
+: (prove (goal '((equal 3 3))))
+-> T
+: (prove (goal '((equal 3 @X))))
+-> ((@X . 3))
+: (prove (goal '((equal 3 4))))
+-> NIL
+</code></pre>
+
+<p><dt><a name="push"><code>(push 'var 'any ..) -> any</code></a>
+<dd>Implements a stack using a list in <code>var</code>. The <code>any</code>
+arguments are cons'ed in front of the value list.
+
+<p><pre><code>
+: (push 'S 3)              # Use the VAL of `S' as a stack
+-> 3
+: S
+-> (3)
+: (push 'S 2)
+-> 2
+: (push 'S 1)
+-> 1
+: S
+-> (1 2 3)
+: (push S 999)             # Now use the CAR of the list in `S'
+-> 999
+: (push S 888 777)
+-> 777
+: S
+-> ((777 888 999 . 1) 2 3)
+</code></pre>
+
+<p><dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym 'any) -> any</code></a>
+<dd>Stores a new value <code>any</code> for a property key <code>sym</code> in a
+symbol. That symbol is <code>sym1</code> (if no other arguments are given), or a
+symbol found by applying the <code><a href="#get">get</a></code> algorithm to
+<code>sym1|lst</code> and the following arguments.
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (get 'X 'a)
+-> 1
+: (prop 'X 'a)
+-> (1 . a)
+</code></pre>
+
+<p><dt><a name="putl"><code>(putl 'sym1|lst1 ['sym2|cnt ..] 'lst) -> lst</code></a>
+<dd>Stores a complete new property list <code>lst</code> in a symbol. That
+symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
+by applying the <code><a href="#get">get</a></code> algorithm to
+<code>sym1|lst1</code> and the following arguments. All previously defined
+properties for that symbol are lost.
+
+<p><pre><code>
+: (putl 'X '((123 . a) flg ("Hello" . b)))
+-> ((123 . a) flg ("Hello" . b))
+: (get 'X 'a)
+-> 123
+: (get 'X 'b)
+-> "Hello"
+: (get 'X 'flg)
+-> T
+</code></pre>
+
+
+<p><hr>
+<h3><a name="q-foo">Q</a></h3>
+
+<dt><a name="quote"><code>(quote . any) -> any</code></a>
+<dd>Returns <code>any</code> unevaluated. The reader recognizes the single quote
+char <code>'</code> as a macro for this function.
+
+<p><pre><code>
+: 'a
+-> a
+: '(foo a b c)
+-> (foo a b c)
+: (quote (quote (quote a)))
+-> ('('(a)))
+</code></pre>
+
+<p><dt><a name="queue"><code>(queue 'var 'any) -> any</code></a>
+<dd>Implements a queue using a list in <code>var</code>. The <code>any</code>
+argument is (destructively) concatenated to the end of the value list.
+
+<p><pre><code>
+: (queue 'A 1)
+-> 1
+: (queue 'A 2)
+-> 2
+: (queue 'A 3)
+-> 3
+: A
+-> (1 2 3)
+: (pop 'A)
+-> 1
+: A
+-> (2 3)
+</code></pre>
+
+<p><dt><a name="quit"><code>(quit ['any ['any]])</code></a>
+<dd>Stops current execution. If no arguments are given, control is returned to
+the top level read-eval-print loop. Otherwise, an error handler is entered. The
+first argument can be some error message, and the second might be the reason for
+the error. See also <code><a href="#err">Error Handling</a></code>.
+
+<p><pre><code>
+: (de foo (X) (quit "Sorry, my error" X))
+-> foo
+: (foo 123)                                  # `X' is bound to `123'
+123 -- Sorry, my error                       # Error entered
+? X                                          # Inspect `X'
+-> 123
+?                                            # Empty line: Exit
+:
+</code></pre>
+
+
+<p><hr>
+<h3><a name="r-foo">R</a></h3>
+
+<dt><a name="rand"><code>(rand ['cnt1 'cnt2] | ['T]) -> cnt | flg</code></a>
+<dd>Returns a pseudo random number in the range cnt1 .. cnt2 (or -2147483648 ..
++2147483647 if no arguments are given). If the argument is <code>T</code>, a
+boolean value <code>flg</code> is returned. See also <code><a
+href="#seed">seed</a></code>.
+
+<p><pre><code>
+: (rand 3 9)
+-> 3
+: (rand 3 9)
+-> 7
+</code></pre>
+
+<p><dt><a name="rank"><code>(rank 'any 'lst) -> lst</code></a>
+<dd>Searches a ranking list. Returns the element from <code>lst</code> with a
+maximal <code>CAR</code> less than or equal to <code>any</code>, or
+<code>NIL</code> if no match is found. <code>lst</code> may be unsorted. See
+also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (rank 0 '((1 . a) (100 . b) (1000 . c)))
+-> NIL
+: (rank 50 '((1 . a) (100 . b) (1000 . c)))
+-> (1 . a)
+: (rank 100 '((1 . a) (100 . b) (1000 . c)))
+-> (100 . b)
+: (rank 300 '((1 . a) (100 . b) (1000 . c)))
+-> (100 . b)
+: (rank 9999 '((1 . a) (100 . b) (1000 . c)))
+-> (1000 . c)
+</code></pre>
+
+<p><dt><a name="rd"><code>(rd) -> any<br>
+(rd 'cnt) -> num | NIL</code></a>
+<dd>Binary read: Reads one item from the current input channel in encoded binary
+format. When called with a <code>cnt</code> argument (second form), that number
+of raw bytes (in big endian format if <code>cnt</code> is positive) is read into
+a single number. See also <code><a href="#pr">pr</a></code>.
+
+<p><pre><code>
+: (in "/dev/urandom" (rd 20))
+-> 396737673456823753584720194864200246115286686486
+</code></pre>
+
+<p><dt><a name="read"><code>(read) -> any</code></a>
+<dd>Reads one item from the current input channel. <code>NIL</code> is returned
+upon end of file.
+
+<p><pre><code>
+: (list (read) (read) (read))    # Read three things from console
+123                              # a number
+abcd                             # a symbol
+(def                             # and a list
+ghi
+jkl
+)
+-> (123 abcd (def ghi jkl))
+</code></pre>
+
+<p><dt><a name="rel"><code>(rel sym lst [any ..]) -> any</code></a>
+<dd>Defines a relation <code>sym</code> for the current class
+<code>*Class</code>, using <code>lst</code> as the list of classes for that
+relation, and possibly additional arguments <code>any</code> for its
+initialization.
+
+<p><pre><code>
+(class +Person +Entity)
+(rel nm     (+List +Ref +String))               # Names
+(rel tel    (+Ref +String))                     # Telephone
+(rel adr    (+Joint) prs (+Address))            # Address
+
+(class +Address +Entity)
+(rel Cit    (+Need +Hook) (+City))              # City
+(rel str    (+Key +List +Ref +String) Cit)      # Street
+(rel prs    (+List +Joint) adr (+Person))       # Inhabitants
+
+(class +City +Entity)
+(rel nm     (+Key +List +Ref +String))          # Zip / Names
+</code></pre>
+
+<p><dt><a name="replace"><code>(replace 'lst 'any1 'any2 ..) -> lst</code></a>
+<dd>Replaces in <code>lst</code> all occurrences of <code>any1</code> with
+<code>any2</code>. For optional additional argument pairs, this process is
+repeated.
+
+<p><pre><code>
+: (replace '(a b b a) 'a 'A)
+-> (A b b A)
+: (replace '(a b b a) 'b 'B)
+-> (a B B a)
+: (replace '(a b b a) 'a 'B 'b 'A)
+-> (B A A B)
+</code></pre>
+
+<p><dt><a name="rest"><code>(rest) -> lst</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns the the list of all remaining arguments from the
+internal list. See also <code><a href="#args">args</a></code>, <code><a
+href="#next">next</a></code>, <code><a href="#arg">arg</a></code> and <code><a
+href="#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (rest)))
+-> foo
+: (foo 1 2 3)
+(1 2 3)
+-> (1 2 3)
+</code></pre>
+
+<p><dt><a name="reverse"><code>(reverse 'lst) -> lst</code></a>
+<dd>Returns a reversed copy of <code>lst</code>.
+
+<p><pre><code>
+: (reverse (1 2 3 4))
+-> (4 3 2 1)
+</code></pre>
+
+<p><dt><a name="rewind"><code>(rewind) -> flg</code></a>
+<dd>Sets the file position indicator for the current output stream to the
+beginning of the file, and truncates the file length to zero. Returns
+<code>T</code> when successful. See also <code><a
+href="#flush">flush</a></code>.
+
+<p><pre><code>
+</code></pre>
+
+<p><dt><a name="rollback"><code>(rollback) -> flg</code></a>
+<dd>Cancels a transaction, by discarding all modifications of external symbols.
+For nested transactions, only the changes since the last call to <code><a
+href="#begin">begin</a></code> are discarded. Returns <code>T</code> when the
+topmost transaction is cancelled. See also <code><a
+href="#commit">commit</a></code>.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (begin)
+-> T
+: (rollback)            # Rollback second level
+-> NIL
+: (rollback)            # Rollback top level
+-> T
+</code></pre>
+
+<p><dt><a name="rot"><code>(rot 'lst ['cnt]) -> lst</code></a>
+<dd>Rotate: The contents of the cells of <code>lst</code> are (destructively)
+shifted right, and the value from the last cell is stored in the first cell.
+Without optional arguments, the whole list is rotated. Otherwise only the first
+<code>cnt</code> elements are rotated.
+
+<p><pre><code>
+: (rot (1 2 3 4))             # Rotate all four elements
+-> (4 1 2 3)
+: (rot (1 2 3 4 5 6) 3)       # Rotate only the first three elements
+-> (3 1 2 4 5 6)
+</code></pre>
+
+<p><dt><a name="run"><code>(run 'any) -> any</code></a>
+<dd>If <code>any</code> is an atom, <code>run</code> behaves like
+<code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
+sequence. The last result is returned.
+
+<p><pre><code>
+: (run '((println (+ 1 2 3)) (println 'Ok)))
+6
+Ok
+-> Ok
+</code></pre>
+
+
+<p><hr>
+<h3><a name="s-foo">S</a></h3>
+
+<dt><a name="seed"><code>(seed 'any) -> cnt</code></a>
+<dd>Initializes the random generator's seed, and returns a pseudo random number
+in the range -2147483648 .. +2147483647. See also <code><a
+href="#rand">rand</a></code>.
+
+<p><pre><code>
+: (seed "init string")
+-> 2015582081
+: (rand)
+-> -706917003
+: (rand)
+-> 1224196082
+: (seed "init string")
+-> 2015582081
+: (rand)
+-> -706917003
+: (rand)
+-> 1224196082
+</code></pre>
+
+<p><dt><a name="seek"><code>(seek 'foo 'lst ..) -> lst</code></a>
+<dd>Applies <code>foo</code> to <code>lst</code> and all successive
+<code>CDR</code>'s, until non-<code>NIL</code> is returned. Returns the
+<u>tail</u> of <code>lst</code> starting with that element, or <code>NIL</code>
+if <code>foo</code> did not return non-<code>NIL</code> for any element of
+<code>lst</code>. When additional <code>lst</code> arguments are given, they are
+passed to <code>foo</code> in the same way. See also <code><a
+href="#find">find</a></code>, <code><a href="#pick">pick</a></code>.
+
+<p><pre><code>
+: (seek '((X) (> (car X) 9)) (1 5 8 12 19 22))
+-> (12 19 22)
+</code></pre>
+
+<p><dt><a name="send"><code>(send 'msg 'obj ['any ..]) -> any</code></a>
+<dd>Sends the message <code>msg</code> to the object <code>obj</code>,
+optionally with arguments <code>any</code>. If the message cannot be located in
+<code>obj</code>, its classes and superclasses, an error <code>"Bad
+message"</code> is issued.
+
+<p><pre><code>
+: (stop> Dlg)
+-> NIL
+</code></pre>
+
+<p><dt><a name="seq"><code>(seq 'sym1 ['sym2]) -> sym | NIL</code></a>
+<dd>Sequential single step: Returns the next external symbol following
+<code>sym1</code> in the database, or <code>NIL</code> when the end of the
+database is reached. When <code>sym2</code> is given, the database is extended
+up to (including the creation of) <code>sym2</code> if necessary.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (seq *DB)
+-> {2}
+: (seq @)
+-> {3}
+</code></pre>
+
+<p><dt><a name="set"><code>(set 'var 'any ..) -> any</code></a>
+<dd>Stores new values <code>any</code> in the <code>var</code> arguments.
+
+<p><pre><code>
+: (set 'L '(a b c)  (cdr L) '999)
+-> 999
+: L
+-> (a 999 c)
+</code></pre>
+
+<p><dt><a name="setq"><code>(setq sym 'any ..) -> any</code></a>
+<dd>Stores new values <code>any</code> in the <code>sym</code> arguments.
+
+<p><pre><code>
+: (setq  A 123  B (list A A))  # Set `A' to 123, then `B' to (123 123)
+-> (123 123)
+</code></pre>
+
+<p><dt><a name="size"><code>(size 'any) -> cnt</code></a>
+<dd>Returns the "size" of <code>any</code>. For numbers this is the number of
+bytes needed for the value, for symbols it is the number of bytes occupied in
+the UTF-8 representation of the name, and for lists it is the total number of
+cells in this list and all its sublists. See also <code><a
+href="#length">length</a></code>.
+
+<p><pre><code>
+: (size "abc")
+-> 3
+: (size "‰bc")
+-> 4
+: (size 123)
+-> 1
+: (size (1 (2) 3))
+-> 4
+</code></pre>
+
+<p><dt><a name="skip"><code>(skip) -> sym</code></a>
+<dd>Skips all white space and comments in the input stream.
+
+<p><pre><code>
+$ cat a
+# Comment
+abcd
+$ p
+: (in "a" (skip) (peek))
+-> "a"
+</code></pre>
+
+<p><dt><a name="sort"><code>(sort 'lst) -> lst</code></a>
+<dd>Sorts <code>lst</code> by destructively exchanging its elements. See also <a
+href="#cmp">Comparing</a>.
+
+<p><pre><code>
+</code></pre>
+
+<p><dt><a name="space"><code>(space ['cnt]) -> T</code></a>
+<dd>Prints <code>cnt</code> spaces, or a single space when <code>cnt</code> is
+not given.
+
+<p><pre><code>
+: (space)
+ -> T
+: (space 1)
+ -> T
+: (space 2)
+  -> T
+</code></pre>
+
+<p><dt><a name="spQ"><code>(sp? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is
+<code>NIL</code>, or if it is a string (symbol) that consists only of whitespace
+characters.
+
+<p><pre><code>
+: (sp? "  ")
+-> T
+: (sp? "ABC")
+-> NIL
+: (sp? 123)
+-> NIL
+</code></pre>
+
+<p><dt><a name="split"><code>(split 'lst 'any1 'any2 ..) -> lst</code></a>
+<dd>Splits <code>lst</code> at all places containing an element
+<code>anyX</code> and returns the resulting list of sublists.
+
+<p><pre><code>
+: (split (1 a 2 b 3 c 4 d 5 e 6) 'e 3 'a)
+-> ((1) (2 b) (c 4 d 5) (6))
+: (mapcar pack (split (chop "The quick brown fox") " "))
+-> ("The" "quick" "brown" "fox")
+</code></pre>
+
+<p><dt><a name="sqrt"><code>(sqrt 'num) -> num</code></a>
+<dd>Returns the square root of the <code>num</code> argument.
+
+<p><pre><code>
+: (sqrt 64)
+-> 8
+: (sqrt 1000)
+-> 31
+: (sqrt 10000000000000000000000000000000000000000)
+-> 100000000000000000000
+</code></pre>
+
+<p><dt><a name="stk"><code>(stk any ..) -> T</code></a>
+<dd>Displays a dump of the internal runtime stack. All (unevaluated)
+<code>any</code> arguments are printed as a header, then each stack entry is
+printed per line, preceded by its (hexadecimal) address. See also <code><a
+href="#env">env</a></code>.
+
+<p><pre><code>
+: (cons 'A (stk Test))
+(Test)
+BFFFF69C A
+BFFFF70C (cons 'A (stk Test))
+
+-> (A . T)
+</code></pre>
+
+<p><dt><a name="stamp"><code>(stamp ['dat 'tim]) -> sym</code></a>
+<dd>Returns a date-time string in the form "YYYY-MM-DD HH:MM:SS". If
+<code>dat</code> and/or <code>tim</code> is missing, the current date or time is
+used. See also <code><a href="#date">date</a></code> and <code><a
+href="#time">time</a></code>.
+
+<p><pre><code>
+: (stamp)
+-> "2000-09-12 07:48:04"
+: (stamp (date) 0)
+-> "2000-09-12 00:00:00"
+: (stamp (date 2000 1 1) (time 12 0 0))
+-> "2000-01-01 12:00:00"
+</code></pre>
+
+<p><dt><a name="stat"><code>(stat) -> num</code></a>
+<dd>Prints memory usage statistics. The total size of the heap (in megabytes),
+followed by the percentage of used cells. Returns the number of currently free
+cells. See also <code><a href="#heap">heap</a></code>.
+
+<p><pre><code>
+: (stat)
+0.6 32%
+-> 264813
+</code></pre>
+
+<p><dt><a name="str"><code>(str 'sym) -> lst<br>
+(str 'lst) -> sym</code></a>
+<dd>In the first form, the string <code>sym</code> is parsed into a list. The
+second form does the reverse operation by building a string from a list.
+
+<p><pre><code>
+: (str "a (1 2) b")
+-> (a (1 2) b)
+: (str '(a "Hello" DEF))
+-> "a \"Hello\" DEF"
+</code></pre>
+
+<p><dt><a name="strip"><code>(strip 'any) -> any</code></a>
+<dd>Strips all leading <code>quote</code> symbols from <code>any</code>.
+
+<p><pre><code>
+: (strip 123)
+-> 123
+: (strip '''(a))
+-> (a)
+: (strip (quote quote a b c))
+-> (a b c)
+</code></pre>
+
+<p><dt><a name="strQ"><code>(str? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a transient
+symbol (string).
+
+<p><pre><code>
+: (str? 123)
+-> NIL
+: (str? '{ABC})
+-> NIL
+: (str? 'abc)
+-> NIL
+: (str? "abc")
+-> T
+</code></pre>
+
+<p><dt><a name="subQ"><code>(sub? 'sym1 'sym2) -> flg</code></a>
+<dd>Returns non-<code>NIL</code> when the name of the first symbol
+<code>sym1</code> is a substring of the name of the second symbol
+<code>sym2</code>. See also <code><a href="#preQ">pre?</a></code>.
+
+<p><pre><code>
+: (sub? "def" "abcdef")
+-> T
+: (sub? "abb" "abcdef")
+-> NIL
+: (sub? "" "abcdef")
+-> T
+</code></pre>
+
+<p><dt><a name="sum"><code>(sum 'foo 'lst ..) -> num</code></a>
+<dd>Applies <code>foo</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>foo</code>. Returns the sum of all numeric values returned from
+<code>foo</code>.
+
+<p><pre><code>
+: (setq A 1  B 2  C 3)
+-> 3
+: (sum val '(A B C))
+-> 6
+: (sum                           # Total size of symbol list values
+   '((X)
+      (and
+         (pair (val X))
+         (size (val X)) ) )
+   (what) )
+-> 32021
+</code></pre>
+
+<p><dt><a name="super"><code>(super ['any ..]) -> any</code></a>
+<dd>Can only be used inside methods. Sends the current message to the current
+object <code>This</code>, this time starting the search for a method at the
+superclass(es) of the class where the current method was found.
+
+<p><pre><code>
+(dm stop> ()         # `stop>' method of the `+Dialog' class
+   (super)           # Call the `stop>' method of the `+Form' superclass
+   (close> This) )   # then close the connection
+</code></pre>
+
+<p><dt><a name="symQ"><code>(sym? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a symbol.
+
+<p><pre><code>
+: (sym? 'a)
+-> T
+: (sym? NIL)
+-> T
+: (sym? 123)
+-> NIL
+: (sym? '(a b))
+-> NIL
+</code></pre>
+
+<p><dt><a name="sync"><code>(sync) -> flg</code></a>
+<dd>Waits for pending data from all family processes. While other processes are
+still sending data (via the <code><a href"#tell">tell</a></code> mechanism, a
+<code>select</code> system call is executed for all file descriptors and timers
+in the <code>VAL</code> of the global variable <code><a
+href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
+<code><a href="#wait">wait</a></code>.
+
+<p><pre><code>
+: (or (lock) (sync))       # Ensure database consistency
+-> T                       # (numeric process-id if lock failed)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="t-foo">T</a></h3>
+
+<dt><a name="T"><code>T</code></a>
+<dd>A global constant, evaluating to itself. <code>T</code> is commonly returned
+as the boolean value "true" (though any non-<code>NIL</code> values could be
+used). As a property key, it is used to store Pico Prolog (Pilog) clauses, and
+inside Pilog clauses it is the <i>cut</i> operator. See also <code><a
+href="#nilSym">NIL</a></code>.
+
+<p><pre><code>
+: T
+-> T
+: (= 123 123)
+-> T
+: (get 'not T)
+-> ((@P (1 -> @P) T (fail)) (@P))
+</code></pre>
+
+<p><dt><a name="This"><code>This</code></a>
+<dd>Holds the current object during method execution (see <a href="#oop">OO
+Concepts</a>), or inside the body of a <code><a href="#with">with</a></code>
+statement.
+
+<p><pre><code>
+: (with 'X (println 'This 'is This))
+This is X
+-> X
+</code></pre>
+
+<p><dt><a name="t"><code>(t . prg) -> T</code></a>
+<dd>Executes <code>prg</code>, and returns <code>T</code>. See also <code><a
+href="#nil">nil</a></code>, <code><a href="#prog">prog</a></code>, <code><a
+href="#prog1">prog1</a></code> and <code><a href="#prog2">prog2</a></code>.
+
+<p><pre><code>
+: (t (println 'Ok))
+Ok
+-> T
+</code></pre>
+
+<p><dt><a name="tail"><code>(tail 'cnt 'lst) -> lst</code></a>
+<dd>Returns a new list made of the <u>last</u> <code>cnt</code> elements of
+<code>lst</code>. See also <code><a href="#head">head</a></code>.
+
+<p><pre><code>
+: (tail 3 '(a b c d e f))
+-> (d e f)
+: (tail 0 '(a b c d e f))
+-> NIL
+: (tail 10 '(a b c d e f))
+-> (a b c d e f)
+</code></pre>
+
+<p><dt><a name="tell"><code>(tell 'any ['any ..]) -> any</code></a>
+<dd>Inter-Family communication: Send an executable list <code>(any any
+..)</code> to all family members (i.e. all children of the current process, and
+all other children of the parent process, see <code><a
+href="#fork">fork</a></code>) for automatic execution . <code>tell</code> can
+also be used by <code><a href="#commit">commit</a></code> to notify about
+database changes.
+
+<p><pre><code>
+: (call "ps x")                           # Show processes
+  PID TTY      STAT   TIME COMMAND
+  ..
+ 1321 pts/0    S      0:00 ./pico ..      # Parent process
+ 1324 pts/0    S      0:01 ./pico ..      # First child
+ 1325 pts/0    S      0:01 ./pico ..      # Second child
+ 1326 pts/0    R      0:00 ps x
+-> T
+: *Pid                                    # We are the second child
+-> 1325
+: (tell 'println '*Pid)                   # Ask all others to print their Pid's
+1324
+-> *Pid
+</code></pre>
+
+<p><dt><a name="throw"><code>(throw 'sym 'any)</code></a>
+<dd>Non-local jump into a previous <code><a href="#catch">catch</a></code>
+environment with the jump label <code>sym</code> (or <code>T</code> as a
+catch-all). Local symbol bindings are restored, open files are closed and
+internal data structures are reset appropriately, as the environment was at the
+time when the corresponding <code>catch</code> was called. Then <code>any</code>
+is returned from that <code>catch</code>.
+
+<p><pre><code>
+: (de foo (N)
+   (println N)
+   (throw 'Ok) )
+-> foo
+: (let N 1  (catch 'Ok (foo 7))  (println N))
+7
+1
+-> 1
+</code></pre>
+
+<p><dt><a name="tick"><code>(tick cnt . prg) -> any</code></a>
+<dd>Executes <code>prg</code>, then (destructively) adds the number of elapsed
+ticks locally to the <code>cnt</code> parameter. Thus, <code>cnt</code> will
+finally contain the total number of ticks spent in <code>prg</code> and all
+functions called (this works also for recursive functions). For execution
+profiling, <code>tick</code> is usually inserted into words with
+<code>prof</code>, and removed with <code>unprof</code>.
+
+<p><pre><code>
+: (de foo ()                     # Define function with empty loop
+   (tick 0 (do 100000000)) )
+-> foo
+: (foo)                          # Execute it
+-> NIL
+: (pp 'foo)
+(de foo NIL
+   (tick 97 (do 100000000)) )    # `tick' incremented `cnt' by 97
+-> foo
+</code></pre>
+
+<p><dt><a name="till"><code>(till 'sym ['flg]) -> lst|sym</code></a>
+<dd>Reads from the current input channel till a character contained in
+<code>sym</code> is found. If <code>flg</code> is <code>NIL</code>, a list of
+single-character transient symbols is returned. Otherwise, a single string is
+returned. See also <code><a href="#from">from</a> and <code><a
+href="#line">line</a></code>.
+
+<p><pre><code>
+: (till ":")
+abc:def
+-> ("a" "b" "c")
+: (till ":" T)
+abc:def
+-> "abc"
+</code></pre>
+
+<p><dt><a name="time"><code>(time) -> tim<br>
+(time 'tim) -> (h m s)<br>
+(time 'h 'm ['s]) -> tim | NIL<br>
+(time '(h m [s])) -> tim | NIL</code></a>
+<dd>Calculates the time of day, represented as the number of seconds since
+midnight. When called without arguments, the current time is returned. When
+called with a single number <code>tim</code>, it is taken as a time value and a
+list with the corresponding hour, minute and second is returned. When called
+with two or three numers (or a list of two or three numbers) for the hour,
+minute (and optionally the second), the corresponding time value is returned (or
+<code>NIL</code> if they do not represent a legal time). See also <code><a
+href="#date">date</a></code>.
+
+<p><pre><code>
+: (time)                         # Now
+-> 32334
+: (time 32334)                   # Now
+-> (8 58 54)
+: (time 25 30)                   # Illegal time
+-> NIL
+</code></pre>
+
+<p><dt><a name="touch"><code>(touch 'sym) -> sym</code></a>
+<dd>When <code>sym</code> is an external symbol, it is marked as "modified" so
+that upon a later <code><a href="#commit">commit</a></code> it will be written
+to the database file. An explicit call of <code>touch</code> is only necessary
+when the value or properties of <code>sym</code> are indirectly modified.
+
+<p><pre><code>
+: (get '{2} 'lst)
+-> (1 2 3 4 5)
+: (set (cdr (get (touch '{2}) 'lst)) 999)    # Only read-access, need `touch'
+-> 999
+: (get '{2} 'lst)                            # Modified second list element
+-> (1 999 3 4 5)
+</code></pre>
+
+<p><dt><a name="trace"><code>(trace 'sym) -> sym<br>
+(trace 'sym 'cls) -> sym<br>
+(trace 'sym 'cnt) -> sym</code></a>
+<dd>Inserts <code><a href="#$">$</a></code> trace function call at the beginning
+of the function or method body of <code>sym</code>, so that trace information
+will be printed before and after execution. For built-in Pico functions (a
+<code>C</code>-function pointer) the number of arguments <code>cnt</code> must
+be specified.
+
+<p><pre><code>
+: (trace '+ 2)                # Trace '+' with 2 arguments
+-> +
+: (+ 3 4)
+ + : 3 4
+ + = 7
+-> 7
+</code></pre>
+
+<p><dt><a name="trim"><code>(trim 'lst) -> lst</code></a>
+<dd>Returns a copy of <code>lst</code> with all <u>trailing</u> white space
+characters or <code>NIL</code> elements removed. See also <code><a
+href="#clip">clip</a></code>.
+
+<p><pre><code>
+: (trim (1 NIL 2 NIL NIL))
+-> (1 NIL 2)
+: (trim '(a b " " " "))
+-> (a b)
+</code></pre>
+
+<p><dt><a name="type"><code>(type 'any) -> lst</code></a>
+<dd>Return the type (list of classes) of the object <code>sym</code>. See also
+<code><a href="#isa">isa</a></code>.
+
+<p><pre><code>
+: (type '{1A;3})
+(+Address)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="u-foo">U</a></h3>
+
+<dt><a name="unify"><code>(unify 'any) -> lst</code></a>
+<dd>Unifies <code>any</code> with the current Pico Prolog (Pilog) environment at
+the current level and with a value of <code>NIL</code>, and returns the new
+environment or <code>NIL</code> if not successful. See also <code><a
+href="#prove">prove</a></code> and <code><a href="#lookup">-&gt</a></code>.
+
+<p><pre><code>
+: (? (@A unify '(@B @C)))
+ @A=(((NIL . @C) 0 . @C) ((NIL . @B) 0 . @B) T)
+</code></pre>
+
+<p><dt><a name="unless"><code>(unless 'any . prg) -> any</code></a>
+<dd>Conditional execution: When the condition <code>any</code> evaluates to
+non-<code>NIL</code>, <code>NIL</code> is returned. Otherwise <code>prg</code>
+is executed and the result returned.
+
+<p><pre><code>
+: (unless (= 3 3) (println 'Strange 'result))
+-> NIL
+: (unless (= 3 4) (println 'Strange 'result))
+Strange result
+-> result
+</code></pre>
+
+<p><dt><a name="until"><code>(until 'any . prg) -> any</code></a>
+<dd>Conditional loop: While the condition <code>any</code> evaluates to
+<code>NIL</code>, <code>prg</code> is repeatedly executed. If <code>prg</code>
+is never executed, <code>NIL</code> is returned. Otherwise the result of
+<code>prg</code> is returned.
+
+<p><pre><code>
+: (until (=T (setq N (read)))
+   (println 'square (* N N)) )
+4
+square 16
+9
+square 81
+T
+-> 81
+</code></pre>
+
+<p><dt><a name="uppQ"><code>(upp? 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when the argument <code>any</code> is a string
+(symbol) that starts with an uppercase character.
+
+<p><pre><code>
+: (upp? "A")
+-> T
+: (upp? "a")
+-> NIL
+: (upp? 123)
+-> NIL
+: (upp? ".")
+-> NIL
+</code></pre>
+
+<p><dt><a name="uppc"><code>(uppc 'any) -> any</code></a>
+<dd>Upper case conversion: If <code>any</code> is not a symbol, it is returned
+as it is. Otherwise, a new transient symbol with all characters of
+<code>any</code>, converted to upper case, is returned.
+
+<p><pre><code>
+: (uppc 123)
+-> 123
+: (uppc "abc")
+-> "ABC"
+: (uppc 'car)
+-> "CAR"
+</code></pre>
+
+<p><dt><a name="use"><code>(use sym . prg) -> any<br>
+(use (sym ..) . prg) -> any</code></a>
+<dd>Defines local variables. The value of the symbol <code>sym</code> - or the
+values of the symbols <code>sym</code> in the list of the second form - are
+saved, <code>prg</code> is executed, then the symbols are restored to their
+original values. During execution of <code>prg</code>, the values of the symbols
+can be temporarily modified. The return value is the result of <code>prg</code>.
+See also <code><a href="#bind">bind</a></code>, <code><a
+href="#job">job</a></code> and <code><a href="#let">let</a></code>.
+
+<p><pre><code>
+: (setq  X 123  Y 456)
+-> 456
+: (use (X Y) (setq  X 3  Y 4) (* X Y))
+-> 12
+: X
+-> 123
+: Y
+-> 456
+</code></pre>
+
+
+<p><hr>
+<h3><a name="v-foo">V</a></h3>
+
+<dt><a name="val"><code>(val 'var) -> any</code></a>
+<dd>Returns the current value of <code>var</code>.
+
+<p><pre><code>
+: (setq L '(a b c))
+-> (a b c)
+: (val 'L)
+-> (a b c)
+: (val (cdr L))
+-> b
+</code></pre>
+
+
+<p><hr>
+<h3><a name="w-foo">W</a></h3>
+
+<dt><a name="wait"><code>(wait ['cnt] . prg) -> any</code></a>
+<dd>Waits for a condition. While the result of the execution of <code>prg</code>
+returns non-<code>NIL</code>, a <code>select</code> system call is executed for
+all file descriptors and timers in the <code>VAL</code> of the global variable
+<code><a href="#*Key">*Key</a></code>. When <code>cnt</code> is
+non-<code>NIL</code>, the waiting time is limited to <code>cnt</code>
+milliseconds. See also <code><a href="#key">key</a></code> and <code><a
+href="#sync">sync</a></code>.
+
+<p><pre><code>
+: (wait 2000)                                # Sleep for 2 seconds
+-> 2000
+: (prog
+   (zero *Cnt)
+   (setq *Key                                # Install background loop
+      '((-2000 0 (println (inc '*Cnt)))) )   # Increment `*Cnt' every 2 sec
+   (wait NIL (> *Cnt 6))                     # Wait until > 6
+   (off *Key) )
+1                                            # Waiting ..
+2
+3
+4
+5
+6
+7
+-> NIL
+</code></pre>
+
+<p><dt><a name="when"><code>(when 'any . prg) -> any</code></a>
+<dd>Conditional execution: When the condition <code>any</code> evaluates to
+non-<code>NIL</code>, <code>prg</code> is executed and the result is returned.
+Otherwise <code>NIL</code> is returned.
+
+<p><pre><code>
+: (when (> 4 3) (println 'Ok) (println 'Good))
+Ok
+Good
+-> Good
+</code></pre>
+
+<p><dt><a name="while"><code>(while 'any . prg) -> any</code></a>
+<dd>Conditional loop: While the condition <code>any</code> evaluates to
+non-<code>NIL</code>, <code>prg</code> is repeatedly executed. If
+<code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
+result of <code>prg</code> is returned.
+
+<p><pre><code>
+: (while (read)
+   (println 'got: @) )
+abc
+got: abc
+1234
+got: 1234
+NIL
+-> 1234
+</code></pre>
+
+<p><dt><a name="whilst"><code>(whilst 'any . prg) -> any</code></a>
+<dd>Conditional loop: While the condition <code>any</code> evaluates to a list
+(a pair or <code>NIL</code>), <code>prg</code> is repeatedly executed. If
+<code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
+result of <code>prg</code> is returned.
+
+<p><pre><code>
+: (whilst (read) (println 'got: @))
+(a b c)
+got: (a b c)
+NIL
+got: NIL
+abc
+-> NIL
+</code></pre>
+
+<p><dt><a name="wipe"><code>(wipe 'sym|lst) -> sym|lst</code></a>
+<dd>Clears the <code>VAL</code> and the property list of <code>sym</code>, or of
+all symbols in the list <code>lst</code>. When a symbol is an external symbol,
+its state is also set to "not loaded". It is an error when <code>sym</code> is
+an external symbol that has been modified or deleted ("dirty").
+
+<p><pre><code>
+: (setq A (1 2 3 4))
+-> (1 2 3 4)
+: (put 'A 'a 1)
+-> 1
+: (put 'A 'b 2)
+-> 2
+: (show 'A)
+A (1 2 3 4)
+   b 2
+   a 1
+-> A
+: (wipe 'A)
+-> A
+: (show 'A)
+A NIL
+-> A
+</code></pre>
+
+<p><dt><a name="with"><code>(with 'sym . prg) -> any</code></a>
+<dd>Saves the current object <code>This</code> and sets it to the new value
+<code>sym</code>. Then <code>prg</code> is executed, and <code>This</code> is
+restored to its previous value. The return value is the result of
+<code>prg</code>. Used typically to access the local data of <code>sym</code> in
+the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
+(and <code>NIL</code> is returned) when <code>sym</code> is <code>NIL</code>.
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (put 'X 'b 2)
+-> 2
+: (with 'X (list (: a) (: b)))
+-> (1 2)
+</code></pre>
+
+
+<p><hr>
+<h3><a name="x-foo">X</a></h3>
+
+<dt><a name="xchg"><code>(xchg 'var 'var ..) -> any</code></a>
+<dd>Exchange the values of successive <code>var</code> argument pairs.
+
+<p><pre><code>
+: (setq  A 1  B 2  C '(a b c))
+-> (a b c)
+: (xchg  'A C  'B (cdr C))
+-> 2
+: A
+-> a
+: B
+-> b
+: C
+-> (1 2 c)
+</code></pre>
+
+<p><dt><a name="xor"><code>(xor 'any 'any) -> flg</code></a>
+<dd>Returns T if exactly one of the arguments evaluates to non-<code>NIL</code>.
+
+<p><pre><code>
+: (xor T NIL)
+-> T
+: (xor T T)
+-> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="y-foo">Y</a></h3>
+
+
+<p><hr>
+<h3><a name="z-foo">Z</a></h3>
+
+
+<dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
+<dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
+remove it from the internal hash table, effectively transforming it to a
+transient symbol. For external symbols, it means to mark it as "deleted", so
+that upon a later <code><a href="#commit">commit</a></code> it will be removed
+from the database file.
+
+<p><pre><code>
+: (de foo (Lst) (car Lst))          # `foo' calls `car'
+-> foo
+: (zap 'car)                        # Delete the symbol `car'
+-> "car"
+: (pp 'foo)
+(de foo (Lst)
+   ("car" Lst) )                    # `car' is now a transient symbol
+-> foo
+: (foo (1 2 3))                     # `foo' still works
+-> 1
+: (car (1 2 3))                     # Reader returns a new `car' symbol
+!? (car (1 2 3))
+car -- Undefined
+?
+</code></pre>
+
+<p><dt><a name="zero"><code>(zero sym ..) -> 0</code></a>
+<dd>Stores <code>0</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>.
+
+<p><pre><code>
+: (zero A B)
+-> 0
+: A
+-> 0
+: B
+-> 0
+</code></pre>
+
+
+<p><hr>
+<h3><a name="pun-foo">Other</a></h3>
+
+<dt><a name="!"><code>(! . prg) -> any</code></a>
+<dd>Low level breakpoint function: The current execution environment is saved
+and the I/O channels are redirected to the console. Then <code>prg</code> is
+displayed, and a read-eval-print-loop is entered (with <code>!</code> as its
+prompt character), to evaluate expressions and examine the current program
+environment. An empty input line terminates the read-eval-print-loop, the
+environment and I/O channels are restored, and the result of <code>prg</code> is
+returned. <code>!</code> is normally inserted into existing programs with the
+<code><a href="#debug">debug</a></code> function. See also <code><a
+href="#e">e</a></code> and <code><a href="#^">^</a></code>.
+
+<p><pre><code>
+: (de foo (N) (and (println 1) (! println N) (println 2)))
+-> foo
+: (foo 7)
+1                 # Executed `(println 1)'
+(println N)       # Entered breakpoint
+! N               # Examine the value of `N'
+-> 7
+! (e)             # Evaluate '^', i.e. (println N)
+7
+-> 7
+! (e @)           # Evaluate '@' -> the result of '(println 1)'
+-> 1
+!                 # Empty line: continue
+7                 # Executed `(println N)'
+2                 # Executed `(println 2)'
+-> 2
+</code></pre>
+
+<p><dt><a name="$"><code>($ sym|lst lst . prg) -> any</code></a>
+<dd>Low level trace function: The first argument <code>sym|lst</code> is printed
+to the console with a proper indentation, followed by a colon <code>:</code>. If
+a function is traced, the first argument is the function symbol, else if a
+method is traced, it is a cons pair of message and class. The second argument
+<code>lst</code> should be a list of symbols, identical to the function's
+argument list. The current values of these symbols are printed, followed by a
+newline. Then <code>prg</code> is executed, and its return value printed in a
+similar way (this time with an equals sign <code>=</code> instead of a colon)
+and returned. <code>$</code> is normally inserted into existing programs with
+the <code><a href="#trace">trace</a></code> function.
+
+<p><pre><code>
+: (de foo (A B) ($ foo (A B) (* A B)))
+-> foo
+: (foo 3 4)
+ foo : 3 4        # Function entry, arguments 3 and 4
+ foo = 12         # Function exit, return value 12
+-> 12
+</code></pre>
+
+<p><dt><a name="%"><code>(% 'num ..) -> num</code></a>
+<dd>Returns the remainder from the divisions of successive <code>num</code>
+arguments. The sign of the result is that of the first argument.
+
+<p><pre><code>
+: (% 17 5)
+-> 2
+: (% -17 5)  # Sign is that of the first argument
+-> -2
+: (% 5 2)
+-> 1
+: (% 15 10)
+-> 5
+: (% 15 10 2)  # (% 15 10) -> 5, then (% 5 2) -> 1
+-> 1
+</code></pre>
+
+<p><dt><a name="&"><code>(& 'num ..) -> num</code></a>
+<dd>Returns the bitwise <code>AND</code> of all <code>num</code> arguments.
+
+<p><pre><code>
+: (& 6 3)
+-> 2
+: (& 7 3 1)
+-> 1
+</code></pre>
+
+<p><dt><a name="*"><code>(* 'num ..) -> num</code></a>
+<dd>Returns the product of all <code>num</code> arguments.
+
+<p><pre><code>
+: (* 1 2 3)
+-> 6
+: (* 5 3 2 2)
+-> 60
+</code></pre>
+
+<p><dt><a name="*/"><code>(*/ 'num 'num 'num ['flg]) -> num</code></a>
+<dd>Returns the product of the first two <code>num</code> arguments, divided by
+the third argument. If <code>flg</code> is non-<code>NIL</code>, the result is
+rounded to the nearest integer value.
+
+<p><pre><code>
+: (*/ 3 4 2)
+-> 6
+: (*/ 1234 2 10)
+-> 246
+: (*/ 1234 2 10 T)
+-> 247
+</code></pre>
+
+<p><dt><a name="*Bye"><code>*Bye</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body, to be
+executed just before the termination of the Pico interpreter.
+
+<p><pre><code>
+: (push '*Bye '(call "rm -f *.tmp"))   # Remove all temporary files
+-> (call "rm -f *.tmp")
+</code></pre>
+
+<p><dt><a name="*Class"><code>*Class</code></a>
+<dd>A global variable holding the current class.
+
+<p><pre><code>
+: (class +Test)
+-> +Test
+: *Class
+-> +Test
+</code></pre>
+
+<p><dt><a name="*DB"><code>*DB</code></a>
+<dd>A global constant holding the external symbol <code>{1}</code>, the database
+root. All transient symbols in a database can be reached from that root. Except
+during debugging, any explicit literal access to symbols in the database should
+be avoided, because otherwise a memory leak might occur (The garbage collector
+temporarily sets <code>*DB</code> to <code>NIL</code> and restores its value
+after collection, thus disposing of all external symbols not currently used in
+the program).
+
+<p><pre><code>
+: (show *DB)
+{1} NIL
+   +City {P}
+   +Person {3}
+-> {1}
+: (show '{P})
+{P} (+ObjRoot)
+   nm (566 . {AhDx})
+-> {P}
+: (show '{3})
+{3} (+ObjRoot)
+   tel (681376 . {Agyl})
+   nm (1461322 . {2gu7})
+-> {3}
+</code></pre>
+
+<p><dt><a name="*Err"><code>*Err</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body which
+will be executed during error processing. See also <code><a href="#err">Error
+Handling</a></code>.
+
+<p><pre><code>
+: (de *Err (prinl "Fatal error!") (bye))
+-> ((prinl "Fatal error!") (bye))
+: (/ 3 0)
+!? (/ 3 0)
+Div/0
+Fatal error!
+$
+</code></pre>
+
+<p><dt><a name="*Msg"><code>*Msg</code></a>
+<dd>A global variable holding the last recently issued error message. See also
+<code><a href="#err">Error Handling</a></code>.
+
+<p><pre><code>
+: (+ 'A 2)
+!? (+ 'A 2)
+A -- Number expected
+?
+:
+: *Msg
+-> "Number expected"
+</code></pre>
+
+<p><dt><a name="*Key"><code>*Key</code></a>
+<dd>This global variable can hold a list of <code>prg</code> expressions which
+are used during <code><a href="#key">key</a></code>, <code><a
+href="#sync">sync</a></code> and <code><a href="#wait">wait</a></code>. The
+first element of each expression must either be a positive number (thus denoting
+a file descriptor to wait for) or a negative number (denoting a timeout value in
+milliseconds (in that case another number must follow to hold the remaning
+time)). A <code>select</code> system call is performed with these values, and
+the corresponding <code>prg</code> body is executed then input data are
+available, or a timeout occurred.
+
+<p><pre><code>
+: (de *Key (-2000 0 (println '2sec)))     # Install 2-sec-timer
+-> *Key
+: 2sec                                    # Prints "2sec" every 2 seconds
+2sec
+2sec
+                                          # (Enter) Exit
+$
+</code></pre>
+
+<p><dt><a name="*Dbg"><code>*Dbg</code></a>
+<dd>A boolean variable controlling the <code><a href="#$">$</a></code> (tracing)
+and <code><a href="#!">!</a></code> (breakpoint) functions. They are enabled
+when <code>*Dbg</code> is non-<code>NIL</code>.
+
+<p><pre><code>
+: (de foo (A B) (* A B))
+-> foo
+: (trace 'foo)
+-> foo
+: (foo 3 4)
+ foo : 3 4
+ foo = 12
+-> 12
+: (let *Dbg NIL (foo 3 4))
+-> 12
+</code></pre>
+
+<p><dt><a name="*Led"><code>*Led</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body that
+implements a "Line editor". When non-<code>NIL</code>, it should return a single
+symbol (string) upon execution.
+
+<p><pre><code>
+: (de *Led "(bye)")
+*Led redefined
+-> *Led
+: $                                    # Exit
+</code></pre>
+
+<p><dt><a name="*Pid"><code>*Pid</code></a>
+<dd>A global constant holding the current process-id.
+
+<p><pre><code>
+: *Pid
+-> 6386
+: (call "ps")                          # Show processes
+  PID TTY          TIME CMD
+ .... ...      ........ .....
+ 6386 pts/1    00:00:00 pico           # <- current process
+ 6388 pts/1    00:00:00 ps
+-> T
+</code></pre>
+
+<p><dt><a name="*Scl"><code>*Scl</code></a>
+<dd>A global variable holding the current fixed-point input scale. See also
+<code><a href="#num-io">Numbers</a></code>. The value can be locally overridden
+with the <code>scl</code> function:
+
+<p><pre><code>
+: (pp 'scl)
+(de scl (*Scl . "Prg")
+   (run "Prg") )
+-> scl
+: (str "123.45")                 # Default value of '*Scl' is 0
+-> (123)
+: (scl 0 (str "123.45"))
+-> (123)
+: (scl 3 (str "123.45"))
+-> (123450)
+</code></pre>
+
+<p><dt><a name="+"><code>(+ 'num ..) -> num</code></a>
+<dd>Returns the sum of all <code>num</code> arguments.
+
+<p><pre><code>
+: (+ 1 2 3)
+-> 6
+</code></pre>
+
+<p><dt><a name="-"><code>(- 'num ..) -> num</code></a>
+<dd>Returns the difference of the first <code>num</code> argument and all
+following arguments. If only a single argument is given, it is negated.
+
+<p><pre><code>
+: (- 7)
+-> -7
+: (- 7 2 1)
+-> 4
+</code></pre>
+
+<p><dt><a name="/"><code>(/ 'num ..) -> num</code></a>
+<dd>Returns the the first <code>num</code> argument successively divided by all
+following arguments.
+
+<p><pre><code>
+: (/ 12 3)
+-> 4
+: (/ 60 3 2 2)
+</code></pre>
+
+<p><dt><a name=":"><code>(: sym [sym1|cnt .. sym2]) -> any</code></a>
+<dd>Fetches a value <code>any</code> for a property key <code>sym</code> or
+<code>sym2</code> from a symbol. That symbol is <code>This</code> (if no other
+arguments are given), or a symbol found by applying the <code><a
+href="#get">get</a></code> algorithm to <code>This</code> and the following
+arguments. Used typically in methods or <code><a href="#with">with</a></code>
+bodies.
+
+<p><pre><code>
+: (put 'X 'a 1)
+-> 1
+: (with 'X (: a))
+-> 1
+</code></pre>
+
+<p><dt><a name="::"><code>(:: sym [sym1|cnt .. sym2]) -> lst|sym</code></a>
+<dd>Fetches a property for a property key <code>sym</code> or <code>sym2</code>
+from a symbol. That symbol is <code>This</code> (if no other arguments are
+given), or a symbol found by applying the <code><a href="#get">get</a></code>
+algorithm to <code>This</code> and the following arguments. The property (the
+cell, not just its value) is returned, suitable for direct (destructive)
+manipulations. Used typically in methods or <code><a
+href="#with">with</a></code> bodies.
+
+<p><pre><code>
+: (with 'X (=: cnt 0) (inc (:: cnt)) (: cnt))
+-> 1
+</code></pre>
+
+<p><dt><a name="<"><code>(< 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
+<u>increasing</u> order. See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (< 3 4)
+-> T
+: (< 'a 'b 'c)
+-> T
+: (< 999 'a)
+-> T
+</code></pre>
+
+<p><dt><a name="<="><code>(<= 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
+<u>non-decreasing</u> order. See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (<= 3 3)
+-> T
+: (<= 1 2 3)
+-> T
+: (<= "abc" "abc" "def")
+-> T
+</code></pre>
+
+<p><dt><a name="<>"><code>(<&gt 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when <u>not</u> all <code>any</code> arguments are
+equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
+<code>(not (= 'any ..))</code>. See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (<&gt 'a 'b)
+-> T
+: (<&gt 'a 'b 'b)
+-> T
+: (<&gt 'a 'a 'a)
+-> NIL
+</code></pre>
+
+<p><dt><a name="="><code>(= 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all <code>any</code> arguments are equal
+(structure equality). See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (= 6 (* 1 2 3))
+-> T
+: (= "a" "a")
+-> T
+: (== "a" "a")
+-> T
+: (= (1 (2) 3) (1 (2) 3))
+-> T
+</code></pre>
+
+<p><dt><a name="=0"><code>(=0 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is a number with value zero.
+
+<p><pre><code>
+: (=0 (- 6 3 2 1))
+-> T
+: (=0 'a)
+-> NIL
+</code></pre>
+
+<p><dt><a name="=:"><code>(=: sym [sym1|cnt .. sym2] 'any)</code></a>
+<dd>Stores a new value <code>any</code> for a property key <code>sym</code> or
+<code>sym2</code> in a symbol. That symbol is <code>This</code> (if no other
+arguments are given), or a symbol found by applying the <code><a
+href="#get">get</a></code> algorithm to <code>This</code> and the following
+arguments. Used typically in methods or <code><a href="#with">with</a></code>
+bodies.
+
+<p><pre><code>
+: (with 'X (=: a 1) (=: b 2))
+-> 2
+: (get 'X 'a)
+-> 1
+: (get 'X 'b)
+-> 2
+</code></pre>
+
+<p><dt><a name="=="><code>(== 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all <code>any</code> arguments are the same
+(pointer equality).
+
+<p><pre><code>
+: (== 'a 'a)
+-> T
+: (== 'NIL NIL (val NIL) (car NIL) (cdr NIL))
+-> T
+: (== 6 (* 1 2 3))
+-> NIL
+</code></pre>
+
+<p><dt><a name="===="><code>(==== ['sym ..]) -> NIL</code></a>
+<dd>Close the current transient scope by clearing the transient hash table. All
+transient symbols become hidden and inaccessible by the reader. Then any
+optional <code>sym</code> arguments are inserted into the transient hash table.
+See also <code><a href="#extern">extern</a></code> and <code><a
+href="#intern">intern</a></code>.
+
+<p><pre><code>
+: (setq S "abc")           # Read "abc"
+-> "abc"
+: (== S "abc")             # Read again, get the same symbol
+-> T
+: (====)                   # Close scope
+-> NIL
+: (== S "abc")             # Read again, get another symbol
+-> NIL
+</code></pre>
+
+<p><dt><a name="=T"><code>(=T 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is the symbol <code>T</code>.
+
+<p><pre><code>
+: (=T 0)
+-> NIL
+: (=T "T")
+-> NIL
+: (=T T)
+-> T
+</code></pre>
+
+<p><dt><a name=">"><code>(> 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
+<u>decreasing</u> order. See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (> 4 3)
+-> T
+: (> 'A 999)
+-> T
+</code></pre>
+
+<p><dt><a name=">="><code>(>= 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
+<u>non-increasing</u> order. See also <a href="#cmp">Comparing</a>.
+
+<p><pre><code>
+: (>= 'A 999)
+-> T
+: (>= 3 2 2 1)
+-> T
+</code></pre>
+
+<p><dt><a name=">>"><code>(>> 'cnt 'num) -> num</code></a>
+<dd>Shifts right the <code>num</code> argument by <code>cnt</code>
+bit-positions. If <code>cnt</code> is negative, a corresponding left shift is
+performed.
+
+<p><pre><code>
+: (>> 1 8)
+-> 4
+: (>> 3 16)
+-> 2
+: (>> -3 16)
+-> 128
+: (>> -1 -16)
+-> -32
+</code></pre>
+
+<p><dt><a name="?"><code>"?"</code></a>
+<dd>Top-level function for Pico Prolog (Pilog) queries. It displays each result,
+waits for console input, and terminates when a non-empty line is entered.
+
+<p><pre><code>
+: (? (append (a b c) (d e f) @X))
+ @X=(a b c d e f)
+-> NIL
+
+: (? (append @X @Y (a b c)))
+ @X=NIL @Y=(a b c)
+ @X=(a) @Y=(b c)
+ @X=(a b) @Y=(c)
+ @X=(a b c) @Y=NIL
+-> NIL
+
+: (? (append @X @Y (a b c)))
+ @X=NIL @Y=(a b c).                       # Stopped
+-> NIL
+</code></pre>
+
+<p><dt><a name="@"><code>@</code></a>
+<dd>Holds the result of the last top level expression in the current
+read-eval-print loop, or the result of the conditional expression during the
+evaluation of flow functions (see <code><a href="#atres">@ Result</a></code>).
+When <code>@</code> is used as a formal parameter in <a href="#lambda">lambda
+expressions</a>, it denotes a variable number of evaluated arguments.
+
+<dt><a name="@@"><code>@@</code></a>
+<dd>Holds the result of the second last top level expression in the current
+read-eval-print loop (see <code><a href="#atres">@ Result</a></code>).
+
+<dt><a name="@@@"><code>@@@</code></a>
+<dd>Holds the result of the third last top level expression in the current
+read-eval-print loop (see <code><a href="#atres">@ Result</a></code>).
+
+<dt><a name="^"><code>^</code></a>
+<dd>Holds the currently executed expression during a breakpoint or an error. See
+also <code><a href="#!">!</a></code> and <code><a href="#e">e</a></code>.
+
+<p><pre><code>
+: (* (+ 3 4) (/ 7 0))
+!? (/ 7 0)
+Div/0
+? ^
+-> (/ 7 0)
+</code></pre>
+
+<p><dt><a name="|"><code>(| 'num ..) -> num</code></a>
+<dd>Returns the bitwise <code>OR</code> of all <code>num</code> arguments.
+
+<p><pre><code>
+: (| 1 2)
+-> 3
+: (| 1 2 4 8)
+-> 15
+</code></pre>
+
+</dl>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Pico Lisp FAQ</title>
+</head>
+<body>
+<a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
+
+<h3>Pico Lisp Frequently Asked Questions</h3>
+
+<p align=right>(c) Software Lab. Alexander Burger
+
+<dl>
+
+<p><dt>Why did you write yet another Lisp?
+<dd>Simply because other Lisps are not the way I want them to be. The history of
+Pico goes back to 1988; at that time machine resources on PC's were limited and
+existing Lisp systems not very usable. Today's Lisps concentrate on efficient
+<u>compilation</u>, and lost the one-to-one relation of language and virtual
+machine of an <u>interpreted</u> system.
+
+<p><dt>Is there (or will be in the future) a compiler available?
+<dd>No. That would contradict the idea of Pico's simple virtual machine
+structure. A compiler transforms it to another (physical) machine, with the
+result that many assumptions about the machine's behavior won't hold any more.
+Besides that, Pico's primitive functions evaluate their arguments independently
+and are not very much suited for being called from compiled code. Finally, the
+gain in execution speed would probably not be worth the effort.
+
+<p><dt>I cannot find the LAMBDA keyword in Pico.
+<dd>Because it isn't there. The reason is that it is redundant; it is equivalent
+to the <code>quote</code> function in all practical aspects. If you insist on
+it, you can define your own <code>lambda</code>:
+
+<p><pre><code>
+: (setq lambda quote)
+-> 67293272
+: ((lambda (X Y) (+ X Y)) 3 4)
+-> 7
+: (mapcar (lambda (X) (+ 1 X)) '(1 2 3 4 5))
+-> (2 3 4 5 6)
+</code></pre>
+
+<p><dt>Are there no problems caused by dynamic variable binding?
+<dd>You mean the <i>funarg</i> problem, or problems that arise when a variable
+might be bound to itself? For that reason it should be a convention to use only
+transient symbols (and not internal symbols)
+
+<ul>
+<li>for all parameters and locals, when functional arguments or executable lists
+are passed through the current dynamic scope.
+
+<li>for a parameter or local, when that symbol might possibly be bound to itself
+</ul>
+
+<p><dt>What happens when I locally bind a symbol which has a function definition?
+<dd>That's not a good idea. The next time that function gets executed within the
+dynamic context the system may crash. Therefore we have the convention to use an
+upper case first letter for variables and not for functions.
+
+</dl>
+
+</body>
+</html>

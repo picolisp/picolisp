@@ -1,0 +1,11 @@
+#!./bin/pico ./lib.l
+# 25sep02abu
+# (c) Software Lab. Alexander Burger
+
+(load "lib/misc.l" "lib/http.l")
+
+(client "localhost" (format (car (argv)))
+   (pack "@psh?" (pw) "&" (in '("tty") (nth (line) 6)))
+   (line) )
+
+(bye)

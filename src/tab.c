@@ -1,4 +1,4 @@
-/* 29dec04abu
+/* 19mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -79,6 +79,7 @@ static symInit Symbols[] = {
    {doDel, "del"},
    {doDelete, "delete"},
    {doDelq, "delq"},
+   {doDir, "dir"},
    {doDiv, "/"},
    {doDm, "dm"},
    {doDo, "do"},
@@ -128,6 +129,7 @@ static symInit Symbols[] = {
    {doIntern, "intern"},
    {doIsa, "isa"},
    {doJob, "job"},
+   {doJournal, "journal"},
    {doKey, "key"},
    {doKill, "kill"},
    {doLast, "last"},
@@ -217,6 +219,7 @@ static symInit Symbols[] = {
    {doProg2, "prog2"},
    {doProp, "prop"},
    {doPropCol, "::"},
+   {doProtect, "protect"},
    {doProve, "prove"},
    {doPush, "push"},
    {doPut, "put"},

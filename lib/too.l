@@ -1,4 +1,4 @@
-# 17dec04abu
+# 09feb05abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -34,12 +34,12 @@
       (when *Blob
          (use (@S @R F)
             (let Pat (conc (chop *Blob) '(@S "." @R))
-               (in (list "find" *Blob "-type" "f")
+               (in (list 'find *Blob "-type" "f")
                   (whilst (setq F (line))
                      (when (match Pat F)
                         (unless
                            (and
-                              (extern (pack (replace @S "/")))
+                              (extern (pack (replace @S '/)))
                               (get @ (intern (pack @R))) )
                            (inc 'N)
                            (call 'rm (pack F)) ) ) ) ) ) ) )
@@ -200,9 +200,7 @@
       (commit)
       (dbgc) )
    (for Obj Lst
-      (and
-         (not (get Obj T))
-         (get Obj Var)
+      (when (and (not (get Obj T)) (get Obj Var))
          (rel> (meta Obj Var) Obj NIL
             (put> (meta Obj Var) Obj NIL @) )
          (commit) ) ) )

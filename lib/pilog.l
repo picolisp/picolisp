@@ -1,4 +1,4 @@
-# 08dec04abu
+# 26feb05abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -455,26 +455,30 @@
 
 
 (de "select" (Lst Flg)
-   (use (X Var Cls Hook Val)
-      (when (atom (setq X (pop 'Lst)))
-         (setq Cls (pop 'Lst)  Hook (and (get Cls X 'hook) (pop 'Lst))) )
-      (when (or (setq Val (pop 'Lst)) Flg)
+   (let? X
+      (if (atom (car Lst))
+         (let
+            (Var (pop 'Lst)
+               Cls (pop 'Lst)
+               Hook (and (get Cls Var 'hook) (pop 'Lst))
+               Val (pop 'Lst) )
+            (and (or Val Flg) ("initSel")) )
+         (make
+            (for (L (pop 'Lst) L)
+               (let
+                  (Var (pop 'L)
+                     Cls (pop 'L)
+                     Hook (and (get Cls Var 'hook) (pop 'L))
+                     Val (pop 'L) )
+                  (and (or Val Flg) (chain ("initSel"))) ) ) ) )
+      (cons
          (cons
-            (cons
-               (for (L NIL Lst)
-                  (push 'L (pop 'Lst) NIL)
-                   L )
-               (if (atom X)
-                  ("initSel" X Cls Hook)
-                  (make
-                     (while X
-                        (chain
-                           ("initSel"
-                              (setq Var (pop 'X))
-                              (setq Cls (pop 'X))
-                              (and (get Cls Var 'hook) (pop 'Lst)) ) ) ) ) ) ) ) ) ) )
+            (for (L NIL Lst)
+               (push 'L (pop 'Lst) NIL)
+                L )
+            X ) ) ) )
 
-(de "initSel" (Var Cls Hook)
+(de "initSel" ()
    (with (get Cls Var)
       (when (find '((B) (isa '+Index B)) (: bag))
          (setq This @) )

@@ -1,4 +1,4 @@
-# 01dec04abu
+# 16mar05abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -19,6 +19,7 @@
 (rel ad     (+Ref +Date))                       # Aenderungsdatum
 
 (dm upd> (X Old)
+   (extra X)
    (and X (n== X 'ad) (put> This 'ad (date))) )
 
 
@@ -302,23 +303,23 @@
                      ((car L)
                         (new! '(+Pos) 'dat (car L)) ) ) ) )
             (row
-               (gui '(+Button) "" " \^ " '(sort> (: home query) '(: dat)))
+               (gui '(+Button) "" '^ '(sort> (: home query) '(: dat)))
                (flow
-                  (gui '(+Button) "" " \^ " '(sort> (: home query) '(: val)))
+                  (gui '(+Button) "" '^ '(sort> (: home query) '(: val)))
                   (gui '(+Button) "" " + "
                      '(set> (: home sum)
                         (sum
                            '((X) (get X 'val))
                            (val> (: home query)) ) ) ) )
                (flow
-                  (gui '(+Button) "" " \^ " '(sort> (: home query) '(: ust)))
+                  (gui '(+Button) "" '^ '(sort> (: home query) '(: ust)))
                   (gui '(+Button) "" " + "
                      '(set> (: home sum)
                         (sum
                            '((X) (get X 'ust))
                            (val> (: home query)) ) ) ) )
-               (gui '(+Button) "" " \^ " '(sort> (: home query) '(: txt)))
-               (gui '(+Button) "" " \^ " '(sort> (: home query) '(: kto nm))) ) ) ) ) )
+               (gui '(+Button) "" '^ '(sort> (: home query) '(: txt)))
+               (gui '(+Button) "" '^ '(sort> (: home query) '(: kto nm))) ) ) ) ) )
 
 (de firm @
    (pass get (fetch NIL 'firm)) )
@@ -337,7 +338,7 @@
          (ps (format (/ N 1.0)) T)
          (ps (pad 2 (% (abs N) 1.0)) T) ) ) )
 
-(de recUms ("Sym" "foo" "Lst")
+(de recUms ("Sym" "Foo" "Lst")
    (record "Sym" '-)
    (let (SN 0  SU 0)
       (for This "Lst"
@@ -354,7 +355,7 @@
                      (pack (: kto nm) " (" (: kto pr) "%)")
                      (: kto nm) )
                   (: txt) )
-               ("foo" B N U) ) ) )
+               ("Foo" B N U) ) ) )
       (<row> NIL NIL '<hr> '-)
       (record NIL '- (money SN) (money SU)) ) )
 

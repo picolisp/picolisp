@@ -1,4 +1,4 @@
-# 22nov04abu
+# 06jan05abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("loc/help/")
@@ -72,7 +72,7 @@
       (<select> "Ok" '("Ja" "Nein") '*Ok)
 
       <hr>
-      (form '(+View +Form) NIL  900 700
+      (form '(+View +Form) NIL  900 900
          (quote
             (gui '(+AtomField) "Atomfeld" 20)
             (----)

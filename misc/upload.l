@@ -1,4 +1,4 @@
-# 14sep04abu
+# 04feb05abu
 # (c) Software Lab. Alexander Burger
 
 (app)
@@ -6,9 +6,9 @@
 (html "Dateiübertragung"
    (<head> "Dateiübertragung")
 
-   (when (dir (tmp))
+   (let? D (dir (tmp))
       (<table> T "Übertragene Dateien" '((- "Dateiname") (+ "Dateigrösse"))
-         (for F (dir (tmp))
+         (for F D
             (<row> F (car (info (tmp F)))) ) ) )
 
    (when *UpFile

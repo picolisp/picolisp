@@ -1,4 +1,4 @@
-/* 18nov04abu
+/* 05jan05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -78,8 +78,6 @@ static void gc(long c) {
    } while (h = h->next);
    while (c >= 0)
       heapAlloc(),  c -= CELLS;
-   if (SigInt)
-      SigInt = NO,  brkLoad(Up);
 }
 
 // (gc ['cnt]) -> cnt | NIL

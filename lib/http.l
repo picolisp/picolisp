@@ -1,4 +1,4 @@
-# 17dec04abu
+# 12mar05abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -564,10 +564,10 @@
                (cons (car "Pos") ("expand" (car "Pos")))
                (caar "Pos") ) ) )
       (setq "Pos" (car "Pos"))
-      (<_tree> "Tree")
+      ("tree" "Tree")
       "Tree" ) )
 
-(de <_tree> ("Tree" "Lst")
+(de "tree" ("Tree" "Lst")
    (prinl "<UL>")
    (for ("N" . "X") "Tree"
       (prin "<LI><A NAME=\"T" (inc '"A") "\"></A>")
@@ -581,7 +581,7 @@
                   "_self" )
                (space)
                ("format" (car "X"))
-               (and (cdr "X") (<_tree> @ "L")) ) )
+               (and (cdr "X") ("tree" @ "L")) ) )
          (("able?" "X")
             (let "L" (append "Lst" (cons (- "N")))
                (<href> (if (== "X" "Pos") "< >" "[ ]")

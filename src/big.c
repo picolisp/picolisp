@@ -1,4 +1,4 @@
-/* 26dec04abu
+/* 15mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -954,7 +954,7 @@ any doAbs(any ex) {
    return consNum(unDig(x) & ~1, cdr(numCell(x)));
 }
 
-// (bit? 'num ..) -> flg
+// (bit? 'num ..) -> num | NIL
 any doBitQ(any ex) {
    any x, y, z;
    cell c1;
@@ -981,8 +981,7 @@ any doBitQ(any ex) {
          }
       }
    }
-   drop(c1);
-   return T;
+   return Pop(c1);
 }
 
 // (& 'num ..) -> num

@@ -1,4 +1,4 @@
-/* 29dec04abu
+/* 20mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,6 +25,18 @@ static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno
 static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
+
+static void lockFile(int fd, int cmd, int typ) {
+   struct flock fl;
+
+   fl.l_type = typ;
+   fl.l_whence = SEEK_SET;
+   fl.l_start = 0;
+   fl.l_len = 0;
+   while (fcntl(fd, cmd, &fl) < 0)
+      if (errno != EINTR)
+         lockErr();
+}
 
 int slow(int fd, byte *p, int cnt) {
    int n;
@@ -569,32 +581,31 @@ static void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
    {
       byte nm[pathSize(x)];
-      struct flock fl;
 
       pathString(x,nm);
       if (nm[0] == '+') {
          if ((f->fd = open(nm+1, O_CREAT|O_RDWR, 0666)) < 0)
             openErr(ex, nm);
-         fl.l_type = F_RDLCK;
+         lockFile(f->fd, F_SETLKW, F_RDLCK);
       }
       else {
          if ((f->fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0)
             openErr(ex, nm);
-         fl.l_type = F_WRLCK;
+         lockFile(f->fd, F_SETLKW, F_WRLCK);
       }
-      fl.l_whence = SEEK_SET;
-      fl.l_start = 0;
-      fl.l_len = 0;
-      while (fcntl(f->fd, F_SETLKW, &fl) < 0)
-         if (errno != EINTR)
-            close(f->fd),  lockErr();
    }
 }
 
 /*** Reading ***/
 void getStdin(void) {
-   if (InFile != stdin || !isCell(val(Led)))
+   if (InFile != stdin)
       Chr = getc(InFile);
+   else if (!isCell(val(Led))) {
+      byte buf[1];
+
+      waitFd(NULL, STDIN_FILENO, -1);
+      Chr = rdBytes(STDIN_FILENO, buf, 1)? buf[0] : -1;
+   }
    else {
       static word dig;
 
@@ -1462,7 +1473,7 @@ any load(any ex, int pr, any x) {
          data(c1) = read1(0);
       else {
          if (pr && !Chr)
-            Env.put(pr), space();
+            Env.put(pr), space(), fflush(OutFile);
          data(c1) = read1('\n');
          SigInt = NO;
          if (Chr == '\n')
@@ -1953,6 +1964,7 @@ any doWr(any x) {
 typedef long long adr;
 
 static int BlkFile;
+static FILE *Journal;
 static adr BlkIndex, BlkLink, Marks;
 static byte *Ptr, *Mark;
 static byte Block[BLKSIZE];
@@ -2005,33 +2017,34 @@ static adr blk64(any x) {
    return n;
 }
 
-/* File Record Locking */
-static void setLock(int cmd, int typ, off_t len) {
+/* DB Record Locking */
+static void dbLock(int cmd, int typ, off_t len) {
    struct flock fl;
 
    fl.l_type = typ;
    fl.l_whence = SEEK_SET;
    fl.l_start = 0;
    fl.l_len = len;
-   if (fcntl(BlkFile, cmd, &fl) < 0)
-      lockErr();
+   while (fcntl(BlkFile, cmd, &fl) < 0)
+      if (errno != EINTR)
+         lockErr();
 }
 
 static void rdLock(void) {
    if (val(Solo) != T)
-      setLock(F_SETLKW, F_RDLCK, 1);
+      dbLock(F_SETLKW, F_RDLCK, 1);
 }
 
 static void wrLock(void) {
    if (val(Solo) != T)
-      setLock(F_SETLKW, F_WRLCK, 1);
+      dbLock(F_SETLKW, F_WRLCK, 1);
 }
 
 static void rwUnlock(int len) {
    if (val(Solo) != T) {
       if (len == 0)
          val(Solo) = Zero;
-      setLock(F_SETLK, F_UNLCK, len);
+      dbLock(F_SETLK, F_UNLCK, len);
    }
 }
 
@@ -2050,14 +2063,15 @@ static pid_t tryLock(adr n) {
             val(Solo) = Nil;
          return 0;
       }
-      if (errno != EACCES  &&  errno != EAGAIN)
+      if (errno != EINTR  &&  errno != EACCES  &&  errno != EAGAIN)
          lockErr();
       fl.l_type = F_WRLCK;  //??
       fl.l_whence = SEEK_SET;
       fl.l_start = (off_t)n;
       fl.l_len = (off_t)(n != 0);
-      if (fcntl(BlkFile, F_GETLK, &fl) < 0)
-         lockErr();
+      while (fcntl(BlkFile, F_GETLK, &fl) < 0)
+         if (errno != EINTR)
+            lockErr();
       if (fl.l_type != F_UNLCK)
          return fl.l_pid;
    }
@@ -2074,7 +2088,7 @@ static void blkPeek(adr pos, void *buf, size_t siz) {
    }
 }
 
-static void blkPoke(adr pos, void *buf, size_t siz) {
+static void blkPoke(adr pos, void *buf, int siz) {
    for (;;) {
       if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
          dbErr("seek");
@@ -2082,6 +2096,14 @@ static void blkPoke(adr pos, void *buf, size_t siz) {
          break;
       if (errno != EINTR)
          dbErr("write");
+   }
+   if (Journal) {
+      byte a[BLK];
+
+      setAdr(pos,a);
+      putc(siz, Journal);
+      fwrite(a, BLK, 1, Journal);
+      fwrite(buf, siz, 1, Journal);
    }
 }
 
@@ -2113,7 +2135,13 @@ any newId(void) {
    adr n;
 
    wrLock();
+   if (Journal)
+      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+   protect(YES);
    n = newBlock();
+   if (Journal)
+      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+   protect(NO);
    rwUnlock(1);
    return new64(n/BLKSIZE, At2);  // dirty
 }
@@ -2178,13 +2206,15 @@ static void putBlock(int c) {
    *Ptr++ = (byte)c;
 }
 
-// (pool ['sym]) -> flg
+// (pool ['sym1 ['sym2]]) -> flg
 any doPool(any ex) {
    any x;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
    free(Mark), Mark = NULL, Marks = 0;
+   if (Journal)
+      fclose(Journal),  Journal = NULL;
    if (BlkFile) {
       while (isNil(doRollback(Nil)));
       if (close(BlkFile) < 0)
@@ -2208,6 +2238,28 @@ any doPool(any ex) {
          blkPoke(0, buf, 2*BLK);
          setAdr(1, IniBlk),  blkPoke(BLKSIZE, IniBlk, BLKSIZE);
       }
+      x = cddr(ex),  x = EVAL(car(x));
+      NeedSym(ex,x);
+      if (!isNil(x)) {
+         byte nm[pathSize(x)];
+
+         pathString(x, nm);
+         if (!(Journal = fopen(nm, "a")))
+            openErr(ex, nm);
+      }
+   }
+   return T;
+}
+
+// (journal) -> T
+any doJournal(any ex) {
+   int siz;
+   byte a[BLK], buf[BLKSIZE];
+
+   while ((siz = getc(InFile)) >= 0) {
+      if (siz > BLKSIZE || fread(a,BLK,1,InFile) != 1 || fread(buf,siz,1,InFile) != 1)
+         err(ex, NULL, "Bad Journal");
+      blkPoke(getAdr(a), buf, siz);
    }
    return T;
 }
@@ -2426,8 +2478,10 @@ any doCommit(any x) {
    byte buf[PIPE_BUF];
 
    x = cdr(x),  flg = EVAL(car(x));
-   wrLock();
    force = !isNil(flg) || !Transactions;
+   wrLock();
+   if (Journal)
+      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    if (note = Tell && !isNil(flg) && flg != T)
       tellBeg(&pbSave, &ppSave, buf),  tell(flg);
@@ -2488,6 +2542,8 @@ any doCommit(any x) {
    }
    if (note)
       tellEnd(&pbSave, &ppSave);
+   if (Journal)
+      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    if (Transactions) {
       rwUnlock(1);
@@ -2549,6 +2605,8 @@ any doDbck(any ex) {
    cnt = BLKSIZE;
    blks = syms = offs = 0;
    BlkLink = getAdr(buf);  // Check free list
+   if (Journal)
+      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    while (BlkLink) {
       rdBlock(BlkLink);
@@ -2583,6 +2641,8 @@ any doDbck(any ex) {
       if (Block[0] & TAGMASK)
          Block[0] &= BLKMASK,  wrBlock();
    }
+   if (Journal)
+      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    if (cnt != next)
       return  mkStr("Bad count");

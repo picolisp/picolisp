@@ -1,4 +1,4 @@
-# 09oct04abu
+# 05feb05abu
 # (c) Software Lab. Alexander Burger
 
 # *Line
@@ -6,14 +6,13 @@
 # Line input editing
 (de mkChar (C)
    (prin C)
-   (setq *Line (conc *Line (list C))) )
+   (queue '*Line C) )
 
 # Enable line editing
 (de *Led
    (use C
       (until (member (setq C (key)) '("^J" "^M"))
          (case C
-            ("^C" (prinl) (bye))
             (("^H" "^?")
                (when *Line
                   (prin "^H ^H")

@@ -1,4 +1,4 @@
-# 01dec04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 # *VisitedKey *VisitedLess *VisitedMore
@@ -221,8 +221,8 @@
 (====)
 
 # Scan tree nodes
-(de scan ("Tree" "foo" "Beg" "End" "F")
-   (default "foo" println)
+(de scan ("Tree" "Foo" "Beg" "End" "F")
+   (default "Foo" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _scan _nacs)
       (cdr (root "Tree")) ) )
@@ -234,7 +234,7 @@
          (when (<= "Beg" (car "Node"))
             (_scan (cadr "Node"))
             (unless (and "F" (flg? (fin (car "Node"))))
-               ("foo" (car "Node") (cdddr "Node")) ) )
+               ("Foo" (car "Node") (cdddr "Node")) ) )
          (_scan (caddr "Node")) ) ) )
 
 (de _nacs ("Node")
@@ -244,14 +244,14 @@
          (when (>= "Beg" (car "Node"))
             (_nacs (caddr "Node"))
             (unless (and "F" (flg? (fin (car "Node"))))
-               ("foo" (car "Node") (cdddr "Node")) ) )
+               ("Foo" (car "Node") (cdddr "Node")) ) )
          (_nacs (cadr "Node")) ) ) )
 
 (====)
 
 # Iterate tree values
-(de iter ("Tree" "foo" "Beg" "End" "F")
-   (default "foo" println)
+(de iter ("Tree" "Foo" "Beg" "End" "F")
+   (default "Foo" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _iter _reti)
       (cdr (root "Tree")) ) )
@@ -263,7 +263,7 @@
          (when (<= "Beg" (car "Node"))
             (_iter (cadr "Node"))
             (unless (and "F" (flg? (fin (car "Node"))))
-               ("foo" (cdddr "Node")) ) )
+               ("Foo" (cdddr "Node")) ) )
          (_iter (caddr "Node")) ) ) )
 
 (de _reti ("Node")
@@ -273,13 +273,13 @@
          (when (>= "Beg" (car "Node"))
             (_reti (caddr "Node"))
             (unless (and "F" (flg? (fin (car "Node"))))
-               ("foo" (cdddr "Node")) ) )
+               ("Foo" (cdddr "Node")) ) )
          (_reti (cadr "Node")) ) ) )
 
 (====)
 
 # Check tree structure
-(de check ("Node" "foo")
+(de check ("Node" "Foo")
    (let ("N" 0  "X")
       (when "Node"
          (recur ("Node")
@@ -294,8 +294,8 @@
             (setq "X" (car (val "Node")))
             (inc '"N")
             (and
-               "foo"
-               (not ("foo" (car (val "Node")) (cdddr (val "Node"))))
+               "Foo"
+               (not ("Foo" (car (val "Node")) (cdddr (val "Node"))))
                (quit "Check fail" "Node") )
             (when (caddr (val "Node"))
                (unless (ext? (caddr (val "Node")))

@@ -1,4 +1,4 @@
-/* 27nov04abu
+/* 15mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -876,7 +876,7 @@ any doAtom(any x) {
 // (pair 'any) -> flg
 any doPair(any x) {
    x = cdr(x);
-   return isCell(EVAL(car(x)))? T : Nil;
+   return isCell(x = EVAL(car(x)))? x : Nil;
 }
 
 // (lst? 'any) -> flg
@@ -885,10 +885,10 @@ any doLstQ(any x) {
    return isCell(x = EVAL(car(x))) || isNil(x)? T : Nil;
 }
 
-// (num? 'any) -> flg
+// (num? 'any) -> num | NIL
 any doNumQ(any x) {
    x = cdr(x);
-   return isNum(EVAL(car(x)))? T : Nil;
+   return isNum(x = EVAL(car(x)))? x : Nil;
 }
 
 // (sym? 'any) -> flg

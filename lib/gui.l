@@ -1,8 +1,8 @@
-# 22nov04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Apps *AppId *AppPort *AppGate *Top *Bar *Menu *DlgStk
+# *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk
 
 (allow "java/pico.jar")
 
@@ -14,7 +14,7 @@
       (with *Top
          (when (: app)
             (out @
-               (pr "url"
+               (pr 'url
                   (pack
                      (baseHRef)
                      *SesId
@@ -36,27 +36,27 @@
       (setq *AppId 1)
       (task (setq "Sok1" (port *APorts '*AppPort))
          (let? S (accept "Sok1")
-            (if
+            (ifn
                (in S
                   (and
                      (= *SesId (rd))
                      (rd)
                      (get *Apps (- *AppId @)) ) )
+               (close S)
                (push '*Key
                   (list (put @ 'app S) (list 'ev> (lit @) S)) )
-               (close S) ) ) )
+               (out S (pr (car *InND))) ) ) )
       (task -40000 80000
          (and *Top (ping> *Top)) ) )
    (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
    (while Lst
       (prinl ","  *SesId (pop 'Lst)) )
    (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
-   (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
    (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
+   (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
    (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
-   (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">")
    (prinl "<PARAM NAME=\"sid\" VALUE=\"" *SesId "\">")
    (while (args)
       (prin "<PARAM NAME=\"" (next) "\" VALUE=\"")
@@ -84,7 +84,7 @@
 
 (dm ping> ()
    (when (: app)
-      (out @ (pr "ping")) ) )
+      (out @ (pr 'ping)) ) )
 
 (dm init> ())
 
@@ -92,8 +92,7 @@
 
 (dm stop> ()
    (when (: app)
-      (out @ (pr "done")) )
-   (=: outN) )
+      (out @ (pr 'done)) ) )
 
 (dm upd> ())
 
@@ -108,36 +107,34 @@
 
 (dm beep> ()
    (when (: app)
-      (out @ (pr "beep")) ) )
+      (out @ (pr 'beep)) ) )
 
 (dm play> (Url Flg)
    (when (: app)
       (out @
-         (pr "play" (and Url (pack (baseHRef) *SesId Url)) Flg) ) ) )
+         (pr 'play (and Url (pack (baseHRef) *SesId Url)) Flg) ) ) )
 
 (dm menu> (Ttl Lst)
    (when (: app)
       (out @
-         (pr "menu" Ttl (length Lst))
+         (pr 'menu Ttl (length Lst))
          (for L (setq *Menu Lst)
             (pr (car L) (eval (cadr L))) ) ) ) )
 
 
 ### Applet Form ###
-# *Lay
-
 (class +Form +Applet)
 # init fields arrays focus focus2 hot able lock rv
 
 (de form @
    (if (pair (next))
-      (pass new (arg))
+      (pass new @)
       (pass new) ) )
 
 (de gui @
    (pr *Lay)
    (cond
-      ((pair (next)) (pass new (arg)))
+      ((pair (next)) (pass new @))
       ((and (not (: fields)) (get *Top (arg)))
          (quit "gui conflict" (arg)) )
       (T (put *Top (arg) (pass new (next)))) )
@@ -172,7 +169,10 @@
 
 
 (dm T (DX DY Prg . @)
-   (super "Front" '("java/pico.jar") DX DY)
+   (let X (assoc Prg *Siz)
+      (super "Front" '("java/pico.jar")
+         (or (cadr X) DX)
+         (or (cddr X) DY) ) )
    (=: init Prg)
    (set This
       (conc
@@ -186,7 +186,7 @@
    (super)
    (when (: app)
       (out @
-         (pr "make")
+         (pr 'make)
          (let *Lay '*
             (=: fields (make (run (: init)))) )
          (pr NIL) )
@@ -194,6 +194,12 @@
          (put F 'ix I)
          (init> F) )
       (mapc 'init> (: arrays)) ) )
+
+(dm siz> ()
+   (let X (cons (rd) (rd))
+      (if (assoc (: init) *Siz)
+         (con @ X)
+         (push '*Siz (cons (: init) X)) ) ) )
 
 (dm start> ()
    (super)
@@ -237,22 +243,22 @@
 (dm lock> (Flg)
    (when (: app)
       (out @
-         (pr "lock" (bool (=: lock Flg))) ) ) )
+         (pr 'lock (bool (=: lock Flg))) ) ) )
 
 (dm focus> (F)
    (when (: app)
       (out @
-         (pr "focus" (get F 'ix)) )
+         (pr 'focus (get F 'ix)) )
       (=: focus F) ) )
 
 (dm next> ()
    (when (: app)
-      (out @ (pr "next")) ) )
+      (out @ (pr 'next)) ) )
 
 (dm menu> (F Ttl Lst)
    (when (: app)
       (out @
-         (pr "menu" (get F 'ix) Ttl (length Lst))
+         (pr 'menu (get F 'ix) Ttl (length Lst))
          (for L (setq *Menu Lst)
             (pr (car L) (eval (cadr L))) ) ) ) )
 
@@ -288,7 +294,7 @@
 (dm act> ()
    (let F (get (: fields) (rd))
       (and (fieldEnd) (act> F))
-      (and (: app) (out @ (pr "ack"))) ) )
+      (and (: app) (out @ (pr 'ack))) ) )
 
 # sym
 (dm key> ()
@@ -422,7 +428,6 @@
 
 # ix sym|flg sel
 (dm chg> ()  # Change string
-   (=: "last")
    (chg> (get (: fields) (rd))) )
 
 # ix
@@ -475,10 +480,10 @@
                         Err ) )
                   (when (: "last" undo)
                      (undo> (: "last")) ) ) ) ) )
-      (T (end> (: focus))
+      (T (=: "last")
+         (end> (: focus))
          (and (: focus arr) (end> @))
          T ) ) )
-
 
 ### Form Prefix Classes ###
 (class +View)
@@ -499,10 +504,11 @@
 
 (de _dlg (Ttl)
    (when (get (=: top *Top) 'app)
+      (=: outN (: top outN))
       (use Port
          (let Sock (port *APorts 'Port)
             (out @
-               (pr "dialog" Port *AppGate *SesId Ttl) )
+               (pr 'dialog Port *SesId Ttl) )
             (prog1
                (let? S (accept Sock)
                   (if (in S (= *SesId (rd)))
@@ -599,8 +605,8 @@
       (: rv) ) )
 
 # Dialog Buttons
-(de okButton (@Exe S Able)
-   (gui '(+Able +Button) (or Able T) "" (or S "Ok")
+(de okButton (@Exe Str Able)
+   (gui '(+Able +Button) (or Able T) "" (or Str "Ok")
       (cons 'prog
          (ifn @Exe
             '((=: home rv T) (stop> (: home)))
@@ -608,8 +614,8 @@
                (fill '(=: home rv @Exe))
                '(stop> (: home)) ) ) ) ) )
 
-(de quitButton (S)
-   (gui '(+Rid +Button) "" (or S ,"Cancel")
+(de quitButton (Str)
+   (gui '(+Rid +Button) "" (or Str ,"Cancel")
       '(stop> (: home)) ) )
 
 
@@ -650,7 +656,7 @@
                   (----)
                   (row
                      (quitButton)
-                     (gui 'cnt '(+Mono +Label) "->" "Cnt") ) ) )
+                     (gui 'cnt '(+Mono +Label) '-> "Cnt") ) ) )
             (wait NIL (not "Busy"))
             (: rv) ) ) ) )
 
@@ -672,7 +678,7 @@
 
 (dm T @
    (pass extra)
-   (pr "sync") )
+   (pr 'sync) )
 
 
 (class +Map +Sync)
@@ -823,7 +829,7 @@
    (put *Top 'able
       (cons This (get *Top 'able)) )
    (pass extra)
-   (pr "able") )
+   (pr 'able) )
 
 (dm cho> ()
    (when (eval (: able))
@@ -850,7 +856,7 @@
 
 (dm T @
    (pass extra)
-   (pr "rid") )
+   (pr 'rid) )
 
 (dm upd> ()
    (extra)
@@ -902,8 +908,8 @@
 
 (dm T (B F . @)
    (pass extra)
-   (and B (pr "bCol" (=: bCol B)))
-   (and F (pr "fCol" (=: fCol F))) )
+   (and B (pr 'bCol (=: bCol B)))
+   (and F (pr 'fCol (=: fCol F))) )
 
 
 (class +Radio)
@@ -942,11 +948,7 @@
 (class +Relay)
 # relay
 
-(dm T (Lst . @)
-   (=: relay Lst)
-   (pass extra) )
-
-(dm relay> (Val)
+(de relay (Val)
    (for "X" (: relay)
       (cond
          ((atom "X")
@@ -959,20 +961,24 @@
                   ((cdr "X") Val)
                   (with Val (eval (cdr "X"))) ) ) ) ) ) )
 
+(dm T (Lst . @)
+   (=: relay Lst)
+   (pass extra) )
+
 (dm upd> ()
    (extra)
-   (relay> This (val> This)) )
+   (relay (val> This)) )
 
 (dm set> (Val)
    (let Old (val> This)
       (extra Val)
       (let Val (val> This)
          (unless (= Old Val)
-            (relay> This Val) ) ) ) )
+            (relay Val) ) ) ) )
 
 (dm end> ()
    (extra)
-   (relay> This (val> This)) )
+   (relay (val> This)) )
 
 
 (class +Hot)
@@ -1153,7 +1159,17 @@
 
 ### Form Field Classes ###
 (class +field)
-# home ix lbl str sel ign arr able undo redo adv
+# home ix lbl str sel ign arr able undo redo adv growX growY
+
+(de bCol (Col)
+   (when (: home app)
+      (out @
+         (pr 'bCol (: ix) Col) ) ) )
+
+(de fCol (Col)
+   (when (: home app)
+      (out @
+         (pr 'fCol (: ix) Col) ) ) )
 
 (dm T ()
    (=: home *Top)
@@ -1182,12 +1198,12 @@
 (dm text> (S)
    (when (: home app)
       (out @
-         (pr "text" (: ix) S) ) ) )
+         (pr 'text (: ix) S) ) ) )
 
 (dm type> (S)
    (when (: home app)
       (out @
-         (pr "type" (: ix) S) ) ) )
+         (pr 'type (: ix) S) ) ) )
 
 (dm str> (Str)
    (unless (= Str (: str))
@@ -1229,7 +1245,22 @@
 (dm able> ()
    (when (: home app)
       (out @
-         (pr "able" (: ix) (bool (eval (: able)))) ) ) )
+         (pr 'able (: ix) (bool (eval (: able)))) ) ) )
+
+(dm grow> (DX DY)
+   (when (: home app)
+      (out @
+         (pr 'grow (: ix)
+            (if (= DX (: growX))
+               0
+               (prog1
+                  (- (or DX 0) (or (: growX) 0))
+                  (=: growX DX) ) )
+            (if (= DY (: growY))
+               0
+               (prog1
+                  (- (or DY 0) (or (: growY) 0))
+                  (=: growY DY) ) ) ) ) ) )
 
 (dm able?> ()
    (or
@@ -1246,7 +1277,7 @@
 
 # Mark hot link field (blue foreground)
 (de hotField ()
-   (pr "fCol" (=: fCol `(hex "0000FF"))) )
+   (pr 'fCol (=: fCol `(hex "0000FF"))) )
 
 # Get field
 (de field (X)
@@ -1291,7 +1322,9 @@
 
 (dm act> ()
    (when (super)
-      (let (Val @  Fld (get (: home fields) (inc (: ix))))
+      (let
+         (Val @
+            Fld (get (: home fields) ((if (== '-> (: str)) inc dec) (: ix))) )
          (focus> Fld)
          (do> Fld
             (if (=T Val)
@@ -1307,7 +1340,8 @@
    (=: chg Foo)
    (pass super Lbl Str
       '(let
-         (Fld (get (: home fields) (inc (: ix)))
+         (Fld
+            (get (: home fields) ((if (== '-> (: str)) inc dec) (: ix)))
             Val ((: chg) (val> Fld)) )
          (when Val
             (focus> Fld)
@@ -1372,19 +1406,19 @@
 (dm siz> (SX SY)
    (when (: home app)
       (out @
-         (pr "siz" (: ix) (=: sx SX) (=: sy SY)) ) ) )
+         (pr 'siz (: ix) (=: sx SX) (=: sy SY)) ) ) )
 
 (dm set> (Lst)
    (when (: home app)
       (out @
-         (pr "set" (: ix)
+         (pr 'set (: ix)
             (sum 'len> (=: lst Lst)) )
          (mapc 'pr> Lst) ) ) )
 
 (dm tmp> (Lst)
    (when (: home app)
       (out @
-         (pr "tmp" (: ix)
+         (pr 'tmp (: ix)
             (sum 'len> (=: tmp Lst)) )
          (mapc 'pr> Lst) ) ) )
 
@@ -1414,8 +1448,8 @@
    (when (: home app)
       (out @
          (ifn (=: img Img)
-            (pr "img" (: ix) 0)
-            (pr "img" (: ix) (car (info Img)))
+            (pr 'img (: ix) 0)
+            (pr 'img (: ix) (car (info Img)))
             (in Img (echo)) ) ) ) )
 
 (dm val> ()
@@ -1446,7 +1480,7 @@
 (dm feed> (N S)  # TextArea only
    (when (: home app)
       (out @
-         (pr "feed" (: ix) N S) ) ) )
+         (pr 'feed (: ix) N S) ) ) )
 
 (dm end> ()
    (set> This (val> This)) )
@@ -1493,38 +1527,22 @@
 # Secure Transmission Field Prefix
 (class +Rsa)
 
-(de outN ()
-   (unless (: home outN)
-      (or *InND (quit "No keys"))
-      (when (: home app)
-         (out @
-            (pr "rsa" (car *InND)) ) ) ) )
-
 (dm T @
+   (or *InND (quit "No keys"))
    (pass extra)
-   (pr "crypt") )
-
-(dm beg> ()
-   (outN)
-   (extra) )
+   (pr 'rsa) )
 
 (dm chg> ()
    (=: str (pack (decrypt *InND (rd))))
    (=: sel (rd)) )
 
 (dm text> (S)
-   (outN)
-   (wait NIL (: home outN))
    (extra (encrypt (: home outN) (chop S))) )
 
 (dm feed> (N S)  # TextArea only
-   (outN)
-   (wait NIL (: home outN))
    (extra N (encrypt (: home outN) (chop S))) )
 
 (dm key> (Lst)
-   (outN)
-   (wait NIL (: home outN))
    (encrypt
       (: home outN)
       (chop (extra (car (decrypt *InND Lst)))) ) )
@@ -1535,7 +1553,7 @@
 
 (dm T @
    (pass super)
-   (pr "pw") )
+   (pr 'pw) )
 
 
 # Symbol Fields
@@ -1613,12 +1631,10 @@
 (class +NegRed)
 
 (dm set> (Val)
-   (when (: home app)
-      (out @
-         (pr "fCol" (: ix)
-            (if (lt0 Val)
-               `(hex "CC0000")
-               (or (: fCol) 0) ) ) ) )
+   (fCol
+      (if (lt0 Val)
+         `(hex "CC0000")
+         (or (: fCol) 0) ) )
    (extra Val) )
 
 
@@ -1733,7 +1749,7 @@
    (let? Val (val> This)
       (when (: home app)
          (out @
-            (pr "url"
+            (pr 'url
                (if (sub? ":/" Val) Val (pack "http://" Val))
                "HTTP" ) ) ) ) )
 
@@ -1748,7 +1764,7 @@
    (let? Val (val> This)
       (when (: home app)
          (out @
-            (pr "url" (pack "mailto:" Val) "MAIL") ) ) ) )
+            (pr 'url (pack "mailto:" Val) "MAIL") ) ) ) )
 
 
 ### Field Arrays ###
@@ -1807,7 +1823,7 @@
 # put get
 
 # (.. ttl cols foo lst [put [get]])
-(dm T ("Ttl" "N" "foo" "Lst" "Put" "Get")
+(dm T ("Ttl" "N" "Foo" "Lst" "Put" "Get")
    (super)
    (pr "Ttl" 0)
    (=: put (or "Put" prog1))
@@ -1821,7 +1837,7 @@
             (while "Lst"
                (let *Lay '+
                   (do "N"
-                     ("foo" (pop '"Lst"))
+                     ("Foo" (pop '"Lst"))
                      (NIL "Lst")
                      (setq *Lay '-) ) ) ) ) ) ) )
 
@@ -1844,12 +1860,15 @@
    (get> This)
    (=: ofs N)
    (put> This)
+   (let Fld (: home focus)
+      (when (find '((L) (memq Fld L)) (: fields))
+         (beg> Fld) ) )
    (setScroll) )
 
 (de setScroll ()
    (when (: home app)
       (out @
-         (pr "scrl"
+         (pr 'scrl
             (get (caar (: fields)) 'ix)
             (: ofs)  # val
             (: rows) # vis
@@ -2005,8 +2024,8 @@
    (when (> (: rows) 1)
       (gui '(+Able +Set +Button)
          '(curr)
-         '((V) (extra " \^ "))
-         "" " \^ "
+         '((V) (extra '^) (=: str))
+         "" '^
          '(let (N (row> (: arr) This)  L (val> (: arr)))
             (ifn (nth L N)
                (beep> (: home))
@@ -2107,14 +2126,19 @@
       (if (isa '+Key (get @Cls @Var))
          (fill '(get (: home obj) '@Var))
          (fill '(cons (get (: home obj) '@Var) (: home obj))) )
-      (gui '(+Rid +Button) "" ,"Next data record"
-         (list
-            'let 'Q
-            (fill '(init (tree '@Var '@Cls '@Hook) @Key T))
-            '(step Q)
-            '(if (and (step Q) (url> @))
-               (url @)
-               (beep> (: home)) ) ) ) ) )
+      (gui '(+Rid +Able +Button)
+         (fill
+            '(let Q (init (tree '@Var '@Cls '@Hook) @Key T)
+               (step Q)
+               (step Q) ) )
+         "" ,"Next data record"
+         (fill
+            '(let Q (init (tree '@Var '@Cls '@Hook) @Key T)
+               (step Q)
+               (if (and (step Q) (url> @))
+                  (url @)
+                  (beep> (: home)) ) )
+            '(@Var @Cls @Hook @Key) ) ) ) )
 
 (de choButton (Exe)
    (gui 'hot '(+Rid +Button) "" ,"Choose/Create (F4)" Exe) )
@@ -2143,7 +2167,10 @@
 (de choDialog ("Ttl" "Rel" . @)
    (let
       ("Hook" (and (meta (cdr "Rel") (car "Rel") 'hook) (next))
-         "Fld" (or (next) '(+Obj +TextField))
+         "Fld" (cond
+            ((not (next)) '(+Obj +TextField))
+            ((=T (arg)) '(+Rv +Obj +TextField))
+            (T (arg)) )
          "Pre" (next)
          "Post" (next) )
       (dialog (pack "Ttl" ,"-Choice") NIL
@@ -2350,7 +2377,7 @@
 
 (dm T @
    (pass extra)
-   (pr "bCol" (=: bCol `(hex "E0E0FF"))) )
+   (pr 'bCol (=: bCol `(hex "E0E0FF"))) )
 
 
 (class +Obj +Sync)
@@ -2364,8 +2391,7 @@
                (query> This
                   (pack (head (: sel) (chop V)) C) ) ) )
          (C)
-         ((num? V)
-            (goal (query> This V)) ) ) ) )
+         ((num? V) (goal (query> This V))) ) ) )
 
 (dm T (Rel . @)
    (=: objVar (car Rel))
@@ -2376,8 +2402,7 @@
    (hotField) )
 
 (dm set> (Obj)
-   (extra
-      (get (=: obj Obj) (: objVar)) ) )
+   (extra (get (=: obj Obj) (: objVar))) )
 
 (dm val> (Flg)
    (let V (extra)
@@ -2597,10 +2622,10 @@
 
 (dm key> (C)
    (prog1 (extra C)
-      (let (S (pack (: str) @)  foo (: scrl))
-         (with (pick '((F) (get F 'arr)) (memq This (: home fields)))
+      (let ("S" (pack (: str) @)  "Foo" (: scrl))
+         (with (pick '(("F") (get "F" 'arr)) (memq This (: home fields)))
             (scrl
-               (if (find '((D) (foo S D)) (: data))
+               (if (find '(("D") ("Foo" "S" "D")) (: data))
                   (index @ (: data))
                   1 ) ) ) ) ) )
 

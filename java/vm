@@ -1,8 +1,9 @@
 #!/bin/bash
-# 30dec04abu
+# 11jan05abu
+# Use: java/vm <classPath>
 
 trap 'rm -f fifo/java' 0 1 2 3 15
 mkfifo fifo/java
 
-CLASSPATH=.:java/util.jar
+CLASSPATH="$1"
 java Reflector fifo/java

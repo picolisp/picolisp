@@ -1,4 +1,4 @@
-// 09dec04abu
+// 19feb05abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -13,14 +13,14 @@ public class Pico extends Applet {
    String Host;
    Socket Sock;
    InOut IO;
-   boolean Rdy;
+   boolean Up, Rdy;
    AudioClip Clip;
    long Seed;
    BigInteger InN, InD, OutN;
-   static final BigInteger B1 = new BigInteger("1");
-   static final BigInteger B2 = new BigInteger("2");
-   static final BigInteger B3 = new BigInteger("3");
-   static final BigInteger B6 = new BigInteger("6");
+   static final BigInteger B1 = BigInteger.valueOf(1);
+   static final BigInteger B2 = BigInteger.valueOf(2);
+   static final BigInteger B3 = BigInteger.valueOf(3);
+   static final BigInteger B6 = BigInteger.valueOf(6);
 
    static void sleep(long ms) {
       try {Thread.currentThread().sleep(ms);}
@@ -33,7 +33,7 @@ public class Pico extends Applet {
       Seed = Seed << 1 ^ n;
    }
 
-   void connect(int id, int port, String gate, String sid) {
+   void connect(int id, int port, String sid) {
       addMouseMotionListener(new MouseMotionAdapter() {
          public void mouseMoved(MouseEvent e) {
             seed(e.getX());
@@ -41,21 +41,23 @@ public class Pico extends Applet {
          }
       } );
       try {
-         if (gate.length() == 0)
-            Sock = new Socket(Host, port);
-         else {
-            Sock = new Socket(Host, Integer.parseInt(gate));
-            Sock.getOutputStream().write(("@" + port + " ").getBytes());
-         }
+         Sock = new Socket(Host, port);
          IO = new InOut(Sock.getInputStream(), Sock.getOutputStream());
          IO.print(sid);
-         if (id != 0)
+         if (id != 0) {
             IO.print(id);
+            IO.flush();
+            rsa(IO.read());
+         }
       }
       catch (IOException e) {showStatus(e.toString());}
       Seed ^= IO.hashCode();
-      if (!Rdy)
+      if (Up)
+         Rdy = true;
+      else {
          msg1("init>");
+         Up = true;
+      }
       (new Thread() {
          public void run() {
             try {
@@ -79,9 +81,7 @@ public class Pico extends Applet {
    public void start() {
       if (Sock == null)
          connect(Integer.parseInt(getParameter("ID")),
-               Integer.parseInt(getParameter("port")),
-               getParameter("gate"),
-               getParameter("sid") );
+               Integer.parseInt(getParameter("port")), getParameter("sid") );
    }
 
    public void stop() {msg1("stop>");}
@@ -130,8 +130,6 @@ public class Pico extends Applet {
          new Popup(this,this);
       else if (s.equals("url"))
          url(getStr(),getStr());
-      else if (s.equals("rsa"))
-         rsa();
       else {
          dbg("cmd: " + s);
          done();
@@ -152,14 +150,16 @@ public class Pico extends Applet {
       }
    }
 
-   private void rsa() {
-      int n = (OutN = getBig()).bitLength();
-      Random rnd = new Random(Seed);
-      BigInteger p = prime(n*5/10, rnd);
-      BigInteger q = prime(n*6/10, rnd);
-      InN = p.multiply(q);
-      InD = B1.add(B2.multiply(p.subtract(B1).multiply(q.subtract(B1)))).divide(B3);
-      msg2("rsa>", InN);
+   private void rsa(Object x) {
+      if (x != null) {
+         int n = (OutN = (BigInteger)x).bitLength();
+         Random rnd = new Random(Seed);
+         BigInteger p = prime(n*5/10, rnd);
+         BigInteger q = prime(n*6/10, rnd);
+         InN = p.multiply(q);
+         InD = B1.add(B2.multiply(p.subtract(B1).multiply(q.subtract(B1)))).divide(B3);
+         msg2("rsa>", InN);
+      }
    }
 
    String inCiph() {
@@ -275,18 +275,11 @@ public class Pico extends Applet {
       return 0;
    }
 
-   // Read BigInteger
-   BigInteger getBig() {
-      try {return IO.rdBig();}
-      catch (IOException e) {}
-      return BigInteger.ZERO;
-   }
-
    // Read anything
    Object read() {
       try {return IO.read();}
       catch (IOException e) {}
-      return "";
+      return null;
    }
 
    void dbg(String s) {

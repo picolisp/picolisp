@@ -1,4 +1,4 @@
-/* 28oct04abu
+/* 15mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -138,10 +138,10 @@ any doSpQ(any x) {
    return isBlank(EVAL(car(x)))? T : Nil;
 }
 
-// (pat? 'any) -> flg
+// (pat? 'any) -> sym | NIL
 any doPatQ(any x) {
    x = cdr(x);
-   return isSym(x = EVAL(car(x))) && firstByte(x) == '@'? T : Nil;
+   return isSym(x = EVAL(car(x))) && firstByte(x) == '@'? x : Nil;
 }
 
 // (fun? 'any) -> any
@@ -152,15 +152,16 @@ any doFunQ(any x) {
    if (isSym(x = EVAL(car(x))))
       return Nil;
    if (isNum(x))
-      return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : Zero;
-   if (!isCell(cdr(x)))
+      return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : x;
+   for (y = cdr(x); isCell(y) && y != x; y = cdr(y));
+   if (!isNil(y))
       return Nil;
    if (isNil(x = car(x)))
       return T;
    for (y = x; isCell(y); y = cdr(y))
-      if (isNum(car(y)) || isCell(car(y)))
+      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T)
          return Nil;
-   return isSym(y)? x : Nil;
+   return isSym(y) && y!=T? x : Nil;
 }
 
 // (intern 'sym) -> sym
@@ -217,16 +218,17 @@ any doHide(any ex) {
    return Nil;
 }
 
-// (str? 'any) -> flg
+// (str? 'any) -> sym | NIL
 any doStrQ(any x) {
    x = cdr(x);
-   return isSym(x = EVAL(car(x))) && !isExt(x) && !hashed(x,hash(name(x)),Intern)? T : Nil;
+   return isSym(x = EVAL(car(x))) &&
+         !isExt(x) && !hashed(x,hash(name(x)),Intern)? x : Nil;
 }
 
-// (ext? 'any) -> flg
+// (ext? 'any) -> sym | NIL
 any doExtQ(any x) {
    x = cdr(x);
-   return isExt(x = EVAL(car(x))) && isLife(x) ? T : Nil;
+   return isExt(x = EVAL(car(x))) && isLife(x) ? x : Nil;
 }
 
 // (touch 'sym) -> sym
@@ -277,15 +279,25 @@ any doChop(any x) {
 
 void pack(any x, int *i, any *nm, cell *p) {
    int c;
+   cell c1;
 
    if (isCell(x))
       do
          pack(car(x), i, nm, p);
       while (isCell(x = cdr(x)));
    if (!isNil(x)) {
-      if (isNum(x))
-         x = numToSym(x, 0, 0, 0);
-      if (c = symChar(name(x))) {
+      if (isNum(x)) {
+         Push(c1, x = numToSym(x, 0, 0, 0));
+         c = symChar(name(x));
+         if (*nm)
+            charSym(c, i, nm);
+         else
+            Tuck(*p, c1, boxChar(c, i, nm));
+         while (c = symChar(NULL))
+            charSym(c, i, nm);
+         drop(c1);
+      }
+      else if (c = symChar(name(x))) {
          if (*nm) {
             if (isExt(x))
                charSym('{', i, nm);
@@ -1623,16 +1635,16 @@ static int toLowerCase(int c) {
    return c + Lower[Data[Blocks[c>>5]+c & 0xFFFF] >> 7];
 }
 
-// (low? 'any) -> flg
+// (low? 'any) -> sym | NIL
 any doLowQ(any x) {
    x = cdr(x);
-   return isSym(x = EVAL(car(x))) && isLowc(symChar(name(x)))? T : Nil;
+   return isSym(x = EVAL(car(x))) && isLowc(symChar(name(x)))? x : Nil;
 }
 
-// (upp? 'any) -> flg
+// (upp? 'any) -> sym | NIL
 any doUppQ(any x) {
    x = cdr(x);
-   return isSym(x = EVAL(car(x))) && isUppc(symChar(name(x)))? T : Nil;
+   return isSym(x = EVAL(car(x))) && isUppc(symChar(name(x)))? x : Nil;
 }
 
 // (lowc 'any) -> any

@@ -1,4 +1,4 @@
-16oct04abu
+15mar05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -58,8 +58,8 @@ asked questions in 'doc/faq.html'.
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including
-stress tests, a chat server, 2D drawing, a family database, minesweeper game,
-tax accounting, genetic algorithm, GUI demos, 3D animation, and more.
+tests, demo databases and servers, games (chess, minesweeper), tax accounting,
+algorithms, GUI demos, 2D drawing, 3D animation (flight simulator), and more.
 
 Any feedback is welcome!
 Hope you enjoy :-)

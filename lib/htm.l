@@ -1,4 +1,4 @@
-# 10nov04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -59,7 +59,7 @@
 
 (de gui @
    (cond
-      ((pair (next)) (pass new (arg)))
+      ((pair (next)) (pass new @))
       ((and (not (: fields)) (get *Top (arg)))
          (quit "gui conflict" (arg)) )
       (T (put *Top (arg) (pass new (next)))) )
@@ -428,11 +428,7 @@
 (class +Relay)
 # relay
 
-(dm T (Lst . @)
-   (=: relay Lst)
-   (pass extra) )
-
-(dm relay> (Val)
+(de relay (Val)
    (for "X" (: relay)
       (cond
          ((atom "X")
@@ -445,20 +441,24 @@
                   ((cdr "X") Val)
                   (with Val (eval (cdr "X"))) ) ) ) ) ) )
 
+(dm T (Lst . @)
+   (=: relay Lst)
+   (pass extra) )
+
 (dm upd> ()
    (extra)
-   (relay> This (val> This)) )
+   (relay (val> This)) )
 
 (dm set> (Val)
    (let Old (val> This)
       (extra Val)
       (let Val (val> This)
          (unless (= Old Val)
-            (relay> This Val) ) ) ) )
+            (relay Val) ) ) ) )
 
 (dm end> ()
    (extra)
-   (relay> This (val> This)) )
+   (relay (val> This)) )
 
 
 (class +Hot)
@@ -1104,7 +1104,7 @@
 # put get
 
 # (.. ttl cols foo lst [put [get]])
-(dm T ("Ttl" "N" "foo" "Lst" "Put" "Get")
+(dm T ("Ttl" "N" "Foo" "Lst" "Put" "Get")
    (super)
    (txt "Ttl")
    (=: put (or "Put" prog1))
@@ -1119,7 +1119,7 @@
             (while "Lst"
                (let *LayRow T
                   (do "N"
-                     ("foo" (pop '"Lst"))
+                     ("Foo" (pop '"Lst"))
                      (NIL "Lst")
                      (off *LayRow) ) ) ) ) ) ) )
 

@@ -1,24 +1,24 @@
-# 13sep04abu
+# 28mar05abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
 
 # Nim
-(de nim @
-   (game T (pass +) (rest)
-      '((Flg Pos)
+(de nim Pos
+   (game T NIL
+      '((Flg)  # Moves
          (make
             (for (I . N) Pos
-               (while (gt0 N)
-                  (link (cons I N))
+               (do N
+                  (link
+                     (cons (cons I N) (cons I (- N))) )
                   (dec 'N) ) ) ) )
-      '((Flg Pos Mov)
-         (place (car Mov) Pos
-            (- (get Pos (car Mov)) (cdr Mov)) ) )
-      '((Flg Pos)
+      '((Mov)  # Move
+         (dec (nth Pos (car Mov)) (cdr Mov)) )
+      '((Flg)  # Cost
          (let N (apply + Pos)
             (if (=0 N) -100 N) ) ) ) )
 
 (test
-   '(-100 ((1 . 4) 0 4 4) ((2 . 4) 0 0 4) ((3 . 4) 0 0 0))
+   '(-100 ((1 . 4) 1 . -4) ((2 . 4) 2 . -4) ((3 . 4) 3 . -4))
    (nim 4 4 4) )

@@ -1,4 +1,13 @@
-* XXmar05 picoLisp-2.1.1
+* 30mar05 picoLisp-2.1.1
+   DB journaling
+   'chess' demo
+   Predicates return their argument instead of 'T', if possible
+   Bug in 'fun?'
+   Improved 'lint' heuristics
+   I/O-Multiplexing also for plain stdin
+   'dir' in C
+   Self-adjusting applet size
+   Bug in 'pack()'
 
 * 30dec04 picoLisp-2.1.0
    'pipe' function
@@ -72,8 +81,8 @@
 * 06dec03 picoLisp-2.0.9
    'Tele' java client
    Closed leaking file descriptors in 'fork'
-   Changed Applet protocol to individual server connections
-   Decoupled Applet init from HTML page load
+   Changed applet protocol to individual server connections
+   Decoupled applet init from HTML page load
 
 * 14oct03 picoLisp-2.0.8b
    Bug in 'put>', 'rel>', 'lose>' and 'keep>' for '+List'

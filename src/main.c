@@ -1,4 +1,4 @@
-/* 28dec04abu
+/* 19mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -95,6 +95,14 @@ void setRaw(void) {
 void protect(bool flg) {
    if (!(Protect = flg) && SigTerm)
       raise(SIGTERM);
+}
+
+// (protect . prg) -> any
+any doProtect(any x) {
+   protect(YES);
+   x = prog(cdr(x));
+   protect(NO);
+   return x;
 }
 
 /* Allocate memory */
@@ -734,6 +742,37 @@ any doInfo(any x) {
       data(c1) = cons(S_ISDIR(st.st_mode)? T : boxWord2((word2)st.st_size), data(c1));
       return Pop(c1);
    }
+}
+
+// (dir ['any]) -> lst
+any doDir(any x) {
+   any y;
+   DIR *dp;
+   struct dirent *p;
+   cell c1;
+
+   if (isNil(x = evSym(cdr(x))))
+      dp = opendir(".");
+   else {
+      byte nm[bufSize(x)];
+
+      bufString(x, nm);
+      dp = opendir(nm);
+   }
+   if (!dp)
+      return Nil;
+   do {
+      if (!(p = readdir(dp))) {
+         closedir(dp);
+         return Nil;
+      }
+   } while (p->d_name[0] == '.');
+   Push(c1, y = cons(mkStr(p->d_name), Nil));
+   while (p = readdir(dp))
+      if (p->d_name[0] != '.')
+         y = cdr(y) = cons(mkStr(p->d_name), Nil);
+   closedir(dp);
+   return Pop(c1);
 }
 
 // (argv [sym ..] [. sym]) -> lst|sym

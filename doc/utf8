@@ -34,3 +34,6 @@ Paragraph         # C2 A7     <-> A7
 EUR (8364 "20AC") # E2 82 AC  <-> A4
 
 tr -d '\303' |tr '\204\226\234\244\266\274\237' 'ÄÖÜäöüß'
+
+(out "Nagoya"
+   (prinl (char (hex "540D")) (char (hex "53E4")) (char (hex "5C4B"))) )

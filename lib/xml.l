@@ -1,10 +1,12 @@
-# 08nov04abu
+# 11jan05abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
 (de xml? ()
    (skip)
-   (head '("<" "?" "x" "m" "l") (line)) )
+   (prog1
+      (head '("<" "?" "x" "m" "l") (till ">"))
+      (char) ) )
 
 # Generate/Parse XML data
 (de xml (Lst N)

@@ -1,4 +1,4 @@
-# 17dec04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 # upd
@@ -257,8 +257,7 @@
    (super Var (cdr Lst)) )
 
 (dm mis> (Val Obj)
-   (unless (str? Val)
-      ,"String type expected" ) )
+   (and Val (not (str? Val)) ,"String type expected") )
 
 
 # (+Link) typ
@@ -511,7 +510,7 @@
    (for A Lst
       (let? Val (get Obj A)
          (with (meta Obj A)
-            (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+            (let Tree (tree (: var) (: cls) (get Obj (: hook)))
                (store Tree
                   (conc
                      (cons Val
@@ -603,6 +602,17 @@
    (ifn Val
       ,"Input required"
       (extra Val Obj) ) )
+
+
+(class +Mis)
+# mis
+
+(dm T (Var Lst)
+   (=: mis (car Lst))
+   (extra Var (cdr Lst)) )
+
+(dm mis> (Val Obj)
+   (or ((: mis) Val Obj) (extra Val Obj)) )
 
 
 (class +Alt)

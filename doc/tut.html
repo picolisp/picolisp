@@ -36,6 +36,16 @@ the function <code><a href="ref.html#bye">(bye)</a></code>.
 <p>It is very helpful - though not absolutely necessary - when you know how to
 use the <code>vi</code> editor.
 
+<p>We notice that some people try to use Emacs - or some other IDE - as a
+frontend to the Pico Lisp console. This is not recommended, because the Pico
+Lisp debugging environment will set the console (tty) to raw mode by itself and
+do some special handling during character input.
+
+<p>If you feel that you absolutely have to use an input frontend, please remove
+the entry "@lib/led.l" from "dbg.l". Note that in this case, however, you will
+not have the <code>TAB</code> symbol expansion feature available during command
+line editing.
+
 <p>We recommend that you have a terminal window open, and try the examples by
 yourself. You may either type them in, directly to the Pico Lisp interpreter, or
 edit a separate source file (e.g. <code>"test.l"</code>) in a second terminal

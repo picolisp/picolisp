@@ -1,4 +1,4 @@
-# 10nov04abu
+# 12mar05abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -258,7 +258,7 @@
                   (lMove) )
                (and
                   (assoc (pack "^[" @) "FKey")
-                  (let *Dbg "Dbg"
+                  (let *Dbg "*Dbg"
                      (run (cdr @)) ) )
                (NIL "C") ) )
          (T
@@ -330,7 +330,7 @@
       (on "Insert")
       (until
          (member
-            (setq "C" (let *Dbg "Dbg" (key)))
+            (setq "C" (let *Dbg "*Dbg" (key)))
             '("^J" "^M") )
          (or "C" (bye))
          (when (= "C" "^X")
@@ -356,7 +356,7 @@
    (prinl) )
 
 (de revise ("X" "tabFoo" "skipFoo")
-   (let ("Dbg" *Dbg  *Dbg NIL)
+   (let ("*Dbg" *Dbg  *Dbg NIL)
       (_led (chop "X") "tabFoo" "skipFoo")
       (pack "Line") ) )
 
@@ -377,7 +377,7 @@
 
 # Enable line editing
 (de *Led
-   (let ("Dbg" *Dbg  *Dbg NIL)
+   (let ("*Dbg" *Dbg  *Dbg NIL)
       (_led)
       (and
          (> (length "Line") 3)

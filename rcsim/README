@@ -1,4 +1,4 @@
-16nov04abu
+17jan05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -38,6 +38,8 @@ If you don't have Pico Lisp installed, you might want to try the online version
 at:
 
    http://rcsim.software-lab.biz
+
+(please take care not to use a proxy for that address)
 
 In both cases, click onto the image to set the keyboard focus.
 

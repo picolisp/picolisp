@@ -1,4 +1,4 @@
-27sep04abu
+17mar05abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -46,6 +46,9 @@ Pico Lisp is very different from any other Lisp dialect. This is partly due to
 the above design principles, and partly due to its long development history
 since 1984.
 
+You can download the latest release version at
+"http://software-lab.de/down.html".
+
 
 (2) As an application server framework, Pico Lisp provides for 
    Database Management
@@ -56,6 +59,7 @@ since 1984.
       Pilog (Pico Prolog) queries
       Multi-user synchronization
       DB Garbage collection
+      Journaling, Replication
    User Interface
       Browser GUI
       HTML/WML generation

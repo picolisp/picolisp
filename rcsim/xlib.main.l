@@ -1,4 +1,4 @@
-# 30dec04abu
+# 18feb05abu
 # (c) Software Lab. Alexander Burger
 
 # *Sock *Panel
@@ -103,4 +103,4 @@
 
 (dm tone> (A F)
    (when (: tone)
-      (out @ (pr A F)) ) )
+      (out @ (pr A (*/ F 22 10))) ) )

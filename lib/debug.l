@@ -1,19 +1,20 @@
-# 07dec04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
-(de more ("M" "foo")
+(de more ("M" "Foo")
    (let *Dbg NIL
-      (default "foo" print)
+      (default "Foo" print)
       (if (pair "M")
-         ("foo" (pop '"M"))
-         ("foo" (type "M"))
+         ("Foo" (pop '"M"))
+         ("Foo" (type "M"))
          (setq
-            "foo" (list '(X) (list 'pp 'X (lit "M")))
+            "Foo" (list '(X) (list 'pp 'X (lit "M")))
             "M" (mapcar car (filter pair (val "M"))) ) )
-      (until (or (atom "M") (line))
-         ("foo" (pop '"M")) )
-      T ) )
+      (loop
+         (T (atom "M") (prinl))
+         (T (line) T)
+         ("Foo" (pop '"M")) ) ) )
 
 (de stat ()
    (let *Dbg NIL
@@ -36,7 +37,7 @@
                   (and (match S (chop "X")) (link "X")) ) ) ) ) ) )
 
 
-(de who ("X" . "Prg")
+(de who ("X" . "*Prg")
    (let (*Dbg NIL  "Who" '("Who" @ @@ @@@))
       (make (all "who")) ) )
 
@@ -49,10 +50,7 @@
                (and ("match" "Z") (link "Y"))
                (when ("nest" (cdr "Z"))
                   (link (cons (car "Z") "Y")) ) ) )
-         (and
-            (pair (val "Y"))
-            ("nest" (val "Y"))
-            (link "Y") ) )
+         (and (pair (val "Y")) ("nest" @) (link "Y")) )
       (maps
          '(("Z")
             (if (atom "Z")
@@ -70,7 +68,7 @@
       (loop
          (T (atom "Y") (and (sym? "Y") ("who" "Y")))
          (and (sym? (car "Y")) ("who" (car "Y")))
-         (and (pair (car "Y")) ("nst1" (car "Y")))
+         (and (pair (car "Y")) ("nst1" @))
          (T (== "Z" (setq "Y" (cdr "Y")))) ) ) )
 
 (de "nst2" ("Y")
@@ -87,7 +85,7 @@
          ((str? "X") (and (str? "D") (= "X" "D")))
          ((sym? "X") (== "X" "D"))
          (T (match "X" "D")) )
-      (or (not "Prg") (run "Prg")) ) )
+      (or (not "*Prg") (run "*Prg")) ) )
 
 (de can (X)
    (let *Dbg NIL

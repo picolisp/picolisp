@@ -1,4 +1,4 @@
-/* 13jul04abu
+/* 17jan05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -153,15 +153,12 @@ int main(int ac, char *av[]) {
             if (n < 6)
                return 1;
 
-            /* "@8080 "
-             * "GET /url HTTP/1.1"
+            /* "GET /url HTTP/1.1"
              * "GET /8080/url HTTP/1.1"
              * "POST /url HTTP/1.1"
              * "POST /8080/url HTTP/1.1"
              */
-            if (buf[0] == '@')
-               p = buf + 1;
-            else if (pre(buf, "GET /"))
+            if (pre(buf, "GET /"))
                p = buf + 5;
             else if (pre(buf, "POST /"))
                p = buf + 6;
@@ -193,19 +190,15 @@ int main(int ac, char *av[]) {
                }
                return 0;
             }
-            if (buf[0] == '@')
-               p = q + 1;
-            else {
-               wrBytes(srv, buf, p - buf);
-               if (*q == '/')
-                  ++q;
-               p = q;
-               while (*p++ != '\n')
-                  if (p >= buf + n)
-                     return 1;
-               wrBytes(srv, q, p - q);
-               wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
-            }
+            wrBytes(srv, buf, p - buf);
+            if (*q == '/')
+               ++q;
+            p = q;
+            while (*p++ != '\n')
+               if (p >= buf + n)
+                  return 1;
+            wrBytes(srv, q, p - q);
+            wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
             wrBytes(srv, p, buf + n - p);
 
             for (;;) {

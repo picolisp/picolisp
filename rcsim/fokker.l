@@ -1,11 +1,11 @@
-# 17sep04abu
+# 01feb05abu
 # (c) Software Lab. Alexander Burger
 
 (=: mass 910.0)               # kg
 (=: power 3924.0)             # N
 (=: rc -1.4)                  # kg/m
 (=: lc -250.0)                # kg/m
-(=: trim 25)                  # Trimmung
+(=: trim 30)                  # Trimmung
 (=: lim1 0.8)                 # tan(a)
 (=: lim2 0.24)
 (=: tx 1.2)                   # Touchdown

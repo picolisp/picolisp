@@ -1,4 +1,4 @@
-# 17dec04abu
+# 09feb05abu
 # (c) Software Lab. Alexander Burger
 
 # *Tmp
@@ -319,12 +319,6 @@
       (finally (cd "Old")
          (run "Prg") ) ) )
 
-(de dir (Dir)
-   (make
-      (in (list 'sh "-c" (pack "ls " Dir))
-         (until=T (line T)
-            (link @) ) ) ) )
-
 (de dirname (F)
    (pack
       (flip (cdr (member "/" (reverse (chop F))))) ) )
@@ -347,9 +341,9 @@
       ((if (atom (car "Prg")) prinl eval) (pop '"Prg")) ) )
 
 # Echo here-documents
-(de here (S)
+(de here (X)
    (line)
-   (echo S) )
+   (echo X) )
 
 # Send mail
 (de mail ("Host" "Port" "From" "To" "Sub" "Att" . "Prg")

@@ -1,4 +1,4 @@
-/* 29dec04abu
+/* 19mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -12,6 +12,7 @@
 #include <math.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <termio.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -144,6 +145,7 @@ typedef struct catchFrame {
 #define Save(c)         ((c).cdr=Env.stack, Env.stack=&(c))
 #define drop(c)         (Env.stack=(c).cdr)
 #define Push(c,x)       (data(c)=(x), Save(c))
+#define Tuck(c1,c2,x)   (data(c1)=(x), (c1).cdr=(c2).cdr, (c2).cdr=&(c1))
 #define Pop(c)          (drop(c), data(c))
 
 #define Bind(s,f)       ((f).cnt=1, (f).bnd[0].sym=(s), (f).bnd[0].val=val(s), (f).link=Env.bind, Env.bind=&(f))
@@ -370,6 +372,7 @@ any doDefault(any);
 any doDel(any);
 any doDelete(any);
 any doDelq(any);
+any doDir(any);
 any doDiv(any);
 any doDm(any);
 any doDo(any);
@@ -419,6 +422,7 @@ any doInfo(any);
 any doIntern(any);
 any doIsa(any);
 any doJob(any);
+any doJournal(any);
 any doKey(any);
 any doKill(any);
 any doLast(any);
@@ -509,6 +513,7 @@ any doProg1(any);
 any doProg2(any);
 any doProp(any);
 any doPropCol(any);
+any doProtect(any);
 any doProve(any);
 any doPush(any);
 any doPut(any);

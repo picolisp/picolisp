@@ -1,4 +1,4 @@
-# 13may04abu
+# 10feb05abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -51,7 +51,7 @@
 (rel usr    (+List +Joint) role (+User))        # Associated users
 
 (dm url> ()
-   (and (may T RoleAdmin) (pack "lib/role.l?*ID=" (ht:Fmt This))) )
+   (and (may RoleAdmin) (pack "lib/role.l?*ID=" (ht:Fmt This))) )
 
 
 ### User ###
@@ -62,7 +62,7 @@
 (rel role   (+Joint) usr (+Role))               # User role
 
 (dm url> ()
-   (and (may T UserAdmin) (pack "lib/user.l?*ID=" (ht:Fmt This))) )
+   (and (may UserAdmin) (pack "lib/user.l?*ID=" (ht:Fmt This))) )
 
 
 ### Permission management ###
@@ -71,20 +71,14 @@
       (queue '*Perms (car Lst))
       (def (pop 'Lst) (pop 'Lst)) ) )
 
-(de may (Flg . Args)
-   (and
-      Flg
-      (find
-         '((X)
-            (memq X (get *Login 'role 'perm)) )
-         Args ) ) )
+(de may Args
+   (mmeq Args (get *Login 'role 'perm)) )
 
 (de must Args
    (unless
-      (find
-         '((X)
-            (memq X (get *Login 'role 'perm)) )
-         (cdr Args) )
+      (if (cdr Args)
+         (mmeq @ (get *Login 'role 'perm))
+         *Login )
       (quit "No permission" (car Args)) ) )
 
 

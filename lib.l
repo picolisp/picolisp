@@ -1,4 +1,4 @@
-# 29dec04abu
+# 28mar05abu
 # (c) Software Lab. Alexander Burger
 
 (de task ("Key" . "Prg")
@@ -154,31 +154,29 @@
 
 (====)
 
-(de sortBy ("foo" "Lst")
+(de sortBy ("Foo" "Lst")
    (mapcar cdr
       (sort
-         (mapcar '(("X") (cons ("foo" "X") "X")) "Lst") ) ) )
+         (mapcar '(("X") (cons ("Foo" "X") "X")) "Lst") ) ) )
 
 (====)
 
-(de groupBy ("foo" "Lst")
+(de groupBy ("Foo" "Lst")
    (mapcar cdr
       (group
-         (mapcar '(("X") (cons ("foo" "X") "X")) "Lst") ) ) )
+         (mapcar '(("X") (cons ("Foo" "X") "X")) "Lst") ) ) )
 
 (====)
 
 ### Symbol ###
-(de loc ("S" "X")
-   (if (and (str? "X") (= "S" "X"))
-      "X"
+(de loc (S X)
+   (if (and (str? X) (= S X))
+      X
       (and
-         (pair "X")
+         (pair X)
          (or
-            (loc "S" (car "X"))
-            (loc "S" (cdr "X")) ) ) ) )
-
-(====)
+            (loc S (car X))
+            (loc S (cdr X)) ) ) ) )
 
 (de clone ("X" . Lst)
    (if Lst

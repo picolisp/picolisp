@@ -150,6 +150,8 @@ explicitly passing around file descriptors.
 <li>A well-defined <a href="ref.html#cmp">ordinal relationship</a> between
 arbitrary data types facilitates generalized comparing and sorting.
 
+<li>Uniform handling of <code>var</code> locations. 
+
 <li>The universality and usefulness of symbol properties is enforced and
 extended with implicit and explicit bindings of the symbol <code><a
 href="ref.html#This">This</a></code> in combination with the access functions
@@ -526,7 +528,7 @@ constant substitution with zero runtime overhead.
 
 <p>That's not a good idea. The next time that function gets executed within the
 dynamic context the system may crash. Therefore we have a convention to use an
-<u>upper case first letter</u> for variables:
+<u>upper case first letter</u> for locally bound symbols:
 
 <p><pre><code>
 (de findCar (Car List)

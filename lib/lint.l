@@ -1,51 +1,88 @@
-# 14sep04abu
+# 12mar05abu
 # (c) Software Lab. Alexander Burger
 
-(de global? (X)
+(de global? (S)
    (or
-      (memq X '(This ^))
-      (member (char X) '(`(char '*) `(char '+) `(char '@))) ) )
+      (memq S '(NIL ^ @ @@ @@@ This T))
+      (member (char S) '(`(char '*) `(char '+))) ) )
+
+(de local? (S)
+   (or
+      (str? S)
+      (member (char S) '(`(char '*) `(char '_))) ) )
+
+(de dlsym? (S)
+   (and
+      (car (setq S (split (chop S) ':)))
+      (cadr S)
+      (low? (caar S)) ) )
 
 (de lint1 ("X")
-   (if (atom "X")
-      (if (memq "X" "*L")
-         (setq "*U" (delq "X" "*U"))
-         (or
-            (not (sym? "X"))
-            (memq "X" '(T NIL))
-            (getd "X")
-            (str? "X")
-            (global? "X")
-            (memq "X" "*G")
-            (push '"*G" "X") ) )
-      (unless (num? (car "X"))
+   (cond
+      ((atom "X")
+         (when (sym? "X")
+            (cond
+               ((memq "X" "*L") (setq "*Use" (delq "X" "*Use")))
+               ((local? "X") (lint2 (val "X")))
+               (T
+                  (or
+                     (getd "X")
+                     (global? "X")
+                     (memq "X" "*Bnd")
+                     (push '"*Bnd" "X") ) ) ) ) )
+      ((num? (car "X")))
+      (T
          (case (car "X")
-            (:)
+            ((: ::))
             (quote
-               (let F (fun? (cdr "X"))
-                  (and
-                     (pair F)
-                     (not (cdr (tail 1 F)))
-                     (use "*L" (lintFoo (cdr "X"))) ) ) )
+               (if (and (pair (fun? (cdr "X"))) (not (cdr (tail 1 @))))
+                  (use "*L" (lintFoo (cdr "X")))
+                  (lint2 (cdr "X")) ) )
+            (recur
+               (let recurse (cdr "X")
+                  (lintFoo recurse) ) )
+            (let?
+               (use "*L"
+                  (lintVar (cadr "X"))
+                  (mapc lint1 (cddr "X")) ) )
             (let
                (use "*L"
                   (if (atom (cadr "X"))
-                     (lint2 (cadr "X"))
+                     (lintVar (cadr "X"))
                      (for (L (cadr "X") L (cddr L))
-                        (lint2 (car L))
+                        (lintVar (car L))
                         (lint1 (cadr L)) ) )
                   (mapc lint1 (cddr "X")) ) )
             (use
                (use "*L"
                   (if (atom (cadr "X"))
-                     (lint2 (cadr "X"))
-                     (mapc lint2 (cadr "X")) )
+                     (lintVar (cadr "X"))
+                     (mapc lintVar (cadr "X")) )
                   (mapc lint1 (cddr "X")) ) )
             (for
                (use "*L"
-                  (lint2 (caadr "X"))
-                  (mapc lint1 (cdadr "X"))
-                  (mapc lint1 (cddr "X")) ) )
+                  (let "Y" (cadr "X")
+                     (cond
+                        ((atom "Y")          # (for X (1 2 ..) ..)
+                           (lint1 (caddr "X"))
+                           (lintVar "Y")
+                           (lintLoop (cdddr "X")) )
+                        ((atom (cdr "Y"))    # (for (I . X) (1 2 ..) ..)
+                           (lintVar (car "Y"))
+                           (lint1 (caddr "X"))
+                           (lintVar (cdr "Y"))
+                           (lintLoop (cdddr "X")) )
+                        ((atom (car "Y"))    # (for (X (1 2 ..) ..) ..)
+                           (lint1 (cadr "Y"))
+                           (lintVar (car "Y"))
+                           (mapc lint1 (cddr "Y"))
+                           (lintLoop (cddr "X")) )
+                        (T                   # (for ((I . L) (1 2 ..) ..) ..)
+                           (lintVar (caar "Y"))
+                           (lint1 (cadr "Y"))
+                           (lintVar (cdar "Y"))
+                           (mapc lint1 (cddr "Y"))
+                           (lintLoop (cddr "X")) ) ) ) ) )
             (case
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
@@ -53,84 +90,114 @@
             (cond
                (for "X" (cdr "X")
                   (mapc lint1 "X") ) )
-            ((loop do)
-               (when (== 'do (car "X"))
-                  (lint1 (cadr "X")) )
-               (for "X" (cddr "X")
-                  (if (and (pair "X") (or (=T (car "X")) (not (car "X"))))
-                     (mapc lint1 (cdr "X"))
-                     (lint1 "X") ) ) )
+            (loop
+               (lintLoop (cdr "X")) )
+            (do
+               (lint1 (cadr "X"))
+               (lintLoop (cddr "X")) )
             (=:
                (lint1 (last (cddr "X"))) )
-            ((dec inc pop push queue val)
-               (lintSpec '(T)) )
+            ((dec inc pop push queue val idx accu)
+               (_lintq '(T)) )
             ((cut port)
-               (lintSpec '(NIL T)) )
+               (_lintq '(NIL T)) )
             (set
-               (lintSpec '(T NIL .)) )
+               (_lintq '(T NIL .)) )
             (xchg
-               (lintSpec '(T T .)) )
+               (_lintq '(T T .)) )
             (T
-               (if (sym? (car "X"))
-                  (if (memq (car "X") "*L")
-                     (setq "*U" (delq (car "X") "*U"))
+               (cond
+                  ((pair (car "X"))
+                     (lint1 @)
+                     (mapc lint2 (cdr "X")) )
+                  ((memq (car "X") "*L")
+                     (setq "*Use" (delq (car "X") "*Use"))
+                     (mapc lint2 (cdr "X")) )
+                  ((fun? (val (car "X")))
+                     (if (num? @)
+                        (mapc lint1 (cdr "X"))
+                        (when (local? (car "X"))
+                           (lint2 (val (car "X"))) )
+                        (let "Y" (car (getd (pop '"X")))
+                           (while (and (pair "X") (pair "Y"))
+                              (lint1 (pop '"X"))
+                              (pop '"Y") )
+                           (if (or (== '@ "Y") (= "Prg" "Y") (= "*Prg" "Y"))
+                              (mapc lint1 "X")
+                              (lint2 "X") ) ) ) )
+                  (T
                      (or
-                        (getd (car "X"))
                         (str? (car "X"))
-                        (global? (car "X"))
-                        (memq (car "X") "*B")
-                        (pre? "ext:" (car "X"))
-                        (push '"*B" (car "X")) ) )
-                  (lint1 (car "X")) )
-               (mapc lint1 (cdr "X")) ) ) ) ) )
+                        (dlsym? (car "X"))
+                        (memq (car "X") "*Def")
+                        (push '"*Def" (car "X")) )
+                     (mapc lint1 (cdr "X")) ) ) ) ) ) ) )
 
-(de lint2 (X)
-   (when (and (sym? X) (nor (str? X) (global? X)))
-      (push '"*U" X)
-      (push '"*L" X) ) )
+(de lint2 (X Mark)
+   (cond
+      ((memq X Mark))
+      ((atom X)
+         (and (memq X "*L") (setq "*Use" (delq X "*Use"))) )
+      (T (lint2 (car X))
+         (lint2 (cdr X) (cons X Mark)) ) ) )
 
-(de lintSpec (L)
+(de lintVar (X Flg)
+   (cond
+      ((or (not (sym? X)) (memq X '(NIL *DB *Solo T)))
+         (push '"*Var" X) )
+      ((not (global? X))
+         (or Flg (memq X "*Use") (push '"*Use" X))
+         (push '"*L" X) ) ) )
+
+(de lintLoop ("Lst")
+   (for "Y" "Lst"
+      (if (and (pair "Y") (or (=T (car "Y")) (not (car "Y"))))
+         (mapc lint1 (cdr "Y"))
+         (lint1 "Y") ) ) )
+
+(de _lintq (Lst)
    (mapc
       '((X Flg)
          (lint1 (if Flg (strip X) X)) )
       (cdr "X")
-      L ) )
+      Lst ) )
 
 (de lintFoo ("Lst")
-   (let "A" (car "Lst")
+   (let "A" (and (pair "Lst") (car "Lst"))
       (while (pair "A")
-         (lint2 (pop '"A")) )
+         (lintVar (pop '"A") T) )
       (when "A"
-         (lint2 "A") )
+         (lintVar "A") )
       (mapc lint1 (cdr "Lst")) ) )
 
 (de lint ("X" "C")
-   (let (*Dbg T  "*L" NIL  "*B" NIL  "*G" NIL  "*U")
+   (let ("*L" NIL  "*Var" NIL  "*Def" NIL  "*Bnd" NIL  "*Use" NIL)
       (when (pair "X")
          (setq  "C" (cdr "X")  "X" (car "X")) )
-      (lintFoo (if "C" (method "X" "C") (getd "X")))
-      (when (or "*B" "*G" "*U")
-         (if "C"
-            (println "X" "C")
-            (println "X") )
-         (when "*B" (prin "   BadFun ") (println "*B"))
-         (when "*G" (prin "   Global ") (println "*G"))
-         (when "*U" (prin "   Unused ") (println "*U"))
-         T ) ) )
+      (lintFoo (if "C" (method "X" "C") (val "X")))
+      (when (or "*Var" "*Def" "*Bnd" "*Use")
+         (make
+            # Bad variables
+            (and "*Var" (link (cons 'var "*Var")))
+            # Undefined functions
+            (and "*Def" (link (cons 'def "*Def")))
+            # Unbound variables
+            (and "*Bnd" (<> `(char '_) (char "X")) (link (cons 'bnd "*Bnd")))
+            # Unused variables
+            (and "*Use" (link (cons 'use "*Use"))) ) ) ) )
 
 (de lintAll ()
    (let *Dbg NIL
-      (all
-         '(("X")
-            (cond
-               ((= `(char "+") (char "X"))
-                  (mapc lint
-                     (mapcan
-                        '(("Y")
-                           (and
-                              (pair "Y")
-                              (fun? (cdr "Y"))
-                              (list (cons (car "Y") "X")) ) )
-                        (val "X") ) ) )
-               ((and (not (global? "X")) (pair (getd "X")))
-                  (lint "X") ) ) ) ) ) )
+      (make
+         (all
+            '(("X")
+               (cond
+                  ((= `(char "+") (char "X"))
+                     (for "Y" (val "X")
+                        (and
+                           (pair "Y")
+                           (fun? (cdr "Y"))
+                           (lint (car "Y") "X")
+                           (link (cons (cons (car "Y") "X") @)) ) ) )
+                  ((and (not (global? "X")) (pair (getd "X")) (lint "X"))
+                     (link (cons "X" @)) ) ) ) ) ) ) )

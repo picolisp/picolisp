@@ -1,4 +1,4 @@
-# 17dec04abu
+# 02mar05abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -24,7 +24,7 @@
          "Pdf" ) ) )
 
 (de _pdf ()
-   (call "ps2pdf"
+   (call 'ps2pdf
       (pack "-dDEVICEWIDTHPOINTS=" "*PgX")
       (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
       "Ps" "Pdf" ) )
@@ -244,6 +244,10 @@
       (off "*Lim")
       (run "*FF")
       (setq "*Lim" (pop '"*Pag")) ) )
+
+(de noff "Prg"
+   (let "*Lim" NIL
+      (psEval "Prg") ) )
 
 (de eps (Eps X Y DX DY)
    (prinl "gsave " (or X 0) " " (- "*PgY" (or Y 0)) " translate")

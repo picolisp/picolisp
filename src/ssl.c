@@ -1,4 +1,4 @@
-/* 03sep03abu
+/* 21mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -30,8 +30,6 @@ static char Get[] =
    "User-Agent: PicoLisp\r\n"
    "Host: %s:%s\r\n"
    "Accept-Charset: utf-8\r\n\r\n";
-
-static char NIL[] = {'N', 'I', 'L', '\n'};
 
 static void errmsg(char *msg) {
    fprintf(stderr, "ssl: %s\n", msg);
@@ -79,6 +77,16 @@ static int sslConnect(SSL *ssl, char *host, int port) {
    return -1;
 }
 
+static bool sslClose(SSL *ssl, int sd) {
+   int n;
+
+   do
+      if ((n = SSL_shutdown(ssl)) == 1)
+         return close(sd) == 0;
+   while (n == 0);
+   return NO;
+}
+
 static bool sslFile(SSL *ssl, char *file) {
    int fd, n;
    char buf[BUFSIZ];
@@ -120,10 +128,10 @@ static void doSigTerm(int n __attribute__((unused))) {
 int main(int ac, char *av[]) {
    SSL_CTX *ctx;
    SSL *ssl;
-   int n, sec, getLen, fd, sd;
+   int n, sec, getLen, lenLen, fd, sd;
    struct stat st;
    struct flock fl;
-   char get[1024], buf[BUFSIZ];
+   char get[1024], buf[BUFSIZ], len[64];
 
    if (ac < 4 || ac > 7)
       giveup("host port url [[key] file [sec]]");
@@ -150,7 +158,6 @@ int main(int ac, char *av[]) {
             giveup(av[4]);
          if (ac > 5  &&  *av[5]  &&  !sslFile(ssl,av[5]))
             giveup(av[5]);
-         sslChk(SSL_write(ssl, NIL, sizeof(NIL)));
       }
       while ((n = SSL_read(ssl, buf, sizeof(buf))) > 0)
          write(STDOUT_FILENO, buf, n);
@@ -160,12 +167,14 @@ int main(int ac, char *av[]) {
    sec = (int)atol(av[6]);
    signal(SIGINT, doSigTerm);
    signal(SIGTERM, doSigTerm);
+   signal(SIGPIPE, SIG_IGN);
    for (;;) {
       if ((fd = open(File, O_RDWR)) < 0)
          sleep(sec);
       else if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
          close(fd),  sleep(sec);
       else {
+         lenLen = sprintf(len, "%lld\n", Size);
          fl.l_type = F_WRLCK;
          fl.l_whence = SEEK_SET;
          fl.l_start = 0;
@@ -182,15 +191,13 @@ int main(int ac, char *av[]) {
          for (;;) {
             if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
                if (SSL_write(ssl, get, getLen) == getLen  &&
-                        (!*av[4] || sslFile(ssl,av[4]))  &&
-                        SSL_write(ssl, Data, Size) == Size  &&
-                        SSL_write(ssl, NIL, sizeof(NIL)) == sizeof(NIL)  &&
-                        SSL_read(ssl, buf, sizeof(NIL)) == sizeof(NIL)  &&
-                                       memcmp(buf, NIL, sizeof(NIL)) == 0 ) {
-                  SSL_shutdown(ssl),  close(sd);
+                        (!*av[4] || sslFile(ssl,av[4]))  &&          // key
+                        SSL_write(ssl, len, lenLen) == lenLen  &&    // length
+                        SSL_write(ssl, Data, Size) == Size  &&       // data
+                        sslClose(ssl,sd) )
                   break;
-               }
-               SSL_shutdown(ssl),  close(sd);
+
+               sslClose(ssl,sd);
             }
             sleep(sec);
          }

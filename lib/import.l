@@ -1,4 +1,4 @@
-# 01oct04abu
+# 19jan05abu
 # (c) Software Lab. Alexander Burger
 
 ### Import Parsing ###
@@ -21,28 +21,3 @@
       (mapcar
          '((N) (getNum N Lst))
          L ) ) )
-
-# Upper/lower case conversions
-(de *Ulowc
-   (`(chop "GMBH") . "GmbH")
-   (`(chop "UND") . "und")
-   (`(chop "AG") . "AG")
-   (`(chop "KG") . "KG")
-   (`(chop "OHG") . "OHG") )
-
-(de getUlowc (N Lst)
-   (setq Lst (clip (get Lst N)))
-   (pack
-      (make
-         (while Lst
-            (let L
-               (make
-                  (while (or (low? (car Lst)) (upp? (car Lst)))
-                     (link (pop 'Lst)) ) )
-               (cond
-                  ((assoc (mapcar uppc L) *Ulowc)
-                     (link (cdr @)) )
-                  ((>= 3 (length L))
-                     (link L) )
-                  (T (link (uppc (car L)) (mapcar lowc (cdr L)))) ) )
-            (and Lst (link (pop 'Lst))) ) ) ) )

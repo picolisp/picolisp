@@ -1,4 +1,4 @@
-# 17dec04abu
+# 15mar05abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -30,7 +30,7 @@
                               ((type "X")
                                  (prin "  # ")
                                  (print @) )
-                              ((<= 666666 "X" 999999)
+                              ((>= 799999 "X" 700000)
                                  (prin "  # " (datStr "X")) ) )
                            (prinl) ) )
                      (prinl)
@@ -56,7 +56,7 @@
 
 (de "loc" ("X")
    (cond
-      ((and "X" (str? "X") (not (memq "X" (made))))
+      ((and (str? "X") (not (memq "X" (made))))
          (link "X") )
       ((pair "X")
          ("loc" (car "X"))

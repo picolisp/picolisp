@@ -1,5 +1,7 @@
-# 17dec04abu
+# 18mar05abu
 # (c) Software Lab. Alexander Burger
+
+(pool (tmp "db"))
 
 # src/main.c
 (use (Tim1 Tim2 Dat1 Dat2 T1 T2 D1 D2)
@@ -43,6 +45,49 @@
    (test '(1 (x y z) 2 (y z) 3 (z) (z) i a)
       (make (link (for ((I . A) '(x y z) A (cdr A)) (link I A))) (link I A)) ) )
 
+# src/sym.c
+(test 1000000000 (fun? 1000000000))
+(test NIL (fun? 100000000000000))
+(test NIL (fun? 1000000001))
+(test '(A B) (fun? '((A B) (* A B))))
+(test NIL (fun? '((A B) (* A B) . C)))
+(test NIL (fun? '(1 2 3 4)))
+(test NIL (fun? '((A 2 B) (* A B))))
+(test T (fun? '(NIL (* 3 4))))
+(test '@ (pat? '@))
+(test "@Abc" (pat? "@Abc"))
+(test NIL (pat? "ABC"))
+(test NIL (pat? 123))
+(test NIL (str? 123))
+(test NIL (str? '{ABC}))
+(test NIL (str? 'abc))
+(test "abc" (str? "abc"))
+(test '{1} (ext? *DB))
+(test NIL (ext? 'abc))
+(test NIL (ext? "abc"))
+(test NIL (ext? 123))
+(test "a" (low? "a"))
+(test NIL (low? "A"))
+(test NIL (low? 123))
+(test NIL (low? "."))
+(test "A" (upp? "A"))
+(test NIL (upp? "a"))
+(test NIL (upp? 123))
+(test NIL (upp? "."))
+
+# src/subr.c
+(test '(3 4 5 6) (member 3 (1 2 3 4 5 6)))
+(test NIL (member 9 (1 2 3 4 5 6)))
+(test '(c d e f) (memq 'c '(a b c d e f)))
+(let (@X 1234  @Y (1 2 3 4))
+   (test '(a b (c 1234) (((1 2 3 4) . d) e))
+      (fill '(a b (c @X) ((@Y . d) e))) ) )
+(let X 2 (test '(1 2 3) (fill (1 X 3) 'X)))
+(let X 2 (test '(1 2 3) (fill (1 X 3) '(X))))
+(test 123 (num? 123))
+(test NIL (num? 'abc))
+(test NIL (num? (1 2 3)))
+
 # src/big.c
 (test NIL (- NIL 7))
 (test -7 (- 7))
@@ -56,17 +101,9 @@
 (test -8 (dec -7))
 (test -1 (dec 0))
 (test (7 -8 -1) (let L (8 -7 0) (map dec L) L))
-
-
-# src/subr.c
-(test '(3 4 5 6) (member 3 (1 2 3 4 5 6)))
-(test NIL (member 9 (1 2 3 4 5 6)))
-(test '(c d e f) (memq 'c '(a b c d e f)))
-(let (@X 1234  @Y (1 2 3 4))
-   (test '(a b (c 1234) (((1 2 3 4) . d) e))
-      (fill '(a b (c @X) ((@Y . d) e))) ) )
-(let X 2 (test '(1 2 3) (fill (1 X 3) 'X)))
-(let X 2 (test '(1 2 3) (fill (1 X 3) '(X))))
+(test 7 (bit? 7 15 255))
+(test 1 (bit? 1 3))
+(test NIL (bit? 1 2))
 
 # src/io.c
 (when pool

@@ -1,4 +1,4 @@
-// 09dec04abu
+// 04mar05abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -20,10 +20,13 @@ public class Front extends Pico {
 
    public Front() {}
 
-   public Front(Front p, int port, String gate, String sid, String ttl) {
+   public Front(Front p, int port, String sid, String ttl) {
       Parent = p;
-      Seed = p.Seed;
       Host = p.Host;
+      Seed = p.Seed;
+      InN = p.InN;
+      InD = p.InD;
+      OutN = p.OutN;
       Container cont = p.getParent();
       while (!(cont instanceof Frame))
          cont = cont.getParent();
@@ -33,7 +36,7 @@ public class Front extends Pico {
       Dialog.addWindowListener(new WindowAdapter() {
          public void windowClosing(WindowEvent ev) {stop();}
       } );
-      connect(0, port, gate, sid);
+      connect(0, port, sid);
    }
 
    public void stop() {
@@ -70,6 +73,8 @@ public class Front extends Pico {
    void cmd(String s) {
       if (s.equals("ack"))
          {Req = false; relay();}
+      else if (s.equals("able"))
+         able(Fields[getNum()-1], getStr().length() != 0);
       else if (s.equals("focus"))
          focus(getNum());
       else if (s.equals("next"))
@@ -84,6 +89,8 @@ public class Front extends Pico {
          bCol(getNum());
       else if (s.equals("fCol"))
          fCol(getNum());
+      else if (s.equals("grow"))
+         grow(Fields[getNum()-1]);
       else if (s.equals("siz"))
          ((DrawField)Fields[getNum()-1]).siz(getNum());
       else if (s.equals("set"))
@@ -92,8 +99,6 @@ public class Front extends Pico {
          ((DrawField)Fields[getNum()-1]).tmp();
       else if (s.equals("img"))
          img(getNum());
-      else if (s.equals("able"))
-         able(Fields[getNum()-1], getStr().length() != 0);
       else if (s.equals("lock"))
          lock(getStr().length() == 0);
       else if (s.equals("scrl"))
@@ -103,7 +108,7 @@ public class Front extends Pico {
       else if (s.equals("make"))
          make();
       else if (s.equals("dialog"))
-         new Front(this, getNum(), getStr(), getStr(), getStr());
+         new Front(this, getNum(), getStr(), getStr());
       else
          super.cmd(s);
    }
@@ -115,6 +120,7 @@ public class Front extends Pico {
       Scrollbar b;
       Panel panel, flow;
       String s;
+      Dimension d;
 
       fld = new Vector();
       sb = new Vector();
@@ -173,7 +179,7 @@ public class Front extends Pico {
                f.setForeground(new Color(getNum()));
             else if (s.equals("rid"))
                Rid.addElement(f);
-            else if (s.equals("crypt"))
+            else if (s.equals("rsa"))
                Crypt.addElement(f);
             else if (s.equals("pw"))
                ((TextField)f).setEchoChar('*');
@@ -277,9 +283,13 @@ public class Front extends Pico {
       sb.copyInto(SBars = new Scrollbar[sb.size()]);
       validate();
 
-      if (Dialog != null) {
+      if (Dialog == null) {
+         d = getPreferredSize();
+         msg3("siz>", d.width, d.height);
+      }
+      else {
          Dialog.pack();
-         Dimension d = Dialog.getToolkit().getScreenSize();
+         d = Dialog.getToolkit().getScreenSize();
          Rectangle r = Dialog.getBounds();
          r.x = (d.width - r.width)/2;
          r.y = (d.height - r.height)/2;
@@ -388,6 +398,12 @@ public class Front extends Pico {
    // Set background/foreground color
    void bCol(int fld) {(Fields[fld-1]).setBackground(new Color(getNum()));}
    void fCol(int fld) {(Fields[fld-1]).setForeground(new Color(getNum()));}
+
+   // Grow/shrink field
+   void grow(Component f) {
+      Dimension d = f.getSize();
+      f.setSize(d.width + getNum(), d.height + getNum());
+   }
 
    // Set image
    void img(int fld) {

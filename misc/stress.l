@@ -1,4 +1,4 @@
-# 31aug02abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/too.l")
@@ -6,9 +6,6 @@
 (class +A +Entity)
 (rel key    (+Key +Number))                     # Key  1 .. 999
 (rel dat    (+Ref +Number))                     # Data 1 .. 999
-
-(de w Lst
-   (wipe Lst) )
 
 (de rnd ()
    (rand 1 999) )
@@ -19,7 +16,7 @@
       (let (D (rnd)  X (db 'key '+A (rnd)))
          (inc *DB (- D (get X 'dat)))
          (put> X 'dat D) )
-      (commit 'w) ) )
+      (commit 'upd) ) )
 
 (de verify ()
    (dbCheck)
@@ -35,11 +32,11 @@
 
 (de main ()
    (seed (in "/dev/urandom" (rd 8)))
-   (call "rm" "-f" "db/test")
+   (call 'rm "-f" "db/test")
    (pool "db/test")
    (unless (val *DB)
       (set *DB 0)
-      (for (N 1 (<= N 999) (+ 1 N))
+      (for (N 1 (<= N 999) (inc N))
          (let D (rnd)
             (new T '(+A)  'key N  'dat D)
             (inc *DB D) ) )

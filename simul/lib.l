@@ -1,4 +1,4 @@
-# 14sep04abu
+# 15dec04abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
@@ -45,11 +45,11 @@
             (make
                (link (pop 'Lst) (pop 'Lst) (pop 'Lst))
                (mapc link *UMat)
-               (while Lst
+               (for M Lst
                   (link
-                     (if (and (caar Lst) (sym? (caar Lst)))
-                        (model Obj (pop 'Lst))
-                        (pop 'Lst) ) ) ) ) ) ) ) )
+                     (if (and (car M) (sym? (car M)))
+                        (model Obj M)
+                        M ) ) ) ) ) ) ) )
 
 # Duplicate position and orientation
 (de placement (Sym)

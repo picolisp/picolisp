@@ -1,11 +1,36 @@
-# 15sep04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 # src/main.c
-(test (date) (date NIL))
+(use (Tim1 Tim2 Dat1 Dat2 T1 T2 D1 D2)
+   (until
+      (=
+         (setq Tim1 (time))
+         (setq
+            Tim2 (time T)
+            Dat1 (date)
+            Dat2 (date T)
+            T1 (in '(date "+%H %M %S") (list (read) (read) (read)))
+            T2 (in '(date "-u" "+%H %M %S") (list (read) (read) (read)))
+            D1 (in '(date "+%Y %m %d") (list (read) (read) (read)))
+            D2 (in '(date "-u" "+%Y %m %d") (list (read) (read) (read)))
+            @ (time) ) ) )
+   (test Tim1 (time T1))
+   (test Tim1 (apply time T1))
+   (test Tim2 (time T2))
+   (test Dat1 (date D1))
+   (test Dat1 (apply date D1))
+   (test Dat2 (date D2)) )
+            
+(test (2000 7 15) (date 730622))
 (test 730622 (date 2000 7 15))
 (test 730622 (date (2000 7 15)))
-(test (2000 7 15) (date 730622))
+(test NIL (date NIL))
+
+(test (11 17 23) (time 40643))
+(test 40643 (time 11 17 23))
+(test 40643 (time (11 17 23)))
+(test NIL (time NIL))
 
 # src/flow.c
 (let (A 'a I 'i)
@@ -19,25 +44,39 @@
       (make (link (for ((I . A) '(x y z) A (cdr A)) (link I A))) (link I A)) ) )
 
 # src/big.c
-(test T (- NIL))
 (test NIL (- NIL 7))
-(test NIL (- T))
 (test -7 (- 7))
 (test 7 (- -7))
+(test 8 (inc 7))
+(test -6 (inc -7))
+(test 0 (inc -1))
+(test 1 (inc 0))
+(test (8 -6 0 1) (let L (7 -7 -1 0) (map inc L) L))
+(test 7 (dec 8))
+(test -8 (dec -7))
+(test -1 (dec 0))
+(test (7 -8 -1) (let L (8 -7 0) (map dec L) L))
+
 
 # src/subr.c
+(test '(3 4 5 6) (member 3 (1 2 3 4 5 6)))
+(test NIL (member 9 (1 2 3 4 5 6)))
+(test '(c d e f) (memq 'c '(a b c d e f)))
 (let (@X 1234  @Y (1 2 3 4))
    (test '(a b (c 1234) (((1 2 3 4) . d) e))
       (fill '(a b (c @X) ((@Y . d) e))) ) )
+(let X 2 (test '(1 2 3) (fill (1 X 3) 'X)))
+(let X 2 (test '(1 2 3) (fill (1 X 3) '(X))))
 
 # src/io.c
-(call "rm" "-f" "db/test")
-(test T (pool "db/test"))
-(test NIL (mark *DB))
-(test T (mark *DB T))
-(test T (mark *DB))
-(test NIL (mark *DB 0))
-(test NIL (mark *DB))
+(when pool
+   (call 'rm "-f" "db/test")
+   (test T (pool "db/test"))
+   (test NIL (mark *DB))
+   (test T (mark *DB T))
+   (test T (mark *DB))
+   (test NIL (mark *DB 0))
+   (test NIL (mark *DB)) )
 
 # lib.l
 (test '((1 a b c) (2 d e f))

@@ -1,4 +1,4 @@
-/* 24jun04abu
+/* 27nov04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -531,6 +531,22 @@ any doReverse(any x) {
    return y;
 }
 
+// (flip 'lst) -> lst
+any doFlip(any x) {
+   any y, z;
+
+   x = cdr(x);
+   if (!isCell(x = EVAL(car(x))) ||  !isCell(y = cdr(x)))
+      return x;
+   cdr(x) = Nil;
+   for (;;) {
+      z = cdr(y),  cdr(y) = x;
+      if (!isCell(z))
+         return y;
+      x = y,  y = z;
+   }
+}
+
 static any trim(any x) {
    any y;
 
@@ -648,6 +664,14 @@ any doStem(any x) {
             data(c1) = cdr(x);
    }
    return Pop(c1);
+}
+
+// (fin 'any) -> num|sym
+any doFin(any x) {
+   x = cdr(x),  x = EVAL(car(x));
+   while (isCell(x))
+      x = cdr(x);
+   return x;
 }
 
 // (last 'lst) -> any
@@ -873,13 +897,19 @@ any doSymQ(any x) {
    return isSym(EVAL(car(x)))? T : Nil;
 }
 
+// (flg? 'any) -> flg
+any doFlgQ(any x) {
+   x = cdr(x);
+   return isNil(x = EVAL(car(x))) || x==T? T : Nil;
+}
+
 // (member 'any 'lst) -> any
 any doMember(any x) {
    cell c1;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  x = EVAL(car(x));
-   return member(Pop(c1), x);
+   return member(Pop(c1), x) ?: Nil;
 }
 
 // (memq 'any 'lst) -> any
@@ -888,7 +918,7 @@ any doMemq(any x) {
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  x = EVAL(car(x));
-   return memq(Pop(c1), x);
+   return memq(Pop(c1), x) ?: Nil;
 }
 
 // (mmeq 'lst 'lst) -> any
@@ -899,7 +929,7 @@ any doMmeq(any x) {
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  y = EVAL(car(x));
    for (x = Pop(c1);  isCell(x);  x = cdr(x))
-      if (!isNil(z = memq(car(x), y)))
+      if (z = memq(car(x), y))
          return z;
    return Nil;
 }
@@ -1080,30 +1110,31 @@ any doMatch(any x) {
 }
 
 // Fill template structure
-static any fill(any x) {
+static any fill(any x, any s) {
    any y;
    cell c1;
 
    if (isNum(x))
       return NULL;
    if (isSym(x))
-      return  firstByte(x) == '@'?  val(x) : NULL;
-   if (y = fill(car(x))) {
+      return (isNil(s)? firstByte(x)=='@' : memq(x,s)!=NULL)? val(x) : NULL;
+   if (y = fill(car(x),s)) {
       Push(c1,y);
-      y = fill(cdr(x));
+      y = fill(cdr(x),s);
       return cons(Pop(c1), y ?: cdr(x));
    }
-   if (y = fill(cdr(x)))
+   if (y = fill(cdr(x),s))
       return cons(car(x), y);
    return NULL;
 }
 
-// (fill 'any) -> any
+// (fill 'any ['sym|lst]) -> any
 any doFill(any x) {
-   cell c1;
+   cell c1, c2;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
-   if (x = fill(data(c1))) {
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   if (x = fill(data(c1),data(c2))) {
       drop(c1);
       return x;
    }
@@ -1227,7 +1258,7 @@ any doProve(any x) {
             }
          }
          else {
-            if (data(dbg)  &&  !isNil(memq(caar(data(tp1)), data(dbg)))) {
+            if (data(dbg)  &&  memq(caar(data(tp1)), data(dbg))) {
                outWord(indx(car(data(alt)), get(caar(data(tp1)), T)));
                space();
                print(uniFill(car(data(tp1)))), crlf();

@@ -1,11 +1,12 @@
-# 27jul04abu
+# 22nov04abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("loc/help/")
+   "favicon.ico"
    *N *Ok *Dat *Radio *Area *Upload *Chk1 *Chk2 *Chk3
    "misc/htest.l" "@psh" )
 
-(load "lib/gui.l")
+(load "lib/rsa.l" "lib/gui.l")
 
 (setq *HPorts (8071 . 8079)  *APorts (8081 . 8089))
 
@@ -20,7 +21,7 @@
 (de tst ()
    (set> (get *Top 'theChart)
       (make
-         (for (C 33 (<= C 255) (+ 1 C))
+         (for (C 33 (<= C 255) (inc C))
             (link
                (list
                   C
@@ -65,7 +66,7 @@
    (<post> "misc/htest.l"
       (<select> "Choice"
          (make
-            (for (N 1 (< N 600) (+ 1 N))
+            (for (N 1 (< N 600) (inc N))
                (link N) ) )
          '*N )
       (<select> "Ok" '("Ja" "Nein") '*Ok)
@@ -136,7 +137,8 @@
                (quote
                   (gui '(+NumField)  "" 10)
                   (gui '(+TextField) "" 25)
-                  (gui '(+Skip +Able +TextField) '*Flg "!!" 5) )
+                  (gui '(+Skip +Able +TextField) '*Flg "!!" 5)
+                  (bubbleButton) )
                '((L)
                   (list (car L) (cadr L) "Ok") )
                '((L)
@@ -185,7 +187,7 @@
       (<check> '*Chk1 "A")
       (<check> '*Chk2 "B")
       (<check> '*Chk3 "C")
-   
+
       "<br>Radio"
       (<radio> '(*Radio . 7) "a" "A")
       (<radio> '(*Radio . 7) "b" "B")

@@ -1,4 +1,4 @@
-# 14sep04abu
+# 17nov04abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -17,8 +17,7 @@
          (list
             (pack "(" *Msg ")")
             ,"An internal error occurred."
-            ,"Connection will be closed." ) ) )
-   (bye) )
+            ,"Connection will be closed." ) ) ) )
 
 # User identification
 (de user (Pid1 Pid2 Nm To)

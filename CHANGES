@@ -1,4 +1,26 @@
-* XXjan05 picoLisp-2.0.15
+* XXmar05 picoLisp-2.1.1
+
+* 30dec04 picoLisp-2.1.0
+   'pipe' function
+   Bugs in bignum arithmetic
+   'arg' optional 'cnt' argument
+   '+Aux' auxiliary index keys
+   '*Solo' global variable
+   'flg?' predicate function
+   'fin' access function
+   Bug in C-'compare()'
+   'cd' returns old directory
+   'inc' and 'dec' numeric argument
+   Next 'opt' command line arg
+   'finally' exception cleanup
+   Implied 'upd' argument in transactions 'put!>', 'del!>' etc.
+   Bug in 'idx' for empty trees
+   'curry' function
+   Anonymous recursion with 'recur' and 'recurse'
+   Extended 'env' to return bindings
+   Second argument to 'fill'
+   Optional comment character argument for 'skip'
+   'flip' destructive list reversal
 
 * 01oct04 picoLisp-2.0.14
    '<tree>' HTML function
@@ -20,7 +42,7 @@
 * 29may04 picoLisp-2.0.12
    Fixed 'boss' mechanism
    'del' delete-and-set function
-   Introduce '*Fork' global variable
+   '*Fork' global variable
    Changed URL encoding of Lisp objects
    Removed traffic throttle from "httpGate"
    Synchronized ".picoHistory" in "lib/led.l"
@@ -104,7 +126,7 @@
 
 * 01feb03 picoLisp-2.0.3
    Extension and redesign of the HTML API
-   Introduce 'loop' function as a synonym for 'do NIL'
+   'loop' function as a synonym for 'do NIL'
 
 * 17jan03 picoLisp-2.0.2
    The example files for the tutorial were in the wrong directory

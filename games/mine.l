@@ -1,4 +1,4 @@
-# 29sep04abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/xterm.l")
@@ -46,7 +46,7 @@
                   (T C) ) ) )
          (prinl) )
       (prin "   ")
-      (for (C 1 (<= C *FeldX) (+ 1 C))
+      (for (C 1 (<= C *FeldX) (inc C))
          (prin " " (char (+ 64 C))) )
       (prinl)
       (prinl "<" N ">  ") ) )
@@ -109,7 +109,7 @@
                      (dec 'X) ) )
                ((" " "^J" "^M")
                   (xtLeft (+ 2 (* 2 X)))
-                  (xtUp (- Y 1))
+                  (xtUp (dec Y))
                   (when (=T (get *Feld Y X))
                      (anzeigen T)
                      (prinl "*** BUMM ***")

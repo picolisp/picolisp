@@ -1,4 +1,4 @@
-# 30sep04abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -97,7 +97,7 @@
       (inc '*PnlCnt)
       (inc (prop *PnlFld '*))
       (off *PnlFld) )
-   (endPnl> *Fld (- *PnlCnt 1))
+   (endPnl> *Fld (dec *PnlCnt))
    (on *LayPnl)
    (off *LayRow) )
 
@@ -407,7 +407,7 @@
 
 (de radio (N Rows Cols)
    (make
-      (let I (- Rows N) 
+      (let I (- Rows N)
          (do Rows
             (or (=0 I) (link (* I Cols)))
             (dec 'I) ) ) ) )
@@ -665,8 +665,7 @@
                               (pack "*** " @ " ***")
                               (if (pair Err) Err (cons Err)) )
                            Err ) ) ) ) ) )
-         (T
-            (end> This)
+         (T (end> This)
             (and (: arr) (end> @))
             (and
                (find
@@ -767,7 +766,7 @@
 
 (dm act> ()
    (when (super)
-      (let (Val @  Fld (get (: home fields) (+ 1 (: ix))))
+      (let (Val @  Fld (get (: home fields) (inc (: ix))))
          (if (=T Val)
             (clr> Fld)
             (set> Fld Val) ) ) ) )
@@ -780,7 +779,7 @@
    (=: chg Foo)
    (pass super Lbl Str
       '(let
-         (Fld (get (: home fields) (+ 1 (: ix)))
+         (Fld (get (: home fields) (inc (: ix)))
             Val ((: chg) (val> Fld)) )
          (when Val
             (if (=T Val)
@@ -1230,7 +1229,7 @@
 ### DB GUI ###
 (de newUrl ("Typ" . @)
    (prog1
-      (pass new! 'upd "Typ")
+      (pass new! "Typ")
       (url (url> @)) ) )
 
 (de <id> (Ttl . Lst)
@@ -1280,7 +1279,7 @@
 
 (de cloneButton ()
    (gui '(+Button) "" ,"New/Copy"
-      '(url (url> (clone!> (: home obj) 'upd))) ) )
+      '(url (url> (clone!> (: home obj)))) ) )
 
 # Delete object in +ObjForm
 (de delButton (Able)
@@ -1290,7 +1289,7 @@
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
       "" ,"Delete"
       '(when (ask ,"Delete" ,"Delete this data record?")
-         (lose!> (: home obj) 'upd)
+         (lose!> (: home obj))
          (and (: home obj) (url> @) (url @)) ) ) )
 
 (de closeButton ()
@@ -1371,7 +1370,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (put!> @ 'upd (: erVar) Val)
+      (put!> @ (: erVar) Val)
       (extra Val) ) )
 
 (dm chk> ()
@@ -1386,7 +1385,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (put!> @ 'upd (: erVar) (bool Val))
+      (put!> @ (: erVar) (bool Val))
       (extra
          (and Val
             (allow (blob (eval (: erObj)) (: erVar))) ) ) ) )
@@ -1404,7 +1403,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (set!> @ 'upd Val) )
+      (set!> @ Val) )
    (super Val) )
 
 
@@ -1544,7 +1543,7 @@
             (cadr (: tree))
             (eval (cddr (: tree))) )
          (: beg) (: end) )
-      (do (- (: ofs) 1)
+      (do (dec (: ofs))
          (step Node T) )
       (for F (: fields)
          (mapc 'set> F ((: put) (step Node T))) ) ) )

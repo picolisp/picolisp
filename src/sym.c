@@ -1,4 +1,4 @@
-/* 20sep04abu
+/* 28oct04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -52,19 +52,28 @@ any findHash(any s, any *p) {
 
 /* Get symbol name */
 any name(any s) {
-   s = tail(s);
-   while (isCell(s))
-      s = cdr(s);
+   for (s = tail(s); isCell(s); s = cdr(s));
    return s;
 }
 
-// (name 'sym) -> sym
+// (name 'sym ['sym2]) -> sym
 any doName(any ex) {
-   any x;
+   any x, y, *p;
+   cell c1;
 
-   x = cdr(ex),  x = EVAL(car(x));
+   x = cdr(ex),  data(c1) = EVAL(car(x));
+   NeedSym(ex,data(c1));
+   y = name(data(c1));
+   if (!isCell(x = cdr(x)))
+      return isNum(y)? consStr(y) : Nil;
+   if (isNil(data(c1)) || isExt(data(c1)) || hashed(data(c1), hash(y), Intern))
+      err(ex, data(c1), "Can't rename");
+   Save(c1);
+   x = EVAL(car(x));
    NeedSym(ex,x);
-   return isNum(x = name(x))? consStr(x) : Nil;
+   for (p = &tail(data(c1)); isCell(*p); p = &cdr(*p));
+   *p = name(x);
+   return Pop(c1);
 }
 
 /* Find or create single-char symbol */
@@ -156,15 +165,15 @@ any doFunQ(any x) {
 
 // (intern 'sym) -> sym
 any doIntern(any ex) {
-   any x, y, *h;
+   any x, y, z, *h;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
    if (!isNum(y = name(x)))
       return Nil;
-   if (x = findHash(y, h = Intern + hash(y)))
-      return x;
-   *h = cons(x = consSym(Nil,y), *h);
+   if (z = findHash(y, h = Intern + hash(y)))
+      return z;
+   *h = cons(x,*h);
    return x;
 }
 
@@ -611,7 +620,8 @@ any doIdx(any ex) {
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
       Push(c2, Nil);
-      idx(val(data(c1)), &c2);
+      if (isCell(val(data(c1))))
+         idx(val(data(c1)), &c2);
       drop(c1);
       return data(c2);
    }
@@ -1004,9 +1014,7 @@ any doGetl(any ex) {
 static void wipe(any ex, any x) {
    any y, z;
 
-   y = tail(x);
-   while (isCell(y))
-      y = cdr(y);
+   for (y = tail(x); isCell(y); y = cdr(y));
    z = numCell(y);
    while (isNum(cdr(z)))
       z = numCell(cdr(z));

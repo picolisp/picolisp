@@ -1,4 +1,4 @@
-/* 24sep04abu
+/* 29dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -95,7 +95,11 @@ static symInit Symbols[] = {
    {doExtra, "extra"},
    {doFill, "fill"},
    {doFilter, "filter"},
+   {doFin, "fin"},
+   {doFinally, "finally"},
    {doFind, "find"},
+   {doFlgQ, "flg?"},
+   {doFlip, "flip"},
    {doFlush, "flush"},
    {doFold, "fold"},
    {doFor, "for"},
@@ -187,6 +191,7 @@ static symInit Symbols[] = {
    {doOffset, "offset"},
    {doOn, "on"},
    {doOpen, "open"},
+   {doOpt, "opt"},
    {doOr, "or"},
    {doOut, "out"},
    {doPack, "pack"},
@@ -195,6 +200,7 @@ static symInit Symbols[] = {
    {doPatQ, "pat?"},
    {doPeek, "peek"},
    {doPick, "pick"},
+   {doPipe, "pipe"},
    {doPoll, "poll"},
    {doPool, "pool"},
    {doPop, "pop"},
@@ -308,6 +314,7 @@ void initSymbols(void) {
    for (i = 0; i < HASH; ++i)
       Intern[i] = Transient[i] = Extern[i] = Nil;
    DB    = initSym(Nil, "*DB");
+   Solo  = initSym(Zero, "*Solo");
    Up    = initSym(Nil, "^");
    At    = initSym(Nil, "@");
    At2   = initSym(Nil, "@@");

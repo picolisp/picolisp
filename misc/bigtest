@@ -1,4 +1,6 @@
+#!/bin/bash
+# 26dec04abu
 # misc/bigtest <seed>
-# 24sep02abu
 
-nice bin/pico -"seed '$1" misc/bigtest1.l |nice bc |nice bin/pico misc/bigtest2.l
+export BC_LINE_LENGTH=200
+nice bin/pico lib.l lib/misc.l -"seed '$1" misc/bigtest1.l |nice bc |nice bin/pico misc/bigtest2.l

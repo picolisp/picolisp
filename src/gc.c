@@ -1,4 +1,4 @@
-/* 13sep03abu
+/* 18nov04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -39,8 +39,10 @@ static void gc(long c) {
    for (p = Env.stack; p; p = cdr(p))
       mark(car(p));
    for (p = (any)Env.bind;  p;  p = (any)((bindFrame*)p)->link)
-      for (i = ((bindFrame*)p)->cnt;  --i >= 0;)
+      for (i = ((bindFrame*)p)->cnt;  --i >= 0;) {
+         mark(((bindFrame*)p)->bnd[i].sym);
          mark(((bindFrame*)p)->bnd[i].val);
+      }
    for (p = (any)CatchPtr; p; p = (any)((catchFrame*)p)->link)
       mark(((catchFrame*)p)->tag);
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)

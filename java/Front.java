@@ -1,4 +1,4 @@
-// 19aug04abu
+// 09dec04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -614,8 +614,7 @@ class PicoKeyAdapter extends KeyAdapter {
 
          t = System.currentTimeMillis();
          if (Tim > t) {
-            try {Thread.currentThread().sleep(Tim - t);}
-            catch (InterruptedException e) {}
+            Pico.sleep(Tim - t);
             t = Tim;
          }
          Tim = t + 100;

@@ -1,10 +1,10 @@
-# 14sep03abu
+# 01oct04abu
 # (c) Software Lab. Alexander Burger
 
 ### Import Parsing ###
 (de getStr (N Lst)
    (pack (clip (get Lst N))) )
-               
+
 (de getStrl (L Lst)
    (mapcan
       '((N) (and (getStr N Lst) (cons @)))
@@ -44,8 +44,5 @@
                      (link (cdr @)) )
                   ((>= 3 (length L))
                      (link L) )
-                  (T
-                     (link
-                        (uppc (car L))
-                        (mapcar lowc (cdr L)) ) ) ) )
+                  (T (link (uppc (car L)) (mapcar lowc (cdr L)))) ) )
             (and Lst (link (pop 'Lst))) ) ) ) )

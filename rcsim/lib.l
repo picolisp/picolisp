@@ -1,4 +1,4 @@
-# 04sep04abu
+# 29nov04abu
 # (c) Software Lab. Alexander Burger
 
 # *Pilot *Scene *Model
@@ -142,10 +142,10 @@
       ((> (: thrust) (: thr))
          (dec (:: thrust)) ) )
    (if (> 20 (: thrust))
-      (blade> *Model)
-      (disk> *Model) )
+      (blade> This)
+      (disk> This) )
    (unless (=0 (: thrust))
-      (z3d:Xrot 0.2 (get *Model 'propeller)) )
+      (z3d:Xrot 0.2 (: propeller)) )
    (use (Touch VX VY VZ Body Taxi Stick A FX FY FZ DX DY DZ)
       (z3d:Rotate (: tx) 0 (: tz) (: body) NIL NIL 'Touch)
       (z3d:Rotate (: vx) (: vy) (: vz) (: body) 'VX 'VY 'VZ T)
@@ -218,7 +218,7 @@
          (when (> -6.0 (: vz))
             (=: thr (=: thrust 0))
             (=: vx (=: vy 0))
-            (blade> *Model) )
+            (blade> This) )
          (set (cddr Body) (- Touch))
          (=: vz 0) )
 
@@ -234,10 +234,10 @@
                (/ (ext:Dist (car Body) (cadr Body)) 40.0) ) )
          (cond
             ((=0 (: thrust)) 0)
-            ((> 22 (: thrust)) 22)
+            ((> 22 (: thrust)) 11)
             (T
                (doppler
-                  (+ (: thrust) (/ VX 0.5))
+                  (>> 1 (+ (: thrust) (/ VX 0.5)))
                   (car Body)
                   (cadr Body)
                   (: vx)

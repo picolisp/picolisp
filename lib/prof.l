@@ -1,4 +1,4 @@
-# 19may04abu
+# 09oct04abu
 # (c) Software Lab. Alexander Burger
 
 # *Profile
@@ -38,7 +38,7 @@
 
 (de profile ()
    (mapc println
-      (reverse
+      (flip
          (sort
             (mapcar
                '(("X")

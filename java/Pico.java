@@ -1,4 +1,4 @@
-// 12aug04abu
+// 09dec04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -21,6 +21,11 @@ public class Pico extends Applet {
    static final BigInteger B2 = new BigInteger("2");
    static final BigInteger B3 = new BigInteger("3");
    static final BigInteger B6 = new BigInteger("6");
+
+   static void sleep(long ms) {
+      try {Thread.currentThread().sleep(ms);}
+      catch (InterruptedException e) {}
+   }
 
    void seed(int n) {
       if (Seed < 0)

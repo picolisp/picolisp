@@ -1,4 +1,4 @@
-# 14sep04abu
+# 08dec04abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -181,6 +181,12 @@
       (cond
          ((pair Val)
             (cond
+               ((pair (cdr Val))
+                  (cond
+                     ((not (get Rel 'aux)) (quit "No Aux"))
+                     ((pair (car Val))
+                        (init Tree (car Val) (append (cdr Val) T)) )
+                     (T (init Tree Val (append Val T))) ) )
                ((isa '+Key Rel)
                   (init Tree (car Val) (cdr Val)) )
                ((>= (cdr Val) (car Val))
@@ -504,7 +510,7 @@
                      (initQuery
                         (caadr Lst)
                         (cadr (cadr Lst))
-                        X
+                        X  # Hook
                         (cadddr (cadr Lst)) ) )
                   (T
                      (initQuery

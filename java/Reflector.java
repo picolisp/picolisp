@@ -1,4 +1,4 @@
-// 05sep00abu
+// 29dec04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -7,7 +7,10 @@ import java.lang.reflect.*;
 
 public class Reflector extends Thread {
    String Fifo, Cls, Foo;
-   Object Arg;
+   Object Obj;
+   Object[] Args;
+   FileOutputStream Out;
+   InOut IO;
 
    // java Reflector <fifo>
    public static void main(String[] arg) throws Exception {
@@ -19,45 +22,59 @@ public class Reflector extends Thread {
    Reflector(InOut io) throws IOException {
       Fifo = io.rdStr();
       Cls = io.rdStr();
-      Foo = io.rdStr();
-      Arg = io.read();
+      if ((Obj = io.read()) instanceof String)
+         Foo = (String)Obj;   // Invoke static function
+      else
+         Foo = io.rdStr();    // Invoke method on a new Object
+      Args = (Object[])io.read();
+      IO = new InOut(null, Out = new FileOutputStream(Fifo));
    }
 
    public void run() {
-      InOut io = null;
+      Class cls;
+      Object[] args;
+      Class[] par;
 
-      try {  // Invoke static method 'Foo' in class 'Cls'
-         Object[] arg;
-         Class[] par;
-
-         if (Arg == null) {
-            arg = null;
-            par = null;
-         }
-         else if (Arg instanceof Object[]) {
-            arg = (Object[])Arg;
-            par = new Class[arg.length];
-            for (int i = 0; i < arg.length; ++i)
-               par[i] = arg[i]==null?  arg.getClass() : arg[i].getClass();
-         }
+      try {
+         cls = Class.forName(Cls);
+         if (Obj instanceof String)
+            Obj = null;
          else {
-            arg = new Object[1];
-            par = new Class[1];
-            arg[0] = Arg;
-            par[0] = Arg.getClass();
+            if (Obj == null)
+               Obj = cls.newInstance();
+            else {
+               args = (Object[])Obj;
+               par = new Class[args.length];
+               for (int i = 0; i < args.length; ++i) {
+                  if (args[i] == null)
+                     args[i] = "";
+                  par[i] = args[i].getClass();
+               }
+
+               Obj = cls.getConstructor(par).newInstance(args);
+            }
          }
-         Object res = Class.forName(Cls).getMethod(Foo,par).invoke(null,arg);
-         io = new InOut(null, new FileOutputStream(Fifo));
-         io.print(res);
-         io.flush();
+
+         if (Args == null)
+            par = null;
+         else {
+            par = new Class[Args.length];
+            for (int i = 0; i < Args.length; ++i) {
+               if (Args[i] == null)
+                  Args[i] = "";
+               par[i] = Args[i].getClass();
+            }
+         }
+         Object res = cls.getMethod(Foo,par).invoke(Obj,Args);
+         IO.prSym("T");
+         IO.print(res);
+         Out.close();
       }
       catch (Exception e) {
-         System.err.println(e);
          try {
-            if (io == null)
-               io = new InOut(null, new FileOutputStream(Fifo));
-            io.print(e.toString());
-            io.flush();
+            IO.prSym("");
+            IO.print(e.toString());
+            Out.close();
          }
          catch (IOException e2) {System.err.println(e2);}
       }

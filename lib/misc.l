@@ -1,4 +1,4 @@
-# 14sep04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 # *Tmp
@@ -146,11 +146,13 @@
 
 ### Tree ###
 (de balance (Var Lst)
-   (when Lst
-      (let N (/ (+ 1 (length Lst)) 2)
-         (idx Var (nth Lst N 1) T)
-         (balance Var (head (- N 1) Lst))
-         (balance Var (nth Lst (+ 1 N))) ) ) )
+   (let Len (length Lst)
+      (recur (Lst Len)
+         (unless (=0 Len)
+            (let (N (>> 1 (inc Len))  L (nth Lst N))
+               (idx Var (car L) T)
+               (recurse Lst (dec N))
+               (recurse (cdr L) (- Len N)) ) ) ) ) )
 
 ### Telephone ###
 (de telStr (S)
@@ -182,9 +184,8 @@
 ### Date ###
 # ISO date
 (de dat$ (Dat C)
-   (when Dat
-      (setq Dat (date Dat))
-      (pack (car Dat) C (pad 2 (cadr Dat)) C (pad 2 (caddr Dat))) ) )
+   (when (date Dat)
+      (pack (car @) C (pad 2 (cadr @)) C (pad 2 (caddr @))) ) )
 
 (de $dat (S C)
    (if C
@@ -203,17 +204,15 @@
             (% S 100) ) ) ) )
 
 (de datSym (Dat)
-   (when Dat
-      (setq Dat (date Dat))
+   (when (date Dat)
       (pack
-         (pad 2 (caddr Dat))
-         (get *mon (cadr Dat))
-         (pad 2 (% (car Dat) 100)) ) ) )
+         (pad 2 (caddr @))
+         (get *mon (cadr @))
+         (pad 2 (% (car @) 100)) ) ) )
 
 # Localized
 (de datStr (D F)
-   (when D
-      (setq D (date D))
+   (when (setq D (date D))
       (let
          (@Y (if F (pad 2 (% (car D) 100)) (pad 4 (car D)))
             @M (pad 2 (cadr D))
@@ -269,7 +268,7 @@
 (de day (Dat Lst)
    (get
       (or Lst *DayFmt)
-      (+ 1 (% (+ 1 Dat) 7)) ) )
+      (inc (% (inc Dat) 7)) ) )
 
 # Week of the year
 (de week (Dat)
@@ -279,14 +278,14 @@
       -1 ) )
 
 (de _week (Dat)
-   (/ (- Dat (% (+ Dat 1) 7)) 7) )
+   (/ (- Dat (% (inc Dat) 7)) 7) )
 
 # Last day of month
 (de ultimo (Y M)
    (-
       (if (= 12 M)
-         (date (+ 1 Y) 1 1)
-         (date Y (+ 1 M) 1) )
+         (date (inc Y) 1 1)
+         (date Y (inc M) 1) )
       1 ) )
 
 ### Time ###
@@ -315,24 +314,28 @@
    (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 
 ### I/O ###
-# Directory contents
+(de chdir ("Dir" . "Prg")
+   (let? "Old" (cd "Dir")
+      (finally (cd "Old")
+         (run "Prg") ) ) )
+
 (de dir (Dir)
    (make
-      (in (list "sh" "-c" (pack "ls " Dir))
+      (in (list 'sh "-c" (pack "ls " Dir))
          (until=T (line T)
             (link @) ) ) ) )
 
 (de dirname (F)
    (pack
-      (reverse (cdr (member "/" (reverse (chop F))))) ) )
+      (flip (cdr (member "/" (reverse (chop F))))) ) )
 
 # Temporary Files
 (?push '*Fork '(off *Tmp))
-(?push '*Bye '(and *Tmp (call "rm" "-r" *Tmp)))
+(?push '*Bye '(and *Tmp (call 'rm "-r" *Tmp)))
 
 (de tmp @
    (unless *Tmp
-      (call "mkdir" "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
 (de tmp? (F)
@@ -350,8 +353,8 @@
 
 # Send mail
 (de mail ("Host" "Port" "From" "To" "Sub" "Att" . "Prg")
-   (when (connect "Host" "Port")
-      (let ("S" @  "B" (pack "==" (date) "-" (time) "=="))
+   (let? "S" (connect "Host" "Port")
+      (let ("B" (pack "==" (date) "-" (time) "=="))
          (prog1
             (and
                (pre? "220 " (in "S" (line T)))

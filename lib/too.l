@@ -1,4 +1,4 @@
-# 14sep04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -42,7 +42,7 @@
                               (extern (pack (replace @S "/")))
                               (get @ (intern (pack @R))) )
                            (inc 'N)
-                           (call "rm" (pack F)) ) ) ) ) ) ) )
+                           (call 'rm (pack F)) ) ) ) ) ) ) )
       (and (n0 N) N) ) )
 
 (de markExt (S)
@@ -203,7 +203,6 @@
       (and
          (not (get Obj T))
          (get Obj Var)
-         (let Val @
-            (put> Obj Var NIL)
-            (put> Obj Var Val)
-            (commit) ) ) ) )
+         (rel> (meta Obj Var) Obj NIL
+            (put> (meta Obj Var) Obj NIL @) )
+         (commit) ) ) )

@@ -1,4 +1,4 @@
-/* 07sep04abu
+/* 26dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -50,11 +50,11 @@ void digMul2(any x) {
    any y;
    word n, carry;
 
-   n = unDig(x),  carry = n > setDig(x, n + n);
+   n = unDig(x),  setDig(x, n + n),  carry = n & 0x80000000;
    while (isNum(x = cdr(numCell(y = x)))) {
-      if ((n = carry + unDig(x)) >= carry)
-         carry = unDig(x) > (n += unDig(x));
-      setDig(x,n);
+      n = unDig(x);
+      setDig(x, n + n + (carry? 1 : 0));
+      carry = n & 0x80000000;
    }
    if (carry)
       cdr(numCell(y)) = box(1);
@@ -103,6 +103,8 @@ void bigAdd(any dst, any src) {
       }
       if ((n = carry + unDig(src)) >= carry)
          carry = unDig(dst) > (n += unDig(dst));
+      else
+         n = unDig(dst);
       setDig(dst,n);
       src = cdr(numCell(src));
       dst = cdr(numCell(x = dst));
@@ -288,7 +290,7 @@ static int bigCmp(any x, any y) {
 static any bigDiv(any u, any v, bool rem) {
    int m, n, d, i;
    word q, v1, v2, u1, u2, u3, borrow;
-   word2 t, t2;
+   word2 t, r;
    any x, y, z;
    cell c1;
 
@@ -318,17 +320,10 @@ static any bigDiv(any u, any v, bool rem) {
       while (--i >= 0);
 
       t = ((word2)u1 << 32) + u2;                           // Calculate q
-      if (u1 == v1)
-         q = MAX;
-      else
-         q = t / v1;
-
-      t2 = t - (word2)q*v1;
-      while ((word2)q*v2 > (t2 << 32) + u3) {
-         --q;
-         if ((t2 += v1) > MAX)
-            break;
-      }
+      q = u1 == v1? MAX : t / v1;
+      r = t - (word2)q*v1;
+      while (r <= MAX  &&  (word2)q*v2 > (r << 32) + u3)
+         --q,  r += v1;
 
       z = x;                                                // x -= q*v
       t = (word2)q * unDig(y = v);
@@ -353,6 +348,8 @@ static any bigDiv(any u, any v, bool rem) {
                while (x = cdr(numCell(x)),  isNum(y = cdr(numCell(y)))) {
                   if ((n = carry + unDig(y)) >= carry)
                      carry = unDig(x) > (n += unDig(x));
+                  else
+                     n = unDig(x);
                   setDig(x,n);
                }
                setDig(x, carry + unDig(x));
@@ -620,13 +617,9 @@ any doSub(any ex) {
    cell c1, c2;
 
    x = cdr(ex);
-   if (!isNum(data(c1) = EVAL(car(x)))) {
-      if (isNil(data(c1)))
-         return isCell(cdr(x))? Nil : T;
-      if (data(c1) == T  &&  !isCell(cdr(x)))
-         return Nil;
-      numError(ex,data(c1));
-   }
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   NeedNum(ex,data(c1));
    if (!isCell(x = cdr(x)))
       return IsZero(data(c1))?
             data(c1) : consNum(unDig(data(c1)) ^ 1, cdr(numCell(data(c1))));
@@ -655,21 +648,33 @@ any doSub(any ex) {
    return Pop(c1);
 }
 
+// (inc 'num) -> num
 // (inc 'var ['num]) -> num
 any doInc(any ex) {
    any x;
    cell c1, c2;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
-   NeedVar(ex,data(c1));
+   x = cdr(ex);
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   if (isNum(data(c1))) {
+      Push(c1, bigCopy(data(c1)));
+      if (!isNeg(data(c1)))
+         digAdd(data(c1), 2);
+      else {
+         digSub1(data(c1));
+         if (unDig(data(c1)) == 1  &&  !isNum(cdr(numCell(data(c1)))))
+            setDig(data(c1), 0);
+      }
+      return Pop(c1);
+   }
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
       Touch(ex,data(c1));
-      if (isNil(val(data(c1)))) {
-         drop(c1);
+      if (isNil(val(data(c1))))
          return Nil;
-      }
       NeedNum(ex,val(data(c1)));
+      Save(c1);
       val(data(c1)) = bigCopy(val(data(c1)));
       if (!isNeg(val(data(c1))))
          digAdd(val(data(c1)), 2);
@@ -680,6 +685,7 @@ any doInc(any ex) {
       }
    }
    else {
+      Save(c1);
       Push(c2, EVAL(car(x)));
       Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
@@ -701,26 +707,36 @@ any doInc(any ex) {
          bigSub(val(data(c1)),data(c2));
       else
          bigAdd(val(data(c1)),data(c2));
-      drop(c2);
    }
    return val(Pop(c1));
 }
 
+// (dec 'num) -> num
 // (dec 'var ['num]) -> num
 any doDec(any ex) {
    any x;
    cell c1, c2;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
-   NeedVar(ex,data(c1));
+   x = cdr(ex);
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   if (isNum(data(c1))) {
+      Push(c1, bigCopy(data(c1)));
+      if (isNeg(data(c1)))
+         digAdd(data(c1), 2);
+      else if (IsZero(data(c1)))
+         setDig(data(c1), 3);
+      else
+         digSub1(data(c1));
+      return Pop(c1);
+   }
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
       Touch(ex,data(c1));
-      if (isNil(val(data(c1)))) {
-         drop(c1);
+      if (isNil(val(data(c1))))
          return Nil;
-      }
       NeedNum(ex,val(data(c1)));
+      Save(c1);
       val(data(c1)) = bigCopy(val(data(c1)));
       if (isNeg(val(data(c1))))
          digAdd(val(data(c1)), 2);
@@ -730,6 +746,7 @@ any doDec(any ex) {
          digSub1(val(data(c1)));
    }
    else {
+      Save(c1);
       Push(c2, EVAL(car(x)));
       Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
@@ -751,7 +768,6 @@ any doDec(any ex) {
          bigAdd(val(data(c1)),data(c2));
       else
          bigSub(val(data(c1)),data(c2));
-      drop(c2);
    }
    return val(Pop(c1));
 }

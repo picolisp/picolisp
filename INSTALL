@@ -1,4 +1,4 @@
-31jan04abu
+16oct04abu
 (c) Software Lab. Alexander Burger
 
 
@@ -17,11 +17,11 @@ Please follow these steps:
 
 1. Upack the distribution
 
-   $ tar xfz picoLisp-*.tgz
+   $ tar xfz picoLisp-XXX.tgz
 
 2. Change the directory
 
-   $ cd picoLisp-*.tgz
+   $ cd picoLisp-XXX
 
 3. Compile the Pico Lisp interpreter
 

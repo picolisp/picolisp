@@ -1,4 +1,4 @@
-# 14sep04abu
+# 07dec04abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -142,7 +142,7 @@
          (quote
             (when (fun? Lst)
                (map _dbg (cdr Lst)) ) )
-         ((for use let)
+         ((for job use let let? recur)
             (map _dbg (cdr Lst)) )
          ((loop do)
             (map
@@ -157,12 +157,16 @@
 (de d () (let *Dbg NIL (dbg ^)))
 
 (de debug ("X" "C")
-   (let *Dbg NIL
-      (when (pair "X")
-         (setq  "C" (cdr "X")  "X" (car "X")) )
-      (or
-         (dbg (if "C" (method "X" "C") (getd "X")))
-         (quit "Can't debug" "X") ) ) )
+   (ifn (traced? "X" "C")
+      (let *Dbg NIL
+         (when (pair "X")
+            (setq  "C" (cdr "X")  "X" (car "X")) )
+         (or
+            (dbg (if "C" (method "X" "C") (getd "X")))
+            (quit "Can't debug" "X") ) )
+      (untrace "X" "C")
+      (debug "X" "C")
+      (trace "X" "C") ) )
 
 (de ubg (Lst)
    (when (pair Lst)
@@ -283,7 +287,7 @@
                (inc 'Pos 16)
                (for N L
                   (prin (pad 2 (hex N)) " ") )
-               (space (+ 1 (* 3 (- 16 (length L)))))
+               (space (inc (* 3 (- 16 (length L)))))
                (for N L
                   (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )

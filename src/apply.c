@@ -1,4 +1,4 @@
-/* 27may03abu
+/* 08dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -139,7 +139,7 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
    return evSubr(foo, ApplyBody);
 }
 
-// (apply 'foo 'lst ['any ..]) -> any
+// (apply 'fun 'lst ['any ..]) -> any
 any doApply(any ex) {
    any x, y;
    int i, n;
@@ -160,7 +160,7 @@ any doApply(any ex) {
    return x;
 }
 
-// (pass 'foo ['any ..]) -> any
+// (pass 'fun ['any ..]) -> any
 any doPass(any ex) {
    any x;
    int n, i;
@@ -176,7 +176,7 @@ any doPass(any ex) {
    return x;
 }
 
-// (all 'foo) -> any
+// (all 'fun) -> any
 any doAll(any ex) {
    any x;
    int i;
@@ -190,7 +190,7 @@ any doAll(any ex) {
    return x;
 }
 
-// (maps 'foo 'sym ['lst ..]) -> any
+// (maps 'fun 'sym ['lst ..]) -> any
 any doMaps(any ex) {
    any x;
    int i, n;
@@ -212,7 +212,7 @@ any doMaps(any ex) {
    return x;
 }
 
-// (map 'foo 'lst ..) -> lst
+// (map 'fun 'lst ..) -> lst
 any doMap(any ex) {
    any x;
    int i, n;
@@ -230,7 +230,7 @@ any doMap(any ex) {
    return x;
 }
 
-// (mapc 'foo 'lst ..) -> any
+// (mapc 'fun 'lst ..) -> any
 any doMapc(any ex) {
    any x;
    int i, n;
@@ -248,7 +248,7 @@ any doMapc(any ex) {
    return x;
 }
 
-// (maplist 'foo 'lst ..) -> lst
+// (maplist 'fun 'lst ..) -> lst
 any doMaplist(any ex) {
    any x;
    int i, n;
@@ -272,7 +272,7 @@ any doMaplist(any ex) {
    return data(res);
 }
 
-// (mapcar 'foo 'lst ..) -> lst
+// (mapcar 'fun 'lst ..) -> lst
 any doMapcar(any ex) {
    any x;
    int i, n;
@@ -296,7 +296,7 @@ any doMapcar(any ex) {
    return data(res);
 }
 
-// (mapcon 'foo 'lst ..) -> lst
+// (mapcon 'fun 'lst ..) -> lst
 any doMapcon(any ex) {
    any x;
    int i, n;
@@ -329,7 +329,7 @@ any doMapcon(any ex) {
    return data(res);
 }
 
-// (mapcan 'foo 'lst ..) -> lst
+// (mapcan 'fun 'lst ..) -> lst
 any doMapcan(any ex) {
    any x;
    int i, n;
@@ -362,7 +362,7 @@ any doMapcan(any ex) {
    return data(res);
 }
 
-// (filter 'foo 'lst ..) -> lst
+// (filter 'fun 'lst ..) -> lst
 any doFilter(any ex) {
    any x;
    int i, n;
@@ -394,7 +394,7 @@ any doFilter(any ex) {
    return data(res);
 }
 
-// (seek 'foo 'lst ..) -> lst
+// (seek 'fun 'lst ..) -> lst
 any doSeek(any ex) {
    any x;
    int i, n;
@@ -415,7 +415,7 @@ any doSeek(any ex) {
    return Nil;
 }
 
-// (find 'foo 'lst ..) -> any
+// (find 'fun 'lst ..) -> any
 any doFind(any ex) {
    any x;
    int i, n;
@@ -436,7 +436,7 @@ any doFind(any ex) {
    return Nil;
 }
 
-// (pick 'foo 'lst ..) -> any
+// (pick 'fun 'lst ..) -> any
 any doPick(any ex) {
    any x;
    int i, n;
@@ -457,7 +457,7 @@ any doPick(any ex) {
    return Nil;
 }
 
-// (cnt 'foo 'lst ..) -> cnt
+// (cnt 'fun 'lst ..) -> cnt
 any doCnt(any ex) {
    any x;
    int i, n, res;
@@ -477,7 +477,7 @@ any doCnt(any ex) {
    return box(res);
 }
 
-// (sum 'foo 'lst ..) -> num
+// (sum 'fun 'lst ..) -> num
 any doSum(any ex) {
    any x;
    int i, n;
@@ -510,7 +510,7 @@ any doSum(any ex) {
    return Pop(res);
 }
 
-// (maxi 'foo 'lst ..) -> any
+// (maxi 'fun 'lst ..) -> any
 any doMaxi(any ex) {
    any x;
    int i, n;
@@ -530,7 +530,7 @@ any doMaxi(any ex) {
    return Pop(res);
 }
 
-// (mini 'foo 'lst ..) -> any
+// (mini 'fun 'lst ..) -> any
 any doMini(any ex) {
    any x;
    int i, n;

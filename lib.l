@@ -1,17 +1,10 @@
-# 27sep04abu
+# 29dec04abu
 # (c) Software Lab. Alexander Burger
-
-(de macro "Prg"
-   (run (fill "Prg")) )
-
-(====)
 
 (de task ("Key" . "Prg")
    (cond
-      ((not "Prg")
-         (del (assoc "Key" *Key) '*Key) )
-      ((assoc "Key" *Key)
-         (quit "Key conflict" "Key") )
+      ((not "Prg") (del (assoc "Key" *Key) '*Key))
+      ((assoc "Key" *Key) (quit "Key conflict" "Key"))
       (T
          (push '*Key
             (conc
@@ -35,6 +28,23 @@
    (if (assoc -1 *Key)
       (set (cdr @) (+ N))
       (push '*Key (list -1 (+ N) '(bye))) ) )
+
+(====)
+
+(de macro "Prg"
+   (run (fill "Prg")) )
+
+(de recur recurse
+   (run (cdr recurse)) )
+
+(de curry Args
+   (list (car Args)
+      (list 'list
+         (lit (cadr Args))
+         (list 'cons ''job
+            (list 'cons
+               (list 'env (lit (car Args)))
+               (lit (cddr Args)) ) ) ) ) )
 
 (====)
 
@@ -66,7 +76,7 @@
 (de cache ("Var" "Str" . "Prg")
    (cond
       ((not (setq "Var" (car (idx "Var" "Str" T))))
-         (set "Str" (run "Prg")) )
+         (set "Str" "Str"  "Str" (run "Prg")) )
       ((== "Var" (val "Var"))
          (set "Var" (run "Prg")) )
       (T (val "Var")) ) )
@@ -107,18 +117,18 @@
 
 (de insert (N Lst X)
    (conc
-      (cut (- N 1) 'Lst)
+      (cut (dec N) 'Lst)
       (cons X)
       Lst ) )
 
 (de remove (N Lst)
    (conc
-      (cut (- N 1) 'Lst)
+      (cut (dec N) 'Lst)
       (cdr Lst) ) )
 
 (de place (N Lst X)
    (conc
-      (cut (- N 1) 'Lst)
+      (cut (dec N) 'Lst)
       (cons X)
       (cdr Lst) ) )
 
@@ -200,8 +210,8 @@
       (= (cdr Lst) (type (setq *Class (car Lst))))
       (def *Class (cdr Lst)) ) )
 
-(de extend "X"
-   (setq *Class (car "X")) )
+(de extend X
+   (setq *Class (car X)) )
 
 # Class variables
 (de var X
@@ -212,8 +222,9 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless whilst while until until=T do case state
-   for with catch ! quote setq default job let let? use =: in out new )
+   T NIL if ifn when unless whilst while until until=T do case state for
+   with catch finally ! quote setq default push job use let let? recur
+   =: in out pipe ctl new )
 
 (de *PP1 let for)
 (de *PP2 setq default)
@@ -250,13 +261,14 @@
                ((or (atom (car X)) (<= (size (car X)) 12))
                   (space)
                   (print (pop 'X)) ) ) )
-         (loop
-            (NIL X)
-            (T (== Z X) (prin " ."))
-            (T (atom X) (prin " . ") (print X))
-            (prinl)
-            (pretty (pop 'X) (+ 3 N)) )
-         (space)
+         (when X
+            (loop
+               (T (== Z X) (prin " ."))
+               (T (atom X) (prin " . ") (print X))
+               (prinl)
+               (pretty (pop 'X) (+ 3 N))
+               (NIL X) )
+            (space) )
          (prin ")") ) ) )
 
 (de pp ("X" "C")
@@ -277,8 +289,7 @@
                (if (cdr "X")
                   (print (car "X") '. @)
                   (print (car "X")) ) )
-            (T
-               (print (pop '"X"))
+            (T (print (pop '"X"))
                (while (pair "X")
                   (prinl)
                   (pretty (pop '"X") 3) )

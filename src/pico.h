@@ -1,4 +1,4 @@
-/* 24sep04abu
+/* 29dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -190,7 +190,7 @@ extern FILE *InFile, *OutFile;
 extern any TheKey, TheCls;
 extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
+extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
 extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
@@ -213,7 +213,6 @@ void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
-void closeFiles(inFrame*,outFrame*,ctlFrame*);
 void cntError(any,any) __attribute__ ((noreturn));
 int compare(any,any);
 any cons(any,any);
@@ -268,6 +267,9 @@ void pack(any,int*,any*,cell*);
 int pathSize(any);
 void pathString(any,byte*);
 void pipeError(any,char*);
+void popCtlFiles(void);
+void popInFiles(void);
+void popOutFiles(void);
 void pr(any);
 void prin(any);
 void print(any);
@@ -288,6 +290,7 @@ void symError(any,any) __attribute__ ((noreturn));
 any symToNum(any,int,int,int);
 long unBox(any);
 void undefined(any,any);
+void unwind (catchFrame*);
 void varError(any,any) __attribute__ ((noreturn));
 long waitFd(any,int,long);
 bool wrBytes(int,byte*,int);
@@ -383,7 +386,11 @@ any doExtQ(any);
 any doExtra(any);
 any doFill(any);
 any doFilter(any);
+any doFin(any);
+any doFinally(any);
 any doFind(any);
+any doFlgQ(any);
+any doFlip(any);
 any doFlush(any);
 any doFold(any);
 any doFor(any);
@@ -476,6 +483,7 @@ any doOff(any);
 any doOffset(any);
 any doOn(any);
 any doOpen(any);
+any doOpt(any);
 any doOr(any);
 any doOut(any);
 any doPack(any);
@@ -484,6 +492,7 @@ any doPass(any);
 any doPatQ(any);
 any doPeek(any);
 any doPick(any);
+any doPipe(any);
 any doPoll(any);
 any doPool(any);
 any doPop(any);
@@ -607,7 +616,7 @@ static inline any member(any x, any y) {
       if (z == (y = cdr(y)))
          return Nil;
    }
-   return equal(x,y)? y : Nil;
+   return equal(x,y)? y : NULL;
 }
 
 static inline any memq(any x, any y) {
@@ -619,7 +628,7 @@ static inline any memq(any x, any y) {
       if (z == (y = cdr(y)))
          return Nil;
    }
-   return x == y? y : Nil;
+   return x == y? y : NULL;
 }
 
 static inline int indx(any x, any y) {

@@ -1,4 +1,4 @@
-# 17sep04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -36,7 +36,7 @@
                      (prinl)
                      (println '(********))
                      (prinl) ) ) ) )
-         (call "vim"
+         (call 'vim
             "+set iskeyword=@,33-34,36-38,42-90,92,94-95,97-125"
             "+map ^] yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
             "+map ^T GC(0)^[ZZ"

@@ -1,34 +1,39 @@
-# 19feb03abu
+# 26dec04abu
 # (c) Software Lab. Alexander Burger
 
 (de rnd ()
-   (let L
-      (make
-         (do (rand 1 30)
-            (link (char (+ 48 (rand 0 9)))) ) )
-      (while (and (= "0" (car L)) (cdr L))
-         (pop 'L) )
-      (pack L) ) )
+   (let N
+      (if (rand T)
+         (hex
+            (pack
+               (make
+                  (do (rand 1 5)
+                     (link (if (rand T) "FFFFFFFF" "00000000")) ) ) ) )
+         (let L
+            (make
+               (do (rand 1 60)
+                  (link (char (+ 48 (rand 0 9)))) ) )
+            (while (and (= "0" (car L)) (cdr L))
+               (pop 'L) )
+            (format (pack L)) ) )
+      (if (rand T) N (- N)) ) )
 
-(do 1000000
-   (setq
-      S1 (and (rand T) "-")
-      N1 (rnd)
-      S2 (and (rand T) "-") )
-   (while (= "0" (setq N2 (rnd))))
-   (prinl S1 N1)
-   (prinl S2 N2)
-   (prinl S1 N1 " + " S2 N2)
-   (prinl S1 N1 " + 1")
-   (prinl S1 N1 " - " S2 N2)
-   (prinl S1 N1 " - 1")
-   (prinl S1 N1 " * " S2 N2)
-   (prinl S1 N1 " * 2")
-   (prinl S1 N1 " % " S2 N2)
-   (prinl S1 N1 " / " S2 N2)
-   (prinl S1 N1 " / 2")
-   (prinl S1 N1 " >= " S2 N2)
-   (prinl S1 N1 " > " S2 N2)
-   (prinl "sqrt(" N1 ")") )
+(do 8000000
+   (setq N1 (rnd))
+   (while (=0 (setq N2 (rnd))))
+   (prinl N1)
+   (prinl N2)
+   (prinl N1 " + " N2)
+   (prinl N1 " + 1")
+   (prinl N1 " - " N2)
+   (prinl N1 " - 1")
+   (prinl N1 " * " N2)
+   (prinl N1 " * 2")
+   (prinl N1 " % " N2)
+   (prinl N1 " / " N2)
+   (prinl N1 " / 2")
+   (prinl N1 " >= " N2)
+   (prinl N1 " > " N2)
+   (prinl "sqrt(" (abs N1) ")") )
 
 (bye)

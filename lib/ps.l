@@ -1,4 +1,4 @@
-# 26mar04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -20,7 +20,7 @@
             ((=0 "How") (_pdf) (url "Pdf"))
             ((=T "How") (_pdf) (httpEcho "Pdf" "application/pdf" 1))
             ((fun? "How") ("How" "Ps") (_pdf))
-            (T (call "lpr" (pack "-P" "How") "Ps") (_pdf)) )
+            (T (call 'lpr (pack "-P" "How") "Ps") (_pdf)) )
          "Pdf" ) ) )
 
 (de _pdf ()
@@ -230,8 +230,7 @@
          (prinl "grestore") )
       ((=0 Flg)
          (setq "*DX" "*PgX"  "*DY" "*PgY"  "*Lim") )
-      (T
-         (prin "%%DocumentFonts:")
+      (T (prin "%%DocumentFonts:")
          (while "*Fonts"
             (prin " " (pop '"*Fonts")) )
          (prinl)

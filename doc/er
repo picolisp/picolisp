@@ -1,0 +1,44 @@
+                  E/R-Diagramm Notation
+                  =====================
+
+   *---           Konkrete Einzel-Relation: +Bool, +Number, +Symbol, +Link
+   @---           Konkrete Mehrfach-Relation: +List, +Bag
+   O---           Virtuelle Mehrfach-Relation: +Ref
+
+
+    Hook
+     |
+   --*--+
+      \ |
+        @--       Hook-Relation
+
+
+   Beispiele:
+
+      |
+      *-- nr         +Number
+      |
+
+      |     |
+      *-----+        +Link
+      |     |
+
+      |     |
+      @-----+        +List +Link
+      |     |
+
+      |     |
+      *-----O        +Ref +Link
+      |     |
+
+      |     |
+      @-----O        +List +Ref +Link
+      |     |
+
+      |     |
+      *-----*        +Joint   <->   +Joint
+      |     |
+
+      |     |
+      @-----*        +List +Joint   <->   +Joint
+      |     |

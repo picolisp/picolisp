@@ -1,4 +1,4 @@
-# 14sep04abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -14,7 +14,7 @@
 (de shuffle (Lst)
    (make
       (while Lst
-         (let (N (rand 1 (length Lst))  L1 (head (- N 1) Lst)  L2 (nth Lst N))
+         (let (N (rand 1 (length Lst))  L1 (head (dec N) Lst)  L2 (nth Lst N))
             (link (pop 'L2))
             (setq Lst (conc L1 L2)) ) ) ) )
 
@@ -76,7 +76,7 @@
 
 # Alpha-Beta tree search
 (de game ("Flg" "Cnt" "Pos" "moves" "move" "cost")
-   (_game "Flg" "Cnt" "Pos" '(T)) )
+   (_game "Flg" "Cnt" "Pos" '(999999999) -999999999) )
 
 (de _game ("Flg" "Cnt" "Pos" "Alpha" "Beta")
    (let? "Lst"

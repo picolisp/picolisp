@@ -1,4 +1,4 @@
-# 23jan03abu
+# 09oct04abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Port (port 6789))
@@ -11,6 +11,6 @@
 (in *Sock
    (whilst (line)
       (out *Sock
-         (prinl (reverse @)) ) ) )
+         (prinl (flip @)) ) ) )
 
 (bye)

@@ -1,4 +1,4 @@
-27sep04abu
+16nov04abu
 (c) Software Lab. Alexander Burger
 
 
@@ -9,7 +9,9 @@ The Pico Lisp RC Flight Simulator is a very simple toy simulator, allowing you
 to fly an airplane in a way similar to a radio controlled model plane.
 
 It is all implemented within the Pico Lisp system, so that no additional
-libraries like OpenGL or GL4Java are needed.
+libraries like OpenGL or GL4Java are needed. It may be regarded as a proof of
+concept, because a flight simulator is one of the least typical things to do in
+Lisp.
 
 The plane is similar to the German WW-I aircraft Fokker "D-VII" (and a bit to
 the British Sopwith Camel ;-). Though the user's position is that of a model
@@ -41,9 +43,11 @@ In both cases, click onto the image to set the keyboard focus.
 
 
 The second version uses the same graphical frontend, but written in 'C' instead
-of Java. This is much faster on older machines.
+of Java. This is much faster on older machines. You'll have to build it once:
 
-Start the Pico Lisp server with
+   $ (cd src; make x11)
+
+Then start the Pico Lisp server with
 
    $ ./p dbg.l rcsim/xlib.main.l -main -go
 
@@ -72,13 +76,13 @@ If you see no ':' prompt, it is helpful to type a single dot '.' and ENTER, to
 avoid terminating the interpreter:
 
 ...
-0 %  0 km/h  0 m/s  1 m  
+0 %  0 km/h  0 m/s  1 m
 .
 -> NIL
-:  
+:
 
 
-The simulator is controlled by the following 6 keys:
+The simulator is controlled by the following 8 keys:
 
 - The cursor (arrow) keys UP and DOWN control the elevator
 - The LEFT and RIGHT cursor keys control the combined rudder/ailerons
@@ -99,13 +103,15 @@ produces a simple square wave sound, depending on the engine's thrust, the
 airspeed, the distance, and the doppler effect.
 
 If you are using the Java/Applet version, you might simply click on the "Sound"
-checkbox. Be warned, however, that this induces another heavy load on the client
-side.
+checkbox. Be warned, however, that this induces additional load on the client
+side, and doesn't sound very smooth. BTW, does anybody know of a better way to
+produce continuous sound with variable frequency in a Java applet?
 
-In the Z3d-Client version, a console speaker interface is used. As the speaker
-can be accessed in Linux only from a virtual console (not from an X-terminal),
-log into a virtual console (typically tty1 .. tty6) _before_ you start the
-simulator, change to the 'pico' directory, and run the simple tone server:
+In the Z3d-Client version, a console speaker interface is used, which gives
+better results. As the speaker can be accessed in Linux only from a virtual
+console (not from an X-terminal), log into a virtual console (typically tty1 ..
+tty6) _before_ you start the simulator, change to the 'pico' directory, and run
+the simple tone server:
 
    $ rcsim/tone
 

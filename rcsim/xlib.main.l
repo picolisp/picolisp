@@ -1,4 +1,4 @@
-# 04sep04abu
+# 30dec04abu
 # (c) Software Lab. Alexander Burger
 
 # *Sock *Panel
@@ -88,7 +88,7 @@
 
 (dm T ()
    (load "rcsim/env.l")
-   (when (call "test" "-p" "fifo/tone")
+   (when (call 'test "-p" "fifo/tone")
       (=: tone (open "fifo/tone")) ) )
 
 (dm sim> ())

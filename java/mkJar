@@ -1,6 +1,6 @@
+#!/bin/bash
+# 28dec04abu
 # (cd java; ./mkJar [-g])
-# 20jul04abu
-# (c) Software Lab. Alexander Burger
 
 javac -O  ${1:--g:none}  -target 1.1  *.java
 

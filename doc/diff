@@ -80,5 +80,7 @@ Then the list of arguments will be bound to `Lst' without evaluation:
 `MACRO's do not exist in Pico.
 
 `NCONC' is `conc'
-For `RPLACA' can `set' be used
-`RPLACD' is `con'
+
+For `RPLACA' can `set' be used, and `RPLACD' is `con'
+
+'NREVERSE' is `flip'

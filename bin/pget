@@ -1,12 +1,12 @@
 #!bin/pico lib.l
-# 07feb04abu
+# 06nov04abu
 # (c) Software Lab. Alexander Burger
 
-(load "@lib/misc.l" "@lib/rsa.l" "@lib/http.l")
+(load "@lib/misc.l" "@lib/http.l")
 
 (setq Arg (chop (car (argv))))
 
-(when (= '("h" "t" "t" "p" ":" "/" "/") (head 7 Arg))
+(when (head '("h" "t" "t" "p" ":" "/" "/") Arg)
    (setq Arg (nth Arg 8)) )
 
 (cond
@@ -16,8 +16,7 @@
       (setq Host (pack @H)  Port (format (pack @P))  Url) )
    ((match '(@H "/" @U) Arg)
       (setq Host (pack @H)  Port 80  Url (pack @U)) )
-   (T
-      (setq Host (pack Arg)  Port 80  Url) ) )
+   (T (setq Host (pack Arg)  Port 80  Url)) )
 
 (client Host Port Url
    (unless (=T (line))

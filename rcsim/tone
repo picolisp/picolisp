@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 18sep04abu
+# 30dec04abu
 # (c) Software Lab. Alexander Burger
 
 # Must be run on a virtual console
@@ -22,12 +22,11 @@ any tone(any ex) {
 /**/
 
 ### Create named pipe
-(call "mkdir" "-p" "fifo")
 (or
-   (call "test" "-p" "fifo/tone")
-   (call "mkfifo" "fifo/tone") )
+   (call 'test "-p" "fifo/tone")
+   (call 'mkfifo "fifo/tone") )
 
-(?push '*Bye '(call "rm" "fifo/tone"))
+(?push '*Bye '(call 'rm "fifo/tone"))
 
 
 ### Serve calls like:

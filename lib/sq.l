@@ -1,4 +1,4 @@
-# 14sep04abu
+# 31oct04abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook] [var val ..])
@@ -64,8 +64,7 @@
                            (print (apply get Var Obj)) )
                         ((meta Obj Var)
                            (print> @ (get Obj Var)) )
-                        (T
-                           (print (get Obj Var)) ) )
+                        (T (print (get Obj Var))) )
                      (space) )
                   (print Obj) )
                (T (line) Obj) ) ) ) ) )
@@ -86,7 +85,7 @@
       (printsp Obj)
       (if Var
          (_update (get Obj Var) Var)
-         (set!> Obj 'upd
+         (set!> Obj
             (any (revise (sym (val Obj)))) )
          (for X (getl Obj)
             (_update (or (atom X) (pop 'X)) X) )
@@ -101,7 +100,7 @@
       (unless (= New Val)
          (if (mis> Obj Var New)
             (quit "mismatch" @)
-            (put!> Obj 'upd Var New) ) ) ) )
+            (put!> Obj Var New) ) ) ) )
 
 
 (dm (revise> . +Relation) (Val)

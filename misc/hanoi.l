@@ -1,4 +1,4 @@
-# 25mar03abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 # Lisp
@@ -7,9 +7,9 @@
 
 (de move (N A B C)
    (unless (=0 N)
-      (move (- N 1) A C B)
+      (move (dec N) A C B)
       (println 'Move 'disk 'from 'the A 'to 'the B 'pole)
-      (move (- N 1) C B A) ) )
+      (move (dec N) C B A) ) )
 
 # Pilog
 (be hanoi (@N)

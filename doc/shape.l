@@ -1,6 +1,7 @@
-# 31jul04abu
+# 29oct04abu
 # (c) Software Lab. Alexander Burger
 
+# The Shape base class
 (class +Shape)
 # x y
 
@@ -13,6 +14,7 @@
    (inc (:: y) DY) )
 
 
+# The Rectangle class
 (class +Rectangle +Shape)
 # dx dy
 
@@ -25,12 +27,13 @@
    (* (: dx) (: dy)) )
 
 (dm perimeter> ()
-   (+ (* 2 (: dx)) (* 2 (: dy))) )
+   (* 2 (+ (: dx) (: dy))) )
 
 (dm draw> ()
    (drawRect (: x) (: y) (: dx) (: dy)) ) # Hypothetical function 'drawRect'
 
 
+# The Circle class
 (class +Circle +Shape)
 # r
 
@@ -39,10 +42,16 @@
    (=: r R) )
 
 (dm area> ()
-   (*/ (: r) (: r) 31415627 10000000) )
+   (*/ (: r) (: r) 31415927 10000000) )
 
 (dm perimeter> ()
-   (*/ 2 (: r) 31415627 10000000) )
+   (*/ 2 (: r) 31415927 10000000) )
 
 (dm draw> ()
    (drawCircle (: x) (: y) (: r)) )       # Hypothetical function 'drawCircle'
+
+
+# The Fixed prefix class
+(class +Fixed)
+
+(dm move> (DX DY))  # A do-nothing method

@@ -1,4 +1,4 @@
-/* 25sep04abu
+/* 08dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -91,7 +91,8 @@ any doDe(any ex) {
    return cadr(ex);
 }
 
-// (dm sym . foo) -> sym | (dm (sym . cls) . foo) -> sym
+// (dm sym . fun) -> sym
+// (dm (sym . cls) . fun) -> sym
 any doDm(any ex) {
    any x, y, msg, cls;
 
@@ -341,7 +342,7 @@ any doIsa(any ex) {
    return Nil;
 }
 
-// (method 'msg 'obj) -> foo
+// (method 'msg 'obj) -> fun
 any doMethod(any ex) {
    any x, y;
 
@@ -360,10 +361,10 @@ any doMeth(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedSym(ex,data(c1));
    Fetch(ex,data(c1));
-   for (TheKey = car(ex); ; TheKey = y) {
+   for (TheKey = car(ex); ; TheKey = val(TheKey)) {
       if (!isSym(TheKey))
          err(ex, car(ex), "Bad message");
-      if (isNum(y = val(TheKey))) {
+      if (isNum(val(TheKey))) {
          TheCls = Nil;
          if (y = method(data(c1))) {
             x = evMethod(data(c1), y, cdr(x));
@@ -791,11 +792,11 @@ any doState(any ex) {
 
    x = cdr(ex);
    Push(c1, EVAL(car(x)));
-   NeedVar(ex,car(x));
+   NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
    while (isCell(x = cdr(x))) {
       y = caar(x),  z = car(y);
-      if (z==T || z==val(data(c1)) || isCell(z) && !isNil(memq(val(data(c1)),z))) {
+      if (z==T || z==val(data(c1)) || isCell(z) && memq(val(data(c1)),z)) {
          y = cdr(y);
          if (!isCell(cdr(y)) || !isNil(val(At) = prog(cdr(y)))) {
             Touch(ex,data(c1));
@@ -1083,6 +1084,7 @@ any doCatch(any ex) {
    catchFrame f;
 
    x = cdr(ex),  f.tag = EVAL(car(x));
+   NeedSym(ex,f.tag);
    f.link = CatchPtr,  CatchPtr = &f;
    f.env = Env;
    if (!(y = (any)setjmp(f.rst)))
@@ -1093,26 +1095,32 @@ any doCatch(any ex) {
 
 // (throw 'sym 'any)
 any doThrow(any ex) {
-   int i;
    any x, tag;
+   catchFrame *p;
 
    x = cdr(ex),  tag = EVAL(car(x));
    x = cdr(x),  x = EVAL(car(x));
-   while (CatchPtr) {
-      if (CatchPtr->tag == T  ||  tag == CatchPtr->tag) {
-         while (Env.bind != CatchPtr->env.bind) {
-            i = Env.bind->cnt;
-            while (--i >= 0)
-               val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
-            Env.bind = Env.bind->link;
-         }
-         closeFiles(CatchPtr->env.inFiles, CatchPtr->env.outFiles, CatchPtr->env.ctlFiles);
-         Env = CatchPtr->env;
-         longjmp(CatchPtr->rst, (int)x);
+   for (p = CatchPtr;  p;  p = p->link)
+      if (p->tag == T  ||  tag == p->tag) {
+         unwind(p);
+         longjmp(p->rst, (int)x);
       }
-      CatchPtr = CatchPtr->link;
-   }
    err(ex, tag, "Tag not found");
+}
+
+// (finally exe . prg) -> any
+any doFinally(any x) {
+   catchFrame f;
+   cell c1;
+
+   x = cdr(x);
+   f.tag = car(x);
+   f.link = CatchPtr,  CatchPtr = &f;
+   f.env = Env;
+   Push(c1, prog(cdr(x)));
+   EVAL(f.tag);
+   CatchPtr = f.link;
+   return Pop(c1);
 }
 
 static bindFrame BrkAt, BrkKey;
@@ -1122,7 +1130,7 @@ void brkLoad(any x) {
    cell c1;
 
    if (!isNil(val(Dbg)) && !Env.brk) {
-      if (!isatty(STDIN_FILENO))
+      if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
          err(x, NULL, "BREAK");
       Env.brk = YES;
       Push(c1, val(Up)),  val(Up) = x;
@@ -1368,6 +1376,5 @@ any doFork(any ex) {
 any doBye(any ex) {
    any x = EVAL(cadr(ex));
 
-   run(val(Bye));
    bye(isNil(x)? 0 : xCnt(ex,x));
 }

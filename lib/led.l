@@ -1,4 +1,4 @@
-# 18aug04abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -52,7 +52,7 @@
 
 # Basic editing routine
 (de chgLine (L N)
-   (backsp (- "LPos" 1))  # To start of old line
+   (backsp (dec "LPos"))  # To start of old line
    (setq "LPos" N)
    (mapc ledChr L)  # Draw new line
    (flush)
@@ -62,7 +62,7 @@
 
 # Move left
 (de lMove ()
-   (posLine (max 1 (- "LPos" 1))) )
+   (posLine (max 1 (dec "LPos"))) )
 
 # Move to beginning
 (de bMove ()
@@ -73,7 +73,7 @@
    (posLine
       (if (>= "LPos" (length "Line"))
          "LPos"
-         (+ 1 "LPos") ) ) )
+         (inc "LPos") ) ) )
 
 # Move to end of line
 (de eMove ()
@@ -81,7 +81,7 @@
 
 # Move beyond end of line
 (de xMove ()
-   (posLine (+ 1 (length "Line"))) )
+   (posLine (inc (length "Line"))) )
 
 # Move word left
 (de lWord ()
@@ -91,7 +91,7 @@
             1
             (loop
                (T (= 1 (dec 'N)) 1)
-               (setq L (nth "Line" (- N 1)))
+               (setq L (nth "Line" (dec N)))
                (T (and (delim? (car L)) (not (delim? (cadr L))))
                   N ) ) ) ) ) )
 
@@ -104,13 +104,13 @@
             M
             (loop
                (T (= M (inc 'N)) M)
-               (setq L (nth "Line" (- N 1)))
+               (setq L (nth "Line" (dec N)))
                (T (and (delim? (car L)) (not (delim? (cadr L))))
                   N ) ) ) ) ) )
 
 # Match left parenthesis
 (de lPar ()
-   (let (N 1  I (- "LPos" 1))
+   (let (N 1  I (dec "LPos"))
       (loop
          (T (=0 I))
          (case (get "Line" I)
@@ -121,7 +121,7 @@
 
 # Match right parenthesis
 (de rPar ()
-   (let (N 1  I (+ "LPos" 1))
+   (let (N 1  I (inc "LPos"))
       (loop
          (T (> I (length "Line")))
          (case (get "Line" I)
@@ -132,14 +132,14 @@
 
 # Clear to end of line
 (de clrEol ()
-   (let N (- "LPos" 1)
+   (let N (dec "LPos")
       (if (=0 N)
          (chgLine NIL 1)
          (chgLine (head N "Line") N) ) ) )
 
 # Insert a char
 (de insChar (C)
-   (chgLine (insert "LPos" "Line" C) (+ "LPos" 1)) )
+   (chgLine (insert "LPos" "Line" C) (inc "LPos")) )
 
 (de del1 (L)
    (ifn (nth L "LPos")
@@ -188,7 +188,7 @@
       (chgLine (append "Clip" "Line") 1)
       (chgLine
          (append
-            (head (- "LPos" 1) "Line")
+            (head (dec "LPos") "Line")
             "Clip"
             (nth "Line" "LPos") )
          (+ "LPos" (length "Clip") -1) ) ) )
@@ -204,7 +204,7 @@
 # Searching
 (de ledSearch (L)
    (use (H S)
-      (setq H (nth "History" (+ 1 "HPos")))
+      (setq H (nth "History" (inc "HPos")))
       (chgLine
          (ifn (setq S (find '((X) (match "Item" X)) H))
             (prog (beep) L)
@@ -215,7 +215,7 @@
 
 # TAB expansion
 (de expandTab ()
-   (let ("L" (head (- "LPos" 1) "Line")  "S" "L")
+   (let ("L" (head (dec "LPos") "Line")  "S" "L")
       (while (find "skipFoo" "S")
          (pop '"S") )
       (ifn "S"
@@ -226,7 +226,7 @@
             (or
                "Complete"
                (setq "Complete"
-                  (let "N" (+ 1 (length "S"))
+                  (let "N" (inc (length "S"))
                      (mapcar
                         '((X)
                            (setq X (nth (chop X) "N"))
@@ -246,7 +246,7 @@
       (case "C"
          (("^H" "^?")
             (when (> "LPos" 1)
-               (chgLine (remove (- "LPos" 1) "Line") (- "LPos" 1)) ) )
+               (chgLine (remove (dec "LPos") "Line") (dec "LPos")) ) )
          ("^V" (insChar (key)))
          ("^["
             (loop
@@ -292,14 +292,14 @@
       ("d" (doUndo) (delWord T))
       ("D" (doUndo) (clrEol))
       ("f"
-         (ifn (setq "C" (index (key) (nth "Line" (+ 1 "LPos"))))
+         (ifn (setq "C" (index (key) (nth "Line" (inc "LPos"))))
             (beep)
             (posLine (+ "C" "LPos")) ) )
       ("h" (lMove))
       ("i" (doUndo) (on "Insert"))
       ("I" (doUndo) (bMove) (on "Insert"))
-      ("j" (unless (=0 "HPos") (setHist (- "HPos" 1))))
-      ("k" (when (< "HPos" (length "History")) (setHist (+ 1 "HPos"))))
+      ("j" (unless (=0 "HPos") (setHist (dec "HPos"))))
+      ("k" (when (< "HPos" (length "History")) (setHist (inc "HPos"))))
       ("l" (rMove))
       ("n" (ledSearch "Line"))
       ("N" (if "Found" (setHist (pop '"Found")) (beep)))
@@ -326,7 +326,7 @@
 # Get a line from console
 (de _getLine ("L" "skipFoo")
    (use "C"
-      (chgLine "L" (+ 1 (length "L")))
+      (chgLine "L" (inc (length "L")))
       (on "Insert")
       (until
          (member

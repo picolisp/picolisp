@@ -1,4 +1,4 @@
-/* 30sep04abu
+/* 29dec04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -631,7 +631,7 @@ static void pushCtlFiles(ctlFrame *f) {
    f->link = Env.ctlFiles,  Env.ctlFiles = f;
 }
 
-static void popInFiles(void) {
+void popInFiles(void) {
    if (Env.inFiles->pid >= 0) {
       fclose(InFile);
       if (Env.inFiles->pid > 0)
@@ -643,7 +643,7 @@ static void popInFiles(void) {
    InFile = (Env.inFiles = Env.inFiles->link)?  Env.inFiles->fp : stdin;
 }
 
-static void popOutFiles(void) {
+void popOutFiles(void) {
    if (Env.outFiles->pid >= 0) {
       fclose(OutFile);
       if (Env.outFiles->pid > 0)
@@ -654,22 +654,13 @@ static void popOutFiles(void) {
    OutFile = (Env.outFiles = Env.outFiles->link)? Env.outFiles->fp : stdout;
 }
 
-static void popCtlFiles(void) {
+void popCtlFiles(void) {
    close(Env.ctlFiles->fd);
    Env.ctlFiles = Env.ctlFiles->link;
 }
 
-void closeFiles(inFrame *in, outFrame *out, ctlFrame *ctl) {
-   while (Env.inFiles != in)
-      popInFiles();
-   while (Env.outFiles != out)
-      popOutFiles();
-   while (Env.ctlFiles != ctl)
-      popCtlFiles();
-}
-
 /* Skip White Space and Comments */
-static int skip(void) {
+static int skip(int c) {
    for (;;) {
       if (Chr < 0)
          return Chr;
@@ -678,7 +669,7 @@ static int skip(void) {
          if (Chr < 0)
             return Chr;
       }
-      if (Chr != '#')
+      if (Chr != c)
          return Chr;
       while (Env.get(), Chr != '\n')
          if (Chr < 0)
@@ -717,7 +708,7 @@ static any rdList(void) {
    static any read0(bool);
 
    Env.get();
-   if (skip() == ')') {
+   if (skip('#') == ')') {
       Env.get();
       return Nil;
    }
@@ -739,7 +730,7 @@ static any rdList(void) {
       drop(c1);
    }
    for (;;) {
-      if (skip() == ')') {
+      if (skip('#') == ')') {
          Env.get();
          break;
       }
@@ -747,8 +738,8 @@ static any rdList(void) {
          break;
       if (Chr == '.') {
          Env.get();
-         cdr(x) = skip()==')' || Chr==']'? data(c1) : read0(NO);
-         if (skip() == ')')
+         cdr(x) = skip('#')==')' || Chr==']'? data(c1) : read0(NO);
+         if (skip('#') == ')')
             Env.get();
          else if (Chr != ']')
             err(NULL, x, "Bad dotted pair");
@@ -798,7 +789,7 @@ static any read0(bool top) {
    any x, y, *h;
    cell c1;
 
-   if (skip() < 0) {
+   if (skip('#') < 0) {
       if (top)
          return Nil;
       eofErr();
@@ -822,7 +813,7 @@ static any read0(bool top) {
    }
    if (Chr == ',') {
       Env.get();
-      if (isCell(y = member(x = read0(NO), val(Uni))))
+      if ((y = member(x = read0(NO), val(Uni))) && isCell(y))
          return car(y);
       val(Uni) = cons(x, val(Uni));
       return x;
@@ -1172,9 +1163,13 @@ any doChar(any ex) {
    atomError(ex,x);
 }
 
-// (skip) -> sym
-any doSkip(any ex __attribute__((unused))) {
-   return skip()<0? Nil : mkChar(Chr);
+// (skip ['sym]) -> sym
+any doSkip(any ex) {
+   any x;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   NeedSym(ex,x);
+   return skip(symChar(name(x)))<0? Nil : mkChar(Chr);
 }
 
 // (from 'any ..) -> sym
@@ -1478,7 +1473,7 @@ any load(any ex, int pr, any x) {
       Save(c1),  x = EVAL(data(c1)),  drop(c1);
       if (InFile == stdin && !Chr) {
          val(At3) = val(At2),  val(At2) = val(At),  val(At) = x;
-         outString("-> "),  print(x),  crlf();
+         outString("-> "),  fflush(OutFile),  print(x),  crlf();
       }
    }
    popInFiles();
@@ -1492,8 +1487,11 @@ any doLoad(any ex) {
 
    x = cdr(ex);
    do {
-      y = EVAL(car(x));
-      y = load(ex, '>', y);
+      if ((y = EVAL(car(x))) != T)
+         y = load(ex, '>', y);
+      else
+         while (*AV  &&  strcmp(*AV,"-") != 0)
+            y = load(ex, '>', mkStr(*AV++));
    } while (isCell(x = cdr(x)));
    return y;
 }
@@ -1521,6 +1519,31 @@ any doOut(any ex) {
    pushOutFiles(&f);
    x = prog(cddr(ex));
    popOutFiles();
+   return x;
+}
+
+// (pipe exe . prg) -> any
+any doPipe(any ex) {
+   any x;
+   inFrame f;
+   int pfd[2];
+
+   if (pipe(pfd) < 0)
+      err(ex, NULL, "Can't pipe");
+   if (isNil(doFork(Nil))) {
+      close(pfd[0]);
+      if (pfd[1] != STDOUT_FILENO)
+         dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
+      EVAL(cadr(ex));
+      bye(0);
+   }
+   close(pfd[1]);
+   if (!(f.fp = fdopen(pfd[0], "r")))
+      openErr(ex, "Read pipe");
+   f.pid = 0;
+   pushInFiles(&f);
+   x = prog(cddr(ex));
+   popInFiles();
    return x;
 }
 
@@ -1994,9 +2017,23 @@ static void setLock(int cmd, int typ, off_t len) {
       lockErr();
 }
 
-static void rdLock(void) {setLock(F_SETLKW, F_RDLCK, 1);}
-static void wrLock(void) {setLock(F_SETLKW, F_WRLCK, 1);}
-static void rwUnlock(int len) {setLock(F_SETLK, F_UNLCK, len);}
+static void rdLock(void) {
+   if (val(Solo) != T)
+      setLock(F_SETLKW, F_RDLCK, 1);
+}
+
+static void wrLock(void) {
+   if (val(Solo) != T)
+      setLock(F_SETLKW, F_WRLCK, 1);
+}
+
+static void rwUnlock(int len) {
+   if (val(Solo) != T) {
+      if (len == 0)
+         val(Solo) = Zero;
+      setLock(F_SETLK, F_UNLCK, len);
+   }
+}
 
 static pid_t tryLock(adr n) {
    struct flock fl;
@@ -2006,8 +2043,13 @@ static pid_t tryLock(adr n) {
       fl.l_whence = SEEK_SET;
       fl.l_start = (off_t)n;
       fl.l_len = (off_t)(n != 0);  // Zero-id: Lock all
-      if (fcntl(BlkFile, F_SETLK, &fl) >= 0)
+      if (fcntl(BlkFile, F_SETLK, &fl) >= 0) {
+         if (!n)
+            val(Solo) = T;
+         else if (val(Solo) != T)
+            val(Solo) = Nil;
          return 0;
+      }
       if (errno != EACCES  &&  errno != EAGAIN)
          lockErr();
       fl.l_type = F_WRLCK;  //??
@@ -2058,8 +2100,10 @@ static adr newBlock(void) {
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    if (n = getAdr(buf))
       blkPeek(n, buf, BLK);  // Get free link
+   else if ((n = getAdr(buf+BLK)) == 281474976710592LL)
+      err(NULL, NULL, "DB Oversize");
    else
-      n = getAdr(buf+BLK),  setAdr(n + BLKSIZE, buf+BLK);  // Increment next
+      setAdr(n + BLKSIZE, buf+BLK);  // Increment next
    setAdr(0, IniBlk),  blkPoke(n, IniBlk, BLKSIZE);
    blkPoke(0, buf, 2*BLK);
    return n;
@@ -2145,6 +2189,7 @@ any doPool(any ex) {
       while (isNil(doRollback(Nil)));
       if (close(BlkFile) < 0)
          closeErr("DB");
+      val(Solo) = Zero;
       BlkFile = 0;
    }
    if (!isNil(x)) {
@@ -2345,9 +2390,7 @@ any doBegin(any x) {
 
    for (i = 0; i < HASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-         y = tail(car(x));
-         while (isCell(y))
-            y = cdr(y);
+         for (y = tail(car(x)); isCell(y); y = cdr(y));
          y = numCell(y);
          while (isNum(cdr(y)))
             y = numCell(cdr(y));
@@ -2374,7 +2417,7 @@ any doBegin(any x) {
    return T;
 }
 
-// (commit ['flg]) -> flg
+// (commit ['any]) -> flg
 any doCommit(any x) {
    bool force, note;
    int i;
@@ -2390,9 +2433,7 @@ any doCommit(any x) {
       tellBeg(&pbSave, &ppSave, buf),  tell(flg);
    for (i = 0; i < HASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-         y = tail(car(x));
-         while (isCell(y))
-            y = cdr(y);
+         for (y = tail(car(x)); isCell(y); y = cdr(y));
          z = numCell(y);
          while (isNum(cdr(z)))
             z = numCell(cdr(z));
@@ -2464,9 +2505,7 @@ any doRollback(any x) {
 
    for (i = 0; i < HASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-         y = tail(car(x));
-         while (isCell(y))
-            y = cdr(y);
+         for (y = tail(car(x)); isCell(y); y = cdr(y));
          z = numCell(y);
          while (isNum(cdr(z)))
             z = numCell(cdr(z));

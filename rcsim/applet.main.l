@@ -1,14 +1,14 @@
-# 04sep04abu
+# 20nov04abu
 # (c) Software Lab. Alexander Burger
 
 # *Panel *Rate *Sound *Tone
 
 (allowed ("loc/help/")
-   *PW "@rcsim" "lib/clrlog.l" "@psh" )
+   *PW "@rcsim" "favicon.ico" "lib/clrlog.l" "@psh" )
 
 (load "simul/gui.l")
 (load "rcsim/lib.l")
-(load "lib/heartbeat.l" "lib/boss.l")
+(load "lib/heartbeat.l")
 
 
 (de main ()
@@ -85,15 +85,17 @@
    (super) )
 
 (dm foc> ()
-   (set> (get *Panel 'msg)
-      "HOME:      Full throttle                DOWN:  Elevator up^J\
-       PAGE DOWN: Decrease throttle            UP:    Elevator down^J\
-       PAGE UP:   Increase throttle            LEFT:  Aileron/rudder left^J\
-       END:       Engine off                   RIGHT: Aileron/rudder right" ) )
+   (when (get *Panel 'msg)
+      (set> @
+         "HOME:      Full throttle                DOWN:  Elevator up^J\
+          PAGE DOWN: Decrease throttle            UP:    Elevator down^J\
+          PAGE UP:   Increase throttle            LEFT:  Aileron/rudder left^J\
+          END:       Engine off                   RIGHT: Aileron/rudder right" ) ) )
 
 (dm nxt> ()
-   (set> (get *Panel 'msg)
-      "^J   Click on the picture for keybard focus" ) )
+   (when (get *Panel 'msg)
+      (set> @
+         "^J   Click on the picture for keybard focus" ) ) )
 
 (dm sim> ())
 

@@ -1,5 +1,7 @@
-# 18sep04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
+
+# upd
 
 ### Tree Access ###
 (de tree (Var Cls Hook)
@@ -18,13 +20,14 @@
             (and
                (fetch Tree (next))
                (pass _db @) )
-            (let
-               (Val (next)
-                  Key (if (isa '+Fold This) (fold Val) Val)
-                  Q (init Tree (cons Key) (cons Key T)) )
-               (loop
-                  (NIL (step Q T))
-                  (T (pass _db @ Var Val) @) ) ) ) ) ) )
+            (let (Val (next)  Key (cons (if (isa '+Fold This) (fold Val) Val)))
+               (let? A (: aux)
+                   (for (L (rest) (and L (== (pop 'A) (pop 'L))) (cdr L))
+                     (conc Key (cons (car L))) ) )
+               (let Q (init Tree Key (append Key T))
+                  (loop
+                     (NIL (step Q T))
+                     (T (pass _db @ Var Val) @) ) ) ) ) ) ) )
 
 (de _db (Obj . @)
    (when (isa Cls Obj)
@@ -51,33 +54,31 @@
                         (link (pass get X)) ) )
                   X1 X2 )
                (if (>= X2 X1)
-                  (setq X1 (cons X1)  X2 (cons X2 T))
-                  (setq X1 (cons X1 T)  X2 (cons X2)) )
-               (if (isa '+List This)
-                  (iter Tree
-                     '((X)
-                        (ifn (args)
-                           (and
-                              (isa Cls X)
-                              (not (memq X (made)))
-                              (link X) )
-                           (setq X (pass get X))
-                           (or (memq X (made)) (link X)) ) )
-                     X1 X2 )
-                  (iter Tree
-                     '((X)
-                        (ifn (args)
-                           (and (isa Cls X) (link X))
-                           (link (pass get X)) ) )
-                     X1 X2 T ) ) ) ) ) ) )
+                  (if (pair X1)
+                     (setq X2 (append X2 T))
+                     (setq X1 (cons X1)  X2 (cons X2 T)) )
+                  (if (pair X1)
+                     (setq X1 (append X1 T))
+                     (setq X1 (cons X1 T)  X2 (cons X2)) ) )
+               (iter Tree
+                  '((X)
+                     (ifn (args)
+                        (and
+                           (isa Cls X)
+                           (not (memq X (made)))
+                           (link X) )
+                        (or
+                           (memq (setq X (pass get X)) (made))
+                           (link X) ) ) )
+                  X1 X2 T ) ) ) ) ) )
 
 
 (de genKey (Var Cls Hook Min Max)
    (if (lt0 Max)
       (let K (minKey (tree Var Cls Hook) Min Max)
-         (if (lt0 K) (- K 1) (or Max -1)) )
+         (if (lt0 K) (dec K) (or Max -1)) )
       (let K (maxKey (tree Var Cls Hook) Min Max)
-         (if (gt0 K) (+ K 1) (or Min 1)) ) ) )
+         (if (gt0 K) (inc K) (or Min 1)) ) ) )
 
 
 ### Relations ###
@@ -363,10 +364,10 @@
    (pack *Blob (glue "/" (chop Obj)) "." Var) )
 
 (dm rel> (Obj Old New)
-   (and New (call "mkdir" "-p" (dirname (blob Obj)))) )
+   (and New (call 'mkdir "-p" (dirname (blob Obj)))) )
 
 (dm zap> (Obj Val)
-   (and Val (call "rm" "-f" (blob Obj (: var)))) )
+   (and Val (call 'rm "-f" (blob Obj (: var)))) )
 
 
 ### Index classes ###
@@ -388,12 +389,12 @@
          Val
          (not (has> Obj (: var) Val))
          (fetch
-            (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+            (tree (: var) (: cls) (or Hook (get Obj (: hook))))
             Val )
          ,"Not unique" ) ) )
 
 (dm rel> (Obj Old New Hook)
-   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
       (and Old
          (= Obj (fetch Tree Old))
          (store Tree Old NIL) )
@@ -406,14 +407,17 @@
 
 # (+Ref) hook
 (class +Ref +Index)
+# aux
 
 (dm rel> (Obj Old New Hook)
-   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+   (let
+      (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
       (when Old
-         (store Tree (cons Old Obj) NIL) )
+         (store Tree (cons Old Aux) NIL) )
       (and New
          (not (get Obj T))
-         (store Tree (cons New Obj) Obj) ) )
+         (store Tree (cons New Aux) Obj) ) )
    (extra Obj Old New Hook) )
 
 
@@ -430,7 +434,7 @@
       (tree
          (: var)
          (meta (: cls) (: var) 'cls)
-         (or Hook (get Obj (: hook)) *DB) )
+         (or Hook (get Obj (: hook))) )
       (when Old
          (store Tree (cons Old Obj) NIL) )
       (and New
@@ -448,15 +452,17 @@
    (super Var (cdr Lst)) )
 
 (dm rel> (Obj Old New Hook)
-   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+   (let
+      (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
       (when Old
-         (store Tree (cons Old Obj) NIL)
+         (store Tree (cons Old Aux) NIL)
          (for S (split (cdr (chop Old)) " " "^J")
             (while (nth S (: min))
                (store Tree (list (pack S) Obj) NIL)
                (pop 'S) ) ) )
       (when (and New (not (get Obj T)))
-         (store Tree (cons New Obj) Obj)
+         (store Tree (cons New Aux) Obj)
          (for S (split (cdr (chop New)) " " "^J")
             (while (nth S (: min))
                (store Tree (list (pack S) Obj) Obj)
@@ -468,7 +474,7 @@
 (class +Sn)
 
 (dm rel> (Obj Old New Hook)
-   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+   (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
       (when Old
          (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL) )
       (and New
@@ -486,6 +492,44 @@
 
 (dm rel> (Obj Old New Hook)
    (extra Obj (fold Old) (fold New) Hook) )
+
+
+# (+Aux) lst
+(class +Aux)
+
+(dm T (Var Lst)
+   (=: aux (car Lst))
+   (with *Class
+      (for A (car Lst)
+         (if (asoq A (: aux))
+            (conc @ (cons Var))
+            (=: aux
+               (conc (: aux) (cons (list A Var))) ) ) ) )
+   (extra Var (cdr Lst)) )
+
+(de relAux (Obj Var Old Lst)
+   (for A Lst
+      (let? Val (get Obj A)
+         (with (meta Obj A)
+            (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+               (store Tree
+                  (conc
+                     (cons Val
+                        (mapcar
+                           '((S)
+                              (if (== S Var) Old (get Obj S)) )
+                           (: aux) ) )
+                     Obj )
+                  NIL )
+               (store Tree
+                  (conc
+                     (cons Val
+                        (mapcar
+                           '((S)
+                              (if (== S Var) (get Obj Var) (get Obj S)) )
+                           (: aux) ) )
+                     Obj )
+                  Obj ) ) ) ) ) )
 
 
 ### Relation prefix classes ###
@@ -570,6 +614,7 @@
 
 ### Entities ###
 (class +Entity)
+# aux
 
 (de dbSync ()
    (let *Key NIL
@@ -577,38 +622,39 @@
          (wait 40) )
       (sync) ) )
 
-(de new! ("Sym" "Typ" . @)
+(de new! ("Typ" . @)
    (prog2
       (dbSync)
       (pass new T "Typ")
-      (commit "Sym") ) )
+      (commit 'upd) ) )
 
-(de set! (Obj Sym Val)
+(de set! (Obj Val)
    (unless (= Val (val Obj))
       (dbSync)
       (set Obj Val)
-      (commit Sym) )
+      (commit 'upd) )
    Val )
 
-(de put! (Obj Sym Var Val)
+(de put! (Obj Var Val)
    (unless (= Val (get Obj Var))
       (dbSync)
       (put Obj Var Val)
-      (commit Sym) )
+      (commit 'upd) )
    Val )
 
-(de inc! (Obj Sym Var)
+(de inc! (Obj Var)
    (when (num? (get Obj Var))
       (dbSync)
       (touch Obj)
       (inc (prop Obj Var))
-      (commit Sym) ) )
+      (commit 'upd) ) )
 
-(de blob! (Obj Sym Rel File)
-   (put!> Obj Sym Rel T)
-   (call "mv" File (blob Obj Rel)) )
+(de blob! (Obj Rel File)
+   (put!> Obj Rel T)
+   (call 'mv File (blob Obj Rel)) )
 
 (dm T @
+   (=: aux)
    (while (args)
       (if (atom (next))
          (put> This (arg) (next))
@@ -623,7 +669,7 @@
 (dm dlg> ())
 (dm url> ())
 
-(dm upd> (X))
+(dm upd> (X Old))
 
 (dm has> (Var Val)
    (or
@@ -632,53 +678,65 @@
 
 (dm put> (Var Val)
    (unless (has> This Var Val)
-      (rel> (meta This Var) This (get This Var)
-         (put This Var
-            (put> (meta This Var) This (get This Var) Val) ) )
-      (upd> This Var) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (put This Var (put> (meta This Var) This Old Val)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old) ) )
    Val )
 
-(dm put!> (Sym Var Val)
+(dm put!> (Var Val)
    (unless (has> This Var Val)
       (dbSync)
-      (rel> (meta This Var) This (get This Var)
-         (put This Var
-            (put> (meta This Var) This (get This Var) Val) ) )
-      (upd> This Var)
-      (commit Sym) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (put This Var (put> (meta This Var) This Old Val)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old)
+         (commit 'upd) ) )
    Val )
 
 (dm del> (Var Val)
    (when (and Val (has> (meta This Var) Val (get This Var)))
-      (rel> (meta This Var) This (get This Var)
-         (put This Var
-            (del> (meta This Var) This (get This Var) @) ) )
-      (upd> This Var) ) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (put This Var (del> (meta This Var) This Old @)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old) ) ) )
 
-(dm del!> (Sym Var Val)
+(dm del!> (Var Val)
    (when (and Val (has> (meta This Var) Val (get This Var)))
       (dbSync)
-      (rel> (meta This Var) This (get This Var)
-         (put This Var
-            (del> (meta This Var) This (get This Var) @) ) )
-      (upd> This Var)
-      (commit Sym) ) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (put This Var (del> (meta This Var) This Old @)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old)
+         (commit 'upd) ) ) )
 
 (dm inc> (Var)
    (when (num? (get This Var))
       (touch This)
-      (rel> (meta This Var) This (get This Var)
-         (inc (prop This Var)) )
-      (upd> This Var) ) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old (inc (prop This Var)))
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old) ) ) )
 
-(dm inc!> (Sym Var)
+(dm inc!> (Var)
    (when (num? (get This Var))
       (dbSync)
       (touch This)
-      (rel> (meta This Var) This (get This Var)
-         (inc (prop This Var)) )
-      (upd> This Var)
-      (commit Sym) ) )
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old (inc (prop This Var)))
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old)
+         (commit 'upd) ) ) )
 
 (dm mis> (Var Val)
    (mis> (meta This Var) Val This) )
@@ -697,10 +755,10 @@
    (=: T T)
    (upd> This) )
 
-(dm lose!> (Sym)
+(dm lose!> ()
    (dbSync)
    (lose> This)
-   (commit Sym) )
+   (commit 'upd) )
 
 (dm keep1> (Var)
    (when (meta This Var)
@@ -716,10 +774,10 @@
             (keep> @ This V) ) ) )
    (upd> This T) )
 
-(dm keep!> (Sym)
+(dm keep!> ()
    (dbSync)
    (keep> This)
-   (commit Sym) )
+   (commit 'upd) )
 
 (dm set> (Val)
    (unless (= Val (val This))
@@ -739,17 +797,17 @@
                         (put> This X)
                         (put This X) ) ) )
                L ) )
-         (set This Val)
+         (xchg This 'Val)
          (mapc
             '((X V)
                (if (meta This X)
                   (put> This X V)
                   (put This X V) ) )
             L V ) )
-      (upd> This (val This)) )
-   Val )
+      (upd> This (val This) Val) )
+   (val This) )
 
-(dm set!> (Sym Val)
+(dm set!> (Val)
    (unless (= Val (val This))
       (dbSync)
       (let
@@ -768,16 +826,16 @@
                         (put> This X)
                         (put This X) ) ) )
                L ) )
-         (set This Val)
+         (xchg This 'Val)
          (mapc
             '((X V)
                (if (meta This X)
                   (put> This X V)
                   (put This X V) ) )
             L V ) )
-      (upd> This (val This))
-      (commit Sym) )
-   Val )
+      (upd> This (val This) Val)
+      (commit 'upd) )
+   (val This) )
 
 (dm clone> ()
    (let Obj (new T (val This))
@@ -826,11 +884,11 @@
                (setq S (pack "# " S)) )
             S ) ) ) )
 
-(dm clone!> (Sym)
+(dm clone!> ()
    (prog2
       (dbSync)
       (clone> This)
-      (commit Sym) ) )
+      (commit 'upd) ) )
 
 # Default syncronization function
 (de upd Lst

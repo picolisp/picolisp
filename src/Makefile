@@ -1,4 +1,4 @@
-# 08sep03abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -19,14 +19,13 @@ picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 	gcc -c -O3 -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
-	-pipe  $*.c
+	-pipe  -D_FILE_OFFSET_BITS=64  $*.c
 
 
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 
 $(bin)/pico: $(picoFiles:.c=.o)
-	rm -f ../pico
-	mkdir -p $(bin)
+	mkdir -p $(bin) $(lib) ../tmp ../fifo
 	echo "  " link pico:
 	gcc  -rdynamic  -o $(bin)/pico  $(picoFiles:.c=.o)  -lc -lm -ldl
 	strip $(bin)/pico

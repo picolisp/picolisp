@@ -5,14 +5,14 @@ in Programm-Code
    Statt dessen: (+List +Bag) ((+Ref +Link) ..)  <-->  NIL
    oder: (+List +Joint)  <-->  (+Joint)  <-->  (+List +Joint)
 
-Gleichzeitiges Iterieren und Modifizieren von Properties oder
-Baumstrukturen
+Gleichzeitiges Iterieren ('step', 'iter', 'scan') und Modifizieren von
+Properties oder Baumstrukturen
 
 Verwendung von internen Symbolen als Lokale wenn
 - funktionale Argumente durchgegeben werden
 - in Pilog fremde Environments manipuliert werden (unify)
 
-Anwendung von 'dbgc' auf eine nicht 'commit'tete Datenbank
+Anwendung von 'dbgc' auf eine nicht ge'lock'te und 'commit'tete Datenbank
 
 Seitendarstellung in Target-Window wenn ein Applet auf der Seite ist
 

@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 14sep04abu
+# 30dec04abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -10,18 +10,17 @@
 (argv *MailHost *MailPort *MailFrom .  *MailTo)
 (setq *MailPort (format *MailPort))
 
-(unless (call "test" "-p" "fifo/beat")
-   (call "rm" "-f" "fifo/beat")
-   (call "mkfifo" "fifo/beat") )
+(unless (call 'test "-p" "fifo/beat")
+   (call 'rm "-f" "fifo/beat")
+   (call 'mkfifo "fifo/beat") )
 
-(?push '*Bye '(call "rm" "fifo/beat"))
+(?push '*Bye '(call 'rm "fifo/beat"))
 
 (de *Err
    (out NIL
       (prin (stamp))
       (space)
-      (println *Watch) )
-   (bye) )
+      (println *Watch) ) )
 
 (task (setq *Beat (open "fifo/beat"))
    (in *Beat

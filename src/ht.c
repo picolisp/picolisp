@@ -1,4 +1,4 @@
-/* 14aug04abu
+/* 19oct04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -120,7 +120,7 @@ static void htFmt(any x) {
          byte nm[bufSize(x)];
 
          bufString(x, nm);
-         if (x == findHash(y, Intern + hash(y)))
+         if (hashed(x, hash(y), Intern))
             Env.put('$'),  htEncode(nm);
          else if (strchr("$+.", *nm)) {
             Env.put('%'), putHex(*nm);

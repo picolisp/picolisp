@@ -1,4 +1,4 @@
-# 21sep04abu
+# 22nov04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -268,7 +268,7 @@
                (pack Lang "." Url)
                (setq Url (reverse Url))
                (set (member "/" Url) (list "/" Lang "."))
-               (pack (reverse Url)) )
+               (pack (flip Url)) )
             (and (info F) (allow F)) ) ) ) )
 
 # Events
@@ -475,8 +475,7 @@
                         Err ) )
                   (when (: "last" undo)
                      (undo> (: "last")) ) ) ) ) )
-      (T
-         (end> (: focus))
+      (T (end> (: focus))
          (and (: focus arr) (end> @))
          T ) ) )
 
@@ -544,8 +543,8 @@
          (cons
             (mapcar 'val> (: fields))
             (mapcar 'stat> (: arrays)) ) ) )
-   (=: on)
    (super)
+   (=: on)
    (pop '*DlgStk)
    (setq *Top (: top)) )
 
@@ -692,7 +691,7 @@
          (find
             '((X) (pre? H (car X)))
             (: map) )
-         (pack (nth (chop (car @)) (+ 1 (: sel))))
+         (pack (nth (chop (car @)) (inc (: sel))))
          C ) ) )
 
 (dm set> (Val)
@@ -759,7 +758,7 @@
                         T
                         'type>
                         '(: focus)
-                        (lit (nth M (+ 1 (length @)))) ) ) ) )
+                        (lit (nth M (inc (length @)))) ) ) ) )
             (cdr (: mac)) ) ) ) )
 
 
@@ -1274,7 +1273,7 @@
    (pass super) )
 
 (dm act> ()
-   (when (or (not (: able)) (eval (: able)))
+   (when (able?> This)
       (eval (: exe)) ) )
 
 (dm set> (Val)
@@ -1292,7 +1291,7 @@
 
 (dm act> ()
    (when (super)
-      (let (Val @  Fld (get (: home fields) (+ 1 (: ix))))
+      (let (Val @  Fld (get (: home fields) (inc (: ix))))
          (focus> Fld)
          (do> Fld
             (if (=T Val)
@@ -1308,7 +1307,7 @@
    (=: chg Foo)
    (pass super Lbl Str
       '(let
-         (Fld (get (: home fields) (+ 1 (: ix)))
+         (Fld (get (: home fields) (inc (: ix)))
             Val ((: chg) (val> Fld)) )
          (when Val
             (focus> Fld)
@@ -1662,10 +1661,6 @@
                      (and (= D I) " <--") )
                   I ) ) ) ) ) )
 
-(dm act> ()
-   (do> This
-      (set> This (date)) ) )
-
 (dm set> (Val)
    (super (datStr Val)) )
 
@@ -1693,10 +1688,6 @@
 (dm cho> ()
    (let Tim (time)
       (list (mkCho (tim$ Tim (> (: dx) 6)) Tim)) ) )
-
-(dm act> ()
-   (do> This
-      (set> This (time)) ) )
 
 (dm set> (Val)
    (super (tim$ Val (> (: dx) 6))) )
@@ -1928,10 +1919,10 @@
          (- (size> This) (length (: fields)) -2) ) ) )
 
 (dm UP> ()
-   (scrl (max 1 (- (: ofs) 1))) )
+   (scrl (max 1 (dec (: ofs)))) )
 
 (dm DN> ()
-   (scrl (+ 1 (: ofs))) )
+   (scrl (inc (: ofs))) )
 
 
 (class +Chart +chart)
@@ -1997,10 +1988,7 @@
    (ifn (row> This)
       (beep> (: home))
       (=: clip (get (: data) @))
-      (=: data
-         (conc
-            (head (- @ 1) (: data))
-            (nth (: data) (+ @ 1)) ) )
+      (=: data (remove @ (: data)))
       (put> This)
       (setScroll) ) )
 
@@ -2009,13 +1997,25 @@
    (get> This)
    (ifn (row> This)
       (beep> (: home))
-      (=: data
-         (conc
-            (head (- @ 1) (: data))
-            (list (: clip))
-            (nth (: data) @) ) )
+      (=: data (insert @ (: data) (: clip)))
       (put> This)
       (setScroll) ) )
+
+(de bubbleButton ()
+   (when (> (: rows) 1)
+      (gui '(+Able +Set +Button)
+         '(curr)
+         '((V) (extra " \^ "))
+         "" " \^ "
+         '(let (N (row> (: arr) This)  L (val> (: arr)))
+            (ifn (nth L N)
+               (beep> (: home))
+               (set> (: arr)
+                  (conc
+                     (cut (- N 2) 'L)
+                     (cons (cadr L))
+                     (cons (car L))
+                     (cddr L) ) ) ) ) ) ) )
 
 (de delRowButton (@Chart @Foo)
    (macro
@@ -2067,12 +2067,12 @@
 
 (de newDlg ("Typ" . @)
    (prog1
-      (pass new! 'upd "Typ")
+      (pass new! "Typ")
       (and (dlg> (put *Top 'rv @)) (eval @)) ) )
 
 (de newUrl ("Typ" . @)
    (prog1
-      (pass new! 'upd "Typ")
+      (pass new! "Typ")
       (url (url> (put *Top 'rv @))) ) )
 
 (de <id> (Ttl . Lst)
@@ -2121,7 +2121,7 @@
 
 (de cloneButton ()
    (gui '(+Rid +Button) "" ,"New/Copy"
-      '(url (url> (clone!> (: home obj) 'upd))) ) )
+      '(url (url> (clone!> (: home obj)))) ) )
 
 # Delete object in +ObjForm
 (de delButton (Able)
@@ -2131,7 +2131,7 @@
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
       "" ,"Delete"
       '(when (ask ,"Delete" ,"Delete this data record?")
-         (lose!> (: home obj) 'upd)
+         (lose!> (: home obj))
          (and (: home obj) (url> @) (url @)) ) ) )
 
 (de closeButton ()
@@ -2203,7 +2203,7 @@
       (loop
          (NIL (asoq '@@ (prove Q)) C)
          (T (pre? H (setq S (cdr @)))
-            (pack (nth (chop S) (+ 1 (: sel)))) ) ) ) )
+            (pack (nth (chop S) (inc (: sel)))) ) ) ) )
 
 (dm cho> ()
    (let (H (pack (head (: sel) (chop (: str))))  Q (goal (: hint) '@1 H))
@@ -2250,6 +2250,10 @@
    (=: obj Obj)
    (pass super) )
 
+(dm upd> ()
+   (lock> This (or (: lock) (: obj T)))
+   (super) )
+
 (dm set> (Obj)
    (=: obj Obj)
    (upd> This) )
@@ -2277,8 +2281,8 @@
    (super) )
 
 (dm stop> ()
-   (=: on)
    (super)
+   (=: on)
    (pop '*DlgStk)
    (setq *Top (: top)) )
 
@@ -2304,7 +2308,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (put!> @ 'upd (: erVar) Val)
+      (put!> @ (: erVar) Val)
       (extra Val) ) )
 
 (dm chk> ()
@@ -2319,7 +2323,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (put!> @ 'upd (: erVar) (bool Val))
+      (put!> @ (: erVar) (bool Val))
       (extra
          (and Val
             (allow (blob (eval (: erObj)) (: erVar))) ) ) ) )
@@ -2337,7 +2341,7 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (set!> @ 'upd Val) )
+      (set!> @ Val) )
    (super Val) )
 
 
@@ -2394,7 +2398,7 @@
          (pack
             (nth
                (chop (get (=: obj (cdr @)) (: objVar)))
-               (+ 1 (: sel)) ) ) ) ) )
+               (inc (: sel)) ) ) ) ) )
 
 (dm cho> ()
    (let Q (objQuery)
@@ -2480,7 +2484,7 @@
       (extra Flg)
       (and
          (: str)
-         (new! 'upd (: objTyp) (: objVar) (: str)) ) ) )
+         (new! (: objTyp) (: objVar) (: str)) ) ) )
 
 
 # +Obj Prefix for +Dialog return value
@@ -2541,7 +2545,7 @@
             (cadr (: tree))
             (eval (cddr (: tree))) )
          (: beg) (: end) )
-      (do (- (: ofs) 1)
+      (do (dec (: ofs))
          (step Node T) )
       (for F (: fields)
          (mapc 'set> F ((: put) (step Node T))) ) ) )
@@ -2659,11 +2663,11 @@
 
 (dm DEL> ()
    (super)
-   (and (: clip) (lose!> @ 'upd)) )
+   (and (: clip) (lose!> @)) )
 
 (dm INS> ()
    (super)
-   (and (: clip) (keep!> @ 'upd)) )
+   (and (: clip) (keep!> @)) )
 
 # Text File Export
 (de export ("Nm" . "Prg")

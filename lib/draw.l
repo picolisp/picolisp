@@ -1,4 +1,4 @@
-# 14sep04abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 ### 2D-Shapes ###
@@ -9,7 +9,7 @@
    (=: home Home) )
 
 (dm len> ()
-   (+ 1 (length (: link))) )
+   (inc (length (: link))) )
 
 (dm pr> ()
    (for X (: link)

@@ -1,4 +1,4 @@
-// 20jul04abu
+// 28dec04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -148,6 +148,8 @@ public class InOut {
    public void print(Object x) throws IOException {
       if (x == null)
          Out.write(NIX);
+      else if (x instanceof Boolean)
+         prSym(((Boolean)x).booleanValue()? "T" : "");
       else if (x instanceof BigInteger)
          print((BigInteger)x);
       else if (x instanceof String)

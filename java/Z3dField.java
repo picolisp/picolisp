@@ -1,4 +1,4 @@
-// 02sep04abu
+// 09dec04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -14,11 +14,11 @@ public class Z3dField extends Pico {
    Image Img;
    Z3dText Marks, Labels;
    static long Tim;
-   int Amp, Freq;
+   int Amp, Freq, Need;
    byte[] Pcm;
    SourceDataLine Line;
-   final static int Rate = 8000;
-   final static int MinFreq = 8;
+   final static int RATE = 16000;
+   final static int MINF = 8;
 
    // Applet entry point
    public void init() {
@@ -311,8 +311,7 @@ public class Z3dField extends Pico {
       update(getGraphics());
       t = System.currentTimeMillis();
       if (Tim > t) {
-         try {Thread.currentThread().sleep(Tim - t);}
-         catch (InterruptedException e) {}
+         Pico.sleep(Tim - t);
          t = Tim;
       }
       Tim = t + 40;
@@ -324,27 +323,36 @@ public class Z3dField extends Pico {
       else if (a == 0  ||  Amp != 0)
          Amp = a;
       else {
-         Pcm = new byte[Rate/MinFreq];
-         AudioFormat fmt = new AudioFormat((float)Rate, 8, 1, true, true);
+         Pcm = new byte[RATE/MINF];
+         AudioFormat fmt = new AudioFormat((float)RATE, 8, 1, true, true);
 
          try {
             Line = (SourceDataLine)AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, fmt));
             Line.open(fmt);
             Line.start();
+            Need = Line.available() - RATE/MINF;
             Amp = a;
          } catch (LineUnavailableException e) {}
 
          (new Thread() {
             public void run() {
-               while (Amp != 0) {
-                  int a, n, i;
+               int n = RATE / Math.max(Freq, MINF);
 
-                  a = 127 * Amp / 100;
-                  n = Rate / (Freq < MinFreq? MinFreq : Freq);
+               while (Amp != 0) {
+                  int a, i;
+
+                  a = Amp;
+                  if (n != (i = RATE / Math.max(Freq, MINF)))
+                     if (n < i)
+                        n += i+15-n >> 4;
+                     else
+                        n += i-15-n >> 4;
                   for (i = 0; i < n/2; ++i)
                      Pcm[i] = (byte)a;
                   for (a = -a; i < n; ++i)
                      Pcm[i] = (byte)a;
+                  while (Line.available() < Need)
+                     Pico.sleep(10);
                   Line.write(Pcm, 0, n);
                }
                Line.close();

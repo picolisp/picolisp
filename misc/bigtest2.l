@@ -1,4 +1,4 @@
-# 19feb03abu
+# 24dec04abu
 # (c) Software Lab. Alexander Burger
 
 (de test1 (S N1)
@@ -20,10 +20,8 @@
          (bye) ) ) )
 
 (in NIL
-   (do 1000
-      (prin ".")
-      (flush)
-      (do 1000
+   (do 80
+      (do 100000
          (setq
             N1 (read)
             N2 (read) )
@@ -38,7 +36,9 @@
          (test2 '/ N1 2)
          (cmp2 '>= N1 N2)
          (cmp2 '> N1 N2)
-         (test1 'sqrt (abs N1)) ) ) )
+         (test1 'sqrt (abs N1)) )
+      (prin '.)
+      (flush) ) )
 
 (prinl)
 (bye)

@@ -1,4 +1,4 @@
-# 19feb01abu
+# 06nov04abu
 # (c) Software Lab. Alexander Burger
 
 (app)
@@ -8,5 +8,5 @@
    (App1 (X Y)
       (new '(+Form) X Y
          (quote
-            (gui '(+TextField) "Name" 20)
-            (gui '(+NumField) "Zahl" 10) ) ) ) )
+            (gui '(+TextField) "Text" 20)
+            (gui '(+NumField) "Number" 10) ) ) ) )

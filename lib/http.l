@@ -1,8 +1,8 @@
-# 01oct04abu
+# 17dec04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
-# *Url *Timeout *SesId *ConId *InND *Frame *U1 *Help *Meta *Css
+# *Url *Timeout *SesId *ConId *Frame *U1 *Help *Meta *Css
 
 (default
    *HPorts 0
@@ -82,11 +82,6 @@
 (de https @
    (pass pack "https://" *Host "/" *Port "/" *SesId) )
 
-# Init crypt
-(de rsa (N)
-   (seed (in "/dev/urandom" (rd 20)))
-   (setq *InND (rsaKey N)) )
-
 # Application startup page
 (de app ()
    (unless *SesId
@@ -129,9 +124,7 @@
                      (httpStat 501 "Method Not Implemented"
                         "Allow: GET, POST" ) )
                   (throw "http") )
-               (T
-                  (out S (httpStat 400 "Bad Request"))
-                  (throw "http") ) )
+               (T (out S (httpStat 400 "Bad Request")) (throw "http")) )
             (out S
                (setq
                   L (split @U "?")
@@ -201,7 +194,7 @@
                (setq *Host
                   (cond
                      (*Gate @X)
-                     ((index ":" @X) (head (- @ 1) @X))
+                     ((index ":" @X) (head (dec @) @X))
                      (T @X) ) ) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
@@ -239,7 +232,7 @@
                (if (_htSet @N (pack (stem @V '/ '\)))
                   (let F (tmp @)
                      (unless (out F (echo (pack "^M^J" *MPartLim)))
-                        (call "rm" "-f" F) ) )
+                        (call 'rm "-f" F) ) )
                   (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
                (let C (char)
                   (and (= "^M" C) (setq C (char)))
@@ -554,45 +547,51 @@
    (prinl "</UL>") )
 
 (de <tree> ("Url" "Path" "Tree" "able?" "excl?" "expand" "format")
-   (when "Path"
-      (let (X "Tree"  F (pop '"Path"))
+   (let ("Pos" "Tree"  "F" (pop '"Path")  "A" 0)
+      (when "Path"
          (loop
-            (and F
+            (and "F"
                (not (cdr "Path"))
                (map
                   '((L)
                      (when (pair (car L)) (set L (caar L))) )
-                  X ) )
-            (T (atom (car (setq X (nth X (pop '"Path"))))))
+                  "Pos" ) )
+            (T (atom (car (setq "Pos" (nth "Pos" (abs (pop '"Path")))))))
             (NIL "Path")
-            (setq X (cdar X)) )
-         (set X
-            (if (atom (car X))
-               (cons (car X) ("expand" (car X)))
-               (caar X) ) ) ) )
-   (<_tree> "Tree")
-   "Tree" )
+            (setq "Pos" (cdar "Pos")) )
+         (set "Pos"
+            (if (atom (car "Pos"))
+               (cons (car "Pos") ("expand" (car "Pos")))
+               (caar "Pos") ) ) )
+      (setq "Pos" (car "Pos"))
+      (<_tree> "Tree")
+      "Tree" ) )
 
-(de <_tree> (Tree Lst)
+(de <_tree> ("Tree" "Lst")
    (prinl "<UL>")
-   (for (N . X) Tree
-      (prin "<LI>")
-      (let L (append Lst (cons N))
-         (cond
-            ((pair X)
-               (<href> "[+]"
-                  (pack "Url" "?" (ht:Fmt (cons NIL L)))
+   (for ("N" . "X") "Tree"
+      (prin "<LI><A NAME=\"T" (inc '"A") "\"></A>")
+      (cond
+         ((pair "X")
+            (let "L" (append "Lst" (cons "N"))
+               (<href> (if (== "X" "Pos") "<+>" "[+]")
+                  (pack "Url"
+                     "?" (ht:Fmt (cons NIL "L"))
+                     "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)
-               ("format" (car X))
-               (and (cdr X) (<_tree> @ L)) )
-            (("able?" X)
-               (<href> "[ ]"
-                  (pack "Url" "?" (ht:Fmt (cons ("excl?" X) L)))
+               ("format" (car "X"))
+               (and (cdr "X") (<_tree> @ "L")) ) )
+         (("able?" "X")
+            (let "L" (append "Lst" (cons (- "N")))
+               (<href> (if (== "X" "Pos") "< >" "[ ]")
+                  (pack "Url"
+                     "?" (ht:Fmt (cons ("excl?" "X") "L"))
+                     "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)
-               ("format" X) )
-            (T ("format" X)) ) ) )
+               ("format" "X") ) )
+         (T ("format" "X")) ) )
    (prinl "</UL>") )
 
 

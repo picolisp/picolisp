@@ -1,4 +1,4 @@
-# 18sep04abu
+# 01dec04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -11,14 +11,14 @@
 
 (de *Kategorien
    Betriebsausgaben Sonderausgaben
-   Betriebseinnahmen Gehalt
+   Betriebseinnahmen Gehalt Miete
    Privateinnahmen Leerbuchungen )
 
 
 (class +AD)
 (rel ad     (+Ref +Date))                       # Aenderungsdatum
 
-(dm upd> (X)
+(dm upd> (X Old)
    (and X (n== X 'ad) (put> This 'ad (date))) )
 
 
@@ -101,13 +101,13 @@
 (dm chk> ()
    (or
       (super)
-      (let (N (val> (get (: home fields) (- (: ix) 1)))  U (val> This))
+      (let (N (val> (get (: home fields) (dec (: ix))))  U (val> This))
          (and N U
             (xor (lt0 N) (lt0 U))
             "Vorzeichenfehler" ) ) ) )
 
 (dm cho> ()
-   (when (val> (get (: home fields) (- (: ix) 1)))
+   (when (val> (get (: home fields) (dec (: ix))))
       (let V @
          (mapcar
             '((U)
@@ -230,7 +230,7 @@
       (if (=0 (count Tree))
          (list (car (date (date))))
          (make
-            (for (N (car (date (car (minKey Tree)))) (<= N Max) (+ 1 N))
+            (for (N (car (date (car (minKey Tree)))) (<= N Max) (inc N))
                (link N) ) ) ) ) )
 
 (de tax ()
@@ -266,7 +266,7 @@
                      (val> (: home focus2)) )
                   " " "Kopie"
                   '(when (get (: home query data) (row> (: home query)))
-                     (put!> (clone!> @) 'upd 'dat (val> (: home dat)))
+                     (put!> (clone!> @) 'dat (val> (: home dat)))
                      (upd> (: home query))
                      (focus> (: home focus2)) ) )
                (gui 'dat '(+DateField) "" 10)
@@ -300,7 +300,7 @@
                         (commit 'upd)
                         (and (get D 'dat) D) )
                      ((car L)
-                        (new! 'upd '(+Pos) 'dat (car L)) ) ) ) )
+                        (new! '(+Pos) 'dat (car L)) ) ) ) )
             (row
                (gui '(+Button) "" " \^ " '(sort> (: home query) '(: dat)))
                (flow
@@ -397,7 +397,7 @@
                   (date Y (if *Quartal (- M 2) M) 1)
                   (if (= 12 M)
                      (date Y M 31)
-                     (- (date Y (+ M 1) 1) 1) ) ) ) )
+                     (dec (date Y (inc M) 1)) ) ) ) )
          (<href> "PDF"
             (pack "@ustvor.pdf?" (ht:Fmt Ums Frei USt VSt))
             "PDF" ) ) ) )
@@ -425,13 +425,13 @@
       (if *Quartal
          (window
             580
-            (+ 132 (* 19 (/ (- *QMonth 1) 3)))
+            (+ 132 (* 19 (/ (dec *QMonth) 3)))
             23
             17
             (ps "X") )
          (window
             (if (<= *QMonth 6) 374 456)
-            (+ 132 (* 19 (% (- *QMonth 1) 6)))
+            (+ 132 (* 19 (% (dec *QMonth) 6)))
             23
             17
             (ps "X") ) )
@@ -443,18 +443,18 @@
       (prBetrag 494 790 100 18 USt)    # Uebertrag
       (page T)
 
-      (prBetrag 477 13 100 18 USt)        # Uebertrag
-      (prBetrag 477 164 100 18 USt)       # Umsatzsteuer
-      (prBetrag 477 202 100 18 (- VSt))   # Vorsteuer [66]
+      (prBetrag 477 15 100 18 USt)        # Uebertrag
+      (prBetrag 477 166 100 18 USt)       # Umsatzsteuer
+      (prBetrag 477 204 100 18 (- VSt))   # Vorsteuer [66]
       (setq U (+ USt VSt))
-      (prBetrag 477 334 100 18 U)         # Verbleibender Betrag
-      (prBetrag 477 428 100 18 U)         # Vorauszahlung [83]
+      (prBetrag 477 336 100 18 U)         # Verbleibender Betrag
+      (prBetrag 477 430 100 18 U)         # Vorauszahlung [83]
       (page) ) )
 
 # Gewinn/Verlust-Rechnung
 (de gewinn (Y)
    (let
-      (Ums 0  USt 0  Frei 0  Ein 0  Aus 0  VSt 0  Afa 0
+      (Ums 0  USt 0  Frei 0  Gehalt 0  Miete 0  Aus 0  VSt 0  Afa 0
          Lst (collect 'dat '+Pos (date Y 1 1) (date Y 12 31)) )
       (html "Gewinnermittlung"
          (report (pack "GV-" Y) (pack "Gewinn/Verlust " Y))
@@ -477,7 +477,12 @@
 
             (recUms 'Gehalt
                '((B N U)
-                  (inc 'Ein N) )
+                  (inc 'Gehalt N) )
+               Lst )
+
+            (recUms 'Miete
+               '((B N U)
+                  (inc 'Miete N) )
                Lst ) )
          <p>
          (<table> NIL "Anlagevermögen"
@@ -523,7 +528,8 @@
             (<row> NIL (money (+ Aus Afa VSt))) )
          <p>
          (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus Afa VSt)) "***")
-         (<br> "*** Gehalt:" (money Ein) "***")
+         (<br> "*** Gehalt:" (money Gehalt) "***")
+         (<br> "*** Miete:"  (money Miete) "***")
          <p>
          (let (U 0  YY (pad 2 (% Y 100)))
             (<table> NIL "Umsatzsteuer-Vorauszahlungen"
@@ -607,6 +613,7 @@
 
 # Check
 (de chk ()
+   (and (lock) (quit 'lock @))
    (and (dbck) (quit 'dbck @))
    (dbCheck)
    (dangling 'nm '+Kto)

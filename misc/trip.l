@@ -1,4 +1,4 @@
-# 06nov01abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
@@ -56,12 +56,12 @@
                   (setq Y @)
                   (xchg 'X 'Y) ) ) ) )
       '((L)  # Mutation
-         (let (N (length L)  H (>> 1 N)  N1 (rand 1 H)  N2 (rand (+ 1 H) N))
+         (let (N (length L)  H (>> 1 N)  N1 (rand 1 H)  N2 (rand (inc H) N))
             (if (route (get L N1) (get L N2))
                (append
-                  (head (- N1 1) L) 
+                  (head (dec N1) L)
                   @
-                  (nth L (+ N2 1)) )
+                  (nth L (inc N2)) )
                L ) ) )
       '((L)  # Selection
          (let A (pop 'L)

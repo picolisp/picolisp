@@ -1,4 +1,4 @@
-# 23jan03abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
 
 # Structure Editor
@@ -28,7 +28,7 @@
             (if (<= "1" C "9")
                (cons
                   (head (setq C (- (char C) `(char "0"))) X)
-                  (nth X (+ 1 C)) )
+                  (nth X (inc C)) )
                (case (uppc C)
                   (("^M" "^J") (cons (_ed (car X)) (cdr X)))
                   ("^[" (throw))

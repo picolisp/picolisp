@@ -1,4 +1,4 @@
-# 14sep04abu
+# 08nov04abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -6,7 +6,7 @@
    (skip)
    (head '("<" "?" "x" "m" "l") (line)) )
 
-# Parse XML data
+# Generate/Parse XML data
 (de xml (Lst N)
    (if Lst
       (let Tag (pop 'Lst)
@@ -88,6 +88,26 @@
       (if (member C '`(chop "\"&<"))
          (prin "&#" (char C) ";")
          (prin C) ) ) )
+
+
+# Simple XML string
+(de xml$ (Lst)
+   (pack
+      (make
+         (recur (Lst)
+            (let Tag (pop 'Lst)
+               (link "<" Tag)
+               (for X (pop 'Lst)
+                  (link " " (car X) "=\"" (cdr X) "\"") )
+               (ifn Lst
+                  (link "/>")
+                  (link ">")
+                  (for X Lst
+                     (if (pair X)
+                        (recurse X (+ 3 N))
+                        (link X) ) )
+                  (link "</" Tag ">") ) ) ) ) ) )
+
 
 # Access functions
 (de body (Lst . @)

@@ -12,23 +12,23 @@
 <p align=right>(c) Software Lab. Alexander Burger</p>
 
 <p>This document demonstrates some aspects of the Pico Lisp system in detail and
-example. For a general description of the Pico kernel please look at the <a
+example. For a general description of the Pico Lisp kernel please look at the <a
 href="ref.html">Pico Lisp Reference</a>.
 
 <p>This is <u>not</u> a Lisp tutorial, as it assumes some working knowledge of
 Lisp (and programming in general). It concentrates on the specialities of Pico
 Lisp, and its differences to other Lisp dialects.
 
-<p>If not stated otherwise, all examples assume that Pico was started from the
-shell prompt as
+<p>If not stated otherwise, all examples assume that Pico Lisp was started from
+the shell prompt as
 
 <p><pre><code>
 $ ./p dbg.l
 :
 </code></pre>
 
-<p>This loads the Pico base system and the debugging environment, and waits for
-you to enter input lines at the interpreter prompt (<code>:</code>). You can
+<p>This loads the Pico Lisp base system and the debugging environment, and waits
+for you to enter input lines at the interpreter prompt (<code>:</code>). You can
 terminate the interpreter and return to the shell at any time, by either hitting
 the <code>RETURN</code> key (i.e. by entering an empty line), or by executing
 the function <code><a href="ref.html#bye">(bye)</a></code>.
@@ -37,9 +37,9 @@ the function <code><a href="ref.html#bye">(bye)</a></code>.
 use the <code>vi</code> editor.
 
 <p>We recommend that you have a terminal window open, and try the examples by
-yourself. You may either type them in, directly to the Pico interpreter, or edit
-a separate source file (e.g. <code>"test.l"</code>) in a second terminal window
-and load it into Pico with
+yourself. You may either type them in, directly to the Pico Lisp interpreter, or
+edit a separate source file (e.g. <code>"test.l"</code>) in a second terminal
+window and load it into Pico Lisp with
 
 <p><pre><code>
 : (load "test.l")
@@ -48,37 +48,41 @@ and load it into Pico with
 <p>each time you have modified and saved it.
 
 
-<p>If you are new to Pico, you might want to read the following sections in the
-given order, as some of them assume knowledge about previous ones. Otherwise
+<p>If you are new to Pico Lisp, you might want to read the following sections in
+the given order, as some of them assume knowledge about previous ones. Otherwise
 just jump anywhere you are interested in.
 
 <p><ul>
-<li><a href="#ledit">The Command Line Editor</a>
+<li><a href="#ledit">Command Line Editing</a>
 <li><a href="#brw">Browsing</a>
 <li><a href="#fun">Defining Functions</a>
 <li><a href="#dbg">Debugging</a>
+<li><a href="#funio">Functional I/O</a>
+<li><a href="#script">Scripting</a>
 <li><a href="#oop">Objects and Classes</a>
 <li><a href="#ext">Persistence (External Symbols)</a>
 <li><a href="#db">Database Progamming</a>
-<li><a href="#gui">User Interface Programming</a>
-<li><a href="#pilog">Pilog -- Pico Prolog</a>
+<li><a href="#gui">User Interface (GUI) Programming</a>
+<li><a href="#pilog">Pilog -- Pico Lisp Prolog</a>
+<li><a href="#sql">Poor Man's SQL</a>
 <li><a href="#ref">References</a>
 </ul>
 
 
 <p><hr>
-<h3><a name="ledit">The Command Line Editor</a></h3>
+<h3><a name="ledit">Command Line Editing</a></h3>
 
-<p>Pico permanently reads input from the current input channel (i.e. the console
-in interactive mode), evaluates it, and prints the result to the current output
-channel.
+<p>Pico Lisp permanently reads input from the current input channel (i.e. the
+console in interactive mode), evaluates it, and prints the result to the current
+output channel.
 
 <p>To alleviate the task of manual line input, a command line editor is provided
 which is similar to (though much simpler than) the <code>readline</code> feature
-of the <code>bash</code>. Only a subset of the <code>vi</code> mode is
+of the <code>bash</code> shell. Only a subset of the <code>vi</code> mode is
 supported, which is restricted to single-key commands (the "real"
 <code>vi</code> supports multi-key commands and the modification of most
-commands with count prefixes).
+commands with count prefixes). It is loaded at startup via "dbg.l", you find its
+source in "lib/led.l" if wish to take a look.
 
 <p>You can enter lines in the normal way, correcting mistypes with the
 <code>BACKSPACE</code> key, and terminating them with the <code>RETURN</code>
@@ -140,8 +144,8 @@ whole expression when the cursor is at a left parenthesis.
 <li><code>c</code> - Change the word at the cursor position (<i>Insert Mode</i>)
 <li><code>C</code> - Change the rest of the line (<i>Insert Mode</i>)
 <li><code>f</code> - Find next key in the rest of the current line
-<li><code>p</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> before the cursor position
-<li><code>P</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> after the cursor position
+<li><code>p</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> after the cursor position
+<li><code>P</code> - Paste data deleted with <code>x</code>, <code>X</code>, <code>d</code> or <code>D</code> before the cursor position
 <li><code>/</code> - Accept an input pattern and search the history for it
 <li><code>n</code> - Search for next occurrence of pattern (as entered with <code>/</code>)
 <li><code>N</code> - Search for previous occurrence of pattern
@@ -149,7 +153,7 @@ whole expression when the cursor is at a left parenthesis.
 <li><code>~</code> - Convert character to opposite (lower or upper) case and move right
 <li><code>u</code> - Undo the last change (one level only)
 <li><code>U</code> - Undo all changes of the current line
-<li><code>g</code> - Display cut buffer (not in <code>vi</code>)
+<li><code>g</code> - Display current contents of cut buffer (not in <code>vi</code>)
 </ul>
 
 <p>Notes:
@@ -163,7 +167,7 @@ whole expression when the cursor is at a left parenthesis.
 <li>Lines shorter than 3 characters, lines beginning with a space character, or
 duplicate lines are not entered into the history.
 
-<li>The history is stored in a file named ".picoHistory" in the Pico home
+<li>The history is stored in a file named ".picoHistory" in the Pico Lisp home
 directory. The length of the history is limited to 4000 lines.
 
 </ul>
@@ -198,7 +202,7 @@ It will make life much easier in the future :-)
 <p><hr>
 <h3><a name="brw">Browsing</a></h3>
 
-<p>Pico provides some functionality for inspecting pieces of data and code
+<p>Pico Lisp provides some functionality for inspecting pieces of data and code
 within the running system.
 
 <p>Most commonly used is probably the <code>show</code> function. It takes a
@@ -267,8 +271,9 @@ be restarted with that symbol added to the editor window (this is similar to the
 the previous view.
 
 <p><code>edit</code> is also very useful to browse in a database. You can follow
-the links between objects with <code>Ctrl-]</code>, and even modify the data if
-you are sure about what you are doing (and don't forget to <code><a
+the links between objects with <code>Ctrl-]</code>, and even - e.g. for
+low-level repairs - modify the data (but only if you are really sure about what
+you are doing, and don't forget to <code><a
 href="ref.html#commit">commit</a></code> when you are done).
 
 <p><code>more</code> is a simple tool that displays the elements of a list one
@@ -356,10 +361,8 @@ system. If an optional pattern argument (with '<code>@</code>' wildcard
 characters ) is given, only symbols matching that pattern are returned.
 
 <p><pre><code>
-: (what "@Field")
--> (+HttpField hotField +TimeField +PwField +DigField +FixField +IntField
-+MailField +SymField +DateField +McField +TextField +DrawField +ClsField
-+PictField +NumField +FileField)
+: (what "prin@")
+-> (println printsp print> prinl print prin)
 </code></pre>
 
 <p>The function <code>who</code> returns <i>"who contains that"</i>, i.e. a list
@@ -367,18 +370,23 @@ of symbols that contain a given argument somewhere in their value or property
 list.
 
 <p><pre><code>
-: (who 'cdar)
--> (step dbg ubg _scan (T . _sel) _gen _iter _reti (set> . +Map) _nacs)
+: (who 'print)
+-> ((print> . +Relation) query show select pretty "edit" msg rules pp more (print> . +Date))
 </code></pre>
 
-<p>A dotted pair indicates either a method definition or a property entry.
+<p>A dotted pair indicates either a method definition or a property entry. So
+<code>(print> . +Relation)</code> denotes the <code>print&gt;</code> method of
+the <code>+Relation</code> class.
 
 <p><code>who</code> can be conveniently combined with <code>more</code> and
 <code>pp</code>:
 
 <p><pre><code>
-: (more (who 'cdar) pp)
-(de step (Q F)          # Pretty-print these functions one by one
+: (more (who 'print) pp)
+(dm (print> . +Relation) (Val)   # Pretty-print these functions one by one
+   (print Val) )
+
+(de query ("Q" "Dbg")
    ...
 </code></pre>
 
@@ -386,6 +394,8 @@ list.
 href="ref.html#match">match</a></code>):
 
 <p><pre><code>
+: (who '(print @ (val @)))
+-> (show)
 : (more (who '(+ @ 1)) pp)
 (de _week (Dat)
    (/ (- Dat (% (+ Dat 1) 7)) 7) )
@@ -401,25 +411,23 @@ with <code>pp</code>:
 -> ((del> . +Relation) (del> . +Entity) (del> . +List))
 : (more (can 'del>) pp)                         # Inspect the methods with 'pp'
 (dm (del> . +Relation) (Obj Old Val)
-   (and (&lt;&gt;> Old Val) Val) )
+   (and (&lt;> Old Val) Val) )
 
 (dm (del> . +Entity) (Var Val)
    (when
       (and
          Val
          (has> (meta This Var) Val (get This Var)) )
-      (rel>
-         (meta This Var)
-         This
-         (get This Var)
-         (put
+      (let Old (get This Var)
+         (rel>
+            (meta This Var)
             This
-            Var
-            (del> (meta This Var) This (get This Var) @) ) )
-      (upd> This Var) ) )
+            Old
+            (put This Var (del> (meta This Var) This Old @)) )
+         (upd> This Var Old) ) ) )
 
 (dm (del> . +List) (Obj Old Val)
-   (delete Val Old) )
+   (and (&lt;> Old Val) (delete Val Old)) )
 </code></pre>
 
 <p><code>dep</code> shows the dependencies in a class hierarchy. That is, for a
@@ -427,54 +435,37 @@ given class it displays the tree of its (super)class(es) above it, and the tree
 of its subclasses below it.
 
 <p>To view the complete hierarchy of input fields, we start with the root class
-<code>+field</code>:
+<code>+Relation</code>:
 
 <p><pre><code>
-: (dep '+field)
-+field
-   +Button
-      +ChgButton
-      +ClrButton
-      +SetButton
-   +Label
-   +TextField
-      +HttpField
-      +TimeField
-      +PwField
-      +DigField
-         +NumField
-            +IntField
-      +FixField
-      +MailField
-      +SymField
-      +DateField
-      +McField
-      +ClsField
-      +FileField
-   +DrawField
-   +PictField
-   +Checkbox
--> +field
+: (dep '+Relation)
++Relation
+   +Number
+      +Time
+      +Date
+   +Symbol
+      +String
+   +Blob
+   +Link
+      +Joint
+   +Bool
+   +Any
+   +Bag
+-> +Relation
 </code></pre>
 
-<p>If we are interested in <code>+DigField</code>:
+<p>If we are interested in <code>+Link</code>:
 
 <p><pre><code>
-: (dep '+DigField)
-         +Font
-      +Mono
-   +Align
-      +field
-   +TextField
-+DigField
-   +NumField
-      +IntField
--> +DigField
+: (dep '+Link)
+   +Relation
++Link
+   +Joint
+-> +Link
 </code></pre>
 
-<p>This says for example that <code>+DigField</code> has two direct superclasses
-(<code>+Align</code> and <code>+TextField</code>) and one direct subclass
-(<code>+NumField</code>).
+<p>This says that <code>+Link</code> is a subclass of <code>+Relation</code>,
+and has a single subclass (<code>+Joint</code>).
 
 
 <p><hr>
@@ -512,9 +503,9 @@ Hello world
 hello redefined
 </code></pre>
 
-<p>Pico informs you that you have just redefined the function. This might be a
-useful warning in case you forgot that a bound symbol with that name already
-existed.
+<p>Pico Lisp informs you that you have just redefined the function. This might
+be a useful warning in case you forgot that a bound symbol with that name
+already existed.
 
 <p><pre><code>
 : (hello "world")
@@ -526,7 +517,8 @@ Hello world
 Hello Alex
 </code></pre>
 
-<p>Normally Pico evaluates the arguments before it passes them to a function:
+<p>Normally, Pico Lisp evaluates the arguments before it passes them to a
+function:
 
 <p><pre><code>
 : (hello (+ 1 2 3))
@@ -548,8 +540,8 @@ href="ref.html#setq">setq</a></code> for example) it is better if the function
 gets all arguments unevaluated, and can decide for itself what to do with them.
 
 <p>For such cases you do not define the function with a <i>list</i> of
-parameters, but give it a single atomic parameter instead. Pico will then bind
-all (unevaluated) arguments to that list.
+parameters, but give it a <i>single atomic</i> parameter instead. Pico Lisp will
+then bind all (unevaluated) arguments to that list.
 
 <p><pre><code>
 : (de foo X
@@ -577,10 +569,11 @@ function with 2 evaluated and an arbitrary number of unevaluated arguments:
 </code></pre>
 
 <p>More common, in fact, is the case where you want to pass an arbitrary number
-of <i>evaluated</i> arguments to a function. For that, Pico recognizes the
+of <i>evaluated</i> arguments to a function. For that, Pico Lisp recognizes the
 symbol <code>@</code> as a single atomic parameter and remembers all evaluated
-arguments in an internal list. This list can then be access sequentially with
-the <code><a href="ref.html#args">args</a></code>, <code><a
+arguments in an internal frame. This frame can then be accessed sequentially
+with the <code><a href="ref.html#args">args</a></code>, <code><a
+href="ref.html#next">next</a></code>, <code><a
 href="ref.html#arg">arg</a></code> and <code><a
 href="ref.html#rest">rest</a></code> functions.
 
@@ -604,19 +597,19 @@ href="ref.html#rest">rest</a></code> functions.
 
 <p>These examples are not very useful, because the advantage of a variable
 number of arguments is not used. A function that prints all its evaluated
-numeric arguments, each on a line followed by its incremented value:
+numeric arguments, each on a line followed by its squared value:
 
 <p><pre><code>
 : (de foo @
    (while (args)
-      (println (next) (+ 1 (arg))) ) )
+      (println (next) (* (arg) (arg))) ) )
 
 : (foo (+ 2 3) (- 7 1) 1234 (* 9 9))
-5 6
-6 7
-1234 1235
-81 82
--> 82
+5 25
+6 36
+1234 1522756
+81 6561
+-> 6561
 </code></pre>
 
 <p>Finally, it is possible to pass all these evaluated argument to another
@@ -685,15 +678,16 @@ colon (<code>:</code>), and upon function exit with an equals sign
 <p>Trace works by modifying the function body, so generally only for functions
 defined as lists (lambda expressions, see <a href="ref.html#ev">Evaluation</a>).
 Tracing a <code>C</code>-function is possible, however, when it is a function
-that evaluates all its arguments, and when the number of arguments is known in
-advance. Then this number must be passed to trace.
+that evaluates all its arguments.
 
-<p>The function <code><a href="ref.html#=0">=0</a></code> is a single-argument
-predicate. We'll trace it too (with '<code>1</code>' for one parameter):
+<p>So let's trace the functions <code><a href="ref.html#=0">=0</a></code> and
+<code><a href="ref.html#*">*</a></code>:
 
 <p><pre><code>
-: (trace '=0 1)
+: (trace '=0)
 -> =0
+: (trace '*)
+-> *
 </code></pre>
 
 <p>If we call <code>fact</code> again, we see the additional output:
@@ -711,27 +705,36 @@ predicate. We'll trace it too (with '<code>1</code>' for one parameter):
     =0 = NIL
     fact : 0
      =0 : 0
-     =0 = T
+     =0 = 0
     fact = 1
+    * : 1 1
+    * = 1
    fact = 1
+   * : 2 1
+   * = 2
   fact = 2
+  * : 3 2
+  * = 6
  fact = 6
 -> 6
 </code></pre>
 
-<p>To reset a function to its untraced state, call
+<p>To reset a function to its untraced state, call <code>untrace</code>
 
 <p><pre><code>
 : (untrace 'fact)
 -> fact
 : (untrace '=0)
 -> =0
+: (untrace '*)
+-> *
 </code></pre>
 
 <p>or simply
 
 <p><pre><code>
-: (mapc untrace '(fact =0))
+: (mapc untrace '(fact =0 *))
+-> *
 </code></pre>
 
 <p><i>Single-stepping</i> means to execute a function step by step, giving the
@@ -749,8 +752,8 @@ then
 
 <li>execute <code>(d)</code> to recursively debug the next expression
 
-<li>execute <code>(e)</code> to evaluate the next expression, to see what will
-happen without actually advancing on
+<li>execute <code>(<a href="ref.html#e">e</a>)</code> to evaluate the next
+expression, to see what will happen without actually advancing on
 
 <li>type <code>RETURN</code> (: enter an empty line) to leave the read-eval
 loop and continue with the next expression
@@ -765,17 +768,8 @@ href="ref.html#stamp">stamp</a></code> system function.
 
 <p><pre><code>
 (de stamp (Dat Tim)
-   (default
-      Dat (date)
-      Tim (time) )
-   (setq Tim (time Tim))
-   (pack
-      (dat$ Dat "-")
-      " "
-      (pack
-         (pad 2 (car Tim)) ":"
-         (pad 2 (cadr Tim)) ":"
-         (pad 2 (caddr Tim)) ) ) )
+   (default  Dat (date)  Tim (time))
+   (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 </code></pre>
 
 <p><pre><code>
@@ -784,37 +778,35 @@ href="ref.html#stamp">stamp</a></code> system function.
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time))        # stopped at first expression
 !                                      # RETURN
-(setq Tim (time Tim))                  # stopped at second expression
-!                                      # RETURN
-(pack (dat$ Dat "-") " " (pack ...     # third expression
+(pack (dat$ Dat "-") " " (tim$ ...     # second expression
 ! Tim                                  # inspect 'Tim' variable
--> (11 22 35)
+-> 41908
+! (time Tim)                           # convert it
+-> (11 38 28)
 !                                      # RETURN
--> "2002-12-15 11:22:35"               # done, as there are only 3 expressions
+-> "2004-10-29 11:38:28"               # done, as there are only 2 expressions
 </code></pre>
 
 <p>Now we execute it again, but this time we want to look at what's happening
-inside the third expression.
+inside the second expression.
 
 <p><pre><code>
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time))
 !                                      # RETURN
-(setq Tim (time Tim))
-!                                      # RETURN
-(pack (dat$ Dat "-") " " (pack ...     # here we want to look closer
+(pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
 ! (d)                                  # debug this expression
 -> T
 !                                      # RETURN
 (dat$ Dat "-")                         # stopped at first subexpression
 ! (e)                                  # evaluate it
--> "2002-12-15"
+-> "2004-10-29"
 !                                      # RETURN
-(pack (pad 2 (car Tim)) ":" (pad ...   # stopped at second subexpression
+(tim$ Tim T)                           # stopped at second subexpression
 ! (e)                                  # evaluate it
--> "11:27:17"
+-> "11:40:44"
 !                                      # RETURN
--> "2002-12-15 11:27:17"               # done
+-> "2004-10-29 11:40:44"               # done
 </code></pre>
 
 <p>The breakpoints still remain in the function body. We can see them when we
@@ -824,16 +816,10 @@ pretty-print it:
 : (pp 'stamp)
 (de stamp (Dat Tim)
    (! default Dat (date) Tim (time))
-   (! setq Tim (time Tim))
    (! pack
       (! dat$ Dat "-")
       " "
-      (! pack
-         (pad 2 (car Tim))
-         ":"
-         (pad 2 (cadr Tim))
-         ":"
-         (pad 2 (caddr Tim)) ) ) )
+      (! tim$ Tim T) ) )
 -> stamp
 </code></pre>
 
@@ -851,34 +837,313 @@ environment and continue execution with <code>RETURN</code> when you are done.
 
 
 <p><hr>
+<h3><a name="funio">Functional I/O</a></h3>
+
+<p>Input and output in Pico Lisp is functional, in the sense that there are
+<u>not</u> variables assigned to file descriptors, which need then to be passed
+to I/O functions for reading, writing and closing. Instead, these functions
+operate on implicit input and output channels, which are created and maintained
+as dynamic environments.
+
+<p>Standard input and standard output are the default channels. Try reading a
+single expression:
+
+<p><pre><code>
+: (read)
+(a b c)        # Console input
+-> (a b c)
+</code></pre>
+
+<p>To read from a file, we redirect the input with <code><a
+href="ref.html#in">in</a></code>. Note that comments and white space are
+automatically skipped by <code>read</code>:
+
+<p><pre><code>
+: (in "doc/fun.l" (read))
+-> (de fact (N) (if (=0 N) 1 (* N (fact (- N 1)))))
+</code></pre>
+
+<p>The <code><a href="ref.html#skip">skip</a></code> function can also be used
+directly. To get the first non-white character in the file with <code><a
+href="ref.html#char">char</a></code>:
+
+<p><pre><code>
+: (in "doc/fun.l" (skip "#") (char))
+-> "("
+</code></pre>
+
+<p><code><a href="ref.html#from">from</a></code> searches through the input
+stream for given patterns. Typically, this is not done with Lisp source files
+(there are better ways), but for a simple example let's extract all items
+immediately following <code>fact</code> in the file,
+
+<p><pre><code>
+: (in "doc/fun.l" (make (while (from "fact ") (link (read)))))
+-> ((N) (- N 1))
+</code></pre>
+
+<p>or the word following "(de " with <code><a
+href="ref.html#till">till</a></code>:
+
+<p><pre><code>
+: (in "doc/fun.l" (from "(de ") (till " " T)))
+-> "fact"
+</code></pre>
+
+
+<p>With <code><a href="ref.html#line">line</a></code>, a line of characters is
+read, either into a single transient symbol,
+
+<p><pre><code>
+: (in "doc/tut.html" (line T))
+-> "&lt;!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" ...
+</code></pre>
+
+<p>or into a list of characters:
+
+<p><pre><code>
+: (in "doc/tut.html" (line))
+-> ("&lt;" "!" "D" "O" "C" "T" "Y" "P" "E" " " "H" "T" "M" "L" ...
+</code></pre>
+
+<p><code>line</code> is typically used to read tabular data from a file.
+Additional arguments can split the line into fixed-width fields, as described in
+the <code><a href="ref.html#line">reference manual</a></code>. If, however, the
+data are of variable width, delimited by some special character, the <code><a
+href="ref.html#split">split</a></code> function can be used to extract the
+fields. A typical way to import the contents of such a file is:
+
+<p><pre><code>
+(load "lib/import.l")
+
+(in '("bin/utf2" "importFile.txt")              # Pipe: Convert to UTF-8
+   (use L                                       # Local variable 'L'
+      (whilst (setq L (split (line) "^I"))      # TAB-delimited data
+         ... use 'getStr', 'getNum' etc ...     # process them
+</code></pre>
+
+<p>Some more examples:
+
+<p><pre><code>
+(in "a"                                         # Copy the first 40 Bytes
+   (out "b"                                     # from file "a" to file "b"
+      (echo 40) ) )
+
+(in "doc/tut.html"                              # Show the HTTP-header
+   (line)
+   (echo "&lt;body>") )
+
+(out "file.mac"                                 # Convert to Macintosh
+   (in "file.txt"                               # from Unix or DOS format:
+      (while (char)
+         (prin
+            (case @
+               ("^M" NIL)                       # ignore CR
+               ("^J" "^M")                      # convert CR to LF
+               (T @) ) ) ) ) )                  # otherwise no change
+
+(out "c"                                        # Merge the contents of "a"
+   (in "b"                                      # and "b" into "c"
+      (in "a"
+         (while (read)                          # Read an item from "a",
+            (println @ (in -1 (read))) ) ) ) )  # print it with an item from "b"
+</code></pre>
+
+
+<p><hr>
+<h3><a name="script">Scripting</a></h3>
+
+<p>There are two possibilities to get the Pico Lisp interpreter into doing
+useful work: Via command line arguments, or as a stand-alone script.
+
+<p>The command line can specify either files for execution, or arbitrary Lisp
+expressions for direct evaluation (see <code><a
+href="ref.html#invoc">Invocation</a></code>): If an argument starts with a
+hyphen, it is evaluated, otherwise <code><a
+href="ref.html#load">load</a></code>ed as a file. A typical invocation might
+look like:
+
+<p><pre><code>
+$ ./p dbg.l app/file1.l -main app/file2.l
+</code></pre>
+
+<p>It loads the debugging environment, an application source file, calls the
+main function, and then loads another application source. In a typical
+development and debugging session, this line is often modified using the shell's
+history mechanisms, e.g. by inserting debugging statements:
+
+<p><pre><code>
+$ ./p dbg.l app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l
+</code></pre>
+
+<p>Another convenience during debugging and testing is to put things into the
+command line (shell history) which would otherwise have to be done each time in
+the application's user interface:
+
+<p><pre><code>
+$ ./p dbg.l app/file1.l -main app/file2.l -go -'login "name" "password"'
+</code></pre>
+
+<p>The final production release of an application usually includes a shell
+script, which initializes the environment, does some bookkeeping and cleanup,
+and calls the application with a proper command line. It is no problem if the
+command line is long and complicated.
+
+<p>For small utility programs, however, this is overkill. It is better to write
+a single executable file using the mechanisms of "interpreter files": If the
+first two characters in an executable file are "<code>#!</code>", the operating
+system kernel will pass this file to an interpreter program whose pathname is
+given in the first line (optionally followed by a single argument). This is fast
+and efficient, because the overhead of a subshell is avoided.
+
+<p>Let's assume you installed Pico Lisp in the directory "/usr/local/pico/" (or
+put a symbolic link "pico" into "/usr/local/"). Then a simple hello-world script
+might look like:
+
+<p><pre><code>
+#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+(prinl "Hello world!")
+(bye)
+</code></pre>
+
+<p>If you write this into a text file, and use <code>chmod</code> to set it to
+"executable", it can be executed like any other command. Note that - because
+<code>#</code> is the comment character in Pico Lisp - the first line will not
+be interpreted, and you can still use that file as a normal command line
+argument to Pico Lisp (useful during debugging).
+
+<p>The fact that a hyphen causes evaluation of command line arguments can be
+used to simulate something like command line options. The following script
+defines two functions <code>a</code> and <code>f</code>, and then calls
+<code>(load T)</code> to process the rest of the command line (which otherwise
+would be ignored because of the <code>(bye)</code> statement):
+
+<p><pre><code>
+#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+
+(de a ()
+   (println '-a '-> (opt)) )
+
+(de f ()
+   (println '-f '-> (opt)) )
+
+(load T)
+(bye)
+</code></pre>
+
+<p>Calling this script (let's say we named it "testOpts") gives:
+
+<p><pre><code>
+$ ./testOpts -f abc
+-f -> "abc"
+$ ./testOpts -a xxx  -f yyy
+-a -> "xxx"
+-f -> "yyy"
+</code></pre>
+
+<p>We have to be aware of the fact, however, that the aggregation of arguments
+like
+
+<p><pre><code>
+$ ./testOpts -axxx  -fyyy
+</code></pre>
+
+<p>or
+
+<p><pre><code>
+$ ./testOpts -af yyy
+</code></pre>
+
+<p>cannot be achieved with this simple and general mechanism of command line
+processing.
+
+<p>Utilities are typically used outside the context of the Pico Lisp
+environment. All examples above assumed that the current working directory is
+the Pico Lisp installation directory, which is usually all right for
+applications developed in that environment. Command line file arguments like
+"dbg.l" or "app/file1.l" will be properly found.
+
+<p>To allow utilities to run in arbitrary places on the host file system, the
+concept of <i>home directory substitution</i> was introduced. The interpreter
+remembers internally at start-up the pathname of its first argument (usually
+"lib.l"), and substitutes any leading "<code>@</code>" character in subsequent
+file names with that pathname. Thus, to run the above example in some other
+place, simply write:
+
+<p><pre><code>
+$ /usr/local/pico/p @dbg.l @app/file1.l -main @app/file2.l
+</code></pre>
+
+<p>that is, supply a full path name to the initial command (here 'p'), or put it
+into your <code>PATH</code> variable, and prefix each file which has to be
+loaded from the Pico Lisp home directory with a <code>@</code> character.
+"Normal" files (not prefixed by <code>@</code>) will be opened or created
+relative to the current working directory as usual.
+
+<p>Stand-alone scripts will often want to load additional modules from the Pico
+Lisp environment, beyond the "lib.l" we provided in the first line of the
+hello-world script. Typically, at least a call to
+
+<p><pre><code>
+(load "@lib/misc.l")
+</code></pre>
+
+<p>(note the home directory substitution) will be included near the beginning of
+the script.
+
+<p>As a more complete example, here is a script which extracts the date, name
+and size of the latest official Pico Lisp release version from the download web
+site, and prints it to standard output:
+
+<p><pre><code>
+#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+
+(load "@lib/misc.l" "@lib/http.l")
+
+(use (@Date @Name @Size)
+   (when
+      (match
+         '(@Date " " "-" " " @Name " " "(" @Size ")")
+         (client "software-lab.de" 80 "down.html"
+            (from "Archive")
+            (from ".tgz\">")
+            (till "<") ) )
+      (prinl @Name)
+      (prinl @Date " -- " @Size) ) )
+
+(bye)
+</code></pre>
+
+
+<p><hr>
 <h3><a name="oop">Objects and Classes</a></h3>
 
 <p>The Pico Lisp object model is very simple, yet flexible and powerful. Objects
 as well as classes are both implemented as symbols. In fact, there is no formal
-difference between objects and classes in Pico; classes are more a conceptual
-design consideration in the head of the programmer than a physical reality.
+difference between objects and classes; classes are more a conceptual design
+consideration in the head of the programmer than a physical reality.
 
-<p>Having said this, we declare:
+<p>Having said this, we declare that normally:
 
 <ol>
 <li>A Class
    <ul>
-   <li>Has a name
+   <li>Has a name (interned symbol)
    <li>Has method definitions and superclass(es) in the value cell
-   <li>May have class variables in the property list
+   <li>May have class variables (attributes) in the property list
    </ul>
 <li>An Object
    <ul>
-   <li>Is anonymous
-   <li>May have method definitions and class(es) in the value cell
-   <li>Has instance variables in the property list
+   <li>Has no name (anonymous symbol) or is an external symbol
+   <li>Has class(es) and (optionally method definitions) and in the value cell
+   <li>Has instance variables (attributes) in the property list
    </ul>
 </ol>
 
 <p>So the main difference between classes and objects is that the former ones
-usually have names. By convention, these names start with a '<code>+</code>'.
-Sometimes it makes sense, however, to create named objects (as global
-singletons, for example), or even anonymous classes.
+usually are internal symbols. By convention, their names start with a
+'<code>+</code>'. Sometimes it makes sense, however, to create named objects (as
+global singletons, for example), or even anonymous classes.
 
 <p>Both classes and objects have a list in their value cell, consisting of
 method definitions (often empty for objects) and (super)class(es). And both
@@ -919,7 +1184,7 @@ $ ./p dbg.l doc/shape.l
 definitions will go to that class.
 
 <p>The comment '<code># x y</code>' in the second line is just a convention, to
-indicate what instance variables (properties) that class uses. As Pico is a
+indicate what instance variables (properties) that class uses. As Pico Lisp is a
 dynamic language, a class can be extended at runtime with any number of
 properties, and there is nothing like a fixed object size or structure. This
 comment is a hint of what the programmer thinks to be essential and typical for
@@ -953,7 +1218,7 @@ the offset values <code>DX</code> and <code>DY</code> to the object's origin.
    (* (: dx) (: dy)) )
 
 (dm perimeter> ()
-   (+ (* 2 (: dx)) (* 2 (: dy))) )
+   (* 2 (+ (: dx) (: dy))) )
 
 (dm draw> ()
    (drawRect (: x) (: y) (: dx) (: dy)) )
@@ -986,10 +1251,10 @@ the hypothetical function <code>drawCircle</code>:
    (=: r R) )
 
 (dm area> ()
-   (*/ (: r) (: r) 31415627 10000000) )
+   (*/ (: r) (: r) 31415927 10000000) )
 
 (dm perimeter> ()
-   (*/ 2 (: r) 31415627 10000000) )
+   (*/ 2 (: r) 31415927 10000000) )
 
 (dm draw> ()
    (drawCircle (: x) (: y) (: r)) )
@@ -1074,7 +1339,7 @@ $134432607 (+Circle)                      # Origin changed (10,10) -> (20,15)
 : (mapc
    '((Shape) (move> Shape 10 10))         # Move all 10 right and down
    (list R C) )
--> 20
+-> 25
 : (show R)
 $134431493 (+Rectangle)
    y 15
@@ -1099,14 +1364,14 @@ position. That is, they do not change their position even if they receive a
 the whole shape hierarchy (e.g. by defining <code>+FixedShape</code>,
 <code>+FixedRectangle</code> and <code>+FixedCircle</code> classes).
 
-<p>The Pico Way is the use of <u>Prefix Classes</u> through multiple
+<p>The Pico Lisp Way is the use of <u>Prefix Classes</u> through multiple
 inheritance. It uses the fact that searching for method definitions is a
 depth-first, left-to-right search of the class tree. We define a prefix class:
 
 <p><pre><code>
 : (class +Fixed)
 
-(dm move> (DX DY))      # Do-nothing method
+(dm move> (DX DY))  # A do-nothing method
 </code></pre>
 
 <p>We can now create a fixed rectangle, and try to move it:
@@ -1127,14 +1392,32 @@ $134432881 (+Fixed +Rectangle)
 <p>We see, prefix classes can surgically change the inheritance tree for
 selected objects or classes.
 
+<p>Alternatively, if fixed rectangles are needed often, it might make sense to
+define a new class <code>+FixRect</code>:
+
+<p><pre><code>
+: (class +FixRect +Fixed +Rectangle)
+-> +FixRect
+</code></pre>
+
+<p>and then use it directly:
+
+<p><pre><code>
+: (setq R (new '(+FixRect) 0 0 30 20))
+-> $13455710
+</code></pre>
+
 
 <p><hr>
 <h3><a name="ext">Persistence (External Symbols)</a></h3>
 
-<p>Pico Lisp has persistent objects built-in as a first class data type. They
-are, in fact, simply a special type of symbolic atoms (called "<a
-href="ref.html#external">External Symbols</a>"), that happen to be read from a
-pool file when accessed, and written back automatically when modified.
+<p>Pico Lisp has persistent objects built-in as a first class data type. With
+"first class" we mean not just the ability of being passed around, or returned
+from functions (that's a matter of course), but that they are a primary data
+type with their own interpreter tag bits. They are, in fact, a special type of
+symbolic atoms (called "<a href="ref.html#external">External Symbols</a>"), that
+happen to be read from a pool file when accessed, and written back automatically
+when modified.
 
 <p>In all other aspects they are normal symbols. They have a value cell, a
 property list and a name.
@@ -1153,10 +1436,11 @@ href="ref.html#read">read</a></code> functions) it is surrounded by braces.
 
 <p>If a file with that name did not exist, it got created now. Also created at
 the same moment was <code>{1}</code>, the very first symbol in the file. This
-symbol is of great importance, and is handled especially by Pico. Therefore a
-global constant <code><a href="ref.html#*DB">*DB</a></code> exists, which points
-to that symbol <code>{1}</code>, which should be used exclusively to access the
-symbol <code>{1}</code>, and which should never be modified by the programmer.
+symbol is of great importance, and is handled especially by Pico Lisp. Therefore
+a global constant <code><a href="ref.html#*DB">*DB</a></code> exists, which
+points to that symbol <code>{1}</code>, which should be used exclusively to
+access the symbol <code>{1}</code>, and which should never be modified by the
+programmer.
 
 <p><pre><code>
 : *DB                   # The value of '*DB'
@@ -1187,8 +1471,8 @@ have written '<code>(setq {1} "Hello world")</code>', and instead of '<code>(put
 would have the same effect, but as a rule external symbols should <u>never</u>
 be be accessed <u>literally</u> in application programs, because the garbage
 collector might not be able to free these symbols and all symbols connected to
-them (and that might well be the whole database). It is perfectly all right,
-however, to access external symbols literally during interactive debugging.
+them (and that might well be the whole database). It is all right, however, to
+access external symbols literally during interactive debugging.
 
 <p>Now we can create own first own external symbol. This can be done with
 <code><a href="ref.html#new">new</a></code> when a <code>T</code> argument is
@@ -1227,8 +1511,8 @@ supplied:
 
 <p>All modifications to - and creations of - external symbols done so far are
 not written to the database yet. We could call <code><a
-href="ref.html#rollback">rollback</a></code> (or simply exit Pico) to undo all
-the changes. But as we want to keep them:
+href="ref.html#rollback">rollback</a></code> (or simply exit Pico Lisp) to undo
+all the changes. But as we want to keep them:
 
 <p><pre><code>
 : (commit)           # Commit all changes
@@ -1240,7 +1524,7 @@ $                    # back to the shell
 <p>So, the next time when ..
 
 <p><pre><code>
-$ ./p dbg.l             # .. we start Pico
+$ ./p dbg.l             # .. we start Pico Lisp
 : (pool "test.db")      # and open the database file,
 -> T
 : (show *DB)            # our two symbols are there again
@@ -1348,8 +1632,8 @@ with the soundex algorithm (<code>+Sn</code>) and a full index
 <p>The attributes for <i>father</i> (<code>pa</code>), <i>Mother</i>
 (<code>ma</code>) and <i>partner</i> (<code>mate</code>) are all defined as
 <code>+Joint</code>s. A <code>+Joint</code> is probably the most powerful
-relation mechanism in Pico; it establishes a bi-directional link between two
-objects.
+relation mechanism in Pico Lisp; it establishes a bi-directional link between
+two objects.
 
 <p>The above declarations say that the <i>father</i> (<code>pa</code>) attribute
 points to an object of type <code>+Man</code>, and is joined with that object's
@@ -1381,8 +1665,8 @@ relations as <code>+Joint</code>s.
 </code></pre>
 
 <p>They are all searchable via a non-unique index (<code>+Ref</code>). Date
-values in Pico are just numbers, representing the numbers of days since first of
-March in the year zero.
+values in Pico Lisp are just numbers, representing the numbers of days since
+first of March in the year zero.
 
 <p>A method <code>url&gt;</code> is defined:
 
@@ -1502,11 +1786,11 @@ more efficient) searches can be performed.
 
 
 <p><hr>
-<h3><a name="gui">User Interface Programming</a></h3>
+<h3><a name="gui">User Interface (GUI) Programming</a></h3>
 
-<p>The only type of GUI supported by the Pico application server framework is
-either dynamically generated (but static by nature) <code>HTML</code>, or an
-interactive applet frontend.
+<p>The only type of GUI supported by the Pico Lisp application server framework
+is either dynamically generated (but static by nature) <code>HTML</code>, or an
+interactive frontend jusing Java applets.
 
 <p>Before we explain the GUI of our demo database application, we present a
 minimal example for a plain <code>HTML</code> GUI in <code><a
@@ -1604,7 +1888,7 @@ interactively while it is running. For example, the global variable
 : (show *Top)
 </code></pre>
 
-<p>To take a look at the field with the current input current focus:
+<p>To take a look at the field with the current input current field (focus):
 
 <p><pre><code>
 : (show *Top 'focus)
@@ -1621,7 +1905,7 @@ $ ./p doc/family.l -main -go -wait
 process which will continue to run until it is killed. The other is a child
 process which is connected to the applet in the browser, it will terminate when
 the browser is closed, or when <code>(bye)</code> or a plain <code>RETURN</code>
-is entered at the Pico prompt.
+is entered at the Pico Lisp prompt.
 
 <p>Now back to the explanation of the GUI function <code>person</code>:
 
@@ -1643,8 +1927,8 @@ doesn't harm, though, if it is called each time as in this case).
 href="hello.l">doc/hello.l</a></code> example). <code>html</code> takes a page
 title as the first argument, and interprets all following arguments as a body
 description. Each item may be an atom (in that case it will be simply printed as
-"This is Pico" in <code><a href="hello.l">doc/hello.l</a></code>), or a list
-which is executed.
+"This is Pico Lisp" in <code><a href="hello.l">doc/hello.l</a></code>), or a
+list which is executed.
 
 <p>In this case the body consists only of three statements:
 
@@ -1666,11 +1950,11 @@ arguments depending on the needs of these classes.
 
 <p><pre><code>
    (row
-      (gui '(+E/R +TextField) '(nm : home obj) "Name" 30)
+      (gui '(+E/R +TextField) '(nm : home obj) "Name" 40)
 </code></pre>
 
 <p>This creates a <code>+TextField</code> with the label "Name" and a length of
-30 characters. The <code>+E/R</code> (: Entity/Relation) prefix class connects
+40 characters. The <code>+E/R</code> (: Entity/Relation) prefix class connects
 that field to a database object, the <code>nm</code> attribute of a person in
 this case, so that the person's name is displayed in that text field, and any
 changes entered into that field are propagated to the database automatically.
@@ -1681,10 +1965,11 @@ vertically below each other).
 
 <p><pre><code>
    (gui '(+Set +ClassField)
-      '((V)
-         (unless (= V (val (: home obj)))
-            (extra V)
-            (upd> (: home)) ) )
+      '((Val)
+         (let Old (val (: home obj))
+            (extra Val)
+            (unless (= Val Old)
+               (upd> (: home)) ) ) )
       '(: home obj) "Sex"
       '(("Male" +Man) ("Female" +Woman)) ) )
    ...
@@ -1703,16 +1988,16 @@ as a side effect, and thus require a refresh of the display.
    ...
 </code></pre>
 
-<p>This is a function that opens a new panel in the GUI layout. Pico applets use
-the AWT <code>GridBagLayout</code> to arrange components in panels, so calling
-<code>(----)</code> allows a certain degree of control.
+<p>This is a function that opens a new panel in the GUI layout. Pico Lisp
+applets use the AWT <code>GridBagLayout</code> to arrange components in panels,
+so calling <code>(----)</code> allows a certain degree of control.
 
 <p><pre><code>
    ...
    (---- T)
    (gui '(+E/R +Chart)
       '(kids : home obj)
-      4 '("Children" "born" "Father" "Mother")
+      4 '(" " "Children" "born" "Father" "Mother")
       (quote
    ...
 </code></pre>
@@ -1735,17 +2020,17 @@ database.
 
 <p>The first one shows all contemporaries of the person that is currently
 displayed, i.e. all persons who did not die before, or were not born after that
-person. This is a typical Pico report, in that in addition to the report's
+person. This is a typical Pico Lisp report, in that in addition to the report's
 <code>HTML</code> page, a temporary file is generated which is suitable for
 download (and import into a spread sheet), and from which a <code>PDF</code> can
 be produced for print-out.
 
-<p>In Pico, there is not a real difference between a plain <code>HTML</code> GUI
-and a report. Again, the function <code>html</code> is used to generate the
-page. By calling the function <code>report</code>, however, the temporary file
-and the links for download and <code>PDF</code> are created. A <code>HTML</code>
-table is then filled with the function <code>record</code> which takes care of
-all necessary output management.
+<p>In Pico Lisp, there is not a real difference between a plain
+<code>HTML</code> GUI and a report. Again, the function <code>html</code> is
+used to generate the page. By calling the function <code>report</code>, however,
+the temporary file and the links for download and <code>PDF</code> are created.
+A <code>HTML</code> table is then filled with the function <code>record</code>
+which takes care of all necessary output management.
 
 <p>The second report is much simpler. It produces a recursive structure of the
 family.
@@ -1755,7 +2040,7 @@ navigation through the database.
 
 
 <p><hr>
-<h3><a name="pilog">Pilog -- Pico Prolog</a></h3>
+<h3><a name="pilog">Pilog -- Pico Lisp Prolog</a></h3>
 
 <p>This sections explains some cases of using Pilog in typical application
 programming, in combination with persistent objects and databases. Please refer
@@ -1768,9 +2053,9 @@ href="#db">Database Progamming</a> section.
 
 <p>Normally, Pilog is used either interactively to query the database during
 debugging, or in applications to generate export data and reports. In the
-following examples we use the interactive query function <code><a
-href="ref.html#quest">?</a></code>. An application will use <code><a
-href="ref.html#goal">goal</a></code> and <code><a
+following examples we use the interactive query frontend functions <code><a
+href="ref.html#quest">?</a></code> and <code>select</code>. An application will
+use <code><a href="ref.html#goal">goal</a></code> and <code><a
 href="ref.html#prove">prove</a></code> directly, or use convenience functions
 like <code>pilog</code> or <code>solve</code>.
 
@@ -1783,8 +2068,10 @@ like <code>pilog</code> or <code>solve</code>.
 <code>collect</code>, as it derives its data from a single relation. It can be
 used for simple database queries.
 
-<li><code>select</code> has no corresponding Lisp function. It provides for
-self-optimizing parallel access to an arbitrary number of relations.
+<li><code>select</code> provides for self-optimizing parallel access to an
+arbitrary number of relations. There is also a Lisp frontend function
+<code>select</code>, for convenient calls to the Pilog <code>select</code>
+predicate.
 
 </ul>
 
@@ -1901,11 +2188,20 @@ substring matches), and filter objects that
 
 </ul>
 
-<p>A more extensive example for the usage of <code>select</code> can be found in
-the <code>qPerson</code> function in <code><a
+<p>A more typical and extensive example for the usage of <code>select</code> can
+be found in the <code>qPerson</code> function in <code><a
 href="family.l">doc/family.l</a></code>. It is used in the search dialog of the
 demo application, and searches for a person with the name, the parents' and
-partner's names, the occupation and a time range for the birth date.
+partner's names, the occupation and a time range for the birth date. The
+relevant index trees in the database are searched (actually only those trees
+where the user entered a search key in the corresponding dialog field), and a
+logical AND of the search attributes is applied to the result.
+
+<p>For example, press the "Choose/Create (F4)" button, enter "Elizabeth" into
+the "Mother" search field and "Phil" in the "Partner" search field, meaning to
+look for all persons whose mother's name is like "Elizabeth" and whose partner's
+name is like "Phil". As a result, two persons ("Elizabeth II" and "Anne") will
+show up.
 
 <p>In principle, <code>db</code> can be seen as a special case of
 <code>select</code>. The following two queries are equivalent:
@@ -1919,7 +2215,7 @@ partner's names, the occupation and a time range for the birth date.
  @P={4U}
  @P={46}
 -> NIL
-: (? (select (@P) ((nm +Person "Edward")))) 
+: (? (select (@P) ((nm +Person "Edward"))))
  @P={2R}
  @P={4f}
  @P={5y}
@@ -1927,6 +2223,155 @@ partner's names, the occupation and a time range for the birth date.
  @P={4U}
  @P={46}
 -> NIL
+</code></pre>
+
+
+<p><hr>
+<h3><a name="sql">Poor Man's SQL</a></h3>
+
+<h4>select</h4>
+
+<p>For convenience, a <code>select</code> Lisp glue function is provided as a
+frontend to the <code>select</code> predicate. Note that this function does not
+evaluate its arguments (it is intended for interactive use), and that it
+supports only a subset of the predicate's functionality. The syntax resembles
+SELECT in the SQL language, for example:
+
+<p><pre><code>
+# SELECT * FROM Person
+: (select +Person)  # Step through the whole database
+{Iq} (+Man)
+   nm "Adalbert Ferdinand Berengar Viktor of Prussia"
+   ma {Fy}
+   fin 711698
+   dat 688253
+   pa {;H}
+
+{4f} (+Man)
+   nm "Albert Edward"
+   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+   job "Prince"
+   mate {4o}
+   fin 680370
+   dat 664554
+...
+</code></pre>
+
+<p><pre><code>
+# SELECT * FROM Person WHERE nm LIKE "%Edward%"
+: (select +Person nm "Edward")  # Show all Edwards
+{2R} (+Man)
+   nm "Edward"
+   ma {2}
+   pa {C}
+   job "Prince"
+   dat 717346
+
+{4f} (+Man)
+   nm "Albert Edward"
+   dat 664554
+   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+   job "Prince"
+   mate {4o}
+   fin 680370
+...
+</code></pre>
+
+<p><pre><code>
+# SELECT nm, dat FROM Person WHERE nm LIKE "%Edward%"
+: (select nm dat +Person nm "Edward")
+"Edward" "1964-03-10" {2R}
+"Albert Edward" "1819-08-26" {4f}
+"George Edward" NIL {5y}
+"Edward Augustus Hanover" NIL {89}
+...
+</code></pre>
+
+<p><pre><code>
+# SELECT dat, fin, p1.nm, p2.nm
+#    FROM Person p1, Person p2
+#    WHERE p1.nm LIKE "%Edward%"
+#    AND p1.job LIKE "King%"
+#    AND p1.mate = p2.mate  -- Actually, in a SQL model we'd need
+#                           -- another table here for the join
+: (select dat fin nm (mate nm) +Person nm "Edward" job "King")
+"1894-06-23" "1972-05-28" "Edward VIII" "Wallace Simpson" {46}
+"1841-11-09" NIL "Edward VII" "Alexandra of Denmark" {4U}
+-> NIL
+</code></pre>
+
+
+<h4>update</h4>
+
+<p>In addition (just to stay with the SQL terminology ;-), there is also an
+<code>update</code> function. It is a frontend to the 'set!>' and 'put!>'
+transaction functions, and should be used when single objects in the database
+have to be modified by hand.
+
+<p>In principle, it would also be possible to use the <code>edit</code> function
+to modify a database object. This is not recommended, however, because
+<code>edit</code> does not know about relations to other objects (like Links,
+Joints and index trees) and may easily cause database corruption.
+
+<p>In the most general case, the value of a property in a database object is
+changed with the <code>put!></code> function. Let's look at "Edward" from the
+previous examples:
+
+<p><pre><code>
+: (show '{2R})
+{2R} (+Man)
+   nm "Edward"
+   ma {2}
+   pa {C}
+   dat 717346
+   job "Prince"
+-> {2R}
+</code></pre>
+
+<p>We might change the name to "Johnny" with <code>put!></code>:
+
+<p><pre><code>
+: (put!> '{2R} 'nm "Johnny")
+-> "Johnny"
+</code></pre>
+
+<p>However, an easier and less error-prone prone way - especially when more than
+one property has to be changed - is using <code>update</code>. It presents the
+value cell (the list of classes) and then each property on its own line,
+allowing the user to change it with the <a href="#ledit">command line
+editor</a>.
+
+<p>Just hitting <code>RETURN</code> will leave that property unchanged. To
+modify it, you'll typically hit <code>ESC</code> to get into command mode, and
+move the cursor to the point of change.
+
+<p>For properties with nested list structures (<code>+List +Bag</code>),
+<code>update</code> will recurse into the data structure.
+
+<p><pre><code>
+: (update '{2R})
+{2R} (+Man)       # RETURN
+nm "Johnny"       # Modified the name to "Johnny"
+ma {2}            # RETURN
+pa {C}            # Return
+dat 1960-03-10    # Modified the year from "1964" to "1960"
+job "Prince"      # Return
+-> {2R}
+</code></pre>
+
+<p>All changes are committed immediately, observing the rules of database
+synchronization so that any another user looking at the same object will have
+his GUI updated correctly.
+
+<p>To abort <code>update</code>, hit <code>Ctrl-X</code>.
+
+<p>If only a single property has to be changed, <code>update</code> can be
+called directly for that property:
+
+<p><pre><code>
+: (update '{2R} 'nm)
+{2R} nm "Edward"
+...
 </code></pre>
 
 

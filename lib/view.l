@@ -1,4 +1,4 @@
-# 18sep04abu
+# 12nov04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/draw.l")
@@ -29,10 +29,9 @@
                   (cons S (cons X 36))
                   (inc 'X
                      (* (: home adv)
-                        (+ 1
-                           (if (atom S)
-                              (length S)
-                              (+ 2 (length (car S))) ) ) ) ) ) )
+                        (if (atom S)
+                           (inc (length S))
+                           (+ 3 (length (car S))) ) ) ) ) )
             Btn ) ) )
    (siz> (: home)
       (max (: home sx) (+ 60 X (: box dx)))
@@ -92,8 +91,7 @@
                   X Y2 ) )
             ((bit? 1 M)  # Shift
                (sel> This (lst> (car L) D)) )
-            (T
-               (del> This (lst> (car L) D)) ) ) ) ) )
+            (T (del> This (lst> (car L) D))) ) ) ) )
 
 (de _viewLst (Lst X)
    (let
@@ -132,7 +130,8 @@
          Txt (if (and A B)
             (pack A " : " B)
             (or A B
-               (find '((X) ("_isa" '+Ref X)) L) ) ) )
+               (car
+                  (find '((X) ("_isa" '+Ref X)) L) ) ) ) )
       (new> Fld '(+EntityBox) X Y This
          (str (list This (type This)))
          Txt

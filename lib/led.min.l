@@ -1,4 +1,4 @@
-# 26apr02abu
+# 09oct04abu
 # (c) Software Lab. Alexander Burger
 
 # *Line
@@ -17,7 +17,7 @@
             (("^H" "^?")
                (when *Line
                   (prin "^H ^H")
-                  (setq *Line (reverse (cdr (reverse *Line)))) ) )
+                  (setq *Line (cdr (rot *Line))) ) )
             ("^I" (do 3 (mkChar " ")))
             (T (mkChar C)) ) ) )
    (prinl)

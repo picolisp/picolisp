@@ -1,5 +1,7 @@
-# 12feb03abu
+# 10nov04abu
 # (c) Software Lab. Alexander Burger
+
+# *InND
 
 # Generate long random number
 (de longRand (N)
@@ -25,11 +27,11 @@
    (and
       (> N 1)
       (bit? 1 N)
-      (let (Q (- N 1)  K 0)
+      (let (Q (dec N)  K 0)
          (until (bit? 1 Q)
             (setq
                Q  (>> 1 Q)
-               K  (+ 1 K) ) )
+               K  (inc K) ) )
          (do 50
             (NIL (_prim? N Q K))
             T ) ) ) )
@@ -45,7 +47,7 @@
          (T
             (or
                (and (=0 J) (= 1 Y))
-               (= Y (- N 1)) )
+               (= Y (dec N)) )
             T )
          (T
             (or
@@ -65,7 +67,7 @@
       (let (R (longRand (** 10 (/ Len 3)))  K (+ R (% (- P R) 3)))
          (when (bit? 1 K)
             (inc 'K 3) )
-         (until (prime? (setq R (+ 1 (* K P))))
+         (until (prime? (setq R (inc (* K P))))
             (inc 'K 6) )
          R ) ) )
 
@@ -75,7 +77,7 @@
       (cons
          (* P Q)
          (/
-            (+ 1 (* 2 (- P 1) (- Q 1)))
+            (inc (* 2 (dec P) (dec Q)))
             3 ) ) ) )
 
 # Encrypt a list of characters
@@ -96,7 +98,12 @@
          (let Res NIL
             (setq N (**Mod N (cdr Keys) (car Keys)))
             (until (=0 N)
-               (push 'Res (char (& `(- (** 2 16) 1) N)))
+               (push 'Res (char (& `(dec (** 2 16)) N)))
                (setq N (>> 16 N)) )
             Res ) )
       Lst ) )
+
+# Init crypt
+(de rsa (N)
+   (seed (in "/dev/urandom" (rd 20)))
+   (setq *InND (rsaKey N)) )

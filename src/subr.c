@@ -1,4 +1,4 @@
-/* 14jan04abu
+/* 03apr04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -357,35 +357,26 @@ any doAppend(any x) {
    any y;
    cell c1, c2;
 
-   x = cdr(x);
-   Push(c1, EVAL(car(x)));
-   if (!isCell(data(c1)))
-      y = NULL;
-   else {
-      Push(c2, y = cons(car(data(c1)),cdr(data(c1))));
-      while (isCell(data(c1) = cdr(data(c1))))
-         y = cdr(y) = cons(car(data(c1)),cdr(data(c1)));
-      data(c1) = Pop(c2);
-   }
    while (isCell(cdr(x = cdr(x)))) {
-      if (!y) {
-         if (isCell(data(c1) = EVAL(car(x))))
-            for (y = data(c1); isCell(cdr(y)); y = cdr(y));
-      }
-      else {
-         Push(c2, EVAL(car(x)));
-         while (isCell(data(c2))) {
-            y = cdr(y) = cons(car(data(c2)),cdr(data(c2)));
-            data(c2) = cdr(data(c2));
+      if (isCell(data(c1) = EVAL(car(x)))) {
+         Save(c1);
+         Push(c2, y = cons(car(data(c1)),cdr(data(c1))));
+         while (isCell(data(c1) = cdr(data(c1))))
+            y = cdr(y) = cons(car(data(c1)),cdr(data(c1)));
+         while (isCell(cdr(x = cdr(x)))) {
+            data(c1) = EVAL(car(x));
+            while (isCell(data(c1))) {
+               y = cdr(y) = cons(car(data(c1)),cdr(data(c1)));
+               data(c1) = cdr(data(c1));
+            }
+            cdr(y) = data(c1);
          }
-         cdr(y) = Pop(c2);
+         cdr(y) = EVAL(car(x));
+         drop(c1);
+         return data(c2);
       }
    }
-   if (!y)
-      data(c1) = EVAL(car(x));
-   else
-      cdr(y) = EVAL(car(x));
-   return Pop(c1);
+   return EVAL(car(x));
 }
 
 // (delete 'any 'lst) -> lst

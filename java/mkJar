@@ -1,5 +1,5 @@
 # (cd java; ./mkJar)
-# 24nov03abu
+# 26mar04abu
 # (c) Software Lab. Alexander Burger
 
 javac -O *.java
@@ -15,7 +15,7 @@ jar cf pico.jar \
    Popup.class
 
 jar cf tele.jar \
-   Tele*.class InOut.class
+   Tele*.class
 
 jar cf util.jar \
    Reflector.class InOut.class Util.class

@@ -1,4 +1,4 @@
-# 29jan04abu
+# 11feb04abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -7,7 +7,7 @@
 (de login (Nm Pw)
    (and
       (db 'nm '+User Nm 'pw Pw)
-      (timeout (setq *Login @  *Timeout `(* 4 60 60 1000))) ) )
+      (setq *Login @  *Timeout `(* 4 60 60 1000)) ) )
 
 (de logout ()
    (off *Login)

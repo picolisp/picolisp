@@ -1,5 +1,7 @@
-# 14jan04abu
+# 03apr04abu
 # (c) Software Lab. Alexander Burger
+
+# *Tmp
 
 (de *Day . (Mon Tue Wed Thu Fri Sat Sun .))
 (de *Mon . (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec .))
@@ -71,6 +73,22 @@
                X ) )
          (let S (chop (next))
             (need (>> 1 (+ X (length S))) S " ") ) ) ) )
+
+(de wrap (Max Lst)
+   (setq Lst (split Lst " " "^J"))
+   (pack
+      (make
+         (while Lst
+            (if (>= (length (car Lst)) Max)
+               (link (pop 'Lst) "^J")
+               (chain
+                  (make
+                     (link (pop 'Lst))
+                     (loop
+                        (NIL Lst)
+                        (T (>= (+ (length (car Lst)) (sum length (made))) Max)
+                           (link "^J") )
+                        (link " " (pop 'Lst)) ) ) ) ) ) ) ) )
 
 (de glue (Str Lst)
    (pack
@@ -310,6 +328,18 @@
    (pack
       (reverse (cdr (member "/" (reverse (chop F))))) ) )
 
+# Temporary
+(?push '*Bye
+   '(and *Tmp (call "rm" "-r" *Tmp)) )
+
+(de tmp @
+   (unless *Tmp
+      (call "mkdir" "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+   (pass pack *Tmp) )
+
+(de tmp? (F)
+   (and *Tmp (pre? *Tmp F) (not (sub? "/../" F))) )
+
 # Print or eval
 (de prEval ("Prg")
    (while "Prg"
@@ -402,6 +432,19 @@
    (hex (>> -6 (fmt64 S))) )
 
 ### System ###
+(de gcc (S . @)
+   (out (tmp S ".c")
+      (prinl "#include \"../../src/pico.h\"")
+      (here "/**/") )
+   (call "gcc" "-o" (tmp S)
+      "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
+      "-O3" "-fomit-frame-pointer"
+      "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
+      "-Wuninitialized" "-Wstrict-prototypes"
+      "-pipe" (tmp S ".c") )
+   (while (args)
+      (def (next) (tmp S ': (arg))) ) )
+
 (de test ("Val" . "Prg")
    (unless (= "Val" (run "Prg"))
       (println 'fail "Prg") ) )

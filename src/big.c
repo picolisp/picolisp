@@ -1,4 +1,4 @@
-/* 27jan04abu
+/* 19feb04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -439,10 +439,6 @@ any symToNum(any s, int scl, int sep, int ign) {
             drop(c1);
             return NULL;
          }
-         if (c > 9) {
-            drop(c1);
-            return NULL;
-         }
       }
    }
    if (frac)
@@ -464,6 +460,7 @@ static inline int numlen(any x) {
 
 /* Make symbol from number */
 any numToSym(any x, int scl, int sep, int ign) {
+   int i;
    bool sign;
    cell c1;
    word n = numlen(x);
@@ -500,34 +497,25 @@ any numToSym(any x, int scl, int sep, int ign) {
    }
    if (sep < 0)
       return boxCnt(ta - acc + (sign? 2 : 1));
-   if (sep == 0) {
-      int i = 0;
-
-      Push(c1, x = box(*ta + '0'));
-      while (--ta >= acc)
-         byteSym(*ta + '0', &i, &x);
-   }
-   else {
-      Push(c1, box(*(p = acc) + '0'));
-      while (++p <= ta) {
-         if (--scl == 0)
-            consByteSym(sep, data(c1));
-         else if (ign  &&  scl < 0  &&  -scl % 3 == 0)
-            consByteSym(ign, data(c1));
-         consByteSym(*p + '0', data(c1));
-      }
-      if (--scl >= 0) {
-         if (scl > 0)
-            do
-               consByteSym('0', data(c1));
-            while (--scl);
-         consByteSym(sep, data(c1));
-         consByteSym('0', data(c1));
-      }
-   }
+   i = -8,  Push(c1, x = box(0));
    if (sign)
-      consByteSym('-', data(c1));
-   return consStr(Pop(c1));
+      byteSym('-', &i, &x);
+   if ((scl = ta - acc - scl) < 0) {
+      byteSym('0', &i, &x);
+      byteSym(sep, &i, &x);
+      while (scl < -1)
+         byteSym('0', &i, &x),  ++scl;
+   }
+   for (;;) {
+      byteSym(*ta + '0', &i, &x);
+      if (--ta < acc)
+         return consStr(Pop(c1));
+      if (scl == 0)
+         byteSym(sep, &i, &x);
+      else if (ign  &&  scl > 0  &&  scl % 3 == 0)
+         byteSym(ign, &i, &x);
+      --scl;
+   }
 }
 
 #define DMAX 4294967296.0
@@ -690,7 +678,7 @@ any doInc(any ex) {
    else {
       Push(c2, EVAL(car(x)));
       Touch(ex,data(c1));
-      if (isNil(val(data(c1))) || isNil(val(data(c2)))) {
+      if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;
       }
@@ -740,7 +728,7 @@ any doDec(any ex) {
    else {
       Push(c2, EVAL(car(x)));
       Touch(ex,data(c1));
-      if (isNil(val(data(c1))) || isNil(val(data(c2)))) {
+      if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;
       }

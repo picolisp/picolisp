@@ -1,3 +1,10 @@
+* 07apr04 picoLisp-2.0.11
+   Bug in 'append'
+   Modal dialogs revised
+   Bug in 'lose>' and 'keep>' for '+Bag'
+   'poll' (no block-on-read-) check function
+   Inline 'gcc' C-function compilation
+
 * 01feb04 picoLisp-2.0.10
    'wr' raw byte output function
    Improved modal dialogs

@@ -1,4 +1,4 @@
-/* 22dec03abu
+/* 06apr04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,7 +24,7 @@ static int tcpSocket(any ex) {
 static any tcpAccept(any ex, int sd) {
    int n, i, sd2;
    struct sockaddr_in addr;
-   struct timespec tv = {0,100000000};
+   struct timespec tv = {0,100000000};  // 100 ms
 
    if ((n = fcntl(sd, F_GETFL, 0)) < 0)
       tcpErr(ex, "GETFL");

@@ -1,4 +1,4 @@
-# 31dec03abu
+# 10mar04abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -41,7 +41,6 @@
             (prinl ")")
             (T (== L L1) (println '(repeat))) )
          S ) ) )
-
 
 ### Pilog Interpreter ###
 (de goal ("CL" . @)
@@ -142,6 +141,39 @@
    ("@A" get (-> "@H") T)
    (member "@B" "@A") )
 
+(be show (@X) (@ show (-> @X)))
+
+### idx ###
+(be idx (@Idx @Str @Sym)
+   (@Q box
+      (let (Node (val (-> @Idx))  Str (-> @Str)  Q)
+         (while Node
+            (if (> Str (car Node))
+               (setq Node (cddr Node))
+               (when (pre? Str (car Node))
+                  (push 'Q Node) )
+               (setq Node (cadr Node)) ) )
+         (cons Str Q) ) )
+   (_idx @Sym @Q) )
+
+(be _idx (@Sym @Q)
+   (@ not
+      (setq "R"
+         (let (Q (val (-> @Q))  Val (cadr Q)  Node (cddr Val))
+            (con Q (cddr Q))
+            (when Node
+               (loop
+                  (T (> (car Q) (car Node)))
+                  (when (pre? (car Q) (car Node))
+                     (con Q (cons Node (cdr Q))) )
+                  (NIL (setq Node (cadr Node))) ) )
+            (car Val) ) ) )
+   T
+   (fail) )
+
+(be _idx (@Sym @Q) (@Sym . "R"))
+
+(repeat)
 
 ### DB ###
 (de initQuery (Var Cls Hook Val)
@@ -212,9 +244,6 @@
 (be _db (@Obj @Q) (@Obj . "R"))
 
 (repeat)
-
-
-(be show (@Obj) (@ show (-> @Obj)))
 
 
 (be val (@V . @L)

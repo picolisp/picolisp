@@ -1084,7 +1084,7 @@ because it often makes the assignment to temporary variables unnecessary.
 <dt><code><a href="#load">load</a></code> <dd>In read-eval loops, the last three
 results which were printed at the console are available in <code>@@@</code>,
 <code>@@</code> and <code>@</code>, in that order (i.e the latest result is in
-<code>@</code>.
+<code>@</code>).
 
 <p><pre><code>
 : (+ 1 2 3)
@@ -1199,10 +1199,10 @@ superclasses are stored in the symbol's <code>VAL</code> (encapsulation).
 
 <p>In fact, there is no formal difference between objects and classes (except
 that objects usually are anonymous symols containing mostly local data, while
-classes have names and an emphasis on method definitions). At any time, a class
-may be assigned its own local data (class variables), and any object can receive
-individual method definitions in addition to (or overriding) those inherited
-from its (super)classes.
+classes are named internal symbols with an emphasis on method definitions). At
+any time, a class may be assigned its own local data (class variables), and any
+object can receive individual method definitions in addition to (or overriding)
+those inherited from its (super)classes.
 
 <p>Pico supports multiple inheritance. The <code>VAL</code> of each object is a
 (possibly empty) association list of message symbols and method bodies,
@@ -1818,6 +1818,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#hear">hear</a>
    <a href="#tell">tell</a>
    <a href="#key">key</a>
+   <a href="#poll">poll</a>
    <a href="#peek">peek</a>
    <a href="#char">char</a>
    <a href="#skip">skip</a>
@@ -3640,11 +3641,11 @@ A 1
 
 <p><dt><a name="line"><code>(line 'flg ['cnt ..]) -> lst|sym</code></a>
 <dd>Reads a line of characters from the current input channel. End of line is
-recognized either as return (hex "0D"), as linefeed (hex "0A"), or as a
-return-linefeed sequence (hex "0D0A"). If <code>flg</code> is <code>NIL</code>,
-a list of single-character transient symbols is returned. When <code>cnt</code>
-arguments are given, subsequenct characters of the input line are grouped into
-sublists, to allow parsing of fixed field length records. If <code>flg</code> is
+recognized as linefeed (hex "0A"), carriage return characters (hex "0D") are
+ignored. If <code>flg</code> is <code>NIL</code>, a list of single-character
+transient symbols is returned. When <code>cnt</code> arguments are given,
+subsequenct characters of the input line are grouped into sublists, to allow
+parsing of fixed field length records. If <code>flg</code> is
 non-<code>NIL</code>, strings are returned instead of single-character lists.
 <code>T</code> is returned upon end of file. See also <code><a
 href="#char">char</a></code> and <code><a href="#till">till</a></code>.
@@ -4505,7 +4506,8 @@ starts with an at-mark "<code>@</code>".
 
 <p><dt><a name="peek"><code>(peek) -> sym</code></a>
 <dd>Single character look-ahead: Returns the same character as the next call to
-<code><a href="#char">char</a></code> would return.
+<code><a href="#char">char</a></code> would return. See also <code><a
+href="#skip">skip</a></code>.
 
 <p><pre><code>
 $ cat a
@@ -4529,6 +4531,15 @@ href="#seek">seek</a></code>, <code><a href="#find">find</a></code>.
 -> "Hello"
 : (pick '((X) (get X 'str)) '(A B C D E F))
 -> "Hello"
+</code></pre>
+
+<p><dt><a name="poll"><code>(poll 'cnt) -> flg</code></a>
+<dd>Checks for the availability of data for reading on the file descriptor
+<code>cnt</code>. See also <code><a href="#open">open</a></code>, <code><a
+href="#in">in</a></code> and <code><a href="#close">close</a></code>.
+
+<p><pre><code>
+: (and (poll *Fd) (in *Fd (read)))  # Prevent blocking
 </code></pre>
 
 <p><dt><a name="pool"><code>(pool ['sym]) -> flg</code></a>
@@ -5119,7 +5130,9 @@ href="#length">length</a></code>.
 </code></pre>
 
 <p><dt><a name="skip"><code>(skip) -> sym</code></a>
-<dd>Skips all white space and comments in the input stream.
+<dd>Skips all white space and comments in the input stream. Returns the next
+available character, or <code>NIL</code> upon end of file. See also <code><a
+href="#peek">peek</a></code>.
 
 <p><pre><code>
 $ cat a

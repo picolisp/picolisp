@@ -1,7 +1,9 @@
-# 23dec03abu
+# 03apr04abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
+
+(on *Quartal)
 
 (setq *Scl 2)
 
@@ -9,7 +11,8 @@
 
 (de *Kategorien
    Betriebsausgaben Sonderausgaben
-   Betriebseinnahmen Privateinnahmen Leerbuchungen )
+   Betriebseinnahmen Gehalt
+   Privateinnahmen Leerbuchungen )
 
 
 (class +AD)
@@ -363,7 +366,12 @@
 (de ustvor (Y M)
    (let (Ums 0  Frei 0  USt 0  VSt 0)
       (html "Umsatzsteuer"
-         (report "Ums" (pack "Umsätze " (get *MonFmt M) " " Y))
+         (report "Ums"
+            (pack "Umsätze "
+               (when *Quartal
+                  (pack (get *MonFmt (- M 2)) " - ") )
+               (get *MonFmt M)
+               " " Y) )
          (<table> T NIL
             '((-) (- "Datum") (+ "Wert") (+ "USt")  (- "Konto") (- "Text"))
             (mapc
@@ -391,7 +399,7 @@
                                  (: txt) )
                               (inc 'VSt U) ) ) ) ) )
                (collect 'dat '+Pos
-                  (date Y M 1)
+                  (date Y (if *Quartal (- M 2) M) 1)
                   (if (= 12 M)
                      (date Y M 31)
                      (- (date Y (+ M 1) 1) 1) ) ) ) )
@@ -419,12 +427,19 @@
          (down 8)
          (ps (pack "Tel. " (firm 'tel))) )
 
-      (window
-         (if (<= *QMonth 6) 374 456)
-         (+ 132 (* 19 (% (- *QMonth 1) 6)))
-         23
-         17
-         (ps "X") )
+      (if *Quartal
+         (window
+            580
+            (+ 132 (* 19 (/ (- *QMonth 1) 3)))
+            23
+            17
+            (ps "X") )
+         (window
+            (if (<= *QMonth 6) 374 456)
+            (+ 132 (* 19 (% (- *QMonth 1) 6)))
+            23
+            17
+            (ps "X") ) )
 
       (unless (=0 Frei)
          (prUms 352 448 80 18 Frei) )  # Steuerfreie Umsaetze [48]
@@ -433,18 +448,18 @@
       (prBetrag 494 790 100 18 USt)    # Uebertrag
       (page T)
 
-      (prBetrag 466 13 100 18 USt)        # Uebertrag
-      (prBetrag 466 164 100 18 USt)       # Umsatzsteuer
-      (prBetrag 466 202 100 18 (- VSt))   # Vorsteuer [66]
+      (prBetrag 477 13 100 18 USt)        # Uebertrag
+      (prBetrag 477 164 100 18 USt)       # Umsatzsteuer
+      (prBetrag 477 202 100 18 (- VSt))   # Vorsteuer [66]
       (setq U (+ USt VSt))
-      (prBetrag 466 334 100 18 U)         # Verbleibender Betrag
-      (prBetrag 466 428 100 18 U)         # Vorauszahlung [83]
+      (prBetrag 477 334 100 18 U)         # Verbleibender Betrag
+      (prBetrag 477 428 100 18 U)         # Vorauszahlung [83]
       (page) ) )
 
 # Gewinn/Verlust-Rechnung
 (de gewinn (Y)
    (let
-      (Ums 0  USt 0  Frei 0  Aus 0  VSt 0  Afa 0
+      (Ums 0  USt 0  Frei 0  Ein 0  Aus 0  VSt 0  Afa 0
          Lst (collect 'dat '+Pos (date Y 1 1) (date Y 12 31)) )
       (html "Gewinnermittlung"
          (report (pack "GV-" Y) (pack "Gewinn/Verlust " Y))
@@ -463,6 +478,11 @@
                '((B N U)
                   (inc 'Aus N)
                   (inc 'VSt U) )
+               Lst )
+
+            (recUms 'Gehalt
+               '((B N U)
+                  (inc 'Ein N) )
                Lst ) )
          <p>
          (<table> NIL "Anlagevermögen"
@@ -494,7 +514,7 @@
             (<row> NIL NIL NIL NIL NIL '<hr>)
             (record NIL NIL NIL NIL NIL (money Afa)) )
          <p>
-         (<table> NIL "Betriebsseinnahmen" '((-) (+))
+         (<table> NIL "Betriebseinnahmen" '((-) (+))
             (<row> "Steuerpflichtige Umsätze (netto)" (money Ums))
             (<row> "Umsatzsteuer" (money USt))
             (<row> "Steuerfreie Umsätze" (money Frei))
@@ -509,6 +529,7 @@
             (<row> NIL (money (+ Aus Afa VSt))) )
          <p>
          (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus Afa VSt)) "***")
+         (<br> "*** Gehalt:" (money Ein) "***")
          <p>
          (let (U 0  YY (pad 2 (% Y 100)))
             (<table> NIL "Umsatzsteuer-Vorauszahlungen"

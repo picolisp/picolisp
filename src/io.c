@@ -1,4 +1,4 @@
-/* 29jan04abu
+/* 20feb04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -425,23 +425,6 @@ void charSym(int c, int *i, any *p) {
    }
 }
 
-/* Add next byte in front of symbol name */
-void consByteSym(int c, any x) {
-   c &= 0xFF;
-   for (;;) {
-      word n = unDig(x) & 0xFF000000;
-      setDig(x, unDig(x) << 8 | c);
-      if (!n)
-         return;
-      c = n >> 24;
-      if (!isNum(cdr(numCell(x)))) {
-         cdr(numCell(x)) = consNum(c, cdr(numCell(x)));
-         return;
-      }
-      x = cdr(numCell(x));
-   }
-}
-
 static void rdOpen(any ex, any x, inFrame *f) {
    if (isNum(x)) {
       int n = (int)unBox(x);
@@ -719,7 +702,7 @@ static void testEsc(void) {
          return;
       do
          Env.get();
-      while (Chr == '\t');
+      while (Chr == ' '  ||  Chr == '\t');
    }
 }
 
@@ -1007,7 +990,7 @@ long waitFd(any ex, int fd, long ms) {
          raise(SIGTERM);
       for (x = data(c1); isCell(x); x = cdr(x))
          if (isNeg(caar(x))) {
-            if ((n = (int)unDig(cadar(x)) / 2 - t) > 0)
+            if ((n = (int)(unDig(cadar(x)) / 2 - t)) > 0)
                setDig(cadar(x), 2*n);
             else {
                setDig(cadar(x), unDig(caar(x)));
@@ -1092,6 +1075,21 @@ any doTell(any x) {
    while (isCell(cdr(x)));
    tellEnd(&pbSave, &ppSave);
    return y;
+}
+
+// (poll 'cnt) -> flg
+any doPoll(any ex) {
+   int fd;
+   fd_set fdSet;
+   struct timeval tv;
+
+   FD_ZERO(&fdSet);
+   FD_SET(fd = (int)evCnt(ex,cdr(ex)), &fdSet);
+   tv.tv_sec = tv.tv_usec = 0;
+   while (select(fd+1, &fdSet, NULL, NULL, &tv) < 0)
+      if (errno != EINTR)
+         err(ex, NULL, "Poll error: %s", strerror(errno));
+   return FD_ISSET(fd, &fdSet)? T : Nil;
 }
 
 // (key ['cnt]) -> sym
@@ -1704,12 +1702,10 @@ void print(any x) {
          Env.put('$'),  outWord(num(x)/sizeof(cell));
       else if (isExt(x))
          Env.put('{'),  outSym(c),  Env.put('}');
-      else {
-         if (hashed(x, hash(name(x)), Intern))
-            outSym(c);
-         else
-            Env.put('"'),  outStr(c),  Env.put('"');
-      }
+      else if (hashed(x, hash(name(x)), Intern))
+         outSym(c);
+      else
+         Env.put('"'),  outStr(c),  Env.put('"');
    }
    else if (car(x) == Quote  &&  x != cdr(x))
       Env.put('\''),  print(cdr(x));
@@ -1942,35 +1938,38 @@ static void setAdr(adr n, byte *p) {
 
 static any new64(adr n, any x) {
    int c;
-   cell c1;
+   word2 w = 0;
 
-   if ((c = n & 0x3F) > 11)
-      c += 5;
-   if (c > 42)
-      c += 6;
-   Push(c1, consNum(c + '0', x));
-   while (n >>= 6) {
+   do {
       if ((c = n & 0x3F) > 11)
          c += 5;
       if (c > 42)
          c += 6;
-      consByteSym(c + '0', data(c1));
-   }
-   return Pop(c1);
+      w = w << 8 | c + '0';
+   } while (n >>= 6);
+   if (w >> 32)
+      return consNum((word)w, consNum((word)(w >> 32), x));
+   return consNum((word)w, x);
 }
 
 static adr blk64(any x) {
    int c;
+   word2 w;
    adr n = 0;
 
-   if (c = symByte(x))
+   if (isNum(x)) {
+      w = unDig(x);
+      if (isNum(x = cdr(numCell(x))))
+         w |= (word2)unDig(x) << 32;
       do {
+         c = w & 0xFF;
          if ((c -= '0') > 42)
             c -= 6;
          if (c > 11)
             c -= 5;
          n = n << 6 | c;
-      } while (c = symByte(NULL));
+      } while (w >>= 8);
+   }
    return n;
 }
 

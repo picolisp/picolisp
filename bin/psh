@@ -1,8 +1,8 @@
 #!bin/pico lib.l
-# 30jun03abu
+# 07feb04abu
 # (c) Software Lab. Alexander Burger
 
-(load "@lib/misc.l" "@lib/tmp.l" "@lib/rsa.l" "@lib/http.l")
+(load "@lib/misc.l" "@lib/rsa.l" "@lib/http.l")
 
 (ctty)
 (let *Dbg NIL

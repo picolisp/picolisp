@@ -1,4 +1,4 @@
-/* 29jan04abu
+/* 19feb04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -193,6 +193,7 @@ static symInit Symbols[] = {
    {doPatQ, "pat?"},
    {doPeek, "peek"},
    {doPick, "pick"},
+   {doPoll, "poll"},
    {doPool, "pool"},
    {doPop, "pop"},
    {doPort, "port"},
@@ -286,7 +287,7 @@ static symInit Symbols[] = {
    {doZero, "zero"},
 };
 
-any initSym(any v, char *s) {
+static any initSym(any v, char *s) {
    any x, *h;
 
    h = Intern + hash(x = mkName((byte*)s));

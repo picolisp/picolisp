@@ -1,4 +1,4 @@
-/* 30jan04abu
+/* 19feb04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -917,8 +917,8 @@ any doAt(any ex) {
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedCell(ex,x);
-   NeedCnt(ex,(car(x)));
-   NeedCnt(ex,(cdr(x)));
+   NeedCnt(ex,car(x));
+   NeedCnt(ex,cdr(x));
    if (setDig(car(x), unDig(car(x))+2) < unDig(cdr(x)))
       return Nil;
    setDig(car(x), 0);

@@ -1,8 +1,8 @@
-# 23jan04abu
+# 04apr04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Apps *AppId *AppPort *AppGate *Top *Bar *Menu
+# *Apps *AppId *AppPort *AppGate *Top *Bar *Menu *DlgStk
 
 (allow "java/pico.jar")
 
@@ -58,6 +58,7 @@
       (ht:Prin (next))
       (prinl "\">") )
    (prinl "</APPLET>")
+   (=: url *Url)
    (push '*Apps This)
    (and (nth *Apps 40) (con @))
    (inc '*AppId) )
@@ -190,8 +191,7 @@
                (put F 'ix (inc 'I))
                (init> F) )
             (: fields) ) )
-      (mapc 'init> (: arrays))
-      (start> This) ) )
+      (mapc 'init> (: arrays)) ) )
 
 (dm start> ()
    (super)
@@ -224,6 +224,12 @@
    (mapc 'stop> (: fields))
    (mapc 'stop> (: arrays))
    (super) )
+
+(dm at> ()
+   (ifn (: top)
+      (mapc 'stop> *DlgStk)
+      (while (memq This (cdr *DlgStk))
+         (stop> (car *DlgStk)) ) ) )
 
 (dm able> ()
    (unless (: lock)
@@ -492,18 +498,6 @@
 (class +Dialog +Form)
 # top on args
 
-(de modal (Sym)
-   (and
-      (isa '+Dialog (: top))
-      (: top app)
-      (out @ (pr Sym)) )
-   (mapc
-      '((App)
-         (and
-            (get App 'app)
-            (out @ (pr Sym)) ) )
-      *Apps ) )
-
 (de _dlg (Ttl)
    (when (get (=: top *Top) 'app)
       (use Port
@@ -521,13 +515,13 @@
 
 (dm T ("Ttl" "Lst" "Args" . @)
    (when (_dlg "Ttl")
-      (modal '+)
       (=: init "Lst")
       (=: args "Args")
       (set This (conc (rest) (val This)))
       (wait NIL (: on)) ) )
 
 (dm init> ()
+   (push '*DlgStk This)
    (=: on T)
    (super)
    (mapc
@@ -542,8 +536,7 @@
             (while L
                (put B (caar L) (cdr (pop 'L))) ) )
          (cdr (val (: args)))
-         (: arrays) ) )
-   (start> This) )
+         (: arrays) ) ) )
 
 (dm stop> ()
    (unless (lst? (: args))
@@ -551,10 +544,9 @@
          (cons
             (mapcar 'val> (: fields))
             (mapcar 'stat> (: arrays)) ) ) )
-   (when (: on)
-      (modal '-)
-      (=: on) )
+   (=: on)
    (super)
+   (pop '*DlgStk)
    (setq *Top (: top)) )
 
 
@@ -637,7 +629,7 @@
 
 (dm paint> ()
    (super)
-   (run (: prg))
+   (=: rv (run (: prg)))
    (stop> This) )
 
 (dm stop> ()
@@ -650,22 +642,29 @@
    (ifn *Top
       (run "Prg")
       (catch "busy"
-         (new '(+BusyDialog) ,"Please wait" "Cnt" "Prg"
-            (quote
-               (mapc txt "Msg")
-               (----)
-               (row
-                  (quitButton)
-                  (gui 'cnt '(+Mono +Label) "->" (pack "Cnt" "        ")) ) ) )
-         (wait NIL (not "Busy")) ) ) )
+         (with
+            (new '(+BusyDialog) ,"Please wait" "Cnt" "Prg"
+               (quote
+                  (if (atom "Msg")
+                     (txt "Msg")
+                     (mapc txt "Msg") )
+                  (----)
+                  (row
+                     (quitButton)
+                     (gui 'cnt '(+Mono +Label) "->" (pack "Cnt" "        ")) ) ) )
+            (wait NIL (not "Busy"))
+            (: rv) ) ) ) )
 
 (de work ()
    (when *Top
-      (if "Busy"
+      (ifn "Busy"
+         (throw "busy")
          (with @
             (set> (: cnt)
                (format (abs (dec (:: work)))) ) )
-         (throw "busy") ) ) )
+         (while (poll (: app))
+            (ev> This (: app))
+            (or (: app) (throw "busy")) ) ) ) )
 (====)
 
 
@@ -924,7 +923,7 @@
 
 (de radio (N Rows Cols)
    (make
-      (let I (- Rows N) 
+      (let I (- Rows N)
          (do Rows
             (or (=0 I) (link (* I Cols)))
             (dec 'I) ) ) ) )
@@ -1298,7 +1297,10 @@
    (: str) )
 
 
-(class +SetButton +Button)
+(class +setButton +Button)
+
+
+(class +SetButton +setButton)
 
 (dm act> ()
    (when (super)
@@ -1311,7 +1313,7 @@
       (next> (: home)) ) )
 
 
-(class +ChgButton +Button)
+(class +ChgButton +setButton)
 # chg
 
 (dm T (Lbl Str Foo . @)
@@ -1329,7 +1331,7 @@
          (next> (: home)) ) ) )
 
 
-(class +ClrButton +Button)
+(class +ClrButton +setButton)
 # clr
 
 (dm T (Lbl Str Lst . @)
@@ -1908,7 +1910,10 @@
    (=: lock
       (not
          (find
-            '((F) (nor (isa '+Button F) (isa '+Lock F)))
+            '((F)
+               (or
+                  (isa '+setButton F)
+                  (nor (isa '+Button F) (isa '+Lock F)) ) )
             (: fields 1) ) ) ) )
 
 (dm init> ()
@@ -2220,17 +2225,23 @@
 (dm cho> ()
    (let (H (pack (head (: sel) (chop (: str))))  Q (goal (: hint) '@1 H))
       (mapcan
-         '((S)
-            (when (pre? H S)
-               (cons (mkCho S S)) ) )
-         (make
-            (while
-               (and
-                  (asoq '@@ (prove Q))
-                  (let S (cdr @)
-                     (or
-                        (member S (made))
-                        (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
+         '((X)
+            (if (pair X)
+               (when (pre? H (car X))
+                  (cons (mkCho (car X) (cdr X))) )
+               (when (pre? H X)
+                  (cons (mkCho X X)) ) ) )
+         (use (L X)
+            (make
+               (loop
+                  (NIL (setq L (prove Q)))
+                  (setq X
+                     (if (assoc '@@@ L)
+                        (cons (cdr (assoc '@@ L)) (cdr @))
+                        (cdr (assoc '@@ L)) ) )
+                  (unless (member X (made))
+                     (link X) )
+                  (T (>= (length (made)) 40)) ) ) ) ) ) )
 
 
 ### DB Form ###
@@ -2272,22 +2283,20 @@
 
 (dm T ("Ttl" "Typ" "Obj" "Lst")
    (when (_dlg "Ttl")
-      (modal '+)
       (=: typ "Typ")
       (=: obj "Obj")
       (=: init "Lst")
       (wait NIL (: on)) ) )
 
 (dm init> ()
+   (push '*DlgStk This)
    (=: on T)
-   (super)
-   (start> This) )
+   (super) )
 
 (dm stop> ()
-   (when (: on)
-      (modal '-)
-      (=: on) )
+   (=: on)
    (super)
+   (pop '*DlgStk)
    (setq *Top (: top)) )
 
 (de objDialog ("Ttl" "Typ" "Obj" "Exe" "Lst")

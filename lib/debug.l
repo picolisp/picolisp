@@ -1,4 +1,4 @@
-# 10jan04abu
+# 10mar04abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -23,7 +23,7 @@
             " "
             (- 100 (*/ 100 F H))
             "%" )
-         F ) ) )
+         (- H F) ) ) )
 
 (de what (S)
    (let *Dbg NIL

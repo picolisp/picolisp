@@ -1,4 +1,4 @@
-# 15jan04abu
+# 27feb04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -221,12 +221,11 @@
             ((match '(@N ~(chop "; filename=") . @V) @X)
                (match '("\"" @N "\"") @N)
                (match '("\"" @V "\"") @V)
-               (let F
-                  (if (_htSet @N (pack (stem @V "/" "\\")))
-                     (tmp @)
-                     "/dev/null" )
-                  (unless (out F (echo (pack "^M^J" *MPartLim)))
-                     (call "rm" "-f" F) ) )
+               (if (_htSet @N (pack (stem @V '/ '\)))
+                  (let F (tmp @)
+                     (unless (out F (echo (pack "^M^J" *MPartLim)))
+                        (call "rm" "-f" F) ) )
+                  (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
                (let C (char)
                   (and (= "^M" C) (setq C (char)))
                   (setq L (if (= "^J" C) *MPartLim *MPartEnd)) ) ) ) ) ) )
@@ -542,7 +541,7 @@
    (prinl ">")
    (when "Ttl"
       (prin "<CAPTION>")
-      (ht:Prin "Ttl")
+      (<item> "Ttl")
       (prinl "</CAPTION>") )
    (when "Head"
       (prin "<TR>")
@@ -557,7 +556,7 @@
                (and (caddr L) (pack " WIDTH=" @))
                (cadddr L)
                ">" )
-            (ht:Prin (cadr L))
+            (<item> (cadr L))
             (prin "</TH>") )
          "Head" )
       (prinl "</TR>") )

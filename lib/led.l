@@ -1,4 +1,4 @@
-# 07jun03abu
+# 20feb04abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -42,7 +42,7 @@
 
 # Check for delimiter
 (de delim? (C)
-   (member C '`(chop '" ^I^J^M\"'()[]`~")) )
+   (member C '`(chop '" \"'()[]`~")) )
 
 # Line positioning
 (de posLine (N)
@@ -59,8 +59,7 @@
    (setq "LPos" N)
    (mapc ledChr L)  # Draw new line
    (flush)
-   (setq N (- (length "Line") (length L)))  # Clear rest of old line
-   (space N)
+   (space (setq N (- (length "Line") (length L))))  # Clear rest of old line
    (backsp N)
    (backsp (- (length (setq "Line" L)) "LPos" -1)) )  # To new position
 

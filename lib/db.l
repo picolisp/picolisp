@@ -1,4 +1,4 @@
-# 27jan04abu
+# 26feb04abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -79,6 +79,7 @@
 
 # Type check
 (dm mis> (Val Obj))  #> lst
+(dm ele> (Val))
 
 # Value present?
 (dm has> (Val X)  #> any | NIL
@@ -135,6 +136,12 @@
          (: bag)
          Val ) ) )
 
+(dm ele> (Val)
+   (and Val
+      (or
+         (atom Val)
+         (find 'ele> (: bag) Val) ) ) )
+
 (dm has> (Val X)
    (and Val
       (or
@@ -177,7 +184,7 @@
          (rel> X Obj O NIL
             (with X
                (get
-                  (if (sym? (: hook)) Obj Old)
+                  (if (sym? (: hook)) Obj Val)
                   (: hook) ) ) ) )
       (: bag)
       Val ) )
@@ -188,7 +195,7 @@
          (rel> X Obj NIL N
             (with X
                (get
-                  (if (sym? (: hook)) Obj Old)
+                  (if (sym? (: hook)) Obj Val)
                   (: hook) ) ) ) )
       (: bag)
       Val ) )
@@ -506,6 +513,9 @@
       (ifn (lst? Val) "Not a List")
       (pick '((V) (extra V Obj)) Val) ) )
 
+(dm ele> (Val)
+   (and Val (or (atom Val) (find extra Val))) )
+
 (dm has> (Val X)
    (and Val
       (or
@@ -513,7 +523,7 @@
          (find '((X) (extra Val X)) X) ) ) )
 
 (dm put> (Obj Old New)
-   (if (and New (mis> This New Obj))
+   (if (ele> This New)
       (cons (extra Obj Old New) Old)
       (mapcar
          '((N O) (extra Obj O N))
@@ -526,10 +536,7 @@
       (delete Val Old) ) )
 
 (dm rel> (Obj Old New)
-   (if
-      (or
-         (and Old (mis> This Old Obj))
-         (and New (mis> This New Obj)) )
+   (if (or (ele> This Old) (ele> This New))
       (extra Obj Old New)
       (mapc
          '((O) (extra Obj O NIL))
@@ -539,14 +546,14 @@
          New ) ) )
 
 (dm lose> (Obj Val)
-   (if (and Val (mis> This Val Obj))
+   (if (ele> This Val)
       (extra Obj Val)
       (mapc
          '((V) (extra Obj V))
          Val ) ) )
 
 (dm keep> (Obj Val)
-   (if (and Val (mis> This Val Obj))
+   (if (ele> This Val)
       (extra Obj Val)
       (mapc
          '((V) (extra Obj V))

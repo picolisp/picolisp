@@ -1,4 +1,4 @@
-// 12dec03abu
+// 29mar04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -9,97 +9,146 @@ import javax.comm.*;
 
 // Remote Control
 public class Tele {
-   Socket Sock;
-   InOut IO;
-   InputStream In;
-   OutputStream Out;
+   CommPort Device;
+   InputStream NetIn, DevIn;
+   OutputStream NetOut, DevOut;
+   static byte Pw[];
+   ServerSocket Server;
+   Thread RdThread, WrThread;
 
    public static void main(String[] arg) {
-      if (arg.length < 2)
-         giveup("Usage: java Tele <host>  <port> <dev> ..  [<port>]");
+      if (arg.length < 3)
+         giveup("Usage: java Tele <pw> [<host>]  <port> <dev>  ..");
       try {
-         for (int i = 2; i <= arg.length; i += 2)
-            new Tele(arg[0],
-                  Integer.parseInt(arg[i-1]),
-                  i==arg.length? null : arg[i] );
+         Pw = arg[0].getBytes();
+         if (arg[1].length() <= 5)
+            for (int i = 1; i < arg.length; i += 2)
+               new Tele(Integer.parseInt(arg[i]), arg[i+1]);
+         else
+            for (int i = 2; i < arg.length; i += 2)
+               new Tele(arg[1], Integer.parseInt(arg[i]), arg[i+1]);
       }
       catch (Exception e) {giveup(e.toString());}
    }
 
    public Tele(String host, int port, String dev) throws Exception {
-      Sock = new Socket(host, port);
-      IO = new InOut(Sock.getInputStream(), Sock.getOutputStream());
-      if (dev == null) {
-         (new Thread() {
-            public void run() {
+      tele(host, port, dev);
+   }
+
+   public Tele(final int port, final String dev) throws Exception {
+      Server = new ServerSocket(port);
+      (new Thread() {
+         public void run() {
+            for (;;) {
                try {
-                  for (;;) {
-                     int n;
-                     Object[] lst = (Object[])IO.read();
-
-                     if (lst == null)
-                        System.exit(0);
-
-                     String[] cmd = new String[n = lst.length];
-
-                     while (--n >= 0)
-                        cmd[n] = (lst[n] instanceof String)?
-                           (String)lst[n] : ((BigInteger)lst[n]).toString();
-
-                     Process p = Runtime.getRuntime().exec(cmd);
-                     In = p.getInputStream();
-                     while ((n = In.read()) >= 0)
-                        IO.print(n);
-                     IO.flush();
-                     p.waitFor();
+                  if (tele(null, port, dev)) {
+                     if (RdThread != null)
+                        RdThread.join();
+                     if (WrThread != null)
+                        WrThread.join();
                   }
                }
-               catch (Exception e) {giveup(e.toString());}
+               catch (Exception e) {}
             }
-         } ).start();
-      }
-      else {
-         if (dev.startsWith("/dev/")) {
-            In = new FileInputStream(dev);
-            Out = new FileOutputStream(dev);
+         }
+      } ).start();
+   }
+
+   private boolean tele(String host, int port, String dev) {
+      try {
+         Socket sock;
+
+         if (host != null)
+            sock = new Socket(host, port);
+         else
+            sock = Server.accept();
+
+         NetIn = sock.getInputStream();
+         NetOut = sock.getOutputStream();
+
+         if (host != null) {
+            NetOut.write(Pw);
+            NetOut.write('\n');
          }
          else {
-            CommPort p = (CommPortIdentifier.getPortIdentifier(dev)).open("Tele", 2000);
-            In = p.getInputStream();
-            Out = p.getOutputStream();
+            for (int i = 0; i < Pw.length; ++i)
+               if (NetIn.read() != Pw[i])
+                  throw new Exception();
          }
-         (new Thread() {
+      }
+      catch (Exception e) {
+         closeNet();
+         return false;
+      }
+      try {
+         if (dev.startsWith("/dev/")) {
+            DevIn = new FileInputStream(dev);
+            DevOut = new FileOutputStream(dev);
+         }
+         else {
+            Device = (CommPortIdentifier.getPortIdentifier(dev)).open("Tele", 2000);
+            DevIn = Device.getInputStream();
+            DevOut = Device.getOutputStream();
+         }
+      }
+      catch (Exception e) {giveup(e.toString());}
+      if (DevIn != null)
+         (RdThread = new Thread() {
             public void run() {
                try {
+                  byte buf[] = new byte[8192];
                   int n;
 
-                  while ((n = In.read()) >= 0) {
-                     IO.print(n);
-                     IO.flush();
+                  while ((n = DevIn.read(buf)) >= 0) {
+                     NetOut.write(buf, 0, n);
+                     NetOut.flush();
                   }
                }
+               catch (IOException e) {}
                catch (Exception e) {giveup(e.toString());}
-               System.exit(0);
+               closeNet();
+               closeDev();
             }
          } ).start();
-         (new Thread() {
+      if (DevOut != null)
+         (WrThread = new Thread() {
             public void run() {
                try {
-                  Object x;
+                  byte buf[] = new byte[8192];
+                  int n;
 
-                  while ((x = IO.read()) != null)
-                     if (x instanceof String)
-                        Out.write(((String)x).getBytes());
-                     else if (x instanceof BigInteger) {
-                        byte[] buf = ((BigInteger)x).toByteArray();
-                        Out.write(buf[buf.length-1]);
-                     }
+                  while ((n = NetIn.read(buf)) >= 0) {
+                     DevOut.write(buf, 0, n);
+                     DevOut.flush();
+                  }
                }
+               catch (IOException e) {}
                catch (Exception e) {giveup(e.toString());}
-               System.exit(0);
+               closeNet();
+               closeDev();
             }
          } ).start();
+      return true;
+   }
+
+   private void closeNet() {
+      try {NetIn.close();}
+      catch (IOException e) {}
+      try {NetOut.close();}
+      catch (IOException e) {}
+   }
+
+   private void closeDev() {
+      if (DevIn != null) {
+         try {DevIn.close();}
+         catch (IOException e) {}
       }
+      if (DevOut != null) {
+         try {DevOut.close();}
+         catch (IOException e) {}
+      }
+      if (Device != null)
+         Device.close();
    }
 
 	// Error exit

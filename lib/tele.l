@@ -1,4 +1,4 @@
-# 22dec03abu
+# 26mar04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Remote Control ###
@@ -16,7 +16,7 @@
                (tele> '@Obj T)
                (task @Var
                   (in @Var
-                     (if (rd)
+                     (if (rd 1)
                         @Exe
                         (close @Var)
                         (task @Var)
@@ -25,19 +25,20 @@
                         (tele @L '@Obj) ) ) ) ) ) ) ) )
 
 
-(class +TeleForm +Form)
+# Form Prefix
+(class +Tele)
 # tele
 
 (dm T (Lst . @)
    (=: tele Lst)
-   (pass super) )
+   (pass extra) )
 
 (dm start> ()
    (mapc tele (: tele) (circ This))
-   (super) )
+   (extra) )
 
 (dm stop> ()
-   (super)
+   (extra)
    (mapc
       '((L)
          (let (Var (cadr L)  N (or (val Var) (cdddr L)))

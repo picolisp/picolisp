@@ -1,4 +1,4 @@
-// 22jan04abu
+// 02apr04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -12,7 +12,7 @@ public class Front extends Pico {
    Scrollbar[] SBars;
    Hashtable Skip;
    Vector Sync, Rid, Crypt;
-   int Focus, Dirty, Level;
+   int Focus, Dirty;
    boolean Req;
    Dialog Dialog;
    final Front Parent;
@@ -33,7 +33,6 @@ public class Front extends Pico {
          } );
          connect(0, port, gate, sid);
       }
-      Level = 0;
    }
 
    public void start() {
@@ -42,6 +41,7 @@ public class Front extends Pico {
    }
 
    public void stop() {
+      msg1("at>");
       change("chg>");
       super.stop();
    }
@@ -86,10 +86,6 @@ public class Front extends Pico {
    void cmd(String s) {
       if (s.equals("ack"))
          {Req = false; relay();}
-      else if (s.equals("+"))
-         ++Level;
-      else if (s.equals("-"))
-         --Level;
       else if (s.equals("focus"))
          focus(getNum());
       else if (s.equals("next"))
@@ -231,9 +227,10 @@ public class Front extends Pico {
                ((Button)f).setActionCommand(Integer.toString(i+1));
                ((Button)f).addActionListener(new ActionListener() {
                   public void actionPerformed(ActionEvent ev) {
-                     if (Req  ||  Level != 0)
+                     if (Req)
                         getToolkit().beep();
                      else {
+                        msg1("at>");
                         change("log>");
                         Req = true;
                         msg2("act>", Integer.parseInt(ev.getActionCommand()));
@@ -592,14 +589,15 @@ class PicoMouseAdapter extends MouseAdapter {
    PicoMouseAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void mousePressed(MouseEvent ev) {
-      if (Home.Req  ||  Home.Level != 0) {
-         Home.getToolkit().beep();
-         ev.consume();
-      }
-      else if (ev.getClickCount() == 2) {
-         Home.change("log>");
-         Home.Req = true;
-         Home.msg2("act>", Ix);
+      Home.msg1("at>");
+      if (ev.getClickCount() == 2) {
+         if (Home.Req)
+            Home.getToolkit().beep();
+         else {
+            Home.change("log>");
+            Home.Req = true;
+            Home.msg2("act>", Ix);
+         }
          ev.consume();
       }
    }
@@ -617,11 +615,7 @@ class PicoKeyAdapter extends KeyAdapter {
       char c;
       Component f;
 
-      if (Home.Level != 0) {
-         Home.getToolkit().beep();
-         ev.consume();
-         return;
-      }
+      Home.msg1("at>");
       f = Home.Fields[Ix-1];
       if ((c = ev.getKeyChar()) == KeyEvent.VK_ENTER) {
          Home.change("log>");
@@ -657,15 +651,11 @@ class PicoKeyAdapter extends KeyAdapter {
       int m, c, i, j;
       Component f;
 
-      if (Home.Level != 0) {
-         Home.getToolkit().beep();
-         ev.consume();
-         return;
-      }
       if (((m = ev.getModifiers()) & (InputEvent.META_MASK | InputEvent.ALT_MASK)) != 0) {
          ev.consume();
          return;
       }
+      Home.msg1("at>");
       f = Home.Fields[Ix-1];
       switch (c = ev.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
@@ -998,22 +988,18 @@ class GField extends Panel implements AdjustmentListener  {
 
       addMouseListener(new MouseAdapter() {
          public void mousePressed(MouseEvent ev) {
-            if (Home.Level != 0)
-               Home.getToolkit().beep();
-            else
-               Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
-                     ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
+            Home.msg1("at>");
+            Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
+                  ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
             ev.consume();
          }
       } );
 
       addMouseMotionListener(new MouseMotionAdapter() {
          public void mouseDragged(MouseEvent ev) {
-            if (Home.Level != 0)
-               Home.getToolkit().beep();
-            else
-               Home.msg5("drg>", Ix+1,
-                  ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
+            Home.msg1("at>");
+            Home.msg5("drg>", Ix+1,
+               ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
             ev.consume();
          }
       } );

@@ -1,4 +1,4 @@
-/* 30jan04abu
+/* 18mar04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -217,7 +217,7 @@ int main(int ac, char *av[]) {
                else
                   return 1;
 
-               if (*p == ' ' || *p == '@')
+               if (*p == ' ' || *p == '?' || *p == '@')
                   port = dflt,  q = p;
                else {
                   port = (int)strtol(p, &q, 10);

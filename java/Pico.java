@@ -1,4 +1,4 @@
-// 08jan04abu
+// 02apr04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -50,7 +50,9 @@ public class Pico extends Applet {
       }
       catch (IOException e) {showStatus(e.toString());}
       Seed ^= IO.hashCode();
-      msg1(Rdy? "start>" : "init>");
+      if (!Rdy)
+         msg1("init>");
+      msg1("start>");
       (new Thread() {
          public void run() {
             try {

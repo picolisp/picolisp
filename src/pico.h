@@ -1,4 +1,4 @@
-/* 29jan04abu
+/* 19feb04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -217,7 +217,6 @@ void closeFiles(inFrame*,outFrame*,ctlFrame*);
 void cntError(any,any) __attribute__ ((noreturn));
 int compare(any,any);
 any cons(any,any);
-void consByteSym(int,any);
 any consNum(word,any);
 any consStr(any);
 any consSym(any,any);
@@ -482,6 +481,7 @@ any doPass(any);
 any doPatQ(any);
 any doPeek(any);
 any doPick(any);
+any doPoll(any);
 any doPool(any);
 any doPop(any);
 any doPort(any);

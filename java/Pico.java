@@ -1,4 +1,4 @@
-// 06dec03abu
+// 08jan04abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -53,19 +53,19 @@ public class Pico extends Applet {
       msg1(Rdy? "start>" : "init>");
       (new Thread() {
          public void run() {
-            while (Sock != null) {
-               try {
+            try {
+               while (Sock != null) {
                   cmd(getStr());
                   seed((int)System.currentTimeMillis());
                }
-               catch (Exception e) {dbg(e.toString());}
             }
+            catch (Exception e) {done();}
          }
       } ).start();
    }
 
    public void init() {
-      Seed = System.currentTimeMillis();
+      Seed = System.currentTimeMillis() ^ Long.parseLong(getParameter("rand"));
       Host = getDocumentBase().getHost();
    }
 
@@ -109,8 +109,6 @@ public class Pico extends Applet {
          play(getCodeBase(), getStr());
       else if (s.equals("menu"))
          new Popup(this,this);
-      else if (s.equals("dialog"))
-         new Front(this, getNum(), getStr(), getStr(), getStr());
       else if (s.equals("url"))
          {s = getStr(); url(s,getStr());}
       else if (s.equals("rsa"))
@@ -228,11 +226,11 @@ public class Pico extends Applet {
       try {
          byte[] b;
 
-         if ((b = IO.rdBytes(cnt)) == null)
-            done();
-         return b;
+         if ((b = IO.rdBytes(cnt)) != null)
+            return b;
       }
-      catch (IOException e) {done();}
+      catch (IOException e) {}
+      done();
       return null;
    }
 
@@ -241,18 +239,19 @@ public class Pico extends Applet {
       try {
          String s;
 
-         if ((s = IO.rdStr()) == null)
-            done();
-         return s;
+         if ((s = IO.rdStr()) != null)
+            return s;
       }
-      catch (IOException e) {done();}
+      catch (IOException e) {}
+      done();
       return null;
    }
 
    // Read 32-bit number
    int getNum() {
       try {return IO.rdNum();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
+      done();
       return 0;
    }
 
@@ -261,18 +260,19 @@ public class Pico extends Applet {
       try {
          BigInteger b;
 
-         if ((b = IO.rdBig()) == null)
-            done();
-         return b;
+         if ((b = IO.rdBig()) != null)
+            return b;
       }
-      catch (IOException e) {done();}
+      catch (IOException e) {}
+      done();
       return null;
    }
 
    // Read anything
    Object read() {
       try {return IO.read();}
-      catch (IOException e) {done();}
+      catch (IOException e) {}
+      done();
       return null;
    }
 

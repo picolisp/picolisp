@@ -1,13 +1,15 @@
-# 27nov03abu
+# 15jan04abu
 # (c) Software Lab. Alexander Burger
 
 # lib/db.l
 "Input required" "Eingabe erforderlich"
 "Not unique" "Nicht eindeutig"
 "Bad type" "Falscher Daten-Typ"
+"Boolean input expected" "Boolean-Type erwartet"
+"Numeric input expected" "Zahleneingabe erforderlich"
 "Symbolic type expected" "Symbol-Type erwartet"
 "String type expected" "String-Type erwartet"
-"Numeric input expected" "Zahleneingabe erforderlich"
+"Type error" "Typ-Fehler"
 
 # lib/gui.l
 "No" "Nein"

@@ -1,4 +1,4 @@
-/* 27sep03abu
+/* 14jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -490,7 +490,7 @@ any doStrip(any x) {
    return x;
 }
 
-// (split 'lst 'any1 'any2 ..) -> lst
+// (split 'lst 'any ..) -> lst
 any doSplit(any x) {
    any y;
    int i, n = length(cdr(x = cdr(x)));
@@ -606,6 +606,22 @@ any doTail(any ex) {
    while (isCell(y))
       x = cdr(x),  y = cdr(y);
    return x;
+}
+
+// (stem 'lst 'any ..) -> lst
+any doStem(any x) {
+   int i, n = length(cdr(x = cdr(x)));
+   cell c1, c[n];
+
+   Push(c1, EVAL(car(x)));
+   for (i = 0; i < n; ++i)
+      x = cdr(x),  Push(c[i], EVAL(car(x)));
+   for (x = data(c1); isCell(x); x = cdr(x)) {
+      for (i = 0;  i < n;  ++i)
+         if (equal(car(x), data(c[i])))
+            data(c1) = cdr(x);
+   }
+   return Pop(c1);
 }
 
 // (last 'lst) -> any
@@ -833,19 +849,11 @@ any doSymQ(any x) {
 
 // (member 'any 'lst) -> any
 any doMember(any x) {
-   any y, z;
    cell c1;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = z = EVAL(car(x));
-   x = Pop(c1);
-   while (isCell(y)) {
-      if (equal(x, car(y)))
-         return y;
-      if (z == (y = cdr(y)))
-         return Nil;
-   }
-   return equal(x,y)? y : Nil;
+   x = cdr(x),  x = EVAL(car(x));
+   return member(Pop(c1), x);
 }
 
 // (memq 'any 'lst) -> any
@@ -950,7 +958,7 @@ any doSize(any x) {
    if (isNum(x = EVAL(cadr(x))))
       return boxCnt(numBytes(x));
    if (isSym(x))
-      return boxCnt(numBytes(name(x)));
+      return boxCnt(isExt(x)? dbSize(x) : numBytes(name(x)));
    return (n = size(x))? boxCnt(n) : T;
 }
 

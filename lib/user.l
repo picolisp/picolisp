@@ -1,27 +1,27 @@
-# 14jun03abu
+# 14jan04abu
 # (c) Software Lab. Alexander Burger
 
-(must `(_ "User") UserAdmin)
+(must "User" UserAdmin)
 
-(html `(_ "User")
-   (<id> `(_ "User") (: nm))
+(html ,"User"
+   (<id> ,"User" (: nm))
    <hr>
    (form '(+ObjForm) '(+User) *ID 800 200
       (quote
          (row
-            (gui '(+E/R +TextField) '(nm : home obj)  `(_ "Name") 20)
+            (gui '(+E/R +TextField) '(nm : home obj)  ,"Name" 20)
             (stepButton 'nm '+User) )
          (----)
          (if (may T Password)
             (gui '(+E/R +Rsa +Mono +TextField)
                '(pw : home obj)
-               `(_ "Password") 12 )
-            (txt `(_ "Password") "----") )
+               ,"Password" 12 )
+            (txt ,"Password" "----") )
          (gui '(+Able +E/R +Obj +TextField)
             '(may T RoleAdmin)
             '(role : home obj)
             '(nm +Role)
-            `(_ "Role") 40 )
+            ,"Role" 40 )
          (----)
          (row
             (choButton '(choUser))

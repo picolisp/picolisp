@@ -1,6 +1,6 @@
 /* lat1.c
- * 14apr02abu
- * Convert stdin (UTF-8, 2-Byte) to process or file (ISO-8859-Latin15)
+ * 26dec03abu
+ * Convert stdin (UTF-8, 2-Byte) to process or file (ISO-8859-15)
  */
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 // lat1 [-<cmd> [<arg> ..]]
-// lat1 [[+]<Outfile/UTF-8>]
+// lat1 [[+]<Outfile/ISO-8859-15>]
 int main(int ac, char *av[]) {
 	int c;
    pid_t pid = 0;

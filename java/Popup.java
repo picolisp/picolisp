@@ -1,4 +1,4 @@
-// 24oct03abu
+// 18dec03abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -12,6 +12,7 @@ public class Popup implements ActionListener {
    public Popup(Pico p, Component c) {
       Parent = p;
       PopupMenu menu = new PopupMenu(p.getStr());
+      menu.setFont(new Font("Monospaced", Font.PLAIN, 12));
       Lst = new String[p.getNum()];
       for (int i = 0; i < Lst.length; ++i) {
          MenuItem item = new MenuItem(Lst[i] = p.getStr());

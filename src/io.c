@@ -1,4 +1,4 @@
-/* 19nov03abu
+/* 29jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -832,6 +832,13 @@ static any read0(bool top) {
    if (Chr == '\'') {
       Env.get();
       return cons(Quote, read0(NO));
+   }
+   if (Chr == ',') {
+      Env.get();
+      if (isCell(y = member(x = read0(NO), val(Uni))))
+         return car(y);
+      val(Uni) = cons(x, val(Uni));
+      return x;
    }
    if (Chr == '`') {
       Env.get();
@@ -1897,6 +1904,17 @@ any doPr(any x) {
    return y;
 }
 
+// (wr 'num ..) -> num
+any doWr(any x) {
+   any y;
+
+   x = cdr(x);
+   do
+      putc(unDig(y = EVAL(car(x))) / 2 & 255, OutFile);
+   while (isCell(x = cdr(x)));
+   return y;
+}
+
 /*** DB-I/O ***/
 #define BLKSIZE 64   // DB block size
 
@@ -2233,6 +2251,18 @@ any doLock(any ex) {
    }
    return n? boxCnt(n) : Nil;
 }
+
+int dbSize(any sym) {
+   int n = 1;
+
+   rdLock();
+   rdBlock(blk64(name(sym))*BLKSIZE);
+   while (BlkLink)
+      ++n,  rdBlock(BlkLink);
+   rwUnlock(1);
+   return n;
+}
+
 
 void db(any ex, any s, int a) {
    any x, y, *p;

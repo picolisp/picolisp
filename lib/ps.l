@@ -1,4 +1,4 @@
-# 03dec03abu
+# 04jan04abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -7,22 +7,20 @@
 (de pdf ("Nm" . "Prg")
    (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
       (out (list "bin/lat1" "Ps") (prEval "Prg"))
-      (_pdf) ) )
+      (_pdf)
+      "Pdf" ) )
 
 (de psOut ("How" "Nm" . "Prg")
-   (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
-      (out (list "bin/lat1" "Ps") (prEval "Prg"))
-      (cond
-         ((not "How")
-            (_pdf)
-            (url "Pdf" "PDF") )
-         ((=0 "How")
-            (_pdf)
-            (url "Pdf") )
-         ((=T "How")
-            (_pdf)
-            (httpEcho "Pdf" "application/pdf" 1) )
-         (T (call "lpr" (pack "-P" "How") "Ps")) ) ) )
+   (ifn "Nm"
+      (out (list "bin/lat1" "-lpr" (pack "-P" "How")) (prEval "Prg"))
+      (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
+         (out (list "bin/lat1" "Ps") (prEval "Prg"))
+         (cond
+            ((not "How") (_pdf) (url "Pdf" "PDF"))
+            ((=0 "How") (_pdf) (url "Pdf"))
+            ((=T "How") (_pdf) (httpEcho "Pdf" "application/pdf" 1))
+            (T (call "lpr" (pack "-P" "How") "Ps") (_pdf)) )
+         "Pdf" ) ) )
 
 (de _pdf ()
    (call "ps2pdf"
@@ -258,8 +256,8 @@
 
 (de brief ("F" "Fnt" "Abs" . "Prg")
    (when "F"
-      (poly NIL 5 265  14 265)            # Faltmarken
-      (poly NIL 5 421  14 421) )
+      (poly NIL 10 265  19 265)           # Faltmarken
+      (poly NIL 10 421  19 421) )
    (poly NIL 50 106  50 103  53 103)      # Fenstermarken
    (poly NIL 50 222  50 225  53 225)
    (poly NIL 288 103  291 103  291 106)

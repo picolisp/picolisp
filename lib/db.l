@@ -1,4 +1,4 @@
-# 14oct03abu
+# 27jan04abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -62,9 +62,11 @@
 
 
 (de genKey (Var Cls Hook Min Max)
-   (if (maxKey (tree Var Cls Hook) Min Max)
-      (+ 1 @)
-      (or Min 1) ) )
+   (if (lt0 Max)
+      (let K (minKey (tree Var Cls Hook) Min Max)
+         (if (lt0 K) (- K 1) (or Max -1)) )
+      (let K (maxKey (tree Var Cls Hook) Min Max)
+         (if (gt0 K) (+ K 1) (or Min 1)) ) ) )
 
 
 ### Relations ###
@@ -137,7 +139,7 @@
    (and Val
       (or
          (super Val X)
-         (and (member Val X) X) ) ) )
+         (car (member Val X)) ) ) )
 
 (dm put> (Obj Old New)
    (trim
@@ -192,6 +194,12 @@
       Val ) )
 
 
+(class +Bool +Relation)
+
+(dm mis> (Val Obj)
+   (and Val (nT Val) ,"Boolean input expected") )
+
+
 # (+Number) [num]
 (class +Number +Relation)
 # scl
@@ -201,10 +209,7 @@
    (super Var (cdr Lst)) )
 
 (dm mis> (Val Obj)
-   (and
-      Val
-      (not (num? Val))
-      `(_ "Numeric input expected") ) )
+   (and Val (not (num? Val)) ,"Numeric input expected") )
 
 
 # (+Date)
@@ -226,7 +231,7 @@
 
 (dm mis> (Val Obj)
    (unless (sym? Val)
-      `(_ "Symbolic type expected") ) )
+      ,"Symbolic type expected" ) )
 
 
 # (+String) [num]
@@ -239,7 +244,7 @@
 
 (dm mis> (Val Obj)
    (unless (str? Val)
-      `(_ "String type expected") ) )
+      ,"String type expected" ) )
 
 
 # (+Link) typ
@@ -248,7 +253,7 @@
 
 (dm T (Var Lst)
    (unless (=: type (car Lst))
-      (quit "Missing Link" Var) )
+      (quit "No Link" Var) )
    (super Var (cdr Lst)) )
 
 (de canQuery (Val)
@@ -273,7 +278,7 @@
       (nor
          (isa (: type) Val)
          (canQuery Val) )
-      `(_ "Typ-Fehler") ) )
+      ,"Type error" ) )
 
 
 # (+Joint) var typ
@@ -297,7 +302,7 @@
                   (find
                      '((B) (isa '+Joint B))
                      (: bag) ) ) ) ) )
-      `(_ "Bad type") ) )
+      ,"Bad type" ) )
 
 (dm rel> (Obj Old New)
    (and Old (del> Old (: slot) Obj))
@@ -345,14 +350,14 @@
 # (+Blob)
 (class +Blob +Relation)
 
+(de blob (Obj Var)
+   (pack *Blob (glue "/" (chop Obj)) "." Var) )
+
 (dm rel> (Obj Old New)
-   (and New (call "mkdir" "-p" (dirname (blob Obj (: var))))) )
+   (and New (call "mkdir" "-p" (dirname (blob Obj)))) )
 
 (dm zap> (Obj Val)
    (and Val (call "rm" "-f" (blob Obj (: var)))) )
-
-(de blob (Obj Var)
-   (pack *Blob (glue "/" (chop Obj)) "." Var) )
 
 
 ### Index classes ###
@@ -376,7 +381,7 @@
          (fetch
             (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
             Val )
-         `(_ "Not unique") ) ) )
+         ,"Not unique" ) ) )
 
 (dm rel> (Obj Old New Hook)
    (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
@@ -395,6 +400,28 @@
 
 (dm rel> (Obj Old New Hook)
    (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook)) *DB))
+      (when Old
+         (store Tree (cons Old Obj) NIL) )
+      (and New
+         (not (get Obj T))
+         (store Tree (cons New Obj) Obj) ) )
+   (extra Obj Old New Hook) )
+
+
+# Backing index prefix
+(class +Ref2)
+
+(dm T (Var Lst)
+   (unless (meta *Class Var)
+      (quit "No Ref2" Var) )
+   (extra Var Lst) )
+
+(dm rel> (Obj Old New Hook)
+   (let Tree
+      (tree
+         (: var)
+         (meta (: cls) (: var) 'cls)
+         (or Hook (get Obj (: hook)) *DB) )
       (when Old
          (store Tree (cons Old Obj) NIL) )
       (and New
@@ -494,7 +521,9 @@
          Old ) ) )
 
 (dm del> (Obj Old Val)
-   (delete Val Old) )
+   (and
+      (<> Old Val)
+      (delete Val Old) ) )
 
 (dm rel> (Obj Old New)
    (if
@@ -528,8 +557,15 @@
 
 (dm mis> (Val Obj)
    (ifn Val
-      `(_ "Input required")
+      ,"Input required"
       (extra Val Obj) ) )
+
+
+(class +Alt)
+
+(dm T (Var Lst)
+   (extra Var (cdr Lst))
+   (=: cls (car Lst)) )
 
 
 ### Entities ###
@@ -573,11 +609,11 @@
    (call "mv" File (blob Obj Rel)) )
 
 (dm T @
-   (upd> This (val This))
    (while (args)
       (if (atom (next))
          (put> This (arg) (next))
-         (put> This (car (arg)) (eval (cdr (arg)))) ) ) )
+         (put> This (car (arg)) (eval (cdr (arg)))) ) )
+   (upd> This (val This)) )
 
 (dm zap> ()
    (mapc
@@ -649,6 +685,10 @@
 (dm mis> (Var Val)
    (mis> (meta This Var) Val This) )
 
+(dm lose1> (Var)
+   (when (meta This Var)
+      (lose> @ This (get This Var)) ) )
+
 (dm lose> (Lst)
    (mapc
       '((X)
@@ -665,6 +705,10 @@
    (dbSync)
    (lose> This)
    (commit Sym) )
+
+(dm keep1> (Var)
+   (when (meta This Var)
+      (keep> @ This (get This Var)) ) )
 
 (dm keep> (Lst)
    (=: T)

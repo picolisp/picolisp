@@ -1,4 +1,4 @@
-# 04dec03abu
+# 23jan04abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -34,7 +34,7 @@
    (unless *Apps
       (setq *AppId 1)
       (task (setq "Sok1" (port *APorts '*AppPort))
-         (let S (accept "Sok1")
+         (let? S (accept "Sok1")
             (if
                (in S
                   (and
@@ -51,6 +51,7 @@
    (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
    (prinl "<PARAM NAME=\"gate\" VALUE=\"" *AppGate "\">")
+   (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"sid\" VALUE=\"" *SesId "\">")
    (while (args)
       (prin "<PARAM NAME=\"" (next) "\" VALUE=\"")
@@ -133,7 +134,7 @@
    (cond
       ((pair (next)) (pass new (arg)))
       ((and (not (: fields)) (get *Top (arg)))
-         (quit "Conflict" (arg)) )
+         (quit "gui conflict" (arg)) )
       (T (put *Top (arg) (pass new (next)))) )
    (setq *Lay '+) )
 
@@ -165,9 +166,15 @@
    (setq *Lay (if Flg ': '=)) )
 
 
-(dm T (DX DY Prg)
+(dm T (DX DY Prg . @)
    (super "Front" "java/pico.jar" DX DY)
-   (=: init Prg) )
+   (=: init Prg)
+   (set This
+      (conc
+         (prog1
+            (rest)
+            (mapc '((L) (def (car L) meth)) @) )
+         (val This) ) ) )
 
 (dm init> ()
    (super)
@@ -213,7 +220,7 @@
    (able> This) )
 
 (dm stop> ()
-   (fieldEnd)
+   (fieldEnd T)
    (mapc 'stop> (: fields))
    (mapc 'stop> (: arrays))
    (super) )
@@ -225,8 +232,7 @@
 (dm lock> (Flg)
    (when (: app)
       (out @
-         (pr "lock" (bool (=: lock Flg))) )
-      (upd> This) ) )
+         (pr "lock" (bool (=: lock Flg))) ) ) )
 
 (dm focus> (F)
    (when (: app)
@@ -353,7 +359,7 @@
 # Choice
 (dm F2> ()
    (if (and (not (: lock)) (: focus) (cho> (: focus)))
-      (menu> This (: focus) `(_ "F2-Choice") @)
+      (menu> This (: focus) ,"F2-Choice" @)
       (beep> This) ) )
 
 # Field Hot-Action
@@ -433,18 +439,20 @@
 
 # Enter value into current focus field
 (de setFocus (Val)
-   (set> (: focus) Val)
+   (do> (: focus)
+      (set> This Val) )
    (able> This)
    (next> This) )
 
 # Field end processing
-(de fieldEnd ()
+(de fieldEnd (Ign)
    (cond
       ((not (: focus)) T)
       ((: focus ign) T)
       ((or (chk> (: focus)) (and (: focus arr) (chk> (: focus arr))))
          (let Err @
             (or
+               Ign
                (== (: "last") (: focus))
                (and (: top) (not (: on)))
                (nil
@@ -471,38 +479,53 @@
 (class +View)
 # "view"
 
-(dm T (Flg . @)
-   (=: "view" Flg)
+(dm T (Exe . @)
+   (=: "view" Exe)
    (pass extra) )
 
-(dm init> ()
-   (extra)
-   (lock> This (: "view")) )
+(dm upd> ()
+   (lock> This (eval (: "view")))
+   (extra) )
 
 
 ### Dialogs ###
 (class +Dialog +Form)
 # top on args
 
+(de modal (Sym)
+   (and
+      (isa '+Dialog (: top))
+      (: top app)
+      (out @ (pr Sym)) )
+   (mapc
+      '((App)
+         (and
+            (get App 'app)
+            (out @ (pr Sym)) ) )
+      *Apps ) )
+
 (de _dlg (Ttl)
-   (=: top *Top)
-   (use Port
-      (let Sock (port *APorts 'Port)
-         (when (: top app)
+   (when (get (=: top *Top) 'app)
+      (use Port
+         (let Sock (port *APorts 'Port)
             (out @
                (pr "dialog" Port *AppGate *SesId Ttl) )
-            (let S (accept Sock)
-               (if (in S (= *SesId (rd)))
-                  (push '*Key
-                     (list (=: app S) (list 'ev> (lit This) S)) )
-                  (close S) ) ) )
-         (close Sock) ) ) )
+            (prog1
+               (let? S (accept Sock)
+                  (if (in S (= *SesId (rd)))
+                     (push '*Key
+                        (list (=: app S) (list 'ev> (lit This) S)) )
+                     (close S)
+                     NIL ) )
+               (close Sock) ) ) ) ) )
 
-(dm T ("Ttl" "Lst" "Args")
-   (_dlg "Ttl")
-   (=: init "Lst")
-   (=: args "Args")
-   (wait NIL (: on)) )
+(dm T ("Ttl" "Lst" "Args" . @)
+   (when (_dlg "Ttl")
+      (modal '+)
+      (=: init "Lst")
+      (=: args "Args")
+      (set This (conc (rest) (val This)))
+      (wait NIL (: on)) ) )
 
 (dm init> ()
    (=: on T)
@@ -528,7 +551,9 @@
          (cons
             (mapcar 'val> (: fields))
             (mapcar 'stat> (: arrays)) ) ) )
-   (=: on)
+   (when (: on)
+      (modal '-)
+      (=: on) )
    (super)
    (setq *Top (: top)) )
 
@@ -553,7 +578,7 @@
                   '(mapc txt '@X)
                   '(txt @X) ) )
             '((----)
-               (row (okButton NIL `(_ "Yes")) (quitButton `(_ "No"))) ) ) )
+               (row (okButton NIL ,"Yes") (quitButton ,"No")) ) ) )
       (wait NIL (not (: on)))
       (: rv) ) )
 
@@ -568,8 +593,8 @@
             (quote
                (----)
                (row
-                  (okButton NIL `(_ "Yes"))
-                  (gui '(+Button) "" `(_ "No")
+                  (okButton NIL ,"Yes")
+                  (gui '(+Button) "" ,"No"
                      '(prog (=: home rv 0) (stop> (: home))) )
                   (quitButton) ) ) ) )
       (wait NIL (not (: on)))
@@ -577,14 +602,14 @@
          (eval "Exe") )
       (: rv) ) )
 
-(de dialog ("Ttl" "Args" "Lst")
-   (with (new '(+Dialog) "Ttl" "Lst" "Args")
+(de dialog ("Ttl" "Args" "Lst" . @)
+   (with (pass new '(+Dialog) "Ttl" "Lst" "Args")
       (wait NIL (not (: on)))
       (: rv) ) )
 
 # Dialog Buttons
-(de okButton (@Exe S)
-   (gui '(+Button) "" (or S "Ok")
+(de okButton (@Exe S Able)
+   (gui '(+Able +Button) (or Able T) "" (or S "Ok")
       (cons 'prog
          (ifn @Exe
             '((=: home rv T) (stop> (: home)))
@@ -593,7 +618,7 @@
                '(stop> (: home)) ) ) ) ) )
 
 (de quitButton (S)
-   (gui '(+Rid +Button) "" (or S `(_ "Cancel"))
+   (gui '(+Rid +Button) "" (or S ,"Cancel")
       '(stop> (: home)) ) )
 
 
@@ -602,7 +627,7 @@
 (off "Busy")
 
 (class +BusyDialog +Dialog)
-# prg work ind
+# prg work cnt
 
 (dm T (Ttl Cnt Prg Lst)
    (=: work Cnt)
@@ -625,20 +650,20 @@
    (ifn *Top
       (run "Prg")
       (catch "busy"
-         (new '(+BusyDialog) `(_ "Please wait") "Cnt" "Prg"
+         (new '(+BusyDialog) ,"Please wait" "Cnt" "Prg"
             (quote
                (mapc txt "Msg")
                (----)
                (row
                   (quitButton)
-                  (gui 'ind '(+Mono +Label) "->" (pack "Cnt" "        ")) ) ) )
+                  (gui 'cnt '(+Mono +Label) "->" (pack "Cnt" "        ")) ) ) )
          (wait NIL (not "Busy")) ) ) )
 
 (de work ()
    (when *Top
       (if "Busy"
          (with @
-            (set> (: ind)
+            (set> (: cnt)
                (format (abs (dec (:: work)))) ) )
          (throw "busy") ) ) )
 (====)
@@ -785,6 +810,12 @@
    (uppc (extra C)) )
 
 
+(class +Lowc)
+
+(dm key> (C)
+   (lowc (extra C)) )
+
+
 # Field enable/disable
 (class +Able)
 
@@ -863,16 +894,17 @@
 
 (dm chk> ()
    (or
-      (and (> (length (: str)) (: lim)) `(_ "Text too long"))
+      (and (> (length (: str)) (: lim)) ,"Text too long")
       (extra) ) )
 
 
 (class +Color)
+# bCol fCol
 
 (dm T (B F . @)
    (pass extra)
-   (and B (pr "bCol" B))
-   (and F (pr "fCol" F)) )
+   (and B (pr "bCol" (=: bCol B)))
+   (and F (pr "fCol" (=: fCol F))) )
 
 
 (class +Radio)
@@ -889,6 +921,13 @@
          '(("X")
             (clr> (field "X")) )
          (: radio) ) ) )
+
+(de radio (N Rows Cols)
+   (make
+      (let I (- Rows N) 
+         (do Rows
+            (or (=0 I) (link (* I Cols)))
+            (dec 'I) ) ) ) )
 
 
 (class +Trigger)
@@ -913,12 +952,16 @@
 (dm relay> (Val)
    (mapc
       '(("X")
-         (if (atom "X")
-            (set> (field "X") Val)
-            (set> (field (car "X"))
-               (if (or (atom (cdr "X")) (lst? (cadr "X")))
-                  ((cdr "X") Val)
-                  (with Val (eval (cdr "X"))) ) ) ) )
+         (cond
+            ((atom "X")
+               (and (field "X") (set> @ Val)) )
+            ((not (cdr "X"))
+               (and (field (car "X")) (upd> @)) )
+            ((field (car "X"))
+               (set> @
+                  (if (or (atom (cdr "X")) (lst? (cadr "X")))
+                     ((cdr "X") Val)
+                     (with Val (eval (cdr "X"))) ) ) ) ) )
       (: relay) ) )
 
 (dm upd> ()
@@ -950,26 +993,26 @@
 
 
 (class +Init)
-# init
+# "init"
 
 (dm T (Exe . @)
-   (=: init Exe)
+   (=: "init" Exe)
    (pass extra) )
 
 (dm init> ()
-   (eval (: init))
+   (eval (: "init"))
    (extra) )
 
 
 (class +Start)
-# start
+# "start"
 
 (dm T (Exe . @)
-   (=: start Exe)
+   (=: "start" Exe)
    (pass extra) )
 
 (dm start> ()
-   (eval (: start))
+   (eval (: "start"))
    (extra) )
 
 
@@ -982,6 +1025,25 @@
 
 (dm set> @
    (pass (: set)) )
+
+
+(class +Dflt)
+# dflt
+
+(dm T (Exe . @)
+   (=: dflt Exe)
+   (pass extra) )
+
+(dm set> (Val)
+   (extra (or Val (eval (: dflt)))) )
+
+(dm val> (Flg)
+   (let? Val (extra Flg)
+      (and (<> Val (eval (: dflt))) Val) ) )
+
+(dm chk> ()
+   (when (val> This)
+      (extra) ) )
 
 
 (class +Clr)
@@ -1055,11 +1117,21 @@
    (=: chg Exe)
    (pass extra) )
 
-(dm chg> ()
-   (let S (: str)
-      (extra)
-      (unless (= S (: str))
-         (eval (: chg)) ) ) )
+(dm do> "Prg"
+   (let "S" (: str)
+      (run "Prg")
+      (unless (= "S" (: str))
+         (eval (: chg))
+         (=: undo (cons "S" (: undo)))
+         (=: redo) ) ) )
+
+(dm undo> ()
+   (extra)
+   (eval (: chg)) )
+
+(dm redo> ()
+   (extra)
+   (eval (: chg)) )
 
 
 (class +Chk)
@@ -1189,7 +1261,7 @@
 
 # Mark hot link field (blue foreground)
 (de hotField ()
-   (pr "fCol" `(hex "0000FF")) )
+   (pr "fCol" (=: fCol `(hex "0000FF"))) )
 
 # Get field
 (de field (X)
@@ -1198,11 +1270,12 @@
       (get (: home fields) (+ X (: ix))) ) )
 
 # Get current chart data row
-(de curr ()
-   (pick
-      '((F D) (and (memq This F) D))
-      (: arr fields)
-      (nth (: arr data) (: arr ofs)) ) )
+(de curr @
+   (pass get
+      (pick
+         '((F D) (and (memq This F) D))
+         (: arr fields)
+         (nth (: arr data) (: arr ofs)) ) ) )
 
 
 (class +Button +field)
@@ -1407,12 +1480,17 @@
 
 
 (class +ListTextField +TextField)
+# split
+
+(dm T (C . @)
+   (=: split C)
+   (pass super) )
 
 (dm set> (Val)
-   (super (glue " " Val)) )
+   (super (glue (: split) Val)) )
 
 (dm val> ()
-   (mapcar pack (split (chop (super)) " ")) )
+   (mapcar pack (split (chop (super)) (: split))) )
 
 
 # Matchcode Field
@@ -1551,8 +1629,24 @@
    (when (: home app)
       (out @
          (pr "fCol" (: ix)
-            (if (lt0 Val) `(hex "CC0000") 0) ) ) )
+            (if (lt0 Val)
+               `(hex "CC0000")
+               (or (: fCol) 0) ) ) ) )
    (extra Val) )
+
+
+# Number- or String-Field
+(class +AtomField +Mono +TextField)
+
+(dm set> (Val)
+   (super
+      (if (num? Val)
+         (align (: dx) (format Val))
+         Val ) ) )
+
+(dm val> ()
+   (let S (super)
+      (or (format S) S) ) )
 
 
 (class +DateField +Limit +TextField)
@@ -1594,7 +1688,7 @@
    (and
       (: str)
       (not (val> This))
-      `(_ "Bad date format") ) )
+      ,"Bad date format" ) )
 
 
 (class +TimeField +Limit +TextField)
@@ -1626,7 +1720,7 @@
    (and
       (: str)
       (not (val> This))
-      `(_ "Bad time format") ) )
+      ,"Bad time format" ) )
 
 
 (class +FileField +TextField)
@@ -1657,13 +1751,12 @@
    (hotField) )
 
 (dm act> ()
-   (when (val> This)
-      (let Val @
-         (when (: home app)
-            (out @
-               (pr "url"
-                  (if (sub? ":/" Val) Val (pack "http://" Val))
-                  "HTTP" ) ) ) ) ) )
+   (let? Val (val> This)
+      (when (: home app)
+         (out @
+            (pr "url"
+               (if (sub? ":/" Val) Val (pack "http://" Val))
+               "HTTP" ) ) ) ) )
 
 
 (class +MailField +TextField)
@@ -1673,10 +1766,10 @@
    (hotField) )
 
 (dm act> ()
-   (let V (val> This)
-      (and V (: home app)
+   (let? Val (val> This)
+      (when (: home app)
          (out @
-            (pr "url" (pack "mailto:" V) "MAIL") ) ) ) )
+            (pr "url" (pack "mailto:" Val) "MAIL") ) ) ) )
 
 
 ### Field Arrays ###
@@ -1786,7 +1879,7 @@
 # (.. rows lst prg [put [get]])
 (dm T ("N" "Lst" "Prg" "Put" "Get")
    (super)
-   (=: rows "N")
+   (=: rows 0)
    (pr (car "Lst") 0)
    (mapc
       '((S) (pr '- S 0))
@@ -1805,6 +1898,7 @@
       (=: fields
          (make
             (do "N"
+               (inc (:: rows))
                (let *Lay '+
                   (link
                      (make
@@ -1814,7 +1908,7 @@
    (=: lock
       (not
          (find
-            '((F) (not (isa '+Lock F)))
+            '((F) (nor (isa '+Button F) (isa '+Lock F)))
             (: fields 1) ) ) ) )
 
 (dm init> ()
@@ -1869,8 +1963,9 @@
             (set D
                (trim
                   ((: get)
-                     (mapcar '((F) (val> F)) (car F))
-                     (car D) ) ) ) )
+                     (mapcar 'val> (car F))
+                     (car D)
+                     (car F) ) ) ) )
          (: fields)
          (nth
             (=: data
@@ -1934,13 +2029,14 @@
       (put> This)
       (setScroll) ) )
 
-(de delRowButton (Chart Exe)
-   (gui '(+Able +Button)
-      (list 'row> Chart)
-      "" `(_ "Delete row")
-      (list 'when '(ask `(_ "Delete row") `(_ "Delete row?"))
-         Exe
-         (list 'upd> Chart) ) ) )
+(de delRowButton (@Chart @Foo)
+   (macro
+      (gui '(+Able +Button)
+         '(row> @Chart)
+         "" ,"Delete row"
+         '(when (ask ,"Delete row" ,"Delete row?")
+            ('@Foo (row> @Chart))
+            (upd> @Chart) ) ) ) )
 
 
 (class +ListChart +Chart)
@@ -1985,7 +2081,7 @@
 (de newDlg ("Typ" . @)
    (prog1
       (pass new! 'upd "Typ")
-      (dlg> (put *Top 'rv @)) ) )
+      (and (dlg> (put *Top 'rv @)) (eval @)) ) )
 
 (de newUrl ("Typ" . @)
    (prog1
@@ -2024,7 +2120,7 @@
       (if (isa '+Key (get @Cls @Var))
          (fill '(get (: home obj) '@Var))
          (fill '(cons (get (: home obj) '@Var) (: home obj))) )
-      (gui '(+Rid +Button) "" `(_ "Next data record")
+      (gui '(+Rid +Button) "" ,"Next data record"
          (list
             'let 'Q
             (fill '(init (tree '@Var '@Cls '@Hook) @Key T))
@@ -2034,10 +2130,10 @@
                (beep> (: home)) ) ) ) ) )
 
 (de choButton (Exe)
-   (gui 'hot '(+Rid +Button) "" `(_ "Choose/Create (F4)") Exe) )
+   (gui 'hot '(+Rid +Button) "" ,"Choose/Create (F4)" Exe) )
 
 (de cloneButton ()
-   (gui '(+Button) "" `(_ "New/Copy")
+   (gui '(+Rid +Button) "" ,"New/Copy"
       '(url (url> (clone!> (: home obj) 'upd))) ) )
 
 # Delete object in +ObjForm
@@ -2046,13 +2142,13 @@
       (ifn Able
          '(and (: home obj) (not (: home obj T)))
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
-      "" `(_ "Delete")
-      '(when (ask `(_ "Delete") `(_ "Delete this data record?"))
+      "" ,"Delete"
+      '(when (ask ,"Delete" ,"Delete this data record?")
          (lose!> (: home obj) 'upd)
          (and (: home obj) (url> @) (url @)) ) ) )
 
 (de closeButton ()
-   (quitButton `(_ "Close")) )
+   (quitButton ,"Close") )
 
 (====)
 # Choose object for +ObjForm
@@ -2070,7 +2166,7 @@
             (and "Hook" (link (lit "Hook")))
             (and "Post" (link "Post"))
             (link "" 40) ) )
-      (dialog (pack "Ttl" `(_ "-Choice")) NIL
+      (dialog (pack "Ttl" ,"-Choice") NIL
          (quote
             (row
                (apply gui
@@ -2081,9 +2177,9 @@
                      (and "Hook" (link (lit "Hook")))
                      (and "Post" (link "Post"))
                      (link "Ttl" 40) ) )
-               (gui '(+Able +Button) '(val> (: home fields 1)) "" `(_ "Choose")
+               (gui '(+Able +Button) '(val> (: home fields 1)) "" ,"Choose"
                   '(act> (: home fields 1)) )
-               (gui '(+Button) "" `(_ "Create")
+               (gui '(+Button) "" ,"Create"
                   '(with (: home fields 1)
                      (if (meta (: objTyp) (: objVar) 'hook)
                         (newUrl (: objTyp) @ (eval (: objHook)))
@@ -2097,7 +2193,7 @@
                      (lit "Hook") ) )
                8 NIL '((apply gui "Lst")) )
             (----)
-            (row (hotButton `(_ "Choose")) (quitButton)) ) ) ) )
+            (row (hotButton ,"Choose") (quitButton)) ) ) ) )
 (====)
 
 
@@ -2155,10 +2251,10 @@
 (class +ObjForm +DbForm)
 # typ obj
 
-(dm T (Typ Obj DX DY Prg)
+(dm T (Typ Obj . @)
    (=: typ Typ)
-   (=: obj Obj)  #? (=: obj (extern Obj))
-   (super DX DY Prg) )
+   (=: obj Obj)
+   (pass super) )
 
 (dm set> (Obj)
    (=: obj Obj)
@@ -2175,11 +2271,12 @@
 # top on
 
 (dm T ("Ttl" "Typ" "Obj" "Lst")
-   (_dlg "Ttl")
-   (=: typ "Typ")
-   (=: obj "Obj")
-   (=: init "Lst")
-   (wait NIL (: on)) )
+   (when (_dlg "Ttl")
+      (modal '+)
+      (=: typ "Typ")
+      (=: obj "Obj")
+      (=: init "Lst")
+      (wait NIL (: on)) ) )
 
 (dm init> ()
    (=: on T)
@@ -2187,12 +2284,14 @@
    (start> This) )
 
 (dm stop> ()
-   (=: on)
+   (when (: on)
+      (modal '-)
+      (=: on) )
    (super)
    (setq *Top (: top)) )
 
-(de objDialog ("Ttl" "Typ" "Obj" "Flg" "Lst")
-   (with (new '(+View +ObjDialog) "Flg" "Ttl" "Typ" "Obj" "Lst")
+(de objDialog ("Ttl" "Typ" "Obj" "Exe" "Lst")
+   (with (new '(+View +ObjDialog) "Exe" "Ttl" "Typ" "Obj" "Lst")
       (wait NIL (not (: on)))
       (: rv) ) )
 
@@ -2255,7 +2354,7 @@
 
 (dm T @
    (pass extra)
-   (pr "bCol" `(hex "A8A8FF")) )
+   (pr "bCol" (=: bCol `(hex "A8A8FF"))) )
 
 
 (class +Obj +Sync)
@@ -2320,9 +2419,9 @@
                         (prog (link S) (> 40 (length (made)))) ) ) ) ) ) ) ) )
 
 (dm act> ()
-   (if (and (val> This) (url> @))
-      (url @)
-      (beep> (: home)) ) )
+   (ifn (and (: obj) (url> @))
+      (beep> (: home))
+      (url @) ) )
 
 (dm chk> ()
    (or
@@ -2331,7 +2430,7 @@
          (: str)
          (not (val> This))
          (<> "-" (: str))
-         `(_ "Data not found") ) ) )
+         ,"Data not found" ) ) )
 
 (dm query> (X)
    (let Cls (meta (: objTyp) (: objVar) 'cls)
@@ -2370,18 +2469,18 @@
    (: obj) )
 
 (dm act> ()
-   (if (and (: obj) (url> @))
-      (url @)
-      (beep> (: home)) ) )
+   (ifn (and (: obj) (url> @))
+      (beep> (: home))
+      (url @) ) )
 
 
 # +Obj/+ObjView Prefix
 (class +Dlg)
 
 (dm act> ()
-   (ifn (: obj)
+   (ifn (and (: obj) (dlg> @))
       (beep> (: home))
-      (dlg> @)
+      (eval @)
       (upd> (: home)) ) )
 
 
@@ -2400,7 +2499,7 @@
 (class +Rv)
 
 (dm act> ()
-   (ifn (val> This)
+   (ifn (: obj)
       (beep> (: home))
       (=: home rv @)
       (stop> (: home) ) ) )

@@ -1,7 +1,9 @@
 #!/usr/abu/pico/bin/pico /usr/abu/pico/lib.l
-# 23jan03abu
+# 18dec03abu
 
-(de msg Lst
+# *Port *Sock *Name
+
+(de chat Lst
    (out *Sock
       (mapc prin Lst)
       (prinl) ) )
@@ -19,13 +21,11 @@
    (flush) )
 (in *Sock (setq *Name (line T)))
 
-(tell 'msg "+++ " *Name " arrived +++")
+(tell 'chat "+++ " *Name " arrived +++")
 
 (task *Sock
-   (in *Sock (setq Line (line T)))
-   (cond
-      ((=T Line)
-         (tell 'msg "--- " *Name " left ---")
-         (bye) )
-      (T (tell 'msg *Name "> " Line)) ) )
+   (ifn (=T (in *Sock (setq "Line" (line T))))
+      (tell 'chat *Name "> " "Line")
+      (tell 'chat "--- " *Name " left ---")
+      (bye) ) )
 (wait)

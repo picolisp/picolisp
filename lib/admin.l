@@ -1,4 +1,4 @@
-# 28nov03abu
+# 29jan04abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -7,7 +7,7 @@
 (de login (Nm Pw)
    (and
       (db 'nm '+User Nm 'pw Pw)
-      (setq *Login @  *Timeout `(* 4 60 60 1000)) ) )
+      (timeout (setq *Login @  *Timeout `(* 4 60 60 1000))) ) )
 
 (de logout ()
    (off *Login)
@@ -16,29 +16,33 @@
    (upd> (: home msg))
    (and *Bar (upd> *Bar)) )
 
-(de pwForm ()
+(de pwForm Prg
    (form '(+Form) 360 120
-      (quote
-         (gui 'nm '(+TextField) "Name" 20)
-         (gui 'pw '(+Chk +End +PwField)
-            '(unless (login (val> (: home nm)) (val> (: home pw)))
-               (msg *Pid " ?! " (val> (: home nm)))
-               `(_ "Permission denied") )
-            '(prog
-               (msg *Pid " * " (stamp) " " (val> (: home nm)))
-               (flush)
-               (upd> (: home msg))
-               (and *Bar (upd> *Bar)) )
-            `(_ "Password") 20 )
-         (----)
-         (gui 'msg '(+Upd +Mono +Label)
-            '(set> This
-               (and *Login
-                  (pack "'" (get *Login 'nm) `(_ "' logged in")) ) )
-            ""
-            "                                        " )
-         (gui '(+Able +Button) '*Login "" `(_ "logout")
-            '(logout) ) ) ) )
+      (append
+         (quote
+            (gui 'nm '(+TextField) ,"Name" 20)
+            (gui 'pw '(+Chk +End +PwField)
+               '(let? Nm (val> (: home nm))
+                  (unless (login Nm (val> (: home pw)))
+                     (msg *Pid " ?! " Nm)
+                     ,"Permission denied" ) )
+               '(when (val> (: home nm))
+                  (msg *Pid " * " (stamp) " " @)
+                  (flush)
+                  (upd> (: home msg))
+                  (and *Bar (upd> *Bar)) )
+               ,"Password" 20 ) )
+         (and Prg (cons '(-|-) Prg))
+         (quote
+            (----)
+            (gui 'msg '(+Upd +Mono +Label)
+               '(set> This
+                  (and *Login
+                     (pack "'" (get *Login 'nm) ,"' logged in") ) )
+               ""
+               "                                        " )
+            (gui '(+Able +Button) '*Login "" ,"logout"
+               '(logout) ) ) ) ) )
 
 
 ### Role ###
@@ -88,7 +92,7 @@
 
 ### GUI ###
 (de choRole ()
-   (choDialog `(_ "Role") '(nm +Role)) )
+   (choDialog ,"Role" '(nm +Role)) )
 
 (de choUser ()
-   (choDialog `(_ "User") '(nm +User)) )
+   (choDialog ,"User" '(nm +User)) )

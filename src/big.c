@@ -1,4 +1,4 @@
-/* 20may03abu
+/* 27jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -218,14 +218,8 @@ static any bigMul(any x1, any x2) {
             ++carry;
          carry += hi(t);
       }
-      if (carry) {
-         /***
-         if (isNum(cdr(numCell(y))))
-            digAdd(y,carry);
-         else
-         ***/
+      if (carry)
          cdr(numCell(y)) = box(carry);
-      }
       if (!isNum(x2))
          break;
       if (!isNum(y = cdr(numCell(x))))

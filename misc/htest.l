@@ -1,4 +1,4 @@
-# 03dec03abu
+# 09dec03abu
 # (c) Software Lab. Alexander Burger
 
 (and (app) (rsa 40))
@@ -59,7 +59,7 @@
       <hr>
       (form '(+View +Form) NIL  800 700
          (quote
-            (gui '(+IntField) "Zahlenfeld" 10)
+            (gui '(+AtomField) "Atomfeld" 20)
             (----)
             (row
                (gui '(+Color +Uppc +TextField) (hex "9999FF") NIL  "Msg 1" 10)
@@ -89,7 +89,7 @@
                '(A B C D E F G) )
             (-|-)
             (txt)
-            (gui '(+ListTextField) "ListText" 30)
+            (gui '(+ListTextField) " " "ListText" 30)
             (---- T)
             (gui '(+Chart)
                4 '(" " "Nummer" "Text")

@@ -1,4 +1,4 @@
-# 24sep03abu
+# 31dec03abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -232,6 +232,16 @@
 (be _lst (@Val @Lst) (@Val pop (-> @Lst)))
 (repeat)
 
+(be map (@V . @L)
+   (@Lst box
+      (let L (-> @L)
+         (apply get (cdr L) (car L)) ) )
+   (_map @V @Lst) )
+
+(be _map (@Val @Lst) (@ not (val (-> @Lst))) T (fail))
+(be _map (@Val @Lst) (@Val prog1 (val (-> @Lst)) (pop (-> @Lst))))
+(repeat)
+
 
 (be isa (@Typ . @L)
    (@ or
@@ -438,17 +448,17 @@
                               (and (get Cls Var 'hook) (pop 'Lst)) ) ) ) ) ) ) ) ) ) )
 
 (de "initSel" (Var Cls Hook)
-   (let Rel (get Cls Var)
-      (when (find '((B) (isa '+Index B)) (get Rel 'bag))
-         (setq Rel @) )
+   (with (or (get Cls Var) (meta Cls Var))
+      (when (find '((B) (isa '+Index B)) (: bag))
+         (setq This @) )
       (cond
-         ((isa '+Fold Rel)
-            (initQuery Var Cls Hook (fold Val)) )
-         ((isa '+Sn Rel)
+         ((isa '+Fold This)
+            (initQuery Var (: cls) Hook (fold Val)) )
+         ((isa '+Sn This)
             (conc
-               (initQuery Var Cls Hook Val)
-               (initQuery Var Cls Hook (ext:Snx Val)) ) )
-         (T (initQuery Var Cls Hook Val)) ) ) )
+               (initQuery Var (: cls) Hook Val)
+               (initQuery Var (: cls) Hook (ext:Snx Val)) ) )
+         (T (initQuery Var (: cls) Hook Val)) ) ) )
 
 (de _gen (Lst Q)
    (ifn Lst

@@ -1,4 +1,4 @@
-// 27nov03abu
+// 12dec03abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -36,6 +36,10 @@ public class Tele {
                   for (;;) {
                      int n;
                      Object[] lst = (Object[])IO.read();
+
+                     if (lst == null)
+                        System.exit(0);
+
                      String[] cmd = new String[n = lst.length];
 
                      while (--n >= 0)
@@ -46,6 +50,7 @@ public class Tele {
                      In = p.getInputStream();
                      while ((n = In.read()) >= 0)
                         IO.print(n);
+                     IO.flush();
                      p.waitFor();
                   }
                }
@@ -54,23 +59,27 @@ public class Tele {
          } ).start();
       }
       else {
-         /******/
-         CommPort p = (CommPortIdentifier.getPortIdentifier(dev)).open("Tele", 2000);
-         In = p.getInputStream();
-         Out = p.getOutputStream();
-         /******
-         In = new FileInputStream(dev);
-         Out = new FileOutputStream(dev);
-         ******/
+         if (dev.startsWith("/dev/")) {
+            In = new FileInputStream(dev);
+            Out = new FileOutputStream(dev);
+         }
+         else {
+            CommPort p = (CommPortIdentifier.getPortIdentifier(dev)).open("Tele", 2000);
+            In = p.getInputStream();
+            Out = p.getOutputStream();
+         }
          (new Thread() {
             public void run() {
                try {
                   int n;
 
-                  while ((n = In.read()) >= 0)
+                  while ((n = In.read()) >= 0) {
                      IO.print(n);
+                     IO.flush();
+                  }
                }
                catch (Exception e) {giveup(e.toString());}
+               System.exit(0);
             }
          } ).start();
          (new Thread() {
@@ -87,6 +96,7 @@ public class Tele {
                      }
                }
                catch (Exception e) {giveup(e.toString());}
+               System.exit(0);
             }
          } ).start();
       }

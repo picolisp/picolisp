@@ -1,3 +1,15 @@
+* 01feb04 picoLisp-2.0.10
+   'wr' raw byte output function
+   Improved modal dialogs
+   Comma ',' read-macro, replacing the '_' function
+   'let?' conditional flow/bind function
+   'accept' non-blocking, with timeout
+   Optional method-defining arguments to '+Form's
+   '+Bool' relation class
+   '+Ref2' backing index prefix class
+   'size' returns number of DB blocks for external symbols
+   '+ListTextField' split parameter
+
 * 06dec03 picoLisp-2.0.9
    'Tele' java client
    Closed leaking file descriptors in 'fork'

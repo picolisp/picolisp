@@ -1,14 +1,17 @@
-# 26nov03abu
+# 16jan04abu
 # (c) Software Lab. Alexander Burger
 
 (de macro "Prg"
    (run (fill "Prg")) )
 
 (de task ("Key" . "Prg")
-   (setq *Key
-      (ifn "Prg"
-         (delete (assoc "Key" *Key) *Key)
-         (cons
+   (cond
+      ((not "Prg")
+         (setq *Key (delete (assoc "Key" *Key) *Key)) )
+      ((assoc "Key" *Key)
+         (quit "Key conflict" "Key") )
+      (T
+         (push '*Key
             (conc
                (make
                   (link "Key")
@@ -24,8 +27,7 @@
                               (while (atom (car "Prg"))
                                  (link
                                     (cons (pop '"Prg") (eval (pop '"Prg"))) ) ) )
-                           "Prg" ) ) ) ) )
-            (if (assoc "Key" *Key) (delete @ *Key) *Key) ) ) ) )
+                           "Prg" ) ) ) ) ) ) ) ) )
 
 (de timeout (N)
    (if (assoc -1 *Key)
@@ -47,16 +49,6 @@
          (cdr (asoq "X" (val "C")))
          (set "C"
             (delq (asoq "X" (val "C")) (val "C")) ) ) ) )
-
-(de lit (X)
-   (if
-      (or
-         (=T X)
-         (not X)
-         (num? X)
-         (and (pair X) (num? (car X))) )
-      X
-      (cons 'quote X) ) )
 
 (de scl (*Scl . "Prg")
    (run "Prg") )
@@ -176,17 +168,24 @@
 
 ### OOP ###
 (de class Lst
-   (def
-      (setq *Class (car Lst))
-      (cdr Lst) ) )
+   (or
+      (= (cdr Lst) (type (setq *Class (car Lst))))
+      (def *Class (cdr Lst)) ) )
 
 (de extend "X"
    (setq *Class (car "X")) )
 
+# Class variables
+(de var X
+   (put *Class (car X) (cdr X)) )
+
+(de var: X
+   (apply meta X This) )
+
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless whilst while until do case for with catch
-   ! quote setq default let use =: in out new )
+   T NIL if ifn when unless whilst while until until=T do case for with catch
+   ! quote setq default let let? use =: in out new )
 
 (de *PP1 let)
 (de *PP2 setq default)

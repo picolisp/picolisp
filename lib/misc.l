@@ -1,4 +1,4 @@
-# 01dec03abu
+# 14jan04abu
 # (c) Software Lab. Alexander Burger
 
 (de *Day . (Mon Tue Wed Thu Fri Sat Sun .))
@@ -8,7 +8,6 @@
 ### Locale ###
 (de *Ctry)
 (de *Lang)
-(de *Str)
 (de *Sep0 . ".")
 (de *Sep3 . ",")
 (de *CtryCode)
@@ -17,15 +16,10 @@
 (de *MonFmt January February March April May June July August September October November December)
 (de *Help "loc/help/en.l")
 
-(de _ Str
-   (if (member (car Str) *Str)
-      (car @)
-      (push '*Str (car Str)) ) )
-
 (de locale (Ctry Lang Dir)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "loc/" @) "loc/NIL"))
    (ifn (setq *Lang Lang)
-      (mapc '(("S") (set "S" "S")) *Str)
+      (mapc '(("S") (set "S" "S")) *Uni)
       (locStr (pack "loc/" Lang))
       (and Dir (locStr (pack Dir Lang))) ) )
 
@@ -33,10 +27,10 @@
    (in F
       (for ("K" (read) "K" (read))
          (let "V" (read)
-            (if (member "K" *Str)
+            (if (member "K" *Uni)
                (set (car @) "V")
                (set "K" "V")
-               (push '*Str "K") ) ) ) ) )
+               (push '*Uni "K") ) ) ) ) )
 
 ### Math ###
 # (Knuth Vol.2, p.442)
@@ -115,12 +109,13 @@
          (until (=0 (setq X (>> 4 X)))
             (push 'L (_hex X)) )
          (pack L) )
-      (setq X (chop X))
       (let N 0
-         (while X
-            (let C (- (char (pop 'X)) `(char "0"))
+         (mapc
+            '((C)
+               (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
-               (setq N (+ C (>> -4 N))) ) )
+               (setq N (+ C (>> -4 N))) )
+            (chop X) )
          N ) ) )
 
 (de _hex (N)
@@ -384,13 +379,14 @@
          (until (=0 (setq X (>> 6 X)))
             (push 'L (_fmt64 X)) )
          (pack L) )
-      (setq X (chop X))
       (let N 0
-         (while X
-            (let C (- (char (pop 'X)) `(char "0"))
+         (mapc
+            '((C)
+               (setq C (- (char C) `(char "0")))
                (and (> C 42) (dec 'C 6))
                (and (> C 11) (dec 'C 5))
-               (setq N (+ C (>> -6 N))) ) )
+               (setq N (+ C (>> -6 N))) )
+            (chop X) )
          N ) ) )
 
 (de _fmt64 (N)

@@ -1,4 +1,4 @@
-# 01dec03abu
+# 14jan04abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -15,11 +15,11 @@
          (env) ) )
    (rollback)
    (when *Top
-      (alert `(_ "Sorry!")
+      (alert ,"Sorry!"
          (list
             (pack "(" *Msg ")")
-            `(_ "An internal error occurred.")
-            `(_ "Connection will be closed.") ) ) )
+            ,"An internal error occurred."
+            ,"Connection will be closed." ) ) )
    (bye) )
 
 # User identification

@@ -1,4 +1,4 @@
-/* 28nov03abu
+/* 29jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -191,7 +191,7 @@ extern any TheKey, TheCls;
 extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Adr, Bye;
+extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -223,6 +223,7 @@ any consStr(any);
 any consSym(any,any);
 void crlf(void);
 void db(any,any,int);
+int dbSize(any);
 void digAdd(any,word);
 void digDiv2(any);
 void digMul2(any);
@@ -416,11 +417,13 @@ any doLast(any);
 any doLe(any);
 any doLength(any);
 any doLet(any);
+any doLetQ(any);
 any doLine(any);
 any doLines(any);
 any doLink(any);
 any doList(any);
 any doListen(any);
+any doLit(any);
 any doLstQ(any);
 any doLoad(any);
 any doLock(any);
@@ -528,6 +531,7 @@ any doSpace(any);
 any doSplit(any);
 any doSpQ(any);
 any doSqrt(any);
+any doStem(any);
 any doStk(any);
 any doStr(any);
 any doStrip(any);
@@ -565,6 +569,7 @@ any doWhile(any);
 any doWhilst(any);
 any doWipe(any);
 any doWith(any);
+any doWr(any);
 any doXchg(any);
 any doXor(any);
 any doZap(any);
@@ -589,6 +594,18 @@ static inline int length(any x) {
 }
 
 /* Membership */
+static inline any member(any x, any y) {
+   any z = y;
+
+   while (isCell(y)) {
+      if (equal(x, car(y)))
+         return y;
+      if (z == (y = cdr(y)))
+         return Nil;
+   }
+   return equal(x,y)? y : Nil;
+}
+
 static inline any memq(any x, any y) {
    any z = y;
 

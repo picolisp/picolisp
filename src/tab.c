@@ -1,4 +1,4 @@
-/* 28nov03abu
+/* 29jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -129,11 +129,13 @@ static symInit Symbols[] = {
    {doLe, "<="},
    {doLength, "length"},
    {doLet, "let"},
+   {doLetQ, "let?"},
    {doLine, "line"},
    {doLines, "lines"},
    {doLink, "link"},
    {doList, "list"},
    {doListen, "listen"},
+   {doLit, "lit"},
    {doLstQ, "lst?"},
    {doLoad, "load"},
    {doLock, "lock"},
@@ -239,6 +241,7 @@ static symInit Symbols[] = {
    {doSplit, "split"},
    {doSpQ, "sp?"},
    {doSqrt, "sqrt"},
+   {doStem, "stem"},
    {doStk, "stk"},
    {doStr, "str"},
    {doStrip, "strip"},
@@ -276,6 +279,7 @@ static symInit Symbols[] = {
    {doWhilst, "whilst"},
    {doWipe, "wipe"},
    {doWith, "with"},
+   {doWr, "wr"},
    {doXchg, "xchg"},
    {doXor, "xor"},
    {doZap, "zap"},
@@ -317,8 +321,9 @@ void initSymbols(void) {
    Led   = initSym(Nil, "*Led");
    Err   = initSym(Nil, "*Err");
    Msg   = initSym(Nil, "*Msg");
+   Uni   = initSym(Nil, "*Uni");
    Adr   = initSym(Nil, "*Adr");
-   Bye   = initSym(Nil, "*Bye");
+   Bye   = initSym(Nil, "*Bye");  // Last unremovable symbol
 
    val(DB) = DbVal = extSym(consStr(DbTail = box('1')));
    Extern['1'] = cons(DbVal, Nil);

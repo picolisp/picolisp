@@ -1,4 +1,4 @@
-# 01dec03abu
+# 15jan04abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Allow *Gate *Agent *Host *Port *Sock *MPartLim *MPartEnd *ContLen
@@ -9,15 +9,17 @@
    *Timeout (* 15 60 1000) )
 
 (de *Mimes
-   (`(chop ".css") "text/css" 86400)
-   (`(chop ".gif") "image/gif" 86400)
-   (`(chop ".jpg") "image/jpeg" 86400)
-   (`(chop ".txt") "text/octet-stream" 1 T)
-   (`(chop ".wav") "audio/x-wav" 1)
-   (`(chop ".mp3") "audio/x-mpeg" 86400)
-   (`(chop ".pdf") "application/pdf" 1)
-   (`(chop ".zip") "application/zip" 1)
-   (`(chop ".jar") "application/java-archive" 86400) )
+   (`(chop "html"))
+   (`(chop "css") "text/css" 86400)
+   (`(chop "gif") "image/gif" 86400)
+   (`(chop "jpg") "image/jpeg" 86400)
+   (`(chop "txt") "text/octet-stream" 1 T)
+   (`(chop "wav") "audio/x-wav" 1)
+   (`(chop "mp3") "audio/x-mpeg" 86400)
+   (`(chop "ps") "application/postscript" 1)
+   (`(chop "pdf") "application/pdf" 1)
+   (`(chop "zip") "application/zip" 1)
+   (`(chop "jar") "application/java-archive" 86400) )
 
 
 ### HTTP-Client ###
@@ -67,8 +69,9 @@
       (or *SesId (bye))
       (timeout *Timeout)
       (task *Sock
-         (http (accept *Sock))
-         (timeout *Timeout) ) ) )
+         (when (accept *Sock)
+            (http @)
+            (timeout *Timeout) ) ) ) )
 
 (de baseHRef ()
    (pack
@@ -144,11 +147,11 @@
                               (mapc
                                  '((L)
                                     (prin "<TD ALIGN=\"CENTER\">")
-                                    (when (car L)
-                                       (prin "<IMG SRC=\"" *SesId (car L) "\">") )
+                                    (when (eval (car L))
+                                       (prin "<IMG SRC=\"" *SesId @ "\">") )
                                     (prinl
                                        "<A HREF=\"" *SesId (inc 'N) "\" TARGET=\"MENU\">"
-                                       (cadr L) "</A></TD>" ) )
+                                       (eval (cadr L)) "</A></TD>" ) )
                                  *Frame ) )
                            (prinl "</TR></TABLE>") ) )
                      (F (html NIL (prEval (nth *Frame F 3))))
@@ -156,9 +159,7 @@
                         (apply (val (intern (ht:Pack (cdr @)))) L) )
                      ((= '("." "l") (tail 2 @U))
                         (load *Url) )
-                     ((= '("." "h" "t" "m" "l") (tail 5 @U))
-                        (httpEcho *Url) )
-                     ((assoc (tail 4 @U) *Mimes)
+                     ((assoc (stem @U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (load (pack *Url "default")) )
@@ -220,9 +221,10 @@
             ((match '(@N ~(chop "; filename=") . @V) @X)
                (match '("\"" @N "\"") @N)
                (match '("\"" @V "\"") @V)
-               (while (or (member "/" @V) (member "\\" @V))
-                  (setq @V (cdr @)) )
-               (let F (if (_htSet @N (pack @V)) (tmp @) "/dev/null")
+               (let F
+                  (if (_htSet @N (pack (stem @V "/" "\\")))
+                     (tmp @)
+                     "/dev/null" )
                   (unless (out F (echo (pack "^M^J" *MPartLim)))
                      (call "rm" "-f" F) ) )
                (let C (char)
@@ -307,10 +309,10 @@
             (car D) " "
             (tim$ (cddr @)) " GMT^M" ) )
       (when Att
-         (let F (chop File)
-            (while (member "/" F)
-               (setq F (cdr @)) )
-            (prinl "Content-Disposition: attachment; filename=\"" F "\"^M") ) )
+         (prinl
+            "Content-Disposition: attachment; filename=\""
+            (stem (chop File) "/")
+            "\"^M" ) )
       (prinl "^M")
       (in File (echo)) ) )
 
@@ -549,9 +551,9 @@
             (prin
                "<TH ALIGN="
                (case (car L)
-                  ((- ^) "LEFT")
-                  (+ "RIGHT")
-                  (T "CENTER") )
+                  ((- ^) "\"LEFT\"")
+                  (+ "\"RIGHT\"")
+                  (T "\"CENTER\"") )
                (and (caddr L) (pack " WIDTH=" @))
                (cadddr L)
                ">" )
@@ -569,8 +571,8 @@
          (unless (memq (car X) '(T -))
             (prinl
                "<TD ALIGN="
-               (if (== '+ (caar H)) "RIGHT" "LEFT")
-               (and (== '^ (caar H)) " VALIGN=TOP")
+               (if (== '+ (caar H)) "\"RIGHT\"" "\"LEFT\"")
+               (and (== '^ (caar H)) " VALIGN=\"TOP\"")
                (when (== '- (cadr X))
                   (pack
                      " COLSPAN="

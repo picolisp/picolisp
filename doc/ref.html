@@ -774,6 +774,12 @@ also printed instead of the full function name.
 -> 'a
 </code></pre>
 
+<p>A comma (<code>,</code>) will cause the reader to collect the following data
+item into the global variable <code><a href="#*Uni">*Uni</a></code>, and to
+return a previously inserted equal item if present. This makes it possible to
+create a unique list of references to data which do normally not follow the
+rules of pointer equality.
+
 <p>A single backquote character <code>`</code> will cause the reader to evaluate
 the following expression, and return the result.
 
@@ -1561,6 +1567,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#zero">zero</a>
    <a href="#default">default</a>
    <a href="#let">let</a>
+   <a href="#letQ">let?</a>
    <a href="#use">use</a>
    <a href="#push">push</a>
    <a href="#pop">pop</a>
@@ -1680,6 +1687,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#clip">clip</a>
    <a href="#head">head</a>
    <a href="#tail">tail</a>
+   <a href="#stem">stem</a>
    <a href="#last">last</a>
    <a href="#member">member</a>
    <a href="#memq">memq</a>
@@ -1715,6 +1723,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#pass">pass</a>
    <a href="#quote">quote</a>
    <a href="#as">as</a>
+   <a href="#lit">lit</a>
    <a href="#eval">eval</a>
    <a href="#run">run</a>
    <a href="#def">def</a>
@@ -1733,6 +1742,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#bind">bind</a>
    <a href="#job">job</a>
    <a href="#let">let</a>
+   <a href="#letQ">let?</a>
    <a href="#use">use</a>
    <a href="#and">and</a>
    <a href="#or">or</a>
@@ -1826,6 +1836,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#rewind">rewind</a>
    <a href="#rd">rd</a>
    <a href="#pr">pr</a>
+   <a href="#wr">wr</a>
    <a href="#wait">wait</a>
    <a href="#sync">sync</a>
    <a href="#echo">echo</a>
@@ -1910,6 +1921,7 @@ argument types and return values are described with the following abbreviations:
    <a href="#*Led">*Led</a>
    <a href="#*Err">*Err</a>
    <a href="#*Msg">*Msg</a>
+   <a href="#*Uni">*Uni</a>
    <a href="#*Adr">*Adr</a>
    <a href="#*Bye">*Bye</a>
 </code>
@@ -1932,7 +1944,7 @@ argument types and return values are described with the following abbreviations:
 -> 7
 </code></pre>
 
-<p><dt><a name="accept"><code>(accept 'cnt) -> cnt</code></a>
+<p><dt><a name="accept"><code>(accept 'cnt) -> cnt | NIL</code></a>
 <dd>Accepts at a connection of descriptor <code>cnt</code> (as recieved by
 <code><a href="#port">port</a></code>), and returns the new socket descriptor
 <code>cnt</code>. The global variable <code>*Adr</code> is set to the IP address
@@ -2180,12 +2192,12 @@ transaction processing with <code><a href="#commit">commit</a></code> and
 <p><dt><a name="bind"><code>(bind 'sym|lst 'prg) -> any</code></a>
 <dd>Binds value(s) to symbol(s). The first argument <code>sym</code> must
 evaluate to a symbol, a list of symbols, or to a list of symbol-value pairs. The
-values of these symbols are saved (and bound to the values in the last case),
-<code>prg</code> is executed, then the symbols are restored to their original
-values. During execution of <code>prg</code>, the values of the symbols can be
-temporarily modified. The return value is the result of <code>prg</code>. See
-also <code><a href="#let">let</a></code>, <code><a href="#job">job</a></code>
-and <code><a href="#use">use</a></code>.
+values of these symbols are saved (and the symbols bound to the values in the
+last case), <code>prg</code> is executed, then the symbols are restored to their
+original values. During execution of <code>prg</code>, the values of the symbols
+can be temporarily modified. The return value is the result of <code>prg</code>.
+See also <code><a href="#let">let</a></code>, <code><a
+href="#job">job</a></code> and <code><a href="#use">use</a></code>.
 
 <p><pre><code>
 : (setq X 123)                               # X is 123
@@ -2598,7 +2610,7 @@ returned.
 -> 2
 </code></pre>
 
-<p><dt><a name="connect"><code>(connect 'any 'cnt) -> cnt</code></a>
+<p><dt><a name="connect"><code>(connect 'any 'cnt) -> cnt | NIL</code></a>
 <dd>Tries to establish a TCP/IP connection to a server listening at host
 <code>any</code>, port <code>cnt</code>. <code>any</code> may be either a
 hostname or a standard internet address in numbers-and-dots notation. Returns a
@@ -2811,7 +2823,7 @@ message is issued.
 : (def 'b '((X Y) (* X (+ X Y))))
 -> b
 : (def 'b 999)
-b redefined
+# b redefined
 -> b
 </code></pre>
 
@@ -3530,9 +3542,10 @@ upon timeout. See also <code><a href="#wait">wait</a></code>.
 -> "a"                     # `a' pressed
 </code></pre>
 
-<p><dt><a name="kill"><code>(kill 'pid 'cnt) -> flg</code></a>
-<dd>Sends a signal with the signal number <code>cnt</code> to the process with
-the ID <code>pid</code>. Returns <code>T</code> if successful.
+<p><dt><a name="kill"><code>(kill 'pid ['cnt]) -> flg</code></a>
+<dd>Sends a signal with the signal number <code>cnt</code> (or TERM if
+<code>cnt</code> is not given) to the process with the ID <code>pid</code>.
+Returns <code>T</code> if successful.
 
 <p><pre><code>
 : (kill *Pid 20)                                # Stop current process
@@ -3581,11 +3594,12 @@ href="#size">size</a></code>.
 (let (sym 'any ..) . prg) -> any</code></a>
 <dd>Defines local variables. The value of the symbol <code>sym</code> - or the
 values of the symbols <code>sym</code> in the list of the second form - are
-saved and bound to the evaluated <code>any</code> arguments. <code>prg</code> is
-executed, then the symbols are restored to their original values. The result of
-<code>prg</code> is returned. It is an error condition to pass <code>NIL</code>
-as a <code>sym</code> argument. See also <code><a href="#bind">bind</a></code>,
-<code><a href="#job">job</a></code> and <code><a href="#use">use</a></code>.
+saved and the symbols are bound to the evaluated <code>any</code> arguments.
+<code>prg</code> is executed, then the symbols are restored to their original
+values. The result of <code>prg</code> is returned. It is an error condition to
+pass <code>NIL</code> as a <code>sym</code> argument. See also <code><a
+href="#letQ">let?</a></code>, <code><a href="#bind">bind</a></code>, <code><a
+href="#job">job</a></code> and <code><a href="#use">use</a></code>.
 
 <p><pre><code>
 : (setq  X 123  Y 456)
@@ -3600,6 +3614,28 @@ Hello world
 -> 123
 : Y
 -> 456
+</code></pre>
+
+<p><dt><a name="letQ"><code>(let? sym 'any . prg) -> any</code></a>
+<dd>Conditional local variable binding and execution: If <code>any</code>
+evalutes to <code>NIL</code>, <code>NIL</code> is returned. Otherwise, the value
+of the symbol <code>sym</code> is saved and <code>sym</code> is bound to the
+evaluated <code>any</code> argument. <code>prg</code> is executed, then
+<code>sym</code> is restored to its original value. The result of
+<code>prg</code> is returned. It is an error condition to pass <code>NIL</code>
+as the <code>sym</code> argument. <code>(let? sym 'any ..)</code> is equivalent
+to <code>(when 'any (let sym @ ..))</code>. See also <code><a
+href="#let">let</a></code>, <code><a href="#bind">bind</a></code>, <code><a
+href="#job">job</a></code> and <code><a href="#use">use</a></code>.
+
+<p><pre><code>
+: (setq Lst (1 NIL 2 NIL 3))
+-> (1 NIL 2 NIL 3)
+: (let? A (pop 'Lst) (println 'A A))
+A 1
+-> 1
+: (let? A (pop 'Lst) (println 'A A))
+-> NIL
 </code></pre>
 
 <p><dt><a name="line"><code>(line 'flg ['cnt ..]) -> lst|sym</code></a>
@@ -3694,6 +3730,22 @@ and <code><a href="#*Adr">*Adr</a></code>.
 -> 4
 : *Adr
 -> "127.0.0.1"
+</code></pre>
+
+<p><dt><a name="lit"><code>(lit 'any) -> any</code></a>
+<dd>Returns the literal (i.e. quoted) value of <code>any</code>, by
+<code>cons</code>ing it with the <code><a href="#quote">quote</a></code>
+function if necessary.
+
+<p><pre><code>
+: (lit T)
+-> T
+: (lit 1)
+-> 1
+: (lit '(1))
+-> (1)
+: (lit '(a))
+-> '(a)
 </code></pre>
 
 <p><dt><a name="load"><code>(load 'any ..) -> any</code></a>
@@ -4525,7 +4577,8 @@ tried in turn. When <code>var</code> is given, it is bound to the port number.
 
 <p><dt><a name="pr"><code>(pr 'any ..) -> any</code></a>
 <dd>Binary print: Prints all <code>any</code> arguments to the current output
-channel in encoded binary format. See also <code><a href="#rd">rd</a></code>.
+channel in encoded binary format. See also <code><a href="#rd">rd</a></code> and
+<code><a href="#wr">wr</a></code>.
 
 <p><pre><code>
 : (out "x" (pr 7 "abc" (1 2 3) 'a))          # Print to "x"
@@ -4742,7 +4795,8 @@ properties for that symbol are lost.
 
 <p><dt><a name="quote"><code>(quote . any) -> any</code></a>
 <dd>Returns <code>any</code> unevaluated. The reader recognizes the single quote
-char <code>'</code> as a macro for this function.
+char <code>'</code> as a macro for this function. See also <code><a
+href="#lit">lit</a></code>.
 
 <p><pre><code>
 : 'a
@@ -4829,8 +4883,9 @@ also <a href="#cmp">Comparing</a>.
 (rd 'cnt) -> num | NIL</code></a>
 <dd>Binary read: Reads one item from the current input channel in encoded binary
 format. When called with a <code>cnt</code> argument (second form), that number
-of raw bytes (in big endian format if <code>cnt</code> is positive) is read into
-a single number. See also <code><a href="#pr">pr</a></code>.
+of raw bytes (in big endian format if <code>cnt</code> is positive) is read as a
+single number. See also <code><a href="#pr">pr</a></code> and <code><a
+href="#wr">wr</a></code>.
 
 <p><pre><code>
 : (in "/dev/urandom" (rd 20))
@@ -5036,8 +5091,8 @@ up to (including the creation of) <code>sym2</code> if necessary.
 -> (a 999 c)
 </code></pre>
 
-<p><dt><a name="setq"><code>(setq sym 'any ..) -> any</code></a>
-<dd>Stores new values <code>any</code> in the <code>sym</code> arguments.
+<p><dt><a name="setq"><code>(setq var 'any ..) -> any</code></a>
+<dd>Stores new values <code>any</code> in the <code>var</code> arguments.
 
 <p><pre><code>
 : (setq  A 123  B (list A A))  # Set `A' to 123, then `B' to (123 123)
@@ -5046,8 +5101,9 @@ up to (including the creation of) <code>sym2</code> if necessary.
 
 <p><dt><a name="size"><code>(size 'any) -> cnt</code></a>
 <dd>Returns the "size" of <code>any</code>. For numbers this is the number of
-bytes needed for the value, for symbols it is the number of bytes occupied in
-the UTF-8 representation of the name, and for lists it is the total number of
+bytes needed for the value, for external symbols it is the number of blocks
+occupied in the database, for other symbols it is the number of bytes occupied
+in the UTF-8 representation of the name, and for lists it is the total number of
 cells in this list and all its sublists. See also <code><a
 href="#length">length</a></code>.
 
@@ -5108,9 +5164,9 @@ characters.
 -> NIL
 </code></pre>
 
-<p><dt><a name="split"><code>(split 'lst 'any1 'any2 ..) -> lst</code></a>
-<dd>Splits <code>lst</code> at all places containing an element
-<code>anyX</code> and returns the resulting list of sublists.
+<p><dt><a name="split"><code>(split 'lst 'any ..) -> lst</code></a>
+<dd>Splits <code>lst</code> at all places containing an element <code>any</code>
+and returns the resulting list of sublists.
 
 <p><pre><code>
 : (split (1 a 2 b 3 c 4 d 5 e 6) 'e 3 'a)
@@ -5129,6 +5185,17 @@ characters.
 -> 31
 : (sqrt 10000000000000000000000000000000000000000)
 -> 100000000000000000000
+</code></pre>
+
+<p><dt><a name="stem"><code>(stem 'lst 'any ..) -> lst</code></a>
+<dd>Returns the tail of <code>lst</code> that does not contain any of the
+<code>any</code> arguments. <code>(stem 'lst 'any ..)</code> is equivalent to
+<code>(last (split 'lst 'any ..))</code>. See also <code><a
+href="#tail">tail</a></code> and <code><a href="#split">split</a></code>.
+
+<p><pre><code>
+: (stem (chop "abc/def\\ghi") "/" "\\")
+-> ("g" "h" "i")
 </code></pre>
 
 <p><dt><a name="stk"><code>(stk any ..) -> T</code></a>
@@ -5769,6 +5836,19 @@ the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
 -> (1 2)
 </code></pre>
 
+<p><dt><a name="wr"><code>(wr 'num ..) -> num</code></a>
+<dd>Writes all <code>num</code> arguments as raw bytes to the current output
+channel. See also <code><a href="#rd">rd</a></code> and <code><a
+href="#pr">pr</a></code>.
+
+<p><pre><code>
+: (out "x" (wr 1 255 257))                   # Write to "x"
+-> 257
+: (hd "x")
+00000000  01 FF 01                                         ...
+-> NIL
+</code></pre>
+
 
 <p><hr>
 <h3><a name="x-foo">X</a></h3>
@@ -6026,6 +6106,22 @@ A -- Number expected
 -> "Number expected"
 </code></pre>
 
+<p><dt><a name="*Uni"><code>*Uni</code></a>
+<dd>A global variable holding all unique data that were collected with the comma
+(<code>,</code>) read-macro. See also <code><a
+href="#macro-io">Read-Macros</a></code>.
+
+<p><pre><code>
+: (off *Uni)            # Clear
+-> NIL
+: ,"abc"                # Collect a transient symbol
+-> "abc"
+: ,(1 2 3)              # Collect a list
+-> (1 2 3)
+: *Uni
+-> ((1 2 3) "abc")
+</code></pre>
+
 <p><dt><a name="*Adr"><code>*Adr</code></a>
 <dd>A global variable holding the IP address of last recently accepted client.
 See also <code><a href="#listen">listen</a></code> and <code><a
@@ -6082,7 +6178,7 @@ symbol (string) upon execution.
 
 <p><pre><code>
 : (de *Led "(bye)")
-*Led redefined
+# *Led redefined
 -> *Led
 : $                                    # Exit
 </code></pre>

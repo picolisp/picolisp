@@ -1,4 +1,4 @@
-/* 26aug03abu
+/* 30jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -202,8 +202,10 @@ int main(int ac, char *av[]) {
 
                /* "@8080 "
                 * "GET / HTTP/1.1"
+                * "GET /@foo HTTP/1.1"
                 * "GET /8080/file HTTP/1.1"
                 * "POST / HTTP/1.1"
+                * "POST /@foo HTTP/1.1"
                 * "POST /8080/file HTTP/1.1"
                 */
                if (buf[0] == '@')
@@ -215,7 +217,7 @@ int main(int ac, char *av[]) {
                else
                   return 1;
 
-               if (*p == ' ')
+               if (*p == ' ' || *p == '@')
                   port = dflt,  q = p;
                else {
                   port = (int)strtol(p, &q, 10);

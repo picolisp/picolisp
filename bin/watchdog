@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 24jun03abu
+# 17dec03abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -64,7 +64,7 @@
                   (setq *Watch (delete W *Watch)) )
                (inc (cdr W) 3600)
                (set (cddr W) T)
-               (let Sub (pack "CRASH " (car W) " " (cdddr W))
+               (let Sub (pack "Timeout " (car W) " " (cdddr W))
                   (msg (car W) " " (stamp))
                   (mapc
                      '((To)

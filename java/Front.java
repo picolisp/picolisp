@@ -1,4 +1,4 @@
-// 06dec03abu
+// 22jan04abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -12,27 +12,28 @@ public class Front extends Pico {
    Scrollbar[] SBars;
    Hashtable Skip;
    Vector Sync, Rid, Crypt;
-   int Focus, Dirty;
+   int Focus, Dirty, Level;
    boolean Req;
    Dialog Dialog;
-   final Pico Parent;
+   final Front Parent;
 
    public Front() {Parent = null;}
 
-   public Front(Pico p, int port, String gate, String sid, String ttl) {
+   public Front(Front p, int port, String gate, String sid, String ttl) {
       if ((Parent = p) != null) {
          Seed = p.Seed;
          Host = p.Host;
          Container c = p.getParent();
          while (!(c instanceof Frame))
             c = c.getParent();
-         Dialog = new Dialog((Frame)c, ttl, true);
+         Dialog = new Dialog((Frame)c, ttl, false);
          Dialog.add(this, BorderLayout.CENTER);
          Dialog.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {stop();}
          } );
          connect(0, port, gate, sid);
       }
+      Level = 0;
    }
 
    public void start() {
@@ -49,8 +50,10 @@ public class Front extends Pico {
       if (Dialog != null) {
          Dialog.dispose();
          Dialog = null;
-         Parent.Seed ^= Seed;
-         synchronized (Parent) {Parent.notify();}
+         synchronized (Parent) {
+            Parent.Seed ^= Seed;
+            Parent.notify();
+         }
       }
       super.done();
    }
@@ -83,6 +86,10 @@ public class Front extends Pico {
    void cmd(String s) {
       if (s.equals("ack"))
          {Req = false; relay();}
+      else if (s.equals("+"))
+         ++Level;
+      else if (s.equals("-"))
+         --Level;
       else if (s.equals("focus"))
          focus(getNum());
       else if (s.equals("next"))
@@ -115,6 +122,8 @@ public class Front extends Pico {
          new Popup(this, Fields[getNum()-1]);
       else if (s.equals("make"))
          make();
+      else if (s.equals("dialog"))
+         new Front(this, getNum(), getStr(), getStr(), getStr());
       else
          super.cmd(s);
    }
@@ -222,7 +231,7 @@ public class Front extends Pico {
                ((Button)f).setActionCommand(Integer.toString(i+1));
                ((Button)f).addActionListener(new ActionListener() {
                   public void actionPerformed(ActionEvent ev) {
-                     if (Req)
+                     if (Req  ||  Level != 0)
                         getToolkit().beep();
                      else {
                         change("log>");
@@ -343,10 +352,10 @@ public class Front extends Pico {
          ((Label)f).setText(txt);
       else {
          ((TextComponent)f).setText(txt);
-         if (MiSt || Focus == 0)
+         if (MiSt  ||  Focus == 0  ||  f instanceof TextArea)
             ((TextComponent)f).select(0,0);
          else if (Focus == fld)
-            ((TextComponent)f).selectAll();
+            ((TextField)f).selectAll();
       }
    }
 
@@ -550,8 +559,8 @@ class PicoFocusListener implements FocusListener {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
       }
-      if (!Home.MiSt && Home.Fields[Ix-1] instanceof TextComponent)
-         ((TextComponent)Home.Fields[Ix-1]).selectAll();
+      if (!Home.MiSt && Home.Fields[Ix-1] instanceof TextField)
+         ((TextField)Home.Fields[Ix-1]).selectAll();
    }
 
    public void focusLost(FocusEvent ev) {
@@ -583,15 +592,15 @@ class PicoMouseAdapter extends MouseAdapter {
    PicoMouseAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void mousePressed(MouseEvent ev) {
-      if (ev.getClickCount() == 2) {
-         if (Home.Req)
-            Home.getToolkit().beep();
-         else {
-            Home.change("log>");
-            Home.Req = true;
-            Home.msg2("act>", Ix);
-            ev.consume();
-         }
+      if (Home.Req  ||  Home.Level != 0) {
+         Home.getToolkit().beep();
+         ev.consume();
+      }
+      else if (ev.getClickCount() == 2) {
+         Home.change("log>");
+         Home.Req = true;
+         Home.msg2("act>", Ix);
+         ev.consume();
       }
    }
 }
@@ -608,6 +617,11 @@ class PicoKeyAdapter extends KeyAdapter {
       char c;
       Component f;
 
+      if (Home.Level != 0) {
+         Home.getToolkit().beep();
+         ev.consume();
+         return;
+      }
       f = Home.Fields[Ix-1];
       if ((c = ev.getKeyChar()) == KeyEvent.VK_ENTER) {
          Home.change("log>");
@@ -643,6 +657,11 @@ class PicoKeyAdapter extends KeyAdapter {
       int m, c, i, j;
       Component f;
 
+      if (Home.Level != 0) {
+         Home.getToolkit().beep();
+         ev.consume();
+         return;
+      }
       if (((m = ev.getModifiers()) & (InputEvent.META_MASK | InputEvent.ALT_MASK)) != 0) {
          ev.consume();
          return;
@@ -979,20 +998,22 @@ class GField extends Panel implements AdjustmentListener  {
 
       addMouseListener(new MouseAdapter() {
          public void mousePressed(MouseEvent ev) {
-            Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
-               ev.getModifiers(),
-               ev.getX()-OrgX,
-               ev.getY()-OrgY );
+            if (Home.Level != 0)
+               Home.getToolkit().beep();
+            else
+               Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
+                     ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
             ev.consume();
          }
       } );
 
       addMouseMotionListener(new MouseMotionAdapter() {
          public void mouseDragged(MouseEvent ev) {
-            Home.msg5("drg>", Ix+1,
-               ev.getModifiers(),
-               ev.getX()-OrgX,
-               ev.getY()-OrgY );
+            if (Home.Level != 0)
+               Home.getToolkit().beep();
+            else
+               Home.msg5("drg>", Ix+1,
+                  ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
             ev.consume();
          }
       } );

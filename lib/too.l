@@ -1,4 +1,4 @@
-# 23sep03abu
+# 13jan04abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -67,9 +67,6 @@
    (when (and (pair X) (= `(char "+") (char (cdr X))) (not (mark (car X))))
       (let (Base (car X)  Cls (cdr X))
          (mark Base T)
-         (when (= '(+ObjRoot) (val Base))    #! Legacy
-            (set Base)                       #
-            (commit) )                       #
          (println '== Cls Base)
          (mapc
             '((X)
@@ -83,7 +80,9 @@
                            (mapc _dbCheck (getl Obj)) ) ) )
                   (scan (tree (cdr X) Cls Hook)
                      '((K V)
-                        (unless (isa Cls V)
+                        (or
+                           (isa Cls V)
+                           (isa '+Alt (meta V (cdr X)))
                            (quit "Bad Type" V) )
                         (unless (has> V (cdr X) (if (pair K) (car K) K))
                            (quit "Bad Value" K) ) )

@@ -1,4 +1,4 @@
-/* 04nov03abu
+/* 22dec03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -22,14 +22,24 @@ static int tcpSocket(any ex) {
 }
 
 static any tcpAccept(any ex, int sd) {
-   int n;
+   int n, i, sd2;
    struct sockaddr_in addr;
+   struct timespec tv = {0,100000000};
 
-   n = sizeof(addr);
-   if ((sd = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
-      tcpErr(ex, "accept");
-   val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
-   return boxCnt(sd);
+   if ((n = fcntl(sd, F_GETFL, 0)) < 0)
+      tcpErr(ex, "GETFL");
+   n |= O_NONBLOCK;
+   if (fcntl(sd, F_SETFL, n) < 0)
+      tcpErr(ex, "SETFL");
+   i = 60; do {
+      n = sizeof(addr);
+      if ((sd2 = accept(sd, (struct sockaddr*)&addr, &n)) >= 0) {
+         val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+         return boxCnt(sd2);
+      }
+      nanosleep(&tv,NULL);
+   } while (errno == EAGAIN  &&  --i >= 0);
+   return NULL;
 }
 
 // (port 'cnt|lst ['var]) -> cnt
@@ -77,17 +87,22 @@ any doPort(any ex) {
 any doListen(any ex) {
    any x;
    int sd;
+   long ms;
 
    sd = (int)evCnt(ex, cdr(ex));
    x = cddr(ex);
-   if (!waitFd(ex, sd, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
-      return Nil;
-   return tcpAccept(ex,sd);
+   ms = isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x);
+   for (;;) {
+      if (!waitFd(ex, sd, ms))
+         return Nil;
+      if (x = tcpAccept(ex,sd))
+         return x;
+   }
 }
 
-// (accept 'cnt) -> cnt
+// (accept 'cnt) -> cnt | NIL
 any doAccept(any ex) {
-   return tcpAccept(ex, (int)evCnt(ex, cdr(ex)));
+   return tcpAccept(ex, (int)evCnt(ex, cdr(ex))) ?: Nil;
 }
 
 // (host 'any) -> sym
@@ -106,7 +121,7 @@ any doHost(any x) {
    }
 }
 
-// (connect 'any 'cnt) -> cnt
+// (connect 'any 'cnt) -> cnt | NIL
 any doConnect(any ex) {
    any x;
    int sd;

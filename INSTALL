@@ -1,4 +1,4 @@
-15dec02abu
+31jan04abu
 (c) Software Lab. Alexander Burger
 
 
@@ -25,7 +25,7 @@ Please follow these steps:
 
 3. Compile the Pico Lisp interpreter
 
-   $ (cd src; make)
+   $ (cd src; make pico)
 
 
          Invocation

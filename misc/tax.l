@@ -1,4 +1,4 @@
-# 13nov03abu
+# 23dec03abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/gui.l" "lib/ps.l")
@@ -298,12 +298,7 @@
                         (commit 'upd)
                         D )
                      ((car L)
-                        (new! 'upd '(+Pos)
-                           'dat (car L)
-                           'val (cadr L)
-                           'ust (caddr L)
-                           'txt (cadddr L)
-                           'kto (get L 5) ) ) ) ) )
+                        (new! 'upd '(+Pos) 'dat (car L)) ) ) ) )
             (row
                (gui '(+Button) "" " \^ " '(sort> (: home query) '(: dat)))
                (flow
@@ -405,7 +400,7 @@
             "PDF" ) ) ) )
 
 (de ustvor.pdf (Ums Frei USt VSt)
-   (psOut T "rel"
+   (psOut T "USt"
       (a4)
       (font "Times-Roman")
       (window 115 34 100 20

@@ -1,4 +1,4 @@
-21may03abu
+31jan04abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -72,8 +72,8 @@ since 1984.
       Java reflection
       Postscript/Printing
 
-Pico Lisp is not an IDE. Program development is done at the console, using bash,
-vim and the Lisp interpreter.
+Pico Lisp is not an IDE. All program development in Software Lab. is done using
+the console, bash, vim and the Lisp interpreter.
 
 The only type of GUI supported for applications is through a browser via HTML.
 This makes the client side completely platform idependent. Applets are created

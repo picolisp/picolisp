@@ -1,13 +1,18 @@
-# 07jul03abu
+# 10jan04abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
-(de more ("Lst" "foo")
+(de more ("M" "foo")
    (let *Dbg NIL
       (default "foo" print)
-      ("foo" (pop '"Lst"))
-      (until (or (atom "Lst") (line))
-         ("foo" (pop '"Lst")) )
+      (if (pair "M")
+         ("foo" (pop '"M"))
+         ("foo" (type "M"))
+         (setq
+            "foo" (list '(X) (list 'pp 'X (lit "M")))
+            "M" (mapcar car (filter pair (val "M"))) ) )
+      (until (or (atom "M") (line))
+         ("foo" (pop '"M")) )
       T ) )
 
 (de stat ()

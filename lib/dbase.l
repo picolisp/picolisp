@@ -1,4 +1,4 @@
-# 08nov03abu
+# 05jan04abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
@@ -45,26 +45,16 @@
                      (link
                         (mapcan
                            '((F)
-                              (when (clip (cut (caddr F) 'X))
-                                 (let S
-                                    (pack
-                                       (replace @  # DOS German Umlauts
-                                          `(char 132) `(char 228)       # ae
-                                          `(char 148) `(char 246)       # oe
-                                          `(char 129) `(char 252)       # ue
-                                          `(char 142) `(char 196)       # AE
-                                          `(char 153) `(char 214)       # OE
-                                          `(char 154) `(char 220)       # UE
-                                          `(char 225) `(char 223) ) )   # sz
+                              (let? S (pack (clip (cut (caddr F) 'X)))
+                                 (cons
                                     (cons
-                                       (cons
-                                          (car F)
-                                          (case (cadr F)
-                                             ("C" S)
-                                             ("D" ($dat S))
-                                             ("L" (bool (member S `(chop "JjTt"))))
-                                             ("N" (format S (cdddr F)))
-                                             (T "?") ) ) ) ) ) )
+                                       (car F)
+                                       (case (cadr F)
+                                          ("C" S)
+                                          ("D" ($dat S))
+                                          ("L" (bool (member S `(chop "JjTt"))))
+                                          ("N" (format S (cdddr F)))
+                                          (T "?") ) ) ) ) )
                            Fld ) ) ) ) )
             (unless (= "^Z" (char))
                (quit "Missing EOF") ) ) ) ) )

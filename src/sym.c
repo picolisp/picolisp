@@ -1,4 +1,4 @@
-/* 08nov03abu
+/* 14jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -225,7 +225,8 @@ any doZap(any ex) {
    if (isExt(x))
       db(ex,x,3);
    else {
-      CheckVar(ex,x);
+      if (x >= Nil  &&  x <= Bye)
+         protError(ex,x);
       for (h = Intern + hash(name(x)); isCell(y = *h); h = &y->cdr)
          if (x == car(y)) {
             *h = cdr(y);
@@ -391,14 +392,14 @@ any doSet(any ex) {
    return val(data(c1));
 }
 
-// (setq sym 'any ..) -> any
+// (setq var 'any ..) -> any
 any doSetq(any ex) {
    any x, y;
 
    x = cdr(ex);
    do {
       y = car(x),  x = cdr(x);
-      NeedSym(ex,y);
+      NeedVar(ex,y);
       val(y) = EVAL(car(x));
    } while (isCell(x = cdr(x)));
    return val(y);

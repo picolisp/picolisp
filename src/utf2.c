@@ -1,6 +1,6 @@
 /* utf2.c
- * 14apr02abu
- * Convert process or file (ISO-8859-Latin15) to stdout (UTF-8, 2-Byte)
+ * 26dec03abu
+ * Convert process or file (ISO-8859-15) to stdout (UTF-8, 2-Byte)
  */
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 // utf2 [-<cmd> [<arg> ..]]
-// utf2 [<Infile/ISO-8859-Latin15>]
+// utf2 [<Infile/ISO-8859-15>]
 int main(int ac, char *av[]) {
 	int c;
    pid_t pid = 0;

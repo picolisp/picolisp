@@ -1,16 +1,17 @@
-/* 28nov03abu
+/* 30jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
+static void comment(void) {outString("# ");}
 static void redefMsg(void) {outString(" redefined\n");}
 
 static void redefine(any ex, any s, any x) {
    NeedSym(ex,s);
    CheckVar(ex,s);
    if (!isNil(val(s))  &&  s != val(s)  &&  !equal(x,val(s)))
-      print(s), redefMsg();
+      comment(), print(s), redefMsg();
    val(s) = x;
 }
 
@@ -23,6 +24,14 @@ any doAs(any x) {
    if (isNil(EVAL(car(x))))
       return Nil;
    return cdr(x);
+}
+
+// (lit 'any) -> any
+any doLit(any x) {
+   x = cadr(x);
+   if (isNil(x = EVAL(x)) || x==T || isNum(x) || isCell(x) && isNum(car(x)))
+      return x;
+   return cons(Quote, x);
 }
 
 // (eval 'any) -> any
@@ -59,7 +68,7 @@ any doDef(any ex) {
    if (!isCell(cdr(x))) {
       if (!equal(data(c2), y = val(data(c1)))) {
          if (!isNil(y)  &&  data(c1) != y)
-            print(data(c1)), redefMsg();
+            comment(), print(data(c1)), redefMsg();
          Touch(ex,data(c1));
          val(data(c1)) = data(c2);
       }
@@ -68,7 +77,7 @@ any doDef(any ex) {
       x = cdr(x),  Push(c3, EVAL(car(x)));
       if (!equal(data(c3), y = get(data(c1), data(c2)))) {
          if (!isNil(y))
-            print(data(c1)), space(), print(data(c2)), redefMsg();
+            comment(), print(data(c1)), space(), print(data(c2)), redefMsg();
          Touch(ex,data(c1));
          put(data(c1), data(c2), data(c3));
       }
@@ -93,10 +102,22 @@ any doDm(any ex) {
       msg = car(x),  cls = val(Class);
    if (msg != T)
       redefine(ex, msg, val(Meth));
+   if (isSym(cdr(x))) {
+      y = val(cdr(x));
+      for (;;) {
+         if (!isCell(y) || !isCell(car(y)))
+            err(ex, msg, "Bad message");
+         if (caar(y) == msg) {
+            x = car(y);
+            break;
+         }
+         y = cdr(y);
+      }
+   }
    for (y = val(cls);  isCell(y) && isCell(car(y));  y = cdr(y))
       if (caar(y) == msg) {
          if (!equal(cdr(x), cdar(y)))
-            print(msg), space(), print(cls), redefMsg();
+            comment(), print(msg), space(), print(cls), redefMsg();
          cdar(y) = cdr(x);
          return msg;
       }
@@ -339,27 +360,34 @@ any doMeth(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedSym(ex,data(c1));
    Fetch(ex,data(c1));
-   TheKey = car(ex),  TheCls = Nil;
-   if (!(y = method(data(c1))))
-      err(ex, TheKey, "Bad message");
-   x = evMethod(data(c1), y, cdr(x));
-   drop(c1);
-   return x;
+   for (TheKey = car(ex); ; TheKey = y) {
+      if (!isSym(TheKey))
+         err(ex, car(ex), "Bad message");
+      if (isNum(y = val(TheKey))) {
+         TheCls = Nil;
+         if (y = method(data(c1))) {
+            x = evMethod(data(c1), y, cdr(x));
+            drop(c1);
+            return x;
+         }
+         err(ex, TheKey, "Bad message");
+      }
+   }
 }
 
 // (send 'msg 'obj ['any ..]) -> any
 any doSend(any ex) {
    any x, y;
-   cell c1;
+   cell c1, c2;
 
-   x = cdr(ex),  y = EVAL(car(x));
-   NeedSym(ex,y);
-   x = cdr(x),  Push(c1,  EVAL(car(x)));
+   x = cdr(ex),  Push(c1,  EVAL(car(x)));
    NeedSym(ex,data(c1));
-   Fetch(ex,data(c1));
-   TheKey = y,  TheCls = Nil;
-   if (y = method(data(c1))) {
-      x = evMethod(data(c1), y, cdr(x));
+   x = cdr(x),  Push(c2,  EVAL(car(x)));
+   NeedSym(ex,data(c2));
+   Fetch(ex,data(c2));
+   TheKey = data(c1),  TheCls = Nil;
+   if (y = method(data(c2))) {
+      x = evMethod(data(c2), y, cdr(x));
       drop(c1);
       return x;
    }
@@ -548,6 +576,20 @@ any doLet(any x) {
          val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
       Env.bind = f.link;
    }
+   return x;
+}
+
+// (let? sym 'any . prg) -> any
+any doLetQ(any ex) {
+   any x, y, z;
+   bindFrame f;
+
+   x = cdr(ex),  y = car(x),  x = cdr(x);
+   if (isNil(z = EVAL(car(x))))
+      return Nil;
+   Bind(y,f),  val(y) = z;
+   x = prog(cdr(x));
+   Unbind(f);
    return x;
 }
 
@@ -947,26 +989,24 @@ any doThrow(any ex) {
 
 static cell BrkAt;
 static bindFrame BrkKey;
+static FILE *OutSave;
 
 void brkLoad(any x) {
    cell c1;
-   FILE *oSave;
 
-   if (!isNil(val(Dbg))) {
+   if (!isNil(val(Dbg)) && !data(BrkAt)) {
       if (!isatty(STDIN_FILENO))
          err(x, NULL, "BREAK");
-      else {
-         Push(c1, val(Up)),  val(Up) = x;
-         Push(BrkAt, val(At));
-         Bind(Key,BrkKey),  val(Key) = Nil;
-         oSave = OutFile,  OutFile = stdout;
-         print(x), crlf();
-         load(NULL, '!', Nil);
-         OutFile = oSave;
-         Unbind(BrkKey);
-         val(At) = data(BrkAt);
-         val(Up) = Pop(c1);
-      }
+      Push(c1, val(Up)),  val(Up) = x;
+      Push(BrkAt, val(At));
+      Bind(Key,BrkKey),  val(Key) = Nil;
+      OutSave = OutFile,  OutFile = stdout;
+      print(x), crlf();
+      load(NULL, '!', Nil);
+      OutFile = OutSave;
+      Unbind(BrkKey);
+      val(At) = data(BrkAt),  data(BrkAt) = NULL;
+      val(Up) = Pop(c1);
    }
 }
 
@@ -988,10 +1028,11 @@ any doE(any ex) {
    Push(key, val(Key)),  val(Key) = BrkKey.bnd[0].val;
    if (Env.inFiles && Env.inFiles->link)
       Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
+   OutFile = OutSave;
    x = isCell(cdr(ex))? run(cdr(ex)) : EVAL(val(Up));
    if (Env.inFiles && Env.inFiles->link)
       Env.inFiles->next = Chr,  Chr = 0;
-   InFile = stdin;
+   InFile = stdin,  OutFile = stdout;
    val(Key) = data(key);
    val(At) = data(at);
    val(Dbg) = Pop(c1);
@@ -1122,12 +1163,21 @@ any doTick(any ex) {
    return x;
 }
 
-// (kill 'pid 'cnt) -> flg
+// (kill 'pid ['cnt]) -> flg
 any doKill(any ex) {
    pid_t pid;
 
    pid = (pid_t)evCnt(ex,cdr(ex));
-   return kill(pid, (int)evCnt(ex,cddr(ex)))? Nil : T;
+   return kill(pid, isCell(cddr(ex))? (int)evCnt(ex,cddr(ex)) : SIGTERM)? Nil : T;
+}
+
+static void doSigChld(int n __attribute__((unused))) {
+   pid_t pid;
+   int stat;
+
+   while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
+      if (WIFSIGNALED(stat))
+         fprintf(stderr, "%d SIG-%d\n", pid, WTERMSIG(stat));
 }
 
 static int allocPipe(void) {
@@ -1140,15 +1190,6 @@ static int allocPipe(void) {
    for (i = 0; i < 16; i += 2)
       Pipe[PSize] = -1,  PSize += 2;
    return PSize - 16;
-}
-
-static void doSigChld(int n __attribute__((unused))) {
-   pid_t pid;
-   int stat;
-
-   while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
-      if (WIFSIGNALED(stat))
-         fprintf(stderr, "%d SIG-%d\n", pid, WTERMSIG(stat));
 }
 
 // (fork) -> pid | NIL

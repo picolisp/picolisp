@@ -1,4 +1,4 @@
-# 20sep03abu
+# 29jan04abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook] [var val ..])
@@ -19,6 +19,11 @@
          (cons
             (or
                (car Vars)
+               (and
+                  (find
+                     '((X) (isa '(+Need +Index) (car X)))
+                     (getl Cls) )
+                  (get (car @) 'var) )
                (cdr
                   (maxi caar
                      (getl (get (or Hook *DB) Cls)) ) ) ) ) )
@@ -65,7 +70,7 @@
                         (space) )
                      Vars )
                   (print Obj) )
-               (T (line)) ) ) ) ) )
+               (T (line) Obj) ) ) ) ) )
 
 (dm (print> . +Relation) (Val)
    (print Val) )

@@ -1,4 +1,4 @@
-/* 26aug03abu
+/* 21jan04abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,7 +18,7 @@ any TheKey, TheCls;
 any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Adr, Bye;
+any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Bye;
 
 static int TtyPid;
 static bool Jam, Protect;
@@ -450,14 +450,14 @@ any evList(any ex) {
       if (isCell(foo))
          return evExpr(foo, cdr(ex));
    }
-   while (!isNum(foo)) {
-      if (isCell(foo))
-         return evExpr(foo, cdr(ex));
+   for (;;) {
       if (isNil(val(foo)) || foo == val(foo))
          undefined(foo,ex);
-      foo = val(foo);
+      if (isNum(foo = val(foo)))
+         return evSubr(foo,ex);
+      if (isCell(foo))
+         return evExpr(foo, cdr(ex));
    }
-   return evSubr(foo,ex);
 }
 
 /* Evaluate any to sym */

@@ -1,3 +1,7 @@
+* 14oct03 picoLisp-2.0.8b
+   Bug in 'put>', 'rel>', 'lose>' and 'keep>' for '+List'
+   Bug in 'lose>' and 'keep>' for '+Bag'
+
 * 01oct03 picoLisp-2.0.8
    '+Hook' handling in '+Bag'
    Unicode case conversions

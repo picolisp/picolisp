@@ -1,8 +1,8 @@
-# 20sep03abu
+# 10oct03abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI ###
-# *ID *Fld *Apps *Top *PnlFld *PnlCnt *LayPnl *LayRow *Bar 
+# *ID *Fld *Apps *Top *Fox *PnlFld *PnlCnt *LayPnl *LayRow *Bar
 
 (de act (App Ix)
    (act> (get (cdr (assoc App *Apps)) 'fields Ix)) )
@@ -32,16 +32,19 @@
    (setq *Bar (form '(+Form) X Y Prg))
    (navi) )
 
+
 (class +Form)
-# app dx dy fields arrays hot able lock rv
+# app dx dy fields arrays focus hot able lock rv
 
 (de form @
    (when (atom (next))
       (default *ID (arg))
       (next) )
+   (setq *Fox -1)
    (let
       (App (pack *Url "?*ID=" *ID)
-         F (if (assoc App *Apps)
+         F
+         (if (assoc App *Apps)
             (cdr @)
             (prog1
                (pass new (arg))
@@ -108,6 +111,7 @@
       (endPnl> (last (: fields)) *PnlCnt) ) )
 
 (dm init> ()
+   (=: focus)
    (mapc 'init> (: fields))
    (mapc 'init> (: arrays))
    (upd> This) )
@@ -134,7 +138,12 @@
                (do (: **)
                   (dec 'N)
                   (prin "</TD></TR></TABLE>") ) ) )
-         (: fields) ) ) )
+         (: fields) ) )
+      (when (: focus)
+         (prinl "<script type=\"text/javascript\">")
+         (prinl "document.forms[" (: focus fox) "].elements[0].focus();")
+         (prinl "document.forms[" (: focus fox) "].elements[0].select();")
+         (prinl "</script>") ) )
 
 (dm help> ())
 
@@ -579,7 +588,7 @@
 
 ### Form Field Classes ###
 (class +field)
-# home lay ix + * ** lbl str ign arr able
+# home lay ix fox + * ** lbl str ign arr able
 
 (dm T ()
    (setq *Fld This)
@@ -602,6 +611,7 @@
 (dm init> ()
    (when (assoc (: ix) *Fld)
       (=: str (cdr @))
+      (=: home focus This)
       (cond
          ((: ign) T)
          ((or (chk> This) (and (: arr) (chk> (: arr))))
@@ -617,6 +627,12 @@
          (T
             (end> This)
             (and (: arr) (end> @))
+            (and
+               (find
+                  '((F)
+                     (and (get F 'fox) (able?> F)) )
+                  (cdr (memq This (: home fields))) )
+               (=: home focus @) )
             T ) ) ) )
 
 (dm upd> ())
@@ -754,7 +770,7 @@
 (dm show> ()
    (and (: lbl) (prin @ "</TD><TD>"))
    (prinl
-      "[<A HREF=\"" *SesId (: home app) "&*Fld(" (: ix) ")="
+      "[<A HREF=\"" *SesId (: home app) "&*Fld(" (ht:Fmt (: ix)) ")="
       (if (: str) " " "X")
       "\">"
       (if (: str) "X" " ")
@@ -796,6 +812,7 @@
 (dm T (Lbl . @)
    (=: lbl Lbl)
    (=: dx (next))
+   (=: fox (inc '*Fox))
    (pass super) )
 
 (dm show> ()
@@ -803,7 +820,7 @@
    (<post> (: home app)
       (prin
          "<INPUT TYPE=TEXT NAME=\"*Fld("
-         (: ix)
+         (ht:Fmt (: ix))
          ")\" VALUE=\"" )
       (ht:Prin (: str))
       (prinl "\" SIZE=" (: dx) ">") ) )
@@ -842,10 +859,8 @@
    (and (: lbl) (prin @ "</TD><TD>"))
    (<post> (: home app)
       (prinl
-         "<INPUT TYPE="
-         (if (match '("w" "3" "m" . @) *Agent) "TEXT" "PASSWORD")
-         " NAME=\"*Fld("
-         (: ix)
+         "<INPUT TYPE=PASSWORD NAME=\"*Fld("
+         (ht:Fmt (: ix))
          ")\" SIZE=" (: dx) ">" ) ) )
 
 

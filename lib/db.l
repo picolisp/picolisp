@@ -1,4 +1,4 @@
-# 23sep03abu
+# 14oct03abu
 # (c) Software Lab. Alexander Burger
 
 ### Tree Access ###
@@ -168,6 +168,28 @@
                      (: hook) ) ) ) )
          (: bag)
          New ) ) )
+
+(dm lose> (Obj Val)
+   (mapc
+      '((X O)
+         (rel> X Obj O NIL
+            (with X
+               (get
+                  (if (sym? (: hook)) Obj Old)
+                  (: hook) ) ) ) )
+      (: bag)
+      Val ) )
+
+(dm keep> (Obj Val)
+   (mapc
+      '((X N)
+         (rel> X Obj NIL N
+            (with X
+               (get
+                  (if (sym? (: hook)) Obj Old)
+                  (: hook) ) ) ) )
+      (: bag)
+      Val ) )
 
 
 # (+Number) [num]
@@ -452,10 +474,10 @@
 
 (class +List)
 
-(dm mis> (Val Obj Hook)
+(dm mis> (Val Obj)
    (or
       (ifn (lst? Val) "Not a List")
-      (pick '((V) (extra V Obj Hook)) Val) ) )
+      (pick '((V) (extra V Obj)) Val) ) )
 
 (dm has> (Val X)
    (and Val
@@ -464,35 +486,42 @@
          (find '((X) (extra Val X)) X) ) ) )
 
 (dm put> (Obj Old New)
-   (if (lst? New)
+   (if (and New (mis> This New Obj))
+      (cons (extra Obj Old New) Old)
       (mapcar
          '((N O) (extra Obj O N))
          New
-         Old )
-      (cons (extra Obj Old New) Old) ) )
+         Old ) ) )
 
 (dm del> (Obj Old Val)
    (delete Val Old) )
 
-(dm rel> (Obj Old New Hook)
-   (ifn (and (lst? Old) (lst? New))
-      (extra Obj Old New Hook)
+(dm rel> (Obj Old New)
+   (if
+      (or
+         (and Old (mis> This Old Obj))
+         (and New (mis> This New Obj)) )
+      (extra Obj Old New)
       (mapc
-         '((O) (extra Obj O NIL Hook))
+         '((O) (extra Obj O NIL))
          (diff Old New) )
       (mapc
-         '((N) (extra Obj NIL N Hook))
+         '((N) (extra Obj NIL N))
          New ) ) )
 
 (dm lose> (Obj Val)
-   (if (lst? Val)
-      (mapc '((V) (extra Obj V)) Val)
-      (extra Obj Val) ) )
+   (if (and Val (mis> This Val Obj))
+      (extra Obj Val)
+      (mapc
+         '((V) (extra Obj V))
+         Val ) ) )
 
 (dm keep> (Obj Val)
-   (if (lst? Val)
-      (mapc '((V) (extra Obj V)) Val)
-      (extra Obj Val) ) )
+   (if (and Val (mis> This Val Obj))
+      (extra Obj Val)
+      (mapc
+         '((V) (extra Obj V))
+         Val ) ) )
 
 
 (class +Need)

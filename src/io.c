@@ -1,4 +1,4 @@
-/* 30jul03abu
+/* 07oct03abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,12 +19,12 @@ static void (*PutSave)(int);
 static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
-static void openErr(char *s) {err(NULL, NULL, "%s: Open error", s);}
-static void lockErr(void) {err(NULL, NULL, "File lock error");}
+static void openErr(char *s) {err(NULL, NULL, "%s open: %s", s, strerror(errno));}
+static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
-static void dbErr(char *s) {err(NULL, NULL, "DB %s error", s);}
+static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
-static void closeErr(char *s) {err(NULL, NULL, "%s: Close error", s);}
+static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
 
 int slow(int fd, byte *p, int cnt) {
    int n;

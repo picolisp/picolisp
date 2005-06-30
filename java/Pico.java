@@ -1,4 +1,4 @@
-// 19feb05abu
+// 19jun05abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -73,7 +73,15 @@ public class Pico extends Applet {
    }
 
    public void init() {
-      setFont(new Font(getParameter("font"), Font.PLAIN, Integer.parseInt(getParameter("size"))));
+      String s = getParameter("size");
+      String t = getParameter("font");
+
+      if (s.length() != 0 || t.length() != 0)
+         setFont(new Font(t, Font.PLAIN, s.length()==0? getFont().getSize() : Integer.parseInt(s)));
+      if ((s = getParameter("back")).length() != 0)
+         setBackground(new Color(Integer.parseInt(s)));
+      if ((s = getParameter("fore")).length() != 0)
+         setForeground(new Color(Integer.parseInt(s)));
       Seed = System.currentTimeMillis() ^ Long.parseLong(getParameter("rand"));
       Host = getDocumentBase().getHost();
    }
@@ -219,9 +227,9 @@ public class Pico extends Applet {
       }
    }
 
-   void msg3(String s, Object x2, Object x3) {
+   void msg3(String s, int n2, Object x3) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(x2); IO.print(x3); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.flush();}
          catch (IOException e) {}
       }
    }

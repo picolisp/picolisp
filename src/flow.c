@@ -1,4 +1,4 @@
-/* 08dec04abu
+/* 26jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -34,25 +34,88 @@ any doLit(any x) {
    return cons(Quote, x);
 }
 
-// (eval 'any) -> any
+// (eval 'any ['cnt]) -> any
 any doEval(any x) {
    cell c1;
+   bindFrame *p;
 
-   x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = EVAL(data(c1));
-   drop(c1);
-   return x;
+   x = cdr(x),  Push(c1, EVAL(car(x))),  x = cdr(x);
+   if (!isNum(x = EVAL(car(x))) || !(p = Env.bind))
+      data(c1) = EVAL(data(c1));
+   else {
+      int cnt, n, i;
+      bindFrame *q;
+
+      for (cnt = (int)unBox(x), n = 0;;) {
+         for (++n, i = 0;  i < p->cnt;  ++i) {
+            x = val(p->bnd[i].sym);
+            val(p->bnd[i].sym) = p->bnd[i].val;
+            p->bnd[i].val = x;
+         }
+         p->cnt -= BNDSKIP;
+         if (i && p->bnd[0].sym==At && !--cnt || !(q = Env.bind->link))
+            break;
+         Env.bind->link = q->link,  q->link = p,  p = q;
+      }
+      Env.bind = p;
+      data(c1) = EVAL(data(c1));
+      for (;;) {
+         for (i = (p->cnt += BNDSKIP);  --i >= 0;) {
+            x = val(p->bnd[i].sym);
+            val(p->bnd[i].sym) = p->bnd[i].val;
+            p->bnd[i].val = x;
+         }
+         if (!--n)
+            break;
+         q = Env.bind->link, Env.bind->link = q->link,  q->link = p,  p = q;
+      }
+      Env.bind = p;
+   }
+   return Pop(c1);
 }
 
-// (run 'any) -> any
-any doRun(any ex) {
+// (run 'any ['cnt]) -> any
+any doRun(any x) {
    cell c1;
+   bindFrame *p;
 
-   Push(c1, EVAL(cadr(ex)));
-   data(c1) = isNum(data(c1))?
-      data(c1) : (isSym(data(c1))?
-         val(data(c1)) : run(data(c1)) );
-   return Pop(c1);
+   x = cdr(x),  data(c1) = EVAL(car(x)),  x = cdr(x);
+   if (!isNum(data(c1))) {
+      Save(c1);
+      if (!isNum(x = EVAL(car(x))) || !(p = Env.bind))
+         data(c1) = isSym(data(c1))? val(data(c1)) : run(data(c1));
+      else {
+         int cnt, n, i;
+         bindFrame *q;
+
+         for (cnt = (int)unBox(x), n = 0;;) {
+            for (++n, i = 0;  i < p->cnt;  ++i) {
+               x = val(p->bnd[i].sym);
+               val(p->bnd[i].sym) = p->bnd[i].val;
+               p->bnd[i].val = x;
+            }
+            p->cnt -= BNDSKIP;
+            if (i && p->bnd[0].sym==At && !--cnt || !(q = Env.bind->link))
+               break;
+            Env.bind->link = q->link,  q->link = p,  p = q;
+         }
+         Env.bind = p;
+         data(c1) = isSym(data(c1))? val(data(c1)) : prog(data(c1));
+         for (;;) {
+            for (i = (p->cnt += BNDSKIP);  --i >= 0;) {
+               x = val(p->bnd[i].sym);
+               val(p->bnd[i].sym) = p->bnd[i].val;
+               p->bnd[i].val = x;
+            }
+            if (!--n)
+               break;
+            q = Env.bind->link, Env.bind->link = q->link,  q->link = p,  p = q;
+         }
+         Env.bind = p;
+      }
+      drop(c1);
+   }
+   return data(c1);
 }
 
 // (def 'sym 'any) -> sym
@@ -131,28 +194,27 @@ any doDm(any ex) {
 
 /* Evaluate method invocation */
 static any evMethod(any o, any expr, any x) {
-   any y;
-   cell at;
-   int i = length(car(expr));
+   any y = car(expr);
+   int i = length(y) + 1;
    methFrame m;
    struct {  // bindFrame
       struct bindFrame *link;
       int cnt;
-      struct {any sym; any val;} bnd[i+1];
+      struct {any sym; any val;} bnd[i+2];
    } f;
 
-   Push(at,val(At));
    m.link = Env.meth;
    m.key = TheKey;
    m.cls = TheCls;
    f.link = Env.bind,  Env.bind = (bindFrame*)&f;
-   f.cnt = 0;
-   for (y = car(expr);  isCell(y);  ++f.cnt, x = cdr(x), y = cdr(y)) {
+   f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
+   while (isCell(y)) {
       f.bnd[f.cnt].sym = car(y);
       f.bnd[f.cnt].val = EVAL(car(x));
+      ++f.cnt, x = cdr(x), y = cdr(y);
    }
    if (isNil(y)) {
-      while (--i >= 0) {
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
@@ -164,30 +226,24 @@ static any evMethod(any o, any expr, any x) {
       x = prog(cdr(expr));
    }
    else if (y != At) {
-      bindFrame g;
-
-      Bind(y,g),  val(y) = x;
-      while (--i >= 0) {
+      f.bnd[f.cnt].sym = y,  f.bnd[f.cnt++].val = val(y),  val(y) = x;
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
       }
-      f.bnd[f.cnt].sym = This;
-      f.bnd[f.cnt++].val = val(This);
-      val(This) = o;
+      f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
       Env.meth = &m;
       x = prog(cdr(expr));
-      Unbind(g);
    }
    else {
       int n, cnt;
       cell *arg;
-      cell c[cnt = length(x)];
+      cell c[n = cnt = length(x)];
 
-      n = cnt;
       while (--n >= 0)
          Push(c[n], EVAL(car(x))),  x = cdr(x);
-      while (--i >= 0) {
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
@@ -199,13 +255,14 @@ static any evMethod(any o, any expr, any x) {
       val(This) = o;
       Env.meth = &m;
       x = prog(cdr(expr));
+      if (cnt)
+         drop(c[cnt-1]);
       Env.arg = arg,  Env.next = n;
    }
    while (--f.cnt >= 0)
       val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
    Env.bind = f.link;
    Env.meth = Env.meth->link;
-   val(At) = Pop(at);
    return x;
 }
 
@@ -303,11 +360,12 @@ any doType(any ex) {
 static bool isa(any ex, any cls, any x) {
    any z;
 
-   Fetch(ex,x);
    z = x = val(x);
    while (isCell(x)) {
       if (!isCell(car(x))) {
          while (isSym(car(x))) {
+            if (isExt(car(x)))
+               return NO;
             if (cls == car(x) || isa(ex, cls, car(x)))
                return YES;
             if (!isCell(x = cdr(x)) || z == x)
@@ -330,9 +388,12 @@ any doIsa(any ex) {
    x = cdr(x),  x = EVAL(car(x));
    drop(c1);
    if (isSym(x)) {
-      if (isSym(data(c1)))
+      if (isSym(data(c1))) {
+         Fetch(ex,x);
          return isa(ex, data(c1), x)? T : Nil;
+      }
       while (isCell(data(c1))) {
+         Fetch(ex,x);
          if (!isa(ex, car(data(c1)), x))
             return Nil;
          data(c1) = cdr(data(c1));
@@ -393,6 +454,27 @@ any doSend(any ex) {
       return x;
    }
    err(ex, TheKey, "Bad message");
+}
+
+// (try 'msg 'any ['any ..]) -> any
+any doTry(any ex) {
+   any x, y;
+   cell c1, c2;
+
+   x = cdr(ex),  Push(c1,  EVAL(car(x)));
+   NeedSym(ex,data(c1));
+   x = cdr(x),  Push(c2,  EVAL(car(x)));
+   if (isSym(data(c2))) {
+      Fetch(ex,data(c2));
+      TheKey = data(c1),  TheCls = Nil;
+      if (y = method(data(c2))) {
+         x = evMethod(data(c2), y, cdr(x));
+         drop(c1);
+         return x;
+      }
+   }
+   drop(c1);
+   return Nil;
 }
 
 // (super ['any ..]) -> any
@@ -1123,26 +1205,31 @@ any doFinally(any x) {
    return Pop(c1);
 }
 
-static bindFrame BrkAt, BrkKey;
 static FILE *OutSave;
+static struct {  // bindFrame
+   struct bindFrame *link;
+   int cnt;
+   struct {any sym; any val;} bnd[3];  // for 'Up', 'Key' and 'At'
+} Brk;
 
 void brkLoad(any x) {
-   cell c1;
-
    if (!isNil(val(Dbg)) && !Env.brk) {
       if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
          err(x, NULL, "BREAK");
       Env.brk = YES;
-      Push(c1, val(Up)),  val(Up) = x;
-      Bind(At, BrkAt);
-      Bind(Key,BrkKey),  val(Key) = Nil;
+      Brk.cnt = 3;
+      Brk.bnd[0].sym = Up,  Brk.bnd[0].val = val(Up),  val(Up) = x;
+      Brk.bnd[1].sym = Key,  Brk.bnd[1].val = val(Key),  val(Key) = Nil;
+      Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At); 
+      Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
       OutSave = OutFile,  OutFile = stdout;
       print(x), crlf();
       load(NULL, '!', Nil);
       OutFile = OutSave;
-      Unbind(BrkKey);
-      Unbind(BrkAt);
-      val(Up) = Pop(c1);
+      val(At) = Brk.bnd[2].val;
+      val(Key) = Brk.bnd[1].val;
+      val(Up) = Brk.bnd[0].val;
+      Env.bind = Brk.link;
       Env.brk = NO;
    }
 }
@@ -1161,12 +1248,12 @@ any doE(any ex) {
    if (!Env.brk)
       err(ex, NULL, "No Break");
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
-   Push(at, val(At)),  val(At) = BrkAt.bnd[0].val;
-   Push(key, val(Key)),  val(Key) = BrkKey.bnd[0].val;
+   Push(at, val(At)),  val(At) = Brk.bnd[2].val;
+   Push(key, val(Key)),  val(Key) = Brk.bnd[1].val;
    if (Env.inFiles && Env.inFiles->link)
       Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
    OutFile = OutSave;
-   x = isCell(cdr(ex))? run(cdr(ex)) : EVAL(val(Up));
+   x = isCell(cdr(ex))? prog(cdr(ex)) : EVAL(val(Up));
    if (Env.inFiles && Env.inFiles->link)
       Env.inFiles->next = Chr,  Chr = 0;
    InFile = stdin,  OutFile = stdout;
@@ -1207,7 +1294,7 @@ any doTrace(any x) {
 
    if (isNil(val(Dbg)))
       return prog(cdddr(x));
-   oSave = OutFile,  OutFile = stdout;
+   oSave = OutFile,  OutFile = stderr;
    x = cdr(x),  foo = car(x);
    x = cdr(x),  body = cdr(x);
    traceIndent(++Trace, foo, " :");
@@ -1218,7 +1305,7 @@ any doTrace(any x) {
    crlf();
    OutFile = oSave;
    Push(c1, prog(body));
-   OutFile = stdout;
+   OutFile = stderr;
    traceIndent(Trace--, foo, " = "),  print(data(c1)),  crlf();
    OutFile = oSave;
    return Pop(c1);

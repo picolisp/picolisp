@@ -1,4 +1,4 @@
-/* 19mar05abu
+/* 26jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -40,7 +40,7 @@ void giveup(char *msg) {
 
 void bye(int n) {
    unwind(NULL);
-   run(val(Bye));
+   prog(val(Bye));
    finish(n);
 }
 
@@ -180,10 +180,10 @@ any doStk(any x) {
    any p;
    FILE *oSave = OutFile;
 
-   OutFile = stdout;
+   OutFile = stderr;
    print(cdr(x)), crlf();
    for (p = Env.stack; p; p = cdr(p)) {
-      printf("%lX ", num(p)),  fflush(stdout);
+      printf("%lX ", num(p)),  fflush_unlocked(stderr);
       print(car(p)), crlf();
    }
    crlf();
@@ -306,7 +306,7 @@ void err(any ex, any x, char *fmt, ...) {
 
    Line = Nil;
    Env.brk = NO;
-   OutFile = stdout;
+   OutFile = stderr;
    while (*AV  &&  strcmp(*AV,"-") != 0)
       ++AV;
    if (ex)
@@ -320,7 +320,7 @@ void err(any ex, any x, char *fmt, ...) {
       outString(msg), crlf();
       val(Msg) = mkStr(msg);
       if (!isNil(val(Err)) && !Jam)
-         Jam = YES,  run(val(Err)),  Jam = NO;
+         Jam = YES,  prog(val(Err)),  Jam = NO;
       if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
          bye(1);
       load(NULL, '?', Nil);
@@ -407,24 +407,23 @@ void unwind(catchFrame *p) {
 /*** Evaluation ***/
 /* Evaluate symbolic expression */
 any evExpr(any expr, any x) {
-   any y;
-   cell at;
-   int i = length(car(expr));
+   any y = car(expr);
+   int i = length(y) + 1;
    struct {  // bindFrame
       struct bindFrame *link;
       int cnt;
-      struct {any sym; any val;} bnd[i];
+      struct {any sym; any val;} bnd[i+1];
    } f;
 
-   Push(at,val(At));
    f.link = Env.bind,  Env.bind = (bindFrame*)&f;
-   f.cnt = 0;
-   for (y = car(expr);  isCell(y);  ++f.cnt, x = cdr(x), y = cdr(y)) {
+   f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
+   while (isCell(y)) {
       f.bnd[f.cnt].sym = car(y);
       f.bnd[f.cnt].val = EVAL(car(x));
+      ++f.cnt, x = cdr(x), y = cdr(y);
    }
    if (isNil(y)) {
-      while (--i >= 0) {
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
@@ -432,26 +431,22 @@ any evExpr(any expr, any x) {
       x = prog(cdr(expr));
    }
    else if (y != At) {
-      bindFrame g;
-
-      Bind(y,g),  val(y) = x;
-      while (--i >= 0) {
+      f.bnd[f.cnt].sym = y,  f.bnd[f.cnt++].val = val(y),  val(y) = x;
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
       }
       x = prog(cdr(expr));
-      Unbind(g);
    }
    else {
       int n, cnt;
       cell *arg;
-      cell c[cnt = length(x)];
+      cell c[n = cnt = length(x)];
 
-      n = cnt;
       while (--n >= 0)
          Push(c[n], EVAL(car(x))),  x = cdr(x);
-      while (--i >= 0) {
+      while (--i > 0) {
          x = val(f.bnd[i].sym);
          val(f.bnd[i].sym) = f.bnd[i].val;
          f.bnd[i].val = x;
@@ -459,12 +454,13 @@ any evExpr(any expr, any x) {
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
       x = prog(cdr(expr));
+      if (cnt)
+         drop(c[cnt-1]);
       Env.arg = arg,  Env.next = n;
    }
    while (--f.cnt >= 0)
       val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
    Env.bind = f.link;
-   val(At) = Pop(at);
    return x;
 }
 

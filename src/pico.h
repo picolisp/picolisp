@@ -1,4 +1,4 @@
-/* 19mar05abu
+/* 21jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,6 +25,7 @@
 
 #define CELLS     40000                      // Heap allocation size
 #define HASH      4999                       // Hash table size (should be prime)
+#define BNDSKIP   0x10000                    // Bind frame skip offset
 #define TOP       0x10000                    // Character Top
 
 typedef unsigned long word;
@@ -321,6 +322,7 @@ any doBind(any);
 any doBitAnd(any);
 any doBitOr(any);
 any doBitQ(any);
+any doBitXor(any);
 any doBool(any);
 any doBox(any);
 any doBreak(any);
@@ -445,6 +447,7 @@ any doLowQ(any);
 any doLowc(any);
 any doLt(any);
 any doLt0(any);
+any doLup(any);
 any doMade(any);
 any doMake(any);
 any doMap(any);
@@ -572,6 +575,7 @@ any doTime(any);
 any doTouch(any);
 any doTrace(any);
 any doTrim(any);
+any doTry(any);
 any doType(any);
 any doUnify(any);
 any doUnless(any);
@@ -606,7 +610,7 @@ static inline any nth(int n, any x) {
 static inline int length(any x) {
    int n;
 
-   for (n = 0; isCell(x);  x = cdr(x))
+   for (n = 0; isCell(x); x = cdr(x))
       ++n;
    return n;
 }

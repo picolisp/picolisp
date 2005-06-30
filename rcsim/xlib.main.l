@@ -1,4 +1,4 @@
-# 18feb05abu
+# 29jun05abu
 # (c) Software Lab. Alexander Burger
 
 # *Sock *Panel
@@ -26,7 +26,7 @@
 
 (de go ()
    (out (setq *Sock (listen (port 8080) 120000))
-      (pr 600 400) )
+      (pr 800 600) )
    (start)
    (draw)
    (task *Sock

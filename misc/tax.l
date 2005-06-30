@@ -1,7 +1,7 @@
-# 16mar05abu
+# 13may05abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/gui.l" "lib/ps.l")
+(load "lib/http.l" "lib/html.l" "lib/gui.l" "lib/ps.l")
 
 (on *Quartal)
 
@@ -126,7 +126,7 @@
    (html "Firma"
       (<head> "Firma")
       <hr>
-      (new '(+ObjForm) '(+Firma) (firm) 900 400
+      (form '(+ObjForm) '(+Firma) (firm) 900 400
          (quote
             (gui '(+E/R +TextField) '(nm : home obj)  "Name" 40)
             (gui '(+E/R +TextField) '(nr : home obj)  "Steuernummer" 20)
@@ -157,7 +157,7 @@
    (html "Konto"
       (<head> "Konto")
       <hr>
-      (new '(+ObjForm) '(+Kto) Kto 900 200
+      (form '(+ObjForm) '(+Kto) Kto 900 200
          (quote
             (row
                (gui '(+E/R +TextField) '(nm : home obj) "Bezeichnung" 30)
@@ -176,7 +176,7 @@
    (html "Position"
       (<head> "Position")
       <hr>
-      (new '(+ObjForm) '(+Pos) Pos 900 400
+      (form '(+ObjForm) '(+Pos) Pos 900 400
          (quote
             (row
                (gui '(+E/R +DateField)
@@ -237,7 +237,7 @@
 (de tax ()
    (app)
    (html "Software Lab"
-      (new '(+Form) 900 600
+      (form '(+Form) 900 600
          (quote
             (row
                (gui '(+Var +NumField) '*QYear "" (posYears))

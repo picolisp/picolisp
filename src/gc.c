@@ -1,4 +1,4 @@
-/* 05jan05abu
+/* 28jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,13 +6,28 @@
 
 /* Mark data */
 static void mark(any x) {
+   any tos, tmp;
    cell *p;
 
-   while (num((p = cellPtr(x))->cdr) & 1) {
-      *(long*)&cdr(p) &= ~1;
-      if (!isNum(x))
-         mark(p->car);
-      x = p->cdr;
+   for (tos = NULL;;) {
+      while (num((p = cellPtr(x))->cdr) & 1) {
+         *(long*)&cdr(p) &= ~1;
+         if (isNum(x)) {
+            while (isNum(p->cdr))
+               *(long*)&cdr(p = numCell(p->cdr)) &= ~1;
+            mark(p->cdr);
+            break;
+         }
+         tmp = x,  x = p->car,  p->car = (any)(num(tos) | 1),  tos = tmp;
+      }
+      for (;;) {
+         if (!tos)
+            return;
+         if (num((p = cellPtr(tos))->car) & 1)
+            break;
+         tmp = tos,  tos = p->cdr,  p->cdr = x,  x = tmp;
+      }
+      tmp = (any)(num(p->car) & ~1),  p->car = x,  x = p->cdr,  p->cdr = tmp;
    }
 }
 
@@ -38,11 +53,13 @@ static void gc(long c) {
    mark(ApplyArgs),  mark(ApplyBody);
    for (p = Env.stack; p; p = cdr(p))
       mark(car(p));
-   for (p = (any)Env.bind;  p;  p = (any)((bindFrame*)p)->link)
-      for (i = ((bindFrame*)p)->cnt;  --i >= 0;) {
+   for (p = (any)Env.bind;  p;  p = (any)((bindFrame*)p)->link) {
+      for (i = ((bindFrame*)p)->cnt;  i < 0;  i += BNDSKIP);
+      while (--i >= 0) {
          mark(((bindFrame*)p)->bnd[i].sym);
          mark(((bindFrame*)p)->bnd[i].val);
       }
+   }
    for (p = (any)CatchPtr; p; p = (any)((catchFrame*)p)->link)
       mark(((catchFrame*)p)->tag);
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)

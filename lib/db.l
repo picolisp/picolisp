@@ -1,4 +1,4 @@
-# 15mar05abu
+# 22jun05abu
 # (c) Software Lab. Alexander Burger
 
 # upd
@@ -79,6 +79,11 @@
          (if (lt0 K) (dec K) (or Max -1)) )
       (let K (maxKey (tree Var Cls Hook) Min Max)
          (if (gt0 K) (inc K) (or Min 1)) ) ) )
+
+(de useKey (Var Cls Hook)
+   (let (Tree (tree Var Cls Hook)  Max (* 2 (inc (count Tree)))  N)
+      (while (fetch Tree (setq N (rand 1 Max))))
+      N ) )
 
 
 ### Relations ###
@@ -188,6 +193,7 @@
          New ) ) )
 
 (dm lose> (Obj Val)
+   (super Obj Val)
    (mapc
       '((This O)
          (rel> This Obj O NIL
@@ -198,6 +204,7 @@
       Val ) )
 
 (dm keep> (Obj Val)
+   (super Obj Val)
    (mapc
       '((This N)
          (rel> This Obj NIL N
@@ -324,11 +331,13 @@
       (put> New (: slot) Obj) ) )
 
 (dm lose> (Obj Val)
+   (super Obj Val)
    (when Val
       (put Val (: slot)
          (del> (meta Val (: slot)) Obj (get Val (: slot)) Obj) ) ) )
 
 (dm keep> (Obj Val)
+   (super Obj Val)
    (when Val
       (put Val (: slot)
          (put> (meta Val (: slot)) Obj (get Val (: slot)) Obj) ) ) )
@@ -349,10 +358,12 @@
                      '((B) (== (: var) (get B 'hook)))
                      (meta Obj (cdr X) 'bag) ) ) ) )
          (getl Obj) )
-      (for X L
-         (rel> (meta Obj (cdr X)) Obj (car X) NIL Old) )
-      (for X L
-         (rel> (meta Obj (cdr X)) Obj NIL (car X) New) ) )
+      (when Old
+         (for X L
+            (rel> (meta Obj (cdr X)) Obj (car X) NIL Old) ) )
+      (when New
+         (for X L
+            (rel> (meta Obj (cdr X)) Obj NIL (car X) New) ) ) )
    (extra Obj Old New Hook) )
 
 
@@ -575,13 +586,13 @@
       (<> Old Val)
       (delete Val Old) ) )
 
-(dm rel> (Obj Old New)
+(dm rel> (Obj Old New Hook)
    (if (or (ele> This Old) (ele> This New))
-      (extra Obj Old New)
+      (extra Obj Old New Hook)
       (for O (diff Old New)
-         (extra Obj O NIL) )
+         (extra Obj O NIL Hook) )
       (for N New
-         (extra Obj NIL N) ) ) )
+         (extra Obj NIL N Hook) ) ) )
 
 (dm lose> (Obj Val)
    (if (ele> This Val)
@@ -661,14 +672,15 @@
 
 (de blob! (Obj Rel File)
    (put!> Obj Rel T)
-   (call 'mv File (blob Obj Rel)) )
+   (call 'cp File (blob Obj Rel)) )
 
 (dm T @
    (=: aux)
    (while (args)
-      (if (atom (next))
-         (put> This (arg) (next))
-         (put> This (car (arg)) (eval (cdr (arg)))) ) )
+      (cond
+         ((=T (next)) (put This T T))
+         ((atom (arg)) (put> This (arg) (next)))
+         (T (put> This (car (arg)) (eval (cdr (arg))))) ) )
    (upd> This (val This)) )
 
 (dm zap> ()

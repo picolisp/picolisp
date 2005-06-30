@@ -1,4 +1,4 @@
-// 04mar05abu
+// 19jun05abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -12,10 +12,11 @@ public class Front extends Pico {
    Scrollbar[] SBars;
    Hashtable Skip;
    Vector Sync, Rid, Crypt;
-   int Focus, Dirty;
+   int Focus, Dirty, Over;
    boolean Req;
    Dialog Dialog;
    Front Parent;
+   Window Tip;
    static final Color Gray = new Color(0xE0,0xE0,0xE0);
 
    public Front() {}
@@ -27,16 +28,22 @@ public class Front extends Pico {
       InN = p.InN;
       InD = p.InD;
       OutN = p.OutN;
-      Container cont = p.getParent();
-      while (!(cont instanceof Frame))
-         cont = cont.getParent();
-      Dialog = new Dialog((Frame)cont, ttl, false);
+      Dialog = new Dialog(p.frame(), ttl, false);
+      Dialog.setBackground(p.getBackground());
+      Dialog.setForeground(p.getForeground());
       Dialog.setFont(p.getFont());
       Dialog.add(this, BorderLayout.CENTER);
       Dialog.addWindowListener(new WindowAdapter() {
          public void windowClosing(WindowEvent ev) {stop();}
       } );
       connect(0, port, sid);
+   }
+
+   Frame frame() {
+      Container c = getParent();
+      while (!(c instanceof Frame))
+         c = c.getParent();
+      return (Frame)c;
    }
 
    public void stop() {
@@ -56,7 +63,7 @@ public class Front extends Pico {
    }
 
    // Switch to another URL
-   void url(final String s, final String t) {
+   void url(String s, String t) {
       if (Parent == null)
          super.url(s,t);
       else {
@@ -86,9 +93,9 @@ public class Front extends Pico {
       else if (s.equals("feed"))
          feed(getNum());
       else if (s.equals("bCol"))
-         bCol(getNum());
+         Fields[getNum()-1].setBackground(new Color(getNum()));
       else if (s.equals("fCol"))
-         fCol(getNum());
+         Fields[getNum()-1].setForeground(new Color(getNum()));
       else if (s.equals("grow"))
          grow(Fields[getNum()-1]);
       else if (s.equals("siz"))
@@ -99,6 +106,8 @@ public class Front extends Pico {
          ((DrawField)Fields[getNum()-1]).tmp();
       else if (s.equals("img"))
          img(getNum());
+      else if (s.equals("tip"))
+         tip(Fields[getNum()-1]);
       else if (s.equals("lock"))
          lock(getStr().length() == 0);
       else if (s.equals("scrl"))
@@ -177,6 +186,8 @@ public class Front extends Pico {
                f.setBackground(new Color(getNum()));
             else if (s.equals("fCol"))
                f.setForeground(new Color(getNum()));
+            else if (s.equals("tip"))
+               f.addMouseListener(new PicoTipAdapter(this,i));
             else if (s.equals("rid"))
                Rid.addElement(f);
             else if (s.equals("rsa"))
@@ -184,7 +195,7 @@ public class Front extends Pico {
             else if (s.equals("pw"))
                ((TextField)f).setEchoChar('*');
             else {  // Font name
-               Font fnt = new Font(s, Font.PLAIN, getNum());
+               Font fnt = new Font(s, Font.PLAIN, (n=getNum())==0? getFont().getSize() : n);
                f.setFont(fnt);
                msg3("adv>", i, getFontMetrics(fnt).charWidth('o'));
             }
@@ -395,14 +406,10 @@ public class Front extends Pico {
       ((TextArea)f).append("\n");
    }
 
-   // Set background/foreground color
-   void bCol(int fld) {(Fields[fld-1]).setBackground(new Color(getNum()));}
-   void fCol(int fld) {(Fields[fld-1]).setForeground(new Color(getNum()));}
-
    // Grow/shrink field
    void grow(Component f) {
       Dimension d = f.getSize();
-      f.setSize(d.width + getNum(), d.height + getNum());
+      f.setSize(d.width + getNum(), d.height + getNum());  // getHeight/getWidth
    }
 
    // Set image
@@ -412,6 +419,29 @@ public class Front extends Pico {
 
       f.Img = n==0? null : getToolkit().createImage(getBytes(n));
       f.repaint();
+   }
+
+   // Show tooltip
+   synchronized void tip(Component f) {
+      Object[] msg = (Object[])read();
+
+      tip();
+      Tip = new Window(frame());
+      Tip.setLayout(new GridLayout(0,1));
+      for (int i = 0; i < msg.length; ++i)
+         Tip.add(new Label((String)msg[i]));
+      Tip.pack();
+      Point p = f.getLocationOnScreen();
+      Tip.setLocation(p.x, p.y + f.getSize().height);  // getHeight
+      Tip.setBackground(Color.yellow);
+      Tip.show();
+   }
+
+   synchronized void tip() {
+      if (Tip != null) {
+         Tip.dispose();
+         Tip = null;
+      }
    }
 
    // Enable or disable
@@ -555,6 +585,7 @@ class PicoFocusListener implements FocusListener {
    }
 
    public void focusLost(FocusEvent ev) {
+      Home.tip();
       Home.change();
    }
 }
@@ -581,6 +612,7 @@ class PicoMouseAdapter extends MouseAdapter {
    PicoMouseAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void mousePressed(MouseEvent ev) {
+      Home.tip();
       if (Home.Rdy  &&  ev.getClickCount() == 2) {
          if (Home.Req)
             Home.getToolkit().beep();
@@ -593,6 +625,33 @@ class PicoMouseAdapter extends MouseAdapter {
          ev.consume();
       }
    }
+}
+
+class PicoTipAdapter extends MouseAdapter {
+   Front Home;
+   int Ix;
+
+   PicoTipAdapter(Front h, int i) {Home = h; Ix = i;}
+
+   public void mouseEntered(MouseEvent ev) {
+      Home.Over = Ix;
+      (new Thread() {
+         public void run() {
+            for (int i = 0; i < 12; ++i) {
+               Pico.sleep(100);
+               if (Home.Over != Ix)
+                  return;
+            }
+            Home.msg2("tip>", Ix);
+         }
+      } ).start();
+   }
+
+   public void mouseExited(MouseEvent ev) {
+      Home.Over = 0;
+      Home.tip();
+   }
+
 }
 
 class PicoKeyAdapter extends KeyAdapter {
@@ -614,7 +673,7 @@ class PicoKeyAdapter extends KeyAdapter {
       if ((c = ev.getKeyChar()) == KeyEvent.VK_ENTER) {
          Home.change();
          if (!(f instanceof TextArea))
-            Home.msg1("ret>");
+            Home.msg2("ret>", Ix);
          else if (Home.Skip.containsKey(f))
             Home.getToolkit().beep();
          else
@@ -645,6 +704,7 @@ class PicoKeyAdapter extends KeyAdapter {
       int m, c, i, j;
       Component f;
 
+      Home.tip();
       if (!Home.Rdy)
          return;
       if (((m = ev.getModifiers()) & (InputEvent.META_MASK | InputEvent.ALT_MASK)) != 0) {
@@ -834,9 +894,9 @@ class PicoKeyAdapter extends KeyAdapter {
    /* Send keystroke */
    private void key(Component f, String s) {
       if (Home.Crypt.contains(f))
-         Home.msg2("key>", Home.outCiph(s));
+         Home.msg3("key>", Ix, Home.outCiph(s));
       else
-         Home.msg2("key>", s);
+         Home.msg3("key>", Ix, s);
    }
 
    /* TextArea movements */

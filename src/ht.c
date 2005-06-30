@@ -1,4 +1,4 @@
-/* 19oct04abu
+/* 26may05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -61,6 +61,11 @@ any Prin(any x) {
                case '"':
                   outString("&quot;");
                   break;
+               case 0xFF:
+                  Env.put(0xEF);
+                  Env.put(0xBF);
+                  Env.put(0xBF);
+                  break;
                default:
                   Env.put(*p);
                }
@@ -97,7 +102,7 @@ static int getHex(any *p) {
 
 static void htEncode(byte *p) {
    while (*p) {
-      if (strchr(" \"#%&=?_", *p))
+      if (strchr(" \"#%&:;<=>?_", *p))
          Env.put('%'), putHex(*p++);
       else
          Env.put(*p++);
@@ -114,21 +119,19 @@ static void htFmt(any x) {
          Env.put('_'),  htFmt(car(x));
       while (isCell(x = cdr(x)));
    else if (isNum(y = name(x))) {
-      if (isExt(x))
-         Env.put('.'),  outName(x);
-      else {
-         byte nm[bufSize(x)];
+      byte nm[bufSize(x)];
 
-         bufString(x, nm);
-         if (hashed(x, hash(y), Intern))
-            Env.put('$'),  htEncode(nm);
-         else if (strchr("$+.", *nm)) {
-            Env.put('%'), putHex(*nm);
-            htEncode(nm+1);
-         }
-         else
-            htEncode(nm);
+      bufString(x, nm);
+      if (isExt(x))
+         Env.put('-'),  htEncode(nm);
+      else if (hashed(x, hash(y), Intern))
+         Env.put('$'),  htEncode(nm);
+      else if (strchr("$+.", *nm)) {
+         Env.put('%'), putHex(*nm);
+         htEncode(nm+1);
       }
+      else
+         htEncode(nm);
    }
 }
 

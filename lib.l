@@ -1,28 +1,27 @@
-# 28mar05abu
+# 25jun05abu
 # (c) Software Lab. Alexander Burger
 
-(de task ("Key" . "Prg")
+(de task (Key . Prg)
    (cond
-      ((not "Prg") (del (assoc "Key" *Key) '*Key))
-      ((assoc "Key" *Key) (quit "Key conflict" "Key"))
+      ((not Prg) (del (assoc Key *Key) '*Key))
+      ((assoc Key *Key) (quit "Key conflict" Key))
       (T
          (push '*Key
             (conc
                (make
-                  (link "Key")
-                  (when (num? (car "Prg"))
-                     (link (+ (pop '"Prg"))) ) )
-               (ifn (sym? (car "Prg"))
-                  "Prg"
+                  (link Key)
+                  (when (num? (car Prg))
+                     (link (+ (pop 'Prg))) ) )
+               (ifn (sym? (car Prg))
+                  Prg
                   (cons
-                     (cons
-                        'job
+                     (cons 'job
                         (cons
                            (make
-                              (while (atom (car "Prg"))
+                              (while (atom (car Prg))
                                  (link
-                                    (cons (pop '"Prg") (eval (pop '"Prg"))) ) ) )
-                           "Prg" ) ) ) ) ) ) ) ) )
+                                    (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) )
+                           Prg ) ) ) ) ) ) ) ) )
 
 (de timeout (N)
    (if (assoc -1 *Key)
@@ -64,21 +63,21 @@
          (set "C"
             (delq (asoq "X" (val "C")) (val "C")) ) ) ) )
 
-(de daemon ("X" . "Prg")
+(de daemon ("X" . Prg)
    (prog1
       (if (pair "X")
          (method (car "X") (cdr "X"))
          (val "X") )
-      (con @ (append "Prg" (cdr @))) ) )
+      (con @ (append Prg (cdr @))) ) )
 
 (====)
 
-(de cache ("Var" "Str" . "Prg")
+(de cache ("Var" "Str" . Prg)
    (cond
       ((not (setq "Var" (car (idx "Var" "Str" T))))
-         (set "Str" "Str"  "Str" (run "Prg")) )
+         (set "Str" "Str"  "Str" (run Prg 1)) )
       ((== "Var" (val "Var"))
-         (set "Var" (run "Prg")) )
+         (set "Var" (run Prg 1)) )
       (T (val "Var")) ) )
 
 (====)
@@ -101,7 +100,7 @@
    (prin "^G") )
 
 (de msg (X . @)
-   (out NIL
+   (out 2
       (print X)
       (while (args)
          (prin (next)) )
@@ -110,10 +109,10 @@
    X )
 
 ### List ###
-(de ?push ("Var" "X")
-   (if (member "X" (val "Var"))
+(de ?push ("Var" X)
+   (if (member X (val "Var"))
       (car @)
-      (push "Var" "X") ) )
+      (push "Var" X) ) )
 
 (de insert (N Lst X)
    (conc
@@ -208,6 +207,12 @@
       (= (cdr Lst) (type (setq *Class (car Lst))))
       (def *Class (cdr Lst)) ) )
 
+(de object ("Sym" Cls . @)
+   (set "Sym" Cls)
+   (while (args)
+      (put "Sym" (next) (next)) )
+   "Sym" )
+
 (de extend X
    (setq *Class (car X)) )
 
@@ -224,7 +229,7 @@
    with catch finally ! quote setq default push job use let let? recur
    =: in out pipe ctl new )
 
-(de *PP1 let for)
+(de *PP1 let let? for)
 (de *PP2 setq default)
 
 (de pretty (X N . @)
@@ -269,17 +274,17 @@
             (space) )
          (prin ")") ) ) )
 
-(de pp ("X" "C")
+(de pp ("X" C)
    (let *Dbg NIL
       (when (pair "X")
-         (setq "C" (cdr "X")) )
+         (setq C (cdr "X")) )
       (prin "(")
-      (printsp (if "C" 'dm 'de))
+      (printsp (if C 'dm 'de))
       (prog1
          (printsp "X")
          (setq "X"
-            (if "C"
-               (method (if (pair "X") (car "X") "X") "C")
+            (if C
+               (method (if (pair "X") (car "X") "X") C)
                (val "X") ) )
          (cond
             ((atom "X") (print '. "X"))

@@ -1,3 +1,19 @@
+* 30jun05 picoLisp-2.1.2
+   GC non-recursive
+   'lup' lookup in 'idx' trees
+   Applet colors
+   'try' to send messages
+   'x|' function
+   Tooltips in applets
+   Binding environment offset for 'eval' and 'run'
+   XHTML/CSS support in "lib/xhtml.l"
+   Separated "lib/html.l" from "lib/http.l"
+   Removed "lib/http.l" from "ext.l"
+   Bug in 'isa'
+   Bug in 'lose>' and 'keep>' for '+Bag'
+   Security hole in 'http'
+   Bug in 'rel>' for '+Hook'
+
 * 30mar05 picoLisp-2.1.1
    DB journaling
    'chess' demo

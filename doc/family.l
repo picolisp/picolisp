@@ -1,7 +1,7 @@
-# 18sep04abu
+# 13may05abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/ps.l")
+(load "lib/http.l" "lib/html.l" "lib/ps.l")
 
 ### DB ###
 (class +Person +Entity)

@@ -1,6 +1,7 @@
 #!bin/pico lib.l
-# 21mar05abu
+# 07may05abu
 # Use: bin/replica <dbFile> <port> <keyFile> [<journal>]
+#    : bin/ssl <host> 443 <port>/@replica <keyFile> <journal> 60
 
 (load "@lib/misc.l" "@lib/http.l")
 

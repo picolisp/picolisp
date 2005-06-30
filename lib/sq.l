@@ -1,7 +1,7 @@
-# 31oct04abu
+# 04jun05abu
 # (c) Software Lab. Alexander Burger
 
-# (select [var ..] cls [hook] [var val ..])
+# (select [var ..] cls [hook|T] [var val ..])
 (de select Lst
    (let
       (Vars
@@ -14,7 +14,9 @@
                      (= `(char "+") (char (car Lst))) ) )
                (link (pop 'Lst)) ) )
          Cls (pop 'Lst)
-         Hook (and (isa '+Entity (car Lst)) (pop 'Lst)) )
+         Hook (cond
+            ((ext? (car Lst)) (pop 'Lst))
+            ((=T (car Lst)) (pop 'Lst) *DB) ) )
       (default Lst
          (cons
             (or

@@ -1,4 +1,4 @@
-# 15mar05abu
+# 28may05abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -16,8 +16,8 @@
             L (mapcan
                '((L)
                   (ifn (cdr (setq L (split L "=")))
-                     (cons (_htArg (car L)))
-                     (_htSet (car L) (_htArg (cadr L)))
+                     (cons (htArg (car L)))
+                     (_htSet (car L) (htArg (cadr L)))
                      NIL ) )
                (split (cadr L) "&") )
             *Url (ht:Pack U) )
@@ -30,7 +30,7 @@
                (httpEcho *Url NIL 86400) ) ) ) ) )
 
 (de bar (Ttl X Y Prg)
-   (prinl Ttl "<hr>")
+   (prinl Ttl '<hr>)
    (setq *Bar (form '(+Form) X Y Prg))
    (navi) )
 
@@ -45,8 +45,7 @@
    (setq *Fox -1)
    (let
       (App (pack *Url "?*ID=" (ht:Fmt *ID))
-         F
-         (if (assoc App *Apps)
+         F (if (assoc App *Apps)
             (cdr @)
             (prog1
                (pass new (arg))
@@ -189,9 +188,9 @@
          (: arrays) ) ) )
 
 (dm show> ()
-   (prinl '<hr>)
+   (<hr>)
    (super)
-   (prinl '<hr>) )
+   (<hr>) )
 
 (dm stop> ()
    (unless (lst? (: args))
@@ -204,12 +203,12 @@
 
 (de alert (Ttl @X)
    (html "Ttl"
-      (prinl '<hr>)
+      (<hr>)
       (<head> Ttl 3)
       (if (pair @X)
          (apply <br> @X)
          (<br> @X) )
-      (prinl '<hr>) ) )
+      (<hr>) ) )
 
 (de dialog ("Ttl" "Args" "Lst")
    (html "Ttl"
@@ -653,27 +652,23 @@
    (when (assoc (: ix) *Fld)
       (=: str (cdr @))
       (=: home focus This)
-      (cond
-         ((: ign) T)
-         ((or (chk> This) (and (: arr) (chk> (: arr))))
+      (unless (: ign)
+         (if (or (chk> This) (and (: arr) (chk> (: arr))))
             (let Err @
-               (or
-                  (nil
-                     (alert "Check"
-                        (if (: lbl)
-                           (cons
-                              (pack "*** " @ " ***")
-                              (if (pair Err) Err (cons Err)) )
-                           Err ) ) ) ) ) )
-         (T (end> This)
+               (prinl
+                  (if (: lbl)
+                     (cons
+                        (pack "*** " @ " ***")
+                        (if (pair Err) Err (cons Err)) )
+                     Err ) ) )
+            (end> This)
             (and (: arr) (end> @))
             (and
                (find
                   '((F)
                      (and (get F 'fox) (able?> F)) )
                   (cdr (memq This (: home fields))) )
-               (=: home focus @) )
-            T ) ) ) )
+               (=: home focus @) ) ) ) ) )
 
 (dm upd> ())
 (dm chk> ())

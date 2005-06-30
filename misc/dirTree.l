@@ -1,5 +1,7 @@
-# 06oct04abu
+# 27may05abu
 # (c) Software Lab. Alexander Burger
+
+(load "lib/http.l" "lib/html.l")
 
 (de subDirs (Dir)
    (cache '*DirCache (or (pack (reverse (chop Dir))) ".")

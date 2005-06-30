@@ -1,4 +1,4 @@
-17mar05abu
+30may05abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -7,6 +7,8 @@
                                                      (Antoine de Saint-Exupéry)
          The Pico Lisp System
          ====================
+
+     _PI_co Lisp is not _CO_mmon Lisp
 
 Pico Lisp can be viewed from two different aspects: As a general purpose
 programming language, and a dedicated application server framework.

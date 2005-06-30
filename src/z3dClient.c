@@ -1,4 +1,4 @@
-/* 30aug04abu
+/* 29jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -401,21 +401,21 @@ int main(int ac, char *av[]) {
    Dpth = PixSize = 0;
    pmFormat = XListPixmapFormats(Disp, &n);
    for (i = 0; i < n; i++) {
-      if (pmFormat[i].depth == 32 || pmFormat[i].depth == 24) {
-         Dpth = pmFormat[i].depth;
+      if (pmFormat[i].depth == 24) {
+         Dpth = 24;
          if (PixSize != 4)
             PixSize = (pmFormat[i].bits_per_pixel + 7) / 8 & ~8;
       }
       else if (pmFormat[i].depth == 16 && (PixSize < 3 || PixSize > 4)) {
-         Dpth = pmFormat[i].depth;
+         Dpth = 16;
          PixSize = (pmFormat[i].bits_per_pixel + 7) / 8 & ~8;
       }
       else if (pmFormat[i].depth == 8 && (PixSize < 2 || PixSize > 4)) {
-         Dpth = pmFormat[i].depth;
+         Dpth = 8;
          PixSize = (pmFormat[i].bits_per_pixel + 7) / 8 & ~8;
       }
    }
-   if (Dpth < 8)
+   if (!Dpth)
       giveup("Bad Display Depth");
    Gc = XCreateGC(Disp,RootWindow(Disp,Scrn), 0, NULL);
 
@@ -445,9 +445,8 @@ int main(int ac, char *av[]) {
                   SizX * SizY * PixSize, IPC_CREAT | 0777 )) < 0  ||
          (Info.shmaddr = Img->data =
                            shmat(Info.shmid, 0, 0) ) == (char*)-1  ||
-         !XShmAttach(Disp, &Info) ) {
+         !XShmAttach(Disp, &Info) )
       giveup("Can't create XImage");
-   }
 
    /* Main loop */
    for (;;) {

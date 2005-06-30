@@ -1,7 +1,7 @@
-# 09feb05abu
+# 04jun05abu
 # (c) Software Lab. Alexander Burger
 
-# *Tmp
+# *Allow *Tmp
 
 (de *Day . (Mon Tue Wed Thu Fri Sat Sun .))
 (de *Mon . (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec .))
@@ -33,6 +33,15 @@
                (set (car @) "V")
                (set "K" "V")
                (push '*Uni "K") ) ) ) ) )
+
+### Allow ###
+(de allowed Lst
+   (setq *Allow (cons NIL (car Lst)))
+   (mapc allow (cdr Lst)) )
+
+(de allow (X)
+   (and *Allow (idx *Allow X T))
+   X )
 
 ### Math ###
 # (Knuth Vol.2, p.442)
@@ -332,8 +341,6 @@
       (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
-(de tmp? (F)
-   (and *Tmp (pre? *Tmp F) (not (sub? "/../" F))) )
 
 # Print or eval
 (de prEval ("Prg")
@@ -417,12 +424,6 @@
       (and (> C 11) (inc 'C 5))
       (and (> C 42) (inc 'C 6))
       (char (+ C `(char "0"))) ) )
-
-(de objID (S)
-   (fmt64 (>> 6 (hex S))) )
-
-(de idAdr (S)
-   (hex (>> -6 (fmt64 S))) )
 
 ### System ###
 (de gcc (S . @)

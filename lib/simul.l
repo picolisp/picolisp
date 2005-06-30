@@ -1,4 +1,4 @@
-# 17mar05abu
+# 06jun05abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -50,7 +50,7 @@
 
 # Alpha-Beta tree search
 (de game ("Flg" "Cnt" "moves" "move" "cost")
-   (let ("Alpha" '(999999999)  "Beta" -999999999)
+   (let ("Alpha" '(1000000)  "Beta" -1000000)
       (recur ("Flg" "Cnt" "Alpha" "Beta")
          (let? "Lst"
             (sort
@@ -124,50 +124,3 @@
 
 (de north (Fld)
    (cddr (val Fld)) )
-
-
-### Parallel Execution Trees ###
-# *Pet
-
-(de pet (Prg Pet)
-   (let Lst
-      (make
-         (when Pet
-            (made Pet (cdr (parMax 0 Pet))) )
-         (run Prg) )
-      (if (num? (car Lst))
-         (list Lst)
-         Lst ) ) )
-
-(de par Lst
-   (for L Lst
-      (when (setq L (make (eval L)))
-         (if (num? (car L))
-            (link L)
-            (mapc link L) ) ) )
-   (when (made)
-      (made (made) (cdr (parMax 0 (made)))) ) )
-
-(de parMax (N Lst)  #> (num . lst)
-   (let C NIL
-      (while (num? (car Lst))
-         (inc 'N (pop 'Lst))
-         (setq
-            C Lst
-            Lst (cdr Lst) ) )
-      (push 'C N)
-      (for X Lst
-         (when (< (car C) (car (setq X (parMax N X))))
-            (setq C X) ) )
-      C ) )
-
-# PET execution
-(de pex (Lst)
-   (mapcan
-      '((*Pet)
-         (run (cadr *Pet))
-         (if (=0 (dec *Pet))
-            (when (setq *Pet (cddr *Pet))
-               ((if (num? (car *Pet)) list copy) *Pet) )
-            (list *Pet) ) )
-      Lst ) )

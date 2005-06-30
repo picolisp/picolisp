@@ -1,4 +1,4 @@
-# 10feb05abu
+# 04may05abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -28,7 +28,6 @@
                      ,"Permission denied" ) )
                '(when (val> (: home nm))
                   (msg *Pid " * " (stamp) " " @)
-                  (flush)
                   (upd> (: home msg))
                   (and *Bar (upd> *Bar)) )
                ,"Password" 20 ) )

@@ -1,5 +1,5 @@
 /* lat1.c
- * 26dec03abu
+ * 31mar05abu
  * Convert stdin (UTF-8, 2-Byte) to process or file (ISO-8859-15)
  */
 
@@ -52,15 +52,15 @@ int main(int ac, char *av[]) {
          }
       }
    }
-	while ((c = getchar()) != EOF) {
+	while ((c = getchar_unlocked()) != EOF) {
       if ((c & 0x80) == 0)
-         putc(c,fp);
+         putc_unlocked(c,fp);
       else if ((c & 0x20) == 0)
-         putc((c & 0x1F) << 6 | getchar() & 0x3F, fp);
+         putc_unlocked((c & 0x1F) << 6 | getchar_unlocked() & 0x3F, fp);
       else {
-         getchar(); // 0x82
-         getchar(); // 0xAC
-         putc(0xA4, fp);
+         getchar_unlocked(); // 0x82
+         getchar_unlocked(); // 0xAC
+         putc_unlocked(0xA4, fp);
       }
 	}
    if (pid) {

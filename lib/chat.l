@@ -1,4 +1,4 @@
-# 10jul04abu
+# 15jun05abu
 # (c) Software Lab. Alexander Burger
 
 # *Cts *Room
@@ -41,6 +41,7 @@
    (super) )
 
 (dm ret> ()
+   (rd)
    (when (val> (: msg))
       (speak *Room @) )
    (clr> (: msg)) )

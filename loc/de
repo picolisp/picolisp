@@ -1,4 +1,4 @@
-# 28apr04abu
+# 23jun05abu
 # (c) Software Lab. Alexander Burger
 
 # lib/db.l
@@ -14,16 +14,17 @@
 # lib/gui.l
 "No" "Nein"
 "Yes" "Ja"
+"Settings" "Einstellungen"
 "Font" "Schriftart"
-"Size" "Größe"
+"Font Size" "Schriftgröße"
+"Background" "Hintergrund"
+"Foreground" "Vordergrund"
 "F2-Choice" "F2-Auswahl"
 "Cancel" "Abbruch"
 "Please wait" "Bitte warten"
 "Text too long" "Text zu lang"
 "Bad date format" "Falsches Datums-Format"
 "Bad time format" "Falsches Uhrzeit-Format"
-"Delete row" "Zeile löschen"
-"Delete row?" "Zeile löschen?"
 "Next data record" "Nächster Datensatz"
 "Choose/Create" "Auswahl/Neuanlage"
 "Choose/Create (F4)" "Auswahl/Neuanlage (F4)"

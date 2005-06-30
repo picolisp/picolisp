@@ -1,4 +1,4 @@
-/* 19mar05abu
+/* 21jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -28,6 +28,7 @@ static symInit Symbols[] = {
    {doBitAnd, "&"},
    {doBitOr, "|"},
    {doBitQ, "bit?"},
+   {doBitXor, "x|"},
    {doBool, "bool"},
    {doBox, "box"},
    {doBreak, "!"},
@@ -152,6 +153,7 @@ static symInit Symbols[] = {
    {doLowc, "lowc"},
    {doLt, "<"},
    {doLt0, "lt0"},
+   {doLup, "lup"},
    {doMade, "made"},
    {doMake, "make"},
    {doMap, "map"},
@@ -277,6 +279,7 @@ static symInit Symbols[] = {
    {doTouch, "touch"},
    {doTrace, "$"},
    {doTrim, "trim"},
+   {doTry, "try"},
    {doType, "type"},
    {doUnify, "unify"},
    {doUnless, "unless"},

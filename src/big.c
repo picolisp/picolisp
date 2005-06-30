@@ -1,4 +1,4 @@
-/* 15mar05abu
+/* 14jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1041,6 +1041,36 @@ any doBitOr(any ex) {
          y = cdr(numCell(y));
       }
    }
+   return Pop(c1);
+}
+
+// (x| 'num ..) -> num
+any doBitXor(any ex) {
+   any x, y, z;
+   cell c1;
+
+   x = cdr(ex);
+   if (isNil(data(c1) = EVAL(car(x))))
+      return Nil;
+   NeedNum(ex,data(c1));
+   Push(c1, bigCopy(data(c1)));
+   while (isCell(x = cdr(x))) {
+      if (isNil(z = EVAL(car(x)))) {
+         drop(c1);
+         return Nil;
+      }
+      NeedNum(ex,z);
+      y = data(c1);
+      for (;;) {
+         setDig(y, unDig(y) ^ unDig(z));
+         if (!isNum(z = cdr(numCell(z))))
+            break;
+         if (!isNum(cdr(numCell(y))))
+            cdr(numCell(y)) = box(0);
+         y = cdr(numCell(y));
+      }
+   }
+   zapZero(data(c1));
    return Pop(c1);
 }
 

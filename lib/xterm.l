@@ -1,11 +1,11 @@
-# 21dec01abu
+# 29jun05abu
 # (c) Software Lab. Alexander Burger
 
 (setq
-   *XtF1    "^[[11~"
-   *XtF2    "^[[12~"
-   *XtF3    "^[[13~"
-   *XtF4    "^[[14~"
+   *XtF1    "^[OP"
+   *XtF2    "^[OQ"
+   *XtF3    "^[OR"
+   *XtF4    "^[OS"
    *XtF5    "^[[15~"
    *XtF6    "^[[17~"
    *XtF7    "^[[18~"

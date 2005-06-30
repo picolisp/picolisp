@@ -1,4 +1,4 @@
-/* 20mar05abu
+/* 31mar05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -77,7 +77,7 @@ static int getBinary(int n) {
    static byte buf[256];
 
    if (BinIx == BinCnt) {
-      if (!(BinCnt = slow(fileno(InFile), buf, n)))
+      if (!(BinCnt = slow(fileno_unlocked(InFile), buf, n)))
          return -1;
       BinIx = 0;
    }
@@ -599,7 +599,7 @@ static void ctOpen(any ex, any x, ctlFrame *f) {
 /*** Reading ***/
 void getStdin(void) {
    if (InFile != stdin)
-      Chr = getc(InFile);
+      Chr = getc_unlocked(InFile);
    else if (!isCell(val(Led))) {
       byte buf[1];
 
@@ -1104,7 +1104,7 @@ any doKey(any ex) {
    int c;
    byte buf[2];
 
-   fflush(stdout);
+   fflush_unlocked(stdout);
    setRaw();
    x = cdr(ex);
    if (!waitFd(ex, STDIN_FILENO, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
@@ -1349,7 +1349,7 @@ any doLines(any ex) {
          pathString(y, nm);
          if (!(fp = fopen(nm,"r")))
             openErr(ex, nm);
-         while ((c = getc(fp)) >= 0)
+         while ((c = getc_unlocked(fp)) >= 0)
             if (c == '\n')
                ++cnt;
          fclose(fp);
@@ -1473,7 +1473,7 @@ any load(any ex, int pr, any x) {
          data(c1) = read1(0);
       else {
          if (pr && !Chr)
-            Env.put(pr), space(), fflush(OutFile);
+            Env.put(pr), space(), fflush_unlocked(OutFile);
          data(c1) = read1('\n');
          SigInt = NO;
          if (Chr == '\n')
@@ -1484,7 +1484,7 @@ any load(any ex, int pr, any x) {
       Save(c1),  x = EVAL(data(c1)),  drop(c1);
       if (InFile == stdin && !Chr) {
          val(At3) = val(At2),  val(At2) = val(At),  val(At) = x;
-         outString("-> "),  fflush(OutFile),  print(x),  crlf();
+         outString("-> "),  fflush_unlocked(OutFile),  print(x),  crlf();
       }
    }
    popInFiles();
@@ -1601,17 +1601,17 @@ any doEcho(any ex) {
 
    x = cdr(ex),  y = EVAL(car(x));
    if (isNil(y) && !isCell(cdr(x))) {
-      int n, dst = fileno(OutFile);
+      int n, dst = fileno_unlocked(OutFile);
       byte buf[BUFSIZ];
 
-      fflush(OutFile);
+      fflush_unlocked(OutFile);
       if (Chr) {
          buf[0] = (byte)Chr;
          if (!wrBytes(dst,buf,1))
             return Nil;
       }
       Chr = 0;
-      while ((n = fread(buf, 1, sizeof(buf), InFile)) > 0)
+      while ((n = fread_unlocked(buf, 1, sizeof(buf), InFile)) > 0)
          if (!wrBytes(dst, buf, n))
             return Nil;
       return T;
@@ -1696,7 +1696,7 @@ any doEcho(any ex) {
 }
 
 /*** Prining ***/
-void putStdout(int c) {putc(c, OutFile);}
+void putStdout(int c) {putc_unlocked(c, OutFile);}
 
 void crlf(void) {Env.put('\n');}
 void space(void) {Env.put(' ');}
@@ -1870,12 +1870,12 @@ any doPrintln(any x) {
 
 // (flush) -> flg
 any doFlush(any ex __attribute__((unused))) {
-   return fflush(OutFile)? Nil : T;
+   return fflush_unlocked(OutFile)? Nil : T;
 }
 
 // (rewind) -> flg
 any doRewind(any ex __attribute__((unused))) {
-   return fseek(OutFile, 0L, SEEK_SET) || ftruncate(fileno(OutFile),0)? Nil : T;
+   return fseek(OutFile, 0L, SEEK_SET) || ftruncate(fileno_unlocked(OutFile),0)? Nil : T;
 }
 
 // (rd) -> any
@@ -1892,7 +1892,7 @@ any doRd(any x) {
    if ((cnt = unBox(x)) < 0) {
       byte buf[cnt = -cnt];
 
-      if (!rdBytes(fileno(InFile), buf, cnt))  // Little Endian
+      if (!rdBytes(fileno_unlocked(InFile), buf, cnt))  // Little Endian
          return Nil;
       if (cnt % sizeof(word) == 0)
          Push(c1, Nil);
@@ -1910,7 +1910,7 @@ any doRd(any x) {
       int i;
       byte buf[cnt];
 
-      if (!rdBytes(fileno(InFile), buf, cnt))
+      if (!rdBytes(fileno_unlocked(InFile), buf, cnt))
          return Nil;
       if (cnt % sizeof(word) == 0) {
          i = 0;
@@ -1949,7 +1949,7 @@ any doWr(any x) {
 
    x = cdr(x);
    do
-      putc(unDig(y = EVAL(car(x))) / 2 & 255, OutFile);
+      putc_unlocked(unDig(y = EVAL(car(x))) / 2 & 255, OutFile);
    while (isCell(x = cdr(x)));
    return y;
 }
@@ -2101,9 +2101,9 @@ static void blkPoke(adr pos, void *buf, int siz) {
       byte a[BLK];
 
       setAdr(pos,a);
-      putc(siz, Journal);
-      fwrite(a, BLK, 1, Journal);
-      fwrite(buf, siz, 1, Journal);
+      putc_unlocked(siz, Journal);
+      fwrite_unlocked(a, BLK, 1, Journal);
+      fwrite_unlocked(buf, siz, 1, Journal);
    }
 }
 
@@ -2136,11 +2136,11 @@ any newId(void) {
 
    wrLock();
    if (Journal)
-      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+      lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    n = newBlock();
    if (Journal)
-      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+      fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    rwUnlock(1);
    return new64(n/BLKSIZE, At2);  // dirty
@@ -2256,8 +2256,8 @@ any doJournal(any ex) {
    int siz;
    byte a[BLK], buf[BLKSIZE];
 
-   while ((siz = getc(InFile)) >= 0) {
-      if (siz > BLKSIZE || fread(a,BLK,1,InFile) != 1 || fread(buf,siz,1,InFile) != 1)
+   while ((siz = getc_unlocked(InFile)) >= 0) {
+      if (siz > BLKSIZE || fread_unlocked(a,BLK,1,InFile) != 1 || fread_unlocked(buf,siz,1,InFile) != 1)
          err(ex, NULL, "Bad Journal");
       blkPoke(getAdr(a), buf, siz);
    }
@@ -2481,7 +2481,7 @@ any doCommit(any x) {
    force = !isNil(flg) || !Transactions;
    wrLock();
    if (Journal)
-      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+      lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    if (note = Tell && !isNil(flg) && flg != T)
       tellBeg(&pbSave, &ppSave, buf),  tell(flg);
@@ -2543,7 +2543,7 @@ any doCommit(any x) {
    if (note)
       tellEnd(&pbSave, &ppSave);
    if (Journal)
-      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+      fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    if (Transactions) {
       rwUnlock(1);
@@ -2606,7 +2606,7 @@ any doDbck(any ex) {
    blks = syms = offs = 0;
    BlkLink = getAdr(buf);  // Check free list
    if (Journal)
-      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+      lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    while (BlkLink) {
       rdBlock(BlkLink);
@@ -2642,7 +2642,7 @@ any doDbck(any ex) {
          Block[0] &= BLKMASK,  wrBlock();
    }
    if (Journal)
-      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+      fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    if (cnt != next)
       return  mkStr("Bad count");

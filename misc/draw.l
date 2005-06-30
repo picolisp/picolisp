@@ -1,15 +1,16 @@
-# 23aug03abu
+# 27may05abu
 # (c) Software Lab. Alexander Burger
+# ./p dbg.l misc/draw.l -go
 
 # *D2dField
 
-(load "lib/draw.l")
+(load "lib/http.l" "lib/html.l" "lib/gui.l" "lib/draw.l")
 
 (de tstPage ()
    (app)
    (html "DrawField"
       (<head> "Draw test")
-      (new '(+Form) 700 500
+      (form '(+Form) 700 500
          (quote
             (gui 'draw '(+SelectView +Mono +DrawField) "Draw" 600 400)
             (----)

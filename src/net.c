@@ -1,4 +1,4 @@
-/* 13jul04abu
+/* 08apr05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -45,7 +45,7 @@ static any tcpAccept(any ex, int sd) {
 // (port 'cnt|lst ['var]) -> cnt
 any doPort(any ex) {
    any x;
-   int sd;
+   int n, sd;
    unsigned short port;
    cell c1;
    struct sockaddr_in addr;
@@ -54,8 +54,10 @@ any doPort(any ex) {
    addr.sin_family = AF_INET;
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    sd = tcpSocket(ex);
-   if (isNum(x = EVAL(cadr(ex))))
-      port = (unsigned short)xCnt(ex,x);
+   if (isNum(x = EVAL(cadr(ex)))) {
+      if ((port = (unsigned short)xCnt(ex,x)) != 0)
+         n = 1,  setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n));
+   }
    else if (isCell(x))
       port = (unsigned short)xCnt(ex,car(x));
    else
@@ -70,7 +72,7 @@ any doPort(any ex) {
    if (listen(sd,5) < 0)
       close(sd),  tcpErr(ex, "listen");
    if (!isNil(data(c1) = EVAL(caddr(ex)))) {
-      int n = sizeof(addr);
+      n = sizeof(addr);
       if (getsockname(sd, (struct sockaddr*)&addr, &n) < 0)
          close(sd),  tcpErr(ex, "getsockname");
       Save(c1);

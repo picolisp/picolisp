@@ -1,13 +1,12 @@
-# 15mar05abu
+# 23jun05abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk
+# *Font *Color *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk *Help
 
 (allow "java/pico.jar")
 
 (default *APorts 0)
-(default *Font (12 . "SansSerif"))
 
 (de url (Str Tar . @)
    (when Str
@@ -23,7 +22,7 @@
                   (or Tar (if *Frame "MAIN" "_self")) ) ) ) ) ) )
 
 (de bar (Ttl X Y Prg)
-   (prinl Ttl "<hr>")
+   (prinl Ttl '<hr>)
    (setq *Bar (new '(+Form) X Y Prg))
    (navi) )
 
@@ -52,8 +51,10 @@
    (while Lst
       (prinl ","  *SesId (pop 'Lst)) )
    (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
-   (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
    (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
+   (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
+   (prinl "<PARAM NAME=\"back\" VALUE=\"" (car *Color) "\">")
+   (prinl "<PARAM NAME=\"fore\" VALUE=\"" (cdr *Color) "\">")
    (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
@@ -296,31 +297,36 @@
       (and (fieldEnd) (act> F))
       (and (: app) (out @ (pr 'ack))) ) )
 
+(dm tip> ()
+   (tip> (get (: fields) (rd))) )
+
 # sym
 (dm key> ()
-   (let X (rd)
-      (when (: focus)
-         (ifn (key> (: focus) X)
+   (let (F (get (: fields) (rd))  X (rd))
+      (when (== F (: focus))
+         (ifn (key> F X)
             (beep> This)
-            (type> (: focus) @) ) ) ) )
+            (type> F @) ) ) ) )
 
 (dm ret> ()
-   (use (B L)
-      (ifn
-         (and
-            (setq B (: focus arr))
-            (isa '+Chart B)
-            (setq L
-               (seek
-                  '((L) (memq (: focus) (car L)))
-                  (get B 'fields) ) )
-            (not
-               (find 'able?> (cdr (memq (: focus) (car L)))) )
-            (not
-               (find '((L) (find 'able?> L)) (cdr L)) ) )
-         (next> This)
-         (focus> (car (last (get B 'fields))))
-         (send 'DN> B) ) ) )
+   (let F (get (: fields) (rd))
+      (when (== F (: focus))
+         (use (B L)
+            (ifn
+               (and
+                  (setq B (: focus arr))
+                  (isa '+Chart B)
+                  (setq L
+                     (seek
+                        '((L) (memq F (car L)))
+                        (get B 'fields) ) )
+                  (not
+                     (find 'able?> (cdr (memq F (car L)))) )
+                  (not
+                     (find '((L) (find 'able?> L)) (cdr L)) ) )
+               (next> This)
+               (focus> (car (last (get B 'fields))))
+               (send 'DN> B) ) ) ) ) )
 
 (de _boxSend X
    (ifn
@@ -401,14 +407,44 @@
       (beep> This) ) )
 
 (dm F7> ()
-   (dialog "Font" (list (car *Font) (cdr *Font))
+   (dialog ,"Settings"
+      (list
+         (car *Font) (cdr *Font)
+         (>> 16 (car *Color))
+         (& 255 (>> 8 (car *Color)))
+         (& 255 (car *Color))
+         (>> 16 (cdr *Color))
+         (& 255 (>> 8 (cdr *Color)))
+         (& 255 (cdr *Color)) )
       (quote
-         (gui 'size '(+NumField) "Size" 3)
-         (gui 'font '(+TextField) "Font" '("Serif" "SansSerif" "Monospaced"))
+         (gui '(+NumField) ,"Font Size" 3)
+         (gui '(+Map +TextField) '((-)) ,"Font"
+            '(- "Serif" "SansSerif" "Monospaced" "Dialog" "DialogInput") )
+         (----)
+         (row
+            (gui '(+NumField) ,"Background" 3)
+            (gui '(+NumField) "" 3)
+            (gui '(+NumField) "" 3) )
+         (row
+            (gui '(+NumField) ,"Foreground" 3)
+            (gui '(+NumField) "" 3)
+            (gui '(+NumField) "" 3) )
+         (----)
          (row
             (okButton
-               '(setq *Font
-                  (cons (val> (: home size)) (val> (: home font))) ) )
+               '(setq
+                  *Font (cons
+                     (val> (: home fields 1))
+                     (val> (: home fields 2)) )
+                  *Color (cons
+                     (|
+                        (>> -16 (val> (: home fields 3)))
+                        (>> -8 (val> (: home fields 4)))
+                        (val> (: home fields 5)) )
+                     (|
+                        (>> -16 (val> (: home fields 6)))
+                        (>> -8 (val> (: home fields 7)))
+                        (val> (: home fields 8)) ) ) ) )
             (quitButton) ) ) ) )
 
 (dm F8> ()
@@ -869,7 +905,7 @@
 # Field display
 (class +Font)
 
-# "Serif" "SansSerif" "Monospaced"
+# "Serif" "SansSerif" "Monospaced" "Dialog" "DialogInput"
 (dm T (Name Size . @)
    (pass extra)
    (pr Name Size) )
@@ -877,7 +913,7 @@
 (class +Mono +Font)
 
 (dm T @
-   (pass super "Monospaced" (car *Font)) )
+   (pass super "Monospaced" 0) )
 
 
 (class +Align +Mono)
@@ -1157,6 +1193,20 @@
    (eval (: end)) )
 
 
+(class +Tip)
+# tip
+
+(dm T (Exe . @)
+   (=: tip Exe)
+   (pass extra)
+   (pr 'tip) )
+
+(dm tip> ()
+   (when (: home app)
+      (out @
+         (pr 'tip (: ix) (eval (: tip))) ) ) )
+
+
 ### Form Field Classes ###
 (class +field)
 # home ix lbl str sel ign arr able undo redo adv growX growY
@@ -1220,6 +1270,8 @@
 
 (dm act> ()
    (beep> (: home)) )
+
+(dm tip> ())
 
 (dm key> (C))
 
@@ -2036,12 +2088,12 @@
                      (cons (car L))
                      (cddr L) ) ) ) ) ) ) )
 
-(de delRowButton (@Chart @Foo)
+(de delRowButton (@Msg @Chart @Foo)
    (macro
       (gui '(+Able +Button)
-         '(row> @Chart)
-         "" ,"Delete row"
-         '(when (ask ,"Delete row" ,"Delete row?")
+         '(and (row> @Chart) (get @Chart 'data @))
+         "" @Msg
+         '(when (ask @Msg (pack @Msg '?))
             ('@Foo (row> @Chart))
             (upd> @Chart) ) ) ) )
 

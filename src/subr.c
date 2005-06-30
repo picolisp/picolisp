@@ -1,4 +1,4 @@
-/* 15mar05abu
+/* 22jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1117,7 +1117,9 @@ static any fill(any x, any s) {
    if (isNum(x))
       return NULL;
    if (isSym(x))
-      return (isNil(s)? firstByte(x)=='@' : memq(x,s)!=NULL)? val(x) : NULL;
+      return
+         (isNil(s)? x!=At && firstByte(x)=='@' : memq(x,s)!=NULL)?
+         val(x) : NULL;
    if (y = fill(car(x),s)) {
       Push(c1,y);
       y = fill(cdr(x),s);

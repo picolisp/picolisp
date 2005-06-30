@@ -17,3 +17,15 @@
    +Idx  (("key" obj) less more . obj)          32      28       24       20
    +Sn  (("key" obj . T) less more . obj)       30      26       22       18
                                                         ----
+
+   Key Arguments for DB- and Pilog-functions:
+
+      123, {abc}     -> (123) (123 . T)
+      T              -> All
+      "abc"          -> ("abc") ("abcT" . T)
+
+      (a b)          -> (a b) (a b . T)
+      ((a 1) b 2)    -> (a 1) (b 2 . T)
+
+      (a . b)        -> (a) (b . T)
+      (b . a)        -> (b . T) (a)

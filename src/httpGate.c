@@ -1,4 +1,4 @@
-/* 17jan05abu
+/* 15jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -62,14 +62,14 @@ static int gateSocket(void) {
 }
 
 static int gatePort(int port) {
-   int sd;
+   int n, sd;
    struct sockaddr_in addr;
 
    bzero((char*)&addr, sizeof(addr));
    addr.sin_family = AF_INET;
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    addr.sin_port = htons((unsigned short)port);
-   sd = gateSocket();
+   n = 1,  setsockopt(sd = gateSocket(), SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n));
    if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
       exit(1);
    if (listen(sd,5) < 0)
@@ -168,6 +168,8 @@ int main(int ac, char *av[]) {
             port = (int)strtol(p, &q, 10);
             if (q == p  ||  *q != ' ' && *q != '/')
                port = dflt,  q = p;
+            else if (port < 1024)
+               return 1;
 
             if ((srv = gateConnect((unsigned short)port)) < 0) {
                if (!memchr(q,'~', buf + n - q))

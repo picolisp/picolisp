@@ -1,4 +1,4 @@
-# 26feb05abu
+# 08may05abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -184,9 +184,11 @@
                ((pair (cdr Val))
                   (cond
                      ((not (get Rel 'aux)) (quit "No Aux"))
-                     ((pair (car Val))
+                     ((atom (car Val))
+                        (init Tree Val (append Val T)) )
+                     ((>= (cdr Val) (car Val))
                         (init Tree (car Val) (append (cdr Val) T)) )
-                     (T (init Tree Val (append Val T))) ) )
+                     (T (init Tree (append (car Val) T) (cdr Val))) ) )
                ((isa '+Key Rel)
                   (init Tree (car Val) (cdr Val)) )
                ((>= (cdr Val) (car Val))
@@ -508,20 +510,21 @@
                @ )
             (NIL (setq X (_gen (cddr Lst) Q)))
             (set Lst
-               (cond
-                  ((atom (cadr Lst)) (get X (cadr Lst)))
-                  ((=T (caddr (cadr Lst)))
-                     (initQuery
-                        (caadr Lst)
-                        (cadr (cadr Lst))
-                        X  # Hook
-                        (cadddr (cadr Lst)) ) )
-                  (T
-                     (initQuery
-                        (caadr Lst)
-                        (cadr (cadr Lst))
-                        (caddr (cadr Lst))
-                        X ) ) ) ) ) ) ) )
+               (let Y (cadr Lst)
+                  (cond
+                     ((atom Y) (get X Y))
+                     ((=T (caddr Y))
+                        (initQuery (car Y) (cadr Y) X (cadddr Y)) )  # X = Hook
+                     (T
+                        (initQuery
+                           (car Y)
+                           (cadr Y)
+                           (caddr Y)
+                           (if (cadddr Y)
+                              (cons
+                                 (cons X (car @))
+                                 (cons X (cdr @)) )
+                              X ) ) ) ) ) ) ) ) ) )
 
 (be select (("@Obj" . "@X") . "@Lst")
    (@ unify (-> "@X"))

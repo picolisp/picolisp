@@ -1,4 +1,4 @@
-/* 08dec04abu
+/* 30may05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,45 +8,43 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
    while (!isNum(foo)) {
       if (isCell(foo)) {
          int i;
-         any x;
-         cell at;
+         any x = car(foo);
          struct {  // bindFrame
             struct bindFrame *link;
             int cnt;
-            struct {any sym; any val;} bnd[length(car(foo))];
+            struct {any sym; any val;} bnd[length(x)+2];
          } f;
 
-         Push(at,val(At));
          f.link = Env.bind,  Env.bind = (bindFrame*)&f;
-         f.cnt = 0;
-         for (x = car(foo);  isCell(x);  ++f.cnt, x = cdr(x)) {
+         f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
+         while (isCell(x)) {
             f.bnd[f.cnt].val = val(f.bnd[f.cnt].sym = car(x));
-            val(f.bnd[f.cnt].sym) = --n<0? Nil : cf? car(data(p[f.cnt])) : data(p[f.cnt]);
+            val(f.bnd[f.cnt].sym) = --n<0? Nil : cf? car(data(p[f.cnt-1])) : data(p[f.cnt-1]);
+            ++f.cnt, x = cdr(x);
          }
          if (isNil(x))
             x = prog(cdr(foo));
          else if (x != At) {
-            bindFrame g;
-
-            Bind(x,g),  val(x) = Nil;
+            f.bnd[f.cnt].sym = x,  f.bnd[f.cnt++].val = val(x),  val(x) = Nil;
             x = prog(cdr(foo));
-            Unbind(g);
          }
          else {
+            int cnt = n;
             int next = Env.next;
             cell *arg = Env.arg;
             cell c[Env.next = n];
 
             Env.arg = c;
-            for (i = f.cnt;  --n >= 0;  ++i)
+            for (i = f.cnt-1;  --n >= 0;  ++i)
                Push(c[n], cf? car(data(p[i])) : data(p[i]));
             x = prog(cdr(foo));
+            if (cnt)
+               drop(c[cnt-1]);
             Env.arg = arg,  Env.next = next;
          }
          while (--f.cnt >= 0)
             val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
          Env.bind = f.link;
-         val(At) = Pop(at);
          return x;
       }
       if (val(foo) == val(Meth)) {
@@ -57,25 +55,24 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
          Fetch(ex,o);
          TheKey = foo,  TheCls = Nil;
          if (expr = method(o)) {
-            cell at;
-            int i = length(car(expr));
+            int i;
             methFrame m;
             struct {  // bindFrame
                struct bindFrame *link;
                int cnt;
-               struct {any sym; any val;} bnd[i+1];
+               struct {any sym; any val;} bnd[length(x = car(expr))+3];
             } f;
 
-            Push(at,val(At));
             m.link = Env.meth;
             m.key = TheKey;
             m.cls = TheCls;
             f.link = Env.bind,  Env.bind = (bindFrame*)&f;
-            f.cnt = 0;
+            f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
             --n, ++p;
-            for (x = car(expr);  isCell(x);  ++f.cnt, x = cdr(x)) {
+            while (isCell(x)) {
                f.bnd[f.cnt].val = val(f.bnd[f.cnt].sym = car(x));
-               val(f.bnd[f.cnt].sym) = --n<0? Nil : cf? car(data(p[f.cnt])) : data(p[f.cnt]);
+               val(f.bnd[f.cnt].sym) = --n<0? Nil : cf? car(data(p[f.cnt-1])) : data(p[f.cnt-1]);
+               ++f.cnt, x = cdr(x);
             }
             if (isNil(x)) {
                f.bnd[f.cnt].sym = This;
@@ -85,36 +82,35 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
                x = prog(cdr(expr));
             }
             else if (x != At) {
-               bindFrame g;
-
-               Bind(x,g),  val(x) = Nil;
+               f.bnd[f.cnt].sym = x,  f.bnd[f.cnt++].val = val(x),  val(x) = Nil;
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;
                Env.meth = &m;
                x = prog(cdr(expr));
-               Unbind(g);
             }
             else {
+               int cnt = n;
                int next = Env.next;
                cell *arg = Env.arg;
                cell c[Env.next = n];
 
                Env.arg = c;
-               for (i = f.cnt;  --n >= 0;  ++i)
+               for (i = f.cnt-1;  --n >= 0;  ++i)
                   Push(c[n], cf? car(data(p[i])) : data(p[i]));
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;
                Env.meth = &m;
                x = prog(cdr(expr));
+               if (cnt)
+                  drop(c[cnt-1]);
                Env.arg = arg,  Env.next = next;
             }
             while (--f.cnt >= 0)
                val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
             Env.bind = f.link;
             Env.meth = Env.meth->link;
-            val(At) = Pop(at);
             return x;
          }
          err(ex, o, "Bad object");

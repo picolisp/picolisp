@@ -1610,6 +1610,7 @@ abbreviations:
    <a href="#del">del</a>
    <a href="#queue">queue</a>
    <a href="#idx">idx</a>
+   <a href="#lup">lup</a>
 </code>
 
 <dt>Property Access
@@ -1671,6 +1672,7 @@ abbreviations:
    <a href="#bitQ">bit?</a>
    <a href="#&">&</a>
    <a href="#|">|</a>
+   <a href="#x|">x|</a>
    <a href="#sqrt">sqrt</a>
    <a href="#seed">seed</a>
    <a href="#rand">rand</a>
@@ -1775,6 +1777,7 @@ abbreviations:
    <a href="#method">method</a>
    <a href="#meth">meth</a>
    <a href="#send">send</a>
+   <a href="#try">try</a>
    <a href="#super">super</a>
    <a href="#extra">extra</a>
    <a href="#with">with</a>
@@ -1995,7 +1998,7 @@ abbreviations:
 </code></pre>
 
 <p><dt><a name="accept"><code>(accept 'cnt) -> cnt | NIL</code></a>
-<dd>Accepts at a connection of descriptor <code>cnt</code> (as recieved by
+<dd>Accepts a connection of descriptor <code>cnt</code> (as recieved by
 <code><a href="#port">port</a></code>), and returns the new socket descriptor
 <code>cnt</code>. The global variable <code>*Adr</code> is set to the IP address
 of the client. See also <code><a href="#listen">listen</a></code>, <code><a
@@ -2279,7 +2282,9 @@ href="#job">job</a></code> and <code><a href="#use">use</a></code>.
 
 <p><dt><a name="bitQ"><code>(bit? 'num ..) -> num | NIL</code></a>
 <dd>Returns the first <code>num</code> argument when all bits which are 1 in the
-first argument are also 1 in all following arguments.
+first argument are also 1 in all following arguments. See also <code><a
+href="#&">&</a></code>, <code><a href="#|">|</a></code> and <code><a
+href="#x|">x|</a></code>.
 
 <p><pre><code>
 : (bit? 7 15 255)
@@ -2944,7 +2949,7 @@ href="#cut">cut</a></code> and <code><a href="#pop">pop</a></code>.
 <p><dt><a name="delete"><code>(delete 'any 'lst) -> lst</code></a>
 <dd>Deletes <code>any</code> from <code>lst</code>. If <code>any</code> is
 contained more than once in <code>lst</code>, only the first occurrence is
-deleted.
+deleted. See also <code><a href="#delq">delq</a></code>.
 
 <p><pre><code>
 : (delete 2 (1 2 3))
@@ -3066,9 +3071,11 @@ and <code><a href="#job">job</a></code>.
 -> 3
 </code></pre>
 
-<p><dt><a name="eval"><code>(eval 'any) -> any</code></a>
+<p><dt><a name="eval"><code>(eval 'any ['cnt]) -> any</code></a>
 <dd>Evaluates <code>any</code>. Note that because of the standard argument
-evaluation, <code>any</code> is actually evaluated twice.
+evaluation, <code>any</code> is actually evaluated twice. If a binding
+environment offset <code>cnt</code> is given, the second evaluation takes place
+in the corresponding environment. See also <code><a href="#run">run</a></code>.
 
 <p><pre><code>
 : (eval (list '+ 1 2 3))
@@ -3540,17 +3547,17 @@ also <code><a href="#*Adr">*Adr</a></code>.
 <p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> lst<br>
 (idx 'var 'any) -> lst<br>
 (idx 'var) -> lst</code></a>
-<dd>Maintains an index tree structure in <code>var</code>, and checks for the
-existence of <code>any</code>. If <code>any</code> is contained in
-<code>var</code>, the corresponding subtree is returned, otherwise
-<code>NIL</code>. In the first form, <code>any</code> is destructively inserted
-into the tree if <code>flg</code> is non-<code>NIL</code>, or deleted from the
-tree if <code>flg</code> is <code>NIL</code>. The second form only checks for
-existence, but does not change the index tree. In the third form (when called
-with a single <code>var</code> argument) the contents of the tree are returned
-as a sorted list. If all elements are inserted in sorted order, the tree
-degenerates into a linear list. See also <code><a href="#sort">sort</a></code>
-and <code><a href="#member">member</a></code>.
+<dd>Maintains an index tree in <code>var</code>, and checks for the existence of
+<code>any</code>. If <code>any</code> is contained in <code>var</code>, the
+corresponding subtree is returned, otherwise <code>NIL</code>. In the first
+form, <code>any</code> is destructively inserted into the tree if
+<code>flg</code> is non-<code>NIL</code>, or deleted from the tree if
+<code>flg</code> is <code>NIL</code>. The second form only checks for existence,
+but does not change the index tree. In the third form (when called with a single
+<code>var</code> argument) the contents of the tree are returned as a sorted
+list. If all elements are inserted in sorted order, the tree degenerates into a
+linear list. See also <code><a href="#lup">lup</a></code>, <code><a
+href="#sort">sort</a></code> and <code><a href="#member">member</a></code>.
 
 <p><pre><code>
 : (idx 'X 'd T)                              # Insert data
@@ -4095,12 +4102,45 @@ otherwise <code>NIL</code>. See also <code><a href="#gt0">gt0</a></code>.
 -> NIL
 </code></pre>
 
+<p><dt><a name="lup"><code>(lup 'lst 'any) -> lst<br>
+(lup 'lst 'any 'any2) -> lst</code></a>
+<dd>Looks up <code>any</code> in the CAR-elements of cells stored in the index
+tree <code>lst</code>, as built up by <code><a href="#idx">idx</a></code>. In
+the first form, the first found cell is returned, in the second form a list of
+all cells whose CAR is in the range <code>any</code> .. <code>any2</code>. See
+also <code><a href="#assoc">assoc</a></code>.
+
+<p><pre><code>
+: (idx 'A 'a T)
+-> NIL
+: (idx 'A (1 . b) T)
+-> NIL
+: (idx 'A 123 T)
+-> NIL
+: (idx 'A (1 . a) T)
+-> NIL
+: (idx 'A (1 . c) T)
+-> NIL
+: (idx 'A (2 . d) T)
+-> NIL
+: (idx 'A)
+-> (123 a (1 . a) (1 . b) (1 . c) (2 . d))
+: (lup A 1)
+-> (1 . b)
+: (lup A 2)
+-> (2 . d)
+: (lup A 1 1)
+-> ((1 . a) (1 . b) (1 . c))
+: (lup A 1 2)
+-> ((1 . a) (1 . b) (1 . c) (2 . d))
+</code></pre>
+
 
 <p><hr>
 <h3><a name="m-foo">M</a></h3>
 
 <p><dt><a name="made"><code>(made ['lst1 ['lst2]]) -> lst</code></a>
-<dd>Set a new initial list value for the current <code><a
+<dd>Initializes a new list value for the current <code><a
 href="#make">make</a></code> environment. All list elements already produced
 with <code><a href="#chain">chain</a></code> and <code><a
 href="#link">link</a></code> are discarded, and <code>lst1</code> is used
@@ -4535,8 +4575,8 @@ with <code>any</code> elements.
 </code></pre>
 
 <p><dt><a name="new"><code>(new ['flg] ['typ ['any ..]]) -> sym</code></a>
-<dd>Creates and returns a new symbol. If <code>flg</code> is given and
-non-<code>NIL</code>, the new symbol will be an external symbol.
+<dd>Creates and returns a new object. If <code>flg</code> is given and
+non-<code>NIL</code>, the new object will be an external symbol.
 <code>typ</code> (typically a list of classes) is assigned to the
 <code>VAL</code>, and the initial <code>T</code> message is sent with the
 arguments <code>any</code> to the new object. See also <code><a
@@ -4632,7 +4672,8 @@ otherwise <code>NIL</code>.
 
 <p><dt><a name="off"><code>(off sym ..) -> NIL</code></a>
 <dd>Stores <code>NIL</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>.
+<code>sym</code>. See also <code><a href="#on">on</a></code> and <code><a
+href="#zero">zero</a></code>.
 
 <p><pre><code>
 : (off A B)
@@ -4657,7 +4698,8 @@ href="#index">index</a></code>.
 
 <p><dt><a name="on"><code>(on sym ..) -> T</code></a>
 <dd>Stores <code>T</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>.
+<code>sym</code>. See also <code><a href="#off">off</a></code> and <code><a
+href="#zero">zero</a></code>.
 
 <p><pre><code>
 : (on A B)
@@ -5337,10 +5379,12 @@ Otherwise only the first <code>cnt</code> elements are rotated.
 -> (3 1 2 4 5 6)
 </code></pre>
 
-<p><dt><a name="run"><code>(run 'any) -> any</code></a>
+<p><dt><a name="run"><code>(run 'any ['cnt]) -> any</code></a>
 <dd>If <code>any</code> is an atom, <code>run</code> behaves like
 <code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
-sequence. The last result is returned.
+sequence. The last result is returned. If a binding environment offset
+<code>cnt</code> is given, that evaluation takes place in the corresponding
+environment. See also <code><a href="#eval">eval</a></code>.
 
 <p><pre><code>
 : (run '((println (+ 1 2 3)) (println 'Ok)))
@@ -5391,7 +5435,7 @@ href="#find">find</a></code>, <code><a href="#pick">pick</a></code>.
 <dd>Sends the message <code>msg</code> to the object <code>obj</code>,
 optionally with arguments <code>any</code>. If the message cannot be located in
 <code>obj</code>, its classes and superclasses, an error <code>"Bad
-message"</code> is issued.
+message"</code> is issued. See also <code><a href="#try">try</a></code>.
 
 <p><pre><code>
 : (stop> Dlg)
@@ -5979,6 +6023,20 @@ href="#clip">clip</a></code>.
 -> (a b)
 </code></pre>
 
+<p><dt><a name="try"><code>(try 'msg 'any ['any ..]) -> any</code></a>
+<dd>Tries to send the message <code>msg</code> to the object <code>obj</code>,
+optionally with arguments <code>any</code>. If <code>any</code> is not an
+object, or if the message cannot be located in <code>obj</code>, its classes and
+superclasses, <code>NIL</code> is returned. See also <code><a
+href="#send">send</a></code>.
+
+<p><pre><code>
+: (try 'msg> 123)
+-> NIL
+: (try 'html> 'a)
+-> NIL
+</code></pre>
+
 <p><dt><a name="type"><code>(type 'any) -> lst</code></a>
 <dd>Return the type (list of classes) of the object <code>sym</code>. See also
 <code><a href="#isa">isa</a></code>.
@@ -6288,6 +6346,18 @@ href="#pr">pr</a></code>.
 -> NIL
 </code></pre>
 
+<p><dt><a name="x|"><code>(x| 'num ..) -> num</code></a>
+<dd>Returns the bitwise <code>XOR</code> of all <code>num</code> arguments. See
+also <code><a href="#&">&</a></code>, <code><a href="#|">|</a></code> and
+<code><a href="#bitQ">bit?</a></code>.
+
+<p><pre><code>
+: (x| 2 7)
+-> 5
+: (x| 2 7 1)
+-> 4
+</code></pre>
+
 
 <p><hr>
 <h3><a name="y-foo">Y</a></h3>
@@ -6323,7 +6393,8 @@ car -- Undefined
 
 <p><dt><a name="zero"><code>(zero sym ..) -> 0</code></a>
 <dd>Stores <code>0</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>.
+<code>sym</code>. See also <code><a href="#on">on</a></code> and <code><a
+href="#off">off</a></code>.
 
 <p><pre><code>
 : (zero A B)
@@ -6408,7 +6479,9 @@ arguments. The sign of the result is that of the first argument.
 </code></pre>
 
 <p><dt><a name="&"><code>(& 'num ..) -> num</code></a>
-<dd>Returns the bitwise <code>AND</code> of all <code>num</code> arguments.
+<dd>Returns the bitwise <code>AND</code> of all <code>num</code> arguments. See
+also <code><a href="#|">|</a></code>, <code><a href="#x|">x|</a></code> and
+<code><a href="#bitQ">bit?</a></code>.
 
 <p><pre><code>
 : (& 6 3)
@@ -6935,7 +7008,9 @@ Div/0
 </code></pre>
 
 <p><dt><a name="|"><code>(| 'num ..) -> num</code></a>
-<dd>Returns the bitwise <code>OR</code> of all <code>num</code> arguments.
+<dd>Returns the bitwise <code>OR</code> of all <code>num</code> arguments. See
+also <code><a href="#x|">x|</a></code>, <code><a href="#&">&</a></code> and
+<code><a href="#bitQ">bit?</a></code>.
 
 <p><pre><code>
 : (| 1 2)

@@ -1,5 +1,5 @@
 /* utf2.c
- * 26dec03abu
+ * 31mar05abu
  * Convert process or file (ISO-8859-15) to stdout (UTF-8, 2-Byte)
  */
 
@@ -46,15 +46,15 @@ int main(int ac, char *av[]) {
          return 1;
       }
    }
-	while ((c = getc(fp)) != EOF) {
+	while ((c = getc_unlocked(fp)) != EOF) {
       if (c == 0xA4)
-         putchar(0xE2), putchar(0x82), putchar(0xAC);
+         putchar_unlocked(0xE2), putchar_unlocked(0x82), putchar_unlocked(0xAC);
       else if (c >= 0x80) {
-         putchar(0xC0 | c>>6 & 0x1F);
-         putchar(0x80 | c & 0x3F);
+         putchar_unlocked(0xC0 | c>>6 & 0x1F);
+         putchar_unlocked(0x80 | c & 0x3F);
       }
       else
-         putchar(c);
+         putchar_unlocked(c);
 	}
    if (pid) {
       fclose(fp);

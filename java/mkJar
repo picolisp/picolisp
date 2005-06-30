@@ -1,5 +1,5 @@
 #!/bin/bash
-# 28dec04abu
+# 13jun05abu
 # (cd java; ./mkJar [-g])
 
 javac -O  ${1:--g:none}  -target 1.1  *.java
@@ -9,7 +9,7 @@ jar cf pico.jar \
    InOut.class \
    Front.class Front\$?.class \
    PicoAdjustmentListener.class PicoFocusListener.class \
-   PicoItemListener.class PicoKeyAdapter.class PicoMouseAdapter.class \
+   PicoItemListener.class Pico*Adapter*.class \
    Graf.class GLine.class GRect.class GOval.class GText.class \
    GField*.class DrawField*.class PictField*.class \
    Popup.class

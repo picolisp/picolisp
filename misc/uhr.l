@@ -1,16 +1,22 @@
-# 17mar03abu
+# 27may05abu
 # (c) Software Lab. Alexander Burger
+# ./p dbg.l misc/uhr.l -go
 
-(app)
+(load "lib/http.l" "lib/html.l" "lib/gui.l")
 
-(html "Uhr"
-   (<head> "Uhr")
-   (setq *Uhr
-      (form '(+Form) 240 80
-         (quote
-            (gui 'uhr '(+Mono +Label) "Zeit:" (stamp))
-            (row
-               (gui '(+Button) "" "Start"
-                  '(task -1000 1000
-                     (set> (get *Uhr 'uhr) (stamp)) ) )
-               (gui '(+Button) "" "Stop" '(task -1000)) ) ) ) ) )
+(de uhr ()
+   (app)
+   (html "Uhr"
+      (<head> "Uhr")
+      (setq *Uhr
+         (form '(+Form) 240 80
+            (quote
+               (gui 'uhr '(+Mono +Label) "Zeit:" (stamp))
+               (row
+                  (gui '(+Button) "" "Start"
+                     '(task -1000 1000
+                        (set> (get *Uhr 'uhr) (stamp)) ) )
+                  (gui '(+Button) "" "Stop" '(task -1000)) ) ) ) ) ) )
+
+(de go ()
+   (server 8080 "@uhr") )

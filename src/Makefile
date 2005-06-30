@@ -1,4 +1,4 @@
-# 17dec04abu
+# 28jun05abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -16,7 +16,7 @@ picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
 .c.o:
 	echo $*.c:
-	gcc -c -O3 -fomit-frame-pointer \
+	gcc -c -Os -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
 	-pipe  -D_FILE_OFFSET_BITS=64  $*.c

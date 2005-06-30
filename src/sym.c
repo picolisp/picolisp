@@ -1,4 +1,4 @@
-/* 15mar05abu
+/* 23jun05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -699,6 +699,59 @@ any doIdx(any ex) {
          x = *(p = &cddr(x));
       }
    }
+}
+
+static any From, To;
+static cell LupCell;
+
+static void lup(any x) {
+   if (isCell(x)) {
+      if (car(x) == T)
+         lup(cadr(x));
+      else if (!isCell(car(x)))
+         lup(cddr(x));
+      else if (compare(To, caar(x)) >= 0) {
+         lup(cddr(x));
+         if (compare(From, caar(x)) <= 0) {
+            data(LupCell) = cons(car(x), data(LupCell));
+            lup(cadr(x));
+         }
+      }
+      else if (compare(From, caar(x)) <= 0)
+         lup(cadr(x));
+   }
+}
+
+// (lup 'lst 'any) -> lst
+// (lup 'lst 'any 'any2) -> lst
+any doLup(any x) {
+   int n;
+   cell c1, c2;
+
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   x = cdr(x);
+   if (!isNil(To = EVAL(car(x)))) {
+      From = data(c2);
+      Push(LupCell, Nil);
+      lup(data(c1));
+      drop(c1);
+      return data(LupCell);
+   }
+   while (isCell(data(c1))) {
+      if (car(data(c1)) == T)
+         data(c1) = cadr(data(c1));
+      else if (!isCell(car(data(c1))))
+         data(c1) = cddr(data(c1));
+      else if (n = compare(data(c2), caar(data(c1))))
+         data(c1) = n < 0? cadr(data(c1)) : cddr(data(c1));
+      else {
+         drop(c1);
+         return car(data(c1));
+      }
+   }
+   drop(c1);
+   return Nil;
 }
 
 any put(any x, any key, any val) {

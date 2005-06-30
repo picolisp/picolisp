@@ -1,4 +1,4 @@
-# 20nov04abu
+# 13may05abu
 # (c) Software Lab. Alexander Burger
 
 # *Panel *Rate *Sound *Tone
@@ -6,6 +6,7 @@
 (allowed ("loc/help/")
    *PW "@rcsim" "favicon.ico" "lib/clrlog.l" "@psh" )
 
+(load "lib/http.l" "lib/html.l")
 (load "simul/gui.l")
 (load "rcsim/lib.l")
 (load "lib/heartbeat.l")

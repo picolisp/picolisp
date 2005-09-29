@@ -1,5 +1,5 @@
 #!/bin/bash
-# 13jun05abu
+# 12aug05abu
 # (cd java; ./mkJar [-g])
 
 javac -O  ${1:--g:none}  -target 1.1  *.java
@@ -19,8 +19,5 @@ jar cf tele.jar \
 
 jar cf util.jar \
    Reflector.class InOut.class Util.class
-
-jar cf gl.jar \
-   Z3d*.class
 
 rm *.class

@@ -1,4 +1,4 @@
-15mar05abu
+28sep05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -6,8 +6,8 @@
          ======================
 
 There is no 'configure' procedure, but the Pico Lisp file structure is simple
-enough to get along without it (we hope). It should compile and run on any Linux
-system without problems.
+enough to get along without it (we hope). It should compile and run on
+GNU/Linux, FreeBSD, and possibly other systems without problems.
 
 By default, Pico Lisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.
@@ -58,8 +58,8 @@ asked questions in 'doc/faq.html'.
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including
-tests, demo databases and servers, games (chess, minesweeper), tax accounting,
-algorithms, GUI demos, 2D drawing, 3D animation (flight simulator), and more.
+tests, demo databases and servers, games (chess, minesweeper), 3D animation
+(flight simulator), and more.
 
 Any feedback is welcome!
 Hope you enjoy :-)

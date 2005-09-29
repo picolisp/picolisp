@@ -1,4 +1,4 @@
-# 04may05abu
+# 03aug05abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -17,7 +17,7 @@
    (and *Bar (upd> *Bar)) )
 
 (de pwForm Prg
-   (form '(+Form) 450 150
+   (form '(+Form) 400 150
       (append
          (quote
             (gui 'nm '(+TextField) ,"Name" 20)
@@ -37,7 +37,8 @@
             (gui 'msg '(+Upd +Mono +Label)
                '(set> This
                   (and *Login
-                     (pack "'" (get *Login 'nm) ,"' logged in") ) ) )
+                     (pack "'" (get *Login 'nm) ,"' logged in") ) )
+               "" "    " )
             (gui '(+Able +Button) '*Login "" ,"logout"
                '(logout) ) ) ) ) )
 

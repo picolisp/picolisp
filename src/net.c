@@ -1,4 +1,4 @@
-/* 08apr05abu
+/* 17sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <netinet/in.h>
 
 static void tcpErr(any ex, char *s) {
    err(ex, NULL, "TCP %s error: %s", s, strerror(errno));
@@ -31,9 +32,9 @@ static any tcpAccept(any ex, int sd) {
    n |= O_NONBLOCK;
    if (fcntl(sd, F_SETFL, n) < 0)
       tcpErr(ex, "SETFL");
-   i = 60; do {
-      n = sizeof(addr);
-      if ((sd2 = accept(sd, (struct sockaddr*)&addr, &n)) >= 0) {
+   i = 200; do {
+      socklen_t len = sizeof(addr);
+      if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
          val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
          return boxCnt(sd2);
       }
@@ -50,7 +51,7 @@ any doPort(any ex) {
    cell c1;
    struct sockaddr_in addr;
 
-   bzero((char*)&addr, sizeof(addr));
+   memset(&addr, 0, sizeof(addr));
    addr.sin_family = AF_INET;
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    sd = tcpSocket(ex);
@@ -72,8 +73,8 @@ any doPort(any ex) {
    if (listen(sd,5) < 0)
       close(sd),  tcpErr(ex, "listen");
    if (!isNil(data(c1) = EVAL(caddr(ex)))) {
-      n = sizeof(addr);
-      if (getsockname(sd, (struct sockaddr*)&addr, &n) < 0)
+      socklen_t len = sizeof(addr);
+      if (getsockname(sd, (struct sockaddr*)&addr, &len) < 0)
          close(sd),  tcpErr(ex, "getsockname");
       Save(c1);
       NeedVar(ex,data(c1));
@@ -114,7 +115,7 @@ any doHost(any x) {
 
    x = evSym(cdr(x));
    {
-      byte nm[bufSize(x)];
+      char nm[bufSize(x)];
 
       bufString(x, nm);
       if (inet_aton(nm, &in) && (p = gethostbyaddr((char*)&in, sizeof(in), AF_INET)))
@@ -132,10 +133,10 @@ any doConnect(any ex) {
 
    x = evSym(cdr(ex));
    {
-      byte nm[bufSize(x)];
+      char nm[bufSize(x)];
 
       bufString(x, nm);
-      bzero((char*)&addr, sizeof(addr));
+      memset(&addr, 0, sizeof(addr));
       if (!inet_aton(nm, &addr.sin_addr)) {
          if (!(p = gethostbyname(nm))  ||  p->h_length == 0)
             return Nil;

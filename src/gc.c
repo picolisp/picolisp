@@ -1,4 +1,4 @@
-/* 28jun05abu
+/* 07jul05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,6 +6,16 @@
 
 /* Mark data */
 static void mark(any x) {
+#ifndef NRGC
+   cell *p;
+
+   while (num((p = cellPtr(x))->cdr) & 1) {
+      *(long*)&cdr(p) &= ~1;
+      if (!isNum(x))
+         mark(p->car);
+      x = p->cdr;
+   }
+#else  // Non-Recursive Garbage Collector
    any tos, tmp;
    cell *p;
 
@@ -29,6 +39,7 @@ static void mark(any x) {
       }
       tmp = (any)(num(p->car) & ~1),  p->car = x,  x = p->cdr,  p->cdr = tmp;
    }
+#endif
 }
 
 /* Garbage collector */
@@ -100,7 +111,7 @@ static void gc(long c) {
 // (gc ['cnt]) -> cnt | NIL
 any doGc(any x) {
    x = cdr(x);
-   gc(isNum(x = EVAL(car(x)))? 1024*1024/sizeof(cell)*unBox(x) : CELLS);
+   gc(isNum(x = EVAL(car(x)))? CELLS*unBox(x) : CELLS);
    return x;
 }
 

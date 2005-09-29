@@ -1,210 +1,262 @@
-# 12jun05abu
+# 04sep05abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
-# *White *Black *WKing *BKing
+# *White *Black *WKPos *BKPos *Pinned
 # *Depth *Moved *Undo *Redo *Me *You
 
 (load "lib/simul.l")
 
 ### Fields/Board ###
-# x y color piece
+# x y color piece whAtt blAtt
 
-(unless *Board
-   (setq *Board (grid 8 8))
-   (for X (1 2 3 4 5 6 7 8)
-      (for Y (1 2 3 4 5 6 7 8)
-         (with (get *Board X Y)
-            (=: x X)
-            (=: y Y)
-            (=: color (not (bit? 1 (+ X Y)))) ) ) ) )
+(setq *Board (grid 8 8))
+
+(for X (1 2 3 4 5 6 7 8)
+   (for Y (1 2 3 4 5 6 7 8)
+      (with (get *Board X Y)
+         (=: x X)
+         (=: y Y)
+         (=: color (not (bit? 1 (+ X Y)))) ) ) )
 
 (de *Straight `west `east `north `south)
 
 (de *Diagonal
-   ((Fld) (cadr (val (caar (val Fld)))))     # Southwest
-   ((Fld) (cddr (val (caar (val Fld)))))     # Northwest
-   ((Fld) (cadr (val (cdar (val Fld)))))     # Southeast
-   ((Fld) (cddr (val (cdar (val Fld))))) )   # Northeast
+   ((This) (: 0 1  1  0 -1  1))   # Southwest
+   ((This) (: 0 1  1  0 -1 -1))   # Northwest
+   ((This) (: 0 1 -1  0 -1  1))   # Southeast
+   ((This) (: 0 1 -1  0 -1 -1)) ) # Northeast
 
 (de *DiaStraight
-   ((Fld) (cadr (val (cadr (val (caar (val Fld)))))))    # South Southwest
-   ((Fld) (caar (val (cadr (val (caar (val Fld)))))))    # West Southwest
-   ((Fld) (caar (val (cddr (val (caar (val Fld)))))))    # West Northwest
-   ((Fld) (cddr (val (cddr (val (caar (val Fld)))))))    # North Northwest
-   ((Fld) (cddr (val (cddr (val (cdar (val Fld)))))))    # North Northeast
-   ((Fld) (cdar (val (cddr (val (cdar (val Fld)))))))    # East Northeast
-   ((Fld) (cdar (val (cadr (val (cdar (val Fld)))))))    # East Southeast
-   ((Fld) (cadr (val (cadr (val (cdar (val Fld))))))) )  # South Southeast
+   ((This) (: 0 1  1  0 -1  1  0 -1  1))   # South Southwest
+   ((This) (: 0 1  1  0 -1  1  0  1  1))   # West Southwest
+   ((This) (: 0 1  1  0 -1 -1  0  1  1))   # West Northwest
+   ((This) (: 0 1  1  0 -1 -1  0 -1 -1))   # North Northwest
+   ((This) (: 0 1 -1  0 -1 -1  0 -1 -1))   # North Northeast
+   ((This) (: 0 1 -1  0 -1 -1  0  1 -1))   # East Northeast
+   ((This) (: 0 1 -1  0 -1  1  0  1 -1))   # East Southeast
+   ((This) (: 0 1 -1  0 -1  1  0 -1  1)) ) # South Southeast
 
 
 ### Pieces ###
-(de piece (Typ Fld)
+(de piece (Typ Cnt Fld)
    (prog1
       (def
-         (pack
-            (mapcar '((Cls) (cdr (chop Cls))) Typ) )
+         (pack (mapcar '((Cls) (cdr (chop Cls))) Typ))
          Typ )
-      (init> @ Fld) ) )
-
-(de ahead (Color Fld)
-   ((if Color south north) Fld) )
-
-(de behind (Color Fld)
-   ((if Color north south) Fld) )
+      (init> @ Cnt Fld) ) )
 
 
 (class +White)
 # color ahead
 
-(dm init> (Fld)
+(dm init> (Cnt Fld)
    (=: ahead north)
-   (extra Fld) )
+   (extra Cnt Fld) )
 
 (dm name> ()
    (pack " " (extra) " ") )
 
 (dm move> (Fld)
-   (cond
-      ((not Fld) (setq *White (delq This *White)))
-      ((not (: field)) (push '*White This)) )
-   (extra Fld) )
+   (let (W (: field whAtt)  B (: field blAtt))
+      (when (: field)
+         (put @ 'piece NIL)
+         (for F (: attacks) (whAtt- F This)) )
+      (cond
+         ((not Fld) (setq *White (delq This *White)))
+         ((not (: field)) (push '*White This)) )
+      (ifn (=: field Fld)
+         (=: attacks)
+         (put Fld 'piece This)
+         (and (isa '+King This) (setq *WKPos Fld))
+         (for F (=: attacks (attacks> This)) (whAtt+ F This)) )
+      (reAtttack W (: field whAtt) B (: field blAtt)) ) )
 
 
 (class +Black)
+# color ahead
 
-(dm init> (Fld)
+(dm init> (Cnt Fld)
    (=: color T)
    (=: ahead south)
-   (extra Fld) )
+   (extra Cnt Fld) )
 
 (dm name> ()
    (pack '< (extra) '>) )
 
 (dm move> (Fld)
-   (cond
-      ((not Fld) (setq *Black (delq This *Black)))
-      ((not (: field)) (push '*Black This)) )
-   (extra Fld) )
+   (let (W (: field whAtt)  B (: field blAtt))
+      (when (: field)
+         (put @ 'piece NIL)
+         (for F (: attacks) (blAtt- F This)) )
+      (cond
+         ((not Fld) (setq *Black (delq This *Black)))
+         ((not (: field)) (push '*Black This)) )
+      (ifn (=: field Fld)
+         (=: attacks)
+         (put Fld 'piece This)
+         (and (isa '+King This) (setq *BKPos Fld))
+         (for F (=: attacks (attacks> This)) (blAtt+ F This)) )
+      (reAtttack W (: field whAtt) B (: field blAtt)) ) )
 
 
 (class +piece)
-# field
+# cnt field attacks
 
-(dm init> (Fld)
+(dm init> (Cnt Fld)
+   (=: cnt Cnt)
    (move> This Fld) )
 
-(dm move> (Fld)
-   (and (: field) (put @ 'piece NIL))
-   (and (=: field Fld) (put @ 'piece This)) )
+(dm ctl> ())
 
 
 (class +King +piece)
 
-(dm init> (Fld)
-   (=: val 126)
-   (super Fld) )
-
 (dm name> () 'K)
 
+(dm val> () 120)
+
+(dm ctl> ()
+   (unless (=0 (: cnt)) -10) )
+
 (dm moves> ()
-   (unless (attack (: field) (not (: color)))
-      (make
-         (unless (memq This *Moved)
-            (castle west T)
-            (castle east) )
-         (try1Move *Straight)
-         (try1Move *Diagonal) ) ) )
+   (make
+      (unless
+         (or
+            (n0 (: cnt))
+            (get (: field) (if (: color) 'whAtt 'blAtt)) )
+         (castle west T)
+         (castle east) )
+      (try1Move *Straight)
+      (try1Move *Diagonal) ) )
+
+(dm attacks> ()
+   (make
+      (try1Attack *Straight)
+      (try1Attack *Diagonal) ) )
+
+
+(class +Castled)
+
+(dm ctl> () 30)
 
 
 (class +Queen +piece)
 
-(dm init> (Fld)
-   (=: val 72)
-   (super Fld) )
-
 (dm name> () 'Q)
 
+(dm val> () 95)
+
 (dm moves> ()
-   (make (tryMoves *Straight) (tryMoves *Diagonal)) )
+   (make
+      (tryMoves *Straight)
+      (tryMoves *Diagonal) ) )
+
+(dm attacks> ()
+   (make
+      (tryAttacks *Straight)
+      (tryAttacks *Diagonal T) ) )
 
 
 (class +Rook +piece)
 
-(dm init> (Fld)
-   (=: val 40)
-   (super Fld) )
-
 (dm name> () 'R)
+
+(dm val> () 50)
 
 (dm moves> ()
    (make (tryMoves *Straight)) )
 
+(dm attacks> ()
+   (make (tryAttacks *Straight)) )
+
 
 (class +Bishop +piece)
 
-(dm init> (Fld)
-   (=: val 28)
-   (super Fld) )
-
 (dm name> () 'B)
+
+(dm val> () 33)
+
+(dm ctl> ()
+   (when (=0 (: cnt)) -10) )
 
 (dm moves> ()
    (make (tryMoves *Diagonal)) )
 
+(dm attacks> ()
+   (make (tryAttacks *Diagonal T)) )
+
 
 (class +Knight +piece)
 
-(dm init> (Fld)
-   (=: val 26)
-   (super Fld) )
-
 (dm name> () 'N)
+
+(dm val> () 33)
+
+(dm ctl> ()
+   (when (=0 (: cnt)) -10) )
 
 (dm moves> ()
    (make (try1Move *DiaStraight)) )
 
+(dm attacks> ()
+   (make (try1Attack *DiaStraight)) )
+
 
 (class +Pawn +piece)
 
-(dm init> (Fld)
-   (=: val 8)
-   (super Fld) )
-
 (dm name> () 'P)
+
+(dm val> () 10)
 
 (dm moves> ()
    (let (Fld1 ((: ahead) (: field))  Fld2 ((: ahead) Fld1))
       (make
          (and
             (tryPawnMove Fld1 Fld2)
-            (not (memq This *Moved))
+            (=0 (: cnt))
             (tryPawnMove Fld2 T) )
          (tryPawnCapt (west Fld1) Fld2 (west (: field)))
          (tryPawnCapt (east Fld1) Fld2 (east (: field))) ) ) )
 
+(dm attacks> ()
+   (let Fld ((: ahead) (: field))
+      (make
+         (and (west Fld) (link @))
+         (and (east Fld) (link @)) ) ) )
+
 
 ### Move Logic ###
-(de king (Color . @)
-   (pass get (if Color *BKing *WKing)) )
+(de inCheck (Color)
+   (if Color (get *BKPos 'whAtt) (get *WKPos 'blAtt)) )
 
-(de isaPawn (Pce Color)
-   (and
-      (isa '+Pawn Pce)
-      (== Color (get Pce 'color))
-      Pce ) )
+(de whAtt+ (This Pce)
+   (=: whAtt (cons Pce (: whAtt))) )
 
-(de isaKnight (Pce Color)
-   (and
-      (isa '+Knight Pce)
-      (== Color (get Pce 'color))
-      Pce ) )
+(de whAtt- (This Pce)
+   (=: whAtt (delq Pce (: whAtt))) )
 
-(de isaKing (Pce Color)
-   (and
-      (isa '+King Pce)
-      (== Color (get Pce 'color))
-      Pce ) )
+(de blAtt+ (This Pce)
+   (=: blAtt (cons Pce (: blAtt))) )
+
+(de blAtt- (This Pce)
+   (=: blAtt (delq Pce (: blAtt))) )
+
+(de reAtttack (W W2 B B2)
+   (for This W
+      (unless (memq This W2)
+         (for F (: attacks) (whAtt- F This))
+         (for F (=: attacks (attacks> This)) (whAtt+ F This)) ) )
+   (for This W2
+      (for F (: attacks) (whAtt- F This))
+      (for F (=: attacks (attacks> This)) (whAtt+ F This)) )
+   (for This B
+      (unless (memq This B2)
+         (for F (: attacks) (blAtt- F This))
+         (for F (=: attacks (attacks> This)) (blAtt+ F This)) ) )
+   (for This B2
+      (for F (: attacks) (blAtt- F This))
+      (for F (=: attacks (attacks> This)) (blAtt+ F This)) ) )
 
 (de try1Move (Lst)
    (for Dir Lst
@@ -216,6 +268,10 @@
                   (list This
                      (cons (get Fld 'piece))
                      (cons This Fld) ) ) ) ) ) ) )
+
+(de try1Attack (Lst)
+   (for Dir Lst
+      (and (Dir (: field)) (link @)) )  )
 
 (de tryMoves (Lst)
    (for Dir Lst
@@ -230,6 +286,26 @@
                         (cons This Fld) ) ) ) )
             (link (list This (cons This Fld))) ) ) ) )
 
+(de tryAttacks (Lst Diag)
+   (use (Pce Cls Fld2)
+      (for Dir Lst
+         (let Fld (: field)
+            (loop
+               (NIL (setq Fld (Dir Fld)))
+               (link Fld)
+               (T
+                  (and
+                     (setq Pce (get Fld 'piece))
+                     (<> (: color) (get Pce 'color)) ) )
+               (T (== '+Pawn (setq Cls (last (type Pce))))
+                  (and
+                     Diag
+                     (setq Fld2 (Dir Fld))
+                     (= (get Fld2 'y) (get ((get Pce 'ahead) Fld) 'y))
+                     (link Fld2) ) )
+               (T (memq Cls '(+Knight +Queen +King)))
+               (T (and Pce (xor Diag (== Cls '+Bishop)))) ) ) ) ) )
+
 (de tryPawnMove (Fld Flg)
    (unless (get Fld 'piece)
       (if Flg
@@ -238,7 +314,9 @@
             (link
                (list This
                   (cons This)
-                  (cons (piece (list (car (type This)) Cls)) Fld) ) ) ) ) ) )
+                  (cons
+                     (piece (list (car (type This)) Cls) (: cnt))
+                     Fld ) ) ) ) ) ) )
 
 (de tryPawnCapt (Fld1 Flg Fld2)
    (if (get Fld1 'piece)
@@ -253,37 +331,70 @@
                   (list This
                      (cons (get Fld1 'piece))
                      (cons This)
-                     (cons (piece (list (car (type This)) Cls)) Fld1) ) ) ) ) )
+                     (cons
+                        (piece (list (car (type This)) Cls) (: cnt))
+                        Fld1 ) ) ) ) ) )
       (let? Pce (get Fld2 'piece)
          (and
             (== Pce (car *Moved))
-            (>= 5 (: field y) 4)
-            (isaPawn Pce (not (: color)))
-            (not (memq Pce (cdr *Moved)))
+            (= 1 (get Pce 'cnt))
+            (isa '+Pawn Pce)
+            (n== (: color) (get Pce 'color))
             (link (list This (cons Pce) (cons This Fld1))) ) ) ) )
 
 (de castle (Dir Long)
    (use (Fld1 Fld2 Fld Pce)
       (or
          (get (setq Fld1 (Dir (: field))) 'piece)
-         (attack Fld1 (not (: color)))
+         (get Fld1 (if (: color) 'whAtt 'blAtt))
          (get (setq Fld2 (Dir Fld1)  Fld Fld2) 'piece)
          (when Long
             (or
                (get (setq Fld (Dir Fld)) 'piece)
-               (attack Fld (not (: color))) ) )
+               (get Fld (if (: color) 'whAtt 'blAtt)) ) )
          (and
-            (== '+Rook
-               (cadr (type (setq Pce (get (Dir Fld) 'piece)))) )
-            (not (memq Pce *Moved))
-            (link (list This (cons This Fld2) (cons Pce Fld1))) ) ) ) ) )
+            (== '+Rook (last (type (setq Pce (get (Dir Fld) 'piece)))))
+            (=0 (get Pce 'cnt))
+            (link
+               (list This
+                  (cons This)
+                  (cons
+                     (piece (cons (car (type This)) '(+Castled +King)) 1)
+                     Fld2 )
+                  (cons Pce Fld1) ) ) ) ) ) )
 
+(de pinned (Fld Lst Color)
+   (use (Pce L P)
+      (and
+         (loop
+            (NIL (setq Fld (Dir Fld)))
+            (T (setq Pce (get Fld 'piece))
+               (and
+                  (= Color (get Pce 'color))
+                  (setq L
+                     (make
+                        (loop
+                           (NIL (setq Fld (Dir Fld)))
+                           (link Fld)
+                           (T (setq P (get Fld 'piece))) ) ) )
+                  (<> Color (get P 'color))
+                  (memq (last (type P)) Lst)
+                  (cons Pce L) ) ) )
+         (link @) ) ) )
+
+
+### Moves ###
+# Move      ((p1 (p1 . f2))        . ((p1 . f1)))
+# Capture   ((p1 (p2) (p1 . f2))   . ((p1 . f1) (p2 . f2)))
+# Castle    ((K (K) (C . f2) (R . f4)) . ((R . f3) (K . f1)))
+# Promote   ((P (P) (Q . f2))      . ((Q) (P . f1)))
+# Capt/Prom ((P (p1) (P) (Q . f2)) . ((Q) (P . f2) (p1 . f1)))
 (de moves (Color)
    (filter
       '((Lst)
          (prog2
             (move (car Lst))
-            (not (attack (king Color 'field) (not Color)))
+            (not (inCheck Color))
             (move (cdr Lst)) ) )
       (mapcan
          '((Pce)
@@ -299,167 +410,66 @@
 
 (de move (Lst)
    (if (atom (car Lst))
-      (push '*Moved (pop 'Lst))
-      (pop '*Moved) )
+      (inc (prop (push '*Moved (pop 'Lst)) 'cnt))
+      (dec (prop (pop '*Moved) 'cnt)) )
    (for Mov Lst
       (move> (car Mov) (cdr Mov)) ) )
 
 
 ### Evaluation ###
-(de attack (Fld Color)
-   (or
-      (isaPawn (get (east (behind Color Fld)) 'piece) Color)
-      (isaPawn (get (west (behind Color Fld)) 'piece) Color)
-      (pick
-         '((Dir)
-            (let? Fld (Dir Fld)
-               (let Pce (get Fld 'piece)
-                  (or
-                     (isaKing Pce Color)
-                     (loop
-                        (T Pce
-                           (and
-                              (== Color (get Pce 'color))
-                              (memq (cadr (type Pce)) '(+Rook +Queen))
-                              Pce ) )
-                        (NIL (setq Fld (Dir Fld)))
-                        (setq Pce (get Fld 'piece)) ) ) ) ) )
-         *Straight )
-      (pick
-         '((Dir)
-            (let? Fld (Dir Fld)
-               (let Pce (get Fld 'piece)
-                  (or
-                     (isaKing Pce Color)
-                     (loop
-                        (T Pce
-                           (and
-                              (== Color (get Pce 'color))
-                              (memq (cadr (type Pce)) '(+Bishop +Queen))
-                              Pce ) )
-                        (NIL (setq Fld (Dir Fld)))
-                        (setq Pce (get Fld 'piece)) ) ) ) ) )
-         *Diagonal )
-      (pick
-         '((Dir)
-            (isaKnight (get (Dir Fld) 'piece) Color) )
-         *DiaStraight ) ) )
+(de mate (Color)
+   (and (inCheck Color) (not (moves Color))) )
 
-(de attacks (Fld Color)
-   (make
-      (and
-         (make
-            (for Dir *DiaStraight
-               (with (isaKnight (get (Dir Fld) 'piece) Color)
-                  (link (: val)) ) ) )
-         (link @) )
-      (let (P1 (east (behind Color Fld))  P2 (west (behind Color Fld)))
-         (for Dir *Diagonal
-            (let? Fld (Dir Fld)
-               (and
-                  (make
-                     (let Pce (get Fld 'piece)
-                        (cond
-                           ((isaKing Pce Color) (link (get Pce 'val)))
-                           ((and (or (== Fld P1) (== Fld P2)) (isaPawn Pce Color))
-                              (link (get Pce 'val))
-                              (loop
-                                 (NIL (setq Fld (Dir Fld)))
-                                 (setq Pce (get Fld 'piece))
-                                 (T
-                                    (and Pce
-                                       (nand
-                                          (== Color (get Pce 'color))
-                                          (memq (cadr (type Pce)) '(+Bishop +Queen))
-                                          (link (get Pce 'val)) ) ) ) ) )
-                           (T
-                              (loop
-                                 (T
-                                    (and Pce
-                                       (nand
-                                          (== Color (get Pce 'color))
-                                          (memq (cadr (type Pce)) '(+Bishop +Queen))
-                                          (link (get Pce 'val)) ) ) )
-                                 (NIL (setq Fld (Dir Fld)))
-                                 (setq Pce (get Fld 'piece)) ) ) ) ) )
-                  (link @) ) ) ) )
-      (for Dir *Straight
-         (let? Fld (Dir Fld)
-            (and
-               (make
-                  (let Pce (get Fld 'piece)
-                     (if (isaKing Pce Color)
-                        (link (get Pce 'val))
-                        (loop
-                           (T
-                              (and Pce
-                                 (nand
-                                    (== Color (get Pce 'color))
-                                    (memq (cadr (type Pce)) '(+Rook +Queen))
-                                    (link (get Pce 'val)) ) ) )
-                           (NIL (setq Fld (Dir Fld)))
-                           (setq Pce (get Fld 'piece)) ) ) ) )
-               (link @) ) ) ) ) )
-
-(de fight (Var)
-   (when (set Var (sort (val Var)))
-      (prog1
-         (pop (val Var))
-         (unless (car (val Var))
-            (pop Var) ) ) ) )
-
-(de battle (Prey Attacker Defender)
-   (let Gain 0
-      (use (Att Def)
-         (loop
-            (NIL (setq Att (fight 'Attacker)) Gain)
-            (NIL (setq Def (fight 'Defender)) (+ Gain Prey))
-            (T (> Att Prey)
-               (loop
-                  (T (> Att Def) Gain)
-                  (NIL (setq Att (fight 'Attacker)) Gain)
-                  (NIL (setq Def (fight 'Defender)) (+ Gain Prey)) ) )
-            (inc 'Gain Prey)
-            (T (> Def Att)
-               (setq Prey Att)
-               (loop
-                  (NIL (setq Att (fight 'Attacker)) (- Gain Prey))
-                  (T (> Def Att) Gain)
-                  (NIL (setq Def (fight 'Defender)) Gain) ) )
-            (dec 'Gain Att)
-            (setq Prey Def) ) ) ) )
+(de battle (Fld Prey Attacker Defender)
+   (use Pce
+      (loop
+         (NIL (setq Pce (mini 'val> Attacker)) 0)
+         (setq Attacker (delq Pce Attacker))
+         (NIL (and (asoq Pce *Pinned) (not (memq Fld @)))
+            (max 0 (- Prey (battle Fld (val> Pce) Defender Attacker))) ) ) ) )
 
 # Ref. Sargon, Dan and Kate Spracklen, Hayden 1978
 (de cost (Color)
-   (let (Ctl 0  Mat 0  Lose 0  Win1 NIL  Win2 NIL  Flg NIL)
-      (use (White Black Col Same B)
-         (for Lst *Board
-            (for This Lst
-               (setq White (attacks This NIL)  Black (attacks This T))
-               ((if Color inc dec)
-                  'Ctl
-                  (- (sum length White) (sum length Black)) )
-               (let? Val (: piece val)
-                  (setq Col (: piece color) Same (== Col Color))
-                  (unless
-                     (=0
-                        (setq B
-                           (if Col (battle Val White Black) (battle Val White Black)) ) )
-                     (dec 'Val 4)
-                     (if Same
-                        (setq
-                           Lose (max Lose B)
-                           Flg (or (== (: piece) (car *Moved)) Flg) )
-                        (when (> B Win1)
-                           (xchg 'B 'Win1)
-                           (setq Win2 (max Win2 B)) ) ) )
-                  ((if Same dec inc) 'Mat Val) ) ) ) )
-      (unless (=0 Lose) (dec 'Lose 4))
-      (if Flg
-         (* 4 (+ Mat Lose))
-         (when (and Win1 Win2)
-            (dec 'Lose (>> 1 (- Win2 4))) )
-         (+ Ctl (* 4 (+ Mat Lose))) ) ) )
+   (if (mate (not Color))
+      -9999
+      (setq *Pinned
+         (make
+            (for Dir *Straight
+               (pinned *WKPos '(+Rook +Queen))
+               (pinned *BKPos '(+Rook +Queen) T) )
+            (for Dir *Diagonal
+               (pinned *WKPos '(+Bishop +Queen))
+               (pinned *BKPos '(+Bishop +Queen) T) ) ) )
+      (let (Ctl 0  Mat 0  Lose 0  Win1 NIL  Win2 NIL  Flg NIL)
+         (use (White Black Col Same B)
+            (for Lst *Board
+               (for This Lst
+                  (setq White (: whAtt)  Black (: blAtt))
+                  ((if Color inc dec) 'Ctl (- (length White) (length Black)))
+                  (let? Val (and (: piece) (val> @))
+                     (setq Col (: piece color)  Same (== Col Color))
+                     ((if Same dec inc) 'Ctl (ctl> (: piece)))
+                     (unless
+                        (=0
+                           (setq B
+                              (if Col
+                                 (battle This Val White Black)
+                                 (battle This Val Black White) ) ) )
+                        (dec 'Val 5)
+                        (if Same
+                           (setq
+                              Lose (max Lose B)
+                              Flg (or Flg (== (: piece) (car *Moved))) )
+                           (when (> B Win1)
+                              (xchg 'B 'Win1)
+                              (setq Win2 (max Win2 B)) ) ) )
+                     ((if Same dec inc) 'Mat Val) ) ) ) )
+         (unless (=0 Lose) (dec 'Lose 5))
+         (if Flg
+            (* 4 (+ Mat Lose))
+            (when Win2
+               (dec 'Lose (>> 1 (- Win2 5))) )
+            (+ Ctl (* 4 (+ Mat Lose))) ) ) ) )
 
 
 ### Game ###
@@ -468,23 +478,41 @@
       (prinl "   +---+---+---+---+---+---+---+---+")
       (prin " " Y " ")
       (for X (1 2 3 4 5 6 7 8)
-         (prin
-            '|
+         (prin '|
             (with (get *Board X Y)
                (cond
                   ((: piece) (name> @))
                   ((: color) " - ")
                   (T "   ") ) ) ) )
       (prinl '|) )
-   (prinl "   +---+---+---+---+---+---+---+---+")
+   (prinl "   +---+---+---+---+---+---+---+---+" (and (inCheck *You) " (+)"))
    (prinl "     a   b   c   d   e   f   g   h")
    T )
 
+(de moved? (Lst)
+   (or
+      (> 16 (length Lst))
+      (find '((This) (n0 (: cnt))) Lst) ) )
+
+(de bookMove (From To)
+   (let Pce (get From 'piece)
+      (list 0 (list (list Pce (cons Pce To)) (cons Pce From))) ) )
+
 (de myMove ()
-   (when (game *Me *Depth moves move cost)
-      (move (car (push '*Undo (cadr @))))
+   (let? M
+      (cond
+         ((moved? (if *Me *Black *White))
+            (game *Me *Depth moves move cost) )
+         (*Me
+            (if (member (get *Moved 1 'field 'x) (1 2 3 5))
+               (bookMove 'e7 'e5)
+               (bookMove 'd7 'd5) ) )
+         ((rand T) (bookMove 'e2 'e4))
+         (T (bookMove 'd2 'd4)) )
+      (move (car (push '*Undo (cadr M))))
+      (off *Redo)
       (display)
-      (cons (car @) (cdar (cadr @))) ) )
+      (cons (car M) (mapcar cdar (cdr M))) ) )
 
 (de yourMove (From To)
    (when
@@ -492,49 +520,58 @@
          '((Lst)
             (and
                (== (caar Lst) (get From 'piece))
-               (find
-                  '((Mov) (== To (cdr Mov)))
-                  (cdar Lst) ) ) )
+               (== To (pick cdr (cdar Lst))) ) )
          (moves *You) )
-      (move (car (push '*Undo @))) ) )
+      (prog1
+         (car (push '*Undo @))
+         (off *Redo)
+         (move @) ) ) )
 
-(de main (Init)
-   (off *White *Black *Moved *Undo *Redo *You)
-   (default *Depth 3)
-   (on *Me)
-   (for Lst *Board (for This Lst (=: piece)))
+(de main (Depth You Init)
+   (setq *Depth (or Depth 5)  *You You  *Me (not You))
+   (off *White *Black *Moved *Undo *Redo)
+   (for Lst *Board
+      (for This Lst (=: piece) (=: whAtt) (=: blAtt)) )
    (if Init
       (for L Init
-         (let Pce (piece (cadr L) (car L))
-            (or (caddr L) (push '*Moved Pce)) ) )
+         (with (piece (cadr L) 0 (car L))
+            (unless (caddr L)
+               (=: cnt 1)
+               (push '*Moved This) ) ) )
       (mapc
          '((Cls Lst)
-            (piece (list '+White Cls) (car Lst))
-            (piece '(+White +Pawn) (cadr Lst))
-            (piece '(+Black +Pawn) (get Lst 7))
-            (piece (list '+Black Cls) (get Lst 8)) )
+            (piece (list '+White Cls) 0 (car Lst))
+            (piece '(+White +Pawn) 0 (cadr Lst))
+            (piece '(+Black +Pawn) 0 (get Lst 7))
+            (piece (list '+Black Cls) 0 (get Lst 8)) )
          '(+Rook +Knight +Bishop +Queen +King +Bishop +Knight +Rook)
          *Board ) )
-   (setq
-      *WKing (find '((Pce) (isa '+King Pce)) *White)
-      *BKing (find '((Pce) (isa '+King Pce)) *Black) )
    (display) )
 
 (de go Args
    (cond
-      ((not Args)
-         (xchg '*Me '*You)
-         (myMove) )
+      ((not Args) (xchg '*Me '*You) (myMove))
       ((== '- (car Args))
          (when *Undo
-            (move (cdr (push '*Redo (pop '*Undo))))
             (move (cdr (push '*Redo (pop '*Undo))))
             (display) ) )
       ((== '+ (car Args))
          (when *Redo
             (move (car (push '*Undo (pop '*Redo))))
-            (move (car (push '*Undo (pop '*Redo))))
             (display) ) )
-      ((yourMove (car Args) (cadr Args))
-         (myMove) )
+      ((yourMove (car Args) (cadr Args)) (myMove))
       (T '?) ) )
+
+# Print position to file
+(de ppos (File)
+   (out File
+      (println
+         (list 'main *Depth *You
+            (lit
+               (mapcar
+                  '((This)
+                     (list
+                        (: field)
+                        (val This)
+                        (not (memq This *Moved)) ) )
+                  (append *White *Black) ) ) ) ) ) )

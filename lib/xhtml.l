@@ -1,4 +1,4 @@
-# 18jun05abu
+# 08sep05abu
 # (c) Software Lab. Alexander Burger
 
 # *Frame
@@ -105,6 +105,9 @@
                      (prinl "</a>") ) ) ) )
          (nth (cdddr *Frame) (format Str) 2) ) ) )
 
+(de style (Str)
+   (cons 'style Str) )
+
 (de <div> (Attr . Prg)
    (tag 'div Attr 2 Prg) )
 
@@ -144,6 +147,9 @@
 
 (de <pre> (Attr . Prg)
    (tag 'pre Attr 2 Prg) )
+
+(de <ol> (Attr . Prg)
+   (tag 'ol Attr 2 Prg) )
 
 (de <ul> (Attr . Prg)
    (tag 'ul Attr 2 Prg) )
@@ -310,3 +316,54 @@
    (prin "<input type=\"reset\" value=\"")
    (ht:Prin S)
    (prinl "\"/>") )
+
+# Interactive tree
+(de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
+   (default "Print" ht:Prin)
+   (let ("Pos" "Tree"  "F" (pop '"Path")  "A" 0)
+      (when "Path"
+         (loop
+            (and "F"
+               (not (cdr "Path"))
+               (map
+                  '((L)
+                     (when (pair (car L)) (set L (caar L))) )
+                  "Pos" ) )
+            (T (atom (car (setq "Pos" (nth "Pos" (abs (pop '"Path")))))))
+            (NIL "Path")
+            (setq "Pos" (cdar "Pos")) )
+         (set "Pos"
+            (if (atom (car "Pos"))
+               (cons (car "Pos") ("Expand" (car "Pos")))
+               (caar "Pos") ) ) )
+      (setq "Pos" (car "Pos"))
+      ("tree" "Tree")
+      "Tree" ) )
+
+(de "tree" ("Tree" "Lst")
+   (prinl "<ul>")
+   (for ("N" . "X") "Tree"
+      (prin "<li><a id=\"T" (inc '"A") "\"></a>")
+      (cond
+         ((pair "X")
+            (let "L" (append "Lst" (cons "N"))
+               (<href> (if (== "X" "Pos") "<+>" "[+]")
+                  (pack "Url"
+                     "?" (ht:Fmt (cons NIL "L"))
+                     "#T" (max 1 (- "A" 12)) )
+                  "_self" )
+               (space)
+               ("Print" (car "X"))
+               (and (cdr "X") ("tree" @ "L")) ) )
+         (("Able?" "X")
+            (let "L" (append "Lst" (cons (- "N")))
+               (<href> (if (== "X" "Pos") "< >" "[ ]")
+                  (pack "Url"
+                     "?" (ht:Fmt (cons ("Excl?" "X") "L"))
+                     "#T" (max 1 (- "A" 12)) )
+                  "_self" )
+               (space)
+               ("Print" "X") ) )
+         (T ("Print" "X")) )
+      (prin "</li>") )
+   (prinl "</ul>") )

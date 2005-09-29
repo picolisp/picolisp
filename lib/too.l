@@ -1,15 +1,20 @@
-# 09feb05abu
+# 25sep05abu
 # (c) Software Lab. Alexander Burger
 
+(de db1 (Dbf)
+   (if (and Dbf (n0 Dbf))
+      (extern (pack Dbf -1))
+      *DB ) )
+
 ### DB Unload/Load ###
-(de dbUnload (File)
+(de dbUnload (File Dbf)
    (out File
-      (for (S *DB S (seq S))
+      (for (S (db1 Dbf) S (seq S))
          (println (cons S (cons (val S) (getl S)))) ) ) )
 
-(de dbLoad (File)
+(de dbLoad (File Dbf)
    (in File
-      (let (P *DB  F)
+      (let (P (db1 Dbf)  F)
          (for (L (read) L (read))
             (setq F (seq P (setq P (car L)) F))
             (commit) ) ) )
@@ -23,12 +28,13 @@
 ### DB Garbage Collection ###
 (de dbgc ()
    (markExt *DB)
-   (let N 0
-      (for (S *DB  S  (seq S))
-         (unless (mark S)
-            (inc 'N)
-            (and (isa '+Entity S) (zap> S))
-            (zap S) ) )
+   (let (N 0  Dbf -1)
+      (do (max 1 (length *Dbs))
+         (for (S (db1 (inc 'Dbf))  S  (seq S))
+            (unless (mark S)
+               (inc 'N)
+               (and (isa '+Entity S) (zap> S))
+               (zap S) ) ) )
       (mark 0)
       (commit)
       (when *Blob
@@ -138,21 +144,18 @@
                                     V ) )
                               (link X) ) )
                         ((isa '+Ref This)
-                           (if (isa '+List This)
-                              (and
-                                 (find
-                                    '((Y)
-                                       (fetch
-                                          (tree Y (: cls) (get Obj (: hook)))
-                                          (cons V Obj) ) )
-                                    V )
-                                 (link X) )
-                              (and
-                                 (<> Obj
-                                    (fetch
-                                       (tree X (: cls) (get Obj (: hook)))
-                                       (cons V Obj) ) )
-                                 (link X) ) ) )
+                           (let
+                              (Tree (tree X (: cls) (get Obj (: hook)))
+                                 Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
+                              (if (isa '+List This)
+                                 (or
+                                    (find
+                                       '((Y) (fetch Tree (cons Y Aux)))
+                                       V )
+                                    (link X) )
+                                 (and
+                                    (<> Obj (fetch Tree (cons V Aux)))
+                                    (link X) ) ) ) )
                         (T
                            (for B (: bag)
                               (cond

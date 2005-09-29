@@ -1,4 +1,4 @@
-/* 15jun05abu
+/* 23sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <netinet/in.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -65,7 +66,7 @@ static int gatePort(int port) {
    int n, sd;
    struct sockaddr_in addr;
 
-   bzero((char*)&addr, sizeof(addr));
+   memset(&addr, 0, sizeof(addr));
    addr.sin_family = AF_INET;
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    addr.sin_port = htons((unsigned short)port);
@@ -81,7 +82,7 @@ static int gateConnect(unsigned short port) {
    int sd;
    struct sockaddr_in addr;
 
-   bzero((char*)&addr, sizeof(addr));
+   memset(&addr, 0, sizeof(addr));
    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
    sd = gateSocket();
    addr.sin_family = AF_INET;
@@ -130,8 +131,8 @@ int main(int ac, char *av[]) {
       if (select(sd+1, &fdSet, NULL, NULL, NULL) < 0)
          return 1;
       if (FD_ISSET(sd, &fdSet)) {
-         n = sizeof(addr);
-         if ((cli = accept(sd, (struct sockaddr*)&addr, &n)) < 0)
+         socklen_t len = sizeof(addr);
+         if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) < 0)
             return 1;
          if ((n = fork()) < 0)
             return 1;

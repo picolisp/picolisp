@@ -1,4 +1,4 @@
-/* 12jul04abu
+/* 15aug05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -52,7 +52,7 @@ any Snx(any ex) {
          return Nil;
    Push(c1, x);
    n = isCell(x = cddr(ex))? evCnt(ex,x) : 24;
-   if (c >= 'a' && c <= 'z' || c == 128 || c >= (byte)224 && c < (byte)255)
+   if (c >= 'a' && c <= 'z' || c == 128 || c >= 224 && c < 255)
       c &= ~0x20;
    Push(c2, boxChar(last = c, &i, &nm));
    while (c = symChar(NULL))

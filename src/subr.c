@@ -1,4 +1,4 @@
-/* 22jun05abu
+/* 23sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1044,18 +1044,28 @@ any doAsoq(any x) {
    return Nil;
 }
 
-// (rank 'any 'lst) -> lst
+// (rank 'any 'lst ['flg]) -> lst
 any doRank(any x) {
    any y, z;
-   cell c1;
+   cell c1, c2;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = EVAL(car(x));
+   x = cdr(x),  Push(c2, y = EVAL(car(x)));
    z = Nil;
-   for (x = Pop(c1);  isCell(y);  y = cdr(y))
-      if (isCell(car(y)) && compare(x,caar(y)) >= 0 && compare(car(z),caar(y)) <= 0)
-         z = car(y);
-   return z;
+   x = cdr(x);
+   if (isNil(EVAL(car(x))))
+      for (x = Pop(c1);  isCell(y);  y = cdr(y)) {
+         if (isCell(car(y)) && compare(caar(y), x) > 0)
+            break;
+         z = y;
+      }
+   else
+      for (x = Pop(c1);  isCell(y);  y = cdr(y)) {
+         if (isCell(car(y)) && compare(x, caar(y)) > 0)
+            break;
+         z = y;
+      }
+   return car(z);
 }
 
 /* Pattern matching */

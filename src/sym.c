@@ -1,4 +1,4 @@
-/* 23jun05abu
+/* 29aug05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -98,19 +98,19 @@ any mkChar(int c) {
 }
 
 /* Make name */
-any mkName(byte *s) {
+any mkName(char *s) {
    int i;
    any nm;
    cell c1;
 
-   i = 0,  Push(c1, nm = box(*s++));
+   i = 0,  Push(c1, nm = box(*(byte*)s++));
    while (*s)
-      byteSym(*s++, &i, &nm);
+      byteSym(*(byte*)s++, &i, &nm);
    return Pop(c1);
 }
 
 /* Make string */
-any mkStr(char *s) {return s && *s? consStr(mkName((byte*)s)) : Nil;}
+any mkStr(char *s) {return s && *s? consStr(mkName(s)) : Nil;}
 
 /* Get first byte of symbol name */
 int firstByte(any s) {
@@ -216,6 +216,12 @@ any doHide(any ex) {
          *h = cons(y, *h);
    }
    return Nil;
+}
+
+// (box? 'any) -> sym | NIL
+any doBoxQ(any x) {
+   x = cdr(x);
+   return isSym(x = EVAL(car(x))) && !isNum(name(x))? x : Nil;
 }
 
 // (str? 'any) -> sym | NIL
@@ -873,12 +879,12 @@ any doPut(any ex) {
    while (isCell(cdr(x = cdr(x)))) {
       if (isCell(data(c1))) {
          NeedNum(ex,data(c2));
-         data(c1) = car(nth(unDig(data(c2))/2, data(c1)));
+         data(c1) = getn(data(c2), data(c1));
       }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), data(c2));
+         data(c1) = isNum(data(c2)) && !unDig(data(c2))? val(data(c1)) : get(data(c1), data(c2));
       }
       data(c2) = EVAL(car(x));
    }
@@ -904,12 +910,12 @@ any doGet(any ex) {
       y = EVAL(car(x));
       if (isCell(data(c1))) {
          NeedNum(ex,y);
-         data(c1) = car(nth(unDig(y)/2, data(c1)));
+         data(c1) = getn(y, data(c1));
       }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), y);
+         data(c1) = isNum(y) && !unDig(y)? val(data(c1)) : get(data(c1), y);
       }
    } while (isCell(x = cdr(x)));
    return Pop(c1);
@@ -925,12 +931,12 @@ any doProp(any ex) {
    while (isCell(x = cdr(x))) {
       if (isCell(data(c1))) {
          NeedNum(ex,y);
-         data(c1) = car(nth(unDig(y)/2, data(c1)));
+         data(c1) = getn(y, data(c1));
       }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), y);
+         data(c1) = isNum(y) && !unDig(y)? val(data(c1)) : get(data(c1), y);
       }
       y = EVAL(car(x));
    }
@@ -939,7 +945,7 @@ any doProp(any ex) {
    return prop(Pop(c1), y);
 }
 
-// (=: sym [sym1|cnt .. sym2] 'any) -> any
+// (=: sym|0 [sym1|cnt .. sym2] 'any) -> any
 any doSetCol(any ex) {
    any x, y, z;
    cell c1;
@@ -947,16 +953,16 @@ any doSetCol(any ex) {
    x = cdr(ex),  y = val(This);
    Fetch(ex,y);
    if (z = car(x),  isCell(cdr(x = cdr(x)))) {
-      y = get(y,z);
+      y = isNum(z) && !unDig(z)? val(y) : get(y,z);
       while (z = car(x),  isCell(cdr(x = cdr(x)))) {
          if (isCell(y)) {
             NeedNum(ex,z);
-            y = car(nth(unDig(z)/2, y));
+            y = getn(z,y);
          }
          else {
             NeedSym(ex,y);
             Fetch(ex,y);
-            y = get(y,z);
+            y = isNum(z) && !unDig(z)? val(y) : get(y,z);
          }
       }
    }
@@ -969,28 +975,28 @@ any doSetCol(any ex) {
    return x;
 }
 
-// (: sym [sym1|cnt ..]) -> any
+// (: sym|0 [sym1|cnt ..]) -> any
 any doCol(any ex) {
    any x, y;
 
    x = cdr(ex),  y = val(This);
    Fetch(ex,y);
-   y = get(y, car(x));
+   y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
    while (isCell(x = cdr(x))) {
       if (isCell(y)) {
          NeedNum(ex,car(x));
-         y = car(nth(unDig(car(x))/2, y));
+         y = getn(car(x), y);
       }
       else {
          NeedSym(ex,y);
          Fetch(ex,y);
-         y = get(y,car(x));
+         y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
       }
    }
    return y;
 }
 
-// (:: sym [sym1|cnt .. sym2]) -> lst|sym
+// (:: sym|0 [sym1|cnt .. sym2]) -> lst|sym
 any doPropCol(any ex) {
    any x, y;
 
@@ -998,16 +1004,16 @@ any doPropCol(any ex) {
    Fetch(ex,y);
    if (!isCell(cdr(x)))
       return prop(y, car(x));
-   y = get(y,car(x));
+   y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
    while (isCell(cdr(x = cdr(x)))) {
       if (isCell(y)) {
          NeedNum(ex,car(x));
-         y = car(nth(unDig(car(x))/2, y));
+         y = getn(car(x), y);
       }
       else {
          NeedSym(ex,y);
          Fetch(ex,y);
-         y = get(y,car(x));
+         y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
       }
    }
    return prop(y,car(x));
@@ -1023,12 +1029,12 @@ any doPutl(any ex) {
    while (isCell(x = cdr(x))) {
       if (isCell(data(c1))) {
          NeedNum(ex,data(c2));
-         data(c1) = car(nth(unDig(data(c2))/2, data(c1)));
+         data(c1) = getn(data(c2), data(c1));
       }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), data(c2));
+         data(c1) = isNum(data(c2)) && !unDig(data(c2))? val(data(c1)) : get(data(c1), data(c2));
       }
       data(c2) = EVAL(car(x));
    }
@@ -1055,12 +1061,12 @@ any doGetl(any ex) {
       y = EVAL(car(x));
       if (isCell(data(c1))) {
          NeedNum(ex,y);
-         data(c1) = car(nth(unDig(y)/2, data(c1)));
+         data(c1) = getn(y, data(c1));
       }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), y);
+         data(c1) = isNum(y) && !unDig(y)? val(data(c1)) : get(data(c1), y);
       }
    }
    NeedSym(ex,data(c1));
@@ -1076,18 +1082,18 @@ any doGetl(any ex) {
    return data(c2);
 }
 
-static void wipe(any ex, any x) {
+static void wipe(any x) {
    any y, z;
 
    for (y = tail(x); isCell(y); y = cdr(y));
    z = numCell(y);
    while (isNum(cdr(z)))
       z = numCell(cdr(z));
-   if (!isNil(cdr(z)) && cdr(z) != At)
-      err(ex, x, "Modified");
-   val(x) = Nil;
-   tail(x) = y;
-   cdr(z) = Nil;
+   if (isNil(cdr(z)) || cdr(z) == At) {
+      val(x) = Nil;
+      tail(x) = y;
+      cdr(z) = Nil;
+   }
 }
 
 // (wipe 'sym|lst) -> sym
@@ -1097,11 +1103,11 @@ any doWipe(any ex) {
    x = cdr(ex);
    if (!isNil(x = EVAL(car(x))))
       if (isSym(x))
-         wipe(ex,x);
+         wipe(x);
       else if (isCell(x)) {
          y = x; do {
             NeedSym(ex,car(y));
-            wipe(ex,car(y));
+            wipe(car(y));
          } while (isCell(y = cdr(y)));
       }
    return x;

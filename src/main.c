@@ -1,4 +1,4 @@
-/* 26jun05abu
+/* 27sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -17,13 +17,14 @@ FILE *InFile, *OutFile;
 any TheKey, TheCls;
 any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
 any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static bool Jam, Protect;
 static struct termios RawTermio;
 static jmp_buf ErrRst;
+static void finish(int) __attribute__ ((noreturn));
 
 
 /*** System ***/
@@ -34,7 +35,7 @@ static void finish(int n) {
 }
 
 void giveup(char *msg) {
-   fprintf(stderr, "%d %s\n", getpid(), msg);
+   fprintf(stderr, "%d %s\n", (int)getpid(), msg);
    finish(1);
 }
 
@@ -44,7 +45,7 @@ void bye(int n) {
    finish(n);
 }
 
-void execError(byte *s) {
+void execError(char *s) {
    fprintf(stderr, "%s: can't exec\n", s);
    exit(127);
 }
@@ -260,22 +261,22 @@ int compare(any x, any y) {
          return +1;
       if (isCell(y) || y == T)
          return -1;
-      if (!isNum(x = name(x)))
-         return !isNum(name(y))? 0 : -1;
-      if (!isNum(y = name(y)))
+      if (!isNum(a = name(x)))
+         return !isNum(name(y))? 1664525*(int32_t)x - 1664525*(int32_t)y : -1;
+      if (!isNum(b = name(y)))
          return +1;
-      n1 = unDig(x), n2 = unDig(y);
+      n1 = unDig(a), n2 = unDig(b);
       for (;;) {
          if ((b1 = n1 & 0xFF) != (b2 = n2 & 0xFF))
             return b1 - b2;
          if ((n1 >>= 8) == 0) {
             if ((n2 >>= 8) != 0)
                return -1;
-            if (!isNum(x = cdr(numCell(x))))
-               return !isNum(y = cdr(numCell(y)))? 0 : -1;
-            if (!isNum(y = cdr(numCell(y))))
+            if (!isNum(a = cdr(numCell(a))))
+               return !isNum(b = cdr(numCell(b)))? 0 : -1;
+            if (!isNum(b = cdr(numCell(b))))
                return +1;
-            n1 = unDig(x), n2 = unDig(y);
+            n1 = unDig(a), n2 = unDig(b);
          }
          else if ((n2 >>= 8) == 0)
             return +1;
@@ -343,7 +344,7 @@ any doQuit(any x) {
    x = cdr(x),  Push(c1, evSym(x));
    x = isCell(x = cdr(x))?  EVAL(car(x)) : NULL;
    {
-      byte msg[bufSize(data(c1))];
+      char msg[bufSize(data(c1))];
 
       bufString(data(c1), msg);
       drop(c1);
@@ -466,7 +467,7 @@ any evExpr(any expr, any x) {
 
 void undefined(any x, any ex) {
    void *h;
-   byte *p, nm[bufSize(x)];
+   char *p, nm[bufSize(x)];
 
    bufString(x, nm);
    if (!(p = strchr(nm,':'))  ||  p == nm  ||  p[1] == '\0')
@@ -535,14 +536,6 @@ long xCnt(any ex, any x) {
    NeedCnt(ex,x);
    return unBox(x);
 }
-
-long unBox(any x) {
-   long n = unDig(x) / 2;
-   return unDig(x) & 1? -n : n;
-}
-
-/* Construct count */
-any boxCnt(long n) {return box(n>=0?  n*2 : -n*2+1);}
 
 /* Evaluate double */
 double evDouble(any ex, any x) {
@@ -689,8 +682,7 @@ any doTime(any ex) {
 any doCd(any x) {
    x = evSym(cdr(x));
    {
-      byte path[pathSize(x)];
-      char *p;
+      char *p, path[pathSize(x)];
 
       pathString(x, path);
       if ((p = getcwd(NULL,0)) == NULL  ||  chdir(path) < 0)
@@ -710,7 +702,7 @@ any doCtty(any ex) {
    else if (!isSym(x))
       TtyPid = xCnt(ex,x);
    else {
-      byte tty[bufSize(x)];
+      char tty[bufSize(x)];
 
       bufString(x, tty);
       if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
@@ -727,7 +719,7 @@ any doInfo(any x) {
 
    x = evSym(cdr(x));
    {
-      byte nm[bufSize(x)];
+      char nm[bufSize(x)];
 
       bufString(x, nm);
       if (stat(nm, &st) < 0)
@@ -750,7 +742,7 @@ any doDir(any x) {
    if (isNil(x = evSym(cdr(x))))
       dp = opendir(".");
    else {
-      byte nm[bufSize(x)];
+      char nm[bufSize(x)];
 
       bufString(x, nm);
       dp = opendir(nm);
@@ -804,7 +796,7 @@ any doArgv(any ex) {
 
 // (opt) -> sym
 any doOpt(any ex __attribute__((unused))) {
-   return mkStr(*AV++);
+   return *AV && strcmp(*AV,"-")? mkStr(*AV++) : Nil;
 }
 
 /*** Main ***/

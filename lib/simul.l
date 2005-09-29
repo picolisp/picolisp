@@ -1,4 +1,4 @@
-# 06jun05abu
+# 22aug05abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -28,19 +28,19 @@
 
 
 # Genetic Algorithm
-(de gen ("Cnt" "re" "mu" "se" . "Init")
+(de gen ("Cnt" "Re" "Mu" "Se" . "Init")
    (use ("P" "X" "Y")
       (setq "P"
          (sort
             (make
                (do "Cnt"
-                  (setq "X" ("mu" (run "Init")))
-                  (link (cons ("se" "X") "X")) ) ) ) )
+                  (setq "X" ("Mu" (run "Init")))
+                  (link (cons ("Se" "X") "X")) ) ) ) )
       (do (* "Cnt" "Cnt")
          (setq "X" (get "P" (rand 1 "Cnt")))                   # Recombination
          (while (== "X" (setq "Y" (get "P" (rand 1 "Cnt")))))
-         (setq "X" ("mu" ("re" (cdr "X") (cdr "Y"))))          # Mutation
-         (when (> (setq "Y" ("se" "X")) (caar "P"))            # Selection
+         (setq "X" ("Mu" ("Re" (cdr "X") (cdr "Y"))))          # Mutation
+         (when (> (setq "Y" ("Se" "X")) (caar "P"))            # Selection
             (if (seek '((L) (>= (caadr L) "Y")) "P")
                (con @ (cons (cons "Y" "X") (cdr @)))
                (conc "P" (cons (cons "Y" "X"))) )
@@ -49,40 +49,41 @@
 
 
 # Alpha-Beta tree search
-(de game ("Flg" "Cnt" "moves" "move" "cost")
+(de game ("Flg" "Cnt" "Moves" "Move" "Cost")
    (let ("Alpha" '(1000000)  "Beta" -1000000)
       (recur ("Flg" "Cnt" "Alpha" "Beta")
-         (let? "Lst"
-            (sort
-               (mapcar
-                  '(("Mov")
-                     (prog2
-                        ("move" (car "Mov"))
-                        (cons ("cost" "Flg") "Mov")
-                        ("move" (cdr "Mov")) ) )
-                  ("moves" "Flg") ) )
-            (dec '"Cnt")
-            (loop
-               ("move" (cadar "Lst"))
-               (setq "*Val"
-                  (or
-                     (and
-                        (n0 "Cnt")
-                        (recurse
-                           (not "Flg")
-                           "Cnt"
-                           (cons (- "Beta"))
-                           (- (car "Alpha")) )
-                        (cons
-                           (- (car @))
-                           (cons (cdar "Lst") (cdr @)) ) )
-                     (list (caar "Lst") (cdar "Lst")) ) )
-               ("move" (cddar "Lst"))
-               (T (>= "Beta" (car "*Val"))
-                  (cons "Beta" (cons (cdar "Lst") (cdr "Alpha"))) )
-               (when (> (car "Alpha") (car "*Val"))
-                  (setq "Alpha" "*Val") )
-               (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) ) ) ) )
+         (if (=0 (dec '"Cnt"))
+            (let? "Lst" ("Moves" "Flg")
+               (loop
+                  ("Move" (caar "Lst"))
+                  (setq "*Val" (list ("Cost" "Flg") (car "Lst")))
+                  ("Move" (cdar "Lst"))
+                  (T (>= "Beta" (car "*Val"))
+                     (cons "Beta" (cons (car "Lst") (cdr "Alpha"))) )
+                  (when (> (car "Alpha") (car "*Val"))
+                     (setq "Alpha" "*Val") )
+                  (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) )
+            (let? "Lst"
+               (sort
+                  (mapcar
+                     '(("Mov")
+                        (prog2
+                           ("Move" (car "Mov"))
+                           (cons ("Cost" "Flg") "Mov")
+                           ("Move" (cdr "Mov")) ) )
+                     ("Moves" "Flg") ) )
+               (loop
+                  ("Move" (cadar "Lst"))
+                  (setq "*Val"
+                     (if (recurse (not "Flg") "Cnt" (cons (- "Beta")) (- (car "Alpha")))
+                        (cons (- (car @)) (cons (cdar "Lst") (cdr @)))
+                        (list (caar "Lst") (cdar "Lst")) ) )
+                  ("Move" (cddar "Lst"))
+                  (T (>= "Beta" (car "*Val"))
+                     (cons "Beta" (cons (cdar "Lst") (cdr "Alpha"))) )
+                  (when (> (car "Alpha") (car "*Val"))
+                     (setq "Alpha" "*Val") )
+                  (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) ) ) ) ) )
 
 
 ### Grids ###
@@ -113,14 +114,14 @@
             (con (cdr (val (get Grid X Y))) (get Grid X (inc Y))) ) )  # north
       Grid ) )
 
-(de west (Fld)
-   (caar (val Fld)) )
+(de west (This)
+   (: 0 1 1) )
 
-(de east (Fld)
-   (cdar (val Fld)) )
+(de east (This)
+   (: 0 1 -1) )
 
-(de south (Fld)
-   (cadr (val Fld)) )
+(de south (This)
+   (: 0 -1 1) )
 
-(de north (Fld)
-   (cddr (val Fld)) )
+(de north (This)
+   (: 0 -1 -1) )

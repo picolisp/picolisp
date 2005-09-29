@@ -1,4 +1,4 @@
-# 04jun05abu
+# 01sep05abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -33,15 +33,6 @@
                (set (car @) "V")
                (set "K" "V")
                (push '*Uni "K") ) ) ) ) )
-
-### Allow ###
-(de allowed Lst
-   (setq *Allow (cons NIL (car Lst)))
-   (mapc allow (cdr Lst)) )
-
-(de allow (X)
-   (and *Allow (idx *Allow X T))
-   X )
 
 ### Math ###
 # (Knuth Vol.2, p.442)
@@ -154,14 +145,23 @@
       (format N 2 *Sep0 *Sep3) ) )
 
 ### Tree ###
-(de balance (Var Lst)
-   (let Len (length Lst)
-      (recur (Lst Len)
-         (unless (=0 Len)
-            (let (N (>> 1 (inc Len))  L (nth Lst N))
-               (idx Var (car L) T)
-               (recurse Lst (dec N))
-               (recurse (cdr L) (- Len N)) ) ) ) ) )
+(de balance ("Var" "Lst")
+   (let "Len" (length "Lst")
+      (recur ("Lst" "Len")
+         (unless (=0 "Len")
+            (let ("N" (>> 1 (inc "Len"))  "L" (nth "Lst" "N"))
+               (idx "Var" (car "L") T)
+               (recurse "Lst" (dec "N"))
+               (recurse (cdr "L") (- "Len" "N")) ) ) ) ) )
+
+### Allow ###
+(de allowed Lst
+   (setq *Allow (cons NIL (car Lst)))
+   (balance *Allow (sort (cdr Lst))) )
+
+(de allow (X)
+   (and *Allow (idx *Allow X T))
+   X )
 
 ### Telephone ###
 (de telStr (S)
@@ -432,7 +432,7 @@
       (here "/**/") )
    (call "gcc" "-o" (tmp S)
       "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
-      "-O3" "-fomit-frame-pointer"
+      "-O" "-falign-functions" "-fomit-frame-pointer"
       "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
       "-Wuninitialized" "-Wstrict-prototypes"
       "-pipe" (tmp S ".c") )

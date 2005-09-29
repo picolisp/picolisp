@@ -1,7 +1,22 @@
-# 22jun05abu
+# 26sep05abu
 # (c) Software Lab. Alexander Burger
 
-# upd
+# *Dbs upd
+
+### DB Files ###
+(de dbf Lst
+   (let Dbf 0
+      (setq *Dbs
+         (mapcar
+            '((L)
+               (for Cls (cdr L)
+                  (if (atom Cls)
+                     (put Cls 'dbf Dbf)
+                     (for Var (cdr Cls)
+                        (put (get (car Cls) Var) 'dbf Dbf) ) ) )
+               (inc 'Dbf)
+               (car L) )
+            Lst ) ) ) )
 
 ### Tree Access ###
 (de tree (Var Cls Hook)
@@ -382,7 +397,7 @@
 
 ### Index classes ###
 (class +Index)
-# hook
+# hook dbf
 
 (dm T (Var Lst)
    (=: hook (car Lst))
@@ -407,11 +422,11 @@
    (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
       (and Old
          (= Obj (fetch Tree Old))
-         (store Tree Old NIL) )
+         (store Tree Old NIL (: dbf)) )
       (and New
          (not (get Obj T))
          (not (fetch Tree New))
-         (store Tree New Obj) ) )
+         (store Tree New Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 
@@ -424,10 +439,10 @@
       (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
          Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
       (when Old
-         (store Tree (cons Old Aux) NIL) )
+         (store Tree (cons Old Aux) NIL (: dbf)) )
       (and New
          (not (get Obj T))
-         (store Tree (cons New Aux) Obj) ) )
+         (store Tree (cons New Aux) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 
@@ -446,10 +461,10 @@
          (meta (: cls) (: var) 'cls)
          (or Hook (get Obj (: hook))) )
       (when Old
-         (store Tree (cons Old Obj) NIL) )
+         (store Tree (cons Old Obj) NIL (: dbf)) )
       (and New
          (not (get Obj T))
-         (store Tree (cons New Obj) Obj) ) )
+         (store Tree (cons New Obj) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 
@@ -466,16 +481,16 @@
       (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
          Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
       (when Old
-         (store Tree (cons Old Aux) NIL)
+         (store Tree (cons Old Aux) NIL (: dbf))
          (for S (split (cdr (chop Old)) " " "^J")
             (while (nth S (: min))
-               (store Tree (list (pack S) Obj) NIL)
+               (store Tree (list (pack S) Obj) NIL (: dbf))
                (pop 'S) ) ) )
       (when (and New (not (get Obj T)))
-         (store Tree (cons New Aux) Obj)
+         (store Tree (cons New Aux) Obj (: dbf))
          (for S (split (cdr (chop New)) " " "^J")
             (while (nth S (: min))
-               (store Tree (list (pack S) Obj) Obj)
+               (store Tree (list (pack S) Obj) Obj (: dbf))
                (pop 'S) ) ) ) )
    (extra Obj Old New Hook) )
 
@@ -486,10 +501,10 @@
 (dm rel> (Obj Old New Hook)
    (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
       (when Old
-         (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL) )
+         (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL (: dbf)) )
       (and New
          (not (get Obj T))
-         (store Tree (cons (ext:Snx New) (cons Obj T)) Obj) ) )
+         (store Tree (cons (ext:Snx New) (cons Obj T)) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 
@@ -530,7 +545,8 @@
                               (if (== S Var) Old (get Obj S)) )
                            (: aux) ) )
                      Obj )
-                  NIL )
+                  NIL
+                  (: dbf) )
                (store Tree
                   (conc
                      (cons Val
@@ -539,7 +555,8 @@
                               (if (== S Var) (get Obj Var) (get Obj S)) )
                            (: aux) ) )
                      Obj )
-                  Obj ) ) ) ) ) )
+                  Obj
+                  (: dbf) ) ) ) ) ) )
 
 
 ### Relation prefix classes ###
@@ -635,18 +652,19 @@
 
 ### Entities ###
 (class +Entity)
-# aux
+
+(var dbf)
+(var aux)
 
 (de dbSync ()
    (let *Key NIL
-      (while (lock *DB)
-         (wait 40) )
+      (while (lock *DB) (wait 40))
       (sync) ) )
 
 (de new! ("Typ" . @)
    (prog2
       (dbSync)
-      (pass new T "Typ")
+      (pass new (or (meta "Typ" 'dbf) 0) "Typ")
       (commit 'upd) ) )
 
 (de set! (Obj Val)
@@ -675,7 +693,6 @@
    (call 'cp File (blob Obj Rel)) )
 
 (dm T @
-   (=: aux)
    (while (args)
       (cond
          ((=T (next)) (put This T T))
@@ -768,14 +785,15 @@
       (lose> @ This (get This Var)) ) )
 
 (dm lose> (Lst)
-   (for X (getl This)
-      (let V (or (atom X) (pop 'X))
-         (and
-            (not (memq X Lst))
-            (meta This X)
-            (lose> @ This V) ) ) )
-   (=: T T)
-   (upd> This) )
+   (unless (: T)
+      (for X (getl This)
+         (let V (or (atom X) (pop 'X))
+            (and
+               (not (memq X Lst))
+               (meta This X)
+               (lose> @ This V) ) ) )
+      (=: T T)
+      (upd> This) ) )
 
 (dm lose!> ()
    (dbSync)
@@ -787,14 +805,15 @@
       (keep> @ This (get This Var)) ) )
 
 (dm keep> (Lst)
-   (=: T)
-   (for X (getl This)
-      (let V (or (atom X) (pop 'X))
-         (and
-            (not (memq X Lst))
-            (meta This X)
-            (keep> @ This V) ) ) )
-   (upd> This T) )
+   (when (: T)
+      (=: T)
+      (for X (getl This)
+         (let V (or (atom X) (pop 'X))
+            (and
+               (not (memq X Lst))
+               (meta This X)
+               (keep> @ This V) ) ) )
+      (upd> This T) ) )
 
 (dm keep!> ()
    (dbSync)
@@ -860,8 +879,15 @@
    (val This) )
 
 (dm clone> ()
-   (let Obj (new T (val This))
-      (for X (getl This)
+   (let Obj (new (or (var: dbf) 0) (val This))
+      (for X
+         (by
+            '((X)
+               (nand
+                  (pair X)
+                  (isa '+Hook (meta This (cdr X))) ) )
+            sort
+            (getl This ) )
          (if (atom X)
             (ifn (meta This X)
                (put Obj X T)
@@ -930,8 +956,8 @@
       (or
          (pass db Var (: cls))
          (if (: hook)
-            (pass new T Typ  @ (next)  Var)
-            (pass new T Typ Var) ) ) ) )
+            (pass new (or (: cls dbf) 0) Typ  @ (next)  Var)
+            (pass new (or (: cls dbf) 0) Typ Var) ) ) ) )
 
 # Create or update object
 (de obj Lst

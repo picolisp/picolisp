@@ -705,9 +705,10 @@ mechanism, it is possible to create symbols with a local access scope, not
 accessible from other parts of the program.
 
 <p>A special case of transient symbols are <i>anonymous symbols</i>, symbols
-without name (see <code><a href="#box">box</a></code> or <code><a
-href="#new">new</a></code>). They print as a dollar sign (<code>$</code>)
-followed by a decimal digit string (actually their machine address).
+without name (see <code><a href="#box">box</a></code>, <code><a
+href="#boxQ">box?</a></code> or <code><a href="#new">new</a></code>). They print
+as a dollar sign (<code>$</code>) followed by a decimal digit string (actually
+their machine address).
 
 
 <p><hr>
@@ -1145,8 +1146,9 @@ NIL
    <a href="#until">until</a>,
    <a href="#untilT">until=T</a>,
    <a href="#when">when</a>,
-   <a href="#while">while</a> and
-   <a href="#whilst">whilst</a>
+   <a href="#while">while</a>,
+   <a href="#whilst">whilst</a>,
+and the bodies of <code><a href="#*Key">*Key</a></code> tasks.
 
 </dl>
 
@@ -1257,10 +1259,9 @@ dynamically swapped in and out of memory. At a time, only one database file can
 be open (<code><a href="#pool">pool</a></code>).
 
 <p>The symbols in the database can be used to store arbitrary information
-structures. In typical use, some symbols represent nodes of a binary search
-tree, by holding a key, a value, and links to the left and right subtrees in
-their <code>VAL</code>'s. Such a binary tree in the database is called
-<u>index</u>.
+structures. In typical use, some symbols represent nodes of search trees, by
+holding keys, valuees, and links to subtrees in their <code>VAL</code>'s. Such a
+search tree in the database is called <u>index</u>.
 
 <p>For the most part, other symbols in the database are objects derived from the
 <code>+Entity</code> class.
@@ -1574,6 +1575,7 @@ abbreviations:
    <a href="#intern">intern</a>
    <a href="#extern">extern</a>
    <a href="#====">====</a>
+   <a href="#boxQ">box?</a>
    <a href="#strQ">str?</a>
    <a href="#extQ">ext?</a>
    <a href="#touch">touch</a>
@@ -1638,6 +1640,7 @@ abbreviations:
    <a href="#spQ">sp?</a>
    <a href="#patQ">pat?</a>
    <a href="#funQ">fun?</a>
+   <a href="#boxQ">box?</a>
    <a href="#strQ">str?</a>
    <a href="#extQ">ext?</a>
    <a href="#==">==</a>
@@ -1848,6 +1851,7 @@ abbreviations:
    <a href="#sum">sum</a>
    <a href="#maxi">maxi</a>
    <a href="#mini">mini</a>
+   <a href="#by">by</a>
 </code>
 
 <dt>Input/Output
@@ -1958,7 +1962,6 @@ abbreviations:
 <dd><code>
    <a href="#nilSym">NIL</a>
    <a href="#*DB">*DB</a>
-   <a href="#*Solo">*Solo</a>
    <a href="#^">^</a>
    <a href="#@">@</a>
    <a href="#@@">@@</a>
@@ -2311,12 +2314,43 @@ href="#flgQ">flg?</a></code>.
 
 <p><dt><a name="box"><code>(box 'any) -> sym</code></a>
 <dd>Creates and returns a new anonymous symbol. The initial value is set to the
-<code>any</code> argument. See also <code><a href="#new">new</a></code>.
+<code>any</code> argument. See also <code><a href="#new">new</a></code> and
+<code><a href="#boxQ">box?</a></code>.
 
 <p><pre><code>
 : (show (box '(A B C)))
 $134425627 (A B C)
 -> $134425627
+</code></pre>
+
+<p><dt><a name="boxQ"><code>(box? 'any) -> sym | NIL</code></a>
+<dd>Returns the argument <code>any</code> when it is an anonymous symbol,
+otherwise <code>NIL</code>. See also <code><a href="#box">box</a></code>,
+<code><a href="#strQ">str?</a></code> and <code><a href="#extQ">ext?</a></code>.
+
+<p><pre><code>
+: (box? (new))
+-> $134563468
+: (box? 123)
+-> NIL
+: (box? 'a)
+-> NIL
+: (box? NIL)
+-> NIL
+</code></pre>
+
+<p><dt><a name="by"><code>(by 'fun1 'fun2 'lst ..) -> lst</code></a>
+<dd>Applies <code>fun1</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>fun1</code>. Each result of <code>fun1</code> is CONSed with its
+corresponding argument form the original <code>lst</code>, and collected into a
+list which is passed to <code>fun2</code>. For the list returned from
+<code>fun2</code>, the CAR elements returned by <code>fun1</code> are
+(destructively) removed from each element.
+
+<p><pre><code>
+: (let (A 1 B 2 C 3) (by val sort '(C A B)))
+-> (A B C)
 </code></pre>
 
 <p><dt><a name="bye"><code>(bye 'cnt|NIL)</code></a>
@@ -2802,14 +2836,14 @@ href="#time">time</a></code>.
 -> 163
 </code></pre>
 
-<p><dt><a name="dbck"><code>(dbck 'flg) -> any</code></a>
-<dd>Performs a low-level integrity check of the current database file, and
-returns <code>NIL</code> (or a list of statistic values if <code>flg</code> is
-non-<code>NIL</code>) if everything seems correct. Otherwise, a string
-indicating an error is returned. As a side effect, possible unused blocks (as
-there might be when a <code><a href="#rollback">rollback</a></code> is done
-after allocating external symbols with <code><a href="#new">new</a></code>) are
-appended to the free list.
+<p><dt><a name="dbck"><code>(dbck ['num] 'flg) -> any</code></a>
+<dd>Performs a low-level integrity check of the current (or <code>num</code>'th)
+database file, and returns <code>NIL</code> (or a list of statistic values if
+<code>flg</code> is non-<code>NIL</code>) if everything seems correct.
+Otherwise, a string indicating an error is returned. As a side effect, possible
+unused blocks (as there might be when a <code><a
+href="#rollback">rollback</a></code> is done after allocating external symbols
+with <code><a href="#new">new</a></code>) are appended to the free list.
 
 <p><pre><code>
 : (pool "db")
@@ -3091,8 +3125,9 @@ in the corresponding environment. See also <code><a href="#run">run</a></code>.
 </code></pre>
 
 <p><dt><a name="extQ"><code>(ext? 'any) -> sym | NIL</code></a>
-<dd>Returns <code>any</code> when the argument is an existing external symbol.
-See also <code><a href="#symQ">sym?</a></code> and <code><a
+<dd>Returns the argument <code>any</code> when it is an existing external
+symbol, otherwise <code>NIL</code>. See also <code><a
+href="#symQ">sym?</a></code>, <code><a href="#boxQ">box?</a></code> and <code><a
 href="#strQ">str?</a></code>.
 
 <p><pre><code>
@@ -3418,9 +3453,11 @@ megabytes of free cells is reserved, increasing the heap size if necessary.
 <p><dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..]) -> any</code></a>
 <dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
 list. From the first argument <code>sym1|lst</code>, values are retrieved in
-successive steps by either extracting a property value from a symbol (if the
-next argument is a symbol), or an element from a list (if the next argument is a
-number). See also <code><a href="#put">put</a></code>.
+successive steps by either extracting the value (if the next argument is zero)
+or a property (if the next argument is a symbol) from a symbol, the n'th element
+(if the next argument is a positive number) or the n'th <code>CDR</code> (if the
+next argument is a negative number) from a list. See also <code><a
+href="#put">put</a></code> and <code><a href="#:">:</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -3443,7 +3480,8 @@ number). See also <code><a href="#put">put</a></code>.
 <dd>Fetches the complete property list <code>lst</code> from a symbol. That
 symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
 by applying the <code><a href="#get">get</a></code> algorithm to
-<code>sym1|lst1</code> and the following arguments.
+<code>sym1|lst1</code> and the following arguments. See also <code><a
+href="#putl">putl</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -3513,9 +3551,9 @@ the system (if <code>flg</code> is non-<code>NIL</code>).
 
 <p><pre><code>
 : (heap)
--> 65948
+-> 126999
 : (heap T)
--> 131072
+-> 262144
 </code></pre>
 
 <p><dt><a name="hear"><code>(hear 'num|sym) -> any</code></a>
@@ -4019,9 +4057,9 @@ the whole database if <code>sym</code> is <code>NIL</code>. Returns
 <code>NIL</code> if successful, or the ID of the process currently holding the
 lock. When <code>sym</code> is non-<code>NIL</code>, the lock is released at the
 next top level call to <code><a href="#commit">commit</a></code> or <code><a
-href="#rollback">rollback</a></code>, otherwise only when another database is
-opened with <code><a href="#pool">pool</a></code> or when the process
-terminates. See also <code><a href="#*Solo">*Solo</a></code>.
+href="#rollback">rollback</a></code>, otherwise (when locking the whole
+database) only when another database is opened with <code><a
+href="#pool">pool</a></code> or when the process terminates.
 
 <p><pre><code>
 : (lock '{1})        # Lock single object
@@ -4574,13 +4612,13 @@ with <code>any</code> elements.
 -> (" " " " a b c)
 </code></pre>
 
-<p><dt><a name="new"><code>(new ['flg] ['typ ['any ..]]) -> sym</code></a>
+<p><dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> sym</code></a>
 <dd>Creates and returns a new object. If <code>flg</code> is given and
-non-<code>NIL</code>, the new object will be an external symbol.
-<code>typ</code> (typically a list of classes) is assigned to the
-<code>VAL</code>, and the initial <code>T</code> message is sent with the
-arguments <code>any</code> to the new object. See also <code><a
-href="#box">box</a></code>.
+non-<code>NIL</code>, the new object will be an external symbol (created in the
+corresponding database file if <code>num</code> is given). <code>typ</code>
+(typically a list of classes) is assigned to the <code>VAL</code>, and the
+initial <code>T</code> message is sent with the arguments <code>any</code> to
+the new object. See also <code><a href="#box">box</a></code>.
 
 <p><pre><code>
 : (new)
@@ -4857,13 +4895,15 @@ href="#seek">seek</a></code>, <code><a href="#find">find</a></code>.
 -> "Hello"
 </code></pre>
 
-<p><dt><a name="pipe"><code>(pipe exe . prg) -> any</code></a>
+<p><dt><a name="pipe"><code>(pipe exe) -> cnt<br>
+(pipe exe . prg) -> any</code></a>
 <dd>Executes <code>exe</code> in a <code><a href="#fork">fork</a></code>'ed
-child process (which terminates thereafter), and opens a pipe from the standard
-output of that process as input channel during the execution of
-<code>prg</code>. The current input channel will be saved and restored
-appropriately. See also <code><a href="#in">in</a></code> and <code><a
-href="#out">out</a></code>.
+child process (which terminates thereafter). In the first form,
+<code>pipe</code> just returns a file descriptor to read from the standard
+output of that process. In the second form, it opens the standard output of that
+process as input channel during the execution of <code>prg</code>. The current
+input channel will be saved and restored appropriately. See also <code><a
+href="#in">in</a></code> and <code><a href="#out">out</a></code>.
 
 <p><pre><code>
 : (pipe                                # equivalent to 'any'
@@ -4886,11 +4926,14 @@ href="#in">in</a></code> and <code><a href="#close">close</a></code>.
 : (and (poll *Fd) (in *Fd (read)))  # Prevent blocking
 </code></pre>
 
-<p><dt><a name="pool"><code>(pool ['sym1 ['sym2]]) -> flg</code></a>
+<p><dt><a name="pool"><code>(pool ['sym1 ['lst ['sym2]]]) -> flg</code></a>
 <dd>Opens the file <code>sym1</code> as a database file in read/write mode. If
-the file does not exist, it is created. A currently open database is closed. If
-<code>sym2</code> is given, it is opened in append-mode as a journal file.
-Returns <code>T</code> when successful. See also <code><a
+the file does not exist, it is created. A currently open database is closed.
+<code>lst</code> is a list of block size scale factors (i.e. numbers),
+defaulting to zero (for 64 byte block size(s)). If <code>lst</code> is given, an
+individual database file is opened for each item. If <code>sym2</code> is
+non-<code>NIL</code>, it is opened in append-mode as a journal file. Returns
+<code>T</code> when successful. See also <code><a
 href="#journal">journal</a></code>.
 
 <p><pre><code>
@@ -5146,7 +5189,8 @@ symbol found by applying the <code><a href="#get">get</a></code> algorithm to
 symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
 by applying the <code><a href="#get">get</a></code> algorithm to
 <code>sym1|lst1</code> and the following arguments. All previously defined
-properties for that symbol are lost.
+properties for that symbol are lost. See also <code><a
+href="#getl">getl</a></code>.
 
 <p><pre><code>
 : (putl 'X '((123 . a) flg ("Hello" . b)))
@@ -5232,11 +5276,13 @@ href="#seed">seed</a></code>.
 -> 7
 </code></pre>
 
-<p><dt><a name="rank"><code>(rank 'any 'lst) -> lst</code></a>
-<dd>Searches a ranking list. Returns the element from <code>lst</code> with a
-maximal <code>CAR</code> less than or equal to <code>any</code>, or
-<code>NIL</code> if no match is found. <code>lst</code> may be unsorted. See
-also <a href="#cmp">Comparing</a>.
+<p><dt><a name="rank"><code>(rank 'any 'lst ['flg]) -> lst</code></a>
+<dd>Searches a ranking list. <code>lst</code> should be sorted. Returns the
+element from <code>lst</code> with a <u>maximal</u> <code>CAR</code> less or
+equal to <code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a
+<u>minimal</u> <code>CAR</code> greater or equal to <code>any</code> (if
+<code>flg</code> is non-<code>NIL</code>), or <code>NIL</code> if no match is
+found. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (rank 0 '((1 . a) (100 . b) (1000 . c)))
@@ -5249,6 +5295,8 @@ also <a href="#cmp">Comparing</a>.
 -> (100 . b)
 : (rank 9999 '((1 . a) (100 . b) (1000 . c)))
 -> (1000 . c)
+: (rank 50 '((1000 . a) (100 . b) (1 . c)) T)
+-> (100 . b)
 </code></pre>
 
 <p><dt><a name="rd"><code>(rd) -> any<br>
@@ -5690,8 +5738,9 @@ href="#sym">sym</a></code>.
 </code></pre>
 
 <p><dt><a name="strQ"><code>(str? 'any) -> sym | NIL</code></a>
-<dd>Returns <code>T</code> when the argument <code>any</code> is a transient
-symbol (string). See also <code><a href="#symQ">sym?</a></code> and <code><a
+<dd>Returns the argument <code>any</code> when it is a transient symbol
+(string), otherwise <code>NIL</code>. See also <code><a
+href="#symQ">sym?</a></code>, <code><a href="#boxQ">box?</a></code> and <code><a
 href="#extQ">ext?</a></code>.
 
 <p><pre><code>
@@ -5760,8 +5809,8 @@ new symbol <code>sym</code>. See also <code><a href="#any">any</a></code>,
 
 <p><dt><a name="symQ"><code>(sym? 'any) -> flg</code></a>
 <dd>Returns <code>T</code> when the argument <code>any</code> is a symbol. See
-also <code><a href="#strQ">str?</a></code> and <code><a
-href="#extQ">ext?</a></code>.
+also <code><a href="#strQ">str?</a></code>, <code><a
+href="#boxQ">box?</a></code> and <code><a href="#extQ">ext?</a></code>.
 
 <p><pre><code>
 : (sym? 'a)
@@ -5853,13 +5902,13 @@ Ok
 </code></pre>
 
 <p><dt><a name="tail"><code>(tail 'cnt|lst 'lst) -> lst</code></a>
-<dd>Returns a new list made of the <u>last</u> <code>cnt</code> elements of
-<code>lst</code>. If <code>cnt</code> is negative, it is added to the length of
-<code>lst</code>. If the first argument is a <code>lst</code>, <code>tail</code>
-is a predicate function returning that argument list if it is <code>equal</code>
-to the tail of the second argument, and <code>NIL</code> otherwise. See also
-<code><a href="#head">head</a></code>. <code>(tail -2 Lst)</code> is equivalent
-to <code>(nth Lst 3)</code>.
+<dd>Returns the <u>last</u> <code>cnt</code> elements of <code>lst</code>. If
+<code>cnt</code> is negative, it is added to the length of <code>lst</code>. If
+the first argument is a <code>lst</code>, <code>tail</code> is a predicate
+function returning that argument list if it is <code>equal</code> to the tail of
+the second argument, and <code>NIL</code> otherwise. See also <code><a
+href="#head">head</a></code>. <code>(tail -2 Lst)</code> is equivalent to
+<code>(nth Lst 3)</code>.
 
 <p><pre><code>
 : (tail 3 '(a b c d e f))
@@ -6263,8 +6312,8 @@ abc
 <p><dt><a name="wipe"><code>(wipe 'sym|lst) -> sym|lst</code></a>
 <dd>Clears the <code>VAL</code> and the property list of <code>sym</code>, or of
 all symbols in the list <code>lst</code>. When a symbol is an external symbol,
-its state is also set to "not loaded". It is an error when <code>sym</code> is
-an external symbol that has been modified or deleted ("dirty").
+its state is also set to "not loaded". Does nothing when <code>sym</code> is an
+external symbol that has been modified or deleted ("dirty").
 
 <p><pre><code>
 : (setq A (1 2 3 4))
@@ -6691,31 +6740,6 @@ with the <code>scl</code> function:
 -> (123450)
 </code></pre>
 
-<p><dt><a name="*Solo"><code>*Solo</code></a>
-<dd>A global variable indicating exclusive database access. Its value is
-<code>0</code> initially, set to <code>T</code> (or <code>NIL</code>) during
-cooperative database locks when <code><a href="#lock">lock</a></code> is
-successfully called with a <code>NIL</code> (or non-<code>NIL</code>) argument,
-and reset to <code>0</code> by <code><a href="#commit">commit</a></code> and
-<code><a href="#rollback">rollback</a></code>.
-
-<p><pre><code>
-: *Solo
--> 0
-: (lock *DB)
--> NIL
-: *Solo
--> NIL
-: (rollback)
--> T
-: *Solo
--> 0
-: (lock)
--> NIL
-: *Solo
--> T
-</code></pre>
-
 <p><dt><a name="*Uni"><code>*Uni</code></a>
 <dd>A global variable holding all unique data that were collected with the comma
 (<code>,</code>) read-macro. See also <code><a
@@ -6761,13 +6785,12 @@ following arguments.
 : (/ 60 3 2 2)
 </code></pre>
 
-<p><dt><a name=":"><code>(: sym [sym1|cnt ..]) -> any</code></a>
-<dd>Fetches a value <code>any</code> for a property key <code>sym</code> or
-<code>sym2</code> from a symbol. That symbol is <code>This</code> (if no other
-arguments are given), or a symbol found by applying the <code><a
-href="#get">get</a></code> algorithm to <code>This</code> and the following
-arguments. Used typically in methods or <code><a href="#with">with</a></code>
-bodies. See also <code><a href="#=:">=:</a></code> and <code><a
+<p><dt><a name=":"><code>(: sym|0 [sym1|cnt ..]) -> any</code></a>
+<dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
+list, by applying the <code><a href="#get">get</a></code> algorithm to
+<code>This</code> and the following arguments. Used typically in methods or
+<code><a href="#with">with</a></code> bodies. See also <code><a
+href="#get">get</a></code>, <code><a href="#=:">=:</a></code> and <code><a
 href="#::">::</a></code>.
 
 <p><pre><code>
@@ -6863,8 +6886,8 @@ equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
 arguments are given), or a symbol found by applying the <code><a
 href="#get">get</a></code> algorithm to <code>This</code> and the following
 arguments. Used typically in methods or <code><a href="#with">with</a></code>
-bodies. See also <code><a href="#:">:</a></code> and <code><a
-href="#::">::</a></code>.
+bodies. See also <code><a href="#put">put</a></code>, <code><a
+href="#:">:</a></code> and <code><a href="#::">::</a></code>.
 
 <p><pre><code>
 : (with 'X (=: a 1) (=: b 2))

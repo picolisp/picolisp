@@ -1,4 +1,4 @@
-# 10feb05abu
+# 30jul05abu
 # (c) Software Lab. Alexander Burger
 
 (must "User" UserAdmin)
@@ -6,12 +6,12 @@
 (html ,"User"
    (<id> ,"User" (: nm))
    <hr>
-   (form '(+ObjForm) '(+User) *ID 800 200
+   (form '(+ObjForm) '(+User) *ID 500 150
       (quote
          (row
             (gui '(+E/R +TextField) '(nm : home obj)  ,"Name" 20)
             (stepButton 'nm '+User) )
-         (----)
+         (---- NIL)
          (if (may Password)
             (gui '(+E/R +Rsa +Mono +TextField)
                '(pw : home obj)

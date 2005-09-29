@@ -1,10 +1,10 @@
-/* 26may05abu
+/* 16aug05abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-static byte *HtOK[] = {
+static char *HtOK[] = {
    "<b>",      "</b>",
    "<i>",      "</i>",
    "<u>",      "</u>",
@@ -16,8 +16,8 @@ static byte *HtOK[] = {
    "<br>", "<hr>", NULL
 };
 
-static bool findHtOK(byte *s) {
-   byte **p, *q, *t;
+static bool findHtOK(char *s) {
+   char **p, *q, *t;
 
    for (p = HtOK; *p; ++p)
       for (q = *p,  t = s;;) {
@@ -39,7 +39,7 @@ any Prin(any x) {
       if (isNum(y = EVAL(car(x))) || isExt(y))
          prin(y);
       else {
-         byte *p, *q, nm[bufSize(y)];
+         char *p, *q, nm[bufSize(y)];
 
          bufString(y, nm);
          for (p = nm; *p;) {
@@ -48,7 +48,7 @@ any Prin(any x) {
                   Env.put(*p++);
                while (p <= q);
             else {
-               switch (*p) {
+               switch (*(byte*)p) {
                case '<':
                   outString("&lt;");
                   break;
@@ -100,7 +100,7 @@ static int getHex(any *p) {
    return n << 4 | m;
 }
 
-static void htEncode(byte *p) {
+static void htEncode(char *p) {
    while (*p) {
       if (strchr(" \"#%&:;<=>?_", *p))
          Env.put('%'), putHex(*p++);
@@ -119,7 +119,7 @@ static void htFmt(any x) {
          Env.put('_'),  htFmt(car(x));
       while (isCell(x = cdr(x)));
    else if (isNum(y = name(x))) {
-      byte nm[bufSize(x)];
+      char nm[bufSize(x)];
 
       bufString(x, nm);
       if (isExt(x))

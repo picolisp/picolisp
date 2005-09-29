@@ -1,5 +1,5 @@
 #!bin/pico lib.l
-# 07may05abu
+# 30aug05abu
 # Use: bin/replica <dbFile> <port> <keyFile> [<journal>]
 #    : bin/ssl <host> 443 <port>/@replica <keyFile> <journal> 60
 
@@ -19,6 +19,8 @@
          (= (read) *SSLKey)
          (read)
          (out (tmp 'replica) (echo 1 @))
+         (prin (peek))
+         (flush)
          (ctl *DbFile (in (tmp 'replica) (journal))) ) ) )
 
 (pool *DbFile *Journal)

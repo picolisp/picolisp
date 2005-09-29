@@ -1,3 +1,20 @@
+* 29sep05 picoLisp-2.2.0
+   FreeBSD-Port
+   B-Trees
+   Multi-file DB
+   Configurable DB block size
+   Generalized 'pipe' semantics
+   Changed 'rank' to sorted lists
+   Removed '*Solo' global variable
+   Relaxed 'wipe' "modified" error condition
+   DB-I/O changed to 'pread()' and 'pwrite()'
+   Extended 'get'-syntax to zero and negative keys
+   'by' attribute map function
+   Swing GUI in "java2/" and "lib/gui2.l"
+   'box?' predicate function
+   Bug in 'compare()'
+   'balance' C-utility
+
 * 30jun05 picoLisp-2.1.2
    GC non-recursive
    'lup' lookup in 'idx' trees
@@ -33,7 +50,7 @@
    '*Solo' global variable
    'flg?' predicate function
    'fin' access function
-   Bug in C-'compare()'
+   Bug in 'compare()'
    'cd' returns old directory
    'inc' and 'dec' numeric argument
    Next 'opt' command line arg

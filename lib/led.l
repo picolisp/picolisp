@@ -1,4 +1,4 @@
-# 12mar05abu
+# 05sep05abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -373,6 +373,7 @@
                   (NIL Old)
                   (prinl (pop 'Old)) ) ) ) ) ) )
 
+(?push '*Fork '(del '(saveHistory) '*Bye))
 (?push '*Bye '(saveHistory))
 
 # Enable line editing

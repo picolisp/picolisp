@@ -1,4 +1,4 @@
-# 14jan04abu
+# 30jul05abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role" RoleAdmin)
@@ -6,12 +6,12 @@
 (html ,"Role"
    (<id> ,"Role" (: nm))
    <hr>
-   (form '(+ObjForm) '(+Role) *ID 800 500
+   (form '(+ObjForm) '(+Role) *ID 600 400
       (quote
          (row
             (gui '(+E/R +TextField) '(nm : home obj) ,"Name" 40)
             (stepButton 'nm '+Role) )
-         (----)
+         (---- NIL)
          (gui '(+E/R +Array) '(perm : home obj) ,"Permissions" 4
             '((S) (gui '(+Checkbox) (val S)))
             *Perms

@@ -1,4 +1,4 @@
-/* 26jun05abu
+/* 25sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -299,7 +299,7 @@ any doBox(any x) {
    return consSym(EVAL(car(x)), Nil);
 }
 
-// (new ['flg] ['typ ['any ..]]) -> sym
+// (new ['flg|num] ['typ ['any ..]]) -> sym
 any doNew(any ex) {
    any x, y, *p;
    cell c1, c2;
@@ -311,7 +311,7 @@ any doNew(any ex) {
    else {
       if (!isNil(y)) {
          data(c1) = extSym(data(c1));
-         p = Extern + hash(tail(data(c1)) = newId());
+         p = Extern + hash(tail(data(c1)) = newId(isNum(y)? (int)unDig(y)/2 : 0));
          *p = cons(data(c1),*p);
       }
       x = cdr(x),  y = EVAL(car(x));
@@ -1317,14 +1317,14 @@ any doSys(any x) {
 
    y = evSym(x = cdr(x));
    {
-      byte nm[bufSize(y)];
+      char nm[bufSize(y)];
 
       bufString(y,nm);
       if (!isCell(x = cdr(x)))
          return mkStr(getenv(nm));
       y = evSym(x);
       {
-         byte val[bufSize(y)];
+         char val[bufSize(y)];
 
          bufString(y,val);
          return setenv(nm,val,1)? Nil : y;
@@ -1337,7 +1337,7 @@ any doCall(any ex) {
    pid_t pid;
    any x, y;
    int res, i, ac = length(x = cdr(ex));
-   byte *av[ac+1];
+   char *av[ac+1];
 
    if (ac == 0)
       return Nil;
@@ -1401,7 +1401,7 @@ static void doSigChld(int n __attribute__((unused))) {
 
    while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
       if (WIFSIGNALED(stat))
-         fprintf(stderr, "%d SIG-%d\n", pid, WTERMSIG(stat));
+         fprintf(stderr, "%d SIG-%d\n", (int)pid, WTERMSIG(stat));
 }
 
 static int allocPipe(void) {
@@ -1410,7 +1410,7 @@ static int allocPipe(void) {
    for (i = 0; i < PSize; i += 2)
       if (Pipe[i] < 0)
          return i;
-   Pipe = realloc(Pipe, (PSize + 16) * sizeof(int));
+   Pipe = alloc(Pipe, (PSize + 16) * sizeof(int));
    for (i = 0; i < 16; i += 2)
       Pipe[PSize] = -1,  PSize += 2;
    return PSize - 16;

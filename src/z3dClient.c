@@ -1,4 +1,4 @@
-/* 29jun05abu
+/* 17sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -247,7 +247,7 @@ static void mkEdge(int x1, int y1, int z1, int x2, int y2, int z2) {
 }
 
 static void zDots(long i, long h, long h2, unsigned long z, unsigned long z2) {
-   byte *frame;
+   char *frame;
    unsigned long *zbuff;
 
    i = i * SizX + h;
@@ -257,9 +257,9 @@ static void zDots(long i, long h, long h2, unsigned long z, unsigned long z2) {
    switch (PixSize) {
    case 1:
       if (z < *zbuff)
-         *zbuff = z,  *frame = (byte)0;
+         *zbuff = z,  *frame = 0;
       if (z2 < *(zbuff += i))
-         *zbuff = z2,  *(frame + i) = (byte)0;
+         *zbuff = z2,  *(frame + i) = 0;
       break;
    case 2:
       if (z < *zbuff)
@@ -270,16 +270,16 @@ static void zDots(long i, long h, long h2, unsigned long z, unsigned long z2) {
    case 3:
       if (z < *zbuff) {
          *zbuff = z;
-         frame[0] = (byte)0;
-         frame[1] = (byte)0;
-         frame[2] = (byte)0;
+         frame[0] = 0;
+         frame[1] = 0;
+         frame[2] = 0;
       }
       if (z2 < *(zbuff += i)) {
          *zbuff = z2;
          frame += 3 * i;
-         frame[0] = (byte)0;
-         frame[1] = (byte)0;
-         frame[2] = (byte)0;
+         frame[0] = 0;
+         frame[1] = 0;
+         frame[2] = 0;
       }
       break;
    case 4:
@@ -293,7 +293,7 @@ static void zDots(long i, long h, long h2, unsigned long z, unsigned long z2) {
 
 static void zLine(long pix, long v, long h, long h2,
                                        unsigned long z, unsigned long z2) {
-   byte *frame;
+   char *frame;
    unsigned long *zbuff;
    long d, e, dh, dz, sz;
 
@@ -315,7 +315,7 @@ static void zLine(long pix, long v, long h, long h2,
       case 1:
          do {
             if (z < *zbuff)
-               *zbuff = z,  *frame = (byte)pix;
+               *zbuff = z,  *frame = pix;
             z += d;
             if (e >= 0)
                z += sz,  e -= dh;
@@ -338,9 +338,9 @@ static void zLine(long pix, long v, long h, long h2,
          do {
             if (z < *zbuff) {
                *zbuff = z;
-               frame[0] = (byte)pix;
-               frame[1] = (byte)(pix >> 8);
-               frame[2] = (byte)(pix >> 16);
+               frame[0] = pix;
+               frame[1] = (pix >> 8);
+               frame[2] = (pix >> 16);
             }
             z += d;
             if (e >= 0)
@@ -371,7 +371,7 @@ int main(int ac, char *av[]) {
    XPixmapFormatValues *pmFormat;
    long hor, sky, gnd, pix, v;
    int n, i, x0, y0, z0, x1, y1, z1, x2, y2, z2;
-   byte *frame;
+   char *frame;
    edge *e;
    long long t;
    struct timeval tv;
@@ -380,7 +380,7 @@ int main(int ac, char *av[]) {
       giveup("Use: <host> <port>");
 
    /* Open Connection */
-   bzero((char*)&addr, sizeof(addr));
+   memset(&addr, 0, sizeof(addr));
    if ((long)(addr.sin_addr.s_addr = inet_addr(av[1])) == -1) {
       if (!(hp = gethostbyname(av[1]))  ||  hp->h_length == 0)
          giveup("Can't get host");
@@ -471,9 +471,9 @@ int main(int ac, char *av[]) {
          case 3:
             i = 0;
             do {
-               frame[0] = (byte)pix;
-               frame[1] = (byte)(pix >> 8);
-               frame[2] = (byte)(pix >> 16);
+               frame[0] = pix;
+               frame[1] = (pix >> 8);
+               frame[2] = (pix >> 16);
                frame += 3;
             } while (++i < SizX);
             break;
@@ -485,10 +485,10 @@ int main(int ac, char *av[]) {
             break;
          }
       }
-      memset((char*)Zbuff, 0xFF, SizX * SizY * sizeof(unsigned long));
+      memset(Zbuff, 0xFF, SizX * SizY * sizeof(unsigned long));
 
       while (n = getNum()) {
-         memset((char*)Edges, 0, SizY * sizeof(edge));
+         memset(Edges, 0, SizY * sizeof(edge));
          x0 = x1 = getNum();
          y0 = y1 = getNum();
          z0 = z1 = getNum();

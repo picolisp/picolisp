@@ -34,5 +34,5 @@ Der Soundex-Algorithmus geht folgendermassen vor:
    7. Nur die ersten 24 Zeichen des Ergebnisses werden fuer die Suche
       herangezogen.
 
-Nun werden alle Datenbanksaetze angezeight, die mit dem aus diesem Algorithmus
+Nun werden alle Datenbanksaetze angezeigt, die mit dem aus diesem Algorithmus
 resultierenden Muster beginnen.

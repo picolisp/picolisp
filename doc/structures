@@ -53,10 +53,10 @@
 
          External Symbols:
 
-                  +-----------+---+-----------+---+
-      Block 0:    |   Free    | 0 |   Next    | 0 |
-                  +-----------+---+-----------+---+
-                  0              BLK
+                  +-----------+---+-----------+---+----+
+      Block 0:    |   Free    | 0 |   Next    | 0 | << |
+                  +-----------+---+-----------+---+----+
+                  0               BLK                  2*Blk+1
 
 
                   +-----------+---+
@@ -83,6 +83,7 @@
    - 8 bits per byte
    - word: sizeof(void*) == sizeof(unsigned long) == 4
    - gcc
+      Functions aligned to 4-byte boundaries
       64-bit "long long" integers
       Zero- or variable-length arrays
       Conditionals with Omitted Operands

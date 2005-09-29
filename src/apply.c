@@ -1,4 +1,4 @@
-/* 30may05abu
+/* 11aug05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -210,17 +210,22 @@ any doMaps(any ex) {
 
 // (map 'fun 'lst ..) -> lst
 any doMap(any ex) {
-   any x;
-   int i, n;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell foo;
 
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      x = apply(ex, data(foo), NO, n, c);
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         x = apply(ex, data(foo), NO, n, c);
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
    }
    drop(foo);
    return x;
@@ -228,17 +233,22 @@ any doMap(any ex) {
 
 // (mapc 'fun 'lst ..) -> any
 any doMapc(any ex) {
-   any x;
-   int i, n;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell foo;
 
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      x = apply(ex, data(foo), YES, n, c);
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         x = apply(ex, data(foo), YES, n, c);
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
    }
    drop(foo);
    return x;
@@ -246,166 +256,180 @@ any doMapc(any ex) {
 
 // (maplist 'fun 'lst ..) -> lst
 any doMaplist(any ex) {
-   any x;
-   int i, n;
-   cell foo, res, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo;
 
+   Push(res, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   if (!isCell(data(c[0]))) {
-      drop(foo);
-      return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      data(res) = x = cons(apply(ex, data(foo), NO, n, c), Nil);
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         cdr(x) = cons(apply(ex, data(foo), NO, n, c), Nil);
+         x = cdr(x);
+      }
    }
-   Push(res, x = cons(apply(ex, data(foo), NO, n, c), Nil));
-   while (isCell(data(c[0]) = cdr(data(c[0])))) {
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
-      cdr(x) = cons(apply(ex, data(foo), NO, n, c), Nil);
-      x = cdr(x);
-   }
-   drop(foo);
-   return data(res);
+   return Pop(res);
 }
 
 // (mapcar 'fun 'lst ..) -> lst
 any doMapcar(any ex) {
-   any x;
-   int i, n;
-   cell foo, res, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo;
 
+   Push(res, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   if (!isCell(data(c[0]))) {
-      drop(foo);
-      return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      data(res) = x = cons(apply(ex, data(foo), YES, n, c), Nil);
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         cdr(x) = cons(apply(ex, data(foo), YES, n, c), Nil);
+         x = cdr(x);
+      }
    }
-   Push(res, x = cons(apply(ex, data(foo), YES, n, c), Nil));
-   while (isCell(data(c[0]) = cdr(data(c[0])))) {
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
-      cdr(x) = cons(apply(ex, data(foo), YES, n, c), Nil);
-      x = cdr(x);
-   }
-   drop(foo);
-   return data(res);
+   return Pop(res);
 }
 
 // (mapcon 'fun 'lst ..) -> lst
 any doMapcon(any ex) {
-   any x;
-   int i, n;
-   cell foo, res, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo;
 
+   Push(res, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   if (!isCell(data(c[0]))) {
-      drop(foo);
-      return data(c[0]);
-   }
-   while (!isCell(x = apply(ex, data(foo), NO, n, c))) {
-      if (!isCell(data(c[0]) = cdr(data(c[0])))) {
-         drop(foo);
-         return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      while (!isCell(x = apply(ex, data(foo), NO, n, c))) {
+         if (!isCell(data(c[0]) = cdr(data(c[0]))))
+            return Pop(res);
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+      data(res) = x;
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         while (isCell(cdr(x)))
+            x = cdr(x);
+         cdr(x) = apply(ex, data(foo), NO, n, c);
+      }
    }
-   Push(res,x);
-   while (isCell(data(c[0]) = cdr(data(c[0])))) {
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
-      while (isCell(cdr(x)))
-         x = cdr(x);
-      cdr(x) = apply(ex, data(foo), NO, n, c);
-   }
-   drop(foo);
-   return data(res);
+   return Pop(res);
 }
 
 // (mapcan 'fun 'lst ..) -> lst
 any doMapcan(any ex) {
-   any x;
-   int i, n;
-   cell foo, res, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo;
 
+   Push(res, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   if (!isCell(data(c[0]))) {
-      drop(foo);
-      return data(c[0]);
-   }
-   while (!isCell(x = apply(ex, data(foo), YES, n, c))) {
-      if (!isCell(data(c[0]) = cdr(data(c[0])))) {
-         drop(foo);
-         return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      while (!isCell(x = apply(ex, data(foo), YES, n, c))) {
+         if (!isCell(data(c[0]) = cdr(data(c[0]))))
+            return Pop(res);
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+      data(res) = x;
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         while (isCell(cdr(x)))
+            x = cdr(x);
+         cdr(x) = apply(ex, data(foo), YES, n, c);
+      }
    }
-   Push(res,x);
-   while (isCell(data(c[0]) = cdr(data(c[0])))) {
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
-      while (isCell(cdr(x)))
-         x = cdr(x);
-      cdr(x) = apply(ex, data(foo), YES, n, c);
-   }
-   drop(foo);
-   return data(res);
+   return Pop(res);
 }
 
 // (filter 'fun 'lst ..) -> lst
 any doFilter(any ex) {
-   any x;
-   int i, n;
-   cell foo, res, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo;
 
+   Push(res, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   if (!isCell(data(c[0]))) {
-      drop(foo);
-      return data(c[0]);
-   }
-   while (isNil(apply(ex, data(foo), YES, n, c))) {
-      if (!isCell(data(c[0]) = cdr(data(c[0])))) {
-         drop(foo);
-         return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      while (isNil(apply(ex, data(foo), YES, n, c))) {
+         if (!isCell(data(c[0]) = cdr(data(c[0]))))
+            return Pop(res);
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+      data(res) = x = cons(car(data(c[0])), Nil);
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         if (!isNil(apply(ex, data(foo), YES, n, c)))
+            x = cdr(x) = cons(car(data(c[0])), Nil);
+      }
    }
-   Push(res, x = cons(car(data(c[0])), Nil));
-   while (isCell(data(c[0]) = cdr(data(c[0])))) {
-      for (i = 1; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
-      if (!isNil(apply(ex, data(foo), YES, n, c)))
-         x = cdr(x) = cons(car(data(c[0])), Nil);
-   }
-   drop(foo);
-   return data(res);
+   return Pop(res);
 }
 
 // (seek 'fun 'lst ..) -> lst
 any doSeek(any ex) {
-   any x;
-   int i, n;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell foo;
 
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (!isNil(apply(ex, data(foo), NO, n, c))) {
-         drop(foo);
-         return data(c[0]);
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (!isNil(apply(ex, data(foo), NO, n, c))) {
+            drop(foo);
+            return data(c[0]);
+         }
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
    }
    drop(foo);
    return Nil;
@@ -413,20 +437,25 @@ any doSeek(any ex) {
 
 // (find 'fun 'lst ..) -> any
 any doFind(any ex) {
-   any x;
-   int i, n;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell foo;
 
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (!isNil(apply(ex, data(foo), YES, n, c))) {
-         drop(foo);
-         return car(data(c[0]));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (!isNil(apply(ex, data(foo), YES, n, c))) {
+            drop(foo);
+            return car(data(c[0]));
+         }
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
    }
    drop(foo);
    return Nil;
@@ -434,20 +463,25 @@ any doFind(any ex) {
 
 // (pick 'fun 'lst ..) -> any
 any doPick(any ex) {
-   any x;
-   int i, n;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell foo;
 
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (!isNil(x = apply(ex, data(foo), YES, n, c))) {
-         drop(foo);
-         return x;
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (!isNil(x = apply(ex, data(foo), YES, n, c))) {
+            drop(foo);
+            return x;
+         }
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
    }
    drop(foo);
    return Nil;
@@ -455,19 +489,25 @@ any doPick(any ex) {
 
 // (cnt 'fun 'lst ..) -> cnt
 any doCnt(any ex) {
-   any x;
-   int i, n, res;
-   cell foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   int res;
+   cell foo;
 
-   Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
    res = 0;
-   while (isCell(data(c[0]))) {
-      if (!isNil(apply(ex, data(foo), YES, n, c)))
-         res += 2;
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+   Push(foo, EVAL(car(x)));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (!isNil(apply(ex, data(foo), YES, n, c)))
+            res += 2;
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
    }
    drop(foo);
    return box(res);
@@ -475,73 +515,118 @@ any doCnt(any ex) {
 
 // (sum 'fun 'lst ..) -> num
 any doSum(any ex) {
-   any x;
-   int i, n;
-   cell res, foo, c1, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, foo, c1;
 
    Push(res, box(0));
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (isNum(data(c1) = apply(ex, data(foo), YES, n, c))) {
-         Save(c1);
-         if (isNeg(data(res))) {
-            if (isNeg(data(c1)))
-               bigAdd(data(res),data(c1));
-            else
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (isNum(data(c1) = apply(ex, data(foo), YES, n, c))) {
+            Save(c1);
+            if (isNeg(data(res))) {
+               if (isNeg(data(c1)))
+                  bigAdd(data(res),data(c1));
+               else
+                  bigSub(data(res),data(c1));
+               if (!IsZero(data(res)))
+                  neg(data(res));
+            }
+            else if (isNeg(data(c1)))
                bigSub(data(res),data(c1));
-            if (!IsZero(data(res)))
-               neg(data(res));
+            else
+               bigAdd(data(res),data(c1));
+            drop(c1);
          }
-         else if (isNeg(data(c1)))
-            bigSub(data(res),data(c1));
-         else
-            bigAdd(data(res),data(c1));
-         drop(c1);
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
       }
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
    }
    return Pop(res);
 }
 
 // (maxi 'fun 'lst ..) -> any
 any doMaxi(any ex) {
-   any x;
-   int i, n;
-   cell res, val, foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, val, foo;
 
    Push(res, Nil);
    Push(val, Nil);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (compare(x = apply(ex, data(foo), YES, n, c), data(val)) > 0)
-         data(res) = car(data(c[0])),  data(val) = x;
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (compare(x = apply(ex, data(foo), YES, n, c), data(val)) > 0)
+            data(res) = car(data(c[0])),  data(val) = x;
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
    }
    return Pop(res);
 }
 
 // (mini 'fun 'lst ..) -> any
 any doMini(any ex) {
-   any x;
-   int i, n;
-   cell res, val, foo, c[length(cdr(x = cdr(ex)))];
+   any x = cdr(ex);
+   cell res, val, foo;
 
    Push(res, Nil);
    Push(val, T);
    Push(foo, EVAL(car(x)));
-   for (n = 0; isCell(x = cdr(x)); ++n)
-      Push(c[n], EVAL(car(x)));
-   while (isCell(data(c[0]))) {
-      if (compare(x = apply(ex, data(foo), YES, n, c), data(val)) < 0)
-         data(res) = car(data(c[0])),  data(val) = x;
-      for (i = 0; i < n; ++i)
-         data(c[i]) = cdr(data(c[i]));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      while (isCell(data(c[0]))) {
+         if (compare(x = apply(ex, data(foo), YES, n, c), data(val)) < 0)
+            data(res) = car(data(c[0])),  data(val) = x;
+         for (i = 0; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
+   }
+   return Pop(res);
+}
+
+// (by 'fun1 'fun2 'lst ..) -> lst
+any doBy(any ex) {
+   any x = cdr(ex);
+   cell res, foo1, foo2;
+
+   Push(res, Nil);
+   Push(foo1, EVAL(car(x))),  x = cdr(x),  Push(foo2, EVAL(car(x)));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      data(res) = x = cons(cons(apply(ex, data(foo1), YES, n, c), car(data(c[0]))), Nil);
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         cdr(x) = cons(cons(apply(ex, data(foo1), YES, n, c), car(data(c[0]))), Nil);
+         x = cdr(x);
+      }
+      data(res) = apply(ex, data(foo2), NO, 1, &res);
+      for (x = data(res); isCell(x); x = cdr(x))
+         car(x) = cdar(x);
    }
    return Pop(res);
 }

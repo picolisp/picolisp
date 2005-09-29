@@ -1,4 +1,4 @@
-// 09dec04abu
+// 12aug05abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -35,6 +35,7 @@ public class Z3dField extends Pico {
       Source.setAnimated(true);
       Img = createImage(Source);
 
+      setFocusable(true);
       addFocusListener(new FocusListener() {
          public void focusGained(FocusEvent ev) {msg1("foc>");}
          public void focusLost(FocusEvent ev) {msg1("nxt>");}
@@ -90,6 +91,7 @@ public class Z3dField extends Pico {
 
       addMouseListener(new MouseAdapter() {
          public void mouseClicked(MouseEvent ev) {
+            requestFocus();
             msg4("clk>",
                ev.getModifiers(),
                PosX = ev.getX()-OrgX,

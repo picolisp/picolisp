@@ -1,4 +1,4 @@
-# 15mar05abu
+# 26sep05abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -20,11 +20,19 @@
    (let *Dbg NIL
       (let (F (heap)  H (heap T))
          (prinl
-            (format (*/ H 10 `(* 128 1024)) 1)
+            (*/ H `(* 128 1024))
             " "
             (- 100 (*/ 100 F H))
             "%" )
          (- H F) ) ) )
+
+(de depth (Idx)
+   (if (atom Idx)
+      0
+      (inc
+         (max
+            (depth (cadr Idx))
+            (depth (cddr Idx)) ) ) ) )
 
 (de what (S)
    (let *Dbg NIL

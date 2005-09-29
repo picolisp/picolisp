@@ -1,4 +1,4 @@
-/* 21jun05abu
+/* 27sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include <termio.h>
+#include <termios.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <dlfcn.h>
@@ -23,7 +23,13 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#define CELLS     40000                      // Heap allocation size
+#ifndef __linux__
+#define fflush_unlocked fflush
+#define fread_unlocked fread
+#define fwrite_unlocked fwrite
+#endif
+
+#define CELLS     (1024*1024/sizeof(cell))   // Heap allocation unit 1MB
 #define HASH      4999                       // Hash table size (should be prime)
 #define BNDSKIP   0x10000                    // Bind frame skip offset
 #define TOP       0x10000                    // Character Top
@@ -193,7 +199,7 @@ extern FILE *InFile, *OutFile;
 extern any TheKey, TheCls;
 extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
 extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
@@ -207,11 +213,10 @@ int bigCompare(any,any);
 any bigCopy(any);
 void bigSub(any,any);
 any boxChar(int,int*,any*);
-any boxCnt(long);
 any boxWord2(word2);
 void brkLoad(any);
 int bufSize(any);
-void bufString(any,byte*);
+void bufString(any,char*);
 void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
@@ -238,13 +243,13 @@ long evCnt(any,any);
 double evDouble(any,any);
 any evList(any);
 any evSym(any);
-void execError(byte*);
+void execError(char*) __attribute__ ((noreturn));
 void extError(any,any) __attribute__ ((noreturn));
 any findHash(any,any*);
 int firstByte(any);
 any get(any,any);
 void getStdin(void);
-void giveup(char*);
+void giveup(char*) __attribute__ ((noreturn));
 unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
@@ -255,20 +260,20 @@ void lstError(any,any) __attribute__ ((noreturn));
 any load(any,int,any);
 any method(any);
 any mkChar(int);
-any mkName(byte*);
+any mkName(char*);
 any mkStr(char*);
 any name(any);
-any newId(void);
+any newId(int);
 int numBytes(any);
 void numError(any,any) __attribute__ ((noreturn));
 double numToDouble(any);
 any numToSym(any,int,int,int);
 void outName(any);
-void outString(byte*);
+void outString(char*);
 void outWord(word);
 void pack(any,int*,any*,cell*);
 int pathSize(any);
-void pathString(any,byte*);
+void pathString(any,char*);
 void pipeError(any,char*);
 void popCtlFiles(void);
 void popInFiles(void);
@@ -291,7 +296,6 @@ int symByte(any);
 int symChar(any);
 void symError(any,any) __attribute__ ((noreturn));
 any symToNum(any,int,int,int);
-long unBox(any);
 void undefined(any,any);
 void unwind (catchFrame*);
 void varError(any,any) __attribute__ ((noreturn));
@@ -325,7 +329,9 @@ any doBitQ(any);
 any doBitXor(any);
 any doBool(any);
 any doBox(any);
+any doBoxQ(any);
 any doBreak(any);
+any doBy(any);
 any doBye(any) __attribute__ ((noreturn));
 any doCaaar(any);
 any doCaadr(any);
@@ -597,6 +603,13 @@ any doXor(any);
 any doZap(any);
 any doZero(any);
 
+static inline long unBox(any x) {
+   long n = unDig(x) / 2;
+   return unDig(x) & 1? -n : n;
+}
+
+static inline any boxCnt(long n) {return box(n>=0?  n*2 : -n*2+1);}
+
 /* List element access */
 static inline any nth(int n, any x) {
    if (--n < 0)
@@ -604,6 +617,19 @@ static inline any nth(int n, any x) {
    while (--n >= 0)
       x = cdr(x);
    return x;
+}
+
+static inline any getn(any x, any y) {
+   long n = unDig(x) / 2;
+
+   if (isNeg(x)) {
+      while (--n)
+         y = cdr(y);
+      return cdr(y);
+   }
+   while (--n > 0)
+      y = cdr(y);
+   return car(y);
 }
 
 /* List length calculation */

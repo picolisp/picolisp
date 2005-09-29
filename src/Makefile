@@ -1,4 +1,4 @@
-# 28jun05abu
+# 01sep05abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -8,7 +8,7 @@ lib = ../lib
 
 # all: pico gate x11
 
-pico: $(bin)/pico $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2
+pico: $(bin)/pico $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2 $(bin)/balance
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
 
@@ -16,10 +16,10 @@ picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
 .c.o:
 	echo $*.c:
-	gcc -c -Os -fomit-frame-pointer \
+	gcc -c -O -falign-functions -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
-	-pipe  -D_FILE_OFFSET_BITS=64  $*.c
+	-pipe  -D_GNU_SOURCE  -D_FILE_OFFSET_BITS=64  $*.c
 
 
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
@@ -58,6 +58,11 @@ $(bin)/utf2: utf2.o
 	echo "  " link utf2:
 	gcc -o $(bin)/utf2 utf2.o
 	strip $(bin)/utf2
+
+$(bin)/balance: balance.o
+	echo "  " link balance:
+	gcc -o $(bin)/balance balance.o
+	strip $(bin)/balance
 
 $(bin)/ssl: ssl.o
 	echo "  " link ssl:

@@ -1,8 +1,10 @@
-/* 31mar05abu
+/* 27sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
+
+static any read0(bool);
 
 // I/O Tokens
 enum {NIX, BEG, DOT, END};
@@ -23,6 +25,8 @@ static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(e
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
+static void dbfErr(void) {err(NULL, NULL, "Bad DB file");}
+static void jnlErr(void) {err(NULL, NULL, "Bad Journal");}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
 
@@ -372,16 +376,16 @@ int pathSize(any x) {
    return strlen(Home) + numBytes(name(x));
 }
 
-void bufString(any x, byte *p) {
+void bufString(any x, char *p) {
    int c = symByte(name(x));
 
    while (*p++ = c)
       c = symByte(NULL);
 }
 
-void pathString(any x, byte *p) {
+void pathString(any x, char *p) {
    int c;
-   byte *h;
+   char *h;
 
    if ((c = symByte(name(x))) == '+')
       *p++ = c,  c = symByte(NULL);
@@ -469,7 +473,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
    else if (isNil(x))
       f->pid = -1,  f->fp = stdin;
    else if (isSym(x)) {
-      byte nm[pathSize(x)];
+      char nm[pathSize(x)];
 
       pathString(x,nm);
       if (!(f->fp = fopen(nm,"r")))
@@ -479,7 +483,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
    else {
       any y;
       int i, pfd[2], ac = length(x);
-      byte *av[ac+1];
+      char *av[ac+1];
 
       if (pipe(pfd) < 0)
          pipeError(ex, "read open");
@@ -535,7 +539,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
    else if (isNil(x))
       f->pid = -1,  f->fp = stdout;
    else if (isSym(x)) {
-      byte nm[pathSize(x)];
+      char nm[pathSize(x)];
 
       pathString(x,nm);
       if (nm[0] == '+') {
@@ -549,7 +553,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
    else {
       any y;
       int i, pfd[2], ac = length(x);
-      byte *av[ac+1];
+      char *av[ac+1];
 
       if (pipe(pfd) < 0)
          pipeError(ex, "write open");
@@ -580,7 +584,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
 static void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
    {
-      byte nm[pathSize(x)];
+      char nm[pathSize(x)];
 
       pathString(x,nm);
       if (nm[0] == '+') {
@@ -716,7 +720,6 @@ static void testEsc(void) {
 static any rdList(void) {
    any x;
    cell c1, c2;
-   static any read0(bool);
 
    Env.get();
    if (skip('#') == ')') {
@@ -918,13 +921,16 @@ any doRead(any x) {
 
 long waitFd(any ex, int fd, long ms) {
    any x;
-   cell c1;
+   cell c1, at;
    int i, j, m, n;
    long t;
    bool flg;
    fd_set fdSet;
-   char buf[1024];
+   byte buf[1024];
    struct timeval *tp, tv;
+#ifndef __linux__
+   struct timeval tt;
+#endif
 
    Save(c1);
    do {
@@ -966,12 +972,21 @@ long waitFd(any ex, int fd, long ms) {
       if (tp) {
          tv.tv_sec = t / 1000;
          tv.tv_usec = t % 1000 * 1000;
+#ifndef __linux__
+         gettimeofday(&tt,NULL);
+         t = tt.tv_sec*1000 + tt.tv_usec/1000;
+#endif
       }
       while (select(m+1, &fdSet, NULL, NULL, tp) < 0)
          if (errno != EINTR)
             err(ex, NULL, "Select error: %s", strerror(errno));
       if (tp) {
+#ifdef __linux__
          t -= tv.tv_sec*1000 + tv.tv_usec/1000;
+#else
+         gettimeofday(&tt,NULL);
+         t = tt.tv_sec*1000 + tt.tv_usec/1000 - t;
+#endif
          if (ms > 0  &&  (ms -= t) < 0)
             ms = 0;
       }
@@ -1000,7 +1015,9 @@ long waitFd(any ex, int fd, long ms) {
                setDig(cadar(x), 2*n);
             else {
                setDig(cadar(x), unDig(caar(x)));
-               run(cddar(x));
+               Push(at,val(At)),  val(At) = caar(x);
+               prog(cddar(x));
+               val(At) = Pop(at);
             }
          }
       if (Hear  &&  FD_ISSET(Hear, &fdSet))
@@ -1012,7 +1029,9 @@ long waitFd(any ex, int fd, long ms) {
             evList(x);
       for (x = data(c1); isCell(x); x = cdr(x))
          if (!isNeg(caar(x)) && (n=(int)unDig(caar(x))/2)!=fd && FD_ISSET(n,&fdSet)) {
-            run(cdar(x));
+            Push(at,val(At)),  val(At) = caar(x);
+            prog(cdar(x));
+            val(At) = Pop(at);
             break;
          }
    } while (ms  &&  fd >= 0 && !FD_ISSET(fd, &fdSet));
@@ -1057,7 +1076,7 @@ any doHear(any ex) {
       Hear = (int)xCnt(ex,x);
    else {
       int fd;
-      byte nm[pathSize(x)];
+      char nm[pathSize(x)];
 
       pathString(x, nm);
       if ((fd = open(nm, O_RDONLY)) <= 0)
@@ -1188,7 +1207,7 @@ any doFrom(any ex) {
    any x;
    int res, i, j, ac = length(x = cdr(ex)), p[ac];
    cell c[ac];
-   byte *av[ac];
+   char *av[ac];
 
    if (ac == 0)
       return Nil;
@@ -1238,7 +1257,7 @@ any doTill(any ex) {
 
    x = evSym(cdr(ex));
    {
-      byte buf[bufSize(x)];
+      char buf[bufSize(x)];
 
       bufString(x, buf);
       if (!Chr)
@@ -1344,7 +1363,7 @@ any doLines(any ex) {
       y = EVAL(car(x));
       NeedSym(ex,y);
       {
-         byte nm[pathSize(y)];
+         char nm[pathSize(y)];
 
          pathString(y, nm);
          if (!(fp = fopen(nm,"r")))
@@ -1533,6 +1552,7 @@ any doOut(any ex) {
    return x;
 }
 
+// (pipe exe) -> cnt
 // (pipe exe . prg) -> any
 any doPipe(any ex) {
    any x;
@@ -1549,6 +1569,8 @@ any doPipe(any ex) {
       bye(0);
    }
    close(pfd[1]);
+   if (!isCell(cddr(ex)))
+      return boxCnt(pfd[0]);
    if (!(f.fp = fdopen(pfd[0], "r")))
       openErr(ex, "Read pipe");
    f.pid = 0;
@@ -1579,7 +1601,7 @@ any doOpen(any ex) {
    NeedSym(ex,x);
    {
       int fd;
-      byte nm[pathSize(x)];
+      char nm[pathSize(x)];
 
       pathString(x, nm);
       if ((fd = open(nm, O_CREAT|O_RDWR, 0666)) >= 0)
@@ -1619,7 +1641,7 @@ any doEcho(any ex) {
    if (isSym(y)) {
       int res, m, n, i, j, ac = length(x), p[ac], om, op;
       cell c[ac];
-      byte *av[ac];
+      char *av[ac];
 
       for (i = 0;;) {
          Push(c[i], y);
@@ -1707,7 +1729,7 @@ void outWord(word n) {
    Env.put('0' + n % 10);
 }
 
-void outString(byte *s) {
+void outString(char *s) {
    while (*s)
       Env.put(*s++);
 }
@@ -1787,8 +1809,6 @@ void prin(any x) {
          if (isExt(x))
             Env.put('}');
       }
-      else if (car(x) == Quote)
-         Env.put('\''),  prin(cdr(x));
       else {
          cell c1;
 
@@ -1955,20 +1975,19 @@ any doWr(any x) {
 }
 
 /*** DB-I/O ***/
-#define BLKSIZE 64   // DB block size
-
+#define BLKSIZE 64  // DB block unit size
 #define BLK 6
 #define TAGMASK (BLKSIZE-1)
 #define BLKMASK (~TAGMASK)
 
 typedef long long adr;
 
-static int BlkFile;
+static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
 static FILE *Journal;
-static adr BlkIndex, BlkLink, Marks;
-static byte *Ptr, *Mark;
-static byte Block[BLKSIZE];
-static byte IniBlk[BLKSIZE];  // 01 00 00 00 00 00 NIL 0
+static adr BlkIndex, BlkLink;
+word2 *Marks;
+static byte *Ptr, **Mark;
+static byte *Block, *IniBlk;  // 01 00 00 00 00 00 NIL 0
 
 static adr getAdr(byte *p) {
    return (adr)p[0] | (adr)p[1]<<8 | (adr)p[2]<<16 |
@@ -1980,8 +1999,8 @@ static void setAdr(adr n, byte *p) {
    p[3] = (byte)(n >> 24),  p[4] = (byte)(n >> 32),  p[5] = (byte)(n >> 40);
 }
 
-static any new64(adr n, any x) {
-   int c;
+static any new64(word2 n, any x) {
+   int c, i;
    word2 w = 0;
 
    do {
@@ -1991,27 +2010,41 @@ static any new64(adr n, any x) {
          c += 6;
       w = w << 8 | c + '0';
    } while (n >>= 6);
+   if (i = F) {
+      w = w << 8 | '-';
+      do {
+         if ((c = i & 0x3F) > 11)
+            c += 5;
+         if (c > 42)
+            c += 6;
+         w = w << 8 | c + '0';
+      } while (i >>= 6);
+   }
    if (w >> 32)
       return consNum((word)w, consNum((word)(w >> 32), x));
    return consNum((word)w, x);
 }
 
-static adr blk64(any x) {
+static word2 blk64(any x) {
    int c;
    word2 w;
-   adr n = 0;
+   word2 n = 0;
 
+   F = 0;
    if (isNum(x)) {
       w = unDig(x);
       if (isNum(x = cdr(numCell(x))))
          w |= (word2)unDig(x) << 32;
       do {
-         c = w & 0xFF;
-         if ((c -= '0') > 42)
-            c -= 6;
-         if (c > 11)
-            c -= 5;
-         n = n << 6 | c;
+         if ((c = w & 0xFF) == '-')
+            F = n,  n = 0;
+         else {
+            if ((c -= '0') > 42)
+               c -= 6;
+            if (c > 11)
+               c -= 5;
+            n = n << 6 | c;
+         }
       } while (w >>= 8);
    }
    return n;
@@ -2025,51 +2058,32 @@ static void dbLock(int cmd, int typ, off_t len) {
    fl.l_whence = SEEK_SET;
    fl.l_start = 0;
    fl.l_len = len;
-   while (fcntl(BlkFile, cmd, &fl) < 0)
+   while (fcntl(BlkFile[0], cmd, &fl) < 0)
       if (errno != EINTR)
          lockErr();
 }
 
-static void rdLock(void) {
-   if (val(Solo) != T)
-      dbLock(F_SETLKW, F_RDLCK, 1);
-}
+static void rdLock(void) {dbLock(F_SETLKW, F_RDLCK, 1);}
+static void wrLock(void) {dbLock(F_SETLKW, F_WRLCK, 1);}
+static void rwUnlock(off_t len) {dbLock(F_SETLK, F_UNLCK, len);}
 
-static void wrLock(void) {
-   if (val(Solo) != T)
-      dbLock(F_SETLKW, F_WRLCK, 1);
-}
-
-static void rwUnlock(int len) {
-   if (val(Solo) != T) {
-      if (len == 0)
-         val(Solo) = Zero;
-      dbLock(F_SETLK, F_UNLCK, len);
-   }
-}
-
-static pid_t tryLock(adr n) {
+static pid_t tryLock(off_t n, off_t len) {
    struct flock fl;
 
    for (;;) {
       fl.l_type = F_WRLCK;
       fl.l_whence = SEEK_SET;
-      fl.l_start = (off_t)n;
-      fl.l_len = (off_t)(n != 0);  // Zero-id: Lock all
-      if (fcntl(BlkFile, F_SETLK, &fl) >= 0) {
-         if (!n)
-            val(Solo) = T;
-         else if (val(Solo) != T)
-            val(Solo) = Nil;
+      fl.l_start = n;
+      fl.l_len = len;
+      if (fcntl(BlkFile[F], F_SETLK, &fl) >= 0)
          return 0;
-      }
       if (errno != EINTR  &&  errno != EACCES  &&  errno != EAGAIN)
          lockErr();
       fl.l_type = F_WRLCK;  //??
       fl.l_whence = SEEK_SET;
-      fl.l_start = (off_t)n;
-      fl.l_len = (off_t)(n != 0);
-      while (fcntl(BlkFile, F_GETLK, &fl) < 0)
+      fl.l_start = n;
+      fl.l_len = len;
+      while (fcntl(BlkFile[F], F_GETLK, &fl) < 0)
          if (errno != EINTR)
             lockErr();
       if (fl.l_type != F_UNLCK)
@@ -2077,43 +2091,33 @@ static pid_t tryLock(adr n) {
    }
 }
 
-static void blkPeek(adr pos, void *buf, size_t siz) {
-   for (;;) {
-      if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
-         dbErr("seek");
-      if (read(BlkFile, buf, siz) == (ssize_t)siz)
-         break;
+static void blkPeek(off_t pos, void *buf, size_t siz) {
+   while (pread(BlkFile[F], buf, siz, pos) != (ssize_t)siz)
       if (errno != EINTR)
          dbErr("read");
-   }
 }
 
-static void blkPoke(adr pos, void *buf, int siz) {
-   for (;;) {
-      if (lseek(BlkFile, (off_t)pos, SEEK_SET) != (off_t)pos)
-         dbErr("seek");
-      if (write(BlkFile, buf, siz) == (ssize_t)siz)
-         break;
+static void blkPoke(off_t pos, void *buf, int siz) {
+   while (pwrite(BlkFile[F], buf, siz, pos) != (ssize_t)siz)
       if (errno != EINTR)
          dbErr("write");
-   }
    if (Journal) {
       byte a[BLK];
 
-      setAdr(pos,a);
-      putc_unlocked(siz, Journal);
-      fwrite_unlocked(a, BLK, 1, Journal);
+      putc_unlocked(siz == BlkSize[F]? BLKSIZE : siz, Journal);
+      a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite_unlocked(a, 2, 1, Journal);
+      setAdr(pos >> BlkShift[F], a),  fwrite_unlocked(a, BLK, 1, Journal);
       fwrite_unlocked(buf, siz, 1, Journal);
    }
 }
 
 static void rdBlock(adr n) {
-   blkPeek(BlkIndex = n, Block, BLKSIZE);
+   blkPeek((BlkIndex = n) << BlkShift[F], Block, BlkSize[F]);
    BlkLink = getAdr(Block) & BLKMASK;
    Ptr = Block + BLK;
 }
 
-static void wrBlock(void) {blkPoke(BlkIndex, Block, BLKSIZE);}
+static void wrBlock(void) {blkPoke(BlkIndex << BlkShift[F], Block, BlkSize[F]);}
 
 static adr newBlock(void) {
    adr n;
@@ -2121,19 +2125,21 @@ static adr newBlock(void) {
 
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    if (n = getAdr(buf))
-      blkPeek(n, buf, BLK);  // Get free link
+      blkPeek(n << BlkShift[F], buf, BLK);  // Get free link
    else if ((n = getAdr(buf+BLK)) == 281474976710592LL)
       err(NULL, NULL, "DB Oversize");
    else
       setAdr(n + BLKSIZE, buf+BLK);  // Increment next
-   setAdr(0, IniBlk),  blkPoke(n, IniBlk, BLKSIZE);
+   setAdr(0, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
    blkPoke(0, buf, 2*BLK);
    return n;
 }
 
-any newId(void) {
+any newId(int i) {
    adr n;
 
+   if ((F = i) >= Files)
+      dbfErr();
    wrLock();
    if (Journal)
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
@@ -2150,10 +2156,10 @@ bool isLife(any x) {
    adr n;
    byte buf[BLK];
 
-   if (BlkFile && (n = blk64(name(x))*BLKSIZE)) {
+   if ((n = blk64(name(x))*BLKSIZE)  &&  F < Files) {
       blkPeek(BLK, buf, BLK);  // Get Next
       if (n < getAdr(buf)) {
-         blkPeek(n, buf, BLK);
+         blkPeek(n << BlkShift[F], buf, BLK);
          if ((getAdr(buf) & TAGMASK) == 1)
             return YES;
       }
@@ -2166,19 +2172,19 @@ static void cleanUp(adr n) {
    byte buf[BLK];
 
    blkPeek(0, buf, BLK),  fr = getAdr(buf);  // Get Free
-   setAdr(n, buf),  blkPoke(0, buf, BLK);     // Set new
+   setAdr(n, buf),  blkPoke(0, buf, BLK);    // Set new
    do {
       p = n;
-      blkPeek(p, buf, BLK),  n = getAdr(buf);  // Get block link
-      n &= BLKMASK;        // Clear Tag
-      setAdr(n, buf),  blkPoke(p, buf, BLK);
+      blkPeek(p << BlkShift[F], buf, BLK),  n = getAdr(buf);  // Get block link
+      n &= BLKMASK;  // Clear Tag
+      setAdr(n, buf),  blkPoke(p << BlkShift[F], buf, BLK);
    } while (n);
    if (fr)
-      setAdr(fr, buf),  blkPoke(p, buf, BLK);  // Append old free list
+      setAdr(fr, buf),  blkPoke(p << BlkShift[F], buf, BLK);  // Append old free list
 }
 
 static int getBlock(int n __attribute__((unused))) {
-   if (Ptr == Block+BLKSIZE) {
+   if (Ptr == Block+BlkSize[F]) {
       if (!BlkLink)
          return 0;
       rdBlock(BlkLink);
@@ -2187,7 +2193,7 @@ static int getBlock(int n __attribute__((unused))) {
 }
 
 static void putBlock(int c) {
-   if (Ptr == Block+BLKSIZE) {
+   if (Ptr == Block+BlkSize[F]) {
       if (BlkLink)
          wrBlock(),  rdBlock(BlkLink);
       else {
@@ -2206,42 +2212,76 @@ static void putBlock(int c) {
    *Ptr++ = (byte)c;
 }
 
-// (pool ['sym1 ['sym2]]) -> flg
+// (pool ['sym1 ['lst ['sym2]]]) -> flg
 any doPool(any ex) {
-   any x;
+   any x, db;
+   byte buf[2*BLK+1];
 
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
-   free(Mark), Mark = NULL, Marks = 0;
+   if (Files) {
+      while (isNil(doRollback(Nil)));
+      for (F = 0; F < Files; ++F) {
+         if (Marks)
+            free(Mark[F]);
+         if (close(BlkFile[F]) < 0)
+            closeErr("DB");
+      }
+      free(Mark), Mark = NULL, free(Marks), Marks = NULL;
+      Files = 0;
+   }
    if (Journal)
       fclose(Journal),  Journal = NULL;
-   if (BlkFile) {
-      while (isNil(doRollback(Nil)));
-      if (close(BlkFile) < 0)
-         closeErr("DB");
-      val(Solo) = Zero;
-      BlkFile = 0;
-   }
-   if (!isNil(x)) {
-      byte nm[pathSize(x)];
-      byte buf[2*BLK];
-
-      pathString(x, nm);
-      if ((BlkFile = open(nm, O_RDWR)) < 0) {
-         if (errno != ENOENT  ||
-                  (BlkFile = open(nm, O_CREAT|O_EXCL|O_RDWR, 0666)) < 0) {
-            BlkFile = 0;
-            return Nil;
-         }
-         setAdr(0, buf);              // Free
-         setAdr(2*BLKSIZE, buf+BLK);  // Next
-         blkPoke(0, buf, 2*BLK);
-         setAdr(1, IniBlk),  blkPoke(BLKSIZE, IniBlk, BLKSIZE);
-      }
+   x = cdr(ex),  db = EVAL(car(x));
+   NeedSym(ex,db);
+   if (!isNil(db)) {
       x = cddr(ex),  x = EVAL(car(x));
+      NeedLst(ex,x);
+      Files = length(x) ?: 1;
+      BlkShift = alloc(BlkShift, Files * sizeof(int));
+      BlkFile = alloc(BlkFile, Files * sizeof(int));
+      BlkSize = alloc(BlkSize, Files * sizeof(int));
+      MaxBlkSize = 0;
+      for (F = 0; F < Files; ++F) {
+         char nm[pathSize(db) + 8];
+
+         pathString(db, nm);
+         if (F)
+            sprintf(nm + strlen(nm), "%d", F);
+         BlkShift[F] = isNum(car(x))? (int)unDig(car(x))/2 : 0;
+         if ((BlkFile[F] = open(nm, O_RDWR)) >= 0) {
+            blkPeek(2*BLK, buf, 1);  // Get block shift
+            BlkSize[F] = BLKSIZE << (BlkShift[F] = (int)buf[0]);
+         }
+         else {
+            if (errno != ENOENT  ||
+                     (BlkFile[F] = open(nm, O_CREAT|O_EXCL|O_RDWR, 0666)) < 0) {
+               Files = 0;
+               return Nil;
+            }
+            BlkSize[F] = BLKSIZE << BlkShift[F];
+            setAdr(0, buf);  // Free
+            if (F)
+               setAdr(BLKSIZE, buf+BLK);  // Next
+            else {
+               byte blk[BlkSize[0]];
+
+               setAdr(2*BLKSIZE, buf+BLK);  // Next
+               memset(blk, 0, BlkSize[0]);
+               setAdr(1, blk),  blkPoke(BlkSize[0], blk, BlkSize[0]);
+            }
+            buf[2*BLK] = (byte)BlkShift[F];
+            blkPoke(0, buf, 2*BLK+1);
+         }
+         if (BlkSize[F] > MaxBlkSize)
+            MaxBlkSize = BlkSize[F];
+         x = cdr(x);
+      }
+      Block = alloc(Block, MaxBlkSize);
+      IniBlk = alloc(IniBlk, MaxBlkSize);
+      memset(IniBlk, 0, MaxBlkSize);
+      x = cdddr(ex),  x = EVAL(car(x));
       NeedSym(ex,x);
       if (!isNil(x)) {
-         byte nm[pathSize(x)];
+         char nm[pathSize(x)];
 
          pathString(x, nm);
          if (!(Journal = fopen(nm, "a")))
@@ -2252,14 +2292,20 @@ any doPool(any ex) {
 }
 
 // (journal) -> T
-any doJournal(any ex) {
+any doJournal(any ex __attribute__((unused))) {
    int siz;
-   byte a[BLK], buf[BLKSIZE];
+   byte a[BLK], buf[MaxBlkSize];
 
    while ((siz = getc_unlocked(InFile)) >= 0) {
-      if (siz > BLKSIZE || fread_unlocked(a,BLK,1,InFile) != 1 || fread_unlocked(buf,siz,1,InFile) != 1)
-         err(ex, NULL, "Bad Journal");
-      blkPoke(getAdr(a), buf, siz);
+      if (fread_unlocked(a, 2, 1, InFile) != 1)
+         jnlErr();
+      if ((F = a[0] | a[1]<<8) >= Files)
+         dbfErr();
+      if (siz == BLKSIZE)
+         siz = BlkSize[F];
+      if (fread_unlocked(a, BLK, 1, InFile) != 1 || fread_unlocked(buf, siz, 1, InFile) != 1)
+         jnlErr();
+      blkPoke(getAdr(a) << BlkShift[F], buf, siz);
    }
    return T;
 }
@@ -2278,17 +2324,17 @@ any doSeq(any ex) {
          x = cdr(x),  free = blk64(EVAL(car(x)));
          while ((n += BLKSIZE) < n2) {
             if (free) {
-               setAdr(n, buf),  blkPoke(free, buf, BLK);
-               setAdr(0, buf),  blkPoke(n, buf, BLK);  // Set new Free tail
+               setAdr(n, buf),  blkPoke(free << BlkShift[F], buf, BLK);
+               setAdr(0, buf),  blkPoke(n << BlkShift[F], buf, BLK);  // Set new Free tail
             }
             else {
                blkPeek(0, buf, BLK); // Get Free
-               blkPoke(n, buf, BLK); // Write Free|0
+               blkPoke(n << BlkShift[F], buf, BLK); // Write Free|0
                setAdr(n, buf),  blkPoke(0, buf, BLK);  // Set new Free
             }
             free = n;
          }
-         setAdr(1, IniBlk),  blkPoke(n, IniBlk, BLKSIZE);
+         setAdr(1, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
          blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
          if (n >= next)
             setAdr(n+BLKSIZE, buf),  blkPoke(BLK, buf, BLK);  // Set new Next
@@ -2296,7 +2342,7 @@ any doSeq(any ex) {
       }
       blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
       while ((n += BLKSIZE) < next) {
-         blkPeek(n, buf, BLK),  p = getAdr(buf);
+         blkPeek(n << BlkShift[F], buf, BLK),  p = getAdr(buf);
          if ((p & TAGMASK) == 1) {
             z = new64(n/BLKSIZE, Nil);
             if (y = findHash(z, h = Extern + hash(z)))
@@ -2313,27 +2359,36 @@ any doSeq(any ex) {
 // (mark 'sym|0 [NIL | T | 0]) -> flg
 any doMark(any ex) {
    any x, y;
-   adr n, m;
+   word2 n, m;
    int b;
    byte *p, buf[BLK];
 
    x = cdr(ex);
-   if (isNum(y = EVAL(car(x))))
-      free(Mark), Mark = NULL, Marks = 0;
+   if (isNum(y = EVAL(car(x))) && Marks) {
+      for (F = 0; F < Files; ++F)
+         free(Mark[F]);
+      free(Mark), Mark = NULL, free(Marks), Marks = NULL;
+   }
    else {
       NeedSym(ex,y);
       if (n = blk64(name(y))) {
+         if (!Marks) {
+            Marks = alloc(Marks, Files * sizeof(word2));
+            memset(Marks, 0, Files * sizeof(word2));
+            Mark = alloc(Mark, Files * sizeof(byte*));
+            memset(Mark, 0, Files * sizeof(byte*));
+         }
          b = 1 << (n & 7);
-         if ((n >>= 3) >= Marks) {
-            m = Marks;
-            blkPeek(BLK, buf, BLK),  Marks = getAdr(buf);  // Get Next
-            Marks = (Marks/BLKSIZE + 7 >> 3);
-            Mark = alloc(Mark,Marks);
-            bzero(Mark+m, Marks-m);
-            if (n >= Marks)
+         if ((n >>= 3) >= Marks[F]) {
+            m = Marks[F];
+            blkPeek(BLK, buf, BLK),  Marks[F] = getAdr(buf);  // Get Next
+            Marks[F] = (Marks[F]/BLKSIZE + 7 >> 3);
+            Mark[F] = alloc(Mark[F], Marks[F]);
+            memset(Mark[F] + m, 0, Marks[F] - m);
+            if (n >= Marks[F])
                err(ex, y, "Bad mark");
          }
-         p = Mark + n;
+         p = Mark[F] + n;
          x = cdr(x);
          if (isNil(x = EVAL(car(x)))) {
             if (*p & b)  // Test mark
@@ -2354,13 +2409,17 @@ any doMark(any ex) {
 any doLock(any ex) {
    any x;
    pid_t n;
+   off_t blk;
 
    x = cdr(ex);
    if (isNil(x = EVAL(car(x))))
-      n = tryLock(0);
+      F = 0,  n = tryLock(0,0);
    else {
       NeedExt(ex,x);
-      n = tryLock(blk64(name(x))*BLKSIZE);
+      blk = blk64(name(x));
+      if (F >= Files)
+         dbfErr();
+      n = tryLock(blk * BlkSize[F], 1);
    }
    return n? boxCnt(n) : Nil;
 }
@@ -2588,8 +2647,9 @@ any doRollback(any x) {
    return T;
 }
 
-// (dbck 'flg) -> any
-any doDbck(any ex) {
+// (dbck ['num] 'flg) -> any
+any doDbck(any x) {
+   any y;
    bool flg;
    int i;
    adr next, p, cnt;
@@ -2597,10 +2657,17 @@ any doDbck(any ex) {
    byte buf[2*BLK];
    cell c1;
 
-   flg = !isNil(EVAL(cadr(ex)));
+   F = 0;
+   x = cdr(x);
+   if (isNum(y = EVAL(car(x)))) {
+      if ((F = (int)unDig(y)/2) >= Files)
+         dbfErr();
+      x = cdr(x),  y = EVAL(car(x));
+   }
+   flg = !isNil(y);
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    next = getAdr(buf+BLK);
-   if ((p = lseek(BlkFile, 0, SEEK_END))  &&  p != next)  // Check size
+   if ((p = lseek(BlkFile[F], 0, SEEK_END) >> BlkShift[F]) >= BlkSize[F]  &&  p != next)  // Check size
       return mkStr("Size mismatch");
    cnt = BLKSIZE;
    blks = syms = offs = 0;
@@ -2645,7 +2712,7 @@ any doDbck(any ex) {
       fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
    protect(NO);
    if (cnt != next)
-      return  mkStr("Bad count");
+      return mkStr("Bad count");
    if (!flg)
       return Nil;
    Push(c1, boxWord2(offs));

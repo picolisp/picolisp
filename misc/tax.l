@@ -1,4 +1,4 @@
-# 13may05abu
+# 11aug05abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/html.l" "lib/gui.l" "lib/ps.l")
@@ -11,7 +11,7 @@
 
 (de *Kategorien
    Betriebsausgaben Sonderausgaben
-   Betriebseinnahmen Gehalt Miete
+   Betriebseinnahmen Gehalt Miete Haus
    Privateinnahmen Leerbuchungen )
 
 
@@ -44,6 +44,7 @@
 (rel nm     (+Key +String))                     # Name
 (rel kat    (+Ref +Symbol))                     # Kategorie
 (rel pr     (+Number))                          # Anteil-% (default 100)
+(rel ust    (+Bool))                            # USt relevant
 
 (dm url> ()
    (pack "@konto?" (ht:Fmt This)) )
@@ -70,7 +71,7 @@
 
 (dm net> ()
    (*/
-      (if (: ust)
+      (if (and (: kto ust) (: ust))
          (- (: val) @)
          (: val) )
       (or (: kto pr) 100)
@@ -78,7 +79,7 @@
 
 (dm ust> ()
    (*/
-      (: ust)
+      (and (: kto ust) (: ust))
       (or (: kto pr) 100)
       100 ) )
 
@@ -165,7 +166,8 @@
             (----)
             (gui '(+E/R +SymField) '(kat : home obj) "Kategorie" *Kategorien)
             (----)
-               (gui '(+E/R +NumField) '(pr : home obj) "Anteil [%]" 3)
+            (gui '(+E/R +NumField) '(pr : home obj) "Anteil [%]" 3)
+            (gui '(+E/R +Checkbox) '(ust : home obj) "USt")
             (----)
             (row
                (choButton '(choDialog "Konto" '(nm +Kto)))
@@ -359,6 +361,35 @@
       (<row> NIL NIL '<hr> '-)
       (record NIL '- (money SN) (money SU)) ) )
 
+(de recAfa ("Sym" "Var")
+   (<table> NIL (pack "Anlagevermögen (" "Sym" ")")
+      (quote
+         (- "Datum")
+         (+ "Kauf")
+         (- "Text")
+         (+ "AFA")
+         (+ "Stand")
+         (+ "Abschreibung") )
+      (for This
+         (by '((This) (: dat)) sort
+            (filter
+               '((This) (== "Sym" (: kto kat)))
+               (collect 'afa '+Pos) ) )
+         (unless (and (: aus) (>= Y @))
+            (let A (afa> This Y)
+               (dec "Var" (cdr A))
+               (record
+                  (href This (datSym (: dat)))
+                  (money (- (net> This)))
+                  (if (and (: kto pr) (<> @ 100))
+                     (pack (: txt) " (" (: kto pr) "%)")
+                     (: txt) )
+                  (: afa)
+                  (money (car A))
+                  (money (cdr A)) ) ) ) )
+      (<row> NIL NIL NIL NIL NIL '<hr>)
+      (record NIL NIL NIL NIL NIL (money (val "Var"))) ) )
+
 # Umsatzsteuer-Voranmeldung
 (de ustvor (Y M)
    (let (Ums 0  Frei 0  USt 0  VSt 0)
@@ -455,7 +486,8 @@
 # Gewinn/Verlust-Rechnung
 (de gewinn (Y)
    (let
-      (Ums 0  USt 0  Frei 0  Gehalt 0  Miete 0  Aus 0  VSt 0  Afa 0
+      (Ums 0  USt 0  Frei 0
+         Gehalt 0  Miete 0  Kosten 0  Aus 0  VSt 0  AfaB 0  AfaM 0
          Lst (collect 'dat '+Pos (date Y 1 1) (date Y 12 31)) )
       (html "Gewinnermittlung"
          (report (pack "GV-" Y) (pack "Gewinn/Verlust " Y))
@@ -478,59 +510,42 @@
 
             (recUms 'Gehalt
                '((B N U)
-                  (inc 'Gehalt N) )
+                  (inc 'Gehalt B) )
                Lst )
 
             (recUms 'Miete
                '((B N U)
-                  (inc 'Miete N) )
+                  (inc (if (lt0 B) 'Kosten 'Miete) B) )
                Lst ) )
          <p>
-         (<table> NIL "Anlagevermögen"
-            (quote
-               (- "Datum")
-               (+ "Kauf")
-               (- "Text")
-               (+ "AFA")
-               (+ "Stand")
-               (+ "Abschreibung") )
-            (mapc
-               '((This)
-                  (unless (and (: aus) (>= @ Y))
-                     (let A (afa> This Y)
-                        (dec 'Afa (cdr A))
-                        (record
-                           (href This (datSym (: dat)))
-                           (money (- (net> This)))
-                           (if (and (: kto pr) (<> @ 100))
-                              (pack (: txt) " (" (: kto pr) "%)")
-                              (: txt) )
-                           (: afa)
-                           (money (car A))
-                           (money (cdr A)) ) ) ) )
-               (sortBy
-                  '((P) (get P 'dat))
-                  (collect 'afa '+Pos) ) )
-            (<row> NIL NIL NIL NIL NIL '<hr>)
-            (record NIL NIL NIL NIL NIL (money Afa)) )
+         (recAfa 'Betriebsausgaben 'AfaB)
+         <p>
+         (recAfa 'Haus 'AfaM)
          <p>
          (<table> NIL "Betriebseinnahmen" '((-) (+))
             (<row> "Steuerpflichtige Umsätze (netto)" (money Ums))
             (<row> "Umsatzsteuer" (money USt))
-            (<row> "Steuerfreie Umsätze" (money Frei))
+            (<row> "Steuerfreie Einnahmen" (money Frei))
             (<row> '<hr> '-)
             (<row> NIL (money (+ Ums USt Frei))) )
          <p>
          (<table> NIL "Betriebsausgaben" '((-) (+))
             (<row> "Ausgaben (netto)" (money Aus))
-            (<row> "Abschreibungen" (money Afa))
+            (<row> "Abschreibungen" (money AfaB))
             (<row> "Vorsteuer" (money VSt))
             (<row> '<hr> '-)
-            (<row> NIL (money (+ Aus Afa VSt))) )
+            (<row> NIL (money (+ Aus AfaB VSt))) )
          <p>
-         (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus Afa VSt)) "***")
+         (<table> NIL "Vermietung" '((-) (+))
+            (<row> "Mieteinnahmen" (money Miete))
+            (<row> "Kosten" (money Kosten))
+            (<row> "Abschreibungen" (money AfaM))
+            (<row> '<hr> '-)
+            (<row> NIL (money (+ Miete Kosten AfaM))) )
+         <p>
+         (<br> "*** Gewinn:" (money (+ Ums USt Frei Aus AfaB VSt)) "***")
          (<br> "*** Gehalt:" (money Gehalt) "***")
-         (<br> "*** Miete:"  (money Miete) "***")
+         (<br> "*** Vermietung:"  (money (+ Miete Kosten AfaM)) "***")
          <p>
          (let (U 0  YY (pad 2 (% Y 100)))
             (<table> NIL "Umsatzsteuer-Vorauszahlungen"

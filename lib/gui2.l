@@ -2,11 +2,11 @@
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Font *Color *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk *Help
+# *Scale *Apps *AppId *AppPort *Top *Lay *Bar *Menu *DlgStk *Help
 
-(allow "java/pico.jar")
+(allow "java2/pico.jar")
 
-(default *APorts 0)
+(default *APorts 0  *Scale 100)
 
 (de url (Str Tar . @)
    (when Str
@@ -51,10 +51,7 @@
    (while Lst
       (prinl ","  *SesId (pop 'Lst)) )
    (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
-   (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
-   (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
-   (prinl "<PARAM NAME=\"back\" VALUE=\"" (car *Color) "\">")
-   (prinl "<PARAM NAME=\"fore\" VALUE=\"" (cdr *Color) "\">")
+   (prinl "<PARAM NAME=\"scl\" VALUE=\"" (format *Scale 2) "\">")
    (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
    (prinl "<PARAM NAME=\"ID\" VALUE=\"" *AppId "\">")
    (prinl "<PARAM NAME=\"port\" VALUE=\"" *AppPort "\">")
@@ -162,18 +159,19 @@
       (setq *Lay '-)
       (eval (pop '"Prg")) ) )
 
-(de ---- (Flg)
-   (setq *Lay (if Flg '/ '*)) )
+(de ---- Args
+   (setq *Lay
+      (cond
+         ((not Args) '*)
+         ((car Args) '/)
+         (T '&) ) ) )
 
-(de -|- (Flg)
-   (setq *Lay (if Flg ': '=)) )
+(de -|- Args
+   (setq *Lay (if (car Args) ': '=)) )
 
 
 (dm T (DX DY Prg . @)
-   (let X (assoc Prg *Siz)
-      (super "Front" '("java/pico.jar")
-         (or (cadr X) DX)
-         (or (cddr X) DY) ) )
+   (super "Front" '("java2/pico.jar") DX DY)
    (=: init Prg)
    (set This
       (conc
@@ -196,18 +194,13 @@
          (init> F) )
       (mapc 'init> (: arrays)) ) )
 
-(dm siz> ()
-   (let X (cons (rd) (rd))
-      (if (assoc (: init) *Siz)
-         (con @ X)
-         (push '*Siz (cons (: init) X)) ) ) )
-
 (dm start> ()
    (super)
    (mapc 'start> (: fields))
    (mapc 'start> (: arrays))
    (upd> This)
-   (focus1> This) )
+   (focus1> This)
+   (out (: app) (pr 'rdy)) )
 
 (dm focus1> ()
    (and
@@ -296,9 +289,6 @@
    (let F (get (: fields) (rd))
       (and (fieldEnd) (act> F))
       (and (: app) (out @ (pr 'ack))) ) )
-
-(dm tip> ()
-   (tip> (get (: fields) (rd))) )
 
 # sym
 (dm key> ()
@@ -407,44 +397,12 @@
       (beep> This) ) )
 
 (dm F7> ()
-   (dialog ,"Settings"
-      (list
-         (car *Font) (cdr *Font)
-         (>> 16 (car *Color))
-         (& 255 (>> 8 (car *Color)))
-         (& 255 (car *Color))
-         (>> 16 (cdr *Color))
-         (& 255 (>> 8 (cdr *Color)))
-         (& 255 (cdr *Color)) )
+   (dialog ,"Settings" (list *Scale)
       (quote
-         (gui '(+NumField) ,"Font Size" 3)
-         (gui '(+Map +TextField) '((-)) ,"Font"
-            '(- "Serif" "SansSerif" "Monospaced" "Dialog" "DialogInput") )
+         (gui '(+FixField) 2 ,"Font Size" 6)
          (----)
          (row
-            (gui '(+NumField) ,"Background" 3)
-            (gui '(+NumField) "" 3)
-            (gui '(+NumField) "" 3) )
-         (row
-            (gui '(+NumField) ,"Foreground" 3)
-            (gui '(+NumField) "" 3)
-            (gui '(+NumField) "" 3) )
-         (----)
-         (row
-            (okButton
-               '(setq
-                  *Font (cons
-                     (val> (: home fields 1))
-                     (val> (: home fields 2)) )
-                  *Color (cons
-                     (|
-                        (>> -16 (val> (: home fields 3)))
-                        (>> -8 (val> (: home fields 4)))
-                        (val> (: home fields 5)) )
-                     (|
-                        (>> -16 (val> (: home fields 6)))
-                        (>> -8 (val> (: home fields 7)))
-                        (val> (: home fields 8)) ) ) ) )
+            (okButton '(setq *Scale (val> (: home fields 1))))
             (quitButton) ) ) ) )
 
 (dm F8> ()
@@ -918,7 +876,7 @@
    (pass super "Monospaced" 0) )
 
 
-(class +Align +Mono)
+(class +Align)
 
 (dm set> (Val)
    (extra (and Val (align (: dx) Val))) )
@@ -1196,17 +1154,10 @@
 
 
 (class +Tip)
-# tip
 
 (dm T (Str . @)
-   (=: tip Str)
    (pass extra)
-   (pr 'tip) )
-
-(dm tip> ()
-   (when (: home app)
-      (out @
-         (pr 'tip (: ix) (: tip)) ) ) )
+   (pr 'tip Str) )
 
 
 ### Form Field Classes ###
@@ -1272,8 +1223,6 @@
 
 (dm act> ()
    (beep> (: home)) )
-
-(dm tip> ())
 
 (dm key> (C))
 
@@ -1445,47 +1394,6 @@
    (pass super) )
 
 
-(class +DrawField +field)
-# dx dy sx sy lst tmp
-
-# (lbl dx dy sx sy)
-(dm T (Lbl DX DY . @)
-   (pr
-      (=: lbl Lbl)
-      `(char "D")
-      (=: dx DX)
-      (=: dy DY) )
-   (pass super) )
-
-(dm siz> (SX SY)
-   (when (: home app)
-      (out @
-         (pr 'siz (: ix) (=: sx SX) (=: sy SY)) ) ) )
-
-(dm set> (Lst)
-   (when (: home app)
-      (out @
-         (pr 'set (: ix)
-            (sum 'len> (=: lst Lst)) )
-         (mapc 'pr> Lst) ) ) )
-
-(dm tmp> (Lst)
-   (when (: home app)
-      (out @
-         (pr 'tmp (: ix)
-            (sum 'len> (=: tmp Lst)) )
-         (mapc 'pr> Lst) ) ) )
-
-(dm clk> (M X Y))
-(dm dbl> (M X Y))
-(dm drg> (M X Y))
-
-(dm new> (Typ . @)
-   (prog1
-      (pass new Typ This)
-      (set> This (cons @ (: lst))) ) )
-
-
 (class +PictField +field)
 # dx dy img
 
@@ -1605,9 +1513,8 @@
 # Password Field
 (class +PwField +Rsa +TextField)
 
-(dm T @
-   (pass super)
-   (pr 'pw) )
+(dm T (Lbl . @)
+   (pass super Lbl 0) )
 
 
 # Symbol Fields
@@ -1693,7 +1600,7 @@
 
 
 # Number- or String-Field
-(class +AtomField +Mono +TextField)
+(class +AtomField +TextField)
 
 (dm set> (Val)
    (super
@@ -2251,12 +2158,7 @@
                      (and "Post" (link "Post"))
                      (link "Ttl" 40) ) )
                (gui '(+Able +Button) '(val> (: home fields 1)) "" ,"Choose"
-                  '(act> (: home fields 1)) )
-               (gui '(+Button) "" ,"Create"
-                  '(with (: home fields 1)
-                     (if (meta (: objTyp) (: objVar) 'hook)
-                        (newUrl (: objTyp) @ (eval (: objHook)))
-                        (newUrl (: objTyp)) ) ) ) )
+                  '(act> (: home fields 1)) ) )
             (---- T)
             (gui '(+QueryChart)
                '(goal
@@ -2274,7 +2176,14 @@
                cons
                car )
             (----)
-            (row (hotButton ,"Choose") (quitButton)) ) ) ) )
+            (row
+               (hotButton ,"Choose")
+               (gui '(+Button) "" ,"Create"
+                  '(with (: home fields 1)
+                     (if (meta (: objTyp) (: objVar) 'hook)
+                        (newUrl (: objTyp) @ (eval (: objHook)))
+                        (newUrl (: objTyp)) ) ) )
+               (quitButton)) ) ) ) )
 (====)
 
 

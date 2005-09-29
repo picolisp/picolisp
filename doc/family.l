@@ -1,7 +1,7 @@
-# 13may05abu
+# 11aug05abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/http.l" "lib/html.l" "lib/ps.l")
+(load "lib/http.l" "lib/html.l" "lib/gui2.l" "lib/ps.l")
 
 ### DB ###
 (class +Person +Entity)
@@ -106,7 +106,7 @@
    (app)
    (html (get (default *ID (seq *DB)) 'nm)
       (<head> "Family")
-      (form '(+ObjForm) '(+Person) *ID 800 450
+      (form '(+ObjForm) '(+Person) *ID 700 400
          (quote
             (row
                (gui '(+E/R +TextField) '(nm : home obj) "Name" 40)
@@ -184,8 +184,7 @@
                               (href (: pa) (: pa nm))
                               (href (: ma) (: ma nm))
                               (href (: mate) (: mate nm)) ) ) )
-                     (sortBy
-                        '((P) (get P 'nm))
+                     (by '((P) (get P 'nm)) sort
                         (collect 'dat '+Person (- Dat 36525) Fin) ) ) )
                (<br> "<hr>Total:" Cnt)
                (<br>) ) ) ) ) )
@@ -260,12 +259,4 @@
 
 (de go ()
    (rollback)
-   (server 8080 "@start") )
-
-(de start ()
-   (load "lib/gui.l")
-   (person) )
-
-(de htm ()
-   (load "lib/htm.l")
-   (person) )
+   (server 8080 "@person") )

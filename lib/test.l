@@ -1,7 +1,7 @@
-# 18mar05abu
+# 12sep05abu
 # (c) Software Lab. Alexander Burger
 
-(pool (tmp "db"))
+(test T (pool (tmp "db")))
 
 # src/main.c
 (use (Tim1 Tim2 Dat1 Dat2 T1 T2 D1 D2)
@@ -33,6 +33,35 @@
 (test 40643 (time 11 17 23))
 (test 40643 (time (11 17 23)))
 (test NIL (time NIL))
+
+# src/apply.c
+(test 6 (apply + (1 2 3)))
+(test 360 (apply * (5 6) 3 4))
+(test 27 (apply '((X Y Z) (* X (+ Y Z))) (3 4 5)))
+(test 24 ((quote (N . @) (* N (pass + 6))) 2 1 2 3))
+(let L '((1 . a) (2 . b) flg)
+   (test L (let X (box) (putl X L) (make (maps link X)))) )
+(test '((1 2 3) (2 3) (3)) (make (map link (1 2 3))))
+(test (1 2 3) (make (mapc link (1 2 3))))
+(test '(((1 2 3) A B C) ((2 3) B C) ((3) C)) (maplist cons (1 2 3) '(A B C)))
+(test (5 7 9) (mapcar + (1 2 3) (4 5 6)))
+(test (26 38 52 68) (mapcar '((X Y) (+ X (* Y Y))) (1 2 3 4) (5 6 7 8)))
+(test (1 2 3 4 5 2 3 4 5 3 4 5 4 5 5) (mapcon copy '(1 2 3 4 5)))
+(test '(c b a f e d i h g) (mapcan reverse '((a b c) (d e f) (g h i))))
+(test (1 2 3) (filter num? (1 A 2 (B) 3 CDE)))
+(test (12 19 22) (seek '((X) (> (car X) 9)) (1 5 8 12 19 22)))
+(test '(B) (find pair (1 A 2 (B) 3 CDE)))
+(test 4 (find > (1 2 3 4 5 6) (6 5 4 3 2 1)))
+(test 4 (find '((A B) (> A B)) (1 2 3 4 5 6) (6 5 4 3 2 1)))
+(test "Hello"
+   (pick '((X) (get X 'str))
+      (list (box) (prog1 (box) (put @ 'str "Hello")) (box)) ) )
+(test 2 (cnt cdr '((1 . T) (2) (3 4) (5))))
+(test 6 (sum val (list (box 1) (box) (box 2) (box 'a) (box 3))))
+(let (A 1 B 2 C 3)
+   (test 'C (maxi val '(A B C)))
+   (test 'A (mini val '(A B C)))
+   (test '(A B C) (by val sort '(C A B))) )
 
 # src/flow.c
 (let (A 'a I 'i)
@@ -66,6 +95,26 @@
 (test NIL (ext? 'abc))
 (test NIL (ext? "abc"))
 (test NIL (ext? 123))
+(let (A (box)  B (box A)  C (box (cons A B)))
+   (put B 'a A)
+   (put C 'b B)
+   (put A 'x 1)
+   (put B 'a 'y 2)
+   (put C 0 -1 'a 'z 3)
+   (test 1 (get A 'x))
+   (test 2 (with A (: y)))
+   (test 2 (get A 'y))
+   (test 2 (with B (: 0 y)))
+   (test 2 (get B 0 'y))
+   (test 3 (with C (: b a z)))
+   (test 3 (with C (: 0 1 z)))
+   (test 3 (with C (: 0 -1 a z)))
+   (test 3 (get C 0 1 'z))
+   (test 3 (get C 0 -1 'a 'z))
+   (test (3 . z) (prop C 0 -1 'a 'z))
+   (test 9 (with C (=: 0 -1 a z (* 3 3))))
+   (test (9 . z) (with C (:: 0 -1 a z)))
+   (test (putl C 0 -1 'a '((1 . x) (2 . y))) (getl C 'b 0)) )
 (test "a" (low? "a"))
 (test NIL (low? "A"))
 (test NIL (low? 123))
@@ -106,14 +155,11 @@
 (test NIL (bit? 1 2))
 
 # src/io.c
-(when pool
-   (call 'rm "-f" "db/test")
-   (test T (pool "db/test"))
-   (test NIL (mark *DB))
-   (test T (mark *DB T))
-   (test T (mark *DB))
-   (test NIL (mark *DB 0))
-   (test NIL (mark *DB)) )
+(test NIL (mark *DB))
+(test T (mark *DB T))
+(test T (mark *DB))
+(test NIL (mark *DB 0))
+(test NIL (mark *DB))
 
 # lib.l
 (test '((1 a b c) (2 d e f))

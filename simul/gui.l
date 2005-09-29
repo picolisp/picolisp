@@ -1,16 +1,16 @@
-# 14sep04abu
+# 12aug05abu
 # (c) Software Lab. Alexander Burger
 
-(allow "java/gl.jar")
+(allow "java2/gl.jar")
 
-(load "lib/gui.l")
+(load "lib/gui2.l")
 
 ### 3D-Applet ###
 (class +Z3dField +Applet)
 # foc yaw pitch x y z sky gnd snx sny snap
 
 (dm T (DX DY F Dir X Y Z Sky Gnd)
-   (super "Z3dField" '("java/gl.jar" "java/pico.jar") DX DY)
+   (super "Z3dField" '("java2/gl.jar" "java2/pico.jar") DX DY)
    (=: foc F)
    (=: yaw (car Dir))
    (=: pitch (cdr Dir))

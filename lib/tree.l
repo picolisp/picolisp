@@ -1,4 +1,4 @@
-# 15mar05abu
+# 27sep05abu
 # (c) Software Lab. Alexander Burger
 
 # *VisitedKey *VisitedLess *VisitedMore
@@ -23,7 +23,8 @@
                (val Node) ) ) ) ) )
 
 # Store
-(de store (Tree Key Val)
+(de store (Tree Key Val Dbf)
+   (default Dbf 0)
    (if (atom Tree)
       (let Base (or Tree *DB)
          (_store (or (val Base) (set Base (cons 0)))) )
@@ -31,10 +32,10 @@
          (if (atom (cdr Tree))
             (or
                (get *DB (cdr Tree))
-               (put *DB (cdr Tree) (new T)) )
+               (put *DB (cdr Tree) (new Dbf)) )
             (or
                (get (cddr Tree) (cadr Tree))
-               (put (cddr Tree) (cadr Tree) (new T)) ) )
+               (put (cddr Tree) (cadr Tree) (new Dbf)) ) )
          (_store
             (or
                (get Base (car Tree))
@@ -47,14 +48,12 @@
 
 (de _put (Top)
    (ifn Top
-      (let Node (new T)
+      (prog1 (new Dbf)
+         (set @ (cons Key (cons NIL (cons NIL Val))))
          (setq *VisitedKey Key)
          (off *VisitedLess *VisitedMore)
-         (set Node
-            (cons Key (cons NIL (cons NIL Val))) )
          (touch Base)
-         (inc Root)
-         Node )
+         (inc Root) )
       (use (Less More Node)
          (setq
             Less (cadr (val Top))
@@ -97,9 +96,7 @@
          ((= Key (car (val Top)))
             (touch Base)
             (dec Root)
-            (prog1
-               (_delR (cadr (val Top)) (caddr (val Top)))
-               (and *Solo (zap Top)) ) )
+            (_delR (cadr (val Top)) (caddr (val Top))) )
          ((< Key (car (val Top)))
             (use Node
                (ifn
@@ -139,32 +136,7 @@
 (de count (Tree)
    (or (car (root Tree)) 0) )
 
-# Calculate tree depth
-(de depth (Tree)
-   (dpth (cdr (root Tree))) )
-
-(de dpth (Top)
-   (ifn Top
-      0
-      (prog1
-         (inc
-            (max
-               (dpth (cadr (val Top)))
-               (dpth (caddr (val Top))) ) )
-         (wipe Top) ) ) )
-
 # Key management
-(de maxKey (Tree Min Max)
-   (default Max T)
-   (let (Node (cdr (root Tree))  K)
-      (while Node
-         (if (>= (car (val Node)) Max)
-            (setq Node (cadr (val Node)))
-            (when (>= (car (val Node)) Min)
-               (setq K (car (val Node))) )
-            (setq Node (caddr (val Node))) ) )
-      K ) )
-
 (de minKey (Tree Min Max)
    (default Max T)
    (let (Node (cdr (root Tree))  K)
@@ -174,6 +146,17 @@
             (when (>= Max (car (val Node)))
                (setq K (car (val Node))) )
             (setq Node (cadr (val Node))) ) )
+      K ) )
+
+(de maxKey (Tree Min Max)
+   (default Max T)
+   (let (Node (cdr (root Tree))  K)
+      (while Node
+         (if (>= (car (val Node)) Max)
+            (setq Node (cadr (val Node)))
+            (when (>= (car (val Node)) Min)
+               (setq K (car (val Node))) )
+            (setq Node (caddr (val Node))) ) )
       K ) )
 
 # Step
@@ -202,6 +185,7 @@
             (until (prog (setq Node (cadr Q)) (con Q (cddr Q)) (atom Node))
                (set Q Node) )
             (setq Val (val Node))
+            (wipe Node)
             (if (>= (cdar Q) (caar Q))
                (when (setq Node (caddr Val))
                   (loop
@@ -228,24 +212,26 @@
       (cdr (root "Tree")) ) )
 
 (de _scan ("Node")
-   (when (setq "Node" (val "Node"))
-      (if (< "End" (car "Node"))
-         (_scan (cadr "Node"))
-         (when (<= "Beg" (car "Node"))
-            (_scan (cadr "Node"))
-            (unless (and "F" (flg? (fin (car "Node"))))
-               ("Foo" (car "Node") (cdddr "Node")) ) )
-         (_scan (caddr "Node")) ) ) )
+   (let? "X" (val "Node")
+      (if (> (car "X") "End")
+         (_scan (cadr "X"))
+         (when (>= (car "X") "Beg")
+            (_scan (cadr "X"))
+            (unless (and "F" (flg? (fin (car "X"))))
+               ("Foo" (car "X") (cdddr "X")) ) )
+         (_scan (caddr "X")) )
+      (wipe "Node") ) )
 
 (de _nacs ("Node")
-   (when (setq "Node" (val "Node"))
-      (if (> "End" (car "Node"))
-         (_nacs (caddr "Node"))
-         (when (>= "Beg" (car "Node"))
-            (_nacs (caddr "Node"))
-            (unless (and "F" (flg? (fin (car "Node"))))
-               ("Foo" (car "Node") (cdddr "Node")) ) )
-         (_nacs (cadr "Node")) ) ) )
+   (let? "X" (val "Node")
+      (if (> "End" (car "X"))
+         (_nacs (caddr "X"))
+         (when (>= "Beg" (car "X"))
+            (_nacs (caddr "X"))
+            (unless (and "F" (flg? (fin (car "X"))))
+               ("Foo" (car "X") (cdddr "X")) ) )
+         (_nacs (cadr "X")) )
+      (wipe "Node") ) )
 
 (====)
 
@@ -257,24 +243,26 @@
       (cdr (root "Tree")) ) )
 
 (de _iter ("Node")
-   (when (setq "Node" (val "Node"))
-      (if (< "End" (car "Node"))
-         (_iter (cadr "Node"))
-         (when (<= "Beg" (car "Node"))
-            (_iter (cadr "Node"))
-            (unless (and "F" (flg? (fin (car "Node"))))
-               ("Foo" (cdddr "Node")) ) )
-         (_iter (caddr "Node")) ) ) )
+   (let? "X" (val "Node")
+      (if (> (car "X") "End")
+         (_iter (cadr "X"))
+         (when (>= (car "X") "Beg")
+            (_iter (cadr "X"))
+            (unless (and "F" (flg? (fin (car "X"))))
+               ("Foo" (cdddr "X")) ) )
+         (_iter (caddr "X")) )
+      (wipe "Node") ) )
 
 (de _reti ("Node")
-   (when (setq "Node" (val "Node"))
-      (if (> "End" (car "Node"))
-         (_reti (caddr "Node"))
-         (when (>= "Beg" (car "Node"))
-            (_reti (caddr "Node"))
-            (unless (and "F" (flg? (fin (car "Node"))))
-               ("Foo" (cdddr "Node")) ) )
-         (_reti (cadr "Node")) ) ) )
+   (let? "X" (val "Node")
+      (if (> "End" (car "X"))
+         (_reti (caddr "X"))
+         (when (>= "Beg" (car "X"))
+            (_reti (caddr "X"))
+            (unless (and "F" (flg? (fin (car "X"))))
+               ("Foo" (cdddr "X")) ) )
+         (_reti (cadr "X")) )
+      (wipe "Node") ) )
 
 (====)
 
@@ -283,23 +271,24 @@
    (let ("N" 0  "X")
       (when "Node"
          (recur ("Node")
-            (when (> 3 (size (val "Node")))
-               (quit "Bad node size" "Node") )
-            (when (cadr (val "Node"))
-               (unless (ext? (cadr (val "Node")))
-                  (quit "Bad node link" "Node") )
-               (recurse (cadr (val "Node"))) )
-            (when (>= "X" (car (val "Node")))
-               (quit "Bad sequence" "Node") )
-            (setq "X" (car (val "Node")))
-            (inc '"N")
-            (and
-               "Foo"
-               (not ("Foo" (car (val "Node")) (cdddr (val "Node"))))
-               (quit "Check fail" "Node") )
-            (when (caddr (val "Node"))
-               (unless (ext? (caddr (val "Node")))
-                  (quit "Bad node link" "Node") )
-               (recurse (caddr (val "Node"))) )
+            (let "V" (val "Node")
+               (when (> 3 (size "V"))
+                  (quit "Bad node size" "Node") )
+               (when (cadr "V")
+                  (unless (ext? (cadr "V"))
+                     (quit "Bad node link" "Node") )
+                  (recurse (cadr "V")) )
+               (when (>= "X" (car "V"))
+                  (quit "Bad sequence" "Node") )
+               (setq "X" (car "V"))
+               (inc '"N")
+               (and
+                  "Foo"
+                  (not ("Foo" (car "V") (cdddr "V")))
+                  (quit "Check fail" "Node") )
+               (when (caddr "V")
+                  (unless (ext? (caddr "V"))
+                     (quit "Bad node link" "Node") )
+                  (recurse (caddr "V")) ) )
             (wipe "Node") ) )
       "N" ) )

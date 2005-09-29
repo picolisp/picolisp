@@ -1,5 +1,6 @@
-# 17dec04abu
+# 24sep05abu
 # (c) Software Lab. Alexander Burger
+# Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
 (load "lib/too.l")
 
@@ -12,6 +13,12 @@
 
 (de modify (N)
    (do N
+      (do (rand 10 40)
+         (let K (rnd)
+            (with (db 'key '+A K)
+               (unless (= K (: key))
+                  (print '!)
+                  (flush) ) ) ) )
       (dbSync)
       (let (D (rnd)  X (db 'key '+A (rnd)))
          (inc *DB (- D (get X 'dat)))
@@ -19,6 +26,7 @@
       (commit 'upd) ) )
 
 (de verify ()
+   (and (dbck) (quit 'dbck @))
    (dbCheck)
    (let N 0
       (scan (tree 'dat '+A)
@@ -32,29 +40,30 @@
 
 (de main ()
    (seed (in "/dev/urandom" (rd 8)))
-   (call 'rm "-f" "db/test")
-   (pool "db/test")
-   (unless (val *DB)
-      (set *DB 0)
-      (for (N 1 (<= N 999) (inc N))
-         (let D (rnd)
-            (new T '(+A)  'key N  'dat D)
-            (inc *DB D) ) )
-      (commit) ) )
+   (call 'mkdir "-p" "db")
+   (call 'rm "-f" "db/test" "jnl" "db/test2")
+   (pool "db/test" NIL "jnl")
+   (set *DB 0)
+   (for (K 1 (<= K 999) (inc K))
+      (let D (rnd)
+         (new T '(+A)  'key K  'dat D)
+         (inc *DB D) ) )
+   (commit) )
 
-(de go (N)
-   (do (or N 6)
+(de go ()
+   (do 6
       (let Pids
          (make
             (do 20
                (rand)
                (if (fork)
                   (link @)
-                  (modify 600)
+                  (modify 999)
                   (bye) ) ) )
          (while (find '((P) (kill P 0)) Pids)
             (wait 1000) )
          (rollback)
-         (when (dbck)
-            (quit 'dbck @) )
-         (verify) ) ) )
+         (verify) ) )
+   (pool "db/test2")
+   (in "jnl" (journal))
+   (call 'cmp "db/test" "db/test2") )

@@ -1,12 +1,12 @@
-12jun05abu
+04sep05abu
 (c) Software Lab. Alexander Burger
 
 
          Pico Lisp Demo Games
          ====================
 
-This directory contains a few simple games. They aren't especially interesting
-or powerful, but may be useful programming examples.
+This directory contains a few simple games. They are neither especially
+interesting, nor powerful, but may be useful as programming examples.
 
 
 
@@ -28,7 +28,7 @@ possibly aftre re-initializing it with
 
 : (main)
 
-or quit the Pico Lisp interpreter with ENTER.
+or exit the Pico Lisp interpreter with ENTER.
 
 
 
@@ -72,11 +72,8 @@ Your positions are marked with 'T', the computer's with '0'.
 
 
 
-The 'chess' game is still under construction, and will be continued in future
-releases. Currently, only the move logic is implemented, while the position
-evaluation (the 'cost' function) is still very rudimentary.
-
-Nevertheless, it plays some brainless chess. Start it as:
+The 'chess' game is minimalistic (458 lines of code). Nevertheless, it plays
+some slow - though correct - chess. Start it as:
 
 $ ./p dbg.l games/chess.l -main
    +---+---+---+---+---+---+---+---+
@@ -127,11 +124,28 @@ The initial board position can be restored with
 
 : (main)
 
-and to setup some given board position, call 'main' with a list of triples for
-the field, the piece's classes, and optionally a 'T' flag to indicate that the
-piece did not move yet:
+The global variable '*Depth' holds the maximal depth of the alpha-beta tree
+search. It defaults to 5. You may change it to some smaller value for a faster
+response, or to a larger value for a deeper search:
 
-: (main
+: (setq *Depth 7)
+
+The same effect can be achieved by passing the desired depth as the first
+argument to 'main':
+
+: (main 7)
+
+The second (optional) argument to 'main' is your color ('NIL' for white and 'T'
+for black).
+
+To setup some given board position, call 'main' with a list of triples, with
+each describing:
+
+   1. The field
+   2. The piece's classes
+   3. An optional flag to indicate that the piece did not move yet
+
+: (main 5 NIL
    (quote
       (a2 (+White +Pawn) T)
       (b1 (+White +King))
@@ -155,10 +169,11 @@ piece did not move yet:
    +---+---+---+---+---+---+---+---+
      a   b   c   d   e   f   g   h
 
-The global variable '*Depth' holds the maximal depth of the alpha-beta tree
-search. It defaults to 3. You may change it to some larger value for a deeper
-search
+At any time, you can print the current board position in the above format to a
+file with
 
-: (setq *Depth 5)
+: (ppos "file")
 
-or a smaller value for a faster response.
+which later can be restored with
+
+: (load "file")

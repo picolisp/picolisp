@@ -1,4 +1,4 @@
-# 21may05abu
+# 22aug05abu
 # (c) Software Lab. Alexander Burger
 
 # *Url1 *Frame *Meta *Css
@@ -200,7 +200,7 @@
       (prinl) )
    (prinl "</UL>") )
 
-(de <tree> ("Url" "Path" "Tree" "able?" "excl?" "expand" "format")
+(de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
    (let ("Pos" "Tree"  "F" (pop '"Path")  "A" 0)
       (when "Path"
          (loop
@@ -215,7 +215,7 @@
             (setq "Pos" (cdar "Pos")) )
          (set "Pos"
             (if (atom (car "Pos"))
-               (cons (car "Pos") ("expand" (car "Pos")))
+               (cons (car "Pos") ("Expand" (car "Pos")))
                (caar "Pos") ) ) )
       (setq "Pos" (car "Pos"))
       ("tree" "Tree")
@@ -234,18 +234,18 @@
                      "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)
-               ("format" (car "X"))
+               ("Print" (car "X"))
                (and (cdr "X") ("tree" @ "L")) ) )
-         (("able?" "X")
+         (("Able?" "X")
             (let "L" (append "Lst" (cons (- "N")))
                (<href> (if (== "X" "Pos") "< >" "[ ]")
                   (pack "Url"
-                     "?" (ht:Fmt (cons ("excl?" "X") "L"))
+                     "?" (ht:Fmt (cons ("Excl?" "X") "L"))
                      "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)
-               ("format" "X") ) )
-         (T ("format" "X")) ) )
+               ("Print" "X") ) )
+         (T ("Print" "X")) ) )
    (prinl "</UL>") )
 
 

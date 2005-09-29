@@ -1,4 +1,4 @@
-/* 21jun05abu
+/* 27sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,7 +31,9 @@ static symInit Symbols[] = {
    {doBitXor, "x|"},
    {doBool, "bool"},
    {doBox, "box"},
+   {doBoxQ, "box?"},
    {doBreak, "!"},
+   {doBy, "by"},
    {doBye, "bye"},
    {doCaaar, "caaar"},
    {doCaadr, "caadr"},
@@ -305,7 +307,7 @@ static symInit Symbols[] = {
 static any initSym(any v, char *s) {
    any x, *h;
 
-   h = Intern + hash(x = mkName((byte*)s));
+   h = Intern + hash(x = mkName(s));
    x = consSym(v,x);
    *h = cons(x,*h);
    return x;
@@ -320,7 +322,6 @@ void initSymbols(void) {
    for (i = 0; i < HASH; ++i)
       Intern[i] = Transient[i] = Extern[i] = Nil;
    DB    = initSym(Nil, "*DB");
-   Solo  = initSym(Zero, "*Solo");
    Up    = initSym(Nil, "^");
    At    = initSym(Nil, "@");
    At2   = initSym(Nil, "@@");

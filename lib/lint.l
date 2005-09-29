@@ -1,4 +1,4 @@
-# 12mar05abu
+# 27sep05abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (S)
@@ -143,7 +143,7 @@
 
 (de lintVar (X Flg)
    (cond
-      ((or (not (sym? X)) (memq X '(NIL *DB *Solo T)))
+      ((or (not (sym? X)) (memq X '(NIL *DB T)))
          (push '"*Var" X) )
       ((not (global? X))
          (or Flg (memq X "*Use") (push '"*Use" X))

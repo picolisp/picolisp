@@ -1,4 +1,4 @@
-# 25jun05abu
+# 25sep05abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -109,10 +109,12 @@
    X )
 
 ### List ###
-(de ?push ("Var" X)
-   (if (member X (val "Var"))
+(de ?push ("Var" "X")
+   (if (member "X" (val "Var"))
       (car @)
-      (push "Var" X) ) )
+      (push "Var" "X") ) )
+
+(====)
 
 (de insert (N Lst X)
    (conc
@@ -151,22 +153,6 @@
             (link
                (cons (caar Lst) (cons (cdr (pop 'Lst)))) ) ) ) ) )
 
-(====)
-
-(de sortBy ("Foo" "Lst")
-   (mapcar cdr
-      (sort
-         (mapcar '(("X") (cons ("Foo" "X") "X")) "Lst") ) ) )
-
-(====)
-
-(de groupBy ("Foo" "Lst")
-   (mapcar cdr
-      (group
-         (mapcar '(("X") (cons ("Foo" "X") "X")) "Lst") ) ) )
-
-(====)
-
 ### Symbol ###
 (de loc (S X)
    (if (and (str? X) (= S X))
@@ -201,14 +187,16 @@
                   (cdr "Y") ) ) ) )
       Obj ) )
 
+(====)
+
 ### OOP ###
 (de class Lst
    (or
       (= (cdr Lst) (type (setq *Class (car Lst))))
       (def *Class (cdr Lst)) ) )
 
-(de object ("Sym" Cls . @)
-   (set "Sym" Cls)
+(de object ("Sym" "Cls" . @)
+   (set "Sym" "Cls")
    (while (args)
       (put "Sym" (next) (next)) )
    "Sym" )
@@ -227,7 +215,7 @@
 (de *PP
    T NIL if ifn when unless whilst while until until=T do case state for
    with catch finally ! quote setq default push job use let let? recur
-   =: in out pipe ctl new )
+   =: in out ctl new )
 
 (de *PP1 let let? for)
 (de *PP2 setq default)

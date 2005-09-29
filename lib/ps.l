@@ -1,4 +1,4 @@
-# 02mar05abu
+# 13sep05abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -29,7 +29,7 @@
       (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
       "Ps" "Pdf" ) )
 
-(de "head" (DX DY)
+(de psHead (DX DY)
    (prinl "%!PS-Adobe-1.0")
    (prinl "%%Creator: Pico Lisp")
    (prinl "%%BoundingBox: 0 0 "
@@ -51,16 +51,16 @@
    (setq "*Size" 12) )
 
 (de a4 ()
-   ("head" 595 842) )
+   (psHead 595 842) )
 
 (de a4L ()
-   ("head" 842 595) )
+   (psHead 842 595) )
 
 (de a5 ()
-   ("head" 420 595) )
+   (psHead 420 595) )
 
 (de a5L ()
-   ("head" 595 420) )
+   (psHead 595 420) )
 
 (de _font ()
    (prinl "/" "*Font" " findfont  " "*Size" " scalefont  setfont") )
@@ -107,7 +107,10 @@
 (de poly (F X Y . @)
    (prin "newpath " X " " (- "*PgY" Y) " moveto  ")
    (while (args)
-      (prin (next) " " (- "*PgY" (next)) " lineto  ") )
+      (if (pair (next))
+         (for P (arg)
+            (prin (car P) " " (- "*PgY" (cdr P)) " lineto  ") )
+         (prin (arg) " " (- "*PgY" (next)) " lineto  ") ) )
    (prinl (if F "fill" "stroke")) )
 
 (de rect (X1 Y1 X2 Y2 F)

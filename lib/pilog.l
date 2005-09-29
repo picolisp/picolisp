@@ -1,4 +1,4 @@
-# 08may05abu
+# 06jul05abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -204,17 +204,15 @@
                (init Tree Val Val)
                (init Tree (cons Val) (cons Val T)) ) )
          ((=T Val) (init Tree))
-         (T
-            (cond
-               ((isa '+Key Rel)
-                  (init Tree Val (pack Val `(char T))) )
-               ((isa '+Idx Rel)
-                  (let Q (init Tree (cons Val) (cons (pack Val `(char T)) T))
-                     (if (cdr Q)
-                        Q
-                        (setq Val (pack (car (split (chop Val) " "))))
-                        (init Tree (cons Val) (cons (pack Val `(char T)) T)) ) ) )
-               (T (init Tree (cons Val) (cons (pack Val `(char T)) T))) ) ) ) ) )
+         ((isa '+Key Rel)
+            (init Tree Val (pack Val `(char T))) )
+         ((isa '+Idx Rel)
+            (let Q (init Tree (cons Val) (cons (pack Val `(char T)) T))
+               (if (cdr Q)
+                  Q
+                  (setq Val (pack (car (split (chop Val) " "))))
+                  (init Tree (cons Val) (cons (pack Val `(char T)) T)) ) ) )
+         (T (init Tree (cons Val) (cons (pack Val `(char T)) T))) ) ) )
 
 # (db var cls obj)
 (be db (@Var @Cls @Obj)
@@ -496,7 +494,7 @@
 (de _gen (Lst Q)
    (ifn Lst
       (step Q (= '(NIL) (caar Q)))
-      (use (X)
+      (use X
          (loop
             (T
                (cond

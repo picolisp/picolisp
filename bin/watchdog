@@ -1,11 +1,11 @@
 #!bin/pico lib.l
-# 30dec04abu
+# 06sep05abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
 (load "@lib/misc.l")
 
-# *MailHost *MailPort *MailFrom *MailTo *Beat *Watch
+# *MailHost *MailPort *MailFrom *MailTo *Watch
 
 (argv *MailHost *MailPort *MailFrom .  *MailTo)
 (setq *MailPort (format *MailPort))
@@ -22,8 +22,8 @@
       (space)
       (println *Watch) ) )
 
-(task (setq *Beat (open "fifo/beat"))
-   (in *Beat
+(task (open "fifo/beat")
+   (in @
       (let X (rd)
          (cond
             ((not X) (bye))

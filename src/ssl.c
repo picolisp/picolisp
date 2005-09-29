@@ -1,4 +1,4 @@
-/* 21mar05abu
+/* 23sep05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <netinet/in.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -52,7 +53,7 @@ static int sslConnect(SSL *ssl, char *host, int port) {
    struct hostent *p;
    int sd;
 
-   bzero((char*)&addr, sizeof(addr));
+   memset(&addr, 0, sizeof(addr));
    if ((long)(addr.sin_addr.s_addr = inet_addr(host)) == -1) {
       if (!(p = gethostbyname(host))  ||  p->h_length == 0)
          return -1;
@@ -171,18 +172,20 @@ int main(int ac, char *av[]) {
    for (;;) {
       if ((fd = open(File, O_RDWR)) < 0)
          sleep(sec);
-      else if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
+      else if (fstat(fd,&st) < 0  ||  st.st_size == 0)
          close(fd),  sleep(sec);
       else {
-         lenLen = sprintf(len, "%lld\n", Size);
          fl.l_type = F_WRLCK;
          fl.l_whence = SEEK_SET;
          fl.l_start = 0;
          fl.l_len = 0;
          if (fcntl(fd, F_SETLKW, &fl) < 0)
             giveup("Can't lock");
-         if (fstat(fd,&st) < 0 || (Data = malloc(Size)) == NULL)
-            giveup("Can't copy");
+         if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
+            giveup("Can't access");
+         lenLen = sprintf(len, "%lld\n", Size);
+         if ((Data = malloc(Size)) == NULL)
+            giveup("Can't alloc");
          if (read(fd, Data, Size) != Size)
             giveup("Can't read");
          if (ftruncate(fd,0) < 0)
@@ -190,10 +193,13 @@ int main(int ac, char *av[]) {
          close(fd);
          for (;;) {
             if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
+               buf[0] = 'T';
                if (SSL_write(ssl, get, getLen) == getLen  &&
                         (!*av[4] || sslFile(ssl,av[4]))  &&          // key
                         SSL_write(ssl, len, lenLen) == lenLen  &&    // length
                         SSL_write(ssl, Data, Size) == Size  &&       // data
+                        SSL_write(ssl, buf, 1) == 1 &&               // ack
+                        SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T'  &&
                         sslClose(ssl,sd) )
                   break;
 

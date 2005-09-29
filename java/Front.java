@@ -1,4 +1,4 @@
-// 19jun05abu
+// 05aug05abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -7,7 +7,6 @@ import java.applet.*;
 import java.awt.event.*;
 
 public class Front extends Pico {
-   GridBagLayout Gridbag;
    Component[] Fields;
    Scrollbar[] SBars;
    Hashtable Skip;
@@ -111,7 +110,7 @@ public class Front extends Pico {
       else if (s.equals("lock"))
          lock(getStr().length() == 0);
       else if (s.equals("scrl"))
-         scrl(getNum());
+         scrl(SBars[getNum()-1], getNum(), getNum(), getNum());
       else if (s.equals("menu"))
          new Popup(this, Fields[getNum()-1]);
       else if (s.equals("make"))
@@ -130,6 +129,7 @@ public class Front extends Pico {
       Panel panel, flow;
       String s;
       Dimension d;
+      GridBagLayout gridbag;
 
       fld = new Vector();
       sb = new Vector();
@@ -141,14 +141,14 @@ public class Front extends Pico {
       b = null;
       panel = flow = null;
       Skip = new Hashtable();
-      setLayout(Gridbag = new GridBagLayout());
+      setLayout(gridbag = new GridBagLayout());
       while ((s = getStr()).length() != 0) {
          if (s.charAt(0) == '*' || s.charAt(0) == '/') {
             if (panel != null) {
                constrain(this, panel, 0, p++, 1, 1, GridBagConstraints.NONE,
-                     GridBagConstraints.NORTHWEST, 4, 1.0, 1.0 );
+                     GridBagConstraints.NORTHWEST, 2, 1.0, 1.0 );
             }
-            panel = new Panel(Gridbag);
+            panel = new Panel(gridbag);
             j = k = k2 = 0;
             if (s.charAt(0) == '/') {
                k = k2 = 1;
@@ -289,7 +289,7 @@ public class Front extends Pico {
             k3 = k;
       }
       constrain(this, panel, 0, p, 1, 1, GridBagConstraints.NONE,
-                              GridBagConstraints.NORTHWEST, 4, 1.0, 1.0 );
+                              GridBagConstraints.NORTHWEST, 2, 1.0, 1.0 );
       fld.copyInto(Fields = new Component[fld.size()]);
       sb.copyInto(SBars = new Scrollbar[sb.size()]);
       validate();
@@ -423,13 +423,10 @@ public class Front extends Pico {
 
    // Show tooltip
    synchronized void tip(Component f) {
-      Object[] msg = (Object[])read();
-
       tip();
       Tip = new Window(frame());
       Tip.setLayout(new GridLayout(0,1));
-      for (int i = 0; i < msg.length; ++i)
-         Tip.add(new Label((String)msg[i]));
+      Tip.add(new Label(getStr()));
       Tip.pack();
       Point p = f.getLocationOnScreen();
       Tip.setLocation(p.x, p.y + f.getSize().height);  // getHeight
@@ -467,13 +464,9 @@ public class Front extends Pico {
    }
 
    // Set scroll bar values
-   void scrl(int fld) {
-      int val = getNum();
-      int vis = getNum();
-      if (SBars[fld-1] == null)
-         getNum();
-      else
-         SBars[fld-1].setValues(val, vis, 1, 2+Math.max(vis,getNum()));
+   void scrl(Scrollbar sb, int val, int vis, int max) {
+      if (sb != null)
+         sb.setValues(val, vis, 1, 2+Math.max(vis,max));
    }
 
    // Signal field value change

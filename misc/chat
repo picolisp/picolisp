@@ -1,5 +1,5 @@
-#!bin/pico lib.l
-# 18jun04abu
+#!bin/picolisp lib.l
+# 21dec05abu
 
 # *Port *Sock *Name
 
@@ -24,8 +24,9 @@
 (tell 'chat "+++ " *Name " arrived +++")
 
 (task *Sock
-   (ifn (=T (in *Sock (setq "Line" (line T))))
-      (tell 'chat *Name "> " "Line")
-      (tell 'chat "--- " *Name " left ---")
-      (bye) ) )
+   (in @
+      (ifn (eof)
+         (tell 'chat *Name "> " (line T))
+         (tell 'chat "--- " *Name " left ---")
+         (bye) ) ) )
 (wait)

@@ -927,8 +927,8 @@ fields. A typical way to import the contents of such a file is:
 (load "lib/import.l")
 
 (in '("bin/utf2" "importFile.txt")              # Pipe: Convert to UTF-8
-   (use L                                       # Local variable 'L'
-      (whilst (setq L (split (line) "^I"))      # TAB-delimited data
+   (until (eof)                                 # Process whole file
+      (let L (split (line) "^I")                # TAB-delimited data
          ... use 'getStr', 'getNum' etc ...     # process them
 </code></pre>
 
@@ -1006,12 +1006,18 @@ system kernel will pass this file to an interpreter program whose pathname is
 given in the first line (optionally followed by a single argument). This is fast
 and efficient, because the overhead of a subshell is avoided.
 
-<p>Let's assume you installed Pico Lisp in the directory "/usr/local/pico/" (or
-put a symbolic link "pico" into "/usr/local/"). Then a simple hello-world script
-might look like:
+<p>Let's assume you installed Pico Lisp in the directory "/home/foo/picolisp/",
+and put links to the executable and the installation directory as:
 
 <p><pre><code>
-#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+$ ln -s /home/foo/picolisp/bin/picolisp /usr/bin/picolisp
+$ ln -s /home/foo/picolisp /usr/lib/picolisp
+</code></pre>
+
+Then a simple hello-world script might look like:
+
+<p><pre><code>
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
 (prinl "Hello world!")
 (bye)
 </code></pre>
@@ -1029,7 +1035,7 @@ defines two functions <code>a</code> and <code>f</code>, and then calls
 would be ignored because of the <code>(bye)</code> statement):
 
 <p><pre><code>
-#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
 
 (de a ()
    (println '-a '-> (opt)) )
@@ -1081,7 +1087,7 @@ file names with that pathname. Thus, to run the above example in some other
 place, simply write:
 
 <p><pre><code>
-$ /usr/local/pico/p @dbg.l @app/file1.l -main @app/file2.l
+$ /home/foo/picolisp/p @dbg.l @app/file1.l -main @app/file2.l
 </code></pre>
 
 <p>that is, supply a full path name to the initial command (here 'p'), or put it
@@ -1106,7 +1112,7 @@ and size of the latest official Pico Lisp release version from the download web
 site, and prints it to standard output:
 
 <p><pre><code>
-#!/usr/local/pico/bin/pico /usr/local/pico/lib.l
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
 
 (load "@lib/misc.l" "@lib/http.l")
 
@@ -1527,7 +1533,7 @@ all the changes. But as we want to keep them:
 <p><pre><code>
 : (commit)           # Commit all changes
 -> T
-: (bye)              # Exit pico
+: (bye)              # Exit picolisp
 $                    # back to the shell
 </code></pre>
 
@@ -1818,7 +1824,7 @@ corner.
 
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
-'<code>killall pico</code>'), or type the <code>Quit</code> key (typically
+'<code>killall picolisp</code>'), or type the <code>Quit</code> key (typically
 <code>Ctrl-\</code>) in the console window.
 
 <p>In our demo database application, a single function <code>person</code> is
@@ -1911,7 +1917,7 @@ $ ./p doc/family.l -main -go -wait
 </code></pre>
 
 <p>In that case, no debug prompt will appear. In both cases, however, two
-<code>pico</code> processes will be running now. One is the initial server
+<code>picolisp</code> processes will be running now. One is the initial server
 process which will continue to run until it is killed. The other is a child
 process which is connected to the applet in the browser, it will terminate when
 the browser is closed, or when <code>(bye)</code> or a plain <code>RETURN</code>

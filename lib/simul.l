@@ -1,4 +1,4 @@
-# 22aug05abu
+# 25dec05abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -88,7 +88,7 @@
 
 ### Grids ###
 (de grid (DX DY)
-   (let Grid
+   (prog1
       (make
          (for (X 1 (>= DX X) (inc X))
             (link
@@ -100,19 +100,17 @@
                               (box)
                               (intern (pack (char (+ X 96)) Y)) )
                            (cons (cons) (cons)) ) ) ) ) ) ) )
-      (for (X 2 (>= DX X) (inc X))
-         (for (Y 1 (>= DY Y) (inc Y))
-            (set (car (val (get Grid X Y))) (get Grid (dec X) Y)) ) )  # west
-      (for (X 1 (> DX X) (inc X))
-         (for (Y 1 (>= DY Y) (inc Y))
-            (con (car (val (get Grid X Y))) (get Grid (inc X) Y)) ) )  # east
-      (for (X 1 (>= DX X) (inc X))
-         (for (Y 2 (>= DY Y) (inc Y))
-            (set (cdr (val (get Grid X Y))) (get Grid X (dec Y))) ) )  # south
-      (for (X 1 (>= DX X) (inc X))
-         (for (Y 1 (> DY Y) (inc Y))
-            (con (cdr (val (get Grid X Y))) (get Grid X (inc Y))) ) )  # north
-      Grid ) )
+      (let (Lst @  West)
+         (while Lst
+            (let (East (cadr Lst)  South)
+               (for (L (car Lst) (pop 'L))
+                  (with @
+                     (and (pop 'West) (set (: 0 1) @))  # west
+                     (and (pop 'East) (con (: 0 1) @))  # east
+                     (and South (set (: 0 -1) @))       # south
+                     (and (car L) (con (: 0 -1) @))     # north
+                     (setq South This) ) ) )
+            (setq West (pop 'Lst)) ) ) ) )
 
 (de west (This)
    (: 0 1 1) )

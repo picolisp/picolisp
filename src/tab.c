@@ -1,4 +1,4 @@
-/* 27sep05abu
+/* 19dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -89,6 +89,7 @@ static symInit Symbols[] = {
    {doE, "e"},
    {doEcho, "echo"},
    {doEnv, "env"},
+   {doEof, "eof"},
    {doEq, "=="},
    {doEqual, "="},
    {doEqual0, "=0"},
@@ -122,6 +123,7 @@ static symInit Symbols[] = {
    {doHear, "hear"},
    {doHide, "===="},
    {doHost, "host"},
+   {doId, "id"},
    {doIdx, "idx"},
    {doIf, "if"},
    {doIfn, "ifn"},
@@ -140,6 +142,7 @@ static symInit Symbols[] = {
    {doLength, "length"},
    {doLet, "let"},
    {doLetQ, "let?"},
+   {doLieu, "lieu"},
    {doLine, "line"},
    {doLines, "lines"},
    {doLink, "link"},
@@ -232,6 +235,7 @@ static symInit Symbols[] = {
    {doQuit, "quit"},
    {doRand, "rand"},
    {doRank, "rank"},
+   {doRaw, "raw"},
    {doRd, "rd"},
    {doRead, "read"},
    {doRem, "%"},
@@ -286,7 +290,6 @@ static symInit Symbols[] = {
    {doUnify, "unify"},
    {doUnless, "unless"},
    {doUntil, "until"},
-   {doUntilT, "until=T"},
    {doUppQ, "upp?"},
    {doUppc, "uppc"},
    {doUse, "use"},
@@ -294,7 +297,6 @@ static symInit Symbols[] = {
    {doWait, "wait"},
    {doWhen, "when"},
    {doWhile, "while"},
-   {doWhilst, "whilst"},
    {doWipe, "wipe"},
    {doWith, "with"},
    {doWr, "wr"},

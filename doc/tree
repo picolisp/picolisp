@@ -8,7 +8,7 @@
 
    Max DB-Size: 7 digits -> 2**42 (10**12) Blocks (2**48 Bytes, 256 TB)
       <Link> BEG TRANSIENT <key> EXTERN <7> EXTERN <7> DOT EXTERN <7> NIX
-      -> keyLen: 30  # 6+2+30+1+7+1+7+2+7+1 = 64
+      6+2+<key>+1+7+1+7+2+7+1 = 34 + <key>  # -> keyLen 30
 
                                                1 GB    64 GB    4 TB     256 TB
                                              ----------------------------------

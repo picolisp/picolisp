@@ -1,20 +1,15 @@
-# 25sep05abu
+# 27dec05abu
 # (c) Software Lab. Alexander Burger
 
-(de db1 (Dbf)
-   (if (and Dbf (n0 Dbf))
-      (extern (pack Dbf -1))
-      *DB ) )
-
 ### DB Unload/Load ###
-(de dbUnload (File Dbf)
+(de dbUnload (File N)
    (out File
-      (for (S (db1 Dbf) S (seq S))
+      (for (S (db1 N) S (seq S))
          (println (cons S (cons (val S) (getl S)))) ) ) )
 
-(de dbLoad (File Dbf)
+(de dbLoad (File N)
    (in File
-      (let (P (db1 Dbf)  F)
+      (let (P (db1 N)  F)
          (for (L (read) L (read))
             (setq F (seq P (setq P (car L)) F))
             (commit) ) ) )
@@ -28,11 +23,11 @@
 ### DB Garbage Collection ###
 (de dbgc ()
    (markExt *DB)
-   (let (N 0  Dbf -1)
+   (let (Cnt 0  N -1)
       (do (max 1 (length *Dbs))
-         (for (S (db1 (inc 'Dbf))  S  (seq S))
+         (for (S (db1 (inc 'N))  S  (seq S))
             (unless (mark S)
-               (inc 'N)
+               (inc 'Cnt)
                (and (isa '+Entity S) (zap> S))
                (zap S) ) ) )
       (mark 0)
@@ -41,15 +36,15 @@
          (use (@S @R F)
             (let Pat (conc (chop *Blob) '(@S "." @R))
                (in (list 'find *Blob "-type" "f")
-                  (whilst (setq F (line))
+                  (while (setq F (line))
                      (when (match Pat F)
                         (unless
                            (and
                               (extern (pack (replace @S '/)))
                               (get @ (intern (pack @R))) )
-                           (inc 'N)
+                           (inc 'Cnt)
                            (call 'rm (pack F)) ) ) ) ) ) ) )
-      (and (n0 N) N) ) )
+      (and (n0 Cnt) Cnt) ) )
 
 (de markExt (S)
    (unless (mark S)
@@ -81,9 +76,7 @@
                (unless (= (caar X) (check (cdar X)))
                   (quit "Tree size mismatch") )
                (iter (tree (cdr X) Cls Hook)
-                  '((Obj)
-                     (let Hook Obj
-                        (mapc _dbCheck (getl Obj)) ) ) )
+                  '((Hook) (mapc _dbCheck (getl Hook))) )
                (scan (tree (cdr X) Cls Hook)
                   '((K V)
                      (or

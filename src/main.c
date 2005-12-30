@@ -1,4 +1,4 @@
-/* 27sep05abu
+/* 09dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,7 +6,7 @@
 
 /* Globals */
 bool SigInt, SigTerm;
-int Chr, Mic[2], Slot, Hear, Tell, PSize, *Pipe, Trace;
+int Chr, Spkr, Mic, Slot, Hear, Tell, PSize, *Pipe, Trace;
 char **AV, *Home;
 heap *Heaps;
 cell *Avail;
@@ -29,8 +29,7 @@ static void finish(int) __attribute__ ((noreturn));
 
 /*** System ***/
 static void finish(int n) {
-   if (Termio)
-      tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+   setCooked();
    exit(n);
 }
 
@@ -69,6 +68,15 @@ static void doSigTerm(int n __attribute__((unused))) {
    bye(0);
 }
 
+static void doSigChld(int n __attribute__((unused))) {
+   pid_t pid;
+   int stat;
+
+   while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
+      if (WIFSIGNALED(stat))
+         fprintf(stderr, "%d SIG-%d\n", (int)pid, WTERMSIG(stat));
+}
+
 static void doTermStop(int n __attribute__((unused))) {
    sigset_t mask;
 
@@ -93,6 +101,24 @@ void setRaw(void) {
    }
 }
 
+void setCooked(void) {
+   if (Termio)
+      tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+   Termio = NULL;
+}
+
+// (raw ['flg]) -> flg
+any doRaw(any x) {
+   if (!isCell(x = cdr(x)))
+      return Termio? T : Nil;
+   if (isNil(EVAL(car(x)))) {
+      setCooked();
+      return Nil;
+   }
+   setRaw();
+   return T;
+}
+
 void protect(bool flg) {
    if (!(Protect = flg) && SigTerm)
       raise(SIGTERM);
@@ -108,11 +134,9 @@ any doProtect(any x) {
 
 /* Allocate memory */
 void *alloc(void *p, size_t siz) {
-   void *q;
-
-   if (!(q = realloc(p,siz)))
+   if (!(p = realloc(p,siz)))
       giveup("No memory");
-   return q;
+   return p;
 }
 
 /* Allocate cell heap */
@@ -293,7 +317,7 @@ int compare(any x, any y) {
       if (!isCell(x = cdr(x)))
          return compare(x, cdr(y));
       if (!isCell(y = cdr(y)))
-         return +1;
+         return y == T? -1 : +1;
       if (x == a && y == b)
          return 0;
    }
@@ -578,7 +602,7 @@ any doRest(any x) {
    return Pop(c1);
 }
 
-static any mkDat(int y, int m, int d) {
+any mkDat(int y, int m, int d) {
    int n;
    static char mon[13] = {31,31,28,31,30,31,30,31,31,30,31,30,31};
 
@@ -693,13 +717,11 @@ any doCd(any x) {
    }
 }
 
-// (ctty '[sym|pid]) -> flg
+// (ctty 'sym|pid) -> flg
 any doCtty(any ex) {
    any x;
 
-   if (isNil(x = EVAL(cadr(ex))))
-      setRaw();
-   else if (!isSym(x))
+   if (!isSym(x = EVAL(cadr(ex))))
       TtyPid = xCnt(ex,x);
    else {
       char tty[bufSize(x)];
@@ -823,6 +845,7 @@ int main(int ac, char *av[]) {
    ApplyBody = cons(Nil,Nil);
    signal(SIGINT, doSigInt);
    signal(SIGTERM, doSigTerm);
+   signal(SIGCHLD, doSigChld);
    signal(SIGPIPE, SIG_IGN);
    signal(SIGTTIN, SIG_IGN);
    signal(SIGTTOU, SIG_IGN);

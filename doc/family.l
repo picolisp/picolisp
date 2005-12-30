@@ -1,4 +1,4 @@
-# 11aug05abu
+# 19dec05abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/html.l" "lib/gui2.l" "lib/ps.l")
@@ -192,7 +192,7 @@
 (de contemporaries.pdf ()
    (psOut T "Contemporaries"
       (in (list "bin/utf2" (tmp "Contemporaries.txt"))
-         (let (Page 1  Fmt (200 120 50 50 120 120 120)  Ttl (line T)  L)
+         (let (Page 1  Fmt (200 120 50 50 120 120 120)  Ttl (line T))
             (a4L)
             (font (7 . "Arial"))
             (indent 30 10)
@@ -213,19 +213,20 @@
                (down 12)
                (ps (pack Ttl ", Page " (inc 'Page)))
                (down 12) )
-            (whilst (setq L (split (line) "^I"))
-               (hline 4)
-               (down 8)
-               (table Fmt
-                  (font "Arial-Bold" (ps (head 50 (car L))))
-                  (ps (head 30 (cadr L)))
-                  (ps (get L 3))
-                  (ps (get L 4))
-                  (ps (head 30 (get L 5)))
-                  (ps (head 30 (get L 6)))
-                  (ps (head 30 (get L 7))) )
+            (until (eof)
+               (let L (split (line) "^I")
+                  (hline 4)
+                  (down 8)
+                  (table Fmt
+                     (font "Arial-Bold" (ps (head 50 (car L))))
+                     (ps (head 30 (cadr L)))
+                     (ps (get L 3))
+                     (ps (get L 4))
+                     (ps (head 30 (get L 5)))
+                     (ps (head 30 (get L 6)))
+                     (ps (head 30 (get L 7))) )
                   (down 4) )
-            (page) ) ) ) )
+               (page) ) ) ) ) )
 
 # Tree display of a person's descendants
 (de treeReport (Prs)

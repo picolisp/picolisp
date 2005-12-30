@@ -42,8 +42,9 @@
 
 <p>Because other Lisps are not the way I'd like them to be. They concentrate on
 efficient compilation, and lost the one-to-one relationship of language and
-virtual machine of an interpreted system. Other reasons are the
-case-insensitivity and complexity of current Lisp systems.
+virtual machine of an interpreted system, gave up power and flexibility, and
+impose unnecessary limitations on the freedom of the programmer. Other reasons
+are the case-insensitivity and complexity of current Lisp systems.
 
 
 <p><hr>
@@ -106,9 +107,9 @@ simple:
 <p><ul>
 <li>In other systems you have to statically declare "slots". In Pico Lisp,
 classes and objects are completely dynamic, they are created and extended at
-runtime. "Slots" don't even exist at definition time! They spring into existence
-purely dynamically. You can add any new property to any single object, at any
-time, regardless of its class.
+runtime. "Slots" don't even exist at creation time. They spring into existence
+purely dynamically. You can add any new property or any new method to any single
+object, at any time, regardless of its class.
 
 <li>The multiple inheritance is such that not only classes can have several
 superclasses, but each individual object can be of more than one class.
@@ -135,7 +136,7 @@ runtime anyway.
 <li>The <code><a href="ref.html#quote">quote</a></code> function returns
 <u>all</u> unevaluated arguments, instead of just the first one. This is both
 faster (<code>quote</code> does not have to take the <code>CAR</code> of its
-argument list) and shorter (a single cell instead of two). For example,
+argument list) and smaller (a single cell instead of two). For example,
 <code>'A</code> expands to <code>(quote . A)</code> and <code>'(A B C)</code>
 expands to <code>(quote A B C)</code>.
 
@@ -150,7 +151,8 @@ explicitly passing around file descriptors.
 <li>A well-defined <a href="ref.html#cmp">ordinal relationship</a> between
 arbitrary data types facilitates generalized comparing and sorting.
 
-<li>Uniform handling of <code>var</code> locations. 
+<li>Uniform handling of <code>var</code> locations (i.e. values of symbols and
+<code>CAR</code>s of list cells).
 
 <li>The universality and usefulness of symbol properties is enforced and
 extended with implicit and explicit bindings of the symbol <code><a
@@ -544,8 +546,8 @@ dynamic context the system may crash. Therefore we have a convention to use an
 
 <p>At least it should be interesting. It would be a machine executing list
 (tree) structures instead of linear instruction sequences. "Instruction
-prefetch" would look down the CAR- and CDR-chains, and perhaps need only a
-single cache for both data and instructions.
+prefetch" would look down the <code>CAR</code>- and <code>CDR</code>-chains, and
+perhaps need only a single cache for both data and instructions.
 
 <p>Primitive functions like <code>set</code>, <code>val</code>, <code>if</code>
 and <code>while</code>, which are written in <Code>C</code> now, would be

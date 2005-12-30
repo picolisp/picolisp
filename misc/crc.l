@@ -1,7 +1,7 @@
-# 24may05abu
+# 06nov05abu
 # (c) Software Lab. Alexander Burger
 
-(gcc "crc" 'crc)
+(gcc "crc" NIL 'crc)
 
 any crc(any ex) {
    any x = EVAL(cadr(ex));

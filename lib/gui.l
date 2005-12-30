@@ -1,4 +1,4 @@
-# 06sep05abu
+# 24nov05abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -47,9 +47,9 @@
                (out S (pr (car *InND))) ) ) )
       (task -40000 80000
          (and *Top (ping> *Top)) ) )
-   (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
+   (prin "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
    (while Lst
-      (prinl ","  *SesId (pop 'Lst)) )
+      (prin ","  *SesId (pop 'Lst)) )
    (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
    (prinl "<PARAM NAME=\"size\" VALUE=\"" (car *Font) "\">")
    (prinl "<PARAM NAME=\"font\" VALUE=\"" (cdr *Font) "\">")
@@ -131,6 +131,9 @@
    (if (pair (next))
       (pass new @)
       (pass new) ) )
+
+(de back (Col))
+(de fore (Col))
 
 (de gui @
    (pr *Lay)
@@ -268,8 +271,7 @@
       (if (= "@" (car Url))
          (let S (intern (pack Lang "." (cdr Url)))
             (when (getd S)
-               (prog1 (pack "@" S)
-                  (allow @) ) ) )
+               (prog1 (pack "@" S) (allow @)) ) )
          (let F
             (ifn (member "/" Url)
                (pack Lang "." Url)
@@ -2666,16 +2668,6 @@
 
 (dm upd> ()
    (set> This (cons (: home obj)) (cons (: home obj) T)) )
-
-
-# IndexChart selector
-(class +Sel +Sync)
-
-(dm key> (C)
-   (prog1 (extra C)
-      (set> (pick '((F) (get F 'arr)) (memq This (: home fields)))
-         (cons (pack (: str) @))
-         (cons (pack (: str) @ `(char T)) T) ) ) )
 
 
 # Chart scroller

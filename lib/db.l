@@ -1,22 +1,33 @@
-# 26sep05abu
+# 22dec05abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
 
-### DB Files ###
-(de dbf Lst
-   (let Dbf 0
+### DB Sizes ###
+(de dbs Lst
+   (let N -1
       (setq *Dbs
          (mapcar
             '((L)
-               (for Cls (cdr L)
-                  (if (atom Cls)
-                     (put Cls 'dbf Dbf)
-                     (for Var (cdr Cls)
-                        (put (get (car Cls) Var) 'dbf Dbf) ) ) )
-               (inc 'Dbf)
+               (let Dbf (cons (inc 'N) (>> (- (car L)) 64))
+                  (for Cls (cdr L)
+                     (if (atom Cls)
+                        (put Cls 'dbf Dbf)
+                        (for Var (cdr Cls)
+                           (put (get (car Cls) Var) 'dbf Dbf) ) ) ) )
                (car L) )
             Lst ) ) ) )
+
+(de db1 (N)
+   (if (and N (n0 N))
+      (extern (pack N -1))
+      *DB ) )
+
+(de dbf Lst
+   (if (cdr Lst)
+      (get (car Lst) (cadr Lst) 'dbf)
+      (get (car Lst) 'dbf) ) )
+
 
 ### Tree Access ###
 (de tree (Var Cls Hook)
@@ -30,12 +41,12 @@
    (with (or (get Cls Var) (meta Cls Var))
       (when (find '((B) (isa '+Index B)) (: bag))
          (setq This @) )
-      (let Tree (tree (: var) (: cls) (and (: hook) (next)))
+      (let (Tree (tree (: var) (: cls) (and (: hook) (next)))  Val (next))
          (if (isa '+Key This)
-            (and
-               (fetch Tree (next))
-               (pass _db @) )
-            (let (Val (next)  Key (cons (if (isa '+Fold This) (fold Val) Val)))
+            (if (args)
+               (and (fetch Tree Val) (pass _db @))
+               (fetch Tree Val) )
+            (let Key (cons (if (isa '+Fold This) (fold Val) Val))
                (let? A (: aux)
                    (for (L (rest) (and L (== (pop 'A) (pop 'L))) (cdr L))
                      (conc Key (cons (car L))) ) )
@@ -49,6 +60,17 @@
       (loop
          (NIL (next) Obj)
          (NIL (has> Obj (arg) (next))) ) ) )
+
+
+# (aux 'var 'cls ['hook] 'val ..)
+(de aux (Var Cls . @)
+   (with (or (get Cls Var) (meta Cls Var))
+      (when (find '((B) (isa '+Index B)) (: bag))
+         (setq This @) )
+      (step
+         (init (tree (: var) (: cls) (and (: hook) (next)))
+            (rest)
+            (conc (rest) T) ) ) ) )
 
 
 # (collect 'var 'cls ['hook] ['val|beg ['end [var ..]]])
@@ -363,22 +385,20 @@
 
 (dm rel> (Obj Old New Hook)
    (let L
-      (filter
+      (mapcan
          '((X)
+            (and (atom X) (setq X (cons T X)))
             (and
-               (pair X)
                (or
                   (== (: var) (meta Obj (cdr X) 'hook))
                   (find
                      '((B) (== (: var) (get B 'hook)))
-                     (meta Obj (cdr X) 'bag) ) ) ) )
+                     (meta Obj (cdr X) 'bag) ) )
+               (cons X) ) )
          (getl Obj) )
-      (when Old
-         (for X L
-            (rel> (meta Obj (cdr X)) Obj (car X) NIL Old) ) )
-      (when New
-         (for X L
-            (rel> (meta Obj (cdr X)) Obj NIL (car X) New) ) ) )
+      (for X L
+         (rel> (meta Obj (cdr X)) Obj (car X) NIL (or Old *DB))
+         (rel> (meta Obj (cdr X)) Obj NIL (car X) (or New *DB)) ) )
    (extra Obj Old New Hook) )
 
 
@@ -664,7 +684,7 @@
 (de new! ("Typ" . @)
    (prog2
       (dbSync)
-      (pass new (or (meta "Typ" 'dbf) 0) "Typ")
+      (pass new (or (car (meta "Typ" 'dbf)) 0) "Typ")
       (commit 'upd) ) )
 
 (de set! (Obj Val)
@@ -757,21 +777,45 @@
          (upd> This Var Old)
          (commit 'upd) ) ) )
 
-(dm inc> (Var)
+(dm inc> (Var Val)
    (when (num? (get This Var))
       (touch This)
       (let Old (get This Var)
-         (rel> (meta This Var) This Old (inc (prop This Var)))
+         (rel> (meta This Var) This Old
+            (inc (prop This Var) (or Val 1)) )
          (when (asoq Var (meta This 'aux))
             (relAux This Var Old (cdr @)) )
          (upd> This Var Old) ) ) )
 
-(dm inc!> (Var)
+(dm inc!> (Var Val)
    (when (num? (get This Var))
       (dbSync)
       (touch This)
       (let Old (get This Var)
-         (rel> (meta This Var) This Old (inc (prop This Var)))
+         (rel> (meta This Var) This Old
+            (inc (prop This Var) (or Val 1)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old)
+         (commit 'upd) ) ) )
+
+(dm dec> (Var Val)
+   (when (num? (get This Var))
+      (touch This)
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (dec (prop This Var) (or Val 1)) )
+         (when (asoq Var (meta This 'aux))
+            (relAux This Var Old (cdr @)) )
+         (upd> This Var Old) ) ) )
+
+(dm dec!> (Var Val)
+   (when (num? (get This Var))
+      (dbSync)
+      (touch This)
+      (let Old (get This Var)
+         (rel> (meta This Var) This Old
+            (dec (prop This Var) (or Val 1)) )
          (when (asoq Var (meta This 'aux))
             (relAux This Var Old (cdr @)) )
          (upd> This Var Old)
@@ -879,7 +923,7 @@
    (val This) )
 
 (dm clone> ()
-   (let Obj (new (or (var: dbf) 0) (val This))
+   (let Obj (new (or (car (var: dbf)) 0) (val This))
       (for X
          (by
             '((X)
@@ -956,8 +1000,16 @@
       (or
          (pass db Var (: cls))
          (if (: hook)
-            (pass new (or (: cls dbf) 0) Typ  @ (next)  Var)
-            (pass new (or (: cls dbf) 0) Typ Var) ) ) ) )
+            (pass new
+               (or (car (: cls dbf)) 0)
+               Typ
+               (: hook)
+               (next)
+               Var )
+            (pass new
+               (or (car (: cls dbf)) 0)
+               Typ
+               Var ) ) ) ) )
 
 # Create or update object
 (de obj Lst

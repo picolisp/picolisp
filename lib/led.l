@@ -1,4 +1,4 @@
-# 05sep05abu
+# 19dec05abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor (vi-mode)
@@ -25,7 +25,7 @@
    "History"            # History of input lines
    (ctl "+@.picoHistory"
       (in "@.picoHistory"
-         (make (whilst (line) (link @))) ) )
+         (make (until (eof) (link (line)))) ) )
    "Hist0"     "History" )
 
 # Output character
@@ -363,7 +363,7 @@
 (de saveHistory ()
    (ctl "@.picoHistory"
       (in "@.picoHistory"
-         (let (Old (make (whilst (line) (link @)))  New "History"  N "HistMax")
+         (let (Old (make (until (eof) (link (line))))  New "History"  N "HistMax")
             (out "@.picoHistory"
                (while (and New (n== New "Hist0"))
                   (prinl (pop 'New))
@@ -373,12 +373,11 @@
                   (NIL Old)
                   (prinl (pop 'Old)) ) ) ) ) ) )
 
-(?push '*Fork '(del '(saveHistory) '*Bye))
-(?push '*Bye '(saveHistory))
-
 # Enable line editing
 (de *Led
    (let ("*Dbg" *Dbg  *Dbg NIL)
+      (?push '*Bye '(saveHistory))
+      (?push '*Fork '(del '(saveHistory) '*Bye))
       (_led)
       (and
          (> (length "Line") 3)

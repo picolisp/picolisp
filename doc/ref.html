@@ -500,7 +500,7 @@ command line flags or options. They are reserved for application programs.
 immediately by calling <code><a href="#bye">bye</a></code>:
 
 <p><pre><code>
-$ bin/pico -bye
+$ bin/picolisp -bye
 $
 </code></pre>
 
@@ -508,7 +508,7 @@ $
 href="#load">load</a></code>) will also exit when an empty line is entered:
 
 <p><pre><code>
-$ bin/pico
+$ bin/picolisp
 :
 $
 </code></pre>
@@ -518,7 +518,7 @@ loaded. The most commonly used things are in "lib.l" and in a bunch of other
 files, which are in turn loaded by "ext.l". Thus, a typical call would be:
 
 <p><pre><code>
-$ bin/pico lib.l ext.l
+$ bin/picolisp lib.l ext.l
 </code></pre>
 
 <p>The recommended way, however, is to call the "p" shell script, which includes
@@ -1144,10 +1144,8 @@ NIL
    <a href="#state">state</a>,
    <a href="#unless">unless</a>,
    <a href="#until">until</a>,
-   <a href="#untilT">until=T</a>,
    <a href="#when">when</a>,
    <a href="#while">while</a>,
-   <a href="#whilst">whilst</a>,
 and the bodies of <code><a href="#*Key">*Key</a></code> tasks.
 
 </dl>
@@ -1809,9 +1807,7 @@ abbreviations:
    <a href="#case">case</a>
    <a href="#state">state</a>
    <a href="#while">while</a>
-   <a href="#whilst">whilst</a>
    <a href="#until">until</a>
-   <a href="#untilT">until=T</a>
    <a href="#loop">loop</a>
    <a href="#do">do</a>
    <a href="#at">at</a>
@@ -1871,6 +1867,7 @@ abbreviations:
    <a href="#peek">peek</a>
    <a href="#char">char</a>
    <a href="#skip">skip</a>
+   <a href="#eof">eof</a>
    <a href="#from">from</a>
    <a href="#till">till</a>
    <a href="#line">line</a>
@@ -1909,7 +1906,9 @@ abbreviations:
    <a href="#begin">begin</a>
    <a href="#commit">commit</a>
    <a href="#rollback">rollback</a>
+   <a href="#lieu">lieu</a>
    <a href="#lock">lock</a>
+   <a href="#id">id</a>
    <a href="#seq">seq</a>
    <a href="#mark">mark</a>
    <a href="#dbck">dbck</a>
@@ -1938,6 +1937,7 @@ abbreviations:
    <a href="#argv">argv</a>
    <a href="#opt">opt</a>
    <a href="#gc">gc</a>
+   <a href="#raw">raw</a>
    <a href="#protect">protect</a>
    <a href="#heap">heap</a>
    <a href="#env">env</a>
@@ -2187,10 +2187,10 @@ href="#memq">memq</a></code> and <code><a href="#mmeq">mmeq</a></code>.
 -> NIL
 </code></pre>
 
-<p><dt><a name="at"><code>(at '(num1 . num2) . prg) -> any</code></a>
-<dd>Increments <code>num1</code> (destructively), and returns <code>NIL</code>
-when it is less than <code>num2</code>. Otherwise, <code>prg</code> is executed
-and <code>num1</code> is reset to zero. Returns the result of <code>prg</code>.
+<p><dt><a name="at"><code>(at '(cnt1 . cnt2) . prg) -> any</code></a>
+<dd>Increments <code>cnt1</code> (destructively), and returns <code>NIL</code>
+when it is less than <code>cnt2</code>. Otherwise, <code>prg</code> is executed
+and <code>cnt1</code> is reset to zero. Returns the result of <code>prg</code>.
 
 <p><pre><code>
 : (do 11 (prin ".") (at (0 . 3) (prin "!")))
@@ -2351,6 +2351,8 @@ list which is passed to <code>fun2</code>. For the list returned from
 <p><pre><code>
 : (let (A 1 B 2 C 3) (by val sort '(C A B)))
 -> (A B C)
+: (by '((N) (bit? 1 N)) group (3 11 6 2 9 5 4 10 12 7 8 1))
+-> ((3 11 9 5 7 1) (6 2 4 10 12 8))
 </code></pre>
 
 <p><dt><a name="bye"><code>(bye 'cnt|NIL)</code></a>
@@ -2583,7 +2585,8 @@ character (used as a top value in comparisons). Otherwise, when called with a
 symbol <code>sym</code>, the numeric unicode value of the first character of the
 name of that symbol is returned. See also <code><a href="#peek">peek</a></code>,
 <code><a href="#skip">skip</a></code>, <code><a href="#key">key</a></code>,
-<code><a href="#line">line</a></code> and <code><a href="#till">till</a></code>.
+<code><a href="#line">line</a></code>, <code><a href="#till">till</a></code> and
+<code><a href="#eof">eof</a></code>.
 
 <p><pre><code>
 : (char)                   # Read character from console
@@ -2780,11 +2783,11 @@ $ cat count                               # Check "count"
 8
 </code></pre>
 
-<p><dt><a name="ctty"><code>(ctty '[sym|pid]) -> flg</code></a>
+<p><dt><a name="ctty"><code>(ctty 'sym|pid) -> flg</code></a>
 <dd>When called with a symbolic argument, <code>ctty</code> changes the current
 TTY device to <code>sym</code>. Otherwise, the local console is prepared for
-serving a remote Pico Lisp process (when called with a <code>pid</code>
-argument), or set to raw mode (when called without arguments).
+serving the remote Pico Lisp process <code>pid</code>. See also <code><a
+href="#raw">raw</a></code>.
 
 <p><pre><code>
 : (ctty "/dev/tty")
@@ -2838,8 +2841,8 @@ href="#time">time</a></code>.
 
 <p><dt><a name="dbck"><code>(dbck ['num] 'flg) -> any</code></a>
 <dd>Performs a low-level integrity check of the current (or <code>num</code>'th)
-database file, and returns <code>NIL</code> (or a list of statistic values if
-<code>flg</code> is non-<code>NIL</code>) if everything seems correct.
+database file, and returns <code>NIL</code> (or the number of blocks and symbols
+if <code>flg</code> is non-<code>NIL</code>) if everything seems correct.
 Otherwise, a string indicating an error is returned. As a side effect, possible
 unused blocks (as there might be when a <code><a
 href="#rollback">rollback</a></code> is done after allocating external symbols
@@ -3018,17 +3021,20 @@ href="#cd">cd</a></code> and <code><a href="#info">info</a></code>.
 </code></pre>
 
 <p><dt><a name="dm"><code>(dm sym . fun) -> sym<br>
-(dm (sym . cls) . fun) -> sym</code></a>
+(dm (sym . cls) . fun) -> sym<br>
+(dm (sym sym [. cls]) . fun) -> sym</code></a>
 <dd>Defines a method for the message <code>sym</code> in the current class,
 implicitly given by the value of the global variable <code>*Class</code>, or -
-in the second form - for the explicitly given class <code>cls</code>. This is
-analog to a function definition.
+in the second form - for the explicitly given class <code>cls</code>. In the
+third form, the class object is obtained by <code><a
+href="#get">get</a></code>ing <code>sym</code> from <code>*Class</code> (or
+<code>cls</code> if given).
 
 <p><pre><code>
 : (dm start> ()
    (super)
-   (mapc '((F) (start> F)) (: fields))
-   (mapc '((B) (start> B)) (: arrays)) )
+   (mapc 'start> (: fields))
+   (mapc 'start> (: arrays)) )
 </code></pre>
 
 <p><dt><a name="do"><code>(do 'flg|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
@@ -3105,6 +3111,20 @@ and <code><a href="#job">job</a></code>.
 -> 3
 </code></pre>
 
+<p><dt><a name="eof"><code>(eof ['flg]) -> flg</code></a>
+<dd>Returns the end-of-file status of the current input channel. If
+<code>flg</code> is non-<code>NIL</code>, the channel's status is forced to
+end-of-file, so that the next call to <code>eof</code> will return
+<code>T</code>, and calls to <code><a href="#char">char</a></code>, <code><a
+href="#line">line</a></code>, <code><a href="#rd">rd</a></code>, <code><a
+href="#read">read</a></code> or <code><a href="#skip">skip</a></code> will
+return <code>NIL</code>.
+
+<p><pre><code>
+: (in "file" (until (eof) (println (line T))))
+...
+</code></pre>
+
 <p><dt><a name="eval"><code>(eval 'any ['cnt]) -> any</code></a>
 <dd>Evaluates <code>any</code>. Note that because of the standard argument
 evaluation, <code>any</code> is actually evaluated twice. If a binding
@@ -3127,8 +3147,8 @@ in the corresponding environment. See also <code><a href="#run">run</a></code>.
 <p><dt><a name="extQ"><code>(ext? 'any) -> sym | NIL</code></a>
 <dd>Returns the argument <code>any</code> when it is an existing external
 symbol, otherwise <code>NIL</code>. See also <code><a
-href="#symQ">sym?</a></code>, <code><a href="#boxQ">box?</a></code> and <code><a
-href="#strQ">str?</a></code>.
+href="#symQ">sym?</a></code>, <code><a href="#boxQ">box?</a></code>, <code><a
+href="#strQ">str?</a></code> and <code><a href="#lieu">lieu</a></code>.
 
 <p><pre><code>
 : (ext? *DB)
@@ -3141,7 +3161,7 @@ href="#strQ">str?</a></code>.
 -> NIL
 </code></pre>
 
-<p><dt><a name="extern"><code>(extern 'sym) -> sym|NIL</code></a>
+<p><dt><a name="extern"><code>(extern 'sym) -> sym | NIL</code></a>
 <dd>Creates or finds an external symbol. If a symbol with the name
 <code>sym</code> is already extern, it is returned. Otherwise, a new external
 symbol is returned. <code>NIL</code> is returned if <code>sym</code> does not
@@ -3582,6 +3602,18 @@ also <code><a href="#*Adr">*Adr</a></code>.
 <p><hr>
 <h3><a name="i-foo">I</a></h3>
 
+<p><dt><a name="id"><code>(id 'sym) -> (num . num)<br>
+(id 'num 'num) -> sym</code></a>
+<dd>Converts an external symbol to a pair of numbers, or two numbers to an
+external symbol.
+
+<p><pre><code>
+: (id '{1-2})
+-> (1 . 2)
+: (id 1 2)
+-> {1-2}
+</code></pre>
+
 <p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> lst<br>
 (idx 'var 'any) -> lst<br>
 (idx 'var) -> lst</code></a>
@@ -3814,7 +3846,8 @@ a <code>select</code> system call is executed for all file descriptors and
 timers in the <code>VAL</code> of the global variable <code><a
 href="#*Key">*Key</a></code>. If <code>cnt</code> is non-<code>NIL</code>, that
 amount of milliseconds is waited maximally, and <code>NIL</code> is returned
-upon timeout. See also <code><a href="#wait">wait</a></code>.
+upon timeout. See also <code><a href="#raw">raw</a></code> and <code><a
+href="#wait">wait</a></code>.
 
 <p><pre><code>
 : (key)                    # Wait for a key
@@ -3829,9 +3862,9 @@ Returns <code>T</code> if successful.
 <p><pre><code>
 : (kill *Pid 20)                                # Stop current process
 
-[2]+  Stopped               /usr/local/pico/p   # Unix shell
+[2]+  Stopped               bin/picolisp        # Unix shell
 $ fg                                            # Job control: Foreground
-/usr/local/pico/p
+bin/picolisp
 -> T                                            # `kill' was successful
 </code></pre>
 
@@ -3918,6 +3951,16 @@ A 1
 -> NIL
 </code></pre>
 
+<p><dt><a name="lieu"><code>(lieu 'any) -> sym | NIL</code></a>
+<dd>Returns the argument <code>any</code> when it is an external symbol and
+currently manifest in heap space, otherwise <code>NIL</code>. See also <code><a
+href="#extQ">ext?</a></code>.
+
+<p><pre><code>
+: (lieu *DB)
+-> {1}
+</code></pre>
+
 <p><dt><a name="line"><code>(line 'flg ['cnt ..]) -> lst|sym</code></a>
 <dd>Reads a line of characters from the current input channel. End of line is
 recognized as linefeed (hex "0A"), carriage return characters (hex "0D") are
@@ -3926,8 +3969,9 @@ transient symbols is returned. When <code>cnt</code> arguments are given,
 subsequenct characters of the input line are grouped into sublists, to allow
 parsing of fixed field length records. If <code>flg</code> is
 non-<code>NIL</code>, strings are returned instead of single-character lists.
-<code>T</code> is returned upon end of file. See also <code><a
-href="#char">char</a></code> and <code><a href="#till">till</a></code>.
+<code>NIL</code> is returned upon end of file. See also <code><a
+href="#char">char</a></code>, <code><a href="#till">till</a></code> and <code><a
+href="#eof">eof</a></code>.
 
 <p><pre><code>
 : (line)
@@ -4761,8 +4805,8 @@ also <code><a href="#close">close</a></code>.
 </code></pre>
 
 <p><dt><a name="opt"><code>(opt) -> sym</code></a>
-<dd>Return the next command line argument as a string, and remove it from the
-remaining command line arguments. See also <code><a
+<dd>Return the next command line argument (option) as a string, and remove it
+from the remaining command line arguments. See also <code><a
 href="#invoc">Invocation</a></code> and <code><a href="#argv">argv</a></code>.
 
 <p><pre><code>
@@ -5299,23 +5343,43 @@ found. See also <a href="#cmp">Comparing</a>.
 -> (100 . b)
 </code></pre>
 
+<p><dt><a name="raw"><code>(raw ['flg]) -> flg</code></a>
+<dd>Console mode control function. When called without arguments, it returns the
+current console mode (<code>NIL</code> for "cooked mode"). Otherwise, the
+console is set to the new state. See also <code><a href="#key">key</a></code>.
+
+<p><pre><code>
+$ ./p
+: (raw)
+-> NIL
+$ ./p dbg.l
+: (raw)
+-> T
+</code></pre>
+
 <p><dt><a name="rd"><code>(rd) -> any<br>
 (rd 'cnt) -> num | NIL</code></a>
 <dd>Binary read: Reads one item from the current input channel in encoded binary
 format. When called with a <code>cnt</code> argument (second form), that number
 of raw bytes (in big endian format if <code>cnt</code> is positive) is read as a
 single number. <code>NIL</code> is returned upon end of file. See also <code><a
-href="#pr">pr</a></code> and <code><a href="#wr">wr</a></code>.
+href="#pr">pr</a></code>, <code><a href="#wr">wr</a></code> and <code><a
+href="#eof">eof</a></code>.
 
 <p><pre><code>
 : (in "/dev/urandom" (rd 20))
 -> 396737673456823753584720194864200246115286686486
 </code></pre>
 
-<p><dt><a name="read"><code>(read) -> any</code></a>
+<p><dt><a name="read"><code>(read ['sym1 ['sym2]]) -> any</code></a>
 <dd>Reads one item from the current input channel. <code>NIL</code> is returned
-upon end of file. See also <code><a href="#any">any</a></code> and <code><a
-href="#str">str</a></code>.
+upon end of file. When called without arguments, an arbitrary Lisp expression is
+read. Otherwise, a token (a number, or an internal or transient symbol) is read.
+In that case, <code>sym1</code> specifies which set of characters to accept for
+internal symbols (in addition to the standard alphanumerical characters), and
+<code>sym2</code> an optional comment character. See also <code><a
+href="#any">any</a></code>, <code><a href="#str">str</a></code>, <code><a
+href="#skip">skip</a></code> and <code><a href="#eof">eof</a></code>.
 
 <p><pre><code>
 : (list (read) (read) (read))    # Read three things from console
@@ -5326,6 +5390,10 @@ ghi
 jkl
 )
 -> (123 abcd (def ghi jkl))
+: (make (while (read "_" "#") (link @)))
+abc = def_ghi("xyz"+-123) # Comment
+""
+-> (abc "=" def_ghi "(" "xyz" "+" -123 ")")
 </code></pre>
 
 <p><dt><a name="rel"><code>(rel sym lst [any ..]) -> any</code></a>
@@ -5527,10 +5595,10 @@ is used as an internal free list link.
 
 <p><dt><a name="size"><code>(size 'any) -> cnt</code></a>
 <dd>Returns the "size" of <code>any</code>. For numbers this is the number of
-bytes needed for the value, for external symbols it is the number of blocks
-occupied in the database, for other symbols it is the number of bytes occupied
-in the UTF-8 representation of the name, and for lists it is the total number of
-cells in this list and all its sublists. See also <code><a
+bytes needed for the value, for external symbols it is the number of bytes it
+would occupy in the database, for other symbols it is the number of bytes
+occupied in the UTF-8 representation of the name, and for lists it is the total
+number of cells in this list and all its sublists. See also <code><a
 href="#length">length</a></code>.
 
 <p><pre><code>
@@ -5547,7 +5615,8 @@ href="#length">length</a></code>.
 <p><dt><a name="skip"><code>(skip ['sym]) -> sym</code></a>
 <dd>Skips all white space (and comments if <code>sym</code> is given) in the
 input stream. Returns the next available character, or <code>NIL</code> upon end
-of file. See also <code><a href="#peek">peek</a></code>.
+of file. See also <code><a href="#peek">peek</a></code> and <code><a
+href="#eof">eof</a></code>.
 
 <p><pre><code>
 $ cat a
@@ -5932,17 +6001,17 @@ also be used by <code><a href="#commit">commit</a></code> to notify about
 database changes.
 
 <p><pre><code>
-: (call 'ps "x")                          # Show processes
+: (call 'ps "x")                            # Show processes
   PID TTY      STAT   TIME COMMAND
   ..
- 1321 pts/0    S      0:00 ./pico ..      # Parent process
- 1324 pts/0    S      0:01 ./pico ..      # First child
- 1325 pts/0    S      0:01 ./pico ..      # Second child
+ 1321 pts/0    S      0:00 bin/picolisp ..  # Parent process
+ 1324 pts/0    S      0:01 bin/picolisp ..  # First child
+ 1325 pts/0    S      0:01 bin/picolisp ..  # Second child
  1326 pts/0    R      0:00 ps x
 -> T
-: *Pid                                    # We are the second child
+: *Pid                                      # We are the second child
 -> 1325
-: (tell 'println '*Pid)                   # Ask all others to print their Pid's
+: (tell 'println '*Pid)                     # Ask all others to print their Pid's
 1324
 -> *Pid
 </code></pre>
@@ -6129,30 +6198,11 @@ Strange result
 <dd>Conditional loop: While the condition <code>any</code> evaluates to
 <code>NIL</code>, <code>prg</code> is repeatedly executed. If <code>prg</code>
 is never executed, <code>NIL</code> is returned. Otherwise the result of
-<code>prg</code> is returned. See also <code><a href="#while">while</a></code>
-and <code><a href="#untilT">until=T</a></code>.
+<code>prg</code> is returned. See also <code><a href="#while">while</a></code>.
 
 <p><pre><code>
 : (until (=T (setq N (read)))
    (println 'square (* N N)) )
-4
-square 16
-9
-square 81
-T
--> 81
-</code></pre>
-
-<p><dt><a name="untilT"><code>(until=T 'any . prg) -> any</code></a>
-<dd>Conditional loop: While the condition <code>any</code> does not evaluate to
-<code>T</code>, <code>prg</code> is repeatedly executed. If <code>prg</code> is
-never executed, <code>NIL</code> is returned. Otherwise the result of
-<code>prg</code> is returned. See also <code><a href="#until">until</a></code>
-and <code><a href="#whilst">whilst</a></code>.
-
-<p><pre><code>
-: (until=T (read)
-   (println 'square (* @ @)) )
 4
 square 16
 9
@@ -6244,7 +6294,7 @@ href="#sync">sync</a></code>.
 
 <p><pre><code>
 : (wait 2000)                                # Sleep for 2 seconds
--> 2000
+-> NIL
 : (prog
    (zero *Cnt)
    (setq *Key                                # Install background loop
@@ -6279,7 +6329,7 @@ Good
 non-<code>NIL</code>, <code>prg</code> is repeatedly executed. If
 <code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
 result of <code>prg</code> is returned. See also <code><a
-href="#whilst">whilst</a></code> and <code><a href="#until">until</a></code>.
+href="#until">until</a></code>.
 
 <p><pre><code>
 : (while (read)
@@ -6290,23 +6340,6 @@ got: abc
 got: 1234
 NIL
 -> 1234
-</code></pre>
-
-<p><dt><a name="whilst"><code>(whilst 'any . prg) -> any</code></a>
-<dd>Conditional loop: While the condition <code>any</code> evaluates to a list
-(a pair or <code>NIL</code>), <code>prg</code> is repeatedly executed. If
-<code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
-result of <code>prg</code> is returned. See also <code><a
-href="#while">while</a></code> and <code><a href="#untilT">until=T</a></code>.
-
-<p><pre><code>
-: (whilst (read) (println 'got: @))
-(a b c)
-got: (a b c)
-NIL
-got: NIL
-abc
--> NIL
 </code></pre>
 
 <p><dt><a name="wipe"><code>(wipe 'sym|lst) -> sym|lst</code></a>
@@ -6717,7 +6750,7 @@ A -- Number expected
 : (call "ps")                          # Show processes
   PID TTY          TIME CMD
  .... ...      ........ .....
- 6386 pts/1    00:00:00 pico           # <- current process
+ 6386 pts/1    00:00:00 bin/picolisp   # <- current process
  6388 pts/1    00:00:00 ps
 -> T
 </code></pre>

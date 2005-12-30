@@ -1,5 +1,5 @@
-#!bin/pico lib.l
-# 03jan05abu
+#!bin/picolisp lib.l
+# 10oct05abu
 # misc/bigtest <seed>
 
 (load "lib/misc.l")

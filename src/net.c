@@ -1,4 +1,4 @@
-/* 17sep05abu
+/* 24oct05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -22,24 +22,35 @@ static int tcpSocket(any ex) {
    return sd;
 }
 
-static any tcpAccept(any ex, int sd) {
-   int n, i, sd2;
-   struct sockaddr_in addr;
-   struct timespec tv = {0,100000000};  // 100 ms
+static void setBlocking(bool flg, any ex, int sd) {
+   int n;
 
    if ((n = fcntl(sd, F_GETFL, 0)) < 0)
       tcpErr(ex, "GETFL");
-   n |= O_NONBLOCK;
+   if (flg)
+      n &= ~O_NONBLOCK;
+   else
+      n |= O_NONBLOCK;
    if (fcntl(sd, F_SETFL, n) < 0)
       tcpErr(ex, "SETFL");
+}
+
+static any tcpAccept(any ex, int sd) {
+   int i, sd2;
+   struct sockaddr_in addr;
+   struct timespec tv = {0,100000000};  // 100 ms
+
+   setBlocking(NO, ex, sd);
    i = 200; do {
       socklen_t len = sizeof(addr);
       if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
+         setBlocking(YES, ex, sd2);
          val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
          return boxCnt(sd2);
       }
       nanosleep(&tv,NULL);
    } while (errno == EAGAIN  &&  --i >= 0);
+   setBlocking(YES, ex, sd);
    return NULL;
 }
 

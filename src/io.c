@@ -1,4 +1,4 @@
-/* 27sep05abu
+/* 20dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -348,8 +348,6 @@ int numBytes(any x) {
    int cnt;
    word n;
 
-   if (!isNum(x))
-      return 0;
    for (cnt = 4;  isNum(cdr(numCell(x)));  cnt += 4)
       x = cdr(numCell(x));
    if (((n = unDig(x)) & 0xFF000000) == 0) {
@@ -364,7 +362,7 @@ int numBytes(any x) {
 }
 
 /* Buffer size */
-int bufSize(any x) {return numBytes(name(x)) + 1;}
+int bufSize(any x) {return isNum(x = name(x))? numBytes(x)+1 : 1;}
 
 int pathSize(any x) {
    int c = firstByte(x);
@@ -406,7 +404,7 @@ void byteSym(int c, int *i, any *p) {
    if ((*i += 8) < 32)
       setDig(*p, unDig(*p) | (c & 0xFF) << *i);
    else
-      *i = 0,  *p = cdr(numCell(*p)) = box(c);
+      *i = 0,  *p = cdr(numCell(*p)) = box(c & 0xFF);
 }
 
 /* Box first char of symbol name */
@@ -694,29 +692,29 @@ static int skip(int c) {
 }
 
 /* Test for escaped characters */
-static void testEsc(void) {
+static bool testEsc(void) {
    for (;;) {
       if (Chr < 0)
-         eofErr();
+         return NO;
       if (Chr == '^') {
          Env.get();
          if (Chr == '?')
             Chr = 127;
          else
             Chr &= 0x1F;
-         return;
+         return YES;
       }
       if (Chr != '\\')
-         return;
+         return YES;
       if (Env.get(), Chr != '\n')
-         return;
+         return YES;
       do
          Env.get();
       while (Chr == ' '  ||  Chr == '\t');
    }
 }
 
-/* Read a List */
+/* Read a list */
 static any rdList(void) {
    any x;
    cell c1, c2;
@@ -797,7 +795,7 @@ static any anonymous(any s) {
    return NULL;
 }
 
-/* Read one Expression */
+/* Read one expression */
 static any read0(bool top) {
    int i;
    any x, y, *h;
@@ -845,10 +843,12 @@ static any read0(bool top) {
          Env.get();
          return Nil;
       }
-      testEsc();
+      if (!testEsc())
+         eofErr();
       i = 0,  Push(c1, y = box(Chr));
       while (Env.get(), Chr != '"') {
-         testEsc();
+         if (!testEsc())
+            eofErr();
          byteSym(Chr, &i, &y);
       }
       y = Pop(c1),  Env.get();
@@ -897,7 +897,6 @@ static any read0(bool top) {
    return x;
 }
 
-/* Read one expression */
 any read1(int end) {
    any x;
 
@@ -911,9 +910,77 @@ any read1(int end) {
    return x;
 }
 
-// (read) -> any
-any doRead(any x) {
-   x = read1(0);
+/* Read one token */
+any token(any x, int siz, int c) {
+   int i;
+   any y, *h;
+   cell c1;
+   char nm[siz];
+
+   if (!Chr)
+      Env.get();
+   if (skip(c) < 0)
+      return Nil;
+   if (Chr == '"') {
+      Env.get();
+      if (Chr == '"') {
+         Env.get();
+         return Nil;
+      }
+      testEsc();
+      i = 0,  Push(c1, y = box(Chr));
+      while (Env.get(), Chr != '"' && testEsc())
+         byteSym(Chr, &i, &y);
+      Env.get();
+      return consStr(y = Pop(c1));
+   }
+   if (Chr == '+' || Chr == '-') {
+      if (c = Chr,  Env.get(), Chr < '0' || Chr > '9')
+         return mkChar(c);
+      i = 0,  Push(c1, y = box(c));
+      do
+         byteSym(Chr, &i, &y);
+      while (Env.get(), Chr >= '0' && Chr <= '9' || Chr == '.');
+      return symToNum(Pop(c1), (int)unDig(val(Scl)) / 2, '.', 0);
+   }
+   if (Chr >= '0' && Chr <= '9') {
+      i = 0,  Push(c1, y = box(Chr));
+      while (Env.get(), Chr >= '0' && Chr <= '9' || Chr == '.')
+         byteSym(Chr, &i, &y);
+      return symToNum(Pop(c1), (int)unDig(val(Scl)) / 2, '.', 0);
+   }
+   bufString(x, nm);
+   if (Chr >= 'A' && Chr <= 'Z' || Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr)) {
+      i = 0,  Push(c1, y = box(Chr));
+      while (Env.get(),
+            Chr >= '0' && Chr <= '9' || Chr >= 'A' && Chr <= 'Z' ||
+            Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr) )
+         byteSym(Chr, &i, &y);
+      y = Pop(c1);
+      if (x = findHash(y, h = Intern + hash(y)))
+         return x;
+      x = consSym(Nil,y);
+      *h = cons(x,*h);
+      return x;
+   }
+   y = mkChar(Chr);
+   Env.get();
+   return y;
+}
+
+// (read ['sym1 ['sym2]]) -> any
+any doRead(any ex) {
+   any x, y;
+
+   if (!isCell(x = cdr(ex)))
+      x = read1(0);
+   else {
+      y = EVAL(car(x));
+      NeedSym(ex,y);
+      x = cdr(x),  x = EVAL(car(x));
+      NeedSym(ex,x);
+      x = token(y, bufSize(y), symChar(name(x)));
+   }
    if (InFile == stdin  &&  Chr == '\n')
       Chr = 0;
    return x;
@@ -957,10 +1024,10 @@ long waitFd(any ex, int fd, long ms) {
                m = n;
             FD_SET(n, &fdSet);
          }
-      if (Mic[0]) {
-         if (Mic[0] > m)
-            m = Mic[0];
-         FD_SET(Mic[0], &fdSet);
+      if (Spkr) {
+         if (Spkr > m)
+            m = Spkr;
+         FD_SET(Spkr, &fdSet);
       }
       for (i = 0; i < PSize; i += 2) {
          if (Pipe[i] >= 0) {
@@ -1003,8 +1070,8 @@ long waitFd(any ex, int fd, long ms) {
             }
          }
       }
-      if (!flg  &&  Mic[0]  &&  FD_ISSET(Mic[0], &fdSet)  &&
-               rdBytes(Mic[0], (byte*)&m, sizeof(int))  &&  Pipe[m] >= 0  &&
+      if (!flg  &&  Spkr  &&  FD_ISSET(Spkr, &fdSet)  &&
+               rdBytes(Spkr, (byte*)&m, sizeof(int))  &&  Pipe[m] >= 0  &&
                                     !wrBytes(Pipe[m+1], TBuf, sizeof(TBuf)) )
          close(Pipe[m]),  close(Pipe[m+1]),  Pipe[m] = -1;
       if (SigTerm)
@@ -1055,9 +1122,9 @@ any doWait(any ex) {
 
 // (sync) -> flg
 any doSync(any ex) {
-   if (!Mic[1] || !Hear)
+   if (!Mic || !Hear)
       return Nil;
-   if (write(Mic[1], &Slot, sizeof(int)) != sizeof(int))
+   if (write(Mic, &Slot, sizeof(int)) != sizeof(int))
       writeErr("sync");
    Sync = NO;
    do
@@ -1202,6 +1269,18 @@ any doSkip(any ex) {
    return skip(symChar(name(x)))<0? Nil : mkChar(Chr);
 }
 
+// (eof ['flg]) -> flg
+any doEof(any x) {
+   x = cdr(x);
+   if (!isNil(EVAL(car(x)))) {
+      Chr = -1;
+      return T;
+   }
+   if (!Chr)
+      Env.get();
+   return Chr < 0? T : Nil;
+}
+
 // (from 'any ..) -> sym
 any doFrom(any ex) {
    any x;
@@ -1288,7 +1367,7 @@ any doLine(any ex) {
    if (!Chr)
       Env.get();
    if (Chr < 0)
-      return T;
+      return Nil;
    if (Chr == '\r')
       Env.get();
    if (Chr < 0  ||  Chr == '\n') {
@@ -1561,7 +1640,9 @@ any doPipe(any ex) {
 
    if (pipe(pfd) < 0)
       err(ex, NULL, "Can't pipe");
-   if (isNil(doFork(Nil))) {
+   if ((f.pid = forkLisp(ex)) == 0) {
+      if (isCell(cddr(ex)))
+         setpgid(0,0);
       close(pfd[0]);
       if (pfd[1] != STDOUT_FILENO)
          dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
@@ -1573,7 +1654,7 @@ any doPipe(any ex) {
       return boxCnt(pfd[0]);
    if (!(f.fp = fdopen(pfd[0], "r")))
       openErr(ex, "Read pipe");
-   f.pid = 0;
+   setpgid(f.pid,0);
    pushInFiles(&f);
    x = prog(cddr(ex));
    popInFiles();
@@ -1718,7 +1799,7 @@ any doEcho(any ex) {
 }
 
 /*** Prining ***/
-void putStdout(int c) {putc_unlocked(c, OutFile);}
+void putStdout(int c) {putc_unlocked(c & 0xFF, OutFile);}
 
 void crlf(void) {Env.put('\n');}
 void space(void) {Env.put(' ');}
@@ -1969,7 +2050,7 @@ any doWr(any x) {
 
    x = cdr(x);
    do
-      putc_unlocked(unDig(y = EVAL(car(x))) / 2 & 255, OutFile);
+      putc_unlocked(unDig(y = EVAL(car(x))) / 2 & 0xFF, OutFile);
    while (isCell(x = cdr(x)));
    return y;
 }
@@ -2020,9 +2101,7 @@ static any new64(word2 n, any x) {
          w = w << 8 | c + '0';
       } while (i >>= 6);
    }
-   if (w >> 32)
-      return consNum((word)w, consNum((word)(w >> 32), x));
-   return consNum((word)w, x);
+   return hi(w)? consNum(num(w), consNum(hi(w), x)) :  consNum(num(w), x);
 }
 
 static word2 blk64(any x) {
@@ -2310,10 +2389,45 @@ any doJournal(any ex __attribute__((unused))) {
    return T;
 }
 
+static any mkId(word2 n) {
+   any x, y, *h;
+
+   x = new64(n, Nil);
+   if (y = findHash(x, h = Extern + hash(x)))
+      return y;
+   y = extSym(consSym(Nil,x));
+   *h = cons(y,*h);
+   return y;
+}
+
+// (id 'sym) -> (num . num)
+// (id 'num 'num) -> sym
+any doId(any ex) {
+   any x, y;
+   word2 n;
+   cell c1;
+
+   x = cdr(ex);
+   if (isNum(y = EVAL(car(x)))) {
+      F = unBox(y);
+      x = cdr(x),  y = EVAL(car(x));
+      NeedNum(ex,y);
+      n = (word2)unDig(y);
+      if (isNum(y = cdr(numCell(y))))
+         n = n << 32 + unDig(y);
+      return mkId(n / 2);
+   }
+   NeedExt(ex,y);
+   n = blk64(name(y));
+   Push(c1, boxWord2(n));
+   data(c1) = cons(box(F*2), data(c1));
+   return Pop(c1);
+}
+
 // (seq 'sym1 ['sym2 ['num]]) -> sym | num | NIL
 any doSeq(any ex) {
    adr n, n2, free, p, next;
-   any x, y, z, *h;
+   any x, y;
    byte buf[BLK];
 
    x = cdr(ex),  y = EVAL(car(x));
@@ -2343,14 +2457,8 @@ any doSeq(any ex) {
       blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
       while ((n += BLKSIZE) < next) {
          blkPeek(n << BlkShift[F], buf, BLK),  p = getAdr(buf);
-         if ((p & TAGMASK) == 1) {
-            z = new64(n/BLKSIZE, Nil);
-            if (y = findHash(z, h = Extern + hash(z)))
-               return y;
-            y = extSym(consSym(Nil,z));
-            *h = cons(y,*h);
-            return y;
-         }
+         if ((p & TAGMASK) == 1)
+            return mkId(n/BLKSIZE);
       }
    }
    return Nil;
@@ -2405,6 +2513,17 @@ any doMark(any ex) {
    return Nil;
 }
 
+// (lieu 'any) -> sym | NIL
+any doLieu(any x) {
+   any y;
+
+   x = cdr(x);
+   if (!isExt(x = EVAL(car(x))))
+      return Nil;
+   for (y = tail(x); !isSym(y); y = cdr(cellPtr(y)));
+   return y == At || y == At2? x : Nil;
+}
+
 // (lock ['sym]) -> cnt | NIL
 any doLock(any ex) {
    any x;
@@ -2424,14 +2543,43 @@ any doLock(any ex) {
    return n? boxCnt(n) : Nil;
 }
 
-int dbSize(any sym) {
-   int n = 1;
+static int binSize(any x) {
+   if (isNum(x)) {
+      int n = numBytes(x);
 
-   rdLock();
-   rdBlock(blk64(name(sym))*BLKSIZE);
-   while (BlkLink)
-      ++n,  rdBlock(BlkLink);
-   rwUnlock(1);
+      if (n < 63)
+         return n + 1;
+      return n + 2 + (n - 63) / 255;
+   }
+   else if (isNil(x))
+      return 1;
+   else if (isSym(x))
+      return binSize(name(x));
+   else {
+      any y = x;
+      int n = 2;
+
+      while (n += binSize(car(x)), !isNil(x = cdr(x))) {
+         if (x == y)
+            return n + 1;
+         if (!isCell(x))
+            return n + binSize(x);
+      }
+      return n;
+   }
+}
+
+int dbSize(any ex, any x) {
+   int n;
+
+   db(ex,x,1);
+   n = BLK + 1 + binSize(val(x));
+   for (x = tail(x);  isCell(x);  x = cdr(x)) {
+      if (isSym(car(x)))
+         n += binSize(car(x)) + 2;
+      else
+         n += binSize(cdar(x)) + binSize(caar(x));
+   }
    return n;
 }
 
@@ -2512,7 +2660,7 @@ any doBegin(any x) {
 
             Push(c1, cdr(y));
             Push(c2, car(x));
-            cdr(y) = cons(z, cons(val(car(x)),Nil)),  y = cddr(y);
+            cdr(y) = cons(z, cons(val(car(x)), Nil)),  y = cddr(y);
             for (z = tail(car(x));  isCell(z);  z = cdr(z)) {
                if (!isCell(car(z)))
                   cdr(y) = cons(car(z),Nil);
@@ -2653,7 +2801,7 @@ any doDbck(any x) {
    bool flg;
    int i;
    adr next, p, cnt;
-   word2 blks, syms, offs;
+   word2 blks, syms;
    byte buf[2*BLK];
    cell c1;
 
@@ -2670,7 +2818,7 @@ any doDbck(any x) {
    if ((p = lseek(BlkFile[F], 0, SEEK_END) >> BlkShift[F]) >= BlkSize[F]  &&  p != next)  // Check size
       return mkStr("Size mismatch");
    cnt = BLKSIZE;
-   blks = syms = offs = 0;
+   blks = syms = 0;
    BlkLink = getAdr(buf);  // Check free list
    if (Journal)
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
@@ -2693,7 +2841,6 @@ any doDbck(any x) {
          cnt += BLKSIZE;
          for (i = 2;  BlkLink != 0;  cnt += BLKSIZE) {
             ++blks;
-            offs += labs((long)((BlkLink - BlkIndex) * 64 / next));
             rdBlock(BlkLink);
             if ((Block[0] & TAGMASK) != i)
                return mkStr("Bad chain");
@@ -2715,8 +2862,7 @@ any doDbck(any x) {
       return mkStr("Bad count");
    if (!flg)
       return Nil;
-   Push(c1, boxWord2(offs));
-   data(c1) = cons(boxWord2(syms), data(c1));
+   Push(c1, boxWord2(syms));
    data(c1) = cons(boxWord2(blks), data(c1));
    return Pop(c1);
 }

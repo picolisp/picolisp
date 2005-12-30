@@ -1,4 +1,4 @@
-# 18jun05abu
+# 21dec05abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Agent *Host *Port *Port1 *Sock *MPartLim *MPartEnd *ContLen
@@ -105,7 +105,7 @@
       (catch "http"
          (in S
             (cond
-               ((=T (setq L (line))) (throw "http"))
+               ((not (setq L (line))) (throw "http"))
                ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" . @) L)
                   (_htHead) )
                ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" . @) L)
@@ -133,44 +133,44 @@
                      (and (info "void") (httpEcho "void")) )
                   ((match '("-" @X "." "h" "t" "m" "l") @U)
                      (try 'html> (extern (ht:Pack @X))) )
-                  ((>= '("9") @U '("0"))
+                  ((prog
+                        (setq
+                           L (split @U "?")
+                           @U (car L)
+                           L (mapcan
+                              '((L)
+                                 (ifn (cdr (setq L (split L "=")))
+                                    (cons (htArg (car L)))
+                                    (_htSet (car L) (htArg (cadr L)))
+                                    NIL ) )
+                              (split (cadr L) "&") ) )
+                        (>= '("9") @U '("0")) )
                      (urlN (car @U)) )
-                  (T
-                     (setq
-                        L (split @U "?")
-                        @U (car L)
-                        L (mapcan
-                           '((L)
-                              (ifn (cdr (setq L (split L "=")))
-                                 (cons (htArg (car L)))
-                                 (_htSet (car L) (htArg (cadr L)))
-                                 NIL ) )
-                           (split (cadr L) "&") ) )
-                     (unless (setq *Url (ht:Pack @U))
-                        (setq  *Url (car *Home)  @U (cdr *Home)) )
-                     (cond
-                        ((= '@ (car @U))
-                           (if (and *Allow (not (idx *Allow *Url)))
-                              (prog (msg *Url " not allowed") (http404))
-                              (and *SesId (timeout *Timeout))
-                              (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
-                        ((and *Allow
-                              (not (idx *Allow *Url))
-                              (or
-                                 (sub? ".." *Url)
-                                 (nor
-                                    (and *Tmp (pre? *Tmp *Url))
-                                    (find pre? (cdr *Allow) (circ *Url)) ) ) )
-                           (msg *Url " not allowed")
-                           (http404) )
-                        ((tail '("." "l") @U)
-                           (and *SesId (timeout *Timeout))
-                           (load *Url) )
-                        ((assoc (stem @U ".") *Mimes)
-                           (apply httpEcho (cdr @) *Url) )
-                        ((=T (car (info *Url)))
-                           (load (pack *Url "default")) )
-                        (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) ) )
+                  ((prog
+                        (unless (setq *Url (ht:Pack @U))
+                           (setq  *Url (car *Home)  @U (cdr *Home)) )
+                        (= '@ (car @U)) )
+                     (if (and *Allow (not (idx *Allow *Url)))
+                        (prog (msg *Url " not allowed") (http404))
+                        (and *SesId (timeout *Timeout))
+                        (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
+                  ((and *Allow
+                        (not (idx *Allow *Url))
+                        (or
+                           (sub? ".." *Url)
+                           (nor
+                              (and *Tmp (pre? *Tmp *Url))
+                              (find pre? (cdr *Allow) (circ *Url)) ) ) )
+                     (msg *Url " not allowed")
+                     (http404) )
+                  ((tail '("." "l") @U)
+                     (and *SesId (timeout *Timeout))
+                     (load *Url) )
+                  ((assoc (stem @U ".") *Mimes)
+                     (apply httpEcho (cdr @) *Url) )
+                  ((=T (car (info *Url)))
+                     (load (pack *Url "default")) )
+                  (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) )
       (close S) ) )
 
 (de _htHead ()

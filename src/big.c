@@ -1,4 +1,4 @@
-/* 14jun05abu
+/* 28oct05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,8 +6,6 @@
 
 #define MAX       num(-1)           /* Maximal digit size */
 
-#define lo(t)     num((t) & 0xFFFFFFFF)
-#define hi(t)     num((t) >> 32)
 
 static void divErr(any ex) {err(ex,NULL,"Div/0");}
 
@@ -15,9 +13,7 @@ static void divErr(any ex) {err(ex,NULL,"Div/0");}
 any boxWord2(word2 t) {
    cell c1;
 
-   Push(c1, box(lo(t)));
-   if (hi(t))
-      data(c1) = cons(box(hi(t)), data(c1));
+   Push(c1, hi(t)? consNum(num(t), box(hi(t))) : box(num(t)));
    digMul2(data(c1));
    return Pop(c1);
 }
@@ -238,15 +234,15 @@ static void digMul(any x, word n) {
    any y;
 
    t = (word2)n * unDig(x);
-   setDig(x, lo(t));
+   setDig(x, num(t));
    t = hi(t);
    while (isNum(x = cdr(numCell(y = x)))) {
       t += (word2)n * unDig(x);
-      setDig(x, lo(t));
+      setDig(x, num(t));
       t = hi(t);
    }
    if (t)
-      cdr(numCell(y)) = box(lo(t));
+      cdr(numCell(y)) = box(num(t));
 }
 
 /* (Positive) Bignum comparison */

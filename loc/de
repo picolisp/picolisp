@@ -1,4 +1,4 @@
-# 23jun05abu
+# 14nov05abu
 # (c) Software Lab. Alexander Burger
 
 # lib/db.l
@@ -38,6 +38,7 @@
 "Data not found" "Datensatz nicht gefunden"
 
 # lib/admin.l
+"login" "anmelden"
 "logout" "abmelden"
 "Permission denied" "Keine Berechtigung"
 "Password" "Passwort"

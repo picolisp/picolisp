@@ -1,4 +1,4 @@
-# 12sep05abu
+# 01dec05abu
 # (c) Software Lab. Alexander Burger
 
 (test T (pool (tmp "db")))
@@ -162,5 +162,11 @@
 (test NIL (mark *DB))
 
 # lib.l
+(test '((@ . 1) (@ . 4) (@ . 9) (@ . 16) (@ . 25) (@ . 36))
+   (prog1
+      (mapcan
+         '((N) (later (cons) (cons *Pid (* N N))))
+         (1 2 3 4 5 6) )
+      (wait NIL (not (memq NIL @))) ) )
 (test '((1 a b c) (2 d e f))
    (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f))) )

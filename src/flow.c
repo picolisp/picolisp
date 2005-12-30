@@ -1,4 +1,4 @@
-/* 25sep05abu
+/* 19dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -156,14 +156,18 @@ any doDe(any ex) {
 
 // (dm sym . fun) -> sym
 // (dm (sym . cls) . fun) -> sym
+// (dm (sym sym [. cls]) . fun) -> sym
 any doDm(any ex) {
    any x, y, msg, cls;
 
    x = cdr(ex);
-   if (isCell(car(x)))
-      msg = caar(x),  cls = cdar(x);
-   else
+   if (!isCell(car(x)))
       msg = car(x),  cls = val(Class);
+   else {
+      msg = caar(x);
+      cls = !isCell(cdar(x))? cdar(x) :
+         get(isNil(cddar(x))? val(Class) : cddar(x), cadar(x));
+   }
    if (msg != T)
       redefine(ex, msg, val(Meth));
    if (isSym(cdr(x))) {
@@ -904,18 +908,6 @@ any doWhile(any x) {
    return Pop(c1);
 }
 
-// (whilst 'any . prg) -> any
-any doWhilst(any x) {
-   any cond;
-   cell c1;
-
-   cond = car(x = cdr(x)),  x = cdr(x);
-   Push(c1, Nil);
-   while (isCell(val(At) = EVAL(cond)) || isNil(val(At)))
-      data(c1) = prog(x);
-   return Pop(c1);
-}
-
 // (until 'any . prg) -> any
 any doUntil(any x) {
    any cond;
@@ -924,18 +916,6 @@ any doUntil(any x) {
    cond = car(x = cdr(x)),  x = cdr(x);
    Push(c1, Nil);
    while (isNil(val(At) = EVAL(cond)))
-      data(c1) = prog(x);
-   return Pop(c1);
-}
-
-// (until=T 'any . prg) -> any
-any doUntilT(any x) {
-   any cond;
-   cell c1;
-
-   cond = car(x = cdr(x)),  x = cdr(x);
-   Push(c1, Nil);
-   while ((val(At) = EVAL(cond)) != T)
       data(c1) = prog(x);
    return Pop(c1);
 }
@@ -1018,7 +998,7 @@ any doDo(any x) {
    }
 }
 
-// (at '(num1 . num2) . prg) -> any
+// (at '(cnt1 . cnt2) . prg) -> any
 any doAt(any ex) {
    any x;
 
@@ -1223,8 +1203,12 @@ void brkLoad(any x) {
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At); 
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
       OutSave = OutFile,  OutFile = stdout;
+      if (Env.outFiles)
+         Env.outFiles->fp = stdout;
       print(x), crlf();
       load(NULL, '!', Nil);
+      if (Env.outFiles)
+         Env.outFiles->fp = OutSave;
       OutFile = OutSave;
       val(At) = Brk.bnd[2].val;
       val(Key) = Brk.bnd[1].val;
@@ -1395,15 +1379,6 @@ any doKill(any ex) {
    return kill(pid, isCell(cddr(ex))? (int)evCnt(ex,cddr(ex)) : SIGTERM)? Nil : T;
 }
 
-static void doSigChld(int n __attribute__((unused))) {
-   pid_t pid;
-   int stat;
-
-   while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
-      if (WIFSIGNALED(stat))
-         fprintf(stderr, "%d SIG-%d\n", (int)pid, WTERMSIG(stat));
-}
-
 static int allocPipe(void) {
    int i;
 
@@ -1416,15 +1391,18 @@ static int allocPipe(void) {
    return PSize - 16;
 }
 
-// (fork) -> pid | NIL
-any doFork(any ex) {
-   int n, i, hear[2], tell[2];
+pid_t forkLisp(any ex) {
+   pid_t n;
+   inFrame *inFile;
+   outFrame *outFile;
+   int i, hear[2], tell[2];
+   static int mic[2];
 
    fflush(NULL);
-   if (!Mic[0]) {
-      signal(SIGCHLD, doSigChld);
-      if (pipe(Mic) < 0)
+   if (!Spkr) {
+      if (pipe(mic) < 0)
          pipeError(ex, "open");
+      Spkr = mic[0];
    }
    if (pipe(hear) < 0  ||  pipe(tell) < 0)
       pipeError(ex, "open");
@@ -1433,15 +1411,22 @@ any doFork(any ex) {
       err(ex, NULL, "fork");
    if (n == 0) {
       /* Child Process */
+      for (inFile = Env.inFiles; inFile; inFile = inFile->link)
+         if (inFile->pid > 0)
+            inFile->pid = 0;
+      for (outFile = Env.outFiles; outFile; outFile = outFile->link) 
+         if (outFile->pid > 0)
+            outFile->pid = 0;
       free(Termio),  Termio = NULL;
-      if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(Mic[0]) < 0)
+      if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(mic[0]) < 0)
          pipeError(ex, "close");
       Slot = i;
-      Mic[0] = 0;
+      Spkr = 0;
+      Mic = mic[1];
       for (i = 0; i < PSize; i += 2)
          if (Pipe[i] >= 0)
             close(Pipe[i]), close(Pipe[i+1]);
-      PSize = 0,  free(Pipe);
+      PSize = 0,  free(Pipe),  Pipe = NULL;
       if (Hear)
          close(Hear);
       Hear = hear[0];
@@ -1450,13 +1435,20 @@ any doFork(any ex) {
       Tell = tell[1];
       val(Pid) = boxCnt(getpid());
       run(val(Fork));
-      return Nil;
+      return 0;
    }
    if (close(hear[0]) < 0  ||  close(tell[1]) < 0)
       pipeError(ex, "close");
    Pipe[i] = tell[0];
    Pipe[i+1] = hear[1];
-   return boxCnt(n);
+   return n;
+}
+
+// (fork) -> pid | NIL
+any doFork(any ex) {
+   int n;
+
+   return (n = forkLisp(ex))? boxCnt(n) : Nil;
 }
 
 // (bye 'cnt|NIL)

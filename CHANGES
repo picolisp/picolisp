@@ -1,3 +1,20 @@
+* 30dec05 picoLisp-2.2.1
+   'eof' end-of-file function
+   Changed 'line' EOF return value
+   Deprecated 'whilst' and 'until=T'
+   'read' extended to parse tokens
+   'raw' console mode function
+   'later' multiprocessing function
+   Bug in nested 'fork' and 'pipe'
+   Extended 'gcc' arguments
+   Bug in 'boxWord2()'
+   'id' external symbol function
+   Extended 'dm' syntax for object argument
+   'size' changed to return bytes instead of blocks in DB
+   Executable renamed to "picolisp"
+   'lieu' predicate function
+   Bug in 'compare()'
+
 * 29sep05 picoLisp-2.2.0
    FreeBSD-Port
    B-Trees

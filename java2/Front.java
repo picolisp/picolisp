@@ -1,4 +1,4 @@
-// 27aug05abu
+// 20nov05abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -121,6 +121,7 @@ public class Front extends Pico {
       JComponent f;
       JScrollBar b;
       JPanel panel, flow;
+      Color back, fore;
       String s, font;
       float size;
       Font fnt;
@@ -137,6 +138,7 @@ public class Front extends Pico {
       f = null;
       b = null;
       panel = flow = null;
+      back = fore = null;
       Skip = new Hashtable();
       border = new CompoundBorder(BorderFactory.createRaisedBevelBorder(), new EmptyBorder(6,6,6,6));
       getContentPane().setLayout(gridbag = new GridBagLayout());
@@ -149,6 +151,8 @@ public class Front extends Pico {
             }
             j = k = k2 = 0;
             panel = new JPanel(gridbag);
+            if (back != null)
+               panel.setBackground(back);
             if (s.charAt(0) != '*') {
                panel.setBorder(border);
                if (s.charAt(0) == '/') {
@@ -171,6 +175,8 @@ public class Front extends Pico {
          else if (s.charAt(0) != '-') {
             if (s.charAt(0) == '[') {
                FlowLayout fl = (FlowLayout)(flow = new JPanel()).getLayout();
+               if (back != null)
+                  flow.setBackground(back);
                fl.setAlignment(FlowLayout.LEFT);
                fl.setVgap(0);
                fl.setHgap(0);
@@ -185,6 +191,13 @@ public class Front extends Pico {
                able(f,false);
             else if (s.equals("sync"))
                Sync.addElement(f);
+            else if (s.equals("back")) {
+               back = new Color(getNum());
+               if (panel == null)
+                  getContentPane().setBackground(back);
+            }
+            else if (s.equals("fore"))
+               fore = new Color(getNum());
             else if (s.equals("bCol"))
                f.setBackground(new Color(getNum()));
             else if (s.equals("fCol"))
@@ -206,11 +219,14 @@ public class Front extends Pico {
          s = getStr();
          n = getNum();
          if (s.length() > 0) {
-            f = new JLabel(s, JLabel.LEFT);
+            f = new JLabel(s, n<=0? JLabel.LEFT : JLabel.RIGHT);
+            if (fore != null)
+               f.setForeground(fore);
             fnt = f.getFont();
             f.setFont(fnt.deriveFont(Scale * fnt.getSize()));
             constrain(panel, f, k++, j, 1, 1, 0.0, 1.0,
-                  n==0?  GridBagConstraints.SOUTH : GridBagConstraints.WEST,
+                  n==0?  GridBagConstraints.SOUTH :
+                     n<0?  GridBagConstraints.WEST : GridBagConstraints.EAST,
                   GridBagConstraints.NONE,
                   0, n<=0? 0 : 2 );
          }
@@ -258,6 +274,8 @@ public class Front extends Pico {
                break;
             case 'L':  // Label
                f = new JLabel(getStr());
+               if (fore != null)
+                  f.setForeground(fore);
                break;
             case 'T':  // TextField
                if ((m = getNum()) == 0)         // dx
@@ -304,13 +322,13 @@ public class Front extends Pico {
             6, 0 );
       fld.copyInto(Fields = new JComponent[fld.size()]);
       sb.copyInto(SBars = new JScrollBar[sb.size()]);
+      validate();
 
       if (Dialog == null) {
-         frame().setSize(getPreferredSize());
-         frame().validate();
+         d = getPreferredSize();
+         msg3("siz>", d.width, d.height);
       }
       else {
-         validate();
          Dialog.pack();
          d = Dialog.getToolkit().getScreenSize();
          Rectangle r = Dialog.getBounds();
@@ -769,7 +787,9 @@ class PicoKeyAdapter extends KeyAdapter {
             ev.consume();
             Home.getToolkit().beep();
          }
-         else if (c == KeyEvent.VK_BACK_SPACE || ev.isControlDown())
+         else if (c == KeyEvent.VK_BACK_SPACE)
+            Home.msg2("bs>", Home.Dirty = Ix);
+         else if (ev.isControlDown())
             Home.Dirty = Ix;
          else if (f instanceof JTextComponent)
             ev.consume();

@@ -1,8 +1,8 @@
-# 06sep05abu
+# 24nov05abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Scale *Apps *AppId *AppPort *Top *Lay *Bar *Menu *DlgStk *Help
+# *Scale *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk *Help
 
 (allow "java2/pico.jar")
 
@@ -18,7 +18,7 @@
                      (baseHRef)
                      *SesId
                      Str
-                     (and (args) (pack "?" (pass 'ht:Fmt))) )
+                     (and (args) (pack '? (pass 'ht:Fmt))) )
                   (or Tar (if *Frame "MAIN" "_self")) ) ) ) ) ) )
 
 (de bar (Ttl X Y Prg)
@@ -47,9 +47,9 @@
                (out S (pr (car *InND))) ) ) )
       (task -40000 80000
          (and *Top (ping> *Top)) ) )
-   (prinl "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
+   (prin "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
    (while Lst
-      (prinl ","  *SesId (pop 'Lst)) )
+      (prin ","  *SesId (pop 'Lst)) )
    (prinl "\" WIDTH=" DX " HEIGHT=" DY ">")
    (prinl "<PARAM NAME=\"scl\" VALUE=\"" (format *Scale 2) "\">")
    (prinl "<PARAM NAME=\"rand\" VALUE=\"" (in "/dev/urandom" (rd 7)) "\">")
@@ -129,6 +129,12 @@
       (pass new @)
       (pass new) ) )
 
+(de back (Col)
+   (and Col (pr 'back Col)) )
+
+(de fore (Col)
+   (and Col (pr 'fore Col)) )
+
 (de gui @
    (pr *Lay)
    (cond
@@ -171,7 +177,10 @@
 
 
 (dm T (DX DY Prg . @)
-   (super "Front" '("java2/pico.jar") DX DY)
+   (let X (assoc Prg *Siz)
+      (super "Front" '("java2/pico.jar")
+         (or (cadr X) DX)
+         (or (cddr X) DY) ) )
    (=: init Prg)
    (set This
       (conc
@@ -193,6 +202,12 @@
          (put F 'ix I)
          (init> F) )
       (mapc 'init> (: arrays)) ) )
+
+(dm siz> ()
+   (let X (cons (rd) (rd))
+      (if (assoc (: init) *Siz)
+         (con @ X)
+         (push '*Siz (cons (: init) X)) ) ) )
 
 (dm start> ()
    (super)
@@ -261,8 +276,7 @@
       (if (= "@" (car Url))
          (let S (intern (pack Lang "." (cdr Url)))
             (when (getd S)
-               (prog1 (pack "@" S)
-                  (allow @) ) ) )
+               (prog1 (pack "@" S) (allow @)) ) )
          (let F
             (ifn (member "/" Url)
                (pack Lang "." Url)
@@ -297,6 +311,10 @@
          (ifn (key> F X)
             (beep> This)
             (type> F @) ) ) ) )
+
+(dm bs> ()
+   (let F (get (: fields) (rd))
+      (and (== F (: focus)) (bs> F)) ) )
 
 (dm ret> ()
    (let F (get (: fields) (rd))
@@ -651,17 +669,17 @@
                   (----)
                   (row
                      (quitButton)
-                     (gui 'cnt '(+Mono +Label) '-> "Cnt") ) ) )
+                     (gui 'cnt '(+NumField) "" 9) ) ) )
             (wait NIL (not "Busy"))
             (: rv) ) ) ) )
 
-(de work ()
+(de work (N)
    (when *Top
       (ifn "Busy"
          (throw "busy")
          (with "Busy"
             (set> (: cnt)
-               (format (abs (dec (:: work)))) ) )
+               (abs (dec (:: work) (or N 1))) ) )
          (while (poll (: app))
             (ev> This (: app))
             (or (: app) (throw "busy")) ) ) ) )
@@ -674,6 +692,10 @@
 (dm T @
    (pass extra)
    (pr 'sync) )
+
+(dm bs> ()
+   (=: str (pack (cdr (rot (chop (: str))))))
+   (able> (: home)) )
 
 
 (class +Map +Sync)
@@ -1225,6 +1247,7 @@
    (beep> (: home)) )
 
 (dm key> (C))
+(dm bs> ())
 
 (dm do> "Prg"
    (let "S" (: str)
@@ -2007,6 +2030,12 @@
             (upd> @Chart) ) ) ) )
 
 
+(class +VarChart +Var +Chart)
+
+(dm set> (Val)
+   (super (trim Val)) )
+
+
 (class +ListChart +Chart)
 
 (dm set> (Lst)
@@ -2582,9 +2611,17 @@
 
 (dm key> (C)
    (prog1 (extra C)
-      (set> (pick '((F) (get F 'arr)) (memq This (: home fields)))
-         (cons (pack (: str) @))
-         (cons (pack (: str) @ `(char T)) T) ) ) )
+      ("_sel" (pack (: str) @) (pack (: str) @ `(char T))) ) )
+
+(dm bs> ()
+   (super)
+   ("_sel" (: str) (pack (: str) `(char T))) )
+
+(de "_sel" (Beg End)
+   (let A (pick '((F) (get F 'arr)) (memq This (: home fields)))
+      (if (isa '+Key (get A 'tree 2 (get A 'tree 1)))
+         (set> A Beg End)
+         (set> A (cons Beg) (cons End T)) ) ) )
 
 
 # Chart scroller
@@ -2597,12 +2634,19 @@
 
 (dm key> (C)
    (prog1 (extra C)
-      (let ("S" (pack (: str) @)  "Foo" (: scrl))
-         (with (pick '(("F") (get "F" 'arr)) (memq This (: home fields)))
-            (scrl
-               (if (find '(("D") ("Foo" "S" "D")) (: data))
-                  (index @ (: data))
-                  1 ) ) ) ) ) )
+      ("_scrl" (pack (: str) @)) ) )
+
+(dm bs> ()
+   (super)
+   ("_scrl" (: str)) )
+
+(de "_scrl" ("S")
+   (let "Foo" (: scrl)
+      (with (pick '(("F") (get "F" 'arr)) (memq This (: home fields)))
+         (scrl
+            (if (find '(("D") ("Foo" "S" "D")) (: data))
+               (index @ (: data))
+               1 ) ) ) ) )
 
 
 # DB Query Chart

@@ -1,4 +1,4 @@
-# 22aug05abu
+# 05nov05abu
 # (c) Software Lab. Alexander Burger
 
 # *Url1 *Frame *Meta *Css
@@ -230,7 +230,7 @@
             (let "L" (append "Lst" (cons "N"))
                (<href> (if (== "X" "Pos") "<+>" "[+]")
                   (pack "Url"
-                     "?" (ht:Fmt (cons NIL "L"))
+                     '? (ht:Fmt (cons NIL "L"))
                      "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)
@@ -240,7 +240,7 @@
             (let "L" (append "Lst" (cons (- "N")))
                (<href> (if (== "X" "Pos") "< >" "[ ]")
                   (pack "Url"
-                     "?" (ht:Fmt (cons ("Excl?" "X") "L"))
+                     '? (ht:Fmt (cons ("Excl?" "X") "L"))
                      "#T" (max 1 (- "A" 12)) )
                   "_self" )
                (space)

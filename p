@@ -1,1 +1,1 @@
-exec ${0%/*}/bin/pico ${0%/*}/lib.l @ext.l "$@"
+exec ${0%/*}/bin/picolisp ${0%/*}/lib.l @ext.l "$@"

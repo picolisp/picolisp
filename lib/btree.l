@@ -1,10 +1,14 @@
-# 27sep05abu
+# 10dec05abu
 # (c) Software Lab. Alexander Burger
+
+# *Prune
 
 (mapc undef
    (quote
-      fetch _store _put _del _delR _delL maxKey minKey init step
+      fetch _store _put _del maxKey minKey init step
       scan _scan _nacs iter _iter _reti check ) )
+(mapc zap '(_delR _delL))
+
 
 (de root (Tree)
    (cond
@@ -16,20 +20,21 @@
 
 # Fetch
 (de fetch (Tree Key)
-   (let Node (cdr (root Tree))
+   (let? Node (cdr (root Tree))
+      (and *Prune (idx '*Prune Node T))
       (use R
          (loop
-            (NIL Node)
             (T
                (and
                   (setq R (rank Key (cdr (val Node))))
                   (= Key (car R)) )
                (cddr R) )
-            (setq Node (if R (cadr R) (car (val Node)))) ) ) ) )
+            (NIL
+               (setq Node (if R (cadr R) (car (val Node)))) ) ) ) ) )
 
 # Store
 (de store (Tree Key Val Dbf)
-   (default Dbf 0)
+   (default Dbf (0 . 64))
    (if (atom Tree)
       (let Base (or Tree *DB)
          (_store (or (val Base) (set Base (cons 0)))) )
@@ -37,10 +42,10 @@
          (if (atom (cdr Tree))
             (or
                (get *DB (cdr Tree))
-               (put *DB (cdr Tree) (new Dbf)) )
+               (put *DB (cdr Tree) (new T)) )
             (or
                (get (cddr Tree) (cadr Tree))
-               (put (cddr Tree) (cadr Tree) (new Dbf)) ) )
+               (put (cddr Tree) (cadr Tree) (new T)) ) )
          (_store
             (or
                (get Base (car Tree))
@@ -49,14 +54,15 @@
 
 
 (de _store (Root)
+   (and *Prune (cdr Root) (idx '*Prune @ T))
    (if Val
       (if (cdr Root)
          (when (_put @)
             (touch Base)
-            (con Root (def (new Dbf) (list (cdr Root) @))) )
+            (con Root (def (new (car Dbf)) (list (cdr Root) @))) )
          (touch Base)
          (con Root
-            (def (new Dbf)
+            (def (new (car Dbf))
                (list NIL (cons Key (cons NIL Val))) ) )
          (inc Root) )
       (when (and (cdr Root) (_del @))
@@ -73,28 +79,35 @@
                   (if (cadr R)
                      (when (_put @)
                         (touch Top)
-                        (con X (cons @ (cdr X))) )
+                        (con X (cons @ (cdr X)))
+                        (_splitBt) )
                      (touch Top)
                      (con X
                         (cons (cons Key (cons NIL Val)) (cdr X)) )
                      (touch Base)
-                     (inc Root) ) ) )
+                     (inc Root)
+                     (_splitBt) ) ) )
             ((car V)
                (when (_put @)
                   (touch Top)
-                  (con V (cons @ (cdr V))) ) )
+                  (con V (cons @ (cdr V)))
+                  (_splitBt) ) )
             (T
                (touch Top)
                (con V
                   (cons (cons Key (cons NIL Val)) (cdr V)) )
                (touch Base)
-               (inc Root) ) )
-         (when (= 42 (length V))
-            (set Top (head 21 V))
-            (prog1 (get V 22)
-               (set (cdr @)
-                  (def (new Dbf)
-                     (cons (cadr @) (nth V 23)) ) ) ) ) ) ) )
+               (inc Root)
+               (_splitBt) ) ) ) ) )
+
+(de _splitBt ()
+   (when (and (cddddr (val Top)) (> (size Top) (cdr Dbf)))
+      (let N (>> 1 (length V))
+         (set Top (head N V))
+         (prog1 (get V (inc N))
+            (set (cdr @)
+               (def (new (car Dbf))
+                  (cons (cadr @) (nth V (+ 2 N))) ) ) ) ) ) )
 
 # Del
 (de _del (Top)
@@ -106,24 +119,15 @@
                (set V)
                (not (cdr V)) ) )
          ((= Key (car R))
-            (touch Base)
-            (dec Root)
             (if (cadr R)
-               (use (H P X)
-                  (loop
-                     (setq H Top  P (cdr R))
-                     (while (car (setq X (val (car P))))
-                        (setq H (car P)  P X) )
-                     (touch Top)
-                     (set R (caadr X))
-                     (con (cdr R) (cddr (cadr X)))
-                     (NIL (cadr (cadr X))
-                        (touch (car P))
-                        (unless (con X (cddr X))
-                           (touch H)
-                           (set P) )
-                        NIL )
-                     (setq Top (car P)  R (cadr X)) ) )
+               (let X (val @)
+                  (while (car X) (setq X (val @)))
+                  (touch Top)
+                  (xchg R (cadr X))
+                  (con (cdr R) (cddr (cadr X)))
+                  (and (_del (cadr R)) (set (cdr R))) )
+               (touch Base)
+               (dec Root)
                (nand
                   (or
                      (con V (delq R (cdr V)))
@@ -132,8 +136,7 @@
          ((cadr R)
             (when (_del @)
                (touch Top)
-               (set (cdr R))
-               NIL ) ) ) ) )
+               (set (cdr R)) ) ) ) ) )
 
 # Tree node count
 (de count (Tree)
@@ -253,7 +256,8 @@
          (or (cadr L) (con L (cddr L)))
          (T ((if F > <) (car X) (cdar L)))
          (for (V (cadr X) ((if F val revNode) V) (car @))
-            (con L (cons (cdr @) (cdr L))) )
+            (con L (cons (cdr @) (cdr L)))
+            (wipe V) )
          (NIL (and X F (flg? (fin (car X))))
             (cddr X) ) ) ) )
 
@@ -345,14 +349,25 @@
 
 (====)
 
+(de prune (Done)
+   (for Node (idx '*Prune)
+      (recur (Node)
+         (let? V (val (lieu Node))
+            (if (nor (car V) (find cadr (cdr V)))
+               (wipe Node)
+               (recurse (car V))
+               (for X (cdr V)
+                  (recurse (cadr X))
+                  (wipe (lieu (cddr X))) ) ) ) ) )
+   (setq *Prune (not Done)) )
+
+
 # Check tree structure
 (de check ("Node" "Foo")
    (let ("N" 0  "X")
       (when "Node"
          (recur ("Node")
             (let "V" (val "Node")
-               (unless (>= 41 (length "V"))
-                  (quit "Bad node length" "Node") )
                (let "L" (car "V")
                   (for "Y" (cdr "V")
                      (when "L"

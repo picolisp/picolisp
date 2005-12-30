@@ -1,4 +1,4 @@
-# 25sep05abu
+# 19dec05abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -28,10 +28,15 @@
       (set (cdr @) (+ N))
       (push '*Key (list -1 (+ N) '(bye))) ) )
 
-(====)
-
 (de macro "Prg"
    (run (fill "Prg")) )
+
+(de later ("@Var" . "@Prg")
+   (macro
+      (task (pipe (pr (prog . "@Prg")))
+         (task @)
+         (in @ (setq "@Var" (rd))) ) )
+   "@Var" )
 
 (de recur recurse
    (run (cdr recurse)) )
@@ -107,6 +112,17 @@
       (prinl)
       (flush) )
    X )
+
+(de rc (File Key . @)
+   (let Lst (and (info File) (in File (read)))
+      (ifn (args)
+         (cdr (assoc Key Lst))
+         (let Val (next)
+            (if (assoc Key Lst)
+               (con @ Val)
+               (push 'Lst (cons Key Val)) )
+            (out File (println Lst))
+            Val ) ) ) )
 
 ### List ###
 (de ?push ("Var" "X")
@@ -195,8 +211,8 @@
       (= (cdr Lst) (type (setq *Class (car Lst))))
       (def *Class (cdr Lst)) ) )
 
-(de object ("Sym" "Cls" . @)
-   (set "Sym" "Cls")
+(de object ("Sym" "Typ" . @)
+   (set "Sym" "Typ")
    (while (args)
       (put "Sym" (next) (next)) )
    "Sym" )
@@ -213,9 +229,9 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless whilst while until until=T do case state for
-   with catch finally ! quote setq default push job use let let? recur
-   =: in out ctl new )
+   T NIL if ifn when unless while until do case state for
+   with catch finally ! quote setq default push job use let let?
+   recur later =: in out ctl new )
 
 (de *PP1 let let? for)
 (de *PP2 setq default)

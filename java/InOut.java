@@ -1,4 +1,4 @@
-// 28dec04abu
+// 28oct05abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -249,9 +249,9 @@ public class InOut {
       n = In.read();
       while (--InCount >= 0)
          n |= In.read() << (i += 8);
-      if ((n & 1) != 0)
-         n = -n;
-      return n / 2;
+      i = n & 1;
+      n >>>= 1;
+      return i == 0? n : -n;
    }
 
    // Read string

@@ -1,4 +1,4 @@
-# 27sep05abu
+# 14oct05abu
 # (c) Software Lab. Alexander Burger
 
 # *VisitedKey *VisitedLess *VisitedMore
@@ -24,7 +24,7 @@
 
 # Store
 (de store (Tree Key Val Dbf)
-   (default Dbf 0)
+   (default Dbf (0 . 64))
    (if (atom Tree)
       (let Base (or Tree *DB)
          (_store (or (val Base) (set Base (cons 0)))) )
@@ -32,10 +32,10 @@
          (if (atom (cdr Tree))
             (or
                (get *DB (cdr Tree))
-               (put *DB (cdr Tree) (new Dbf)) )
+               (put *DB (cdr Tree) (new T)) )
             (or
                (get (cddr Tree) (cadr Tree))
-               (put (cddr Tree) (cadr Tree) (new Dbf)) ) )
+               (put (cddr Tree) (cadr Tree) (new T)) ) )
          (_store
             (or
                (get Base (car Tree))
@@ -48,7 +48,7 @@
 
 (de _put (Top)
    (ifn Top
-      (prog1 (new Dbf)
+      (prog1 (new (car Dbf))
          (set @ (cons Key (cons NIL (cons NIL Val))))
          (setq *VisitedKey Key)
          (off *VisitedLess *VisitedMore)

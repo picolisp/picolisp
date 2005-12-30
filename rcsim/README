@@ -1,4 +1,4 @@
-17jan05abu
+10oct05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -62,7 +62,7 @@ started the simulator from, _not_ the Z3d-Client window).
 
 Hitting ENTER at the Pico Lisp prompt (the colon ':') will terminate the
 simulation process and close the Z3d-Client window. As always, you can stop the
-Pico Lisp servers with 'killall pico'.
+Pico Lisp servers with 'killall picolisp'.
 
 
 The simulator runs in the background, so if it is started interactively (see
@@ -112,8 +112,8 @@ produce continuous sound with variable frequency in a Java applet?
 In the Z3d-Client version, a console speaker interface is used, which gives
 better results. As the speaker can be accessed in Linux only from a virtual
 console (not from an X-terminal), log into a virtual console (typically tty1 ..
-tty6) _before_ you start the simulator, change to the 'pico' directory, and run
-the simple tone server:
+tty6) _before_ you start the simulator, change to the installation directory,
+and run the simple tone server:
 
    $ rcsim/tone
 

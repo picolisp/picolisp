@@ -5,8 +5,6 @@ in Programm-Code
    Statt dessen: (+List +Bag) ((+Ref +Link) ..)  <-->  NIL
    oder: (+List +Joint)  <-->  (+Joint)  <-->  (+List +Joint)
 
-Hook in einem Objekt von/nach NIL umsetzen
-
 Gleichzeitiges Iterieren ('step', 'iter', 'scan') und Modifizieren von
 Properties oder Baumstrukturen
 

@@ -1,4 +1,4 @@
-# 09oct04abu
+# 19dec05abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Port (port 6789))
@@ -9,8 +9,8 @@
    (close *Sock) )
 
 (in *Sock
-   (whilst (line)
+   (until (eof)
       (out *Sock
-         (prinl (flip @)) ) ) )
+         (prinl (flip (line))) ) ) )
 
 (bye)

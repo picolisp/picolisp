@@ -1,4 +1,4 @@
-/* 27sep05abu
+/* 19dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -123,6 +123,8 @@ typedef struct catchFrame {
 #define isNeg(x)        (unDig(x) & 1)
 #define pos(x)          (car(numCell(x)) = (any)(unDig(x) & ~1))
 #define neg(x)          (car(numCell(x)) = (any)(unDig(x) ^ 1))
+#define lo(w)           num((w) & 0xFFFFFFFF)
+#define hi(w)           num((w) >> 32)
 
 /* Symbol access */
 #define symPtr(x)       ((any)(num(x)+4))
@@ -188,7 +190,7 @@ typedef struct catchFrame {
 
 /* Globals */
 extern bool SigInt, SigTerm;
-extern int Chr, Mic[2], Slot, Hear, Tell, PSize, *Pipe, Trace;
+extern int Chr, Spkr, Mic, Slot, Hear, Tell, PSize, *Pipe, Trace;
 extern char **AV, *Home;
 extern heap *Heaps;
 extern cell *Avail;
@@ -229,7 +231,7 @@ any consStr(any);
 any consSym(any,any);
 void crlf(void);
 void db(any,any,int);
-int dbSize(any);
+int dbSize(any,any);
 void digAdd(any,word);
 void digDiv2(any);
 void digMul2(any);
@@ -247,6 +249,7 @@ void execError(char*) __attribute__ ((noreturn));
 void extError(any,any) __attribute__ ((noreturn));
 any findHash(any,any*);
 int firstByte(any);
+pid_t forkLisp(any);
 any get(any,any);
 void getStdin(void);
 void giveup(char*) __attribute__ ((noreturn));
@@ -260,6 +263,7 @@ void lstError(any,any) __attribute__ ((noreturn));
 any load(any,int,any);
 any method(any);
 any mkChar(int);
+any mkDat(int,int,int);
 any mkName(char*);
 any mkStr(char*);
 any name(any);
@@ -289,6 +293,7 @@ void putStdout(int);
 any read1(int);
 bool rdBytes(int,byte*,int);
 int secondByte(any);
+void setCooked(void);
 void setRaw(void);
 int slow(int,byte*,int);
 void space(void);
@@ -387,6 +392,7 @@ any doDo(any);
 any doE(any);
 any doEcho(any);
 any doEnv(any);
+any doEof(any);
 any doEq(any);
 any doEqual(any);
 any doEqual0(any);
@@ -420,6 +426,7 @@ any doHeap(any);
 any doHear(any);
 any doHide(any);
 any doHost(any);
+any doId(any);
 any doIdx(any);
 any doIf(any);
 any doIfn(any);
@@ -438,6 +445,7 @@ any doLe(any);
 any doLength(any);
 any doLet(any);
 any doLetQ(any);
+any doLieu(any);
 any doLine(any);
 any doLines(any);
 any doLink(any);
@@ -532,6 +540,7 @@ any doQuit(any);
 any doQuote(any);
 any doRand(any);
 any doRank(any);
+any doRaw(any);
 any doRd(any);
 any doRead(any);
 any doRem(any);
@@ -586,7 +595,6 @@ any doType(any);
 any doUnify(any);
 any doUnless(any);
 any doUntil(any);
-any doUntilT(any);
 any doUppQ(any);
 any doUppc(any);
 any doUse(any);
@@ -594,7 +602,6 @@ any doVal(any);
 any doWait(any);
 any doWhen(any);
 any doWhile(any);
-any doWhilst(any);
 any doWipe(any);
 any doWith(any);
 any doWr(any);
@@ -611,12 +618,16 @@ static inline long unBox(any x) {
 static inline any boxCnt(long n) {return box(n>=0?  n*2 : -n*2+1);}
 
 /* List element access */
-static inline any nth(int n, any x) {
-   if (--n < 0)
-      return Nil;
+static inline any nCdr(int n, any x) {
    while (--n >= 0)
       x = cdr(x);
    return x;
+}
+
+static inline any nth(int n, any x) {
+   if (--n < 0)
+      return Nil;
+   return nCdr(n,x);
 }
 
 static inline any getn(any x, any y) {

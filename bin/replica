@@ -1,5 +1,5 @@
-#!bin/pico lib.l
-# 30aug05abu
+#!bin/picolisp lib.l
+# 10oct05abu
 # Use: bin/replica <dbFile> <port> <keyFile> [<journal>]
 #    : bin/ssl <host> 443 <port>/@replica <keyFile> <journal> 60
 

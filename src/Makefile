@@ -1,4 +1,4 @@
-# 01sep05abu
+# 09oct05abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -6,9 +6,9 @@
 bin = ../bin
 lib = ../lib
 
-# all: pico gate x11
+# all: picolisp gate x11
 
-pico: $(bin)/pico $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2 $(bin)/balance
+picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2 $(bin)/balance
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
 
@@ -24,11 +24,11 @@ picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 
-$(bin)/pico: $(picoFiles:.c=.o)
+$(bin)/picolisp: $(picoFiles:.c=.o)
 	mkdir -p $(bin) $(lib) ../tmp ../fifo
-	echo "  " link pico:
-	gcc  -rdynamic  -o $(bin)/pico  $(picoFiles:.c=.o)  -lc -lm -ldl
-	strip $(bin)/pico
+	echo "  " link picolisp:
+	gcc  -rdynamic  -o $(bin)/picolisp  $(picoFiles:.c=.o)  -lc -lm -ldl
+	strip $(bin)/picolisp
 
 $(lib)/ext: ext.o
 	echo "  " link ext:

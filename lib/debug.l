@@ -1,4 +1,4 @@
-# 26sep05abu
+# 27dec05abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -131,9 +131,17 @@
    (or
       (atom (car Lst))
       (num? (caar Lst))
-      (=T (caar Lst))
+      (flg? (caar Lst))
       (== '! (caar Lst))
       (set Lst (cons '! (car Lst))) ) )
+
+(de _dbg2 (Lst)
+   (map
+      '((L)
+         (if (and (pair (car L)) (flg? (caar L)))
+            (map _dbg (cdar L))
+            (_dbg L) ) )
+      Lst ) )
 
 (de dbg (Lst)
    (when (pair Lst)
@@ -148,15 +156,16 @@
          (quote
             (when (fun? Lst)
                (map _dbg (cdr Lst)) ) )
-         ((for job use let let? recur)
+         ((job use let let? recur)
             (map _dbg (cdr Lst)) )
-         ((loop do)
-            (map
-               '((L)
-                  (if (and (pair (car L)) (or (=T (caar L)) (not (caar L))))
-                     (map _dbg (cdar L))
-                     (_dbg L) ) )
-               Lst ) )
+         (loop
+            (_dbg2 Lst) )
+         (do
+            (_dbg Lst)
+            (_dbg2 (cdr Lst)) )
+         (for
+            (and (pair (car Lst)) (map _dbg (cdar Lst)))
+            (_dbg2 (cdr Lst)) )
          (T (map _dbg Lst)) )
       T ) )
 
@@ -260,13 +269,16 @@
 (de *NoTrace
    @ @@ @@@
    pp show more led
-   stat what who can dep ed d e debug u unbug trace untrace )
+   stat what who can dep d e debug u unbug trace untrace )
 
-(de traceAll ()
+(de traceAll (Excl)
    (let *Dbg NIL
       (all
          '(("X")
-            (unless (memq "X" *NoTrace)
+            (or
+               (memq "X" Excl)
+               (memq "X" *NoTrace)
+               (= `(char "*") (char "X"))
                (cond
                   ((= `(char "+") (char "X"))
                      (mapc trace

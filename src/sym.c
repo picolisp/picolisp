@@ -1,4 +1,4 @@
-/* 29aug05abu
+/* 27dec05abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -153,13 +153,15 @@ any doFunQ(any x) {
       return Nil;
    if (isNum(x))
       return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : x;
-   for (y = cdr(x); isCell(y) && y != x; y = cdr(y));
+   for (y = cdr(x); isCell(y) && y != x; y = cdr(y))
+      if (!isCell(car(y)) && !isNil(cdr(y)))
+         return Nil;
    if (!isNil(y))
       return Nil;
    if (isNil(x = car(x)))
       return T;
-   for (y = x; isCell(y); y = cdr(y))
-      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T)
+   for (y = x; isCell(y);)
+      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T || x==(y=cdr(y)))
          return Nil;
    return isSym(y) && y!=T? x : Nil;
 }
@@ -178,7 +180,7 @@ any doIntern(any ex) {
    return x;
 }
 
-// (extern 'sym) -> sym|NIL
+// (extern 'sym) -> sym | NIL
 any doExtern(any ex) {
    int c, i;
    any x, y, *h, nm;

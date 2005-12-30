@@ -1,4 +1,4 @@
-# 03aug05abu
+# 21nov05abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Perms
@@ -16,20 +16,14 @@
    (upd> (: home msg))
    (and *Bar (upd> *Bar)) )
 
-(de pwForm Prg
-   (form '(+Form) 400 150
+(de pwForm (Back Fore . Prg)
+   (form '(+Form) 300 120
       (append
+         (list (list 'back Back) (list 'fore Fore))
          (quote
             (gui 'nm '(+TextField) ,"Name" 20)
-            (gui 'pw '(+Chk +End +PwField)
-               '(let? Nm (val> (: home nm))
-                  (unless (login Nm (val> (: home pw)))
-                     (msg *Pid " ?! " Nm)
-                     ,"Permission denied" ) )
-               '(when (val> (: home nm))
-                  (msg *Pid " * " (stamp) " " @)
-                  (upd> (: home msg))
-                  (and *Bar (upd> *Bar)) )
+            (gui 'pw '(+End +PwField)
+               '(act> (: home login))
                ,"Password" 20 ) )
          (and Prg (cons '(-|-) Prg))
          (quote
@@ -39,8 +33,17 @@
                   (and *Login
                      (pack "'" (get *Login 'nm) ,"' logged in") ) )
                "" "    " )
-            (gui '(+Able +Button) '*Login "" ,"logout"
-               '(logout) ) ) ) ) )
+            (----)
+            (row
+               (gui 'login '(+Button) "" ,"login"
+                  '(if (login (: home nm str) (: home pw str))
+                     (prog
+                        (msg *Pid " * " (stamp) " " (: home nm str))
+                        (upd> (: home msg))
+                        (and *Bar (upd> *Bar)) )
+                     (msg *Pid " ?! " (val> (: home nm)))
+                     (set> (: home msg) ,"Permission denied") ) )
+               (gui '(+Able +Button) '*Login "" ,"logout" '(logout)) ) ) ) ) )
 
 
 ### Role ###
@@ -53,6 +56,27 @@
 (dm url> ()
    (and (may RoleAdmin) (pack "lib/role.l?*ID=" (ht:Fmt This))) )
 
+(de roleForm (Back Fore)
+   (form '(+ObjForm) '(+Role) *ID 600 400
+      (append
+         (list (list 'back Back) (list 'fore Fore))
+         (quote
+            (row
+               (gui '(+E/R +TextField) '(nm : home obj) ,"Name" 40)
+               (stepButton 'nm '+Role) )
+            (---- NIL)
+            (gui '(+E/R +Array) '(perm : home obj) ,"Permissions" 4
+               '((S) (gui '(+Checkbox) (val S)))
+               *Perms
+               '((L) (mapcar '((S) (memq S L)) *Perms))
+               '((L) (mapcan '((F S) (and F (cons S))) L *Perms)) )
+            (---- T)
+            (gui '(+E/R +ListChart) '(usr : home obj)
+               6 (list ,"User")
+               '((gui '(+Obj +TextField) '(nm +User) "" 30)) )
+            (----)
+            (row (choButton '(choRole)) (delButton)) ) ) ) )
+
 
 ### User ###
 (class +User +Entity)
@@ -63,6 +87,28 @@
 
 (dm url> ()
    (and (may UserAdmin) (pack "lib/user.l?*ID=" (ht:Fmt This))) )
+
+(de userForm (Back Fore)
+   (form '(+ObjForm) '(+User) *ID 500 150
+      (append
+         (list (list 'back Back) (list 'fore Fore))
+         (quote
+            (row
+               (gui '(+E/R +TextField) '(nm : home obj)  ,"Name" 20)
+               (stepButton 'nm '+User) )
+            (---- NIL)
+            (if (may Password)
+               (gui '(+E/R +Rsa +Mono +TextField)
+                  '(pw : home obj)
+                  ,"Password" 12 )
+               (txt ,"Password" "----") )
+            (gui '(+Able +E/R +Obj +TextField)
+               '(may RoleAdmin)
+               '(role : home obj)
+               '(nm +Role)
+               ,"Role" 40 )
+            (----)
+            (row (choButton '(choUser)) (delButton)) ) ) ) )
 
 
 ### Permission management ###

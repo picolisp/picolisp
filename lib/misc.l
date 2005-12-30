@@ -1,4 +1,4 @@
-# 01sep05abu
+# 01dec05abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -426,19 +426,19 @@
       (char (+ C `(char "0"))) ) )
 
 ### System ###
-(de gcc (S . @)
+(de gcc (S L . @)
    (out (tmp S ".c")
       (prinl "#include \"../../src/pico.h\"")
       (here "/**/") )
-   (call "gcc" "-o" (tmp S)
+   (apply call L 'gcc "-o" (tmp S)
       "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
       "-O" "-falign-functions" "-fomit-frame-pointer"
       "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
       "-Wuninitialized" "-Wstrict-prototypes"
-      "-pipe" (tmp S ".c") )
+      "-pipe" "-D_GNU_SOURCE" "-D_FILE_OFFSET_BITS=64" (tmp S ".c") )
    (while (args)
       (def (next) (tmp S ': (arg))) ) )
 
-(de test ("Val" . "Prg")
-   (unless (= "Val" (run "Prg"))
+(de test ("Pat" . "Prg")
+   (unless (match "Pat" (run "Prg"))
       (println 'fail "Prg") ) )

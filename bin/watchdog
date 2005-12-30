@@ -1,5 +1,5 @@
-#!bin/pico lib.l
-# 06sep05abu
+#!bin/picolisp lib.l
+# 10oct05abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -29,7 +29,7 @@
             ((not X) (bye))
             ((num? X)
                (del (assoc X *Watch) '*Watch) )
-            ((atom X)  # bin/pico -"out 'fifo/beat (pr '$(tty))" -bye
+            ((atom X)  # bin/picolisp -"out 'fifo/beat (pr '$(tty))" -bye
                (let D (+ (time T) (* 86400 (date T)))
                   (out X
                      (for W *Watch

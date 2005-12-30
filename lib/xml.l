@@ -1,4 +1,4 @@
-# 11jan05abu
+# 23dec05abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -35,34 +35,36 @@
       (_xml (till " /<>" T)) ) )
 
 (de _xml (Tok)
-   (use X
-      (make
-         (link (intern Tok))
-         (let L
-            (make
-               (loop
-                  (NIL (skip))
-                  (T (member @ '`(chop "/>")))
-                  (NIL (setq X (intern (till "=" T))))
-                  (char)
-                  (unless (= "\"" (char))
-                     (quit "XML parse error" X) )
-                  (link (cons X (pack (xmlEsc (till "\"")))))
-                  (char) ) )
-            (if (= "/" (char))
-               (prog (char) (and L (link L)))
-               (link L)
-               (loop
-                  (NIL (skip))
-                  (T (and (= "<" (setq X (char))) (= "/" (peek)))
+   (if (= "!--" Tok)
+      (nil (from "-->"))
+      (use X
+         (make
+            (link (intern Tok))
+            (let L
+               (make
+                  (loop
+                     (NIL (skip))
+                     (T (member @ '`(chop "/>")))
+                     (NIL (setq X (intern (till "=" T))))
                      (char)
-                     (unless (= Tok (till " /<>" T))
-                        (quit "Unbalanced XML" Tok) )
-                     (char) )
-                  (if (= "<" X)
-                     (and (_xml (till " /<>" T)) (link @))
-                     (link
-                        (pack (xmlEsc (trim (cons X (till "^J/<>"))))) ) ) ) ) ) ) ) )
+                     (unless (= "\"" (char))
+                        (quit "XML parse error" X) )
+                     (link (cons X (pack (xmlEsc (till "\"")))))
+                     (char) ) )
+               (if (= "/" (char))
+                  (prog (char) (and L (link L)))
+                  (link L)
+                  (loop
+                     (NIL (skip))
+                     (T (and (= "<" (setq X (char))) (= "/" (peek)))
+                        (char)
+                        (unless (= Tok (till " /<>" T))
+                           (quit "Unbalanced XML" Tok) )
+                        (char) )
+                     (if (= "<" X)
+                        (and (_xml (till " /<>" T)) (link @))
+                        (link
+                           (pack (xmlEsc (trim (cons X (till "^J/<>"))))) ) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
    (use (@A @X @Z)

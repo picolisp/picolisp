@@ -1,5 +1,5 @@
-#!bin/pico lib.l
-# 30dec04abu
+#!bin/picolisp lib.l
+# 10nov05abu
 # (c) Software Lab. Alexander Burger
 
 # Must be run on a virtual console
@@ -7,8 +7,9 @@
 (load "lib/misc.l")
 
 ### 'ioctl' glue function
-(gcc "tst" 'tone)
+(gcc "tst" NIL 'tone)
 
+#include <sys/ioctl.h>
 #include <linux/kd.h> // KIOCSOUND
 
 // (tone 'freq) -> flg

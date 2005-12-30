@@ -1,4 +1,4 @@
-28sep05abu
+21oct05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -24,8 +24,9 @@ Please follow these steps:
    $ cd picoLisp-XXX
 
 3. Compile the Pico Lisp interpreter
+   (in case of FreeBSD, remove "-ldl" in "src/Makefile")
 
-   $ (cd src; make pico)
+   $ (cd src; make picolisp)
 
 
          Invocation

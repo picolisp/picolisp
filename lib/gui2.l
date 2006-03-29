@@ -1,8 +1,8 @@
-# 24nov05abu
+# 11mar06abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
-# *Scale *Apps *AppId *AppPort *Top *Lay *Siz *Bar *Menu *DlgStk *Help
+# *Scale *Apps *AppId *AppPort *Top *Lay *Siz *Bar *DlgStk *Help
 
 (allow "java2/pico.jar")
 
@@ -28,11 +28,11 @@
 
 
 (class +Applet)
-# url app outN
+# url app outN menu
 
 (dm T (A Lst DX DY . @)
    (unless *Apps
-      (setq *AppId 1)
+      (one *AppId)
       (task (port *APorts '*AppPort)
          (let? S (accept @)
             (ifn
@@ -101,7 +101,7 @@
    (=: outN (rd)) )
 
 (dm cmd> ()
-   (eval (nth *Menu (rd) 3)) )
+   (eval (nth (: menu) (rd) 3)) )
 
 (dm beep> ()
    (when (: app)
@@ -116,7 +116,7 @@
    (when (: app)
       (out @
          (pr 'menu Ttl (length Lst))
-         (for L (setq *Menu Lst)
+         (for L (=: menu Lst)
             (pr (car L) (eval (cadr L))) ) ) ) )
 
 
@@ -141,7 +141,7 @@
       ((pair (next)) (pass new @))
       ((and (not (: fields)) (get *Top (arg)))
          (quit "gui conflict" (arg)) )
-      (T (put *Top (arg) (pass new (next)))) )
+      (T (put *Top (arg) (pass new))) )
    (setq *Lay '+) )
 
 (de txt @
@@ -268,7 +268,7 @@
    (when (: app)
       (out @
          (pr 'menu (get F 'ix) Ttl (length Lst))
-         (for L (setq *Menu Lst)
+         (for L (=: menu Lst)
             (pr (car L) (eval (cadr L))) ) ) ) )
 
 (dm help> ()
@@ -2091,9 +2091,9 @@
       (pass new! "Typ")
       (and (dlg> (put *Top 'rv @)) (eval @)) ) )
 
-(de newUrl ("Typ" . @)
+(de newUrl @
    (prog1
-      (pass new! "Typ")
+      (pass new!)
       (url (url> (put *Top 'rv @))) ) )
 
 (de <id> (Ttl . Lst)
@@ -2339,8 +2339,8 @@
 
 (dm set> (Val)
    (when (eval (: erObj))
-      (put!> @ (: erVar) Val)
-      (extra Val) ) )
+      (put!> @ (: erVar) Val) )
+   (extra Val) )
 
 (dm chk> ()
    (or
@@ -2716,3 +2716,5 @@
    (out (list "bin/lat1" (setq "Nm" (tmp "Nm" ".txt")))
       (run "Prg") )
    (url "Nm") )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

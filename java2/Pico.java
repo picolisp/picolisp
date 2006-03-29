@@ -1,4 +1,4 @@
-// 29jul05abu
+// 10jan06abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -44,6 +44,7 @@ public class Pico extends JApplet {
       } );
       try {
          Sock = new Socket(Host, port);
+         Sock.setTcpNoDelay(true);
          IO = new InOut(Sock.getInputStream(), Sock.getOutputStream());
          IO.print(sid);
          if (id != 0) {

@@ -1,0 +1,19 @@
+# 01feb06abu
+# (c) Software Lab. Alexander Burger
+
+"Language" "言語"
+
+# lib/db.l
+
+# lib/gui.l
+
+# lib/admin.l
+"login" "ログイン"
+"logout" "ログアウト"
+"Permission denied" "認証できません"
+"Name" "名前"
+"Password" "パスワード"
+"' logged in" "' ログインしました"
+"Role" "分野"
+"User" "ユーザー"
+"Permissions" "許可"

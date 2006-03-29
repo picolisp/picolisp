@@ -1,8 +1,8 @@
-# 27may05abu
+# 04feb06abu
 # (c) Software Lab. Alexander Burger
 # ./p dbg.l misc/uhr.l -go
 
-(load "lib/http.l" "lib/html.l" "lib/gui.l")
+(load "lib/http.l" "lib/html.l" "lib/gui2.l")
 
 (de uhr ()
    (app)

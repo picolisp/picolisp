@@ -1,4 +1,4 @@
-/* 27dec05abu
+/* 20feb06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -488,6 +488,18 @@ any doOff(any ex) {
    return Nil;
 }
 
+// (onOff sym ..) -> flg
+any doOnOff(any ex) {
+   any x = cdr(ex);
+   any y;
+
+   do {
+      NeedSym(ex,car(x));
+      y = val(car(x)) = isNil(val(car(x)))? T : Nil;
+   } while (isCell(x = cdr(x)));
+   return y;
+}
+
 // (zero sym ..) -> 0
 any doZero(any ex) {
    any x = cdr(ex);
@@ -496,6 +508,16 @@ any doZero(any ex) {
       val(car(x)) = Zero;
    } while (isCell(x = cdr(x)));
    return Zero;
+}
+
+// (one sym ..) -> 1
+any doOne(any ex) {
+   any x = cdr(ex);
+   do {
+      NeedSym(ex,car(x));
+      val(car(x)) = One;
+   } while (isCell(x = cdr(x)));
+   return One;
 }
 
 // (default sym 'any ..) -> any
@@ -1048,7 +1070,10 @@ any doPutl(any ex) {
    while (isCell(cdr(x)))
       cdr(x) = cddr(x);
    for (y = data(c2);  isCell(y);  y = cdr(y))
-      cdr(x) = cons(car(y),cdr(x)),  x = cdr(x);
+      if (!isCell(car(y)))
+         cdr(x) = cons(car(y),cdr(x)),  x = cdr(x);
+      else if (!isNil(caar(y)))
+         cdr(x) = cons(caar(y)==T? cdar(y) : car(y), cdr(x)),  x = cdr(x);
    drop(c1);
    return data(c2);
 }

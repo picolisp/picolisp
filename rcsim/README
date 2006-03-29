@@ -1,4 +1,4 @@
-10oct05abu
+31dec05abu
 (c) Software Lab. Alexander Burger
 
 
@@ -84,13 +84,14 @@ avoid terminating the interpreter:
 :
 
 
-The simulator is controlled by the following 8 keys:
+The simulator is controlled by the following 10 keys:
 
 - The cursor (arrow) keys UP and DOWN control the elevator
 - The LEFT and RIGHT cursor keys control the combined rudder/ailerons
 - The HOME key sets full throttle
 - The END key turns the engine off
 - PAGE UP/DOWN increase/decrease the throttle
+- INS/DEL zoom in/out
 
 For a first flight, just hit the HOME key as the plane sits waiting on the
 runway, and watch it accelerate. After some time, when it starts to jump a bit

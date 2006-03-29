@@ -1,4 +1,4 @@
-# 15mar05abu
+# 10feb06abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -22,10 +22,11 @@
                      (prinl)
                      (for "X" (sort (getl "S"))
                         ("loc" "X")
+                        (space 3)
                         (if (atom "X")
                            (println "X" T)
                            (printsp (cdr "X"))
-                           (pretty (setq "X" (car "X")))
+                           (pretty (setq "X" (car "X")) -3)
                            (cond
                               ((type "X")
                                  (prin "  # ")
@@ -35,7 +36,8 @@
                            (prinl) ) )
                      (prinl)
                      (println '(********))
-                     (prinl) ) ) ) )
+                     (prinl) ) ) )
+            (prinl "# vim:syntax=picolisp:ts=3:sw=3:expandtab") )
          (call 'vim
             "+set iskeyword=@,33-34,36-38,42-90,92,94-95,97-125"
             "+map ^] yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
@@ -61,3 +63,5 @@
       ((pair "X")
          ("loc" (car "X"))
          ("loc" (cdr "X")) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

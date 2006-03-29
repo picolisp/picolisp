@@ -1,4 +1,4 @@
-# 28may05abu
+# 01feb06abu
 # (c) Software Lab. Alexander Burger
 
 ### Plain HTML GUI (Preliminary, experimental) ###
@@ -1222,9 +1222,9 @@
 
 
 ### DB GUI ###
-(de newUrl ("Typ" . @)
+(de newUrl @
    (prog1
-      (pass new! "Typ")
+      (pass new!)
       (url (url> @)) ) )
 
 (de <id> (Ttl . Lst)
@@ -1559,3 +1559,5 @@
    (=: beg Beg)
    (=: end End)
    (put> This) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

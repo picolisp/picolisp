@@ -1,4 +1,4 @@
-# 14oct05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 # *VisitedKey *VisitedLess *VisitedMore
@@ -292,3 +292,5 @@
                   (recurse (caddr "V")) ) )
             (wipe "Node") ) )
       "N" ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

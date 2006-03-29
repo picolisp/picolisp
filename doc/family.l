@@ -1,4 +1,4 @@
-# 19dec05abu
+# 14jan06abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/html.l" "lib/gui2.l" "lib/ps.l")
@@ -261,3 +261,5 @@
 (de go ()
    (rollback)
    (server 8080 "@person") )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

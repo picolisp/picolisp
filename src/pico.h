@@ -1,4 +1,4 @@
-/* 19dec05abu
+/* 13mar06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,7 +31,6 @@
 
 #define CELLS     (1024*1024/sizeof(cell))   // Heap allocation unit 1MB
 #define HASH      4999                       // Hash table size (should be prime)
-#define BNDSKIP   0x10000                    // Bind frame skip offset
 #define TOP       0x10000                    // Character Top
 
 typedef unsigned long word;
@@ -55,7 +54,7 @@ typedef struct heap {
 
 typedef struct bindFrame {
    struct bindFrame *link;
-   int cnt;
+   int i, cnt;
    struct {any sym; any val;} bnd[1];
 } bindFrame;
 
@@ -157,7 +156,7 @@ typedef struct catchFrame {
 #define Tuck(c1,c2,x)   (data(c1)=(x), (c1).cdr=(c2).cdr, (c2).cdr=&(c1))
 #define Pop(c)          (drop(c), data(c))
 
-#define Bind(s,f)       ((f).cnt=1, (f).bnd[0].sym=(s), (f).bnd[0].val=val(s), (f).link=Env.bind, Env.bind=&(f))
+#define Bind(s,f)       ((f).i=0, (f).cnt=1, (f).bnd[0].sym=(s), (f).bnd[0].val=val(s), (f).link=Env.bind, Env.bind=&(f))
 #define Unbind(f)       (val((f).bnd[0].sym)=(f).bnd[0].val, Env.bind=(f).link)
 
 /* Predicates */
@@ -199,10 +198,10 @@ extern catchFrame *CatchPtr;
 extern struct termios *Termio;
 extern FILE *InFile, *OutFile;
 extern any TheKey, TheCls;
-extern any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
+extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
+extern any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -230,6 +229,7 @@ any consNum(word,any);
 any consStr(any);
 any consSym(any,any);
 void crlf(void);
+void ctOpen(any,any,ctlFrame*);
 void db(any,any,int);
 int dbSize(any,any);
 void digAdd(any,word);
@@ -288,8 +288,12 @@ void print(any);
 void prn(long);
 void protError(any,any) __attribute__ ((noreturn));
 void protect(bool);
+void pushInFiles(inFrame*);
+void pushOutFiles(outFrame*);
+void pushCtlFiles(ctlFrame*);
 any put(any,any,any);
 void putStdout(int);
+void rdOpen(any,any,inFrame*);
 any read1(int);
 bool rdBytes(int,byte*,int);
 int secondByte(any);
@@ -306,6 +310,7 @@ void unwind (catchFrame*);
 void varError(any,any) __attribute__ ((noreturn));
 long waitFd(any,int,long);
 bool wrBytes(int,byte*,int);
+void wrOpen(any,any,outFrame*);
 long xCnt(any,any);
 any xSym(any);
 void zapZero(any);
@@ -429,6 +434,7 @@ any doHost(any);
 any doId(any);
 any doIdx(any);
 any doIf(any);
+any doIf2(any);
 any doIfn(any);
 any doIn(any);
 any doInc(any);
@@ -503,6 +509,8 @@ any doNumQ(any);
 any doOff(any);
 any doOffset(any);
 any doOn(any);
+any doOne(any);
+any doOnOff(any);
 any doOpen(any);
 any doOpt(any);
 any doOr(any);
@@ -510,6 +518,7 @@ any doOut(any);
 any doPack(any);
 any doPair(any);
 any doPass(any);
+any doPath(any);
 any doPatQ(any);
 any doPeek(any);
 any doPick(any);
@@ -535,6 +544,7 @@ any doProve(any);
 any doPush(any);
 any doPut(any);
 any doPutl(any);
+any doPwd(any);
 any doQueue(any);
 any doQuit(any);
 any doQuote(any);
@@ -550,6 +560,7 @@ any doReverse(any);
 any doRewind(any);
 any doRollback(any);
 any doRot(any);
+any doRpc(any);
 any doRun(any);
 any doSeed(any);
 any doSeek(any);
@@ -595,6 +606,7 @@ any doType(any);
 any doUnify(any);
 any doUnless(any);
 any doUntil(any);
+any doUp(any);
 any doUppQ(any);
 any doUppc(any);
 any doUse(any);

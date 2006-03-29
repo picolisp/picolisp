@@ -1,4 +1,4 @@
-# 01dec05abu
+# 13mar06abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -18,12 +18,12 @@
 (de *MonFmt January February March April May June July August September October November December)
 (de *Help "loc/help/en.l")
 
-(de locale (Ctry Lang Dir)  # "DE" "de" ["app/loc/"]
-   (load (if (setq *Ctry Ctry) (pack "loc/" @) "loc/NIL"))
+(de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
+   (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
    (ifn (setq *Lang Lang)
       (for "S" *Uni (set "S" "S"))
-      (locStr (pack "loc/" Lang))
-      (and Dir (locStr (pack Dir Lang))) ) )
+      (locStr (pack "@loc/" Lang))
+      (and App (locStr (pack App Lang))) ) )
 
 (de locStr (F)
    (in F
@@ -291,11 +291,10 @@
 
 # Last day of month
 (de ultimo (Y M)
-   (-
+   (dec
       (if (= 12 M)
          (date (inc Y) 1 1)
-         (date Y (inc M) 1) )
-      1 ) )
+         (date Y (inc M) 1) ) ) )
 
 ### Time ###
 (de tim$ (Tim F)
@@ -428,7 +427,7 @@
 ### System ###
 (de gcc (S L . @)
    (out (tmp S ".c")
-      (prinl "#include \"../../src/pico.h\"")
+      (chdir '@ (prinl "#include \"" (pwd) "/src/pico.h\""))
       (here "/**/") )
    (apply call L 'gcc "-o" (tmp S)
       "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
@@ -442,3 +441,5 @@
 (de test ("Pat" . "Prg")
    (unless (match "Pat" (run "Prg"))
       (println 'fail "Prg") ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

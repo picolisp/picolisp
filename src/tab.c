@@ -1,4 +1,4 @@
-/* 19dec05abu
+/* 13mar06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -126,6 +126,7 @@ static symInit Symbols[] = {
    {doId, "id"},
    {doIdx, "idx"},
    {doIf, "if"},
+   {doIf2, "if2"},
    {doIfn, "ifn"},
    {doIn, "in"},
    {doInc, "inc"},
@@ -199,6 +200,8 @@ static symInit Symbols[] = {
    {doOff, "off"},
    {doOffset, "offset"},
    {doOn, "on"},
+   {doOne, "one"},
+   {doOnOff, "onOff"},
    {doOpen, "open"},
    {doOpt, "opt"},
    {doOr, "or"},
@@ -206,6 +209,7 @@ static symInit Symbols[] = {
    {doPack, "pack"},
    {doPair, "pair"},
    {doPass, "pass"},
+   {doPath, "path"},
    {doPatQ, "pat?"},
    {doPeek, "peek"},
    {doPick, "pick"},
@@ -231,6 +235,7 @@ static symInit Symbols[] = {
    {doPush, "push"},
    {doPut, "put"},
    {doPutl, "putl"},
+   {doPwd, "pwd"},
    {doQueue, "queue"},
    {doQuit, "quit"},
    {doRand, "rand"},
@@ -245,6 +250,7 @@ static symInit Symbols[] = {
    {doRewind, "rewind"},
    {doRollback, "rollback"},
    {doRot, "rot"},
+   {doRpc, "rpc"},
    {doRun, "run"},
    {doSeed, "seed"},
    {doSeek, "seek"},
@@ -290,6 +296,7 @@ static symInit Symbols[] = {
    {doUnify, "unify"},
    {doUnless, "unless"},
    {doUntil, "until"},
+   {doUp, "up"},
    {doUppQ, "upp?"},
    {doUppc, "uppc"},
    {doUse, "use"},
@@ -321,6 +328,7 @@ void initSymbols(void) {
    Nil = symPtr(Avail),  Avail = Avail->cdr->cdr;  // Allocate 2 cells for NIL
    val(Nil) = tail(Nil) = val(Nil+1) = tail(Nil+1) = Nil;
    Zero = box(0);
+   One = box(2);
    for (i = 0; i < HASH; ++i)
       Intern[i] = Transient[i] = Extern[i] = Nil;
    DB    = initSym(Nil, "*DB");
@@ -339,6 +347,7 @@ void initSymbols(void) {
    Class = initSym(Nil, "*Class");
    Key   = initSym(Nil, "*Key");
    Led   = initSym(Nil, "*Led");
+   Tsm   = initSym(Nil, "*Tsm");
    Err   = initSym(Nil, "*Err");
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");

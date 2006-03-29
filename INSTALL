@@ -1,4 +1,4 @@
-21oct05abu
+22mar06abu
 (c) Software Lab. Alexander Burger
 
 
@@ -7,7 +7,8 @@
 
 There is no 'configure' procedure, but the Pico Lisp file structure is simple
 enough to get along without it (we hope). It should compile and run on
-GNU/Linux, FreeBSD, and possibly other systems without problems.
+GNU/Linux, FreeBSD, Mac OS X (Darwin), and possibly other systems without
+problems.
 
 By default, Pico Lisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.
@@ -24,7 +25,6 @@ Please follow these steps:
    $ cd picoLisp-XXX
 
 3. Compile the Pico Lisp interpreter
-   (in case of FreeBSD, remove "-ldl" in "src/Makefile")
 
    $ (cd src; make picolisp)
 
@@ -48,6 +48,15 @@ To exit the interpreter, you may enter
 : (bye)
 
 or simply type an empy line (Return).
+
+
+         Console Underlines
+         ==================
+
+In case that your console (terminal) does not support underlining, you might
+want to remove or replace the first statement int "ext.l" which uses the
+terminfo database to initialize the global variable '*Tsm' (transient symbol
+markup). Unfortunately, the VGA text mode does not properly support underlines.
 
 
          Documentation

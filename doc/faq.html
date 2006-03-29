@@ -55,11 +55,11 @@ environment, at all levels, from the application domain down to the bare metal.
 Who want use a transparent and simple - yet universal - programming model, and
 want to know exactly what is going on. This is an aspect influenced by Forth.
 
-<p>It does <u>not</u> pretend to be easy to learn. There are already plenty of
-languages that do so. It is <u>not</u> for people who don't care what's under
-the hood, who just want to get their application running. They are better served
-with some standard, "safe" black-box, which may be easier to learn, and which
-allegedly better protects them from their own mistakes.
+<p>It does <i>not</i> pretend to be easy to learn. There are already plenty of
+languages that do so. It is not for people who don't care what's under the hood,
+who just want to get their application running. They are better served with some
+standard, "safe" black-box, which may be easier to learn, and which allegedly
+better protects them from their own mistakes.
 
 
 <p><hr>
@@ -68,8 +68,9 @@ allegedly better protects them from their own mistakes.
 <h4>Simplicity</h4>
 <p>Pico Lisp is easy to understand and adapt. There is no compiler enforcing
 special rules, and the interpreter is simple and straightforward. There are only
-three data types: Numbers, symbols and lists. The memory footprint is minimal,
-and the tarball size of the whole system is just a few hundred kilobytes.
+three data types: Numbers, symbols and lists ("LISP" means "List-, Integer- and
+Symbol Processing" after all ;-). The memory footprint is minimal, and the
+tarball size of the whole system is just a few hundred kilobytes.
 
 <h4>A Clear Model</h4>
 <p>Most other systems define the language, and leave it up to the implementation
@@ -133,12 +134,12 @@ them are:
 because a number never makes sense as a function name, and has to be checked at
 runtime anyway.
 
-<li>The <code><a href="ref.html#quote">quote</a></code> function returns
-<u>all</u> unevaluated arguments, instead of just the first one. This is both
-faster (<code>quote</code> does not have to take the <code>CAR</code> of its
-argument list) and smaller (a single cell instead of two). For example,
-<code>'A</code> expands to <code>(quote . A)</code> and <code>'(A B C)</code>
-expands to <code>(quote A B C)</code>.
+<li>The <code><a href="ref.html#quote">quote</a></code> function returns all
+unevaluated arguments, instead of just the first one. This is both faster
+(<code>quote</code> does not have to take the <code>CAR</code> of its argument
+list) and smaller (a single cell instead of two). For example, <code>'A</code>
+expands to <code>(quote . A)</code> and <code>'(A B C)</code> expands to
+<code>(quote A B C)</code>.
 
 <li>The symbol <code><a href="ref.html#atres">@</a></code> is automatically
 maintained as a local variable, and set implicitly in certain flow- and
@@ -241,12 +242,12 @@ system constraints.
 <p><hr>
 <h3><a name="interpreted">What means "interpreted"?</a></h3>
 
-<p>It means to directly execute Lisp <u>data</u> as program code. No
-transformation to some other representation of code (e.g. compilation), and no
-structural modifications of these data, takes place.
+<p>It means to directly execute Lisp data as program code. No transformation to
+some other representation of code (e.g. compilation), and no structural
+modifications of these data, takes place.
 
 <p>Lisp data are the "real" things, like numbers, symbols and lists, which can
-be directly handled by the system. They are <u>not</u> the textual
+be directly handled by the system. They are <i>not</i> the textual
 representation of these structures (which is outside the Lisp realm and taken
 care of the <code><a href="ref.html#read">read</a></code>ing and <code><a
 href="ref.html#print">print</a></code>ing interfaces).
@@ -300,11 +301,11 @@ compilation.
 <p><hr>
 <h3><a name="portable">Is it portable?</a></h3>
 
-<p>Yes and No. Though we wrote and tested Pico Lisp only on Linux and FreeBSD,
-it will probably run on many other POSIX systems. The first versions were even
-fully portable between DOS, SCO-Unix and Macintosh systems. But today we have
-Linux. Linux itself is <u>very</u> portable, and you can get access to a Linux
-system almost everywhere. So why bother?
+<p>Yes and No. Though we wrote and tested Pico Lisp only on Linux, FreeBSD and
+Mac OS X (Darwin), it will probably run on many other POSIX systems. The first
+versions were even fully portable between DOS, SCO-Unix and Macintosh systems.
+But today we have Linux. Linux itself is very portable, and you can get access
+to a Linux system almost everywhere. So why bother?
 
 <p>The GUI is completely platform independent (Browser/Applet), and in the times
 of Internet an application <u>server</u> does not really need to be portable.
@@ -428,14 +429,14 @@ break if we call it as <code>(double 'Var)</code>. Therefore, the correnct
 implementation of <code>double</code> should be:
 
 <p><pre><code>
-(de double ("Var")
-   (set "Var" (* 2 (val "Var"))) )
+(de double ("<u>Var</u>")
+   (set "<u>Var</u>" (* 2 (val "<u>Var</u>"))) )
 </code></pre>
 
 <p>If <code>double</code> is defined that way in a separate source file, and/or
 isolated via the <code><a href="ref.html#====">====</a></code> function, then
-the symbol <code>"Var"</code> is locked into a private lexical context and
-cannot conflict with other symbols.
+the symbol <code>"<u>Var</u>"</code> is locked into a private lexical context
+and cannot conflict with other symbols.
 
 <p>Admittedly, there are two disadvantages with this solution:
 
@@ -460,7 +461,7 @@ utilities than in production code, so that they can be easily encapsulated.
 <p>This is not true. Closures are a matter of scope, not of binding.
 
 <p>For a closure it is necessary to build and maintain an environment. For
-lexical bindings, this has <u>always</u> to be done, and in case of compiled
+lexical bindings, this has <i>always</i> to be done, and in case of compiled
 code it is the most efficient strategy anyway, because it is done once by the
 compiler, and can then be accessed as stack frames at runtime.
 
@@ -530,7 +531,7 @@ constant substitution with zero runtime overhead.
 
 <p>That's not a good idea. The next time that function gets executed within the
 dynamic context the system may crash. Therefore we have a convention to use an
-<u>upper case first letter</u> for locally bound symbols:
+upper case first letter for locally bound symbols:
 
 <p><pre><code>
 (de findCar (Car List)

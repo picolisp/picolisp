@@ -1,16 +1,17 @@
-# 17nov04abu
+# 20mar06abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
 (de *Err
-   (out NIL
+   (out 2
       (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
       (show This)
       (for "X" '(*Gate *Agent *Host *Port *Url *SesId *ConId *ID)
          (println "X" (val "X")) )
       (and (get *Top 'focus) (println 'focus (get @ 'ix)))
       (for "X" (env)
-         (println "X" (val "X")) ) )
+         (unless (== "X" (val "X"))
+            (println "X" (val "X")) ) ) )
    (rollback)
    (when *Top
       (alert ,"Sorry!"

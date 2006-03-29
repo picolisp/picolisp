@@ -1,4 +1,4 @@
-/* 09dec05abu
+/* 29mar06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -15,10 +15,10 @@ catchFrame *CatchPtr;
 struct termios *Termio;
 FILE *InFile, *OutFile;
 any TheKey, TheCls;
-any Line, Zero, Intern[HASH], Transient[HASH], Extern[HASH];
+any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Err, Msg, Uni, Adr, Fork, Bye;
+any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static bool Jam, Protect;
@@ -49,6 +49,24 @@ void execError(char *s) {
    exit(127);
 }
 
+static void sigterm(void) {
+   int i;
+
+   if (Protect)
+      return;
+   for (i = 0; i < PSize; i += 2)
+      if (Pipe[i] >= 0)
+         return;
+   bye(0);
+}
+
+static void doSigInt1(int n __attribute__((unused))) {
+   if (TtyPid)
+      kill(TtyPid, SIGINT);
+   else
+      sigterm();
+}
+
 static void doSigInt(int n __attribute__((unused))) {
    if (TtyPid)
       kill(TtyPid, SIGINT);
@@ -57,15 +75,8 @@ static void doSigInt(int n __attribute__((unused))) {
 }
 
 static void doSigTerm(int n __attribute__((unused))) {
-   int i;
-
    SigTerm = YES;
-   if (Protect)
-      return;
-   for (i = 0; i < PSize; i += 2)
-      if (Pipe[i] >= 0)
-         return;
-   bye(0);
+   sigterm();
 }
 
 static void doSigChld(int n __attribute__((unused))) {
@@ -185,19 +196,39 @@ any doEnv(any x) {
    else {
       Push(c1, Nil);
       for (p = Env.bind;  p;  p = p->link) {
-         for (i = p->cnt;  --i >= 0;) {
-            for (x = data(c1); ; x = cdr(x)) {
-               if (!isCell(x)) {
-                  data(c1) = cons(p->bnd[i].sym, data(c1));
-                  break;
+         if (p->i == 0) {
+            for (i = p->cnt;  --i >= 0;) {
+               for (x = data(c1); ; x = cdr(x)) {
+                  if (!isCell(x)) {
+                     data(c1) = cons(p->bnd[i].sym, data(c1));
+                     break;
+                  }
+                  if (car(x) == p->bnd[i].sym)
+                     break;
                }
-               if (car(x) == p->bnd[i].sym)
-                  break;
             }
          }
       }
    }
    return Pop(c1);
+}
+
+// (up sym ['val]) -> any
+any doUp(any x) {
+   any y;
+   int i;
+   bindFrame *p;
+
+   x = cdr(x),  y = car(x);
+   for (p = Env.bind;  p;  p = p->link)
+      if (p->i <= 0)
+         for (i = p->cnt;  --i >= 0;)
+            if (p->bnd[i].sym == y) {
+               if (isCell(x = cdr(x)))
+                  return p->bnd[i].val = EVAL(car(x));
+               return p->bnd[i].val;
+            }
+   return Nil;
 }
 
 // (stk any ..) -> T
@@ -327,11 +358,12 @@ int compare(any x, any y) {
 void err(any ex, any x, char *fmt, ...) {
    va_list ap;
    char msg[240];
-   FILE *oSave = OutFile;
+   outFrame f;
 
    Line = Nil;
    Env.brk = NO;
-   OutFile = stderr;
+   f.pid = -1,  f.fp = stderr;
+   pushOutFiles(&f);
    while (*AV  &&  strcmp(*AV,"-") != 0)
       ++AV;
    if (ex)
@@ -350,7 +382,7 @@ void err(any ex, any x, char *fmt, ...) {
          bye(1);
       load(NULL, '?', Nil);
    }
-   OutFile = oSave;
+   popOutFiles();
    unwind(NULL);
    Env.stack = NULL;
    Env.meth = NULL;
@@ -397,8 +429,9 @@ void unwind(catchFrame *p) {
    while (CatchPtr) {
       q = CatchPtr,  CatchPtr = CatchPtr->link;
       while (Env.bind != q->env.bind) {
-         for (i = Env.bind->cnt;  --i >= 0;)
-            val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
+         if (Env.bind->i == 0)
+            for (i = Env.bind->cnt;  --i >= 0;)
+               val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
          Env.bind = Env.bind->link;
       }
       while (Env.inFiles != q->env.inFiles)
@@ -417,8 +450,9 @@ void unwind(catchFrame *p) {
       }
    }
    while (Env.bind) {
-      for (i = Env.bind->cnt;  --i >= 0;)
-         val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
+      if (Env.bind->i == 0)
+         for (i = Env.bind->cnt;  --i >= 0;)
+            val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
       Env.bind = Env.bind->link;
    }
    while (Env.inFiles)
@@ -433,14 +467,14 @@ void unwind(catchFrame *p) {
 /* Evaluate symbolic expression */
 any evExpr(any expr, any x) {
    any y = car(expr);
-   int i = length(y) + 1;
    struct {  // bindFrame
       struct bindFrame *link;
-      int cnt;
-      struct {any sym; any val;} bnd[i+1];
+      int i, cnt;
+      struct {any sym; any val;} bnd[length(y)+2];
    } f;
 
    f.link = Env.bind,  Env.bind = (bindFrame*)&f;
+   f.i = sizeof(f.bnd) / (2*sizeof(any)) - 1;
    f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
    while (isCell(y)) {
       f.bnd[f.cnt].sym = car(y);
@@ -448,19 +482,19 @@ any evExpr(any expr, any x) {
       ++f.cnt, x = cdr(x), y = cdr(y);
    }
    if (isNil(y)) {
-      while (--i > 0) {
-         x = val(f.bnd[i].sym);
-         val(f.bnd[i].sym) = f.bnd[i].val;
-         f.bnd[i].val = x;
+      while (--f.i > 0) {
+         x = val(f.bnd[f.i].sym);
+         val(f.bnd[f.i].sym) = f.bnd[f.i].val;
+         f.bnd[f.i].val = x;
       }
       x = prog(cdr(expr));
    }
    else if (y != At) {
       f.bnd[f.cnt].sym = y,  f.bnd[f.cnt++].val = val(y),  val(y) = x;
-      while (--i > 0) {
-         x = val(f.bnd[i].sym);
-         val(f.bnd[i].sym) = f.bnd[i].val;
-         f.bnd[i].val = x;
+      while (--f.i > 0) {
+         x = val(f.bnd[f.i].sym);
+         val(f.bnd[f.i].sym) = f.bnd[f.i].val;
+         f.bnd[f.i].val = x;
       }
       x = prog(cdr(expr));
    }
@@ -471,10 +505,10 @@ any evExpr(any expr, any x) {
 
       while (--n >= 0)
          Push(c[n], EVAL(car(x))),  x = cdr(x);
-      while (--i > 0) {
-         x = val(f.bnd[i].sym);
-         val(f.bnd[i].sym) = f.bnd[i].val;
-         f.bnd[i].val = x;
+      while (--f.i > 0) {
+         x = val(f.bnd[f.i].sym);
+         val(f.bnd[f.i].sym) = f.bnd[f.i].val;
+         f.bnd[f.i].val = x;
       }
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
@@ -501,12 +535,13 @@ void undefined(any x, any ex) {
       int n = Home? strlen(Home) : 0;
       char buf[n + strlen(nm) + 4 + 1];
 
-      if (n)
-         memcpy(buf, Home, n);
       if (strchr(nm,'/'))
-         strcpy(buf + n, nm);
-      else
+         strcpy(buf, nm);
+      else {
+         if (n)
+            memcpy(buf, Home, n);
          strcpy(buf + n, "lib/"),  strcpy(buf + n + 4, nm);
+      }
       if (!(h = dlopen(buf, RTLD_LAZY | RTLD_GLOBAL))  ||  !(h = dlsym(h,p)))
          err(ex, x, "%s", (char*)dlerror());
       val(x) = box(num(h));
@@ -702,6 +737,17 @@ any doTime(any ex) {
    return boxCnt(h * 3600 + m * 60 + s);
 }
 
+// (pwd) -> sym
+any doPwd(any x) {
+   char *p;
+
+   if ((p = getcwd(NULL,0)) == NULL)
+      return Nil;
+   x = mkStr(p);
+   free(p);
+   return x;
+}
+
 // (cd 'any) -> sym
 any doCd(any x) {
    x = evSym(cdr(x));
@@ -709,7 +755,7 @@ any doCd(any x) {
       char *p, path[pathSize(x)];
 
       pathString(x, path);
-      if ((p = getcwd(NULL,0)) == NULL  ||  chdir(path) < 0)
+      if ((p = getcwd(NULL,0)) == NULL  ||  path[0] && chdir(path) < 0)
          return Nil;
       x = mkStr(p);
       free(p);
@@ -843,7 +889,7 @@ int main(int ac, char *av[]) {
    OutFile = stdout,  Env.put = putStdout;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
-   signal(SIGINT, doSigInt);
+   signal(SIGINT, doSigInt1);
    signal(SIGTERM, doSigTerm);
    signal(SIGCHLD, doSigChld);
    signal(SIGPIPE, SIG_IGN);
@@ -852,6 +898,7 @@ int main(int ac, char *av[]) {
    setjmp(ErrRst);
    while (*AV  &&  strcmp(*AV,"-") != 0)
       load(NULL, 0, mkStr(*AV++));
+   signal(SIGINT, doSigInt);
    load(NULL, ':', Nil);
    bye(0);
 }

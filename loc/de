@@ -1,5 +1,7 @@
-# 14nov05abu
+# 01feb06abu
 # (c) Software Lab. Alexander Burger
+
+"Language" "Sprache"
 
 # lib/db.l
 "Input required" "Eingabe erforderlich"
@@ -41,16 +43,11 @@
 "login" "anmelden"
 "logout" "abmelden"
 "Permission denied" "Keine Berechtigung"
+"Name" "Name"
 "Password" "Passwort"
 "' logged in" "' ist angemeldet"
 "Role" "Rolle"
 "User" "Benutzer"
-
-# lib/user.l
-"Name" "Name"
-"Password" "Passwort"
-
-# lib/role.l
 "Permissions" "Berechtigungen"
 
 # lib/app.l

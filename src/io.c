@@ -1,4 +1,4 @@
-/* 20dec05abu
+/* 24mar06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -275,7 +275,7 @@ static void tellBeg(ptr *pb, ptr *pp, ptr buf) {
    *PipePtr++ = BEG;
 }
 
-static void tell(any x) {putBin = putTell,  binPrint(x);}
+static void prTell(any x) {putBin = putTell,  binPrint(x);}
 
 static void tellEnd(ptr *pb, ptr *pp) {
    int i;
@@ -399,6 +399,20 @@ void pathString(any x, char *p) {
    }
 }
 
+// (path 'sym) -> sym
+any doPath(any ex) {
+   any x;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   NeedSym(ex,x);
+   {
+      char nm[pathSize(x)];
+
+      pathString(x,nm);
+      return mkStr(nm);
+   }
+}
+
 /* Add next byte to symbol name */
 void byteSym(int c, int *i, any *p) {
    if ((*i += 8) < 32)
@@ -443,7 +457,7 @@ void charSym(int c, int *i, any *p) {
    }
 }
 
-static void rdOpen(any ex, any x, inFrame *f) {
+void rdOpen(any ex, any x, inFrame *f) {
    if (isNum(x)) {
       int n = (int)unBox(x);
 
@@ -509,7 +523,7 @@ static void rdOpen(any ex, any x, inFrame *f) {
    }
 }
 
-static void wrOpen(any ex, any x, outFrame *f) {
+void wrOpen(any ex, any x, outFrame *f) {
    if (isNum(x)) {
       int n = (int)unBox(x);
 
@@ -579,7 +593,7 @@ static void wrOpen(any ex, any x, outFrame *f) {
    }
 }
 
-static void ctOpen(any ex, any x, ctlFrame *f) {
+void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
    {
       char nm[pathSize(x)];
@@ -629,18 +643,18 @@ static void getParse(void) {
    }
 }
 
-static void pushInFiles(inFrame *f) {
+void pushInFiles(inFrame *f) {
    f->next = Chr,  Chr = 0;
    InFile = f->fp;
    f->link = Env.inFiles,  Env.inFiles = f;
 }
 
-static void pushOutFiles(outFrame *f) {
+void pushOutFiles(outFrame *f) {
    OutFile = f->fp;
    f->link = Env.outFiles,  Env.outFiles = f;
 }
 
-static void pushCtlFiles(ctlFrame *f) {
+void pushCtlFiles(ctlFrame *f) {
    f->link = Env.ctlFiles,  Env.ctlFiles = f;
 }
 
@@ -911,11 +925,10 @@ any read1(int end) {
 }
 
 /* Read one token */
-any token(any x, int siz, int c) {
+any token(any x, int c) {
    int i;
    any y, *h;
    cell c1;
-   char nm[siz];
 
    if (!Chr)
       Env.get();
@@ -949,19 +962,28 @@ any token(any x, int siz, int c) {
          byteSym(Chr, &i, &y);
       return symToNum(Pop(c1), (int)unDig(val(Scl)) / 2, '.', 0);
    }
-   bufString(x, nm);
-   if (Chr >= 'A' && Chr <= 'Z' || Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr)) {
-      i = 0,  Push(c1, y = box(Chr));
-      while (Env.get(),
-            Chr >= '0' && Chr <= '9' || Chr >= 'A' && Chr <= 'Z' ||
-            Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr) )
-         byteSym(Chr, &i, &y);
-      y = Pop(c1);
-      if (x = findHash(y, h = Intern + hash(y)))
+   {
+      char nm[bufSize(x)];
+
+      bufString(x, nm);
+      if (Chr >= 'A' && Chr <= 'Z' || Chr == '\\' || Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr)) {
+         if (Chr == '\\')
+            Env.get();
+         i = 0,  Push(c1, y = box(Chr));
+         while (Env.get(),
+               Chr >= '0' && Chr <= '9' || Chr >= 'A' && Chr <= 'Z' ||
+               Chr == '\\' || Chr >= 'a' && Chr <= 'z' || strchr(nm,Chr) ) {
+            if (Chr == '\\')
+               Env.get();
+            byteSym(Chr, &i, &y);
+         }
+         y = Pop(c1);
+         if (x = findHash(y, h = Intern + hash(y)))
+            return x;
+         x = consSym(Nil,y);
+         *h = cons(x,*h);
          return x;
-      x = consSym(Nil,y);
-      *h = cons(x,*h);
-      return x;
+      }
    }
    y = mkChar(Chr);
    Env.get();
@@ -979,7 +1001,7 @@ any doRead(any ex) {
       NeedSym(ex,y);
       x = cdr(x),  x = EVAL(car(x));
       NeedSym(ex,x);
-      x = token(y, bufSize(y), symChar(name(x)));
+      x = token(y, symChar(name(x)));
    }
    if (InFile == stdin  &&  Chr == '\n')
       Chr = 0;
@@ -1116,7 +1138,7 @@ any doWait(any ex) {
    x = cdr(x);
    while (isNil(y = prog(x)))
       if (!(ms = waitFd(ex, -1, ms)))
-         return Nil;
+         return prog(x);
    return y;
 }
 
@@ -1163,7 +1185,7 @@ any doTell(any x) {
       return Nil;
    tellBeg(&pbSave, &ppSave, buf);
    do
-      x = cdr(x),  tell(y = EVAL(car(x)));
+      x = cdr(x),  prTell(y = EVAL(car(x)));
    while (isCell(cdr(x)));
    tellEnd(&pbSave, &ppSave);
    return y;
@@ -1850,8 +1872,13 @@ void print(any x) {
          Env.put('{'),  outSym(c),  Env.put('}');
       else if (hashed(x, hash(name(x)), Intern))
          outSym(c);
-      else
+      else if (isNil(val(Tsm)) || Env.put != putStdout || !isatty(fileno_unlocked(OutFile)))
          Env.put('"'),  outStr(c),  Env.put('"');
+      else {
+         outName(car(val(Tsm)));
+         outStr(symByte(name(x)));
+         outName(cdr(val(Tsm)));
+      }
    }
    else if (car(x) == Quote  &&  x != cdr(x))
       Env.put('\''),  print(cdr(x));
@@ -1924,17 +1951,18 @@ any doPrinl(any x) {
    return y;
 }
 
-// (space ['cnt]) -> T
+// (space ['cnt]) -> cnt
 any doSpace(any ex) {
    any x;
    int n;
 
-   if (isNil(x = EVAL(cadr(ex))))
+   if (isNil(x = EVAL(cadr(ex)))) {
       Env.put(' ');
-   else
-      for (n = xCnt(ex,x); n > 0; --n)
-         Env.put(' ');
-   return T;
+      return One;
+   }
+   for (n = xCnt(ex,x); n > 0; --n)
+      Env.put(' ');
+   return x;
 }
 
 // (print 'any ..) -> any
@@ -2055,6 +2083,20 @@ any doWr(any x) {
    return y;
 }
 
+static void putChar(int c) {putchar_unlocked(c & 0xFF);}
+
+// (rpc 'sym ['any ..]) -> flg
+any doRpc(any x) {
+   any y;
+
+   x = cdr(x),  y = EVAL(car(x));
+   putBin = putChar,  putBin(BEG),  binPrint(y);
+   while (isCell(x = cdr(x)))
+      y = EVAL(car(x)),  putBin = putChar,  binPrint(y);
+   putBin(END);
+   return fflush_unlocked(stdout)? Nil : T;
+}
+
 /*** DB-I/O ***/
 #define BLKSIZE 64  // DB block unit size
 #define BLK 6
@@ -2142,9 +2184,9 @@ static void dbLock(int cmd, int typ, off_t len) {
          lockErr();
 }
 
-static void rdLock(void) {dbLock(F_SETLKW, F_RDLCK, 1);}
-static void wrLock(void) {dbLock(F_SETLKW, F_WRLCK, 1);}
-static void rwUnlock(off_t len) {dbLock(F_SETLK, F_UNLCK, len);}
+static inline void rdLock(void) {dbLock(F_SETLKW, F_RDLCK, 1);}
+static inline void wrLock(void) {dbLock(F_SETLKW, F_WRLCK, 1);}
+static inline void rwUnlock(off_t len) {dbLock(F_SETLK, F_UNLCK, len);}
 
 static pid_t tryLock(off_t n, off_t len) {
    struct flock fl;
@@ -2170,7 +2212,7 @@ static pid_t tryLock(off_t n, off_t len) {
    }
 }
 
-static void blkPeek(off_t pos, void *buf, size_t siz) {
+static void blkPeek(off_t pos, void *buf, int siz) {
    while (pread(BlkFile[F], buf, siz, pos) != (ssize_t)siz)
       if (errno != EINTR)
          dbErr("read");
@@ -2233,11 +2275,11 @@ any newId(int i) {
 
 bool isLife(any x) {
    adr n;
-   byte buf[BLK];
+   byte buf[2*BLK];
 
    if ((n = blk64(name(x))*BLKSIZE)  &&  F < Files) {
-      blkPeek(BLK, buf, BLK);  // Get Next
-      if (n < getAdr(buf)) {
+      blkPeek(0, buf, 2*BLK);  // Get Next
+      if (n < getAdr(buf+BLK)) {
          blkPeek(n << BlkShift[F], buf, BLK);
          if ((getAdr(buf) & TAGMASK) == 1)
             return YES;
@@ -2291,7 +2333,7 @@ static void putBlock(int c) {
    *Ptr++ = (byte)c;
 }
 
-// (pool ['sym1 ['lst ['sym2]]]) -> flg
+// (pool ['sym1 ['lst] ['sym2]]) -> flg
 any doPool(any ex) {
    any x, db;
    byte buf[2*BLK+1];
@@ -2327,8 +2369,8 @@ any doPool(any ex) {
             sprintf(nm + strlen(nm), "%d", F);
          BlkShift[F] = isNum(car(x))? (int)unDig(car(x))/2 : 0;
          if ((BlkFile[F] = open(nm, O_RDWR)) >= 0) {
-            blkPeek(2*BLK, buf, 1);  // Get block shift
-            BlkSize[F] = BLKSIZE << (BlkShift[F] = (int)buf[0]);
+            blkPeek(0, buf, 2*BLK+1);  // Get block shift
+            BlkSize[F] = BLKSIZE << (BlkShift[F] = (int)buf[2*BLK]);
          }
          else {
             if (errno != ENOENT  ||
@@ -2400,8 +2442,9 @@ static any mkId(word2 n) {
    return y;
 }
 
-// (id 'sym) -> (num . num)
 // (id 'num 'num) -> sym
+// (id 'sym [NIL]) -> num
+// (id 'sym T) -> (num . num)
 any doId(any ex) {
    any x, y;
    word2 n;
@@ -2419,6 +2462,9 @@ any doId(any ex) {
    }
    NeedExt(ex,y);
    n = blk64(name(y));
+   x = cdr(x);
+   if (isNil(EVAL(car(x))))
+      return boxWord2(n);
    Push(c1, boxWord2(n));
    data(c1) = cons(box(F*2), data(c1));
    return Pop(c1);
@@ -2428,7 +2474,7 @@ any doId(any ex) {
 any doSeq(any ex) {
    adr n, n2, free, p, next;
    any x, y;
-   byte buf[BLK];
+   byte buf[2*BLK];
 
    x = cdr(ex),  y = EVAL(car(x));
    NeedExt(ex,y);
@@ -2449,12 +2495,12 @@ any doSeq(any ex) {
             free = n;
          }
          setAdr(1, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
-         blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
+         blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
          if (n >= next)
-            setAdr(n+BLKSIZE, buf),  blkPoke(BLK, buf, BLK);  // Set new Next
+            setAdr(n+BLKSIZE, buf+BLK),  blkPoke(0, buf, 2*BLK);  // Set new Next
          return new64(free,Nil);
       }
-      blkPeek(BLK, buf, BLK),  next = getAdr(buf);  // Get Next
+      blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
       while ((n += BLKSIZE) < next) {
          blkPeek(n << BlkShift[F], buf, BLK),  p = getAdr(buf);
          if ((p & TAGMASK) == 1)
@@ -2469,7 +2515,7 @@ any doMark(any ex) {
    any x, y;
    word2 n, m;
    int b;
-   byte *p, buf[BLK];
+   byte *p, buf[2*BLK];
 
    x = cdr(ex);
    if (isNum(y = EVAL(car(x))) && Marks) {
@@ -2489,7 +2535,7 @@ any doMark(any ex) {
          b = 1 << (n & 7);
          if ((n >>= 3) >= Marks[F]) {
             m = Marks[F];
-            blkPeek(BLK, buf, BLK),  Marks[F] = getAdr(buf);  // Get Next
+            blkPeek(0, buf, 2*BLK),  Marks[F] = getAdr(buf+BLK);  // Get Next
             Marks[F] = (Marks[F]/BLKSIZE + 7 >> 3);
             Mark[F] = alloc(Mark[F], Marks[F]);
             memset(Mark[F] + m, 0, Marks[F] - m);
@@ -2691,7 +2737,7 @@ any doCommit(any x) {
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
    if (note = Tell && !isNil(flg) && flg != T)
-      tellBeg(&pbSave, &ppSave, buf),  tell(flg);
+      tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
    for (i = 0; i < HASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail(car(x)); isCell(y); y = cdr(y));
@@ -2712,11 +2758,11 @@ any doCommit(any x) {
                cleanUp(blk64(y)*BLKSIZE);
                cdr(z) = Nil;
                if (note) {
-                  if (PipePtr >= PipeBuf + PIPE_BUF - 9) {  // EXTERN <7> END
+                  if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
                      tellEnd(&pbSave, &ppSave);
-                     tellBeg(&pbSave, &ppSave, buf),  tell(flg);
+                     tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
                   }
-                  tell(car(x));
+                  prTell(car(x));
                }
             }
             else if (cdr(z) == At2) {  // dirty
@@ -2737,11 +2783,11 @@ any doCommit(any x) {
                   cleanUp(BlkLink);
                cdr(z) = At;  // loaded
                if (note) {
-                  if (PipePtr >= PipeBuf + PIPE_BUF - 9) {  // EXTERN <7> END
+                  if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
                      tellEnd(&pbSave, &ppSave);
-                     tellBeg(&pbSave, &ppSave, buf),  tell(flg);
+                     tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
                   }
-                  tell(car(x));
+                  prTell(car(x));
                }
             }
          }

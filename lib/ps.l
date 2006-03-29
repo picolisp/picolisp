@@ -1,8 +1,8 @@
-# 13sep05abu
+# 17jan06abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
-# "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF"
+# "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF" "*UL"
 
 (de pdf ("Nm" . "Prg")
    (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
@@ -47,7 +47,7 @@
    (prinl "   end  definefont")
    (prinl "} def")
    (zero "*Pos")
-   (off "*Fonts" "*Lim")
+   (off "*Fonts" "*Lim" "*UL")
    (setq "*Size" 12) )
 
 (de a4 ()
@@ -158,15 +158,17 @@
       ((pair "X") (_ps "X"))
       (T (mapc _ps (split (chop "X") "^J"))) ) )
 
+(de ps+ ("X")
+   (?ul1)
+   (prinl
+      "("
+      (escPs (if (atom "X") (chop "X") "X"))
+      ") show" )
+   (?ul2) )
+
 (de _ps ("L")
    ("?ff")
-   (setq "L"
-      (mapcan
-         '((C)
-            (if (sub? C "\\()")
-               (list "\\" C)
-               (list C) ) )
-         "L" ) )
+   (setq "L" (escPs "L"))
    (cond
       ((not "H")
          (prin 0) )
@@ -184,10 +186,27 @@
                (setq "*Pos" (+ (/ "*Size" 4) (/ "*DY" 2))) )
             (T (setq "*Pos" "*DY")) ) ) )
    (prin " moveto ")
-   (ps+ "L") )
+   (?ul1)
+   (prinl "(" "L" ") show")
+   (?ul2) )
 
-(de ps+ (X)
-   (prinl "(" X ") show") )
+(de escPs (L)
+   (mapcan
+      '((C)
+         (if (sub? C "\\()")
+            (list "\\" C)
+            (list C) ) )
+      L ) )
+
+(de ?ul1 ()
+   (and "*UL" (prinl "currentpoint " "*UL" " sub")) )
+
+(de ?ul2 ()
+   (when "*UL"
+      (prinl "currentpoint " "*UL" " sub")
+      (prinl "gsave")
+      (prinl "newpath 4 -2 roll moveto lineto stroke")
+      (prinl "grestore") ) )
 
 (de pos (N)
    (if N (+ N "*Pos") "*Pos") )
@@ -208,12 +227,15 @@
          "Prg" )
       (inc '"*Pos" "Max") ) )
 
-(de hline (Y X1 X2)
-   (inc 'Y "*Pos")
-   (poly NIL (or X1 "*DX") Y (or X2 0) Y) )
+(de underline ("*UL" . "Prg")
+   (psEval "Prg") )
 
-(de vline (X Y1 Y2)
-   (poly NIL X (or Y1 "*DY") X (or Y2 0)) )
+(de hline (Y X2 X1)
+   (inc 'Y "*Pos")
+   (poly NIL (or X2 "*DX") Y (or X1 0) Y) )
+
+(de vline (X Y2 Y1)
+   (poly NIL X (or Y2 "*DY") X (or Y1 0)) )
 
 (de border (Y)
    (rect 0 (or Y 0) "*DX" "*Pos") )
@@ -274,3 +296,5 @@
       (font "Fnt" (ps "Abs" 0)) )
    (window 65 125 210 90
       (psEval "Prg") ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

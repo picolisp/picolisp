@@ -1,3 +1,16 @@
+* 29mar06 picoLisp-2.2.2
+   Mac OS X (Darwin) port
+   'pwd' function
+   'if2' flow function
+   'one' function
+   Changed 'space' return value
+   'up' symbol binding lookup function
+   Bug in 'eval' and 'run' environment offset
+   'onOff' function
+   'path' substitution function
+   '*Tsm' transient symbol markup
+   Underlining transient symbols
+
 * 30dec05 picoLisp-2.2.1
    'eof' end-of-file function
    Changed 'line' EOF return value
@@ -16,7 +29,7 @@
    Bug in 'compare()'
 
 * 29sep05 picoLisp-2.2.0
-   FreeBSD-Port
+   FreeBSD port
    B-Trees
    Multi-file DB
    Configurable DB block size

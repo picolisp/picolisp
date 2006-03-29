@@ -1,4 +1,4 @@
-/* 23sep05abu
+/* 13jan06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -55,10 +55,12 @@ static void wrBytes(int fd, char *p, int cnt) {
 }
 
 static int gateSocket(void) {
-   int sd;
+   int sd, opt;
 
    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       exit(1);
+   opt = 1;
+   setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (char*)&opt, sizeof(int));
    return sd;
 }
 
@@ -118,7 +120,7 @@ int main(int ac, char *av[]) {
       ssl = SSL_new(ctx),  gate = "Gate: https %s\r\n";
    }
 
-   signal(SIGCHLD,SIG_IGN);  /* Prevent zombies (Linux) */
+   signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
    if ((n = fork()) < 0)
       giveup("detach");
    if (n)
@@ -126,16 +128,8 @@ int main(int ac, char *av[]) {
    setsid();
 
    for (;;) {
-      FD_ZERO(&fdSet);
-      FD_SET(sd, &fdSet);
-      if (select(sd+1, &fdSet, NULL, NULL, NULL) < 0)
-         return 1;
-      if (FD_ISSET(sd, &fdSet)) {
-         socklen_t len = sizeof(addr);
-         if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) < 0)
-            return 1;
-         if ((n = fork()) < 0)
-            return 1;
+      socklen_t len = sizeof(addr);
+      if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
          if (n)
             close(cli);
          else {

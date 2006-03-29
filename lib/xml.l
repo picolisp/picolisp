@@ -1,4 +1,4 @@
-# 23dec05abu
+# 13jan06abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -125,3 +125,5 @@
          Lst (assoc Key (cddr Lst))
          Key (next) ) )
    (cdr (assoc Key (cadr Lst))) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

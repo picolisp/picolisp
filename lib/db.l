@@ -1,4 +1,4 @@
-# 22dec05abu
+# 25mar06abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -23,10 +23,8 @@
       (extern (pack N -1))
       *DB ) )
 
-(de dbf Lst
-   (if (cdr Lst)
-      (get (car Lst) (cadr Lst) 'dbf)
-      (get (car Lst) 'dbf) ) )
+(de db: X
+   (get X 1 'dbf 1) )
 
 
 ### Tree Access ###
@@ -684,7 +682,7 @@
 (de new! ("Typ" . @)
    (prog2
       (dbSync)
-      (pass new (or (car (meta "Typ" 'dbf)) 0) "Typ")
+      (pass new (or (meta "Typ" 'dbf 1) 0) "Typ")
       (commit 'upd) ) )
 
 (de set! (Obj Val)
@@ -923,7 +921,7 @@
    (val This) )
 
 (dm clone> ()
-   (let Obj (new (or (car (var: dbf)) 0) (val This))
+   (let Obj (new (or (var: dbf 1) 0) (val This))
       (for X
          (by
             '((X)
@@ -1001,13 +999,13 @@
          (pass db Var (: cls))
          (if (: hook)
             (pass new
-               (or (car (: cls dbf)) 0)
+               (or (: cls dbf 1) 0)
                Typ
                (: hook)
                (next)
                Var )
             (pass new
-               (or (car (: cls dbf)) 0)
+               (or (: cls dbf 1) 0)
                Typ
                Var ) ) ) ) )
 
@@ -1017,3 +1015,5 @@
       (while Lst
          (put> Obj (pop 'Lst) (pop 'Lst)) )
       Obj ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

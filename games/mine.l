@@ -1,4 +1,4 @@
-# 10nov04abu
+# 11feb06abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/xterm.l")
@@ -87,7 +87,7 @@
       (anzeigen)
       (xtUp (+ 2 *FeldY))
       (xtRight 4)
-      (setq X 1 Y 1)
+      (one X Y)
       (catch NIL
          (until (= "^[" (setq K (key)))
             (case K

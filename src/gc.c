@@ -1,4 +1,4 @@
-/* 07jul05abu
+/* 11feb06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -58,19 +58,17 @@ static void gc(long c) {
    } while (h = h->next);
    /* Mark */
    mark(Nil+1);
-   mark(Line),  mark(Zero);
+   mark(Line),  mark(Zero),  mark(One);
    for (i = 0; i < HASH; ++i)
       mark(Intern[i]),  mark(Transient[i]);
    mark(ApplyArgs),  mark(ApplyBody);
    for (p = Env.stack; p; p = cdr(p))
       mark(car(p));
-   for (p = (any)Env.bind;  p;  p = (any)((bindFrame*)p)->link) {
-      for (i = ((bindFrame*)p)->cnt;  i < 0;  i += BNDSKIP);
-      while (--i >= 0) {
+   for (p = (any)Env.bind;  p;  p = (any)((bindFrame*)p)->link)
+      for (i = ((bindFrame*)p)->cnt;  --i >= 0;) {
          mark(((bindFrame*)p)->bnd[i].sym);
          mark(((bindFrame*)p)->bnd[i].val);
       }
-   }
    for (p = (any)CatchPtr; p; p = (any)((catchFrame*)p)->link)
       mark(((catchFrame*)p)->tag);
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)

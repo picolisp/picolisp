@@ -1,4 +1,4 @@
-# 27dec05abu
+# 21mar06abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Unload/Load ###
@@ -62,31 +62,39 @@
 ### Check tree structures ###
 (de dbCheck ()
    (let Hook NIL
-      (mapc _dbCheck (getl *DB)) )
+      (for X (getl *DB)
+         (recur (X)
+            (when
+               (and
+                  (pair X)
+                  (= `(char "+") (char (cdr X)))
+                  (not (mark (car X))) )
+               (let (Base (car X)  Cls (cdr X))
+                  (mark Base T)
+                  (println '== Cls Base)
+                  (for X (getl Base)
+                     (when
+                        (and
+                           (pair X)
+                           (sym? (cdr X))
+                           (pair (car X))
+                           (num? (caar X)) )
+                        (println (cdr X) (cdar X) (caar X))
+                        (unless (= (caar X) (check (cdar X)))
+                           (quit "Tree size mismatch") )
+                        (iter (tree (cdr X) Cls Hook)
+                           '((Hook) (mapc recurse (getl Hook))) )
+                        (scan (tree (cdr X) Cls Hook)
+                           '((K V)
+                              (or
+                                 (isa Cls V)
+                                 (isa '+Alt (meta V (cdr X)))
+                                 (quit "Bad Type" V) )
+                              (unless (has> V (cdr X) (if (pair K) (car K) K))
+                                 (quit "Bad Value" K) ) )
+                           NIL T T ) ) )
+                  (wipe Base) ) ) ) ) )
    (mark 0) )
-
-(de _dbCheck (X)
-   (when (and (pair X) (= `(char "+") (char (cdr X))) (not (mark (car X))))
-      (let (Base (car X)  Cls (cdr X))
-         (mark Base T)
-         (println '== Cls Base)
-         (for X (getl Base)
-            (when (and (pair X) (sym? (cdr X)) (pair (car X)) (num? (caar X)))
-               (println (cdr X) (cdar X) (caar X))
-               (unless (= (caar X) (check (cdar X)))
-                  (quit "Tree size mismatch") )
-               (iter (tree (cdr X) Cls Hook)
-                  '((Hook) (mapc _dbCheck (getl Hook))) )
-               (scan (tree (cdr X) Cls Hook)
-                  '((K V)
-                     (or
-                        (isa Cls V)
-                        (isa '+Alt (meta V (cdr X)))
-                        (quit "Bad Type" V) )
-                     (unless (has> V (cdr X) (if (pair K) (car K) K))
-                        (quit "Bad Value" K) ) )
-                  NIL T T ) ) )
-         (wipe Base) ) ) )
 
 
 ### Check Index References ###
@@ -200,3 +208,5 @@
          (rel> (meta Obj Var) Obj NIL
             (put> (meta Obj Var) Obj NIL @) )
          (commit) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

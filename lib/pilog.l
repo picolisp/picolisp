@@ -1,4 +1,4 @@
-# 06jul05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -557,3 +557,5 @@
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

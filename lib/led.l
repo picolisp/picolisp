@@ -1,14 +1,15 @@
-# 19dec05abu
+# 17jan06abu
 # (c) Software Lab. Alexander Burger
 
-# Line editor (vi-mode)
-# Just a subset:
+# Line editor
+# vi-mode, just a subset:
 #  - Only single-key commands
 #  - No repeat count
 
 (setq
    "Line"      NIL      # Holds current input line
    "LPos"      1        # Position in line (1 .. length)
+   "Tsm"       NIL      # Transient symbol markup
    "HPos"      1        # Position in history
    "UndoLine"  NIL      # Undo
    "UndoPos"   0
@@ -28,37 +29,49 @@
          (make (until (eof) (link (line)))) ) )
    "Hist0"     "History" )
 
-# Output character
-(de ledChr (C)
-   (prin (if (< C " ") "_" C)) )
 
-# Output backspaces
-(de backsp (N)
-   (do N (prin "^H"))
+# Line positioning
+(de posLine (N)
+   (if (> "LPos" N)
+      (until (>= N "LPos")  # Output backspaces
+         (dec '"LPos")
+         (prin "^H")
+         (and
+            *Tsm
+            (= "\"" (get "Line" "LPos"))
+            ("notEsc")
+            (prin ((if (onOff "Tsm") cdr car)) *Tsm) ) )
+      (until (>= "LPos" N)  # Output characters
+         (let C (get "Line" "LPos")
+            (cond
+               ((> " " C) (prin "_"))
+               ((nand *Tsm (= "\"" C) ("notEsc")) (prin C))
+               ("Tsm" (off "Tsm") (prin (cdr *Tsm) C))
+               (T (on "Tsm") (prin C (car *Tsm))) ) )
+         (inc '"LPos") ) )
    (flush) )
+
+(de "notEsc" ()
+   (let Flg T
+      (for (I 1 (> "LPos" I) (inc I))
+         ((if (= "\\" (get "Line" I)) onOff on) Flg) )
+      Flg ) )
+
+# Basic editing routine
+(de chgLine (L N)
+   (posLine 1)  # To start of old line
+   (let (Len (length L)  D (- (length "Line") Len))
+      (setq "Line" L)
+      (posLine (inc Len))  # Draw new line
+      (and "Tsm" (prin (cdr *Tsm)))
+      (space D)  # Clear rest of old line
+      (do D (prin "^H"))
+      (and "Tsm" (prin (car *Tsm))) )
+   (posLine N) )  # To new position
 
 # Check for delimiter
 (de delim? (C)
    (member C '`(chop '" \"'()[]`~")) )
-
-# Line positioning
-(de posLine (N)
-   (if (< N "LPos")
-      (backsp (- "LPos" (setq "LPos" N)))
-      (while (< "LPos" N)
-         (ledChr (get "Line" "LPos"))
-         (inc '"LPos") )
-      (flush) ) )
-
-# Basic editing routine
-(de chgLine (L N)
-   (backsp (dec "LPos"))  # To start of old line
-   (setq "LPos" N)
-   (mapc ledChr L)  # Draw new line
-   (flush)
-   (space (setq N (- (length "Line") (length L))))  # Clear rest of old line
-   (backsp N)
-   (backsp (- (length (setq "Line" L)) "LPos" -1)) )  # To new position
 
 # Move left
 (de lMove ()
@@ -168,7 +181,7 @@
                (")" (dec 'N)) ) ) )
       (and
          F
-         (= " " (get L "LPos"))
+         (sp? (get L "LPos"))
          (setq L (del1 L)) )
       (chgLine L (max 1 (min "LPos" (length L)))) ) )
 
@@ -334,6 +347,7 @@
             '("^J" "^M") )
          (or "C" (bye))
          (when (= "C" "^X")
+            (prin (cdr *Tsm))
             (prinl)
             (quit) )
          ((if "Insert" insMode cmdMode) "C") ) ) )
@@ -350,9 +364,11 @@
 
 # Main editing functions
 (de _led ("Line1" "tabFoo" "skipFoo")
+   (off "Tsm")
    (default "tabFoo" '((S) (make (all '((X) (and (pre? S X) (link X)))))))
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFoo" delim?))
+   (prin (cdr *Tsm))
    (prinl) )
 
 (de revise ("X" "tabFoo" "skipFoo")
@@ -379,10 +395,12 @@
       (?push '*Bye '(saveHistory))
       (?push '*Fork '(del '(saveHistory) '*Bye))
       (_led)
-      (and
-         (> (length "Line") 3)
-         (<> " " (car "Line"))
-         (<> "Line" (car "History"))
+      (or
+         (>= 3 (length "Line"))
+         (sp? (car "Line"))
+         (= "Line" (car "History"))
          (push '"History" "Line") )
       (and (nth "History" "HistMax") (con @))
       (pack "Line") ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

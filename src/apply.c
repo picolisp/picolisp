@@ -1,4 +1,4 @@
-/* 11aug05abu
+/* 02feb06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -11,11 +11,12 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
          any x = car(foo);
          struct {  // bindFrame
             struct bindFrame *link;
-            int cnt;
+            int i, cnt;
             struct {any sym; any val;} bnd[length(x)+2];
          } f;
 
          f.link = Env.bind,  Env.bind = (bindFrame*)&f;
+         f.i = 0;
          f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
          while (isCell(x)) {
             f.bnd[f.cnt].val = val(f.bnd[f.cnt].sym = car(x));
@@ -59,7 +60,7 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
             methFrame m;
             struct {  // bindFrame
                struct bindFrame *link;
-               int cnt;
+               int i, cnt;
                struct {any sym; any val;} bnd[length(x = car(expr))+3];
             } f;
 
@@ -67,6 +68,7 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
             m.key = TheKey;
             m.cls = TheCls;
             f.link = Env.bind,  Env.bind = (bindFrame*)&f;
+            f.i = 0;
             f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
             --n, ++p;
             while (isCell(x)) {

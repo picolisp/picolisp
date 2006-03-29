@@ -1,7 +1,7 @@
-# 29jun05abu
+# 01jan06abu
 # (c) Software Lab. Alexander Burger
 
-# *Sock *Panel
+# *Sock *Panel *FocLen
 
 (load "lib/xterm.l")
 (load "rcsim/lib.l")
@@ -9,6 +9,7 @@
 
 (de main ()
    (setq
+      *FocLen 8000.0
       *Pilot (new '(+Pilot))
       *Scene (new '(+Scene))
       *Model (new '(+Model))
@@ -38,6 +39,14 @@
                (rd) (rd) ) ) ) ) )
 
 # Key Controls
+(fkey *XtIns
+   (when (> 32000.0 *FocLen)
+      (setq *FocLen (>> -1 *FocLen)) ) )
+
+(fkey *XtDel
+   (when (> *FocLen 2000.0)
+      (setq *FocLen (>> 1 *FocLen)) ) )
+
 (fkey *XtUp
    (down> *Model) )
 
@@ -96,7 +105,7 @@
 (dm draw> ()
    (out *Sock
       (let Dir (dir> *Model)
-         (z3d:Draw 7500.0 (car Dir) (cdr Dir)  0 0 *Tower  LightBlue DarkGreen)
+         (z3d:Draw *FocLen (car Dir) (cdr Dir)  0 0 *Tower  LightBlue DarkGreen)
          (z3d:Draw (get *Model 'body))
          (mapc z3d:Draw (: env))
          (z3d:Draw) ) ) )

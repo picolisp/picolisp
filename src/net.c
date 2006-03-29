@@ -1,4 +1,4 @@
-/* 24oct05abu
+/* 10jan06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -15,10 +15,12 @@ static void tcpErr(any ex, char *s) {
 }
 
 static int tcpSocket(any ex) {
-   int sd;
+   int sd, opt;
 
    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       tcpErr(ex, "socket");
+   opt = 1;
+   setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (char*)&opt, sizeof(int));
    return sd;
 }
 

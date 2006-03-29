@@ -1,8 +1,8 @@
-# 21dec05abu
+# 13mar06abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Agent *Host *Port *Port1 *Sock *MPartLim *MPartEnd *ContLen
-# *Url *Timeout *SesId *ConId
+# *Post *Url *Timeout *SesId *ConId
 
 (default
    *HPorts 0
@@ -57,7 +57,7 @@
          (in (list "ps" (pack "t" Tty)) (from "/psh "))
          (ctty Tty) )
       (prinl *Pid)
-      (load "dbg.l")
+      (load "@dbg.l")
       (quit) ) )
 
 
@@ -107,8 +107,10 @@
             (cond
                ((not (setq L (line))) (throw "http"))
                ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" . @) L)
+                  (off *Post)
                   (_htHead) )
                ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" . @) L)
+                  (on *Post)
                   (off *MPartLim *MPartEnd)
                   (_htHead)
                   (and *MPartLim *MPartEnd (_htMultipart)) )
@@ -235,21 +237,36 @@
                   (setq L (if (= "^J" C) *MPartLim *MPartEnd)) ) ) ) ) ) )
 
 (de _htSet ("Var" Val)
-   (use (@N @V)
+   (use (@N @V @Z)
       (off @N)
       (setq "Var"
          (intern
             (ht:Pack
-               (ifn (match '(@V "(" @N ")") "Var")
+               (ifn (match '(@V "(" @N ")" @Z) "Var")
                   "Var"
                   (setq @N (htArg @N))
                   @V ) ) ) )
+      (when @Z
+         (setq Val
+            (cond
+               ((= @Z '("." "x")) (cons (format Val)))
+               ((= @Z '("." "y")) (cons NIL (format Val)))
+               (T (msg @Z " bad suffix") (throw "http")) ) ) )
       (cond
          ((nand (= `(char '*) (char "Var")) (or (not *Allow) (idx *Allow "Var")))
             (msg "Var" " not allowed")
             (throw "http") )
-         ((not @N) (set "Var" Val))
-         ((assoc @N (val "Var")) (con @ Val))
+         ((not @N)
+            (cond
+               ((nand @Z (val "Var")) (set "Var" Val))
+               ((car Val) (set (val "Var") @))
+               (T (con (val "Var") (cdr Val))) ) )
+         ((assoc @N (val "Var"))
+            (let X @
+               (cond
+                  ((nand @Z (cdr X)) (con X Val))
+                  ((car Val) (set (cdr X) @))
+                  (T (con (cdr X) (cdr Val))) ) ) )
          (T (queue "Var" (cons @N Val))) ) ) )
 
 (de htArg (Lst)
@@ -279,7 +296,7 @@
 (de httpEcho (File Typ Upd Att)
    (ifn (info File)
       (http404)
-      (_http Typ Upd)
+      (_http Typ (if (and *Tmp (pre? *Tmp File)) 1 Upd))
       (let D (date (cadr @))
          (prinl "Content-Length: " (car @) "^M")
          (prinl "Last-Modified: "
@@ -331,3 +348,5 @@
    (httpStat 404 "Not Found") )
 
 (de urlN . `http404)
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

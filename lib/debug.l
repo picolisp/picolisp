@@ -1,4 +1,4 @@
-# 27dec05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -309,3 +309,5 @@
                (for N L
                   (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

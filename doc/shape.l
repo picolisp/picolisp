@@ -1,4 +1,4 @@
-# 29oct04abu
+# 14jan06abu
 # (c) Software Lab. Alexander Burger
 
 # The Shape base class
@@ -55,3 +55,5 @@
 (class +Fixed)
 
 (dm move> (DX DY))  # A do-nothing method
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

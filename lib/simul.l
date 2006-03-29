@@ -1,4 +1,4 @@
-# 25dec05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -13,10 +13,11 @@
 
 (de shuffle (Lst)
    (make
-      (while Lst
-         (let (N (rand 1 (length Lst))  L1 (head (dec N) Lst)  L2 (nth Lst N))
-            (link (pop 'L2))
-            (setq Lst (conc L1 L2)) ) ) ) )
+      (for (N (length Lst) (gt0 N))
+         (setq Lst
+            (conc
+               (cut (rand 0 (dec 'N)) 'Lst)
+               (prog (link (car Lst)) (cdr Lst)) ) ) ) ) )
 
 (de samples (Cnt Lst)
    (make
@@ -123,3 +124,40 @@
 
 (de north (This)
    (: 0 -1 -1) )
+
+(de disp (Grid How Foo X Y DX DY)
+   (setq Grid
+      (if X
+         (mapcar
+            '((L) (flip (head DY (nth L Y))))
+            (head DX (nth Grid X)) )
+         (mapcar reverse Grid) ) )
+   (let (N (+ (length (cdar Grid)) (or Y 1))  Sp (length N))
+      ("border" north)
+      (while (caar Grid)
+         (prin " " (align Sp N) " "
+            (and How (if (and (nT How) (west (caar Grid))) " " '|)) )
+         (for L Grid
+            (prin
+               (Foo (car L))
+               (and How (if (and (nT How) (east (car L))) " " '|)) ) )
+         (prinl)
+         ("border" south)
+         (map pop Grid)
+         (dec 'N) )
+      (unless (> (default X 1) 26)
+         (space (inc Sp))
+         (for L Grid
+            (prin " " (and How "  ") (char (+ 96 X)))
+            (T (> (inc 'X) 26)) )
+         (prinl) ) ) )
+
+(de "border" (Dir)
+   (when How
+      (space Sp)
+      (prin "  +")
+      (for L Grid
+         (prin (if (and (nT How) (Dir (car L))) "   +" "---+")) )
+      (prinl) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

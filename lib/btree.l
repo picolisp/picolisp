@@ -1,4 +1,4 @@
-# 10dec05abu
+# 13feb06abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -28,7 +28,7 @@
                (and
                   (setq R (rank Key (cdr (val Node))))
                   (= Key (car R)) )
-               (cddr R) )
+               (or (cddr R) (fin (car R))) )
             (NIL
                (setq Node (if R (cadr R) (car (val Node)))) ) ) ) ) )
 
@@ -55,7 +55,11 @@
 
 (de _store (Root)
    (and *Prune (cdr Root) (idx '*Prune @ T))
-   (if Val
+   (ifn Val
+      (when (and (cdr Root) (_del @))
+         (touch Base)
+         (con Root) )
+      (and (= Val (fin Key)) (off Val))
       (if (cdr Root)
          (when (_put @)
             (touch Base)
@@ -64,10 +68,7 @@
          (con Root
             (def (new (car Dbf))
                (list NIL (cons Key (cons NIL Val))) ) )
-         (inc Root) )
-      (when (and (cdr Root) (_del @))
-         (touch Base)
-         (con Root) ) ) )
+         (inc Root) ) ) )
 
 (de _put (Top)
    (let (V (val Top)  R (rank Key (cdr V)))
@@ -259,7 +260,7 @@
             (con L (cons (cdr @) (cdr L)))
             (wipe V) )
          (NIL (and X F (flg? (fin (car X))))
-            (cddr X) ) ) ) )
+            (or (cddr X) (fin (car X))) ) ) ) )
 
 (====)
 
@@ -283,7 +284,9 @@
             (cdr "V") )
          (T (> (car "X") "End"))
          (unless (and "F" (flg? (fin (car "X"))))
-            ("Foo" (car "X") (cddr "X")) )
+            ("Foo"
+               (car "X")
+               (or (cddr "X") (fin (car "X"))) ) )
          (_scan (cadr "X")) )
       (wipe "Node") ) )
 
@@ -300,7 +303,9 @@
             (cdr "V") )
          (T (> "End" (car "X")))
          (unless (and "F" (flg? (fin (car "X"))))
-            ("Foo" (car "X") (cddr "X")) )
+            ("Foo"
+               (car "X")
+               (or (cddr "X") (fin (car "X"))) ) )
          (_nacs (cadr "X")) )
       (wipe "Node") ) )
 
@@ -326,7 +331,7 @@
             (cdr "V") )
          (T (> (car "X") "End"))
          (unless (and "F" (flg? (fin (car "X"))))
-            ("Foo" (cddr "X")) )
+            ("Foo" (or (cddr "X") (fin (car "X")))) )
          (_iter (cadr "X")) )
       (wipe "Node") ) )
 
@@ -343,7 +348,7 @@
             (cdr "V") )
          (T (> "End" (car "X")))
          (unless (and "F" (flg? (fin (car "X"))))
-            ("Foo" (cddr "X")) )
+            ("Foo" (or (cddr "X") (fin (car "X")))) )
          (_reti (cadr "X")) )
       (wipe "Node") ) )
 
@@ -386,3 +391,5 @@
                   (and "L" (recurse "L")) ) )
             (wipe "Node") ) )
       "N" ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

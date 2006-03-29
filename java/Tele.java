@@ -1,4 +1,4 @@
-// 29mar04abu
+// 10jan06abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -62,6 +62,7 @@ public class Tele {
             sock = new Socket(host, port);
          else
             sock = Server.accept();
+         sock.setTcpNoDelay(true);
 
          NetIn = sock.getInputStream();
          NetOut = sock.getOutputStream();

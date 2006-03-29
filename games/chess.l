@@ -1,4 +1,4 @@
-# 04sep05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -12,14 +12,13 @@
 
 (setq *Board (grid 8 8))
 
-(for X (1 2 3 4 5 6 7 8)
-   (for Y (1 2 3 4 5 6 7 8)
-      (with (get *Board X Y)
-         (=: x X)
-         (=: y Y)
-         (=: color (not (bit? 1 (+ X Y)))) ) ) )
+(for (X . Lst) *Board
+   (for (Y . This) Lst
+      (=: x X)
+      (=: y Y)
+      (=: color (not (bit? 1 (+ X Y)))) ) )
 
-(de *Straight `west `east `north `south)
+(de *Straight `west `east `south `north)
 
 (de *Diagonal
    ((This) (: 0 1  1  0 -1  1))   # Southwest
@@ -58,19 +57,7 @@
    (pack " " (extra) " ") )
 
 (dm move> (Fld)
-   (let (W (: field whAtt)  B (: field blAtt))
-      (when (: field)
-         (put @ 'piece NIL)
-         (for F (: attacks) (whAtt- F This)) )
-      (cond
-         ((not Fld) (setq *White (delq This *White)))
-         ((not (: field)) (push '*White This)) )
-      (ifn (=: field Fld)
-         (=: attacks)
-         (put Fld 'piece This)
-         (and (isa '+King This) (setq *WKPos Fld))
-         (for F (=: attacks (attacks> This)) (whAtt+ F This)) )
-      (reAtttack W (: field whAtt) B (: field blAtt)) ) )
+   (adjMove '*White '*WKPos whAtt- whAtt+) )
 
 
 (class +Black)
@@ -85,19 +72,7 @@
    (pack '< (extra) '>) )
 
 (dm move> (Fld)
-   (let (W (: field whAtt)  B (: field blAtt))
-      (when (: field)
-         (put @ 'piece NIL)
-         (for F (: attacks) (blAtt- F This)) )
-      (cond
-         ((not Fld) (setq *Black (delq This *Black)))
-         ((not (: field)) (push '*Black This)) )
-      (ifn (=: field Fld)
-         (=: attacks)
-         (put Fld 'piece This)
-         (and (isa '+King This) (setq *BKPos Fld))
-         (for F (=: attacks (attacks> This)) (blAtt+ F This)) )
-      (reAtttack W (: field whAtt) B (: field blAtt)) ) )
+   (adjMove '*Black '*BKPos blAtt- blAtt+) )
 
 
 (class +piece)
@@ -125,8 +100,8 @@
          (or
             (n0 (: cnt))
             (get (: field) (if (: color) 'whAtt 'blAtt)) )
-         (castle west T)
-         (castle east) )
+         (tryCastle west T)
+         (tryCastle east) )
       (try1Move *Straight)
       (try1Move *Diagonal) ) )
 
@@ -242,6 +217,21 @@
 (de blAtt- (This Pce)
    (=: blAtt (delq Pce (: blAtt))) )
 
+(de adjMove (Var KPos Att- Att+)
+   (let (W (: field whAtt)  B (: field blAtt))
+      (when (: field)
+         (put @ 'piece NIL)
+         (for F (: attacks) (Att- F This)) )
+      (cond
+         ((not Fld) (set Var (delq This (val Var))))
+         ((not (: field)) (push Var This)) )
+      (ifn (=: field Fld)
+         (=: attacks)
+         (put Fld 'piece This)
+         (and (isa '+King This) (set KPos Fld))
+         (for F (=: attacks (attacks> This)) (Att+ F This)) )
+      (reAtttack W (: field whAtt) B (: field blAtt)) ) )
+
 (de reAtttack (W W2 B B2)
    (for This W
       (unless (memq This W2)
@@ -342,7 +332,7 @@
             (n== (: color) (get Pce 'color))
             (link (list This (cons Pce) (cons This Fld1))) ) ) ) )
 
-(de castle (Dir Long)
+(de tryCastle (Dir Long)
    (use (Fld1 Fld2 Fld Pce)
       (or
          (get (setq Fld1 (Dir (: field))) 'piece)
@@ -474,20 +464,13 @@
 
 ### Game ###
 (de display ()
-   (for Y (8 7 6 5 4 3 2 1)
-      (prinl "   +---+---+---+---+---+---+---+---+")
-      (prin " " Y " ")
-      (for X (1 2 3 4 5 6 7 8)
-         (prin '|
-            (with (get *Board X Y)
-               (cond
-                  ((: piece) (name> @))
-                  ((: color) " - ")
-                  (T "   ") ) ) ) )
-      (prinl '|) )
-   (prinl "   +---+---+---+---+---+---+---+---+" (and (inCheck *You) " (+)"))
-   (prinl "     a   b   c   d   e   f   g   h")
-   T )
+   (disp *Board T
+      '((This)
+         (cond
+            ((: piece) (name> @))
+            ((: color) " - ")
+            (T "   ") ) ) )
+   (and (inCheck *You) (prinl "(+)")) )
 
 (de moved? (Lst)
    (or
@@ -575,3 +558,5 @@
                         (val This)
                         (not (memq This *Moved)) ) )
                   (append *White *Black) ) ) ) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

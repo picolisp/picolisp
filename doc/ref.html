@@ -22,7 +22,7 @@
 <p>This document describes the concepts, data types, and kernel functions of the
 <a href="http://software-lab.de/down.html">Pico Lisp</a> system.
 
-<p>This is <u>not</u> a Lisp tutorial. For an introduction to Lisp, a
+<p>This is <i>not</i> a Lisp tutorial. For an introduction to Lisp, a
 traditional Lisp book like "Lisp" by Winston/Horn (Addison-Wesley 1981) is
 recommended. Note, however, that there are significant differences between Pico
 Lisp and Maclisp (and even greater differences to Common Lisp).
@@ -192,12 +192,16 @@ programmer).
 <p><hr>
 <h3><a name="dat">Data Types</a></h3>
 
-<p>On the virtual machine level, Pico Lisp supports exactly <u>three</u> base
-data types (<u>Numbers, Symbols and Cons Pairs (Lists)</u>), the three scope
-variations of symbols (<u>Internal, Transient and External</u>), and the special
-symbol <code><u>NIL</u></code>. They are all built from the single cell data
-structure, and all runtime data cannot consist of any other types than these
-three.
+<p>On the virtual machine level, Pico Lisp supports
+
+<p><ul>
+<li>three base data types: Numbers, Symbols and Cons Pairs (Lists)
+<li>the three scope variations of symbols: Internal, Transient and External
+<li>and the special symbol <code>NIL</code>.
+</ul>
+
+<p>They are all built from the single cell data structure, and all runtime data
+cannot consist of any other types than these three.
 
 <p>The following diagram shows the complete data type hierarchy, consisting of
 the three base types and the symbol variations:
@@ -209,6 +213,7 @@ the three base types and the symbol variations:
             |        |        |
          Number    Symbol    List
                      |
+                     |
    +--------+--------+--------+
    |        |        |        |
   NIL   Internal Transient External
@@ -219,7 +224,7 @@ the three base types and the symbol variations:
 <h3><a name="number">Numbers</a></h3>
 
 <p>A number can represent a signed integral value of arbitrary size. The
-<code>CAR</code> of one or more cells hold the number's "digits" (each in the
+<code>CAR</code>s of one or more cells hold the number's "digits" (each in the
 machine's word size), to store the number's binary representation.
 
 <p><pre><code>
@@ -316,7 +321,9 @@ three 8-bit-bytes per character. The first byte of the first character is stored
 in the lowest 8 bits of the number.
 
 <p>All symbols have the above structure, but depending on scope and
-accessibility there are actually four types of symbols:
+accessibility there are actually four types of symbols: <code><a
+href="#nilSym">NIL</a></code>, <a href="#internal">internal</a>, <a
+href="#transient">transient</a> and <a href="#external">external</a> symbols.
 
 
 <p><hr>
@@ -433,7 +440,7 @@ arrays, trees, stacks or queues.
 
 <p>Typically, the <code>CDR</code> of each cell in a list points to the
 following cell, except for the last cell which points <code>NIL</code>. If,
-however, the <code>CDR</code> of the last cell points to an atom, this cell is
+however, the <code>CDR</code> of the last cell points to an atom, that cell is
 called a "dotted pair" (because of its I/O syntax with a dot '.' between the two
 values).
 
@@ -509,7 +516,7 @@ href="#load">load</a></code>) will also exit when an empty line is entered:
 
 <p><pre><code>
 $ bin/picolisp
-:
+:                       # Typed RETURN
 $
 </code></pre>
 
@@ -539,9 +546,9 @@ $ ./p dbg.l myProject.l -main
 </code></pre>
 
 <p>In any case, the path name to the first command line file argument is
-remembered internally as the <i>Pico Lisp Home Directory</i>. This path is later
+remembered internally as the <u>Pico Lisp Home Directory</u>. This path is later
 automatically substituted for any leading "<code>@</code>" character in file
-name arguments to I/O functions.
+name arguments to I/O functions (see <code><a href="#path">path</a></code>).
 
 
 <p><hr>
@@ -621,11 +628,11 @@ href="#format">format</a></code> function:
 <h3><a name="sym-io">Symbols</a></h3>
 
 <p>The reader is able to recognize the individual symbol types from their
-syntactic form. A symbol name should - of course - <u>not</u> look like a legal
-number (see above).
+syntactic form. A symbol name should - of course - not look like a legal number
+(see above).
 
-<p>In general, symbol names are case-sensitive. <code>car</code> is <u>not</u>
-the same as <code>CAR</code>.
+<p>In general, symbol names are case-sensitive. <code>car</code> is not the same
+as <code>CAR</code>.
 
 
 <p><hr>
@@ -653,7 +660,7 @@ the same as <code>CAR</code>.
 character, except for the following meta characters:
 
 <p><pre><code>
-   "  #  '  (  )  [  ]  `  ~
+   "  '  (  )  [  ]  `  ~
 </code></pre>
 
 <p>As a rule, anything not recognized by the reader as another data type will be
@@ -663,26 +670,30 @@ returned as an internal symbol.
 <p><hr>
 <h3><a name="transient-io">Transient Symbols</a></h3>
 
-<p>A transient symbol is anything surrounded by double quotes '<code>"</code>'.
-With that, it looks - and can be used - like a string constant in other
-languages. However, it is a real symbol, and may be assigned a value or a
-function definition, and properties.
+<p>In an interactive environment (console), transient symbols should appear as
+an <u>underlined</u> sequence of characters. Where this is not possible (e.g.
+for representation in files), or inconvenient (while editing), double quotes
+'<code>"</code>' are used instead of - or in addition to - underlining.
+
+<p>A transient symbol may be used (and, in double quote representation, also
+look) like a string constant in other languages. However, it is a real symbol,
+and may be assigned a value or a function definition, and properties.
 
 <p>Initially, a transient symbol's value is that symbol itself, so that it does
 not need to be quoted for evaluation:
 
 <p><pre><code>
-: "This is a string"
--> "This is a string"
+: "<u>This is a string</u>"
+-> <u>This is a string</u>
 </code></pre>
 
 <p>However, care must be taken when assigning a value to a transient symbol.
 This may cause unexpected behavior:
 
 <p><pre><code>
-: (setq "This is a string" 12345)
+: (setq "<u>This is a string</u>" 12345)
 -> 12345
-: "This is a string"
+: "<u>This is a string</u>"
 -> 12345
 </code></pre>
 
@@ -692,10 +703,10 @@ itself has to be escaped with another backslash. Control characters can be
 written with a preceding hat '<code>^</code>' character.
 
 <p><pre><code>
-: "We^Ird\\Str\"ing"
--> "We^Ird\\Str\"ing"
+: "<u>We^Ird\\Str\"ing</u>"
+-> <u>We^Ird\\Str\"ing</u>
 : (chop @)
--> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
+-> (<u>W</u> <u>e</u> <u>^I</u> <u>r</u> <u>d</u> <u>\\</u> <u>S</u> <u>t</u> <u>r</u> <u>\"</u> <u>i</u> <u>n</u> <u>g</u>)
 </code></pre>
 
 <p>The hash table for transient symbols is cleared automatically before and
@@ -704,8 +715,8 @@ explicitly with the <code><a href="#====">====</a></code> function. With that
 mechanism, it is possible to create symbols with a local access scope, not
 accessible from other parts of the program.
 
-<p>A special case of transient symbols are <i>anonymous symbols</i>, symbols
-without name (see <code><a href="#box">box</a></code>, <code><a
+<p>A special case of transient symbols are <i>anonymous symbols</i>. These are
+symbols without name (see <code><a href="#box">box</a></code>, <code><a
 href="#boxQ">box?</a></code> or <code><a href="#new">new</a></code>). They print
 as a dollar sign (<code>$</code>) followed by a decimal digit string (actually
 their machine address).
@@ -822,13 +833,13 @@ currently open parentheses.
 loop. Basically, it does so by applying the following three rules:
 
 <p><ul>
-<li>A <u>number</u> evaluates to <u>itself</u>.
+<li>A number evaluates to itself.
 
-<li>A <u>symbol</u> evaluates to its <u>value</u> (<code>VAL</code>).
+<li>A symbol evaluates to its value (<code>VAL</code>).
 
-<li>A <u>list</u> is evaluated as a <u>function call</u>, with the
-<code>CAR</code> as the function and the <code>CDR</code> the arguments to that
-function. These arguments are in turn evaluated according to these three rules.
+<li>A list is evaluated as a function call, with the <code>CAR</code> as the
+function and the <code>CDR</code> the arguments to that function. These
+arguments are in turn evaluated according to these three rules.
 
 </ul>
 
@@ -930,7 +941,7 @@ function.
 a symbol but a list, that list is evaluated to obtain an executable function.
 
 <p><pre><code>
-: ((intern (pack "c" "a" "r")) (1 2 3))
+: ((intern (pack "<u>c</u>" "<u>a</u>" "<u>r</u>")) (1 2 3))
 -> 1
 </code></pre>
 
@@ -1134,6 +1145,7 @@ NIL
    <a href="#do">do</a>,
    <a href="#for">for</a>,
    <a href="#if">if</a>,
+   <a href="#if2">if2</a>,
    <a href="#ifn">ifn</a>,
    <a href="#loop">loop</a>,
    <a href="#nand">nand</a>,
@@ -1185,8 +1197,8 @@ special cases, <code>NIL</code> is always less than anything else, and
 data types:
 
 <p><pre><code>
-: (sort '("abc" T (d e f) NIL 123 DEF))
--> (NIL 123 DEF "abc" (d e f) T)
+: (sort '("<u>abc</u>" T (d e f) NIL 123 DEF))
+-> (NIL 123 DEF <u>abc</u> (d e f) T)
 </code></pre>
 
 <p>See also <code><a href="#max">max</a></code>, <code><a
@@ -1438,7 +1450,7 @@ executed. Instead, it is safe to write:
 -> max-speed
 </code></pre>
 
-<p>Note that there are also some strict naming <u>rules</u> (as opposed to the
+<p>Note that there are also some strict naming rules (as opposed to the
 voluntary conventions) that are required by the corresponding kernel
 functionalities, like:
 
@@ -1470,8 +1482,8 @@ which was not the case in traditional Lisp systems.
 
 <dt><code>QUOTE</code>
 <dd>In traditional Lisp, the <code>QUOTE</code> function returns its
-<u>first</u> unevaluated argument. In Pico Lisp, on the other hand,
-<code>quote</code> returns <u>all</u> (unevaluated) argument(s).
+<i>first</i> unevaluated argument. In Pico Lisp, on the other hand,
+<code>quote</code> returns <i>all</i> (unevaluated) argument(s).
 
 <dt><code>LAMBDA</code>
 <dd>The <code>LAMBDA</code> function, in some way at the heart of traditional
@@ -1483,7 +1495,7 @@ functionality, is also missing. Pico Lisp's <code>prog</code> function is just a
 simple sequencer (as <code>PROGN</code> ins some Lisps).
 
 <dt>Function/Value
-<dd>In Pico Lisp, a symbol cannot have a value <u>and</u> a function definition
+<dd>In Pico Lisp, a symbol cannot have a value <i>and</i> a function definition
 at the same time. Though this is a disadvantage at first sight, it allows a
 completely uniform handling of functional data.
 
@@ -1599,7 +1611,9 @@ abbreviations:
    <a href="#xchg">xchg</a>
    <a href="#on">on</a>
    <a href="#off">off</a>
+   <a href="#onOff">onOff</a>
    <a href="#zero">zero</a>
+   <a href="#one">one</a>
    <a href="#default">default</a>
    <a href="#let">let</a>
    <a href="#letQ">let?</a>
@@ -1800,6 +1814,7 @@ abbreviations:
    <a href="#prog1">prog1</a>
    <a href="#prog2">prog2</a>
    <a href="#if">if</a>
+   <a href="#if2">if2</a>
    <a href="#ifn">ifn</a>
    <a href="#when">when</a>
    <a href="#unless">unless</a>
@@ -1852,6 +1867,7 @@ abbreviations:
 
 <dt>Input/Output
 <dd><code>
+   <a href="#path">path</a>
    <a href="#in">in</a>
    <a href="#out">out</a>
    <a href="#pipe">pipe</a>
@@ -1884,6 +1900,7 @@ abbreviations:
    <a href="#rd">rd</a>
    <a href="#pr">pr</a>
    <a href="#wr">wr</a>
+   <a href="#rpc">rpc</a>
    <a href="#wait">wait</a>
    <a href="#sync">sync</a>
    <a href="#echo">echo</a>
@@ -1941,6 +1958,7 @@ abbreviations:
    <a href="#protect">protect</a>
    <a href="#heap">heap</a>
    <a href="#env">env</a>
+   <a href="#up">up</a>
    <a href="#stk">stk</a>
    <a href="#stat">stat</a>
    <a href="#date">date</a>
@@ -1974,6 +1992,7 @@ abbreviations:
    <a href="#*Class">*Class</a>
    <a href="#*Key">*Key</a>
    <a href="#*Led">*Led</a>
+   <a href="#*Tsm">*Tsm</a>
    <a href="#*Err">*Err</a>
    <a href="#*Msg">*Msg</a>
    <a href="#*Uni">*Uni</a>
@@ -2022,9 +2041,9 @@ result of the last application.
 delWord +PwField +Fmt tail char cons month ..
 .. conc cond -> cond
 
-: (make (all '((X) (and (= "_" (car (chop X))) (link X)))))  # Find all symbols
-starting with an underscore charactoer
--> (_ed _isa _delL _delR _dbg _del _clone _query _scan _hex _boxSend _put)
+# Find all symbols starting with an underscore charactoer
+: (make (all '((X) (and (= "<u>_</u>" (car (chop X))) (link X)))))
+-> (_ed _isa _delL _delR _dbg _del _query _scan _hex _boxSend _put)
 </code></pre>
 
 <p><dt><a name="and"><code>(and 'any ..) -> any</code></a>
@@ -2045,10 +2064,10 @@ abc  # User input
 href="#sym">sym</a></code> and <code><a href="#str">str</a></code>.
 
 <p><pre><code>
-: (any "(a b # Comment^Jc d)")
+: (any "<u>(a b # Comment^Jc d)</u>")
 -> (a b c d)
-: (any "\"A String\"")
--> "A String"
+: (any "<u>\"A String\"</u>")
+-> <u>A String</u>
 </code></pre>
 
 <p><dt><a name="append"><code>(append 'lst ..) -> lst</code></a>
@@ -2134,17 +2153,17 @@ href="#opt">opt</a></code>.
 $ ./p -"println 'Ok" - abc 123
 Ok
 : (argv)
--> ("abc" "123")
+-> (<u>abc</u> <u>123</u>)
 : (argv A B)
--> "123"
+-> <u>123</u>
 : A
--> "abc"
+-> <u>abc</u>
 : B
--> "123"
+-> <u>123</u>
 : (argv . Lst)
--> ("abc" "123")
+-> (<u>abc</u> <u>123</u>)
 : Lst
--> ("abc" "123")
+-> (<u>abc</u> <u>123</u>)
 </code></pre>
 
 <p><dt><a name="as"><code>(as 'any1 . any2) -> any2 | NIL</code></a>
@@ -2167,9 +2186,9 @@ href="#assoc">assoc</a></code>, <code><a href="#delq">delq</a></code>, <code><a
 href="#memq">memq</a></code> and <code><a href="#mmeq">mmeq</a></code>.
 
 <p><pre><code>
-: (asoq 999 '((999 1 2 3) (b . 7) ("ok" "Hello")))
+: (asoq 999 '((999 1 2 3) (b . 7) ("<u>ok</u>" "<u>Hello</u>")))
 -> NIL
-: (asoq 'b '((999 1 2 3) (b . 7) ("ok" "Hello")))
+: (asoq 'b '((999 1 2 3) (b . 7) ("<u>ok</u>" "<u>Hello</u>")))
 -> (b . 7)
 </code></pre>
 
@@ -2179,11 +2198,11 @@ href="#memq">memq</a></code> and <code><a href="#mmeq">mmeq</a></code>.
 <code>NIL</code> if no match is found.
 
 <p><pre><code>
-: (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
--> ("b" . 7)
-: (assoc 999 '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+: (assoc "<u>b</u>" '((999 1 2 3) ("<u>b</u>" . 7) ("<u>ok</u>" "<u>Hello</u>")))
+-> (<u>b</u> . 7)
+: (assoc 999 '((999 1 2 3) ("<u>b</u>" . 7) ("<u>ok</u>" "<u>Hello</u>")))
 -> (999 1 2 3)
-: (assoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+: (assoc 'u '((999 1 2 3) ("<u>b</u>" . 7) ("<u>ok</u>" "<u>Hello</u>")))
 -> NIL
 </code></pre>
 
@@ -2193,13 +2212,13 @@ when it is less than <code>cnt2</code>. Otherwise, <code>prg</code> is executed
 and <code>cnt1</code> is reset to zero. Returns the result of <code>prg</code>.
 
 <p><pre><code>
-: (do 11 (prin ".") (at (0 . 3) (prin "!")))
+: (do 11 (prin "<u>.</u>") (at (0 . 3) (prin "<u>!</u>")))
 ...!...!...!..-> NIL
 </code></pre>
 
 <p><dt><a name="atom"><code>(atom 'any) -> flg</code></a>
 <dd>Returns <code>T</code> when the argument <code>any</code> is an atom (a
-number or a symbol).
+number or a symbol). See also <code><a href="#pair">pair</a></code>.
 
 <p><pre><code>
 : (atom 123)
@@ -2235,25 +2254,25 @@ property of <code>sym</code>. See also <code><a href="#goal">goal</a></code> and
 </code></pre>
 
 <p><dt><a name="begin"><code>(begin) -> T</code></a>
-<dd>Opens a nested transaction. <u>Not</u> needed for normal single-level
-transaction processing with <code><a href="#commit">commit</a></code> and
-<code><a href="#rollback">rollback</a></code>.
+<dd>Opens a nested transaction. Not needed for normal single-level transaction
+processing with <code><a href="#commit">commit</a></code> and <code><a
+href="#rollback">rollback</a></code>.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
-: (put '{1} 'str "Hello")        # Set property in first level
--> "Hello"
+: (put '{1} 'str "<u>Hello</u>")        # Set property in first level
+-> <u>Hello</u>
 : (begin)                        # Start second level
 -> T
-: (put '{1} 'str "abc")          # Set another value
--> "abc"
+: (put '{1} 'str "<u>abc</u>")          # Set another value
+-> <u>abc</u>
 : (get '{1} 'str)
--> "abc"
+-> <u>abc</u>
 : (rollback)                     # Rollback second level
 -> NIL
 : (get '{1} 'str)                # Value is restored
--> "Hello"
+-> <u>Hello</u>
 : (rollback)                     # Rollback top level
 -> T
 : (get '{1} 'str)                # Value is cleared
@@ -2273,9 +2292,9 @@ href="#job">job</a></code> and <code><a href="#use">use</a></code>.
 <p><pre><code>
 : (setq X 123)                               # X is 123
 -> 123
-: (bind 'X '((setq X "Hello") (println X)))  # Set X to "Hello", print it
-"Hello"
--> "Hello"
+: (bind 'X '((setq X "<u>Hello</u>") (println X)))  # Set X to <u>Hello</u>, print it
+<u>Hello</u>
+-> <u>Hello</u>
 : (bind '((X . 3) (Y . 4)) '((println X Y) (* X Y)))
 3 4
 -> 12
@@ -2440,9 +2459,9 @@ command and its arguments. Returns <code>T</code> if the command was executed
 successfully.
 
 <p><pre><code>
-: (when (call 'test "-r" "file.l")  # Test if file exists and is readable
-   (load "file.l")                  # Load it
-   (call 'rm "file.l") )            # Remove it
+: (when (call 'test "<u>-r</u>" "file.l")  # Test if file exists and is readable
+   (load "<u>file.l</u>")                  # Load it
+   (call 'rm "<u>file.l</u>") )            # Remove it
 </code></pre>
 
 <p><dt><a name="car"><code>(car 'lst) -> any</code></a>
@@ -2462,8 +2481,8 @@ list, <code>any</code> is in turn compared to all elements of that list.
 <code>NIL</code> is returned.
 
 <p><pre><code>
-: (case (char 66) ("A" (+ 1 2 3)) (("B" "C") "Bambi") ("D" (* 1 2 3)))
--> "Bambi"
+: (case (char 66) ("<u>A</u>" (+ 1 2 3)) (("<u>B</u>" "<u>C</u>") "<u>Bambi</u>") ("<u>D</u>" (* 1 2 3)))
+-> <u>Bambi</u>
 </code></pre>
 
 <p><dt><a name="catch"><code>(catch 'sym . prg) -> any</code></a>
@@ -2483,10 +2502,10 @@ returned. See also <code><a href="#finally">finally</a></code>.
 <p><dt><a name="cd"><code>(cd 'any) -> sym</code></a>
 <dd>Changes the current directory to <code>any</code>. The old directory is
 returned on success, otherwise <code>NIL</code>. See also <code><a
-href="#dir">dir</a></code>.
+href="#dir">dir</a></code> and <code><a href="#pwd">pwd</a></code>.
 
 <p><pre><code>
-: (when (cd "lib")
+: (when (cd "<u>lib</u>")
    (println (sum lines (dir)))
    (cd @) )
 10955
@@ -2591,12 +2610,12 @@ name of that symbol is returned. See also <code><a href="#peek">peek</a></code>,
 <p><pre><code>
 : (char)                   # Read character from console
 A                          # (typed `A' and a space/return)
--> "A"
+-> <u>A</u>
 : (char 100)               # Convert unicode to symbol
--> "d"
+-> <u>d</u>
 : (char T)                 # Special case, catch all
 -> # (not printable)
-: (char "d")               # Convert symbol to unicode
+: (char <u>d</u>)               # Convert symbol to unicode
 -> 100
 </code></pre>
 
@@ -2607,9 +2626,9 @@ is returned. A list argument is returned unchanged.
 
 <p><pre><code>
 : (chop 'car)
--> ("c" "a" "r")
-: (chop "Hello")
--> ("H" "e" "l" "l" "o")
+-> (<u>c</u> <u>a</u> <u>r</u>)
+: (chop "<u>Hello</u>")
+-> (<u>H</u> <u>e</u> <u>l</u> <u>l</u> <u>o</u>)
 </code></pre>
 
 <p><dt><a name="circ"><code>(circ 'any ..) -> lst</code></a>
@@ -2625,14 +2644,14 @@ href="#list">list</a></code>.
 
 <p><dt><a name="clip"><code>(clip 'lst) -> lst</code></a>
 <dd>Returns a copy of <code>lst</code> with all white space characters or
-<code>NIL</code> elements removed from <u>both</u> sides. See also <code><a
+<code>NIL</code> elements removed from both sides. See also <code><a
 href="#trim">trim</a></code>.
 
 <p><pre><code>
 : (clip '(NIL 1 NIL 2 NIL))
 -> (1 NIL 2)
-: (clip '(" " a " " b " "))
--> (a " " b)
+: (clip '("<u> </u>" a "<u> </u>" b "<u> </u>"))
+-> (a <u> </u> b)
 </code></pre>
 
 <p><dt><a name="close"><code>(close 'cnt) -> T</code></a>
@@ -2669,10 +2688,10 @@ out, even if this is not the top level. When the argument is anything other than
 href="#rollback">rollback</a></code>.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
-: (put '{1} 'str "Hello")
--> "Hello"
+: (put '{1} 'str "<u>Hello</u>")
+-> <u>Hello</u>
 : (commit)
 -> T
 </code></pre>
@@ -2727,7 +2746,7 @@ socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
 be established. See also <code><a href="#listen">listen</a></code>.
 
 <p><pre><code>
-: (connect "localhost" 4444)
+: (connect "<u>localhost</u>" 4444)
 -> 3
 </code></pre>
 
@@ -2772,10 +2791,10 @@ href="#out">out</a></code>.
 <p><pre><code>
 $ echo 9 >count                           # Write '9' to file "count"
 $ ./p dbg.l
-: (ctl "count"                            # Get exclusive control
-   (in "count"
+: (ctl "<u>count</u>"                            # Get exclusive control
+   (in "<u>count</u>"
       (let Cnt (read)                     # Read '9'
-         (out "count"
+         (out "<u>count</u>"
             (println (- Cnt 1)) ) ) ) )   # Write '8'
 -> 8
 :
@@ -2790,7 +2809,7 @@ serving the remote Pico Lisp process <code>pid</code>. See also <code><a
 href="#raw">raw</a></code>.
 
 <p><pre><code>
-: (ctty "/dev/tty")
+: (ctty "<u>/dev/tty</u>")
 -> T
 </code></pre>
 
@@ -2849,7 +2868,7 @@ href="#rollback">rollback</a></code> is done after allocating external symbols
 with <code><a href="#new">new</a></code>) are appended to the free list.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
 : (dbck)
 -> NIL
@@ -3016,8 +3035,8 @@ starting with a dot '<code>.</code>' are ignored. See also <code><a
 href="#cd">cd</a></code> and <code><a href="#info">info</a></code>.
 
 <p><pre><code>
-: (filter '((F) (tail '(. c) (chop F))) (dir "src/"))
--> ("main.c" "subr.c" "gc.c" "io.c" "big.c" "sym.c" "tab.c" "flow.c" ..
+: (filter '((F) (tail '(. c) (chop F))) (dir "<u>src/</u>"))
+-> (<u>main.c</u> <u>subr.c</u> <u>gc.c</u> <u>io.c</u> <u>big.c</u> <u>sym.c</u> <u>tab.c</u> <u>flow.c</u> ..
 </code></pre>
 
 <p><dt><a name="dm"><code>(dm sym . fun) -> sym<br>
@@ -3083,10 +3102,10 @@ returned), but not written). Returns non-<code>NIL</code> if the operation was
 successfully completed.
 
 <p><pre><code>
-: (in "x.l" (echo))                    # Display file on console
+: (in "<u>x.l</u>" (echo))                    # Display file on console
  ..
 
-: (out "x2.l" (in "x.l" (echo)))       # Copy file "x.l" to "x2.l"
+: (out "<u>x2.l</u>" (in "<u>x.l</u>" (echo)))       # Copy file "x.l" to "x2.l"
 </code></pre>
 
 <p><dt><a name="env"><code>(env '[lst]) -> lst</code></a>
@@ -3116,12 +3135,13 @@ and <code><a href="#job">job</a></code>.
 <code>flg</code> is non-<code>NIL</code>, the channel's status is forced to
 end-of-file, so that the next call to <code>eof</code> will return
 <code>T</code>, and calls to <code><a href="#char">char</a></code>, <code><a
-href="#line">line</a></code>, <code><a href="#rd">rd</a></code>, <code><a
+href="#peek">peek</a></code>, <code><a href="#line">line</a></code>, <code><a
+href="#from">from</a></code>, <code><a href="#till">till</a></code>, <code><a
 href="#read">read</a></code> or <code><a href="#skip">skip</a></code> will
 return <code>NIL</code>.
 
 <p><pre><code>
-: (in "file" (until (eof) (println (line T))))
+: (in "<u>file</u>" (until (eof) (println (line T))))
 ...
 </code></pre>
 
@@ -3129,7 +3149,8 @@ return <code>NIL</code>.
 <dd>Evaluates <code>any</code>. Note that because of the standard argument
 evaluation, <code>any</code> is actually evaluated twice. If a binding
 environment offset <code>cnt</code> is given, the second evaluation takes place
-in the corresponding environment. See also <code><a href="#run">run</a></code>.
+in the corresponding environment. See also <code><a href="#run">run</a></code>
+and <code><a href="#up">up</a></code>.
 
 <p><pre><code>
 : (eval (list '+ 1 2 3))
@@ -3155,7 +3176,7 @@ href="#strQ">str?</a></code> and <code><a href="#lieu">lieu</a></code>.
 -> {1}
 : (ext? 'abc)
 -> NIL
-: (ext? "abc")
+: (ext? "<u>abc</u>")
 -> NIL
 : (ext? 123)
 -> NIL
@@ -3168,9 +3189,9 @@ symbol is returned. <code>NIL</code> is returned if <code>sym</code> does not
 exist in the database. See also <code><a href="#intern">intern</a></code>.
 
 <p><pre><code>
-: (extern "A1b")
+: (extern "<u>A1b</u>")
 -> {A1b}
-: (extern "{A1b}")
+: (extern "<u>{A1b}</u>")
 -> {A1b}
 </code></pre>
 
@@ -3242,14 +3263,14 @@ href="#bye">bye</a></code>, <code><a href="#catch">catch</a></code>, <code><a
 href="#quit">quit</a></code> and <code><a href="#err">Error Handling</a></code>.
 
 <p><pre><code>
-: (finally (prinl "Done!")
+: (finally (prinl "<u>Done!</u>")
    (println 123)
    (quit)
    (println 456) )
 123
 Done!
 : (catch 'A
-   (finally (prinl "Done!")
+   (finally (prinl "<u>Done!</u>")
       (println 1)
       (throw 'A 123)
       (println 2) ) )
@@ -3260,10 +3281,10 @@ Done!
 
 <p><dt><a name="find"><code>(find 'fun 'lst ..) -> any</code></a>
 <dd>Applies <code>fun</code> to successive elements of <code>lst</code> until
-non-<code>NIL</code> is returned. Returns that <u>element</u>, or
-<code>NIL</code> if <code>fun</code> did not return non-<code>NIL</code> for any
-element of <code>lst</code>. When additional <code>lst</code> arguments are
-given, their elements are also passed to <code>fun</code>. See also <code><a
+non-<code>NIL</code> is returned. Returns that element, or <code>NIL</code> if
+<code>fun</code> did not return non-<code>NIL</code> for any element of
+<code>lst</code>. When additional <code>lst</code> arguments are given, their
+elements are also passed to <code>fun</code>. See also <code><a
 href="#seek">seek</a></code>, <code><a href="#pick">pick</a></code>.
 
 <p><pre><code>
@@ -3318,10 +3339,10 @@ defaults to 24. See also <code><a href="#uppc">uppc</a></code> and <code><a
 href="#lowc">lowc</a></code>.
 
 <p><pre><code>
-: (fold " 1A 2-b/3")
--> "1a2b3"
-: (fold " 1A 2-B/3" 3)
--> "1a2"
+: (fold "<u> 1A 2-b/3</u>")
+-> <u>1a2b3</u>
+: (fold "<u> 1A 2-B/3</u>" 3)
+-> <u>1a2</u>
 </code></pre>
 
 <p><dt><a name="for"><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any<br>
@@ -3391,25 +3412,25 @@ also <code><a href="#num-io">Numbers</a></code>.
 
 <p><pre><code>
 : (format 123456789)                   # Integer conversion
--> "123456789"
+-> <u>123456789</u>
 : (format 123456789 2)                 # Fixed point
--> "1234567.89"
-: (format 123456789 2 ",")             # Comma as decimal-separator
--> "1234567,89"
-: (format 123456789 2 "," ".")         # and period as thousands-separator
--> "1.234.567,89"
+-> <u>1234567.89</u>
+: (format 123456789 2 "<u>,</u>")             # Comma as decimal-separator
+-> <u>1234567,89</u>
+: (format 123456789 2 "<u>,</u>" "<u>.</u>")         # and period as thousands-separator
+-> <u>1.234.567,89</u>
 :
-: (format "123456789")                 # String to number
+: (format "<u>123456789</u>")                 # String to number
 -> 123456789
-: (format "1234567.89" 4)              # scaled to four digits
+: (format "<u>1234567.89</u>" 4)              # scaled to four digits
 -> 12345678900
-: (format "1.234.567,89")              # separators not recognized
+: (format "<u>1.234.567,89</u>")              # separators not recognized
 -> NIL
-: (format "1234567,89" 4 ",")
+: (format "<u>1234567,89</u>" 4 "<u>,</u>")
 -> 12345678900
-: (format "1.234.567,89" 4 ",")        # thousands-separator not recognized
+: (format "<u>1.234.567,89</u>" 4 "<u>,</u>")        # thousands-separator not recognized
 -> NIL
-: (format "1.234.567,89" 4 "," ".")
+: (format "<u>1.234.567,89</u>" 4 "<u>,</u>" "<u>.</u>")
 -> 12345678900
 </code></pre>
 
@@ -3420,9 +3441,9 @@ argument, or <code>NIL</code> (if none is found) is returned. See also <code><a
 href="#till">till</a></code> and <code><a href="#echo">echo</a></code>.
 
 <p><pre><code>
-: (and (from "val='") (till "'" T))
+: (and (from "<u>val='</u>") (till "<u>'</u>" T))
 test val='abc'
--> "abc"
+-> <u>abc</u>
 </code></pre>
 
 <p><dt><a name="funQ"><code>(fun? 'any) -> any</code></a>
@@ -3544,7 +3565,7 @@ zero, otherwise <code>NIL</code>. See also <code><a href="#lt0">lt0</a></code>.
 <h3><a name="h-foo">H</a></h3>
 
 <p><dt><a name="head"><code>(head 'cnt|lst 'lst) -> lst</code></a>
-<dd>Returns a new list made of the <u>first</u> <code>cnt</code> elements of
+<dd>Returns a new list made of the first <code>cnt</code> elements of
 <code>lst</code>. If <code>cnt</code> is negative, it is added to the length of
 <code>lst</code>. If the first argument is a <code>lst</code>, <code>head</code>
 is a predicate function returning that argument list if it is <code>equal</code>
@@ -3565,8 +3586,8 @@ to the head of the second argument, and <code>NIL</code> otherwise. See also
 </code></pre>
 
 <p><dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
-<dd>Returns the number of <u>free</u> cells currently available (if
-<code>flg</code> is <code>NIL</code>), or the <u>total</u> number of cells in
+<dd>Returns the number of <i>free</i> cells currently available (if
+<code>flg</code> is <code>NIL</code>), or the <i>total</i> number of cells in
 the system (if <code>flg</code> is non-<code>NIL</code>).
 
 <p><pre><code>
@@ -3585,8 +3606,8 @@ href="#tell">tell</a></code>), <code>hear</code> is usually only called
 explicitly by a top level parent process.
 
 <p><pre><code>
-: (hear "fifo/cmd")
--> "fifo/cmd"
+: (hear "<u>fifo/cmd</u>")
+-> <u>fifo/cmd</u>
 </code></pre>
 
 <p><dt><a name="host"><code>(host 'any) -> sym</code></a>
@@ -3594,24 +3615,27 @@ explicitly by a top level parent process.
 also <code><a href="#*Adr">*Adr</a></code>.
 
 <p><pre><code>
-: (host "217.160.106.89")
--> "software-lab.biz"
+: (host "<u>217.160.106.89</u>")
+-> <u>software-lab.biz</u>
 </code></pre>
 
 
 <p><hr>
 <h3><a name="i-foo">I</a></h3>
 
-<p><dt><a name="id"><code>(id 'sym) -> (num . num)<br>
-(id 'num 'num) -> sym</code></a>
-<dd>Converts an external symbol to a pair of numbers, or two numbers to an
-external symbol.
+<p><dt><a name="id"><code>(id 'num 'num) -> sym<br>
+(id 'sym [NIL]) -> num<br>
+(id 'sym T) -> (num . num)</code></a>
+<dd>Converts two numbers to an external symbol, or an external symbol to a
+number or a pair of numbers.
 
 <p><pre><code>
-: (id '{1-2})
--> (1 . 2)
 : (id 1 2)
 -> {1-2}
+: (id '{1-2})
+-> 2
+: (id '{1-2} T)
+-> (1 . 2)
 </code></pre>
 
 <p><dt><a name="idx"><code>(idx 'var 'any 'flg) -> lst<br>
@@ -3674,6 +3698,26 @@ Bad
 -> Bad
 </code></pre>
 
+<p><dt><a name="if2"><code>(if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any</code></a>
+<dd>Four-way conditional execution for two conditions: If both conditions
+<code>any1</code> and <code>any2</code> evaluate to non-<code>NIL</code>,
+<code>any3</code> is evaluated and returned. Otherwise, <code>any4</code> or
+<code>any5</code> is evaluated and returned if <code>any1</code> or
+<code>any2</code> evaluate to non-<code>NIL</code>, respectively. If none of the
+conditions evaluate to non-<code>NIL</code>, <code>prg</code> is executed and
+the result returned.
+
+<p><pre><code>
+: (if2 T T 'both 'first 'second 'none)
+-> both
+: (if2 T NIL 'both 'first 'second 'none)
+-> first
+: (if2 NIL T 'both 'first 'second 'none)
+-> second
+: (if2 NIL NIL 'both 'first 'second 'none)
+-> none
+</code></pre>
+
 <p><dt><a name="ifn"><code>(ifn 'any1 'any2 . prg) -> any</code></a>
 <dd>Conditional execution ("If not"): If the condition <code>any1</code>
 evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
@@ -3698,7 +3742,7 @@ href="#load">load</a></code>, <code><a href="#out">out</a></code>, <code><a
 href="#pipe">pipe</a></code> and <code><a href="#ctl">ctl</a></code>.
 
 <p><pre><code>
-: (in "a" (list (read) (read) (read)))    # Read three items from file "a"
+: (in "<u>a</u>" (list (read) (read) (read)))    # Read three items from file "a"
 -> (123 (a b c) def)
 </code></pre>
 
@@ -3755,10 +3799,10 @@ href="#time">time</a></code> and <code><a href="#lines">lines</a></code>.
 $ ls -l x.l
 -rw-r--r--   1 abu      users         208 Jun 17 08:58 x.l
 $ ./p dbg.l
-: (info "x.l")
+: (info "<u>x.l</u>")
 -> (208 730594 . 32315)
 : (stamp 730594 32315)
--> "2000-06-17 08:58:35"
+-> <u>2000-06-17 08:58:35</u>
 </code></pre>
 
 <p><dt><a name="intern"><code>(intern 'sym) -> sym</code></a>
@@ -3768,11 +3812,11 @@ is interned and returned. See also <code><a href="#zap">zap</a></code>, <code><a
 href="#extern">extern</a></code> and <code><a href="#====">====</a></code>.
 
 <p><pre><code>
-: (intern "abc")
+: (intern "<u>abc</u>")
 -> abc
 : (intern 'car)
 -> car
-: ((intern (pack "c" "a" "r")) (1 2 3))
+: ((intern (pack "<u>c</u>" "<u>a</u>" "<u>r</u>")) (1 2 3))
 -> 1
 </code></pre>
 
@@ -3831,7 +3875,7 @@ href="#use">use</a></code>.
 the database. See also <code><a href="#pool">pool</a></code>.
 
 <p><pre><code>
-: (in "db.log" (journal))
+: (in "<u>db.log</u>" (journal))
 -> T
 </code></pre>
 
@@ -3851,7 +3895,7 @@ href="#wait">wait</a></code>.
 
 <p><pre><code>
 : (key)                    # Wait for a key
--> "a"                     # `a' pressed
+-> <u>a</u>                     # `a' pressed
 </code></pre>
 
 <p><dt><a name="kill"><code>(kill 'pid ['cnt]) -> flg</code></a>
@@ -3891,9 +3935,9 @@ of characters in the name, and for lists it is the number of elements (or
 href="#size">size</a></code>.
 
 <p><pre><code>
-: (length "abc")
+: (length "<u>abc</u>")
 -> 3
-: (length "äbc")
+: (length "<u>äbc</u>")
 -> 3
 : (length 123)
 -> 3
@@ -3917,12 +3961,12 @@ href="#job">job</a></code> and <code><a href="#use">use</a></code>.
 <p><pre><code>
 : (setq  X 123  Y 456)
 -> 456
-: (let X "Hello" (println X))
-"Hello"
--> "Hello"
-: (let (X "Hello" Y "world") (prinl X " " Y))
+: (let X "<u>Hello</u>" (println X))
+<u>Hello</u>
+-> <u>Hello</u>
+: (let (X "<u>Hello</u>" Y "<u>world</u>") (prinl X "<u> </u>" Y))
 Hello world
--> "world"
+-> <u>world</u>
 : X
 -> 123
 : Y
@@ -3976,16 +4020,16 @@ href="#eof">eof</a></code>.
 <p><pre><code>
 : (line)
 abcdefghijkl
--> ("a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l")
+-> (<u>a</u> <u>b</u> <u>c</u> <u>d</u> <u>e</u> <u>f</u> <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
 : (line T)
 abcdefghijkl
--> "abcdefghijkl"
+-> <u>abcdefghijkl</u>
 : (line NIL 1 2 3)
 abcdefghijkl
--> (("a") ("b" "c") ("d" "e" "f") "g" "h" "i" "j" "k" "l")
+-> ((<u>a</u>) (<u>b</u> <u>c</u>) (<u>d</u> <u>e</u> <u>f</u>) <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
 : (line T 1 2 3)
 abcdefghijkl
--> ("a" "bc" "def" "g" "h" "i" "j" "k" "l")
+-> (<u>a</u> <u>bc</u> <u>def</u> <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
 </code></pre>
 
 <p><dt><a name="lines"><code>(lines 'sym ..) -> cnt</code></a>
@@ -3993,7 +4037,7 @@ abcdefghijkl
 also <code><a href="#info">info</a></code>.
 
 <p><pre><code>
-: (lines "x.l")
+: (lines "<u>x.l</u>")
 -> 11
 </code></pre>
 
@@ -4020,8 +4064,8 @@ href="#made">made</a></code>.
 <p><pre><code>
 : (list 1 2 3 4)
 -> (1 2 3 4)
-: (list 'a (2 3) "Ok")
--> (a (2 3) "Ok")
+: (list 'a (2 3) "<u>Ok</u>")
+-> (a (2 3) <u>Ok</u>)
 </code></pre>
 
 <p><dt><a name="listQ"><code>(lst? 'any) -> flg</code></a>
@@ -4041,19 +4085,21 @@ href="#pair">pair</a></code>.
 <p><dt><a name="listen"><code>(listen 'cnt1 ['cnt2]) -> cnt | NIL</code></a>
 <dd>Listens at a socket descriptor <code>cnt1</code> (as recieved by <code><a
 href="#port">port</a></code>) for an incoming connection, and returns the new
-socket descriptor <code>cnt</code>. If <code>cnt1</code> is
-non-<code>NIL</code>, that amount of milliseconds is waited maximally, and
-<code>NIL</code> is returned upon timeout. The global variable <code>*Adr</code>
-is set to the IP address of the client. See also <code><a
-href="#accept">accept</a></code>, <code><a href="#connect">connect</a></code>
-and <code><a href="#*Adr">*Adr</a></code>.
+socket descriptor <code>cnt</code>. While waiting for a connection, a
+<code>select</code> system call is executed for all file descriptors and timers
+in the <code>VAL</code> of the global variable <code><a
+href="#*Key">*Key</a></code>. If <code>cnt2</code> is non-<code>NIL</code>, that
+amount of milliseconds is waited maximally, and <code>NIL</code> is returned
+upon timeout. The global variable <code>*Adr</code> is set to the IP address of
+the client. See also <code><a href="#accept">accept</a></code>, <code><a
+href="#connect">connect</a></code> and <code><a href="#*Adr">*Adr</a></code>.
 
 <p><pre><code>
 : (setq *Socket
    (listen (port 6789) 60000) )  # Listen at port 6789 for max 60 seconds
 -> 4
 : *Adr
--> "127.0.0.1"
+-> <u>127.0.0.1</u>
 </code></pre>
 
 <p><dt><a name="lit"><code>(lit 'any) -> any</code></a>
@@ -4091,7 +4137,7 @@ href="#in">in</a></code>, <code><a href="#out">out</a></code> and <code><a
 href="#str">str</a></code>.
 
 <p><pre><code>
-: (load "lib.l" "-* 1 2 3")
+: (load "<u>lib.l</u>" "<u>-* 1 2 3</u>")
 -> 6
 </code></pre>
 
@@ -4099,11 +4145,10 @@ href="#str">str</a></code>.
 <dd>Write-locks an external symbol <code>sym</code> (file record locking), or
 the whole database if <code>sym</code> is <code>NIL</code>. Returns
 <code>NIL</code> if successful, or the ID of the process currently holding the
-lock. When <code>sym</code> is non-<code>NIL</code>, the lock is released at the
-next top level call to <code><a href="#commit">commit</a></code> or <code><a
-href="#rollback">rollback</a></code>, otherwise (when locking the whole
-database) only when another database is opened with <code><a
-href="#pool">pool</a></code> or when the process terminates.
+lock. The lock is released at the next top level call to <code><a
+href="#commit">commit</a></code> or <code><a
+href="#rollback">rollback</a></code>, when another database is opened with
+<code><a href="#pool">pool</a></code>, or when the process terminates.
 
 <p><pre><code>
 : (lock '{1})        # Lock single object
@@ -4149,13 +4194,13 @@ href="#do">do</a></code> and <code><a href="#for">for</a></code>.
 with a lowercase character. See also <code><a href="#lowc">lowc</a></code>.
 
 <p><pre><code>
-: (low? "a")
--> "a"
-: (low? "A")
+: (low? "<u>a</u>")
+-> <u>a</u>
+: (low? "<u>A</u>")
 -> NIL
 : (low? 123)
 -> NIL
-: (low? ".")
+: (low? "<u>.</u>")
 -> NIL
 </code></pre>
 
@@ -4169,8 +4214,8 @@ href="#lowQ">low?</a></code>.
 <p><pre><code>
 : (lowc 123)
 -> 123
-: (lowc "ABC")
--> "abc"
+: (lowc "<u>ABC</u>")
+-> <u>abc</u>
 </code></pre>
 
 <p><dt><a name="lt0"><code>(lt0 'any) -> num | NIL</code></a>
@@ -4354,7 +4399,7 @@ argument of <code>NIL</code>, <code>T</code> or <code>0</code>, respectively).
 If the first argument is zero, all marks are cleared.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
 : (mark '{1} T)      # Mark
 -> T
@@ -4491,7 +4536,7 @@ cannot be located in <code>obj</code>, its classes and superclasses,
 
 <p><pre><code>
 : (method 'mis> '+Number)
--> ((Val Obj) (and Val (not (num? Val)) "Numeric input expected"))
+-> ((Val Obj) (and Val (not (num? Val)) <u>Numeric input expected</u>))
 </code></pre>
 
 <p><dt><a name="min"><code>(min 'any ..) -> any</code></a>
@@ -4552,9 +4597,9 @@ href="#delq">delq</a></code>.
 <h3><a name="n-foo">N</a></h3>
 
 <p><dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
-<dd>Returns <code>T</code> when <u>not</u> all <code>any</code> arguments are
-the same (pointer equality). <code>(n== 'any ..)</code> is equivalent to
-<code>(not (== 'any ..))</code>. See also <code><a href="#==">==</a></code>.
+<dd>Returns <code>T</code> when not all <code>any</code> arguments are the same
+(pointer equality). <code>(n== 'any ..)</code> is equivalent to <code>(not (==
+'any ..))</code>. See also <code><a href="#==">==</a></code>.
 
 <p><pre><code>
 : (n== 'a 'a)
@@ -4581,7 +4626,7 @@ zero. See also <a href="#=0">=0</a>.
 <p><pre><code>
 : (nT 0)
 -> T
-: (nT "T")
+: (nT "<u>T</u>")
 -> T
 : (nT T)
 -> NIL
@@ -4596,16 +4641,16 @@ href="#zap">zap</a></code> and <code><a href="#intern">intern</a></code>.
 
 <p><pre><code>
 : (name 'abc)
--> "abc"
-: (name "abc")
--> "abc"
+-> <u>abc</u>
+: (name "<u>abc</u>")
+-> <u>abc</u>
 : (name '{abc})
--> "abc"
+-> <u>abc</u>
 : (name (new))
 -> NIL
 : (de foo (Lst) (car Lst))          # `foo' calls `car'
 -> foo
-: (intern (name (zap 'car) "xxx"))  # Globally change the name of `car'
+: (intern (name (zap 'car) "<u>xxx</u>"))  # Globally change the name of `car'
 -> xxx
 : (xxx (1 2 3))
 -> 1
@@ -4639,11 +4684,11 @@ NIL
 </code></pre>
 
 <p><dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
-<dd>Produces a list of <u>at least</u> <code>cnt</code> elements. When called
-without optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is
-returned. When <code>lst</code> is given, it is extended to the left (if
-<code>cnt</code> is positive) or to the right (if <code>cnt</code> is negative)
-with <code>any</code> elements.
+<dd>Produces a list of at least <code>cnt</code> elements. When called without
+optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is returned.
+When <code>lst</code> is given, it is extended to the left (if <code>cnt</code>
+is positive) or to the right (if <code>cnt</code> is negative) with
+<code>any</code> elements.
 
 <p><pre><code>
 : (need 5)
@@ -4652,8 +4697,8 @@ with <code>any</code> elements.
 -> (NIL NIL a b c)
 : (need -5 '(a b c))
 -> (a b c NIL NIL)
-: (need 5 '(a b c) " ")             # String alignment
--> (" " " " a b c)
+: (need 5 '(a b c) "<u> </u>")             # String alignment
+-> (<u> </u> <u> </u> a b c)
 </code></pre>
 
 <p><dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> sym</code></a>
@@ -4754,8 +4799,9 @@ otherwise <code>NIL</code>.
 
 <p><dt><a name="off"><code>(off sym ..) -> NIL</code></a>
 <dd>Stores <code>NIL</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>. See also <code><a href="#on">on</a></code> and <code><a
-href="#zero">zero</a></code>.
+<code>sym</code>. See also <code><a href="#on">on</a></code>, <code><a
+href="#onOff">onOff</a></code>, <code><a href="#zero">zero</a></code> and
+<code><a href="#one">one</a></code>.
 
 <p><pre><code>
 : (off A B)
@@ -4780,8 +4826,9 @@ href="#index">index</a></code>.
 
 <p><dt><a name="on"><code>(on sym ..) -> T</code></a>
 <dd>Stores <code>T</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>. See also <code><a href="#off">off</a></code> and <code><a
-href="#zero">zero</a></code>.
+<code>sym</code>. See also <code><a href="#off">off</a></code>, <code><a
+href="#onOff">onOff</a></code>, <code><a href="#zero">zero</a></code> and
+<code><a href="#one">one</a></code>.
 
 <p><pre><code>
 : (on A B)
@@ -4792,6 +4839,42 @@ href="#zero">zero</a></code>.
 -> T
 </code></pre>
 
+<p><dt><a name="one"><code>(one sym ..) -> 1</code></a>
+<dd>Stores <code>1</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. See also <code><a href="#zero">zero</a></code>, <code><a
+href="#on">on</a></code>, <code><a href="#off">off</a></code> and <code><a
+href="#onOff">onOff</a></code>.
+
+<p><pre><code>
+: (one A B)
+-> 1
+: A
+-> 1
+: B
+-> 1
+</code></pre>
+
+<p><dt><a name="onOff"><code>(onOff sym ..) -> flg</code></a>
+<dd>Logical negates the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. Returns the new value of the last symbol. See also <code><a
+href="#on">on</a></code>, <code><a href="#off">off</a></code>, <code><a
+href="#zero">zero</a></code> and <code><a href="#one">one</a></code>.
+
+<p><pre><code>
+: (onOff A B)
+-> T
+: A
+-> T
+: B
+-> T
+: (onOff A B)
+-> NIL
+: A
+-> NIL
+: B
+-> NIL
+</code></pre>
+
 <p><dt><a name="open"><code>(open 'sym) -> cnt | NIL</code></a>
 <dd>Opens the file <code>sym</code> in read/write mode, and returns a file
 descriptor <code>cnt</code> (or <code>NIL</code> on error). If the file does not
@@ -4800,7 +4883,7 @@ exist, it is created. The file descriptor can be used in subsequent calls to
 also <code><a href="#close">close</a></code>.
 
 <p><pre><code>
-: (open "x")
+: (open "<u>x</u>")
 -> 3
 </code></pre>
 
@@ -4811,7 +4894,7 @@ href="#invoc">Invocation</a></code> and <code><a href="#argv">argv</a></code>.
 
 <p><pre><code>
 $ ./p  -"de f () (println 'opt (opt))"  -f abc  -bye
-opt "abc"
+opt <u>abc</u>
 </code></pre>
 
 <p><dt><a name="or"><code>(or 'any ..) -> any</code></a>
@@ -4841,7 +4924,7 @@ href="#in">in</a></code>, <code> <a href="#pipe">pipe</a></code>, <code> <a
 href="#ctl">ctl</a></code> and <code><a href="#load">load</a></code>.
 
 <p><pre><code>
-: (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
+: (out "<u>a</u>" (println 123 '(a b c) 'def))      # Write one line to file <u>a</u>
 -> def
 </code></pre>
 
@@ -4856,12 +4939,13 @@ string, a number is converted to a digit string, a symbol supplies the
 characters of its name, and for a list its elements are taken.
 
 <p><pre><code>
-: (pack 'car " is " 1 '(" symbol " name))
--> "car is 1 symbol name"
+: (pack 'car "<u> is </u>" 1 '("<u> symbol </u>" name))
+-> <u>car is 1 symbol name</u>
 </code></pre>
 
 <p><dt><a name="pair"><code>(pair 'any) -> flg</code></a>
-<dd>Returns <code>any</code> when the argument a cons pair cell.
+<dd>Returns <code>any</code> when the argument a cons pair cell. See also
+<code><a href="#atom">atom</a></code>.
 
 <p><pre><code>
 : (pair NIL)
@@ -4895,6 +4979,24 @@ bar 2 c (d e f)
 -> (d e f)
 </code></pre>
 
+<p><dt><a name="path"><code>(path 'sym) -> sym</code></a>
+<dd>Substitues any leading "<code>@</code>" character in the <code>sym</code>
+argument with the <u>Pico Lisp Home Directory</u>, as it was remembered during
+interpreter startup. Optionally, the name may be preceded by a "<code>+</code>"
+character (as used by <code><a href="#out">out</a></code>). This mechanism is
+used internally by all I/O functions. See also <code><a
+href="#invoc">Invocation</a></code>.
+
+<p><pre><code>
+$ /usr/bin/picolisp /usr/lib/picolisp/lib.l
+: (path "<u>a/b/c</u>")
+-> <u>a/b/c</u>
+: (path "<u>@a/b/c</u>")
+-> <u>/usr/lib/picolisp/a/b/c</u>
+: (path "<u>+@a/b/c</u>")
+-> <u>+/usr/lib/picolisp/a/b/c</u>
+</code></pre>
+
 <p><dt><a name="patQ"><code>(pat? 'any) -> sym | NIL</code></a>
 <dd>Returns <code>any</code> when the argument <code>any</code> is a symbol
 whose name starts with an at-mark "<code>@</code>", otherwise <code>NIL</code>.
@@ -4902,9 +5004,9 @@ whose name starts with an at-mark "<code>@</code>", otherwise <code>NIL</code>.
 <p><pre><code>
 : (pat? '@)
 -> @
-: (pat? "@Abc")
--> "@Abc"
-: (pat? "ABC")
+: (pat? "<u>@Abc</u>")
+-> <u>@Abc</u>
+: (pat? "<u>ABC</u>")
 -> NIL
 : (pat? 123)
 -> NIL
@@ -4920,23 +5022,23 @@ $ cat a
 # Comment
 abcd
 $ ./p dbg.l
-: (in "a" (list (peek) (char)))
--> ("#" "#")
+: (in "<u>a</u>" (list (peek) (char)))
+-> (<u>#</u> <u>#</u>)
 </code></pre>
 
 <p><dt><a name="pick"><code>(pick 'fun 'lst ..) -> any</code></a>
 <dd>Applies <code>fun</code> to successive elements of <code>lst</code> until
-non-<code>NIL</code> is returned. Returns that <u>value</u>, or <code>NIL</code>
-if <code>fun</code> did not return non-<code>NIL</code> for any element of
+non-<code>NIL</code> is returned. Returns that value, or <code>NIL</code> if
+<code>fun</code> did not return non-<code>NIL</code> for any element of
 <code>lst</code>. When additional <code>lst</code> arguments are given, their
 elements are also passed to <code>fun</code>. See also <code><a
 href="#seek">seek</a></code>, <code><a href="#find">find</a></code>.
 
 <p><pre><code>
-: (put 'D 'str "Hello")
--> "Hello"
+: (put 'D 'str "<u>Hello</u>")
+-> <u>Hello</u>
 : (pick '((X) (get X 'str)) '(A B C D E F))
--> "Hello"
+-> <u>Hello</u>
 </code></pre>
 
 <p><dt><a name="pipe"><code>(pipe exe) -> cnt<br>
@@ -4951,14 +5053,14 @@ href="#in">in</a></code> and <code><a href="#out">out</a></code>.
 
 <p><pre><code>
 : (pipe                                # equivalent to 'any'
-   (prinl "(a b # Comment^Jc d)")         # (child process)
+   (prinl "<u>(a b # Comment^Jc d)</u>")         # (child process)
    (read) )                               # (parent process)
 -> (a b c d)
 : (pipe                                # pipe through an external program
-   (out '(tr "[a-z]" "[A-Z]")             # (child process)
-      (prinl "abc def ghi") )
+   (out '(tr "<u>[a-z]</u>" "<u>[A-Z]</u>")             # (child process)
+      (prinl "<u>abc def ghi</u>") )
    (line T) )                             # (parent proces)
--> "ABC DEF GHI"
+-> <u>ABC DEF GHI</u>
 </code></pre>
 
 <p><dt><a name="poll"><code>(poll 'cnt) -> flg</code></a>
@@ -4970,7 +5072,7 @@ href="#in">in</a></code> and <code><a href="#close">close</a></code>.
 : (and (poll *Fd) (in *Fd (read)))  # Prevent blocking
 </code></pre>
 
-<p><dt><a name="pool"><code>(pool ['sym1 ['lst ['sym2]]]) -> flg</code></a>
+<p><dt><a name="pool"><code>(pool ['sym1 ['lst] ['sym2]]) -> flg</code></a>
 <dd>Opens the file <code>sym1</code> as a database file in read/write mode. If
 the file does not exist, it is created. A currently open database is closed.
 <code>lst</code> is a list of block size scale factors (i.e. numbers),
@@ -4981,7 +5083,7 @@ non-<code>NIL</code>, it is opened in append-mode as a journal file. Returns
 href="#journal">journal</a></code>.
 
 <p><pre><code>
-: (pool "/dev/hda2")
+: (pool "<u>/dev/hda2</u>")
 -> T
 </code></pre>
 
@@ -5022,13 +5124,13 @@ tried in turn. When <code>var</code> is given, it is bound to the port number.
 
 <p><dt><a name="pr"><code>(pr 'any ..) -> any</code></a>
 <dd>Binary print: Prints all <code>any</code> arguments to the current output
-channel in encoded binary format. See also <code><a href="#rd">rd</a></code> and
-<code><a href="#wr">wr</a></code>.
+channel in encoded binary format. See also <code><a href="#rd">rd</a></code>,
+<code><a href="#wr">wr</a></code> and <code><a href="#rpc">rpc</a></code>.
 
 <p><pre><code>
-: (out "x" (pr 7 "abc" (1 2 3) 'a))          # Print to "x"
+: (out "<u>x</u>" (pr 7 "<u>abc</u>" (1 2 3) 'a))          # Print to <u>x</u>
 -> a
-: (hd "x")
+: (hd "<u>x</u>")
 00000000  04 0E 0E 61 62 63 01 04 02 04 04 04 06 03 05 61  ...abc.........a
 -> NIL
 </code></pre>
@@ -5039,11 +5141,11 @@ channel in encoded binary format. See also <code><a href="#rd">rd</a></code> and
 <code>sym2</code>. See also <code><a href="#subQ">sub?</a></code>.
 
 <p><pre><code>
-: (pre? "abc" "abcdef")
+: (pre? "<u>abc</u>" "<u>abcdef</u>")
 -> T
-: (pre? "def" "abcdef")
+: (pre? "<u>def</u>" "<u>abcdef</u>")
 -> NIL
-: (pre? "" "abcdef")
+: (pre? "" "<u>abcdef</u>")
 -> T
 </code></pre>
 
@@ -5110,9 +5212,9 @@ between successive arguments. See also <code><a href="#print">print</a></code>,
 </code></pre>
 
 <p><dt><a name="prog"><code>(prog . prg) -> any</code></a>
-<dd>Executes <code>prg</code>, and returns the result of the <u>last</u>
-expression. See also <code><a href="#nil">nil</a></code>, <code><a
-href="#t">t</a></code>, <code><a href="#prog1">prog1</a></code> and <code><a
+<dd>Executes <code>prg</code>, and returns the result of the last expression.
+See also <code><a href="#nil">nil</a></code>, <code><a href="#t">t</a></code>,
+<code><a href="#prog1">prog1</a></code> and <code><a
 href="#prog2">prog2</a></code>.
 
 <p><pre><code>
@@ -5121,10 +5223,10 @@ href="#prog2">prog2</a></code>.
 </code></pre>
 
 <p><dt><a name="prog1"><code>(prog1 'any1 . prg) -> any1</code></a>
-<dd>Executes all arguments, and returns the result of the <u>first</u>
-expression <code>any1</code>. See also <code><a href="#nil">nil</a></code>,
-<code><a href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and
-<code><a href="#prog2">prog2</a></code>.
+<dd>Executes all arguments, and returns the result of the first expression
+<code>any1</code>. See also <code><a href="#nil">nil</a></code>, <code><a
+href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and <code><a
+href="#prog2">prog2</a></code>.
 
 <p><pre><code>
 : (prog1 (print 1) (print 2) (print 3))
@@ -5132,10 +5234,10 @@ expression <code>any1</code>. See also <code><a href="#nil">nil</a></code>,
 </code></pre>
 
 <p><dt><a name="prog2"><code>(prog2 'any1 'any2 . prg) -> any2</code></a>
-<dd>Executes all arguments, and returns the result of the <u>second</u>
-expression <code>any2</code>. See also <code><a href="#nil">nil</a></code>,
-<code><a href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and
-<code><a href="#prog1">prog1</a></code>.
+<dd>Executes all arguments, and returns the result of the second expression
+<code>any2</code>. See also <code><a href="#nil">nil</a></code>, <code><a
+href="#t">t</a></code>, <code><a href="#prog">prog</a></code> and <code><a
+href="#prog1">prog1</a></code>.
 
 <p><pre><code>
 : (prog2 (print 1) (print 2) (print 3))
@@ -5167,7 +5269,7 @@ be delayed until the execution of <code>prg</code> is completed. See also
 <code><a href="#kill">kill</a></code>.
 
 <p><pre><code>
-: (protect (journal "db1.log" "db2.log"))
+: (protect (journal "<u>db1.log</u>" "<u>db2.log</u>"))
 -> T
 </code></pre>
 
@@ -5237,14 +5339,23 @@ properties for that symbol are lost. See also <code><a
 href="#getl">getl</a></code>.
 
 <p><pre><code>
-: (putl 'X '((123 . a) flg ("Hello" . b)))
--> ((123 . a) flg ("Hello" . b))
+: (putl 'X '((123 . a) flg ("<u>Hello</u>" . b)))
+-> ((123 . a) flg (<u>Hello</u> . b))
 : (get 'X 'a)
 -> 123
 : (get 'X 'b)
--> "Hello"
+-> <u>Hello</u>
 : (get 'X 'flg)
 -> T
+</code></pre>
+
+<p><dt><a name="pwd"><code>(pwd) -> sym</code></a>
+<dd>Returns the path to the current working directory. See also <code><a
+href="#dir">dir</a></code> and <code><a href="#cd">cd</a></code>.
+
+<p><pre><code>
+: (pwd)
+-> <u>/home/app/</u>
 </code></pre>
 
 
@@ -5293,7 +5404,7 @@ the reason for the error. See also <code><a href="#err">Error
 Handling</a></code>.
 
 <p><pre><code>
-: (de foo (X) (quit "Sorry, my error" X))
+: (de foo (X) (quit "<u>Sorry, my error</u>" X))
 -> foo
 : (foo 123)                                  # `X' is bound to `123'
 123 -- Sorry, my error                       # Error entered
@@ -5322,11 +5433,11 @@ href="#seed">seed</a></code>.
 
 <p><dt><a name="rank"><code>(rank 'any 'lst ['flg]) -> lst</code></a>
 <dd>Searches a ranking list. <code>lst</code> should be sorted. Returns the
-element from <code>lst</code> with a <u>maximal</u> <code>CAR</code> less or
-equal to <code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a
-<u>minimal</u> <code>CAR</code> greater or equal to <code>any</code> (if
-<code>flg</code> is non-<code>NIL</code>), or <code>NIL</code> if no match is
-found. See also <a href="#cmp">Comparing</a>.
+element from <code>lst</code> with a maximal <code>CAR</code> less or equal to
+<code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a minimal
+<code>CAR</code> greater or equal to <code>any</code> (if <code>flg</code> is
+non-<code>NIL</code>), or <code>NIL</code> if no match is found. See also <a
+href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (rank 0 '((1 . a) (100 . b) (1000 . c)))
@@ -5367,7 +5478,7 @@ href="#pr">pr</a></code>, <code><a href="#wr">wr</a></code> and <code><a
 href="#eof">eof</a></code>.
 
 <p><pre><code>
-: (in "/dev/urandom" (rd 20))
+: (in "<u>/dev/urandom</u>" (rd 20))
 -> 396737673456823753584720194864200246115286686486
 </code></pre>
 
@@ -5390,10 +5501,10 @@ ghi
 jkl
 )
 -> (123 abcd (def ghi jkl))
-: (make (while (read "_" "#") (link @)))
+: (make (while (read "<u>_</u>" "<u>#</u>") (link @)))
 abc = def_ghi("xyz"+-123) # Comment
 ""
--> (abc "=" def_ghi "(" "xyz" "+" -123 ")")
+-> (abc <u>=</u> def_ghi <u>(</u> <u>xyz</u> <u>+</u> -123 <u>)</u>)
 </code></pre>
 
 <p><dt><a name="rel"><code>(rel sym lst [any ..]) -> any</code></a>
@@ -5472,7 +5583,7 @@ topmost transaction is cancelled. See also <code><a
 href="#commit">commit</a></code>.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
 : (begin)
 -> T
@@ -5495,12 +5606,27 @@ Otherwise only the first <code>cnt</code> elements are rotated.
 -> (3 1 2 4 5 6)
 </code></pre>
 
+<p><dt><a name="rpc"><code>(rpc 'sym ['any ..]) -> flg</code></a>
+<dd>Rapid (remote procedure) call: Send an executable list <code>(sym any
+..)</code> via standard output in encoded binary format. See also <code><a
+href="#pr">pr</a></code>, <code><a href="#pipe">pipe</a></code>, <code><a
+href="#tell">tell</a></code> and <code><a href="#hear">hear</a></code>.
+
+<p><pre><code>
+: (hear (pipe (do 3 (wait 2000) (rpc 'println ''Ok))))
+-> 3
+: Ok  # every two seconds
+Ok
+Ok
+</code></pre>
+
 <p><dt><a name="run"><code>(run 'any ['cnt]) -> any</code></a>
 <dd>If <code>any</code> is an atom, <code>run</code> behaves like
 <code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
 sequence. The last result is returned. If a binding environment offset
 <code>cnt</code> is given, that evaluation takes place in the corresponding
-environment. See also <code><a href="#eval">eval</a></code>.
+environment. See also <code><a href="#eval">eval</a></code> and <code><a
+href="#up">up</a></code>.
 
 <p><pre><code>
 : (run '((println (+ 1 2 3)) (println 'Ok)))
@@ -5519,13 +5645,13 @@ in the range -2147483648 .. +2147483647. See also <code><a
 href="#rand">rand</a></code>.
 
 <p><pre><code>
-: (seed "init string")
+: (seed "<u>init string</u>")
 -> 2015582081
 : (rand)
 -> -706917003
 : (rand)
 -> 1224196082
-: (seed "init string")
+: (seed "<u>init string</u>")
 -> 2015582081
 : (rand)
 -> -706917003
@@ -5535,9 +5661,9 @@ href="#rand">rand</a></code>.
 
 <p><dt><a name="seek"><code>(seek 'fun 'lst ..) -> lst</code></a>
 <dd>Applies <code>fun</code> to <code>lst</code> and all successive
-<code>CDR</code>'s, until non-<code>NIL</code> is returned. Returns the
-<u>tail</u> of <code>lst</code> starting with that element, or <code>NIL</code>
-if <code>fun</code> did not return non-<code>NIL</code> for any element of
+<code>CDR</code>'s, until non-<code>NIL</code> is returned. Returns the tail of
+<code>lst</code> starting with that element, or <code>NIL</code> if
+<code>fun</code> did not return non-<code>NIL</code> for any element of
 <code>lst</code>. When additional <code>lst</code> arguments are given, they are
 passed to <code>fun</code> in the same way. See also <code><a
 href="#find">find</a></code>, <code><a href="#pick">pick</a></code>.
@@ -5567,7 +5693,7 @@ given, it should be the return value of a previous call to <code>seq</code>, and
 is used as an internal free list link.
 
 <p><pre><code>
-: (pool "db")
+: (pool "<u>db</u>")
 -> T
 : (seq *DB)
 -> {2}
@@ -5602,9 +5728,9 @@ number of cells in this list and all its sublists. See also <code><a
 href="#length">length</a></code>.
 
 <p><pre><code>
-: (size "abc")
+: (size "<u>abc</u>")
 -> 3
-: (size "äbc")
+: (size "<u>äbc</u>")
 -> 4
 : (size 123)
 -> 1
@@ -5623,8 +5749,8 @@ $ cat a
 # Comment
 abcd
 $ ./p dbg.l
-: (in "a" (skip "#"))
--> "a"
+: (in "<u>a</u>" (skip "<u>#</u>"))
+-> <u>a</u>
 </code></pre>
 
 <p><dt><a name="sort"><code>(sort 'lst) -> lst</code></a>
@@ -5636,7 +5762,7 @@ href="#cmp">Comparing</a>.
 -> (NIL 1 2 3 4 a b c d (1 2 3) (a b c) (x y z) T)
 </code></pre>
 
-<p><dt><a name="space"><code>(space ['cnt]) -> T</code></a>
+<p><dt><a name="space"><code>(space ['cnt]) -> cnt</code></a>
 <dd>Prints <code>cnt</code> spaces, or a single space when <code>cnt</code> is
 not given.
 
@@ -5655,9 +5781,9 @@ not given.
 characters.
 
 <p><pre><code>
-: (sp? "  ")
+: (sp? "<u>  </u>")
 -> T
-: (sp? "ABC")
+: (sp? "<u>ABC</u>")
 -> NIL
 : (sp? 123)
 -> NIL
@@ -5670,8 +5796,8 @@ and returns the resulting list of sublists.
 <p><pre><code>
 : (split (1 a 2 b 3 c 4 d 5 e 6) 'e 3 'a)
 -> ((1) (2 b) (c 4 d 5) (6))
-: (mapcar pack (split (chop "The quick brown fox") " "))
--> ("The" "quick" "brown" "fox")
+: (mapcar pack (split (chop "<u>The quick brown fox</u>") "<u> </u>"))
+-> (<u>The</u> <u>quick</u> <u>brown</u> <u>fox</u>)
 </code></pre>
 
 <p><dt><a name="sqrt"><code>(sqrt 'num) -> num</code></a>
@@ -5734,8 +5860,8 @@ start run run -> run
 href="#tail">tail</a></code> and <code><a href="#split">split</a></code>.
 
 <p><pre><code>
-: (stem (chop "abc/def\\ghi") "/" "\\")
--> ("g" "h" "i")
+: (stem (chop "<u>abc/def\\ghi</u>") "<u>/</u>" "<u>\\</u>")
+-> (<u>g</u> <u>h</u> <u>i</u>)
 </code></pre>
 
 <p><dt><a name="stk"><code>(stk any ..) -> T</code></a>
@@ -5761,11 +5887,11 @@ href="#time">time</a></code>.
 
 <p><pre><code>
 : (stamp)
--> "2000-09-12 07:48:04"
+-> <u>2000-09-12 07:48:04</u>
 : (stamp (date) 0)
--> "2000-09-12 00:00:00"
+-> <u>2000-09-12 00:00:00</u>
 : (stamp (date 2000 1 1) (time 12 0 0))
--> "2000-01-01 12:00:00"
+-> <u>2000-01-01 12:00:00</u>
 </code></pre>
 
 <p><dt><a name="stat"><code>(stat) -> num</code></a>
@@ -5788,10 +5914,10 @@ href="#any">any</a></code>, <code><a href="#name">name</a></code> and <code><a
 href="#sym">sym</a></code>.
 
 <p><pre><code>
-: (str "a (1 2) b")
+: (str "<u>a (1 2) b</u>")
 -> (a (1 2) b)
-: (str '(a "Hello" DEF))
--> "a \"Hello\" DEF"
+: (str '(a "<u>Hello</u>" DEF))
+-> <u>a \"Hello\" DEF</u>
 </code></pre>
 
 <p><dt><a name="strip"><code>(strip 'any) -> any</code></a>
@@ -5819,8 +5945,8 @@ href="#extQ">ext?</a></code>.
 -> NIL
 : (str? 'abc)
 -> NIL
-: (str? "abc")
--> "abc"
+: (str? "<u>abc</u>")
+-> <u>abc</u>
 </code></pre>
 
 <p><dt><a name="subQ"><code>(sub? 'sym1 'sym2) -> flg</code></a>
@@ -5829,11 +5955,11 @@ href="#extQ">ext?</a></code>.
 <code>sym2</code>. See also <code><a href="#preQ">pre?</a></code>.
 
 <p><pre><code>
-: (sub? "def" "abcdef")
+: (sub? "<u>def</u>" "<u>abcdef</u>")
 -> T
-: (sub? "abb" "abcdef")
+: (sub? "<u>abb</u>" "<u>abcdef</u>")
 -> NIL
-: (sub? "" "abcdef")
+: (sub? "" "<u>abcdef</u>")
 -> T
 </code></pre>
 
@@ -5872,8 +5998,8 @@ new symbol <code>sym</code>. See also <code><a href="#any">any</a></code>,
 <code><a href="#name">name</a></code> and <code><a href="#str">str</a></code>.
 
 <p><pre><code>
-: (sym '(abc "Hello" 123))
--> "(abc \"Hello\" 123)"
+: (sym '(abc "<u>Hello</u>" 123))
+-> <u>(abc \"Hello\" 123)</u>
 </code></pre>
 
 <p><dt><a name="symQ"><code>(sym? 'any) -> flg</code></a>
@@ -5909,12 +6035,12 @@ href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
 <dd>Returns or sets a system environment variable.
 
 <p><pre><code>
-: (sys "TERM")                # Get current value
--> "xterm"
-: (sys "TERM" "vt100")        # Set new value
--> "vt100"
-: (sys "TERM")
--> "vt100"
+: (sys "<u>TERM</u>")                # Get current value
+-> <u>xterm</u>
+: (sys "<u>TERM</u>" "<u>vt100</u>")        # Set new value
+-> <u>vt100</u>
+: (sys "<u>TERM</u>")
+-> <u>vt100</u>
 </code></pre>
 
 
@@ -5971,7 +6097,7 @@ Ok
 </code></pre>
 
 <p><dt><a name="tail"><code>(tail 'cnt|lst 'lst) -> lst</code></a>
-<dd>Returns the <u>last</u> <code>cnt</code> elements of <code>lst</code>. If
+<dd>Returns the last <code>cnt</code> elements of <code>lst</code>. If
 <code>cnt</code> is negative, it is added to the length of <code>lst</code>. If
 the first argument is a <code>lst</code>, <code>tail</code> is a predicate
 function returning that argument list if it is <code>equal</code> to the tail of
@@ -5998,10 +6124,11 @@ href="#head">head</a></code>. <code>(tail -2 Lst)</code> is equivalent to
 all other children of the parent process, see <code><a
 href="#fork">fork</a></code>) for automatic execution. <code>tell</code> can
 also be used by <code><a href="#commit">commit</a></code> to notify about
-database changes.
+database changes. See also <code><a href="#rpc">rpc</a></code> and <code><a
+href="#hear">hear</a></code>.
 
 <p><pre><code>
-: (call 'ps "x")                            # Show processes
+: (call 'ps "<u>x</u>")                            # Show processes
   PID TTY      STAT   TIME COMMAND
   ..
  1321 pts/0    S      0:00 bin/picolisp ..  # Parent process
@@ -6065,12 +6192,12 @@ returned. See also <code><a href="#from">from</a></code> and <code><a
 href="#line">line</a></code>.
 
 <p><pre><code>
-: (till ":")
+: (till "<u>:</u>")
 abc:def
--> ("a" "b" "c")
-: (till ":" T)
+-> (<u>a</u> <u>b</u> <u>c</u>)
+: (till "<u>:</u>" T)
 abc:def
--> "abc"
+-> <u>abc</u>
 </code></pre>
 
 <p><dt><a name="time"><code>(time ['T]) -> tim<br>
@@ -6130,14 +6257,14 @@ expressions.
 </code></pre>
 
 <p><dt><a name="trim"><code>(trim 'lst) -> lst</code></a>
-<dd>Returns a copy of <code>lst</code> with all <u>trailing</u> white space
-characters or <code>NIL</code> elements removed. See also <code><a
+<dd>Returns a copy of <code>lst</code> with all trailing white space characters
+or <code>NIL</code> elements removed. See also <code><a
 href="#clip">clip</a></code>.
 
 <p><pre><code>
 : (trim (1 NIL 2 NIL NIL))
 -> (1 NIL 2)
-: (trim '(a b " " " "))
+: (trim '(a b "<u> </u>" "<u> </u>"))
 -> (a b)
 </code></pre>
 
@@ -6211,18 +6338,32 @@ T
 -> 81
 </code></pre>
 
+<p><dt><a name="up"><code>(up sym ['val]) -> any</code></a>
+<dd>Looks up (or modifies) the previously saved value of <code>sym</code> in the
+enclosing environment. See also <code><a href="#eval">eval</a></code>, <code><a
+href="#run">run</a></code> and <code><a href="#env">env</a></code>.
+
+<p><pre><code>
+: (let N 1 ((quote (N) (println N (up N))) 2))
+2 1
+-> 1
+: (let N 1 ((quote (N) (println N (up N) (up N 7))) 2) N)
+2 1 7
+-> 7
+</code></pre>
+
 <p><dt><a name="uppQ"><code>(upp? 'any) -> sym | NIL</code></a>
 <dd>Returns <code>any</code> when the argument is a string (symbol) that starts
 with an uppercase character. See also <code><a href="#uppc">uppc</a></code>.
 
 <p><pre><code>
-: (upp? "A")
+: (upp? "<u>A</u>")
 -> T
-: (upp? "a")
+: (upp? "<u>a</u>")
 -> NIL
 : (upp? 123)
 -> NIL
-: (upp? ".")
+: (upp? "<u>.</u>")
 -> NIL
 </code></pre>
 
@@ -6236,10 +6377,10 @@ href="#uppQ">upp?</a></code>.
 <p><pre><code>
 : (uppc 123)
 -> 123
-: (uppc "abc")
--> "ABC"
+: (uppc "<u>abc</u>")
+-> <u>ABC</u>
 : (uppc 'car)
--> "CAR"
+-> <u>CAR</u>
 </code></pre>
 
 <p><dt><a name="use"><code>(use sym . prg) -> any<br>
@@ -6372,8 +6513,8 @@ A NIL
 <code>sym</code>. Then <code>prg</code> is executed, and <code>This</code> is
 restored to its previous value. The return value is the result of
 <code>prg</code>. Used typically to access the local data of <code>sym</code> in
-the same manner as inside a method body. <code>prg</code> is <u>not</u> executed
-(and <code>NIL</code> is returned) when <code>sym</code> is <code>NIL</code>.
+the same manner as inside a method body. <code>prg</code> is not executed (and
+<code>NIL</code> is returned) when <code>sym</code> is <code>NIL</code>.
 <code>(with 'X . prg)</code> is equivalent to <code>(let? This 'X . prg)</code>.
 
 <p><pre><code>
@@ -6391,9 +6532,9 @@ channel. See also <code><a href="#rd">rd</a></code> and <code><a
 href="#pr">pr</a></code>.
 
 <p><pre><code>
-: (out "x" (wr 1 255 257))                   # Write to "x"
+: (out "<u>x</u>" (wr 1 255 257))                   # Write to <u>x</u>
 -> 257
-: (hd "x")
+: (hd "<u>x</u>")
 00000000  01 FF 01                                         ...
 -> NIL
 </code></pre>
@@ -6460,10 +6601,10 @@ from the database file. See also <code><a href="#intern">intern</a></code>.
 : (de foo (Lst) (car Lst))          # `foo' calls `car'
 -> foo
 : (zap 'car)                        # Delete the symbol `car'
--> "car"
+-> <u>car</u>
 : (pp 'foo)
 (de foo (Lst)
-   ("car" Lst) )                    # `car' is now a transient symbol
+   (<u>car</u> Lst) )                      # `car' is now a transient symbol
 -> foo
 : (foo (1 2 3))                     # `foo' still works
 -> 1
@@ -6475,8 +6616,9 @@ car -- Undefined
 
 <p><dt><a name="zero"><code>(zero sym ..) -> 0</code></a>
 <dd>Stores <code>0</code> in the <code>VAL</code>'s of all argument symbols
-<code>sym</code>. See also <code><a href="#on">on</a></code> and <code><a
-href="#off">off</a></code>.
+<code>sym</code>. See also <code><a href="#one">one</a></code>, <code><a
+href="#on">on</a></code>, <code><a href="#off">off</a></code> and <code><a
+href="#onOff">onOff</a></code>.
 
 <p><pre><code>
 : (zero A B)
@@ -6603,7 +6745,7 @@ href="#accept">accept</a></code>.
 
 <p><pre><code>
 : *Adr
--> "127.0.0.1"
+-> <u>127.0.0.1</u>
 </code></pre>
 
 <p><dt><a name="*Bye"><code>*Bye</code></a>
@@ -6611,8 +6753,8 @@ href="#accept">accept</a></code>.
 executed just before the termination of the Pico Lisp interpreter.
 
 <p><pre><code>
-: (push '*Bye '(call 'rm "-r" *Tmp))   # Remove all temporary files
--> (call 'rm "-r" *Tmp)
+: (push '*Bye '(call 'rm "<u>-r</u>" *Tmp))   # Remove all temporary files
+-> (call 'rm <u>-r</u> *Tmp)
 </code></pre>
 
 <p><dt><a name="*Class"><code>*Class</code></a>
@@ -6675,8 +6817,8 @@ will be executed during error processing. See also <code><a href="#err">Error
 Handling</a></code>.
 
 <p><pre><code>
-: (de *Err (prinl "Fatal error!"))
--> ((prinl "Fatal error!"))
+: (de *Err (prinl "<u>Fatal error!</u>"))
+-> ((prinl <u>Fatal error!</u>))
 : (/ 3 0)
 !? (/ 3 0)
 Div/0
@@ -6702,8 +6844,8 @@ first element of each expression must either be a positive number (thus denoting
 a file descriptor to wait for) or a negative number (denoting a timeout value in
 milliseconds (in that case another number must follow to hold the remaning
 time)). A <code>select</code> system call is performed with these values, and
-the corresponding <code>prg</code> body is executed then input data are
-available, or a timeout occurred.
+the corresponding <code>prg</code> body is executed when input data are
+available or when a timeout occurred.
 
 <p><pre><code>
 : (de *Key (-2000 0 (println '2sec)))     # Install 2-sec-timer
@@ -6721,7 +6863,7 @@ implements a "Line editor". When non-<code>NIL</code>, it should return a single
 symbol (string) upon execution.
 
 <p><pre><code>
-: (de *Led "(bye)")
+: (de *Led "<u>(bye)</u>")
 # *Led redefined
 -> *Led
 : $                                    # Exit
@@ -6738,7 +6880,7 @@ A -- Number expected
 ?
 :
 : *Msg
--> "Number expected"
+-> <u>Number expected</u>
 </code></pre>
 
 <p><dt><a name="*Pid"><code>*Pid</code></a>
@@ -6747,7 +6889,7 @@ A -- Number expected
 <p><pre><code>
 : *Pid
 -> 6386
-: (call "ps")                          # Show processes
+: (call "<u>ps</u>")                          # Show processes
   PID TTY          TIME CMD
  .... ...      ........ .....
  6386 pts/1    00:00:00 bin/picolisp   # <- current process
@@ -6762,15 +6904,32 @@ with the <code>scl</code> function:
 
 <p><pre><code>
 : (pp 'scl)
-(de scl (*Scl . "Prg")
-   (run "Prg") )
+(de scl (*Scl . <u>Prg</u>)
+   (run <u>Prg</u>) )
 -> scl
-: (str "123.45")                 # Default value of '*Scl' is 0
+: (str "<u>123.45</u>")                 # Default value of '*Scl' is 0
 -> (123)
-: (scl 0 (str "123.45"))
+: (scl 0 (str "<u>123.45</u>"))
 -> (123)
-: (scl 3 (str "123.45"))
+: (scl 3 (str "<u>123.45</u>"))
 -> (123450)
+</code></pre>
+
+<p><dt><a name="*Tsm"><code>*Tsm</code></a>
+<dd>A global variable which may hold a cons pair of two strings with escape
+sequences, to switch on and off an alternative transient symbol markup. If set,
+<code><a href="#print">print</a></code> will output these sequences to the
+console instead of the standard double quote markup characters.
+
+<p><pre><code>
+: (de *Tsm "<u>^[[4m</u>" . "<u>^[[24m</u>")   # vt100 escape sequences for underline
+-> *Tsm
+: "<u>Hello world</u>"
+-> <u>Hello world</u>
+: (off *Tsm)
+-> NIL
+: "Hello world"                  # No underlining
+-> "Hello world"
 </code></pre>
 
 <p><dt><a name="*Uni"><code>*Uni</code></a>
@@ -6781,12 +6940,12 @@ href="#macro-io">Read-Macros</a></code>.
 <p><pre><code>
 : (off *Uni)            # Clear
 -> NIL
-: ,"abc"                # Collect a transient symbol
--> "abc"
+: ,<u></u>"abc"                # Collect a transient symbol
+-> <u>abc</u>
 : ,(1 2 3)              # Collect a list
 -> (1 2 3)
 : *Uni
--> ((1 2 3) "abc")
+-> ((1 2 3) <u>abc</u>)
 </code></pre>
 
 <p><dt><a name="+"><code>(+ 'num ..) -> num</code></a>
@@ -6850,7 +7009,7 @@ and <code><a href="#:">:</a></code>.
 
 <p><dt><a name="<"><code>(< 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
-<u>increasing</u> order. See also <a href="#cmp">Comparing</a>.
+increasing order. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (< 3 4)
@@ -6863,21 +7022,21 @@ and <code><a href="#:">:</a></code>.
 
 <p><dt><a name="<="><code>(<= 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
-<u>non-decreasing</u> order. See also <a href="#cmp">Comparing</a>.
+non-decreasing order. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (<= 3 3)
 -> T
 : (<= 1 2 3)
 -> T
-: (<= "abc" "abc" "def")
+: (<= "<u>abc</u>" "<u>abc</u>" "<u>def</u>")
 -> T
 </code></pre>
 
 <p><dt><a name="<>"><code>(<&gt 'any ..) -> flg</code></a>
-<dd>Returns <code>T</code> when <u>not</u> all <code>any</code> arguments are
-equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
-<code>(not (= 'any ..))</code>. See also <a href="#cmp">Comparing</a>.
+<dd>Returns <code>T</code> when not all <code>any</code> arguments are equal
+(structure equality). <code>(<&gt 'any ..)</code> is equivalent to <code>(not (=
+'any ..))</code>. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (<&gt 'a 'b)
@@ -6895,9 +7054,9 @@ equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
 <p><pre><code>
 : (= 6 (* 1 2 3))
 -> T
-: (= "a" "a")
+: (= "<u>a</u>" "<u>a</u>")
 -> T
-: (== "a" "a")
+: (== "<u>a</u>" "<u>a</u>")
 -> T
 : (= (1 (2) 3) (1 (2) 3))
 -> T
@@ -6905,6 +7064,7 @@ equal (structure equality). <code>(<&gt 'any ..)</code> is equivalent to
 
 <p><dt><a name="=0"><code>(=0 'any) -> num | NIL</code></a>
 <dd>Returns <code>0</code> when <code>any</code> is a number with value zero.
+See also <a href="#n0">n0</a>.
 
 <p><pre><code>
 : (=0 (- 6 3 2 1))
@@ -6952,24 +7112,25 @@ See also <code><a href="#extern">extern</a></code> and <code><a
 href="#intern">intern</a></code>.
 
 <p><pre><code>
-: (setq S "abc")           # Read "abc"
--> "abc"
-: (== S "abc")             # Read again, get the same symbol
+: (setq S "<u>abc</u>")           # Read <u>abc</u>
+-> <u>abc</u>
+: (== S "<u>abc</u>")             # Read again, get the same symbol
 -> T
 : (====)                   # Close scope
 -> NIL
-: (== S "abc")             # Read again, get another symbol
+: (== S "<u>abc</u>")             # Read again, get another symbol
 -> NIL
 </code></pre>
 
 <p><dt><a name="=T"><code>(=T 'any) -> flg</code></a>
 <dd>Returns <code>T</code> when <code>any</code> is the symbol <code>T</code>.
-<code>(=T X)</code> is equivalent to <code>(== T X)</code>.
+<code>(=T X)</code> is equivalent to <code>(== T X)</code>. See also <a
+href="#nT">nT</a>.
 
 <p><pre><code>
 : (=T 0)
 -> NIL
-: (=T "T")
+: (=T "<u>T</u>")
 -> NIL
 : (=T T)
 -> T
@@ -6977,7 +7138,7 @@ href="#intern">intern</a></code>.
 
 <p><dt><a name=">"><code>(> 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
-<u>decreasing</u> order. See also <a href="#cmp">Comparing</a>.
+decreasing order. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (> 4 3)
@@ -6988,7 +7149,7 @@ href="#intern">intern</a></code>.
 
 <p><dt><a name=">="><code>(>= 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
-<u>non-increasing</u> order. See also <a href="#cmp">Comparing</a>.
+non-increasing order. See also <a href="#cmp">Comparing</a>.
 
 <p><pre><code>
 : (>= 'A 999)

@@ -1,4 +1,4 @@
-# 13may05abu
+# 13jan06abu
 # (c) Software Lab. Alexander Burger
 
 # *Panel *Rate *Sound *Tone
@@ -33,7 +33,7 @@
          (setq
             *Panel (form '(+Form) 600 150
                (quote
-                  (gui 'msg '(+Skip +Lock +Mono +TextField) "" -72 -4)
+                  (gui 'msg '(+Skip +Lock +Mono +TextField) "" -72 -5)
                   (----)
                   (row
                      (gui 'thr '(+Skip +Lock +NumField) "Throttle [%]" 5)
@@ -73,7 +73,7 @@
 
 (dm T (DX DY)
    (load "rcsim/env.l")
-   (super DX DY 7500.0 NIL  0 0 *Tower  LightBlue DarkGreen ) )
+   (super DX DY 8000.0 NIL  0 0 *Tower  LightBlue DarkGreen ) )
 
 (dm start> ()
    (super)
@@ -91,7 +91,8 @@
          "HOME:      Full throttle                DOWN:  Elevator up^J\
           PAGE DOWN: Decrease throttle            UP:    Elevator down^J\
           PAGE UP:   Increase throttle            LEFT:  Aileron/rudder left^J\
-          END:       Engine off                   RIGHT: Aileron/rudder right" ) ) )
+          END:       Engine off                   RIGHT: Aileron/rudder right^J\
+          INS:       Zoom in                      DEL:   Zoom out" ) ) )
 
 (dm nxt> ()
    (when (get *Panel 'msg)
@@ -114,6 +115,14 @@
       (super A (setq *Tone F)) ) )
 
 # Key Controls
+(dm INS> ()
+   (when (> 32000.0 (: foc))
+      (=: foc (>> -1 (: foc))) ) )
+
+(dm DEL> ()
+   (when (> (: foc) 2000.0)
+      (=: foc (>> 1 (: foc))) ) )
+
 (dm UP> ()
    (down> *Model) )
 
@@ -137,3 +146,5 @@
 
 (dm END> ()
    (throt> *Model) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

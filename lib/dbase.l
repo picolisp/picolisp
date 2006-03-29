@@ -1,4 +1,4 @@
-# 05jan04abu
+# 16jan06abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
@@ -58,3 +58,5 @@
                            Fld ) ) ) ) )
             (unless (= "^Z" (char))
                (quit "Missing EOF") ) ) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

@@ -1,4 +1,4 @@
-# 27sep05abu
+# 07jan06abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (S)
@@ -201,3 +201,5 @@
                            (link (cons (cons (car "Y") "X") @)) ) ) )
                   ((and (not (global? "X")) (pair (getd "X")) (lint "X"))
                      (link (cons "X" @)) ) ) ) ) ) ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

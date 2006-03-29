@@ -1,4 +1,4 @@
-# 19dec05abu
+# 20mar06abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -9,9 +9,8 @@
          (push '*Key
             (conc
                (make
-                  (link Key)
-                  (when (num? (car Prg))
-                     (link (+ (pop 'Prg))) ) )
+                  (when (lt0 (link Key))
+                     (link (+ (eval (pop 'Prg) 1))) ) )
                (ifn (sym? (car Prg))
                   Prg
                   (cons
@@ -179,32 +178,6 @@
             (loc S (car X))
             (loc S (cdr X)) ) ) ) )
 
-(de clone ("X" . Lst)
-   (if Lst
-      (let "Env" (car Lst)
-         (_clone "X" (cdr Lst)) )
-      (prog1 (new (ext? "X"))
-         (set @ (val "X"))
-         (putl @ (getl "X")) ) ) )
-
-(de _clone ("X" Lst)
-   (let Obj
-      (cdr
-         (or
-            (asoq "X" (val "Env"))
-            (push "Env" (cons "X" (new (ext? "X")))) ) )
-      (set Obj (val "X"))
-      (for "Y" Lst
-         (if (atom "Y")
-            (put Obj "Y" (get "X" "Y"))
-            (put Obj (car "Y")
-               (_clone
-                  (get "X" (car "Y"))
-                  (cdr "Y") ) ) ) )
-      Obj ) )
-
-(====)
-
 ### OOP ###
 (de class Lst
    (or
@@ -237,10 +210,10 @@
 (de *PP2 setq default)
 
 (de pretty (X N . @)
-   (space (default N 0))
+   (setq N (abs (space (or N 0))))
    (while (args)
       (printsp (next)) )
-   (if (or (atom X) (<= (size X) 12))
+   (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
          (prin "'")
@@ -251,12 +224,12 @@
             (cond
                ((memq (car Z) *PP1)
                   (if (and (pair (car X)) (pair (cdar X)))
-                     (when (<= (size (car X)) 12)
+                     (when (>= 12 (size (car X)))
                         (space)
                         (print (pop 'X)) )
                      (space)
                      (print (pop 'X))
-                     (when (or (atom (car X)) (<= (size (car X)) 12))
+                     (when (or (atom (car X)) (>= 12 (size (car X))))
                         (space)
                         (print (pop 'X)) ) ) )
                ((memq (car Z) *PP2)
@@ -265,7 +238,7 @@
                      (prinl)
                      (pretty (cadr X) N (car X))
                      (NIL (setq X (cddr X))) ) )
-               ((or (atom (car X)) (<= (size (car X)) 12))
+               ((or (atom (car X)) (>= 12 (size (car X))))
                   (space)
                   (print (pop 'X)) ) ) )
          (when X
@@ -320,3 +293,5 @@
                   (println (cdr X) (car X)) ) )
             "X" ) )
       "X" ) )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

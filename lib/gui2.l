@@ -1,4 +1,4 @@
-# 11mar06abu
+# 28jun06abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -1306,10 +1306,10 @@
    (pr 'fCol (=: fCol `(hex "0000FF"))) )
 
 # Get field
-(de field (X)
+(de field (X . @)
    (if (sym? X)
-      (get (: home) X)
-      (get (: home fields) (+ X (: ix))) ) )
+      (pass get (: home) X)
+      (pass get (: home fields) (+ X (: ix))) ) )
 
 # Get current chart data row
 (de curr @
@@ -1971,8 +1971,8 @@
    (unless (= Lst (: data))
       (let N (- (length Lst) (: rows) -1)
          (when (> (: ofs) N)
-            (=: ofs (max 1 N)) ) )
-      (=: data (copy Lst)) )
+            (=: ofs (max 1 N)) ) ) )
+   (=: data (copy Lst))
    (put> This)
    (setScroll) )
 
@@ -2080,7 +2080,6 @@
 # *DbForms
 
 (undef 'upd)
-
 (de upd Lst
    (wipe Lst)
    (for F *DbForms
@@ -2353,11 +2352,11 @@
 (class +Blob/R +/R)
 
 (dm set> (Val)
-   (when (eval (: erObj))
-      (put!> @ (: erVar) (bool Val))
-      (extra
-         (and Val
-            (allow (blob (eval (: erObj)) (: erVar))) ) ) ) )
+   (extra
+      (and
+         (eval (: erObj))
+         (put!> @ (: erVar) (bool Val))
+         (allow (blob (eval (: erObj)) (: erVar))) ) ) )
 
 
 (class +ClassField +Map +TextField)

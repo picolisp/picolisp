@@ -1,4 +1,4 @@
-/* 24mar06abu
+/* 12jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -686,6 +686,25 @@ void popCtlFiles(void) {
    Env.ctlFiles = Env.ctlFiles->link;
 }
 
+/* Get full char from input channel */
+static int getChar(void) {
+   int c;
+
+   if ((c = Chr) == 0xFF)
+      return TOP;
+   if (c & 0x80) {
+      Env.get();
+      if ((c & 0x20) == 0)
+         c &= 0x1F;
+      else
+         c = (c & 0xF) << 6 | Chr & 0x3F,  Env.get();
+      if (Chr < 0)
+         eofErr();
+      c = c << 6 | Chr & 0x3F;
+   }
+   return c;
+}
+
 /* Skip White Space and Comments */
 static int skip(int c) {
    for (;;) {
@@ -947,15 +966,6 @@ any token(any x, int c) {
       Env.get();
       return consStr(y = Pop(c1));
    }
-   if (Chr == '+' || Chr == '-') {
-      if (c = Chr,  Env.get(), Chr < '0' || Chr > '9')
-         return mkChar(c);
-      i = 0,  Push(c1, y = box(c));
-      do
-         byteSym(Chr, &i, &y);
-      while (Env.get(), Chr >= '0' && Chr <= '9' || Chr == '.');
-      return symToNum(Pop(c1), (int)unDig(val(Scl)) / 2, '.', 0);
-   }
    if (Chr >= '0' && Chr <= '9') {
       i = 0,  Push(c1, y = box(Chr));
       while (Env.get(), Chr >= '0' && Chr <= '9' || Chr == '.')
@@ -985,9 +995,11 @@ any token(any x, int c) {
          return x;
       }
    }
-   y = mkChar(Chr);
+   y = box(c = getChar());
    Env.get();
-   return y;
+   if (x = findHash(y, Intern + hash(y)))
+      return x;
+   return mkChar(c);
 }
 
 // (read ['sym1 ['sym2]]) -> any
@@ -1121,7 +1133,6 @@ long waitFd(any ex, int fd, long ms) {
             Push(at,val(At)),  val(At) = caar(x);
             prog(cdar(x));
             val(At) = Pop(at);
-            break;
          }
    } while (ms  &&  fd >= 0 && !FD_ISSET(fd, &fdSet));
    drop(c1);
@@ -1234,25 +1245,6 @@ any doKey(any ex) {
       }
    }
    return mkChar(c);
-}
-
-/* Get full char from input channel */
-static int getChar(void) {
-   int c;
-
-   if ((c = Chr) == 0xFF)
-      return TOP;
-   if (c & 0x80) {
-      Env.get();
-      if ((c & 0x20) == 0)
-         c &= 0x1F;
-      else
-         c = (c & 0xF) << 6 | Chr & 0x3F,  Env.get();
-      if (Chr < 0)
-         eofErr();
-      c = c << 6 | Chr & 0x3F;
-   }
-   return c;
 }
 
 // (peek) -> sym
@@ -1713,10 +1705,9 @@ any doOpen(any ex) {
    return Nil;
 }
 
-// (close 'cnt) -> T
+// (close 'cnt) -> flg
 any doClose(any ex) {
-   close((int)evCnt(ex, cdr(ex)));
-   return T;
+   return close((int)evCnt(ex, cdr(ex)))? Nil : T;
 }
 
 // (echo ['cnt ['cnt]] | ['sym ..]) -> sym
@@ -2108,7 +2099,7 @@ typedef long long adr;
 static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
 static FILE *Journal;
 static adr BlkIndex, BlkLink;
-word2 *Marks;
+static word2 *Marks;
 static byte *Ptr, **Mark;
 static byte *Block, *IniBlk;  // 01 00 00 00 00 00 NIL 0
 
@@ -2134,6 +2125,7 @@ static any new64(word2 n, any x) {
       w = w << 8 | c + '0';
    } while (n >>= 6);
    if (i = F) {
+      ++i;
       w = w << 8 | '-';
       do {
          if ((c = i & 0x3F) > 11)
@@ -2158,7 +2150,7 @@ static word2 blk64(any x) {
          w |= (word2)unDig(x) << 32;
       do {
          if ((c = w & 0xFF) == '-')
-            F = n,  n = 0;
+            F = n-1,  n = 0;
          else {
             if ((c -= '0') > 42)
                c -= 6;
@@ -2184,9 +2176,24 @@ static void dbLock(int cmd, int typ, off_t len) {
          lockErr();
 }
 
-static inline void rdLock(void) {dbLock(F_SETLKW, F_RDLCK, 1);}
-static inline void wrLock(void) {dbLock(F_SETLKW, F_WRLCK, 1);}
-static inline void rwUnlock(off_t len) {dbLock(F_SETLK, F_UNLCK, len);}
+static inline void rdLock(void) {
+   if (val(Solo) != T)
+      dbLock(F_SETLKW, F_RDLCK, 1);
+}
+
+
+static inline void wrLock(void) {
+   if (val(Solo) != T)
+      dbLock(F_SETLKW, F_WRLCK, 1);
+}
+
+static inline void rwUnlock(off_t len) {
+   if (val(Solo) != T) {
+      if (len == 0)
+         val(Solo) = Zero;
+      dbLock(F_SETLK, F_UNLCK, len);
+   }
+}
 
 static pid_t tryLock(off_t n, off_t len) {
    struct flock fl;
@@ -2196,8 +2203,13 @@ static pid_t tryLock(off_t n, off_t len) {
       fl.l_whence = SEEK_SET;
       fl.l_start = n;
       fl.l_len = len;
-      if (fcntl(BlkFile[F], F_SETLK, &fl) >= 0)
+      if (fcntl(BlkFile[F], F_SETLK, &fl) >= 0) {
+         if (!n)
+            val(Solo) = T;
+         else if (val(Solo) != T)
+            val(Solo) = Nil;
          return 0;
+      }
       if (errno != EINTR  &&  errno != EACCES  &&  errno != EAGAIN)
          lockErr();
       fl.l_type = F_WRLCK;  //??
@@ -2259,7 +2271,7 @@ static adr newBlock(void) {
 any newId(int i) {
    adr n;
 
-   if ((F = i) >= Files)
+   if ((F = i-1) >= Files)
       dbfErr();
    wrLock();
    if (Journal)
@@ -2338,6 +2350,7 @@ any doPool(any ex) {
    any x, db;
    byte buf[2*BLK+1];
 
+   val(Solo) = Zero;
    if (Files) {
       while (isNil(doRollback(Nil)));
       for (F = 0; F < Files; ++F) {
@@ -2365,9 +2378,9 @@ any doPool(any ex) {
          char nm[pathSize(db) + 8];
 
          pathString(db, nm);
-         if (F)
-            sprintf(nm + strlen(nm), "%d", F);
-         BlkShift[F] = isNum(car(x))? (int)unDig(car(x))/2 : 0;
+         if (isCell(x))
+            sprintf(nm + strlen(nm), "%d", F+1);
+         BlkShift[F] = isNum(car(x))? (int)unDig(car(x))/2 : 2;
          if ((BlkFile[F] = open(nm, O_RDWR)) >= 0) {
             blkPeek(0, buf, 2*BLK+1);  // Get block shift
             BlkSize[F] = BLKSIZE << (BlkShift[F] = (int)buf[2*BLK]);
@@ -2452,7 +2465,7 @@ any doId(any ex) {
 
    x = cdr(ex);
    if (isNum(y = EVAL(car(x)))) {
-      F = unBox(y);
+      F = unBox(y) - 1;
       x = cdr(x),  y = EVAL(car(x));
       NeedNum(ex,y);
       n = (word2)unDig(y);
@@ -2466,7 +2479,7 @@ any doId(any ex) {
    if (isNil(EVAL(car(x))))
       return boxWord2(n);
    Push(c1, boxWord2(n));
-   data(c1) = cons(box(F*2), data(c1));
+   data(c1) = cons(box((F + 1) * 2), data(c1));
    return Pop(c1);
 }
 
@@ -2518,45 +2531,43 @@ any doMark(any ex) {
    byte *p, buf[2*BLK];
 
    x = cdr(ex);
-   if (isNum(y = EVAL(car(x))) && Marks) {
-      for (F = 0; F < Files; ++F)
-         free(Mark[F]);
-      free(Mark), Mark = NULL, free(Marks), Marks = NULL;
-   }
-   else {
-      NeedSym(ex,y);
-      if (n = blk64(name(y))) {
-         if (!Marks) {
-            Marks = alloc(Marks, Files * sizeof(word2));
-            memset(Marks, 0, Files * sizeof(word2));
-            Mark = alloc(Mark, Files * sizeof(byte*));
-            memset(Mark, 0, Files * sizeof(byte*));
-         }
-         b = 1 << (n & 7);
-         if ((n >>= 3) >= Marks[F]) {
-            m = Marks[F];
-            blkPeek(0, buf, 2*BLK),  Marks[F] = getAdr(buf+BLK);  // Get Next
-            Marks[F] = (Marks[F]/BLKSIZE + 7 >> 3);
-            Mark[F] = alloc(Mark[F], Marks[F]);
-            memset(Mark[F] + m, 0, Marks[F] - m);
-            if (n >= Marks[F])
-               err(ex, y, "Bad mark");
-         }
-         p = Mark[F] + n;
-         x = cdr(x);
-         if (isNil(x = EVAL(car(x)))) {
-            if (*p & b)  // Test mark
-               return T;
-         }
-         else if (isNum(x))
-            *p &= ~b;  // Clear mark
-         else {
-            *p |= b;  // Set mark
-            return T;
-         }
+   if (isNum(y = EVAL(car(x)))) {
+      if (Marks) {
+         for (F = 0; F < Files; ++F)
+            free(Mark[F]);
+         free(Mark), Mark = NULL, free(Marks), Marks = NULL;
       }
+      return Nil;
    }
-   return Nil;
+   NeedSym(ex,y);
+   if (!(n = blk64(name(y))))
+      return Nil;
+   if (!Marks) {
+      Marks = alloc(Marks, Files * sizeof(word2));
+      memset(Marks, 0, Files * sizeof(word2));
+      Mark = alloc(Mark, Files * sizeof(byte*));
+      memset(Mark, 0, Files * sizeof(byte*));
+   }
+   b = 1 << (n & 7);
+   if ((n >>= 3) >= Marks[F]) {
+      m = Marks[F];
+      blkPeek(0, buf, 2*BLK),  Marks[F] = getAdr(buf+BLK);  // Get Next
+      Marks[F] = (Marks[F]/BLKSIZE + 7 >> 3);
+      Mark[F] = alloc(Mark[F], Marks[F]);
+      memset(Mark[F] + m, 0, Marks[F] - m);
+      if (n >= Marks[F])
+         err(ex, y, "Bad mark");
+   }
+   p = Mark[F] + n;
+   x = cdr(x);
+   y = *p & b? T : Nil;  // Old value
+   if (!isNil(x = EVAL(car(x)))) {
+      if (isNum(x))
+         *p &= ~b;  // Clear mark
+      else
+         *p |= b;  // Set mark
+   }
+   return y;
 }
 
 // (lieu 'any) -> sym | NIL
@@ -2854,7 +2865,7 @@ any doDbck(any x) {
    F = 0;
    x = cdr(x);
    if (isNum(y = EVAL(car(x)))) {
-      if ((F = (int)unDig(y)/2) >= Files)
+      if ((F = (int)unDig(y)/2 - 1) >= Files)
          dbfErr();
       x = cdr(x),  y = EVAL(car(x));
    }

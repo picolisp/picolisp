@@ -1,4 +1,4 @@
-/* 13jan06abu
+/* 13jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -29,7 +29,8 @@ static char Head_200[] =
    "HTTP/1.1 200 OK\r\n"
    "Server: PicoLisp\r\n"
    "Connection: close\r\n"
-   "Content-Type: text/html; charset=utf-8\r\n";
+   "Content-Type: text/html; charset=utf-8\r\n"
+   "\r\n";
 
 static void giveup(char *msg) {
    fprintf(stderr, "httpGate: %s\n", msg);
@@ -148,12 +149,15 @@ int main(int ac, char *av[]) {
             if (n < 6)
                return 1;
 
-            /* "GET /url HTTP/1.1"
+            /* "@8080 "
+             * "GET /url HTTP/1.1"
              * "GET /8080/url HTTP/1.1"
              * "POST /url HTTP/1.1"
              * "POST /8080/url HTTP/1.1"
              */
-            if (pre(buf, "GET /"))
+            if (buf[0] == '@')
+               p = buf + 1;
+            else if (pre(buf, "GET /"))
                p = buf + 5;
             else if (pre(buf, "POST /"))
                p = buf + 6;
@@ -187,15 +191,19 @@ int main(int ac, char *av[]) {
                }
                return 0;
             }
-            wrBytes(srv, buf, p - buf);
-            if (*q == '/')
-               ++q;
-            p = q;
-            while (*p++ != '\n')
-               if (p >= buf + n)
-                  return 1;
-            wrBytes(srv, q, p - q);
-            wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
+            if (buf[0] == '@')
+               p = q + 1;
+            else {
+               wrBytes(srv, buf, p - buf);
+               if (*q == '/')
+                  ++q;
+               p = q;
+               while (*p++ != '\n')
+                  if (p >= buf + n)
+                     return 1;
+               wrBytes(srv, q, p - q);
+               wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
+            }
             wrBytes(srv, p, buf + n - p);
 
             for (;;) {

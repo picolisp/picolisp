@@ -7,7 +7,7 @@
 <body>
 <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
 
-<h3>A Pico Lisp Tutorial</h3>
+<h1>A Pico Lisp Tutorial</h1>
 
 <p align=right>(c) Software Lab. Alexander Burger</p>
 
@@ -80,7 +80,7 @@ just jump anywhere you are interested in.
 
 
 <p><hr>
-<h3><a name="ledit">Command Line Editing</a></h3>
+<h2><a name="ledit">Command Line Editing</a></h2>
 
 <p>Pico Lisp permanently reads input from the current input channel (i.e. the
 console in interactive mode), evaluates it, and prints the result to the current
@@ -210,7 +210,7 @@ It will make life much easier in the future :-)
 
 
 <p><hr>
-<h3><a name="brw">Browsing</a></h3>
+<h2><a name="brw">Browsing</a></h2>
 
 <p>Pico Lisp provides some functionality for inspecting pieces of data and code
 within the running system.
@@ -325,9 +325,9 @@ definition), and displays that definition in a formatted and indented way.
 <p><pre><code>
 : (pp 'pretty)
 (de pretty (X N . @)
-   (space (default N 0))
+   (setq N (abs (space (or N 0))))
    (while (args) (printsp (next)))
-   (if (or (atom X) (<= (size X) 12))
+   (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
          (prin <u>'</u>)
@@ -338,7 +338,7 @@ definition), and displays that definition in a formatted and indented way.
             (cond
                ((memq (car Z) *PP1)
                   (if (and (pair (car X)) (pair (cdar X)))
-                     (when (<= (size (car X)) 12)
+                     (when (>= 12 (size (car X)))
                         (space)
                         (print (pop 'X)) )
                      (space)
@@ -346,7 +346,7 @@ definition), and displays that definition in a formatted and indented way.
                      (when
                         (or
                            (atom (car X))
-                           (<= (size (car X)) 12) )
+                           (>= 12 (size (car X))) )
                         (space)
                         (print (pop 'X)) ) ) )
                ((memq (car Z) *PP2)
@@ -355,7 +355,7 @@ definition), and displays that definition in a formatted and indented way.
                      (prinl)
                      (pretty (cadr X) N (car X))
                      (NIL (setq X (cddr X))) ) )
-               ((or (atom (car X)) (<= (size (car X)) 12))
+               ((or (atom (car X)) (>= 12 (size (car X))))
                   (space)
                   (print (pop 'X)) ) ) )
          (when X
@@ -496,7 +496,7 @@ and has a single subclass (<code>+Joint</code>).
 
 
 <p><hr>
-<h3><a name="fun">Defining Functions</a></h3>
+<h2><a name="fun">Defining Functions</a></h2>
 
 <p>Most of the time during programming is spent defining functions (or methods).
 In the following we will concentrate on functions, but most will be true for
@@ -654,7 +654,7 @@ function, using <code><a href="ref.html#pass">pass</a></code>:
 
 
 <p><hr>
-<h3><a name="dbg">Debugging</a></h3>
+<h2><a name="dbg">Debugging</a></h2>
 
 <p>There are two major ways to debug functions (and methods) at runtime:
 <i>Tracing</i> and <i>single-stepping</i>.
@@ -866,7 +866,7 @@ environment and continue execution with <code>RETURN</code> when you are done.
 
 
 <p><hr>
-<h3><a name="funio">Functional I/O</a></h3>
+<h2><a name="funio">Functional I/O</a></h2>
 
 <p>Input and output in Pico Lisp is functional, in the sense that there are not
 variables assigned to file descriptors, which need then to be passed to I/O
@@ -980,7 +980,7 @@ fields. A typical way to import the contents of such a file is:
 
 
 <p><hr>
-<h3><a name="script">Scripting</a></h3>
+<h2><a name="script">Scripting</a></h2>
 
 <p>There are two possibilities to get the Pico Lisp interpreter into doing
 useful work: Via command line arguments, or as a stand-alone script.
@@ -1151,7 +1151,7 @@ site, and prints it to standard output:
 
 
 <p><hr>
-<h3><a name="oop">Objects and Classes</a></h3>
+<h2><a name="oop">Objects and Classes</a></h2>
 
 <p>The Pico Lisp object model is very simple, yet flexible and powerful. Objects
 as well as classes are both implemented as symbols. In fact, there is no formal
@@ -1444,7 +1444,7 @@ define a new class <code>+FixRect</code>:
 
 
 <p><hr>
-<h3><a name="ext">Persistence (External Symbols)</a></h3>
+<h2><a name="ext">Persistence (External Symbols)</a></h2>
 
 <p>Pico Lisp has persistent objects built-in as a first class data type. With
 "first class" we mean not just the ability of being passed around, or returned
@@ -1576,7 +1576,7 @@ $ ./p dbg.l             # .. we start Pico Lisp
 
 
 <p><hr>
-<h3><a name="db">Database Progamming</a></h3>
+<h2><a name="db">Database Progamming</a></h2>
 
 <p>To a database, there is more than just persistence. Pico Lisp includes an
 entity/relation class framework (see also <a href="ref.html#dbase">Database</a>)
@@ -1821,14 +1821,14 @@ possibly more efficient) searches can be performed.
 
 
 <p><hr>
-<h3><a name="gui">User Interface (GUI) Programming</a></h3>
+<h2><a name="gui">User Interface (GUI) Programming</a></h2>
 
 <p>The only type of GUI supported by the Pico Lisp application server framework
-is either dynamically generated (but static by nature) <code>HTML</code>, or an
-interactive frontend jusing Java applets.
+is either dynamically generated (but static by nature) HTML, or an interactive
+frontend jusing Java applets.
 
 <p>Before we explain the GUI of our demo database application, we present a
-minimal example for a plain <code>HTML</code> GUI in <code><a
+minimal example for a plain HTML-GUI in <code><a
 href="hello.l">doc/hello.l</a></code>. Start the application server as:
 
 <p><pre><code>
@@ -1837,9 +1837,8 @@ $ ./p lib/http.l -'server 8080 "doc/hello.l"' -wait
 
 <p>Now point your browser to the address '<code><a
 href="http://localhost:8080">http://localhost:8080</a></code>'. You should see a
-very simple <code>HTML</code> page. You can come back here with normal browser
-navigation, or with the '<code>&lt;&lt;&lt;</code>' link in the upper right
-corner.
+very simple HTML page. You can come back here with normal browser navigation, or
+with the '<code>&lt;&lt;&lt;</code>' link in the upper right corner.
 
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
@@ -1957,7 +1956,7 @@ is entered at the Pico Lisp prompt.
 <code>(app)</code> must be called at least once when the GUI is initialized (it
 doesn't harm, though, if it is called each time as in this case).
 
-<p>The principal function to generate a <code>HTML</code> page is the function
+<p>The principal function to generate a HTML page is the function
 <code>html</code> (see also the previous minimal <code><a
 href="hello.l">doc/hello.l</a></code> example). <code>html</code> takes a page
 title as the first argument, and interprets all following arguments as a body
@@ -2056,16 +2055,15 @@ database.
 <p>The first one shows all contemporaries of the person that is currently
 displayed, i.e. all persons who did not die before, or were not born after that
 person. This is a typical Pico Lisp report, in that in addition to the report's
-<code>HTML</code> page, a temporary file is generated which is suitable for
-download (and import into a spread sheet), and from which a <code>PDF</code> can
-be produced for print-out.
+HTML page, a temporary file is generated which is suitable for download (and
+import into a spread sheet), and from which a PDF can be produced for print-out.
 
-<p>In Pico Lisp, there is not a real difference between a plain
-<code>HTML</code> GUI and a report. Again, the function <code>html</code> is
-used to generate the page. By calling the function <code>report</code>, however,
-the temporary file and the links for download and <code>PDF</code> are created.
-A <code>HTML</code> table is then filled with the function <code>record</code>
-which takes care of all necessary output management.
+<p>In Pico Lisp, there is not a real difference between a plain HTML-GUI and a
+report. Again, the function <code>html</code> is used to generate the page. By
+calling the function <code>report</code>, however, the temporary file and the
+links for download and PDF are created. A HTML table is then filled with the
+function <code>record</code> which takes care of all necessary output
+management.
 
 <p>The second report is much simpler. It produces a recursive structure of the
 family.
@@ -2075,7 +2073,7 @@ navigation through the database.
 
 
 <p><hr>
-<h3><a name="pilog">Pilog -- Pico Lisp Prolog</a></h3>
+<h2><a name="pilog">Pilog -- Pico Lisp Prolog</a></h2>
 
 <p>This sections explains some cases of using Pilog in typical application
 programming, in combination with persistent objects and databases. Please refer
@@ -2262,9 +2260,9 @@ show up.
 
 
 <p><hr>
-<h3><a name="sql">Poor Man's SQL</a></h3>
+<h2><a name="sql">Poor Man's SQL</a></h2>
 
-<h4>select</h4>
+<h3>select</h3>
 
 <p>For convenience, a <code>select</code> Lisp glue function is provided as a
 frontend to the <code>select</code> predicate. Note that this function does not
@@ -2336,7 +2334,7 @@ SELECT in the SQL language, for example:
 </code></pre>
 
 
-<h4>update</h4>
+<h3>update</h3>
 
 <p>In addition (just to stay with the SQL terminology ;-), there is also an
 <code>update</code> function. It is a frontend to the 'set!>' and 'put!>'
@@ -2411,7 +2409,7 @@ called directly for that property:
 
 
 <p><hr>
-<h3><a name="ref">References</a></h3>
+<h2><a name="ref">References</a></h2>
 
 <p><a name="knuth73">[knuth73]</a> Donald E. Knuth: ``The Art of Computer
 Programming'', Vol.3, Addison-Vesley, 1973, p. 392

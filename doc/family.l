@@ -1,6 +1,7 @@
-# 14jan06abu
+# 12jun06abu
 # (c) Software Lab. Alexander Burger
 
+(load "lib/tree.l")  # Deprecated
 (load "lib/http.l" "lib/html.l" "lib/gui2.l" "lib/ps.l")
 
 ### DB ###

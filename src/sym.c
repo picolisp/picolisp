@@ -1,4 +1,4 @@
-/* 20feb06abu
+/* 28may06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -190,15 +190,17 @@ any doExtern(any ex) {
    NeedSym(ex,x);
    if (!isNum(x = name(x)))
       return Nil;
-   if (!(y = findHash(x, h = Extern + hash(x)))) {
+   if (!(y = findHash(x, Extern + hash(x)))) {
       Push(c1, x);
       if ((c = symChar(x)) == '{')
          c = symChar(NULL);
       Push(c2, boxChar(c, &i, &nm));
       while ((c = symChar(NULL)) && c != '}')
          charSym(c, &i, &nm);
-      if (!(y = findHash(data(c2), h = Extern + hash(data(c2)))))
-         *h = cons(y = extSym(consSym(Nil,data(c2))), *h);
+      if (!(y = findHash(data(c2), h = Extern + hash(data(c2))))) {
+         y = extSym(consSym(Nil,data(c2)));
+         *h = cons(y,*h);
+      }
       drop(c1);
    }
    return isLife(y)? y : Nil;
@@ -215,7 +217,7 @@ any doHide(any ex) {
       y = EVAL(car(x));
       NeedSym(ex,y);
       if (isNum(z = name(y)) && !findHash(z, h = Transient + hash(z)))
-         *h = cons(y, *h);
+         *h = cons(y,*h);
    }
    return Nil;
 }

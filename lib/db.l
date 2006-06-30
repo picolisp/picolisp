@@ -1,30 +1,34 @@
-# 25mar06abu
+# 14jun06abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
 
 ### DB Sizes ###
 (de dbs Lst
-   (let N -1
-      (setq *Dbs
-         (mapcar
-            '((L)
-               (let Dbf (cons (inc 'N) (>> (- (car L)) 64))
-                  (for Cls (cdr L)
-                     (if (atom Cls)
-                        (put Cls 'dbf Dbf)
-                        (for Var (cdr Cls)
-                           (put (get (car Cls) Var) 'dbf Dbf) ) ) ) )
-               (car L) )
-            Lst ) ) ) )
+   (default *Dbs (_dbs 1)) )
+
+(de dbs+ (N . Lst)
+   (unless (cdr (nth *Dbs N))
+      (conc *Dbs (_dbs N)) ) )
+
+(de _dbs (N)
+   (mapcar
+      '((L)
+         (let Dbf (cons N (>> (- (car L)) 64))
+            (for Cls (cdr L)
+               (if (atom Cls)
+                  (put Cls 'dbf Dbf)
+                  (for Var (cdr Cls)
+                     (put (get (car Cls) Var) 'dbf Dbf) ) ) ) )
+         (inc 'N)
+         (car L) )
+      Lst ) )
 
 (de db1 (N)
-   (if (and N (n0 N))
-      (extern (pack N -1))
-      *DB ) )
+   (ext? (id (or N 1) 1)) )
 
-(de db: X
-   (get X 1 'dbf 1) )
+(de db: Typ
+   (or (meta Typ 'dbf 1) 1) )
 
 
 ### Tree Access ###
@@ -83,10 +87,7 @@
          (make
             (if (isa '+Key This)
                (iter Tree
-                  '((X)
-                     (ifn (args)
-                        (and (isa Cls X) (link X))
-                        (link (pass get X)) ) )
+                  '((X) (and (isa Cls X) (link (pass get X))))
                   X1 X2 )
                (if (>= X2 X1)
                   (if (pair X1)
@@ -97,14 +98,10 @@
                      (setq X1 (cons X1 T)  X2 (cons X2)) ) )
                (iter Tree
                   '((X)
-                     (ifn (args)
-                        (and
-                           (isa Cls X)
-                           (not (memq X (made)))
-                           (link X) )
-                        (or
-                           (memq (setq X (pass get X)) (made))
-                           (link X) ) ) )
+                     (and
+                        (isa Cls X)
+                        (not (memq (setq X (pass get X)) (made)))
+                        (link X) ) )
                   X1 X2 T ) ) ) ) ) )
 
 
@@ -357,7 +354,7 @@
                   (find
                      '((B) (isa '+Joint B))
                      (: bag) ) ) ) ) )
-      ,"Bad type" ) )
+      ,"Type error" ) )
 
 (dm rel> (Obj Old New)
    (and Old (del> Old (: slot) Obj))
@@ -366,13 +363,11 @@
       (put> New (: slot) Obj) ) )
 
 (dm lose> (Obj Val)
-   (super Obj Val)
    (when Val
       (put Val (: slot)
          (del> (meta Val (: slot)) Obj (get Val (: slot)) Obj) ) ) )
 
 (dm keep> (Obj Val)
-   (super Obj Val)
    (when Val
       (put Val (: slot)
          (put> (meta Val (: slot)) Obj (get Val (: slot)) Obj) ) ) )
@@ -682,7 +677,7 @@
 (de new! ("Typ" . @)
    (prog2
       (dbSync)
-      (pass new (or (meta "Typ" 'dbf 1) 0) "Typ")
+      (pass new (or (meta "Typ" 'dbf 1) 1) "Typ")
       (commit 'upd) ) )
 
 (de set! (Obj Val)
@@ -706,9 +701,14 @@
       (inc (prop Obj Var))
       (commit 'upd) ) )
 
-(de blob! (Obj Rel File)
-   (put!> Obj Rel T)
-   (call 'cp File (blob Obj Rel)) )
+(de blob! (Obj Var File Flg)
+   (put!> Obj Var T)
+   (call 'cp File (blob Obj Var))
+   (when Flg
+      (chdir *Blob
+         (call 'ln "-s"
+            (pack (glue "/" (chop Obj)) "." Var)
+            (pack (name Obj) "." Var) ) ) ) )
 
 (dm T @
    (while (args)
@@ -921,7 +921,7 @@
    (val This) )
 
 (dm clone> ()
-   (let Obj (new (or (var: dbf 1) 0) (val This))
+   (let Obj (new (or (var: dbf 1) 1) (val This))
       (for X
          (by
             '((X)
@@ -999,13 +999,13 @@
          (pass db Var (: cls))
          (if (: hook)
             (pass new
-               (or (: cls dbf 1) 0)
+               (or (meta Typ 'dbf 1) 1)
                Typ
                (: hook)
                (next)
                Var )
             (pass new
-               (or (: cls dbf 1) 0)
+               (or (meta Typ 'dbf 1) 1)
                Typ
                Var ) ) ) ) )
 

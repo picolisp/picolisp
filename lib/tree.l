@@ -1,7 +1,67 @@
-# 07jan06abu
+# 19jun06abu
 # (c) Software Lab. Alexander Burger
 
+# This file is deprecated
+# Use "lib/btree.l" for all new projects
+
 # *VisitedKey *VisitedLess *VisitedMore
+
+
+### Pilog compatibility ###
+(be _db (@Obj)
+   (@ let (Q (val (-> @Q 2))  Cls (-> @Cls 2))
+      (loop
+         (NIL (step Q (= '(NIL) (caar Q))) T)
+         (T (isa Cls (setq "R" @))) ) )
+   T
+   (fail) )
+
+(be _db (@Obj) (@Obj . "R"))
+
+(repeat)
+
+
+(undef '_gen)
+(de _gen (Lst Q)
+   (ifn Lst
+      (step Q (= '(NIL) (caar Q)))
+      (use X
+         (loop
+            (T
+               (cond
+                  ((atom (car Lst))
+                     (prog1 (car Lst) (set Lst)) )
+                  ((atom (caar Lst)) (pop Lst))
+                  (T
+                     (prog1
+                        (step (car Lst) (= '(NIL) (caaar Lst)))
+                        (or (cdar Lst) (set Lst)) ) ) )
+               @ )
+            (NIL (setq X (_gen (cddr Lst) Q)))
+            (set Lst
+               (let Y (cadr Lst)
+                  (cond
+                     ((atom Y) (get X Y))
+                     ((=T (caddr Y))
+                        (initQuery (car Y) (cadr Y) X (cadddr Y)) )  # X = Hook
+                     (T
+                        (initQuery
+                           (car Y)
+                           (cadr Y)
+                           (caddr Y)
+                           (if (cadddr Y)
+                              (cons
+                                 (cons X (car @))
+                                 (cons X (cdr @)) )
+                              X ) ) ) ) ) ) ) ) ) )
+
+### End Pilog compatibility ###
+
+(mapc undef
+   (quote
+      fetch store _store _put _del maxKey minKey init step
+      scan _scan _nacs iter _iter _reti check ) )
+
 
 (de root (Tree)
    (cond
@@ -24,7 +84,7 @@
 
 # Store
 (de store (Tree Key Val Dbf)
-   (default Dbf (0 . 64))
+   (default Dbf (1 . 64))
    (if (atom Tree)
       (let Base (or Tree *DB)
          (_store (or (val Base) (set Base (cons 0)))) )
@@ -96,7 +156,9 @@
          ((= Key (car (val Top)))
             (touch Base)
             (dec Root)
-            (_delR (cadr (val Top)) (caddr (val Top))) )
+            (prog1
+               (_delR (cadr (val Top)) (caddr (val Top)))
+               (and *Solo (zap Top)) ) )
          ((< Key (car (val Top)))
             (use Node
                (ifn

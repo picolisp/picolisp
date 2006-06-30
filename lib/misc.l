@@ -1,4 +1,4 @@
-# 13mar06abu
+# 27may06abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -159,8 +159,12 @@
    (setq *Allow (cons NIL (car Lst)))
    (balance *Allow (sort (cdr Lst))) )
 
-(de allow (X)
-   (and *Allow (idx *Allow X T))
+(de allow (X Flg)
+   (nond
+      (*Allow)
+      (Flg (idx *Allow X T))
+      ((member X (cdr *Allow))
+         (conc *Allow (cons X)) ) )
    X )
 
 ### Telephone ###
@@ -255,14 +259,14 @@
       (and
          (setq @D (format (pack @D)))
          (date
-            (cond
-               ((not @Y)
+            (nond
+               (@Y
                   (car (date (date))) )
-               ((not (setq X (format (pack @Y)))))
-               ((< X 100)
+               ((setq X (format (pack @Y))))
+               ((>= X 100)
                   (+ X
                      (* 100 (/ (car (date (date))) 100)) ) )
-               (T X) )
+               (NIL X) )
             (cond
                ((not @M)
                   (cadr (date (date))) )

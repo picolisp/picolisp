@@ -1,14 +1,7 @@
-# 13feb06abu
+# 19jun06abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
-
-(mapc undef
-   (quote
-      fetch _store _put _del maxKey minKey init step
-      scan _scan _nacs iter _iter _reti check ) )
-(mapc zap '(_delR _delL))
-
 
 (de root (Tree)
    (cond
@@ -34,7 +27,7 @@
 
 # Store
 (de store (Tree Key Val Dbf)
-   (default Dbf (0 . 64))
+   (default Dbf (1 . 256))
    (if (atom Tree)
       (let Base (or Tree *DB)
          (_store (or (val Base) (set Base (cons 0)))) )
@@ -58,12 +51,13 @@
    (ifn Val
       (when (and (cdr Root) (_del @))
          (touch Base)
+         (and *Solo (zap (cdr Root)))
          (con Root) )
       (and (= Val (fin Key)) (off Val))
       (if (cdr Root)
          (when (_put @)
             (touch Base)
-            (con Root (def (new (car Dbf)) (list (cdr Root) @))) )
+            (con Root (def (new (car Dbf)) (list (car @) (cdr @)))) )
          (touch Base)
          (con Root
             (def (new (car Dbf))
@@ -80,7 +74,8 @@
                   (if (cadr R)
                      (when (_put @)
                         (touch Top)
-                        (con X (cons @ (cdr X)))
+                        (set (cdr R) (car @))
+                        (con X (cons (cdr @) (cdr X)))
                         (_splitBt) )
                      (touch Top)
                      (con X
@@ -91,7 +86,8 @@
             ((car V)
                (when (_put @)
                   (touch Top)
-                  (con V (cons @ (cdr V)))
+                  (set V (car @))
+                  (con V (cons (cdr @) (cdr V)))
                   (_splitBt) ) )
             (T
                (touch Top)
@@ -102,13 +98,17 @@
                (_splitBt) ) ) ) ) )
 
 (de _splitBt ()
-   (when (and (cddddr (val Top)) (> (size Top) (cdr Dbf)))
-      (let N (>> 1 (length V))
-         (set Top (head N V))
-         (prog1 (get V (inc N))
-            (set (cdr @)
-               (def (new (car Dbf))
-                  (cons (cadr @) (nth V (+ 2 N))) ) ) ) ) ) )
+   (when (and (cddddr V) (> (size Top) (cdr Dbf)))
+      (let (N (>> 1 (length V))  X (get V (inc N)))
+         (set (cdr X)
+            (def (new (car Dbf))
+               (cons (cadr X) (nth V (+ 2 N))) ) )
+         (cons
+            (ifn *Solo
+               (def (new (car Dbf)) (head N V))
+               (set Top (head N V))
+               Top )
+            X ) ) ) )
 
 # Del
 (de _del (Top)
@@ -117,6 +117,7 @@
          ((not R)
             (when (and (car V) (_del @))
                (touch Top)
+               (and *Solo (zap (car V)))
                (set V)
                (not (cdr V)) ) )
          ((= Key (car R))
@@ -126,7 +127,9 @@
                   (touch Top)
                   (xchg R (cadr X))
                   (con (cdr R) (cddr (cadr X)))
-                  (and (_del (cadr R)) (set (cdr R))) )
+                  (when (_del (cadr R))
+                     (and *Solo (zap (cadr R)))
+                     (set (cdr R)) ) )
                (touch Base)
                (dec Root)
                (nand
@@ -137,6 +140,7 @@
          ((cadr R)
             (when (_del @)
                (touch Top)
+               (and *Solo (zap (cadr R)))
                (set (cdr R)) ) ) ) ) )
 
 # Tree node count
@@ -244,28 +248,32 @@
                   (setq Node (car V)) ) ) ) )
       (cons (cons (cons Beg End) Q)) ) )
 
-(de step (Q F)
+(de step (Q Flg)
    (use (L F X)
-      (loop
-         (while (and (cdr Q) (not (cdar Q)))
-            (set Q (cadr Q))
-            (con Q (cddr Q)) )
-         (NIL (cdr (setq L (car Q))))
-         (setq
-            F (>= (cdar L) (caar L))
-            X (pop (cdr L)) )
-         (or (cadr L) (con L (cddr L)))
-         (T ((if F > <) (car X) (cdar L)))
-         (for (V (cadr X) ((if F val revNode) V) (car @))
-            (con L (cons (cdr @) (cdr L)))
-            (wipe V) )
-         (NIL (and X F (flg? (fin (car X))))
-            (or (cddr X) (fin (car X))) ) ) ) )
+      (catch NIL
+         (loop
+            (until (cdar Q)
+               (or (cdr Q) (throw))
+               (set Q (cadr Q))
+               (con Q (cddr Q)) )
+            (setq
+               L (car Q)
+               F (>= (cdar L) (caar L))
+               X (pop (cdr L)) )
+            (or (cadr L) (con L (cddr L)))
+            (if ((if F > <) (car X) (cdar L))
+               (con (car Q))
+               (for (V (cadr X) ((if F val revNode) V) (car @))
+                  (con L (cons (cdr @) (cdr L)))
+                  (wipe V) )
+               (unless (and Flg (flg? (fin (car X))))
+                  (throw NIL
+                     (or (cddr X) (fin (car X))) ) ) ) ) ) ) )
 
 (====)
 
 # Scan tree nodes
-(de scan ("Tree" "Foo" "Beg" "End" "F")
+(de scan ("Tree" "Foo" "Beg" "End" "Flg")
    (default "Foo" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _scan _nacs)
@@ -283,7 +291,7 @@
             (_scan (car "V"))
             (cdr "V") )
          (T (> (car "X") "End"))
-         (unless (and "F" (flg? (fin (car "X"))))
+         (unless (and "Flg" (flg? (fin (car "X"))))
             ("Foo"
                (car "X")
                (or (cddr "X") (fin (car "X"))) ) )
@@ -302,7 +310,7 @@
             (_nacs (car "V"))
             (cdr "V") )
          (T (> "End" (car "X")))
-         (unless (and "F" (flg? (fin (car "X"))))
+         (unless (and "Flg" (flg? (fin (car "X"))))
             ("Foo"
                (car "X")
                (or (cddr "X") (fin (car "X"))) ) )
@@ -312,7 +320,7 @@
 (====)
 
 # Iterate tree values
-(de iter ("Tree" "Foo" "Beg" "End" "F")
+(de iter ("Tree" "Foo" "Beg" "End" "Flg")
    (default "Foo" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _iter _reti)
@@ -330,7 +338,7 @@
             (_iter (car "V"))
             (cdr "V") )
          (T (> (car "X") "End"))
-         (unless (and "F" (flg? (fin (car "X"))))
+         (unless (and "Flg" (flg? (fin (car "X"))))
             ("Foo" (or (cddr "X") (fin (car "X")))) )
          (_iter (cadr "X")) )
       (wipe "Node") ) )
@@ -347,7 +355,7 @@
             (_reti (car "V"))
             (cdr "V") )
          (T (> "End" (car "X")))
-         (unless (and "F" (flg? (fin (car "X"))))
+         (unless (and "Flg" (flg? (fin (car "X"))))
             ("Foo" (or (cddr "X") (fin (car "X")))) )
          (_reti (cadr "X")) )
       (wipe "Node") ) )

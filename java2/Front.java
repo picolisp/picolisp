@@ -1,4 +1,4 @@
-// 20nov05abu
+// 05may06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -116,10 +116,11 @@ public class Front extends Pico {
    }
 
    void make() {
-      int i, j, k, k2, k3, m, n, p, flgs;
+      int i, j, k, k2, k3, m, n, p, vFlg, hFlg;
       Vector fld, sb;
       JComponent f;
       JScrollBar b;
+      JScrollPane jsp;
       JPanel panel, flow;
       Color back, fore;
       String s, font;
@@ -238,6 +239,7 @@ public class Front extends Pico {
                      0, 0 );
             }
             sb.addElement(b);
+            jsp = null;
             font = null;
             size = Scale;
             b = null;
@@ -283,11 +285,13 @@ public class Front extends Pico {
                else if ((n = getNum()) == 0)    // dy
                   f = new JTextField(m);
                else {
+                  vFlg = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED;
+                  hFlg = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED;
                   if (m < 0)
-                     m = -m;
+                     {m = -m;  hFlg = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER;}
                   if (n < 0)
-                     n = -n;
-                  f = new JTextArea(n, m);
+                     {n = -n;  vFlg = JScrollPane.VERTICAL_SCROLLBAR_NEVER;}
+                  jsp = new JScrollPane(f = new JTextArea(n, m), vFlg, hFlg);
                }
                f.addMouseListener(new PicoMouseAdapter(this,i));
                f.setBackground(Color.white);
@@ -303,16 +307,18 @@ public class Front extends Pico {
             else
                f.setFont(new Font(font, Font.PLAIN, (int)size));
             f.setMinimumSize(f.getPreferredSize());
+            if (jsp != null)
+               jsp.setMinimumSize(jsp.getPreferredSize());
             f.addFocusListener(new PicoFocusListener(this,i));
             f.addKeyListener(new PicoKeyAdapter(this,i));
             ++i;
+            fld.addElement(f);
             if (flow != null)
                flow.add(f);
             else
-               constrain(panel, f, k++, j, 1, 1, 1.0, 1.0,
+               constrain(panel, jsp==null? f : jsp, k++, j, 1, 1, 1.0, 1.0,
                      GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                      0, 0 );
-            fld.addElement(f);
          }
          if (k > k3)
             k3 = k;
@@ -367,9 +373,11 @@ public class Front extends Pico {
          ((JLabel)f).setText(txt);
       else {
          ((JTextComponent)f).setText(txt);
-         if (f instanceof JTextField  &&  len > ((JTextField)f).getColumns())
-            len = 0;
-         ((JTextComponent)f).select(len,len);
+         if (f instanceof JTextField) {
+            if (len > ((JTextField)f).getColumns())
+               len = 0;
+            ((JTextField)f).select(len,len);
+         }
       }
    }
 
@@ -663,15 +671,31 @@ class PicoKeyAdapter extends KeyAdapter {
          ev.consume();
          break;
       case KeyEvent.VK_PAGE_UP:
-         Home.change();
-         Home.msg1("PGUP>");
-         Home.relay();
+         if ((m & InputEvent.CTRL_MASK) == 0  &&  f instanceof JTextArea) {
+            i = j = goPgUp((JTextArea)f);
+            if ((m & InputEvent.SHIFT_MASK) != 0)
+               j = ((JTextArea)f).getSelectionEnd();
+            ((JTextArea)f).select(i,j);
+         }
+         else {
+            Home.change();
+            Home.msg1("PGUP>");
+            Home.relay();
+         }
          ev.consume();
          break;
       case KeyEvent.VK_PAGE_DOWN:
-         Home.change();
-         Home.msg1("PGDN>");
-         Home.relay();
+         if ((m & InputEvent.CTRL_MASK) == 0  &&  f instanceof JTextArea) {
+            i = j = goPgDn((JTextArea)f);
+            if ((m & InputEvent.SHIFT_MASK) != 0)
+               i = ((JTextArea)f).getSelectionStart();
+            ((JTextArea)f).select(i,j);
+         }
+         else {
+            Home.change();
+            Home.msg1("PGDN>");
+            Home.relay();
+         }
          ev.consume();
          break;
       case KeyEvent.VK_END:
@@ -712,9 +736,17 @@ class PicoKeyAdapter extends KeyAdapter {
          }
          break;
       case KeyEvent.VK_UP:
-         Home.change();
-         Home.msg1("UP>");
-         Home.relay();
+         if ((m & InputEvent.CTRL_MASK) == 0  &&  f instanceof JTextArea) {
+            i = j = goUp((JTextArea)f);
+            if ((m & InputEvent.SHIFT_MASK) != 0)
+               j = ((JTextArea)f).getSelectionEnd();
+            ((JTextArea)f).select(i,j);
+         }
+         else {
+            Home.change();
+            Home.msg1("UP>");
+            Home.relay();
+         }
          ev.consume();
          break;
       case KeyEvent.VK_RIGHT:
@@ -727,9 +759,17 @@ class PicoKeyAdapter extends KeyAdapter {
          }
          break;
       case KeyEvent.VK_DOWN:
-         Home.change();
-         Home.msg1("DN>");
-         Home.relay();
+         if ((m & InputEvent.CTRL_MASK) == 0  &&  f instanceof JTextArea) {
+            i = j = goDn((JTextArea)f);
+            if ((m & InputEvent.SHIFT_MASK) != 0)
+               i = ((JTextArea)f).getSelectionStart();
+            ((JTextArea)f).select(i,j);
+         }
+         else {
+            Home.change();
+            Home.msg1("DN>");
+            Home.relay();
+         }
          ev.consume();
          break;
       case KeyEvent.VK_DELETE:
@@ -802,6 +842,53 @@ class PicoKeyAdapter extends KeyAdapter {
          Home.msg3("key>", Ix, Home.outCiph(s));
       else
          Home.msg3("key>", Ix, s);
+   }
+
+   /* TextArea movements */
+   private int goUp(JTextArea f) {
+      int i, j, k;
+
+      String s = f.getText();
+      if ((i = f.getSelectionStart()) == 0)
+         return 0;
+      if ((j = s.lastIndexOf('\n',i-1)) < 0)
+         return i;
+      return (k = s.lastIndexOf('\n',j-1) + i - j) > j?  j : k;
+   }
+
+   private int goDn(JTextArea f) {
+      int i, j, k;
+
+      String s = f.getText();
+      i = f.getSelectionEnd();
+      if ((j = s.indexOf('\n',i)) < 0)
+         return i;
+      i -= s.lastIndexOf('\n',i-1);
+      if ((k = s.indexOf('\n',j+1)) < 0)
+         k = s.length();
+      return Math.min(k, j + i);
+   }
+
+   private int goPgUp(JTextArea f) {
+      int n, i;
+
+      String s = f.getText();
+      n = f.getRows()-1;
+      for (i = f.getSelectionStart()-1;  n > 0 && i > 0;  --i)
+         if (s.charAt(i) == '\n')
+            --n;
+      return i;
+   }
+
+   private int goPgDn(JTextArea f) {
+      int n, i;
+
+      String s = f.getText();
+      n = f.getRows()-1;
+      for (i = f.getSelectionEnd();  n > 0 && i < s.length();  ++i)
+         if (s.charAt(i) == '\n')
+            --n;
+      return i;
    }
 }
 

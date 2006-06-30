@@ -1,17 +1,26 @@
-/* 02mar06abu
+/* 27jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-static void comment(void) {outString("# ");}
-static void redefMsg(void) {outString(" redefined\n");}
+static void redefMsg(any x, any y) {
+   FILE *oSave = OutFile;
+
+   OutFile = stderr;
+   outString("# ");
+   print(x);
+   if (y)
+      space(), print(y);
+   outString(" redefined\n");
+   OutFile = oSave;
+}
 
 static void redefine(any ex, any s, any x) {
    NeedSym(ex,s);
    CheckVar(ex,s);
    if (!isNil(val(s))  &&  s != val(s)  &&  !equal(x,val(s)))
-      comment(), print(s), redefMsg();
+      redefMsg(s,NULL);
    val(s) = x;
 }
 
@@ -149,7 +158,7 @@ any doDef(any ex) {
    if (!isCell(cdr(x))) {
       if (!equal(data(c2), y = val(data(c1)))) {
          if (!isNil(y)  &&  data(c1) != y)
-            comment(), print(data(c1)), redefMsg();
+            redefMsg(data(c1),NULL);
          Touch(ex,data(c1));
          val(data(c1)) = data(c2);
       }
@@ -158,7 +167,7 @@ any doDef(any ex) {
       x = cdr(x),  Push(c3, EVAL(car(x)));
       if (!equal(data(c3), y = get(data(c1), data(c2)))) {
          if (!isNil(y))
-            comment(), print(data(c1)), space(), print(data(c2)), redefMsg();
+            redefMsg(data(c1), data(c2));
          Touch(ex,data(c1));
          put(data(c1), data(c2), data(c3));
       }
@@ -203,7 +212,7 @@ any doDm(any ex) {
    for (y = val(cls);  isCell(y) && isCell(car(y));  y = cdr(y))
       if (caar(y) == msg) {
          if (!equal(cdr(x), cdar(y)))
-            comment(), print(msg), space(), print(cls), redefMsg();
+            redefMsg(msg,cls);
          cdar(y) = cdr(x);
          return msg;
       }
@@ -333,7 +342,7 @@ any doNew(any ex) {
    else {
       if (!isNil(y)) {
          data(c1) = extSym(data(c1));
-         p = Extern + hash(tail(data(c1)) = newId(isNum(y)? (int)unDig(y)/2 : 0));
+         p = Extern + hash(tail(data(c1)) = newId(isNum(y)? (int)unDig(y)/2 : 1));
          *p = cons(data(c1),*p);
       }
       x = cdr(x),  y = EVAL(car(x));
@@ -581,10 +590,12 @@ any doBind(any ex) {
    if (isSym(y)) {
       bindFrame f;
 
-      Bind(y,f);
+      if (!isNil(y))
+         Bind(y,f);
       x = cdr(x),  Push(c1, EVAL(car(x)));
       x = prog(data(c1));
-      Unbind(f);
+      if (!isNil(y))
+         Unbind(f);
    }
    else {
       struct {  // bindFrame
@@ -619,17 +630,19 @@ any doBind(any ex) {
    return x;
 }
 
-// (job lst . prg) -> any
+// (job 'lst . prg) -> any
 any doJob(any ex) {
    any x = cdr(ex);
-   any y = car(x);
+   any y = EVAL(car(x));
    any z;
+   cell c1;
    struct {  // bindFrame
       struct bindFrame *link;
       int i, cnt;
       struct {any sym; any val;} bnd[length(y)];
    } f;
 
+   Push(c1,y);
    f.link = Env.bind,  Env.bind = (bindFrame*)&f;
    f.i = f.cnt = 0;
    while (isCell(y)) {
@@ -639,7 +652,7 @@ any doJob(any ex) {
       ++f.cnt,  y = cdr(y);
    }
    z = prog(cdr(x));
-   for (f.cnt = 0, y = car(x);  isCell(y);  ++f.cnt, y = cdr(y)) {
+   for (f.cnt = 0, y = Pop(c1);  isCell(y);  ++f.cnt, y = cdr(y)) {
       cdar(y) = val(caar(y));
       val(caar(y)) = f.bnd[f.cnt].val;
    }
@@ -889,6 +902,14 @@ any doCond(any x) {
    return Nil;
 }
 
+// (nond (('any1 . prg1) ('any2 . prg2) ..)) -> any
+any doNond(any x) {
+   while (isCell(x = cdr(x)))
+      if (isNil(val(At) = EVAL(caar(x))))
+         return prog(cdar(x));
+   return Nil;
+}
+
 // (case 'any (any1 . prg1) (any2 . prg2) ..) -> any
 any doCase(any x) {
    any y, z;
@@ -1043,7 +1064,7 @@ any doAt(any ex) {
    NeedCell(ex,x);
    NeedCnt(ex,car(x));
    NeedCnt(ex,cdr(x));
-   if (setDig(car(x), unDig(car(x))+2) < unDig(cdr(x)))
+   if (num(setDig(car(x), unDig(car(x))+2)) < unDig(cdr(x)))
       return Nil;
    setDig(car(x), 0);
    return prog(cddr(ex));

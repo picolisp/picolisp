@@ -1,7 +1,25 @@
+* 30jun06 picoLisp-2.2.3
+   "redefined" messages go to stderr
+   Bug in 'argv'
+   Deprecated "lib/tree.l"
+   Restored '*Solo' global variable
+   '(get lst 0)' returns 'NIL'
+   Bug in 'extern'
+   'nond' (negated 'cond') function
+   'ge0' function
+   Bug in 'lose>' and 'keep>' for '+Joint'
+   '*Rst' global variable
+   Bug in 'next'/'arg'
+   Changed 'env' and 'job'
+   Bug in B-Tree 'step'
+   Changed 'mark' return value
+   Changed 'close' return value
+
 * 29mar06 picoLisp-2.2.2
    Mac OS X (Darwin) port
    'pwd' function
    'if2' flow function
+   'rpc' function
    'one' function
    Changed 'space' return value
    'up' symbol binding lookup function

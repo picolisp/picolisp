@@ -1,4 +1,4 @@
-22mar06abu
+21jun06abu
 (c) Software Lab. Alexander Burger
 
 
@@ -63,8 +63,8 @@ markup). Unfortunately, the VGA text mode does not properly support underlines.
          =============
 
 For further information, please read the Pico Lisp Reference Manual in
-'doc/ref.html', the Pico Lisp tutorial in 'doc/tut.html', and the frequently
-asked questions in 'doc/faq.html'.
+'doc/ref.html', the Pico Lisp tutorials in 'doc/tut.html' and 'doc/app.html',
+and the frequently asked questions in 'doc/faq.html'.
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including

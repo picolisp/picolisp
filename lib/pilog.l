@@ -1,4 +1,4 @@
-# 07jan06abu
+# 19jun06abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -240,7 +240,7 @@
 (be _db (@Obj)
    (@ let (Q (val (-> @Q 2))  Cls (-> @Cls 2))
       (loop
-         (NIL (step Q (= '(NIL) (caar Q))) T)
+         (NIL (step Q (= '(NIL) (caaar Q))) T)
          (T (isa Cls (setq "R" @))) ) )
    T
    (fail) )
@@ -493,7 +493,7 @@
 
 (de _gen (Lst Q)
    (ifn Lst
-      (step Q (= '(NIL) (caar Q)))
+      (step Q (= '(NIL) (caaar Q)))
       (use X
          (loop
             (T
@@ -503,8 +503,8 @@
                   ((atom (caar Lst)) (pop Lst))
                   (T
                      (prog1
-                        (step (car Lst) (= '(NIL) (caaar Lst)))
-                        (or (cdar Lst) (set Lst)) ) ) )
+                        (step (car Lst) (= '(NIL) (caar (caar Lst))))
+                        (or (cdaar Lst) (set Lst)) ) ) )
                @ )
             (NIL (setq X (_gen (cddr Lst) Q)))
             (set Lst

@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 10oct05abu
+# 08may06abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -17,10 +17,9 @@
 (?push '*Bye '(call 'rm "fifo/beat"))
 
 (de *Err
-   (out NIL
-      (prin (stamp))
-      (space)
-      (println *Watch) ) )
+   (prin (stamp))
+   (space)
+   (println *Watch) )
 
 (task (open "fifo/beat")
    (in @

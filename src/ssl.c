@@ -1,4 +1,4 @@
-/* 23sep05abu
+/* 15jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
@@ -22,7 +23,7 @@
 
 typedef enum {NO,YES} bool;
 
-static char *File, *Data;
+static char *File, *Dir, *Data;
 static off_t Size;
 
 static char Get[] =
@@ -125,20 +126,26 @@ static void doSigTerm(int n __attribute__((unused))) {
 // ssl host port url
 // ssl host port url file
 // ssl host port url key file
-// ssl host port url key file sec
+// ssl host port url key file dir sec
 int main(int ac, char *av[]) {
    SSL_CTX *ctx;
    SSL *ssl;
+   bool bin;
    int n, sec, getLen, lenLen, fd, sd;
+   DIR *dp;
+   struct dirent *p;
    struct stat st;
    struct flock fl;
-   char get[1024], buf[BUFSIZ], len[64];
+   char get[1024], buf[4096], nm[4096], len[64];
 
-   if (ac < 4 || ac > 7)
-      giveup("host port url [[key] file [sec]]");
+   if (!(ac >= 4 && ac <= 6  ||  ac == 8))
+      giveup("host port url [[key] file] | host port url key file dir sec");
    if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
       giveup("Names too long");
-   getLen = sprintf(get, Get, av[3], av[1], av[2]);
+   if (strchr(av[3],'/'))
+      bin = NO,  getLen = sprintf(get, Get, av[3], av[1], av[2]);
+   else
+      bin = YES,  getLen = sprintf(get, "@%s ", av[3]);
 
    SSL_load_error_strings();
    OpenSSL_add_ssl_algorithms();
@@ -165,49 +172,71 @@ int main(int ac, char *av[]) {
       return 0;
    }
    File = av[5];
-   sec = (int)atol(av[6]);
+   Dir = av[6];
+   sec = (int)atol(av[7]);
    signal(SIGINT, doSigTerm);
    signal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
    for (;;) {
-      if ((fd = open(File, O_RDWR)) < 0)
-         sleep(sec);
-      else if (fstat(fd,&st) < 0  ||  st.st_size == 0)
-         close(fd),  sleep(sec);
-      else {
-         fl.l_type = F_WRLCK;
-         fl.l_whence = SEEK_SET;
-         fl.l_start = 0;
-         fl.l_len = 0;
-         if (fcntl(fd, F_SETLKW, &fl) < 0)
-            giveup("Can't lock");
-         if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
-            giveup("Can't access");
-         lenLen = sprintf(len, "%lld\n", Size);
-         if ((Data = malloc(Size)) == NULL)
-            giveup("Can't alloc");
-         if (read(fd, Data, Size) != Size)
-            giveup("Can't read");
-         if (ftruncate(fd,0) < 0)
-            errmsg("Can't truncate");
-         close(fd);
-         for (;;) {
-            if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
-               buf[0] = 'T';
-               if (SSL_write(ssl, get, getLen) == getLen  &&
-                        (!*av[4] || sslFile(ssl,av[4]))  &&          // key
-                        SSL_write(ssl, len, lenLen) == lenLen  &&    // length
-                        SSL_write(ssl, Data, Size) == Size  &&       // data
-                        SSL_write(ssl, buf, 1) == 1 &&               // ack
-                        SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T'  &&
-                        sslClose(ssl,sd) )
-                  break;
+      if (*File && (fd = open(File, O_RDWR)) >= 0) {
+         if (fstat(fd,&st) < 0  ||  st.st_size == 0)
+            close(fd);
+         else {
+            fl.l_type = F_WRLCK;
+            fl.l_whence = SEEK_SET;
+            fl.l_start = 0;
+            fl.l_len = 0;
+            if (fcntl(fd, F_SETLKW, &fl) < 0)
+               giveup("Can't lock");
+            if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
+               giveup("Can't access");
+            lenLen = sprintf(len, "%lld\n", Size);
+            if ((Data = malloc(Size)) == NULL)
+               giveup("Can't alloc");
+            if (read(fd, Data, Size) != Size)
+               giveup("Can't read");
+            if (ftruncate(fd,0) < 0)
+               errmsg("Can't truncate");
+            close(fd);
+            for (;;) {
+               if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
+                  if (SSL_write(ssl, get, getLen) == getLen  &&
+                           (!*av[4] || sslFile(ssl,av[4]))  &&                   // key
+                           (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
+                           SSL_write(ssl, Data, Size) == Size  &&                // data
+                           SSL_write(ssl, bin? "\0" : "T", 1) == 1  &&           // ack
+                           SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T'  &&
+                           sslClose(ssl,sd) )
+                     break;
 
-               sslClose(ssl,sd);
+                  sslClose(ssl,sd);
+               }
+               sleep(sec);
             }
-            sleep(sec);
+            free(Data),  Data = NULL;
          }
-         free(Data),  Data = NULL;
       }
+      if (*Dir && (dp = opendir(Dir))) {
+         while (p = readdir(dp)) {
+            if (p->d_name[0] != '.') {
+               snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
+               if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
+                     (sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0 ) {
+
+                  if (SSL_write(ssl, get, getLen) == getLen  &&
+                        (!*av[4] || sslFile(ssl,av[4]))  &&          // key
+                        (bin || SSL_write(ssl, buf, n) == n)  &&     // path
+                        (bin || SSL_write(ssl, "\n", 1) == 1)  &&    // nl
+                        sslFile(ssl, nm)  &&                         // file
+                        sslClose(ssl,sd) )
+                     unlink(nm);
+
+                  sslClose(ssl,sd);
+               }
+            }
+         }
+         closedir(dp);
+      }
+      sleep(sec);
    }
 }

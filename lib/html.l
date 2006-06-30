@@ -1,4 +1,4 @@
-# 05nov05abu
+# 28jun06abu
 # (c) Software Lab. Alexander Burger
 
 # *Url1 *Frame *Meta *Css
@@ -29,15 +29,15 @@
          "<link rel=\"stylesheet\" type=\"text/css\" href=\""
          *SesId *Css "\">" ) )
    (prinl "</HEAD>")
-   (cond
-      ((not (num? (car "Prg")))
+   (nond
+      ((num? (car "Prg"))
          (prin "<BODY")
          (while (and (pair (car "Prg")) (=T (caar "Prg")))
             (prin " " (eval (cdr (pop '"Prg")))) )
          (prinl ">")
          (prEval "Prg")
          (prinl "</BODY>") )
-      ((not (num? (cadr "Prg")))
+      ((num? (cadr "Prg"))
          (prinl
             "<FRAMESET COLS=\""
             (eval (pop '"Prg"))
@@ -49,7 +49,7 @@
             "\"></FRAMESET>" )
          (setq  *Frame
             (cons (list NIL NIL (cons 'html (cons NIL "Prg"))))) )
-      (T
+      (NIL
          (prinl
             "<FRAMESET ROWS=\""
             (eval (pop '"Prg"))
@@ -71,7 +71,6 @@
    (prinl "</HTML>") )
 
 (undef 'urlN)
-
 (de urlN (Str)
    (if (= "0" Str)
       (html NIL

@@ -1,4 +1,4 @@
-# 10feb06abu
+# 30may06abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -56,12 +56,14 @@
          (setq "N" (car "*X"))
          ("edit" (conc (cdr "*X") "Lst")) ) ) )
 
-(de "loc" ("X")
+(de "loc" ("X" "Lst")
    (cond
+      ((memq "X" "Lst"))
       ((and (str? "X") (not (memq "X" (made))))
          (link "X") )
       ((pair "X")
-         ("loc" (car "X"))
-         ("loc" (cdr "X")) ) ) )
+         (push '"Lst" "X")
+         ("loc" (car "X") "Lst")
+         ("loc" (cdr "X") "Lst") ) ) )
 
 # vim:syntax=picolisp:ts=3:sw=3:expandtab

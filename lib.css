@@ -1,0 +1,115 @@
+/* 06jun06abu
+ * (c) Software Lab. Alexander Burger
+ */
+
+/* Lib */
+.left {float: left;}
+.right {float: right;}
+.clr {clear: both;}
+.align {text-align: right;}
+.red {color: red}
+.blue {color: blue}
+
+
+/* Defaults */
+body {
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   margin: 0;
+}
+
+img {border: 0;}
+
+/* Navitaion */
+#menu {
+   position: absolute;
+   top: 2%;
+   left: 2%;
+   width: 20%;
+   height: 78%;
+   padding: 0;
+   margin: 0;
+   background-color: rgb(80%,80%,80%);
+}
+
+#menu ul {
+   padding: 0;
+   margin: 6px auto 6px 0;
+   background-color: rgb(60%,60%,60%);
+}
+
+#menu a {
+   text-decoration: none;
+}
+
+#menu a:hover {
+   background-color: rgb(80%,80%,80%);
+}
+
+#menu .top {
+   list-style-position: inside;
+   padding: 2px 2px 2px 2px;
+   font-size: 120%;
+}
+
+#menu .sub {
+   list-style-position: inside;
+   padding: 4px 4px 4px 4px;
+}
+#menu .sub a {
+   font-size: 90%;
+}
+
+
+/* Tabulators */
+.tab a {
+   color: black;
+   text-decoration: none;
+}
+
+.tab td {
+   padding: 4px 8px;
+   margin: 4px;
+}
+
+.tab .top {
+   background-color: rgb(60%,60%,60%);
+}
+
+.tab .sub {
+   background-color: rgb(80%,80%,80%);
+}
+
+
+/* Main area */
+#main {
+   position: absolute;
+   top: 2%;
+   left: 26%;
+}
+
+
+/* Errors */
+.err {
+   color: red;
+   background-color: yellow;
+   margin-bottom: 12px;
+}
+
+/* Alerts */
+.alert {
+   display: inline;
+   padding: 6px;
+   margin: 12px 0 12px 60px;
+   background-color: yellow;
+   border: dotted 2px;
+}
+
+/* Dialogs */
+.dialog {
+   display: inline;
+   padding: 6px;
+   margin: 12px 0 12px 60px;
+   background-color: rgb(90%,90%,90%);
+   border: dotted 2px;
+}

@@ -1,10 +1,11 @@
-# 15dec03abu
+# 26may06abu
 # (c) Software Lab. Alexander Burger
 
 (de zahlwort (N)
    (cond
       ((not N))
       ((=0 N) "null")
+      ((lt0 N) (pack "minus " (zahlw (- N))))
       (T (zahlw N)) ) )
 
 (de zahlw (N Flg)

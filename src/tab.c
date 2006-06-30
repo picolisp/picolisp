@@ -1,4 +1,4 @@
-/* 13mar06abu
+/* 02jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -114,6 +114,7 @@ static symInit Symbols[] = {
    {doFunQ, "fun?"},
    {doGc, "gc"},
    {doGe, ">="},
+   {doGe0, "ge0"},
    {doGet, "get"},
    {doGetl, "getl"},
    {doGt, ">"},
@@ -193,6 +194,7 @@ static symInit Symbols[] = {
    {doNew, "new"},
    {doNext, "next"},
    {doNil, "nil"},
+   {doNond, "nond"},
    {doNor, "nor"},
    {doNot, "not"},
    {doNth, "nth"},
@@ -332,6 +334,7 @@ void initSymbols(void) {
    for (i = 0; i < HASH; ++i)
       Intern[i] = Transient[i] = Extern[i] = Nil;
    DB    = initSym(Nil, "*DB");
+   Solo  = initSym(Zero, "*Solo");
    Up    = initSym(Nil, "^");
    At    = initSym(Nil, "@");
    At2   = initSym(Nil, "@@");
@@ -349,6 +352,7 @@ void initSymbols(void) {
    Led   = initSym(Nil, "*Led");
    Tsm   = initSym(Nil, "*Tsm");
    Err   = initSym(Nil, "*Err");
+   Rst   = initSym(Nil, "*Rst");
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");
    Adr   = initSym(Nil, "*Adr");

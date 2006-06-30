@@ -1,4 +1,4 @@
-# 20feb06abu
+# 21jun06abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -34,9 +34,10 @@ ifeq ($(UNAME),Darwin)
 endif
 
 
-# all: picolisp gate x11
+# all: picolisp tools gate x11
 
-picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht $(lib)/z3d $(bin)/lat1 $(bin)/utf2 $(bin)/balance
+picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht $(lib)/z3d
+tools: $(bin)/lat1 $(bin)/utf2 $(bin)/balance
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
 

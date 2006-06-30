@@ -1,4 +1,4 @@
-# 13mar06abu
+# 01jun06abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Agent *Host *Port *Port1 *Sock *MPartLim *MPartEnd *ContLen
@@ -15,6 +15,7 @@
    (`(chop "mp3") "audio/x-mpeg" 86400)
    (`(chop "css") "text/css" 86400)
    (`(chop "gif") "image/gif" 86400)
+   (`(chop "png") "image/png" 86400)
    (`(chop "jpg") "image/jpeg" 86400)
    (`(chop "txt") "text/octet-stream" 1 T)
    (`(chop "ps") "application/postscript" 1)
@@ -324,12 +325,7 @@
       (pack *SesId Url) ) )
 
 (de redirect (Url)
-   (httpHead)
-   (prinl "<HTML>")
-   (prinl "<FRAMESET ROWS=\"100%,*\">")
-   (prinl "<FRAME SRC=\"" Url "\">")
-   (prinl "</FRAMESET>")
-   (prinl "</HTML>") )
+   (httpStat 302 "Found" (pack "Location: " Url)) )
 
 (de httpStat (N Str . @)
    (prinl "HTTP/1.1 " N " " Str "^M")

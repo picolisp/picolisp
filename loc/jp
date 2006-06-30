@@ -1,11 +1,41 @@
-# 01feb06abu
+# 06may06abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
 
 # lib/db.l
+"Bad type" "タイプが違う"
+"Boolean input expected" "Booleanタイプが必要"
+"Input required" "入力が必要"
+"Not unique" "重複"
+"Numeric input expected" "数値入力が必要"
+"String type expected" "Stringタイプが必要"
+"Symbolic type expected" "Symbolicタイプが必要"
+"Type error" "タイプエラー"
 
 # lib/gui.l
+"Background" "背景"
+"Bad date format" "日付けが違う"
+"Bad time format" "時刻が違う"
+"Cancel" "キャンセル"
+"Choose" "選択"
+"Choose/Create" "選択 / 新しい"
+"Close" "閉じる"
+"Create" "新しい"
+"Data not found" "データが見付からない"
+"Delete" "消す"
+"Delete this data record?" "このデータを消す？"
+"Font" "フォント"
+"Font Size" "フォントサイズ"
+"Foreground" "前面"
+"New/Copy" "新しい / コピー"
+"Next data record" "次のデータ"
+"No" "いいえ"
+"Please wait" "お待ちください"
+"Settings" "セッティング"
+"Search" "探す"
+"Text too long" "テキストが長過ぎる"
+"Yes" "はい"
 
 # lib/admin.l
 "login" "ログイン"

@@ -1,10 +1,12 @@
-# 04may04abu
+# 19may06abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "fifo/beat")
-   (de heartbeat ())
+   (de heartbeat ()
+      (sync) )
 
    (de heartbeat @
+      (sync)
       (out "fifo/beat"
          (pr
             (cons *Pid

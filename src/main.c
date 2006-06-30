@@ -1,4 +1,4 @@
-/* 29mar06abu
+/* 14jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -17,8 +17,8 @@ FILE *InFile, *OutFile;
 any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Msg, Uni, Adr, Fork, Bye;
+any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static bool Jam, Protect;
@@ -181,34 +181,44 @@ any doHeap(any x) {
    return boxCnt(n);
 }
 
-// (env ['lst]) -> lst
+// (env ['lst] | ['sym 'val] ..) -> lst
 any doEnv(any x) {
-   any y;
    int i;
    bindFrame *p;
-   cell c1;
+   cell c1, c2;
 
-   if (isCell(x = EVAL(cadr(x)))) {
-      Push(c1, y = cons(cons(car(x), val(car(x))), Nil));
-      while (isCell(x = cdr(x)))
-         y = cdr(y) = cons(cons(car(x), val(car(x))), Nil);
-   }
-   else {
-      Push(c1, Nil);
+   Push(c1, Nil);
+   if (!isCell(x = cdr(x))) {
       for (p = Env.bind;  p;  p = p->link) {
          if (p->i == 0) {
             for (i = p->cnt;  --i >= 0;) {
                for (x = data(c1); ; x = cdr(x)) {
                   if (!isCell(x)) {
-                     data(c1) = cons(p->bnd[i].sym, data(c1));
+                     data(c1) = cons(cons(p->bnd[i].sym, val(p->bnd[i].sym)), data(c1));
                      break;
                   }
-                  if (car(x) == p->bnd[i].sym)
+                  if (caar(x) == p->bnd[i].sym)
                      break;
                }
             }
          }
       }
+   }
+   else {
+      do {
+         Push(c2, EVAL(car(x)));
+         if (isCell(data(c2))) {
+            do
+               data(c1) = cons(cons(car(data(c2)), val(car(data(c2)))), data(c1));
+            while (isCell(data(c2) = cdr(data(c2))));
+         }
+         else if (!isNil(data(c2))) {
+            x = cdr(x);
+            data(c1) = cons(cons(data(c2), EVAL(car(x))), data(c1));
+         }
+         drop(c2);
+      }
+      while (isCell(x = cdr(x)));
    }
    return Pop(c1);
 }
@@ -355,6 +365,17 @@ int compare(any x, any y) {
 }
 
 /*** Error handling ***/
+static void reset(void) {
+   popOutFiles();
+   unwind(NULL);
+   Env.stack = NULL;
+   Env.meth = NULL;
+   Env.next = -1;
+   Env.make = NULL;
+   Env.parser = NULL;
+   Trace = 0;
+}
+
 void err(any ex, any x, char *fmt, ...) {
    va_list ap;
    char msg[240];
@@ -378,19 +399,14 @@ void err(any ex, any x, char *fmt, ...) {
       val(Msg) = mkStr(msg);
       if (!isNil(val(Err)) && !Jam)
          Jam = YES,  prog(val(Err)),  Jam = NO;
+      if (!isNil(val(Rst)))
+         reset(),  longjmp(ErrRst, -1);
       if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
          bye(1);
       load(NULL, '?', Nil);
    }
-   popOutFiles();
-   unwind(NULL);
-   Env.stack = NULL;
-   Env.meth = NULL;
-   Env.next = 0;
-   Env.make = NULL;
-   Env.parser = NULL;
-   Trace = 0;
-   longjmp(ErrRst,1);
+   reset();
+   longjmp(ErrRst, +1);
 }
 
 // (quit ['any ['any]])
@@ -605,18 +621,24 @@ double evDouble(any ex, any x) {
 
 // (args) -> flg
 any doArgs(any ex __attribute__((unused))) {
-   return Env.next? T : Nil;
+   return Env.next > 0? T : Nil;
 }
 
 // (next) -> any
 any doNext(any ex __attribute__((unused))) {
-   return Env.next? data(Env.arg[--Env.next]) : Nil;
+   if (Env.next > 0)
+      return data(Env.arg[--Env.next]);
+   if (Env.next == 0)
+      Env.next = -1;
+   return Nil;
 }
 
 // (arg ['cnt]) -> any
 any doArg(any ex) {
    long n;
 
+   if (Env.next < 0)
+      return Nil;
    if (!isCell(cdr(ex)))
       return data(Env.arg[Env.next]);
    if ((n = evCnt(ex,cdr(ex))) > 0  &&  n <= Env.next)
@@ -629,7 +651,7 @@ any doRest(any x) {
    int i;
    cell c1;
 
-   if (!(i = Env.next))
+   if ((i = Env.next) <= 0)
       return Nil;
    Push(c1, x = cons(data(Env.arg[--i]), Nil));
    while (i)
@@ -837,11 +859,11 @@ any doArgv(any ex) {
    char **p;
    cell c1;
 
-   if (!*(p = AV))
-      return Nil;
-   if (strcmp(*p,"-") == 0  &&  !*++p)
-      return Nil;
+   if (*(p = AV) && strcmp(*p,"-") == 0)
+      ++p;
    if (isNil(x = cdr(ex))) {
+      if (!*p)
+         return Nil;
       Push(c1, x = cons(mkStr(*p++), Nil));
       while (*p)
          x = cdr(x) = cons(mkStr(*p++), Nil);
@@ -850,6 +872,8 @@ any doArgv(any ex) {
    do {
       if (!isCell(x)) {
          NeedSym(ex,x);
+         if (!*p)
+            return val(x) = Nil;
          Push(c1, y = cons(mkStr(*p++), Nil));
          while (*p)
             y = cdr(y) = cons(mkStr(*p++), Nil);
@@ -895,10 +919,13 @@ int main(int ac, char *av[]) {
    signal(SIGPIPE, SIG_IGN);
    signal(SIGTTIN, SIG_IGN);
    signal(SIGTTOU, SIG_IGN);
-   setjmp(ErrRst);
-   while (*AV  &&  strcmp(*AV,"-") != 0)
-      load(NULL, 0, mkStr(*AV++));
-   signal(SIGINT, doSigInt);
-   load(NULL, ':', Nil);
+   if (setjmp(ErrRst) < 0)
+      prog(val(Rst));
+   else {
+      while (*AV  &&  strcmp(*AV,"-") != 0)
+         load(NULL, 0, mkStr(*AV++));
+      signal(SIGINT, doSigInt);
+      load(NULL, ':', Nil);
+   }
    bye(0);
 }

@@ -1,4 +1,4 @@
-/* 28oct05abu
+/* 09jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -77,7 +77,7 @@ void bigAdd(any dst, any src) {
    any x;
    word n, carry;
 
-   carry = (unDig(src) & ~1) > setDig(dst, (unDig(src) & ~1) + (unDig(dst) & ~1));
+   carry = (unDig(src) & ~1) > num(setDig(dst, (unDig(src) & ~1) + (unDig(dst) & ~1)));
    src = cdr(numCell(src));
    dst = cdr(numCell(x = dst));
    for (;;) {
@@ -85,7 +85,7 @@ void bigAdd(any dst, any src) {
          while (isNum(dst)) {
             if (!carry)
                return;
-            carry = 0 == setDig(dst, 1 + unDig(dst));
+            carry = 0 == num(setDig(dst, 1 + unDig(dst)));
             dst = cdr(numCell(x = dst));
          }
          break;
@@ -114,10 +114,10 @@ void digAdd(any x, word n) {
    any y;
    word carry;
 
-   carry = n > setDig(x, n + unDig(x));
+   carry = n > num(setDig(x, n + unDig(x)));
    while (carry) {
       if (isNum(x = cdr(numCell(y = x))))
-         carry = 0 == setDig(x, 1 + unDig(x));
+         carry = 0 == num(setDig(x, 1 + unDig(x)));
       else {
          cdr(numCell(y)) = box(1);
          break;
@@ -130,7 +130,7 @@ void bigSub(any dst, any src) {
    any x, y;
    word n, borrow;
 
-   borrow = MAX - (unDig(src) & ~1) < setDig(dst, (unDig(dst) & ~1) - (unDig(src) & ~1));
+   borrow = MAX - (unDig(src) & ~1) < num(setDig(dst, (unDig(dst) & ~1) - (unDig(src) & ~1)));
    y = dst;
    for (;;) {
       src = cdr(numCell(src));
@@ -139,7 +139,7 @@ void bigSub(any dst, any src) {
          while (isNum(dst)) {
             if (!borrow)
                return;
-            borrow = MAX == setDig(dst, unDig(dst) - 1);
+            borrow = MAX == num(setDig(dst, unDig(dst) - 1));
             dst = cdr(numCell(x = dst));
          }
          break;
@@ -157,7 +157,7 @@ void bigSub(any dst, any src) {
       if ((n = unDig(dst) - borrow) > MAX - borrow)
          setDig(dst, MAX - unDig(src));
       else
-         borrow = setDig(dst, n - unDig(src)) > MAX - unDig(src);
+         borrow = num(setDig(dst, n - unDig(src))) > MAX - unDig(src);
    }
    if (borrow) {
       dst = y;
@@ -168,7 +168,7 @@ void bigSub(any dst, any src) {
          if (borrow)
             setDig(dst, MAX - unDig(dst));
          else
-            borrow = 0 != (setDig(dst, -unDig(dst)));
+            borrow = 0 != num(setDig(dst, -unDig(dst)));
       }
    }
    if (unDig(x) == 0)
@@ -181,11 +181,11 @@ void digSub1(any x) {
    word borrow;
 
    r = NULL;
-   borrow = MAX == setDig(x, unDig(x) - 2);
+   borrow = MAX == num(setDig(x, unDig(x) - 2));
    while (isNum(x = cdr(numCell(y = x)))) {
       if (!borrow)
          return;
-      borrow = MAX == setDig(x, unDig(x) - 1);
+      borrow = MAX == num(setDig(x, unDig(x) - 1));
       r = y;
    }
    if (r  &&  unDig(y) == 0)
@@ -205,14 +205,14 @@ static any bigMul(any x1, any x2) {
       if (isNum(x2 = cdr(numCell(x2)))  &&  unDig(x2) & 1)
          n |= 0x80000000;
       t = (word2)n * unDig(z = x1);  // x += n * x1
-      carry = (lo(t) > setDig(y, unDig(y) + lo(t))) + hi(t);
+      carry = (lo(t) > num(setDig(y, unDig(y) + lo(t)))) + hi(t);
       while (isNum(z = cdr(numCell(z)))) {
          if (!isNum(cdr(numCell(y))))
             cdr(numCell(y)) = box(0);
          y = cdr(numCell(y));
          t = (word2)n * unDig(z);
-         carry = carry > setDig(y, carry + unDig(y));
-         if (lo(t) > setDig(y, unDig(y) + lo(t)))
+         carry = carry > num(setDig(y, carry + unDig(y)));
+         if (lo(t) > num(setDig(y, unDig(y) + lo(t))))
             ++carry;
          carry += hi(t);
       }
@@ -323,24 +323,24 @@ static any bigDiv(any u, any v, bool rem) {
 
       z = x;                                                // x -= q*v
       t = (word2)q * unDig(y = v);
-      borrow = (MAX - lo(t) < setDig(z, unDig(z) - lo(t))) + hi(t);
+      borrow = (MAX - lo(t) < num(setDig(z, unDig(z) - lo(t)))) + hi(t);
       while (isNum(y = cdr(numCell(y)))) {
          z = cdr(numCell(z));
          t = (word2)q * unDig(y);
-         borrow = MAX - borrow < setDig(z, unDig(z) - borrow);
-         if (MAX - lo(t) < setDig(z, unDig(z) - lo(t)))
+         borrow = MAX - borrow < num(setDig(z, unDig(z) - borrow));
+         if (MAX - lo(t) < num(setDig(z, unDig(z) - lo(t))))
             ++borrow;
          borrow += hi(t);
       }
       if (borrow) {
          z = cdr(numCell(z));
-         if (MAX - borrow < setDig(z, unDig(z) - borrow)) {
+         if (MAX - borrow < num(setDig(z, unDig(z) - borrow))) {
             word n, carry;                                  // x += v
 
             --q;
             if (m || rem) {
                y = v;
-               carry = unDig(y) > setDig(x, unDig(y) + unDig(x));
+               carry = unDig(y) > num(setDig(x, unDig(y) + unDig(x)));
                while (x = cdr(numCell(x)),  isNum(y = cdr(numCell(y)))) {
                   if ((n = carry + unDig(y)) >= carry)
                      carry = unDig(x) > (n += unDig(x));
@@ -929,6 +929,12 @@ any doShift(any ex) {
 any doLt0(any x) {
    x = cdr(x);
    return isNum(x = EVAL(car(x))) && isNeg(x)? x : Nil;
+}
+
+// (ge0 'any) -> num | NIL
+any doGe0(any x) {
+   x = cdr(x);
+   return isNum(x = EVAL(car(x))) && !isNeg(x)? x : Nil;
 }
 
 // (gt0 'any) -> num | NIL

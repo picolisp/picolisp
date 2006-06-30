@@ -15,7 +15,7 @@
 <i>(Zen koan)</i><br>
 </p>
 
-<h2>Pico Lisp Frequently Asked Questions</h2>
+<h1>Pico Lisp Frequently Asked Questions</h1>
 
 <p align=right>(c) Software Lab. Alexander Burger</p>
 
@@ -38,7 +38,7 @@
 </ul>
 
 <p><hr>
-<h3><a name="yet">Why did you write yet another Lisp?</a></h3>
+<h2><a name="yet">Why did you write yet another Lisp?</a></h2>
 
 <p>Because other Lisps are not the way I'd like them to be. They concentrate on
 efficient compilation, and lost the one-to-one relationship of language and
@@ -48,7 +48,7 @@ are the case-insensitivity and complexity of current Lisp systems.
 
 
 <p><hr>
-<h3><a name="who">Who can use Pico Lisp?</a></h3>
+<h2><a name="who">Who can use Pico Lisp?</a></h2>
 
 <p>Pico Lisp is for programmers who want to control their programming
 environment, at all levels, from the application domain down to the bare metal.
@@ -63,16 +63,16 @@ better protects them from their own mistakes.
 
 
 <p><hr>
-<h3><a name="advantages">What are the advantages over other Lisp systems?</a></h3>
+<h2><a name="advantages">What are the advantages over other Lisp systems?</a></h2>
 
-<h4>Simplicity</h4>
+<h3>Simplicity</h3>
 <p>Pico Lisp is easy to understand and adapt. There is no compiler enforcing
 special rules, and the interpreter is simple and straightforward. There are only
 three data types: Numbers, symbols and lists ("LISP" means "List-, Integer- and
 Symbol Processing" after all ;-). The memory footprint is minimal, and the
 tarball size of the whole system is just a few hundred kilobytes.
 
-<h4>A Clear Model</h4>
+<h3>A Clear Model</h3>
 <p>Most other systems define the language, and leave it up to the implementation
 to follow the specifications. Therefore, language designers try to be as
 abstract and general as possible, leaving many questions and ambiguities to the
@@ -84,7 +84,7 @@ composed of these cells. Everything else in the whole system follows from these
 axioms. This is documented in the chapter about the <a href="ref.html#vm">The
 Pico Machine</a> in the reference manual.
 
-<h4>Orthogonality</h4>
+<h3>Orthogonality</h3>
 <p>There is only one symbolic data type, no distinction (confusion) between
 symbols, strings, variables, special variables and identifiers.
 
@@ -101,7 +101,7 @@ example, most other Lisps do not allow calls like
 <p>Pico Lisp has no such restrictions. It favors the principle of "Least
 Astonishment".
 
-<h4>Object System</h4>
+<h3>Object System</h3>
 <p>The OOP system is most powerful, because it is fully dynamic, yet extremely
 simple:
 
@@ -124,7 +124,7 @@ href="ref.html#extra">extra</a></code>.
 
 </ul>
 
-<h4>Pragmatism</h4>
+<h3>Pragmatism</h3>
 <p>Pico Lisp has many practical features not found in other Lisp dialects. Among
 them are:
 
@@ -191,14 +191,14 @@ queries.
 
 </ul>
 
-<h4>Persistent Symbols</h4>
+<h3>Persistent Symbols</h3>
 <p>Database objects ("external" symbols) are a primary data type in Pico Lisp.
 They look like normal symbols to the programmer, but are managed (fetched from
 and stored to the data base) automatically by the system. Symbol manipulation
 functions like <code>set</code>, <code>put</code> or <code>get</code>, the
 garbage collector, and other parts of the interpreter know about them.
 
-<h4>Application Server</h4>
+<h3>Application Server</h3>
 <p>Stand-alone system: Does not depend on external programs like Apache or
 MySQL. Provides a "life" user interface on the client side, via a TCP connection
 between each Java applet and its corresponding application server session. The
@@ -206,14 +206,14 @@ GUI layout and behavior (both in plain HTML and in Java applets) is described
 with s-expressions, generated dynamically at runtime, and maps directly to the
 database structures.
 
-<h4>Localization</h4>
+<h3>Localization</h3>
 <p>Internal exclusive and full use of UTF-8 encoding, and self-translating
 transient symbols (strings), make it easy to write country- and
 language-independent applications.
 
 
 <p><hr>
-<h3><a name="performace">How is the performace compared to other Lisp systems?</a></h3>
+<h2><a name="performace">How is the performace compared to other Lisp systems?</a></h2>
 
 <p>Despite the fact that Pico Lisp is an interpreted-only system, the
 performance is quite good. Typical Lisp programs, operating on list data
@@ -240,7 +240,7 @@ system constraints.
 
 
 <p><hr>
-<h3><a name="interpreted">What means "interpreted"?</a></h3>
+<h2><a name="interpreted">What means "interpreted"?</a></h2>
 
 <p>It means to directly execute Lisp data as program code. No transformation to
 some other representation of code (e.g. compilation), and no structural
@@ -285,7 +285,7 @@ dynamically generated GUI, a fast interpreter is preferable over any compiler.
 
 
 <p><hr>
-<h3><a name="compiler">Is there (or will be in the future) a compiler available?</a></h3>
+<h2><a name="compiler">Is there (or will be in the future) a compiler available?</a></h2>
 
 <p>No. That would contradict the idea of Pico's simple virtual machine
 structure. A compiler transforms it to another (physical) machine, with the
@@ -299,7 +299,7 @@ compilation.
 
 
 <p><hr>
-<h3><a name="portable">Is it portable?</a></h3>
+<h2><a name="portable">Is it portable?</a></h2>
 
 <p>Yes and No. Though we wrote and tested Pico Lisp only on Linux, FreeBSD and
 Mac OS X (Darwin), it will probably run on many other POSIX systems. The first
@@ -312,7 +312,7 @@ of Internet an application <u>server</u> does not really need to be portable.
 
 
 <p><hr>
-<h3><a name="webServer">Is Pico Lisp a web server?</a></h3>
+<h2><a name="webServer">Is Pico Lisp a web server?</a></h2>
 
 <p>Not really, but it evolved a great deal into that direction.
 
@@ -327,7 +327,7 @@ handling "web applications".
 
 
 <p><hr>
-<h3><a name="lambda">I cannot find the LAMBDA keyword in Pico Lisp</a></h3>
+<h2><a name="lambda">I cannot find the LAMBDA keyword in Pico Lisp</a></h2>
 
 <p>Because it isn't there. The reason is that it is redundant; it is equivalent
 to the <code>quote</code> function in all practical aspects, because there's no
@@ -346,7 +346,7 @@ own <code>lambda</code>:
 
 
 <p><hr>
-<h3><a name="dynamic">Why do you use dynamic variable binding?</a></h3>
+<h2><a name="dynamic">Why do you use dynamic variable binding?</a></h2>
 
 <p>Dynamic binding is very powerful, because there is only one single,
 dynamically changing environment active all the time. This makes it possible
@@ -393,7 +393,7 @@ so elegantly with lexical binding?
 
 
 <p><hr>
-<h3><a name="problems">Are there no problems caused by dynamic binding?</a></h3>
+<h2><a name="problems">Are there no problems caused by dynamic binding?</a></h2>
 
 <p>You mean the <i>funarg</i> problem, or problems that arise when a variable
 might be bound to <i>itself</i>? For that reason we have a convention in Pico
@@ -456,7 +456,7 @@ utilities than in production code, so that they can be easily encapsulated.
 
 
 <p><hr>
-<h3><a name="closures">But with dynamic binding I cannot implement closures!</a></h3>
+<h2><a name="closures">But with dynamic binding I cannot implement closures!</a></h2>
 
 <p>This is not true. Closures are a matter of scope, not of binding.
 
@@ -478,28 +478,27 @@ statically scoped environments.
 
 <p><pre><code>
 (de curry Args
-   (list (cons (caar Args))
+   (list (car Args)
       (list 'list
-         (lit (cdar Args))
+         (lit (cadr Args))
          (list 'cons ''job
             (list 'cons
-               (list 'cons
-                  (list 'cons (lit (caar Args)) (caar Args)) )
-               (lit (cdr Args)) ) ) ) ) )
+               (list 'lit (list 'env (lit (car Args))))
+               (lit (cddr Args)) ) ) ) ) )
 </code></pre>
 
 <p>When called, it returns a function-building function which may be applied to
 some argument:
 
 <p><pre><code>
-: ((curry (X Y) (* X Y)) 3)
--> ((Y) (job ((X . 3)) (* X Y)))
+: ((curry (X) (N) (* X N)) 3)
+-> ((N) (job '((X . 3)) (* X N)))
 </code></pre>
 
 <p>or used as:
 
 <p><pre><code>
-: (((curry (X Y) (* X Y)) 3) 4)
+: (((curry (X) (N) (* X N)) 3) 4)
 -> 12
 </code></pre>
 
@@ -509,17 +508,17 @@ in the example above) the curried argument is known to be immutable:
 <p><pre><code>
 (de curry Args
    (list
-      (cons (caar Args))
+      (cadr Args)
       (list 'fill
-         (lit (cons (cdar Args) (cdr Args)))
-         (lit (caar Args)) ) ) )
+         (lit (cons (car Args) (cddr Args)))
+         (lit (cadr Args)) ) ) )
 </code></pre>
 
 <p>Then the function built above will just be:
 
 <p><pre><code>
-: ((curry (X Y) (* X Y)) 3)
--> ((Y) (* 3 Y))
+: ((curry (X) (N) (* X N)) 3)
+-> ((X) (* X 3))
 </code></pre>
 
 <p>In that case, the "environment build-up" is reduced by a simple (lexical)
@@ -527,7 +526,7 @@ constant substitution with zero runtime overhead.
 
 
 <p><hr>
-<h3><a name="bind">What happens when I locally bind a symbol which has a function definition?</a></h3>
+<h2><a name="bind">What happens when I locally bind a symbol which has a function definition?</a></h2>
 
 <p>That's not a good idea. The next time that function gets executed within the
 dynamic context the system may crash. Therefore we have a convention to use an
@@ -543,7 +542,7 @@ upper case first letter for locally bound symbols:
 
 
 <p><hr>
-<h3><a name="hardware">Would it make sense to build Pico Lisp in hardware?</a></h3>
+<h2><a name="hardware">Would it make sense to build Pico Lisp in hardware?</a></h2>
 
 <p>At least it should be interesting. It would be a machine executing list
 (tree) structures instead of linear instruction sequences. "Instruction
@@ -564,7 +563,7 @@ microcode levels) are s-expressions: The machine language is <i>Lisp</i>.
 
 
 <p><hr>
-<h3><a name="few">Why are there only a few questions in this FAQ?</a></h3>
+<h2><a name="few">Why are there only a few questions in this FAQ?</a></h2>
 
 <p>Because I did not receive many questions so far. Please don't hesitate to
 discuss with me, <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>.

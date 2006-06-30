@@ -1,4 +1,4 @@
-# 01dec05abu
+# 30may06abu
 # (c) Software Lab. Alexander Burger
 
 (test T (pool (tmp "db")))
@@ -95,6 +95,11 @@
 (test NIL (ext? 'abc))
 (test NIL (ext? "abc"))
 (test NIL (ext? 123))
+(test NIL (get (1 2 3) 0))
+(test 1 (get (1 2 3) 1))
+(test 3 (get (1 2 3) 3))
+(test NIL (get (1 2 3) 4))
+(test (3) (get (1 2 3) -2))
 (let (A (box)  B (box A)  C (box (cons A B)))
    (put B 'a A)
    (put C 'b B)
@@ -150,15 +155,18 @@
 (test -8 (dec -7))
 (test -1 (dec 0))
 (test (7 -8 -1) (let L (8 -7 0) (map dec L) L))
+(test (-2 NIL NIL) (mapcar lt0 (-2 7 0)))
+(test (7 NIL 0) (mapcar ge0 (7 -2 0)))
+(test (7 NIL NIL) (mapcar gt0 (7 -2 0)))
 (test 7 (bit? 7 15 255))
 (test 1 (bit? 1 3))
 (test NIL (bit? 1 2))
 
 # src/io.c
 (test NIL (mark *DB))
-(test T (mark *DB T))
+(test NIL (mark *DB T))
 (test T (mark *DB))
-(test NIL (mark *DB 0))
+(test T (mark *DB 0))
 (test NIL (mark *DB))
 
 # lib.l

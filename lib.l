@@ -1,4 +1,4 @@
-# 20mar06abu
+# 08jun06abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -16,16 +16,18 @@
                   (cons
                      (cons 'job
                         (cons
-                           (make
-                              (while (atom (car Prg))
-                                 (link
-                                    (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) )
+                           (lit
+                              (make
+                                 (while (atom (car Prg))
+                                    (link
+                                       (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) ) )
                            Prg ) ) ) ) ) ) ) ) )
 
 (de timeout (N)
-   (if (assoc -1 *Key)
+   (if2 N (assoc -1 *Key)
       (set (cdr @) (+ N))
-      (push '*Key (list -1 (+ N) '(bye))) ) )
+      (push '*Key (list -1 (+ N) '(bye)))
+      (del @ '*Key) ) )
 
 (de macro "Prg"
    (run (fill "Prg")) )
@@ -46,7 +48,7 @@
          (lit (cadr Args))
          (list 'cons ''job
             (list 'cons
-               (list 'env (lit (car Args)))
+               (list 'lit (list 'env (lit (car Args))))
                (lit (cddr Args)) ) ) ) ) )
 
 (====)
@@ -56,6 +58,14 @@
       (sym? "X")
       (fun? (val "X"))
       (val "X") ) )
+
+(de expr ("F")
+   (set "F"
+      (list '@ (list 'pass (box (getd "F")))) ) )
+
+(de subr ("F")
+   (set "F"
+      (getd (cadr (cadr (getd "F")))) ) )
 
 (de undef ("X" "C")
    (when (pair "X")
@@ -71,7 +81,7 @@
    (prog1
       (if (pair "X")
          (method (car "X") (cdr "X"))
-         (val "X") )
+         (or (pair (getd "X")) (expr "X")) )
       (con @ (append Prg (cdr @))) ) )
 
 (====)
@@ -106,9 +116,7 @@
 (de msg (X . @)
    (out 2
       (print X)
-      (while (args)
-         (prin (next)) )
-      (prinl)
+      (pass prinl)
       (flush) )
    X )
 
@@ -202,11 +210,11 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless while until do case state for
+   T NIL if if2 ifn when unless while until do case state for
    with catch finally ! quote setq default push job use let let?
    recur later =: in out ctl new )
 
-(de *PP1 let let? for)
+(de *PP1 if2 let let? for)
 (de *PP2 setq default)
 
 (de pretty (X N . @)

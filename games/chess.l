@@ -1,4 +1,4 @@
-# 07jan06abu
+# 27may06abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -222,9 +222,9 @@
       (when (: field)
          (put @ 'piece NIL)
          (for F (: attacks) (Att- F This)) )
-      (cond
-         ((not Fld) (set Var (delq This (val Var))))
-         ((not (: field)) (push Var This)) )
+      (nond
+         (Fld (set Var (delq This (val Var))))
+         ((: field) (push Var This)) )
       (ifn (=: field Fld)
          (=: attacks)
          (put Fld 'piece This)

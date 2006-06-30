@@ -1,0 +1,908 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Pico Lisp Application Development</title>
+</head>
+<body>
+<a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
+
+<h1>Pico Lisp Application Development</h1>
+
+<p align=right>(c) Software Lab. Alexander Burger</p>
+
+<p>This document presents an introduction to writing browser-based applications
+in Pico Lisp.
+
+<p>It concentrates on the XHTML/CSS GUI-Framework (as opposed to the previous
+Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
+flexible in layout design, and does not depend on plugins, JavaScript or
+cookies.
+
+<p>It works also in browsers which do not know about CSS or JavaScript. All
+examples were tested using the w3m text browser.
+
+<p>For basic informations about the Pico Lisp system please look at the <a
+href="ref.html">Pico Lisp Reference</a> and the <a href="tut.html">Pico Lisp
+Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
+
+
+<p><ul>
+<li><a href="#static">Static Pages</a>
+   <ul>
+   <li><a href="#hello">Hello World</a>
+      <ul>
+      <li><a href="#server">Start the application server</a>
+      <li><a href="#how">How does it work?</a>
+      </ul>
+   <li><a href="#htmlFoo">The <code>html</code> Function</a>
+   <li><a href="#cssAttr">CSS Attributes</a>
+   <li><a href="#tags">Tag Functions</a>
+      <ul>
+      <li><a href="#simple">Simple Tags</a>
+      <li><a href="#lists">(Un)ordered Lists</a>
+      <li><a href="#tables">Tables</a>
+      <li><a href="#menus">Menus and Tabs</a>
+      </ul>
+   </ul>
+<li><a href="#forms">Interactive Forms</a>
+   <ul>
+   <li><a href="#sessions">Sessions</a>
+   <li><a href="#actionForms">Action Forms</a>
+      <ul>
+      <li><a href="#ctlFlow">Control Flow</a>
+      <li><a href="#switching">Switching URLs</a>
+      <li><a href="#dialogs">Alerts and Dialogs</a>
+      <li><a href="#calc">A Calculator Example</a>
+      </ul>
+   <li><a href="#charts">Charts</a>
+   </ul>
+<li><a href="#db">DB-Integration</a>
+</ul>
+
+
+<p><hr>
+<h2><a name="static">Static Pages</a></h2>
+
+<p>You can use Pico Lisp to generate static HTML pages. This does not make much
+sense in itself, because you could directly write HTML code as well, but it
+forms the base for interactive applications, and allows us to introduce the
+application server and other fundamental concepts.
+
+<h3><a name="hello">Hello World</a></h3>
+
+<p>To begin with a minimal application, please enter the following two lines
+into a generic source file named "project.l" in the Pico Lisp installation
+directory
+
+<p><pre><code>
+########################################################################
+(html 0 "Hello" "lib.css" NIL
+   "Hello World!" )
+########################################################################
+</code></pre>
+
+<p>(We will modify and use this file in all following examples and experiments)
+
+
+<h4><a name="server">Start the application server</a></h4>
+
+<p>Open a second terminal window, and start a Pico Lisp application server
+
+<p><pre><code>
+$ ./p dbg.l lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+</code></pre>
+
+<p>No prompt appears. The server just sits, and waits for connections. You can
+stop it later by hitting <code>Ctrl-C</code> in that terminal, or by executing
+'<code>killall picolisp</code>' in some other window.
+
+<p>(In the following, we assume that this HTTP server is up and running)
+
+<p>Now open the URL '<code><a
+href="http://localhost:8080">http://localhost:8080</a></code>' with your
+browser. You should see an empty page with a single line of text.
+
+
+<h4><a name="how">How does it work?</a></h4>
+
+<p>The above line loads the debugger ("dbg.l"), the HTTP server code
+("lib/http.l"), the XHTML functions ("lib/xhtml.l") and the input form framework
+("lib/form.l", will be needed later for <a href="#forms">interactive forms</a>).
+
+<p>Then the <code>server</code> function is called with a port number and a
+default URL. It will listen on that port for incoming HTTP requests in an
+endless loop. Whenever a GET request arrives on port 8080, the file "project.l"
+will be <code><a href="ref.html#load">(load)</a></code>ed, causing the
+evaluation (= execution) of all its Lisp expressions.
+
+<p>During that execution, all data written to the current output channel is sent
+directly to to the browser. The code in "project.l" is responsible to produce
+HTML (or anything else the browser can understand).
+
+<h3><a name="htmlFoo">The <code>html</code> Function</a></h3>
+
+<p>In principle you could write "project.l" as a sequence of print statements
+
+<p><pre><code>
+########################################################################
+(prinl "HTTP/1.1 200 OK^M")
+(prinl "Content-Type: text/html; charset=utf-8")
+(prinl "^M")
+(prinl "&lt;html&gt;")
+(prinl "Hello World!")
+(prinl "&lt;/html&gt;")
+########################################################################
+</code></pre>
+
+<p>but using the <code>html</code> function is much more convenient.
+
+<p>Moreover, <code>html</code> <b>is</b> nothing more than a printing function.
+You can see this easily if you connect a Pico Lisp Shell (<code>psh</code>) to
+the server process, and enter the <code>html</code> statement
+
+<p><pre><code>
+$ bin/psh 8080
+: (html 0 "Hello" "lib.css" NIL "Hello World!")
+HTTP/1.1 200 OK
+Server: PicoLisp
+Connection: close
+Cache-Control: max-age=0
+Cache-Control: no-cache
+Content-Type: text/html; charset=utf-8
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt;
+&lt;head&gt;
+&lt;title&gt;Hello&lt;/title&gt;
+&lt;base href="http://localhost:8080/"/&gt;
+&lt;link rel="stylesheet" href="http://localhost:8080/lib.css" type="text/css"/&gt;
+&lt;/head&gt;
+&lt;body&gt;Hello World!&lt;/body&gt;
+&lt;/html&gt;
+-&gt; &lt;/html&gt;
+:
+</code></pre>
+
+<p>These are the arguments to <code>html</code>:
+
+<ol>
+
+<li><code>0</code>: A max-age value for cache-control (in seconds, zero means
+"no-cache"). You might pass a higher value for pages that change seldom, or
+<code>NIL</code> for no cache-control at all.
+
+<li><code>"Hello"</code>: The page title.
+
+<li><code>"lib.css"</code>: A CSS-File name. Pass <code>NIL</code> if you do not want
+to use any CSS-File, or a list of file names if you want to give more than one
+CSS-File.
+
+<li><code>NIL</code>: A CSS style attribute specification (see the description
+of <a href="#cssAttr">CSS Attributes</a> below). It will be passed to the
+<code>body</code> tag.
+
+</ol>
+
+<p>After these four arguments, an arbitrary number of expressions may follow.
+They form the body of the resulting page, and are evaluated according to a
+special rule. <a name="tagRule">This rule</a> is slightly different from the
+evaluation of normal Lisp expressions:
+
+<p><ul>
+
+<li>If an argument is an atom (a number or a symbol (string)), it is printed
+immediately.
+
+<li>Otherwise (a list), it is evaluated as a Lisp function (typically some form
+of printing statement).
+
+</ul>
+
+<p>Therefore, our source file might as well be written as:
+
+<p><pre><code>
+########################################################################
+(html 0 "Hello" "lib.css" NIL
+   (prinl "Hello World!") )
+########################################################################
+</code></pre>
+
+<p>The most typical printing statements will be some HTML-tag
+
+<p><pre><code>
+########################################################################
+(html 0 "Hello" "lib.css" NIL
+   (&lt;h1&gt; NIL "Hello World!")
+   (&lt;br&gt; "This is some text.")
+   (ht:Prin "And this is a number: " (+ 1 2 3)) )
+########################################################################
+</code></pre>
+
+<p><code>&lt;h1&gt;</code> and <code>&lt;br&gt;</code> are tag functions.
+<code>&lt;h1&gt;</code> takes a CSS attribute as its first argument.
+
+<p>Note the use of <code>ht:Prin</code> instead of <code>prin</code>.
+<code>ht:Prin</code> should be used for all direct printing in HTML pages,
+because it takes care to escape special characters.
+
+
+<h3><a name="cssAttr">CSS Attributes</a></h3>
+
+<p>The <a href="#htmlFoo"><code>html</code> function</a> above and many of the
+HTML <a href="#tags">tag functions</a> accept a CSS attribute specification.
+This may be either an atom, a cons pair, or a list of cons pairs. We demonstrate
+the effects with the <code>&lt;h1&gt;</code> tag function.
+
+<p>An atom (usually a symbol or a string) is taken as a CSS class name
+
+<p><pre><code>
+: (&lt;h1&gt; 'foo "Title")
+&lt;h1 class="foo"&gt;Title&lt;/h1&gt;
+</code></pre>
+
+<p>For a cons pair, the <code>CAR</code> is taken as an attribute name, and the
+<code>CDR</code> as the attribute's value
+
+<p><pre><code>
+: (&lt;h1&gt; '(id . bar) "Title")
+&lt;h1 id="bar"&gt;Title&lt;/h1&gt;
+</code></pre>
+
+<p>Consequently, a list of cons pairs gives an arbitrary number of
+attribute-value pairs
+
+<p><pre><code>
+: (&lt;h1&gt; '((id . "abc") (lang . "de")) "Title")
+&lt;h1 id="abc" lang="de"&gt;Title&lt;/h1&gt;
+</code></pre>
+
+
+<h3><a name="tags">Tag Functions</a></h3>
+
+<p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
+recommend to look at their sources, and to experiment by executing them at a
+Pico Lisp prompt and by pressing the browser's "Reload" button after editing the
+"project.l" file.
+
+<p>For a suitable Pico Lisp prompt, either execute (in a separate terminal
+window) the Pico Lisp Shell (<code>psh</code>) command (works only if the
+application server is running)
+
+<p><pre><code>
+$ bin/psh 8080
+:
+</code></pre>
+
+<p>or start the interpreter stand-alone, with "lib/xhtml.l" loaded
+
+<p><pre><code>
+$ ./p dbg.l lib/http.l lib/xhtml.l
+:
+</code></pre>
+
+<p>Note that for all these tag functions the above <a href="#tagRule">tag body
+evaluation rule</a> applies.
+
+
+<h4><a name="simple">Simple Tags</a></h4>
+
+<p>Most tag functions are simple and straightforward. Some of them just print
+their arguments
+
+<p><pre><code>
+: (&lt;br&gt; "Hello world")
+Hello world&lt;br/&gt;
+
+: (&lt;em&gt; "Hello world")
+&lt;em&gt;Hello world&lt;/em&gt;
+</code></pre>
+
+<p>while most of them take a <a href="#cssAttr">CSS attribute specification</a>
+as their first argument (like the <code>&lt;h1&gt;</code> tag above)
+
+<p><pre><code>
+: (&lt;div&gt; 'main "Hello world")
+&lt;div class="main"&gt;Hello world&lt;/div&gt;
+
+: (&lt;p&gt; NIL "Hello world")
+&lt;p&gt;Hello world&lt;/p&gt;
+
+: (&lt;p&gt; 'info "Hello world")
+&lt;p class="info"&gt;Hello world&lt;/p&gt;
+</code></pre>
+
+<p>All of these functions take an arbitrary number of arguments, and may nest to
+an arbitrary depth (as long as the resulting HTML is legal)
+
+<p><pre><code>
+: (&lt;div&gt; 'main
+   (&lt;h1&gt; NIL "Head")
+   (&lt;p&gt; NIL
+      (&lt;br&gt; "Line 1")
+      "Line"
+      (&lt;nbsp&gt;)
+      (+ 1 1) ) )
+&lt;div class="main"&gt;&lt;h1&gt;Head&lt;/h1&gt;
+&lt;p&gt;Line 1&lt;br/&gt;
+Line&nbsp;2&lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+
+
+<h4><a name="lists">(Un)ordered Lists</a></h4>
+
+<p>HTML-lists, implemented by the <code>&lt;ol&gt;</code> and
+<code>&lt;ul&gt;</code> tags, let you define hierarchical structures. You might
+want to paste the following code into your copy of "project.l":
+
+<p><pre><code>
+########################################################################
+(html 0 "Unordered List" "lib.css" NIL
+   (&lt;ul&gt; NIL
+      (&lt;li&gt; NIL "Item 1")
+      (&lt;li&gt; NIL
+         "Sublist 1"
+         (&lt;ul&gt; NIL
+            (&lt;li&gt; NIL "Item 1-1")
+            (&lt;li&gt; NIL "Item 1-2") ) )
+      (&lt;li&gt; NIL "Item 2")
+      (&lt;li&gt; NIL
+         "Sublist 2"
+         (&lt;ul&gt; NIL
+            (&lt;li&gt; NIL "Item 2-1")
+            (&lt;li&gt; NIL "Item 2-2") ) )
+      (&lt;li&gt; NIL "Item 3") ) )
+########################################################################
+</code></pre>
+
+<p>Here too, you can put arbitrary code into each node of that tree, including
+other tag functions.
+
+
+<h4><a name="tables">Tables</a></h4>
+
+<p>Like the hierarchical structures with the list functions, you can generate
+two-dimensional tables with the <code>&lt;table&gt;</code> and
+<code>&lt;row&gt;</code> functions.
+
+<p>The following example prints a table of numbers and their squares:
+
+<p><pre><code>
+########################################################################
+(html 0 "Table" "lib.css" NIL
+   (&lt;table&gt; NIL NIL NIL
+      (for (N 1 (&gt;= 10 N) (inc N))              # A table with 10 rows
+         (&lt;row&gt; NIL N (prin (* N N))) ) ) )     # and 2 columns
+########################################################################
+</code></pre>
+
+<p>The first argument to <code>&lt;table&gt;</code> is the usual CSS attribute,
+the second an optional title ("caption"), and the third an optional list
+specifying the column headers. In that list, you may supply a list for a each
+column, with a CSS attribute in its CAR, and a tag body in its CDR for the
+contents of the column header.
+
+<p>The body of <code>&lt;table&gt;</code> contains calls to the
+<code>&lt;row&gt;</code> function. This function is special in that each
+expression in its body will go to a separate column of the table. If both for
+the column header and the row function an CSS attribute is given, they will be
+combined by a space and passed to the HTML <code>&lt;td&gt;</code> tag. This
+permits distinct CSS specifications for each column and row.
+
+<p>As an extension of the above table example, let's pass some attributes for
+the table itself (not recommended - better define such styles in a CSS file and
+then just pass the class name to <code>&lt;table&gt;</code>), right-align both
+columns, and print each row in a blue color
+
+<p><pre><code>
+########################################################################
+(html 0 "Table" "lib.css" NIL
+   (&lt;table&gt;
+      '((width . "200px") (style . "border: dotted 1px;"))  # table style
+      "Square Numbers"                                      # caption
+      '((align "Number") (align "Square"))                  # 2 headers
+      (for (N 1 (&gt;= 10 N) (inc N))                          # 10 rows
+         (&lt;row&gt; 'blue N (prin (* N N))) ) ) )               # 2 columns
+########################################################################
+</code></pre>
+
+<p>If you wish to concatenate two or more cells in a table, so that a single
+cell spans several columns, you can pass the symbol '<code>-</code>' for the
+additional cell data to <code>&lt;row&gt;</code>. This will cause the data given
+to the left of the '<code>-</code>' symbols to expand to the right.
+
+<p>You can also directly specify table structures with the simple
+<code>&lt;th&gt;</code>, <code>&lt;tr&gt;</code> and <code>&lt;td&gt;</code> tag
+functions.
+
+<p>If you just need a two-dimensional arrangement of components, the even
+simpler <code>&lt;grid&gt;</code> function might be convenient:
+
+<p><pre><code>
+########################################################################
+(html 0 "Grid" "lib.css" NIL
+   (&lt;grid&gt; 3
+      "A" "B" "C"
+      123 456 789 ) )
+########################################################################
+</code></pre>
+
+<p>It just takes a specification for the number of colums (here: 3) as its first
+argument, and then a single expression for each cell. Instead of a number, you
+can also pass a list of CSS atributes. Then the length of that list will
+determine the number of columns. You can change the second line in the above
+example to
+
+<p><pre><code>
+   (&lt;grid&gt; '(NIL NIL right)
+</code></pre>
+
+<p>Then the third column will be right aligned.
+
+
+<h4><a name="menus">Menus and Tabs</a></h4>
+
+<p>The two most powerful tag functions are <code>&lt;menu&gt;</code> and
+<code>&lt;tab&gt;</code>. Used separately or in combination, they form a
+navigation framework with
+
+<p><ul>
+<li>menu items which open and close sub-menus
+<li>sub-menu items which switch to different pages
+<li>tabs which switch to different sub-pages
+</ul>
+
+<p>The following example is not very useful, because the URLs of all items link
+to the same "project.l" page, but it should suffice to demonstrate the
+functionality:
+
+<p><pre><code>
+########################################################################
+(html 0 "Menu+Tab" "lib.css" NIL
+   (&lt;div&gt; '(id . menu)
+      (&lt;menu&gt;
+         (T "Start" "project.l")                   # Direct action
+         (NIL (&lt;hr&gt;))                              # Plain HTML
+         ("Item 1"                                 # Sub-menu 1
+            ("Subitem 1.1" "project.l")
+            ("Subitem 1.2" "project.l") )
+         ("Item 2"                                 # Sub-menu 2
+            ("Subitem 2.1" "project.l")
+            ("Subitem 2.2" "project.l") ) ) )
+   (&lt;div&gt; '(id . main)
+      (&lt;h1&gt; NIL "Menu+Tab")
+      (&lt;tab&gt;
+         ("Tab1"
+            (&lt;h3&gt; NIL "This is Tab 1") )
+         ("Tab2"
+            (&lt;h3&gt; NIL "This is Tab 2") )
+         ("Tab3"
+            (&lt;h3&gt; NIL "This is Tab 3") ) ) ) )
+########################################################################
+</code></pre>
+
+<p><code>&lt;menu&gt;</code> takes a sequence of menu items. Each menu item is a
+list, with its CAR either
+
+<p><ul>
+<li><code>NIL</code>: In that case, it is not an active menu item, and the rest
+of the list may consist of arbitrary code (usually HTML tags).
+
+<li><code>T</code>: In that case, the menu item will specify a direct action
+(instead of opening a sub-menu), where the second list element gives the item's
+name, the third element an URL, and the fourth (optional) element an URL-target.
+
+<li>Otherwise: The CAR is taken as a sub-menu's name, and a click on that name
+will open or close the corresponding sub-menu. The CDR is a list of sub-menu
+items, each of them consisting of a sub-item name, an URL, and an optional
+URL-target.
+
+</ul>
+
+<p><code>&lt;tab&gt;</code> takes a list of sub-pages. Each page is simply a tab
+name, followed by arbitrary code (typically HTML tags).
+
+<p>Note that only a single menu and a single tab may be active at the same time.
+
+
+<p><hr>
+<h2><a name="forms">Interactive Forms</a></h2>
+
+<p>In HTML, the only possibility for user input is via <code>&lt;form&gt;</code>
+and <code>&lt;input&gt;</code> elements, using the HTTP <code>POST</code> method
+to communicate with the server.
+
+<p>"lib/xhtml.l" supplies a function called <code>&lt;post&gt;</code>, and a
+collection of input tag functions, which allow direct programming of HTML forms.
+We will supply only one simple example:
+
+<p><pre><code>
+########################################################################
+(html 0 "Simple Form" "lib.css" NIL
+   (&lt;post&gt; NIL "project.l"
+      (&lt;field&gt; 10 '*Text)
+      (&lt;submit&gt; "Save") ) )
+########################################################################
+</code></pre>
+
+<p>This associates a text input field with a global variable <code>*Text</code>.
+The field displays the current value of <code>*Text</code>, and pressing the
+submit button causes a reload of "project.l" with <code>*Text</code> set to any
+string entered by the user.
+
+<p>An application program could then use that variable to do something useful,
+for example store its value in a database.
+
+<p>The problem with such a straightforward use of forms is that
+
+<p><ol>
+<li>they require the application programmer to take care of maintaining lots of
+global variables. Each input field on the page needs an associated variable for
+the round trip between server and client.
+
+<li>they do not preserve an application's internal state. Each <code>POST</code>
+request spawns an individual process on the server, which sets the global
+variables to their new values, generates the HTML page, and terminates
+thereafter. The application state has to be passed along explicitly, e.g. using
+<code>&lt;hidden&gt;</code> tags.
+
+<li>they are not very interactive. There is typically only a single submit
+button. The user fills out a possibly large number of input fields, but changes
+will take effect only when the submit button is pressed.
+
+</ol>
+
+<p>Though we wrote a few applications in that style, we recommend the GUI
+framework provided by "lib/form.l". It does not need any variables for the
+client/server communication, but implements a class hierarchy of GUI components
+for the abstraction of application logic, button actions and data linkage.
+
+
+<h3><a name="sessions">Sessions</a></h3>
+
+<p>First of all, we need to establish a persistent environment on the server, to
+handle each individual session (for each connected client).
+
+<p>Technically, this is just a child process of the server we started <a
+href="#server">above</a>, which does not terminate immediately after it sent its
+page to the browser. It is achieved by calling the <code>app</code> function
+somewhere on the application's startup page.
+
+<p><pre><code>
+########################################################################
+(app)  # Start a session
+
+(html 0 "Simple Session" "lib.css" NIL
+   (&lt;post&gt; NIL "project.l"
+      (&lt;field&gt; 10 '*Text)
+      (&lt;submit&gt; "Save") ) )
+########################################################################
+</code></pre>
+
+<p>Nothing else changed from the previous example. However, when you connect
+your browser and then look at the terminal window where you started the
+application server, you'll notice a colon, the Pico Lisp prompt
+
+<p><pre><code>
+$ ./p dbg.l lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+:
+</code></pre>
+
+<p>and tools like the Unix <code>ps</code> utility will tell you that two
+<code>picolisp</code> processes are running now, the first being the parent of
+the second.
+
+<p>If you enter some text, say "abcdef", into the text field in the browser
+window, press the submit button, and inspect the Lisp <code>*Text</code>
+variable,
+
+<p><pre><code>
+: *Text
+-> <u>abcdef</u>
+</code></pre>
+
+<p>you see that we now have a dedicated Pico Lisp process, "connected" to the
+client.
+
+<p>You can terminate this process (like any interactive Pico Lisp) by hitting
+<code>RETURN</code> on an empty line. Otherwise, it will terminate by itself if
+no other browser requests arrive within a default timeout period of 15 minutes.
+
+<p>To start a (non-debug) production version, the server is commonly started
+without "dbg.l", and with <code>-wait</code>
+
+<p><pre><code>
+$ ./p lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"' -wait
+</code></pre>
+
+<p>In that way, no command line prompt appears when a client connects.
+
+
+<h3><a name="actionForms">Action Forms</code></a></h3>
+
+<p>Now that we have a persistent session for each client, we can set up an
+active GUI framework.
+
+<p>This is done by wrapping the call to the <code>html</code> function with
+<code>action</code>. Inside the body of <code>html</code> can be - in addition
+to all other kinds of tag functions - one or more calls to <code>form</code>
+
+<p><pre><code>
+########################################################################
+(app)                                              # Start session
+
+(action                                            # Action handler
+   (html 0 "Form" "lib.css" NIL                    # HTTP/HTML protocol
+      (form NIL                                    # Form
+         (gui 'a '(+TextField) 10)                 # Text Field
+         (gui '(+Button) "Print"                   # Button
+            '(msg (val&gt; (: home a))) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>Note that there is no longer a global variable like <code>*Text</code> to
+hold the contents of the input field. Instead, we gave a local, symbolic name
+'<code>a</code>' to a <code>+TextField</code> component
+
+<p><pre><code>
+         (gui 'a '(+TextField) 10)                 # Text Field
+</code></pre>
+
+<p>Other components can refer to it
+
+<p><pre><code>
+            '(msg (val&gt; (: home a)))
+</code></pre>
+
+<p><code>(: home)</code> is always the form which contains this GUI component.
+So <code>(: home a)</code> evaluates to the component '<code>a</code>' in the
+current form. As <code>msg</code> prints its argument to standard error, and the
+<code>val&gt;</code> method retrieves the current contents of a component, we
+will see on the console the text typed into the text field when we press the
+button.
+
+<p>An <code>action</code> without embedded <code>form</code>s - or a
+<code>form</code> without a surrounding <code>action</code> - does not make much
+sense by itself. Inside <code>html</code> and <code>form</code>, however, calls
+to HTML functions (and any other Lisp functions, for that matter) can be freely
+mixed.
+
+<p>In general, a typical page may have the form
+
+<p><pre><code>
+(action                                            # Action handler
+   (html ..                                        # HTTP/HTML protocol
+      (&lt;h1&gt; ..)                                    # HTML tags
+      (form NIL                                    # Form
+         (&lt;h3&gt; ..)
+         (gui ..)                                  # GUI component(s)
+         (gui ..)
+         .. )
+      (&lt;h2&gt; ..)
+      (form NIL                                    # Another form
+         (&lt;h3&gt; ..)
+         (gui ..)                                  # GUI component(s)
+         .. )
+      (&lt;br&gt; ..)
+      .. ) )
+</code></pre>
+
+
+<h4><a name="ctlFlow">Control Flow</a></h4>
+
+<p>HTTP has only two methods to change a browser window: <code>GET</code> and
+<code>POST</code>. We employ these two methods in a certain defined, specialized
+way:
+
+<p><ul>
+<li><code>GET</code> means, a <b>new page</b> is being constructed. It is used
+when a page is visited for the first time, usually by entering an URL into the
+browser's address field, or by clicking on a link (which is often a <a
+href="#menus">sub-menu item or tab</a>).
+
+<li><code>POST</code> is always directed to the <b>same page</b>. It is
+triggered by a button press, updates the corresponding form's data structures,
+and executes that button's action code.
+
+</ul>
+
+<p>A button's action code can do almost anything: Read and modify the contents
+of input fields, communicate with the database, display alerts and dialogs, or
+even fake the <code>POST</code> request to a <code>GET</code>, with the effect
+of showing a completely different document.
+
+<p><code>GET</code> builds up all GUI components on the server. These components
+are objects which encapsulate state and behavior of the HTML page in the
+browser. Whenever a button is pressed, the page is reloaded via a
+<code>POST</code> request. Then - before any output is sent to the browser - the
+<code>action</code> function takes control. It performs error checks on all
+components, processes possible user input on the HTML page, and stores the
+values in correct format (text, number, date, object etc.) in each component.
+
+<p>The following silly example displays two text fields. If you enter some text
+into the "Source" field, you can copy it in upper or lower case to the
+"Destination" field by pressing one of the buttons
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "Case Conversion" "lib.css" NIL
+      (form NIL
+         (&lt;grid&gt; 2
+            "Source" (gui 'src '(+TextField) 30)
+            "Destination" (gui 'dst '(+Lock +TextField) 30) )
+         (gui '(+Button) "Upper Case"
+            '(set&gt; (: home dst)
+               (uppc (val&gt; (: home src))) ) )
+         (gui '(+Button) "Lower Case"
+            '(set&gt; (: home dst)
+               (lowc (val&gt; (: home src))) ) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>The <code>+Lock</code> prefix class in the "Destination" field makes that
+field read-only. The only way to get some text into that field is by using one
+of the buttons.
+
+
+<h4><a name="switching">Switching URLs</a></h4>
+
+<p>Because an action code runs before <code>html</code> has a chance to output
+an HTTP header, it can abort the current page and present something different to
+the user. This might, of course, be another HTML page, but would not be very
+interesting as a normal link would suffice. Instead, it can cause the download
+of dynamically generated data.
+
+<p>The next example shows a text area and two buttons. Any text entered into the
+text area is exported either as a text file via the first button, or a PDF
+document via the second button
+
+<p><pre><code>
+########################################################################
+(load "lib/ps.l")
+
+(app)
+
+(action
+   (html 0 "Export" "lib.css" NIL
+      (form NIL
+         (gui '(+TextField) 30 8)
+         (gui '(+Button) "Text"
+            '(let Txt (tmp "export.txt")
+               (out Txt (prinl (val&gt; (: home gui 1))))
+               (url Txt) ) )
+         (gui '(+Button) "PDF"
+            '(psOut NIL "foo"
+               (a4)
+               (indent 40 40)
+               (down 60)
+               (hline 3)
+               (font (14 . "Times-Roman")
+                  (ps (val&gt; (: home gui 1))) )
+               (hline 3)
+               (page) ) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>(a text area is built when you supply two numeric arguments (columns and
+rows) to a <code>+TextField</code> class)
+
+<p>The action code of the first button creates a temporary file (i.e. a file
+named "export.txt" in the current process's temporary space), prints the value
+of the text area (this time we did not bother to give it a name, we simply refer
+to it as the form's first gui list element) into that file, and then calls the
+<code>url</code> function with the file name.
+
+<p>The second button uses the PostScript library "lib/ps.l" to create a
+temporary file "foo.pdf". Here, the temporary file creation and the call to the
+<code>url</code> function is hidden in the internal mechanisms of
+<code>psOut</code>. The effect is that the browser receives a PDF document and
+displays it.
+
+
+<h4><a name="dialogs">Alerts and Dialogs</a></h4>
+
+<p>Alerts and dialogs are not really what they used to be ;-)
+
+<p>They do not "pop up". In this framework, they are just a kind of
+simple-to-use, pre-fabricated form. They can be invoked by a button's action
+code, and appear always on the current page, immediately preceding the form
+which created them.
+
+<p>Let's look at an example which uses two alerts and a dialog. In the
+beginning, it displays a simple form, with a locked text field, and two buttons
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "Alerts and Dialogs" "lib.css" NIL
+      (form NIL
+         (gui '(+Init +Lock +TextField) "Initial Text" 20 "My Text")
+         (gui '(+Button) "Alert"
+            '(alert "This is an alert " (okButton)) )
+         (gui '(+Button) "Dialog"
+            '(dialog NIL
+               (&lt;br&gt; "This is a dialog.")
+               (&lt;br&gt;
+                  "You can change the text here "
+                  (gui '(+Init +TextField) (val&gt; (: top 1 gui 1)) 20) )
+               (&lt;br&gt; "and then re-submit it to the form.")
+               (gui '(+Button) "Re-Submit"
+                  '(alert "Are you sure? "
+                     (yesButton
+                        '(prog
+                           (set&gt; (: home top 2 gui 1)
+                              (val&gt; (: home top 1 gui 1)) )
+                           (dispose (: home top 1)) ) )
+                     (noButton) ) )
+               (cancelButton) ) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>The <code>+Init</code> prefix class initialises the "My Text" field with the
+string "Initial Text". As the field is locked, you cannot modify this value
+directly.
+
+<p>The first button brings up an alert saying "This is an alert.". You can
+dispose it by pressing "Ok".
+
+<p>The second button brings up a dialog with an editable text field, containing
+a copy of the value from the form's locked text field. You can modify this
+value, and send it back to the form, if you press "Re-Submit" and aswer "Yes" to
+the "Are you sure?" alert.
+
+
+<h4><a name="calc">A Calculator Example</a></h4>
+
+<p>Now let's forget our "project.l" test file for a moment, and move on to a
+more substantial and practical, stand-alone, example. Using what we have learned
+so far, we want to build a simple bignum calculator. ("bignum" because Pico Lisp
+can <i>only</i> do bignums)
+
+<p>It uses a single form, a single numeric input field, and lots of buttons. It
+can be found in the Pico Lisp distribution in "misc/calc.l", together with a
+directly executable wrapper script "misc/calc".
+
+<p>To use it, change to the Pico Lisp installation directory, and start it as
+
+<p><pre><code>
+$ misc/calc
+</code></pre>
+
+<p>If you want to use it from other directories too, change the two relative
+path names in the first line to absolute paths. We recommend symbolic links in
+some global directories, as described in the <a
+href="tut.html#script">Scripting</a> section of the Pico Lisp Tutorial.
+
+<p>If you like to get a Pico Lisp prompt for debugging, start it instead as
+
+<p><pre><code>
+$ ./p dbg.l misc/calc.l -main -go
+</code></pre>
+
+<p>Then - as before - point your browser to '<code><a
+href="http://localhost:8080">http://localhost:8080</a></code>'.
+
+<p>*** TO BE CONTINUED ***
+
+<p>The most recent version of this document can be found on the <a
+href="http://software-lab.de/down.html">Pico Lisp Download</a> page, and in the
+current <a
+href="http://www.software-lab.biz/1024/?download&amp;picoLisp.tgz">development
+release</a> of Pico Lisp.
+
+
+<h3><a name="charts">Charts</a></h3>
+
+
+<p><hr>
+<h2><a name="db">DB-Integration</a></h2>
+
+
+</body>
+</html>

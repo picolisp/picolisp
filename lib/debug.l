@@ -1,4 +1,4 @@
-# 07jan06abu
+# 10apr06abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -205,14 +205,6 @@
          (quit "Can't unbug" "X") ) ) )
 
 # Tracing
-(de expr ("F")
-   (set "F"
-      (list '@ (list 'pass (box (getd "F")))) ) )
-
-(de subr ("F")
-   (set "F"
-      (getd (cadr (cadr (getd "F")))) ) )
-
 (de traced? ("X" "C")
    (setq "X"
       (if "C"

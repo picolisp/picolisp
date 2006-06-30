@@ -1,4 +1,4 @@
-/* 13mar06abu
+/* 09jun06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -118,7 +118,7 @@ typedef struct catchFrame {
 #define numCell(n)      ((any)(num(n)-2))
 #define box(n)          (consNum(n,Nil))
 #define unDig(x)        num(car(numCell(x)))
-#define setDig(x,v)     num(car(numCell(x))=(any)(v))
+#define setDig(x,v)     (car(numCell(x))=(any)(v))
 #define isNeg(x)        (unDig(x) & 1)
 #define pos(x)          (car(numCell(x)) = (any)(unDig(x) & ~1))
 #define neg(x)          (car(numCell(x)) = (any)(unDig(x) ^ 1))
@@ -200,8 +200,8 @@ extern FILE *InFile, *OutFile;
 extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Msg, Uni, Adr, Fork, Bye;
+extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+extern any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -422,6 +422,7 @@ any doFrom(any);
 any doFunQ(any);
 any doGc(any);
 any doGe(any);
+any doGe0(any);
 any doGet(any);
 any doGetl(any);
 any doGt(any);
@@ -502,6 +503,7 @@ any doNeed(any);
 any doNew(any);
 any doNext(any);
 any doNil(any);
+any doNond(any);
 any doNor(any);
 any doNot(any);
 any doNth(any);
@@ -650,7 +652,9 @@ static inline any getn(any x, any y) {
          y = cdr(y);
       return cdr(y);
    }
-   while (--n > 0)
+   if (n == 0)
+      return Nil;
+   while (--n)
       y = cdr(y);
    return car(y);
 }

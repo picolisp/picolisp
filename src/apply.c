@@ -1,4 +1,4 @@
-/* 02feb06abu
+/* 09may06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -162,7 +162,7 @@ any doApply(any ex) {
 any doPass(any ex) {
    any x;
    int n, i;
-   cell foo, c[length(cdr(x = cdr(ex))) + Env.next];
+   cell foo, c[length(cdr(x = cdr(ex))) + (Env.next>0? Env.next : 0)];
 
    Push(foo, EVAL(car(x)));
    for (n = 0; isCell(x = cdr(x)); ++n)

@@ -1,13 +1,13 @@
-# 12jun06abu
+# 08sep06abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
 (de dbgc ()
    (markExt *DB)
-   (let (Cnt 0  N 0)
+   (let Cnt 0
       (finally (mark 0)
-         (do (max 1 (length *Dbs))
-            (for (S (db1 (inc 'N))  S  (seq S))
+         (for (F . @) (or *Dbs (2))
+            (for (S (seq F)  S  (seq S))
                (unless (mark S)
                   (inc 'Cnt)
                   (and (isa '+Entity S) (zap> S))
@@ -268,7 +268,7 @@
       (dbfUpdate) )
    (let Lst
       (make
-         (for (S (db1 1) S (seq S))
+         (for (S *DB S (seq S))
             (link (cons S (cons (val S) (getl S)))) ) )
       (pool)
       (call 'rm (pack Pool 1))
@@ -384,12 +384,12 @@
 ### DB Unload/Load ###
 (de dbUnload (File N)
    (out File
-      (for (S (db1 N) S (seq S))
+      (for (S (seq N) S (seq S))
          (println (cons S (cons (val S) (getl S)))) ) ) )
 
 (de dbLoad (File N)
    (in File
-      (let (P (db1 N)  F)
+      (let (P (seq N)  F)
          (for (L (read) L (read))
             (setq F (seq P (setq P (car L)) F))
             (commit) ) ) )

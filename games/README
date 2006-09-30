@@ -1,4 +1,4 @@
-04sep05abu
+24sep06abu
 (c) Software Lab. Alexander Burger
 
 
@@ -36,8 +36,7 @@ or exit the Pico Lisp interpreter with ENTER.
 function (normally, these games are better implemented by directly exploring
 their underlying principles and strategies).
 
-
-Start Nim as
+Start 'nim' as
 
 $ ./p dbg.l games/nim.l
 
@@ -50,6 +49,7 @@ matches each:
 This is a winning position (a minimal cost of -100), with three moves (in the
 CARs of the move list: Take 4 from heap 1, then 4 from heap 2, and finally 4
 from heap 3).
+
 
 
 To play Tic-Tac-Toe, enter
@@ -177,3 +177,47 @@ file with
 which later can be restored with
 
 : (load "file")
+
+
+
+There is also a plain 'sudoku' solver:
+
+$ ./p dbg.l games/sudoku.l
+
+: (main
+   (quote
+      (5 3 0 0 7 0 0 0 0)
+      (6 0 0 1 9 5 0 0 0)
+      (0 9 8 0 0 0 0 6 0)
+      (8 0 0 0 6 0 0 0 3)
+      (4 0 0 8 0 3 0 0 1)
+      (7 0 0 0 2 0 0 0 6)
+      (0 6 0 0 0 0 2 8 0)
+      (0 0 0 4 1 9 0 0 5)
+      (0 0 0 0 8 0 0 7 9) ) )
+   +---+---+---+---+---+---+---+---+---+
+ 9 | 5   3     |     7     |           |
+   +   +   +   +   +   +   +   +   +   +
+ 8 | 6         | 1   9   5 |           |
+   +   +   +   +   +   +   +   +   +   +
+ 7 |     9   8 |           |     6     |
+   +---+---+---+---+---+---+---+---+---+
+ 6 | 8         |     6     |         3 |
+   +   +   +   +   +   +   +   +   +   +
+ 5 | 4         | 8       3 |         1 |
+   +   +   +   +   +   +   +   +   +   +
+ 4 | 7         |     2     |         6 |
+   +---+---+---+---+---+---+---+---+---+
+ 3 |     6     |           | 2   8     |
+   +   +   +   +   +   +   +   +   +   +
+ 2 |           | 4   1   9 |         5 |
+   +   +   +   +   +   +   +   +   +   +
+ 1 |           |     8     |     7   9 |
+   +---+---+---+---+---+---+---+---+---+
+     a   b   c   d   e   f   g   h   i
+
+Type
+
+: (go)
+
+to let it search for a solution.

@@ -1,4 +1,4 @@
-# 30dec04abu
+# 12sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Java
@@ -8,6 +8,7 @@
 
 (de java (Cls X . @)
    (unless *Java
+      (call 'mkdir "-p" "fifo")
       (unless (call 'test "-p" "fifo/java")
          (quit "No JVM") )
       (call 'mkfifo (setq *Java (pack "fifo/java" *Pid))) )

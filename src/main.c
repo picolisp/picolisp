@@ -1,4 +1,4 @@
-/* 14jun06abu
+/* 28sep06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -14,13 +14,17 @@ stkEnv Env;
 catchFrame *CatchPtr;
 struct termios *Termio;
 FILE *InFile, *OutFile;
+int (*getBin)(int);
+void (*putBin)(int);
 any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+any Dbg, PPid, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
+static word2 USec;
+static struct timeval Tv;
 static bool Jam, Protect;
 static struct termios RawTermio;
 static jmp_buf ErrRst;
@@ -669,7 +673,7 @@ any mkDat(int y, int m, int d) {
    return boxCnt((4404*y+367*m-1094)/12 - 2*n + n/4 - n/100 + n/400 + d);
 }
 
-// (date '[T]) -> dat
+// (date ['T]) -> dat
 // (date 'dat) -> (y m d)
 // (date 'y 'm 'd) -> dat | NIL
 // (date '(y m d)) -> dat | NIL
@@ -759,6 +763,12 @@ any doTime(any ex) {
    return boxCnt(h * 3600 + m * 60 + s);
 }
 
+// (usec) -> num
+any doUsec(any ex __attribute__((unused))) {
+   gettimeofday(&Tv,NULL);
+   return boxWord2((word2)Tv.tv_sec*1000000 + Tv.tv_usec - USec);
+}
+
 // (pwd) -> sym
 any doPwd(any x) {
    char *p;
@@ -809,9 +819,9 @@ any doInfo(any x) {
 
    x = evSym(cdr(x));
    {
-      char nm[bufSize(x)];
+      char nm[pathSize(x)];
 
-      bufString(x, nm);
+      pathString(x, nm);
       if (stat(nm, &st) < 0)
          return Nil;
       p = gmtime(&st.st_mtime);
@@ -832,9 +842,9 @@ any doDir(any x) {
    if (isNil(x = evSym(cdr(x))))
       dp = opendir(".");
    else {
-      char nm[bufSize(x)];
+      char nm[pathSize(x)];
 
-      bufString(x, nm);
+      pathString(x, nm);
       dp = opendir(nm);
    }
    if (!dp)
@@ -892,13 +902,13 @@ any doOpt(any ex __attribute__((unused))) {
 }
 
 /*** Main ***/
-int main(int ac, char *av[]) {
+int MAIN(int ac, char *av[]) {
    int i;
    char *p;
 
    for (i = 1; i < ac; ++i)
       if (*av[i] != '-') {
-         if (p = strrchr(av[i], '/')) {
+         if ((p = strrchr(av[i], '/')) && !(p == av[i]+1 && *av[i] == '.')) {
             Home = malloc(p - av[i] + 2);
             memcpy(Home, av[i], p - av[i] + 1);
             Home[p - av[i] + 1] = '\0';
@@ -919,6 +929,8 @@ int main(int ac, char *av[]) {
    signal(SIGPIPE, SIG_IGN);
    signal(SIGTTIN, SIG_IGN);
    signal(SIGTTOU, SIG_IGN);
+   gettimeofday(&Tv,NULL);
+   USec = (word2)Tv.tv_sec*1000000 + Tv.tv_usec;
    if (setjmp(ErrRst) < 0)
       prog(val(Rst));
    else {

@@ -1,4 +1,4 @@
-// 28oct05abu
+// 05aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -24,7 +24,7 @@ public class InOut {
 
    public InOut(InputStream in, OutputStream out) {
       In = in;
-      Out = out;
+      Out = new BufferedOutputStream(out);
    }
 
    /*** Printing ***/

@@ -1,4 +1,4 @@
-# 30may06abu
+# 22jul06abu
 # (c) Software Lab. Alexander Burger
 
 (test T (pool (tmp "db")))
@@ -100,6 +100,8 @@
 (test 3 (get (1 2 3) 3))
 (test NIL (get (1 2 3) 4))
 (test (3) (get (1 2 3) -2))
+(test 1 (get '((a (b . 1) (c . 2)) (d (e . 3) (f . 4))) 'a 'b))
+(test 4 (get '((a (b . 1) (c . 2)) (d (e . 3) (f . 4))) 'd 'f))
 (let (A (box)  B (box A)  C (box (cons A B)))
    (put B 'a A)
    (put C 'b B)

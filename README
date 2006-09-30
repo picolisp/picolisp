@@ -1,4 +1,4 @@
-22mar06abu
+04sep06abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -97,8 +97,8 @@ internal process and database synchronization.
 A deeper explanation of the programming paradigms can be found at
 "http://software-lab.de/dbui.html".
 
-Pico Lisp compiles and runs under GNU/Linux, FreeBSD, Mac OS X (Darwin), and
-possibly other systems.
+Pico Lisp compiles and runs under GNU/Linux, FreeBSD, Mac OS X (Darwin),
+Cygwin/Win32, and possibly other systems.
 
 Pico Lisp is supported by 7fach and SmApper Technologies.
 

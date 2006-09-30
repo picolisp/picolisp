@@ -1,4 +1,4 @@
-// 12aug05abu
+// 05aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -37,8 +37,8 @@ public class Z3dField extends Pico {
 
       setFocusable(true);
       addFocusListener(new FocusListener() {
-         public void focusGained(FocusEvent ev) {msg1("foc>");}
-         public void focusLost(FocusEvent ev) {msg1("nxt>");}
+         public void focusGained(FocusEvent ev) {msg1("foc>"); flush();}
+         public void focusLost(FocusEvent ev) {msg1("nxt>"); flush();}
       } );
 
       addKeyListener(new KeyAdapter() {
@@ -81,11 +81,14 @@ public class Z3dField extends Pico {
                msg1("INS>");
                break;
             }
+            flush();
             ev.consume();
          }
          public void keyReleased(KeyEvent ev) {
-            if (ev.getKeyCode() == KeyEvent.VK_CONTROL)
+            if (ev.getKeyCode() == KeyEvent.VK_CONTROL) {
                msg4("mov>", 0, PosX, PosY);
+               flush();
+            }
          }
       } );
 
@@ -96,6 +99,7 @@ public class Z3dField extends Pico {
                ev.getModifiers(),
                PosX = ev.getX()-OrgX,
                PosY = ev.getY()-OrgY );
+            flush();
             ev.consume();
          }
       } );
@@ -106,6 +110,7 @@ public class Z3dField extends Pico {
                ev.getModifiers(),
                PosX = ev.getX()-OrgX,
                PosY = ev.getY()-OrgY );
+            flush();
             ev.consume();
          }
       } );
@@ -262,6 +267,7 @@ public class Z3dField extends Pico {
       long t;
 
       msg1("ok>");
+      flush();
       if ((n = DX * (getNum() + OrgY)) > Frame.length)  // Horizon
          n = Frame.length;
       c = getNum() | 0xFF000000;  // Sky color

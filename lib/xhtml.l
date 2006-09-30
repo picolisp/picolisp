@@ -1,7 +1,7 @@
-# 24jun06abu
+# 29sep06abu
 # (c) Software Lab. Alexander Burger
 
-# *Style *Menu *Tab *ID
+# *JS *Style *Menu *Tab *ID
 
 (mapc allow '(*Menu *Tab *ID))
 
@@ -53,6 +53,10 @@
    (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
    (when Css
       (if (atom Css) ("css" Css) (mapc "css" Css)) )
+   (when *JS
+      (prinl
+         "<script src=\"" (baseHRef *Port1) *JS "\" type=\"text/javascript\">"
+         "</script>" ) )
    (prinl "</head>")
    (tag 'body Attr 2 Prg)
    (prinl "</html>") )
@@ -63,8 +67,14 @@
       (baseHRef *Port1) Css
       "\" type=\"text/css\"/>" ) )
 
-(de style (*Style . "Prg")
-   (run "Prg") )
+(de style (X . "Prg")
+   (let *Style
+      (cond
+         ((not *Style) X)
+         ((or (atom *Style) (atom (cdr *Style)))
+            (list X *Style) )
+         (T (cons X *Style)) )
+      (run "Prg") ) )
 
 (de <div> (Attr . Prg)
    (tag 'div Attr 2 Prg) )
@@ -253,6 +263,7 @@
    (prin
       "<form enctype=\"multipart/form-data\" action=\""
       (sesId Url)
+      (and *JS "\" onsubmit=\"return doPost(this);")
       "\" method=\"post\">" )
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )
@@ -362,20 +373,22 @@
    (and Flg (prin " disabled"))
    (prinl "/>") )
 
-(de <submit> (S "Var" Flg)
+(de <submit> (S "Var" Flg JS)
    (prin "<input type=\"submit\"")
    (and "Var" (space) (htmlVar "Var"))
    (prin " value=\"")
    (ht:Prin S)
    (prin "\"")
+   (and *JS JS (prin " onclick=\"return doSubmit(this);\""))
    (and *Style (htStyle @))
    (and Flg (prin " disabled"))
    (prinl "/>") )
 
-(de <image> (Src "Var" Flg)
+(de <image> (Src "Var" Flg JS)
    (prin "<input type=\"image\"")
    (and "Var" (space) (htmlVar "Var"))
    (prin " src=\"" (sesId Src) "\"")
+   (and *JS JS (prin " onclick=\"return doImage(this);\""))
    (and *Style (htStyle @))
    (and Flg (prin " disabled"))
    (prinl "/>") )

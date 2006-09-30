@@ -1,10 +1,10 @@
 #!bin/picolisp lib.l
-# 10nov05abu
+# 12sep06abu
 # (c) Software Lab. Alexander Burger
 
 # Must be run on a virtual console
 
-(load "lib/misc.l")
+(load "lib/misc.l" "lib/gcc.l")
 
 ### 'ioctl' glue function
 (gcc "tst" NIL 'tone)
@@ -23,8 +23,8 @@ any tone(any ex) {
 /**/
 
 ### Create named pipe
-(or
-   (call 'test "-p" "fifo/tone")
+(unless (call 'test "-p" "fifo/tone")
+   (call 'mkdir "-p" "fifo")
    (call 'mkfifo "fifo/tone") )
 
 (?push '*Bye '(call 'rm "fifo/tone"))

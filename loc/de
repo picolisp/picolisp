@@ -1,4 +1,4 @@
-# 06may06abu
+# 29sep06abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -20,10 +20,10 @@
 "Bad time format" "Falsches Uhrzeit-Format"
 "Cancel" "Abbruch"
 "Choose" "Auswahl"
-"Choose/Create" "Auswahl/Neuanlage"
-"Choose/Create (F4)" "Auswahl/Neuanlage (F4)"
+"Choose/New" "Auswahl/Neuanlage"
+"Choose/New (F4)" "Auswahl/Neuanlage (F4)"
 "Close" "Schließen"
-"Create" "Neuanlage"
+"New" "Neuanlage"
 "Data not found" "Datensatz nicht gefunden"
 "Delete" "Löschen"
 "Delete this data record?" "Bestehenden Datensatz löschen?"

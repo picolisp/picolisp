@@ -1,4 +1,4 @@
-// 10jan06abu
+// 22aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -44,7 +44,6 @@ public class Pico extends JApplet {
       } );
       try {
          Sock = new Socket(Host, port);
-         Sock.setTcpNoDelay(true);
          IO = new InOut(Sock.getInputStream(), Sock.getOutputStream());
          IO.print(sid);
          if (id != 0) {
@@ -73,6 +72,7 @@ public class Pico extends JApplet {
          }
       } ).start();
       msg1("start>");
+      flush();
    }
 
    public void init() {
@@ -89,7 +89,7 @@ public class Pico extends JApplet {
                Integer.parseInt(getParameter("port")), getParameter("sid") );
    }
 
-   public void stop() {msg1("stop>");}
+   public void stop() {msg1("stop>"); flush();}
 
    void done() {
       if (Sock != null) {
@@ -122,8 +122,10 @@ public class Pico extends JApplet {
    // Command dispatcher
    void cmd(String s) {
       if (s.equals("ping")) {
-         try {synchronized (IO) {IO.print(0);}}
-         catch (IOException e) {}
+         synchronized (IO) {
+            try {IO.print(0); IO.flush();}
+            catch (IOException e) {}
+         }
       }
       else if (s.equals("done"))
          done();
@@ -203,58 +205,63 @@ public class Pico extends JApplet {
    }
 
    // Write message
+   void flush() {
+      try {IO.flush();}
+      catch (IOException e) {}
+   }
+
    void msg1(String s) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.flush();}
+         try {IO.prSym(s);}
          catch (IOException e) {}
       }
    }
 
    void msg2(String s, Object x2) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(x2); IO.flush();}
+         try {IO.prSym(s); IO.print(x2);}
          catch (IOException e) {}
       }
    }
 
    void msg2(String s, int n2) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.flush();}
+         try {IO.prSym(s); IO.print(n2);}
          catch (IOException e) {}
       }
    }
 
    void msg3(String s, int n2, Object x3) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(x3);}
          catch (IOException e) {}
       }
    }
 
    void msg3(String s, int n2, int n3) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(n3);}
          catch (IOException e) {}
       }
    }
 
    void msg4(String s, int n2, int n3, int n4) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4);}
          catch (IOException e) {}
       }
    }
 
    void msg4(String s, int n2, Object x3, int n4) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.print(n4); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(x3); IO.print(n4);}
          catch (IOException e) {}
       }
    }
 
    void msg5(String s, int n2, int n3, int n4, int n5) {
       synchronized (IO) {
-         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.print(n5); IO.flush();}
+         try {IO.prSym(s); IO.print(n2); IO.print(n3); IO.print(n4); IO.print(n5);}
          catch (IOException e) {}
       }
    }

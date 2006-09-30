@@ -1,4 +1,4 @@
-# 06may06abu
+# 29sep06abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -15,25 +15,25 @@
 
 # lib/gui.l
 "Background" "背景"
-"Bad date format" "日付けが違う"
+"Bad date format" "日付が違う"
 "Bad time format" "時刻が違う"
 "Cancel" "キャンセル"
 "Choose" "選択"
-"Choose/Create" "選択 / 新しい"
+"Choose/New" "選択 / 新しい"
 "Close" "閉じる"
-"Create" "新しい"
+"New" "作成"
 "Data not found" "データが見付からない"
-"Delete" "消す"
+"Delete" "消去"
 "Delete this data record?" "このデータを消す？"
 "Font" "フォント"
 "Font Size" "フォントサイズ"
 "Foreground" "前面"
-"New/Copy" "新しい / コピー"
+"New/Copy" "作成/コピー"
 "Next data record" "次のデータ"
 "No" "いいえ"
 "Please wait" "お待ちください"
 "Settings" "セッティング"
-"Search" "探す"
+"Search" "検索"
 "Text too long" "テキストが長過ぎる"
 "Yes" "はい"
 
@@ -44,6 +44,6 @@
 "Name" "名前"
 "Password" "パスワード"
 "' logged in" "' ログインしました"
-"Role" "分野"
+"Role" "役割"
 "User" "ユーザー"
 "Permissions" "許可"

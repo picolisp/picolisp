@@ -1,4 +1,4 @@
-# 30may06abu
+# 19jul06abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -39,9 +39,9 @@
                      (prinl) ) ) )
             (prinl "# vim:syntax=picolisp:ts=3:sw=3:expandtab") )
          (call 'vim
-            "+set iskeyword=@,33-34,36-38,42-90,92,94-95,97-125"
-            "+map ^] yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
-            "+map ^T GC(0)^[ZZ"
+            "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
+            "+map g yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
+            "+map q GC(0)^[ZZ"
             (pack "+" "N")
             "*F" )
          (apply ==== "*Lst")

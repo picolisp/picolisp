@@ -1,4 +1,4 @@
-# 27may06abu
+# 04sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -16,7 +16,7 @@
 (de *DateFmt @Y "-" @M "-" @D)
 (de *DayFmt Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
 (de *MonFmt January February March April May June July August September October November December)
-(de *Help "loc/help/en.l")
+(de *Help "@loc/help/en.l")
 
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
@@ -428,20 +428,7 @@
       (and (> C 42) (inc 'C 6))
       (char (+ C `(char "0"))) ) )
 
-### System ###
-(de gcc (S L . @)
-   (out (tmp S ".c")
-      (chdir '@ (prinl "#include \"" (pwd) "/src/pico.h\""))
-      (here "/**/") )
-   (apply call L 'gcc "-o" (tmp S)
-      "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
-      "-O" "-falign-functions" "-fomit-frame-pointer"
-      "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
-      "-Wuninitialized" "-Wstrict-prototypes"
-      "-pipe" "-D_GNU_SOURCE" "-D_FILE_OFFSET_BITS=64" (tmp S ".c") )
-   (while (args)
-      (def (next) (tmp S ': (arg))) ) )
-
+### Testing ###
 (de test ("Pat" . "Prg")
    (unless (match "Pat" (run "Prg"))
       (println 'fail "Prg") ) )

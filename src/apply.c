@@ -1,4 +1,4 @@
-/* 09may06abu
+/* 31aug06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -600,6 +600,28 @@ any doMini(any ex) {
             data(c[i]) = cdr(data(c[i]));
       }
    }
+   return Pop(res);
+}
+
+static void fish(any ex, any foo, any x, cell *r) {
+   if (!isNil(apply(ex, foo, NO, 1, (cell*)&x)))
+      data(*r) = cons(x, data(*r));
+   else if (isCell(x)) {
+      if (!isNil(cdr(x)))
+         fish(ex, foo, cdr(x), r);
+      fish(ex, foo, car(x), r);
+   }
+}
+
+// (fish 'fun 'any) -> lst
+any doFish(any ex) {
+   any x = cdr(ex);
+   cell res, foo, c1;
+
+   Push(res, Nil);
+   Push(foo, EVAL(car(x)));
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   fish(ex, data(foo), data(c1), &res);
    return Pop(res);
 }
 

@@ -1,4 +1,4 @@
-# 13jan06abu
+# 12jul06abu
 # (c) Software Lab. Alexander Burger
 
 # Check header
@@ -18,17 +18,22 @@
             (prin " " (car X) "=\"")
             (escXml (cdr X))
             (prin "\"") )
-         (ifn Lst
-            (prinl "/>")
-            (prinl ">")
-            (for X Lst
-               (if (pair X)
-                  (xml X (+ 3 N))
-                  (space (+ 3 N))
-                  (escXml X)
-                  (prinl) ) )
-            (space N)
-            (prinl "</" Tag ">") ) )
+         (nond
+            (Lst (prinl "/>"))
+            ((or (cdr Lst) (pair (car Lst)))
+               (prin ">")
+               (escXml (car Lst))
+               (prinl "</" Tag ">") )
+            (NIL
+               (prinl ">")
+               (for X Lst
+                  (if (pair X)
+                     (xml X (+ 3 N))
+                     (space (+ 3 N))
+                     (escXml X)
+                     (prinl) ) )
+               (space N)
+               (prinl "</" Tag ">") ) ) )
       (skip)
       (unless (= "<" (char))
          (quit "Bad XML") )
@@ -64,7 +69,7 @@
                      (if (= "<" X)
                         (and (_xml (till " /<>" T)) (link @))
                         (link
-                           (pack (xmlEsc (trim (cons X (till "^J/<>"))))) ) ) ) ) ) ) ) ) )
+                           (pack (xmlEsc (trim (cons X (till "^J<"))))) ) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
    (use (@A @X @Z)

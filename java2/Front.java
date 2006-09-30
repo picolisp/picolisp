@@ -1,4 +1,4 @@
-// 05may06abu
+// 07sep06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -14,7 +14,7 @@ public class Front extends Pico {
    JScrollBar[] SBars;
    Hashtable Skip;
    Vector Sync, Rid, Crypt;
-   int Focus, Dirty, Over;
+   int Focus, Dirty;
    boolean Req;
    JDialog Dialog;
    Front Parent;
@@ -78,7 +78,7 @@ public class Front extends Pico {
    // Command dispatcher
    void cmd(String s) {
       if (s.equals("ack"))
-         {Req = false; relay();}
+         {Req = false; relay(); flush();}
       else if (s.equals("able"))
          able(Fields[getNum()-1], getStr().length() != 0);
       else if (s.equals("focus"))
@@ -256,6 +256,7 @@ public class Front extends Pico {
                         change();
                         Req = true;
                         msg2("act>", Integer.parseInt(ev.getActionCommand()));
+                        flush();
                      }
                   }
                } );
@@ -343,6 +344,7 @@ public class Front extends Pico {
          Dialog.setBounds(r);
          Dialog.show();
       }
+      flush();
    }
 
    // Add component to container
@@ -403,8 +405,10 @@ public class Front extends Pico {
          if (o instanceof String)
             ((JTextComponent)f).select(i+1, i+txt.length());
          Dirty = fld;
-         if (Sync.contains(Fields[fld-1]))
+         if (Sync.contains(Fields[fld-1])) {
             change();
+            flush();
+         }
       }
    }
 
@@ -549,11 +553,13 @@ class PicoFocusListener implements FocusListener {
       if (Home.Rdy  &&  Home.Focus != 0  &&  Home.Focus != Ix) {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
+         Home.flush();
       }
    }
 
    public void focusLost(FocusEvent ev) {
       Home.change();
+      Home.flush();
    }
 }
 
@@ -568,6 +574,7 @@ class PicoAdjustmentListener implements AdjustmentListener {
          Home.change();
          Home.msg3("scr>", Ix, Val = ev.getValue());
          Home.relay();
+         Home.flush();
       }
    }
 }
@@ -589,6 +596,7 @@ class PicoMouseAdapter extends MouseAdapter {
             Home.change();
             Home.Req = true;
             Home.msg2("act>", Ix);
+            Home.flush();
          }
          ev.consume();
       }
@@ -598,14 +606,12 @@ class PicoMouseAdapter extends MouseAdapter {
 class PicoKeyAdapter extends KeyAdapter {
    Front Home;
    int Ix;
-   static long Tim;
    static String Clip;
 
    PicoKeyAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void keyTyped(KeyEvent ev) {
       char c;
-      long t;
       JComponent f;
 
       if (!Home.Rdy) {
@@ -629,18 +635,11 @@ class PicoKeyAdapter extends KeyAdapter {
       else if (f instanceof JTextComponent  &&  c >= KeyEvent.VK_SPACE  &&  c != KeyEvent.VK_DELETE) {
          if (Home.Sync.contains(f))
             Home.change();
-
-         t = System.currentTimeMillis();
-         if (Tim > t) {
-            Pico.sleep(Tim - t);
-            t = Tim;
-         }
-         Tim = t + 100;
-
          char[] chr = {c};
          key(f, new String(chr));
          ev.consume();
       }
+      Home.flush();
    }
 
    public void keyPressed(KeyEvent ev) {
@@ -773,39 +772,38 @@ class PicoKeyAdapter extends KeyAdapter {
          ev.consume();
          break;
       case KeyEvent.VK_DELETE:
-         if (Home.Skip.containsKey(f)) {
-            ev.consume();
+         if (Home.Skip.containsKey(f))
             Home.getToolkit().beep();
-         }
          else if ((m & InputEvent.CTRL_MASK) != 0) {
             Home.change();
             Home.msg1("DEL>");
             Home.relay();
-            ev.consume();
          }
          else {
             Home.Dirty = Ix;
             if (f instanceof JTextComponent) {
-               String s = ((JTextComponent)f).getSelectedText();
-               if (s.length() != 0)
-                  Clip = s;
+               i = ((JTextComponent)f).getSelectionStart();
+               j = ((JTextComponent)f).getSelectionEnd();
+               if (i == j)
+                  ((JTextComponent)f).select(i, j+1);
+               else
+                  Clip = ((JTextComponent)f).getSelectedText();
+               ((JTextComponent)f).replaceSelection("");
             }
          }
+         ev.consume();
          break;
       case KeyEvent.VK_INSERT:
          if (Home.Skip.containsKey(f))
             Home.getToolkit().beep();
-         else {
-            if ((m & InputEvent.CTRL_MASK) != 0) {
-               Home.change();
-               Home.msg1("INS>");
-               Home.relay();
-            }
-            else if (Clip != null) {
-               for (i = 1;  i <= Clip.length();  ++i)
-                  key(f, Clip.substring(i-1,i));
-            }
+         else if ((m & InputEvent.CTRL_MASK) != 0) {
+            Home.change();
+            Home.msg1("INS>");
+            Home.relay();
          }
+         else if (Clip != null)
+            for (i = 1;  i <= Clip.length();  ++i)
+               key(f, Clip.substring(i-1,i));
          ev.consume();
          break;
       default:
@@ -834,6 +832,7 @@ class PicoKeyAdapter extends KeyAdapter {
          else if (f instanceof JTextComponent)
             ev.consume();
       }
+      Home.flush();
    }
 
    /* Send keystroke */
@@ -910,6 +909,7 @@ class PictField extends JPanel {
             if (Home.Rdy) {
                Home.msg1("at>");
                Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix, ev.getModifiers(), ev.getX(), ev.getY());
+               Home.flush();
             }
             ev.consume();
          }
@@ -920,6 +920,7 @@ class PictField extends JPanel {
             if (Home.Rdy) {
                Home.msg1("at>");
                Home.msg5("drg>", Ix, ev.getModifiers(), ev.getX(), ev.getY());
+               Home.flush();
             }
             ev.consume();
          }

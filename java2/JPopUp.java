@@ -1,4 +1,4 @@
-// 04aug05abu
+// 05aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.awt.*;
@@ -27,5 +27,6 @@ public class JPopUp implements ActionListener {
 
    public void actionPerformed(ActionEvent ev) {
       Parent.msg2("cmd>", Integer.parseInt(ev.getActionCommand()));
+      Parent.flush();
    }
 }

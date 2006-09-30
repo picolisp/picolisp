@@ -1,4 +1,4 @@
-# 01jun06abu
+# 29sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Agent *Host *Port *Port1 *Sock *MPartLim *MPartEnd *ContLen
@@ -13,11 +13,12 @@
    (`(chop "au") "audio/basic" 86400)
    (`(chop "wav") "audio/x-wav" 86400)
    (`(chop "mp3") "audio/x-mpeg" 86400)
-   (`(chop "css") "text/css" 86400)
    (`(chop "gif") "image/gif" 86400)
    (`(chop "png") "image/png" 86400)
    (`(chop "jpg") "image/jpeg" 86400)
    (`(chop "txt") "text/octet-stream" 1 T)
+   (`(chop "css") "text/css" 86400)
+   (`(chop "js") "application/x-javascript" 86400)
    (`(chop "ps") "application/postscript" 1)
    (`(chop "pdf") "application/pdf" 1)
    (`(chop "zip") "application/zip" 1)
@@ -31,20 +32,19 @@
 
 
 ### HTTP-Client ###
-(de client ("Host" "Port" "Name" . "Prg")
-   (when (connect "Host" "Port")
-      (let "H" @
-         (prog1
-            (out "H"
-               (prinl "GET /" "Name" " HTTP/1.1^M")
-               (prinl "Connection: close^M")
-               (prinl "User-Agent: PicoLisp^M")
-               (prinl "Host: " "Host" "^M")
-               (prinl "Accept-Charset: utf-8^M")
-               (prinl "^M")
-               (flush)
-               (in "H" (run "Prg")) )
-            (close "H") ) ) ) )
+(de client (Host Port Nm . Prg)
+   (let? Sock (connect Host Port)
+      (prog1
+         (out Sock
+            (prinl "GET /" Nm " HTTP/1.1^M")
+            (prinl "Connection: close^M")
+            (prinl "User-Agent: PicoLisp^M")
+            (prinl "Host: " Host "^M")
+            (prinl "Accept-Charset: utf-8^M")
+            (prinl "^M")
+            (flush)
+            (in Sock (run Prg 1)) )
+         (close Sock) ) ) )
 
 # Local Password
 (de pw ()
@@ -114,7 +114,11 @@
                   (on *Post)
                   (off *MPartLim *MPartEnd)
                   (_htHead)
-                  (and *MPartLim *MPartEnd (_htMultipart)) )
+                  (if (and *MPartLim *MPartEnd)
+                     (_htMultipart)
+                     (for L (split (line) '&)
+                        (when (cdr (setq L (split L "=")))
+                           (_htSet (car L) (ht:Pack (cadr L))) ) ) ) )
                ((and
                      (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
                      (member @U

@@ -1,4 +1,4 @@
-// 19apr04abu
+// 05aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -27,5 +27,6 @@ public class Popup implements ActionListener {
 
    public void actionPerformed(ActionEvent ev) {
       Parent.msg2("cmd>", Integer.parseInt(ev.getActionCommand()));
+      Parent.flush();
    }
 }

@@ -1,4 +1,4 @@
-# 19jun06abu
+# 04sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -62,13 +62,13 @@
 
 (de pilog ("CL" . "Prg")
    (for ("Q" (goal "CL") (prove "Q"))
-      (bind @ "Prg") ) )
+      (bind @ (run "Prg")) ) )
 
 (de solve ("CL" . "Prg")
    (make
       (if "Prg"
          (for ("Q" (goal "CL") (prove "Q"))
-            (link (bind @ "Prg")) )
+            (link (bind @ (run "Prg"))) )
          (for ("Q" (goal "CL") (prove "Q"))
             (link @) ) ) ) )
 

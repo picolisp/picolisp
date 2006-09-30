@@ -1,9 +1,10 @@
-# 17dec04abu
+# 12sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Boss
 
 (unless *Boss
+   (call 'mkdir "-p" "fifo")
    (call 'mkfifo (setq *Boss (pack "fifo/boss" *Pid)))
    (hear (open *Boss)) )
 

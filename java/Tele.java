@@ -1,4 +1,4 @@
-// 10jan06abu
+// 05aug06abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -62,10 +62,9 @@ public class Tele {
             sock = new Socket(host, port);
          else
             sock = Server.accept();
-         sock.setTcpNoDelay(true);
 
          NetIn = sock.getInputStream();
-         NetOut = sock.getOutputStream();
+         NetOut = new BufferedOutputStream(sock.getOutputStream());
 
          if (host != null) {
             NetOut.write(Pw);
@@ -84,7 +83,7 @@ public class Tele {
       try {
          if (dev.startsWith("/dev/")) {
             DevIn = new FileInputStream(dev);
-            DevOut = new FileOutputStream(dev);
+            DevOut = new BufferedOutputStream(new FileOutputStream(dev));
          }
          else {
             Device = (CommPortIdentifier.getPortIdentifier(dev)).open("Tele", 2000);

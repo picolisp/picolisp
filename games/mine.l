@@ -1,7 +1,7 @@
-# 11feb06abu
+# 23sep06abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/xterm.l")
+(load "lib/term.l")
 
 # Spielfeldbelegung:
 # NIL    Verdeckt: Leeres Feld

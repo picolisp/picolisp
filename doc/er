@@ -5,40 +5,40 @@
    @---           Konkrete Mehrfach-Relation: +List, +Bag
    O---           Virtuelle Mehrfach-Relation: +Ref
 
-
     Hook
      |
    --*--+
-      \ |
-        @--       Hook-Relation
+        |
+        *-- Hook:nr     Hook-Relation
+        |
 
 
    Beispiele:
 
       |
-      *-- nr         +Number
+      *-- nr            +Number
       |
 
       |     |
-      *-----+        +Link
+      *-----+           +Link
       |     |
 
       |     |
-      @-----+        +List +Link
+      @-----+           +List +Link
       |     |
 
       |     |
-      *-----O        +Ref +Link
+      *-----O           +Ref +Link
       |     |
 
       |     |
-      @-----O        +List +Ref +Link
+      @-----O           +List +Ref +Link
       |     |
 
       |     |
-      *-----*        +Joint   <->   +Joint
+      *-----*           +Joint   <->   +Joint
       |     |
 
       |     |
-      @-----*        +List +Joint   <->   +Joint
+      @-----*           +List +Joint   <->   +Joint
       |     |

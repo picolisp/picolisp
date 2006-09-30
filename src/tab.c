@@ -1,4 +1,4 @@
-/* 02jun06abu
+/* 31aug06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -103,6 +103,7 @@ static symInit Symbols[] = {
    {doFin, "fin"},
    {doFinally, "finally"},
    {doFind, "find"},
+   {doFish, "fish"},
    {doFlgQ, "flg?"},
    {doFlip, "flip"},
    {doFlush, "flush"},
@@ -110,6 +111,7 @@ static symInit Symbols[] = {
    {doFor, "for"},
    {doFork, "fork"},
    {doFormat, "format"},
+   {doFree, "free"},
    {doFrom, "from"},
    {doFunQ, "fun?"},
    {doGc, "gc"},
@@ -184,6 +186,7 @@ static symInit Symbols[] = {
    {doMmeq, "mmeq"},
    {doMul, "*"},
    {doMulDiv, "*/"},
+   {doNagle, "nagle"},
    {doName, "name"},
    {doNand, "nand"},
    {doNEq, "n=="},
@@ -295,6 +298,7 @@ static symInit Symbols[] = {
    {doTrim, "trim"},
    {doTry, "try"},
    {doType, "type"},
+   {doUdp, "udp"},
    {doUnify, "unify"},
    {doUnless, "unless"},
    {doUntil, "until"},
@@ -302,6 +306,7 @@ static symInit Symbols[] = {
    {doUppQ, "upp?"},
    {doUppc, "uppc"},
    {doUse, "use"},
+   {doUsec, "usec"},
    {doVal, "val"},
    {doWait, "wait"},
    {doWhen, "when"},
@@ -345,6 +350,7 @@ void initSymbols(void) {
    T     = initSym(Nil, "T"),  val(T) = T;  // Last protected symbol
 
    Dbg   = initSym(T, "*Dbg");
+   PPid  = initSym(Nil, "*PPid");
    Pid   = initSym(boxCnt(getpid()), "*Pid");
    Scl   = initSym(Zero, "*Scl");
    Class = initSym(Nil, "*Class");

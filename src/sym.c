@@ -1,4 +1,4 @@
-/* 28may06abu
+/* 13jul06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -903,10 +903,8 @@ any doPut(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    x = cdr(x),  Push(c2, EVAL(car(x)));
    while (isCell(cdr(x = cdr(x)))) {
-      if (isCell(data(c1))) {
-         NeedNum(ex,data(c2));
+      if (isCell(data(c1)))
          data(c1) = getn(data(c2), data(c1));
-      }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
@@ -934,10 +932,8 @@ any doGet(any ex) {
    Save(c1);
    do {
       y = EVAL(car(x));
-      if (isCell(data(c1))) {
-         NeedNum(ex,y);
+      if (isCell(data(c1)))
          data(c1) = getn(y, data(c1));
-      }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
@@ -955,10 +951,8 @@ any doProp(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    x = cdr(x),  y = EVAL(car(x));
    while (isCell(x = cdr(x))) {
-      if (isCell(data(c1))) {
-         NeedNum(ex,y);
+      if (isCell(data(c1)))
          data(c1) = getn(y, data(c1));
-      }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
@@ -981,10 +975,8 @@ any doSetCol(any ex) {
    if (z = car(x),  isCell(cdr(x = cdr(x)))) {
       y = isNum(z) && !unDig(z)? val(y) : get(y,z);
       while (z = car(x),  isCell(cdr(x = cdr(x)))) {
-         if (isCell(y)) {
-            NeedNum(ex,z);
+         if (isCell(y))
             y = getn(z,y);
-         }
          else {
             NeedSym(ex,y);
             Fetch(ex,y);
@@ -1009,10 +1001,8 @@ any doCol(any ex) {
    Fetch(ex,y);
    y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
    while (isCell(x = cdr(x))) {
-      if (isCell(y)) {
-         NeedNum(ex,car(x));
+      if (isCell(y))
          y = getn(car(x), y);
-      }
       else {
          NeedSym(ex,y);
          Fetch(ex,y);
@@ -1032,10 +1022,8 @@ any doPropCol(any ex) {
       return prop(y, car(x));
    y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
    while (isCell(cdr(x = cdr(x)))) {
-      if (isCell(y)) {
-         NeedNum(ex,car(x));
+      if (isCell(y))
          y = getn(car(x), y);
-      }
       else {
          NeedSym(ex,y);
          Fetch(ex,y);
@@ -1053,10 +1041,8 @@ any doPutl(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    x = cdr(x),  Push(c2, EVAL(car(x)));
    while (isCell(x = cdr(x))) {
-      if (isCell(data(c1))) {
-         NeedNum(ex,data(c2));
+      if (isCell(data(c1)))
          data(c1) = getn(data(c2), data(c1));
-      }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
@@ -1088,10 +1074,8 @@ any doGetl(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    while (isCell(x = cdr(x))) {
       y = EVAL(car(x));
-      if (isCell(data(c1))) {
-         NeedNum(ex,y);
+      if (isCell(data(c1)))
          data(c1) = getn(y, data(c1));
-      }
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));

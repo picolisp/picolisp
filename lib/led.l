@@ -1,4 +1,4 @@
-# 17jan06abu
+# 22sep06abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -24,8 +24,8 @@
    "HistMax"   4000     # History limit
 
    "History"            # History of input lines
-   (ctl "+@.picoHistory"
-      (in "@.picoHistory"
+   (in "+@.picoHistory"
+      (ctl NIL
          (make (until (eof) (link (line)))) ) )
    "Hist0"     "History" )
 
@@ -377,8 +377,8 @@
       (pack "Line") ) )
 
 (de saveHistory ()
-   (ctl "@.picoHistory"
-      (in "@.picoHistory"
+   (in "+@.picoHistory" 
+      (ctl T
          (let (Old (make (until (eof) (link (line))))  New "History"  N "HistMax")
             (out "@.picoHistory"
                (while (and New (n== New "Hist0"))

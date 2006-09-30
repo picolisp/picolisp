@@ -1,4 +1,4 @@
-/* 09jun06abu
+/* 03sep06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -21,7 +21,15 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
+#ifndef NOWAIT
+#include <sys/wait.h> // tcc doen't like it
+#endif
+
+#ifndef __CYGWIN__
+#define MAIN main
+#else
+#define MAIN main2
+#endif
 
 #ifndef __linux__
 #define fflush_unlocked fflush
@@ -197,11 +205,13 @@ extern stkEnv Env;
 extern catchFrame *CatchPtr;
 extern struct termios *Termio;
 extern FILE *InFile, *OutFile;
+extern int (*getBin)(int);
+extern void (*putBin)(int);
 extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+extern any Dbg, PPid, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -213,6 +223,8 @@ void bigAdd(any,any);
 int bigCompare(any,any);
 any bigCopy(any);
 void bigSub(any,any);
+void binPrint(any);
+any binRead(void);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
 void brkLoad(any);
@@ -411,6 +423,7 @@ any doFilter(any);
 any doFin(any);
 any doFinally(any);
 any doFind(any);
+any doFish(any);
 any doFlgQ(any);
 any doFlip(any);
 any doFlush(any);
@@ -418,6 +431,7 @@ any doFold(any);
 any doFor(any);
 any doFork(any);
 any doFormat(any);
+any doFree(any);
 any doFrom(any);
 any doFunQ(any);
 any doGc(any);
@@ -493,6 +507,7 @@ any doMix(any);
 any doMmeq(any);
 any doMul(any);
 any doMulDiv(any);
+any doNagle(any);
 any doName(any);
 any doNand(any);
 any doNEq(any);
@@ -605,6 +620,7 @@ any doTrace(any);
 any doTrim(any);
 any doTry(any);
 any doType(any);
+any doUdp(any);
 any doUnify(any);
 any doUnless(any);
 any doUntil(any);
@@ -612,6 +628,7 @@ any doUp(any);
 any doUppQ(any);
 any doUppc(any);
 any doUse(any);
+any doUsec(any);
 any doVal(any);
 any doWait(any);
 any doWhen(any);
@@ -645,18 +662,25 @@ static inline any nth(int n, any x) {
 }
 
 static inline any getn(any x, any y) {
-   long n = unDig(x) / 2;
+   if (isNum(x)) {
+      long n = unDig(x) / 2;
 
-   if (isNeg(x)) {
+      if (isNeg(x)) {
+         while (--n)
+            y = cdr(y);
+         return cdr(y);
+      }
+      if (n == 0)
+         return Nil;
       while (--n)
          y = cdr(y);
-      return cdr(y);
+      return car(y);
    }
-   if (n == 0)
-      return Nil;
-   while (--n)
-      y = cdr(y);
-   return car(y);
+   do
+      if (isCell(car(y)) && x == caar(y))
+         return cdar(y);
+   while (isCell(y = cdr(y)));
+   return Nil;
 }
 
 /* List length calculation */

@@ -1,8 +1,9 @@
 #!/bin/bash
-# 11jan05abu
+# 12sep06abu
 # Use: java/vm <classPath>
 
 trap 'rm -f fifo/java' 0 1 2 3 15
+mkdir -p fifo
 mkfifo fifo/java
 
 CLASSPATH="$1"

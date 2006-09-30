@@ -1,3 +1,20 @@
+* XXdec06 picoLisp-2.2.5
+
+* 30sep06 picoLisp-2.2.4
+   Cygwin/Win32 port (Doug Snead)
+   Changed 'bind' argument
+   'fish' function
+   'rd' optional 'sym' argument
+   Bug in 'lock' (unlock all)
+   'free' function
+   Extended 'seq' to return first symbol
+   Simple 'udp' function
+   'usec' function
+   Bug in 'isLife()'
+   '*PPid' global variable
+   'nagle' network function
+   Extended 'get'-syntax to 'asoq'
+
 * 30jun06 picoLisp-2.2.3
    "redefined" messages go to stderr
    Bug in 'argv'
@@ -16,7 +33,7 @@
    Changed 'close' return value
 
 * 29mar06 picoLisp-2.2.2
-   Mac OS X (Darwin) port
+   Mac OS X (Darwin) port (Rick Hanson)
    'pwd' function
    'if2' flow function
    'rpc' function
@@ -80,6 +97,7 @@
    Bug in 'rel>' for '+Hook'
 
 * 30mar05 picoLisp-2.1.1
+   'protect' function
    DB journaling
    'chess' demo
    Predicates return their argument instead of 'T', if possible

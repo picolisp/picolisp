@@ -1,7 +1,13 @@
-# 10apr06abu
+# 26sep06abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
+(de doc (Sym Browser)
+   (call (or Browser 'w3m)
+      (pack
+         (path "@doc/ref.html#")
+         (replace (chop Sym) '? 'Q) ) ) )
+
 (de more ("M" "Foo")
    (let *Dbg NIL
       (default "Foo" print)
@@ -150,7 +156,7 @@
             (_dbg Lst)
             (for L (cdr Lst)
                (map _dbg (cdr L)) ) )
-         (cond
+         ((cond nond)
             (for L Lst
                (map _dbg L) ) )
          (quote

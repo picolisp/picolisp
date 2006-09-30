@@ -1,4 +1,4 @@
-# 14jun06abu
+# 17aug06abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -23,9 +23,6 @@
          (inc 'N)
          (car L) )
       Lst ) )
-
-(de db1 (N)
-   (ext? (id (or N 1) 1)) )
 
 (de db: Typ
    (or (meta Typ 'dbf 1) 1) )

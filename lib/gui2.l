@@ -1,4 +1,4 @@
-# 28jun06abu
+# 29sep06abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -46,7 +46,9 @@
                   (list (put @ 'app S) (list 'ev> (lit @) S)) )
                (out S (pr (car *InND))) ) ) )
       (task -40000 80000
-         (and *Top (ping> *Top)) ) )
+         (with *Top
+            (when (: app)
+               (out @ (pr 'ping)) ) ) ) )
    (prin "<APPLET CODE=\"" A ".class\" ARCHIVE=\"" *SesId (pop 'Lst))
    (while Lst
       (prin ","  *SesId (pop 'Lst)) )
@@ -79,10 +81,6 @@
             ((= meth (val S))
                (send S (setq *Top This)) )
             (T (msg S " -> " *Pid)) ) ) ) )
-
-(dm ping> ()
-   (when (: app)
-      (out @ (pr 'ping)) ) )
 
 (dm init> ())
 
@@ -2142,7 +2140,7 @@
             '(@Var @Cls @Hook @Key) ) ) ) )
 
 (de choButton (Exe)
-   (gui 'hot '(+Rid +Button) "" ,"Choose/Create (F4)" Exe) )
+   (gui 'hot '(+Rid +Button) "" ,"Choose/New (F4)" Exe) )
 
 (de cloneButton ()
    (gui '(+Rid +Button) "" ,"New/Copy"
@@ -2206,7 +2204,7 @@
             (----)
             (row
                (hotButton ,"Choose")
-               (gui '(+Button) "" ,"Create"
+               (gui '(+Button) "" ,"New"
                   '(with (: home fields 1)
                      (if (meta (: objTyp) (: objVar) 'hook)
                         (newUrl (: objTyp) @ (eval (: objHook)))

@@ -1,4 +1,4 @@
-// 05aug05abu
+// 07sep06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -78,7 +78,7 @@ public class Front extends Pico {
    // Command dispatcher
    void cmd(String s) {
       if (s.equals("ack"))
-         {Req = false; relay();}
+         {Req = false; relay(); flush();}
       else if (s.equals("able"))
          able(Fields[getNum()-1], getStr().length() != 0);
       else if (s.equals("focus"))
@@ -235,6 +235,7 @@ public class Front extends Pico {
                         change();
                         Req = true;
                         msg2("act>", Integer.parseInt(ev.getActionCommand()));
+                        flush();
                      }
                   }
                } );
@@ -308,6 +309,7 @@ public class Front extends Pico {
          Dialog.show();
       }
       Rdy = true;
+      flush();
    }
 
    // Add component to container
@@ -382,8 +384,10 @@ public class Front extends Pico {
          if (o instanceof String)
             ((TextComponent)f).select(i+1, i+txt.length());
          Dirty = fld;
-         if (Sync.contains(Fields[fld-1]))
+         if (Sync.contains(Fields[fld-1])) {
             change();
+            flush();
+         }
       }
    }
 
@@ -574,12 +578,14 @@ class PicoFocusListener implements FocusListener {
       if (Home.Rdy  &&  Home.Focus != 0  &&  Home.Focus != Ix) {
          Home.msg2("nxt>", Home.Focus = Ix);
          Home.relay();
+         Home.flush();
       }
    }
 
    public void focusLost(FocusEvent ev) {
       Home.tip();
       Home.change();
+      Home.flush();
    }
 }
 
@@ -594,6 +600,7 @@ class PicoAdjustmentListener implements AdjustmentListener {
          Home.change();
          Home.msg3("scr>", Ix, Val = ev.getValue());
          Home.relay();
+         Home.flush();
       }
    }
 }
@@ -614,6 +621,7 @@ class PicoMouseAdapter extends MouseAdapter {
             Home.change();
             Home.Req = true;
             Home.msg2("act>", Ix);
+            Home.flush();
          }
          ev.consume();
       }
@@ -636,6 +644,7 @@ class PicoTipAdapter extends MouseAdapter {
                   return;
             }
             Home.msg2("tip>", Ix);
+            Home.flush();
          }
       } ).start();
    }
@@ -650,14 +659,12 @@ class PicoTipAdapter extends MouseAdapter {
 class PicoKeyAdapter extends KeyAdapter {
    Front Home;
    int Ix;
-   static long Tim;
    static String Clip;
 
    PicoKeyAdapter(Front h, int i) {Home = h; Ix = i+1;}
 
    public void keyTyped(KeyEvent ev) {
       char c;
-      long t;
       Component f;
 
       if (!Home.Rdy)
@@ -679,18 +686,11 @@ class PicoKeyAdapter extends KeyAdapter {
                !(f instanceof TextField  && ((TextField)f).getEchoChar()=='*') ) {
          if (Home.Sync.contains(f))
             Home.change();
-
-         t = System.currentTimeMillis();
-         if (Tim > t) {
-            Pico.sleep(Tim - t);
-            t = Tim;
-         }
-         Tim = t + 100;
-
          char[] chr = {c};
          key(f, new String(chr));
          ev.consume();
       }
+      Home.flush();
    }
 
    public void keyPressed(KeyEvent ev) {
@@ -844,17 +844,14 @@ class PicoKeyAdapter extends KeyAdapter {
       case KeyEvent.VK_INSERT:
          if (Home.Skip.containsKey(f))
             Home.getToolkit().beep();
-         else {
-            if ((m & InputEvent.CTRL_MASK) != 0) {
-               Home.change();
-               Home.msg1("INS>");
-               Home.relay();
-            }
-            else if (Clip != null) {
-               for (i = 1;  i <= Clip.length();  ++i)
-                  key(f, Clip.substring(i-1,i));
-            }
+         else if ((m & InputEvent.CTRL_MASK) != 0) {
+            Home.change();
+            Home.msg1("INS>");
+            Home.relay();
          }
+         else if (Clip != null)
+            for (i = 1;  i <= Clip.length();  ++i)
+               key(f, Clip.substring(i-1,i));
          ev.consume();
          break;
       default:
@@ -882,6 +879,7 @@ class PicoKeyAdapter extends KeyAdapter {
          else if (f instanceof TextComponent)
             ev.consume();
       }
+      Home.flush();
    }
 
    /* Send keystroke */
@@ -1041,8 +1039,9 @@ class GField extends Panel implements AdjustmentListener  {
                Home.msg1("at>");
                Home.msg5(ev.getClickCount()==2? "dbl>" : "clk>", Ix+1,
                      ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
-               ev.consume();
+               Home.flush();
             }
+            ev.consume();
          }
       } );
 
@@ -1052,8 +1051,9 @@ class GField extends Panel implements AdjustmentListener  {
                Home.msg1("at>");
                Home.msg5("drg>", Ix+1,
                   ev.getModifiers(), ev.getX()-OrgX, ev.getY()-OrgY );
-               ev.consume();
+               Home.flush();
             }
+            ev.consume();
          }
       } );
    }

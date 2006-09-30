@@ -1,4 +1,4 @@
-# 24sep05abu
+# 12sep06abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -51,10 +51,10 @@
    (commit) )
 
 (de go ()
-   (do 6
+   (do 12
       (let Pids
          (make
-            (do 20
+            (do 40
                (rand)
                (if (fork)
                   (link @)
@@ -67,3 +67,5 @@
    (pool "db/test2")
    (in "jnl" (journal))
    (call 'cmp "db/test" "db/test2") )
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

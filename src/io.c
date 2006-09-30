@@ -1,8 +1,14 @@
-/* 12jun06abu
+/* 22sep06abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
+
+#ifdef __CYGWIN__
+#include <sys/file.h>
+#define fcntl(fd,cmd,fl) 0
+#define fileno_unlocked(f) fileno(f)
+#endif
 
 static any read0(bool);
 
@@ -15,8 +21,6 @@ static int StrI, BinIx, BinCnt;
 static cell StrCell, *StrP;
 static bool Sync;
 static byte *PipeBuf, *PipePtr;
-static int (*getBin)(int);
-static void (*putBin)(int);
 static void (*PutSave)(int);
 static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
@@ -37,7 +41,7 @@ static void lockFile(int fd, int cmd, int typ) {
    fl.l_whence = SEEK_SET;
    fl.l_start = 0;
    fl.l_len = 0;
-   while (fcntl(fd, cmd, &fl) < 0)
+   while (fcntl(fd, cmd, &fl) < 0  &&  typ != F_UNLCK)
       if (errno != EINTR)
          lockErr();
 }
@@ -122,7 +126,7 @@ static any rdNum(int cnt) {
    return Pop(c1);
 }
 
-static any binRead(void) {
+any binRead(void) {
    int c;
    any x, y, *h;
    cell c1;
@@ -227,7 +231,7 @@ static void prNum(int t, any x) {
    }
 }
 
-static void binPrint(any x) {
+void binPrint(any x) {
    any y;
 
    if (isNum(x))
@@ -457,6 +461,17 @@ void charSym(int c, int *i, any *p) {
    }
 }
 
+static int currFd(any ex, char *p) {
+   if (!Env.inFiles && !Env.outFiles)
+      err(ex, NULL, "No current fd");
+   if (!Env.inFiles)
+      return fileno_unlocked(OutFile);
+   if (!Env.outFiles)
+      return fileno_unlocked(InFile);
+   return labs((char*)Env.outFiles - p) > labs((char*)Env.inFiles - p)?
+         fileno_unlocked(InFile) : fileno_unlocked(OutFile);
+}
+
 void rdOpen(any ex, any x, inFrame *f) {
    if (isNum(x)) {
       int n = (int)unBox(x);
@@ -488,7 +503,11 @@ void rdOpen(any ex, any x, inFrame *f) {
       char nm[pathSize(x)];
 
       pathString(x,nm);
-      if (!(f->fp = fopen(nm,"r")))
+      if (nm[0] == '+') {
+         if (!(f->fp = fopen(nm+1, "a+")))
+            openErr(ex, nm);
+      }
+      else if (!(f->fp = fopen(nm, "r")))
          openErr(ex, nm);
       f->pid = 0;
    }
@@ -595,7 +614,15 @@ void wrOpen(any ex, any x, outFrame *f) {
 
 void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
-   {
+   if (isNil(x)) {
+      f->fd = -1;
+      lockFile(currFd(ex, (char*)f), F_SETLKW, F_RDLCK);
+   }
+   else if (x == T) {
+      f->fd = -1;
+      lockFile(currFd(ex, (char*)f), F_SETLKW, F_WRLCK);
+   }
+   else {
       char nm[pathSize(x)];
 
       pathString(x,nm);
@@ -682,7 +709,10 @@ void popOutFiles(void) {
 }
 
 void popCtlFiles(void) {
-   close(Env.ctlFiles->fd);
+   if (Env.ctlFiles->fd >= 0)
+      close(Env.ctlFiles->fd);
+   else
+      lockFile(currFd(NULL, (char*)Env.ctlFiles), F_SETLK, F_UNLCK);
    Env.ctlFiles = Env.ctlFiles->link;
 }
 
@@ -919,9 +949,9 @@ static any read0(bool top) {
    y = Pop(c1);
    if (unDig(y) == ('L'<<16 | 'I'<<8 | 'N'))
       return Nil;
-   if (x = findHash(y, h = Intern + hash(y)))
-      return x;
    if (x = symToNum(y, (int)unDig(val(Scl)) / 2, '.', 0))
+      return x;
+   if (x = findHash(y, h = Intern + hash(y)))
       return x;
    if (x = anonymous(y))
       return x;
@@ -1459,7 +1489,7 @@ any doLines(any ex) {
          char nm[pathSize(y)];
 
          pathString(y, nm);
-         if (!(fp = fopen(nm,"r")))
+         if (!(fp = fopen(nm, "r")))
             openErr(ex, nm);
          while ((c = getc_unlocked(fp)) >= 0)
             if (c == '\n')
@@ -1998,7 +2028,7 @@ any doRewind(any ex __attribute__((unused))) {
    return fseek(OutFile, 0L, SEEK_SET) || ftruncate(fileno_unlocked(OutFile),0)? Nil : T;
 }
 
-// (rd) -> any
+// (rd ['sym]) -> any
 // (rd 'cnt) -> num | NIL
 any doRd(any x) {
    long cnt;
@@ -2007,7 +2037,7 @@ any doRd(any x) {
    x = cdr(x);
    if (!isNum(x = EVAL(car(x)))) {
       BinIx = BinCnt = 0,  getBin = getBinary;
-      return binRead() ?: Nil;
+      return binRead() ?: x;
    }
    if ((cnt = unBox(x)) < 0) {
       byte buf[cnt = -cnt];
@@ -2100,7 +2130,7 @@ static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
 static FILE *Journal;
 static adr BlkIndex, BlkLink;
 static word2 *Marks;
-static byte *Ptr, **Mark;
+static byte *Locks, *Ptr, **Mark;
 static byte *Block, *IniBlk;  // 01 00 00 00 00 00 NIL 0
 
 static adr getAdr(byte *p) {
@@ -2164,34 +2194,40 @@ static word2 blk64(any x) {
 }
 
 /* DB Record Locking */
-static void dbLock(int cmd, int typ, off_t len) {
+static void dbLock(int cmd, int typ, int f, off_t len) {
    struct flock fl;
 
    fl.l_type = typ;
    fl.l_whence = SEEK_SET;
    fl.l_start = 0;
    fl.l_len = len;
-   while (fcntl(BlkFile[0], cmd, &fl) < 0)
+   while (fcntl(BlkFile[f], cmd, &fl) < 0  &&  typ != F_UNLCK)
       if (errno != EINTR)
          lockErr();
 }
 
 static inline void rdLock(void) {
    if (val(Solo) != T)
-      dbLock(F_SETLKW, F_RDLCK, 1);
+      dbLock(F_SETLKW, F_RDLCK, 0, 1);
 }
 
 
 static inline void wrLock(void) {
    if (val(Solo) != T)
-      dbLock(F_SETLKW, F_WRLCK, 1);
+      dbLock(F_SETLKW, F_WRLCK, 0, 1);
 }
 
 static inline void rwUnlock(off_t len) {
    if (val(Solo) != T) {
-      if (len == 0)
+      if (len == 0) {
+         int f;
+
+         for (f = 1; f < Files; ++f)
+            if (Locks[f])
+               dbLock(F_SETLK, F_UNLCK, f, 0),  Locks[f] = 0;
          val(Solo) = Zero;
-      dbLock(F_SETLK, F_UNLCK, len);
+      }
+      dbLock(F_SETLK, F_UNLCK, 0, len);
    }
 }
 
@@ -2204,6 +2240,7 @@ static pid_t tryLock(off_t n, off_t len) {
       fl.l_start = n;
       fl.l_len = len;
       if (fcntl(BlkFile[F], F_SETLK, &fl) >= 0) {
+         Locks[F] = 1;
          if (!n)
             val(Solo) = T;
          else if (val(Solo) != T)
@@ -2290,11 +2327,16 @@ bool isLife(any x) {
    byte buf[2*BLK];
 
    if ((n = blk64(name(x))*BLKSIZE)  &&  F < Files) {
-      blkPeek(0, buf, 2*BLK);  // Get Next
-      if (n < getAdr(buf+BLK)) {
-         blkPeek(n << BlkShift[F], buf, BLK);
-         if ((getAdr(buf) & TAGMASK) == 1)
-            return YES;
+      for (x = tail(x); !isSym(x); x = cdr(cellPtr(x)));
+      if (x == At || x == At2)
+         return YES;
+      if (x != At3) {
+         blkPeek(0, buf, 2*BLK);  // Get Next
+         if (n < getAdr(buf+BLK)) {
+            blkPeek(n << BlkShift[F], buf, BLK);
+            if ((getAdr(buf) & TAGMASK) == 1)
+               return YES;
+         }
       }
    }
    return NO;
@@ -2373,6 +2415,8 @@ any doPool(any ex) {
       BlkShift = alloc(BlkShift, Files * sizeof(int));
       BlkFile = alloc(BlkFile, Files * sizeof(int));
       BlkSize = alloc(BlkSize, Files * sizeof(int));
+      Locks = alloc(Locks, Files);
+      memset(Locks, 0, Files);
       MaxBlkSize = 0;
       for (F = 0; F < Files; ++F) {
          char nm[pathSize(db) + 8];
@@ -2483,91 +2527,51 @@ any doId(any ex) {
    return Pop(c1);
 }
 
-// (seq 'sym1 ['sym2 ['num]]) -> sym | num | NIL
+// (seq 'cnt|sym1 ['sym2 ['num]]) -> sym | num | NIL
 any doSeq(any ex) {
    adr n, n2, free, p, next;
    any x, y;
    byte buf[2*BLK];
 
-   x = cdr(ex),  y = EVAL(car(x));
-   NeedExt(ex,y);
-   if (n = blk64(name(y))*BLKSIZE) {
-      if (x = cdr(x),  isExt(y = EVAL(car(x)))) {
-         n2 = blk64(name(y))*BLKSIZE;
-         x = cdr(x),  free = blk64(EVAL(car(x)));
-         while ((n += BLKSIZE) < n2) {
-            if (free) {
-               setAdr(n, buf),  blkPoke(free << BlkShift[F], buf, BLK);
-               setAdr(0, buf),  blkPoke(n << BlkShift[F], buf, BLK);  // Set new Free tail
-            }
-            else {
-               blkPeek(0, buf, BLK); // Get Free
-               blkPoke(n << BlkShift[F], buf, BLK); // Write Free|0
-               setAdr(n, buf),  blkPoke(0, buf, BLK);  // Set new Free
-            }
-            free = n;
-         }
-         setAdr(1, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
-         blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
-         if (n >= next)
-            setAdr(n+BLKSIZE, buf+BLK),  blkPoke(0, buf, 2*BLK);  // Set new Next
-         return new64(free,Nil);
-      }
-      blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
-      while ((n += BLKSIZE) < next) {
-         blkPeek(n << BlkShift[F], buf, BLK),  p = getAdr(buf);
-         if ((p & TAGMASK) == 1)
-            return mkId(n/BLKSIZE);
-      }
-   }
-   return Nil;
-}
-
-// (mark 'sym|0 [NIL | T | 0]) -> flg
-any doMark(any ex) {
-   any x, y;
-   word2 n, m;
-   int b;
-   byte *p, buf[2*BLK];
-
    x = cdr(ex);
    if (isNum(y = EVAL(car(x)))) {
-      if (Marks) {
-         for (F = 0; F < Files; ++F)
-            free(Mark[F]);
-         free(Mark), Mark = NULL, free(Marks), Marks = NULL;
+      if ((F = (int)unDig(y)/2 - 1) >= Files)
+         dbfErr();
+      n = 0;
+   }
+   else {
+      NeedExt(ex,y);
+      if ((n = blk64(name(y))*BLKSIZE) == 0)
+         return Nil;
+   }
+   if (x = cdr(x),  isExt(y = EVAL(car(x)))) {
+      n2 = blk64(name(y))*BLKSIZE;
+      x = cdr(x),  free = blk64(EVAL(car(x)));
+      while ((n += BLKSIZE) < n2) {
+         if (free) {
+            setAdr(n, buf),  blkPoke(free << BlkShift[F], buf, BLK);
+            setAdr(0, buf),  blkPoke(n << BlkShift[F], buf, BLK);  // Set new Free tail
+         }
+         else {
+            blkPeek(0, buf, BLK); // Get Free
+            blkPoke(n << BlkShift[F], buf, BLK); // Write Free|0
+            setAdr(n, buf),  blkPoke(0, buf, BLK);  // Set new Free
+         }
+         free = n;
       }
-      return Nil;
+      setAdr(1, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
+      blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
+      if (n >= next)
+         setAdr(n+BLKSIZE, buf+BLK),  blkPoke(0, buf, 2*BLK);  // Set new Next
+      return new64(free,Nil);
    }
-   NeedSym(ex,y);
-   if (!(n = blk64(name(y))))
-      return Nil;
-   if (!Marks) {
-      Marks = alloc(Marks, Files * sizeof(word2));
-      memset(Marks, 0, Files * sizeof(word2));
-      Mark = alloc(Mark, Files * sizeof(byte*));
-      memset(Mark, 0, Files * sizeof(byte*));
+   blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
+   while ((n += BLKSIZE) < next) {
+      blkPeek(n << BlkShift[F], buf, BLK),  p = getAdr(buf);
+      if ((p & TAGMASK) == 1)
+         return mkId(n/BLKSIZE);
    }
-   b = 1 << (n & 7);
-   if ((n >>= 3) >= Marks[F]) {
-      m = Marks[F];
-      blkPeek(0, buf, 2*BLK),  Marks[F] = getAdr(buf+BLK);  // Get Next
-      Marks[F] = (Marks[F]/BLKSIZE + 7 >> 3);
-      Mark[F] = alloc(Mark[F], Marks[F]);
-      memset(Mark[F] + m, 0, Marks[F] - m);
-      if (n >= Marks[F])
-         err(ex, y, "Bad mark");
-   }
-   p = Mark[F] + n;
-   x = cdr(x);
-   y = *p & b? T : Nil;  // Old value
-   if (!isNil(x = EVAL(car(x)))) {
-      if (isNum(x))
-         *p &= ~b;  // Clear mark
-      else
-         *p |= b;  // Set mark
-   }
-   return y;
+   return Nil;
 }
 
 // (lieu 'any) -> sym | NIL
@@ -2852,7 +2856,69 @@ any doRollback(any x) {
    return T;
 }
 
-// (dbck ['num] 'flg) -> any
+// (mark 'sym|0 [NIL | T | 0]) -> flg
+any doMark(any ex) {
+   any x, y;
+   word2 n, m;
+   int b;
+   byte *p;
+
+   x = cdr(ex);
+   if (isNum(y = EVAL(car(x)))) {
+      if (Marks) {
+         for (F = 0; F < Files; ++F)
+            free(Mark[F]);
+         free(Mark), Mark = NULL, free(Marks), Marks = NULL;
+      }
+      return Nil;
+   }
+   NeedSym(ex,y);
+   if (!(n = blk64(name(y))))
+      return Nil;
+   if (!Marks) {
+      Marks = alloc(Marks, Files * sizeof(word2));
+      memset(Marks, 0, Files * sizeof(word2));
+      Mark = alloc(Mark, Files * sizeof(byte*));
+      memset(Mark, 0, Files * sizeof(byte*));
+   }
+   b = 1 << (n & 7);
+   if ((n >>= 3) >= Marks[F]) {
+      m = Marks[F],  Marks[F] = n + 1;
+      Mark[F] = alloc(Mark[F], Marks[F]);
+      memset(Mark[F] + m, 0, Marks[F] - m);
+   }
+   p = Mark[F] + n;
+   x = cdr(x);
+   y = *p & b? T : Nil;  // Old value
+   if (!isNil(x = EVAL(car(x)))) {
+      if (isNum(x))
+         *p &= ~b;  // Clear mark
+      else
+         *p |= b;  // Set mark
+   }
+   return y;
+}
+
+// (free 'cnt) -> (sym . lst)
+any doFree(any x) {
+   byte buf[2*BLK];
+   cell c1;
+
+   if ((F = (int)evCnt(x, cdr(x)) - 1) >= Files)
+      dbfErr();
+   rdLock();
+   blkPeek(0, buf, 2*BLK);  // Get Free, Next
+   Push(c1, x = cons(mkId(getAdr(buf+BLK)/BLKSIZE), Nil));  // Next
+   BlkLink = getAdr(buf);  // Free
+   while (BlkLink) {
+      x = cdr(x) = cons(mkId(BlkLink/BLKSIZE), Nil);
+      rdBlock(BlkLink);
+   }
+   rwUnlock(1);
+   return Pop(c1);
+}
+
+// (dbck ['cnt] 'flg) -> any
 any doDbck(any x) {
    any y;
    bool flg;

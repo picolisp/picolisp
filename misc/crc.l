@@ -1,5 +1,7 @@
-# 06nov05abu
+# 04sep06abu
 # (c) Software Lab. Alexander Burger
+
+(load "lib/gcc.l")
 
 (gcc "crc" NIL 'crc)
 

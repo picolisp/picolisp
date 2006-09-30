@@ -35,6 +35,8 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
       <li><a href="#server">Start the application server</a>
       <li><a href="#how">How does it work?</a>
       </ul>
+   <li><a href="#urlSyntax">URL Syntax</a>
+   <li><a href="#security">Security</a>
    <li><a href="#htmlFoo">The <code>html</code> Function</a>
    <li><a href="#cssAttr">CSS Attributes</a>
    <li><a href="#tags">Tag Functions</a>
@@ -50,12 +52,18 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
    <li><a href="#sessions">Sessions</a>
    <li><a href="#actionForms">Action Forms</a>
       <ul>
+      <li><a href="#guiFoo">The <code>gui</code> Function</a>
       <li><a href="#ctlFlow">Control Flow</a>
       <li><a href="#switching">Switching URLs</a>
       <li><a href="#dialogs">Alerts and Dialogs</a>
       <li><a href="#calc">A Calculator Example</a>
       </ul>
    <li><a href="#charts">Charts</a>
+      <ul>
+      <li><a href="#scrolling">Scrolling</a>
+      <li><a href="#putGet">Put and Get Functions</a>
+      </ul>
+   <li><a href="#guiClasses">GUI Classes</a>
    </ul>
 <li><a href="#db">DB-Integration</a>
 </ul>
@@ -69,6 +77,7 @@ sense in itself, because you could directly write HTML code as well, but it
 forms the base for interactive applications, and allows us to introduce the
 application server and other fundamental concepts.
 
+<p><hr>
 <h3><a name="hello">Hello World</a></h3>
 
 <p>To begin with a minimal application, please enter the following two lines
@@ -82,7 +91,10 @@ directory
 ########################################################################
 </code></pre>
 
-<p>(We will modify and use this file in all following examples and experiments)
+<p>(We will modify and use this file in all following examples and experiments.
+Whenever you find such a program snipplet between hash lines, just copy and
+paste it into your "project.l" file, and press the "reload" button of your
+browser to view the effects)
 
 
 <h4><a name="server">Start the application server</a></h4>
@@ -112,17 +124,113 @@ browser. You should see an empty page with a single line of text.
 
 <p>Then the <code>server</code> function is called with a port number and a
 default URL. It will listen on that port for incoming HTTP requests in an
-endless loop. Whenever a GET request arrives on port 8080, the file "project.l"
-will be <code><a href="ref.html#load">(load)</a></code>ed, causing the
-evaluation (= execution) of all its Lisp expressions.
+endless loop. Whenever a <code>GET</code> request arrives on port 8080, the file
+"project.l" will be <code><a href="ref.html#load">(load)</a></code>ed, causing
+the evaluation (= execution) of all its Lisp expressions.
 
 <p>During that execution, all data written to the current output channel is sent
 directly to to the browser. The code in "project.l" is responsible to produce
 HTML (or anything else the browser can understand).
 
+
+<p><hr>
+<h3><a name="urlSyntax">URL Syntax</a></h3>
+
+<p>The Pico Lisp application server uses a slightly specialized syntax when
+communicating URs to and from a client. The "path" part of an URL - which
+remains when
+
+<p><ul>
+<li>the preceding protocol, host and port specifications
+<li>and the trailing question mark plus arguments
+</ul>
+
+are stripped off - is interpreted according so some rules. The most promient
+ones are:
+
+<p><ul>
+<li>If a path starts with an '@' (at-mark), the rest (without the '@') is taken
+as the name of a Lisp function to be executed. All arguments following the
+question mark are passed to that function.
+
+<li>If a path ends with ".l" (a dot and a lower case 'L'), it is taken as a Lisp
+source file name to be <code><a href="ref.html#load">(load)</a></code>ed. This
+is the most common case, and we used it in our example "project.l".
+
+<li>If the extension of a path matches with an entry in the global mime type
+table <code>*Mimes</code>, the file is sent to the client with mime-type and
+max-age values taken from that table.
+
+<li>Otherwise, the file is sent to the client with a mime-type of
+"application/octet-stream" and a max-age of 1 second.
+
+</ul>
+
+<p>An application is free to extend or mody the <code>*Mimes</code> table
+with the <code>mime</code> function. For exmaple
+
+<p><pre><code>
+(mime "doc" "application/msword" 60)
+</code></pre>
+
+<p>defines a new mime type with a max-age of one minute.
+
+<p>Argument values in URLs, following the path and the question mark, are
+encoded in such a way that Lisp data types are preserved:
+
+<p><ul>
+<li>An internal symbol starts with a '$' (dollar)
+<li>A number starts with a '+' (plus)
+<li>An external (database) symbol starts with  '-' (dash)
+<li>A list (one level only) is encoded with '_' (underscores)
+<li>Otherwise, it is a transient symbol (a plain string)
+
+</ul>
+
+<p>In that way, high-level data types can be directly passed to functions
+encoded in the URL, or assigned to global variables before a file is loaded.
+
+
+<p><hr>
+<h3><a name="security">Security</a></h3>
+
+<p>It is ouf course a huge security whole that - directly from the URL - any
+Lisp source file can be loaded, and any Lisp function can be called. For that
+reason any application must take care to declare exactly which files and
+functions are to be allowed in URLs. The server checks a global variable
+<code>*Allow</code>, and - when its value is non-<code>NIL</code> - denies
+access to anything that does not match its contents.
+
+<p>Normally, <code>*Allow</code> is not manipulated directly, but set with the
+<code>allowed</code> and <code>allow</code> functions
+
+<p><pre><code>
+(allowed ("img/" "demo/")
+   "favicon.ico" "lib.css"
+   "@start" "customer.l" "article.l")
+</code></pre>
+
+<p>This is usually called in the beginning of an application, and allows access
+to the directories "img/" and "demo/", to the function 'start', and to the files
+"favicon.ico", "lib.css", "customer.l" and "article.l".
+
+<p>Later in the program, <code>*Allow</code> may be dynamically extended with
+<code>allow</code>
+
+<p><pre><code>
+(allow "@foo")
+(allow "newdir/" T)
+</code></pre>
+
+<p>This adds the function 'foo', and the directory "newdir/", to the set of
+allowed items.
+
+
+<p><hr>
 <h3><a name="htmlFoo">The <code>html</code> Function</a></h3>
 
-<p>In principle you could write "project.l" as a sequence of print statements
+<p>Now back to our "Hello World" exmaple. In principle you could write
+"project.l" as a sequence of print statements
 
 <p><pre><code>
 ########################################################################
@@ -227,6 +335,7 @@ of printing statement).
 because it takes care to escape special characters.
 
 
+<p><hr>
 <h3><a name="cssAttr">CSS Attributes</a></h3>
 
 <p>The <a href="#htmlFoo"><code>html</code> function</a> above and many of the
@@ -258,6 +367,7 @@ attribute-value pairs
 </code></pre>
 
 
+<p><hr>
 <h3><a name="tags">Tag Functions</a></h3>
 
 <p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
@@ -559,6 +669,7 @@ client/server communication, but implements a class hierarchy of GUI components
 for the abstraction of application logic, button actions and data linkage.
 
 
+<p><hr>
 <h3><a name="sessions">Sessions</a></h3>
 
 <p>First of all, we need to establish a persistent environment on the server, to
@@ -619,7 +730,8 @@ $ ./p lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"' -wait
 <p>In that way, no command line prompt appears when a client connects.
 
 
-<h3><a name="actionForms">Action Forms</code></a></h3>
+<p><hr>
+<h3><a name="actionForms">Action Forms</a></h3>
 
 <p>Now that we have a persistent session for each client, we can set up an
 active GUI framework.
@@ -689,6 +801,36 @@ mixed.
 </code></pre>
 
 
+<h4><a name="guiFoo">The <code>gui</code> Function</a></h4>
+
+<p>The most prominent function in a <code>form</code> body is <code>gui</code>.
+It is the workhorse of GUI construction.
+
+<p>Outside of a <code>form</code> body it is undefined. Otherwise, it takes an
+optional alias name, a list of classes, and additional arguments as needed by
+the constructors of these classes. We saw this example before
+
+<p><pre><code>
+         (gui 'a '(+TextField) 10)                 # Text Field
+</code></pre>
+
+Here, '<code>a</code>' is an alias name for a component of type
+<code>(+TextField)</code>. The numeric argument <code>10</code> is passed to the
+text field, specifying its width. See the chapter on <a href="#guiClasses">GUI
+Classes</a>) for more examples.
+
+<p>During a <code>GET</code> request, <code>gui</code> is basically a frontend
+to <code>new</code>. It builds a component, stores it in the internal structures
+of the current form, and initializes it by sending the <code>init&gt;</code>
+message to the component. Finally, it sends it the <code>show&gt;</code>
+message, to produce HTML code and transmit it to the browser.
+
+<p>During a <code>POST</code> request, <code>gui</code> does not build any new
+components. Instead, the existing components are re-used. So <code>gui</code>
+does not have much more to do than sending the <code>show&gt;</code> message to
+a component.
+
+
 <h4><a name="ctlFlow">Control Flow</a></h4>
 
 <p>HTTP has only two methods to change a browser window: <code>GET</code> and
@@ -734,10 +876,10 @@ into the "Source" field, you can copy it in upper or lower case to the
          (&lt;grid&gt; 2
             "Source" (gui 'src '(+TextField) 30)
             "Destination" (gui 'dst '(+Lock +TextField) 30) )
-         (gui '(+Button) "Upper Case"
+         (gui '(+JS +Button) "Upper Case"
             '(set&gt; (: home dst)
                (uppc (val&gt; (: home src))) ) )
-         (gui '(+Button) "Lower Case"
+         (gui '(+JS +Button) "Lower Case"
             '(set&gt; (: home dst)
                (lowc (val&gt; (: home src))) ) ) ) ) )
 ########################################################################
@@ -862,7 +1004,7 @@ the "Are you sure?" alert.
 <p>Now let's forget our "project.l" test file for a moment, and move on to a
 more substantial and practical, stand-alone, example. Using what we have learned
 so far, we want to build a simple bignum calculator. ("bignum" because Pico Lisp
-can <i>only</i> do bignums)
+can do <i>only</i> bignums)
 
 <p>It uses a single form, a single numeric input field, and lots of buttons. It
 can be found in the Pico Lisp distribution in "misc/calc.l", together with a
@@ -888,6 +1030,343 @@ $ ./p dbg.l misc/calc.l -main -go
 <p>Then - as before - point your browser to '<code><a
 href="http://localhost:8080">http://localhost:8080</a></code>'.
 
+<p>The code for the calculator logic and the GUI is rather straightforward. The
+entry point is the single function <code>calculator</code>. It is called
+directly (as described in <a href="#urlSyntax">URL Syntax</a>) as the server's
+default URL, and implicitly in all <code>POST</code> requests. No further file
+access is needed once the calculator is running.
+
+<p>Note that for a production application, you should (as recommended by the <a
+href="#security">Security</a> chapter) insert an allow-statement
+
+<p><pre><code>
+(allowed NIL "@calculator")
+</code></pre>
+
+<p>somewhere in "misc/calc.l". This will restrict external access to that single
+function. We usually write it in the beginning, before the other application
+files and the application logic are loaded.
+
+<p>The calculator uses three global variables, <code>*Init</code>,
+<code>*Accu</code> and <code>*Stack</code>. <code>*Init</code> is a boolean flag
+set by the operator buttons to indicate that the next digit should initialize
+the accumulator to zero. <code>*Accu</code> is the accumulator. It is always
+displayed in the numeric input field, accepts user input, and it holds the
+results of calculations. <code>*Stack</code> is a push-down stack, holding
+postopned calculations (operators, priorities and intermediate results) with
+lower-priority operators, while calculations with higher-priority operators are
+performed.
+
+<p>The function <code>digit</code> is called by the digit buttons, and adds
+another digit to the accumulator.
+
+<p>The function <code>calc</code> does an actual calculation step. It pops the
+stack, checks for division by zero, and displays an error alert if necessary.
+
+<p><code>operand</code> processes an operand button, accepting a function and a
+priority as arguments. It compares the priority with that in the top-of-stack
+element, and delays the calculation if it is less.
+
+<p><code>finish</code> is used to calculate the final result.
+
+<p>The <code>calculator</code> function has one numeric input field, with a
+width of 60 characters
+
+<p><pre><code>
+         (gui '(+Var +NumField) '*Accu 60)
+</code></pre>
+
+<p>The <code>+Var</code> prefix class associates this field with the global
+variable <code>*Accu</code>. All changes to the field will show up in that
+variable, and modification of that variable's value will appear in the field.
+
+<p>The square root operator button has an <code>+Able</code> prefix class
+
+<p><pre><code>
+         (gui '(+Able +Button) '(ge0 *Accu) (char 8730) " "
+            '(setq *Accu (sqrt *Accu)) )
+</code></pre>
+
+
+<p>with an argument expression which checks that the current value in the
+accumulator is positive, and disables the button if otherwise.
+
+<p>The rest of the form is just an array (grid) of buttons, encapsulating all
+functionality of the calculator. The user can enter numbers into the input
+field, either by using the digit buttons, or by directly typing them in, and
+perform calculations with the operator buttons. Supported operations are
+addition, subtraction, multiplication, division, sign inversion, square root and
+power (all in bignum integer arithmethic). The '<code>C</code>' button just
+clears the accumulator, while the '<code>A</code>' button also clears all
+pending calculations.
+
+<p>All that in 52 lines of code!
+
+
+<p><hr>
+<h3><a name="charts">Charts</a></h3>
+
+<p>Charts are virtual components, maintaining the internal representation of
+two-dimensional data.
+
+<p>Typically, these data are nested lists, database selections, or some kind of
+dynamically generated tabular information. Charts make it possible to view them
+in rows and columns (usually in HTML <a href="#tables">tables</a>), scroll up
+and down, and associate them with their corresponding visible GUI components.
+
+<p>In fact, the logic to handle charts makes up a substantial part of the whole
+framework, with large impact on all internal mechanisms. Each GUI component must
+know whether it is part of a chart or not, to be able to handle its contents
+properly during updates and user interactions.
+
+<p>Let's assume we want to collect textual and numerical data. We might create a
+table
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "Table" "lib.css" NIL
+      (form NIL
+         (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
+            (do 4
+               (&lt;row&gt; NIL
+                  (gui '(+TextField) 20)
+                  (gui '(+NumField) 10) ) ) )
+         (&lt;submit&gt; "Save") ) ) )
+########################################################################
+</code></pre>
+
+<p>with two columns "Text" and "Number", and four rows, each containing a
+<code>+TextField</code> and a <code>+NumField</code>.
+
+<p>You can enter text into the first column, and numbers into the second.
+Pressing the "Save" button stores these values in the components on the server
+(or produces an error message if a string in the second column is not a legal
+number).
+
+<p>There are two problems with this solution:
+
+<p><ol>
+<li>Though you can get at the user input for the individual fields, e.g.
+
+<pre><code>
+: (val> (get *Top 'gui 2))  # Value in the first row, second column
+-> 123
+</code></pre>
+
+there is no direct way to get the whole data structure as a single list.
+Instead, you have to traverse all GUI components and collect the data.
+
+<li>The user cannot input more than four rows of data, because there is no easy
+way to scroll down and make space for more.
+
+</ol>
+
+<p>A chart can handle these things:
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "Chart" "lib.css" NIL
+      (form NIL
+         (gui '(+Chart) 2)                         # Inserted a +Chart
+         (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
+            (do 4
+               (&lt;row&gt; NIL
+                  (gui 1 '(+TextField) 20)         # Inserted '1'
+                  (gui 2 '(+NumField) 10) ) ) )    # Inserted '2'
+         (&lt;submit&gt; "Save") ) ) )
+########################################################################
+</code></pre>
+
+<p>Note that we inserted a <code>+Chart</code> component before the GUI
+components which should be managed by the chart. The argument '2' tells the
+chart that it has to expect two columns.
+
+<p>Each component got an index number (here '1' and '2') as the first argument
+to <code>gui</code>, indicating the column into which this component should go
+within the chart.
+
+<p>Now - if you entered "a", "b" and "c" into the first, and 1, 2, and 3 into
+the second column - we can retrieve the chart's complete contents by sending it
+the <code>val&gt;</code> message
+
+<pre><code>
+: (val> (get *Top 'chart 1))  # Retrieve the value of the first chart
+-> ((<u>a</u> 1) (<u>b</u> 2) (<u>c</u> 3))
+</code></pre>
+
+<p>BTW, a more convenient function is <code>chart</code>
+
+<pre><code>
+: (val> (chart))  # Retrieve the value of the current chart
+-> ((<u>a</u> 1) (<u>b</u> 2) (<u>c</u> 3))
+</code></pre>
+
+<p><code>chart</code> can be used instead of the above construct when we want to
+access the "current" chart, i.e. the chart most recently processed in the
+current form.
+
+
+<h4><a name="scrolling">Scrolling</a></h4>
+
+<p>To enable scrolling, let's also insert two buttons. We use the pre-defined
+classes <code>+DnButton</code> and <code>+UpButton</code>
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "Scrollable Chart" "lib.css" NIL
+      (form NIL
+         (gui '(+Chart) 2)
+         (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
+            (do 4
+               (&lt;row&gt; NIL
+                  (gui 1 '(+TextField) 20)
+                  (gui 2 '(+NumField) 10) ) ) )
+         (gui '(+JS +DnButton) 1)               # Inserted two buttons
+         (gui '(+JS +UpButton) 1)
+         (&lt;submit&gt; "Save") ) ) )
+########################################################################
+</code></pre>
+
+<p>to scroll down and up a single line at a time (argument '1').
+
+<p>Now it is possible to enter a few rows of data, scroll down, and continue. It
+is not necessary to press the "Save" button, because <b>any</b> button in the
+form will send changes to the server's internal structures before any action is
+performed.
+
+
+<h4><a name="putGet">Put and Get Functions</a></h4>
+
+<p>As we said, a chart is a virtual component to edit two-dimensional data.
+Therefore, a chart's native data format is a list of lists: Each sublist
+represents a single row of data, and each element of a row corresponds to a
+single GUI component.
+
+<p>In the example above, we saw a row like
+
+<pre><code>
+   (<u>a</u> 1)
+</code></pre>
+
+<p>being mapped to
+
+<pre><code>
+   (gui 1 '(+TextField) 20)
+   (gui 2 '(+NumField) 10)
+</code></pre>
+
+<p>Quite often, however, such a one-to-one relationship is not desired. The
+internal data structures may have to be presented in a different form to the
+user, and user input may need conversion to an internal representation.
+
+<p>For that, a chart accepts - in addition to the "number of columns" argument -
+two optional function arguments. The first function is invoked to 'put' the
+internal representation into the GUI components, and the second to 'get' data
+from the GUI into the internal representation.
+
+<p>A typical example is a chart displaying customers in a database. While the
+internal representation is a (one-dimensional) list of customer objects, 'put'
+expands each object to a list with, say, the customer's first and second name,
+telephone number, address and so on. When the user enters a customer's name,
+'get' locates the matching object in the database and stores it in the internal
+representation. In the following, 'put' will in turn expand it to the GUI. We
+will write more about this in the chapter on <a href="#db">DB-Integration</a>.
+
+<p>For now, let's stick with a simpler example: A chart that holds just a list
+of numbers, but expands in the GUI to show also a textual form of each number
+(in German).
+
+<p><pre><code>
+########################################################################
+(app)
+
+(load "lib/zahlwort.l")
+
+(action
+   (html 0 "Numerals" "lib.css" NIL
+      (form NIL
+         (gui '(+Init +Chart) (1 5 7) 2
+            '((N) (list N (zahlwort N)))
+            car )
+         (&lt;table&gt; NIL NIL '((NIL "Numeral") (NIL "German"))
+            (do 4
+               (&lt;row&gt; NIL
+                  (gui 1 '(+NumField) 9)
+                  (gui 2 '(+Lock +TextField) 90) ) ) )
+         (gui '(+JS +DnButton) 1)
+         (gui '(+JS +UpButton) 1)
+         (&lt;submit&gt; "Save") ) ) )
+########################################################################
+</code></pre>
+
+<p>"lib/zahlwort.l" defines the utility function <code>zahlwort</code>, which is
+required later by the 'put' function. <code>zahlwort</code> accepts a number and
+returns its wording in German.
+
+<p>Now look at the code
+
+<p><pre><code>
+         (gui '(+Init +Chart) (1 5 7) 2
+            '((N) (list N (zahlwort N)))
+            car )
+</code></pre>
+
+<p>We prefix the <code>+Chart</code> class with <code>+Init</code>, and pass it
+a list of numbers <code>(1 5 7)</code> for the initial value of the chart. Then,
+following the '2' (the chart has two columns), we pass a 'put' function
+
+<p><pre><code>
+            '((N) (list N (zahlwort N)))
+</code></pre>
+
+<p>which takes a number and returns a list of that number and its wording, and a
+'get' function
+
+<p><pre><code>
+            car )
+</code></pre>
+
+<p>which in turn accepts such a list and returns a number, which happens to be
+the list's first element.
+
+<p>You can see from this example that 'get' is the inverse function of 'put'.
+'get' can be omitted, however, if the chart is read-only (contains no (or only
+locked) input fields).
+
+<p>The field in the second column
+
+<p><pre><code>
+                  (gui 2 '(+Lock +TextField) 90) ) ) )
+</code></pre>
+
+<p>is locked, because it displays the text generated by 'put', and is not
+supposed to accept any user input.
+
+<p>When you start up this form in your browser, you'll see three pre-filled
+lines with "1/eins", "5/fünf" and "7/sieben", according to the
+<code>+Init</code> argument <code>(1 5 7)</code>. Typing a number somewhere into
+the first column, and pressing <code>RETURN</code> or one of the buttons, will
+show a suitable text in the second column.
+
+
+<p><hr>
+<h3><a name="guiClasses">GUI Classes</a></h3>
+
+
+
+<p><hr>
+<h2><a name="db">DB-Integration</a></h2>
+
+
 <p>*** TO BE CONTINUED ***
 
 <p>The most recent version of this document can be found on the <a
@@ -895,13 +1374,6 @@ href="http://software-lab.de/down.html">Pico Lisp Download</a> page, and in the
 current <a
 href="http://www.software-lab.biz/1024/?download&amp;picoLisp.tgz">development
 release</a> of Pico Lisp.
-
-
-<h3><a name="charts">Charts</a></h3>
-
-
-<p><hr>
-<h2><a name="db">DB-Integration</a></h2>
 
 
 </body>

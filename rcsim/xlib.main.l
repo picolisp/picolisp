@@ -1,9 +1,9 @@
-# 01jan06abu
+# 23sep06abu
 # (c) Software Lab. Alexander Burger
 
 # *Sock *Panel *FocLen
 
-(load "lib/xterm.l")
+(load "lib/term.l")
 (load "rcsim/lib.l")
 
 

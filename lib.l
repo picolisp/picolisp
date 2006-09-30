@@ -1,11 +1,11 @@
-# 08jun06abu
+# 07sep06abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
-   (cond
-      ((not Prg) (del (assoc Key *Key) '*Key))
-      ((assoc Key *Key) (quit "Key conflict" Key))
-      (T
+   (nond
+      (Prg (del (assoc Key *Key) '*Key))
+      ((num? Key) (quit "Bad Key" Key))
+      ((assoc Key *Key)
          (push '*Key
             (conc
                (make
@@ -21,7 +21,8 @@
                                  (while (atom (car Prg))
                                     (link
                                        (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) ) )
-                           Prg ) ) ) ) ) ) ) ) )
+                           Prg ) ) ) ) ) ) )
+      (NIL (quit "Key conflict" Key)) ) )
 
 (de timeout (N)
    (if2 N (assoc -1 *Key)
@@ -83,6 +84,21 @@
          (method (car "X") (cdr "X"))
          (or (pair (getd "X")) (expr "X")) )
       (con @ (append Prg (cdr @))) ) )
+
+(de patch ("Lst" "Pat" . "Prg")
+   (bind (fish pat? "Pat")
+      (recur ("Lst")
+         (loop
+            (cond
+               ((match "Pat" (car "Lst"))
+                  (set "Lst" (run "Prg")) )
+               ((pair (car "Lst"))
+                  (recurse @) ) )
+            (NIL (cdr "Lst"))
+            (T (atom (cdr "Lst"))
+               (when (match "Pat" (cdr "Lst"))
+                  (con "Lst" (run "Prg")) ) )
+            (setq "Lst" (cdr "Lst")) ) ) ) )
 
 (====)
 

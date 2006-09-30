@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 08may06abu
+# 12sep06abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -11,6 +11,7 @@
 (setq *MailPort (format *MailPort))
 
 (unless (call 'test "-p" "fifo/beat")
+   (call 'mkdir "-p" "fifo")
    (call 'rm "-f" "fifo/beat")
    (call 'mkfifo "fifo/beat") )
 

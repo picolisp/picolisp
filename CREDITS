@@ -6,3 +6,6 @@ Josef Bartl <josef.bartl@7fach.org>
 
 # The build procedure for Mac OS X (Darwin) was supplied by
 Rick Hanson <rick@tamos.net>
+
+# The port to Cygwin/Win32 was done by
+Doug Snead <doug@drugsense.org>

@@ -1,4 +1,4 @@
-/* 27jun06abu
+/* 04sep06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -579,25 +579,24 @@ any doWith(any ex) {
    return x;
 }
 
-// (bind 'sym|lst 'prg) -> any
+// (bind 'sym|lst . prg) -> any
 any doBind(any ex) {
    any x, y;
-   cell c1;
 
    x = cdr(ex);
    if (isNum(y = EVAL(car(x))))
       argError(ex, y);
+   if (isNil(y))
+      return prog(cdr(x));
    if (isSym(y)) {
       bindFrame f;
 
-      if (!isNil(y))
-         Bind(y,f);
-      x = cdr(x),  Push(c1, EVAL(car(x)));
-      x = prog(data(c1));
-      if (!isNil(y))
-         Unbind(f);
+      Bind(y,f);
+      x = prog(cdr(x));
+      Unbind(f);
+      return x;
    }
-   else {
+   {
       struct {  // bindFrame
          struct bindFrame *link;
          int i, cnt;
@@ -620,14 +619,12 @@ any doBind(any ex) {
          }
          ++f.cnt,  y = cdr(y);
       }
-      x = cdr(x),  Push(c1, EVAL(car(x)));
-      x = prog(data(c1));
+      x = prog(cdr(x));
       while (--f.cnt >= 0)
          val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
       Env.bind = f.link;
+      return x;
    }
-   drop(c1);
-   return x;
 }
 
 // (job 'lst . prg) -> any
@@ -1397,16 +1394,19 @@ any doCall(any ex) {
    if (pid < 0)
       err(ex, NULL, "fork");
    setpgid(pid,0);
-   tcsetpgrp(0,pid);
+   if (Termio)
+      tcsetpgrp(0,pid);
    for (;;) {
       while (waitpid(pid, &res, WUNTRACED) < 0)
          if (errno != EINTR)
             err(ex, NULL, "wait pid");
-      tcsetpgrp(0,getpgrp());
+      if (Termio)
+         tcsetpgrp(0,getpgrp());
       if (!WIFSTOPPED(res))
          return res == 0? T : Nil;
       load(NULL, '+', Nil);
-      tcsetpgrp(0,pid);
+      if (Termio)
+         tcsetpgrp(0,pid);
       kill(pid, SIGCONT);
    }
 }
@@ -1489,6 +1489,7 @@ pid_t forkLisp(any ex) {
       if (Tell)
          close(Tell);
       Tell = tell[1];
+      val(PPid) = val(Pid);
       val(Pid) = boxCnt(getpid());
       run(val(Fork));
       return 0;

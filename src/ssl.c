@@ -1,4 +1,4 @@
-/* 15jun06abu
+/* 29aug06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -156,7 +156,7 @@ int main(int ac, char *av[]) {
    ssl = SSL_new(ctx);
 
    if (ac <= 6) {
-      if (sslConnect(ssl, av[1], (int)atol(av[2])) < 0) {
+      if (sslConnect(ssl, av[1], atoi(av[2])) < 0) {
          errmsg("Can't connect");
          return 1;
       }
@@ -171,9 +171,17 @@ int main(int ac, char *av[]) {
          write(STDOUT_FILENO, buf, n);
       return 0;
    }
+
+   signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
+   if ((n = fork()) < 0)
+      giveup("detach");
+   if (n)
+      return 0;
+   setsid();
+
    File = av[5];
    Dir = av[6];
-   sec = (int)atol(av[7]);
+   sec = atoi(av[7]);
    signal(SIGINT, doSigTerm);
    signal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
@@ -199,7 +207,7 @@ int main(int ac, char *av[]) {
                errmsg("Can't truncate");
             close(fd);
             for (;;) {
-               if ((sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0) {
+               if ((sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&                   // key
                            (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
@@ -221,7 +229,7 @@ int main(int ac, char *av[]) {
             if (p->d_name[0] != '.') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
                if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
-                     (sd = sslConnect(ssl, av[1], (int)atol(av[2]))) >= 0 ) {
+                     (sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0 ) {
 
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                         (!*av[4] || sslFile(ssl,av[4]))  &&          // key

@@ -1,4 +1,4 @@
-/* 14oct05abu
+/* 01sep06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -873,7 +873,7 @@ any doAtom(any x) {
    return !isCell(EVAL(car(x)))? T : Nil;
 }
 
-// (pair 'any) -> flg
+// (pair 'any) -> any
 any doPair(any x) {
    x = cdr(x);
    return isCell(x = EVAL(car(x)))? x : Nil;
@@ -973,8 +973,10 @@ any doLength(any x) {
    }
    n = 1;
    while (car(x) == Quote) {
-      if (x == cdr(x)  ||  !isCell(x = cdr(x)))
+      if (x == cdr(x))
          return T;
+      if (!isCell(x = cdr(x)))
+         return boxCnt(n);
       ++n;
    }
    y = x;

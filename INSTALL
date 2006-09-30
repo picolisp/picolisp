@@ -1,4 +1,4 @@
-21jun06abu
+04sep06abu
 (c) Software Lab. Alexander Burger
 
 
@@ -7,8 +7,8 @@
 
 There is no 'configure' procedure, but the Pico Lisp file structure is simple
 enough to get along without it (we hope). It should compile and run on
-GNU/Linux, FreeBSD, Mac OS X (Darwin), and possibly other systems without
-problems.
+GNU/Linux, FreeBSD, Mac OS X (Darwin), Cygwin/Win32, and possibly other systems
+without problems.
 
 By default, Pico Lisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.

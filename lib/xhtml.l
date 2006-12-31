@@ -1,4 +1,4 @@
-# 29sep06abu
+# 21dec06abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -40,32 +40,37 @@
 ### XHTML Output ###
 (de html (Upd Ttl Css Attr . Prg)
    (httpHead NIL Upd)
-   ## (prinl "<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-   (prinl "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">")
-   (prinl
-      "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\""
-      (or *Lang "en")
-      "\" lang=\""
-      (or *Lang "en")
-      "\">" )
-   (prinl "<head>")
-   (and Ttl (<tag> 'title NIL Ttl))
-   (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
-   (when Css
-      (if (atom Css) ("css" Css) (mapc "css" Css)) )
-   (when *JS
+   (ht:Out *Chunked
+      ## (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+      (prinl "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">")
       (prinl
-         "<script src=\"" (baseHRef *Port1) *JS "\" type=\"text/javascript\">"
-         "</script>" ) )
-   (prinl "</head>")
-   (tag 'body Attr 2 Prg)
-   (prinl "</html>") )
+         "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\""
+         (or *Lang "en")
+         "\" lang=\""
+         (or *Lang "en")
+         "\">" )
+      (prinl "<head>")
+      (and Ttl (<tag> 'title NIL Ttl))
+      (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
+      (when Css
+         (if (atom Css) ("css" Css) (mapc "css" Css)) )
+      (mapc javascript *JS)
+      (prinl "</head>")
+      (tag 'body Attr 2 Prg)
+      (prinl "</html>") ) )
 
 (de "css" (Css)
    (prinl
       "<link rel=\"stylesheet\" href=\""
-      (baseHRef *Port1) Css
+      (srcUrl Css)
       "\" type=\"text/css\"/>" ) )
+
+(de javascript (JS)
+   (when *JS
+      (prinl
+         "<script src=\""
+         (srcUrl JS)
+         "\" type=\"text/javascript\"></script>" ) ) )
 
 (de style (X . "Prg")
    (let *Style
@@ -131,10 +136,11 @@
 (de <li> (Attr . Prg)
    (tag 'li Attr 2 Prg) )
 
-(de <href> (Str Url Tar)
+(de <href> (Str Url Tar JS)
    (prin "<a href=\"" (sesId Url))
    (and Tar (prin "\" target=\"" Tar))
    (prin "\"")
+   (and *JS JS (prin " onclick=\"" JS ";\""))
    (and *Style (htStyle @))
    (prin '>)
    (ht:Prin Str)
@@ -163,33 +169,36 @@
    (pack Url '?  "*Menu=+" Menu  "&*Tab=+" Tab  "&*ID=" (ht:Fmt Id)) )
 
 (de <menu> Lst
-   (let N 1
-      (for L Lst
-         (<ul> NIL
-            (cond
-               ((not (car L)) (htPrin 2 (cdr L)))
-               ((=T (car L))
-                  (<li> 'top
-                     (<href>
-                        (eval (cadr L) 1)
-                        (urlMT (eval (caddr L) 1) *Menu 1)
-                        (cdddr L) ) ) )
-               (T
-                  (<li> 'top
-                     (<href> (eval (car L) 1) (urlMT *Url (x| N *Menu) *Tab *ID))
-                     (when (bit? N *Menu)
-                        (<ul> NIL
-                           (for X (cdr L)
-                              (<li> 'sub
-                                 (cond
-                                    ((atom X) (ht:Prin (eval X 1)))
-                                    ((eval (cadr X) 1)
-                                       (<href>
-                                          (eval (car X) 1)
-                                          (urlMT @ *Menu 1)
-                                          (cddr X) ) )
-                                    (T (ht:Prin (eval (car X) 1))) ) ) ) ) ) ) ) ) )
-         (setq N (>> -1 N)) ) ) )
+   (let (M 1  N 1  E 2  U)
+      (recur (Lst N E)
+         (for L Lst
+            (<ul> NIL
+               (nond
+                  ((car L) (htPrin 2 (cdr L)))
+                  ((=T (car L))
+                     (if (setq U (eval (cadr L) E))
+                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
+                           (<href> (eval (car L) E) (urlMT U *Menu 1)) )
+                        (<li> (pack 'cmd N)
+                           (ht:Prin (eval (car L) E)) ) ) )
+                  ((bit? M *Menu)
+                     (<li> (pack 'sub N)
+                        (<href>
+                           (eval (cadr L) E)
+                           (urlMT *Url (| M *Menu) *Tab *ID) ) )
+                     (setq M (>> -1 M))
+                     (recur (L)
+                        (for X (cddr L)
+                           (when (=T (car X))
+                              (recurse X)
+                              (setq M (>> -1 M)) ) ) ) )
+                  (NIL
+                     (<li> (pack 'top N)
+                        (<href>
+                           (eval (cadr L) E)
+                           (urlMT *Url (x| M *Menu) *Tab *ID) )
+                        (setq M (>> -1 M))
+                        (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
 
 (de <tab> Lst
    (<table> 'tab NIL NIL

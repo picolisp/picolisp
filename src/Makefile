@@ -1,4 +1,4 @@
-# 12sep06abu
+# 28dec06abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -6,9 +6,7 @@ lib = ../lib
 
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
-OPT_FLAGS := -Os
-
-CFLAGS := $(OPT_FLAGS) -c -pipe \
+CFLAGS := -c -O3 -pipe \
 	-falign-functions -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
@@ -44,12 +42,12 @@ endif
 endif
 
 
-# all: picolisp tools gate x11
-
 picolisp: $(bin)/picolisp $(lib)/ext$(dll) $(lib)/ht$(dll) $(lib)/z3d$(dll)
 tools: $(bin)/lat1 $(bin)/utf2 $(bin)/balance
 gate: $(bin)/ssl $(bin)/httpGate
 x11: $(bin)/z3dClient
+
+all: picolisp tools gate x11
 
 .c.o:
 	@echo $*.c:

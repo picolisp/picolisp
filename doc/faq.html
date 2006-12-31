@@ -32,6 +32,7 @@
 <li><a href="#dynamic">Why do you use dynamic variable binding?</a>
 <li><a href="#problems">Are there no problems caused by dynamic binding?</a>
 <li><a href="#closures">But with dynamic binding I cannot implement closures!</a>
+<li><a href="#macros">Do you have macros?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
 <li><a href="#hardware">Would it make sense to build Pico Lisp in hardware?</a>
 <li><a href="#few">Why are there only a few questions in this FAQ?</a>
@@ -87,6 +88,14 @@ Pico Machine</a> in the reference manual.
 <h3>Orthogonality</h3>
 <p>There is only one symbolic data type, no distinction (confusion) between
 symbols, strings, variables, special variables and identifiers.
+
+<p>Most data-manipulation functions operate on the value cells of symbols as
+well as the <code>CAR</code>s of list cells:
+
+<p><pre><code>
+: (let (N 7  L (7 7 7)) (inc 'N) (inc (cdr L)) (cons N L))
+-> (8 7 8 7)
+</code></pre>
 
 <p>There is only a single functional type, no "special forms". As there is no
 compiler, functions can be used instead of macros. No special "syntax"
@@ -523,6 +532,16 @@ in the example above) the curried argument is known to be immutable:
 
 <p>In that case, the "environment build-up" is reduced by a simple (lexical)
 constant substitution with zero runtime overhead.
+
+
+<p><hr>
+<h2><a name="macros">Do you have macros?</a></h2>
+
+<p>Yes, there is a macro mechanism in Pico Lisp, to build and immediately
+execute a list of expressions. But it is seldom used. Macros are a kludge. Most
+things where you need macros in other Lisps are directly expressible as
+functions in Pico Lisp, which in turn can be applied, passed around, and
+debugged.
 
 
 <p><hr>

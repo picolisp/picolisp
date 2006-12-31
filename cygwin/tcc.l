@@ -1,4 +1,4 @@
-# 04sep06dls
+# 09dec06abu
 # (c) Software Lab. Alexander Burger
 
 # use the Tiny C Compiler http://fabrice.bellard.free.fr/tcc
@@ -16,7 +16,7 @@
       "-o" (tmp S ".dll") (tmp S ".c")
       (dospath (path "@/bin/picolisp.def")))
    (while (args)
-      (def (next) (tmp S ': (arg))) ) )
+      (def (next) (def (tmp S ': (arg)))) ) )
 
 (de dospath (p)
    (in '("cygpath" "-m" p) (line T)) )

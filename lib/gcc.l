@@ -1,4 +1,4 @@
-# 04sep06abu
+# 09dec06abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -12,6 +12,6 @@
       "-Wuninitialized" "-Wstrict-prototypes"
       "-pipe" "-D_GNU_SOURCE" "-D_FILE_OFFSET_BITS=64" (tmp S ".c") )
    (while (args)
-      (def (next) (tmp S ': (arg))) ) )
+      (def (next) (def (tmp S ': (arg)))) ) )
 
 # vim:syntax=picolisp:ts=3:sw=3:expandtab

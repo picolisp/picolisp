@@ -19,8 +19,10 @@ Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
 flexible in layout design, and does not depend on plugins, JavaScript or
 cookies.
 
-<p>It works also in browsers which do not know about CSS or JavaScript. All
-examples were tested using the w3m text browser.
+<p>To be precise: CSS <i>can</i> be used to enhance the layout. And browsers
+<i>with</i> JavaScript will respond faster and smoother. But this framework
+works just fine in browsers which do not know anything about CSS or JavaScript.
+All examples were also tested using the w3m text browser.
 
 <p>For basic informations about the Pico Lisp system please look at the <a
 href="ref.html">Pico Lisp Reference</a> and the <a href="tut.html">Pico Lisp
@@ -63,7 +65,33 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
       <li><a href="#scrolling">Scrolling</a>
       <li><a href="#putGet">Put and Get Functions</a>
       </ul>
-   <li><a href="#guiClasses">GUI Classes</a>
+   </ul>
+<li><a href="#guiClasses">GUI Classes</a>
+   <ul>
+   <li><a href="#inputFields">Input Fields</a>
+      <ul>
+      <li><a href="#numberFields">Numeric Input Fields</a>
+      <li><a href="#timeDateFields">Time &amp; Date</a>
+      <li><a href="#telFields">Telephone Numbers</a>
+      <li><a href="#checkboxes">Checkboxes</a>
+      </ul>
+   <li><a href="#fieldPrefix">Field Prefix Classes</a>
+      <ul>
+      <li><a href="#initPrefix">Initialization</a>
+      <li><a href="#ablePrefix">Disabling and Enabling</a>
+      <li><a href="#formatPrefix">Formatting</a>
+      <li><a href="#validPrefix">Validation</a>
+      <li><a href="#bindPrefix">Binding</a>
+      </ul>
+   <li><a href="#buttons">Buttons</a>
+      <ul>
+      <li><a href="#dialogButtons">Dialog Buttons</a>
+      </ul>
+   <li><a href="#buttonPrefix">Button Prefix Classes</a>
+      <ul>
+      <li><a href="#closeButtons">Dialog Close</a>
+      <li><a href="#jsButtons">Active JavaScript</a>
+      </ul>
    </ul>
 <li><a href="#db">DB-Integration</a>
 </ul>
@@ -92,8 +120,8 @@ directory
 </code></pre>
 
 <p>(We will modify and use this file in all following examples and experiments.
-Whenever you find such a program snipplet between hash lines, just copy and
-paste it into your "project.l" file, and press the "reload" button of your
+Whenever you find such a program snipplet between hash ('#') lines, just copy
+and paste it into your "project.l" file, and press the "reload" button of your
 browser to view the effects)
 
 
@@ -120,7 +148,8 @@ browser. You should see an empty page with a single line of text.
 
 <p>The above line loads the debugger ("dbg.l"), the HTTP server code
 ("lib/http.l"), the XHTML functions ("lib/xhtml.l") and the input form framework
-("lib/form.l", will be needed later for <a href="#forms">interactive forms</a>).
+("lib/form.l", it will be needed later for <a href="#forms">interactive
+forms</a>).
 
 <p>Then the <code>server</code> function is called with a port number and a
 default URL. It will listen on that port for incoming HTTP requests in an
@@ -137,11 +166,11 @@ HTML (or anything else the browser can understand).
 <h3><a name="urlSyntax">URL Syntax</a></h3>
 
 <p>The Pico Lisp application server uses a slightly specialized syntax when
-communicating URs to and from a client. The "path" part of an URL - which
+communicating URLs to and from a client. The "path" part of an URL - which
 remains when
 
 <p><ul>
-<li>the preceding protocol, host and port specifications
+<li>the preceding protocol, host and port specifications,
 <li>and the trailing question mark plus arguments
 </ul>
 
@@ -149,17 +178,17 @@ are stripped off - is interpreted according so some rules. The most promient
 ones are:
 
 <p><ul>
-<li>If a path starts with an '@' (at-mark), the rest (without the '@') is taken
+<li>If a path starts with an at-mark ('@'), the rest (without the '@') is taken
 as the name of a Lisp function to be executed. All arguments following the
 question mark are passed to that function.
 
 <li>If a path ends with ".l" (a dot and a lower case 'L'), it is taken as a Lisp
 source file name to be <code><a href="ref.html#load">(load)</a></code>ed. This
-is the most common case, and we used it in our example "project.l".
+is the most common case, and we use it in our example "project.l".
 
-<li>If the extension of a path matches with an entry in the global mime type
-table <code>*Mimes</code>, the file is sent to the client with mime-type and
-max-age values taken from that table.
+<li>If the extension of a path matches an entry in the global mime type table
+<code>*Mimes</code>, the file is sent to the client with mime-type and max-age
+values taken from that table.
 
 <li>Otherwise, the file is sent to the client with a mime-type of
 "application/octet-stream" and a max-age of 1 second.
@@ -167,7 +196,7 @@ max-age values taken from that table.
 </ul>
 
 <p>An application is free to extend or mody the <code>*Mimes</code> table
-with the <code>mime</code> function. For exmaple
+with the <code>mime</code> function. For example
 
 <p><pre><code>
 (mime "doc" "application/msword" 60)
@@ -179,10 +208,10 @@ with the <code>mime</code> function. For exmaple
 encoded in such a way that Lisp data types are preserved:
 
 <p><ul>
-<li>An internal symbol starts with a '$' (dollar)
-<li>A number starts with a '+' (plus)
-<li>An external (database) symbol starts with  '-' (dash)
-<li>A list (one level only) is encoded with '_' (underscores)
+<li>An internal symbol starts with a dollar sign ('$')
+<li>A number starts with a plus sign ('+')
+<li>An external (database) symbol starts with dash ('-')
+<li>A list (one level only) is encoded with underscores ('_')
 <li>Otherwise, it is a transient symbol (a plain string)
 
 </ul>
@@ -194,10 +223,10 @@ encoded in the URL, or assigned to global variables before a file is loaded.
 <p><hr>
 <h3><a name="security">Security</a></h3>
 
-<p>It is ouf course a huge security whole that - directly from the URL - any
+<p>It is, ouf course, a huge security whole that - directly from the URL - any
 Lisp source file can be loaded, and any Lisp function can be called. For that
-reason any application must take care to declare exactly which files and
-functions are to be allowed in URLs. The server checks a global variable
+reason, applications must take care to declare exactly which files and functions
+are to be allowed in URLs. The server checks a global variable
 <code>*Allow</code>, and - when its value is non-<code>NIL</code> - denies
 access to anything that does not match its contents.
 
@@ -229,12 +258,12 @@ allowed items.
 <p><hr>
 <h3><a name="htmlFoo">The <code>html</code> Function</a></h3>
 
-<p>Now back to our "Hello World" exmaple. In principle you could write
+<p>Now back to our "Hello World" exmaple. In principle, you could write
 "project.l" as a sequence of print statements
 
 <p><pre><code>
 ########################################################################
-(prinl "HTTP/1.1 200 OK^M")
+(prinl "HTTP/1.0 200 OK^M")
 (prinl "Content-Type: text/html; charset=utf-8")
 (prinl "^M")
 (prinl "&lt;html&gt;")
@@ -252,9 +281,9 @@ the server process, and enter the <code>html</code> statement
 <p><pre><code>
 $ bin/psh 8080
 : (html 0 "Hello" "lib.css" NIL "Hello World!")
-HTTP/1.1 200 OK
+HTTP/1.0 200 OK
 Server: PicoLisp
-Connection: close
+Date: Fri, 29 Dec 2006 07:28:58 GMT
 Cache-Control: max-age=0
 Cache-Control: no-cache
 Content-Type: text/html; charset=utf-8
@@ -269,7 +298,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-:
+:    # (hit <code>RETURN</code> here to terminate the Pico Lisp Shell)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -299,8 +328,8 @@ evaluation of normal Lisp expressions:
 
 <p><ul>
 
-<li>If an argument is an atom (a number or a symbol (string)), it is printed
-immediately.
+<li>If an argument is an atom (a number or a symbol (string)), its value is
+printed immediately.
 
 <li>Otherwise (a list), it is evaluated as a Lisp function (typically some form
 of printing statement).
@@ -316,7 +345,7 @@ of printing statement).
 ########################################################################
 </code></pre>
 
-<p>The most typical printing statements will be some HTML-tag
+<p>The most typical printing statements will be some HTML-tags
 
 <p><pre><code>
 ########################################################################
@@ -338,8 +367,8 @@ because it takes care to escape special characters.
 <p><hr>
 <h3><a name="cssAttr">CSS Attributes</a></h3>
 
-<p>The <a href="#htmlFoo"><code>html</code> function</a> above and many of the
-HTML <a href="#tags">tag functions</a> accept a CSS attribute specification.
+<p>The <a href="#htmlFoo"><code>html</code> function</a> above, and many of the
+HTML <a href="#tags">tag functions</a>, accept a CSS attribute specification.
 This may be either an atom, a cons pair, or a list of cons pairs. We demonstrate
 the effects with the <code>&lt;h1&gt;</code> tag function.
 
@@ -358,8 +387,7 @@ the effects with the <code>&lt;h1&gt;</code> tag function.
 &lt;h1 id="bar"&gt;Title&lt;/h1&gt;
 </code></pre>
 
-<p>Consequently, a list of cons pairs gives an arbitrary number of
-attribute-value pairs
+<p>Consequently, a list of cons pairs gives a set of attribute-value pairs
 
 <p><pre><code>
 : (&lt;h1&gt; '((id . "abc") (lang . "de")) "Title")
@@ -371,9 +399,9 @@ attribute-value pairs
 <h3><a name="tags">Tag Functions</a></h3>
 
 <p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
-recommend to look at their sources, and to experiment by executing them at a
-Pico Lisp prompt and by pressing the browser's "Reload" button after editing the
-"project.l" file.
+recommend to look at their sources, and to experiment a bit, by executing them
+at a Pico Lisp prompt and by pressing the browser's "Reload" button after
+editing the "project.l" file.
 
 <p>For a suitable Pico Lisp prompt, either execute (in a separate terminal
 window) the Pico Lisp Shell (<code>psh</code>) command (works only if the
@@ -466,7 +494,7 @@ want to paste the following code into your copy of "project.l":
 ########################################################################
 </code></pre>
 
-<p>Here too, you can put arbitrary code into each node of that tree, including
+<p>Here, too, you can put arbitrary code into each node of that tree, including
 other tag functions.
 
 
@@ -558,9 +586,9 @@ example to
 navigation framework with
 
 <p><ul>
-<li>menu items which open and close sub-menus
-<li>sub-menu items which switch to different pages
-<li>tabs which switch to different sub-pages
+<li>menu items which open and close submenus
+<li>submenu items which switch to different pages
+<li>tabs which switch to different subpages
 </ul>
 
 <p>The following example is not very useful, because the URLs of all items link
@@ -572,12 +600,16 @@ functionality:
 (html 0 "Menu+Tab" "lib.css" NIL
    (&lt;div&gt; '(id . menu)
       (&lt;menu&gt;
-         (T "Start" "project.l")                   # Direct action
+         ("Item" "project.l")                      # Top level item
          (NIL (&lt;hr&gt;))                              # Plain HTML
-         ("Item 1"                                 # Sub-menu 1
+         (T "Submenu 1"                            # Submenu
             ("Subitem 1.1" "project.l")
-            ("Subitem 1.2" "project.l") )
-         ("Item 2"                                 # Sub-menu 2
+            (T "Submenu 1.2"
+               ("Subitem 1.2.1" "project.l")
+               ("Subitem 1.2.2" "project.l")
+               ("Subitem 1.2.3" "project.l") )
+            ("Subitem 1.3" "project.l") )
+         (T "Submenu 2"
             ("Subitem 2.1" "project.l")
             ("Subitem 2.2" "project.l") ) ) )
    (&lt;div&gt; '(id . main)
@@ -596,21 +628,20 @@ functionality:
 list, with its CAR either
 
 <p><ul>
-<li><code>NIL</code>: In that case, it is not an active menu item, and the rest
-of the list may consist of arbitrary code (usually HTML tags).
+<li><code>NIL</code>: The entry is not an active menu item, and the rest of the
+list may consist of arbitrary code (usually HTML tags).
 
-<li><code>T</code>: In that case, the menu item will specify a direct action
-(instead of opening a sub-menu), where the second list element gives the item's
-name, the third element an URL, and the fourth (optional) element an URL-target.
+<li><code>T</code>: The second element is taken as a submenu name, and a click
+on that name will open or close the corresponding submenu. The rest of the list
+recursively specifies the submenu items (may nest to arbitrary depth).
 
-<li>Otherwise: The CAR is taken as a sub-menu's name, and a click on that name
-will open or close the corresponding sub-menu. The CDR is a list of sub-menu
-items, each of them consisting of a sub-item name, an URL, and an optional
-URL-target.
+<li>Otherwise: The menu item specifies a direct action (instead of opening a
+submenu), where the first list element gives the item's name, and the second
+element the corresponding URL.
 
 </ul>
 
-<p><code>&lt;tab&gt;</code> takes a list of sub-pages. Each page is simply a tab
+<p><code>&lt;tab&gt;</code> takes a list of subpages. Each page is simply a tab
 name, followed by arbitrary code (typically HTML tags).
 
 <p>Note that only a single menu and a single tab may be active at the same time.
@@ -623,7 +654,7 @@ name, followed by arbitrary code (typically HTML tags).
 and <code>&lt;input&gt;</code> elements, using the HTTP <code>POST</code> method
 to communicate with the server.
 
-<p>"lib/xhtml.l" supplies a function called <code>&lt;post&gt;</code>, and a
+<p>"lib/xhtml.l" defines a function called <code>&lt;post&gt;</code>, and a
 collection of input tag functions, which allow direct programming of HTML forms.
 We will supply only one simple example:
 
@@ -678,7 +709,7 @@ handle each individual session (for each connected client).
 <p>Technically, this is just a child process of the server we started <a
 href="#server">above</a>, which does not terminate immediately after it sent its
 page to the browser. It is achieved by calling the <code>app</code> function
-somewhere on the application's startup page.
+somewhere in the application's startup code.
 
 <p><pre><code>
 ########################################################################
@@ -700,9 +731,9 @@ $ ./p dbg.l lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
 :
 </code></pre>
 
-<p>and tools like the Unix <code>ps</code> utility will tell you that two
-<code>picolisp</code> processes are running now, the first being the parent of
-the second.
+<p>Tools like the Unix <code>ps</code> utility will tell you that now two
+<code>picolisp</code> processes are running, the first being the parent of the
+second.
 
 <p>If you enter some text, say "abcdef", into the text field in the browser
 window, press the submit button, and inspect the Lisp <code>*Text</code>
@@ -806,9 +837,10 @@ mixed.
 <p>The most prominent function in a <code>form</code> body is <code>gui</code>.
 It is the workhorse of GUI construction.
 
-<p>Outside of a <code>form</code> body it is undefined. Otherwise, it takes an
-optional alias name, a list of classes, and additional arguments as needed by
-the constructors of these classes. We saw this example before
+<p>Outside of a <code>form</code> body, <code>gui</code> is undefined.
+Otherwise, it takes an optional alias name, a list of classes, and additional
+arguments as needed by the constructors of these classes. We saw this example
+before
 
 <p><pre><code>
          (gui 'a '(+TextField) 10)                 # Text Field
@@ -841,7 +873,7 @@ way:
 <li><code>GET</code> means, a <b>new page</b> is being constructed. It is used
 when a page is visited for the first time, usually by entering an URL into the
 browser's address field, or by clicking on a link (which is often a <a
-href="#menus">sub-menu item or tab</a>).
+href="#menus">submenu item or tab</a>).
 
 <li><code>POST</code> is always directed to the <b>same page</b>. It is
 triggered by a button press, updates the corresponding form's data structures,
@@ -1021,7 +1053,7 @@ path names in the first line to absolute paths. We recommend symbolic links in
 some global directories, as described in the <a
 href="tut.html#script">Scripting</a> section of the Pico Lisp Tutorial.
 
-<p>If you like to get a Pico Lisp prompt for debugging, start it instead as
+<p>If you like to get a Pico Lisp prompt for inspection, start it instead as
 
 <p><pre><code>
 $ ./p dbg.l misc/calc.l -main -go
@@ -1036,16 +1068,15 @@ directly (as described in <a href="#urlSyntax">URL Syntax</a>) as the server's
 default URL, and implicitly in all <code>POST</code> requests. No further file
 access is needed once the calculator is running.
 
-<p>Note that for a production application, you should (as recommended by the <a
-href="#security">Security</a> chapter) insert an allow-statement
+<p>Note that for a production application, we inserted an allow-statement (as
+recommended by the <a href="#security">Security</a> chapter)
 
 <p><pre><code>
-(allowed NIL "@calculator")
+(allowed NIL "@calculator" "favicon.ico" "lib.css")
 </code></pre>
 
-<p>somewhere in "misc/calc.l". This will restrict external access to that single
-function. We usually write it in the beginning, before the other application
-files and the application logic are loaded.
+<p>at the beginning of "misc/calc.l". This will restrict external access to that
+single function.
 
 <p>The calculator uses three global variables, <code>*Init</code>,
 <code>*Accu</code> and <code>*Stack</code>. <code>*Init</code> is a boolean flag
@@ -1080,10 +1111,11 @@ width of 60 characters
 variable <code>*Accu</code>. All changes to the field will show up in that
 variable, and modification of that variable's value will appear in the field.
 
-<p>The square root operator button has an <code>+Able</code> prefix class
+<p>The <a name="sqrtButton">square root operator button</a> has an
+<code>+Able</code> prefix class
 
 <p><pre><code>
-         (gui '(+Able +Button) '(ge0 *Accu) (char 8730) " "
+         (gui '(+Able +JS +Button) '(ge0 *Accu) (char 8730)
             '(setq *Accu (sqrt *Accu)) )
 </code></pre>
 
@@ -1100,7 +1132,7 @@ power (all in bignum integer arithmethic). The '<code>C</code>' button just
 clears the accumulator, while the '<code>A</code>' button also clears all
 pending calculations.
 
-<p>All that in 52 lines of code!
+<p>All that in 53 lines of code!
 
 
 <p><hr>
@@ -1236,12 +1268,12 @@ classes <code>+DnButton</code> and <code>+UpButton</code>
 ########################################################################
 </code></pre>
 
-<p>to scroll down and up a single line at a time (argument '1').
+<p>to scroll down and up a single (argument '1') line at a time.
 
 <p>Now it is possible to enter a few rows of data, scroll down, and continue. It
-is not necessary to press the "Save" button, because <b>any</b> button in the
-form will send changes to the server's internal structures before any action is
-performed.
+is not necessary (except in the beginning, when the scroll buttons are still
+disabled) to press the "Save" button, because <b>any</b> button in the form will
+send changes to the server's internal structures before any action is performed.
 
 
 <h4><a name="putGet">Put and Get Functions</a></h4>
@@ -1359,15 +1391,441 @@ show a suitable text in the second column.
 
 
 <p><hr>
-<h3><a name="guiClasses">GUI Classes</a></h3>
+<h2><a name="guiClasses">GUI Classes</a></h2>
 
+<p>In previous chapters we saw examples of GUI classes like
+<code>+TextField</code>, <code>+NumField</code> or <code>+Button</code>, often
+in combination with prefix classes like <code>+Lock</code>, <code>+Init</code>
+or <code>+Able</code>. Now we take a broader look at the whole hierarchy, and
+try more examples.
+
+<p>The abstract class <code>+gui</code> is the base of all GUI classes. A life
+view of the class hierarchy can be obtained with the <code>dep</code>
+("dependencies") function:
+
+<p><pre><code>
+: (dep '+gui)
++gui
+   +field
+      +TextField
+         +TimeField
+         +TelField
+         +ListTextField
+         +PwField
+         +UpField
+         +SymField
+         +DateField
+         +BlobField
+         +numField
+            +FixField
+            +NumField
+         +ClassField
+      +Checkbox
+   +Button
+      +DnButton
+      +ChoButton
+      +ClrButton
+      +DstButton
+      +UpButton
+   +JsField
+-> +gui
+</code></pre>
+
+<p>We see, for example, that <code>+DnButton</code> is a subclass of
+<code>+Button</code>, which in turn is a subclass of <code>+gui</code>.
+Inspecting <code>+DnButton</code> directly
+
+<p><pre><code>
+: (dep '+DnButton)
+   +Rid
+   +Able
+      +gui
+   +Button
++DnButton
+-> +DnButton
+</code></pre>
+
+<p>shows that <code>+DnButton</code> inherits from <code>+Rid</code>,
+<code>+Able</code> and <code>+Button</code>. The actual definition of
+<code>+DnButton</code> can be found in "lib/form.l"
+
+<p><pre><code>
+(class +DnButton +Rid +Able +Button)
+...
+</code></pre>
+
+<p>In general, "lib/form.l" is the ultimate reference to the framework, and
+should be freely consulted.
+
+
+<p><hr>
+<h3><a name="inputFields">Input Fields</a></h3>
+
+<p>Input fields implement the visual display of application data, and allow -
+when enabled - input and modification of these data.
+
+<p>On the HTML level, they can take the form of
+
+<ul>
+<li>Normal text input fields
+<li>Textareas
+<li>Checkboxes
+<li>Drop-down selections
+<li>Password fields
+<li>HTML links
+<li>Plain HTML text
+</ul>
+
+<p>Except for checkboxes, which are implemented by the <a
+href="#checkboxes">Checkbox</a> class, all these HTML representations are
+generated by <code>+TextField</code> and its content-specific subclasses like
+<code>+NumField</code>, <code>+DateField</code> etc. Their actual appearance (as
+one of the above forms) depends on their arguments:
+
+<p>We saw already "normal" text fields. They are created with a single numeric
+argument. This example creates an editable field with a width of 10 characters:
+
+<p><pre><code>
+   (gui '(+TextField) 10)
+</code></pre>
+
+<p>If you supply a second numeric for the line count ('4' in this case), you'll
+get a text area:
+
+<p><pre><code>
+   (gui '(+TextField) 10 4)
+</code></pre>
+
+<p>Supplying a list of values instead of a count yields a drop-down selection
+(combo box):
+
+<p><pre><code>
+   (gui '(+TextField) '("Value 1" "Value 2" "Value 3"))
+</code></pre>
+
+<p>In addition to these arguments, you can pass an string. Then the field is
+created with a label:
+
+<p><pre><code>
+   (gui '(+TextField) 10 "Plain")
+   (gui '(+TextField) 10 4 "Text Area")
+   (gui '(+TextField) '("Value 1" "Value 2" "Value 3") "Selection")
+</code></pre>
+
+<p>Finally, without any arguments, the field will appear as a plain HTML text:
+
+<p><pre><code>
+   (gui '(+TextField))
+</code></pre>
+
+<p>This makes mainly sense in combination with prefix classes like
+<code>+Var</code> and <code>+Obj</code>, to manage the contents of these fields,
+and achive special behavior as HTML links or scrollable chart values.
+
+
+<h4><a name="numberFields">Numeric Input Fields</a></h4>
+
+<p>A <code>+NumField</code> returns a number from its <code>val&gt;</code>
+method, and accepts a number for its <code>set&gt;</code> method. It issues an
+error message when user input cannot be converted to a number.
+
+<p>Large numbers are shown with a thousands-separator, as determined by the
+current locale.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+NumField" "lib.css" NIL
+      (form NIL
+         (gui '(+NumField) 10)
+         (gui '(+JS +Button) "Print value"
+            '(msg (val&gt; (: home gui 1))) )
+         (gui '(+JS +Button) "Set to 123"
+            '(set&gt; (: home gui 1) 123) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>A <code>+FixField</code> needs an additional scale factor argument, and
+accepts/returns scaled fixpoint numbers.
+
+<p>The decimal separator is determined by the current locale.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+FixField" "lib.css" NIL
+      (form NIL
+         (gui '(+FixField) 3 10)
+         (gui '(+JS +Button) "Print value"
+            '(msg (format (val&gt; (: home gui 1)) 3)) )
+         (gui '(+JS +Button) "Set to 123.456"
+            '(set&gt; (: home gui 1) 123456) ) ) ) )
+########################################################################
+</code></pre>
+
+
+<h4><a name="timeDateFields">Time &amp; Date</a></h4>
+
+<p>A <code>+DateField</code> accepts and returns a <code><a
+href="ref.html#date">date</a></code> value.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+DateField" "lib.css" NIL
+      (form NIL
+         (gui '(+DateField) 10)
+         (gui '(+JS +Button) "Print value"
+            '(msg (datStr (val&gt; (: home gui 1)))) )
+         (gui '(+JS +Button) "Set to \"today\""
+            '(set&gt; (: home gui 1) (date)) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>The format displayed to - and entered by - the user depends on the current
+locale. You can change it, for example to
+
+<p><pre><code>
+: (locale "DE" "de")
+-> NIL
+</code></pre>
+
+<p>An error is issued when user input does not match the current locale's date
+format.
+
+<p>Independent from the locale setting, a <code>+DateField</code> tries to
+expand abbreviated input from the user. A small number is taken as that day of
+the current month, larger numbers expand to day and month, or to day, month and
+year:
+
+<ul>
+<li>"7" gives the 7th of the current month
+<li>"031" or "0301" give the 3rd of January of the current year
+<li>"311" or "3101" give the 31st of January of the current year
+<li>"0311" gives the 3rd of November of the current year
+<li>"01023" or "010203" give the first of February in the year 2003
+<li>and so on
+</ul>
+
+<p>Similar is the <code>+TimeField</code>. It accepts and returns a <code><a
+href="ref.html#time">time</a></code> value.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+TimeField" "lib.css" NIL
+      (form NIL
+         (gui '(+TimeField) 8)
+         (gui '(+JS +Button) "Print value"
+            '(msg (tim$ (val&gt; (: home gui 1)))) )
+         (gui '(+JS +Button) "Set to \"now\""
+            '(set&gt; (: home gui 1) (time)) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>When the field width is '8', like in this example, time is displayed in the
+format <code>HH:MM:SS</code>. Another possible value would be '5', causing
+<code>+TimeField</code> to display its value as <code>HH:MM</code>.
+
+<p>An error is issued when user input cannot be converted to a time value.
+
+<p>The user may omit the colons. If he inputs just a small number, it should be
+between '0' and '23', and will be taken as a full hour. '125' expands to
+"12:05", '124517' to "12:45:17", and so on.
+
+
+<h4><a name="telFields">Telephone Numbers</a></h4>
+
+<p>Telephone numbers are represented internally by the country code (without a
+leading plus sign or zero) followed by the local phone number (ideally separated
+by spaces) and the phone extension (ideally separated by a hyphen). The exact
+format of the phone number string is not enforced by the GUI, but further
+processing (e.g. database searches) normally uses <code><a
+href="ref.html#fold">fold</a></code> for better reproducibility.
+
+<p>To display a phone number, <code>+TelField</code> replaces the country code
+with a single zero (if it is the country code of the current locale), or
+prepends it with a plus sign (if it is a foreign country).
+
+<p>For user input, a plus sign or a double zero is simply dropped, while a
+single leading zero is replaced with the current locale's country code and a
+space.
+
+<p><pre><code>
+########################################################################
+(app)
+(locale "DE" "de")
+
+(action
+   (html 0 "+TelField" "lib.css" NIL
+      (form NIL
+         (gui '(+TelField) 20)
+         (gui '(+JS +Button) "Print value"
+            '(msg (val&gt; (: home gui 1))) )
+         (gui '(+JS +Button) "Set to \"49 1234 5678-0\""
+            '(set&gt; (: home gui 1) "49 1234 5678-0") ) ) ) )
+########################################################################
+</code></pre>
+
+
+<h4><a name="checkboxes">Checkboxes</a></h4>
+
+<p>A <code>+Checkbox</code> is straightforward. User interaction is restricted
+to clicking it on and off. It accepts boolean (<code>NIL</code> or
+non-<code>NIL</code>) values, and returns <code>T</code> or <code>NIL</code>.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+Checkbox" "lib.css" NIL
+      (form NIL
+         (gui '(+Checkbox))
+         (gui '(+JS +Button) "Print value"
+            '(msg (val&gt; (: home gui 1))) )
+         (gui '(+JS +Button) "On"
+            '(set&gt; (: home gui 1) T) )
+         (gui '(+JS +Button) "Off"
+            '(set&gt; (: home gui 1) NIL) ) ) ) )
+########################################################################
+</code></pre>
+
+
+<p><hr>
+<h3><a name="fieldPrefix">Field Prefix Classes</a></h3>
+
+<p>A big part of this framework's power is owed to the combinatorial flexibility
+of prefix classes for GUI- and DB-objects. They allow to surgically override
+individual methods in the inheritance tree, and can be combined in various ways
+to achieve any desired behavior.
+
+<p>Technically, there is nothing special about prefix classes. They are just
+normal classes. They are called "prefix" because they are intended to be written
+<i>before</i> other classes in a class's or object's list of superclasses.
+
+<p>Usually they take their own arguments for their <code>T</code> method from
+the list of arguments to the <code>gui</code> function.
+
+
+<h4><a name="initPrefix">Initialization</a></h4>
+
+<p><code>+Init</code> overrides the <code>init&gt;</code> method for that
+component. The <code>init&gt;</code> message is sent to a <code>+gui</code>
+component when the page is loaded for the first time (during a <code>GET</code>
+request). <code>+Init</code> takes an expression for the initial value of that
+field.
+
+<p><pre><code>
+   (gui '(+Init +TextField) "This is the initial text" 30)
+</code></pre>
+
+<p>Other classes which automatically give a value to a field are
+<code>+Var</code> (binding the field to a variable) and <code>+E/R</code>
+(binding the field to a database entity/relation).
+
+
+<h4><a name="ablePrefix">Disabling and Enabling</a></h4>
+
+<p>An important feature of an interactive GUI is the context-sensitive disabling
+and enabling of individual components, or of a whole form.
+
+<p>The <code>+Able</code> prefix class takes an argument expression, and
+disables the component if this expression returns <code>NIL</code>. We saw an
+example for its usage already in the <a href="#sqrtButton">sqare root button</a>
+of the calculator example. Or, for illustration purposes, imagine a button which
+is supposed to be enabled only after Christmas
+
+<p><pre><code>
+   (gui '(+Able +Button)
+      '(>= (cdr (date (date))) (12 24))
+      "Close this year"
+      '(endOfYearProcessing) )
+</code></pre>
+
+<p>or a password field that is disabled as long as somebody is logged in
+
+<p><pre><code>
+   (gui '(+Able +PwField) '(not *Login) 10 "Password")
+</code></pre>
+
+<p>A special case is the <code>+Lock</code> prefix, which permanently and
+unconditionally disables a component. It takes no arguments
+
+<p><pre><code>
+   (gui '(+Lock +NumField) 10 "Count")
+</code></pre>
+
+<p>('10' and "Count" are for the <code>+NumField</code>), and creates a
+read-only field.
+
+<p>The whole form can be disabled by calling <code>disable</code> with a
+non-<code>NIL</code> argument. This affects all components in this form. Staying
+with the above example, we can make the form read-only until Christmas
+
+<p><pre><code>
+   (form NIL
+      (disable (> (12 24) (cdr (date (date)))))  # Disable whole form
+      (gui ..)
+      .. )
+</code></pre>
+
+<p>Even in a completely disabled form, however, it is often necessary to
+re-enable certain components, as they are needed for navigation, scrolling, or
+other activities which don't affect the contents of the form. This is done by
+prefixing these fields with <code>+Rid</code> (i.e. getting "rid" of the lock).
+
+<p><pre><code>
+   (form NIL
+      (disable (> (12 24) (cdr (date (date)))))
+      (gui ..)
+      ..
+      (gui '(+Rid +Button) ..)  # Button is enabled despite the disabled form
+      .. )
+</code></pre>
+
+
+<h4><a name="formatPrefix">Formatting</a></h4>
+
+<p>
+
+
+<h4><a name="validPrefix">Validation</a></h4>
+
+
+<p>*** TO BE CONTINUED ***
+
+<h4><a name="bindPrefix">Binding</a></h4>
+
+
+<p><hr>
+<h3><a name="buttons">Buttons</a></h3>
+
+
+<h4><a name="dialogButtons">Dialog Buttons</a></h4>
+
+
+<p><hr>
+<h3><a name="buttonPrefix">Button Prefix Classes</a></h3>
+
+
+<h4><a name="closeButtons">Dialog Close</a></h4>
+
+
+<h4><a name="jsButtons">Active JavaScript</a></h4>
 
 
 <p><hr>
 <h2><a name="db">DB-Integration</a></h2>
 
-
-<p>*** TO BE CONTINUED ***
 
 <p>The most recent version of this document can be found on the <a
 href="http://software-lab.de/down.html">Pico Lisp Download</a> page, and in the

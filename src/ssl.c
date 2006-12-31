@@ -1,4 +1,4 @@
-/* 29aug06abu
+/* 23dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,8 +27,7 @@ static char *File, *Dir, *Data;
 static off_t Size;
 
 static char Get[] =
-   "GET /%s HTTP 1.1\r\n"
-   "Connection: close\r\n"
+   "GET /%s HTTP/1.0\r\n"
    "User-Agent: PicoLisp\r\n"
    "Host: %s:%s\r\n"
    "Accept-Charset: utf-8\r\n\r\n";
@@ -238,8 +237,8 @@ int main(int ac, char *av[]) {
                         sslFile(ssl, nm)  &&                         // file
                         sslClose(ssl,sd) )
                      unlink(nm);
-
-                  sslClose(ssl,sd);
+                  else
+                     sslClose(ssl,sd);
                }
             }
          }

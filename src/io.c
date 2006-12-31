@@ -1,4 +1,4 @@
-/* 22sep06abu
+/* 20dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -30,7 +30,6 @@ static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void dbfErr(void) {err(NULL, NULL, "Bad DB file");}
-static void jnlErr(void) {err(NULL, NULL, "Bad Journal");}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
 
@@ -506,6 +505,7 @@ void rdOpen(any ex, any x, inFrame *f) {
       if (nm[0] == '+') {
          if (!(f->fp = fopen(nm+1, "a+")))
             openErr(ex, nm);
+         fseek(f->fp, 0L, SEEK_SET);
       }
       else if (!(f->fp = fopen(nm, "r")))
          openErr(ex, nm);
@@ -673,11 +673,13 @@ static void getParse(void) {
 void pushInFiles(inFrame *f) {
    f->next = Chr,  Chr = 0;
    InFile = f->fp;
+   f->get = Env.get,  Env.get = getStdin;
    f->link = Env.inFiles,  Env.inFiles = f;
 }
 
 void pushOutFiles(outFrame *f) {
    OutFile = f->fp;
+   f->put = Env.put,  Env.put = putStdout;
    f->link = Env.outFiles,  Env.outFiles = f;
 }
 
@@ -694,6 +696,7 @@ void popInFiles(void) {
                closeErr("Read pipe");
    }
    Chr = Env.inFiles->next;
+   Env.get = Env.inFiles->get;
    InFile = (Env.inFiles = Env.inFiles->link)?  Env.inFiles->fp : stdin;
 }
 
@@ -705,6 +708,7 @@ void popOutFiles(void) {
             if (errno != EINTR)
                closeErr("Write pipe");
    }
+   Env.put = Env.outFiles->put;
    OutFile = (Env.outFiles = Env.outFiles->link)? Env.outFiles->fp : stdout;
 }
 
@@ -1078,7 +1082,7 @@ long waitFd(any ex, int fd, long ms) {
             m = Hear;
          FD_SET(Hear, &fdSet);
       }
-      for (x = data(c1) = val(Key); isCell(x); x = cdr(x))
+      for (x = data(c1) = val(Run); isCell(x); x = cdr(x))
          if (isNeg(caar(x))) {
             if ((n = (int)unDig(cadar(x)) / 2) < t)
                tp = &tv,  t = n;
@@ -1401,6 +1405,22 @@ any doTill(any ex) {
    }
 }
 
+static inline bool eol(void) {
+   if (Chr < 0)
+      return YES;
+   if (Chr == '\n') {
+      Chr = 0;
+      return YES;
+   }
+   if (Chr == '\r') {
+      Env.get();
+      if (Chr == '\n')
+         Chr = 0;
+      return YES;
+   }
+   return NO;
+}
+
 // (line 'flg ['cnt ..]) -> lst|sym
 any doLine(any ex) {
    any x, y, z;
@@ -1410,14 +1430,8 @@ any doLine(any ex) {
 
    if (!Chr)
       Env.get();
-   if (Chr < 0)
+   if (eol())
       return Nil;
-   if (Chr == '\r')
-      Env.get();
-   if (Chr < 0  ||  Chr == '\n') {
-      Chr = 0;
-      return Nil;
-   }
    x = cdr(ex);
    if (pack = !isNil(EVAL(car(x))))
       Push(c1, boxChar(getChar(), &i, &z));
@@ -1432,10 +1446,7 @@ any doLine(any ex) {
       for (;;) {
          n = (int)evCnt(ex,x);
          while (--n) {
-            if (Env.get(), Chr == '\r')
-               Env.get();
-            if (Chr < 0  ||  Chr == '\n') {
-               Chr = 0;
+            if (Env.get(), eol()) {
                if (pack)
                   car(y) = consStr(car(y));
                return Pop(c1);
@@ -1451,24 +1462,16 @@ any doLine(any ex) {
             pack = NO;
             break;
          }
-         if (Env.get(), Chr == '\r')
-            Env.get();
-         if (Chr < 0  ||  Chr == '\n') {
-            Chr = 0;
+         if (Env.get(), eol())
             return Pop(c1);
-         }
          y = cdr(y) = cons(
             pack? boxChar(getChar(), &i, &z) : (z = cons(mkChar(getChar()), Nil)),
             Nil );
       }
    }
    for (;;) {
-      if (Env.get(), Chr == '\r')
-         Env.get();
-      if (Chr < 0  ||  Chr == '\n') {
-         Chr = 0;
+      if (Env.get(), eol())
          return pack? consStr(Pop(c1)) : Pop(c1);
-      }
       if (pack)
          charSym(getChar(), &i, &z);
       else
@@ -1476,15 +1479,14 @@ any doLine(any ex) {
    }
 }
 
-// (lines 'sym ..) -> cnt
+// (lines 'any ..) -> cnt
 any doLines(any ex) {
    any x, y;
    int c, cnt = 0;
    FILE *fp;
 
    for (x = cdr(ex); isCell(x); x = cdr(x)) {
-      y = EVAL(car(x));
-      NeedSym(ex,y);
+      y = evSym(x);
       {
          char nm[pathSize(y)];
 
@@ -1525,7 +1527,7 @@ static void putString(int c) {
    if (StrP)
       byteSym(c, &StrI, &StrP);
    else
-      StrI = 0,  data(StrCell) = StrP = box(c);
+      StrI = 0,  data(StrCell) = StrP = box(c & 0xFF);
 }
 
 void begString(void) {
@@ -1747,19 +1749,27 @@ any doEcho(any ex) {
 
    x = cdr(ex),  y = EVAL(car(x));
    if (isNil(y) && !isCell(cdr(x))) {
-      int n, dst = fileno_unlocked(OutFile);
-      byte buf[BUFSIZ];
-
-      fflush_unlocked(OutFile);
-      if (Chr) {
-         buf[0] = (byte)Chr;
-         if (!wrBytes(dst,buf,1))
-            return Nil;
+      if (Env.get != getStdin || Env.put != putStdout) {
+         if (!Chr)
+            Env.get();
+         while (Chr >= 0)
+            Env.put(Chr),  Env.get();
       }
-      Chr = 0;
-      while ((n = fread_unlocked(buf, 1, sizeof(buf), InFile)) > 0)
-         if (!wrBytes(dst, buf, n))
-            return Nil;
+      else {
+         int n, dst = fileno_unlocked(OutFile);
+         byte buf[BUFSIZ];
+
+         fflush_unlocked(OutFile);
+         if (Chr) {
+            buf[0] = (byte)Chr;
+            if (!wrBytes(dst,buf,1))
+               return Nil;
+            Chr = 0;
+         }
+         while ((n = fread_unlocked(buf, 1, sizeof(buf), InFile)) > 0)
+            if (!wrBytes(dst, buf, n))
+               return Nil;
+      }
       return T;
    }
    if (isSym(y)) {
@@ -2025,7 +2035,7 @@ any doFlush(any ex __attribute__((unused))) {
 
 // (rewind) -> flg
 any doRewind(any ex __attribute__((unused))) {
-   return fseek(OutFile, 0L, SEEK_SET) || ftruncate(fileno_unlocked(OutFile),0)? Nil : T;
+   return fseek(OutFile, 0L, SEEK_SET) || ftruncate(fileno_unlocked(OutFile), 0)? Nil : T;
 }
 
 // (rd ['sym]) -> any
@@ -2143,6 +2153,8 @@ static void setAdr(adr n, byte *p) {
    p[3] = (byte)(n >> 24),  p[4] = (byte)(n >> 32),  p[5] = (byte)(n >> 40);
 }
 
+static void jnlErr(void) {err(NULL, NULL, "Bad Journal");}
+
 static any new64(word2 n, any x) {
    int c, i;
    word2 w = 0;
@@ -2210,7 +2222,6 @@ static inline void rdLock(void) {
    if (val(Solo) != T)
       dbLock(F_SETLKW, F_RDLCK, 0, 1);
 }
-
 
 static inline void wrLock(void) {
    if (val(Solo) != T)
@@ -2294,14 +2305,19 @@ static adr newBlock(void) {
    byte buf[2*BLK];
 
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
-   if (n = getAdr(buf))
+   setAdr(0, IniBlk);
+   if (n = getAdr(buf)) {
       blkPeek(n << BlkShift[F], buf, BLK);  // Get free link
-   else if ((n = getAdr(buf+BLK)) == 281474976710592LL)
-      err(NULL, NULL, "DB Oversize");
-   else
+      blkPoke(0, buf, 2*BLK);
+      blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
+   }
+   else if ((n = getAdr(buf+BLK)) < 281474976710592LL) {
       setAdr(n + BLKSIZE, buf+BLK);  // Increment next
-   setAdr(0, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
-   blkPoke(0, buf, 2*BLK);
+      blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
+      blkPoke(0, buf, 2*BLK);
+   }
+   else
+      err(NULL, NULL, "DB Oversize");
    return n;
 }
 
@@ -2313,11 +2329,9 @@ any newId(int i) {
    wrLock();
    if (Journal)
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
-   protect(YES);
    n = newBlock();
    if (Journal)
       fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
-   protect(NO);
    rwUnlock(1);
    return new64(n/BLKSIZE, At2);  // dirty
 }
@@ -2415,8 +2429,7 @@ any doPool(any ex) {
       BlkShift = alloc(BlkShift, Files * sizeof(int));
       BlkFile = alloc(BlkFile, Files * sizeof(int));
       BlkSize = alloc(BlkSize, Files * sizeof(int));
-      Locks = alloc(Locks, Files);
-      memset(Locks, 0, Files);
+      Locks = alloc(Locks, Files),  memset(Locks, 0, Files);
       MaxBlkSize = 0;
       for (F = 0; F < Files; ++F) {
          char nm[pathSize(db) + 8];
@@ -2737,20 +2750,21 @@ any doBegin(any x) {
    return T;
 }
 
-// (commit ['any]) -> flg
-any doCommit(any x) {
+// (commit ['any] [exe1] [exe2]) -> flg
+any doCommit(any ex) {
    bool force, note;
    int i;
-   any flg, y, z;
+   any flg, x, y, z;
    ptr pbSave, ppSave;
    byte buf[PIPE_BUF];
 
-   x = cdr(x),  flg = EVAL(car(x));
-   force = !isNil(flg) || !Transactions;
+   x = cdr(ex),  flg = EVAL(car(x));
+   force = !Transactions || !isNil(flg);
    wrLock();
    if (Journal)
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
+   x = cddr(ex),  EVAL(car(x));
    if (note = Tell && !isNil(flg) && flg != T)
       tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
    for (i = 0; i < HASH; ++i) {
@@ -2812,6 +2826,7 @@ any doCommit(any x) {
       tellEnd(&pbSave, &ppSave);
    if (Journal)
       fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
+   x = cdddr(ex),  EVAL(car(x));
    protect(NO);
    if (Transactions) {
       rwUnlock(1);
@@ -2936,17 +2951,15 @@ any doDbck(any x) {
       x = cdr(x),  y = EVAL(car(x));
    }
    flg = !isNil(y);
-   blkPeek(0, buf, 2*BLK);  // Get Free, Next
-   next = getAdr(buf+BLK);
-   if ((p = lseek(BlkFile[F], 0, SEEK_END) >> BlkShift[F]) >= BlkSize[F]  &&  p != next)  // Check size
-      return mkStr("Size mismatch");
    cnt = BLKSIZE;
    blks = syms = 0;
-   BlkLink = getAdr(buf);  // Check free list
+   blkPeek(0, buf, 2*BLK);  // Get Free, Next
+   BlkLink = getAdr(buf);
+   next = getAdr(buf+BLK);
    if (Journal)
       lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
    protect(YES);
-   while (BlkLink) {
+   while (BlkLink) {  // Check free list
       rdBlock(BlkLink);
       if ((cnt += BLKSIZE) > next)
          return mkStr("Circular free list");

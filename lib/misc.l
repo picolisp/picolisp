@@ -1,4 +1,4 @@
-# 04sep06abu
+# 02dec06abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -89,15 +89,6 @@
                         (T (>= (+ (length (car Lst)) (sum length (made))) Max)
                            (link "^J") )
                         (link " " (pop 'Lst)) ) ) ) ) ) ) ) )
-
-(de glue (Str Lst)
-   (pack
-      (maplist
-         '((L)
-            (cons
-               (car L)
-               (and (cdr L) Str) ) )
-         Lst ) ) )
 
 ### Number ###
 (de pad (N Val)
@@ -336,8 +327,8 @@
       (flip (cdr (member "/" (reverse (chop F))))) ) )
 
 # Temporary Files
-(?push '*Fork '(off *Tmp))
-(?push '*Bye '(and *Tmp (call 'rm "-r" *Tmp)))
+(push1 '*Fork '(off *Tmp))
+(push1 '*Bye '(and *Tmp (call 'rm "-r" *Tmp)))
 
 (de tmp @
    (unless *Tmp
@@ -396,9 +387,13 @@
                            "\"^M" )
                         (prinl "Content-Transfer-Encoding: base64^M")
                         (prinl "^M")
-                        (in (list "uuencode" "-m" (car "Att") (cadr "Att"))
-                           (line)
-                           (echo '====) )
+                        (in (car "Att")
+                           (while
+                              (do 15
+                                 (NIL (ext:Base64 (rd 1) (rd 1) (rd 1)))
+                                 T )
+                              (prinl) ) )
+                        (prinl)
                         (prinl "^M")
                         (NIL (setq "Att" (cdddr "Att"))) )
                      (prinl "--" "B" "--^M") )
@@ -430,7 +425,7 @@
 
 ### Testing ###
 (de test ("Pat" . "Prg")
-   (unless (match "Pat" (run "Prg"))
+   (unless ((if (atom "Pat") = match) "Pat" (run "Prg"))
       (println 'fail "Prg") ) )
 
 # vim:syntax=picolisp:ts=3:sw=3:expandtab

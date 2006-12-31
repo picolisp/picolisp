@@ -1,4 +1,4 @@
-# 28jun06abu
+# 21dec06abu
 # (c) Software Lab. Alexander Burger
 
 # *Url1 *Frame *Meta *Css
@@ -6,69 +6,70 @@
 ### HTML Output ###
 (de html ("Ttl" . "Prg")
    (httpHead NIL (if (car "Prg") 0 (pop '"Prg")))
-   (prinl
-      "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 "
-      (if (num? (car "Prg")) "Frameset" "Transitional")
-      "//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">" )
-   (if *Lang
-      (prinl "<HTML lang=\"" *Lang "\">")
-      (prinl "<HTML>") )
-   (prinl "<HEAD>")
-   (prinl "<BASE HREF=\"" (baseHRef) "\">")
-   (when "Ttl"
-      (prin "<TITLE>")
-      (ht:Prin "Ttl")
-      (prinl "</TITLE>") )
-   (for L *Meta
-      (prin "<META")
-      (while L
-         (prin " " (caar L) "=\"" (cdr (pop 'L)) "\"") )
-      (prinl ">") )
-   (when *Css
+   (ht:Out *Chunked
       (prinl
-         "<link rel=\"stylesheet\" type=\"text/css\" href=\""
-         *SesId *Css "\">" ) )
-   (prinl "</HEAD>")
-   (nond
-      ((num? (car "Prg"))
-         (prin "<BODY")
-         (while (and (pair (car "Prg")) (=T (caar "Prg")))
-            (prin " " (eval (cdr (pop '"Prg")))) )
-         (prinl ">")
-         (prEval "Prg")
-         (prinl "</BODY>") )
-      ((num? (cadr "Prg"))
+         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 "
+         (if (num? (car "Prg")) "Frameset" "Transitional")
+         "//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">" )
+      (if *Lang
+         (prinl "<HTML lang=\"" *Lang "\">")
+         (prinl "<HTML>") )
+      (prinl "<HEAD>")
+      (prinl "<BASE HREF=\"" (baseHRef) "\">")
+      (when "Ttl"
+         (prin "<TITLE>")
+         (ht:Prin "Ttl")
+         (prinl "</TITLE>") )
+      (for L *Meta
+         (prin "<META")
+         (while L
+            (prin " " (caar L) "=\"" (cdr (pop 'L)) "\"") )
+         (prinl ">") )
+      (when *Css
          (prinl
-            "<FRAMESET COLS=\""
-            (eval (pop '"Prg"))
-            ",*\"><FRAME NAME=\"MENU\" SRC=\""
-            *SesId
-            "1\"><FRAME NAME=\"MAIN\" SRC=\""
-            *SesId
-            (eval (pop '"Prg"))
-            "\"></FRAMESET>" )
-         (setq  *Frame
-            (cons (list NIL NIL (cons 'html (cons NIL "Prg"))))) )
-      (NIL
-         (prinl
-            "<FRAMESET ROWS=\""
-            (eval (pop '"Prg"))
-            ",*\"><FRAME SRC=\""
-            *SesId
-            "0\" MARGINHEIGHT=\"0\" SCROLLING=\"NO\"><FRAMESET COLS=\""
-            (eval (pop '"Prg"))
-            ",*\"><FRAME NAME=\"MENU\" SRC=\""
-            *SesId
-            "1\"><FRAME NAME=\"MAIN\" SRC=\""
-            *SesId
-            (eval (pop '"Prg"))
-            "\"></FRAMESET></FRAMESET>" )
-         (setq  *Frame
-            (mapcar
-               '((L)
-                  (mix L 1 2 (cons 'html (cons NIL (cddr L)))) )
-               "Prg" ) ) ) )
-   (prinl "</HTML>") )
+            "<link rel=\"stylesheet\" type=\"text/css\" href=\""
+            *SesId *Css "\">" ) )
+      (prinl "</HEAD>")
+      (nond
+         ((num? (car "Prg"))
+            (prin "<BODY")
+            (while (and (pair (car "Prg")) (=T (caar "Prg")))
+               (prin " " (eval (cdr (pop '"Prg")))) )
+            (prinl ">")
+            (prEval "Prg")
+            (prinl "</BODY>") )
+         ((num? (cadr "Prg"))
+            (prinl
+               "<FRAMESET COLS=\""
+               (eval (pop '"Prg"))
+               ",*\"><FRAME NAME=\"MENU\" SRC=\""
+               *SesId
+               "1\"><FRAME NAME=\"MAIN\" SRC=\""
+               *SesId
+               (eval (pop '"Prg"))
+               "\"></FRAMESET>" )
+            (setq  *Frame
+               (cons (list NIL NIL (cons 'html (cons NIL "Prg"))))) )
+         (NIL
+            (prinl
+               "<FRAMESET ROWS=\""
+               (eval (pop '"Prg"))
+               ",*\"><FRAME SRC=\""
+               *SesId
+               "0\" MARGINHEIGHT=\"0\" SCROLLING=\"NO\"><FRAMESET COLS=\""
+               (eval (pop '"Prg"))
+               ",*\"><FRAME NAME=\"MENU\" SRC=\""
+               *SesId
+               "1\"><FRAME NAME=\"MAIN\" SRC=\""
+               *SesId
+               (eval (pop '"Prg"))
+               "\"></FRAMESET></FRAMESET>" )
+            (setq  *Frame
+               (mapcar
+                  '((L)
+                     (mix L 1 2 (cons 'html (cons NIL (cddr L)))) )
+                  "Prg" ) ) ) )
+      (prinl "</HTML>") ) )
 
 (undef 'urlN)
 (de urlN (Str)

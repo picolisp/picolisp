@@ -1,10 +1,10 @@
-# 12sep06abu
+# 13oct06abu
 # (c) Software Lab. Alexander Burger
 
 # *Java
 
-(?push '*Fork '(off *Java))
-(?push '*Bye '(and *Java (call 'rm *Java))) )
+(push1 '*Fork '(off *Java))
+(push1 '*Bye '(and *Java (call 'rm *Java))) )
 
 (de java (Cls X . @)
    (unless *Java

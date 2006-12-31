@@ -1178,7 +1178,7 @@ NIL
    <a href="#until">until</a>,
    <a href="#when">when</a>,
    <a href="#while">while</a>,
-and the bodies of <code><a href="#*Key">*Key</a></code> tasks.
+and the bodies of <code><a href="#*Run">*Run</a></code> tasks.
 
 </dl>
 
@@ -1285,12 +1285,12 @@ href="#:">:</a></code> and <code><a href="#::">::</a></code>.
 
 <p>On the lowest level, a Pico Lisp database is simply a collection of <a
 href="#external">external symbols</a>. They reside in a database file, and are
-dynamically swapped in and out of memory. At a time, only one database file can
-be open (<code><a href="#pool">pool</a></code>).
+dynamically swapped in and out of memory. Only one database file (pool) can be
+open at any time (<code><a href="#pool">pool</a></code>).
 
 <p>The symbols in the database can be used to store arbitrary information
 structures. In typical use, some symbols represent nodes of search trees, by
-holding keys, valuees, and links to subtrees in their <code>VAL</code>'s. Such a
+holding keys, values, and links to subtrees in their <code>VAL</code>'s. Such a
 search tree in the database is called <u>index</u>.
 
 <p>For the most part, other symbols in the database are objects derived from the
@@ -1616,6 +1616,8 @@ abbreviations:
    <a href="#format">format</a>
    <a href="#chop">chop</a>
    <a href="#pack">pack</a>
+   <a href="#glue">glue</a>
+   <a href="#text">text</a>
    <a href="#preQ">pre?</a>
    <a href="#subQ">sub?</a>
    <a href="#lowQ">low?</a>
@@ -1640,10 +1642,12 @@ abbreviations:
    <a href="#letQ">let?</a>
    <a href="#use">use</a>
    <a href="#push">push</a>
+   <a href="#push1">push1</a>
    <a href="#pop">pop</a>
    <a href="#cut">cut</a>
    <a href="#del">del</a>
    <a href="#queue">queue</a>
+   <a href="#fifo">fifo</a>
    <a href="#idx">idx</a>
    <a href="#lup">lup</a>
 </code>
@@ -1676,6 +1680,8 @@ abbreviations:
    <a href="#boxQ">box?</a>
    <a href="#strQ">str?</a>
    <a href="#extQ">ext?</a>
+   <a href="#bool">bool</a>
+   <a href="#not">not</a>
    <a href="#==">==</a>
    <a href="#n==">n==</a>
    <a href="#=">=</a>
@@ -1782,9 +1788,11 @@ abbreviations:
    <a href="#set">set</a>
    <a href="#xchg">xchg</a>
    <a href="#push">push</a>
+   <a href="#push1">push1</a>
    <a href="#pop">pop</a>
    <a href="#cut">cut</a>
    <a href="#queue">queue</a>
+   <a href="#fifo">fifo</a>
    <a href="#idx">idx</a>
    <a href="#get">get</a>
    <a href="#fill">fill</a>
@@ -1982,6 +1990,7 @@ abbreviations:
    <a href="#opt">opt</a>
    <a href="#gc">gc</a>
    <a href="#raw">raw</a>
+   <a href="#die">die</a>
    <a href="#protect">protect</a>
    <a href="#heap">heap</a>
    <a href="#env">env</a>
@@ -2021,7 +2030,7 @@ abbreviations:
    <a href="#*Pid">*Pid</a>
    <a href="#*Scl">*Scl</a>
    <a href="#*Class">*Class</a>
-   <a href="#*Key">*Key</a>
+   <a href="#*Run">*Run</a>
    <a href="#*Led">*Led</a>
    <a href="#*Tsm">*Tsm</a>
    <a href="#*Err">*Err</a>
@@ -2707,17 +2716,20 @@ from <code>fun</code>.
 -> 2
 </code></pre>
 
-<p><dt><a name="commit"><code>(commit ['any]) -> flg</code></a>
+<p><dt><a name="commit"><code>(commit ['any] [exe1] [exe2]) -> flg</code></a>
 <dd>Closes a transaction, by writing all new or modified external symbols to the
 database, and by removing all deleted symbols from the database. For nested
 transactions, only the changes since the last call to <code><a
 href="#begin">begin</a></code> are taken into account. A non-<code>NIL</code>
-argument forces modifications of the current transaction level to be written
-out, even if this is not the top level. When the argument is anything other than
-<code>T</code>, it is implicitly sent (with all modified objects) via the
-<code><a href="#tell">tell</a></code> mechanism to all family members. Returns
-<code>T</code> when the topmost transaction is closed. See also <code><a
-href="#rollback">rollback</a></code>.
+<code>any</code> argument forces modifications of the current transaction level
+to be written out, even if this is not the top level. When <code>any</code> is
+anything other than <code>T</code>, it is implicitly sent (with all modified
+objects) via the <code><a href="#tell">tell</a></code> mechanism to all family
+members. If <code>exe1</code> or <code>exe2</code> are given, they are executed
+as pre- or post-expressions while the database is <code><a
+href="#lock">lock</a></code>ed and <code><a
+href="#protect">protect</a></code>ed. Returns <code>T</code> when the topmost
+transaction is closed. See also <code><a href="#rollback">rollback</a></code>.
 
 <p><pre><code>
 : (pool "<u>db</u>")
@@ -3069,6 +3081,18 @@ href="#mmeq">mmeq</a></code>.
 -> (1 2 3)
 </code></pre>
 
+<p><dt><a name="die"><code>(die 'cnt . prg) -> any</code></a>
+<dd> If the execution of <code>prg</code> does not finish within
+<code>cnt</code> seconds, the current process will recieve a SIGTERM signal. See
+also <code><a href="#bye">bye</a></code> and <code><a
+href="#protect">protect</a></code>.
+
+<p><pre><code>
+: (die 6 (finally (msg 'Bye) (loop)))
+Bye
+$
+</code></pre>
+
 <p><dt><a name="dir"><code>(dir ['any]) -> lst</code></a>
 <dd>Returns a list of all filenames in the directory <code>any</code>. Names
 starting with a dot '<code>.</code>' are ignored. See also <code><a
@@ -3248,6 +3272,31 @@ was found.
 
 <p><hr>
 <h3><a name="f-foo">F</a></h3>
+
+<p><dt><a name="fifo"><code>(fifo 'var ['any]) -> any</code></a>
+<dd>Implements a first-in-first-out structure using a ciruclar list. When called
+with an <code>any</code> argument, it will be concateneted to end of the
+structure. Otherwise, the first element is removed from the structure and
+returned. See also <code><a href="#queue">queue</a></code>, <code><a
+href="#push">push</a></code>, <code><a href="#pop">pop</a></code>, <code><a
+href="#rot">rot</a></code> and <code><a href="#circ">circ</a></code>.
+
+<p><pre><code>
+: (fifo 'X 1)
+-> 1
+: (fifo 'X 2)
+-> 2
+: (fifo 'X 3)
+-> 3
+: X
+-> (3 1 2 .)
+: (fifo 'X)
+-> 1
+: (fifo 'X)
+-> 2
+: X
+-> (3 .)
+</code></pre>
 
 <p><dt><a name="fill"><code>(fill 'any ['sym|lst]) -> any</code></a>
 <dd>Fills a pattern <code>any</code>, by substituting <code>sym</code>, or all
@@ -3637,10 +3686,21 @@ href="#putl">putl</a></code> and <code><a href="#maps">maps</a></code>.
 -> (flg (2 . b) (1 . a))
 </code></pre>
 
-<p><dt><a name="goal"><code>(goal '([sym 'any ..] . lst) ['sym 'any ..]) ->
-lst</code></a> <dd>Constructs a <a href="#pilog">Pilog</a> query list from the
-list of clauses <code>lst</code>. The head of the argument list may consist of a
-sequence of symbols and expressions, which are used together with the optional
+<p><dt><a name="glue"><code>(glue 'any 'lst) -> sym</code></a>
+<dd>Builds a new transient symbol (string) by <code><a
+href="#pack">pack</a></code>ing the <code>any</code> argument between the
+individual elements of <code>lst</code>. See also <code><a
+href="#text">text</a></code>.
+
+<p><pre><code>
+: (glue "," '(a b c d))
+-> <u>a,b,c,d</u>
+</code></pre>
+
+<p><dt><a name="goal"><code>(goal '([sym 'any ..] . lst) ['sym 'any ..]) -> lst</code></a>
+<dd>Constructs a <a href="#pilog">Pilog</a> query list from the list of clauses
+<code>lst</code>. The head of the argument list may consist of a sequence of
+symbols and expressions, which are used together with the optional
 <code>sym</code> and <code>any</code> arguments to form an initial environment.
 See also <code><a href="#prove">prove</a></code>.
 
@@ -3951,9 +4011,9 @@ symbols are bound to the values in <code>lst</code>, <code>prg</code> is
 executed, then the (possibly modified) symbol values are (destructively) stored
 in the environment list, and the symbols are restored to their original values.
 The return value is the result of <code>prg</code>. Typically used in a <code><a
-href="#*Key">*Key</a></code> task. See also <code><a
-href="#bind">bind</a></code>, <code><a href="#let">let</a></code>, <code><a
-href="#use">use</a></code> and <code><a href="#state">state</a></code>.
+href="#*Run">*Run</a></code> task. See also <code><a href="#env">env</a></code>,
+<code><a href="#bind">bind</a></code>, <code><a href="#let">let</a></code>,
+<code><a href="#use">use</a></code> and <code><a href="#state">state</a></code>.
 
 <p><pre><code>
 : (de tst ()
@@ -3994,7 +4054,7 @@ the database. See also <code><a href="#pool">pool</a></code>.
 transient symbol. The console is set to raw mode. While waiting for a key press,
 a <code>select</code> system call is executed for all file descriptors and
 timers in the <code>VAL</code> of the global variable <code><a
-href="#*Key">*Key</a></code>. If <code>cnt</code> is non-<code>NIL</code>, that
+href="#*Run">*Run</a></code>. If <code>cnt</code> is non-<code>NIL</code>, that
 amount of milliseconds is waited maximally, and <code>NIL</code> is returned
 upon timeout. See also <code><a href="#raw">raw</a></code> and <code><a
 href="#wait">wait</a></code>.
@@ -4113,15 +4173,17 @@ href="#extQ">ext?</a></code>.
 
 <p><dt><a name="line"><code>(line 'flg ['cnt ..]) -> lst|sym</code></a>
 <dd>Reads a line of characters from the current input channel. End of line is
-recognized as linefeed (hex "0A"), carriage return characters (hex "0D") are
-ignored. If <code>flg</code> is <code>NIL</code>, a list of single-character
-transient symbols is returned. When <code>cnt</code> arguments are given,
-subsequenct characters of the input line are grouped into sublists, to allow
-parsing of fixed field length records. If <code>flg</code> is
-non-<code>NIL</code>, strings are returned instead of single-character lists.
-<code>NIL</code> is returned upon end of file. See also <code><a
-href="#char">char</a></code>, <code><a href="#till">till</a></code> and <code><a
-href="#eof">eof</a></code>.
+recognized as linefeed (hex "0A"), carriage return (hex "0D"), or the
+combination of both. (Note that a single carriage return may not work on network
+connections, because the character look-ahead to distinguish from
+return+linefeed can block the connection.) If <code>flg</code> is
+<code>NIL</code>, a list of single-character transient symbols is returned. When
+<code>cnt</code> arguments are given, subsequenct characters of the input line
+are grouped into sublists, to allow parsing of fixed field length records. If
+<code>flg</code> is non-<code>NIL</code>, strings are returned instead of
+single-character lists. <code>NIL</code> is returned upon end of file. See also
+<code><a href="#char">char</a></code>, <code><a href="#till">till</a></code> and
+<code><a href="#eof">eof</a></code>.
 
 <p><pre><code>
 : (line)
@@ -4138,9 +4200,9 @@ abcdefghijkl
 -> (<u>a</u> <u>bc</u> <u>def</u> <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
 </code></pre>
 
-<p><dt><a name="lines"><code>(lines 'sym ..) -> cnt</code></a>
-<dd>Returns the number of lines in a file with the name <code>sym</code>. See
-also <code><a href="#info">info</a></code>.
+<p><dt><a name="lines"><code>(lines 'any ..) -> cnt</code></a>
+<dd>Returns the sum of the number of lines in the files with the names
+<code>any</code>. See also <code><a href="#info">info</a></code>.
 
 <p><pre><code>
 : (lines "<u>x.l</u>")
@@ -4194,7 +4256,7 @@ href="#port">port</a></code>) for an incoming connection, and returns the new
 socket descriptor <code>cnt</code>. While waiting for a connection, a
 <code>select</code> system call is executed for all file descriptors and timers
 in the <code>VAL</code> of the global variable <code><a
-href="#*Key">*Key</a></code>. If <code>cnt2</code> is non-<code>NIL</code>, that
+href="#*Run">*Run</a></code>. If <code>cnt2</code> is non-<code>NIL</code>, that
 amount of milliseconds is waited maximally, and <code>NIL</code> is returned
 upon timeout. The global variable <code>*Adr</code> is set to the IP address of
 the client. See also <code><a href="#accept">accept</a></code>, <code><a
@@ -4524,11 +4586,11 @@ the first argument is zero, all marks are cleared.
 -> NIL               # -> unmarked
 </code></pre>
 
-<p><dt><a name="match"><code>(match 'lst 'lst) -> lst</code></a>
-<dd>Takes the first <code>lst</code> argument as a pattern to be matched against
-the second <code>lst</code>, and returns <code>T</code> when successful. Atoms
-must be equal, and sublists must match recursively. Symbols in the pattern list
-with names starting with an at-mark "<code>@</code>" (see <code><a
+<p><dt><a name="match"><code>(match 'lst1 'lst2) -> flg</code></a>
+<dd>Takes <code>lst1</code> as a pattern to be matched against
+<code>lst2</code>, and returns <code>T</code> when successful. Atoms must be
+equal, and sublists must match recursively. Symbols in the pattern list with
+names starting with an at-mark "<code>@</code>" (see <code><a
 href="#patQ">pat?</a></code>) are taken as wildcards. They can match zero, one
 or more elements, and are bound to the corresponding data. See also <code><a
 href="#chop">chop</a></code>, <code><a href="#split">split</a></code> and
@@ -4645,7 +4707,8 @@ search is unsuccessful.
 <dd>Returns the function body of the method that would be executed upon sending
 the message <code>msg</code> to the object <code>obj</code>. If the message
 cannot be located in <code>obj</code>, its classes and superclasses,
-<code>NIL</code> is returned.
+<code>NIL</code> is returned. See also <code><a href="#send">send</a></code> and
+<code><a href="#try">try</a></code>.
 
 <p><pre><code>
 : (method 'mis> '+Number)
@@ -5080,7 +5143,8 @@ href="#ctl">ctl</a></code> and <code><a href="#load">load</a></code>.
 <dd>Returns a transient symbol whose name is concatenated from all arguments
 <code>any</code>. A <code>NIL</code> arguments contributes nothing to the result
 string, a number is converted to a digit string, a symbol supplies the
-characters of its name, and for a list its elements are taken.
+characters of its name, and for a list its elements are taken. See also <code><a
+href="#text">text</a></code> and <code><a href="#glue">glue</a></code>.
 
 <p><pre><code>
 : (pack 'car "<u> is </u>" 1 '("<u> symbol </u>" name))
@@ -5220,10 +5284,10 @@ href="#in">in</a></code> and <code><a href="#close">close</a></code>.
 <dd>Opens the file <code>sym1</code> as a database file in read/write mode. If
 the file does not exist, it is created. A currently open database is closed.
 <code>lst</code> is a list of block size scale factors (i.e. numbers),
-defaulting to 2 (for 256 byte block size(s)). If <code>lst</code> is given, an
-individual database file is opened for each item. If <code>sym2</code> is
-non-<code>NIL</code>, it is opened in append-mode as a journal file. Returns
-<code>T</code> when successful. See also <code><a
+defaulting to (2) (for a single file with a 256 byte block size). If
+<code>lst</code> is given, an individual database file is opened for each item.
+If <code>sym2</code> is non-<code>NIL</code>, it is opened in append-mode as a
+journal file. Returns <code>T</code> when successful. See also <code><a
 href="#journal">journal</a></code>.
 
 <p><pre><code>
@@ -5233,8 +5297,9 @@ href="#journal">journal</a></code>.
 
 <p><dt><a name="pop"><code>(pop 'var) -> any</code></a>
 <dd>Pops the first element (<code>CAR</code>) from the stack in
-<code>var</code>. See also <code><a href="#cut">cut</a></code> and <code><a
-href="#del">del</a></code>.
+<code>var</code>. See also <code><a href="#push">push</a></code>, <code><a
+href="#queue">queue</a></code>, <code><a href="#cut">cut</a></code>, <code><a
+href="#del">del</a></code> and <code><a href="#fifo">fifo</a></code>.
 
 <p><pre><code>
 : (setq S '((a b c) (1 2 3)))
@@ -5442,7 +5507,9 @@ and <code><a href="#unify">unify</a></code>.
 
 <p><dt><a name="push"><code>(push 'var 'any ..) -> any</code></a>
 <dd>Implements a stack using a list in <code>var</code>. The <code>any</code>
-arguments are cons'ed in front of the value list.
+arguments are cons'ed in front of the value list. See also <code><a
+href="#push1">push1</a></code>, <code><a href="#pop">pop</a></code>, <code><a
+href="#queue">queue</a></code> and <code><a href="#fifo">fifo</a></code>.
 
 <p><pre><code>
 : (push 'S 3)              # Use the VAL of `S' as a stack
@@ -5461,6 +5528,24 @@ arguments are cons'ed in front of the value list.
 -> 777
 : S
 -> ((777 888 999 . 1) 2 3)
+</code></pre>
+
+<p><dt><a name="push1"><code>(push1 'var 'any ..) -> any</code></a>
+<dd>Maintains a unique list in <code>var</code>. Each <code>any</code> argument
+is cons'ed in front of the value list only if it is not already a <code><a
+href="#member">member</a></code> of that list. See also <code><a
+href="#push">push</a></code>, <code><a href="#pop">pop</a></code> and <code><a
+href="#queue">queue</a></code>.
+
+<p><pre><code>
+: (push1 'S 1 2 3)
+-> 3
+: S
+-> (3 2 1)
+: (push1 'S 2 4)
+-> 4
+: S
+-> (4 3 2 1)
 </code></pre>
 
 <p><dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym 'any) -> any</code></a>
@@ -5526,7 +5611,9 @@ href="#lit">lit</a></code>.
 
 <p><dt><a name="queue"><code>(queue 'var 'any) -> any</code></a>
 <dd>Implements a queue using a list in <code>var</code>. The <code>any</code>
-argument is (destructively) concatenated to the end of the value list.
+argument is (destructively) concatenated to the end of the value list. See also
+<code><a href="#push">push</a></code>, <code><a href="#pop">pop</a></code> and
+<code><a href="#fifo">fifo</a></code>.
 
 <p><pre><code>
 : (queue 'A 1)
@@ -5836,7 +5923,8 @@ href="#find">find</a></code>, <code><a href="#pick">pick</a></code>.
 <dd>Sends the message <code>msg</code> to the object <code>obj</code>,
 optionally with arguments <code>any</code>. If the message cannot be located in
 <code>obj</code>, its classes and superclasses, an error <code>"Bad
-message"</code> is issued. See also <code><a href="#try">try</a></code>.
+message"</code> is issued. See also <code><a href="#try">try</a></code> and
+<code><a href="#method">method</a></code>.
 
 <p><pre><code>
 : (send 'stop> Dlg)  # Equivalent to (stop> Dlg)
@@ -6184,7 +6272,7 @@ href="#boxQ">box?</a></code> and <code><a href="#extQ">ext?</a></code>.
 still sending data (via the <code><a href="#tell">tell</a></code> mechanism), a
 <code>select</code> system call is executed for all file descriptors and timers
 in the <code>VAL</code> of the global variable <code><a
-href="#*Key">*Key</a></code>. See also <code><a href="#key">key</a></code> and
+href="#*Run">*Run</a></code>. See also <code><a href="#key">key</a></code> and
 <code><a href="#wait">wait</a></code>.
 
 <p><pre><code>
@@ -6304,6 +6392,22 @@ href="#hear">hear</a></code>.
 -> *Pid
 </code></pre>
 
+<p><dt><a name="text"><code>(text 'sym 'any ..) -> sym</code></a>
+<dd>Builds a new transient symbol (string) from <code>sym</code>, by replacing
+all occurrences of an at-mark "<code>@</code>", followed by one of the letters
+"<code>1</code>" through "<code>9</code>", and "<code>A</code>" through
+"<code>Z</code>", with the corresponding <code>any</code> argument. In this
+context "<code>@A</code>" refers to the 10th argument. A literal at-mark in the
+text can be represented by two successive at-marks. See also <code><a
+href="#pack">pack</a></code> and <code><a href="#glue">glue</a></code>.
+
+<p><pre><code>
+:  (text "abc @1 def @2" 'XYZ 123)
+-> <u>abc XYZ def 123</u>
+: (text "a@@bc.@1" "de")
+-> <u>a@bc.de</u>
+</code></pre>
+
 <p><dt><a name="throw"><code>(throw 'sym 'any)</code></a>
 <dd>Non-local jump into a previous <code><a href="#catch">catch</a></code>
 environment with the jump label <code>sym</code> (or <code>T</code> as a
@@ -6325,24 +6429,25 @@ href="#finally">finally</a></code>.
 -> 1
 </code></pre>
 
-<p><dt><a name="tick"><code>(tick cnt . prg) -> any</code></a>
+<p><dt><a name="tick"><code>(tick (cnt1 . cnt2) . prg) -> any</code></a>
 <dd>Executes <code>prg</code>, then (destructively) adds the number of elapsed
-ticks locally to the <code>cnt</code> parameter. Thus, <code>cnt</code> will
-finally contain the total number of ticks spent in <code>prg</code> and all
-functions called (this works also for recursive functions). For execution
-profiling, <code>tick</code> is usually inserted into words with
-<code>prof</code>, and removed with <code>unprof</code>. See also <code><a
-href="#usec">usec</a></code>.
+user ticks to the <code>cnt1</code> parameter, and the number of elapsed system
+ticks to the <code>cnt2</code> parameter. Thus, <code>cnt1</code> and
+<code>cnt2</code> will finally contain the total number of user and system time
+ticks spent in <code>prg</code> and all functions called (this works also for
+recursive functions). For execution profiling, <code>tick</code> is usually
+inserted into words with <code>prof</code>, and removed with
+<code>unprof</code>. See also <code><a href="#usec">usec</a></code>.
 
 <p><pre><code>
-: (de foo ()                     # Define function with empty loop
-   (tick 0 (do 100000000)) )
+: (de foo ()                        # Define function with empty loop
+   (tick (0 . 0) (do 100000000)) )
 -> foo
-: (foo)                          # Execute it
+: (foo)                             # Execute it
 -> NIL
 : (pp 'foo)
 (de foo NIL
-   (tick 97 (do 100000000)) )    # `tick' incremented `cnt' by 97
+   (tick (97 . 0) (do 100000000)) ) # `tick' incremented `cnt1' by 97
 -> foo
 </code></pre>
 
@@ -6436,7 +6541,7 @@ href="#clip">clip</a></code>.
 optionally with arguments <code>any</code>. If <code>any</code> is not an
 object, or if the message cannot be located in <code>obj</code>, its classes and
 superclasses, <code>NIL</code> is returned. See also <code><a
-href="#send">send</a></code>.
+href="#send">send</a></code> and <code><a href="#method">method</a></code>.
 
 <p><pre><code>
 : (try 'msg> 123)
@@ -6622,7 +6727,7 @@ href="#job">job</a></code> and <code><a href="#let">let</a></code>.
 <dd>Waits for a condition. While the result of the execution of <code>prg</code>
 returns non-<code>NIL</code>, a <code>select</code> system call is executed for
 all file descriptors and timers in the <code>VAL</code> of the global variable
-<code><a href="#*Key">*Key</a></code>. When <code>cnt</code> is
+<code><a href="#*Run">*Run</a></code>. When <code>cnt</code> is
 non-<code>NIL</code>, the waiting time is limited to <code>cnt</code>
 milliseconds. See also <code><a href="#key">key</a></code> and <code><a
 href="#sync">sync</a></code>.
@@ -6632,10 +6737,10 @@ href="#sync">sync</a></code>.
 -> NIL
 : (prog
    (zero *Cnt)
-   (setq *Key                                # Install background loop
+   (setq *Run                                # Install background loop
       '((-2000 0 (println (inc '*Cnt)))) )   # Increment `*Cnt' every 2 sec
    (wait NIL (> *Cnt 6))                     # Wait until > 6
-   (off *Key) )
+   (off *Run) )
 1                                            # Waiting ..
 2
 3
@@ -7031,27 +7136,6 @@ process.
 -> (off *Tmp)
 </code></pre>
 
-<p><dt><a name="*Key"><code>*Key</code></a>
-<dd>This global variable can hold a list of <code>prg</code> expressions which
-are used during <code><a href="#key">key</a></code>, <code><a
-href="#sync">sync</a></code> and <code><a href="#wait">wait</a></code>. The
-first element of each expression must either be a positive number (thus denoting
-a file descriptor to wait for) or a negative number (denoting a timeout value in
-milliseconds (in that case another number must follow to hold the remaning
-time)). A <code>select</code> system call is performed with these values, and
-the corresponding <code>prg</code> body is executed when input data are
-available or when a timeout occurred.
-
-<p><pre><code>
-: (de *Key (-2000 0 (println '2sec)))     # Install 2-sec-timer
--> *Key
-: 2sec                                    # Prints "2sec" every 2 seconds
-2sec
-2sec
-                                          # (Enter) Exit
-$
-</code></pre>
-
 <p><dt><a name="*Led"><code>*Led</code></a>
 <dd>A global variable holding a (possibly empty) <code>prg</code> body that
 implements a "Line editor". When non-<code>NIL</code>, it should return a single
@@ -7137,6 +7221,27 @@ Loop Failed!
 Div/0
 Loop Failed!
 ...
+</code></pre>
+
+<p><dt><a name="*Run"><code>*Run</code></a>
+<dd>This global variable can hold a list of <code>prg</code> expressions which
+are used during <code><a href="#key">key</a></code>, <code><a
+href="#sync">sync</a></code> and <code><a href="#wait">wait</a></code>. The
+first element of each expression must either be a positive number (thus denoting
+a file descriptor to wait for) or a negative number (denoting a timeout value in
+milliseconds (in that case another number must follow to hold the remaning
+time)). A <code>select</code> system call is performed with these values, and
+the corresponding <code>prg</code> body is executed when input data are
+available or when a timeout occurred.
+
+<p><pre><code>
+: (de *Run (-2000 0 (println '2sec)))     # Install 2-sec-timer
+-> *Run
+: 2sec                                    # Prints "2sec" every 2 seconds
+2sec
+2sec
+                                          # (Enter) Exit
+$
 </code></pre>
 
 <p><dt><a name="*Scl"><code>*Scl</code></a>

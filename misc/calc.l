@@ -1,8 +1,9 @@
-# 30jun06abu
+# 20oct06abu
 # (c) Software Lab. Alexander Burger
 
 # *Init *Accu *Stack
 
+(allowed NIL "@calculator" "favicon.ico" "lib.css")
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l")
 
 # Calculator logic
@@ -35,31 +36,31 @@
          (form NIL
             (<br> (gui '(+Var +NumField) '*Accu 60))
             (<grid> 4
-               (gui '(+Button) "±" '(setq *Accu (- *Accu)))
-               (gui '(+Able +Button) '(ge0 *Accu) (char 8730) " "
+               (gui '(+JS +Button) "±" '(setq *Accu (- *Accu)))
+               (gui '(+Able +JS +Button) '(ge0 *Accu) (char 8730)
                   '(setq *Accu (sqrt *Accu)) )
-               (gui '(+Button) "\^" '(operand '** 3))
-               (gui '(+Button) "/" '(operand '/ 2))
+               (gui '(+JS +Button) "\^" '(operand '** 3))
+               (gui '(+JS +Button) "/" '(operand '/ 2))
 
-               (gui '(+Button) "7" '(digit 7))
-               (gui '(+Button) "8" '(digit 8))
-               (gui '(+Button) "9" '(digit 9))
-               (gui '(+Button) "*" '(operand '* 2))
+               (gui '(+JS +Button) "7" '(digit 7))
+               (gui '(+JS +Button) "8" '(digit 8))
+               (gui '(+JS +Button) "9" '(digit 9))
+               (gui '(+JS +Button) "*" '(operand '* 2))
 
-               (gui '(+Button) "4" '(digit 4))
-               (gui '(+Button) "5" '(digit 5))
-               (gui '(+Button) "6" '(digit 6))
-               (gui '(+Button) "-" '(operand '- 1))
+               (gui '(+JS +Button) "4" '(digit 4))
+               (gui '(+JS +Button) "5" '(digit 5))
+               (gui '(+JS +Button) "6" '(digit 6))
+               (gui '(+JS +Button) "-" '(operand '- 1))
 
-               (gui '(+Button) "1" '(digit 1))
-               (gui '(+Button) "2" '(digit 2))
-               (gui '(+Button) "3" '(digit 3))
-               (gui '(+Button) "+" '(operand '+ 1))
+               (gui '(+JS +Button) "1" '(digit 1))
+               (gui '(+JS +Button) "2" '(digit 2))
+               (gui '(+JS +Button) "3" '(digit 3))
+               (gui '(+JS +Button) "+" '(operand '+ 1))
 
-               (gui '(+Button) "0" '(digit 0))
-               (gui '(+Button) "C" '(zero *Accu))
-               (gui '(+Button) "A" '(main))
-               (gui '(+Button) "=" '(finish)) ) ) ) ) )
+               (gui '(+JS +Button) "0" '(digit 0))
+               (gui '(+JS +Button) "C" '(zero *Accu))
+               (gui '(+JS +Button) "A" '(main))
+               (gui '(+JS +Button) "=" '(finish)) ) ) ) ) )
 
 # Initialize
 (de main ()

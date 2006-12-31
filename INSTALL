@@ -1,4 +1,4 @@
-04sep06abu
+10nov06abu
 (c) Software Lab. Alexander Burger
 
 
@@ -16,7 +16,7 @@ any system locations, so you don't have to be root.
 
 Please follow these steps:
 
-1. Upack the distribution
+1. Unpack the distribution
 
    $ tar xfz picoLisp-XXX.tgz
 
@@ -75,6 +75,8 @@ Any feedback is welcome!
 Hope you enjoy :-)
 
 --------------------------------------------------------------------------------
-Software Lab. Alexander Burger                               Tel +49-821-9907090
-Bahnhofstr. 24a                                              abu@software-lab.de
-D-86462 Langweid                                             www.software-lab.de
+
+   Alexander Burger
+   Software Lab. / 7fach GmbH
+   Bahnhofstr. 24a, D-86462 Langweid
+   abu@software-lab.de, http://www.software-lab.de, +49 8230 5060

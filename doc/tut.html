@@ -159,7 +159,7 @@ whole expression when the cursor is at a left parenthesis.
 <li><code>/</code> - Accept an input pattern and search the history for it
 <li><code>n</code> - Search for next occurrence of pattern (as entered with <code>/</code>)
 <li><code>N</code> - Search for previous occurrence of pattern
-<li><code>%</code> - Show matching paranthesis
+<li><code>%</code> - Show matching parenthesis
 <li><code>~</code> - Convert character to opposite (lower or upper) case and move right
 <li><code>u</code> - Undo the last change (one level only)
 <li><code>U</code> - Undo all changes of the current line
@@ -251,14 +251,14 @@ A (This is the value)   # (which is 'A' again)
 
 <p>Similar to <code>show</code> is <code>edit</code>. It takes an arbitrary
 number of symbolic arguments, writes them to a temporary file in a format
-similar to <code>show</code>, and starts the <code>vi</code> editor with that
+similar to <code>show</code>, and starts the <code>vim</code> editor with that
 file.
 
 <p><pre><code>
 : (edit 'A 'B)
 </code></pre>
 
-<p>The <code>vi</code> window will look like
+<p>The <code>vim</code> window will look like
 
 <p><pre><code>
 A (This is the value)
@@ -275,13 +275,12 @@ a A  # (This is the value)
 
 <p>Now you can modify values or properties. You should not touch the
 parenthesized asterisks, as they serve as delimiters. If you position the cursor
-on the first char of a symbol name and hit '<code>g</code>' (for "go"), the
-editor will be restarted with that symbol added to the editor window (this is
-similar to the "tags"-feature of <code>vi</code>). '<code>q</code>' (for "quit")
-will bring you back to the previous view.
+on the first char of a symbol name and type '<code>K</code>' ("Keyword lookup"),
+the editor will be restarted with that symbol added to the editor window.
+'<code>Q</code>' (for "quit") will bring you back to the previous view.
 
 <p><code>edit</code> is also very useful to browse in a database. You can follow
-the links between objects with '<code>g</code>', and even - e.g. for low-level
+the links between objects with '<code>K</code>', and even - e.g. for low-level
 repairs - modify the data (but only if you are really sure about what you are
 doing, and don't forget to <code><a href="ref.html#commit">commit</a></code>
 when you are done).
@@ -858,7 +857,7 @@ pretty-print it:
 : (unbug 'stamp)
 </code></pre>
 
-<p>Often, you will not want to single-step a whole function. Just juse
+<p>Often, you will not want to single-step a whole function. Just use
 <code>edit</code> (see above) to insert a single breakpoint (the exclamation
 mark followed by a space) as <code>CAR</code> of an expression, and run your
 program. Execution will then stop there as described above; you can inspect the
@@ -1707,10 +1706,10 @@ first of March in the year zero.
 
 <p><pre><code>
 (dm url> ()
-   (pack "<u>@person?</u>" (ht:Fmt This)) )
+   (list "<u>@person</u>" '*ID This) )
 </code></pre>
 
-<p>It is needed later in the GUI, to cause a double-click to switch to that
+<p>It is needed later in the GUI, to cause a click on a link to switch to that
 object.
 
 <p>The classes <code>+Man</code> and <code>+Woman</code> are subclasses of
@@ -1730,13 +1729,25 @@ object.
 
 <p>That's the whole data model for our demo database application.
 
-<p>A handful of access functions is provided, that knows about database
+<p>It is followed by a call to <code>dbs</code> ("database sizes"). This call is
+optional. If it is not present, the whole database will reside in a single file,
+with a block size of 256 bytes. If it is given, it should specify a list of
+items, each having a number in its <code>CAR</code>, and a list in its
+<code>CDR</code>. The <code>CAR</code>s taken together will be passed later to
+<a href="ref.html#pool">pool</a>, causing an individual database file with that
+size to be created. The <code>CDR</code>s tell what entity classes (if an item
+is a symbol) or index trees (if an item is a list with a class in its
+<code>CAR</code> and a list of relations in its <code>CDR</code>) should be
+placed into that file.
+
+
+<p>A handful of access functions is provided, that know about database
 relationships and thus allows higher-level access modes to the external symbols
 in a database.
 
-<p>For one thing, the binary trees created and maintained by the index daemons
-can be used directly. Though this is rarely done in a typical application, they
-form the base mechanisms of other access modes and should be understood first.
+<p>For one thing, the B-Trees created and maintained by the index daemons can be
+used directly. Though this is rarely done in a typical application, they form
+the base mechanisms of other access modes and should be understood first.
 
 <p>The function <code>tree</code> returns the tree structure for a given
 relation. To iterate over the whole tree, the functions <code>iter</code> and
@@ -1759,7 +1770,7 @@ fall into a range of index values:
 
 <p><pre><code>
 : (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31))
--> ({1V} {1r} {2P})
+-> ({2-M} {2-L} {2-E})
 </code></pre>
 
 <p>This returns all persons born between 1982 and 1988. Let's look at them with
@@ -1767,27 +1778,26 @@ fall into a range of index values:
 
 <p><pre><code>
 : (more (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31)) show)
-{1V} (+Man)
-   nm <u>William</u>
+{2-M} (+Man)
+   nm William
    dat 724023
-   ma {U}
-   pa {L}
-   job <u>Heir to the throne</u>
+   ma {2-K}
+   pa {2-J}
+   job Heir to the throne
 
-{1r} (+Man)
-   nm <u>Henry</u>
+{2-L} (+Man)
+   nm Henry
    dat 724840
-   ma {U}
-   pa {L}
-   job <u>Prince</u>
+   ma {2-K}
+   pa {2-J}
+   job Prince
 
-{2P} (+Woman)
-   nm <u>Beatrice</u>
+{2-E} (+Woman)
+   nm Beatrice
    dat 726263
-   ma {1I}
-   job <u>Princess</u>
-   pa {1B}
--> T
+   ma {2-D}
+   job Princess
+   pa {2-B}
 </code></pre>
 
 <p>If you are only interested in a certain attribute, e.g. the name, you can
@@ -1803,14 +1813,14 @@ used:
 
 <p><pre><code>
 : (db 'nm '+Person "<u>Edward</u>")
--> {2R}
+-> {2-;}
 </code></pre>
 
 <p>If the key is not unique, additional arguments may be supplied:
 
 <p><pre><code>
 : (db 'nm '+Person "<u>Edward</u>"  'job "<u>Prince</u>"  'dat (date 1964 3 10))
--> {2R}
+-> {2-;}
 </code></pre>
 
 <p>The programmer must know which combination of keys will suffice to specify
@@ -1823,9 +1833,10 @@ possibly more efficient) searches can be performed.
 <p><hr>
 <h2><a name="gui">User Interface (GUI) Programming</a></h2>
 
-<p>The only type of GUI supported by the Pico Lisp application server framework
-is either dynamically generated (but static by nature) HTML, or an interactive
-frontend jusing Java applets.
+<p>The only types of GUI supported by the Pico Lisp application server framework
+is either dynamically generated (but static by nature) HTML, an interactive
+frontend jusing Java applets, or an XHTML/CSS framework with the optional use of
+JavaScript.
 
 <p>Before we explain the GUI of our demo database application, we present a
 minimal example for a plain HTML-GUI in <code><a
@@ -1842,8 +1853,8 @@ with the '<code>&lt;&lt;&lt;</code>' link in the upper right corner.
 
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
-'<code>killall picolisp</code>'), or type the <code>Quit</code> key (typically
-<code>Ctrl-\</code>) in the console window.
+'<code>killall picolisp</code>'), or type the <code>Ctrl-C</code> key in the
+console window.
 
 <p>In our demo database application, a single function <code>person</code> is
 responsible for the whole GUI. Again, please look at <code><a
@@ -1869,49 +1880,39 @@ Each connect to that port will cause the function <code>person</code> to be
 invoked.
 
 <p>Again, point your browser to the address '<code><a
-href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'
-(please make sure that <code>Java</code> is enabled).
+href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'.
 
 <p>You should see a new browser window with an input form created by the
 function <code>person</code>. We provided an initial database in
-"doc/family.db". You can navigate through it by double-clicking on the blue
-fields (or with a single-click followed by <code>F3</code>).
+"doc/family[1-4]". You can navigate through it by clicking on the pencil icons
+besides the input fields.
 
-<p>The chart with the children data can be scrolled using the <code>PgUp</code>,
-<code>PgDown</code> and the <code>Up</code> and <code>Down</code> arrow keys.
+<p>The chart with the children data can be scrolled using the down
+(<code>v</code>) and up (<code>^</code>) buttons.
 
-<p>A click on the button "Choose/Create" below (or a hit on <code>F4</code>)
-opens a search dialog. You can scroll through the chart <code>PgUp</code>,
-<code>PgDown</code> and the <code>Up</code> and <code>Down</code> arrow keys.
-Again, a double-click on a blue fields (or a single-click and a click on the
-"Choose"-button) will jump to that person. You can abort the dialog with the
-<code>ESC</code> key (or a click on the "Cancel"-button).
+<p>A click on the button "Select" below opens a search dialog. You can scroll
+through the chart as before. Again, a click on a pencil will jump to that
+person. You can abort the dialog with a click on the "Cancel"-button.
 
 <p>The search fields in the upper part of the dialog allow a conjunctive search.
-If you enter "Edward" in the "Name" field and hit <code>F4</code>, you'll see
-all persons having the string "Edward" in their name. If you also enter "Duke"
-in the "Occupation" field, the result list will reduce to only two entries.
+If you enter "Edward" in the "Name" field and click "Search", you'll see all
+persons having the string "Edward" in their name. If you also enter "Duke" in
+the "Occupation" field, the result list will reduce to only two entries.
 
 <p>To create a new person, press the "New Man" or "New Woman" button. A new
 empty form will be displayed. Please type a name into the first field, and
-perhaps also an occupation and birth date.
+perhaps also an occupation and birth date. Any change of contents should be
+followed by a press on the "Save" button, though any other button (also Scroll
+or Select-buttons) will also do.
 
 <p>To assign a <i>father</i> attribute, you can either type a name directly into
 the field (if that person already exists in the database and you know the exact
 spelling), or use the "Set"-button (<code>-&gt;</code>) to the left of that
 field to open the search dialog. If you type in the name directly, your input
-must exactly match upper and lower case. You may use <code>F2</code> after the
-first few keys to see proposals from the database. With the search dialog, you
-may also assign a new person to the father attribute by hitting "New Man" and
-filling in the data.
+must exactly match upper and lower case.
 
 <p>Alternatively, you may create a new person and assign a child in the
 "Children" chart.
-
-<p>If you go back now to the first object (with browser navigation or with the
-'<code>&lt;&lt;&lt;</code>' link in the upper right corner), the "Father" field
-of that object should be filled now (thanks to the <code>+Joint</code>
-relation).
 
 <p>On the console where you started Pico Lisp, there should a prompt have
 appeared just when the browser connected. You can debug the application
@@ -1922,10 +1923,10 @@ interactively while it is running. For example, the global variable
 : (show *Top)
 </code></pre>
 
-<p>To take a look at the field with the current input current field (focus):
+<p>To take a look at the first field on the form:
 
 <p><pre><code>
-: (show *Top 'focus)
+: (show *Top 'gui 1)
 </code></pre>
 
 <p>A production application would be started in a slightly different way:
@@ -1944,47 +1945,24 @@ is entered at the Pico Lisp prompt.
 <p>Now back to the explanation of the GUI function <code>person</code>:
 
 <p><pre><code>
-(de person (*ID)
+(de person ()
    (app)
-   (html (get (default *ID (seq *DB)) 'nm)
-      (&lt;head&gt; "<u>Family</u>")
-      (new '(+ObjForm) '(+Person) *ID 800 500
-         (quote
+   (action
+      (html 0 (get (default *ID (seq (db: +Person))) 'nm) "lib.css" NIL
+         (form NIL
+            (&lt;h3&gt; (&lt;id&gt; (: nm)))
 </code></pre>
 
-<p>It gets passed the object ID as a single argument. The function
-<code>(app)</code> must be called at least once when the GUI is initialized (it
-doesn't harm, though, if it is called each time as in this case).
+<p>For an in-depth explanation of that startup code, please refer to the guide
+to <a href="app.html">Pico Lisp Application Development</a>.
 
-<p>The principal function to generate a HTML page is the function
-<code>html</code> (see also the previous minimal <code><a
-href="hello.l">doc/hello.l</a></code> example). <code>html</code> takes a page
-title as the first argument, and interprets all following arguments as a body
-description. Each item may be an atom (in that case it will be simply printed as
-"This is Pico Lisp" in <code><a href="hello.l">doc/hello.l</a></code>), or a
-list which is executed.
-
-<p>In this case the body consists only of three statements:
-
-<ul>
-
-<li>a call to <code>&lt;head&gt;</code>
-
-<li>a call to <code><a href="ref.html#new">new</a></code> to create the GUI
-<code>+ObjForm</code> component.
-
-<li>and an item <code>&lt;hr&gt;</code> for a horizontal line
-
-</ul>
-
-<p>All components like fields and buttons are passed to <code>(new '(+ObjForm)
-..)</code> as a quoted list. The function <code>gui</code> creates a single GUI
-component and takes the type (a list of classes) and a variable number of
-arguments depending on the needs of these classes.
+<p>All components like fields and buttons are controlled by <code>form</code>.
+The function <code>gui</code> creates a single GUI component and takes the type
+(a list of classes) and a variable number of arguments depending on the needs of
+these classes.
 
 <p><pre><code>
-   (row
-      (gui '(+E/R +TextField) '(nm : home obj) "<u>Name</u>" 40)
+   (gui '(+E/R +TextField) '(nm : home obj) 40 "<u>Name</u>")
 </code></pre>
 
 <p>This creates a <code>+TextField</code> with the label "Name" and a length of
@@ -1993,55 +1971,13 @@ that field to a database object, the <code>nm</code> attribute of a person in
 this case, so that the person's name is displayed in that text field, and any
 changes entered into that field are propagated to the database automatically.
 
-<p>The call to <code>row</code> causes all argument fields to be arranged
-horizontally (normally, all components produced by <code>gui</code> are arranged
-vertically below each other).
-
 <p><pre><code>
-   (gui '(+Set +ClassField)
-      '((Val)
-         (let Old (val (: home obj))
-            (extra Val)
-            (unless (= Val Old)
-               (upd> (: home)) ) ) )
-      '(: home obj) "<u>Sex</u>"
-      '(("<u>Male</u>" +Man) ("<u>Female</u>" +Woman)) ) )
-   ...
+   (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman)))
 </code></pre>
 
 <p>A <code>+ClassField</code> displays and changes the class of an object, in
 this case the person's sex from <code>+Man</code> to <code>+Woman</code> and
-vice versa. The <code>+Set</code> prefix class is needed to call
-<code>upd&gt;</code> on the whole form, because setting the sex of a person may
-change the <code>kids</code> &lt;-&gt; <code>pa</code>/<code>ma</code> relations
-as a side effect, and thus require a refresh of the display.
-
-<p><pre><code>
-   ...
-   (----)
-   ...
-</code></pre>
-
-<p>This is a function that opens a new panel in the GUI layout. Pico Lisp
-applets use the AWT <code>GridBagLayout</code> to arrange components in panels,
-so calling <code>(----)</code> allows a certain degree of control.
-
-<p><pre><code>
-   ...
-   (---- T)
-   (gui '(+E/R +Chart)
-      '(kids : home obj)
-      4 '("<u> </u>" "<u>Children</u>" "<u>born</u>" "<u>Father</u>" "<u>Mother</u>")
-      (quote
-   ...
-</code></pre>
-
-<p>When <code>(---- T)</code> is called, the panel is equipped with a vertical
-scroll bar. A <code>+Chart</code> creates a two-dimensional array of fields,
-here it is to hold the list of children showing name, date of birth, and the
-names of the parents. Typing the name of a (previously created) child here can
-also be used to establish the <code>+Joint</code> (as opposed to set the
-<code>pa</code> or <code>ma</code> attribute in the child).
+vice versa.
 
 <p>As you see, there is no place where explicit accesses to the database have to
 be programmed, no <code>select</code> or <code>update</code>. This is all
@@ -2055,15 +1991,11 @@ database.
 <p>The first one shows all contemporaries of the person that is currently
 displayed, i.e. all persons who did not die before, or were not born after that
 person. This is a typical Pico Lisp report, in that in addition to the report's
-HTML page, a temporary file is generated which is suitable for download (and
-import into a spread sheet), and from which a PDF can be produced for print-out.
+HTML page, a temporary file may be generated, suitable for download (and import
+into a spread sheet), and from which a PDF can be produced for print-out.
 
 <p>In Pico Lisp, there is not a real difference between a plain HTML-GUI and a
-report. Again, the function <code>html</code> is used to generate the page. By
-calling the function <code>report</code>, however, the temporary file and the
-links for download and PDF are created. A HTML table is then filled with the
-function <code>record</code> which takes care of all necessary output
-management.
+report. Again, the function <code>html</code> is used to generate the page.
 
 <p>The second report is much simpler. It produces a recursive structure of the
 family.
@@ -2115,21 +2047,21 @@ the string "Edward" in their name:
 
 <p><pre><code>
 : (? (db nm +Person "<u>Edward</u>" @P) (show @P))
-{2R} (+Man)
+{2-;} (+Man)
    nm <u>Edward</u>
-   ma {2}
-   pa {C}
+   ma {2-:}
+   pa {2-A}
    dat 717346
    job <u>Prince</u>
- @P={2R}
-{4f} (+Man)
-   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+ @P={2-;}
+{2-1B} (+Man)
    nm <u>Albert Edward</u>
+   kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    job <u>Prince</u>
-   mate {4o}
+   mate {2-f}
    fin 680370
    dat 664554
- @P={4f}
+ @P={2-1B}
 ...               # more results
 </code></pre>
 
@@ -2138,14 +2070,14 @@ somebody with occupation "Queen":
 
 <p><pre><code>
 : (? (db nm +Person "<u>Edward</u>" @P) (val "<u>Queen</u>" @P mate job) (show @P))
-{4f} (+Man)
-   mate {4o}
-   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+{2-1B} (+Man)
+   mate {2-f}
    nm <u>Albert Edward</u>
+   kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    job <u>Prince</u>
    fin 680370
    dat 664554
- @P={4f}
+ @P={2-1B}
 -> NIL            # only one result
 </code></pre>
 
@@ -2153,15 +2085,15 @@ somebody with occupation "Queen":
 
 <p><pre><code>
 : (? (db nm +Person "<u>Albert Edward</u>" @P) (lst @K @P kids) (val @Kid @K nm))
- @P={4f} @K={:z} @Kid=<u>Beatrice Mary Victoria</u>
- @P={4f} @K={:g} @Kid=<u>Leopold George Duncan</u>
- @P={4f} @K={:M} @Kid=<u>Arthur William Patrick</u>
- @P={4f} @K={:3} @Kid=<u>Louise Caroline Alberta</u>
- @P={4f} @K={9i} @Kid=<u>Helena Augusta Victoria</u>
- @P={4f} @K={9Q} @Kid=<u>Alfred Ernest Albert</u>
- @P={4f} @K={9D} @Kid=<u>Alice Maud Mary</u>
- @P={4f} @K={8e} @Kid=<u>Victoria Adelaide Mary</u>
- @P={4f} @K={4U} @Kid=<u>Edward VII</u>
+ @P={2-1B} @K={2-1C} @Kid=<u>Beatrice Mary Victoria</u>
+ @P={2-1B} @K={2-1D} @Kid=<u>Leopold George Duncan</u>
+ @P={2-1B} @K={2-1E} @Kid=<u>Arthur William Patrick</u>
+ @P={2-1B} @K={2-1F} @Kid=<u>Louise Caroline Alberta</u>
+ @P={2-1B} @K={2-1G} @Kid=<u>Helena Augusta Victoria</u>
+ @P={2-1B} @K={2-1H} @Kid=<u>Alfred Ernest Albert</u>
+ @P={2-1B} @K={2-1I} @Kid=<u>Alice Maud Mary</u>
+ @P={2-1B} @K={2-g} @Kid=<u>Victoria Adelaide Mary</u>
+ @P={2-1B} @K={2-a} @Kid=<u>Edward VII</u>
 -> NIL
 </code></pre>
 
@@ -2176,14 +2108,14 @@ at the same time, <code>select</code> has to be used:
       (tolr "<u>Edward</u>" @P nm)                              # Filter clauses
       (tolr "<u>Augusta</u>" @P kids nm) )
    (show @P) )
-{4f} (+Man)
-   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
+{2-1B} (+Man)
+   kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
+   mate {2-f}
    nm <u>Albert Edward</u>
    job <u>Prince</u>
-   mate {4o}
    fin 680370
    dat 664554
- @P={4f}
+ @P={2-1B}
 -> NIL
 </code></pre>
 
@@ -2230,31 +2162,30 @@ relevant index trees in the database are searched (actually only those trees
 where the user entered a search key in the corresponding dialog field), and a
 logical AND of the search attributes is applied to the result.
 
-<p>For example, press the "Choose/Create (F4)" button, enter "Elizabeth" into
-the "Mother" search field and "Phil" in the "Partner" search field, meaning to
-look for all persons whose mother's name is like "Elizabeth" and whose partner's
-name is like "Phil". As a result, two persons ("Elizabeth II" and "Anne") will
-show up.
+<p>For example, press the "Select" button, enter "Elizabeth" into the "Mother"
+search field and "Phil" in the "Partner" search field, meaning to look for all
+persons whose mother's name is like "Elizabeth" and whose partner's name is like
+"Phil". As a result, two persons ("Elizabeth II" and "Anne") will show up.
 
 <p>In principle, <code>db</code> can be seen as a special case of
 <code>select</code>. The following two queries are equivalent:
 
 <p><pre><code>
 : (? (db nm +Person "<u>Edward</u>" @P))
- @P={2R}
- @P={4f}
- @P={5y}
- @P={89}
- @P={4U}
- @P={46}
+ @P={2-;}
+ @P={2-1B}
+ @P={2-R}
+ @P={2-1K}
+ @P={2-a}
+ @P={2-T}
 -> NIL
 : (? (select (@P) ((nm +Person "<u>Edward</u>"))))
- @P={2R}
- @P={4f}
- @P={5y}
- @P={89}
- @P={4U}
- @P={46}
+ @P={2-;}
+ @P={2-1B}
+ @P={2-R}
+ @P={2-1K}
+ @P={2-a}
+ @P={2-T}
 -> NIL
 </code></pre>
 
@@ -2273,39 +2204,39 @@ SELECT in the SQL language, for example:
 <p><pre><code>
 # SELECT * FROM Person
 : (select +Person)  # Step through the whole database
-{Iq} (+Man)
+{2-o} (+Man)
    nm <u>Adalbert Ferdinand Berengar Viktor of Prussia</u>
-   ma {Fy}
-   fin 711698
    dat 688253
-   pa {;H}
+   ma {2-j}
+   pa {2-h}
+   fin 711698
 
-{4f} (+Man)
+{2-1B} (+Man)
    nm <u>Albert Edward</u>
-   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
-   job <u>Prince</u>
-   mate {4o}
-   fin 680370
    dat 664554
+   job <u>Prince</u>
+   mate {2-f}
+   kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
+   fin 680370
 ...
 </code></pre>
 
 <p><pre><code>
 # SELECT * FROM Person WHERE nm LIKE "%Edward%"
 : (select +Person nm "<u>Edward</u>")  # Show all Edwards
-{2R} (+Man)
+{2-;} (+Man)
    nm <u>Edward</u>
-   ma {2}
-   pa {C}
-   job <u>Prince</u>
    dat 717346
+   job <u>Prince</u>
+   ma {2-:}
+   pa {2-A}
 
-{4f} (+Man)
+{2-1B} (+Man)
    nm <u>Albert Edward</u>
    dat 664554
-   kids ({:z} {:g} {:M} {:3} {9i} {9Q} {9D} {8e} {4U})
    job <u>Prince</u>
-   mate {4o}
+   kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
+   mate {2-f}
    fin 680370
 ...
 </code></pre>
@@ -2313,10 +2244,10 @@ SELECT in the SQL language, for example:
 <p><pre><code>
 # SELECT nm, dat FROM Person WHERE nm LIKE "%Edward%"
 : (select nm dat +Person nm "<u>Edward</u>")
-<u>Edward</u> <u>1964-03-10</u> {2R}
-<u>Albert Edward</u> <u>1819-08-26</u> {4f}
-<u>George Edward</u> NIL {5y}
-<u>Edward Augustus Hanover</u> NIL {89}
+<u>Edward</u> <u>1964-03-10</u> {2-;}
+<u>Albert Edward</u> <u>1819-08-26</u> {2-1B}
+<u>George Edward</u> NIL {2-R}
+<u>Edward Augustus Hanover</u> NIL {2-1K}
 ...
 </code></pre>
 
@@ -2328,8 +2259,8 @@ SELECT in the SQL language, for example:
 #    AND p1.mate = p2.mate  -- Actually, in a SQL model we'd need
 #                           -- another table here for the join
 : (select dat fin nm (mate nm) +Person nm "<u>Edward</u>" job "<u>King</u>")
-<u>1894-06-23</u> <u>1972-05-28</u> <u>Edward VIII</u> <u>Wallace Simpson</u> {46}
-<u>1841-11-09</u> NIL <u>Edward VII</u> <u>Alexandra of Denmark</u> {4U}
+<u>1894-06-23</u> <u>1972-05-28</u> <u>Edward VIII</u> <u>Wallace Simpson</u> {2-T}
+<u>1841-11-09</u> NIL <u>Edward VII</u> <u>Alexandra of Denmark</u> {2-a}
 -> NIL
 </code></pre>
 
@@ -2351,20 +2282,20 @@ changed with the <code>put!></code> function. Let's look at "Edward" from the
 previous examples:
 
 <p><pre><code>
-: (show '{2R})
+: (show '{2-;})
 {2R} (+Man)
-   nm <u>Edward</u>
-   ma {2}
-   pa {C}
-   dat 717346
    job <u>Prince</u>
--> {2R}
+   nm <u>Edward</u>
+   dat 717346
+   ma {2-:}
+   pa {20A}
+-> {2-;}
 </code></pre>
 
 <p>We might change the name to "Johnny" with <code>put!></code>:
 
 <p><pre><code>
-: (put!> '{2R} 'nm "<u>Johnny</u>")
+: (put!> '{2-;} 'nm "<u>Johnny</u>")
 -> <u>Johnny</u>
 </code></pre>
 
@@ -2382,14 +2313,14 @@ move the cursor to the point of change.
 <code>update</code> will recurse into the data structure.
 
 <p><pre><code>
-: (update '{2R})
-{2R} (+Man)       # RETURN
+: (update '{2-;})
+{2-;} (+Man)      # RETURN
 nm "<u>Johnny</u>"       # Modified the name to "Johnny"
-ma {2}            # RETURN
-pa {C}            # Return
+ma {2-:}          # RETURN
+pa {2-A}          # Return
 dat 1960-03-10    # Modified the year from "1964" to "1960"
 job "<u>Prince</u>"      # Return
--> {2R}
+-> {2-;}
 </code></pre>
 
 <p>All changes are committed immediately, observing the rules of database
@@ -2402,8 +2333,8 @@ his GUI updated correctly.
 called directly for that property:
 
 <p><pre><code>
-: (update '{2R} 'nm)
-{2R} nm "<u>Edward</u>"
+: (update '{2-;} 'nm)
+{2-;} nm "<u>Edward</u>"
 ...
 </code></pre>
 

@@ -1,4 +1,17 @@
-* XXdec06 picoLisp-2.2.5
+* 31dec06 picoLisp-2.2.5
+   Persistent HTTP Connections
+   Extended 'tick' to count system time
+   Chunked HTTP transfers
+   Changed '*Key' to '*Run'
+   'fifo' function
+   'die' alarm function
+   'line' carriage return handling
+   Pre- and post-arguments to 'commit'
+   'text' function
+   'glue' in C
+   Ajax GUI in "lib/form.l", "lib/form.js"
+   'push1' function (deprecates '?push')
+   Bug in 'ht:Fmt'
 
 * 30sep06 picoLisp-2.2.4
    Cygwin/Win32 port (Doug Snead)

@@ -1,4 +1,4 @@
-# 04may04abu
+# 13oct06abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "fifo/beat")
@@ -14,4 +14,4 @@
 
    (task -54321 0 (heartbeat))
 
-   (?push '*Bye '(out "fifo/beat" (pr *Pid))) )
+   (push1 '*Bye '(out "fifo/beat" (pr *Pid))) )

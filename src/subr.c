@@ -1,4 +1,4 @@
-/* 01sep06abu
+/* 25nov06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -196,7 +196,7 @@ any doRot(any ex) {
    if (isCell(y)) {
       n = isCell(x = cdr(x))? evCnt(ex,x) : 0;
       x = car(y);
-      while (--n  &&  isCell(y = cdr(y)))
+      while (--n  &&  isCell(y = cdr(y))  &&  y != data(c1))
          z = car(y),  car(y) = x,  x = z;
       car(data(c1)) = x;
    }
@@ -1128,7 +1128,7 @@ bool match(any p, any d) {
    }
 }
 
-// (match 'lst 'lst) -> lst
+// (match 'lst1 'lst2) -> flg
 any doMatch(any x) {
    cell c1, c2;
 

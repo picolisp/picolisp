@@ -1,12 +1,12 @@
-# 07sep06abu
+# 26nov06abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
    (nond
-      (Prg (del (assoc Key *Key) '*Key))
+      (Prg (del (assoc Key *Run) '*Run))
       ((num? Key) (quit "Bad Key" Key))
-      ((assoc Key *Key)
-         (push '*Key
+      ((assoc Key *Run)
+         (push '*Run
             (conc
                (make
                   (when (lt0 (link Key))
@@ -25,10 +25,10 @@
       (NIL (quit "Key conflict" Key)) ) )
 
 (de timeout (N)
-   (if2 N (assoc -1 *Key)
+   (if2 N (assoc -1 *Run)
       (set (cdr @) (+ N))
-      (push '*Key (list -1 (+ N) '(bye)))
-      (del @ '*Key) ) )
+      (push '*Run (list -1 (+ N) '(bye)))
+      (del @ '*Run) ) )
 
 (de macro "Prg"
    (run (fill "Prg")) )
@@ -77,6 +77,14 @@
          (cdr (asoq "X" (val "C")))
          (set "C"
             (delq (asoq "X" (val "C")) (val "C")) ) ) ) )
+
+(de redef "Lst"
+   (let ("Old" (car "Lst")  "New" (name "Old"))
+      (set
+         "New" (val "Old")
+         "Old" "New"
+         "Old" (fill (cdr "Lst") "Old") )
+      "New" ) )
 
 (de daemon ("X" . Prg)
    (prog1
@@ -148,7 +156,7 @@
             Val ) ) ) )
 
 ### List ###
-(de ?push ("Var" "X")
+(de ?push ("Var" "X")  # Deprecated, replaced by 'push1'
    (if (member "X" (val "Var"))
       (car @)
       (push "Var" "X") ) )
@@ -228,9 +236,9 @@
 (de *PP
    T NIL if if2 ifn when unless while until do case state for
    with catch finally ! quote setq default push job use let let?
-   recur later =: in out ctl new )
+   later recur redef =: in out ctl new )
 
-(de *PP1 if2 let let? for)
+(de *PP1 if2 let let? for redef)
 (de *PP2 setq default)
 
 (de pretty (X N . @)
@@ -317,5 +325,21 @@
                   (println (cdr X) (car X)) ) )
             "X" ) )
       "X" ) )
+
+(de view (X L)
+   (let (Z X  *Dbg)
+      (loop
+         (T (atom X) (println X))
+         (if (atom (car X))
+            (println '+-- (pop 'X))
+            (print '+---)
+            (view
+               (pop 'X)
+               (append L (cons (if X "|   " "    "))) ) )
+         (NIL X)
+         (mapc prin L)
+         (T (== Z X) (println '*))
+         (println '|)
+         (mapc prin L) ) ) )
 
 # vim:syntax=picolisp:ts=3:sw=3:expandtab

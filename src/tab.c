@@ -1,4 +1,4 @@
-/* 31aug06abu
+/* 26nov06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -82,6 +82,7 @@ static symInit Symbols[] = {
    {doDel, "del"},
    {doDelete, "delete"},
    {doDelq, "delq"},
+   {doDie, "die"},
    {doDir, "dir"},
    {doDiv, "/"},
    {doDm, "dm"},
@@ -98,6 +99,7 @@ static symInit Symbols[] = {
    {doExtern, "extern"},
    {doExtQ, "ext?"},
    {doExtra, "extra"},
+   {doFifo, "fifo"},
    {doFill, "fill"},
    {doFilter, "filter"},
    {doFin, "fin"},
@@ -119,6 +121,7 @@ static symInit Symbols[] = {
    {doGe0, "ge0"},
    {doGet, "get"},
    {doGetl, "getl"},
+   {doGlue, "glue"},
    {doGt, ">"},
    {doGt0, "gt0"},
    {doHead, "head"},
@@ -238,6 +241,7 @@ static symInit Symbols[] = {
    {doProtect, "protect"},
    {doProve, "prove"},
    {doPush, "push"},
+   {doPush1, "push1"},
    {doPut, "put"},
    {doPutl, "putl"},
    {doPwd, "pwd"},
@@ -289,6 +293,7 @@ static symInit Symbols[] = {
    {doT, "t"},
    {doTail, "tail"},
    {doTell, "tell"},
+   {doText, "text"},
    {doThrow, "throw"},
    {doTick, "tick"},
    {doTill, "till"},
@@ -354,7 +359,7 @@ void initSymbols(void) {
    Pid   = initSym(boxCnt(getpid()), "*Pid");
    Scl   = initSym(Zero, "*Scl");
    Class = initSym(Nil, "*Class");
-   Key   = initSym(Nil, "*Key");
+   Run   = initSym(Nil, "*Run");
    Led   = initSym(Nil, "*Led");
    Tsm   = initSym(Nil, "*Tsm");
    Err   = initSym(Nil, "*Err");

@@ -1,4 +1,4 @@
-# 02jun06abu
+# 27nov06abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (S)
@@ -97,7 +97,7 @@
                (lintLoop (cddr "X")) )
             (=:
                (lint1 (last (cddr "X"))) )
-            ((dec inc pop push queue val idx accu)
+            ((dec inc pop push push1 queue fifo val idx accu)
                (_lintq '(T)) )
             ((cut port)
                (_lintq '(NIL T)) )

@@ -1,6 +1,6 @@
 #!bin/picolisp lib.l
-# 15jun06abu
-# Use: bin/replica <port> <keyFile> <journal> <dbFile> <blob/app/> [dbf1 ...]
+# 07nov06abu
+# Use: bin/replica <port> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
 #    : bin/ssl <host> 443 <port>/@replica <keyFile> <journal> <blob/app/> 60
 
 (load "@lib/misc.l" "@lib/http.l")
@@ -29,3 +29,5 @@
 
 (pool *Pool (mapcar format *Dbs) *Journal)
 (server *Port)
+
+# vim:syntax=picolisp:ts=3:sw=3:expandtab

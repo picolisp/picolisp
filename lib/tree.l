@@ -1,4 +1,4 @@
-# 19jun06abu
+# 07nov06abu
 # (c) Software Lab. Alexander Burger
 
 # This file is deprecated
@@ -67,6 +67,7 @@
    (cond
       ((not Tree) (val *DB))
       ((atom Tree) (val Tree))
+      ((ext? (cdr Tree)) (get @ (car Tree)))
       ((atom (cdr Tree))
          (get *DB (cdr Tree) (car Tree)) )
       (T (get (cddr Tree) (cadr Tree) (car Tree))) ) )
@@ -91,6 +92,7 @@
       (let Base
          (if (atom (cdr Tree))
             (or
+               (ext? (cdr Tree))
                (get *DB (cdr Tree))
                (put *DB (cdr Tree) (new T)) )
             (or

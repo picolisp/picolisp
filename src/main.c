@@ -1,4 +1,4 @@
-/* 28sep06abu
+/* 30nov06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -20,12 +20,12 @@ any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, PPid, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+any Dbg, PPid, Pid, Scl, Class, Run, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static word2 USec;
 static struct timeval Tv;
-static bool Jam, Protect;
+static bool Jam;
 static struct termios RawTermio;
 static jmp_buf ErrRst;
 static void finish(int) __attribute__ ((noreturn));
@@ -56,7 +56,7 @@ void execError(char *s) {
 static void sigterm(void) {
    int i;
 
-   if (Protect)
+   if (Env.protect)
       return;
    for (i = 0; i < PSize; i += 2)
       if (Pipe[i] >= 0)
@@ -76,6 +76,11 @@ static void doSigInt(int n __attribute__((unused))) {
       kill(TtyPid, SIGINT);
    else
       SigInt = YES;
+}
+
+static void doSigAlarm(int n __attribute__((unused))) {
+   fprintf(stderr, "%d SIGALRM\n", (int)getpid());
+   raise(SIGTERM);
 }
 
 static void doSigTerm(int n __attribute__((unused))) {
@@ -134,8 +139,18 @@ any doRaw(any x) {
    return T;
 }
 
+// (die 'cnt . prg) -> any
+any doDie(any x) {
+   alarm(Env.alarm = evCnt(x,cdr(x)));
+   x = prog(cddr(x));
+   alarm(Env.alarm = 0);
+   return x;
+}
+
 void protect(bool flg) {
-   if (!(Protect = flg) && SigTerm)
+   if (flg)
+      ++Env.protect;
+   else if (Env.protect && !--Env.protect && SigTerm)
       raise(SIGTERM);
 }
 
@@ -370,6 +385,11 @@ int compare(any x, any y) {
 
 /*** Error handling ***/
 static void reset(void) {
+   if (Env.alarm)
+      alarm(Env.alarm = 0);
+   Env.protect = 0;
+   if (SigTerm)
+      raise(SIGTERM);
    popOutFiles();
    unwind(NULL);
    Env.stack = NULL;
@@ -460,7 +480,11 @@ void unwind(catchFrame *p) {
          popOutFiles();
       while (Env.ctlFiles != q->env.ctlFiles)
          popCtlFiles();
+      if (Env.alarm && !q->env.alarm)
+         alarm(0);
       Env = q->env;
+      if (!Env.protect && SigTerm)
+         raise(SIGTERM);
       if (q == p)
          return;
       if (!isSym(q->tag)) {
@@ -572,19 +596,21 @@ void undefined(any x, any ex) {
 any evList(any ex) {
    any foo;
 
-   if (SigInt)
-      SigInt = NO,  brkLoad(ex);
    if (!isSym(foo = car(ex))) {
       if (isNum(foo))
          return ex;
+      if (SigInt)
+         SigInt = NO,  brkLoad(ex);
       if (isNum(foo = evList(foo)))
          return evSubr(foo,ex);
       if (isCell(foo))
          return evExpr(foo, cdr(ex));
    }
    for (;;) {
-      if (isNil(val(foo)) || foo == val(foo))
+      if (isNil(val(foo)))
          undefined(foo,ex);
+      if (SigInt)
+         SigInt = NO,  brkLoad(ex);
       if (isNum(foo = val(foo)))
          return evSubr(foo,ex);
       if (isCell(foo))
@@ -924,6 +950,7 @@ int MAIN(int ac, char *av[]) {
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
    signal(SIGINT, doSigInt1);
+   signal(SIGALRM, doSigAlarm);
    signal(SIGTERM, doSigTerm);
    signal(SIGCHLD, doSigChld);
    signal(SIGPIPE, SIG_IGN);

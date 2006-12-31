@@ -1,4 +1,4 @@
-/* 15aug05abu
+/* 02dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -140,6 +140,7 @@ any Dist(any ex) {
    return doubleToNum(sqrt(h*h + v*v));
 }
 
+
 /*** U-Law Encoding ***/
 #define BIAS   132
 #define CLIP   (32767-BIAS)
@@ -157,4 +158,36 @@ any Ulaw(any ex) {
    tmp = (val += BIAS) << 1;
    for (exp = 7;  exp > 0  &&  !(tmp & 0x8000);  --exp, tmp <<= 1);
    return boxCnt(~(sign  |  exp<<4  |  val >> exp+3 & 0x000F) & 0xFF);
+}
+
+
+/*** Base64 Encoding ***/
+static unsigned char Chr64[] =
+   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+// (ext:Base64 'num1|NIL ['num2|NIL ['num3|NIL]]) -> flg
+any Base64(any x) {
+   int c, d;
+   any y;
+
+   x = cdr(x);
+   if (isNil(y = EVAL(car(x))))
+      return Nil;
+   c = unDig(y) / 2;
+   Env.put(Chr64[c >> 2]);
+   x = cdr(x);
+   if (isNil(y = EVAL(car(x)))) {
+      Env.put(Chr64[(c & 3) << 4]),  Env.put('='),  Env.put('=');
+      return Nil;
+   }
+   d = unDig(y) / 2;
+   Env.put(Chr64[(c & 3) << 4 | d >> 4]);
+   x = cdr(x);
+   if (isNil(y = EVAL(car(x)))) {
+      Env.put(Chr64[(d & 15) << 2]),  Env.put('=');
+      return Nil;
+   }
+   c = unDig(y) / 2;
+   Env.put(Chr64[(d & 15) << 2 | c >> 6]),  Env.put(Chr64[c & 63]);
+   return T;
 }

@@ -1,4 +1,4 @@
-/* 06jun06abu
+/* 30dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,6 +6,7 @@
 .left {float: left;}
 .right {float: right;}
 .clr {clear: both;}
+.norm {text-align: left;}
 .align {text-align: right;}
 .red {color: red}
 .blue {color: blue}
@@ -20,7 +21,7 @@ body {
 
 img {border: 0;}
 
-/* Navitaion */
+/* Navigation */
 #menu {
    position: absolute;
    top: 2%;
@@ -29,13 +30,13 @@ img {border: 0;}
    height: 78%;
    padding: 0;
    margin: 0;
-   background-color: rgb(80%,80%,80%);
+   background-color: rgb(70%,70%,70%);
 }
 
 #menu ul {
+   list-style: none;
    padding: 0;
    margin: 6px auto 6px 0;
-   background-color: rgb(60%,60%,60%);
 }
 
 #menu a {
@@ -43,21 +44,17 @@ img {border: 0;}
 }
 
 #menu a:hover {
-   background-color: rgb(80%,80%,80%);
+   background-color: rgb(85%,85%,85%);
 }
 
-#menu .top {
+#menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3 {
    list-style-position: inside;
-   padding: 2px 2px 2px 2px;
-   font-size: 120%;
+   padding: 0 0 0 12px;
 }
 
-#menu .sub {
+#menu .sub1, .top1, .sub2, .top2, .sub3, .top3 {
    list-style-position: inside;
-   padding: 4px 4px 4px 4px;
-}
-#menu .sub a {
-   font-size: 90%;
+   padding: 4px 0 4px 12px;
 }
 
 
@@ -73,11 +70,11 @@ img {border: 0;}
 }
 
 .tab .top {
-   background-color: rgb(60%,60%,60%);
+   background-color: rgb(85%,85%,85%);
 }
 
 .tab .sub {
-   background-color: rgb(80%,80%,80%);
+   background-color: rgb(70%,70%,70%);
 }
 
 
@@ -107,9 +104,8 @@ img {border: 0;}
 
 /* Dialogs */
 .dialog {
-   display: inline;
    padding: 6px;
-   margin: 12px 0 12px 60px;
+   margin: 12px 60px 12px 60px;
    background-color: rgb(90%,90%,90%);
    border: dotted 2px;
 }

@@ -1,4 +1,4 @@
-# 29sep06abu
+# 20oct06abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -17,6 +17,7 @@
 "-Choice" "-Auswahl"
 "Background" "Hintergrund"
 "Bad date format" "Falsches Datums-Format"
+"Bad phone number format" "Falsches Telefonnummern-Format"
 "Bad time format" "Falsches Uhrzeit-Format"
 "Cancel" "Abbruch"
 "Choose" "Auswahl"
@@ -26,13 +27,13 @@
 "New" "Neuanlage"
 "Data not found" "Datensatz nicht gefunden"
 "Delete" "Löschen"
-"Delete this data record?" "Bestehenden Datensatz löschen?"
+"Delete this record?" "Diesen Datensatz löschen?"
 "F2-Choice" "F2-Auswahl"
 "Font" "Schriftart"
 "Font Size" "Schriftgröße"
 "Foreground" "Vordergrund"
 "New/Copy" "Neu/Muster"
-"Next data record" "Nächster Datensatz"
+"Next record" "Nächster Datensatz"
 "No" "Nein"
 "Please wait" "Bitte warten"
 "Settings" "Einstellungen"
@@ -55,3 +56,6 @@
 "An internal error occurred." "Es ist ein interner Fehler aufgetreten."
 "Connection will be closed." "Die Verbindung wird beendet."
 "Sorry!" "Sorry!"
+
+# lib/form.l
+"Select" "Auswahl"

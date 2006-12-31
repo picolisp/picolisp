@@ -1,4 +1,4 @@
-/* 03sep06abu
+/* 17dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -73,6 +73,7 @@ typedef struct methFrame {
 
 typedef struct inFrame {
    struct inFrame *link;
+   void (*get)(void);
    FILE *fp;
    int next;
    pid_t pid;
@@ -80,6 +81,7 @@ typedef struct inFrame {
 
 typedef struct outFrame {
    struct outFrame *link;
+   void (*put)(int);
    FILE *fp;
    pid_t pid;
 } outFrame;
@@ -98,7 +100,7 @@ typedef struct stkEnv {
    cell *stack, *arg;
    bindFrame *bind;
    methFrame *meth;
-   int next;
+   int next, alarm, protect;
    any make;
    inFrame *inFiles;
    outFrame *outFiles;
@@ -211,7 +213,7 @@ extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, PPid, Pid, Scl, Class, Key, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+extern any Dbg, PPid, Pid, Scl, Class, Run, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -402,6 +404,7 @@ any doDefault(any);
 any doDel(any);
 any doDelete(any);
 any doDelq(any);
+any doDie(any);
 any doDir(any);
 any doDiv(any);
 any doDm(any);
@@ -418,6 +421,7 @@ any doEval(any);
 any doExtern(any);
 any doExtQ(any);
 any doExtra(any);
+any doFifo(any);
 any doFill(any);
 any doFilter(any);
 any doFin(any);
@@ -439,6 +443,7 @@ any doGe(any);
 any doGe0(any);
 any doGet(any);
 any doGetl(any);
+any doGlue(any);
 any doGt(any);
 any doGt0(any);
 any doHead(any);
@@ -559,6 +564,7 @@ any doPropCol(any);
 any doProtect(any);
 any doProve(any);
 any doPush(any);
+any doPush1(any);
 any doPut(any);
 any doPutl(any);
 any doPwd(any);
@@ -611,6 +617,7 @@ any doSys(any);
 any doT(any);
 any doTail(any);
 any doTell(any);
+any doText(any);
 any doThrow(any);
 any doTick(any);
 any doTill(any);
@@ -700,9 +707,9 @@ static inline any member(any x, any y) {
       if (equal(x, car(y)))
          return y;
       if (z == (y = cdr(y)))
-         return Nil;
+         return NULL;
    }
-   return equal(x,y)? y : NULL;
+   return isNil(y) || !equal(x,y)? NULL : y;
 }
 
 static inline any memq(any x, any y) {
@@ -712,9 +719,9 @@ static inline any memq(any x, any y) {
       if (x == car(y))
          return y;
       if (z == (y = cdr(y)))
-         return Nil;
+         return NULL;
    }
-   return x == y? y : NULL;
+   return isNil(y) || x != y? NULL : y;
 }
 
 static inline int indx(any x, any y) {

@@ -1,4 +1,4 @@
-/* 04sep06abu
+/* 21dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1245,7 +1245,7 @@ static outFrame Out;
 static struct {  // bindFrame
    struct bindFrame *link;
    int i, cnt;
-   struct {any sym; any val;} bnd[3];  // for 'Up', 'Key' and 'At'
+   struct {any sym; any val;} bnd[3];  // for 'Up', 'Run' and 'At'
 } Brk;
 
 void brkLoad(any x) {
@@ -1255,7 +1255,7 @@ void brkLoad(any x) {
       Env.brk = YES;
       Brk.cnt = 3;
       Brk.bnd[0].sym = Up,  Brk.bnd[0].val = val(Up),  val(Up) = x;
-      Brk.bnd[1].sym = Key,  Brk.bnd[1].val = val(Key),  val(Key) = Nil;
+      Brk.bnd[1].sym = Run,  Brk.bnd[1].val = val(Run),  val(Run) = Nil;
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At);
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
       Out.pid = -1,  Out.fp = stdout,  pushOutFiles(&Out);
@@ -1263,7 +1263,7 @@ void brkLoad(any x) {
       load(NULL, '!', Nil);
       popOutFiles();
       val(At) = Brk.bnd[2].val;
-      val(Key) = Brk.bnd[1].val;
+      val(Run) = Brk.bnd[1].val;
       val(Up) = Brk.bnd[0].val;
       Env.bind = Brk.link;
       Env.brk = NO;
@@ -1285,16 +1285,16 @@ any doE(any ex) {
       err(ex, NULL, "No Break");
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
    Push(at, val(At)),  val(At) = Brk.bnd[2].val;
-   Push(key, val(Key)),  val(Key) = Brk.bnd[1].val;
+   Push(key, val(Run)),  val(Run) = Brk.bnd[1].val;
    if (Env.inFiles && Env.inFiles->link)
-      Chr = Env.inFiles->next,  InFile = Env.inFiles->link->fp;
+      Chr = Env.inFiles->next,  Env.get = Env.inFiles->get,  InFile = Env.inFiles->link->fp;
    popOutFiles();
    x = isCell(cdr(ex))? prog(cdr(ex)) : EVAL(val(Up));
    pushOutFiles(&Out);
    if (Env.inFiles && Env.inFiles->link)
       Env.inFiles->next = Chr,  Chr = 0;
    InFile = stdin,  OutFile = stdout;
-   val(Key) = data(key);
+   val(Run) = data(key);
    val(At) = data(at);
    val(Dbg) = Pop(c1);
    return x;
@@ -1327,11 +1327,13 @@ static void traceSym(any x) {
 any doTrace(any x) {
    any foo, body;
    FILE *oSave;
+   void (*putSave)(int);
    cell c1;
 
    if (isNil(val(Dbg)))
       return prog(cdddr(x));
    oSave = OutFile,  OutFile = stderr;
+   putSave = Env.put,  Env.put = putStdout;
    x = cdr(x),  foo = car(x);
    x = cdr(x),  body = cdr(x);
    traceIndent(++Trace, foo, " :");
@@ -1340,6 +1342,7 @@ any doTrace(any x) {
    if (!isNil(x) && isSym(x))
       traceSym(x);
    crlf();
+   Env.put = putSave;
    OutFile = oSave;
    Push(c1, prog(body));
    OutFile = stderr;
@@ -1411,19 +1414,22 @@ any doCall(any ex) {
    }
 }
 
-// (tick cnt . prg) -> any
+// (tick (cnt1 . cnt2) . prg) -> any
 any doTick(any ex) {
    any x;
-   clock_t n, save;
+   clock_t n1, n2, save1, save2;
    struct tms tim;
-   static clock_t ticks;
+   static clock_t ticks1, ticks2;
 
-   save = ticks;
-   times(&tim),  n = tim.tms_utime;
+   save1 = ticks1,  save2 = ticks2;
+   times(&tim),  n1 = tim.tms_utime,  n2 = tim.tms_stime;
    x = prog(cddr(ex));
-   times(&tim),  n = (tim.tms_utime - n) - (ticks - save);
-   setDig(cadr(ex), unDig(cadr(ex)) + 2*n);
-   ticks += n;
+   times(&tim);
+   n1 = (tim.tms_utime - n1) - (ticks1 - save1);
+   n2 = (tim.tms_stime - n2) - (ticks2 - save2);
+   setDig(caadr(ex), unDig(caadr(ex)) + 2*n1);
+   setDig(cdadr(ex), unDig(cdadr(ex)) + 2*n2);
+   ticks1 += n1,  ticks2 += n2;
    return x;
 }
 

@@ -1,4 +1,4 @@
-# 17aug06abu
+# 26nov06abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -465,16 +465,13 @@
    (extra Var Lst) )
 
 (dm rel> (Obj Old New Hook)
-   (let Tree
-      (tree
-         (: var)
-         (meta (: cls) (: var) 'cls)
-         (or Hook (get Obj (: hook))) )
-      (when Old
-         (store Tree (cons Old Obj) NIL (: dbf)) )
-      (and New
-         (not (get Obj T))
-         (store Tree (cons New Obj) Obj (: dbf)) ) )
+   (with (meta (: cls) (: var))
+      (let Tree (tree (: var) (: cls))
+         (when Old
+            (store Tree (cons Old Obj) NIL (: dbf)) )
+         (and New
+            (not (get Obj T))
+            (store Tree (cons New Obj) Obj (: dbf)) ) ) )
    (extra Obj Old New Hook) )
 
 
@@ -667,7 +664,7 @@
 (var aux)
 
 (de dbSync ()
-   (let *Key NIL
+   (let *Run NIL
       (while (lock *DB) (wait 40))
       (sync) ) )
 

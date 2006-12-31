@@ -1,4 +1,4 @@
-# 22sep06abu
+# 12oct06abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -392,8 +392,8 @@
 # Enable line editing
 (de *Led
    (let ("*Dbg" *Dbg  *Dbg NIL)
-      (?push '*Bye '(saveHistory))
-      (?push '*Fork '(del '(saveHistory) '*Bye))
+      (push1 '*Bye '(saveHistory))
+      (push1 '*Fork '(del '(saveHistory) '*Bye))
       (_led)
       (or
          (>= 3 (length "Line"))

@@ -1,4 +1,4 @@
-# 27may06abu
+# 26nov06abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -26,7 +26,7 @@
       (Pid2
          (tell 'user Pid1 *Pid
             (with *Login (lit (cons (: nm) (: name))))
-            (/ (- *Timeout (cadr (assoc -1 *Key))) 60000) ) )
+            (/ (- *Timeout (cadr (assoc -1 *Run))) 60000) ) )
       ((<> *Pid Pid1) (println Pid2 Nm To)) ) )
 
 # Timestamp
@@ -38,4 +38,4 @@
    '((msg *Pid " + " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)) )
 
 # Bye message
-(?push '*Bye '(and *SesId (msg *Pid " - " (stamp))))
+(push1 '*Bye '(and *SesId (msg *Pid " - " (stamp))))

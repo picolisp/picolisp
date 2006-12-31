@@ -1,10 +1,11 @@
-# 26sep06abu
+# 27dec06abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
 (de doc (Sym Browser)
    (call (or Browser 'w3m)
       (pack
+         "file:///"
          (path "@doc/ref.html#")
          (replace (chop Sym) '? 'Q) ) ) )
 
@@ -56,7 +57,7 @@
       (make (all "who")) ) )
 
 (de "who" ("Y")
-   (unless (memq "Y" "Who")
+   (unless (or (ext? "Y") (memq "Y" "Who"))
       (push '"Who" "Y")
       (if (= `(char "+") (char "Y"))
          (for "Z" (val "Y")

@@ -1,4 +1,4 @@
-# 14sep06abu
+# 13oct06abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
@@ -9,6 +9,7 @@
 (if (fork)
    (setq *DbgcPid @)
 
+   (wait 60000)
    (undef 'upd)
    (de upd Lst
       (wipe Lst)
@@ -32,18 +33,20 @@
       (and (ext? X) (markExt X)) )
 
    (loop
-      (markExt *DB)
+      (let MS (+ (/ (usec) 1000) 86400000)
+         (markExt *DB)
+         (when (gt0 (- MS (/ (usec) 1000)))
+            (wait @) ) )
       (let Cnt 0
          (for (F . @) (or *Dbs (2))
             (for (S (seq F)  S  (seq S))
                (wait *DbgcDly)
                (unless (mark S)
-                  (dbSync)
                   (if (mark S)
                      (rollback)
                      (and (isa '+Entity S) (zap> S))
                      (zap S)
-                     (commit 'upd)
+                     (commit)
                      (inc 'Cnt) ) ) ) )
          (when *Blob
             (use (@S @R F S)

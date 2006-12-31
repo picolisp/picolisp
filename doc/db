@@ -1,6 +1,12 @@
    Max DB-Size: 7 digits -> 2**42 (10**12) Blocks
       Blocksize 64 -> (2**48 Bytes (256 TB))
 
+   Tree
+      NIL               -> (val *DB)
+      {x}               -> (val '{x})
+      (var . {x})       -> (get '{x} 'var)
+      (var . +Cls)      -> (get *DB '+Cls 'var)
+      (var +Cls . {x})  -> (get '{x} '+Cls 'var)
 
    B-Tree root:
       (cnt . node)

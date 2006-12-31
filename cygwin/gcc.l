@@ -1,4 +1,4 @@
-# 04sep06dls
+# 09dec06abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -16,6 +16,6 @@
       (tmp S ".o")
       (path "@bin/picolisp.dll") )
    (while (args)
-      (def (next) (tmp S ': (arg))) ) )
+      (def (next) (def (tmp S ': (arg)))) ) )
 
 # vim:syntax=picolisp:ts=3:sw=3:expandtab

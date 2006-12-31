@@ -1,4 +1,4 @@
-# 09oct04abu
+# 22dec06abu
 # (c) Software Lab. Alexander Burger
 
 # *Profile
@@ -11,10 +11,10 @@
       (if (_prf? Lst)
          (prog1
             (cadr (cadr Lst))
-            (set (cdadr Lst) (+ 0)) )
+            (set (cdadr Lst) (cons (+ 0) (+ 0))) )
          (con
             Lst
-            (list (cons 'tick (cons (+ 0) (cdr Lst)))) )
+            (list (cons 'tick (cons (cons (+ 0) (+ 0)) (cdr Lst)))) )
          T ) ) )
 
 (de "uprf" (Lst)
@@ -29,7 +29,7 @@
    (unless
       (and
          (_prf (if "C" (method "X" "C") (getd "X")))
-         (?push '*Profile (cons "X" "C")) )
+         (push1 '*Profile (cons "X" "C")) )
       (quit "Can't profile" "X") ) )
 
 (de unprof ("X" "C")
@@ -39,13 +39,13 @@
 (de profile ()
    (mapc println
       (flip
-         (sort
+         (by '((X) (+ (car X) (cadr X))) sort
             (mapcar
                '(("X")
-                  (cons
+                  (let P
                      (_prf
                         (if (cdr "X")
                            (method (car "X") (cdr "X"))
                            (getd (car "X")) ) )
-                     "X" ) )
+                     (cons (car P) (cons (cdr P) "X")) ) )
                *Profile ) ) ) ) )

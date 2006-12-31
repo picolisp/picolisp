@@ -1,4 +1,4 @@
-/* 16aug05abu
+/* 23dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -39,6 +39,7 @@ any Prin(any x) {
       if (isNum(y = EVAL(car(x))) || isExt(y))
          prin(y);
       else {
+         int c;
          char *p, *q, nm[bufSize(y)];
 
          bufString(y, nm);
@@ -67,7 +68,12 @@ any Prin(any x) {
                   Env.put(0xBF);
                   break;
                default:
-                  Env.put(*p);
+                  Env.put(c = *p);
+                  if ((c & 0x80) != 0) {
+                     Env.put(*++p);
+                     if ((c & 0x20) != 0)
+                        Env.put(*++p);
+                  }
                }
                ++p;
             }
@@ -101,11 +107,19 @@ static int getHex(any *p) {
 }
 
 static void htEncode(char *p) {
-   while (*p) {
-      if (strchr(" \"#%&:;<=>?_", *p))
-         Env.put('%'), putHex(*p++);
-      else
-         Env.put(*p++);
+	int c;
+
+   while (c = *p++) {
+      if (strchr(" \"#%&:;<=>?_", c))
+         Env.put('%'), putHex(c);
+      else {
+         Env.put(c);
+         if ((c & 0x80) != 0) {
+            Env.put(*p++);
+            if ((c & 0x20) != 0)
+               Env.put(*p++);
+         }
+      }
    }
 }
 
@@ -169,4 +183,106 @@ any Pack(any x) {
          outName(car(x)), x = cdr(x);
    }
    return endString();
+}
+
+/*** Chunked Encoding ***/
+#define CHUNK 4000
+static int Cnt;
+static void (*Get)(void);
+static void (*Put)(int);
+static char Chunk[CHUNK];
+
+static int chrHex(void) {
+   if (Chr >= '0' && Chr <= '9')
+      return Chr - 48;
+   else if (Chr >= 'A' && Chr <= 'F')
+      return Chr - 55;
+   else if (Chr >= 'a' && Chr <= 'f')
+      return Chr - 87;
+   else
+      return -1;
+}
+
+static void chunkSize(void) {
+   int n;
+
+   if (!Chr)
+      Get();
+   if ((Cnt = chrHex()) >= 0) {
+      while (Get(), (n = chrHex()) >= 0)
+         Cnt = Cnt << 4 | n;
+      while (Chr != '\n') {
+         if (Chr < 0)
+            return;
+         Get();
+      }
+      Get();
+      if (Cnt == 0) {
+         Get();  // Skip '\r' of empty line
+         Chr = 0;  // Discard '\n'
+      }
+   }
+}
+
+static void getChunked(void) {
+   if (Cnt <= 0)
+      Chr = -1;
+   else {
+      Get();
+      if (--Cnt == 0) {
+         Get(), Get();  // Skip '\n', '\r'
+         chunkSize();
+      }
+   }
+}
+
+// (ht:In 'flg . prg) -> any
+any In(any x) {
+   x = cdr(x);
+   if (isNil(EVAL(car(x))))
+      return prog(cdr(x));
+   Get = Env.get,  Env.get = getChunked;
+   chunkSize();
+   x = prog(cdr(x));
+   Env.get = Get;
+   Chr = 0;
+   return x;
+}
+
+static void wrChunk(void) {
+   int i;
+   char buf[16];
+
+   sprintf(buf, "%x\r\n", Cnt);
+   i = 0;
+   do
+      Put(buf[i]);
+   while (buf[++i]);
+   for (i = 0; i < Cnt; ++i)
+      Put(Chunk[i]);
+   Put('\r'), Put('\n');
+}
+
+static void putChunked(int c) {
+   Chunk[Cnt++] = c;
+   if (Cnt == CHUNK)
+      wrChunk(),  Cnt = 0;
+}
+
+// (ht:Out 'flg . prg) -> any
+any Out(any x) {
+   x = cdr(x);
+   if (isNil(EVAL(car(x))))
+      x = prog(cdr(x));
+   else {
+      Cnt = 0;
+      Put = Env.put,  Env.put = putChunked;
+      x = prog(cdr(x));
+      if (Cnt)
+         wrChunk();
+      Env.put = Put;
+      outString("0\r\n\r\n");
+   }
+   fflush_unlocked(OutFile);
+   return x;
 }

@@ -1,4 +1,4 @@
-# 29sep06abu
+# 26nov06abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -43,7 +43,7 @@
                      (rd)
                      (get *Apps (- *AppId @)) ) )
                (close S)
-               (push '*Key
+               (push '*Run
                   (list (put @ 'app S) (list 'ev> (lit @) S)) )
                (out S (pr (car *InND))) ) ) )
       (task -40000 80000
@@ -549,7 +549,7 @@
             (prog1
                (let? S (accept Sock)
                   (if (in S (= *SesId (rd)))
-                     (push '*Key
+                     (push '*Run
                         (list (=: app S) (list 'ev> (lit This) S)) )
                      (close S)
                      NIL ) )
@@ -2197,7 +2197,7 @@
             '(let Q (init (tree '@Var '@Cls '@Hook) @Key T)
                (step Q)
                (step Q) ) )
-         "" ,"Next data record"
+         "" ,"Next record"
          (fill
             '(let Q (init (tree '@Var '@Cls '@Hook) @Key T)
                (step Q)
@@ -2220,7 +2220,7 @@
          '(and (: home obj) (not (: home obj T)))
          (list 'and '(: home obj) '(not (: home obj T)) Able) )
       "" ,"Delete"
-      '(when (ask ,"Delete" ,"Delete this data record?")
+      '(when (ask ,"Delete" ,"Delete this record?")
          (lose!> (: home obj))
          (and (: home obj) (url> @) (url @)) ) ) )
 

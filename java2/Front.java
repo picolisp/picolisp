@@ -1,4 +1,4 @@
-// 07sep06abu
+// 23dec06abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -825,8 +825,10 @@ class PicoKeyAdapter extends KeyAdapter {
             ev.consume();
             Home.getToolkit().beep();
          }
-         else if (c == KeyEvent.VK_BACK_SPACE)
-            Home.msg2("bs>", Home.Dirty = Ix);
+         else if (c == KeyEvent.VK_BACK_SPACE) {
+            if (f instanceof JTextComponent)
+               Home.msg2("bs>", Home.Dirty = Ix);
+         }
          else if (ev.isControlDown())
             Home.Dirty = Ix;
          else if (f instanceof JTextComponent)

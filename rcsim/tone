@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 12sep06abu
+# 13oct06abu
 # (c) Software Lab. Alexander Burger
 
 # Must be run on a virtual console
@@ -27,7 +27,7 @@ any tone(any ex) {
    (call 'mkdir "-p" "fifo")
    (call 'mkfifo "fifo/tone") )
 
-(?push '*Bye '(call 'rm "fifo/tone"))
+(push1 '*Bye '(call 'rm "fifo/tone"))
 
 
 ### Serve calls like:

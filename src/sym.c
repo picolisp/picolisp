@@ -1,4 +1,4 @@
-/* 13jul06abu
+/* 25nov06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -341,6 +341,75 @@ any doPack(any x) {
    return nm? consStr(data(c2)) : Nil;
 }
 
+// (glue 'any 'lst) -> sym
+any doGlue(any x) {
+   int i;
+   any nm;
+   cell c1, c2, c3;
+
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  Push(c2, x = EVAL(car(x)));
+   if (!isCell(x)) {
+      drop(c1);
+      return x;
+   }
+   nm = NULL,  pack(car(x), &i, &nm, &c3);
+   while (isCell(x = cdr(x))) {
+      pack(data(c1), &i, &nm, &c3);
+      pack(car(x), &i, &nm, &c3);
+   }
+   drop(c1);
+   return consStr(data(c3));
+}
+
+// (text 'sym 'any ..) -> sym
+any doText(any x) {
+   int c, n, i;
+   any nm;
+   any y = evSym(x = cdr(x));
+   char *p, buf[bufSize(y)];
+   cell c1;
+
+   bufString(y, buf);
+   if (!*(p = buf))
+      return Nil;
+   {
+      cell arg[length(x = cdr(x))];
+
+      for (n = 0;  isCell(x);  ++n, x = cdr(x))
+         Push(arg[n], EVAL(car(x)));
+
+      nm = NULL;
+      do {
+         if ((c = *p++) != '@') {
+            if (nm)
+               charSym(c, &i, &nm);
+            else
+               Push(c1, boxChar(c, &i, &nm));
+         }
+         else if (!(c = *p++))
+            break;
+         else if (c == '@') {
+            if (nm)
+               charSym('@', &i, &nm);
+            else
+               Push(c1, boxChar('@', &i, &nm));
+         }
+         else if (c >= '1') {
+            if ((c -= '1') > 8)
+               c -= 7;
+            if (n > c)
+               pack(data(arg[c]), &i, &nm, &c1);
+         }
+      } while (*p);
+      if (n)
+         drop(arg[0]);
+      else if (nm)
+         drop(c1);
+      return nm? consStr(data(c1)) : Nil;
+   }
+}
+
 static bool subStr(word n1, any y, word n2, any x) {
    for (;;) {
       if ((n1 & 0xFF) != (n2 & 0xFF))
@@ -556,6 +625,28 @@ any doPush(any ex) {
    return data(c2);
 }
 
+// (push1 'var 'any ..) -> any
+any doPush1(any ex) {
+   any x;
+   cell c1, c2;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   if (!member(data(c2), val(data(c1)))) {
+      Touch(ex,data(c1));
+      val(data(c1)) = cons(data(c2), val(data(c1)));
+   }
+   while (isCell(x = cdr(x)))
+      if (!member(data(c2) = EVAL(car(x)), val(data(c1)))) {
+         Touch(ex,data(c1));
+         val(data(c1)) = cons(data(c2), val(data(c1)));
+      }
+   drop(c1);
+   return data(c2);
+}
+
 // (pop 'var) -> any
 any doPop(any ex) {
    any x, y;
@@ -638,6 +729,41 @@ any doQueue(any ex) {
       while (isCell(cdr(y)))
          y = cdr(y);
       cdr(y) = cons(x,Nil);
+   }
+   drop(c1);
+   return x;
+}
+
+// (fifo 'var ['any]) -> any
+any doFifo(any ex) {
+   any x, y;
+   cell c1;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   if (isCell(x = cdr(x))) {
+      x = EVAL(car(x));
+      Touch(ex,data(c1));
+      if (isCell(y = val(data(c1))))
+         val(data(c1)) = cdr(y) = cons(x,cdr(y));
+      else {
+         val(data(c1)) = y = cons(x,Nil);
+         cdr(y) = y;
+      }
+   }
+   else if (!isCell(y = val(data(c1))))
+      x = Nil;
+   else {
+      Touch(ex,data(c1));
+      if (y == cdr(y)) {
+         x = car(y);
+         val(data(c1)) = Nil;
+      }
+      else {
+         x = cadr(y);
+         cdr(y) = cddr(y);
+      }
    }
    drop(c1);
    return x;

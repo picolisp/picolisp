@@ -1,4 +1,4 @@
-/* 29jul06abu
+/* 25dec06abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -26,9 +26,8 @@
 typedef enum {NO,YES} bool;
 
 static char Head_200[] =
-   "HTTP/1.1 200 OK\r\n"
+   "HTTP/1.0 200 OK\r\n"
    "Server: PicoLisp\r\n"
-   "Connection: close\r\n"
    "Content-Type: text/html; charset=utf-8\r\n"
    "\r\n";
 
@@ -96,6 +95,14 @@ static int gateConnect(unsigned short port) {
    return connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0? -1 : sd;
 }
 
+
+static pid_t Buddy;
+
+static void doSigAlarm(int n __attribute__((unused))) {
+   kill(Buddy, SIGTERM);
+   exit(0);
+}
+
 int main(int ac, char *av[]) {
    int cnt = ac>4? ac-3 : 1, ports[cnt], n, sd, cli, srv;
    struct sockaddr_in addr;
@@ -157,10 +164,10 @@ int main(int ac, char *av[]) {
                return 1;
 
             /* "@8080 "
-             * "GET /url HTTP/1.1"
-             * "GET /8080/url HTTP/1.1"
-             * "POST /url HTTP/1.1"
-             * "POST /8080/url HTTP/1.1"
+             * "GET /url HTTP/1.x"
+             * "GET /8080/url HTTP/1.x"
+             * "POST /url HTTP/1.x"
+             * "POST /8080/url HTTP/1.x"
              */
             if (buf[0] == '@')
                p = buf + 1;
@@ -215,7 +222,8 @@ int main(int ac, char *av[]) {
             }
             wrBytes(srv, p, buf + n - p);
 
-            if (fork()) {
+            signal(SIGALRM, doSigAlarm);
+            if (Buddy = fork()) {
                if (ssl)
                   while (alarm(60), (n = SSL_read(ssl, buf, sizeof(buf))) > 0)
                      alarm(0),  wrBytes(srv, buf, n);
@@ -227,6 +235,7 @@ int main(int ac, char *av[]) {
                shutdown(srv, SHUT_WR);
             }
             else {
+               Buddy = getppid();
                while ((n = read(srv, buf, sizeof(buf))) > 0) {
                   alarm(60);
                   if (ssl)

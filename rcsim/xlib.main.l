@@ -1,4 +1,4 @@
-# 23sep06abu
+# 13oct06abu
 # (c) Software Lab. Alexander Burger
 
 # *Sock *Panel *FocLen
@@ -19,7 +19,7 @@
          0 " m/s  "
          0 " m  "
          NIL ) )
-   (?push '*Bye '(tone> *Scene 0 0)) )
+   (push1 '*Bye '(tone> *Scene 0 0)) )
 
 (de setPanel (N X)
    (set (nth *Panel N) X)

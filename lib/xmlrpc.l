@@ -1,4 +1,4 @@
-# 03aug06abu
+# 22oct06abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -6,7 +6,7 @@
    (let? Sock (connect Host Port)
       (let Xml (tmp 'xmlrpc)
          (out Xml
-            (prinl "<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
             (xml
                (list 'methodCall NIL
                   (list 'methodName NIL Meth)

@@ -1,10 +1,10 @@
-# 09nov05abu
+# 27feb07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role" RoleAdmin)
 
 (html ,"Role"
    (<id> ,"Role" (: nm))
-   <hr>
+   "<hr>"
    (roleForm)
-   <hr> )
+   "<hr>" )

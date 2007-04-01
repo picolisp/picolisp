@@ -1,4 +1,4 @@
-# 27may06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -558,5 +558,3 @@
                         (val This)
                         (not (memq This *Moved)) ) )
                   (append *White *Black) ) ) ) ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

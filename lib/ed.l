@@ -1,4 +1,4 @@
-# 07jan06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # Structure Editor
@@ -45,5 +45,3 @@
                         (cons (cdar X) (cdr X))
                         (cons (cons '! (car X)) (cdr X)) ) )
                   (T X) ) ) ) ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

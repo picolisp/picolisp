@@ -1,4 +1,4 @@
-/* 28aug06abu
+/* 18feb07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -22,35 +22,22 @@ static int ipSocket(any ex, int type) {
    return sd;
 }
 
-static void setBlocking(bool flg, any ex, int sd) {
-   int n;
-
-   if ((n = fcntl(sd, F_GETFL, 0)) < 0)
-      ipErr(ex, "GETFL");
-   if (flg)
-      n &= ~O_NONBLOCK;
-   else
-      n |= O_NONBLOCK;
-   if (fcntl(sd, F_SETFL, n) < 0)
-      ipErr(ex, "SETFL");
-}
-
 static any tcpAccept(any ex, int sd) {
    int i, sd2;
    struct sockaddr_in addr;
    struct timespec tv = {0,100000000};  // 100 ms
 
-   setBlocking(NO, ex, sd);
+   blocking(NO, ex, sd);
    i = 200; do {
       socklen_t len = sizeof(addr);
       if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
-         setBlocking(YES, ex, sd2);
+         blocking(YES, ex, sd2);
          val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
          return boxCnt(sd2);
       }
       nanosleep(&tv,NULL);
    } while (errno == EAGAIN  &&  --i >= 0);
-   setBlocking(YES, ex, sd);
+   blocking(YES, ex, sd);
    return NULL;
 }
 

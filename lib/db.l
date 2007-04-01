@@ -1,4 +1,4 @@
-# 26nov06abu
+# 04mar07abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -142,11 +142,9 @@
 # Maintain relations
 (dm rel> (Obj Old New))
 
-(dm lose> (Obj Val)
-   (rel> This Obj Val) )
+(dm lose> (Obj Val))
 
-(dm keep> (Obj Val)
-   (rel> This Obj NIL Val) )
+(dm keep> (Obj Val))
 
 # Finalizer
 (dm zap> (Obj Val))
@@ -222,10 +220,9 @@
          New ) ) )
 
 (dm lose> (Obj Val)
-   (super Obj Val)
    (mapc
-      '((This O)
-         (rel> This Obj O NIL
+      '((This V)
+         (lose> This Obj V
             (get
                (if (sym? (: hook)) Obj Val)
                (: hook) ) ) )
@@ -233,10 +230,9 @@
       Val ) )
 
 (dm keep> (Obj Val)
-   (super Obj Val)
    (mapc
-      '((This N)
-         (rel> This Obj NIL N
+      '((This V)
+         (keep> This Obj V
             (get
                (if (sym? (: hook)) Obj Val)
                (: hook) ) ) )
@@ -439,6 +435,18 @@
          (store Tree New Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
+(dm lose> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      Val NIL (: dbf) )
+   (extra Obj Val Hook) )
+
+(dm keep> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      Val Obj (: dbf) )
+   (extra Obj Val Hook) )
+
 
 # (+Ref) hook
 (class +Ref +Index)
@@ -454,6 +462,20 @@
          (not (get Obj T))
          (store Tree (cons New Aux) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
+
+(dm lose> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      (cons Val (conc (mapcar '((S) (get Obj S)) (: aux)) Obj))
+      NIL (: dbf) )
+   (extra Obj Val Hook) )
+
+(dm keep> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      (cons Val (conc (mapcar '((S) (get Obj S)) (: aux)) Obj))
+      Obj (: dbf) )
+   (extra Obj Val Hook) )
 
 
 # Backing index prefix
@@ -473,6 +495,16 @@
             (not (get Obj T))
             (store Tree (cons New Obj) Obj (: dbf)) ) ) )
    (extra Obj Old New Hook) )
+
+(dm lose> (Obj Val Hook)
+   (with (meta (: cls) (: var))
+      (store (tree (: var) (: cls)) (cons Val Obj) NIL (: dbf)) )
+   (extra Obj Val Hook) )
+
+(dm keep> (Obj Val Hook)
+   (with (meta (: cls) (: var))
+      (store (tree (: var) (: cls)) (cons Val Obj) Obj (: dbf)) )
+   (extra Obj Val Hook) )
 
 
 # (+Idx) cnt hook
@@ -501,6 +533,29 @@
                (pop 'S) ) ) ) )
    (extra Obj Old New Hook) )
 
+(dm lose> (Obj Val Hook)
+   (let
+      (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
+      (store Tree (cons Val Aux) NIL (: dbf))
+      (for S (split (cdr (chop Val)) " " "^J")
+         (while (nth S (: min))
+            (store Tree (list (pack S) Obj) NIL (: dbf))
+            (pop 'S) ) ) )
+   (extra Obj Val Hook) )
+
+(dm keep> (Obj Val Hook)
+   (let
+      (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
+      (store Tree (cons Val Aux) Obj (: dbf))
+      (for S (split (cdr (chop Val)) " " "^J")
+         (while (nth S (: min))
+            (store Tree (list (pack S) Obj) Obj (: dbf))
+            (pop 'S) ) ) )
+   (extra Obj Val Hook) )
+
+
 
 # (+Sn +Index) hook
 (class +Sn)
@@ -514,6 +569,20 @@
          (store Tree (cons (ext:Snx New) (cons Obj T)) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
+(dm lose> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      (cons (ext:Snx Val) (cons Obj T))
+      NIL (: dbf) )
+   (extra Obj Val Hook) )
+
+(dm keep> (Obj Val Hook)
+   (store
+      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+      (cons (ext:Snx Val) (cons Obj T))
+      Obj (: dbf) )
+   (extra Obj Val Hook) )
+
 
 # (+Fold +Index) hook
 (class +Fold)
@@ -524,6 +593,12 @@
 
 (dm rel> (Obj Old New Hook)
    (extra Obj (fold Old) (fold New) Hook) )
+
+(dm lose> (Obj Val Hook)
+   (extra Obj (fold Val) Hook) )
+
+(dm keep> (Obj Val Hook)
+   (extra Obj (fold Val) Hook) )
 
 
 # (+Aux) lst
@@ -580,6 +655,11 @@
          (del> Obj Var (get Obj Var)) ) )
    (extra Obj Old New Hook) )
 
+(dm lose> (Obj Val Hook)
+   (for Var (: dep)
+      (del> Obj Var (get Obj Var)) )
+   (extra Obj Val Hook) )
+
 
 (class +List)
 
@@ -618,17 +698,17 @@
       (for N New
          (extra Obj NIL N Hook) ) ) )
 
-(dm lose> (Obj Val)
+(dm lose> (Obj Val Hook)
    (if (ele> This Val)
-      (extra Obj Val)
+      (extra Obj Val Hook)
       (for V Val
-         (extra Obj V) ) ) )
+         (extra Obj V Hook) ) ) )
 
-(dm keep> (Obj Val)
+(dm keep> (Obj Val Hook)
    (if (ele> This Val)
-      (extra Obj Val)
+      (extra Obj Val Hook)
       (for V Val
-         (extra Obj V) ) ) )
+         (extra Obj V Hook) ) ) )
 
 
 (class +Need)
@@ -700,7 +780,7 @@
    (call 'cp File (blob Obj Var))
    (when Flg
       (chdir *Blob
-         (call 'ln "-s"
+         (call 'ln "-sf"
             (pack (glue "/" (chop Obj)) "." Var)
             (pack (name Obj) "." Var) ) ) ) )
 
@@ -836,6 +916,12 @@
    (lose> This)
    (commit 'upd) )
 
+(de lose "Prg"
+   (let "Flg" (: T)
+      (=: T T)
+      (run "Prg")
+      (=: T "Flg") ) )
+
 (dm keep1> (Var)
    (when (meta This Var)
       (keep> @ This (get This Var)) ) )
@@ -855,6 +941,12 @@
    (dbSync)
    (keep> This)
    (commit 'upd) )
+
+(de keep "Prg"
+   (let "Flg" (: T)
+      (=: T)
+      (run "Prg")
+      (=: T "Flg") ) )
 
 (dm set> (Val)
    (unless (= Val (val This))
@@ -1009,5 +1101,3 @@
       (while Lst
          (put> Obj (pop 'Lst) (pop 'Lst)) )
       Obj ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

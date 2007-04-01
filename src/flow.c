@@ -1,4 +1,4 @@
-/* 21dec06abu
+/* 16mar07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -850,7 +850,7 @@ any doIf(any x) {
 // (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
 any doIf2(any x) {
    x = cdr(x);
-   if (isNil(val(At) = EVAL(car(x)))) {
+   if (isNil(EVAL(car(x)))) {
       x = cdr(x);
       if (isNil(val(At) = EVAL(car(x))))
          return prog(cddddr(x));
@@ -1196,6 +1196,8 @@ for2:
    return Pop(c1);
 }
 
+static any Thrown;
+
 // (catch 'sym . prg) -> any
 any doCatch(any ex) {
    any x, y;
@@ -1205,8 +1207,7 @@ any doCatch(any ex) {
    NeedSym(ex,f.tag);
    f.link = CatchPtr,  CatchPtr = &f;
    f.env = Env;
-   if (!(y = (any)setjmp(f.rst)))
-      y = prog(cdr(x));
+   y = setjmp(f.rst)? Thrown : prog(cdr(x));
    CatchPtr = f.link;
    return y;
 }
@@ -1217,11 +1218,11 @@ any doThrow(any ex) {
    catchFrame *p;
 
    x = cdr(ex),  tag = EVAL(car(x));
-   x = cdr(x),  x = EVAL(car(x));
+   x = cdr(x),  Thrown = EVAL(car(x));
    for (p = CatchPtr;  p;  p = p->link)
       if (p->tag == T  ||  tag == p->tag) {
          unwind(p);
-         longjmp(p->rst, (int)x);
+         longjmp(p->rst, 1);
       }
    err(ex, tag, "Tag not found");
 }
@@ -1346,7 +1347,9 @@ any doTrace(any x) {
    OutFile = oSave;
    Push(c1, prog(body));
    OutFile = stderr;
+   Env.put = putStdout;
    traceIndent(Trace--, foo, " = "),  print(data(c1)),  crlf();
+   Env.put = putSave;
    OutFile = oSave;
    return Pop(c1);
 }
@@ -1441,16 +1444,21 @@ any doKill(any ex) {
    return kill(pid, isCell(cddr(ex))? (int)evCnt(ex,cddr(ex)) : SIGTERM)? Nil : T;
 }
 
-static int allocPipe(void) {
+static int allocChild(void) {
    int i;
 
-   for (i = 0; i < PSize; i += 2)
-      if (Pipe[i] < 0)
+   for (i = 0; i < Children; ++i)
+      if (!Child[i].pid)
          return i;
-   Pipe = alloc(Pipe, (PSize + 16) * sizeof(int));
-   for (i = 0; i < 16; i += 2)
-      Pipe[PSize] = -1,  PSize += 2;
-   return PSize - 16;
+   return i;
+}
+
+static void allocChildren(void) {
+   int i;
+
+   Child = alloc(Child, (Children + 8) * sizeof(child));
+   for (i = 0; i < 8; ++i)
+      Child[Children++].pid = 0;
 }
 
 pid_t forkLisp(any ex) {
@@ -1468,7 +1476,7 @@ pid_t forkLisp(any ex) {
    }
    if (pipe(hear) < 0  ||  pipe(tell) < 0)
       pipeError(ex, "open");
-   i = allocPipe();
+   i = allocChild();
    if ((n = fork()) < 0)
       err(ex, NULL, "fork");
    if (n == 0) {
@@ -1485,10 +1493,10 @@ pid_t forkLisp(any ex) {
       Slot = i;
       Spkr = 0;
       Mic = mic[1];
-      for (i = 0; i < PSize; i += 2)
-         if (Pipe[i] >= 0)
-            close(Pipe[i]), close(Pipe[i+1]);
-      PSize = 0,  free(Pipe),  Pipe = NULL;
+      for (i = 0; i < Children; ++i)
+         if (Child[i].pid)
+            close(Child[i].hear), close(Child[i].tell),  free(Child[i].buf);
+      Children = 0,  free(Child),  Child = NULL;
       if (Hear)
          close(Hear);
       Hear = hear[0];
@@ -1500,10 +1508,15 @@ pid_t forkLisp(any ex) {
       run(val(Fork));
       return 0;
    }
+   if (i == Children)
+      allocChildren();
    if (close(hear[0]) < 0  ||  close(tell[1]) < 0)
       pipeError(ex, "close");
-   Pipe[i] = tell[0];
-   Pipe[i+1] = hear[1];
+   Child[i].pid = n;
+   Child[i].hear = tell[0];
+   blocking(NO, ex, Child[i].tell = hear[1]);
+   Child[i].ofs = Child[i].cnt = 0;
+   Child[i].buf = NULL;
    return n;
 }
 

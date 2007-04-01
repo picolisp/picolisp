@@ -1,4 +1,4 @@
-# 28dec06abu
+# 30mar07abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -59,9 +59,9 @@ $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 
 ifeq ($(shell uname -o), Cygwin)
 
-$(bin)/picolisp$(dll): $(picoFiles:.c=.o) 
+$(bin)/picolisp$(dll): $(picoFiles:.c=.o)
 	@echo "  " picolisp shared library $(dll):
-	gcc -o $(bin)/picolisp$(dll) $(DYNAMIC-LIB-FLAGS) $(picoFiles:.c=.o) 
+	gcc -o $(bin)/picolisp$(dll) $(DYNAMIC-LIB-FLAGS) $(picoFiles:.c=.o)
 	$(STRIP) $(bin)/picolisp$(dll)
 
 $(bin)/picolisp: $(picoFiles:.c=.o) $(bin)/picolisp$(dll) start.o

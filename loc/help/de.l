@@ -1,4 +1,4 @@
-# 27jul04abu
+# 27feb07abu
 # (c) Software Lab. Alexander Burger
 
 (html "Browser GUI Help"
@@ -63,4 +63,4 @@
             "nur Tag und Monat"
             "Tag, Monat und zwei Jahresstellen" ) ) )
    (<p> T (<href> "(c) Software Lab." "http://www.software-lab.de"))
-   <hr> )
+   "<hr>" )

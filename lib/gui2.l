@@ -1,4 +1,4 @@
-# 26nov06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -2713,5 +2713,3 @@
    (out (list "bin/lat1" (setq "Nm" (tmp "Nm" ".txt")))
       (run "Prg") )
    (url "Nm") )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

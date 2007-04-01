@@ -1,4 +1,4 @@
-# 20oct06abu
+# 27mar07abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -16,17 +16,10 @@
 # lib/gui.l
 "-Choice" "-Auswahl"
 "Background" "Hintergrund"
-"Bad date format" "Falsches Datums-Format"
-"Bad phone number format" "Falsches Telefonnummern-Format"
-"Bad time format" "Falsches Uhrzeit-Format"
-"Cancel" "Abbruch"
 "Choose" "Auswahl"
 "Choose/New" "Auswahl/Neuanlage"
 "Choose/New (F4)" "Auswahl/Neuanlage (F4)"
 "Close" "Schließen"
-"New" "Neuanlage"
-"Data not found" "Datensatz nicht gefunden"
-"Delete" "Löschen"
 "Delete this record?" "Diesen Datensatz löschen?"
 "F2-Choice" "F2-Auswahl"
 "Font" "Schriftart"
@@ -34,12 +27,9 @@
 "Foreground" "Vordergrund"
 "New/Copy" "Neu/Muster"
 "Next record" "Nächster Datensatz"
-"No" "Nein"
 "Please wait" "Bitte warten"
 "Settings" "Einstellungen"
-"Search" "Suchen"
 "Text too long" "Text zu lang"
-"Yes" "Ja"
 
 # lib/admin.l
 "' logged in" "' ist angemeldet"
@@ -52,10 +42,21 @@
 "login" "anmelden"
 "logout" "abmelden"
 
-# lib/app.l
-"An internal error occurred." "Es ist ein interner Fehler aufgetreten."
-"Connection will be closed." "Die Verbindung wird beendet."
-"Sorry!" "Sorry!"
-
 # lib/form.l
+"Bad date format" "Falsches Datums-Format"
+"Bad phone number format" "Falsches Telefonnummern-Format"
+"Bad time format" "Falsches Uhrzeit-Format"
+"Cancel" "Abbruch"
+"Currently edited by '@2' (@1)" "Zur Zeit von '@2' (@1) bearbeitet"
+"Data not found" "Datensatz nicht gefunden"
+"Delete" "Löschen"
+"Delete @1?" "@1 löschen?"
+"Edit" "Bearbeiten"
+"New" "Neuanlage"
+"No" "Nein"
+"Restore" "Wiederherstellen"
+"Restore @1?" "@1 wiederherstellen?"
+"Save" "Speichern"
+"Search" "Suchen"
 "Select" "Auswahl"
+"Yes" "Ja"

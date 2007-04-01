@@ -1,4 +1,4 @@
-# 20oct06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # *Init *Accu *Stack
@@ -71,5 +71,3 @@
 # Start server
 (de go ()
    (server 8080 "@calculator") )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

@@ -1,4 +1,4 @@
-# 07jan06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook|T] [var val ..])
@@ -129,5 +129,3 @@
    (mapcar
       '((X) (space 3) (extra X))
       (any (revise (sym Val))) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

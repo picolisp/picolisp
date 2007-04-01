@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Pico Lisp FAQ</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
 <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
@@ -13,11 +14,10 @@
 <i>Monk: "But if there is nothing, how can I throw it out?"</i><br>
 <i>Joshu: "Well, then carry it out."</i><br>
 <i>(Zen koan)</i><br>
-</p>
 
 <h1>Pico Lisp Frequently Asked Questions</h1>
 
-<p align=right>(c) Software Lab. Alexander Burger</p>
+<p align=right>(c) Software Lab. Alexander Burger
 
 <p><ul>
 <li><a href="#yet">Why did you write yet another Lisp?</a>
@@ -438,13 +438,13 @@ break if we call it as <code>(double 'Var)</code>. Therefore, the correnct
 implementation of <code>double</code> should be:
 
 <p><pre><code>
-(de double ("<u>Var</u>")
-   (set "<u>Var</u>" (* 2 (val "<u>Var</u>"))) )
+(de double ("Var")
+   (set "Var" (* 2 (val "Var"))) )
 </code></pre>
 
 <p>If <code>double</code> is defined that way in a separate source file, and/or
 isolated via the <code><a href="ref.html#====">====</a></code> function, then
-the symbol <code>"<u>Var</u>"</code> is locked into a private lexical context
+the symbol <code>"Var"</code> is locked into a private lexical context
 and cannot conflict with other symbols.
 
 <p>Admittedly, there are two disadvantages with this solution:

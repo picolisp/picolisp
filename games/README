@@ -1,4 +1,4 @@
-24sep06abu
+08feb07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -72,7 +72,7 @@ Your positions are marked with 'T', the computer's with '0'.
 
 
 
-The 'chess' game is minimalistic (458 lines of code). Nevertheless, it plays
+The 'chess' game is minimalistic (440 lines of code). Nevertheless, it plays
 some slow - though correct - chess. Start it as:
 
 $ ./p dbg.l games/chess.l -main

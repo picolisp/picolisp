@@ -1,4 +1,4 @@
-/* 17dec06abu
+/* 20feb07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -37,9 +37,9 @@
 #define fwrite_unlocked fwrite
 #endif
 
-#define CELLS     (1024*1024/sizeof(cell))   // Heap allocation unit 1MB
-#define HASH      4999                       // Hash table size (should be prime)
-#define TOP       0x10000                    // Character Top
+#define CELLS     1000000     // Heap allocation unit 1 million cells
+#define HASH      4999        // Hash table size (should be prime)
+#define TOP       0x10000     // Character Top
 
 typedef unsigned long word;
 typedef unsigned char byte;
@@ -59,6 +59,13 @@ typedef struct heap {
    cell cells[CELLS];
    struct heap *next;
 } heap;
+
+typedef struct child {
+   int pid;
+   int hear, tell;
+   int ofs, cnt;
+   byte *buf;
+} child;
 
 typedef struct bindFrame {
    struct bindFrame *link;
@@ -199,8 +206,9 @@ typedef struct catchFrame {
 
 /* Globals */
 extern bool SigInt, SigTerm;
-extern int Chr, Spkr, Mic, Slot, Hear, Tell, PSize, *Pipe, Trace;
+extern int Chr, Spkr, Mic, Slot, Hear, Tell, Trace, Children;
 extern char **AV, *Home;
+extern child *Child;
 extern heap *Heaps;
 extern cell *Avail;
 extern stkEnv Env;
@@ -213,7 +221,7 @@ extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-extern any Dbg, PPid, Pid, Scl, Class, Run, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+extern any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -227,6 +235,8 @@ any bigCopy(any);
 void bigSub(any,any);
 void binPrint(any);
 any binRead(void);
+word2 blk64(any);
+void blocking(bool,any,int);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
 void brkLoad(any);
@@ -265,6 +275,7 @@ any findHash(any,any*);
 int firstByte(any);
 pid_t forkLisp(any);
 any get(any,any);
+int getChar(void);
 void getStdin(void);
 void giveup(char*) __attribute__ ((noreturn));
 unsigned long hash(any);
@@ -281,6 +292,7 @@ any mkDat(int,int,int);
 any mkName(char*);
 any mkStr(char*);
 any name(any);
+any new64(word2,any);
 any newId(int);
 int numBytes(any);
 void numError(any,any) __attribute__ ((noreturn));
@@ -405,6 +417,7 @@ any doDel(any);
 any doDelete(any);
 any doDelq(any);
 any doDie(any);
+any doDiff(any);
 any doDir(any);
 any doDiv(any);
 any doDm(any);
@@ -585,6 +598,7 @@ any doRollback(any);
 any doRot(any);
 any doRpc(any);
 any doRun(any);
+any doSect(any);
 any doSeed(any);
 any doSeek(any);
 any doSend(any);

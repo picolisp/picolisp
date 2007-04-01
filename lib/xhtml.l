@@ -1,4 +1,4 @@
-# 21dec06abu
+# 23mar07abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -21,6 +21,17 @@
          (prin " " (car Attr) "=\"" (cdr Attr) "\"") )
       (T (mapc htStyle Attr)) ) )
 
+(de dfltCss (Cls)
+   (htStyle
+      (cond
+         ((not *Style) Cls)
+         ((atom *Style) (pack *Style " " Cls))
+         ((and (atom (car *Style)) (atom (cdr *Style)))
+            (list Cls *Style) )
+         ((find atom *Style)
+            (replace *Style @ (pack @ " " Cls)) )
+         (T (cons Cls *Style)) ) ) )
+
 (de tag (Nm Attr Ofs Prg)
    (prin '< Nm)
    (and Attr (htStyle @))
@@ -36,12 +47,39 @@
 (de <tag> (Nm Attr . Prg)
    (tag Nm Attr 2 Prg) )
 
+(de style ("X" "Prg")
+   (let *Style
+      (nond
+         (*Style "X")
+         ((pair "X")
+            (cond
+               ((atom *Style) (pack *Style " " "X"))
+               ((and (atom (car *Style)) (atom (cdr *Style)))
+                  (list "X" *Style) )
+               ((find atom *Style)
+                  (replace *Style @ (pack @ " " "X")) )
+               (T (cons "X" *Style)) ) )
+         ((or (pair (car "X")) (pair (cdr "X")))
+            (cond
+               ((atom *Style) (list *Style "X"))
+               ((and (atom (car *Style)) (atom (cdr *Style)))
+                  (if (= (car "X") (car *Style))
+                     "X"
+                     (list *Style "X") ) )
+               (T
+                  (cons "X" (delete (assoc (car "X") *Style) *Style)) ) ) )
+         (NIL "X") )
+      (run "Prg") ) )
 
-### XHTML Output ###
+(de <style> ("X" . "Prg")
+   (style "X" "Prg") )
+
+
+### XHTML output ###
 (de html (Upd Ttl Css Attr . Prg)
    (httpHead NIL Upd)
    (ht:Out *Chunked
-      ## (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+      ## (xml? T)
       (prinl "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">")
       (prinl
          "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\""
@@ -72,15 +110,6 @@
          (srcUrl JS)
          "\" type=\"text/javascript\"></script>" ) ) )
 
-(de style (X . "Prg")
-   (let *Style
-      (cond
-         ((not *Style) X)
-         ((or (atom *Style) (atom (cdr *Style)))
-            (list X *Style) )
-         (T (cons X *Style)) )
-      (run "Prg") ) )
-
 (de <div> (Attr . Prg)
    (tag 'div Attr 2 Prg) )
 
@@ -91,11 +120,20 @@
    (htPrin 2 Prg)
    (prinl "<br/>") )
 
+(de ---- ()
+   (prinl "<br/><br/>") )
+
 (de <hr> ()
    (prinl "<hr/>") )
 
 (de <nbsp> (N)
    (do (or N 1) (prin "&nbsp;")) )
+
+(de <small> Prg
+   (tag 'small NIL 2 Prg) )
+
+(de <big> Prg
+   (tag 'big NIL 2 Prg) )
 
 (de <em> Prg
    (tag 'em NIL 2 Prg) )
@@ -165,50 +203,6 @@
    (htPrin 2 Prg)
    (prin "</a>") )
 
-(de urlMT (Url Menu Tab Id)
-   (pack Url '?  "*Menu=+" Menu  "&*Tab=+" Tab  "&*ID=" (ht:Fmt Id)) )
-
-(de <menu> Lst
-   (let (M 1  N 1  E 2  U)
-      (recur (Lst N E)
-         (for L Lst
-            (<ul> NIL
-               (nond
-                  ((car L) (htPrin 2 (cdr L)))
-                  ((=T (car L))
-                     (if (setq U (eval (cadr L) E))
-                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
-                           (<href> (eval (car L) E) (urlMT U *Menu 1)) )
-                        (<li> (pack 'cmd N)
-                           (ht:Prin (eval (car L) E)) ) ) )
-                  ((bit? M *Menu)
-                     (<li> (pack 'sub N)
-                        (<href>
-                           (eval (cadr L) E)
-                           (urlMT *Url (| M *Menu) *Tab *ID) ) )
-                     (setq M (>> -1 M))
-                     (recur (L)
-                        (for X (cddr L)
-                           (when (=T (car X))
-                              (recurse X)
-                              (setq M (>> -1 M)) ) ) ) )
-                  (NIL
-                     (<li> (pack 'top N)
-                        (<href>
-                           (eval (cadr L) E)
-                           (urlMT *Url (x| M *Menu) *Tab *ID) )
-                        (setq M (>> -1 M))
-                        (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
-
-(de <tab> Lst
-   (<table> 'tab NIL NIL
-      (for (N . L) Lst
-         (if (= N *Tab)
-            (<td> 'top (ht:Prin (eval (car L) 1)))
-            (<td> 'sub
-               (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
-   (htPrin 2 (get Lst *Tab -1)) )
-
 (de <table> (Attr Ttl "Head" . Prg)
    (tag 'table Attr 1
       (quote
@@ -260,155 +254,98 @@
             (tag 'tr NIL 1
                (quote
                   (use X
-                     (do (or (num? X) (length X))
-                        (tag 'td (and (pair X) (pop 'X)) 1
-                           (quote
-                              (if (atom (car Lst))
-                                 (ht:Prin (eval (pop 'Lst) 1))
-                                 (eval (pop 'Lst) 1) ) ) ) ) ) ) ) ) ) ) )
+                     (let L (and (sym? X) (chop X))
+                        (do (or (num? X) (length X))
+                           (tag 'td
+                              (cond
+                                 ((pair X) (pop 'X))
+                                 ((= "." (pop 'L)) 'align) )
+                              1
+                              (quote
+                                 (if (atom (car Lst))
+                                    (ht:Prin (eval (pop 'Lst) 1))
+                                    (eval (pop 'Lst) 1) ) ) ) ) ) ) ) ) ) ) ) )
 
-### HTML Form ###
-(de <post> (Attr Url . Prg)
-   (prin
-      "<form enctype=\"multipart/form-data\" action=\""
-      (sesId Url)
-      (and *JS "\" onsubmit=\"return doPost(this);")
-      "\" method=\"post\">" )
-   (tag 'fieldset Attr 2 Prg)
-   (prinl "</form>") )
+(de <spread> Lst
+   (<table> '(width . "100%") NIL '((norm) (align))
+      (<row> NIL
+         (eval (car Lst) 1)
+         (run (cdr Lst) 1) ) ) )
 
-(de htmlVar ("Var")
-   (prin "name=\"")
-   (if (pair "Var")
-      (prin (car "Var") "(" (ht:Fmt (cdr "Var")) ")")
-      (prin "Var") )
-   (prin "\"") )
+(de <tip> ("Str" . "Prg")
+   (style (cons 'title "Str") "Prg") )
 
-(de htmlVal ("Var")
-   (if (pair "Var")
-      (cdr (assoc (cdr "Var") (val (car "Var"))))
-      (val "Var") ) )
 
-(de <label> (Attr . Prg)
-   (tag 'label Attr 2 Prg) )
+# Menus
+(de urlMT (Url Menu Tab Id)
+   (pack Url '?  "*Menu=+" Menu  "&*Tab=+" Tab  "&*ID=" (ht:Fmt Id)) )
 
-(de <field> (N "Var" Max Flg)
-   (prin "<input type=\"text\" ")
-   (htmlVar "Var")
-   (prin " value=\"")
-   (ht:Prin (htmlVal "Var"))
-   (prin "\" size=\"")
-   (if (lt0 N)
-      (prin (- N) "\" style=\"text-align: right;\"")
-      (prin N "\"") )
-   (and Max (prin " maxlength=\"" Max "\""))
-   (and *Style (htStyle @))
-   (and Flg (prin " readonly"))
-   (prinl "/>") )
+(de <menu> Lst
+   (let (M 1  N 1  E 2  U)
+      (recur (Lst N E)
+         (for L Lst
+            (<ul> NIL
+               (nond
+                  ((car L) (htPrin 2 (cdr L)))
+                  ((=T (car L))
+                     (if (setq U (eval (cadr L) E))
+                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
+                           (<href> (eval (car L) E) (urlMT U *Menu 1)) )
+                        (<li> (pack 'cmd N)
+                           (ht:Prin (eval (car L) E)) ) ) )
+                  ((bit? M *Menu)
+                     (<li> (pack 'sub N)
+                        (<href>
+                           (eval (cadr L) E)
+                           (urlMT *Url (| M *Menu) *Tab *ID) ) )
+                     (setq M (>> -1 M))
+                     (recur (L)
+                        (for X (cddr L)
+                           (when (=T (car X))
+                              (recurse X)
+                              (setq M (>> -1 M)) ) ) ) )
+                  (NIL
+                     (<li> (pack 'top N)
+                        (<href>
+                           (eval (cadr L) E)
+                           (urlMT *Url (x| M *Menu) *Tab *ID) )
+                        (setq M (>> -1 M))
+                        (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
 
-(de <hidden> ("Var" Val)
-   (prin "<input type=\"hidden\" ")
-   (htmlVar "Var")
-   (prin " value=\"")
-   (ht:Prin Val)
-   (prinl "\"/>") )
 
-(de <passwd> (N "Var" Flg)
-   (prin "<input type=\"password\" ")
-   (htmlVar "Var")
-   (prin " value=\"")
-   (ht:Prin (htmlVal "Var"))
-   (prin "\" size=\"" N "\" maxlength=\"" N "\"")
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
+# Tabs
+(de <tab> Lst
+   (<table> 'tab NIL NIL
+      (for (N . L) Lst
+         (if (= N *Tab)
+            (<td> 'top (ht:Prin (eval (car L) 1)))
+            (<td> 'sub
+               (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
+   (htPrin 2 (get Lst *Tab -1)) )
 
-(de <upload> (N "Var" Flg)
-   (prin "<input type=\"file\" ")
-   (htmlVar "Var")
-   (prin " value=\"")
-   (ht:Prin (htmlVal "Var"))
-   (prin "\" size=\"" N "\"")
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
 
-(de <area> (Cols Rows "Var" Flg)
-   (prin "<textarea ")
-   (htmlVar "Var")
-   (prin " cols=\"" Cols "\" rows=\"" Rows "\" wrap=\"off\"")
-   (and *Style (htStyle @))
-   (and Flg (prin " readonly"))
-   (prin '>)
-   (ht:Prin (htmlVal "Var"))
-   (prinl "</textarea>") )
-
-(de <select> (Lst "Var" Flg)
-   (prin "<select ")
-   (htmlVar "Var")
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prin '>)
-   (for "X" Lst
-      (let "V" (if (atom "X") "X" (cdr "X"))
-         (prin
-            "<option"
-            (and (pair "X") (pack " value=\"" "V" "\""))
-            (if (= "V" (htmlVal "Var"))
-               " selected=\"selected\">"
-               '> ) ) )
-      (ht:Prin (if (atom "X") "X" (car "X")))
-      (prin "</option>") )
-   (prinl "</select>") )
-
-(de <check> ("Var" Flg)
-   (prin "<input type=\"hidden\" ")
-   (htmlVar "Var")
-   (prin " value=\"\">")
-   (prin "<input type=\"checkbox\" ")
-   (htmlVar "Var")
-   (prin " value=\"T\"" (and (htmlVal "Var") " checked=\"checked\""))
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
-
-(de <radio> ("Var" Val Flg)
-   (prin "<input type=\"radio\" ")
-   (htmlVar "Var")
-   (prin
-      " value=\"" Val "\""
-      (and (= Val (htmlVal "Var")) " checked=\"checked\"") )
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
-
-(de <submit> (S "Var" Flg JS)
-   (prin "<input type=\"submit\"")
-   (and "Var" (space) (htmlVar "Var"))
-   (prin " value=\"")
-   (ht:Prin S)
-   (prin "\"")
-   (and *JS JS (prin " onclick=\"return doSubmit(this);\""))
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
-
-(de <image> (Src "Var" Flg JS)
-   (prin "<input type=\"image\"")
-   (and "Var" (space) (htmlVar "Var"))
-   (prin " src=\"" (sesId Src) "\"")
-   (and *JS JS (prin " onclick=\"return doImage(this);\""))
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
-
-(de <reset> (S Flg)
-   (prin "<input type=\"reset\" value=\"")
-   (ht:Prin S)
-   (prin "\"")
-   (and *Style (htStyle @))
-   (and Flg (prin " disabled"))
-   (prinl "/>") )
+# Links to previous and next object
+(de stepBtn (Var Cls Hook)
+   (<span> 'step
+      (let
+         (K
+            (cond
+               ((isa '+Key (meta *ID Var))
+                  (get *ID Var) )
+               ((isa '+Fold (meta *ID Var))
+                  (cons (fold (get *ID Var)) *ID) )
+               (T (cons (get *ID Var) *ID)) )
+            Q1 (init (tree Var Cls Hook) K NIL)
+            Q2 (init (tree Var Cls Hook) K T) )
+         (or (get *ID T) (step Q1 T))
+         (if (and (step Q1 T) (url> @))
+            (<href> "<<<" (mkUrl @))
+            (prin "&lt;&lt;&lt;") )
+         (prin "&nbsp;--&nbsp;")
+         (or (get *ID T) (step Q2 T))
+         (if (and (step Q2 T) (url> @))
+            (<href> ">>>" (mkUrl @))
+            (prin "&gt;&gt;&gt;") ) ) ) )
 
 # Interactive tree
 (de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
@@ -461,4 +398,146 @@
       (prin "</li>") )
    (prinl "</ul>") )
 
-# vim:syntax=picolisp:ts=3:sw=3:expandtab
+
+### HTML form ###
+(de <post> (Attr Url . Prg)
+   (prin
+      "<form enctype=\"multipart/form-data\" action=\""
+      (sesId Url)
+      (and *JS "\" onsubmit=\"return doPost(this);")
+      "\" method=\"post\">" )
+   (tag 'fieldset Attr 2 Prg)
+   (prinl "</form>") )
+
+(de htmlVar ("Var")
+   (prin "name=\"")
+   (if (pair "Var")
+      (prin (car "Var") "(" (ht:Fmt (cdr "Var")) ")")
+      (prin "Var") )
+   (prin "\"") )
+
+(de htmlVal ("Var")
+   (if (pair "Var")
+      (cdr (assoc (cdr "Var") (val (car "Var"))))
+      (val "Var") ) )
+
+(de <label> (Attr . Prg)
+   (tag 'label Attr 2 Prg) )
+
+(de <field> (N "Var" Max Flg)
+   (prin "<input type=\"text\" ")
+   (htmlVar "Var")
+   (prin " value=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prin "\" size=\"")
+   (if (lt0 N)
+      (prin (- N) "\" style=\"text-align: right;\"")
+      (prin N "\"") )
+   (and Max (prin " maxlength=\"" Max "\""))
+   (dfltCss "field")
+   (and Flg (prin " readonly=\"readonly\""))
+   (prinl "/>") )
+
+(de <hidden> ("Var" Val)
+   (prin "<input type=\"hidden\" ")
+   (htmlVar "Var")
+   (prin " value=\"")
+   (ht:Prin Val)
+   (prinl "\"/>") )
+
+(de <passwd> (N "Var" Flg)
+   (prin "<input type=\"password\" ")
+   (htmlVar "Var")
+   (prin " value=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prin "\" size=\"" N "\" maxlength=\"" N "\"")
+   (dfltCss "passwd")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <upload> (N "Var" Flg)
+   (prin "<input type=\"file\" ")
+   (htmlVar "Var")
+   (prin " value=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prin "\" size=\"" N "\"")
+   (dfltCss "upload")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <area> (Cols Rows "Var" Flg)
+   (prin "<textarea ")
+   (htmlVar "Var")
+   (prin " cols=\"" Cols "\" rows=\"" Rows "\" wrap=\"off\"")
+   (dfltCss "area")
+   (and Flg (prin " readonly=\"readonly\""))
+   (prin '>)
+   (ht:Prin (htmlVal "Var"))
+   (prinl "</textarea>") )
+
+(de <select> (Lst "Var" Flg)
+   (prin "<select ")
+   (htmlVar "Var")
+   (dfltCss "select")
+   (prin '>)
+   (for "X" Lst
+      (let "V" (if (atom "X") "X" (cdr "X"))
+         (prin
+            "<option"
+            (and (pair "X") (pack " value=\"" "V" "\""))
+            (cond
+               ((= "V" (htmlVal "Var")) " selected=\"selected\"")
+               (Flg " disabled=\"disabled\"") )
+            '> ) )
+      (ht:Prin (if (atom "X") "X" (car "X")))
+      (prin "</option>") )
+   (prinl "</select>") )
+
+(de <check> ("Var" Flg)
+   (prin "<input type=\"hidden\" ")
+   (htmlVar "Var")
+   (prin " value=\"" (and Flg (htmlVal "Var")) "\">")
+   (prin "<input type=\"checkbox\" ")
+   (htmlVar "Var")
+   (prin " value=\"T\"" (and (htmlVal "Var") " checked=\"checked\""))
+   (dfltCss "check")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <radio> ("Var" Val Flg)
+   (prin "<input type=\"radio\" ")
+   (htmlVar "Var")
+   (prin
+      " value=\"" Val "\""
+      (and (= Val (htmlVal "Var")) " checked=\"checked\"") )
+   (dfltCss "radio")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <submit> (S "Var" Flg JS)
+   (prin "<input type=\"submit\"")
+   (and "Var" (space) (htmlVar "Var"))
+   (prin " value=\"")
+   (ht:Prin S)
+   (prin "\"")
+   (and *JS JS (prin " onclick=\"return doBtn(this);\""))
+   (dfltCss "submit")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <image> (Src "Var" Flg JS)
+   (prin "<input type=\"image\"")
+   (and "Var" (space) (htmlVar "Var"))
+   (prin " src=\"" (sesId Src) "\"")
+   (and *JS JS (prin " onclick=\"return doBtn(this);\""))
+   (dfltCss "image")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <reset> (S Flg)
+   (prin "<input type=\"reset\" value=\"")
+   (ht:Prin S)
+   (prin "\"")
+   (dfltCss "reset")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )

@@ -1,4 +1,4 @@
-# 09dec06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # use the Tiny C Compiler http://fabrice.bellard.free.fr/tcc
@@ -20,5 +20,3 @@
 
 (de dospath (p)
    (in '("cygpath" "-m" p) (line T)) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

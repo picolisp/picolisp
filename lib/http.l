@@ -1,4 +1,4 @@
-# 28dec06abu
+# 22mar07abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -9,12 +9,16 @@
    *HPorts 0
    *Timeout (* 15 60 1000) )
 
+(zero *Http1)
+
 (de *Mimes
    (`(chop "html"))
    (`(chop "au") "audio/basic" 86400)
    (`(chop "wav") "audio/x-wav" 86400)
    (`(chop "mp3") "audio/x-mpeg" 86400)
    (`(chop "gif") "image/gif" 86400)
+   (`(chop "tif") "image/tiff" 86400)
+   (`(chop "tiff") "image/tiff" 86400)
    (`(chop "bmp") "image/bmp" 86400)
    (`(chop "png") "image/png" 86400)
    (`(chop "jpg") "image/jpeg" 86400)
@@ -147,7 +151,7 @@
                (cond
                   ((nor (= *ConId *SesId) (= *ConId *SesId2))
                      (if *ConId
-                        (and (info "void") (httpEcho "void"))
+                        (http404)
                         (close S)
                         (task S)
                         (off S) ) )
@@ -350,9 +354,6 @@
       Url
       (pack *SesId Url) ) )
 
-(de redirect @
-   (httpStat 302 "Found" (pass pack "Location: ")) )
-
 (de httpStat (N Str . @)
    (prinl "HTTP/1.0 " N " " Str "^M")
    (prinl "Server: PicoLisp^M")
@@ -366,9 +367,14 @@
    (prinl "<BODY><H1>" Str "</H1></BODY>")
    (prinl "</HTML>") )
 
+(de redirect @
+   (httpStat 302 "Found" (pass pack "Location: ")) )
+
+(de forbidden ()
+   (httpStat 403 "No Permission")
+   (throw "http") )
+
 (de http404 ()
    (httpStat 404 "Not Found") )
 
 (de urlN . `http404)
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

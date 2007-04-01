@@ -1,4 +1,4 @@
-/* 26nov06abu
+/* 21jan07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -83,6 +83,7 @@ static symInit Symbols[] = {
    {doDelete, "delete"},
    {doDelq, "delq"},
    {doDie, "die"},
+   {doDiff, "diff"},
    {doDir, "dir"},
    {doDiv, "/"},
    {doDm, "dm"},
@@ -261,6 +262,7 @@ static symInit Symbols[] = {
    {doRot, "rot"},
    {doRpc, "rpc"},
    {doRun, "run"},
+   {doSect, "sect"},
    {doSeed, "seed"},
    {doSeek, "seek"},
    {doSend, "send"},
@@ -361,7 +363,6 @@ void initSymbols(void) {
    Class = initSym(Nil, "*Class");
    Run   = initSym(Nil, "*Run");
    Led   = initSym(Nil, "*Led");
-   Tsm   = initSym(Nil, "*Tsm");
    Err   = initSym(Nil, "*Err");
    Rst   = initSym(Nil, "*Rst");
    Msg   = initSym(Nil, "*Msg");

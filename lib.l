@@ -1,4 +1,4 @@
-# 26nov06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -43,14 +43,26 @@
 (de recur recurse
    (run (cdr recurse)) )
 
-(de curry Args
-   (list (car Args)
-      (list 'list
-         (lit (cadr Args))
-         (list 'cons ''job
+(de curry Z
+   (let (X (pop 'Z)  Y (pop 'Z)  P (filter pat? X))
+      (list X
+         (if2 P (diff X P)
+            (list 'list
+               (lit Y)
+               (list 'cons ''job
+                  (list 'cons
+                     (list 'lit (list 'env (lit @)))
+                     (list 'fill (lit Z) (lit P)) ) ) )
             (list 'cons
-               (list 'lit (list 'env (lit (car Args))))
-               (lit (cddr Args)) ) ) ) ) )
+               (lit Y)
+               (list 'fill (lit Z) (lit P)) )
+            (list 'list
+               (lit Y)
+               (list 'cons ''job
+                  (list 'cons
+                     (list 'lit (list 'env (lit @)))
+                     (lit Z) ) ) )
+            (lit (cons Y Z)) ) ) ) )
 
 (====)
 
@@ -156,13 +168,6 @@
             Val ) ) ) )
 
 ### List ###
-(de ?push ("Var" "X")  # Deprecated, replaced by 'push1'
-   (if (member "X" (val "Var"))
-      (car @)
-      (push "Var" "X") ) )
-
-(====)
-
 (de insert (N Lst X)
    (conc
       (cut (dec N) 'Lst)
@@ -179,12 +184,6 @@
       (cut (dec N) 'Lst)
       (cons X)
       (cdr Lst) ) )
-
-(de sect (Lst1 Lst2)
-   (filter '((X) (member X Lst2)) Lst1) )
-
-(de diff (Lst1 Lst2)
-   (filter '((X) (not (member X Lst2))) Lst1) )
 
 (de uniq (Lst)
    (let R NIL
@@ -341,5 +340,3 @@
          (T (== Z X) (println '*))
          (println '|)
          (mapc prin L) ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

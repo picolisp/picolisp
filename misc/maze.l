@@ -1,4 +1,4 @@
-# 23feb06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # ./p dbg.l maze.l -"setq M (maze 16 10)" -"display M"
@@ -29,5 +29,3 @@
 
 (de display (Maze)
    (disp Maze 0 '((This) "   ")) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

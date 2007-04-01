@@ -1,4 +1,4 @@
-# 04sep06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version (slowest)
@@ -31,6 +31,3 @@ any cFibo(any ex) {
       (if (< N 2)
          1
          (+ (cachedFibo (dec N)) (cachedFibo (- N 2))) ) ) )
-
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

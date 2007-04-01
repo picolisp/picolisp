@@ -1,4 +1,4 @@
-# 13jan06abu
+# 27feb07abu
 # (c) Software Lab. Alexander Burger
 
 # *Panel *Rate *Sound *Tone
@@ -29,7 +29,7 @@
    (html "RC-Sim"
       (<center>
          (setq *Scene (form '(+RcField) 600 400))
-         <br>
+         "<br>"
          (setq
             *Panel (form '(+Form) 600 150
                (quote
@@ -43,7 +43,7 @@
                      (gui '(+Var +Checkbox) '*Sound "Sound")
                      (gui 'climb '(+Skip +Lock +NumField) "Climb [m/s]" 5)
                      (gui 'alt '(+Skip +Lock +NumField) "Altitude [m]" 5) ) ) ) )
-         <br>
+         "<br>"
          (<href> "(c) Software Lab." "http://www.software-lab.de") ) ) )
 
 # Pilot
@@ -146,5 +146,3 @@
 
 (dm END> ()
    (throt> *Model) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

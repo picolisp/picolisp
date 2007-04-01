@@ -1,6 +1,5 @@
-# 07jan06abu
+# 01mar07abu
 # (c) Software Lab. Alexander Burger
 
+(on *Debug)
 (load "@lib/debug.l" "@lib/led.l" "@lib/edit.l" "@lib/lint.l" "@lib/sq.l")
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

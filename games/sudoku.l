@@ -1,4 +1,4 @@
-# 24sep06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
@@ -71,5 +71,3 @@
                   (T (= 9 (: val)) (=: val 0)) )
                (recurse (cdr *Fields)) ) ) )
       (display) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

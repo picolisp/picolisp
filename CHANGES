@@ -1,3 +1,13 @@
+* 01apr07 picoLisp-2.2.6
+   'app' reference application
+   Bug in 'text'
+   Family IPC redesign
+   Gave up 'in'/'out' negative channel offsets
+   Changed 'keep>' and 'lose>' methods
+   Gave up '*Tsm' transient symbol markup
+   'sect' and 'diff' in C
+   'gc' unit changed to "million cells"
+
 * 31dec06 picoLisp-2.2.5
    Persistent HTTP Connections
    Extended 'tick' to count system time
@@ -145,7 +155,7 @@
 
 * 01oct04 picoLisp-2.0.14
    '<tree>' HTML function
-   Finite 'state' automaton function
+   Finite 'state' machine function
    Extended 'for' functionality
    'rcsim' toy RC flight simulator
    Bug in 'sym', 'str' and '*/'

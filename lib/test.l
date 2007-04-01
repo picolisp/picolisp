@@ -1,4 +1,4 @@
-# 25oct06abu
+# 16jan07abu
 # (c) Software Lab. Alexander Burger
 
 (test T (pool (tmp "db")))
@@ -93,6 +93,9 @@
       (make (link (for (A '(x y z) A (cdr A)) (link A))) (link A)) )
    (test '(1 (x y z) 2 (y z) 3 (z) (z) i a)
       (make (link (for ((I . A) '(x y z) A (cdr A)) (link I A))) (link I A)) ) )
+(test NIL (catch NIL (throw)))
+(test 'b (catch 'a (throw 'a 'b)))
+(test 123 (catch T (throw 'a 123)))
 
 
 # src/sym.c
@@ -175,10 +178,18 @@
 
 # src/subr.c
 
-(test '(3 4 5 6) (member 3 (1 2 3 4 5 6)))
+(test (3 4 5 6) (member 3 (1 2 3 4 5 6)))
 (test NIL (member 9 (1 2 3 4 5 6)))
 
 (test '(c d e f) (memq 'c '(a b c d e f)))
+
+(test (3 4) (sect (1 2 3 4) (3 4 5 6)))
+(test (1 2 3) (sect (1 2 3) (1 2 3)))
+(test NIL (sect (1 2 3) (4 5 6)))
+
+(test (1 3 5) (diff (1 2 3 4 5) (2 4)))
+(test (1 2 3) (diff (1 2 3) NIL))
+(test NIL (diff (1 2 3) (1 2 3)))
 
 (let (@X 1234  @Y (1 2 3 4))
    (test '(a b (c 1234) (((1 2 3 4) . d) e))

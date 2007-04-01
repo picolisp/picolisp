@@ -1,4 +1,4 @@
-# 04sep06abu
+# 10feb07abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -295,18 +295,14 @@
       ((not L)
          (if (atom X)
             (= V X)
-            (find '((Y) (= V Y)) X) ) )
-      ((or (atom X) (num? (car L)))
+            (member V X) ) )
+      ((atom X)
          ("same" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("same"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("same" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("same" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("same" (apply get (car L) X) (cdr L))) ) )
 
 (be bool (@F . @L)
    (@ or
@@ -334,17 +330,13 @@
                      (<= (car N) Y (cdr N))
                      (>= (car N) Y (cdr N)) ) )
                X ) ) )
-      ((or (atom X) (num? (car L)))
+      ((atom X)
          ("range" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("range"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("range" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("range" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("range" (apply get (car L) X) (cdr L))) ) )
 
 (be head (@S . @L)
    (@ let S (-> @S)
@@ -359,17 +351,13 @@
          (if (atom X)
             (pre? S X)
             (find '((Y) (pre? S Y)) X) ) )
-      ((or (atom X) (num? (car L)))
+      ((atom X)
          ("head" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("head"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("head" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("head" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("head" (apply get (car L) X) (cdr L))) ) )
 
 (be fold (@S . @L)
    (@ let S (-> @S)
@@ -387,17 +375,13 @@
                (find
                   '((Y) (pre? P (fold Y)))
                   X ) ) ) )
-      ((or (atom X) (num? (car L)))
+      ((atom X)
          ("fold" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("fold"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("fold" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("fold" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("fold" (apply get (car L) X) (cdr L))) ) )
 
 (be part (@S . @L)
    (@ let S (-> @S)
@@ -412,17 +396,13 @@
          (if (atom X)
             (sub? S X)
             (find '((Y) (sub? S Y)) X) ) )
-      ((or (atom X) (num? (car L)))
+      ((atom X)
          ("part" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("part"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("part" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("part" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("part" (apply get (car L) X) (cdr L))) ) )
 
 (be tolr (@S . @L)
    (@ let S (-> @S)
@@ -441,17 +421,13 @@
                   '((Y)
                      (or (sub? S Y) (pre? P (ext:Snx Y))) )
                   X ) ) ) )
-      ((or (atom X) (num? (car L)))
+      ((atom X)
          ("tolr" (get X (car L)) (cdr L)) )
-      ((pair (car L))
-         ("tolr"
-            (apply get (cdar L) (assoc (caar L) X))
-            (cdr L) ) )
-      (T
+      ((atom (car L))
          (pick
-            '((Y)
-               (and (sym? Y) ("tolr" (get Y (car L)) (cdr L))) )
-            X ) ) ) )
+            '((Y) ("tolr" (get Y (car L)) (cdr L)))
+            X ) )
+      (T ("tolr" (apply get (car L) X) (cdr L))) ) )
 
 
 (de "select" (Lst Flg)
@@ -557,5 +533,3 @@
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

@@ -1,4 +1,4 @@
-# 17jan06abu
+# 15feb07abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -220,7 +220,7 @@
       (mapc
          '(("N" "X")
             (window "PosX" "*Pos" "N" "Max"
-               ((if (atom "X") ps eval) "X")
+               (if (atom "X") (ps (eval "X")) (eval "X"))
                (inc '"PosX" "N")
                (setq "Max" (max "*Pos" "Max")) ) )
          "Lst"
@@ -242,8 +242,9 @@
 
 (de psEval ("Prg")
    (while "Prg"
-      ((if (atom (car "Prg")) ps eval)
-         (pop '"Prg") ) ) )
+      (if (atom (car "Prg"))
+         (ps (eval (pop '"Prg")))
+         (eval (pop '"Prg")) ) ) )
 
 (de page (Flg)
    (when (=T Flg)
@@ -296,5 +297,3 @@
       (font "Fnt" (ps "Abs" 0)) )
    (window 65 125 210 90
       (psEval "Prg") ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

@@ -1,10 +1,10 @@
-# 09nov05abu
+# 27feb07abu
 # (c) Software Lab. Alexander Burger
 
 (must "User" UserAdmin)
 
 (html ,"User"
    (<id> ,"User" (: nm))
-   <hr>
+   "<hr>"
    (userForm)
-   <hr> )
+   "<hr>" )

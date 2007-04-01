@@ -1,4 +1,4 @@
-/* 25nov06abu
+/* 17jan07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -932,6 +932,44 @@ any doMmeq(any x) {
       if (z = memq(car(x), y))
          return z;
    return Nil;
+}
+
+// (sect 'lst 'lst) -> lst
+any doSect(any x) {
+   cell c1, c2, c3;
+
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   Push(c3, x = Nil);
+   while (isCell(data(c1))) {
+      if (member(car(data(c1)), data(c2)))
+         if (isNil(x))
+            x = data(c3) = cons(car(data(c1)), Nil);
+         else
+            x = cdr(x) = cons(car(data(c1)), Nil);
+      data(c1) = cdr(data(c1));
+   }
+   drop(c1);
+   return data(c3);
+}
+
+// (diff 'lst 'lst) -> lst
+any doDiff(any x) {
+   cell c1, c2, c3;
+
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   Push(c3, x = Nil);
+   while (isCell(data(c1))) {
+      if (!member(car(data(c1)), data(c2)))
+         if (isNil(x))
+            x = data(c3) = cons(car(data(c1)), Nil);
+         else
+            x = cdr(x) = cons(car(data(c1)), Nil);
+      data(c1) = cdr(data(c1));
+   }
+   drop(c1);
+   return data(c3);
 }
 
 // (index 'any 'lst) -> cnt | NIL

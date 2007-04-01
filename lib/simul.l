@@ -1,4 +1,4 @@
-# 07jan06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -159,5 +159,3 @@
       (for L Grid
          (prin (if (and (nT How) (Dir (car L))) "   +" "---+")) )
       (prinl) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

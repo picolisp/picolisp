@@ -1,4 +1,4 @@
-# 07nov06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # This file is deprecated
@@ -356,5 +356,3 @@
                   (recurse (caddr "V")) ) )
             (wipe "Node") ) )
       "N" ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

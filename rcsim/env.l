@@ -1,4 +1,4 @@
-# 13jan06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 (model This
@@ -101,5 +101,3 @@
       (: runway5)
       (: runway6)
       (: runway7) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

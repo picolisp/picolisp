@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 30jun06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/misc.l" "@misc/calc.l")
@@ -10,5 +10,3 @@
 # Start server
 (go)
 (wait)
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

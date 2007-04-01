@@ -1,4 +1,4 @@
-/* 30nov06abu
+/* 18feb07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,8 +6,9 @@
 
 /* Globals */
 bool SigInt, SigTerm;
-int Chr, Spkr, Mic, Slot, Hear, Tell, PSize, *Pipe, Trace;
+int Chr, Spkr, Mic, Slot, Hear, Tell, Trace, Children;
 char **AV, *Home;
+child *Child;
 heap *Heaps;
 cell *Avail;
 stkEnv Env;
@@ -20,7 +21,7 @@ any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
-any Dbg, PPid, Pid, Scl, Class, Run, Led, Tsm, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
 static word2 USec;
@@ -58,8 +59,8 @@ static void sigterm(void) {
 
    if (Env.protect)
       return;
-   for (i = 0; i < PSize; i += 2)
-      if (Pipe[i] >= 0)
+   for (i = 0; i < Children; ++i)
+      if (Child[i].pid)
          return;
    bye(0);
 }
@@ -346,7 +347,7 @@ int compare(any x, any y) {
       if (isCell(y) || y == T)
          return -1;
       if (!isNum(a = name(x)))
-         return !isNum(name(y))? 1664525*(int32_t)x - 1664525*(int32_t)y : -1;
+         return !isNum(name(y))? 1664525*(int32_t)(long)x - 1664525*(int32_t)(long)y : -1;
       if (!isNum(b = name(y)))
          return +1;
       n1 = unDig(a), n2 = unDig(b);

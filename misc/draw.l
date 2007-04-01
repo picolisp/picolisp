@@ -1,4 +1,4 @@
-# 27may05abu
+# 27feb07abu
 # (c) Software Lab. Alexander Burger
 # ./p dbg.l misc/draw.l -go
 
@@ -24,7 +24,7 @@
                      ("Text Input"  +TextFactory +Mono +DrawField) ) )
                (gui '(+Button) " " "Nix" '(println 'Nix))
                ) ) )
-      <hr> ) )
+      "<hr>" ) )
 
 (de go ()
    (server 8080 "@tstPage") )

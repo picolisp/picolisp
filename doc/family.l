@@ -1,4 +1,4 @@
-# 31dec06abu
+# 22mar07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -31,58 +31,47 @@
    (3 (+Person job dat fin)) )                  # (4 . 512)
 
 
-# Pilog Query
-(de qPerson (Nm Pa Ma Mate Job Dat1 Dat2)
-   (goal
-      (quote
-         @Nm Nm
-         @Pa Pa
-         @Ma Ma
-         @Mate Mate
-         @Job Job
-         @Dat (and (or Dat1 Dat2) (cons Dat1 (or Dat2 T)))
-         (select (@@)
-            ((nm +Person @Nm)
-               (nm +Person @Pa kids)
-               (nm +Person @Ma kids)
-               (nm +Person @Mate mate)
-               (job +Person @Job)
-               (dat +Person @Dat) )
-            (tolr @Nm @@ nm)
-            (tolr @Pa @@ pa nm)
-            (tolr @Ma @@ ma nm)
-            (tolr @Mate @@ mate nm)
-            (head @Job @@ job)
-            (range @Dat @@ dat) ) ) ) )
-
-
 ### GUI ###
 (de choPerson (Dst)
    (diaform '(Dst)
-      (<grid> 6
-         "Name" (gui 'nm '(+TextField) 20)
-         "Occupation" (gui 'job '(+TextField) 20)
-         "born" (prog (gui 'dat1 '(+DateField) 10) (gui 'dat2 '(+DateField) 10))
-         "Father" (gui 'pa '(+TextField) 20)
-         "Mother" (gui 'ma '(+TextField) 20)
-         "Partner" (gui 'mate '(+TextField) 20) )
-      (<p> NIL
-         (gui '(+JS +ClrButton) "Reset" '(nm pa ma mate job dat1 dat2 query))
-         (gui '(+JS +Button) ',"Search" '(init> (: home query))) )
-      (gui 'query '(+QueryChart) 6
-         '(qPerson
-            (val> (: home nm))
-            (val> (: home pa))
-            (val> (: home ma))
-            (val> (: home mate))
-            (val> (: home job))
-            (val> (: home dat1))
-            (val> (: home dat2)) )
+      (<grid> "--.-.-."
+         "Name" (gui 'nm '(+Var +TextField) '*PrsNm 20)
+         "Occupation" (gui 'job '(+Var +TextField) '*PrsJob 20)
+         "born" (prog
+            (gui 'dat1 '(+Var +DateField) '*PrsDat1 10)
+            (gui 'dat2 '(+Var +DateField) '*PrsDat2 10) )
+         (gui '(+JS +Button) ',"Search" '(init> (: home query)))
+         "Father" (gui 'pa '(+Var +TextField) '*PrsPa 20)
+         "Mother" (gui 'ma '(+Var +TextField) '*PrsMa 20)
+         "Partner" (gui 'mate '(+Var +TextField) '*PrsMate 20)
+         (gui '(+JS +ClrButton) ',"Reset" '(nm pa ma mate job dat1 dat2 query)) )
+      (gui 'query '(+QueryChart) 8
+         '(goal
+            (quote
+               @Nm *PrsNm
+               @Pa *PrsPa
+               @Ma *PrsMa
+               @Mate *PrsMate
+               @Job *PrsJob
+               @Dat (and (or *PrsDat1 *PrsDat2) (cons *PrsDat1 (or *PrsDat2 T)))
+               (select (@@)
+                  ((nm +Person @Nm)
+                     (nm +Person @Pa kids)
+                     (nm +Person @Ma kids)
+                     (nm +Person @Mate mate)
+                     (job +Person @Job)
+                     (dat +Person @Dat) )
+                  (tolr @Nm @@ nm)
+                  (tolr @Pa @@ pa nm)
+                  (tolr @Ma @@ ma nm)
+                  (tolr @Mate @@ mate nm)
+                  (head @Job @@ job)
+                  (range @Dat @@ dat) ) ) )
          (if (flg? Dst) 6 7)
          '((This) (list This (: pa) (: ma) (: mate) (: job) (: dat))) )
       (<table> NIL NIL
          '((NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
-         (do 6
+         (do 8
             (<row> NIL
                (gui 1 '(+ObjView +TextField) '(: nm) 20)
                (gui 2 '(+ObjView +TextField) '(: nm) 10)
@@ -91,10 +80,9 @@
                (gui 5 '(+Lock +TextField) 10)
                (gui 6 '(+Lock +DateField) 10)
                (unless (flg? Dst)
-                  (gui 7 '(+DstButton) -6) ) ) ) )
-      (<p> NIL
-         (gui '(+JS +DnButton) 1)
-         (gui '(+JS +UpButton) 1)
+                  (gui 7 '(+DstButton) Dst -6) ) ) ) )
+      (<spread>
+         (scroll 8)
          (when (=T Dst)
             (gui '(+Button) "New Man" '(newUrl '(+Man)))
             (gui '(+Button) "New Woman" '(newUrl '(+Woman))) )
@@ -106,21 +94,23 @@
    (action
       (html 0 (get (default *ID (val *DB)) 'nm) "lib.css" NIL
          (form NIL
-            (<h3> NIL (<id> (: nm)))
+            (<spread>
+               (<h3> NIL (<id> (: nm)))
+               (delButton)
+               (choButton '(choPerson T))
+               (stepBtn 'nm '+Person) )
             (<p> NIL
                (gui '(+E/R +TextField) '(nm : home obj) 40 "Name")
                (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman))) )
             (<grid> 5
                "Occupation" (gui '(+E/R +TextField) '(job : home obj) 20)
-               "Father" (gui '(+Button) "->" '(choPerson (field 1)))
+               "Father" (gui '(+ChoButton) '(choPerson (field 1)))
                (gui '(+E/R +Obj +TextField) '(pa : home obj) '(nm +Man) 30)
                "born" (gui '(+E/R +DateField) '(dat : home obj) 10)
-               "Mother"
-               (gui '(+Button) "->" '(choPerson (field 1)))
+               "Mother" (gui '(+ChoButton) '(choPerson (field 1)))
                (gui '(+E/R +Obj +TextField) '(ma : home obj) '(nm +Woman) 30)
                "died" (gui '(+E/R +DateField) '(fin : home obj) 10)
-               "Partner"
-               (gui '(+Button) "->" '(choPerson (field 1)))
+               "Partner" (gui '(+ChoButton) '(choPerson (field 1)))
                (gui '(+E/R +Obj +TextField) '(mate : home obj) '(nm +Person) 30) )
             (gui '(+E/R +Chart) '(kids : home obj) 5
                '((This) (list NIL This (: dat) (: pa) (: ma)))
@@ -129,21 +119,19 @@
                '(NIL (NIL "Children") (NIL "born") (NIL "Father") (NIL "Mother"))
                (do 4
                   (<row> NIL
-                     (gui 1 '(+Button) "->" '(choPerson (field 1)))
+                     (gui 1 '(+ChoButton) '(choPerson (field 1)))
                      (gui 2 '(+Obj +TextField) '(nm +Person) 20)
                      (gui 3 '(+E/R +DateField) '(dat curr) 10)
                      (gui 4 '(+ObjView +TextField) '(: nm) 20)
                      (gui 5 '(+ObjView +TextField) '(: nm) 20) ) )
-               (<row> NIL NIL (prog (gui '(+JS +DnButton) 1) (gui '(+JS +UpButton) 1))) )
-            (<br>)
+               (<row> NIL NIL (scroll 4)) )
+            (----)
             (gui '(+E/R +TextField) '(txt : home obj) 40 4)
-            (gui '(+Button) "Save")
-            (choButton '(choPerson T))
-            (delButton)
-            (gui '(+Button) "Contemporaries"
+            (gui '(+Rid +Button) "Contemporaries"
                '(url "@contemporaries" (: home obj)) )
-            (gui '(+Button) "Tree View"
-               '(url "@treeReport" (: home obj)) ) ) ) ) )
+            (gui '(+Rid +Button) "Tree View"
+               '(url "@treeReport" (: home obj)) )
+            (editButton) ) ) ) )
 
 
 ### Reports ###
@@ -154,7 +142,7 @@
          (form NIL
             (<h3> NIL (<id> "Contemporaries of " (: nm)))
             (ifn (: obj dat)
-               (<h3> NIL (ht:Prin "No birth dat for " (: obj nm)))
+               (<h3> NIL (ht:Prin "No birth date for " (: obj nm)))
                (gui '(+QueryChart) 12
                   '(goal
                      (quote
@@ -182,14 +170,13 @@
                         (gui 5 '(+ObjView +TextField) '(: nm))
                         (gui 6 '(+ObjView +TextField) '(: nm))
                         (gui 7 '(+ObjView +TextField) '(: nm)) ) ) )
-               (gui '(+JS +DnButton) 12)
-               (gui '(+JS +UpButton) 12)
-               (<nbsp>)
-               (gui '(+Button) "Textfile"
+               (scroll 12)
+               (----)
+               (gui '(+Rid +Button) "Textfile"
                   '(let Txt (tmp "Contemporaries.txt")
                      (out Txt (txt> (chart)))
                      (url Txt) ) )
-               (gui '(+Button) "PDF"
+               (gui '(+Rid +Button) "PDF"
                   '(psOut NIL "Contemporaries"
                      (out (tmp "Contemporaries.txt")
                         (txt> (chart)) )
@@ -251,5 +238,3 @@
 (de go ()
    (rollback)
    (server 8080 "@person") )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

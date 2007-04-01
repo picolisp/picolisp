@@ -1,4 +1,4 @@
-# 12oct06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -9,7 +9,6 @@
 (setq
    "Line"      NIL      # Holds current input line
    "LPos"      1        # Position in line (1 .. length)
-   "Tsm"       NIL      # Transient symbol markup
    "HPos"      1        # Position in history
    "UndoLine"  NIL      # Undo
    "UndoPos"   0
@@ -35,27 +34,12 @@
    (if (> "LPos" N)
       (until (>= N "LPos")  # Output backspaces
          (dec '"LPos")
-         (prin "^H")
-         (and
-            *Tsm
-            (= "\"" (get "Line" "LPos"))
-            ("notEsc")
-            (prin ((if (onOff "Tsm") cdr car)) *Tsm) ) )
+         (prin "^H") )
       (until (>= "LPos" N)  # Output characters
          (let C (get "Line" "LPos")
-            (cond
-               ((> " " C) (prin "_"))
-               ((nand *Tsm (= "\"" C) ("notEsc")) (prin C))
-               ("Tsm" (off "Tsm") (prin (cdr *Tsm) C))
-               (T (on "Tsm") (prin C (car *Tsm))) ) )
+            (prin (if (> " " C) "_" C)) )
          (inc '"LPos") ) )
    (flush) )
-
-(de "notEsc" ()
-   (let Flg T
-      (for (I 1 (> "LPos" I) (inc I))
-         ((if (= "\\" (get "Line" I)) onOff on) Flg) )
-      Flg ) )
 
 # Basic editing routine
 (de chgLine (L N)
@@ -63,10 +47,8 @@
    (let (Len (length L)  D (- (length "Line") Len))
       (setq "Line" L)
       (posLine (inc Len))  # Draw new line
-      (and "Tsm" (prin (cdr *Tsm)))
       (space D)  # Clear rest of old line
-      (do D (prin "^H"))
-      (and "Tsm" (prin (car *Tsm))) )
+      (do D (prin "^H")) )
    (posLine N) )  # To new position
 
 # Check for delimiter
@@ -347,7 +329,6 @@
             '("^J" "^M") )
          (or "C" (bye))
          (when (= "C" "^X")
-            (prin (cdr *Tsm))
             (prinl)
             (quit) )
          ((if "Insert" insMode cmdMode) "C") ) ) )
@@ -364,11 +345,9 @@
 
 # Main editing functions
 (de _led ("Line1" "tabFoo" "skipFoo")
-   (off "Tsm")
    (default "tabFoo" '((S) (make (all '((X) (and (pre? S X) (link X)))))))
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFoo" delim?))
-   (prin (cdr *Tsm))
    (prinl) )
 
 (de revise ("X" "tabFoo" "skipFoo")
@@ -402,5 +381,3 @@
          (push '"History" "Line") )
       (and (nth "History" "HistMax") (con @))
       (pack "Line") ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

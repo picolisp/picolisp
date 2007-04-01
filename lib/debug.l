@@ -1,11 +1,12 @@
-# 27dec06abu
+# 31jan07abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
 (de doc (Sym Browser)
    (call (or Browser 'w3m)
       (pack
-         "file:///"
+         "file:"
+         (and (= `(char '/) (char (path "@"))) "//")
          (path "@doc/ref.html#")
          (replace (chop Sym) '? 'Q) ) ) )
 
@@ -27,7 +28,7 @@
    (let *Dbg NIL
       (let (F (heap)  H (heap T))
          (prinl
-            (*/ H `(* 128 1024))
+            (*/ H 1000000)
             " "
             (- 100 (*/ 100 F H))
             "%" )
@@ -308,5 +309,3 @@
                (for N L
                   (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

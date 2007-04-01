@@ -1,4 +1,4 @@
-# 22oct06abu
+# 22mar07abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -6,7 +6,7 @@
    (let? Sock (connect Host Port)
       (let Xml (tmp 'xmlrpc)
          (out Xml
-            (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+            (xml? T)
             (xml
                (list 'methodCall NIL
                   (list 'methodName NIL Meth)
@@ -54,5 +54,3 @@
                            (xmlrpcKey (caddr (assoc 'name L)))
                            (xmlrpcValue (caddr (assoc 'value L))) ) ) ) )
                (cddr Lst) ) ) ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

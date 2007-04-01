@@ -1,4 +1,4 @@
-# 08sep06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -466,5 +466,3 @@
             (prin ")") )
          (prin ")") )
       (T (print Obj)) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

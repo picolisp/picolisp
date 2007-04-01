@@ -1,4 +1,4 @@
-# 13oct06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
@@ -64,5 +64,3 @@
                            (wipe S) ) ) ) ) ) )
          (msg Cnt " conDbgc") )
       (mark 0) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

@@ -1,0 +1,170 @@
+Porting Pico Lisp to Cygwin
+
+A few months back, I was looking at Lisp programming language
+offerings for the MS Windows environment. I want an interpreter
+that is fast and powerful, yet small. I want it to work well in
+the Cygwin/Win32 environment.
+
+Enter Pico Lisp. http://software-lab.de/down.html
+
+According to the Pico Lisp FAQ, "Pico Lisp is for programmers
+who want to control their programming environment, at all
+levels, from the application domain down to the bare metal."
+Yes! That's part of what I want a Lisp for. Especially a Lisp I
+might embed in other applications. I want control. Pico Lisp
+looked promising.
+
+Pico Lisp is designed with a philosophy of "succinctness",
+according to the literature on the site. Although there are
+even smaller Lisp interpreters available, Pico Lisp seemed to
+strike a balance between terseness and functionality.
+
+Pico Lisp is written using standard C, and the author
+(Alexander Burger) distributes it as C source code under the
+GNU General Public License. That means if you want to use Pico
+Lisp, you'll need to compile it yourself, or otherwise obtain
+the executables. Pico Lisp comes in two flavours: picolisp, and
+an even smaller version: mini picolisp. (More about mini
+picolisp in a bit.)
+
+When you do build Pico Lisp for yourself, you'll get a
+powerhouse of a Lisp including APIs for building web servers,
+gui web application servers (for browser clients running java
+and/or javascript) integrated relational databases, prolog db
+access, and much more. Pico Lisp even comes with two example
+versions of a flight simulator: one which runs under X-Windows,
+the other which uses a client's browser/java for the display.
+There's a chess game written in Pico Lisp and Prolog.
+
+Lest one think that Pico Lisp is a mere toy, consider this. In
+2006, Pico Lisp won second prize in the German-language C't
+Magazine database contest, beating entries written using DB2
+and Oracle. Industrial-strength databases with tightly
+integrated web applications have been crafted with Pico Lisp.
+http://tinyurl.com/y9wu39
+
+Pico Lisp has some drawbacks and limitations. As the FAQ warns,
+Pico Lisp "does not pretend to be easy to learn." It is not a
+Common Lisp flavor. It is not "some standard, 'safe' black-box,
+which may be easier to learn."  Also, for my purposes, I want
+software that runs not only on Linux, but also on PCs with the
+MS-Windows operating systems. And there was the rub: Pico Lisp
+isn't distributed with binaries or Windows exe files.
+
+Even worse (for Windows users), Pico Lisp wasn't ported to
+Cygwin. I have a growing list of portable apps that will run on
+a flash drive, many of them I compiled from source from using
+Cygwin tools like make, gcc, etc.
+
+Cygwin provides a POSIX emulation layer in the form of
+cygwin1.dll and other libraries. This lets a PC running Windows
+look like much like a Linux or UNIX box to programs which have
+been compiled for Cygwin.  I'd compiled hundreds of programs
+for Cygwin and here was Pico Lisp which I wanted to have
+running on all my PCs, Linux ones as well as the MS-Windows
+PCs, too.
+
+So this was beginning to look like a challenge. I'd just take a
+little peek at porting Pico Lisp to Cygwin, and see how it
+would go. I'd ported everything from sox to busybox to fluxbox
+to Cygwin, so I felt ready for porting Pico Lisp.
+
+Pico Lisp comes in two flavors. Mini picolisp and full
+picolisp.
+
+Mini Pico Lisp is a kind of a "pure" Pico Lisp without
+system-dependent functions like databases, UTF-8, bignums, IPC,
+and networking. This seemed like a good place to start my Pico
+Lisp porting adventures. I first tried a straight Cygwin/gcc
+build, and that worked fine, no hitches.
+
+Then I remembered the -mno-cygwin compiler flag for Cygwin's
+gcc. When you compile with -mno-cygwin, gcc causes the
+resulting executable to be built without Cygwin dll library
+dependances. For C code that relies heavily upon the POSIX
+emulation aspects of Cygwin, this might not work. But why not
+try building mini picolisp with the -mno-cygwin option?
+
+The C code for mini picolisp is free from Linux/POSIX system
+calls, and it compiled with no problems using -mno-cygwin. It
+produced a mini picolisp exe file of about 73K, which is not
+dependant upon any Cygwin DLLs.
+
+Porting the full Pico Lisp interpreter proved to be more of a
+challenge. Whereas the mini picolisp was careful to avoid Linux
+system calls, Pico Lisp takes the opposite approach and uses
+Linux (UNIX/POSIX) system functions where needed.
+
+Additionally, Pico Lisp has the ability to dynamically load
+shared libraries for various extensions.
+
+Since we need to use shared libraries anyway, I wanted for all
+of picolisp to go into a single DLL.  Then the picolisp exe
+would be a just small stub that uses that the shared library,
+picolisp.dll. Pico Lisp applications often use fork, so this
+should also be more efficient when forking.
+
+Splitting up Pico Lisp this way (a DLL and an exe stub) would
+allow the picolisp.dll to be used as a Lisp library. As a
+shared library, it would then be possible for other
+applications to treat Pico Lisp as an embedded interpreter,
+somewhat like librep, but much smaller and more portable.
+
+Wanting to see how much I could squeeze down the size of the
+executables and libraries under Cygwin, I used gcc's -Os
+option, which requests that gcc optimize by making the smallest
+possible code. Doing this resulted in a picolisp dll of just
+150K, and a picolisp exe stub of only 2K.
+
+Of course, if you want this full Pico Lisp to run on a Windows
+PC which does not already have Cygwin installed, you'll need to
+obtain a few Cygwin DLLs which provide the POSIX emulation
+layer for Pico Lisp.
+
+For the most part, the port to Win32/Cygwin went smoothly.
+There were just a few differences between Linux and Cygwin that
+were handled with macro ifdef statements in the C code that
+allow something to be done differently for the Cygwin
+compilation.
+
+In the end it turned out that the biggest problem was the fcntl
+system function that does file and record locking. This was
+especially frustrating, as time and time again, I thought I'd
+found a solution or a work-around to the differences in
+semantics of the fcntl call between Linux and Cygwin, only to
+have the my "solution" fail with more rigorous testing.
+
+The locking problem was finally just circumvented for Windows
+by simply not using fcntl locking. So, there is no file or
+record locking for Pico Lisp running under Windows. (See the
+locking notes in http://www.sqlite.org/lockingv3.html for
+another perspective on locking system functions in Windows.)
+However, all the example applications run fine, running in a
+special (Solo) mode in Pico Lisp, in the few places it even
+matters. This avoids depending on buggy or non-existent record
+locking functionality with the various Windows versions and
+file system types.
+
+So, what do we have at this point? Pico Lisp is running on the
+PC. A working, industrial-strength Lisp interpreter is Pico
+Lisp, ready for writing applications that are succinct yet
+powerful. Pico Lisp comes with a Prolog interpreter and
+relational databases and flight simulators and chess games and
+web servers and chat servers and sendmail and much more.
+
+And Pico Lisp itself is written in highly portable C, running
+on Linux and Windows. Pico Lisp is readily embedable, and will
+be useful to add scripting languages (Lisp, Prolog) to other
+applications, either statically linked, or as a shared library
+(DLL).
+
+Pico Lisp is a little dynamo. It even has the ability to use
+in-line C code which is compiled on-the-fly into a shared
+library. This in-line C ability uses gcc. (And it works with
+tcc, the Tiny C Compiler, too.)
+
+With the tremendous number of PCs out there now able to run
+Pico Lisp, watch out! Pico Lisp may be small, but sometimes
+very powerful things come in small packages.
+
+Doug Snead, Jan. 2007

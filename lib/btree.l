@@ -1,4 +1,4 @@
-# 14dec06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -400,5 +400,3 @@
                   (and "L" (recurse "L")) ) )
             (wipe "Node") ) )
       "N" ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

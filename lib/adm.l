@@ -1,18 +1,35 @@
-# 11feb06abu
+# 22mar07abu
 # (c) Software Lab. Alexander Burger
 
-# *Login *Perms
+# *Login *Users *Perms
 
 ### Login ###
 (de login (Nm Pw)
-   (and
-      (db 'nm '+User Nm 'pw Pw)
-      (timeout (setq *Login @  *Timeout `(* 4 60 60 1000))) ) )
+   (ifn (setq *Login (db 'nm '+User Nm 'pw Pw))
+      (msg *Pid " ? " Nm)
+      (msg *Pid " * " (stamp) " " Nm)
+      (tell 'hi *Pid Nm)
+      (push1 '*Bye '(logout))
+      (timeout (setq *Timeout `(* 4 60 60 1000))) )
+   *Login )
 
 (de logout ()
-   (off *Login)
-   (msg *Pid " / " (stamp))
-   (timeout (setq *Timeout `(* 15 60 1000))) )
+   (when *Login
+      (rollback)
+      (off *Login)
+      (tell 'hi *Pid)
+      (msg *Pid " / " (stamp))
+      (timeout (setq *Timeout `(* 15 60 1000))) ) )
+
+(de hi (Pid Nm)
+   (hi2 Pid Nm)
+   (tell 'hi2 *Pid (get *Login 'nm)) )
+
+(de hi2 (Pid Nm)
+   (if2 Nm (lup *Users Pid)
+      (con @ Nm)
+      (idx '*Users (cons Pid Nm) T)
+      (idx '*Users @ NIL) ) )
 
 
 ### Role ###
@@ -45,6 +62,5 @@
       (if (cdr Args)
          (mmeq @ (get *Login 'role 'perm))
          *Login )
-      (quit "No permission" (car Args)) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab
+      (msg *Pid " No permission: " (car Args))
+      (forbidden) ) )

@@ -1,4 +1,4 @@
-# 16nov06abu
+# 21jan07abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -36,8 +36,7 @@
                            (prinl) ) )
                      (prinl)
                      (println '(********))
-                     (prinl) ) ) )
-            (prinl "# vim:syntax=picolisp:ts=3:sw=3:expandtab") )
+                     (prinl) ) ) ) )
          (call 'vim
             "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
             "+map K yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
@@ -65,5 +64,3 @@
          (push '"Lst" "X")
          ("loc" (car "X") "Lst")
          ("loc" (cdr "X") "Lst") ) ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

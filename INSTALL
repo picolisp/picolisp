@@ -1,4 +1,4 @@
-10nov06abu
+21jan07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -48,15 +48,6 @@ To exit the interpreter, you may enter
 : (bye)
 
 or simply type an empy line (Return).
-
-
-         Console Underlines
-         ==================
-
-In case that your console (terminal) does not support underlining, you might
-want to remove or replace the first statement int "ext.l" which uses the
-terminfo database to initialize the global variable '*Tsm' (transient symbol
-markup). Unfortunately, the VGA text mode does not properly support underlines.
 
 
          Documentation

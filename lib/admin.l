@@ -1,4 +1,4 @@
-# 11feb06abu
+# 08mar07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/adm.l")
@@ -30,13 +30,10 @@
             (----)
             (row
                (gui 'login '(+Button) "" ,"login"
-                  '(if (login (: home nm str) (: home pw str))
-                     (prog
-                        (msg *Pid " * " (stamp) " " (: home nm str))
-                        (upd> (: home msg))
-                        (and *Bar (upd> *Bar)) )
-                     (msg *Pid " ?! " (val> (: home nm)))
-                     (set> (: home msg) ,"Permission denied") ) )
+                  '(ifn (login (: home nm str) (: home pw str))
+                     (set> (: home msg) ,"Permission denied")
+                     (upd> (: home msg))
+                     (and *Bar (upd> *Bar)) ) )
                (gui '(+Able +Button) '*Login "" ,"logout"
                   '(prog
                      (logout)
@@ -92,5 +89,3 @@
 
 (de choUser ()
    (choDialog ,"User" '(nm +User)) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

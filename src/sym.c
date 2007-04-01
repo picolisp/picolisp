@@ -1,4 +1,4 @@
-/* 25nov06abu
+/* 02mar07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -383,17 +383,17 @@ any doText(any x) {
       do {
          if ((c = *p++) != '@') {
             if (nm)
-               charSym(c, &i, &nm);
+               byteSym(c, &i, &nm);
             else
-               Push(c1, boxChar(c, &i, &nm));
+               i = 0,  Push(c1, nm = box(c & 0xFF));
          }
          else if (!(c = *p++))
             break;
          else if (c == '@') {
             if (nm)
-               charSym('@', &i, &nm);
+               byteSym('@', &i, &nm);
             else
-               Push(c1, boxChar('@', &i, &nm));
+               i = 0,  Push(c1, nm = box('@'));
          }
          else if (c >= '1') {
             if ((c -= '1') > 8)

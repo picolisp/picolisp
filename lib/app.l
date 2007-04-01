@@ -1,4 +1,4 @@
-# 26nov06abu
+# 15feb07abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -13,11 +13,11 @@
          (println (car "X") (cdr "X")) ) )
    (rollback)
    (when *Top
-      (alert ,"Sorry!"
+      (alert "Sorry!"
          (list
             (pack "(" *Msg ")")
-            ,"An internal error occurred."
-            ,"Connection will be closed." ) ) ) )
+            "An internal error occurred."
+            "Connection will be closed." ) ) ) )
 
 # User identification
 (de user (Pid1 Pid2 Nm To)

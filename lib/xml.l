@@ -1,12 +1,14 @@
-# 12jul06abu
+# 25mar07abu
 # (c) Software Lab. Alexander Burger
 
-# Check header
-(de xml? ()
-   (skip)
-   (prog1
-      (head '("<" "?" "x" "m" "l") (till ">"))
-      (char) ) )
+# Check or write header
+(de xml? (Flg)
+   (if Flg
+      (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+      (skip)
+      (prog1
+         (head '("<" "?" "x" "m" "l") (till ">"))
+         (char) ) ) )
 
 # Generate/Parse XML data
 (de xml (Lst N)
@@ -48,7 +50,7 @@
             (let L
                (make
                   (loop
-                     (NIL (skip))
+                     (NIL (skip) (quit "XML parse error"))
                      (T (member @ '`(chop "/>")))
                      (NIL (setq X (intern (till "=" T))))
                      (char)
@@ -60,7 +62,7 @@
                   (prog (char) (and L (link L)))
                   (link L)
                   (loop
-                     (NIL (skip))
+                     (NIL (skip) (quit "XML parse error" Tok))
                      (T (and (= "<" (setq X (char))) (= "/" (peek)))
                         (char)
                         (unless (= Tok (till " /<>" T))
@@ -130,5 +132,3 @@
          Lst (assoc Key (cddr Lst))
          Key (next) ) )
    (cdr (assoc Key (cadr Lst))) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

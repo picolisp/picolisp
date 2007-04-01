@@ -1,4 +1,4 @@
-/* 30dec06abu
+/* 25mar07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,16 +10,27 @@
 .align {text-align: right;}
 .red {color: red}
 .blue {color: blue}
-
+.bold {font-weight: bold;}
+.btn {width: 12px;}
 
 /* Defaults */
 body {
+   background-color: white;
    font-family: Arial, Helvetica, sans-serif;
    font-size: 12px;
    margin: 0;
 }
 
 img {border: 0;}
+fieldset {border-style: none;}
+input, textarea, select {background-color: rgb(90%,90%,90%);}
+
+caption {
+   padding: 2px 6px;
+   text-align: left;
+   margin-top: 12px;
+   background-color: rgb(70%,70%,70%);
+}
 
 /* Navigation */
 #menu {
@@ -27,7 +38,7 @@ img {border: 0;}
    top: 2%;
    left: 2%;
    width: 20%;
-   height: 78%;
+   height: 96%;
    padding: 0;
    margin: 0;
    background-color: rgb(70%,70%,70%);
@@ -44,19 +55,23 @@ img {border: 0;}
 }
 
 #menu a:hover {
-   background-color: rgb(85%,85%,85%);
+   background-color: rgb(80%,80%,80%);
 }
 
-#menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3 {
+#menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
    list-style-position: inside;
+	list-style-type: circle;
    padding: 0 0 0 12px;
+}
+
+#menu .act1, .act2, .act3 {
+	list-style-type: disc;
 }
 
 #menu .sub1, .top1, .sub2, .top2, .sub3, .top3 {
    list-style-position: inside;
    padding: 4px 0 4px 12px;
 }
-
 
 /* Tabulators */
 .tab a {
@@ -70,13 +85,12 @@ img {border: 0;}
 }
 
 .tab .top {
-   background-color: rgb(85%,85%,85%);
+   background-color: rgb(90%,90%,90%);
 }
 
 .tab .sub {
    background-color: rgb(70%,70%,70%);
 }
-
 
 /* Main area */
 #main {
@@ -85,12 +99,30 @@ img {border: 0;}
    left: 26%;
 }
 
+/* Charts */
+.chart {
+   width: 100%;
+}
+
+.chart td {
+   background-color: rgb(90%,90%,90%);
+}
+
+.chart td.T {
+   background-color: rgb(80%,80%,80%);
+}
 
 /* Errors */
 .err {
    color: red;
    background-color: yellow;
    margin-bottom: 12px;
+}
+
+/* +Tiny */
+.tiny {
+   font-size: 9px;
+   padding: 0;
 }
 
 /* Alerts */
@@ -106,6 +138,5 @@ img {border: 0;}
 .dialog {
    padding: 6px;
    margin: 12px 60px 12px 60px;
-   background-color: rgb(90%,90%,90%);
    border: dotted 2px;
 }

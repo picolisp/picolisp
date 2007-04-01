@@ -1,4 +1,4 @@
-# 02dec06abu
+# 26feb07abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -137,6 +137,7 @@
 
 ### Tree ###
 (de balance ("Var" "Lst")
+   (set "Var")
    (let "Len" (length "Lst")
       (recur ("Lst" "Len")
          (unless (=0 "Len")
@@ -339,7 +340,9 @@
 # Print or eval
 (de prEval ("Prg")
    (while "Prg"
-      ((if (atom (car "Prg")) prinl eval) (pop '"Prg")) ) )
+      (if (atom (car "Prg"))
+         (prinl (eval (pop '"Prg")))
+         (eval (pop '"Prg")) ) ) )
 
 # Echo here-documents
 (de here (X)
@@ -427,5 +430,3 @@
 (de test ("Pat" . "Prg")
    (unless ((if (atom "Pat") = match) "Pat" (run "Prg"))
       (println 'fail "Prg") ) )
-
-# vim:syntax=picolisp:ts=3:sw=3:expandtab

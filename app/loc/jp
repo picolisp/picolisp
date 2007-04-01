@@ -1,0 +1,72 @@
+# 24mar07abu
+# (c) Software Lab. Alexander Burger
+
+"(@1 Positions)" "(銘柄数：@1)"
+"Page @1" "@1 ページ"
+
+"Address" "住所"
+
+"Change" "変換"
+"City" "都市"
+"Contact" "問い合わせ"
+"Continued on page @1" "@1ページに続く"
+"Country" "国"
+"Customer" "カスタマー"
+"Customer/Supplier" "カスタマー/注文先"
+"Customer/Supplier No. @1" "カスタマー/注文先 No. @1"
+
+"Data" "データ"
+"Date" "日付"
+"Description" "仕様"
+
+"EMail" "Eメール"
+
+"Fax" "Fax"
+"Full Name" "フルネーム"
+
+"Home" "ホーム"
+
+"Install" "インストール"
+"Inventory" "在庫目録"
+"Item" "商品"
+"Item No. @1" "商品 No. @1"
+
+"Login Name" "ログイン名"
+
+"Memo" "メモ"
+"Mobile" "携帯電話"
+
+"Name" "名前"
+"Name 2" "名前 2"
+"Number" "番号"
+
+"Order" "注文"
+"Order No. @1" "注文 No. @1"
+
+"Picture" "写真"
+"PDF-Print" "PDF印刷"
+"Phone" "電話番号"
+"Price" "価格"
+
+"Quantity" "数量"
+
+"Reset" "リセット"
+"Report" "レポート"
+"Role '@1'" "役割 '@1'"
+"Role Administration" "役割管理"
+
+"Sales" "セールス"
+"Search" "検索"
+"Show Report" "レポート表示"
+"Street" "住所"
+"Supplier" "注文先"
+"System" "システム"
+
+"Total" "総計"
+
+"Uninstall" "アンインストール"
+"Uninstall Picture?" "写真をアンインストールしますか？"
+"User '@1'" "ユーザー '@1'"
+"User Administration" "ユーザー管理"
+
+"Zip" "郵便番号"

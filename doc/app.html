@@ -3,13 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Pico Lisp Application Development</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
 <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
 
 <h1>Pico Lisp Application Development</h1>
 
-<p align=right>(c) Software Lab. Alexander Burger</p>
+<p align=right>(c) Software Lab. Alexander Burger
 
 <p>This document presents an introduction to writing browser-based applications
 in Pico Lisp.
@@ -80,8 +81,9 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
       <li><a href="#initPrefix">Initialization</a>
       <li><a href="#ablePrefix">Disabling and Enabling</a>
       <li><a href="#formatPrefix">Formatting</a>
+      <li><a href="#sideEffects">Side Effects</a>
       <li><a href="#validPrefix">Validation</a>
-      <li><a href="#bindPrefix">Binding</a>
+      <li><a href="#linkage">Data Linkage</a>
       </ul>
    <li><a href="#buttons">Buttons</a>
       <ul>
@@ -93,7 +95,27 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
       <li><a href="#jsButtons">Active JavaScript</a>
       </ul>
    </ul>
-<li><a href="#db">DB-Integration</a>
+<a name="minAppRef"></a>
+<li><a href="#minApp">A Minimal Complete Application</a>
+   <ul>
+   <li><a href="#getStarted">Getting Started</a>
+      <ul>
+      <li><a href="#localization">Localization</a>
+      <li><a href="#navigation">Navigation</a>
+      <li><a href="#choosing">Choosing Objects</a>
+      <li><a href="#editing">Editing</a>
+      <li><a href="#btnLinks">Buttons vs. Links</a>
+      </ul>
+   <li><a href="#dataModel">The Data Model</a>
+   <li><a href="#usage">Usage</a>
+      <ul>
+      <li><a href="#cuSu">Customer/Supplier</a>
+      <li><a href="#item">Item</a>
+      <li><a href="#order">Order</a>
+      <li><a href="#reports">Reports</a>
+      </ul>
+   <li><a href="#bugs">Bugs</a>
+   </ul>
 </ul>
 
 
@@ -110,7 +132,7 @@ application server and other fundamental concepts.
 
 <p>To begin with a minimal application, please enter the following two lines
 into a generic source file named "project.l" in the Pico Lisp installation
-directory
+directory.
 
 <p><pre><code>
 ########################################################################
@@ -179,16 +201,16 @@ ones are:
 
 <p><ul>
 <li>If a path starts with an at-mark ('@'), the rest (without the '@') is taken
-as the name of a Lisp function to be executed. All arguments following the
+as the name of a Lisp function to be called. All arguments following the
 question mark are passed to that function.
 
 <li>If a path ends with ".l" (a dot and a lower case 'L'), it is taken as a Lisp
 source file name to be <code><a href="ref.html#load">(load)</a></code>ed. This
 is the most common case, and we use it in our example "project.l".
 
-<li>If the extension of a path matches an entry in the global mime type table
-<code>*Mimes</code>, the file is sent to the client with mime-type and max-age
-values taken from that table.
+<li>If the extension of a file name matches an entry in the global mime type
+table <code>*Mimes</code>, the file is sent to the client with mime-type and
+max-age values taken from that table.
 
 <li>Otherwise, the file is sent to the client with a mime-type of
 "application/octet-stream" and a max-age of 1 second.
@@ -298,7 +320,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-:    # (hit <code>RETURN</code> here to terminate the Pico Lisp Shell)
+: # (hit <code>RETURN</code> here to terminate the Pico Lisp Shell)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -332,7 +354,7 @@ evaluation of normal Lisp expressions:
 printed immediately.
 
 <li>Otherwise (a list), it is evaluated as a Lisp function (typically some form
-of printing statement).
+of print statement).
 
 </ul>
 
@@ -345,7 +367,7 @@ of printing statement).
 ########################################################################
 </code></pre>
 
-<p>The most typical printing statements will be some HTML-tags
+<p>The most typical print statements will be some HTML-tags:
 
 <p><pre><code>
 ########################################################################
@@ -400,7 +422,7 @@ the effects with the <code>&lt;h1&gt;</code> tag function.
 
 <p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
 recommend to look at their sources, and to experiment a bit, by executing them
-at a Pico Lisp prompt and by pressing the browser's "Reload" button after
+at a Pico Lisp prompt, or by pressing the browser's "Reload" button after
 editing the "project.l" file.
 
 <p>For a suitable Pico Lisp prompt, either execute (in a separate terminal
@@ -531,17 +553,19 @@ permits distinct CSS specifications for each column and row.
 <p>As an extension of the above table example, let's pass some attributes for
 the table itself (not recommended - better define such styles in a CSS file and
 then just pass the class name to <code>&lt;table&gt;</code>), right-align both
-columns, and print each row in a blue color
+columns, and print each row in an alternating red and blue color
 
 <p><pre><code>
 ########################################################################
 (html 0 "Table" "lib.css" NIL
    (&lt;table&gt;
-      '((width . "200px") (style . "border: dotted 1px;"))  # table style
-      "Square Numbers"                                      # caption
-      '((align "Number") (align "Square"))                  # 2 headers
-      (for (N 1 (&gt;= 10 N) (inc N))                          # 10 rows
-         (&lt;row&gt; 'blue N (prin (* N N))) ) ) )               # 2 columns
+      '((width . "200px") (style . "border: dotted 1px;"))    # table style
+      "Square Numbers"                                        # caption
+      '((align "Number") (align "Square"))                    # 2 headers
+      (for (N 1 (&gt;= 10 N) (inc N))                            # 10 rows
+         (&lt;row&gt; (xchg '(red) '(blue))                         # red or blue
+            N                                                 # 2 columns
+            (prin (* N N) ) ) ) ) )
 ########################################################################
 </code></pre>
 
@@ -741,7 +765,7 @@ variable,
 
 <p><pre><code>
 : *Text
--> <u>abcdef</u>
+-> "abcdef"
 </code></pre>
 
 <p>you see that we now have a dedicated Pico Lisp process, "connected" to the
@@ -849,7 +873,7 @@ before
 Here, '<code>a</code>' is an alias name for a component of type
 <code>(+TextField)</code>. The numeric argument <code>10</code> is passed to the
 text field, specifying its width. See the chapter on <a href="#guiClasses">GUI
-Classes</a>) for more examples.
+Classes</a> for more examples.
 
 <p>During a <code>GET</code> request, <code>gui</code> is basically a frontend
 to <code>new</code>. It builds a component, stores it in the internal structures
@@ -884,7 +908,8 @@ and executes that button's action code.
 <p>A button's action code can do almost anything: Read and modify the contents
 of input fields, communicate with the database, display alerts and dialogs, or
 even fake the <code>POST</code> request to a <code>GET</code>, with the effect
-of showing a completely different document.
+of showing a completely different document (See <a href="#switching">Switching
+URLs</a>).
 
 <p><code>GET</code> builds up all GUI components on the server. These components
 are objects which encapsulate state and behavior of the HTML page in the
@@ -893,6 +918,13 @@ browser. Whenever a button is pressed, the page is reloaded via a
 <code>action</code> function takes control. It performs error checks on all
 components, processes possible user input on the HTML page, and stores the
 values in correct format (text, number, date, object etc.) in each component.
+
+<p>The state of a form is preserved over time. When the user returns to a
+previous page with the browser's <code>BACK</code> button, that state is
+reactivated, and may be <code>POST</code>ed again. (However, this does
+<i>not</i> work well with browsers which do not allow to revisit a previously
+posted page (e.g. MSIE), and also not when returning to an already disposed
+(closed) dialog)
 
 <p>The following silly example displays two text fields. If you enter some text
 into the "Source" field, you can copy it in upper or lower case to the
@@ -998,7 +1030,7 @@ beginning, it displays a simple form, with a locked text field, and two buttons
       (form NIL
          (gui '(+Init +Lock +TextField) "Initial Text" 20 "My Text")
          (gui '(+Button) "Alert"
-            '(alert "This is an alert " (okButton)) )
+            '(alert NIL "This is an alert " (okButton)) )
          (gui '(+Button) "Dialog"
             '(dialog NIL
                (&lt;br&gt; "This is a dialog.")
@@ -1007,7 +1039,7 @@ beginning, it displays a simple form, with a locked text field, and two buttons
                   (gui '(+Init +TextField) (val&gt; (: top 1 gui 1)) 20) )
                (&lt;br&gt; "and then re-submit it to the form.")
                (gui '(+Button) "Re-Submit"
-                  '(alert "Are you sure? "
+                  '(alert NIL "Are you sure? "
                      (yesButton
                         '(prog
                            (set&gt; (: home top 2 gui 1)
@@ -1229,14 +1261,14 @@ the <code>val&gt;</code> message
 
 <pre><code>
 : (val> (get *Top 'chart 1))  # Retrieve the value of the first chart
--> ((<u>a</u> 1) (<u>b</u> 2) (<u>c</u> 3))
+-> (("a" 1) ("b" 2) ("c" 3))
 </code></pre>
 
 <p>BTW, a more convenient function is <code>chart</code>
 
 <pre><code>
 : (val> (chart))  # Retrieve the value of the current chart
--> ((<u>a</u> 1) (<u>b</u> 2) (<u>c</u> 3))
+-> (("a" 1) ("b" 2) ("c" 3))
 </code></pre>
 
 <p><code>chart</code> can be used instead of the above construct when we want to
@@ -1247,7 +1279,7 @@ current form.
 <h4><a name="scrolling">Scrolling</a></h4>
 
 <p>To enable scrolling, let's also insert two buttons. We use the pre-defined
-classes <code>+DnButton</code> and <code>+UpButton</code>
+classes <code>+UpButton</code> and <code>+DnButton</code>
 
 <p><pre><code>
 ########################################################################
@@ -1262,8 +1294,9 @@ classes <code>+DnButton</code> and <code>+UpButton</code>
                (&lt;row&gt; NIL
                   (gui 1 '(+TextField) 20)
                   (gui 2 '(+NumField) 10) ) ) )
-         (gui '(+JS +DnButton) 1)               # Inserted two buttons
-         (gui '(+JS +UpButton) 1)
+         (gui '(+JS +UpButton) 1)               # Inserted two buttons
+         (gui '(+JS +DnButton) 1)
+         (----)
          (&lt;submit&gt; "Save") ) ) )
 ########################################################################
 </code></pre>
@@ -1286,7 +1319,7 @@ single GUI component.
 <p>In the example above, we saw a row like
 
 <pre><code>
-   (<u>a</u> 1)
+   ("a" 1)
 </code></pre>
 
 <p>being mapped to
@@ -1334,8 +1367,9 @@ of numbers, but expands in the GUI to show also a textual form of each number
                (&lt;row&gt; NIL
                   (gui 1 '(+NumField) 9)
                   (gui 2 '(+Lock +TextField) 90) ) ) )
-         (gui '(+JS +DnButton) 1)
          (gui '(+JS +UpButton) 1)
+         (gui '(+JS +DnButton) 1)
+         (----)
          (&lt;submit&gt; "Save") ) ) )
 ########################################################################
 </code></pre>
@@ -1419,12 +1453,16 @@ view of the class hierarchy can be obtained with the <code>dep</code>
          +numField
             +FixField
             +NumField
+         +UrlField
+            +HttpField
+            +MailField
          +ClassField
       +Checkbox
    +Button
       +DnButton
       +ChoButton
       +ClrButton
+      +DelCurrButton
       +DstButton
       +UpButton
    +JsField
@@ -1437,6 +1475,7 @@ Inspecting <code>+DnButton</code> directly
 
 <p><pre><code>
 : (dep '+DnButton)
+   +Tiny
    +Rid
    +Able
       +gui
@@ -1445,12 +1484,12 @@ Inspecting <code>+DnButton</code> directly
 -> +DnButton
 </code></pre>
 
-<p>shows that <code>+DnButton</code> inherits from <code>+Rid</code>,
-<code>+Able</code> and <code>+Button</code>. The actual definition of
-<code>+DnButton</code> can be found in "lib/form.l"
+<p>shows that <code>+DnButton</code> inherits from <code>+Tiny</code>,
+<code>+Rid</code>, <code>+Able</code> and <code>+Button</code>. The actual
+definition of <code>+DnButton</code> can be found in "lib/form.l"
 
 <p><pre><code>
-(class +DnButton +Rid +Able +Button)
+(class +DnButton +Tiny +Rid +Able +Button)
 ...
 </code></pre>
 
@@ -1729,8 +1768,20 @@ field.
 </code></pre>
 
 <p>Other classes which automatically give a value to a field are
-<code>+Var</code> (binding the field to a variable) and <code>+E/R</code>
-(binding the field to a database entity/relation).
+<code>+Var</code> (linking the field to a variable) and <code>+E/R</code>
+(linking the field to a database entity/relation).
+
+<p><code>+Cue</code> can be used, for example in "mandatory" fields, to give a
+hint to the user about what he is supposed to enter. It will display the
+argument value, in angular brackets, if and only if the field's value is
+<code>NIL</code>, and the <code>val&gt;</code> method will return
+<code>NIL</code> despite the fact that this value is displayed.
+
+<p>Cause an empty field to display "&lt;Please enter some text here&gt;":
+
+<p><pre><code>
+   (gui '(+Cue +TextField) "Please enter some text here" 30)
+</code></pre>
 
 
 <h4><a name="ablePrefix">Disabling and Enabling</a></h4>
@@ -1795,44 +1846,623 @@ prefixing these fields with <code>+Rid</code> (i.e. getting "rid" of the lock).
 
 <h4><a name="formatPrefix">Formatting</a></h4>
 
-<p>
+<p>GUI prefix classes allow a fine-grained control of how values are stored in -
+and retrieved from - components. As in predefined classes like
+<code>+NumField</code> or <code>+DateField</code>, they override the
+<code>set&gt;</code> and/or <code>val&gt;</code> methods.
+
+<p><code>+Set</code> takes an argument function which is called whenever that
+field is set to some value. To convert all user input to upper case
+
+<p><pre><code>
+   (gui '(+Set +TextField) uppc 30)
+</code></pre>
+
+<p><code>+Val</code> is the complement to <code>+Set</code>. It takes a function
+which is called whenever the field's value is retrieved. To return the square of
+a field's value
+
+<p><pre><code>
+   (gui '(+Val +NumField) '((N) (* N N)) 10)
+</code></pre>
+
+<p><code>+Fmt</code> is just a combination of <code>+Set</code> and
+<code>+Val</code>, and takes two functional arguments. This example will display
+upper case characters, while returning lower case characters internally
+
+<p><pre><code>
+   (gui '(+Fmt +TextField) uppc lowc 30)
+</code></pre>
+
+<p><code>+Map</code> does (like <code>+Fmt</code>) a two-way translation. It
+uses a list of cons pairs for a linear lookup, where the <code>CAR</code>s
+represent the displayed values which are internally mapped to the values in the
+<code>CDR</code>s. If a value is not found in this list during
+<code>set&gt;</code> or <code>val&gt;</code>, it is passed through unchanged.
+
+<p>Normally, <code>+Map</code> is used in combination with the combo box
+incarnation of text fields (see <a href="#inputFields">Input Fields</a>). This
+example displays "One", "Two" and "Three" to the user, but returns a number 1, 2
+or 3 internally
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+Map" "lib.css" NIL
+      (form NIL
+         (gui '(+Map +TextField)
+            '(("One" . 1) ("Two" . 2) ("Three" . 3))
+            '("One" "Two" "Three") )
+         (gui '(+Button) "Print"
+            '(msg (val> (field -1))) ) ) ) )
+########################################################################
+</code></pre>
+
+
+<h4><a name="sideEffects">Side Effects</a></h4>
+
+<p>Whenenver a button is pressed in the GUI, any changes caused by
+<code>action</code> in the current environment (e.g. the database or application
+state) need to be reflected in the corresponding GUI fields. For that, the
+<code>upd&gt;</code> message is sent to all components. Each component then
+takes appropriate measures (e.g. refresh from database objects, load values from
+variables, or calculate a new value) to update its value.
+
+<p>While the <code>upd&gt;</code> method is mainly used internally, it can be
+overridden in existing classes via the <code>+Upd</code> prefix class. Let's
+print updated values to standard error
+
+<p><pre><code>
+########################################################################
+(app)
+(default *Number 0)
+
+(action
+   (html 0 "+Upd" "lib.css" NIL
+      (form NIL
+         (gui '(+Upd +Var +NumField)
+            '(prog (extra) (msg *Number))
+            '*Number 8 )
+         (gui '(+JS +Button) "Increment"
+            '(inc '*Number) ) ) ) )
+########################################################################
+</code></pre>
 
 
 <h4><a name="validPrefix">Validation</a></h4>
 
+<p>To allow automatic validation of user input, the <code>chk&gt;</code> message
+is sent to all components at appropriate times. The corresponding method should
+return <code>NIL</code> if the value is all right, or a string describing the
+error otherwise.
 
-<p>*** TO BE CONTINUED ***
+<p>Many of the built-in classes have a <code>chk&gt;</code> method. The
+<code>+NumField</code> class checks for legal numeric input, or the
+<code>+DateField</code> for a valid calendar date.
 
-<h4><a name="bindPrefix">Binding</a></h4>
+<p>An on-the-fly check can be implemented with the <code>+Chk</code> prefix
+class. The following code only accepts numbers not bigger than 9: The
+<code>or</code> expression first delegates the check to the main
+<code>+NumField</code> class, and - if it does not give an error - returns an
+error string when the current value is greater than 9.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+Chk" "lib.css" NIL
+      (form NIL
+         (gui '(+Chk +NumField)
+            '(or
+               (extra)
+               (and (&gt; (val&gt; This) 9) "Number too big") )
+            12 )
+         (gui '(+JS +Button) "Print"
+            '(msg (val&gt; (field -1))) ) ) ) )
+########################################################################
+</code></pre>
+
+<p>A more direct kind of validation is built-in via the <code>+Limit</code>
+class. It controls the <code>maxlength</code> attribute of the generated HTML
+input field component. Thus, it is impossible to type to more characters than
+allowed into the field.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(action
+   (html 0 "+Limit" "lib.css" NIL
+      (form NIL
+         (gui '(+Limit +TextField) 4 8)
+         (gui '(+JS +Button) "Print"
+            '(msg (val&gt; (field -1))) ) ) ) )
+########################################################################
+</code></pre>
+
+
+<h4><a name="linkage">Data Linkage</a></h4>
+
+<p>Although <code>set&gt;</code> and <code>val&gt;</code> are the official
+methods to get a value in and out of a GUI component, they are not very often
+used explicitly. Instead, components are directly linked to internal Lisp data
+structures, which are usually either variables or database objects.
+
+<p>The <code>+Var</code> prefix class takes a variable (described as the
+<code>var</code> data type - either a symbol or a cell - in the <a
+href="ref.html#foo">Function Reference</a>). In the following example, we
+initialize a global variable with the value "abc", and let a
+<code>+TextField</code> operate on it. The "Print" button can be used to display
+its current value.
+
+<p><pre><code>
+########################################################################
+(app)
+
+(setq *TextVariable "abc")
+
+(action
+   (html 0 "+Var" "lib.css" NIL
+      (form NIL
+         (gui '(+Var +TextField) '*TextVariable 8)
+         (gui '(+JS +Button) "Print"
+            '(msg *TextVariable) ) ) ) )
+########################################################################
+</code></pre>
+
+<p><code>+E/R</code> takes an entity/relation specification. This is a cell,
+with a relation in its <code>CAR</code> (e.g. <code>nm</code>, for an object's
+name), and an expression in its <code>CDR</code> (typically <code>(: home
+obj)</code>, the object stored in the <code>obj</code> property of the current
+form).
+
+<p>For an isolated, simple example, we create a temporary database, and access
+the <code>nr</code> and <code>nm</code> properties of an object stored in a
+global variable <code>*Obj</code>.
+
+<p><pre><code>
+########################################################################
+(when (app)                # On start of session
+   (class +Tst +Entity)    # Define data model
+   (rel nr (+Number))      # with a number
+   (rel nm (+String))      # and a string
+   (pool (tmp "db"))       # Create temporary DB
+   (setq *Obj              # and a single object
+      (new! '(+Tst) 'nr 1 'nm "New Object") ) )
+
+(action
+   (html 0 "+E/R" "lib.css" NIL
+      (form NIL
+         (gui '(+E/R +NumField) '(nr . *Obj) 8)    # Linkage to 'nr'
+         (gui '(+E/R +TextField) '(nm . *Obj) 20)  # Linkage to 'nm'
+         (gui '(+JS +Button) "Show"                # Show the object
+            '(out 2 (show *Obj)) ) ) ) )           # on standard error
+########################################################################
+</code></pre>
 
 
 <p><hr>
 <h3><a name="buttons">Buttons</a></h3>
 
+<p>*** TO BE DONE ***
+
 
 <h4><a name="dialogButtons">Dialog Buttons</a></h4>
+
+<p>*** TO BE DONE ***
 
 
 <p><hr>
 <h3><a name="buttonPrefix">Button Prefix Classes</a></h3>
 
+<p>*** TO BE DONE ***
+
 
 <h4><a name="closeButtons">Dialog Close</a></h4>
+
+<p>*** TO BE DONE ***
 
 
 <h4><a name="jsButtons">Active JavaScript</a></h4>
 
+<p>*** TO BE DONE ***
+
 
 <p><hr>
-<h2><a name="db">DB-Integration</a></h2>
+<h2><a name="minApp">A Minimal Complete Application</a></h2>
+
+<p>The Pico Lisp release includes in the "app/" directory a minimal, yet
+complete reference application. This application is typical, in the sense that
+it implements many of the techniques described in this document, and it can be
+easily modified and extended. In fact, we use it as templates for our own
+production application development.
+
+<p>It is a kind of simplified ERP system, containing customers/suppliers,
+products (items), and orders. The order input form performs life updates of
+customer and product selections, price, inventory and totals calculations, and
+generates on-the-fly PDF documents. Fine-grained access permissions are
+controlled via users, roles and permissions. It comes localized in three
+languages (English, German and Japanese), with a some initial data and two
+sample reports.
+
+<p>All in about 700 lines of code.
 
 
-<p>The most recent version of this document can be found on the <a
-href="http://software-lab.de/down.html">Pico Lisp Download</a> page, and in the
-current <a
-href="http://www.software-lab.biz/1024/?download&amp;picoLisp.tgz">development
-release</a> of Pico Lisp.
+<p><hr>
+<h3><a name="getStarted">Getting Started</a></h3>
 
+<p>As ever, you may start up the application in debugging mode
+
+<p><pre><code>
+$ ./p dbg.l app/main.l -main -go
+</code></pre>
+
+<p>or in (non-debug) production mode
+
+<p><pre><code>
+$ ./p app/main.l -main -go -wait
+</code></pre>
+
+<p>and go to '<code><a
+href="http://localhost:8080">http://localhost:8080</a></code>' with your
+browser. You can login as user "admin", with password "admin". The demo data
+contain several other users, but those are more restricted in their role
+permissions.
+
+<p>Another possibility is to try the online version of this application at <a
+href="http://app.software-lab.biz">app.software-lab.biz</a>.
+
+
+<h4><a name="localization">Localization</a></h4>
+
+<p>Before or after you logged in, you can select another language, and click on
+the "Change" button. This will effect all GUI components (though not text from
+the database), and also the numeric, date and telephone number formats.
+
+
+<h4><a name="navigation">Navigation</a></h4>
+
+<p>The navigation menu on the left side shows two items "Home" and "logout", and
+three submenus "Data", "Report" and "System".
+
+<p>Both "Home" and "logout" bring you back to the initial login form. Use
+"logout" if you want to switch to another user (say, for another set of
+permissions), and - more important - before you close your browser, to release
+possible locks and process resources on the server.
+
+<p>The "Data" submenu gives access to application specific data entry and
+maintenance: Customers, suppliers, product items and orders. The "Report"
+submenu contains two simple inventory and sales reports. And the "System"
+submenu leads to role and user administration.
+
+<p>You can open and close each submenu individually. Keeping more than one
+submenu open at a time lets you switch rapidly between different parts of the
+application.
+
+<p>The currently active menu item is indicated by a highlighted list style (no
+matter whether you arrived at this page directly via the menu or by clicking on
+a link somewhere else).
+
+
+<h4><a name="choosing">Choosing Objects</a></h4>
+
+<p>Each item in the "Data" or "System" submenu opens a search dialog for that
+class of entities. You can specify a search pattern, press the top right
+"Search" button, and scroll through the list of results.
+
+<p>While the "Role" and "User" entities present simple dialogs (searching just
+by name), other entities can be searched by a variety of criteria. In those
+cases, a "Reset" button clears the contents of the whole dialog. A new object
+can be created with bottom right "New" button.
+
+<p>By default, the search will list all database objects with an attribute value
+greater than or equal to the search criterion. The comparison is done
+arithmetically for numbers, and alphabetically (case sensitive!) for text. This
+means, if you type "Free" in the "City" field of the "Customer/Supplier" dialog,
+the value of "Freetown" will be matched. On the other hand, an entry of "free"
+or "town" will yield no hits.
+
+<p>Some search fields, however, show a different behavior depending on the
+application:
+
+<ul>
+<li>The names of persons, companies or products allow a tolerant search,
+matching either a slightly misspelled name ("Mühler" instead of "Miller") or a
+substring ("Oaks" will match "Seven Oaks Ltd.").
+
+<li>The search field may specify an upper instead of a lower limit, resulting in
+a search for database objects with an attribute value less than or equal to the
+search criterion. This is useful, for example in the "Order" dialog, to list
+orders according to their number or date, by starting with the newest then and
+going backwards.
+
+</ul>
+
+<p>Using the bottom left scroll buttons, you can scroll through the result list
+without limit. Clicking on a link will bring up the corresponding object. Be
+careful here to select the right column: Some dialogs (those for "Item" and
+"Order") also provide links for related entities (e.g. "Supplier").
+
+
+<h4><a name="editing">Editing</a></h4>
+
+<p>A database object is usually displayed in its own individual form, which is
+determined by its entity class.
+
+<p>The basic layout should be consistent for all classes: Below the heading
+(which is usually the same as the invoking menu item) is a line with the
+object's identifier (name, number, etc.) on the left, and a "Delete" button, a
+"Select" button and two navigation links on the right side.
+
+<p>The "Delete" button pops up an alert, asking for confirmation. If the object
+is indeed deleted, this button changes to "Restore" and allows to un-delete the
+object. Note that objects are never completely deleted from the database as long
+as there are any references from other objects. When a "deleted" object is
+shown, its identifier appears in square brackets.
+
+<p>The "Select" button (re-)displays the search dialog for this class of
+entities. The search criteria are preserved between invocations of each dialog,
+so that you can conveniently browse objects in this context.
+
+<p>The navigation links, pointing left and right, serve a similar purpose. They
+let you step sequentially through all objects of this class, in the order of the
+identifier's index.
+
+<p>Other buttons, depending on the entity, are usually arranged at the bottom of
+the form. The bottom rightmost one should always be the "Edit" button.
+
+<p>The form is brought up initially in read-only mode. This is necessary to
+prevent more than one user from modifying an object at the same time (and
+contrary to the previous Pico Lisp Java frameworks, where this was not a problem
+because all changes were immediately reflected in the GUIs of other users).
+
+<p>So if you want to modify an object, you have to gain exclusive access by
+clicking on the "Edit" button. The form will be enabled, and the "Edit" button
+changes to "Save". Should any other user already have reserved this object, you
+will see a message telling his name and process ID.
+
+<p>An exception to this are objects that were just created with "New". They will
+automatically be reserved for you, and the "Edit" button will show up as "Save".
+
+<p>The name of the "Save" button is actually a misnomer. As we said in the
+chapter on <a href="#scrolling">Scrolling</a>, any button in the form will save
+changes to the underlying data model. As a special case, however, the "Save"
+button releases the object and reverts to "Edit". Besides this, the edit mode
+will also cease as soon as another objects is displayed, be it by clicking on an
+object link (the pencil icon), the top right navigation links, or a link in a
+search dialog.
+
+
+<h4><a name="btnLinks">Buttons vs. Links</a></h4>
+
+<p>The only way to interact with a HTTP-based application server is to click
+either on a HTML link, or on a submit button (see also <a
+href="#ctlFlow">Control Flow</a>). It is essential to understand the different
+effects of such a click on data entered or modified in the current form.
+
+<ul>
+<li>A click on a link will leave or reload the page. Changes are discarded.
+<li>A click on a button will commit changes, and perform the associated action.
+</ul>
+
+<p>For that reason the layout design should clearly differentiate between links
+and buttons. Image buttons are not a good idea when in other places images are
+used for links. The standard button components should be preferred; they are
+usually rendered by the browser in a non-ambiguous three-dimensional look and
+feel.
+
+<p>The enabled or disabled state of a button is an integral part of the
+application logic. It must be indicated to the user with appropriate styles.
+
+
+<p><hr>
+<h3><a name="dataModel">The Data Model</a></h3>
+
+<p>The data model for this mini application consists of only six entity classes
+(see the E/R diagram at the beginning of "app/er.l"):
+
+<ul>
+<li>The three main entities are <code>+CuSu</code> (Customer/Supplier),
+<code>+Item</code> (Product Item) and <code>+Ord</code> (Order).
+
+<li>A <code>+Pos</code> object is a single position in an order.
+
+<li><code>+Role</code> and <code>+User</code> objects are needed for
+authentication and authorization.
+
+</ul>
+
+<p>The classes <code>+Role</code> and <code>+User</code> are defined in
+"lib/adm.l". A <code>+Role</code> has a name, a list of permissions, and a list
+of users assigned to this role. A <code>+User</code> has a name, a password and
+a role.
+
+<p>In "app/er.l", the <code>+Role</code> class is extended to define an
+<code>url&gt;</code> method for it. Any object whose class has such a method is
+able to display itself in the GUI. In this case, the file "app/role.l" will be
+loaded - with the global variable <code>*ID</code> pointing to it - whenever an
+HTML link to this role object is activated.
+
+<p>The <code>+User</code> class is also extended. In addition to the login name,
+a full name, telephone number and email address is declared. And, of course, the
+ubiquitous <code>url&gt;</code> method.
+
+<p>The application logic is centered around orders. An order has a number, a
+date, a customer (an instance of <code>+CuSu</code>) and a list of positions
+(<code>+Pos</code> objects). The <code>sum&gt;</code> method calculates the
+total amount of this order.
+
+<p>Each position has an <code>+Item</code> object, a price and a quantity. The
+price in the position overrides the default price from the item.
+
+<p>Each item has a number, a description, a supplier (also an instance of
+<code>+CuSu</code>), an inventory count (the number of these items that were
+counted at the last inventory taking), and a price. The <code>cnt&gt;</code>
+method calculates the current stock of this item as the difference of the
+inventory and the sold item counts.
+
+<p>The call to <code>dbs</code> at the end of "app/er.l" configures the physical
+database storage. Each of the supplied lists has a number in its
+<code>CAR</code> which determines the block size as (64 &lt;&lt; N) of the
+corresponding database file. The <code>CDR</code> says that the instances of
+this class (if the element is a class symbol) or the tree nodes (if the element
+is a list of a class symbol and a property name) are to be placed into that
+file. This allows for some optimizations in the database layout.
+
+
+<p><hr>
+<h3><a name="usage">Usage</a></h3>
+
+<p>When you are connected to the application (see <a href="#getStarted">Getting
+Started</a>) you might try to do some "real" work with it. Via the "Data" menu
+(see <a href="#navigation">Navigation</a>) you can create or modify customers,
+suppliers, items and orders, and produce simple overviews via the "Report" menu.
+
+
+<h4><a name="cuSu">Customer/Supplier</a></h4>
+
+<p align=right>Source in "app/cusu.l"
+
+<p>The Customer/Supplier search dialog (<code>choCuSu</code> in "app/gui.l")
+supports a lot of search criteria. These become necessary when the database
+contains a large number of customers, and can filter by zip, by phone number
+prefixes, and so on.
+
+<p>In addition to the basic layout (see <a href="#editing">Editing</a>), the
+form is divided into four separate tabs. Splitting a form into several tabs
+helps to reduce traffic, with possibly better GUI response. In this case, four
+tabs are perhaps overkill, but ok for demonstration purposes, and they leave
+room for extensions.
+
+<p>Be aware that when data were modified in one of the tabs, the "Save" button
+has to be pressed before another tab is clicked, because tabs are implemented as
+HTML links (see <a href="#btnLinks">Buttons vs. Links</a>).
+
+<p>New customers or suppliers will automatically be assigned the next free
+number. You can enter another number, but an error will result if you try to use
+an existing number. The "Name" field is mandatory, you need to overtype the
+"&lt;Name&gt;" clue.
+
+<p>Phone and fax numbers in the "Contact" tab must be entered in the correct
+format, depending on the locale (see <a href="#telFields">Telephone
+Numbers</a>).
+
+<p>The "Memo" tab contains a single text area. It is no problem to use it for
+large pieces of text, as it gets stored in a database blob internally.
+
+
+<h4><a name="item">Item</a></h4>
+
+<p align=right>Source in "app/item.l"
+
+<p>Items also have a unique number, and a mandatory "Description" field.
+
+<p>To assign a supplier, click on the "+" button. The Customer/Supplier search
+dialog will appear, and you can pick the desired supplier with the "@" button in
+the rightmost column. Alternatively, if you are sure to know the exact spelling
+of the supplier's name, you can also enter it directly into the text field.
+
+<p>In the search dialog you may also click on a link, for example to inspect a
+possible supplier, and then return to the search dialog with the browser's back
+button. The "Edit" mode will then be lost, however, as another object has been
+visited (this is described in the last part of <a href="#editing">Editing</a>).
+
+<p>You can enter an inventory count, the number of items currently in stock. The
+following field will automatically reflect the remaining pieces after some of
+these items were sold (i.e. referenced in order positions). It cannot be changed
+manually.
+
+<p>The price should be entered with the decimal separator according to the
+current locale. It will be formatted with two places after the decimal
+separator.
+
+<p>The "Memo" is for an arbitrary info text, like in <a
+href="#cuSu">Customer/Suppliert</a> above, stored in a database blob.
+
+<p>Finally, a JPEG picture can be stored in a blob for this item. Choose a file
+with the browser's file select control, and click on the "Install" button. The
+picture will appear at the bottom of the page, and the "Install" button changes
+to "Uninstall", allowing the picture's removal.
+
+
+<h4><a name="order">Order</a></h4>
+
+<p align=right>Source in "app/ord.l"
+
+<p>Oders are identified by number and date.
+
+<p>The number must be unique. It is assigned when the order is created, and
+cannot be changed for compliance reasons.
+
+<p>The date is initialized to "today" for a newly created order, but may be
+changed manually. The date format depends on the locale. It is YYYY-MM-DD (ISO)
+by default, DD.MM.YYYY in the German and YYYY/MM/DD in the Japanese locale. As
+described in <a href="#timeDateFields">Time &amp; Date</a>, this field allows
+input shortcuts, e.g. just enter the day to get the full date in the current
+month.
+
+<p>To assign a customer to this order, click on the "+" button. The
+Customer/Supplier search dialog will appear, and you can pick the desired
+customer with the "@" button in the rightmost column (or enter the name directly
+into the text field), just as described above for <a href="#item">Item</a>s.
+
+<p>Now enter order the positions: Choose an item with the "+" button. The
+"Price" field will be preset with the item's default price, you may change it
+manually. Then enter a quantity, and click a button (typically the "+" button to
+select the next item, or a scroll button go down in the chart). The form will be
+automatically recalculated to show the total prices for this position and the
+whole order.
+
+<p>Instead of the "+" or scroll buttons, as recommended above, you could of
+course also press the "Save" button to commit changes. This is all right, but
+has the disadvantage that the button must be pressed a second time (now "Edit")
+if you want to continue with the entry of more positions.
+
+<p>The "x" button at the right of each position deletes that position without
+further confirmation. It has to be used with care!
+
+<p>The "PDF-Print" button generates and displays a PDF document for this order.
+The browser should be configured to display downloaded PDF documents in an
+appropriate viewer. The source for the postscript generating method is in
+"app/lib.l". It produces one or several A4 sized pages, depending on the number
+of positions.
+
+
+<h4><a name="reports">Reports</a></h4>
+
+<p align=right>Sources in "app/inventory.l and "app/sales.l"
+
+<p>The two reports ("Inventory" and "Sales") come up with a few search fields
+and a "Show Report" button.
+
+<p>If no search criteria are entered, the "Show Report" button will produce a
+listing of the relevant part of the whole database. This may take a long time
+and cause a heavy load on the browser if the database is large.
+
+<p>So in the normal case, you will limit the domain by stating a range of item
+numbers, a description pattern, and/or a supplier for the inventory report, or a
+range of order dates and/or a customer for the sales report. If a value in a
+range specification is omitted, the range is considered open in that direction.
+
+
+<p><hr>
+<h3><a name="bugs">Bugs</a></h3>
+
+<ul>
+<li>Returning to a previous page with the browser's back button may show an
+incorrect state. It has to be used with care. This is a problem inherent to HTML
+GUIs.
+
+<li>There are problems with XMLHttpRequest on Mac OS X when connecting to a
+server on localhost. It happens that there is no response at all (instead of
+falling back to plain HTTP). Please disable JavaScript for a short term remedy.
+
+<li>Japanese PDF generation does not work.
+
+</ul>
 
 </body>
 </html>

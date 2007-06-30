@@ -1,4 +1,4 @@
-# 10feb07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -47,7 +47,7 @@
    (let Env '(T)
       (while (args)
          (push 'Env
-            (cons (cons 0 (next)) (cons 1 (next))) ) )
+            (cons (cons 0 (next)) 1 (next)) ) )
       (while (and "CL" (pat? (car "CL")))
          (push 'Env
             (cons
@@ -509,7 +509,7 @@
             (or
                (mapcan "select" L)
                ("select" (car L) T) ) )
-         (cons NIL (cons L L)) ) )
+         (cons NIL L L) ) )
    (_gen "@Obj")
    (_sel) )
 
@@ -533,3 +533,5 @@
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
+
+# vi:et:ts=3:sw=3

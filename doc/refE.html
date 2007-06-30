@@ -1,0 +1,261 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>E</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>E</h1>
+
+<dl>
+
+<dt><a name="*Err"><code>*Err</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body, which
+will be executed during error processing. See also <code><a
+href="ref.html#errors">Error Handling</a></code>, <code><a
+href="refR.html#*Rst">*Rst</a></code> and <code><a
+href="refM.html#*Msg">*Msg</a></code>.
+
+<p><pre><code>
+: (de *Err (prinl "Fatal error!"))
+-> ((prinl "Fatal error!"))
+: (/ 3 0)
+!? (/ 3 0)
+Div/0
+Fatal error!
+$
+</code></pre>
+
+<dt><a name="e"><code>(e . prg) -> any</code></a>
+<dd>Used in a breakpoint. Evaluates <code>prg</code> in the execution
+environment, or the currently executed expression if <code>prg</code> is not
+given. See also <code><a href="refD.html#debug">debug</a></code>, <code><a
+href="ref_.html#!">!</a></code>, <code><a href="ref_.html#^">^</a></code> and
+<code><a href="refD.html#*Dbg">*Dbg</a></code>.
+
+<p><pre><code>
+: (! + 3 4)
+(+ 3 4)
+! (e)
+-> 7
+</code></pre>
+
+<dt><a name="echo"><code>(echo ['cnt ['cnt]] | ['sym ..]) -> sym</code></a>
+<dd>Reads the current input channel, and writes to the current output channel.
+If <code>cnt</code> is given, only that many bytes are actually echoed. In case
+of two <code>cnt</code> arguments, the first one specifies the number of bytes
+to skip in the input stream. Otherwise, if one or more <code>sym</code>
+arguments are given, the echo process stops as soon as one of the symbol's names
+is encountered in the input stream (in that case, the name will be read (and
+returned), but not written). Returns non-<code>NIL</code> if the operation was
+successfully completed.
+
+<p><pre><code>
+: (in "x.l" (echo))                    # Display file on console
+ ..
+
+: (out "x2.l" (in "x.l" (echo)))       # Copy file "x.l" to "x2.l"
+</code></pre>
+
+<dt><a name="env"><code>(env ['lst] | ['sym 'val] ..) -> lst</code></a>
+<dd>Return a list of symbol-value pairs of all dynamically bound symbols if
+called without arguments, or of the symbols in <code>lst</code>, or the
+explicitly given <code>sym</code>-<code>val</code> pairs. See also <code><a
+href="refS.html#stk">stk</a></code>, <code><a
+href="refB.html#bind">bind</a></code> and <code><a
+href="refJ.html#job">job</a></code>.
+
+<p><pre><code>
+: (env)
+-> NIL
+: (let (A 1 B 2) (env))
+-> ((A . 1) (B . 2))
+: (let (A 1 B 2) (env '(A B)))
+-> ((B . 2) (A . 1))
+: (let (A 1 B 2) (env 'X 7 '(A B) 'Y 8))
+-> ((Y . 8) (B . 2) (A . 1) (X . 7))
+</code></pre>
+
+<dt><a name="eof"><code>(eof ['flg]) -> flg</code></a>
+<dd>Returns the end-of-file status of the current input channel. If
+<code>flg</code> is non-<code>NIL</code>, the channel's status is forced to
+end-of-file, so that the next call to <code>eof</code> will return
+<code>T</code>, and calls to <code><a href="refC.html#char">char</a></code>,
+<code><a href="refP.html#peek">peek</a></code>, <code><a
+href="refL.html#line">line</a></code>, <code><a
+href="refF.html#from">from</a></code>, <code><a
+href="refT.html#till">till</a></code>, <code><a
+href="refR.html#read">read</a></code> or <code><a
+href="refS.html#skip">skip</a></code> will return <code>NIL</code>. Note that
+<code>eof</code> <i>cannot</i> be used with the binary <code><a
+href="refR.html#rd">rd</a></code> function.
+
+<p><pre><code>
+: (in "file" (until (eof) (println (line T))))
+...
+</code></pre>
+
+<dt><a name="eval"><code>(eval 'any ['cnt]) -> any</code></a>
+<dd>Evaluates <code>any</code>. Note that because of the standard argument
+evaluation, <code>any</code> is actually evaluated twice. If a binding
+environment offset <code>cnt</code> is given, the second evaluation takes place
+in the corresponding environment. See also <code><a
+href="refR.html#run">run</a></code> and <code><a
+href="refU.html#up">up</a></code>.
+
+<p><pre><code>
+: (eval (list '+ 1 2 3))
+-> 6
+: (setq X 'Y  Y 7)
+-> 7
+: X
+-> Y
+: Y
+-> 7
+: (eval X)
+-> 7
+</code></pre>
+
+<dt><a name="expDat"><code>(expDat 'sym) -> dat</code></a>
+<dd>Expands a <code><a href="refD.html#date">date</a></code> string according to
+the current <code><a href="refL.html#locale">locale</a></code> (delimiter, and
+order of year, month and day). Accepts abbreviated input, without delimiter and
+with only the day, or the day and month, or the day, month and year of current
+century. See also <code><a href="refD.html#datStr">datStr</a></code>, <code><a
+href="refD.html#day">day</a></code>, <code><a
+href="refE.html#expTel">expTel</a></code>.
+
+<p><pre><code>
+: (date)
+-> 733133
+: (date (date))
+-> (2007 5 31)
+: (expDat "31")
+-> 733133
+: (expDat "315")
+-> 733133
+: (expDat "3105")
+-> 733133
+: (expDat "31057")
+-> 733133
+: (expDat "310507")
+-> 733133
+: (expDat "2007-05-31")
+-> 733133
+: (expDat "7-5-31")
+-> 733133
+
+: (locale "DE" "de")
+-> NIL
+: (expDat "31.5")
+-> 733133
+: (expDat "31.5.7")
+-> 733133
+</code></pre>
+
+<dt><a name="expTel"><code>(expTel 'sym) -> sym</code></a>
+<dd>Expands a telephone number string. Multiple spaces or hyphens are coalesced.
+A leading <code>+</code> or <code>00</code> is removed, a leading <code>0</code>
+is replaced with the current country code. Otherwise, <code>NIL</code> is
+returned. See also <code><a href="refT.html#telStr">telStr</a></code>, <code><a
+href="refE.html#expDat">expDat</a></code> and <code><a
+href="refL.html#locale">locale</a></code>.
+
+<p><pre><code>
+: (expTel "+49 1234 5678-0")
+-> "49 1234 5678-0"
+: (expTel "0049 1234 5678-0")
+-> "49 1234 5678-0"
+: (expTel "01234 5678-0")
+-> NIL
+: (locale "DE" "de")
+-> NIL
+: (expTel "01234 5678-0")
+-> "49 1234 5678-0"
+</code></pre>
+
+<dt><a name="expr"><code>(expr 'sym) -> fun</code></a>
+<dd>Converts a C-function ("subr") to a Lisp-function. Defined only for normal
+functions (i.e. functions that evaluate all arguments). See also <code><a
+href="refS.html#subr">subr</a></code>.
+
+<p><pre><code>
+: sqrt
+-> 67325664
+: (expr 'sqrt)
+-> (@ (pass $134533847))
+: (sqrt 64)
+-> 8
+</code></pre>
+
+<dt><a name="ext?"><code>(ext? 'any) -> sym | NIL</code></a>
+<dd>Returns the argument <code>any</code> when it is an existing external
+symbol, otherwise <code>NIL</code>. See also <code><a
+href="refS.html#sym?">sym?</a></code>, <code><a
+href="refB.html#box?">box?</a></code>, <code><a
+href="refS.html#str?">str?</a></code>, <code><a
+href="refE.html#extern">extern</a></code> and <code><a
+href="refL.html#lieu">lieu</a></code>.
+
+<p><pre><code>
+: (ext? *DB)
+-> {1}
+: (ext? 'abc)
+-> NIL
+: (ext? "abc")
+-> NIL
+: (ext? 123)
+-> NIL
+</code></pre>
+
+<dt><a name="extend"><code>(extend cls) -> cls</code></a>
+<dd>Extends the class <code>cls</code>, by storing it in the global variable
+<code><a href="refC.html#*Class">*Class</a></code>. As a consequence, all
+following method, relation and class variable definitions are applied to that
+class. See also <code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
+href="refC.html#class">class</a></code>, <code><a
+href="refD.html#dm">dm</a></code>, <code><a href="refV.html#var">var</a></code>,
+<code><a href="refR.html#rel">rel</a></code>, <code><a
+href="refT.html#type">type</a></code> and <code><a
+href="refI.html#isa">isa</a></code>.
+
+<p><pre><code>
+</code></pre>
+
+<dt><a name="extern"><code>(extern 'sym) -> sym | NIL</code></a>
+<dd>Creates or finds an external symbol. If a symbol with the name
+<code>sym</code> is already extern, it is returned. Otherwise, a new external
+symbol is returned. <code>NIL</code> is returned if <code>sym</code> does not
+exist in the database. See also <code><a
+href="refI.html#intern">intern</a></code> and <code><a
+href="refE.html#ext?">ext?</a></code>.
+
+<p><pre><code>
+: (extern "A1b")
+-> {A1b}
+: (extern "{A1b}")
+-> {A1b}
+</code></pre>
+
+<dt><a name="extra"><code>(extra ['any ..]) -> any</code></a>
+<dd>Can only be used inside methods. Sends the current message to the current
+object <code>This</code>, this time starting the search for a method at the
+remaining branches of the inheritance tree of the class where the current method
+was found. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
+<code><a href="refS.html#super">super</a></code>, <code><a
+href="refM.html#method">method</a></code>, <code><a
+href="refM.html#meth">meth</a></code>, <code><a
+href="refS.html#send">send</a></code> and <code><a
+href="refT.html#try">try</a></code>.
+
+<p><pre><code>
+(dm key> (C)            # 'key>' method of the '+Uppc' class
+   (uppc (extra C)) )   # Convert 'key>' of extra classes to upper case
+</code></pre>
+
+</dl>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-# 22dec06abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 # *Profile
@@ -14,7 +14,7 @@
             (set (cdadr Lst) (cons (+ 0) (+ 0))) )
          (con
             Lst
-            (list (cons 'tick (cons (cons (+ 0) (+ 0)) (cdr Lst)))) )
+            (list (cons 'tick (cons (+ 0) (+ 0)) (cdr Lst))) )
          T ) ) )
 
 (de "uprf" (Lst)
@@ -47,5 +47,5 @@
                         (if (cdr "X")
                            (method (car "X") (cdr "X"))
                            (getd (car "X")) ) )
-                     (cons (car P) (cons (cdr P) "X")) ) )
+                     (cons (car P) (cdr P) "X") ) )
                *Profile ) ) ) ) )

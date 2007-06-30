@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -31,3 +31,5 @@
 
 (de go ()
    (server 8080 "@start") )
+
+# vi:et:ts=3:sw=3

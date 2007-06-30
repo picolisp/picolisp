@@ -1,4 +1,4 @@
-# 21jan07abu
+# 09jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### Java Applet GUI ###
@@ -461,9 +461,9 @@
       (mapc 'zapUndo> L) ) )
 
 # Enter value into current focus field
-(de setFocus (Val)
+(de setFocus (Fld Val)
    (do> (: focus)
-      (set> This Val) )
+      (set> Fld Val) )
    (able> This)
    (next> This) )
 
@@ -816,9 +816,9 @@
 
 (dm cho> ()
    (mapcar
-      '((L)  # ("key" T  setFocus (quote . Obj))
+      '((L)  # ("key" T  setFocus (quote . Fld) (quote . Obj))
          (cons
-            ((: cho) (car L) (eval (cadddr L)))
+            ((: cho) (car L) (eval (get L 5)))
             (cdr L) ) )
       (extra) ) )
 
@@ -1480,7 +1480,7 @@
 (de mkCho (Key Val)
    (cons Key
       (cons T
-         (list 'setFocus (lit (or Val Key))) ) ) )
+         (list 'setFocus (lit This) (lit (or Val Key))) ) ) )
 
 
 (class +ListTextField +TextField)
@@ -2540,8 +2540,7 @@
 
 (dm T (CL . @)
    (pass super
-      '((Str)
-         (cons '@1 (cons Str (: objHint))) ) )
+      '((Str) (cons '@1 Str (: objHint))) )
    (=: objHint
       (append CL
          (cons (list 'head '@1 '@@ (: objVar))) ) ) )

@@ -1,4 +1,4 @@
-/* 23dec06abu
+/* 18jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -78,14 +78,9 @@ static int sslConnect(SSL *ssl, char *host, int port) {
    return -1;
 }
 
-static bool sslClose(SSL *ssl, int sd) {
-   int n;
-
-   do
-      if ((n = SSL_shutdown(ssl)) == 1)
-         return close(sd) == 0;
-   while (n == 0);
-   return NO;
+static void sslClose(SSL *ssl, int sd) {
+   SSL_shutdown(ssl);
+   close(sd);
 }
 
 static bool sslFile(SSL *ssl, char *file) {
@@ -146,9 +141,9 @@ int main(int ac, char *av[]) {
    else
       bin = YES,  getLen = sprintf(get, "@%s ", av[3]);
 
+   SSL_library_init();
    SSL_load_error_strings();
-   OpenSSL_add_ssl_algorithms();
-   if (!(ctx = SSL_CTX_new(SSLv2_client_method()))) {
+   if (!(ctx = SSL_CTX_new(SSLv23_client_method()))) {
       ERR_print_errors_fp(stderr);
       giveup("SSL init");
    }
@@ -212,10 +207,10 @@ int main(int ac, char *av[]) {
                            (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
                            SSL_write(ssl, Data, Size) == Size  &&                // data
                            SSL_write(ssl, bin? "\0" : "T", 1) == 1  &&           // ack
-                           SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T'  &&
-                           sslClose(ssl,sd) )
+                           SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
+                     sslClose(ssl,sd);
                      break;
-
+                  }
                   sslClose(ssl,sd);
                }
                sleep(sec);
@@ -228,17 +223,14 @@ int main(int ac, char *av[]) {
             if (p->d_name[0] != '.') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
                if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
-                     (sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0 ) {
-
+                        (sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0 ) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                         (!*av[4] || sslFile(ssl,av[4]))  &&          // key
                         (bin || SSL_write(ssl, buf, n) == n)  &&     // path
                         (bin || SSL_write(ssl, "\n", 1) == 1)  &&    // nl
-                        sslFile(ssl, nm)  &&                         // file
-                        sslClose(ssl,sd) )
+                        sslFile(ssl, nm) )                           // file
                      unlink(nm);
-                  else
-                     sslClose(ssl,sd);
+                  sslClose(ssl,sd);
                }
             }
          }

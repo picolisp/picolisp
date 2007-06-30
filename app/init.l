@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### Role ###
@@ -19,8 +19,8 @@
 
 ### Customer/Supplier ###
 (obj ((+CuSu) nr 1)
-   nm "General Supplement Corporation"
-   nm2 "Eastern Division"
+   nm "Active Parts Inc."
+   nm2 "East Division"
    str "Wildcat Lane"
    plz "3425"
    ort "Freetown"
@@ -28,7 +28,7 @@
    tel "37 4967 6846-0"
    fax "37 4967 68462"
    mob "37 176 86303"
-   em "info@gsc.tld" )
+   em "info@api.tld" )
 (obj ((+CuSu) nr 2)
    nm "Seven Oaks Ltd."
    str "Sunny Side Heights 202"
@@ -37,7 +37,7 @@
    cty "Atlantica"
    tel "37 6295 5855-0"
    fax "37 6295 58557"
-   em "info@seven-oaks.tld" )
+   em "info@7oaks.tld" )
 (obj ((+CuSu) nr 3)
    nm "Miller"
    nm2 "Thomas Edwin"
@@ -66,3 +66,5 @@
          (new! '(+Pos) 'itm (db 'nr '+Item 1)  'pr 29900  'cnt 1)
          (new! '(+Pos) 'itm (db 'nr '+Item 2)  'pr 1250  'cnt 8)
          (new! '(+Pos) 'itm (db 'nr '+Item 4)  'pr 999  'cnt 20) ) ) )
+
+# vi:et:ts=3:sw=3

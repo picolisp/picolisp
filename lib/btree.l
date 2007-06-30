@@ -1,4 +1,4 @@
-# 21jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -62,7 +62,7 @@
          (touch Base)
          (con Root
             (def (new (car Dbf))
-               (list NIL (cons Key (cons NIL Val))) ) )
+               (list NIL (cons Key NIL Val)) ) )
          (inc Root) ) ) )
 
 (de _put (Top)
@@ -153,8 +153,7 @@
    (let? Lst (val Node)
       (let (L (car Lst)  R)
          (for X (cdr Lst)
-            (push 'R
-               (cons (car X) (cons L (cddr X))) )
+            (push 'R (cons (car X) L (cddr X)))
             (setq L (cadr X)) )
          (cons L R) ) ) )
 
@@ -400,3 +399,5 @@
                   (and "L" (recurse "L")) ) )
             (wipe "Node") ) )
       "N" ) )
+
+# vi:et:ts=3:sw=3

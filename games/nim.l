@@ -1,4 +1,4 @@
-# 28mar05abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
@@ -11,7 +11,7 @@
             (for (I . N) Pos
                (do N
                   (link
-                     (cons (cons I N) (cons I (- N))) )
+                     (cons (cons I N) I (- N)) )
                   (dec 'N) ) ) ) )
       '((Mov)  # Move
          (dec (nth Pos (car Mov)) (cdr Mov)) )

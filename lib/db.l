@@ -1,4 +1,4 @@
-# 04mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -35,7 +35,7 @@
          (cons Cls Hook)
          Cls ) ) )
 
-# (db 'var 'cls ['hook] 'val ['var 'val ..])
+# (db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym
 (de db (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
       (when (find '((B) (isa '+Index B)) (: bag))
@@ -61,7 +61,7 @@
          (NIL (has> Obj (arg) (next))) ) ) )
 
 
-# (aux 'var 'cls ['hook] 'val ..)
+# (aux 'var 'cls ['hook] 'any ..) -> sym
 (de aux (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
       (when (find '((B) (isa '+Index B)) (: bag))
@@ -72,7 +72,7 @@
             (conc (rest) T) ) ) ) )
 
 
-# (collect 'var 'cls ['hook] ['val|beg ['end [var ..]]])
+# (collect 'var 'cls ['hook] ['any|beg ['end [var ..]]]) -> lst
 (de collect (Var Cls . @)
    (with (or (get Cls Var) (meta Cls Var))
       (when (find '((B) (isa '+Index B)) (: bag))
@@ -394,6 +394,12 @@
 (de blob (Obj Var)
    (pack *Blob (glue "/" (chop Obj)) "." Var) )
 
+(dm put> (Obj Old New)
+   (if (flg? New)
+      New
+      (in New (out (blob Obj (: var)) (echo)))
+      T ) )
+
 (dm rel> (Obj Old New)
    (and New (call 'mkdir "-p" (dirname (blob Obj)))) )
 
@@ -563,23 +569,23 @@
 (dm rel> (Obj Old New Hook)
    (let Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
       (when Old
-         (store Tree (cons (ext:Snx Old) (cons Obj T)) NIL (: dbf)) )
+         (store Tree (cons (ext:Snx Old) Obj T) NIL (: dbf)) )
       (and New
          (not (get Obj T))
-         (store Tree (cons (ext:Snx New) (cons Obj T)) Obj (: dbf)) ) )
+         (store Tree (cons (ext:Snx New) Obj T) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 (dm lose> (Obj Val Hook)
    (store
       (tree (: var) (: cls) (or Hook (get Obj (: hook))))
-      (cons (ext:Snx Val) (cons Obj T))
+      (cons (ext:Snx Val) Obj T)
       NIL (: dbf) )
    (extra Obj Val Hook) )
 
 (dm keep> (Obj Val Hook)
    (store
       (tree (: var) (: cls) (or Hook (get Obj (: hook))))
-      (cons (ext:Snx Val) (cons Obj T))
+      (cons (ext:Snx Val) Obj T)
       Obj (: dbf) )
    (extra Obj Val Hook) )
 
@@ -768,16 +774,15 @@
       (commit 'upd) )
    Val )
 
-(de inc! (Obj Var)
+(de inc! (Obj Var Val)
    (when (num? (get Obj Var))
       (dbSync)
       (touch Obj)
-      (inc (prop Obj Var))
+      (inc (prop Obj Var) (or Val 1))
       (commit 'upd) ) )
 
 (de blob! (Obj Var File Flg)
-   (put!> Obj Var T)
-   (call 'cp File (blob Obj Var))
+   (put!> Obj Var File)
    (when Flg
       (chdir *Blob
          (call 'ln "-sf"
@@ -1101,3 +1106,5 @@
       (while Lst
          (put> Obj (pop 'Lst) (pop 'Lst)) )
       Obj ) )
+
+# vi:et:ts=3:sw=3

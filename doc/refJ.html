@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>J</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>J</h1>
+
+<dl>
+
+<dt><a name="job"><code>(job 'lst . prg) -> any</code></a>
+<dd>Executes a job within its own environment (as specified by symbol-value
+pairs in <code>lst</code>). The current values of all symbols are saved, the
+symbols are bound to the values in <code>lst</code>, <code>prg</code> is
+executed, then the (possibly modified) symbol values are (destructively) stored
+in the environment list, and the symbols are restored to their original values.
+The return value is the result of <code>prg</code>. Typically used in <code><a
+href="refC.html#curry">curried</a></code> functions and <code><a
+href="refR.html#*Run">*Run</a></code> tasks. See also <code><a
+href="refE.html#env">env</a></code>, <code><a
+href="refB.html#bind">bind</a></code>, <code><a
+href="refL.html#let">let</a></code>, <code><a
+href="refU.html#use">use</a></code> and <code><a
+href="refS.html#state">state</a></code>.
+
+<p><pre><code>
+: (de tst ()
+   (job '((A . 0) (B . 0))
+      (println (inc 'A) (inc 'B 2)) ) )
+-> tst
+: (tst)
+1 2
+-> 2
+: (tst)
+2 4
+-> 4
+: (tst)
+3 6
+-> 6
+: (pp 'tst)
+(de tst NIL
+   (job '((A . 3) (B . 6))
+      (println (inc 'A) (inc 'B 2)) ) )
+-> tst
+</code></pre>
+
+<dt><a name="journal"><code>(journal) -> T</code></a>
+<dd>Reads journal data from the current input channel, and writes all changes to
+the database. See also <code><a href="refP.html#pool">pool</a></code>.
+
+<p><pre><code>
+: (in "db.log" (journal))
+-> T
+</code></pre>
+
+</dl>
+
+</body>
+</html>

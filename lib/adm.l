@@ -1,4 +1,4 @@
-# 22mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Users *Perms
@@ -64,3 +64,5 @@
          *Login )
       (msg *Pid " No permission: " (car Args))
       (forbidden) ) )
+
+# vi:et:ts=3:sw=3

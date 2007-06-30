@@ -1,4 +1,4 @@
-# 21jan07abu
+# 04may07abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -6,7 +6,7 @@
       (chdir '@ (prinl "#include \"" (pwd) "/src/pico.h\""))
       (here "/**/") )
    (apply call L 'gcc "-o" (tmp S)
-      "-shared" "-nostartfiles" "-nostdlib" "-export-dynamic"
+      "-shared" "-export-dynamic"
       "-O" "-falign-functions" "-fomit-frame-pointer"
       "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
       "-Wuninitialized" "-Wstrict-prototypes"

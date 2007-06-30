@@ -1,9 +1,10 @@
-# 31mar07abu
+# 27jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Top *Gui *Get *Form *Event *Lock
 # "*Cnt" "*Lst" "*App" "*Err" "*Post2" "*Stat" "*Ix" "*Chart" "*Cho"
 
+(allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
 (mapc allow '(*Gui *Get *Form *Event "@jsForm"))
 
@@ -58,7 +59,7 @@
                            (setq "*Chart" This) )
                         This ) )
                   (and (== *Post "*App") (setq *Top "*App"))
-                  (htPrin 1 "Prg") )
+                  (htPrin "Prg") )
                (set "*App")
                (putl "*App"
                   (list
@@ -99,17 +100,21 @@
                            (let *Gui (val "*App")
                               (show> This (cons '*Gui (: id))) ) )
                         This ) )
-                  (htPrin 1 "Prg") ) ) ) )
-      (when (: appendix)
-         (run @)
-         (=: appendix) ) ) )
-
-(de appendix Prg
-   (=: home appendix Prg) )
+                  (htPrin "Prg") ) ) )
+         (eval (: show))
+         (=: show) ) ) )
 
 # Disable form
 (de disable (Flg)
    (and Flg (=: able)) )
+
+# Click button
+(de <click> ()
+   (unless *Post
+      (prinl
+         "<script type=\"text/javascript\">document.getElementById(\""
+         *Form "--" "*Ix"
+         "\").click();</script>" ) ) )
 
 # Handle form actions
 (de action Prg
@@ -134,7 +139,7 @@
          (catch "stop"
             (with (postForm)
                (postGui)
-               (httpHead  "text/plain; charset=utf-8")
+               (httpHead "text/plain; charset=utf-8")
                (if
                   (and
                      (= (car "*Stat") "*Err")
@@ -186,9 +191,9 @@
                ((set> This (val> This) T)) ) )
          (for This (: gui)
             (unless (: id)
-               (ifn (chk> (setq "*Chart" This))
-                  (set> This (val> This))
-                  (err @) ) ) )
+               (if (chk> (setq "*Chart" This))
+                  (err @)
+                  (set> This (val> This)) ) ) )
          (if "*Err"
             (and *Lock (with (caar "*Err") (tryLock *Lock)))
             (finally
@@ -231,17 +236,6 @@
             (apply httpEcho (cdr @) *Url) )
          (T (httpEcho *Url "application/octet-stream" 1 T)) )
       (throw "stop") ) )
-
-(de mkUrl (Lst)
-   (pack (pop 'Lst) '?
-      (make
-         (while Lst
-            (and
-               (sym? (car Lst))
-               (= `(char '*) (char (car Lst)))
-               (link (pop 'Lst) '=) )
-            (link (ht:Fmt (pop 'Lst)))
-            (and Lst (link '&)) ) ) ) )
 
 # Return chart property
 (de chart @
@@ -328,12 +322,17 @@
    (=: chg T) )
 
 
-(class +DstButton +Tiny +Able +Close +Button)
+(class +PickButton +Tiny +Button)
+
+(dm T (Exe)
+   (super "@" Exe) )
+
+
+(class +DstButton +Able +Close +PickButton)
 
 (dm T (@Dst @F)
    (super
       (fill '(val> (field @F)))
-      "@"
       (fill '(set> '@Dst (val> (field @F)))) ) )
 
 
@@ -394,7 +393,7 @@
    (pass extra) )
 
 (dm upd> ()
-   (eval (: upd)) )
+   (set> This (eval (: upd))) )
 
 
 (class +Init)
@@ -469,9 +468,6 @@
 
 
 (class +View +Lock +Upd)
-
-(dm upd> ()
-   (set> This (super)) )
 
 
 # Escape from form lock
@@ -594,11 +590,14 @@
       (pass get (: home gui) (+ X (abs (: id)))) ) )
 
 # Get current chart data row
+(de row (D)
+   (+ (: chart 1 ofs) (: chart 2) -1 (or D 0)) )
+
 (de curr @
-   (pass get (: chart 1 data) (+ (: chart 1 ofs) (: chart 2) -1)) )
+   (pass get (: chart 1 data) (row)) )
 
 (de prev @
-   (pass get (: chart 1 data) (+ (: chart 1 ofs) (: chart 2) -2)) )
+   (pass get (: chart 1 data) (row -1)) )
 
 
 (class +Button +gui)
@@ -659,7 +658,7 @@
    (extra) )
 
 
-(class +DnButton +Tiny +Rid +Able +Button)
+(class +DnButton +Tiny +Rid +JS +Able +Button)
 
 (dm T (Exe Lbl)
    (super
@@ -668,7 +667,7 @@
       (list '"scrl" Exe) ) )
 
 
-(class +UpButton +Tiny +Rid +Able +Button)
+(class +UpButton +Tiny +Rid +JS +Able +Button)
 
 (dm T (Exe Lbl)
    (super
@@ -677,20 +676,50 @@
       (list '"scrl" (list '- Exe)) ) )
 
 (de scroll (N)
-   (gui '(+JS +UpButton) N "<<")
-   (gui '(+JS +UpButton) 1 "<")
-   (gui '(+JS +DnButton) 1 ">")
-   (gui '(+JS +DnButton) N ">>") )
+   (gui '(+UpButton) N "<<")
+   (gui '(+UpButton) 1 "<")
+   (gui '(+DnButton) 1 ">")
+   (gui '(+DnButton) N ">>") )
 
 
-(class +DelCurrButton +Tiny +Able +Button)
+# Delete row
+(class +DelRowButton +Tiny +JS +Able +Button)
+# exe
 
-(dm T @
-   (pass super '(curr) "x"
-      '(set> (: chart 1) (delete (curr) (: chart 1 data))) ) )
+(dm T (Exe)
+   (=: exe Exe)
+   (super '(nth (: chart 1 data) (row)) "x"
+      '(if (curr)
+         (alert (env 'Fld This 'Exe (: exe))
+            ,"Delete row?"
+            (----)
+            (yesButton '(with Fld (_delRow)))
+            (noButton) )
+         (_delRow) ) ) )
+
+(de _delRow ()
+   (eval Exe)
+   (set> (: chart 1) (remove (row) (: chart 1 data))) )
+
+# Move row up
+(class +BubbleButton +Tiny +JS +Able +Button)
+
+(dm T ()
+   (super
+      '(and
+         (> (: chart 2) 1)
+         (nth (: chart 1 data) (row)) )
+      "\^"
+      '(let L (: chart 1 data)
+         (set> (: chart 1)
+            (conc
+               (cut (row -2) 'L)
+               (cons (cadr L))
+               (cons (car L))
+               (cddr L) ) ) ) ) )
 
 
-(class +ClrButton +Button)
+(class +ClrButton +JS +Button)
 # clr
 
 (dm T (Lbl Lst . @)
@@ -700,6 +729,13 @@
          (if (atom X)
             (clr> (field X))
             (set> (field (car X)) (eval (cdr X))) ) ) ) )
+
+
+(class +ShowButton +Button)
+
+(dm T (Exe)
+   (super ,"Show"
+      (list '=: 'home 'show (lit Exe)) ) )
 
 
 (class +Checkbox +field)
@@ -791,7 +827,7 @@
 
 (dm show> ("Var")
    (showFld
-      (<passwd> (: dx) "Var" (not (able))) ) )
+      (<passwd> (: dx) "Var" (eval (: lim)) (not (able))) ) )
 
 
 # Upload field
@@ -899,25 +935,24 @@
 
 (dm js> ()
    (if2 (or (: dx) (: lst)) (ht:Fmt (val> This))
-      (pack (super) "&*" (sesId "img/go.png") '& ((: url) @))
-      (pack (super) "&*" (sesId "img/no.png") '&)
+      (pack (super) "&*" (sesId `(path "@img/go.png")) '& ((: url) @))
+      (pack (super) "&*" (sesId `(path "@img/no.png")) '&)
       (pack @ "&+" ((: url) @))
       (super) ) )
 
 (dm show> ("Var")
-   (showFld
-      (cond
-         ((or (: dx) (: lst))
-            (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
-            (super "Var")
-            (prin "</td><td>")
-            (if (val> This)
-               (<img> "img/go.png" 'url ((: url) @))
-               (<img> "img/no.png") )
-            (prinl "</td></table>") )
-         ((val> This)
-            (<href> @ ((: url) @)) )
-         (T (super "Var")) ) ) )
+   (cond
+      ((or (: dx) (: lst))
+         (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
+         (super "Var")
+         (prin "</td><td>")
+         (if (val> This)
+            (<img> `(path "@img/go.png") 'url ((: url) @))
+            (<img> `(path "@img/no.png")) )
+         (prinl "</td></table>") )
+      ((val> This)
+         (showFld (<href> @ ((: url) @))) )
+      (T (super "Var")) ) )
 
 
 (class +HttpField +UrlField)
@@ -948,6 +983,15 @@
       (str> This)
       (not (val> This))
       ,"Bad phone number format" ) )
+
+
+(class +SexField +Map +TextField)
+
+(dm T (Lbl)
+   (super
+      '((,"male" . T) (,"female" . 0))
+      '(NIL ,"male" ,"female")
+      Lbl ) )
 
 
 (class +JsField +gui)
@@ -1022,11 +1066,13 @@
          ((: put) L I) ) ) )
 
 (dm set> (Lst)
-   (unless (= Lst (: data))
-      (=: ofs (max 1 (min (length Lst) (: ofs))))
-      (=: data (copy Lst)) )
+   (=: ofs (max 1 (min (: ofs) (length (=: data Lst)))))
    (put> This)
-   (: data) )
+   Lst )
+
+(dm log> (Lst)
+   (=: ofs (max (: ofs) (- (length (: data)) (: rows) -2)))
+   (set> This (conc (: data) (cons Lst))) )
 
 (dm clr> ()
    (set> This) )
@@ -1041,9 +1087,6 @@
 (dm upd> ())
 
 (dm chk> ())
-
-(dm size> ()
-   (length (: data)) )
 
 (dm cut> ()
    (get> This)
@@ -1071,11 +1114,6 @@
       (lock (setq *Lock @))
       (apply url (url> @)) ) )
 
-(de htObj (Str Obj Msg Tar)
-   (if (and Obj (send (or Msg 'url>) Obj))
-      (<href> Str (mkUrl @) Tar)
-      (ht:Prin Str) ) )
-
 
 # (choDlg Dst Ttl Rel [Hook] [(+TextField) [pre [post]]])
 (de choDlg (Dst Ttl Rel . @)
@@ -1093,14 +1131,14 @@
          (gui (cons '+Var Fld)
             (cdr (or (assoc Rel "*Cho") (push '"*Cho" (list Rel NIL))))
             40 )
-         (gui '(+JS +Button) ',"Search"
-            '(init> (: home query)) )
+         (searchButton '(init> (: home query)))
          (gui 'query '(+QueryChart) 6
             '(goal
                (list
                   (list 'db (car Rel) (last Rel) Hook (val> (: home gui 1)) '@@) ) )
-            (if (flg? Dst) 1 2) )
-         (<table> 'chart Ttl '(NIL (btn))
+            (if (flg? Dst) 1 2)
+            cons car )
+         (<table> 'chart (choTtl Ttl (car Rel) (cadr Rel) Hook) '(NIL (btn))
             (do 6
                (<row> (alternating)
                   (apply gui Gui 1)
@@ -1115,13 +1153,22 @@
                      (newUrl (cdr Rel)) ) ) )
             (cancelButton) ) ) ) )
 
+(de choTtl (Ttl Var Cls Hook)
+   (with (or (get Cls Var) (meta Cls Var))
+      (pack (count (tree (: var) (: cls) Hook)) " " Ttl) ) )
+
 
 # Able object
 (class +AO +Able)
+# ao
 
-(dm T @
+(dm T (Exe . @)
+   (=: ao Exe)
    (pass super
-      '(and (: home obj) (not (: home obj T))) ) )
+      '(and
+         (: home obj)
+         (not (: home obj T))
+         (eval (: ao)) ) ) )
 
 
 # Lock/Edit button prefix
@@ -1133,7 +1180,11 @@
    (super
       '(if (: home able) ,"Save" ,"Edit")
       '(if (: home able)
-         (when (able) (eval (: save)) (rollback) (off *Lock))
+         (when (able)
+            (eval (: save))
+            (unless "*Err"
+               (rollback)
+               (off *Lock) ) )
          (tryLock (: home obj)) ) ) )
 
 (de tryLock (Obj)
@@ -1145,13 +1196,24 @@
 (de editing (Pid Nm)
    (text ,"Currently edited by '@2' (@1)" Pid Nm) )
 
-(de editButton ()
-   (gui '(+AO +Edit +Button)) )
+(de editButton (Able Exe)
+   (<style> (and (: able) 'edit)
+      (gui '(+AO +Edit +Button) Able Exe) ) )
 
+(de searchButton (Exe)
+   (gui '(+JS +Button) ,"Search" Exe) )
+
+(de resetButton (Lst)
+   (gui '(+ClrButton) ,"Reset" Lst) )
+
+# Clone object in form
+(de cloneButton (Able)
+   (gui '(+Rid +Able +Button) (or Able T) ,"New/Copy"
+      '(apply url (url> (clone!> (: home obj)))) ) )
 
 # Delete object in form
 (de delButton (Able @Txt)
-   (gui '(+Rid +Able +Button) (or Able T) '(if (: home obj T) ,"Restore" ,"Delete")
+   (gui '(+Rid +Able +Button) Able '(if (: home obj T) ,"Restore" ,"Delete")
       (fill
          '(if (: home obj T)
             (alert NIL
@@ -1244,44 +1306,41 @@
 
 
 (class +obj)
-# msg tar obj
+# msg obj
 
-# ([msg [tar]] ..)
+# ([msg] ..)
 (dm T ()
    (ifn (atom (next))
       (=: msg 'url>)
       (=: msg (arg))
-      (when (atom (next))
-         (=: tar (arg))
-         (next) ) ) )
+      (next) ) )
 
 (dm js> ()
    (if2 (or (: dx) (: lst)) (try (: msg) (: obj))
-      (pack (extra) "&*" (sesId "img/go.png") '& (sesId (ht:Fmt (mkUrl @))))
-      (pack (extra) "&*" (sesId "img/no.png") '&)
+      (pack (extra) "&*" (sesId `(path "@img/go.png")) '& (sesId (ht:Fmt (mkUrl @))))
+      (pack (extra) "&*" (sesId `(path "@img/no.png")) '&)
       (pack (ht:Fmt (str> This)) "&+" (sesId (ht:Fmt (mkUrl @))))
       (extra) ) )
 
 (dm show> ("Var")
-   (showFld
-      (cond
-         ((or (: dx) (: lst))
-            (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
-            (extra "Var")
-            (prin "</td><td>")
-            (if (try (: msg) (: obj))
-               (<img> "img/go.png" "obj" (mkUrl @) (: tar))
-               (<img> "img/no.png") )
-            (prinl "</td></table>") )
-         ((try (: msg) (: obj))
-            (<href> (str> This) (mkUrl @) (: tar)) )
-         (T (extra "Var")) ) ) )
+   (cond
+      ((or (: dx) (: lst))
+         (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
+         (extra "Var")
+         (prin "</td><td>")
+         (if (try (: msg) (: obj))
+            (<img> `(path "@img/go.png") "obj" (mkUrl @))
+            (<img> `(path "@img/no.png")) )
+         (prinl "</td></table>") )
+      ((try (: msg) (: obj))
+         (showFld (<href> (str> This) (mkUrl @))) )
+      (T (extra "Var")) ) )
 
 
 (class +Obj +obj)
 # objVar objTyp objHook
 
-# ([msg [tar]] (var . typ) [hook] [T] ..)
+# ([msg] (var . typ) [hook] [T] ..)
 (dm T @
    (super)
    (=: objVar (car (arg)))
@@ -1335,7 +1394,7 @@
 (class +ObjView +obj)
 # disp obj
 
-# ([msg [tar]] exe ..)
+# ([msg] exe ..)
 (dm T @
    (super)
    (=: disp (arg))
@@ -1365,10 +1424,10 @@
 # iniR iniq query
 
 # (.. iniR iniQ cols [put [get]])
-(dm T (R Q N Put Get)
+(dm T (R Q . @)
    (=: iniR R)
    (=: iniQ Q)
-   (super N (or Put cons) (or Get car)) )
+   (pass super) )
 
 (dm init> ()
    (query> This (eval (: iniQ))) )
@@ -1421,3 +1480,18 @@
          (*Solo)
          ((== *Lock (: obj)) T)
          (*Lock (rollback) (off *Lock)) ) ) )
+
+(de panel (Able Txt Del Dlg Var Cls Hook Msg Exe)
+   (<spread>
+      (editButton Able Exe)
+      (delButton
+         (cond
+            ((=T Able) Del)
+            ((=T Del) Able)
+            ((and Able Del) (list Able Del)) )
+         (list 'text Txt (list ': 'top 1 'obj Var)) )
+      (choButton Dlg)
+      (stepBtn Var Cls Hook Msg) )
+   (----) )
+
+# vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 22mar07abu
+# 11may07abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -45,6 +45,12 @@
          ((i4 int) (format X))
          (boolean (= "1" X))
          (double (format X *Scl))
+         (array
+            (when (== 'data (car X))
+               (mapcar
+                  '((L)
+                     (and (== 'value (car L)) (xmlrpcValue (caddr L))) )
+                  (cddr X) ) ) )
          (struct
             (mapcan
                '((L)

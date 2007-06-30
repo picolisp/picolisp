@@ -1,8 +1,12 @@
-/* 28mar07abu
+/* 19may07abu
  * (c) Software Lab. Alexander Burger
  */
 
 body {
    margin-left: 80px;
    margin-right: 60px
+}
+
+code {
+   color: rgb(0%,40%,0%);
 }

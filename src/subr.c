@@ -1,4 +1,4 @@
-/* 17jan07abu
+/* 15may07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -145,13 +145,17 @@ any doCon(any ex) {
    return x;
 }
 
-// (cons 'any 'any) -> lst
+// (cons 'any ['any ..]) -> lst
 any doCons(any x) {
+   any y;
    cell c1;
 
-   x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  x = EVAL(car(x));
-   return cons(Pop(c1), x);
+   x = cdr(x);
+   Push(c1, y = cons(EVAL(car(x)),Nil));
+   while (isCell(cdr(x = cdr(x))))
+      y = cdr(y) = cons(EVAL(car(x)),Nil);
+   cdr(y) = EVAL(car(x));
+   return Pop(c1);
 }
 
 // (conc 'lst ..) -> lst
@@ -308,6 +312,22 @@ any doLink(any x) {
       cdr(Env.make) = y;
    } while (isCell(x = cdr(x)));
    return z;
+}
+
+// (yoke 'any ..) -> any
+any doYoke(any x) {
+   any y;
+
+   if (!Env.make)
+      makeError(x);
+   x = cdr(x);
+   do {
+      if (isCell(car(Env.make)))
+         car(Env.make) = cons(y = EVAL(car(x)), car(Env.make));
+      else
+         car(Env.make) = cdr(Env.make) = cons(y = EVAL(car(x)), Nil);
+   } while (isCell(x = cdr(x)));
+   return y;
 }
 
 // (copy 'any) -> any

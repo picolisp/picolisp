@@ -1,4 +1,4 @@
-# 26feb07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -14,8 +14,8 @@
 (de *Sep3 . ",")
 (de *CtryCode)
 (de *DateFmt @Y "-" @M "-" @D)
-(de *DayFmt Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
-(de *MonFmt January February March April May June July August September October November December)
+(de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
+(de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
 (de *Help "@loc/help/en.l")
 
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
@@ -136,8 +136,8 @@
       (format N 2 *Sep0 *Sep3) ) )
 
 ### Tree ###
-(de balance ("Var" "Lst")
-   (set "Var")
+(de balance ("Var" "Lst" "Flg")
+   (unless "Flg" (set "Var"))
    (let "Len" (length "Lst")
       (recur ("Lst" "Len")
          (unless (=0 "Len")
@@ -252,21 +252,17 @@
          (setq @D (format (pack @D)))
          (date
             (nond
-               (@Y
-                  (car (date (date))) )
+               (@Y (car (date (date))))
                ((setq X (format (pack @Y))))
                ((>= X 100)
                   (+ X
                      (* 100 (/ (car (date (date))) 100)) ) )
                (NIL X) )
-            (cond
-               ((not @M)
-                  (cadr (date (date))) )
-               ((not (setq X (format (pack @M))))
-                  0 )
-               ((=0 X)
-                  (cadr (date (date))) )
-               (T X) )
+            (nond
+               (@M (cadr (date (date))))
+               ((setq X (format (pack @M))) 0)
+               ((n0 X) (cadr (date (date))))
+               (NIL X) )
             @D ) ) ) )
 
 # Day of the week
@@ -325,7 +321,7 @@
 
 (de dirname (F)
    (pack
-      (flip (cdr (member "/" (reverse (chop F))))) ) )
+      (flip (cdr (member '/ (reverse (chop F))))) ) )
 
 # Temporary Files
 (push1 '*Fork '(off *Tmp))
@@ -338,59 +334,60 @@
 
 
 # Print or eval
-(de prEval ("Prg")
-   (while "Prg"
-      (if (atom (car "Prg"))
-         (prinl (eval (pop '"Prg")))
-         (eval (pop '"Prg")) ) ) )
+(de prEval (Prg Ofs)
+   (default Ofs 1)
+   (for X Prg
+      (if (atom X)
+         (prinl (eval X Ofs))
+         (eval X Ofs) ) ) )
 
 # Echo here-documents
-(de here (X)
+(de here (S)
    (line)
-   (echo X) )
+   (echo S) )
 
 # Send mail
-(de mail ("Host" "Port" "From" "To" "Sub" "Att" . "Prg")
-   (let? "S" (connect "Host" "Port")
-      (let ("B" (pack "==" (date) "-" (time) "=="))
+(de mail (Host Port From To Sub Att . Prg)
+   (let? S (connect Host Port)
+      (let (B (pack "==" (date) "-" (time) "=="))
          (prog1
             (and
-               (pre? "220 " (in "S" (line T)))
-               (out "S" (prinl "HELO " (cdr (member "@" (chop "From"))) "^M"))
-               (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "MAIL FROM:" "From" "^M"))
-               (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "RCPT TO:" "To" "^M"))
-               (pre? "250 " (in "S" (line T)))
-               (out "S" (prinl "DATA^M"))
-               (pre? "354 " (in "S" (line T)))
-               (out "S"
-                  (prinl "From: " "From" "^M")
-                  (prinl "To: " "To" "^M")
-                  (prinl "Subject: " "Sub" "^M")
+               (pre? "220 " (in S (line T)))
+               (out S (prinl "HELO " (cdr (member "@" (chop From))) "^M"))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "MAIL FROM:" From "^M"))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "RCPT TO:" To "^M"))
+               (pre? "250 " (in S (line T)))
+               (out S (prinl "DATA^M"))
+               (pre? "354 " (in S (line T)))
+               (out S
+                  (prinl "From: " From "^M")
+                  (prinl "To: " To "^M")
+                  (prinl "Subject: " Sub "^M")
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
-                  (when "Att"
-                     (prinl "Content-Type: multipart/mixed; boundary=\"" "B" "\"^M")
+                  (when Att
+                     (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"^M")
                      (prinl "^M")
-                     (prinl "--" "B" "^M") )
+                     (prinl "--" B "^M") )
                   (prinl "Content-Type: text/plain; charset=utf-8^M")
                   (prinl "Content-Transfer-Encoding: 8bit^M")
                   (prinl "^M")
-                  (prEval "Prg")
+                  (prEval Prg 2)
                   (prinl "^M")
-                  (when "Att"
+                  (when Att
                      (loop
-                        (prinl "--" "B" "^M")
+                        (prinl "--" B "^M")
                         (prinl
                            "Content-Type: "
-                           (or (caddr "Att") "application/octet-stream")
+                           (or (caddr Att) "application/octet-stream")
                            "; name=\""
-                           (cadr "Att")
+                           (cadr Att)
                            "\"^M" )
                         (prinl "Content-Transfer-Encoding: base64^M")
                         (prinl "^M")
-                        (in (car "Att")
+                        (in (car Att)
                            (while
                               (do 15
                                  (NIL (ext:Base64 (rd 1) (rd 1) (rd 1)))
@@ -398,12 +395,12 @@
                               (prinl) ) )
                         (prinl)
                         (prinl "^M")
-                        (NIL (setq "Att" (cdddr "Att"))) )
-                     (prinl "--" "B" "--^M") )
+                        (NIL (setq Att (cdddr Att))) )
+                     (prinl "--" B "--^M") )
                   (prinl ".^M")
                   (prinl "QUIT^M") )
                T )
-            (close "S") ) ) ) )
+            (close S) ) ) ) )
 
 ### Base 64 ###
 (de fmt64 (X)
@@ -427,6 +424,8 @@
       (char (+ C `(char "0"))) ) )
 
 ### Testing ###
-(de test ("Pat" . "Prg")
-   (unless ((if (atom "Pat") = match) "Pat" (run "Prg"))
-      (println 'fail "Prg") ) )
+(de test (Pat . Prg)
+   (unless ((if (atom Pat) = match) Pat (run Prg 1))
+      (println 'fail Prg) ) )
+
+# vi:et:ts=3:sw=3

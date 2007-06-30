@@ -1,4 +1,4 @@
-/* 21jan07abu
+/* 25jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -323,6 +323,7 @@ static symInit Symbols[] = {
    {doWr, "wr"},
    {doXchg, "xchg"},
    {doXor, "xor"},
+   {doYoke, "yoke"},
    {doZap, "zap"},
    {doZero, "zero"},
 };
@@ -348,15 +349,15 @@ void initSymbols(void) {
    DB    = initSym(Nil, "*DB");
    Solo  = initSym(Zero, "*Solo");
    Up    = initSym(Nil, "^");
-   At    = initSym(Nil, "@");
-   At2   = initSym(Nil, "@@");
-   At3   = initSym(Nil, "@@@");
-   This  = initSym(Nil, "This");
    Meth  = initSym(box(num(doMeth)), "meth");
    Quote = initSym(box(num(doQuote)), "quote");
    T     = initSym(Nil, "T"),  val(T) = T;  // Last protected symbol
 
-   Dbg   = initSym(T, "*Dbg");
+   At    = initSym(Nil, "@");
+   At2   = initSym(Nil, "@@");
+   At3   = initSym(Nil, "@@@");
+   This  = initSym(Nil, "This");
+   Dbg   = initSym(Nil, "*Dbg");
    PPid  = initSym(Nil, "*PPid");
    Pid   = initSym(boxCnt(getpid()), "*Pid");
    Scl   = initSym(Zero, "*Scl");

@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -11,9 +11,9 @@
                (,"logout" (and *Login "@stop"))
                (NIL (<hr>))
                (T ,"Data"
-                  (,"Customer/Supplier" (and (may Customer) "app/cusu.l"))
-                  (,"Item" (and (may Item) "app/item.l"))
-                  (,"Order" (and (may Order) "app/ord.l")) )
+                  (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
+                  (,"Items" (and (may Item) "app/item.l"))
+                  (,"Orders" (and (may Order) "app/ord.l")) )
                (T ,"Report"
                   (,"Inventory" (and (may Report) "app/inventory.l"))
                   (,"Sales" (and (may Report) "app/sales.l")) )
@@ -24,10 +24,11 @@
 
 (de start ()
    (setq *Url "@start")
-   (app)
+   (and (app) (setq *Menu 3))
    (menu
       (<h2> NIL "Pico App")
       (<img> "img/7fach.gif" "7fach Logo")
+      (----)
       (form NIL
          (gui '(+Init +Map +TextField)
             (cons *Ctry *Lang)
@@ -42,7 +43,9 @@
             ,"Name" (gui 'nm '(+Able +TextField) '(not *Login) 30)
             ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 30) )
          (<spread>
-            (and *Login (<span> 'bold (ht:Prin "'" (get *Login 'nm) ,"' logged in")))
+            (when *Login
+               (<span> "bold red"
+                  (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) )
             (gui '(+Button) '(if *Login ,"logout" ,"login")
                '(cond
                   (*Login (logout))
@@ -61,11 +64,11 @@
          ,"Number" (gui 'nr '(+Var +NumField) '*CuSuNr 10)
          ,"Name" (gui 'nm '(+Var +TextField) '*CuSuNm 30)
          ,"Phone" (gui 'tel '(+Var +TelField) '*CuSuTel 20)
-         (gui '(+JS +Button) ,"Search" '(init> (: home query)))
+         (searchButton '(init> (: home query)))
          ,"Zip" (gui 'plz '(+Var +TextField) '*CuSuPlz 10)
          ,"City" (gui 'ort '(+Var +TextField) '*CuSuOrt 30)
          ,"Mobile" (gui 'mob '(+Var +TelField) '*CuSuMob 20)
-         (gui '(+JS +ClrButton) ,"Reset" '(nr nm tel plz ort mob query)) )
+         (resetButton '(nr nm tel plz ort mob query)) )
       (gui 'query '(+QueryChart) 8
          '(goal
             (quote
@@ -85,30 +88,30 @@
                   (head @Ort @@ ort)
                   (fold @Mob @@ mob) ) ) )
          (if (flg? Dst) 8 9)
-         '((This) (list This This (: plz) (: ort) (: tel) (: fax) (: mob) (: em))) )
-      (<table> 'chart ,"Customer/Supplier"
+         '((This) (list This This (: nm2) (: em) (: plz) (: ort) (: tel) (: mob))) )
+      (<table> 'chart (choTtl ,"Customers/Suppliers" 'nr '+CuSu)
          (quote
             (align "#")
             (NIL ,"Name")
+            (NIL)
+            (NIL ,"EMail")
             (NIL ,"Zip")
             (NIL ,"City")
             (NIL ,"Phone")
-            (NIL ,"Fax")
             (NIL ,"Mobile")
-            (NIL ,"EMail")
             (btn) )
          (do 8
             (<row> (alternating)
                (gui 1 '(+ObjView +NumField) '(: nr))
                (gui 2 '(+ObjView +TextField) '(: nm))
                (gui 3 '(+TextField))
-               (gui 4 '(+TextField))
-               (gui 5 '(+TelField))
-               (gui 6 '(+TelField))
+               (gui 4 '(+MailField))
+               (gui 5 '(+TextField))
+               (gui 6 '(+TextField))
                (gui 7 '(+TelField))
-               (gui 8 '(+MailField))
+               (gui 8 '(+TelField))
                (unless (flg? Dst)
-                  (gui 9 '(+DstButton) Dst -7) ) ) ) )
+                  (gui 9 '(+DstButton) Dst -8) ) ) ) )
       (<spread>
          (scroll 8)
          (when (=T Dst)
@@ -121,10 +124,10 @@
       (<grid> "--.-."
          ,"Number" (gui 'nr '(+Var +NumField) '*ItemNr 10)
          ,"Supplier" (gui 'sup '(+Var +TextField) '*ItemSup 20)
-         (gui '(+JS +Button) ,"Search" '(init> (: home query)))
+         (searchButton '(init> (: home query)))
          ,"Description" (gui 'nm '(+Var +TextField) '*ItemNm 30)
          ,"Price" (gui 'pr '(+Var +FixField) '*ItemPr 2 12)
-         (gui '(+JS +ClrButton) ,"Reset" '(nr nm pr sup query)) )
+         (resetButton '(nr nm pr sup query)) )
       (gui 'query '(+QueryChart) 8
          '(goal
             (quote
@@ -140,7 +143,7 @@
                   (tolr @Sup @@ sup nm) ) ) )
          (if (flg? Dst) 5 6)
          '((This) (list This This (: sup) (: sup ort) (: pr))) )
-      (<table> 'chart ,"Item"
+      (<table> 'chart (choTtl ,"Items" 'nr '+Item)
          (quote
             (align "#")
             (NIL ,"Description")
@@ -156,7 +159,7 @@
                (gui 4 '(+TextField))
                (gui 5 '(+FixField) 2)
                (unless (flg? Dst)
-                  (gui 6 '(+DstButton) Dst -4) ) ) ) )
+                  (gui 6 '(+DstButton) Dst -5) ) ) ) )
       (<spread>
          (scroll 8)
          (when (=T Dst)
@@ -170,11 +173,11 @@
          ,"Number" (gui 'nr '(+Var +NumField) '*OrdNr 10)
          ,"Customer" (gui 'cus '(+Var +TextField) '*OrdCus 20)
          ,"City" (gui 'ort '(+Var +TextField) '*OrdOrt 20)
-         (gui '(+JS +Button) ,"Search" '(init> (: home query)))
+         (searchButton '(init> (: home query)))
          ,"Date" (gui 'dat '(+Var +DateField) '*OrdDat 10)
          ,"Supplier" (gui 'sup '(+Var +TextField) '*OrdSup 20)
          ,"Item" (gui 'item '(+Var +TextField) '*OrdItem 20)
-         (gui '(+JS +ClrButton) ,"Reset" '(nr cus ort dat sup item query)) )
+         (resetButton '(nr cus ort dat sup item query)) )
       (gui 'query '(+QueryChart) 8
          '(goal
             (quote
@@ -202,7 +205,7 @@
                (: cus) (: cus ort)
                (: pos 1 itm sup) (: pos 1 itm)
                (: pos 2 itm sup) (: pos 2 itm) ) ) )
-      (<table> 'chart ,"Order"
+      (<table> 'chart (choTtl ,"Orders" 'nr '+Ord)
          (quote
             (align "#")
             (NIL ,"Date")
@@ -224,10 +227,12 @@
                (gui 7 '(+ObjView +TextField) '(: nm))
                (gui 8 '(+ObjView +TextField) '(: nm))
                (unless (flg? Dst)
-                  (gui 9 '(+DstButton) Dst -7) ) ) ) )
+                  (gui 9 '(+DstButton) Dst -8) ) ) ) )
       (<spread>
          (scroll 8)
          (when (=T Dst)
             (gui '(+Button) ,"New"
                '(newUrl '(+Ord) '(nr genKey 'nr '+Ord) 'dat (date)) ) )
          (cancelButton) ) ) )
+
+# vi:et:ts=3:sw=3

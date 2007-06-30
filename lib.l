@@ -1,4 +1,4 @@
-# 21jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -43,26 +43,13 @@
 (de recur recurse
    (run (cdr recurse)) )
 
-(de curry Z
-   (let (X (pop 'Z)  Y (pop 'Z)  P (filter pat? X))
-      (list X
-         (if2 P (diff X P)
-            (list 'list
-               (lit Y)
-               (list 'cons ''job
-                  (list 'cons
-                     (list 'lit (list 'env (lit @)))
-                     (list 'fill (lit Z) (lit P)) ) ) )
-            (list 'cons
-               (lit Y)
-               (list 'fill (lit Z) (lit P)) )
-            (list 'list
-               (lit Y)
-               (list 'cons ''job
-                  (list 'cons
-                     (list 'lit (list 'env (lit @)))
-                     (lit Z) ) ) )
-            (lit (cons Y Z)) ) ) ) )
+(de curry "Z"
+   (let ("X" (pop '"Z")  "Y" (pop '"Z")  "P" (filter pat? "X"))
+      (if2 "P" (diff "X" "P")
+         (list "Y" (cons 'job (lit (env @)) (fill "Z" "P")))
+         (cons "Y" (fill "Z" "P"))
+         (list "Y" (cons 'job (lit (env @)) "Z"))
+         (cons "Y" "Z") ) ) )
 
 (====)
 
@@ -157,15 +144,17 @@
    X )
 
 (de rc (File Key . @)
-   (let Lst (and (info File) (in File (read)))
-      (ifn (args)
-         (cdr (assoc Key Lst))
-         (let Val (next)
-            (if (assoc Key Lst)
-               (con @ Val)
-               (push 'Lst (cons Key Val)) )
-            (out File (println Lst))
-            Val ) ) ) )
+   (ctl File
+      (let Lst (in File (read))
+         (ifn (args)
+            (cdr (assoc Key Lst))
+            (let Val (next)
+               (if (assoc Key Lst)
+                  (con @ Val)
+                  (push 'Lst (cons Key Val)) )
+               (protect
+                  (out File (println Lst)) )
+               Val ) ) ) ) )
 
 ### List ###
 (de insert (N Lst X)
@@ -213,10 +202,12 @@
 (de class Lst
    (or
       (= (cdr Lst) (type (setq *Class (car Lst))))
-      (def *Class (cdr Lst)) ) )
+      (def *Class (cdr Lst)) )
+   *Class )
 
 (de object ("Sym" "Typ" . @)
-   (set "Sym" "Typ")
+   (def "Sym" "Typ")
+   (putl "Sym")
    (while (args)
       (put "Sym" (next) (next)) )
    "Sym" )
@@ -232,13 +223,12 @@
    (apply meta X This) )
 
 ### Pretty Printing ###
-(de *PP
+(de "*PP"
    T NIL if if2 ifn when unless while until do case state for
-   with catch finally ! quote setq default push job use let let?
+   with catch finally ! setq default push job use let let?
    later recur redef =: in out ctl new )
-
-(de *PP1 if2 let let? for redef)
-(de *PP2 setq default)
+(de "*PP1" if2 let let? for redef)
+(de "*PP2" setq default)
 
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
@@ -251,9 +241,9 @@
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) *PP)
+         (when (memq (print (pop 'X)) "*PP")
             (cond
-               ((memq (car Z) *PP1)
+               ((memq (car Z) "*PP1")
                   (if (and (pair (car X)) (pair (cdar X)))
                      (when (>= 12 (size (car X)))
                         (space)
@@ -263,7 +253,7 @@
                      (when (or (atom (car X)) (>= 12 (size (car X))))
                         (space)
                         (print (pop 'X)) ) ) )
-               ((memq (car Z) *PP2)
+               ((memq (car Z) "*PP2")
                   (inc 'N 3)
                   (loop
                      (prinl)
@@ -340,3 +330,5 @@
          (T (== Z X) (println '*))
          (println '|)
          (mapc prin L) ) ) )
+
+# vi:et:ts=3:sw=3

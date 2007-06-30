@@ -1,4 +1,4 @@
-# 21jan07abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -60,7 +60,7 @@
                   (setq "*Val" (list ("Cost" "Flg") (car "Lst")))
                   ("Move" (cdar "Lst"))
                   (T (>= "Beta" (car "*Val"))
-                     (cons "Beta" (cons (car "Lst") (cdr "Alpha"))) )
+                     (cons "Beta" (car "Lst") (cdr "Alpha")) )
                   (when (> (car "Alpha") (car "*Val"))
                      (setq "Alpha" "*Val") )
                   (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) )
@@ -77,11 +77,11 @@
                   ("Move" (cadar "Lst"))
                   (setq "*Val"
                      (if (recurse (not "Flg") "Cnt" (cons (- "Beta")) (- (car "Alpha")))
-                        (cons (- (car @)) (cons (cdar "Lst") (cdr @)))
+                        (cons (- (car @)) (cdar "Lst") (cdr @))
                         (list (caar "Lst") (cdar "Lst")) ) )
                   ("Move" (cddar "Lst"))
                   (T (>= "Beta" (car "*Val"))
-                     (cons "Beta" (cons (cdar "Lst") (cdr "Alpha"))) )
+                     (cons "Beta" (cdar "Lst") (cdr "Alpha")) )
                   (when (> (car "Alpha") (car "*Val"))
                      (setq "Alpha" "*Val") )
                   (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) ) ) ) ) )

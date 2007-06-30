@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -10,12 +10,8 @@
          (form 'dialog (choCuSu T)) )
       (<h3> NIL ,"Customer/Supplier")
       (form NIL
-         (<spread>
-            (<h3> NIL (<id> (: nm)))
-            (delButton '(may Delete)
-               '(text ,"Customer/Supplier No. @1" (: top 1 obj nr)) )
-            (choButton '(choCuSu T))
-            (stepBtn 'nr '+CuSu) )
+         (<h2> NIL (<id> (: nr) " -- " (: nm)))
+         (panel T ,"Customer/Supplier No. @1" '(may Delete) '(choCuSu T) 'nr '+CuSu)
          (<tab>
             (,"Name"
                (<grid> 2
@@ -36,5 +32,7 @@
                   ,"Mobile" (gui '(+E/R +TelField) '(mob : home obj) 40)
                   ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) ) )
             (,"Memo"
-               (<br> (gui '(+BlobField) '(txt : home obj) 60 8)) ) )
-         (<spread> NIL (editButton)) ) ) )
+               (gui '(+BlobField) '(txt : home obj) 60 8) ) )
+         (<spread> NIL (editButton T)) ) ) )
+
+# vi:et:ts=3:sw=3

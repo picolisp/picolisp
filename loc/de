@@ -1,4 +1,4 @@
-# 27mar07abu
+# 13jun07abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -25,7 +25,6 @@
 "Font" "Schriftart"
 "Font Size" "Schriftgröße"
 "Foreground" "Vordergrund"
-"New/Copy" "Neu/Muster"
 "Next record" "Nächster Datensatz"
 "Please wait" "Bitte warten"
 "Settings" "Einstellungen"
@@ -38,7 +37,9 @@
 "Permission denied" "Keine Berechtigung"
 "Permissions" "Berechtigungen"
 "Role" "Rolle"
+"Roles" "Rollen"
 "User" "Benutzer"
+"Users" "Benutzer"
 "login" "anmelden"
 "logout" "abmelden"
 
@@ -51,12 +52,18 @@
 "Data not found" "Datensatz nicht gefunden"
 "Delete" "Löschen"
 "Delete @1?" "@1 löschen?"
+"Delete row?" "Zeile löschen?"
 "Edit" "Bearbeiten"
-"New" "Neuanlage"
+"New" "Neu"
+"New/Copy" "Neu/Muster"
 "No" "Nein"
+"Reset" "Zurücksetzen"
 "Restore" "Wiederherstellen"
 "Restore @1?" "@1 wiederherstellen?"
 "Save" "Speichern"
 "Search" "Suchen"
 "Select" "Auswahl"
+"Show" "Anzeigen"
 "Yes" "Ja"
+"female" "weiblich"
+"male" "männlich"

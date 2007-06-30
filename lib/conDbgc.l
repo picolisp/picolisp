@@ -1,10 +1,10 @@
-# 21jan07abu
+# 29jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
 # *DbgcDly *DbgcPid
 
-(default *DbgcDly 128)
+(default *DbgcDly 64)
 
 (if (fork)
    (setq *DbgcPid @)
@@ -15,9 +15,10 @@
       (wipe Lst)
       (let *DbgcDly (>> 1 *DbgcDly)
          (for S Lst
-            (mark S T)
-            (markData (val S))
-            (maps markData S)
+            (when (ext? S)
+               (mark S T)
+               (markData (val S))
+               (maps markData S) )
             (wipe S) ) ) )
 
    (de markExt (S)
@@ -35,15 +36,15 @@
    (loop
       (let MS (+ (/ (usec) 1000) 86400000)
          (markExt *DB)
-         (when (gt0 (- MS (/ (usec) 1000)))
-            (wait @) ) )
+         (while (> MS (/ (usec) 1000))
+            (wait 60000) ) )
       (let Cnt 0
          (for (F . @) (or *Dbs (2))
             (for (S (seq F)  S  (seq S))
                (wait *DbgcDly)
                (unless (mark S)
-                  (if (mark S)
-                     (rollback)
+                  (sync)
+                  (unless (mark S)
                      (and (isa '+Entity S) (zap> S))
                      (zap S)
                      (commit)
@@ -64,3 +65,5 @@
                            (wipe S) ) ) ) ) ) )
          (msg Cnt " conDbgc") )
       (mark 0) ) )
+
+# vi:et:ts=3:sw=3

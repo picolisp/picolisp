@@ -1,4 +1,4 @@
-27oct06abu
+29apr07abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -100,7 +100,8 @@ A deeper explanation of the programming paradigms can be found at
 Pico Lisp compiles and runs under GNU/Linux, FreeBSD, Mac OS X (Darwin),
 Cygwin/Win32, and possibly other systems.
 
-Pico Lisp is supported by 7fach and SmApper Technologies.
+Pico Lisp is supported by 7fach, SmApper Technologies, Becker Marine Systems
+Communication, and others.
 
 --------------------------------------------------------------------------------
 

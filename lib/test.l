@@ -1,4 +1,4 @@
-# 16jan07abu
+# 28may07abu
 # (c) Software Lab. Alexander Burger
 
 (test T (pool (tmp "db")))
@@ -57,7 +57,7 @@
 (test (5 7 9) (mapcar + (1 2 3) (4 5 6)))
 (test (26 38 52 68) (mapcar '((X Y) (+ X (* Y Y))) (1 2 3 4) (5 6 7 8)))
 
-(test (1 2 3 4 5 2 3 4 5 3 4 5 4 5 5) (mapcon copy '(1 2 3 4 5)))
+(test (1 2 3 4 5 2 3 4 5 3 4 5 4 5 5) (mapcon copy (1 2 3 4 5)))
 
 (test '(c b a f e d i h g) (mapcan reverse '((a b c) (d e f) (g h i))))
 
@@ -87,11 +87,13 @@
 (let (A 'a I 'i)
    (test '(x y z z a)
       (make (link (for A '(x y z) (link A))) (link A)) )
-   (test '(1 x 2 y 3 z i a)
+   (test (1 x 2 y 3 z i a)
       (make (for (I . A) '(x y z) (link I A)) (link I A)) )
+   (test '(a b c)
+      (make (yoke 'b) (link 'c) (yoke 'a)) )
    (test '((x y z) (y z) (z) (z) a)
       (make (link (for (A '(x y z) A (cdr A)) (link A))) (link A)) )
-   (test '(1 (x y z) 2 (y z) 3 (z) (z) i a)
+   (test (1 (x y z) 2 (y z) 3 (z) (z) i a)
       (make (link (for ((I . A) '(x y z) A (cdr A)) (link I A))) (link I A)) ) )
 (test NIL (catch NIL (throw)))
 (test 'b (catch 'a (throw 'a 'b)))
@@ -105,7 +107,7 @@
 (test NIL (fun? 1000000001))
 (test '(A B) (fun? '((A B) (* A B))))
 (test NIL (fun? '((A B) (* A B) . C)))
-(test NIL (fun? '(1 2 3 4)))
+(test NIL (fun? (1 2 3 4)))
 (test NIL (fun? '((A 2 B) (* A B))))
 (test T (fun? '(NIL (* 3 4))))
 
@@ -178,6 +180,9 @@
 
 # src/subr.c
 
+(test '(a . b) (cons 'a 'b))
+(test '(a b c . d) (cons 'a 'b 'c 'd))
+
 (test (3 4 5 6) (member 3 (1 2 3 4 5 6)))
 (test NIL (member 9 (1 2 3 4 5 6)))
 
@@ -194,8 +199,8 @@
 (let (@X 1234  @Y (1 2 3 4))
    (test '(a b (c 1234) (((1 2 3 4) . d) e))
       (fill '(a b (c @X) ((@Y . d) e))) ) )
-(let X 2 (test '(1 2 3) (fill (1 X 3) 'X)))
-(let X 2 (test '(1 2 3) (fill (1 X 3) '(X))))
+(let X 2 (test (1 2 3) (fill (1 X 3) 'X)))
+(let X 2 (test (1 2 3) (fill (1 X 3) '(X))))
 
 (test 123 (num? 123))
 (test NIL (num? 'abc))
@@ -241,6 +246,13 @@
 
 # lib.l
 
+(test '((N) (* 7 N))
+   ((quote (@X) (curry (@X) (N) (* @X N))) 7) )
+(test 21
+   (((quote (@X) (curry (@X) (N) (* @X N))) 7) 3) )
+(test '((N) (job '((A . 1)) (+ A 7 N)))
+   (let (A 1 @X 7) (curry (A @X) (N) (+ A @X N))) )
+
 (test '((@ . 1) (@ . 4) (@ . 9) (@ . 16) (@ . 25) (@ . 36))
    (prog1
       (mapcan
@@ -248,5 +260,56 @@
          (1 2 3 4 5 6) )
       (wait NIL (not (memq NIL @))) ) )
 
+(test '(a b 777 c d e) (insert 3 '(a b c d e) 777))
+(test (777 a b c d e) (insert 1 '(a b c d e) 777))
+(test '(a b c d e 777) (insert 9 '(a b c d e) 777))
+
+(test '(a b d e) (remove 3 '(a b c d e)))
+(test '(b c d e) (remove 1 '(a b c d e)))
+(test '(a b c d e) (remove 9 '(a b c d e)))
+
+(test '(a b 777 d e) (place 3 '(a b c d e) 777))
+(test (777 b c d e) (place 1 '(a b c d e) 777))
+(test '(a b c d e 777) (place 9 '(a b c d e) 777))
+
+(test (2 4 6 1 3 5) (uniq (2 4 6 1 2 3 4 5 6 1 3 5)))
+
 (test '((1 a b c) (2 d e f))
    (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f))) )
+
+
+# lib/misc.l
+
+(locale "DE" "de")
+(test "Ja" (val ,"Yes"))
+(locale)
+
+(test 32768 (** 2 15))
+
+(test '((b . 2) (a . 3))
+   (let L NIL (accu 'L 'a 2) (accu 'L 'b 2) (accu 'L 'a 1) L) )
+
+(test "   a" (align 4 'a))
+
+(test "   a" (center 7 'a))
+
+(test "The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog"
+   (wrap 8 (chop "The quick brown fox jumps over the lazy dog")) )
+
+(test "0001" (pad 4 1))
+
+(test "111" (oct (+ 64 8 1)))
+(test (+ 64 8 1) (oct "111"))
+
+(test "111" (hex (+ 256 16 1)))
+(test (+ 256 16 1) (hex "111"))
+
+(test "1,234,567.89 EUR" (money 123456789 "EUR"))
+
+(test (5 (2 (1) 3 NIL 4) 7 (6) 8 NIL 9)
+   (let I NIL (balance 'I (sort (1 4 2 5 3 6 7 9 8))) I) )
+
+
+(locale "DE" "de")
+(test "1.234.567,89 EUR" (money 123456789 "EUR"))
+(locale)

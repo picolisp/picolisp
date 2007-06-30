@@ -1,9 +1,9 @@
-# 22mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
 # *Sock *Agent *MPartLim *MPartEnd *ContLen
-# *Post *Url *Timeout *SesId *SesId2 *ConId
+# *Post *Url *Timeout *SesId *ConId
 
 (default
    *HPorts 0
@@ -104,8 +104,7 @@
    (unless *SesId
       (setq
          *SesId (pack (% (in "/dev/urandom" (rd 5)) 100000000000) "~")
-         *Sock (port *HPorts '*Port)
-         *SesId2 (pack *Port '/ *SesId) )
+         *Sock (port *HPorts '*Port) )
       (timeout *Timeout) ) )
 
 # Handle HTTP-Transaction
@@ -149,7 +148,7 @@
                   (T (out S (httpStat 400 "Bad Request")) (throw "http")) ) )
             (out S
                (cond
-                  ((nor (= *ConId *SesId) (= *ConId *SesId2))
+                  ((<> *ConId *SesId)
                      (if *ConId
                         (http404)
                         (close S)
@@ -298,7 +297,7 @@
       (T (ht:Pack Lst)) ) )
 
 # Http Transfer Header
-(de _http (Typ Upd)
+(de _http (Typ Upd Att)
    (prinl "HTTP/1." *Http1 " 200 OK^M")
    (prinl "Server: PicoLisp^M")
    (prin "Date: ")
@@ -307,10 +306,12 @@
       (prinl "Cache-Control: max-age=" Upd "^M")
       (when (=0 Upd)
          (prinl "Cache-Control: no-cache^M") ) )
-   (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M") )
+   (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M")
+   (when Att
+      (prinl "Content-Disposition: attachment; filename=\"" Att "\"^M") ) )
 
-(de httpHead (Typ Upd)
-   (_http Typ Upd)
+(de httpHead (Typ Upd Att)
+   (_http Typ Upd Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
    (prinl "^M") )
 
@@ -327,15 +328,13 @@
 (de httpEcho (File Typ Upd Att)
    (ifn (info File)
       (http404)
-      (_http Typ (if (and *Tmp (pre? *Tmp File)) 1 Upd))
+      (_http
+         Typ
+         (if (and *Tmp (pre? *Tmp File)) 1 Upd)
+         (and Att (stem (chop File) "/")) )
       (prinl "Content-Length: " (car @) "^M")
       (prin "Last-Modified: ")
       (httpDate (cadr @) (cddr @))
-      (when Att
-         (prinl
-            "Content-Disposition: attachment; filename=\""
-            (stem (chop File) "/")
-            "\"^M" ) )
       (prinl "^M")
       (in File (echo)) ) )
 
@@ -378,3 +377,5 @@
    (httpStat 404 "Not Found") )
 
 (de urlN . `http404)
+
+# vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 27mar05abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 # *Board
@@ -39,7 +39,7 @@
                         (unless P
                            (link
                               (cons
-                                 (cons X (cons Y (or Flg 0)))
+                                 (cons X Y (or Flg 0))
                                  (list X Y) ) ) ) ) ) ) ) )
          '((Mov) # Move
             (set (nth *Board (car Mov) (cadr Mov)) (cddr Mov)) )

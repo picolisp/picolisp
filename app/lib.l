@@ -1,4 +1,4 @@
-# 12mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
@@ -11,8 +11,7 @@
    (brief NIL 8 "7fach GmbH, Bawaria"
       (ps)
       (with (: cus)
-         (ps (: nm))
-         (?ps (: nm2))
+         (ps (pack (: nm2) " " (: nm)))
          (ps (: str))
          (ps (pack (: plz) " " (: ort))) ) )
    (window 360 280 240 60
@@ -56,3 +55,5 @@
          (table Fmt NIL NIL NIL NIL NIL (ps (money (sum> This)) T))
          (hline 4 470 -8) ) )
    (page) )
+
+# vi:et:ts=3:sw=3

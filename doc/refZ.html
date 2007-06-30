@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Z</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>Z</h1>
+
+<dl>
+
+<dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
+<dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
+remove it from the internal hash table, effectively transforming it to a
+transient symbol. For external symbols, it means to mark it as "deleted", so
+that upon a later <code><a href="refC.html#commit">commit</a></code> it will be
+removed from the database file. See also <code><a
+href="refI.html#intern">intern</a></code>.
+
+<p><pre><code>
+: (de foo (Lst) (car Lst))          # 'foo' calls 'car'
+-> foo
+: (zap 'car)                        # Delete the symbol 'car'
+-> "car"
+: (pp 'foo)
+(de foo (Lst)
+   ("car" Lst) )                    # 'car' is now a transient symbol
+-> foo
+: (foo (1 2 3))                     # 'foo' still works
+-> 1
+: (car (1 2 3))                     # Reader returns a new 'car' symbol
+!? (car (1 2 3))
+car -- Undefined
+?
+</code></pre>
+
+<dt><a name="zero"><code>(zero sym ..) -> 0</code></a>
+<dd>Stores <code>0</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. See also <code><a href="refO.html#one">one</a></code>,
+<code><a href="refO.html#on">on</a></code>, <code><a
+href="refO.html#off">off</a></code> and <code><a
+href="refO.html#onOff">onOff</a></code>.
+
+<p><pre><code>
+: (zero A B)
+-> 0
+: A
+-> 0
+: B
+-> 0
+</code></pre>
+
+</dl>
+
+</body>
+</html>

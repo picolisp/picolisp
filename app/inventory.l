@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
@@ -9,15 +9,15 @@
       (<grid> "-.-"
          ,"Number" NIL
          (prog
-            (gui 'from '(+NumField) 10)
+            (gui '(+Var +NumField) '*InvFrom 10)
             (prin " - ")
-            (gui 'till '(+NumField) 10) )
-         ,"Description" NIL (gui 'nm '(+TextField) 30)
+            (gui '(+Var +NumField) '*InvTill 10) )
+         ,"Description" NIL (gui '(+Var +TextField) '*InvNm 30)
          ,"Supplier" (gui '(+ChoButton) '(choCuSu (field 1)))
-         (gui 'sup '(+Obj +TextField) '(nm +CuSu) 30) )
+         (gui '(+Var +Obj +TextField) '*InvSup '(nm +CuSu) 30) )
       (----)
-      (gui '(+Button) ,"Show Report"
-         '(appendix
+      (gui '(+ShowButton)
+         '(csv ,"Inventory"
             (<table> 'chart NIL
                (quote
                   (align)
@@ -30,9 +30,9 @@
                   (align ,"Price") )
                (pilog
                   (quote
-                     @Rng (cons (val> (: from)) (or (val> (: till)) T))
-                     @Nm (val> (: nm))
-                     @Sup (val> (: sup))
+                     @Rng (cons *InvFrom (or *InvTill T))
+                     @Nm *InvNm
+                     @Sup *InvSup
                      (select (@Item)
                         ((nr +Item @Rng) (nm +Item @Nm) (sup +Item @Sup))
                         (range @Rng @Item nr)
@@ -40,11 +40,13 @@
                         (same @Sup @Item sup) ) )
                   (with @Item
                      (<row> (alternating)
-                        (htObj (: nr) This)
-                        (htObj (: nm) This)
-                        (ht:Prin (cnt> This))
-                        (htObj (: sup nm) (: sup))
-                        (ht:Prin (: sup nm2))
-                        (ht:Prin (: sup plz))
-                        (ht:Prin (: sup ort))
-                        (prin (money (: pr))) ) ) ) ) ) ) ) )
+                        (<+> (: nr) This)
+                        (<+> (: nm) This)
+                        (<+> (cnt> This))
+                        (<+> (: sup nm) (: sup))
+                        (<+> (: sup nm2))
+                        (<+> (: sup plz))
+                        (<+> (: sup ort))
+                        (<-> (money (: pr))) ) ) ) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

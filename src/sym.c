@@ -1,4 +1,4 @@
-/* 02mar07abu
+/* 05jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -107,6 +107,18 @@ any mkName(char *s) {
    while (*s)
       byteSym(*(byte*)s++, &i, &nm);
    return Pop(c1);
+}
+
+any intern(char *s) {
+   any nm, x, *h;
+
+   if (!*s)
+      return Nil;
+   nm = mkName(s);
+   if (x = findHash(nm, h = Intern + hash(nm)))
+      return x;
+   *h = cons(x = consStr(nm), *h);
+   return x;
 }
 
 /* Make string */
@@ -513,6 +525,7 @@ any doSetq(any ex) {
    do {
       y = car(x),  x = cdr(x);
       NeedVar(ex,y);
+      CheckVar(ex,y);
       val(y) = EVAL(car(x));
    } while (isCell(x = cdr(x)));
    return val(y);

@@ -1,14 +1,23 @@
-# 31jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
 (de doc (Sym Browser)
-   (call (or Browser 'w3m)
-      (pack
-         "file:"
-         (and (= `(char '/) (char (path "@"))) "//")
-         (path "@doc/ref.html#")
-         (replace (chop Sym) '? 'Q) ) ) )
+   (let (L (chop Sym)  C (car L))
+      (and
+         (member C '("*" "+"))
+         (cadr L)
+         (setq C @) )
+      (cond
+         ((>= "Z" C "A"))
+         ((>= "z" C "a") (setq C (uppc C)))
+         (T (setq C "_")) )
+      (call (or Browser (sys "BROWSER") 'w3m)
+         (pack
+            "file:"
+            (and (= `(char '/) (char (path "@"))) "//")
+            (path "@doc/ref")
+            C ".html#" Sym ) ) ) )
 
 (de more ("M" "Foo")
    (let *Dbg NIL
@@ -309,3 +318,5 @@
                (for N L
                   (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

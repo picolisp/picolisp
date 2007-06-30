@@ -1,3 +1,9 @@
+* 30jun07 picoLisp-2.2.7
+   Extended "doc/ref.html"
+   'cons' multiple arguments
+   'yoke' function
+   'up' optional 'cnt' argument
+
 * 01apr07 picoLisp-2.2.6
    'app' reference application
    Bug in 'text'

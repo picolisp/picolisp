@@ -1,4 +1,4 @@
-# 24mar07abu
+# 13jun07abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(銘柄数：@1)"
@@ -13,13 +13,14 @@
 "Country" "国"
 "Customer" "カスタマー"
 "Customer/Supplier" "カスタマー/注文先"
+"Customers/Suppliers" "カスタマー/注文先"
 "Customer/Supplier No. @1" "カスタマー/注文先 No. @1"
 
 "Data" "データ"
 "Date" "日付"
 "Description" "仕様"
 
-"EMail" "Eメール"
+"eMail" "eメール"
 
 "Fax" "Fax"
 "Full Name" "フルネーム"
@@ -29,6 +30,7 @@
 "Install" "インストール"
 "Inventory" "在庫目録"
 "Item" "商品"
+"Items" "商品"
 "Item No. @1" "商品 No. @1"
 
 "Login Name" "ログイン名"
@@ -41,6 +43,7 @@
 "Number" "番号"
 
 "Order" "注文"
+"Orders" "注文"
 "Order No. @1" "注文 No. @1"
 
 "Picture" "写真"
@@ -50,14 +53,11 @@
 
 "Quantity" "数量"
 
-"Reset" "リセット"
 "Report" "レポート"
 "Role '@1'" "役割 '@1'"
 "Role Administration" "役割管理"
 
 "Sales" "セールス"
-"Search" "検索"
-"Show Report" "レポート表示"
 "Street" "住所"
 "Supplier" "注文先"
 "System" "システム"

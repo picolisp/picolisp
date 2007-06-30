@@ -3,6 +3,6 @@
    *Sep3 ","
    *CtryCode 1
    *DateFmt '(@M "/" @D "/" @Y)
-   *DayFmt '(Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
-   *MonFmt '(January February March April May June July August September October November December)
+   *DayFmt '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
+   *MonFmt '("January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
    *Help "loc/help/en.l" )

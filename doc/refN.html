@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>N</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>N</h1>
+
+<dl>
+
+<dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
+<dd>Returns <code>T</code> when not all <code>any</code> arguments are the same
+(pointer equality). <code>(n== 'any ..)</code> is equivalent to <code>(not (==
+'any ..))</code>. See also <code><a href="ref_.html#==">==</a></code>.
+
+<p><pre><code>
+: (n== 'a 'a)
+-> NIL
+: (n== 1 1)
+-> T
+</code></pre>
+
+<dt><a name="n0"><code>(n0 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is not a number with value
+zero. See also <code><a href="ref_.html#=0">=0</a></code>, <code><a
+href="refL.html#lt0">lt0</a></code>, <code><a
+href="refG.html#ge0">ge0</a></code> and <code><a
+href="refG.html#gt0">gt0</a></code>.
+
+<p><pre><code>
+: (n0 (- 6 3 2 1))
+-> NIL
+: (n0 'a)
+-> T
+</code></pre>
+
+<dt><a name="nT"><code>(nT 'any) -> flg</code></a>
+<dd>Returns <code>T</code> when <code>any</code> is not the symbol
+<code>T</code>. See also <a href="ref_.html#=T">=T</a>.
+
+<p><pre><code>
+: (nT 0)
+-> T
+: (nT "T")
+-> T
+: (nT T)
+-> NIL
+</code></pre>
+
+<dt><a name="nagle"><code>(nagle 'cnt 'flg) -> cnt</code></a>
+<dd>Disables the "nagle" algorithm for the socket descriptor <code>cnt</code> if
+<code>flg</code> is <code>NIL</code>, or enables it if <code>flg</code> is
+non-<code>NIL</code>. Returns the socket descriptor. See also <code><a
+href="refL.html#listen">listen</a></code> and <code><a
+href="refC.html#connect">connect</a></code>.
+
+<p><pre><code>
+: (nagle (connect "localhost" 8080) NIL)  # Disable the nagle algorithm
+-> 3
+</code></pre>
+
+<dt><a name="name"><code>(name 'sym ['sym2]) -> sym</code></a>
+<dd>Returns, if <code>sym2</code> is not given, a new transient symbol with the
+name of <code>sym</code>. Otherwise <code>sym</code> must be a transient symbol,
+and its name is changed to that of <code>sym2</code>. See also <code><a
+href="refS.html#str">str</a></code>, <code><a
+href="refS.html#sym">sym</a></code>, <code><a
+href="refZ.html#zap">zap</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<p><pre><code>
+: (name 'abc)
+-> "abc"
+: (name "abc")
+-> "abc"
+: (name '{abc})
+-> "abc"
+: (name (new))
+-> NIL
+: (de foo (Lst) (car Lst))          # 'foo' calls 'car'
+-> foo
+: (intern (name (zap 'car) "xxx"))  # Globally change the name of 'car'
+-> xxx
+: (xxx (1 2 3))
+-> 1
+: (pp 'foo)
+(de foo (Lst)
+   (xxx Lst) )                      # Name changed
+-> foo
+: (foo (1 2 3))                     # 'foo' still works
+-> 1
+: (car (1 2 3))                     # Reader returns a new 'car' symbol
+!? (car (1 2 3))
+car -- Undefined
+?
+</code></pre>
+
+<dt><a name="nand"><code>(nand 'any ..) -> flg</code></a>
+<dd>Logical NAND. The expressions <code>any</code> are evaluated from left to
+right. If <code>NIL</code> is encountered, <code>T</code> is returned
+immediately. Else <code>NIL</code> is returned. <code>(nand ..)</code> is
+equivalent to <code>(not (and ..))</code>.
+
+<p><pre><code>
+: (nand (lt0 7) (read))
+-> T
+: (nand (lt0 -7) (read))
+abc
+-> NIL
+: (nand (lt0 -7) (read))
+NIL
+-> T
+</code></pre>
+
+<dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
+<dd>Produces a list of at least <code>cnt</code> elements. When called without
+optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is returned.
+When <code>lst</code> is given, it is extended to the left (if <code>cnt</code>
+is positive) or (destructively) to the right (if <code>cnt</code> is negative)
+with <code>any</code> elements.
+
+<p><pre><code>
+: (need 5)
+-> (NIL NIL NIL NIL NIL)            # Allocate 5 cells
+: (need 5 '(a b c))
+-> (NIL NIL a b c)
+: (need -5 '(a b c))
+-> (a b c NIL NIL)
+: (need 5 '(a b c) " ")             # String alignment
+-> (" " " " a b c)
+</code></pre>
+
+<dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> obj</code></a>
+<dd>Creates and returns a new object. If <code>flg</code> is given and
+non-<code>NIL</code>, the new object will be an external symbol (created in
+database file 1 if <code>T</code>, or in the corresponding database file if
+<code>num</code> is given). <code>typ</code> (typically a list of classes) is
+assigned to the <code>VAL</code>, and the initial <code>T</code> message is sent
+with the arguments <code>any</code> to the new object. See also <code><a
+href="refB.html#box">box</a></code>, <code><a
+href="refO.html#object">object</a></code>, <code><a
+href="refC.html#class">class</a></code>, <code><a
+href="refT.html#type">type</a></code>, <code><a
+href="refI.html#isa">isa</a></code>, <code><a
+href="refS.html#send">send</a></code> and <code><a
+href="ref.html#dbase">dbase</a></code>.
+
+<p><pre><code>
+: (new)
+-> $134426427
+: (new T '(+Address))
+-> {1A;3}
+</code></pre>
+
+<dt><a name="next"><code>(next) -> any</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns the next argument from the internal list. See also
+<code><a href="refA.html#args">args</a></code>, <code><a
+href="refA.html#arg">arg</a></code>, <code><a
+href="refR.html#rest">rest</a></code>, and <code><a
+href="refP.html#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (next)))          # Print next argument
+-> foo
+: (foo)
+NIL
+-> NIL
+: (foo 123)
+123
+-> 123
+</code></pre>
+
+<dt><a name="nil"><code>(nil . prg) -> NIL</code></a>
+<dd>Executes <code>prg</code>, and returns <code>NIL</code>. See also <code><a
+href="refT.html#t">t</a></code>, <code><a href="refP.html#prog">prog</a></code>,
+<code><a href="refP.html#prog1">prog1</a></code> and <code><a
+href="refP.html#prog2">prog2</a></code>.
+
+<p><pre><code>
+: (nil (println 'Ok))
+Ok
+-> NIL
+</code></pre>
+
+<dt><a name="nond"><code>(nond (('any1 . prg1) ('any2 . prg2) ..)) -> any</code></a>
+<dd>Negated ("non-cond") multi-way conditional: If any of the <code>anyN</code>
+conditions evaluates to <code>NIL</code>, <code>prgN</code> is executed and the
+result returned. Otherwise (all conditions evaluate to non-<code>NIL</code>),
+<code>NIL</code> is returned. See also <code><a
+href="refC.html#cond">cond</a></code>, <code><a
+href="refI.html#ifn">ifn</a></code> and <code><a
+href="refU.html#unless">unless</a></code>.
+
+<p><pre><code>
+: (nond
+   ((= 3 3) (println 1))
+   ((= 3 4) (println 2))
+   (NIL (println 3)) )
+2
+-> 2
+</code></pre>
+
+<dt><a name="nor"><code>(nor 'any ..) -> flg</code></a>
+<dd>Logical NOR. The expressions <code>any</code> are evaluated from left to
+right. If a non-<code>NIL</code> value is encountered, <code>NIL</code> is
+returned immediately. Else <code>T</code> is returned. <code>(nor ..)</code> is
+equivalent to <code>(not (or ..))</code>.
+
+<p><pre><code>
+: (nor (lt0 7) (= 3 4))
+-> T
+</code></pre>
+
+<dt><a name="not"><code>(not 'any) -> flg</code></a>
+<dd>Logical negation. Returns <code>T</code> if <code>any</code> evaluates to
+<code>NIL</code>.
+
+<p><pre><code>
+: (not (== 'a 'a))
+-> NIL
+: (not (get 'a 'a))
+-> T
+</code></pre>
+
+<dt><a name="nth"><code>(nth 'lst 'cnt ..) -> lst</code></a>
+<dd>Returns the tail of <code>lst</code> starting from the <code>cnt</code>'th
+element of <code>lst</code>. Successive <code>cnt</code> arguments operate on
+the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
+<code>(cdr 'lst)</code>.
+
+<p><pre><code>
+: (nth '(a b c d) 2)
+-> (b c d)
+: (nth '(a (b c) d) 2 2)
+-> (c)
+: (cdadr '(a (b c) d))
+-> (c)
+</code></pre>
+
+<dt><a name="num?"><code>(num? 'any) -> num | NIL</code></a>
+<dd>Returns <code>any</code> when the argument <code>any</code> is a number,
+otherwise <code>NIL</code>.
+
+<p><pre><code>
+: (num? 123)
+-> 123
+: (num? (1 2 3))
+-> NIL
+</code></pre>
+
+</dl>
+
+</body>
+</html>

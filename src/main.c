@@ -1,4 +1,4 @@
-/* 18feb07abu
+/* 25jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -20,7 +20,7 @@ void (*putBin)(int);
 any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+any Nil, DB, Solo, Up, Meth, Quote, T, At, At2, At3, This;
 any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 static int TtyPid;
@@ -243,14 +243,25 @@ any doEnv(any x) {
    return Pop(c1);
 }
 
-// (up sym ['val]) -> any
+// (up [cnt] sym ['val]) -> any
 any doUp(any x) {
    any y;
    int i;
    bindFrame *p;
 
    x = cdr(x),  y = car(x);
-   for (p = Env.bind;  p;  p = p->link)
+   if (!(p = Env.bind))
+      return Nil;
+   if (isNum(y)) {
+      i = (int)unBox(y),  x = cdr(x),  y = car(x);
+      for (;;) {
+         if (p->i <= 0  &&  p->cnt  &&  p->bnd[0].sym == At  &&  !--i)
+            break;
+         if (!(p = p->link))
+            return Nil;
+      }
+   }
+   for (;;) {
       if (p->i <= 0)
          for (i = p->cnt;  --i >= 0;)
             if (p->bnd[i].sym == y) {
@@ -258,7 +269,9 @@ any doUp(any x) {
                   return p->bnd[i].val = EVAL(car(x));
                return p->bnd[i].val;
             }
-   return Nil;
+      if (!(p = p->link))
+         return Nil;
+   }
 }
 
 // (stk any ..) -> T

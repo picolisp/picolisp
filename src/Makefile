@@ -1,4 +1,4 @@
-# 30mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -14,22 +14,26 @@ CFLAGS := -c -O3 -pipe \
 
 
 ifeq ($(shell uname), Linux)
+	OS = Linux
 	PICOLISP-FLAGS = -rdynamic -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -shared -nostartfiles -nostdlib -export-dynamic
+	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), FreeBSD)
+	OS = FreeBSD
 	PICOLISP-FLAGS = -rdynamic -lc -lm
-	DYNAMIC-LIB-FLAGS = -shared -nostartfiles -nostdlib -export-dynamic
+	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), Darwin)
+	OS = Darwin
 	export MACOSX_DEPLOYMENT_TARGET=10.4
 	PICOLISP-FLAGS = -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup -nostartfiles -export-dynamic
+	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup -export-dynamic
 	STRIP = :
 else
 ifeq ($(shell uname -o), Cygwin)
+	OS = Cygwin
 	DYNAMIC-LIB-FLAGS = -shared
 	PICOLISP-FLAGS =
 	DLL-DEFS = $(bin)/picolisp.dll
@@ -57,7 +61,7 @@ all: picolisp tools gate x11
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 
 
-ifeq ($(shell uname -o), Cygwin)
+ifeq ($(OS), Cygwin)
 
 $(bin)/picolisp$(dll): $(picoFiles:.c=.o)
 	@echo "  " picolisp shared library $(dll):
@@ -131,3 +135,5 @@ $(bin)/z3dClient: z3dClient.o
 # Clean up
 clean:
 	rm -f *.o
+
+# vi:noet:ts=4:sw=4

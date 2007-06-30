@@ -1,4 +1,4 @@
-# 22mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -40,11 +40,11 @@
          "born" (prog
             (gui 'dat1 '(+Var +DateField) '*PrsDat1 10)
             (gui 'dat2 '(+Var +DateField) '*PrsDat2 10) )
-         (gui '(+JS +Button) ',"Search" '(init> (: home query)))
+         (searchButton '(init> (: home query)))
          "Father" (gui 'pa '(+Var +TextField) '*PrsPa 20)
          "Mother" (gui 'ma '(+Var +TextField) '*PrsMa 20)
          "Partner" (gui 'mate '(+Var +TextField) '*PrsMate 20)
-         (gui '(+JS +ClrButton) ',"Reset" '(nm pa ma mate job dat1 dat2 query)) )
+         (resetButton '(nm pa ma mate job dat1 dat2 query)) )
       (gui 'query '(+QueryChart) 8
          '(goal
             (quote
@@ -94,11 +94,8 @@
    (action
       (html 0 (get (default *ID (val *DB)) 'nm) "lib.css" NIL
          (form NIL
-            (<spread>
-               (<h3> NIL (<id> (: nm)))
-               (delButton)
-               (choButton '(choPerson T))
-               (stepBtn 'nm '+Person) )
+            (<h2> NIL (<id> (: nm)))
+            (panel T "Person '@1'" T '(choPerson T) 'nm '+Person)
             (<p> NIL
                (gui '(+E/R +TextField) '(nm : home obj) 40 "Name")
                (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman))) )
@@ -131,7 +128,7 @@
                '(url "@contemporaries" (: home obj)) )
             (gui '(+Rid +Button) "Tree View"
                '(url "@treeReport" (: home obj)) )
-            (editButton) ) ) ) )
+            (editButton T) ) ) ) )
 
 
 ### Reports ###
@@ -157,7 +154,7 @@
                   7
                   '((This)
                      (list This (: job) (: dat) (: fin) (: pa) (: ma) (: mate)) ) )
-               (<table> NIL (pack (datStr (: dat)) " ... " (datStr (: fin)))
+               (<table> NIL (pack (datStr (: obj dat)) " - " (datStr (: obj fin)))
                   (quote
                      (NIL "Name") (NIL "Occupation") (NIL "born") (NIL "died")
                      (NIL "Father") (NIL "Mother") (NIL "Partner") )
@@ -238,3 +235,5 @@
 (de go ()
    (rollback)
    (server 8080 "@person") )
+
+# vi:et:ts=3:sw=3

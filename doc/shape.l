@@ -1,4 +1,4 @@
-# 21jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # The Shape base class
@@ -55,3 +55,5 @@
 (class +Fixed)
 
 (dm move> (DX DY))  # A do-nothing method
+
+# vi:et:ts=3:sw=3

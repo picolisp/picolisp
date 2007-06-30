@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>R</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>R</h1>
+
+<dl>
+
+<dt><a name="*Rst"><code>*Rst</code></a>
+<dd>A global variable holding a (possibly empty) <code>prg</code> body, which
+will be executed after error processing. This makes it possible to restart an
+application despite of a failure. See also <code><a href="ref.html#errors">Error
+Handling</a></code>, <code><a href="refE.html#*Err">*Err</a></code> and <code><a
+href="refM.html#*Msg">*Msg</a></code>.
+
+<p><pre><code>
+: (de loopTest ()
+   (let N 4
+      (loop
+         (println (/ 100 (dec 'N))) ) ) )
+-> loopTest
+: (de *Rst
+   (prinl "Loop Failed!")
+   (wait 4000)
+   (loopTest) )  # restart
+-> *Rst
+: (loopTest)
+33
+50
+100
+!? (/ 100 (dec 'N))
+Div/0
+Loop Failed!
+33
+50
+100
+!? (/ 100 (dec 'N))
+Div/0
+Loop Failed!
+...
+</code></pre>
+
+<dt><a name="*Run"><code>*Run</code></a>
+<dd>This global variable can hold a list of <code>prg</code> expressions which
+are used during <code><a href="refK.html#key">key</a></code>, <code><a
+href="refS.html#sync">sync</a></code> and <code><a
+href="refW.html#wait">wait</a></code>. The first element of each expression must
+either be a positive number (thus denoting a file descriptor to wait for) or a
+negative number (denoting a timeout value in milliseconds (in that case another
+number must follow to hold the remaining time)). A <code>select</code> system
+call is performed with these values, and the corresponding <code>prg</code> body
+is executed when input data are available or when a timeout occurred. See also
+<code><a href="refT.html#task">task</a></code>.
+
+<p><pre><code>
+: (de *Run (-2000 0 (println '2sec)))     # Install 2-sec-timer
+-> *Run
+: 2sec                                    # Prints "2sec" every 2 seconds
+2sec
+2sec
+                                          # (Enter) Exit
+$
+</code></pre>
+
+<dt><a name="rand"><code>(rand ['cnt1 'cnt2] | ['T]) -> cnt | flg</code></a>
+<dd>Returns a pseudo random number in the range cnt1 .. cnt2 (or -2147483648 ..
++2147483647 if no arguments are given). If the argument is <code>T</code>, a
+boolean value <code>flg</code> is returned. See also <code><a
+href="refS.html#seed">seed</a></code>.
+
+<p><pre><code>
+: (rand 3 9)
+-> 3
+: (rand 3 9)
+-> 7
+</code></pre>
+
+<dt><a name="rank"><code>(rank 'any 'lst ['flg]) -> lst</code></a>
+<dd>Searches a ranking list. <code>lst</code> should be sorted. Returns the
+element from <code>lst</code> with a maximal <code>CAR</code> less or equal to
+<code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a minimal
+<code>CAR</code> greater or equal to <code>any</code> (if <code>flg</code> is
+non-<code>NIL</code>), or <code>NIL</code> if no match is found. See also <a
+href="ref.html#cmp">Comparing</a>.
+
+<p><pre><code>
+: (rank 0 '((1 . a) (100 . b) (1000 . c)))
+-> NIL
+: (rank 50 '((1 . a) (100 . b) (1000 . c)))
+-> (1 . a)
+: (rank 100 '((1 . a) (100 . b) (1000 . c)))
+-> (100 . b)
+: (rank 300 '((1 . a) (100 . b) (1000 . c)))
+-> (100 . b)
+: (rank 9999 '((1 . a) (100 . b) (1000 . c)))
+-> (1000 . c)
+: (rank 50 '((1000 . a) (100 . b) (1 . c)) T)
+-> (100 . b)
+</code></pre>
+
+<dt><a name="raw"><code>(raw ['flg]) -> flg</code></a>
+<dd>Console mode control function. When called without arguments, it returns the
+current console mode (<code>NIL</code> for "cooked mode"). Otherwise, the
+console is set to the new state. See also <code><a
+href="refK.html#key">key</a></code>.
+
+<p><pre><code>
+$ ./p
+: (raw)
+-> NIL
+$ ./p dbg.l
+: (raw)
+-> T
+</code></pre>
+
+<dt><a name="rc"><code>(rc 'sym 'any1 ['any2]) -> any</code></a>
+<dd>Fetches a value from a ressource file <code>sym</code>, or stores a value
+<code>any2</code> in that file, using a key <code>any1</code>. All values are
+stored in a list in the file, using <code><a
+href="refA.html#assoc">assoc</a></code>. During the whole operation, the file is
+exclusively locked with <code><a href="refC.html#ctl">ctl</a></code>.
+
+<p><pre><code>
+: (info "a.rc")               # File exists?
+-> NIL                        # No
+: (rc "a.rc" 'a 1)            # Store 1 for 'a'
+-> 1
+: (rc "a.rc" 'b (2 3 4))      # Store (2 3 4) for 'b'
+-> (2 3 4)
+: (rc "a.rc" 'c 'b)           # Store 'b' for 'c'
+-> b
+: (info "a.rc")               # Check file
+-> (28 733124 . 61673)
+: (in "a.rc" (echo))          # Display it
+((c . b) (b 2 3 4) (a . 1))
+-> T
+: (rc "a.rc" 'c)              # Fetch value for 'c'
+-> b
+: (rc "a.rc" @)               # Fetch value for 'b'
+-> (2 3 4)
+</code></pre>
+
+<dt><a name="rd"><code>(rd ['sym]) -> any<br>
+(rd 'cnt) -> num | NIL</code></a>
+<dd>Binary read: Reads one item from the current input channel in encoded binary
+format. When called with a <code>cnt</code> argument (second form), that number
+of raw bytes (in big endian format if <code>cnt</code> is positive, otherwise
+little endian) is read as a single number. Upon end of file, if the
+<code>sym</code> argument is given, it is returned, otherwise <code>NIL</code>.
+See also <code><a href="refP.html#pr">pr</a></code> and <code><a
+href="refW.html#wr">wr</a></code>.
+
+<p><pre><code>
+: (out "x" (pr 'abc "EOF" 123 "def"))
+-> "def"
+: (in "x" (rd))
+-> abc
+: (in "x"
+   (make
+      (use X
+         (until (== "EOF" (setq X (rd "EOF")))  # '==' detects end of file
+            (link X) ) ) ) )
+-> (abc "EOF" 123 "def")  # as opposed to reading a symbol "EOF"
+
+: (in "/dev/urandom" (rd 20))
+-> 396737673456823753584720194864200246115286686486
+</code></pre>
+
+<dt><a name="read"><code>(read ['sym1 ['sym2]]) -> any</code></a>
+<dd>Reads one item from the current input channel. <code>NIL</code> is returned
+upon end of file. When called without arguments, an arbitrary Lisp expression is
+read. Otherwise, a token (a number, or an internal or transient symbol) is read.
+In that case, <code>sym1</code> specifies which set of characters to accept for
+internal symbols (in addition to the standard alphanumerical characters), and
+<code>sym2</code> an optional comment character. See also <code><a
+href="refA.html#any">any</a></code>, <code><a
+href="refS.html#str">str</a></code>, <code><a
+href="refS.html#skip">skip</a></code> and <code><a
+href="refE.html#eof">eof</a></code>.
+
+<p><pre><code>
+: (list (read) (read) (read))    # Read three things from console
+123                              # a number
+abcd                             # a symbol
+(def                             # and a list
+ghi
+jkl
+)
+-> (123 abcd (def ghi jkl))
+: (make (while (read "_" "#") (link @)))
+abc = def_ghi("xyz"+-123) # Comment
+""
+-> (abc "=" def_ghi "(" "xyz" "+" -123 ")")
+</code></pre>
+
+<dt><a name="recur"><code>(recur fun) -> any</code></a><br>
+<a name="recurse"><code>(recurse ..) -> any</code></a>
+<dd>Implements anonymous recursion, by defining the function
+<code>recurse</code> on the fly. During the execution of <code>fun</code>, the
+symbol <code>recurse</code> is bound to the function definition
+<code>fun</code>. See also <code><a href="refL.html#let">let</a></code> and
+<code><a href="ref.html#lambda">lambda</a></code>.
+
+<p><pre><code>
+: (de fibonacci (N)
+   (when (lt0 N)
+      (quit "Bad fibonacci" N) )
+   (recur (N)
+      (if (< N 2)
+         1
+         (+
+            (recurse (dec N))
+            (recurse (- N 2)) ) ) ) )
+-> fibonacci
+: (fibonacci 22)
+-> 28657
+: (fibonacci -7)
+-7 -- Bad fibonacci
+</code></pre>
+
+<dt><a name="redef"><code>(redef sym . fun) -> sym</code></a>
+<dd>Redefines <code>sym</code> in terms of itself. The current definition is
+saved in a new symbol, which is substituted for each occurrence of
+<code>sym</code> in <code>fun</code>, and which is also returned. See also
+<code><a href="refD.html#de">de</a></code>, <code><a
+href="refD.html#daemon">daemon</a></code> and <code><a
+href="refP.html#patch">patch</a></code>.
+
+<p><pre><code>
+: (de hello () (prinl "Hello world!"))
+-> hello
+: (pp 'hello)
+(de hello NIL
+   (prinl "Hello world!") )
+-> hello
+
+: (redef hello (A B)
+   (println 'Before A)
+   (prog1 (hello) (println 'After B)) )
+-> "hello"
+: (pp 'hello)
+(de hello (A B)
+   (println 'Before A)
+   (prog1 ("hello") (println 'After B)) )
+-> hello
+: (hello 1 2)
+Before 1
+Hello world!
+After 2
+-> "Hello world!"
+
+: (redef * @
+   (msg (rest))
+   (pass *) )
+-> "*"
+: (* 1 2 3)
+(1 2 3)
+-> 6
+</code></pre>
+
+<dt><a name="rel"><code>(rel var lst [any ..]) -> any</code></a>
+<dd>Defines a relation for <code>var</code> in the current class <code><a
+href="refC.html#*Class">*Class</a></code>, using <code>lst</code> as the list of
+classes for that relation, and possibly additional arguments <code>any</code>
+for its initialization. See also <a href="ref.html#dbase">Database</a>, <a
+href="refC.html#class">class</a>, <a href="refE.html#extend">extend</a>, <a
+href="refD.html#dm">dm</a> and <a href="refV.html#var">var</a>.
+
+<p><pre><code>
+(class +Person +Entity)
+(rel nm  (+List +Ref +String))                  # Names
+(rel tel (+Ref +String))                        # Telephone
+(rel adr (+Joint) prs (+Address))               # Address
+
+(class +Address +Entity)
+(rel Cit (+Need +Hook +Link) (+City))           # City
+(rel str (+List +Ref +String) Cit)              # Street
+(rel prs (+List +Joint) adr (+Person))          # Inhabitants
+
+(class +City +Entity)
+(rel nm  (+List +Ref +String))                  # Zip / Names
+</code></pre>
+
+<dt><a name="remove"><code>(remove 'cnt 'lst) -> lst</code></a>
+<dd>Removes the element at position <code>cnt</code> from <code>lst</code>. See
+also <code><a href="refI.html#insert">insert</a></code>, <code><a
+href="refP.html#place">place</a></code>, <code><a
+href="refA.html#append">append</a></code>, <code><a
+href="refD.html#delete">delete</a></code> and <code><a
+href="refR.html#replace">replace</a></code>.
+
+<p><pre><code>
+: (remove 3 '(a b c d e))
+-> (a b d e)
+: (remove 1 '(a b c d e))
+-> (b c d e)
+: (remove 9 '(a b c d e))
+-> (a b c d e)
+</code></pre>
+
+<dt><a name="replace"><code>(replace 'lst 'any1 'any2 ..) -> lst</code></a>
+<dd>Replaces in <code>lst</code> all occurrences of <code>any1</code> with
+<code>any2</code>. For optional additional argument pairs, this process is
+repeated. See also <code><a href="refA.html#append">append</a></code>, <code><a
+href="refD.html#delete">delete</a></code>, <code><a
+href="refI.html#insert">insert</a></code>, <code><a
+href="refR.html#remove">remove</a></code> and <code><a
+href="refP.html#place">place</a></code>.
+
+<p><pre><code>
+: (replace '(a b b a) 'a 'A)
+-> (A b b A)
+: (replace '(a b b a) 'b 'B)
+-> (a B B a)
+: (replace '(a b b a) 'a 'B 'b 'A)
+-> (B A A B)
+</code></pre>
+
+<dt><a name="rest"><code>(rest) -> lst</code></a>
+<dd>Can only be used inside functions with a variable number of arguments (with
+<code>@</code>). Returns the list of all remaining arguments from the internal
+list. See also <code><a href="refA.html#args">args</a></code>, <code><a
+href="refN.html#next">next</a></code>, <code><a
+href="refA.html#arg">arg</a></code> and <code><a
+href="refP.html#pass">pass</a></code>.
+
+<p><pre><code>
+: (de foo @ (println (rest)))
+-> foo
+: (foo 1 2 3)
+(1 2 3)
+-> (1 2 3)
+</code></pre>
+
+<dt><a name="reverse"><code>(reverse 'lst) -> lst</code></a>
+<dd>Returns a reversed copy of <code>lst</code>. See also <code><a
+href="refF.html#flip">flip</a></code>.
+
+<p><pre><code>
+: (reverse (1 2 3 4))
+-> (4 3 2 1)
+</code></pre>
+
+<dt><a name="rewind"><code>(rewind) -> flg</code></a>
+<dd>Sets the file position indicator for the current output stream to the
+beginning of the file, and truncates the file length to zero. Returns
+<code>T</code> when successful. See also <code><a
+href="refF.html#flush">flush</a></code>.
+
+<p><pre><code>
+</code></pre>
+
+<dt><a name="rollback"><code>(rollback) -> flg</code></a>
+<dd>Cancels a transaction, by discarding all modifications of external symbols.
+For nested transactions, only the changes since the last call to <code><a
+href="refB.html#begin">begin</a></code> are discarded. Returns <code>T</code>
+when the topmost transaction is cancelled. See also <code><a
+href="refC.html#commit">commit</a></code>.
+
+<p><pre><code>
+: (pool "db")
+-> T
+: (begin)
+-> T
+: (rollback)            # Rollback second level
+-> NIL
+: (rollback)            # Rollback top level
+-> T
+</code></pre>
+
+<dt><a name="root"><code>(root 'tree) -> (num . sym)</code></a>
+<dd>Returns the root of a database index tree, with the number of entries in
+<code>num</code>, and the base node in <code>sym</code>. See also <code><a
+href="refT.html#tree">tree</a></code>.
+
+<p><pre><code>
+: (root (tree 'nr '+Item))
+-> (7 . {7-1})
+</code></pre>
+
+<dt><a name="rot"><code>(rot 'lst ['cnt]) -> lst</code></a>
+<dd>Rotate: The contents of the cells of <code>lst</code> are (destructively)
+shifted right, and the value from the last cell is stored in the first cell.
+Without the optional <code>cnt</code> argument, the whole list is rotated.
+Otherwise only the first <code>cnt</code> elements are rotated.
+
+<p><pre><code>
+: (rot (1 2 3 4))             # Rotate all four elements
+-> (4 1 2 3)
+: (rot (1 2 3 4 5 6) 3)       # Rotate only the first three elements
+-> (3 1 2 4 5 6)
+</code></pre>
+
+<dt><a name="rpc"><code>(rpc 'sym ['any ..]) -> flg</code></a>
+<dd><i>Rapid</i> (or <i>remote</i>) procedure call: Send an executable list
+<code>(sym any ..)</code> via standard output in encoded binary format. See also
+<code><a href="refP.html#pr">pr</a></code>, <code><a
+href="refP.html#pipe">pipe</a></code>, <code><a
+href="refT.html#tell">tell</a></code> and <code><a
+href="refH.html#hear">hear</a></code>.
+
+<p><pre><code>
+: (hear (pipe (do 3 (wait 2000) (rpc 'println ''Ok))))
+-> 3
+: Ok  # every two seconds
+Ok
+Ok
+</code></pre>
+
+<dt><a name="run"><code>(run 'any ['cnt]) -> any</code></a>
+<dd>If <code>any</code> is an atom, <code>run</code> behaves like
+<code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
+sequence. The last result is returned. If a binding environment offset
+<code>cnt</code> is given, that evaluation takes place in the corresponding
+environment. See also <code><a href="refE.html#eval">eval</a></code> and
+<code><a href="refU.html#up">up</a></code>.
+
+<p><pre><code>
+: (run '((println (+ 1 2 3)) (println 'Ok)))
+6
+Ok
+-> Ok
+</code></pre>
+
+</dl>
+
+</body>
+</html>

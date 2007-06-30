@@ -1,4 +1,4 @@
-# 17dec04abu
+# 03jun07abu
 # (c) Software Lab. Alexander Burger
 
 # Convert to PDF document
@@ -77,30 +77,30 @@
 
 
 ### TeX Document ###
-(de document ("Doc" "Cls" "Typ" "Use" . "Prg")
-   (out (list "bin/lat1" (pack "Doc" ".tex"))
-      (prinl "\\documentclass[" "Cls" "]{" "Typ" "}")
-      (while "Use"
-         (if (atom (car "Use"))
-            (prinl "\\usepackage{" (pop '"Use") "}")
-            (prinl "\\usepackage[" (caar "Use") "]{" (cdr (pop '"Use")) "}") ) )
+(de document (Doc Cls Typ Use . Prg)
+   (out (list "bin/lat1" (pack Doc ".tex"))
+      (prinl "\\documentclass[" Cls "]{" Typ "}")
+      (while Use
+         (if (atom (car Use))
+            (prinl "\\usepackage{" (pop 'Use) "}")
+            (prinl "\\usepackage[" (caar Use) "]{" (cdr (pop 'Use)) "}") ) )
       (prinl "\\begin{document}")
-      (prEval "Prg")
+      (prEval Prg 2)
       (prinl "\\end{document}") )
    (call 'sh "-c"
-      (pack "latex -interaction=batchmode " "Doc" ".tex >/dev/null") )
-   (call 'rm (pack "Doc" ".aux") (pack "Doc" ".log")) )
+      (pack "latex -interaction=batchmode " Doc ".tex >/dev/null") )
+   (call 'rm (pack Doc ".aux") (pack Doc ".log")) )
 
-(de \block ("S" . "Prg")
-   (prinl "\\begin{" "S" "}")
-   (prEval "Prg")
-   (prinl "\\end{" "S" "}") )
+(de \block (S . Prg)
+   (prinl "\\begin{" S "}")
+   (prEval Prg 2)
+   (prinl "\\end{" S "}") )
 
 
 ### Tabular environment ###
-(de \table ("Fmt" . "Prg")
-   (prinl "\\begin{tabular}[c]{" "Fmt" "}")
-   (prEval "Prg")
+(de \table (Fmt . Prg)
+   (prinl "\\begin{tabular}[c]{" Fmt "}")
+   (prEval Prg 2)
    (prinl "\\end{tabular}") )
 
 (de \carry ()
@@ -145,13 +145,13 @@
 
 
 ### Letter Document Class ###
-(de \letter ("Lst" . "Prg")
-   (prin "\\begin{letter}{" (pop '"Lst"))
-   (while "Lst"
-      (when (pop '"Lst")
+(de \letter (Lst . Prg)
+   (prin "\\begin{letter}{" (pop 'Lst))
+   (while Lst
+      (when (pop 'Lst)
          (prin "\\\\" @) ) )
    (prinl "}")
-   (prEval "Prg")
+   (prEval Prg 2)
    (prinl "\\end{letter}") )
 
 (de \signature (S)

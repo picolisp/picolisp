@@ -1,4 +1,4 @@
-# 23mar07abu
+# 27jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -7,7 +7,8 @@
 
 (default *Menu 0  *Tab 1)
 
-(de htPrin (Ofs Prg)
+(de htPrin (Prg Ofs)
+   (default Ofs 1)
    (for X Prg
       (if (atom X)
          (ht:Prin (eval X Ofs))
@@ -50,6 +51,7 @@
 (de style ("X" "Prg")
    (let *Style
       (nond
+         ("X" *Style)
          (*Style "X")
          ((pair "X")
             (cond
@@ -69,6 +71,7 @@
                (T
                   (cons "X" (delete (assoc (car "X") *Style) *Style)) ) ) )
          (NIL "X") )
+      (and (up 2 @))
       (run "Prg") ) )
 
 (de <style> ("X" . "Prg")
@@ -117,7 +120,7 @@
    (tag 'span Attr 2 Prg) )
 
 (de <br> Prg
-   (htPrin 2 Prg)
+   (htPrin Prg 2)
    (prinl "<br/>") )
 
 (de ---- ()
@@ -174,21 +177,16 @@
 (de <li> (Attr . Prg)
    (tag 'li Attr 2 Prg) )
 
-(de <href> (Str Url Tar JS)
-   (prin "<a href=\"" (sesId Url))
-   (and Tar (prin "\" target=\"" Tar))
-   (prin "\"")
+(de <href> (Str Url JS)
+   (prin "<a href=\"" (sesId Url) "\"")
    (and *JS JS (prin " onclick=\"" JS ";\""))
    (and *Style (htStyle @))
    (prin '>)
    (ht:Prin Str)
    (prin "</a>") )
 
-(de <img> (Src Alt Url Tar DX DY)
-   (when Url
-      (prin "<a href=\"" (sesId Url))
-      (and Tar (prin "\" target=\"" Tar))
-      (prin "\">") )
+(de <img> (Src Alt Url DX DY)
+   (and Url (prin "<a href=\"" (sesId Url) "\">"))
    (prin "<img src=\"" (sesId Src) "\" alt=\"" Alt "\"")
    (and DX (prin " width=\"" DX "\""))
    (and DY (prin " height=\"" DY "\""))
@@ -200,7 +198,7 @@
    (prin "<a href=\"" (sesId *Url) '? Var '= (ht:Fmt Val) "\"")
    (and *Style (htStyle @))
    (prin '>)
-   (htPrin 2 Prg)
+   (htPrin Prg 2)
    (prin "</a>") )
 
 (de <table> (Attr Ttl "Head" . Prg)
@@ -212,7 +210,7 @@
                (quote
                   (for X "Head"
                      (tag 'th (car X) 2 (cdr X)) ) ) ) )
-         (htPrin 2 Prg) ) ) )
+         (htPrin Prg 2) ) ) )
 
 (de <row> (Cls . Prg)
    (tag 'tr NIL 1
@@ -286,7 +284,7 @@
          (for L Lst
             (<ul> NIL
                (nond
-                  ((car L) (htPrin 2 (cdr L)))
+                  ((car L) (htPrin (cdr L) 2))
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
                         (<li> (pack (if (= U *Url) 'act 'cmd) N)
@@ -321,11 +319,32 @@
             (<td> 'top (ht:Prin (eval (car L) 1)))
             (<td> 'sub
                (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
-   (htPrin 2 (get Lst *Tab -1)) )
+   (htPrin (get Lst *Tab -1) 2) )
 
+
+### DB Linkage ###
+(de mkUrl (Lst)
+   (pack (pop 'Lst) '?
+      (make
+         (while Lst
+            (and
+               (sym? (car Lst))
+               (= `(char '*) (char (car Lst)))
+               (link (pop 'Lst) '=) )
+            (link (ht:Fmt (pop 'Lst)))
+            (and Lst (link '&)) ) ) ) )
+
+(de <$> (Str Obj Msg)
+   (cond
+      ((not Obj) (ht:Prin Str))
+      ((=T Obj) (<href> Str (pack Msg Str)))
+      ((send (or Msg 'url>) Obj)
+         (<href> Str (mkUrl @)) )
+      (T (ht:Prin Str)) ) )
 
 # Links to previous and next object
-(de stepBtn (Var Cls Hook)
+(de stepBtn (Var Cls Hook Msg)
+   (default Msg 'url>)
    (<span> 'step
       (let
          (K
@@ -338,14 +357,31 @@
             Q1 (init (tree Var Cls Hook) K NIL)
             Q2 (init (tree Var Cls Hook) K T) )
          (or (get *ID T) (step Q1 T))
-         (if (and (step Q1 T) (url> @))
+         (if (and (step Q1 T) (send Msg @))
             (<href> "<<<" (mkUrl @))
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
          (or (get *ID T) (step Q2 T))
-         (if (and (step Q2 T) (url> @))
+         (if (and (step Q2 T) (send Msg @))
             (<href> ">>>" (mkUrl @))
             (prin "&gt;&gt;&gt;") ) ) ) )
+
+# Character Separated Values
+(off "*CSV")
+
+(de csv ("Nm" . "Prg")
+   (let "*CSV" (pack "+" (tmp "Nm" ".txt"))
+      (run "Prg")
+      (<href> "CSV" (tmp "Nm" ".txt")) ) )
+
+(de <+> (Str Obj Msg)
+   (<$> Str Obj Msg)
+   (and "*CSV" (out @ (prin Str "^I"))) )
+
+(de <-> (Str Obj Msg)
+   (<$> Str Obj Msg)
+   (and "*CSV" (out @ (prinl Str))) )
+
 
 # Interactive tree
 (de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
@@ -380,8 +416,7 @@
                (<href> (if (== "X" "Pos") "<+>" "[+]")
                   (pack "Url"
                      '? (ht:Fmt (cons NIL "L"))
-                     "#T" (max 1 (- "A" 12)) )
-                  "_self" )
+                     "#T" (max 1 (- "A" 12)) ) )
                (space)
                ("Print" (car "X"))
                (and (cdr "X") ("tree" @ "L")) ) )
@@ -390,8 +425,7 @@
                (<href> (if (== "X" "Pos") "< >" "[ ]")
                   (pack "Url"
                      "?" (ht:Fmt (cons ("Excl?" "X") "L"))
-                     "#T" (max 1 (- "A" 12)) )
-                  "_self" )
+                     "#T" (max 1 (- "A" 12)) ) )
                (space)
                ("Print" "X") ) )
          (T ("Print" "X")) )
@@ -445,12 +479,13 @@
    (ht:Prin Val)
    (prinl "\"/>") )
 
-(de <passwd> (N "Var" Flg)
+(de <passwd> (N "Var" Max Flg)
    (prin "<input type=\"password\" ")
    (htmlVar "Var")
    (prin " value=\"")
    (ht:Prin (htmlVal "Var"))
-   (prin "\" size=\"" N "\" maxlength=\"" N "\"")
+   (prin "\" size=\"" N "\"")
+   (and Max (prin " maxlength=\"" Max "\""))
    (dfltCss "passwd")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -541,3 +576,5 @@
    (dfltCss "reset")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
+
+# vi:et:ts=3:sw=3

@@ -88,10 +88,6 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
    <li><a href="#buttons">Buttons</a>
       <ul>
       <li><a href="#dialogButtons">Dialog Buttons</a>
-      </ul>
-   <li><a href="#buttonPrefix">Button Prefix Classes</a>
-      <ul>
-      <li><a href="#closeButtons">Dialog Close</a>
       <li><a href="#jsButtons">Active JavaScript</a>
       </ul>
    </ul>
@@ -175,9 +171,9 @@ forms</a>).
 
 <p>Then the <code>server</code> function is called with a port number and a
 default URL. It will listen on that port for incoming HTTP requests in an
-endless loop. Whenever a <code>GET</code> request arrives on port 8080, the file
-"project.l" will be <code><a href="ref.html#load">(load)</a></code>ed, causing
-the evaluation (= execution) of all its Lisp expressions.
+endless loop. Whenever a GET request arrives on port 8080, the file "project.l"
+will be <code><a href="refL.html#load">(load)</a></code>ed, causing the
+evaluation (= execution) of all its Lisp expressions.
 
 <p>During that execution, all data written to the current output channel is sent
 directly to to the browser. The code in "project.l" is responsible to produce
@@ -196,7 +192,7 @@ remains when
 <li>and the trailing question mark plus arguments
 </ul>
 
-are stripped off - is interpreted according so some rules. The most promient
+are stripped off - is interpreted according so some rules. The most prominent
 ones are:
 
 <p><ul>
@@ -205,7 +201,7 @@ as the name of a Lisp function to be called. All arguments following the
 question mark are passed to that function.
 
 <li>If a path ends with ".l" (a dot and a lower case 'L'), it is taken as a Lisp
-source file name to be <code><a href="ref.html#load">(load)</a></code>ed. This
+source file name to be <code><a href="refL.html#load">(load)</a></code>ed. This
 is the most common case, and we use it in our example "project.l".
 
 <li>If the extension of a file name matches an entry in the global mime type
@@ -217,8 +213,8 @@ max-age values taken from that table.
 
 </ul>
 
-<p>An application is free to extend or mody the <code>*Mimes</code> table
-with the <code>mime</code> function. For example
+<p>An application is free to extend or modify the <code>*Mimes</code> table with
+the <code>mime</code> function. For example
 
 <p><pre><code>
 (mime "doc" "application/msword" 60)
@@ -245,15 +241,17 @@ encoded in the URL, or assigned to global variables before a file is loaded.
 <p><hr>
 <h3><a name="security">Security</a></h3>
 
-<p>It is, ouf course, a huge security whole that - directly from the URL - any
+<p>It is, of course, a huge security whole that - directly from the URL - any
 Lisp source file can be loaded, and any Lisp function can be called. For that
 reason, applications must take care to declare exactly which files and functions
-are to be allowed in URLs. The server checks a global variable
-<code>*Allow</code>, and - when its value is non-<code>NIL</code> - denies
-access to anything that does not match its contents.
+are to be allowed in URLs. The server checks a global variable <code><a
+href="refA.html#*Allow">*Allow</a></code>, and - when its value is
+non-<code>NIL</code> - denies access to anything that does not match its
+contents.
 
 <p>Normally, <code>*Allow</code> is not manipulated directly, but set with the
-<code>allowed</code> and <code>allow</code> functions
+<code><a href="refA.html#allowed">allowed</a></code> and <code><a
+href="refA.html#allow">allow</a></code> functions
 
 <p><pre><code>
 (allowed ("img/" "demo/")
@@ -280,7 +278,7 @@ allowed items.
 <p><hr>
 <h3><a name="htmlFoo">The <code>html</code> Function</a></h3>
 
-<p>Now back to our "Hello World" exmaple. In principle, you could write
+<p>Now back to our "Hello World" example. In principle, you could write
 "project.l" as a sequence of print statements
 
 <p><pre><code>
@@ -320,7 +318,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-: # (hit <code>RETURN</code> here to terminate the Pico Lisp Shell)
+: # (type ENTER here to terminate the Pico Lisp Shell)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -401,8 +399,8 @@ the effects with the <code>&lt;h1&gt;</code> tag function.
 &lt;h1 class="foo"&gt;Title&lt;/h1&gt;
 </code></pre>
 
-<p>For a cons pair, the <code>CAR</code> is taken as an attribute name, and the
-<code>CDR</code> as the attribute's value
+<p>For a cons pair, the CAR is taken as an attribute name, and the CDR as the
+attribute's value
 
 <p><pre><code>
 : (&lt;h1&gt; '(id . bar) "Title")
@@ -590,9 +588,9 @@ simpler <code>&lt;grid&gt;</code> function might be convenient:
 ########################################################################
 </code></pre>
 
-<p>It just takes a specification for the number of colums (here: 3) as its first
-argument, and then a single expression for each cell. Instead of a number, you
-can also pass a list of CSS atributes. Then the length of that list will
+<p>It just takes a specification for the number of columns (here: 3) as its
+first argument, and then a single expression for each cell. Instead of a number,
+you can also pass a list of CSS attributes. Then the length of that list will
 determine the number of columns. You can change the second line in the above
 example to
 
@@ -675,8 +673,8 @@ name, followed by arbitrary code (typically HTML tags).
 <h2><a name="forms">Interactive Forms</a></h2>
 
 <p>In HTML, the only possibility for user input is via <code>&lt;form&gt;</code>
-and <code>&lt;input&gt;</code> elements, using the HTTP <code>POST</code> method
-to communicate with the server.
+and <code>&lt;input&gt;</code> elements, using the HTTP POST method to
+communicate with the server.
 
 <p>"lib/xhtml.l" defines a function called <code>&lt;post&gt;</code>, and a
 collection of input tag functions, which allow direct programming of HTML forms.
@@ -706,10 +704,10 @@ for example store its value in a database.
 global variables. Each input field on the page needs an associated variable for
 the round trip between server and client.
 
-<li>they do not preserve an application's internal state. Each <code>POST</code>
-request spawns an individual process on the server, which sets the global
-variables to their new values, generates the HTML page, and terminates
-thereafter. The application state has to be passed along explicitly, e.g. using
+<li>they do not preserve an application's internal state. Each POST request
+spawns an individual process on the server, which sets the global variables to
+their new values, generates the HTML page, and terminates thereafter. The
+application state has to be passed along explicitly, e.g. using
 <code>&lt;hidden&gt;</code> tags.
 
 <li>they are not very interactive. There is typically only a single submit
@@ -772,8 +770,8 @@ variable,
 client.
 
 <p>You can terminate this process (like any interactive Pico Lisp) by hitting
-<code>RETURN</code> on an empty line. Otherwise, it will terminate by itself if
-no other browser requests arrive within a default timeout period of 15 minutes.
+ENTER on an empty line. Otherwise, it will terminate by itself if no other
+browser requests arrive within a default timeout period of 15 minutes.
 
 <p>To start a (non-debug) production version, the server is commonly started
 without "dbg.l", and with <code>-wait</code>
@@ -824,10 +822,10 @@ hold the contents of the input field. Instead, we gave a local, symbolic name
 
 <p><code>(: home)</code> is always the form which contains this GUI component.
 So <code>(: home a)</code> evaluates to the component '<code>a</code>' in the
-current form. As <code>msg</code> prints its argument to standard error, and the
-<code>val&gt;</code> method retrieves the current contents of a component, we
-will see on the console the text typed into the text field when we press the
-button.
+current form. As <code><a href="refM.html#msg">msg</a></code> prints its
+argument to standard error, and the <code>val&gt;</code> method retrieves the
+current contents of a component, we will see on the console the text typed into
+the text field when we press the button.
 
 <p>An <code>action</code> without embedded <code>form</code>s - or a
 <code>form</code> without a surrounding <code>action</code> - does not make much
@@ -875,56 +873,52 @@ Here, '<code>a</code>' is an alias name for a component of type
 text field, specifying its width. See the chapter on <a href="#guiClasses">GUI
 Classes</a> for more examples.
 
-<p>During a <code>GET</code> request, <code>gui</code> is basically a frontend
-to <code>new</code>. It builds a component, stores it in the internal structures
-of the current form, and initializes it by sending the <code>init&gt;</code>
+<p>During a GET request, <code>gui</code> is basically a frontend to
+<code>new</code>. It builds a component, stores it in the internal structures of
+the current form, and initializes it by sending the <code>init&gt;</code>
 message to the component. Finally, it sends it the <code>show&gt;</code>
 message, to produce HTML code and transmit it to the browser.
 
-<p>During a <code>POST</code> request, <code>gui</code> does not build any new
-components. Instead, the existing components are re-used. So <code>gui</code>
-does not have much more to do than sending the <code>show&gt;</code> message to
-a component.
+<p>During a POST request, <code>gui</code> does not build any new components.
+Instead, the existing components are re-used. So <code>gui</code> does not have
+much more to do than sending the <code>show&gt;</code> message to a component.
 
 
 <h4><a name="ctlFlow">Control Flow</a></h4>
 
-<p>HTTP has only two methods to change a browser window: <code>GET</code> and
-<code>POST</code>. We employ these two methods in a certain defined, specialized
-way:
+<p>HTTP has only two methods to change a browser window: GET and POST. We employ
+these two methods in a certain defined, specialized way:
 
 <p><ul>
-<li><code>GET</code> means, a <b>new page</b> is being constructed. It is used
-when a page is visited for the first time, usually by entering an URL into the
-browser's address field, or by clicking on a link (which is often a <a
+<li>GET means, a <b>new page</b> is being constructed. It is used when a page is
+visited for the first time, usually by entering an URL into the browser's
+address field, or by clicking on a link (which is often a <a
 href="#menus">submenu item or tab</a>).
 
-<li><code>POST</code> is always directed to the <b>same page</b>. It is
-triggered by a button press, updates the corresponding form's data structures,
-and executes that button's action code.
+<li>POST is always directed to the <b>same page</b>. It is triggered by a button
+press, updates the corresponding form's data structures, and executes that
+button's action code.
 
 </ul>
 
 <p>A button's action code can do almost anything: Read and modify the contents
 of input fields, communicate with the database, display alerts and dialogs, or
-even fake the <code>POST</code> request to a <code>GET</code>, with the effect
-of showing a completely different document (See <a href="#switching">Switching
-URLs</a>).
+even fake the POST request to a GET, with the effect of showing a completely
+different document (See <a href="#switching">Switching URLs</a>).
 
-<p><code>GET</code> builds up all GUI components on the server. These components
-are objects which encapsulate state and behavior of the HTML page in the
-browser. Whenever a button is pressed, the page is reloaded via a
-<code>POST</code> request. Then - before any output is sent to the browser - the
-<code>action</code> function takes control. It performs error checks on all
-components, processes possible user input on the HTML page, and stores the
-values in correct format (text, number, date, object etc.) in each component.
+<p>GET builds up all GUI components on the server. These components are objects
+which encapsulate state and behavior of the HTML page in the browser. Whenever a
+button is pressed, the page is reloaded via a POST request. Then - before any
+output is sent to the browser - the <code>action</code> function takes control.
+It performs error checks on all components, processes possible user input on the
+HTML page, and stores the values in correct format (text, number, date, object
+etc.) in each component.
 
 <p>The state of a form is preserved over time. When the user returns to a
-previous page with the browser's <code>BACK</code> button, that state is
-reactivated, and may be <code>POST</code>ed again. (However, this does
-<i>not</i> work well with browsers which do not allow to revisit a previously
-posted page (e.g. MSIE), and also not when returning to an already disposed
-(closed) dialog)
+previous page with the browser's BACK button, that state is reactivated, and may
+be POSTed again. (However, this does <i>not</i> work well with browsers which do
+not allow to revisit a previously posted page (e.g. MSIE), and also not when
+returning to an already disposed (closed) dialog)
 
 <p>The following silly example displays two text fields. If you enter some text
 into the "Source" field, you can copy it in upper or lower case to the
@@ -1050,7 +1044,7 @@ beginning, it displays a simple form, with a locked text field, and two buttons
 ########################################################################
 </code></pre>
 
-<p>The <code>+Init</code> prefix class initialises the "My Text" field with the
+<p>The <code>+Init</code> prefix class initializes the "My Text" field with the
 string "Initial Text". As the field is locked, you cannot modify this value
 directly.
 
@@ -1059,8 +1053,8 @@ dispose it by pressing "Ok".
 
 <p>The second button brings up a dialog with an editable text field, containing
 a copy of the value from the form's locked text field. You can modify this
-value, and send it back to the form, if you press "Re-Submit" and aswer "Yes" to
-the "Are you sure?" alert.
+value, and send it back to the form, if you press "Re-Submit" and answer "Yes"
+to the "Are you sure?" alert.
 
 
 <h4><a name="calc">A Calculator Example</a></h4>
@@ -1097,8 +1091,8 @@ href="http://localhost:8080">http://localhost:8080</a></code>'.
 <p>The code for the calculator logic and the GUI is rather straightforward. The
 entry point is the single function <code>calculator</code>. It is called
 directly (as described in <a href="#urlSyntax">URL Syntax</a>) as the server's
-default URL, and implicitly in all <code>POST</code> requests. No further file
-access is needed once the calculator is running.
+default URL, and implicitly in all POST requests. No further file access is
+needed once the calculator is running.
 
 <p>Note that for a production application, we inserted an allow-statement (as
 recommended by the <a href="#security">Security</a> chapter)
@@ -1116,7 +1110,7 @@ set by the operator buttons to indicate that the next digit should initialize
 the accumulator to zero. <code>*Accu</code> is the accumulator. It is always
 displayed in the numeric input field, accepts user input, and it holds the
 results of calculations. <code>*Stack</code> is a push-down stack, holding
-postopned calculations (operators, priorities and intermediate results) with
+postponed calculations (operators, priorities and intermediate results) with
 lower-priority operators, while calculations with higher-priority operators are
 performed.
 
@@ -1160,7 +1154,7 @@ functionality of the calculator. The user can enter numbers into the input
 field, either by using the digit buttons, or by directly typing them in, and
 perform calculations with the operator buttons. Supported operations are
 addition, subtraction, multiplication, division, sign inversion, square root and
-power (all in bignum integer arithmethic). The '<code>C</code>' button just
+power (all in bignum integer arithmetic). The '<code>C</code>' button just
 clears the accumulator, while the '<code>A</code>' button also clears all
 pending calculations.
 
@@ -1294,8 +1288,8 @@ classes <code>+UpButton</code> and <code>+DnButton</code>
                (&lt;row&gt; NIL
                   (gui 1 '(+TextField) 20)
                   (gui 2 '(+NumField) 10) ) ) )
-         (gui '(+JS +UpButton) 1)               # Inserted two buttons
-         (gui '(+JS +DnButton) 1)
+         (gui '(+UpButton) 1)                   # Inserted two buttons
+         (gui '(+DnButton) 1)
          (----)
          (&lt;submit&gt; "Save") ) ) )
 ########################################################################
@@ -1367,8 +1361,8 @@ of numbers, but expands in the GUI to show also a textual form of each number
                (&lt;row&gt; NIL
                   (gui 1 '(+NumField) 9)
                   (gui 2 '(+Lock +TextField) 90) ) ) )
-         (gui '(+JS +UpButton) 1)
-         (gui '(+JS +DnButton) 1)
+         (gui '(+UpButton) 1)
+         (gui '(+DnButton) 1)
          (----)
          (&lt;submit&gt; "Save") ) ) )
 ########################################################################
@@ -1420,8 +1414,8 @@ supposed to accept any user input.
 <p>When you start up this form in your browser, you'll see three pre-filled
 lines with "1/eins", "5/fünf" and "7/sieben", according to the
 <code>+Init</code> argument <code>(1 5 7)</code>. Typing a number somewhere into
-the first column, and pressing <code>RETURN</code> or one of the buttons, will
-show a suitable text in the second column.
+the first column, and pressing ENTER or one of the buttons, will show a suitable
+text in the second column.
 
 
 <p><hr>
@@ -1433,7 +1427,7 @@ in combination with prefix classes like <code>+Lock</code>, <code>+Init</code>
 or <code>+Able</code>. Now we take a broader look at the whole hierarchy, and
 try more examples.
 
-<p>The abstract class <code>+gui</code> is the base of all GUI classes. A life
+<p>The abstract class <code>+gui</code> is the base of all GUI classes. A live
 view of the class hierarchy can be obtained with the <code>dep</code>
 ("dependencies") function:
 
@@ -1446,6 +1440,7 @@ view of the class hierarchy can be obtained with the <code>dep</code>
          +TelField
          +ListTextField
          +PwField
+         +SexField
          +UpField
          +SymField
          +DateField
@@ -1460,10 +1455,13 @@ view of the class hierarchy can be obtained with the <code>dep</code>
       +Checkbox
    +Button
       +DnButton
+      +ShowButton
+      +DelRowButton
+      +BubbleButton
       +ChoButton
       +ClrButton
-      +DelCurrButton
-      +DstButton
+      +PickButton
+         +DstButton
       +UpButton
    +JsField
 -> +gui
@@ -1477,6 +1475,7 @@ Inspecting <code>+DnButton</code> directly
 : (dep '+DnButton)
    +Tiny
    +Rid
+   +JS
    +Able
       +gui
    +Button
@@ -1489,7 +1488,7 @@ Inspecting <code>+DnButton</code> directly
 definition of <code>+DnButton</code> can be found in "lib/form.l"
 
 <p><pre><code>
-(class +DnButton +Tiny +Rid +Able +Button)
+(class +DnButton +Tiny +Rid +JS +Able +Button)
 ...
 </code></pre>
 
@@ -1542,7 +1541,7 @@ get a text area:
    (gui '(+TextField) '("Value 1" "Value 2" "Value 3"))
 </code></pre>
 
-<p>In addition to these arguments, you can pass an string. Then the field is
+<p>In addition to these arguments, you can pass a string. Then the field is
 created with a label:
 
 <p><pre><code>
@@ -1559,7 +1558,7 @@ created with a label:
 
 <p>This makes mainly sense in combination with prefix classes like
 <code>+Var</code> and <code>+Obj</code>, to manage the contents of these fields,
-and achive special behavior as HTML links or scrollable chart values.
+and achieve special behavior as HTML links or scrollable chart values.
 
 
 <h4><a name="numberFields">Numeric Input Fields</a></h4>
@@ -1610,7 +1609,7 @@ accepts/returns scaled fixpoint numbers.
 <h4><a name="timeDateFields">Time &amp; Date</a></h4>
 
 <p>A <code>+DateField</code> accepts and returns a <code><a
-href="ref.html#date">date</a></code> value.
+href="refD.html#date">date</a></code> value.
 
 <p><pre><code>
 ########################################################################
@@ -1628,12 +1627,17 @@ href="ref.html#date">date</a></code> value.
 </code></pre>
 
 <p>The format displayed to - and entered by - the user depends on the current
-locale. You can change it, for example to
+locale (see <code><a href="refD.html#datStr">datStr</a></code> and <code><a
+href="refE.html#expDat">expDat</a></code>). You can change it, for example to
 
 <p><pre><code>
 : (locale "DE" "de")
 -> NIL
 </code></pre>
+
+<p>If no locale is set, the format is YYYY-MM-DD. Some pre-defined locales use
+patterns like DD.MM.YYYY (DE), YYYY/MM/DD (JP), DD/MM/YYYY (UK), or MM/DD/YYYY
+(US).
 
 <p>An error is issued when user input does not match the current locale's date
 format.
@@ -1653,7 +1657,7 @@ year:
 </ul>
 
 <p>Similar is the <code>+TimeField</code>. It accepts and returns a <code><a
-href="ref.html#time">time</a></code> value.
+href="refT.html#time">time</a></code> value.
 
 <p><pre><code>
 ########################################################################
@@ -1688,15 +1692,16 @@ leading plus sign or zero) followed by the local phone number (ideally separated
 by spaces) and the phone extension (ideally separated by a hyphen). The exact
 format of the phone number string is not enforced by the GUI, but further
 processing (e.g. database searches) normally uses <code><a
-href="ref.html#fold">fold</a></code> for better reproducibility.
+href="refF.html#fold">fold</a></code> for better reproducibility.
 
 <p>To display a phone number, <code>+TelField</code> replaces the country code
-with a single zero (if it is the country code of the current locale), or
-prepends it with a plus sign (if it is a foreign country).
+with a single zero if it is the country code of the current locale, or prepends
+it with a plus sign if it is a foreign country (see <code><a
+href="refT.html#telStr">telStr</a></code>).
 
 <p>For user input, a plus sign or a double zero is simply dropped, while a
-single leading zero is replaced with the current locale's country code and a
-space.
+single leading zero is replaced with the current locale's country code (see
+<code><a href="refE.html#expTel">expTel</a></code>).
 
 <p><pre><code>
 ########################################################################
@@ -1759,9 +1764,8 @@ the list of arguments to the <code>gui</code> function.
 
 <p><code>+Init</code> overrides the <code>init&gt;</code> method for that
 component. The <code>init&gt;</code> message is sent to a <code>+gui</code>
-component when the page is loaded for the first time (during a <code>GET</code>
-request). <code>+Init</code> takes an expression for the initial value of that
-field.
+component when the page is loaded for the first time (during a GET request).
+<code>+Init</code> takes an expression for the initial value of that field.
 
 <p><pre><code>
    (gui '(+Init +TextField) "This is the initial text" 30)
@@ -1791,9 +1795,9 @@ and enabling of individual components, or of a whole form.
 
 <p>The <code>+Able</code> prefix class takes an argument expression, and
 disables the component if this expression returns <code>NIL</code>. We saw an
-example for its usage already in the <a href="#sqrtButton">sqare root button</a>
-of the calculator example. Or, for illustration purposes, imagine a button which
-is supposed to be enabled only after Christmas
+example for its usage already in the <a href="#sqrtButton">square root
+button</a> of the calculator example. Or, for illustration purposes, imagine a
+button which is supposed to be enabled only after Christmas
 
 <p><pre><code>
    (gui '(+Able +Button)
@@ -1875,10 +1879,10 @@ upper case characters, while returning lower case characters internally
 </code></pre>
 
 <p><code>+Map</code> does (like <code>+Fmt</code>) a two-way translation. It
-uses a list of cons pairs for a linear lookup, where the <code>CAR</code>s
-represent the displayed values which are internally mapped to the values in the
-<code>CDR</code>s. If a value is not found in this list during
-<code>set&gt;</code> or <code>val&gt;</code>, it is passed through unchanged.
+uses a list of cons pairs for a linear lookup, where the CARs represent the
+displayed values which are internally mapped to the values in the CDRs. If a
+value is not found in this list during <code>set&gt;</code> or
+<code>val&gt;</code>, it is passed through unchanged.
 
 <p>Normally, <code>+Map</code> is used in combination with the combo box
 incarnation of text fields (see <a href="#inputFields">Input Fields</a>). This
@@ -1903,7 +1907,7 @@ or 3 internally
 
 <h4><a name="sideEffects">Side Effects</a></h4>
 
-<p>Whenenver a button is pressed in the GUI, any changes caused by
+<p>Whenever a button is pressed in the GUI, any changes caused by
 <code>action</code> in the current environment (e.g. the database or application
 state) need to be reflected in the corresponding GUI fields. For that, the
 <code>upd&gt;</code> message is sent to all components. Each component then
@@ -1993,7 +1997,7 @@ structures, which are usually either variables or database objects.
 
 <p>The <code>+Var</code> prefix class takes a variable (described as the
 <code>var</code> data type - either a symbol or a cell - in the <a
-href="ref.html#foo">Function Reference</a>). In the following example, we
+href="ref.html#fun">Function Reference</a>). In the following example, we
 initialize a global variable with the value "abc", and let a
 <code>+TextField</code> operate on it. The "Print" button can be used to display
 its current value.
@@ -2014,10 +2018,9 @@ its current value.
 </code></pre>
 
 <p><code>+E/R</code> takes an entity/relation specification. This is a cell,
-with a relation in its <code>CAR</code> (e.g. <code>nm</code>, for an object's
-name), and an expression in its <code>CDR</code> (typically <code>(: home
-obj)</code>, the object stored in the <code>obj</code> property of the current
-form).
+with a relation in its CAR (e.g. <code>nm</code>, for an object's name), and an
+expression in its CDR (typically <code>(: home obj)</code>, the object stored in
+the <code>obj</code> property of the current form).
 
 <p>For an isolated, simple example, we create a temporary database, and access
 the <code>nr</code> and <code>nm</code> properties of an object stored in a
@@ -2047,28 +2050,84 @@ global variable <code>*Obj</code>.
 <p><hr>
 <h3><a name="buttons">Buttons</a></h3>
 
-<p>*** TO BE DONE ***
+<p>Buttons are, as explained in <a href="#ctlFlow">Control Flow</a>, the only
+way (via POST requests) for an application to communicate with the server.
+
+<p>Basically, a <code>+Button</code> takes
+
+<ul>
+<li>a label, which may be either a string or the name of an image file
+<li>an optional alternative label, shown when the button is disabled
+<li>and an executable expression.
+</ul>
+
+<p>Here is a minimal button, with just a label and an expression:
+
+<p><pre><code>
+   (gui '(+Button) "Label" '(doSomething))
+</code></pre>
+
+<p>And this is a button displaying different labels, depending on the state:
+
+<p><pre><code>
+   (gui '(+Button) "Enabled" "Disabled" '(doSomething))
+</code></pre>
+
+<p>To show an image instead of plain text, the label(s) must be preceeded by the
+<code>T</code> symbol:
+
+<p><pre><code>
+   (gui '(+Button) T "img/enabled.png" "img/disabled.png" '(doSomething))
+</code></pre>
+
+<p>The expression will be executed during <code>action</code> handling (see <a
+href="#actionForms">Action Forms</a>), when this button was pressed.
+
+<p>Like other components, buttons can be extended and combined with prefix
+classes, and a variety of predefined classes and class combinations are
+available.
 
 
 <h4><a name="dialogButtons">Dialog Buttons</a></h4>
 
-<p>*** TO BE DONE ***
+<p>Buttons are essential for the handling of <a href="#dialogs">alerts and
+dialogs</a>. Besides buttons for normal functions, like <a
+href="#scrolling">scrolling</a> in charts or other <a href="#sideEffects">side
+effects</a>, special buttons exist which can <i>close</i> an alert or dialog in
+addition to doing their principal job.
 
-
-<p><hr>
-<h3><a name="buttonPrefix">Button Prefix Classes</a></h3>
-
-<p>*** TO BE DONE ***
-
-
-<h4><a name="closeButtons">Dialog Close</a></h4>
-
-<p>*** TO BE DONE ***
+<p>Such buttons are usually subclasses of <code>+Close</code>, and most of them
+can be called easily with ready-made functions like <code>closeButton</code>,
+<code>cancelButton</code>, <code>yesButton</code> or <code>noButton</code>. We
+saw a few examples in <a href="#dialogs">Alerts and Dialogs</a>.
 
 
 <h4><a name="jsButtons">Active JavaScript</a></h4>
 
-<p>*** TO BE DONE ***
+<p>When a button inherits from the <code>+JS</code> class (and JavaScript is
+enabled in the browser), that button will possibly show a much faster response
+in its action.
+
+<p>The reason is that the activation of a <code>+JS</code> button will - instead
+of doing a normal POST - first try to send only the contents of all GUI
+components via an XMLHttpRequest to the server, and receive the updated values
+in response. This avoids the flicker caused by reloading and redering of the
+whole page, is much faster, and also does not jump to the beginning of the page
+if it is larger than the browser window. The effect is especially noticeable
+while scrolling in charts.
+
+<p>Only if this fails, for example because an error message was issued or a
+dialog popped up, it will fall back, and the form will be POSTed in the normal
+way.
+
+<p>Thus it makes no sense to use the <code>+JS</code> prefix for buttons that
+cause a change of the HTML code, open a dialog, or jump to another page. In such
+cases, overall performance will even be worse, because the XMLHttpRequest is
+tried first (but in vain).
+
+<p>When JavaScript is disabled int the browser, the XMLHttpRequest will not be
+tried at all. The form will be fully usable, though, with identical
+functionality and behavior, just a bit slower and not so smooth.
 
 
 <p><hr>
@@ -2081,14 +2140,14 @@ easily modified and extended. In fact, we use it as templates for our own
 production application development.
 
 <p>It is a kind of simplified ERP system, containing customers/suppliers,
-products (items), and orders. The order input form performs life updates of
+products (items), and orders. The order input form performs live updates of
 customer and product selections, price, inventory and totals calculations, and
 generates on-the-fly PDF documents. Fine-grained access permissions are
 controlled via users, roles and permissions. It comes localized in three
 languages (English, German and Japanese), with a some initial data and two
 sample reports.
 
-<p>All in about 700 lines of code.
+<p>All in less than 700 lines of code.
 
 
 <p><hr>
@@ -2151,7 +2210,7 @@ a link somewhere else).
 
 <p>Each item in the "Data" or "System" submenu opens a search dialog for that
 class of entities. You can specify a search pattern, press the top right
-"Search" button, and scroll through the list of results.
+"Search" button (or just ENTER), and scroll through the list of results.
 
 <p>While the "Role" and "User" entities present simple dialogs (searching just
 by name), other entities can be searched by a variety of criteria. In those
@@ -2193,26 +2252,9 @@ careful here to select the right column: Some dialogs (those for "Item" and
 determined by its entity class.
 
 <p>The basic layout should be consistent for all classes: Below the heading
-(which is usually the same as the invoking menu item) is a line with the
-object's identifier (name, number, etc.) on the left, and a "Delete" button, a
-"Select" button and two navigation links on the right side.
-
-<p>The "Delete" button pops up an alert, asking for confirmation. If the object
-is indeed deleted, this button changes to "Restore" and allows to un-delete the
-object. Note that objects are never completely deleted from the database as long
-as there are any references from other objects. When a "deleted" object is
-shown, its identifier appears in square brackets.
-
-<p>The "Select" button (re-)displays the search dialog for this class of
-entities. The search criteria are preserved between invocations of each dialog,
-so that you can conveniently browse objects in this context.
-
-<p>The navigation links, pointing left and right, serve a similar purpose. They
-let you step sequentially through all objects of this class, in the order of the
-identifier's index.
-
-<p>Other buttons, depending on the entity, are usually arranged at the bottom of
-the form. The bottom rightmost one should always be the "Edit" button.
+(which is usually the same as the invoking menu item) is the object's identifier
+(name, number, etc.), and then a row with an "Edit" button on the left, and
+"Delete" button, a "Select" button and two navigation links on the right side.
 
 <p>The form is brought up initially in read-only mode. This is necessary to
 prevent more than one user from modifying an object at the same time (and
@@ -2226,6 +2268,24 @@ will see a message telling his name and process ID.
 
 <p>An exception to this are objects that were just created with "New". They will
 automatically be reserved for you, and the "Edit" button will show up as "Save".
+
+<p>The "Delete" button pops up an alert, asking for confirmation. If the object
+is indeed deleted, this button changes to "Restore" and allows to undelete the
+object. Note that objects are never completely deleted from the database as long
+as there are any references from other objects. When a "deleted" object is
+shown, its identifier appears in square brackets.
+
+<p>The "Select" button (re-)displays the search dialog for this class of
+entities. The search criteria are preserved between invocations of each dialog,
+so that you can conveniently browse objects in this context.
+
+<p>The navigation links, pointing left and right, serve a similar purpose. They
+let you step sequentially through all objects of this class, in the order of the
+identifier's index.
+
+<p>Other buttons, depending on the entity, are usually arranged at the bottom of
+the form. The bottom rightmost one should always be another "Edit" / "Save"
+button.
 
 <p>The name of the "Save" button is actually a misnomer. As we said in the
 chapter on <a href="#scrolling">Scrolling</a>, any button in the form will save
@@ -2305,12 +2365,12 @@ method calculates the current stock of this item as the difference of the
 inventory and the sold item counts.
 
 <p>The call to <code>dbs</code> at the end of "app/er.l" configures the physical
-database storage. Each of the supplied lists has a number in its
-<code>CAR</code> which determines the block size as (64 &lt;&lt; N) of the
-corresponding database file. The <code>CDR</code> says that the instances of
-this class (if the element is a class symbol) or the tree nodes (if the element
-is a list of a class symbol and a property name) are to be placed into that
-file. This allows for some optimizations in the database layout.
+database storage. Each of the supplied lists has a number in its CAR which
+determines the block size as (64 &lt;&lt; N) of the corresponding database file.
+The CDR says that the instances of this class (if the element is a class symbol)
+or the tree nodes (if the element is a list of a class symbol and a property
+name) are to be placed into that file. This allows for some optimizations in the
+database layout.
 
 
 <p><hr>
@@ -2380,7 +2440,7 @@ current locale. It will be formatted with two places after the decimal
 separator.
 
 <p>The "Memo" is for an arbitrary info text, like in <a
-href="#cuSu">Customer/Suppliert</a> above, stored in a database blob.
+href="#cuSu">Customer/Supplier</a> above, stored in a database blob.
 
 <p>Finally, a JPEG picture can be stored in a blob for this item. Choose a file
 with the browser's file select control, and click on the "Install" button. The
@@ -2424,6 +2484,10 @@ if you want to continue with the entry of more positions.
 <p>The "x" button at the right of each position deletes that position without
 further confirmation. It has to be used with care!
 
+<p>The "^" button is a "bubble" button. It exchanges a row with the row above it.
+Therefore, it can be used to rearrange all items in a chart, by "bubbling" them
+to their desired positions.
+
 <p>The "PDF-Print" button generates and displays a PDF document for this order.
 The browser should be configured to display downloaded PDF documents in an
 appropriate viewer. The source for the postscript generating method is in
@@ -2436,16 +2500,19 @@ of positions.
 <p align=right>Sources in "app/inventory.l and "app/sales.l"
 
 <p>The two reports ("Inventory" and "Sales") come up with a few search fields
-and a "Show Report" button.
+and a "Show" button.
 
-<p>If no search criteria are entered, the "Show Report" button will produce a
-listing of the relevant part of the whole database. This may take a long time
-and cause a heavy load on the browser if the database is large.
+<p>If no search criteria are entered, the "Show" button will produce a listing
+of the relevant part of the whole database. This may take a long time and cause
+a heavy load on the browser if the database is large.
 
 <p>So in the normal case, you will limit the domain by stating a range of item
 numbers, a description pattern, and/or a supplier for the inventory report, or a
 range of order dates and/or a customer for the sales report. If a value in a
 range specification is omitted, the range is considered open in that direction.
+
+<p>At the end of each report appears a "CSV" link. It downloads a file with the
+TAB-separated values generated by this report.
 
 
 <p><hr>
@@ -2455,6 +2522,9 @@ range specification is omitted, the range is considered open in that direction.
 <li>Returning to a previous page with the browser's back button may show an
 incorrect state. It has to be used with care. This is a problem inherent to HTML
 GUIs.
+
+<li>Localization may not work properly on file systems that do not distinguish
+between upper and lower case names (See the note for Cygwin in INSTALL).
 
 <li>There are problems with XMLHttpRequest on Mac OS X when connecting to a
 server on localhost. It happens that there is no response at all (instead of

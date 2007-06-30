@@ -1,4 +1,4 @@
-# 24mar07abu
+# 13jun07abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(@1 Positionen)"
@@ -13,13 +13,14 @@
 "Country" "Land"
 "Customer" "Kunde"
 "Customer/Supplier" "Kunde/Lieferant"
+"Customers/Suppliers" "Kunden/Lieferanten"
 "Customer/Supplier No. @1" "Kunden/Lieferanten Nr. @1"
 
 "Data" "Daten"
 "Date" "Datum"
 "Description" "Bezeichnung"
 
-"EMail" "EMail"
+"eMail" "eMail"
 
 "Fax" "Fax"
 "Full Name" "Vollständiger Name"
@@ -29,6 +30,7 @@
 "Install" "Installieren"
 "Inventory" "Lagerbestand"
 "Item" "Artikel"
+"Items" "Artikel"
 "Item No. @1" "Artikel Nr. @1"
 
 "Login Name" "Login-Name"
@@ -41,6 +43,7 @@
 "Number" "Nummer"
 
 "Order" "Bestellung"
+"Orders" "Bestellungen"
 "Order No. @1" "Bestellung Nr. @1"
 
 "Picture" "Bild"
@@ -50,14 +53,11 @@
 
 "Quantity" "Menge"
 
-"Reset" "Löschen"
 "Report" "Auswertung"
 "Role '@1'" "Rolle '@1'"
 "Role Administration" "Rollenverwaltung"
 
 "Sales" "Verkauf"
-"Search" "Suchen"
-"Show Report" "Auswertung anzeigen"
 "Street" "Straße"
 "Supplier" "Lieferant"
 "System" "System"

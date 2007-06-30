@@ -1,4 +1,4 @@
-# 21jan07abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 # *Init *Accu *Stack
@@ -20,7 +20,7 @@
 
 (de operand (Foo Prio)
    (when (>= (cadar *Stack) Prio) (calc))
-   (push '*Stack (cons Foo (cons Prio *Accu)))
+   (push '*Stack (cons Foo Prio *Accu))
    (on *Init) )
 
 (de finish ()

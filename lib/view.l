@@ -1,4 +1,4 @@
-# 12nov04abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/draw.l")
@@ -26,7 +26,7 @@
          (mapcar
             '((S)
                (prog1
-                  (cons S (cons X 36))
+                  (cons S X 36)
                   (inc 'X
                      (* (: home adv)
                         (if (atom S)
@@ -165,3 +165,5 @@
                (view> Obj This 20 20) )
             "" 800 600 )
          (closeButton) ) ) )
+
+# vi:et:ts=3:sw=3

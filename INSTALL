@@ -1,4 +1,4 @@
-21jan07abu
+10apr07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -12,6 +12,9 @@ without problems.
 
 By default, Pico Lisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.
+
+Note: In Cygwin, the directory where you unpack the distribution should be
+mounted with the "managed" option, to avoid file name conflicts.
 
 
 Please follow these steps:

@@ -1,33 +1,33 @@
-# 15feb07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
 # "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF" "*UL"
 
-(de pdf ("Nm" . "Prg")
-   (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
-      (out (list "bin/lat1" "Ps") (prEval "Prg"))
+(de pdf (Nm . Prg)
+   (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
+      (out (list "bin/lat1" Ps) (run Prg 1))
       (_pdf)
-      "Pdf" ) )
+      Pdf ) )
 
-(de psOut ("How" "Nm" . "Prg")
-   (ifn "Nm"
-      (out (list "bin/lat1" "-lpr" (pack "-P" "How")) (prEval "Prg"))
-      (let ("Ps" (tmp "Nm" ".ps") "Pdf" (tmp "Nm" ".pdf"))
-         (out (list "bin/lat1" "Ps") (prEval "Prg"))
+(de psOut (How Nm . Prg)
+   (ifn Nm
+      (out (list "bin/lat1" "-lpr" (pack "-P" How)) (run Prg 1))
+      (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
+         (out (list "bin/lat1" Ps) (run Prg 1))
          (cond
-            ((not "How") (_pdf) (url "Pdf" "PDF"))
-            ((=0 "How") (_pdf) (url "Pdf"))
-            ((=T "How") (_pdf) (httpEcho "Pdf" "application/pdf" 1))
-            ((fun? "How") ("How" "Ps") (_pdf))
-            (T (call 'lpr (pack "-P" "How") "Ps") (_pdf)) )
-         "Pdf" ) ) )
+            ((not How) (_pdf) (url Pdf "PDF"))
+            ((=0 How) (_pdf) (url Pdf))
+            ((=T How) (_pdf) (httpEcho Pdf "application/pdf" 1))
+            ((fun? How) (How Ps) (_pdf))
+            (T (call 'lpr (pack "-P" How) Ps) (_pdf)) )
+         Pdf ) ) )
 
 (de _pdf ()
    (call 'ps2pdf
       (pack "-dDEVICEWIDTHPOINTS=" "*PgX")
       (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
-      "Ps" "Pdf" ) )
+      Ps Pdf ) )
 
 (de psHead (DX DY)
    (prinl "%!PS-Adobe-1.0")
@@ -37,7 +37,7 @@
       (setq "*DY" DY "*PgY" DY) )
    (prinl "%%DocumentFonts: (atend)")
    (prinl "/PicoEncoding")
-   (prinl "   ISOLatin1Encoding  dup length array  copy ")
+   (prinl "   ISOLatin1Encoding  dup length array  copy")
    (prinl "   dup 164  /Euro  put")
    (prinl "def")
    (prinl "/isoLatin1 {")
@@ -297,3 +297,5 @@
       (font "Fnt" (ps "Abs" 0)) )
    (window 65 125 210 90
       (psEval "Prg") ) )
+
+# vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-// 29dec04abu
+// 01may07abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -9,7 +9,6 @@ public class Reflector extends Thread {
    String Fifo, Cls, Foo;
    Object Obj;
    Object[] Args;
-   FileOutputStream Out;
    InOut IO;
 
    // java Reflector <fifo>
@@ -27,7 +26,7 @@ public class Reflector extends Thread {
       else
          Foo = io.rdStr();    // Invoke method on a new Object
       Args = (Object[])io.read();
-      IO = new InOut(null, Out = new FileOutputStream(Fifo));
+      IO = new InOut(null, new FileOutputStream(Fifo));
    }
 
    public void run() {
@@ -68,13 +67,13 @@ public class Reflector extends Thread {
          Object res = cls.getMethod(Foo,par).invoke(Obj,Args);
          IO.prSym("T");
          IO.print(res);
-         Out.close();
+         IO.Out.close();
       }
       catch (Exception e) {
          try {
             IO.prSym("");
             IO.print(e.toString());
-            Out.close();
+            IO.Out.close();
          }
          catch (IOException e2) {System.err.println(e2);}
       }

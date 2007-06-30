@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>H</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>H</h1>
+
+<dl>
+
+<dt><a name="head"><code>(head 'cnt|lst 'lst) -> lst</code></a>
+<dd>Returns a new list made of the first <code>cnt</code> elements of
+<code>lst</code>. If <code>cnt</code> is negative, it is added to the length of
+<code>lst</code>. If the first argument is a <code>lst</code>, <code>head</code>
+is a predicate function returning that argument list if it is <code>equal</code>
+to the head of the second argument, and <code>NIL</code> otherwise. See also
+<code><a href="refT.html#tail">tail</a></code>.
+
+<p><pre><code>
+: (head 3 '(a b c d e f))
+-> (a b c)
+: (head 0 '(a b c d e f))
+-> NIL
+: (head 10 '(a b c d e f))
+-> (a b c d e f)
+: (head -2 '(a b c d e f))
+-> (a b c d)
+: (head '(a b c) '(a b c d e f))
+-> (a b c)
+</code></pre>
+
+<dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
+<dd>Returns the number of <i>free</i> cells currently available (if
+<code>flg</code> is <code>NIL</code>), or the <i>total</i> number of cells in
+the system (if <code>flg</code> is non-<code>NIL</code>).
+
+<p><pre><code>
+: (heap)
+-> 126999
+: (heap T)
+-> 262144
+</code></pre>
+
+<dt><a name="hear"><code>(hear 'num|sym) -> any</code></a>
+<dd>Uses the file descriptor <code>num</code>, or opens the file
+<code>sym</code>, as an asynchronous command input channel. Any executable list
+received via this channel will be executed in the background. As this mechanism
+is also used for inter-family communication (see <code><a
+href="refT.html#tell">tell</a></code>), <code>hear</code> is usually only called
+explicitly by a top level parent process.
+
+<p><pre><code>
+: (hear "fifo/cmd")
+-> "fifo/cmd"
+</code></pre>
+
+<dt><a name="here"><code>(here ['sym]) -> sym</code></a>
+<dd>Echoes the current input stream until <code>sym</code> is encountered, or
+until end of file. See also <code><a href="refE.html#echo">echo</a></code>.
+
+<p><pre><code>
+$ cat hello.l
+(html 0 "Hello" "lib.css" NIL
+   (&lt;h2&gt; NIL "Hello")
+   (here) )
+&lt;p&gt;Hello!&lt;/p&gt;
+&lt;p&gt;This is a test.&lt;/p&gt;
+
+$ ./p lib/http.l lib/xhtml.l hello.l
+HTTP/1.0 200 OK
+Server: PicoLisp
+Date: Sun, 03 Jun 2007 11:41:27 GMT
+Cache-Control: max-age=0
+Cache-Control: no-cache
+Content-Type: text/html; charset=utf-8
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt;
+&lt;head&gt;
+&lt;title&gt;Hello&lt;/title&gt;
+&lt;link rel="stylesheet" href="http://:/lib.css" type="text/css"/&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;h2&gt;Hello&lt;/h2&gt;
+&lt;p&gt;Hello!&lt;/p&gt;
+&lt;p&gt;This is a test.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<dt><a name="hex"><code>(hex 'num) -> sym<br>
+(hex 'sym) -> num</code></a>
+<dd>Converts a number <code>num</code> to a hexadecimal string, or a hexadecimal
+string <code>sym</code> to a number. See also <code><a
+href="refO.html#oct">oct</a></code> and <code><a
+href="refF.html#format">format</a></code>.
+
+<p><pre><code>
+: (hex 273)
+-> "111"
+: (hex "111")
+-> 273
+</code></pre>
+
+<dt><a name="host"><code>(host 'any) -> sym</code></a>
+<dd>Returns the hostname corresponding to the given IP address. See also
+<code><a href="refA.html#*Adr">*Adr</a></code>.
+
+<p><pre><code>
+: (host "217.160.106.89")
+-> "software-lab.biz"
+</code></pre>
+
+</dl>
+
+</body>
+</html>

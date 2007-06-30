@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Y</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>Y</h1>
+
+<dl>
+
+<dt><a name="yoke"><code>(yoke 'any ..) -> any</code></a>
+<dd>Inserts one or several new elements <code>any</code> in front of the list in
+the current <code><a href="refM.html#make">make</a></code> environment.
+<code>yoke</code> returns the last inserted argument. See also <code><a
+href="refL.html#link">link</a></code>, <code><a
+href="refC.html#chain">chain</a></code> and <code><a
+href="refM.html#made">made</a></code>.
+
+<p><pre><code>
+: (make (link 2 3) (yoke 1) (link 4))
+-> (1 2 3 4)
+</code></pre>
+
+</dl>
+
+</body>
+</html>

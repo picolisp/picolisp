@@ -23,7 +23,7 @@
 <li><a href="#yet">Why did you write yet another Lisp?</a>
 <li><a href="#who">Who can use Pico Lisp?</a>
 <li><a href="#advantages">What are the advantages over other Lisp systems?</a>
-<li><a href="#performace">How is the performace compared to other Lisp systems?</a>
+<li><a href="#performance">How is the performance compared to other Lisp systems?</a>
 <li><a href="#interpreted">What means "interpreted"?</a>
 <li><a href="#compiler">Is there (or will be in the future) a compiler available?</a>
 <li><a href="#portable">Is it portable?</a>
@@ -128,8 +128,8 @@ superclasses, but each individual object can be of more than one class.
 object.
 
 <li>Fine-control of inheritance in methods with <code><a
-href="ref.html#super">super</a></code> and <code><a
-href="ref.html#extra">extra</a></code>.
+href="refS.html#super">super</a></code> and <code><a
+href="refE.html#extra">extra</a></code>.
 
 </ul>
 
@@ -143,7 +143,7 @@ them are:
 because a number never makes sense as a function name, and has to be checked at
 runtime anyway.
 
-<li>The <code><a href="ref.html#quote">quote</a></code> function returns all
+<li>The <code><a href="refQ.html#quote">quote</a></code> function returns all
 unevaluated arguments, instead of just the first one. This is both faster
 (<code>quote</code> does not have to take the <code>CAR</code> of its argument
 list) and smaller (a single cell instead of two). For example, <code>'A</code>
@@ -166,15 +166,16 @@ arbitrary data types facilitates generalized comparing and sorting.
 
 <li>The universality and usefulness of symbol properties is enforced and
 extended with implicit and explicit bindings of the symbol <code><a
-href="ref.html#This">This</a></code> in combination with the access functions
-<code><a href="ref.html#=:">=:</a></code>, <code><a
-href="ref.html#:">:</a></code> and <code><a href="ref.html#::">::</a></code>.
+href="refT.html#This">This</a></code> in combination with the access functions
+<code><a href="ref_.html#=:">=:</a></code>, <code><a
+href="ref_.html#:">:</a></code> and <code><a href="ref_.html#::">::</a></code>.
 
 <li>A very convenient list-building machinery, using the <code><a
-href="ref.html#link">link</a></code>, <code><a
-href="ref.html#chain">chain</a></code> and <code><a
-href="ref.html#made">made</a></code> functions in the <code><a
-href="ref.html#make">make</a></code> environment.
+href="refL.html#link">link</a></code>, <code><a
+href="refY.html#yoke">yoke</a></code>, <code><a
+href="refC.html#chain">chain</a></code> and <code><a
+href="refM.html#made">made</a></code> functions in the <code><a
+href="refM.html#make">make</a></code> environment.
 
 <li>The syntax of often-used functions is kept non-verbose. For example, instead
 of <code>(let ((A 1) (B 2) C 3) ..)</code> you write <code>(let (A 1 B 2 C 3)
@@ -209,7 +210,7 @@ garbage collector, and other parts of the interpreter know about them.
 
 <h3>Application Server</h3>
 <p>Stand-alone system: Does not depend on external programs like Apache or
-MySQL. Provides a "life" user interface on the client side, via a TCP connection
+MySQL. Provides a "live" user interface on the client side, via a TCP connection
 between each Java applet and its corresponding application server session. The
 GUI layout and behavior (both in plain HTML and in Java applets) is described
 with s-expressions, generated dynamically at runtime, and maps directly to the
@@ -222,7 +223,7 @@ language-independent applications.
 
 
 <p><hr>
-<h2><a name="performace">How is the performace compared to other Lisp systems?</a></h2>
+<h2><a name="performance">How is the performance compared to other Lisp systems?</a></h2>
 
 <p>Despite the fact that Pico Lisp is an interpreted-only system, the
 performance is quite good. Typical Lisp programs, operating on list data
@@ -243,7 +244,7 @@ and symbols. The cells (and also the minimal symbols) in Pico Lisp use only 8
 bytes each. No additional tags are stored, because they are implied in the
 pointer encodings. No gaps remain in the heap during allocation, as there are
 only objects of a single size. As a result, consing and garbage collection are
-very fast, and overall performace benefits from a better cache efficiency. Heap
+very fast, and overall performance benefits from a better cache efficiency. Heap
 and stack grow automatically, and are limited only by hardware and operating
 system constraints.
 
@@ -258,8 +259,8 @@ modifications of these data, takes place.
 <p>Lisp data are the "real" things, like numbers, symbols and lists, which can
 be directly handled by the system. They are <i>not</i> the textual
 representation of these structures (which is outside the Lisp realm and taken
-care of the <code><a href="ref.html#read">read</a></code>ing and <code><a
-href="ref.html#print">print</a></code>ing interfaces).
+care of the <code><a href="refR.html#read">read</a></code>ing and <code><a
+href="refP.html#print">print</a></code>ing interfaces).
 
 <p>The following example builds a function and immediately calls it with two
 arguments:
@@ -372,7 +373,7 @@ variables" to support dynamic binding as well, and constructs like
 
 <p>In Pico Lisp, function definitions are normal symbol values. They can be
 dynamically rebound like other variables. As a useful real-world example, take
-this litte gem:
+this little gem:
 
 <p><pre><code>
 (de recur recurse
@@ -434,7 +435,7 @@ consider a function which doubles the value in a variable:
 </code></pre>
 
 <p>This works fine, as long as we call it as <code>(double 'X)</code>, but will
-break if we call it as <code>(double 'Var)</code>. Therefore, the correnct
+break if we call it as <code>(double 'Var)</code>. Therefore, the correct
 implementation of <code>double</code> should be:
 
 <p><pre><code>
@@ -443,7 +444,7 @@ implementation of <code>double</code> should be:
 </code></pre>
 
 <p>If <code>double</code> is defined that way in a separate source file, and/or
-isolated via the <code><a href="ref.html#====">====</a></code> function, then
+isolated via the <code><a href="ref_.html#====">====</a></code> function, then
 the symbol <code>"Var"</code> is locked into a private lexical context
 and cannot conflict with other symbols.
 
@@ -479,8 +480,8 @@ done automatically at each and every function invocation, but only if needed.
 
 <p>You have several options in Pico Lisp. For simple cases, you can take
 advantage of the static scope of transient symbols. For the general case, Pico
-Lisp has built-in functions like <code><a href="ref.html#bind">bind</a></code>
-or <code><a href="ref.html#job">job</a></code>, which dynamically manage
+Lisp has built-in functions like <code><a href="refB.html#bind">bind</a></code>
+or <code><a href="refJ.html#job">job</a></code>, which dynamically manage
 statically scoped environments.
 
 <p>As an example, consider a currying function:
@@ -533,6 +534,11 @@ in the example above) the curried argument is known to be immutable:
 <p>In that case, the "environment build-up" is reduced by a simple (lexical)
 constant substitution with zero runtime overhead.
 
+<p>Note that the actual <code><a href="refC.html#curry">curry</a></code>
+function is simpler and more pragmatic. It combines both strategies (to use
+<code>job</code>, or to substitute), deciding at runtime what kind of function
+to build.
+
 
 <p><hr>
 <h2><a name="macros">Do you have macros?</a></h2>
@@ -540,8 +546,8 @@ constant substitution with zero runtime overhead.
 <p>Yes, there is a macro mechanism in Pico Lisp, to build and immediately
 execute a list of expressions. But it is seldom used. Macros are a kludge. Most
 things where you need macros in other Lisps are directly expressible as
-functions in Pico Lisp, which in turn can be applied, passed around, and
-debugged.
+functions in Pico Lisp, which (as opposed to macros) can be applied, passed
+around, and debugged.
 
 
 <p><hr>

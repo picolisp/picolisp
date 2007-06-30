@@ -1,4 +1,4 @@
-/* 21feb07abu
+/* 05may07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2555,10 +2555,7 @@ any doId(any ex) {
       F = unBox(y) - 1;
       x = cdr(x),  y = EVAL(car(x));
       NeedNum(ex,y);
-      n = (word2)unDig(y);
-      if (isNum(y = cdr(numCell(y))))
-         n = n << 32 + unDig(y);
-      return mkId(n / 2);
+      return mkId(unBoxWord2(y));
    }
    NeedExt(ex,y);
    n = blk64(name(y));

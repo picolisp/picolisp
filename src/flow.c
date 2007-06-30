@@ -1,4 +1,4 @@
-/* 16mar07abu
+/* 18jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -330,7 +330,7 @@ any doBox(any x) {
    return consSym(EVAL(car(x)), Nil);
 }
 
-// (new ['flg|num] ['typ ['any ..]]) -> sym
+// (new ['flg|num] ['typ ['any ..]]) -> obj
 any doNew(any ex) {
    any x, y, *p;
    cell c1, c2;
@@ -410,7 +410,7 @@ static bool isa(any ex, any cls, any x) {
    return NO;
 }
 
-// (isa 'cls|typ 'any) -> flg
+// (isa 'cls|typ 'any) -> obj | NIL
 any doIsa(any ex) {
    any x;
    cell c1;
@@ -421,7 +421,7 @@ any doIsa(any ex) {
    if (isSym(x)) {
       if (isSym(data(c1))) {
          Fetch(ex,x);
-         return isa(ex, data(c1), x)? T : Nil;
+         return isa(ex, data(c1), x)? x : Nil;
       }
       while (isCell(data(c1))) {
          Fetch(ex,x);
@@ -429,7 +429,7 @@ any doIsa(any ex) {
             return Nil;
          data(c1) = cdr(data(c1));
       }
-      return T;
+      return x;
    }
    return Nil;
 }
@@ -487,7 +487,7 @@ any doSend(any ex) {
    err(ex, TheKey, "Bad message");
 }
 
-// (try 'msg 'any ['any ..]) -> any
+// (try 'msg 'obj ['any ..]) -> any
 any doTry(any ex) {
    any x, y;
    cell c1, c2;
@@ -496,7 +496,11 @@ any doTry(any ex) {
    NeedSym(ex,data(c1));
    x = cdr(x),  Push(c2,  EVAL(car(x)));
    if (isSym(data(c2))) {
-      Fetch(ex,data(c2));
+      if (isExt(data(c2))) {
+         if (!isLife(data(c2)))
+            return Nil;
+         db(ex,data(c2),1);
+      }
       TheKey = data(c1),  TheCls = Nil;
       if (y = method(data(c2))) {
          x = evMethod(data(c2), y, cdr(x));

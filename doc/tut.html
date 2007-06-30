@@ -31,8 +31,8 @@ $ ./p dbg.l
 <p>This loads the Pico Lisp base system and the debugging environment, and waits
 for you to enter input lines at the interpreter prompt (<code>:</code>). You can
 terminate the interpreter and return to the shell at any time, by either hitting
-the <code>RETURN</code> key (i.e. by entering an empty line), or by executing
-the function <code><a href="ref.html#bye">(bye)</a></code>.
+the ENTER key (i.e. by entering an empty line), or by executing the function
+<code><a href="refB.html#bye">(bye)</a></code>.
 
 <p>It is very helpful - though not absolutely necessary - when you know how to
 use the <code>vi</code> editor.
@@ -44,8 +44,7 @@ do some special handling during character input.
 
 <p>If you feel that you absolutely have to use an input frontend, please remove
 the entry "@lib/led.l" from "dbg.l". Note that in this case, however, you will
-not have the <code>TAB</code> symbol expansion feature available during command
-line editing.
+not have the TAB symbol expansion feature available during command line editing.
 
 <p>We recommend that you have a terminal window open, and try the examples by
 yourself. You may either type them in, directly to the Pico Lisp interpreter, or
@@ -95,12 +94,11 @@ supported, which is restricted to single-key commands (the "real"
 commands with count prefixes). It is loaded at startup via "dbg.l", you find its
 source in "lib/led.l" if wish to take a look.
 
-<p>You can enter lines in the normal way, correcting mistypes with the
-<code>BACKSPACE</code> key, and terminating them with the <code>RETURN</code>
-key. This is the <i>Insert Mode</i>.
+<p>You can enter lines in the normal way, correcting mistypes with the BACKSPACE
+key, and terminating them with the ENTER key. This is the <i>Insert Mode</i>.
 
-<p>If you hit <code>ESC</code>, you get into <i>Command Mode</i>. Now you can
-navigate horizontally in the current input line, or vertically in the history of
+<p>If you hit ESC, you get into <i>Command Mode</i>. Now you can navigate
+horizontally in the current input line, or vertically in the history of
 previously entered lines, with key commands borrowed from the <code>vi</code>
 editor. Note, however, that there is always only a single line visible.
 
@@ -117,15 +115,15 @@ editor. Note, however, that there is always only a single line visible.
 whole command, but type
 
 <p><ul>
-<li><code>ESC</code> to get into <i>Command Mode</i>
+<li>ESC to get into <i>Command Mode</i>
 <li><code>k</code> to get one line "up"
 <li><code>f</code> and <code>7</code> to "find" the character <code>7</code>
 <li><code>r</code> and <code>8</code> to "replace" with <code>8</code>
 </ul>
 
-<p>Then you hit <code>RETURN</code> to execute the modified line. Instead of
-jumping to the <code>7</code> with the "find" command, you may also type
-<code>l</code> (move "right") repeatedly till you reach the correct position.
+<p>Then you hit ENTER to execute the modified line. Instead of jumping to the
+<code>7</code> with the "find" command, you may also type <code>l</code> (move
+"right") repeatedly till you reach the correct position.
 
 <p>The key commands in the <i>Command Mode</i> are listed below. Some commands
 change the mode back to <i>Insert Mode</i> as indicated in parentheses. Commands
@@ -187,22 +185,21 @@ directory. The length of the history is limited to 4000 lines.
 a breakpoint, or after program execution was interrupted with
 <code>Ctrl-C</code>, to abandon all further processing and return to the
 interpreter's top level. This is equivalent to invoking <code><a
-href="ref.html#quit">quit</a></code>.
+href="refQ.html#quit">quit</a></code>.
 
 <p>In <i>Input Mode</i>, only the following keys have a special meaning:
 
 <p><ul>
 
-<li><code>BACKSPACE</code> (<code>Ctrl-H</code>) and <code>DEL</code> erase the
-character to the left
+<li>BACKSPACE (<code>Ctrl-H</code>) and DEL erase the character to the left
 
 <li><code>Ctrl-V</code> inserts the next key literally
 
-<li><code>TAB</code> performs symbol expansion: When a symbol name is entered
-partially and <code>TAB</code> is pressed subsequently, all internal symbols
-matching the partial input are shown in sequence.
+<li>TAB performs symbol expansion: When a symbol name is entered partially and
+TAB is pressed subsequently, all internal symbols matching the partial input are
+shown in sequence.
 
-<li><code>ESC</code> terminates <i>Input Mode</i> and enters <i>Command Mode</i>
+<li>ESC terminates <i>Input Mode</i> and enters <i>Command Mode</i>
 
 </ul>
 
@@ -235,8 +232,8 @@ A (This is the value)
 </code></pre>
 
 <p><code>show</code> accepts an arbitrary number of arguments which are
-processed according to the rules of <code><a href="ref.html#get">get</a></code>,
-resulting in a symbol which is showed then.
+processed according to the rules of <code><a
+href="refG.html#get">get</a></code>, resulting in a symbol which is showed then.
 
 <p><pre><code>
 : (put 'B 'a 'A)        # Put 'A' under the 'a'-property of 'B'
@@ -283,25 +280,24 @@ the editor will be restarted with that symbol added to the editor window.
 <p><code>edit</code> is also very useful to browse in a database. You can follow
 the links between objects with '<code>K</code>', and even - e.g. for low-level
 repairs - modify the data (but only if you are really sure about what you are
-doing, and don't forget to <code><a href="ref.html#commit">commit</a></code>
+doing, and don't forget to <code><a href="refC.html#commit">commit</a></code>
 when you are done).
 
 <p><code>more</code> is a simple tool that displays the elements of a list one
-by one. It stops after each element and waits for input. If you just hit
-<code>RETURN</code>, <code>more</code> continues with the next element,
-otherwise (usually I type a dot (<code>.</code>) followed by
-<code>RETURN</code>) it terminates.
+by one. It stops after each element and waits for input. If you just hit ENTER,
+<code>more</code> continues with the next element, otherwise (usually I type a
+dot (<code>.</code>) followed by ENTER) it terminates.
 
 <p><pre><code>
 : (more (1 2 3 4 5 6))
-1                          # Hit RETURN
-2.                         # Hit '.' and RETURN
+1                          # Hit ENTER
+2.                         # Hit '.' and ENTER
 -> T                       # stopped
 </code></pre>
 
 <p>Optionally <code>more</code> takes a function as a second argument and
 applies that function to each element (instead of the default <code><a
-href="ref.html#print">print</a></code>). Here, often <code>show</code> or
+href="refP.html#print">print</a></code>). Here, often <code>show</code> or
 <code>pp</code> (see below) is used.
 
 <p><pre><code>
@@ -312,7 +308,7 @@ B-> T
 A (This is the value)      # showing 'A'
    key2 val2
    key1 val111
-                           # Hit RETURN
+                           # Hit ENTER
 B NIL                      # showing 'B'
    a A
 -> T
@@ -334,9 +330,9 @@ definition), and displays that definition in a formatted and indented way.
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) *PP)
+         (when (memq (print (pop 'X)) "*PP")
             (cond
-               ((memq (car Z) *PP1)
+               ((memq (car Z) "*PP1")
                   (if (and (pair (car X)) (pair (cdar X)))
                      (when (>= 12 (size (car X)))
                         (space)
@@ -349,7 +345,7 @@ definition), and displays that definition in a formatted and indented way.
                            (>= 12 (size (car X))) )
                         (space)
                         (print (pop 'X)) ) ) )
-               ((memq (car Z) *PP2)
+               ((memq (car Z) "*PP2")
                   (inc 'N 3)
                   (loop
                      (prinl)
@@ -373,10 +369,10 @@ definition), and displays that definition in a formatted and indented way.
 <p>The style is the same as we use in all our source files:
 <ul>
 
-<li>The Indentation level is three spaces
+<li>The indentation level is three spaces
 
-<li>If a list is too long, pretty-print the <code>CAR</code> on the current
-line, and each element of the <code>CDR</code> recursively on its own line.
+<li>If a list is too long, pretty-print the CAR on the current line, and each
+element of the CDR recursively on its own line.
 
 <li>A closing parenthesis a preceded by a space if the corresponding open
 parenthesis is not on the same line
@@ -418,7 +414,7 @@ the <code>+Relation</code> class.
 </code></pre>
 
 <p>The argument to <code>who</code> may also be a pattern list (see <code><a
-href="ref.html#match">match</a></code>):
+href="refM.html#match">match</a></code>):
 
 <p><pre><code>
 : (who '(print @ (val @)))
@@ -563,7 +559,7 @@ Hello 6
 </code></pre>
 
 <p>In some cases you don't want that. For some functions (<code><a
-href="ref.html#setq">setq</a></code> for example) it is better if the function
+href="refS.html#setq">setq</a></code> for example) it is better if the function
 gets all arguments unevaluated, and can decide for itself what to do with them.
 
 <p>For such cases you do not define the function with a <i>list</i> of
@@ -599,10 +595,10 @@ function with 2 evaluated and an arbitrary number of unevaluated arguments:
 of <i>evaluated</i> arguments to a function. For that, Pico Lisp recognizes the
 symbol <code>@</code> as a single atomic parameter and remembers all evaluated
 arguments in an internal frame. This frame can then be accessed sequentially
-with the <code><a href="ref.html#args">args</a></code>, <code><a
-href="ref.html#next">next</a></code>, <code><a
-href="ref.html#arg">arg</a></code> and <code><a
-href="ref.html#rest">rest</a></code> functions.
+with the <code><a href="refA.html#args">args</a></code>, <code><a
+href="refN.html#next">next</a></code>, <code><a
+href="refA.html#arg">arg</a></code> and <code><a
+href="refR.html#rest">rest</a></code> functions.
 
 <p><pre><code>
 : (de foo @
@@ -640,7 +636,7 @@ numeric arguments, each on a line followed by its squared value:
 </code></pre>
 
 <p>Finally, it is possible to pass all these evaluated argument to another
-function, using <code><a href="ref.html#pass">pass</a></code>:
+function, using <code><a href="refP.html#pass">pass</a></code>:
 
 <p><pre><code>
 : (de foo @
@@ -664,7 +660,7 @@ when they are entered, and their name again and the return value when they are
 exited.
 
 <p>For demonstration, let's define the unavoidable factorial function (or just
-<code><a href="ref.html#load">load</a></code> the file "<code><a
+<code><a href="refL.html#load">load</a></code> the file "<code><a
 href="fun.l">doc/fun.l</a></code>"):
 
 <p><pre><code>
@@ -674,7 +670,7 @@ href="fun.l">doc/fun.l</a></code>"):
       (* N (fact (- N 1))) ) )
 </code></pre>
 
-<p>With <code><a href="ref.html#trace">trace</a></code> we can put it in trace
+<p>With <code><a href="refT.html#trace">trace</a></code> we can put it in trace
 mode:
 
 <p><pre><code>
@@ -704,11 +700,11 @@ colon (<code>:</code>), and upon function exit with an equals sign
 
 <p>Trace works by modifying the function body, so generally only for functions
 defined as lists (lambda expressions, see <a href="ref.html#ev">Evaluation</a>).
-Tracing a <code>C</code>-function is possible, however, when it is a function
-that evaluates all its arguments.
+Tracing a C-function is possible, however, when it is a function that evaluates
+all its arguments.
 
-<p>So let's trace the functions <code><a href="ref.html#=0">=0</a></code> and
-<code><a href="ref.html#*">*</a></code>:
+<p>So let's trace the functions <code><a href="ref_.html#=0">=0</a></code> and
+<code><a href="ref_.html#*">*</a></code>:
 
 <p><pre><code>
 : (trace '=0)
@@ -766,11 +762,11 @@ that evaluates all its arguments.
 
 <p><i>Single-stepping</i> means to execute a function step by step, giving the
 programmer an opportunity to look more closely at what is happening. The
-function <code><a href="ref.html#debug">debug</a></code> inserts a breakpoint
+function <code><a href="refD.html#debug">debug</a></code> inserts a breakpoint
 into each top-level expression of a function. When the function is called, it
 stops at each breakpoint, displays the expression it is about to execute next
 (this expression is also stored into the global variable <code><a
-href="ref.html#^">^</a></code>) and enters a read-eval-loop. The programmer can
+href="ref_.html#^">^</a></code>) and enters a read-eval-loop. The programmer can
 then
 
 <ul>
@@ -779,19 +775,19 @@ then
 
 <li>execute <code>(d)</code> to recursively debug the next expression
 
-<li>execute <code>(<a href="ref.html#e">e</a>)</code> to evaluate the next
+<li>execute <code>(<a href="refE.html#e">e</a>)</code> to evaluate the next
 expression, to see what will happen without actually advancing on
 
-<li>type <code>RETURN</code> (: enter an empty line) to leave the read-eval
-loop and continue with the next expression
+<li>type ENTER (: enter an empty line) to leave the read-eval loop and continue
+with the next expression
 
 </ul>
 
-<p>Thus, in the simplest case, single-stepping consists of just hitting
-<code>RETURN</code> repeatedly to step through the function.
+<p>Thus, in the simplest case, single-stepping consists of just hitting ENTER
+repeatedly to step through the function.
 
 <p>To try it out, let's look at the <code><a
-href="ref.html#stamp">stamp</a></code> system function.
+href="refS.html#stamp">stamp</a></code> system function.
 
 <p><pre><code>
 : (pp 'stamp)
@@ -806,13 +802,13 @@ href="ref.html#stamp">stamp</a></code> system function.
 -> T
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time))        # stopped at first expression
-!                                      # RETURN
+!                                      # ENTER
 (pack (dat$ Dat "-") " " (tim$ ...     # second expression
 ! Tim                                  # inspect 'Tim' variable
 -> 41908
 ! (time Tim)                           # convert it
 -> (11 38 28)
-!                                      # RETURN
+!                                      # ENTER
 -> "2004-10-29 11:38:28"               # done, as there are only 2 expressions
 </code></pre>
 
@@ -822,19 +818,19 @@ inside the second expression.
 <p><pre><code>
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time))
-!                                      # RETURN
+!                                      # ENTER
 (pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
 ! (d)                                  # debug this expression
 -> T
-!                                      # RETURN
+!                                      # ENTER
 (dat$ Dat "-")                         # stopped at first subexpression
 ! (e)                                  # evaluate it
 -> "2004-10-29"
-!                                      # RETURN
+!                                      # ENTER
 (tim$ Tim T)                           # stopped at second subexpression
 ! (e)                                  # evaluate it
 -> "11:40:44"
-!                                      # RETURN
+!                                      # ENTER
 -> "2004-10-29 11:40:44"               # done
 </code></pre>
 
@@ -860,9 +856,9 @@ pretty-print it:
 
 <p>Often, you will not want to single-step a whole function. Just use
 <code>edit</code> (see above) to insert a single breakpoint (the exclamation
-mark followed by a space) as <code>CAR</code> of an expression, and run your
-program. Execution will then stop there as described above; you can inspect the
-environment and continue execution with <code>RETURN</code> when you are done.
+mark followed by a space) as CAR of an expression, and run your program.
+Execution will then stop there as described above; you can inspect the
+environment and continue execution with ENTER when you are done.
 
 
 <p><hr>
@@ -884,7 +880,7 @@ single expression:
 </code></pre>
 
 <p>To read from a file, we redirect the input with <code><a
-href="ref.html#in">in</a></code>. Note that comments and white space are
+href="refI.html#in">in</a></code>. Note that comments and white space are
 automatically skipped by <code>read</code>:
 
 <p><pre><code>
@@ -892,16 +888,16 @@ automatically skipped by <code>read</code>:
 -> (de fact (N) (if (=0 N) 1 (* N (fact (- N 1)))))
 </code></pre>
 
-<p>The <code><a href="ref.html#skip">skip</a></code> function can also be used
+<p>The <code><a href="refS.html#skip">skip</a></code> function can also be used
 directly. To get the first non-white character in the file with <code><a
-href="ref.html#char">char</a></code>:
+href="refC.html#char">char</a></code>:
 
 <p><pre><code>
 : (in "doc/fun.l" (skip "#") (char))
 -> "("
 </code></pre>
 
-<p><code><a href="ref.html#from">from</a></code> searches through the input
+<p><code><a href="refF.html#from">from</a></code> searches through the input
 stream for given patterns. Typically, this is not done with Lisp source files
 (there are better ways), but for a simple example let's extract all items
 immediately following <code>fact</code> in the file,
@@ -912,7 +908,7 @@ immediately following <code>fact</code> in the file,
 </code></pre>
 
 <p>or the word following "(de " with <code><a
-href="ref.html#till">till</a></code>:
+href="refT.html#till">till</a></code>:
 
 <p><pre><code>
 : (in "doc/fun.l" (from "(de ") (till " " T)))
@@ -920,7 +916,7 @@ href="ref.html#till">till</a></code>:
 </code></pre>
 
 
-<p>With <code><a href="ref.html#line">line</a></code>, a line of characters is
+<p>With <code><a href="refL.html#line">line</a></code>, a line of characters is
 read, either into a single transient symbol,
 
 <p><pre><code>
@@ -937,9 +933,9 @@ read, either into a single transient symbol,
 
 <p><code>line</code> is typically used to read tabular data from a file.
 Additional arguments can split the line into fixed-width fields, as described in
-the <code><a href="ref.html#line">reference manual</a></code>. If, however, the
+the <code><a href="refL.html#line">reference manual</a></code>. If, however, the
 data are of variable width, delimited by some special character, the <code><a
-href="ref.html#split">split</a></code> function can be used to extract the
+href="refS.html#split">split</a></code> function can be used to extract the
 fields. A typical way to import the contents of such a file is:
 
 <p><pre><code>
@@ -989,7 +985,7 @@ useful work: Via command line arguments, or as a stand-alone script.
 expressions for direct evaluation (see <code><a
 href="ref.html#invoc">Invocation</a></code>): If an argument starts with a
 hyphen, it is evaluated, otherwise <code><a
-href="ref.html#load">load</a></code>ed as a file. A typical invocation might
+href="refL.html#load">load</a></code>ed as a file. A typical invocation might
 look like:
 
 <p><pre><code>
@@ -1192,8 +1188,8 @@ subclasses <code>+Rectangle</code> and <code>+Circle</code>.
 
 <p>The source code is included as "<code><a
 href="shape.l">doc/shape.l</a></code>" in the Pico Lisp distribution, so you
-don't have to type it in. Just <code><a href="ref.html#load">load</a></code> the
-file, or start it from the shell as:
+don't have to type it in. Just <code><a href="refL.html#load">load</a></code>
+the file, or start it from the shell as:
 
 <p><pre><code>
 $ ./p dbg.l doc/shape.l
@@ -1227,7 +1223,7 @@ that class. In the case of <code>+Shape</code>, <code>x</code> and
 <code>y</code> are the coordinates of the shape's origin.
 
 <p>Then we have two method definitions, using the keyword <code><a
-href="ref.html#dm">dm</a></code> for "define method". The first method is
+href="refD.html#dm">dm</a></code> for "define method". The first method is
 special, in that its name is <code>T</code>. Each time a new object is created,
 and a method with that name is found in its class hierarchy, that method will be
 executed. Though this looks like a "constructor" in other programming languages,
@@ -1460,8 +1456,8 @@ property list and a name.
 <p>The name cannot be directly controlled by the programmer, as it is assigned
 when the symbol is created. It is an encoded index of the symbol's location in
 the pool file ("database"). In its visual representation (output by the <code><a
-href="ref.html#print">print</a></code> functions and input by the <code><a
-href="ref.html#read">read</a></code> functions) it is surrounded by braces.
+href="refP.html#print">print</a></code> functions and input by the <code><a
+href="refR.html#read">read</a></code> functions) it is surrounded by braces.
 
 <p>To make use of external symbols, you need to open a database file first:
 
@@ -1472,7 +1468,7 @@ href="ref.html#read">read</a></code> functions) it is surrounded by braces.
 <p>If a file with that name did not exist, it got created now. Also created at
 the same moment was <code>{1}</code>, the very first symbol in the file. This
 symbol is of great importance, and is handled especially by Pico Lisp. Therefore
-a global constant <code><a href="ref.html#*DB">*DB</a></code> exists, which
+a global constant <code><a href="refD.html#*DB">*DB</a></code> exists, which
 points to that symbol <code>{1}</code>, which should be used exclusively to
 access the symbol <code>{1}</code>, and which should never be modified by the
 programmer.
@@ -1509,8 +1505,8 @@ garbage collector might not be able to free these symbols and all symbols
 connected to them (and that might well be the whole database). It is all right,
 however, to access external symbols literally during interactive debugging.
 
-<p>Now we can create own first own external symbol. This can be done with
-<code><a href="ref.html#new">new</a></code> when a <code>T</code> argument is
+<p>Now we can create our first own external symbol. This can be done with
+<code><a href="refN.html#new">new</a></code> when a <code>T</code> argument is
 supplied:
 
 <p><pre><code>
@@ -1546,7 +1542,7 @@ supplied:
 
 <p>All modifications to - and creations of - external symbols done so far are
 not written to the database yet. We could call <code><a
-href="ref.html#rollback">rollback</a></code> (or simply exit Pico Lisp) to undo
+href="refR.html#rollback">rollback</a></code> (or simply exit Pico Lisp) to undo
 all the changes. But as we want to keep them:
 
 <p><pre><code>
@@ -1604,7 +1600,7 @@ and two subclasses <code>+Man</code> and <code>+Woman</code>.
 <p><code>+Person</code> is a subclass of the <code>+Entity</code> system class.
 Usually all objects in a database are of a direct or indirect subclass of
 <code>+Entity</code>. We can then define the relations to other data with the
-<code><a href="ref.html#rel">rel</a></code> function.
+<code><a href="refR.html#rel">rel</a></code> function.
 
 <p><pre><code>
 (rel nm     (+Need +Sn +Idx +String))           # Name
@@ -1733,13 +1729,12 @@ object.
 <p>It is followed by a call to <code>dbs</code> ("database sizes"). This call is
 optional. If it is not present, the whole database will reside in a single file,
 with a block size of 256 bytes. If it is given, it should specify a list of
-items, each having a number in its <code>CAR</code>, and a list in its
-<code>CDR</code>. The <code>CAR</code>s taken together will be passed later to
-<a href="ref.html#pool">pool</a>, causing an individual database file with that
-size to be created. The <code>CDR</code>s tell what entity classes (if an item
-is a symbol) or index trees (if an item is a list with a class in its
-<code>CAR</code> and a list of relations in its <code>CDR</code>) should be
-placed into that file.
+items, each having a number in its CAR, and a list in its CDR. The CARs taken
+together will be passed later to <a href="refP.html#pool">pool</a>, causing an
+individual database file with that size to be created. The CDRs tell what entity
+classes (if an item is a symbol) or index trees (if an item is a list with a
+class in its CAR and a list of relations in its CDR) should be placed into that
+file.
 
 
 <p>A handful of access functions is provided, that know about database
@@ -1875,10 +1870,9 @@ $ ./p dbg.l doc/family.l -main -go
    (server 8080 "@person") )
 </code></pre>
 
-<p>It starts the <code>HTTP</code> server listening on TCP port 8080 (we did a
-similar thing in our minimal GUI example above directly on the command line).
-Each connect to that port will cause the function <code>person</code> to be
-invoked.
+<p>It starts the HTTP server listening on TCP port 8080 (we did a similar thing
+in our minimal GUI example above directly on the command line). Each connect to
+that port will cause the function <code>person</code> to be invoked.
 
 <p>Again, point your browser to the address '<code><a
 href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'.
@@ -1940,8 +1934,8 @@ $ ./p doc/family.l -main -go -wait
 <code>picolisp</code> processes will be running now. One is the initial server
 process which will continue to run until it is killed. The other is a child
 process which is connected to the applet in the browser, it will terminate when
-the browser is closed, or when <code>(bye)</code> or a plain <code>RETURN</code>
-is entered at the Pico Lisp prompt.
+the browser is closed, or when <code>(bye)</code> or a plain ENTER is entered at
+the Pico Lisp prompt.
 
 <p>Now back to the explanation of the GUI function <code>person</code>:
 
@@ -2020,9 +2014,9 @@ href="#db">Database Programming</a> section.
 <p>Normally, Pilog is used either interactively to query the database during
 debugging, or in applications to generate export data and reports. In the
 following examples we use the interactive query frontend functions <code><a
-href="ref.html#quest">?</a></code> and <code>select</code>. An application will
-use <code><a href="ref.html#goal">goal</a></code> and <code><a
-href="ref.html#prove">prove</a></code> directly, or use convenience functions
+href="ref_.html#?">?</a></code> and <code>select</code>. An application will use
+<code><a href="refG.html#goal">goal</a></code> and <code><a
+href="refP.html#prove">prove</a></code> directly, or use convenience functions
 like <code>pilog</code> or <code>solve</code>.
 
 <p>All Pilog access to external symbols is done via the two predicates
@@ -2306,21 +2300,21 @@ value cell (the list of classes) and then each property on its own line,
 allowing the user to change it with the <a href="#ledit">command line
 editor</a>.
 
-<p>Just hitting <code>RETURN</code> will leave that property unchanged. To
-modify it, you'll typically hit <code>ESC</code> to get into command mode, and
-move the cursor to the point of change.
+<p>Just hitting ENTER will leave that property unchanged. To modify it, you'll
+typically hit ESC to get into command mode, and move the cursor to the point of
+change.
 
 <p>For properties with nested list structures (<code>+List +Bag</code>),
 <code>update</code> will recurse into the data structure.
 
 <p><pre><code>
 : (update '{2-;})
-{2-;} (+Man)      # RETURN
+{2-;} (+Man)      # ENTER
 nm "Johnny"       # Modified the name to "Johnny"
-ma {2-:}          # RETURN
-pa {2-A}          # Return
+ma {2-:}          # ENTER
+pa {2-A}          # ENTER
 dat 1960-03-10    # Modified the year from "1964" to "1960"
-job "Prince"      # Return
+job "Prince"      # ENTER
 -> {2-;}
 </code></pre>
 

@@ -1,10 +1,10 @@
 #!/bin/bash
-# 12sep06abu
+# 02may07abu
 # Use: java/vm <classPath>
 
 trap 'rm -f fifo/java' 0 1 2 3 15
 mkdir -p fifo
 mkfifo fifo/java
 
-CLASSPATH="$1"
+export CLASSPATH="$1"
 java Reflector fifo/java

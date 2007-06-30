@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>O</title>
+<link rel="stylesheet" href="doc.css" type="text/css">
+</head>
+<body>
+
+<h1>O</h1>
+
+<dl>
+
+<dt><a name="object"><code>(object 'sym 'typ ['sym 'any ..]) -> obj</code></a>
+<dd>Defines <code>sym</code> to be an object of type <code>typ</code>. The
+property list is initialized with all optionally supplied key-value pairs. See
+also <code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
+href="refN.html#new">new</a></code>, <code><a
+href="refT.html#type">type</a></code> and <code><a
+href="refI.html#isa">isa</a></code>.
+
+<p><pre><code>
+: (object 'Obj '(+A +B +C) 'a 1 'b 2 'c 3)
+-> Obj
+: (show 'Obj)
+Obj (+A +B +C)
+   c 3
+   b 2
+   a 1
+-> Obj
+</code></pre>
+
+<dt><a name="oct"><code>(oct 'num) -> sym<br>
+(oct 'sym) -> num</code></a>
+<dd>Converts a number <code>num</code> to an octal string, or an octal string
+<code>sym</code> to a number. See also <code><a
+href="refH.html#hex">hex</a></code> and <code><a
+href="refF.html#format">format</a></code>.
+
+<p><pre><code>
+: (oct 73)
+-> "111"
+: (oct "111")
+-> 73
+</code></pre>
+
+<dt><a name="off"><code>(off sym ..) -> NIL</code></a>
+<dd>Stores <code>NIL</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. See also <code><a href="refO.html#on">on</a></code>, <code><a
+href="refO.html#onOff">onOff</a></code>, <code><a
+href="refZ.html#zero">zero</a></code> and <code><a
+href="refO.html#one">one</a></code>.
+
+<p><pre><code>
+: (off A B)
+-> NIL
+: A
+-> NIL
+: B
+-> NIL
+</code></pre>
+
+<dt><a name="offset"><code>(offset 'lst1 'lst2) -> cnt | NIL</code></a>
+<dd>Returns the <code>cnt</code> position of the tail list <code>lst1</code> in
+<code>lst2</code>, or <code>NIL</code> if it is not found. See also <code><a
+href="refI.html#index">index</a></code>.
+
+<p><pre><code>
+: (offset '(c d e f) '(a b c d e f))
+-> 3
+: (offset '(c d e) '(a b c d e f))
+-> NIL
+</code></pre>
+
+<dt><a name="on"><code>(on sym ..) -> T</code></a>
+<dd>Stores <code>T</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. See also <code><a href="refO.html#off">off</a></code>,
+<code><a href="refO.html#onOff">onOff</a></code>, <code><a
+href="refZ.html#zero">zero</a></code> and <code><a
+href="refO.html#one">one</a></code>.
+
+<p><pre><code>
+: (on A B)
+-> T
+: A
+-> T
+: B
+-> T
+</code></pre>
+
+<dt><a name="one"><code>(one sym ..) -> 1</code></a>
+<dd>Stores <code>1</code> in the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. See also <code><a href="refZ.html#zero">zero</a></code>,
+<code><a href="refO.html#on">on</a></code>, <code><a
+href="refO.html#off">off</a></code> and <code><a
+href="refO.html#onOff">onOff</a></code>.
+
+<p><pre><code>
+: (one A B)
+-> 1
+: A
+-> 1
+: B
+-> 1
+</code></pre>
+
+<dt><a name="onOff"><code>(onOff sym ..) -> flg</code></a>
+<dd>Logical negates the <code>VAL</code>'s of all argument symbols
+<code>sym</code>. Returns the new value of the last symbol. See also <code><a
+href="refO.html#on">on</a></code>, <code><a href="refO.html#off">off</a></code>,
+<code><a href="refZ.html#zero">zero</a></code> and <code><a
+href="refO.html#one">one</a></code>.
+
+<p><pre><code>
+: (onOff A B)
+-> T
+: A
+-> T
+: B
+-> T
+: (onOff A B)
+-> NIL
+: A
+-> NIL
+: B
+-> NIL
+</code></pre>
+
+<dt><a name="open"><code>(open 'sym) -> cnt | NIL</code></a>
+<dd>Opens the file <code>sym</code> in read/write mode, and returns a file
+descriptor <code>cnt</code> (or <code>NIL</code> on error). If the file does not
+exist, it is created. The file descriptor can be used in subsequent calls to
+<code><a href="refI.html#in">in</a></code> and <code><a
+href="refO.html#out">out</a></code>. See also <code><a
+href="refC.html#close">close</a></code>.
+
+<p><pre><code>
+: (open "x")
+-> 3
+</code></pre>
+
+<dt><a name="opt"><code>(opt) -> sym</code></a>
+<dd>Return the next command line argument (option) as a string, and remove it
+from the remaining command line arguments. See also <code><a
+href="ref.html#invoc">Invocation</a></code> and <code><a
+href="refA.html#argv">argv</a></code>.
+
+<p><pre><code>
+$ ./p  -"de f () (println 'opt (opt))"  -f abc  -bye
+opt "abc"
+</code></pre>
+
+<dt><a name="or"><code>(or 'any ..) -> any</code></a>
+<dd>Logical OR. The expressions <code>any</code> are evaluated from left to
+right. If a non-<code>NIL</code> value is encountered, it is returned
+immediately. Else the result of the last expression is returned.
+
+<p><pre><code>
+: (or (= 3 3) (read))
+-> T
+: (or (= 3 4) (read))
+abc
+-> abc
+</code></pre>
+
+<dt><a name="out"><code>(out 'any . prg) -> any</code></a>
+<dd>Opens <code>any</code> as output channel during the execution of
+<code>prg</code>. The current output channel will be saved and restored
+appropriately. If the argument is <code>NIL</code>, standard output is used. If
+the argument is a symbol, it is used as a file name (opened in "append" mode if
+the first character is "<code>+</code>"). If it is a number, it is used as the
+descriptor of an open file. Otherwise (if it is a list), it is taken as a
+command with arguments, and a pipe is opened for output. See also <code><a
+href="refC.html#call">call</a></code>, <code><a
+href="refI.html#in">in</a></code>, <code> <a
+href="refP.html#pipe">pipe</a></code>, <code> <a
+href="refC.html#ctl">ctl</a></code> and <code><a
+href="refL.html#load">load</a></code>.
+
+<p><pre><code>
+: (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
+-> def
+</code></pre>
+
+</dl>
+
+</body>
+</html>

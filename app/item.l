@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
@@ -10,12 +10,8 @@
          (form 'dialog (choItem T)) )
       (<h3> NIL ,"Item")
       (form NIL
-         (<spread>
-            (<h3> NIL (<id> (: nm)))
-            (delButton '(may Delete)
-               '(text ,"Item No. @1" (: top 1 obj nr)) )
-            (choButton '(choItem T))
-            (stepBtn 'nr '+Item) )
+         (<h2> NIL (<id> (: nr) " -- " (: nm)))
+         (panel T ,"Item No. @1" '(may Delete) '(choItem T) 'nr '+Item)
          (<grid> 4
             ,"Number" NIL (gui '(+E/R +NumField) '(nr : home obj) 10) NIL
             ,"Description" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Item" 30) NIL
@@ -39,6 +35,8 @@
                         (noButton) )
                      (let? F (val> (field -1))
                         (blob! (: home obj) 'jpg (tmp F)) ) ) ) ) )
-         (<spread> NIL (editButton))
+         (<spread> NIL (editButton T))
          (when (: obj jpg)
             (<img> (allow (blob (: obj) 'jpg)) ,"Picture") ) ) ) )
+
+# vi:et:ts=3:sw=3

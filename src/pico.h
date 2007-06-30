@@ -1,4 +1,4 @@
-/* 20feb07abu
+/* 25jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -220,7 +220,7 @@ extern void (*putBin)(int);
 extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Solo, Up, At, At2, At3, This, Meth, Quote, T;
+extern any Nil, DB, Solo, Up, Meth, Quote, T, At, At2, At3, This;
 extern any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
 
 /* Prototypes */
@@ -282,6 +282,7 @@ unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
 void initSymbols(void);
+any intern(char*);
 bool isBlank(any);
 bool isLife(any);
 void lstError(any,any) __attribute__ ((noreturn));
@@ -331,6 +332,7 @@ int symByte(any);
 int symChar(any);
 void symError(any,any) __attribute__ ((noreturn));
 any symToNum(any,int,int,int);
+word2 unBoxWord2(any);
 void undefined(any,any);
 void unwind (catchFrame*);
 void varError(any,any) __attribute__ ((noreturn));
@@ -659,6 +661,7 @@ any doWith(any);
 any doWr(any);
 any doXchg(any);
 any doXor(any);
+any doYoke(any);
 any doZap(any);
 any doZero(any);
 

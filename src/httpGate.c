@@ -1,4 +1,4 @@
-/* 25dec06abu
+/* 18jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,6 +25,8 @@
 
 typedef enum {NO,YES} bool;
 
+static int Http1;
+
 static char Head_200[] =
    "HTTP/1.0 200 OK\r\n"
    "Server: PicoLisp\r\n"
@@ -41,6 +43,47 @@ static inline bool pre(char *p, char *s) {
       if (*p++ != *s++)
          return NO;
    return YES;
+}
+
+static char *ses(char *buf, int port, int *len) {
+   int np;
+   char *p, *q;
+
+   if (Http1 == 0)
+      return buf;
+   if (pre(buf, "GET /")) {
+      np = (int)strtol(buf+5, &q, 10);
+      if (q == buf+5 || *q != '/' || np < 1024 || np > 65535)
+         return buf;
+      p = q++ - 4;
+      do
+         if (*q < '0' || *q > '9')
+            return buf;
+      while (*++q != '~');
+      if (np == port) {
+         p[0] = 'G',  p[1] = 'E',  p[2] = 'T',  p[3] = ' ';
+         *len -= p - buf;
+         return p;
+      }
+      return NULL;
+   }
+   if (pre(buf, "POST /")) {
+      np = (int)strtol(buf+6, &q, 10);
+      if (q == buf+6 || *q != '/' || np < 1024 || np > 65535)
+         return buf;
+      p = q++ - 5;
+      do
+         if (*q < '0' || *q > '9')
+            return buf;
+      while (*++q != '~');
+      if (np == port) {
+         p[0] = 'P',  p[1] = 'O',  p[2] = 'S',  p[3] = 'T',  p[4] = ' ';
+         *len -= p - buf;
+         return p;
+      }
+      return NULL;
+   }
+   return buf;
 }
 
 static void wrBytes(int fd, char *p, int cnt) {
@@ -118,8 +161,8 @@ int main(int ac, char *av[]) {
    if (ac == 3 || *av[3] == '\0')
       ssl = NULL,  gate = "Gate: http %s\r\n";
    else {
+      SSL_library_init();
       SSL_load_error_strings();
-      OpenSSL_add_ssl_algorithms();
       if (!(ctx = SSL_CTX_new(SSLv23_server_method())) ||
             !SSL_CTX_use_certificate_file(ctx, av[3], SSL_FILETYPE_PEM) ||
                !SSL_CTX_use_PrivateKey_file(ctx, av[3], SSL_FILETYPE_PEM) ||
@@ -207,6 +250,8 @@ int main(int ac, char *av[]) {
                }
                return 0;
             }
+
+            Http1 = 0;
             if (buf[0] == '@')
                p = q + 1;
             else {
@@ -218,6 +263,8 @@ int main(int ac, char *av[]) {
                   if (p >= buf + n)
                      return 1;
                wrBytes(srv, q, p - q);
+               if (pre(p-10, "HTTP/1."))
+                  Http1 = *(p-3) - '0';
                wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
             }
             wrBytes(srv, p, buf + n - p);
@@ -225,11 +272,11 @@ int main(int ac, char *av[]) {
             signal(SIGALRM, doSigAlarm);
             if (Buddy = fork()) {
                if (ssl)
-                  while (alarm(60), (n = SSL_read(ssl, buf, sizeof(buf))) > 0)
-                     alarm(0),  wrBytes(srv, buf, n);
+                  while (alarm(60), (n = SSL_read(ssl,buf,sizeof(buf))) > 0 && (p = ses(buf, port, &n)))
+                     alarm(0),  wrBytes(srv, p, n);
                else
-                  while (alarm(60), (n = read(cli, buf, sizeof(buf))) > 0)
-                     alarm(0),  wrBytes(srv, buf, n);
+                  while (alarm(60), (n = read(cli,buf,sizeof(buf))) > 0 && (p = ses(buf, port, &n)))
+                     alarm(0),  wrBytes(srv, p, n);
                alarm(0);
                shutdown(cli, SHUT_RD);
                shutdown(srv, SHUT_WR);

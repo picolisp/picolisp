@@ -1,4 +1,4 @@
-# 24mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
@@ -9,21 +9,21 @@
       (<grid> "-.-"
          ,"Date" NIL
          (prog
-            (gui 'from '(+DateField) 10)
+            (gui '(+Var +DateField) '*SalFrom 10)
             (prin " - ")
-            (gui 'till '(+DateField) 10) )
+            (gui '(+Var +DateField) '*SalTill 10) )
          ,"Customer" (gui '(+ChoButton) '(choCuSu (field 1)))
-         (gui 'cus '(+Obj +TextField) '(nm +CuSu) 30) )
+         (gui '(+Var +Obj +TextField) '*SalCus '(nm +CuSu) 30) )
       (----)
-      (gui '(+Button) ,"Show Report"
-         '(appendix
+      (gui '(+ShowButton)
+         '(csv ,"Sales"
             (<table> 'chart NIL
                '((align) (NIL ,"Date") (NIL ,"Customer") NIL (NIL ,"Zip") (NIL ,"City") (align ,"Total"))
                (let Sum 0
                   (pilog
                      (quote
-                        @Rng (cons (val> (: from)) (or (val> (: till)) T))
-                        @Cus (val> (: cus))
+                        @Rng (cons *SalFrom (or *SalTill T))
+                        @Cus *SalCus
                         (select (@Ord)
                            ((dat +Ord @Rng) (cus +Ord @Cus))
                            (range @Rng @Ord dat)
@@ -31,14 +31,16 @@
                      (with @Ord
                         (let N (sum> This)
                            (<row> (alternating)
-                              (htObj (: nr) This)
-                              (htObj (datStr (: dat)) This)
-                              (htObj (: cus nm) (: cus))
-                              (ht:Prin (: cus nm2))
-                              (ht:Prin (: cus plz))
-                              (ht:Prin (: cus ort))
-                              (prin (money N)) )
+                              (<+> (: nr) This)
+                              (<+> (datStr (: dat)) This)
+                              (<+> (: cus nm) (: cus))
+                              (<+> (: cus nm2))
+                              (<+> (: cus plz))
+                              (<+> (: cus ort))
+                              (<-> (money N)) )
                            (inc 'Sum N) ) ) )
                   (<row> NIL
                      (<strong> ,"Total") - - - - -
                      (<strong> (prin (money Sum))) ) ) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

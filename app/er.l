@@ -1,4 +1,4 @@
-# 31mar07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -39,7 +39,7 @@
 # Customer/Supplier
 (class +CuSu +Entity)
 (rel nr  (+Need +Key +Number))                  # Customer/Supplier Number
-(rel nm  (+Need +Sn +Idx +String))              # Name
+(rel nm  (+Sn +Idx +String))                    # Name
 (rel nm2 (+String))                             # Name 2
 (rel str (+Ref +String))                        # Street
 (rel plz (+Ref +String))                        # Zip
@@ -58,7 +58,7 @@
 # Item
 (class +Item +Entity)
 (rel nr  (+Need +Key +Number))                  # Item Number
-(rel nm  (+Need +Sn +Idx +String))              # Item Description
+(rel nm  (+Sn +Idx +String))                    # Item Description
 (rel sup (+Ref +Link) NIL (+CuSu))              # Supplier
 (rel inv (+Number))                             # Inventory
 (rel pr  (+Ref +Number) NIL 2)                  # Price
@@ -78,7 +78,7 @@
 # Order
 (class +Ord +Entity)
 (rel nr  (+Need +Key +Number))                  # Order Number
-(rel dat (+Ref +Date))                          # Order date
+(rel dat (+Need +Ref +Date))                    # Order date
 (rel cus (+Ref +Link) NIL (+CuSu))              # Customer
 (rel pos (+List +Joint) ord (+Pos))             # Positions
 
@@ -109,3 +109,5 @@
    (3 (+CuSu nr nm str plz ort cty tel mob))    # (6 . 512)
    (3 (+Item nr nm sup pr))                     # (7 . 512)
    (3 (+Ord nr dat cus) (+Pos itm)) )           # (8 . 512)
+
+# vi:et:ts=3:sw=3

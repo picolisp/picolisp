@@ -1,4 +1,4 @@
-# 13mar05abu
+# 15may07abu
 # (c) Software Lab. Alexander Burger
 
 ### Event-Note-System ###
@@ -24,7 +24,7 @@
          (quote
             @Usr Usr
             @Con Con
-            @CDx (and Con (cons (cons Con) (cons Con Dat)))
+            @CDx (and Con (cons (cons Con) Con Dat))
             (select (@Note)
                ((usr +Note @Usr) (con +Note @CDx))
                (@ >= Dat (get (-> @Note) 'dat))

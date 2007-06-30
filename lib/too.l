@@ -1,4 +1,4 @@
-# 21jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -269,7 +269,7 @@
    (let Lst
       (make
          (for (S *DB S (seq S))
-            (link (cons S (cons (val S) (getl S)))) ) )
+            (link (cons S (val S) (getl S))) ) )
       (pool)
       (call 'rm (pack Pool 1))
       (pool Pool Dbs)
@@ -385,7 +385,7 @@
 (de dbUnload (File N)
    (out File
       (for (S (seq N) S (seq S))
-         (println (cons S (cons (val S) (getl S)))) ) ) )
+         (println (cons S (val S) (getl S))) ) ) )
 
 (de dbLoad (File N)
    (in File
@@ -402,22 +402,28 @@
 
 ### Dump Objects ###
 (de dump CL
-   (for ("Q" (goal CL) (asoq '@@ (prove "Q")))
-      (let (Obj (cdr @)  Lst)
-         (prin "(obj ")
-         (_dmp Obj)
-         (maps
-            '((X)
-               (unless (member X Lst)
-                  (prinl)
-                  (space 3)
-                  (if (atom X)
-                     (print X T)
-                     (printsp (cdr X))
-                     (_dmp (car X) T) ) ))
-               Obj )
-         (prinl " )")
-         Obj ) ) )
+   (let B 0
+      (for ("Q" (goal CL) (asoq '@@ (prove "Q")))
+         (let (Obj (cdr @)  Lst)
+            (prin "(obj ")
+            (_dmp Obj)
+            (maps
+               '((X)
+                  (unless (member X Lst)
+                     (prinl)
+                     (space 3)
+                     (cond
+                        ((pair X)
+                           (printsp (cdr X))
+                           (_dmp (car X) T) )
+                        ((isa '+Blob (meta Obj X))
+                           (prin X " `(tmp " (inc 'B) ")")
+                           (out (tmp B)
+                              (in (blob Obj X) (echo)) ) )
+                        (T (print X T)) ) ) )
+                  Obj )
+            (prinl " )")
+            Obj ) ) ) )
 
 (de _dmp (Obj Flg)
    (cond
@@ -466,3 +472,5 @@
             (prin ")") )
          (prin ")") )
       (T (print Obj)) ) )
+
+# vi:et:ts=3:sw=3

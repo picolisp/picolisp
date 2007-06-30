@@ -1,4 +1,4 @@
-# 21jan07abu
+# 25jun07abu
 # (c) Software Lab. Alexander Burger
 
 (de global? (S)
@@ -87,7 +87,7 @@
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
                   (mapc lint1 (cdr "X")) ) )
-            (cond
+            ((cond nond)
                (for "X" (cdr "X")
                   (mapc lint1 "X") ) )
             (loop
@@ -143,7 +143,7 @@
 
 (de lintVar (X Flg)
    (cond
-      ((or (not (sym? X)) (memq X '(NIL *DB *Solo T)))
+      ((or (not (sym? X)) (memq X '(NIL *DB *Solo ^ meth quote T)))
          (push '"*Var" X) )
       ((not (global? X))
          (or Flg (memq X "*Use") (push '"*Use" X))
@@ -201,3 +201,5 @@
                            (link (cons (cons (car "Y") "X") @)) ) ) )
                   ((and (not (global? "X")) (pair (getd "X")) (lint "X"))
                      (link (cons "X" @)) ) ) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

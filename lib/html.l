@@ -1,24 +1,24 @@
-# 21dec06abu
+# 03jun07abu
 # (c) Software Lab. Alexander Burger
 
 # *Url1 *Frame *Meta *Css
 
 ### HTML Output ###
-(de html ("Ttl" . "Prg")
-   (httpHead NIL (if (car "Prg") 0 (pop '"Prg")))
+(de html (Ttl . Prg)
+   (httpHead NIL (if (car Prg) 0 (pop 'Prg)))
    (ht:Out *Chunked
       (prinl
          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 "
-         (if (num? (car "Prg")) "Frameset" "Transitional")
+         (if (num? (car Prg)) "Frameset" "Transitional")
          "//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">" )
       (if *Lang
          (prinl "<HTML lang=\"" *Lang "\">")
          (prinl "<HTML>") )
       (prinl "<HEAD>")
       (prinl "<BASE HREF=\"" (baseHRef) "\">")
-      (when "Ttl"
+      (when Ttl
          (prin "<TITLE>")
-         (ht:Prin "Ttl")
+         (ht:Prin Ttl)
          (prinl "</TITLE>") )
       (for L *Meta
          (prin "<META")
@@ -31,44 +31,44 @@
             *SesId *Css "\">" ) )
       (prinl "</HEAD>")
       (nond
-         ((num? (car "Prg"))
+         ((num? (car Prg))
             (prin "<BODY")
-            (while (and (pair (car "Prg")) (=T (caar "Prg")))
-               (prin " " (eval (cdr (pop '"Prg")))) )
+            (while (and (pair (car Prg)) (=T (caar Prg)))
+               (prin " " (eval (cdr (pop 'Prg)) 1)) )
             (prinl ">")
-            (prEval "Prg")
+            (prEval Prg 2)
             (prinl "</BODY>") )
-         ((num? (cadr "Prg"))
+         ((num? (cadr Prg))
             (prinl
                "<FRAMESET COLS=\""
-               (eval (pop '"Prg"))
+               (eval (pop 'Prg) 1)
                ",*\"><FRAME NAME=\"MENU\" SRC=\""
                *SesId
                "1\"><FRAME NAME=\"MAIN\" SRC=\""
                *SesId
-               (eval (pop '"Prg"))
+               (eval (pop 'Prg) 1)
                "\"></FRAMESET>" )
             (setq  *Frame
-               (cons (list NIL NIL (cons 'html (cons NIL "Prg"))))) )
+               (cons (list NIL NIL (cons 'html NIL Prg))) ) )
          (NIL
             (prinl
                "<FRAMESET ROWS=\""
-               (eval (pop '"Prg"))
+               (eval (pop 'Prg) 1)
                ",*\"><FRAME SRC=\""
                *SesId
                "0\" MARGINHEIGHT=\"0\" SCROLLING=\"NO\"><FRAMESET COLS=\""
-               (eval (pop '"Prg"))
+               (eval (pop 'Prg) 1)
                ",*\"><FRAME NAME=\"MENU\" SRC=\""
                *SesId
                "1\"><FRAME NAME=\"MAIN\" SRC=\""
                *SesId
-               (eval (pop '"Prg"))
+               (eval (pop 'Prg) 1)
                "\"></FRAMESET></FRAMESET>" )
             (setq  *Frame
                (mapcar
                   '((L)
-                     (mix L 1 2 (cons 'html (cons NIL (cddr L)))) )
-                  "Prg" ) ) ) )
+                     (mix L 1 2 (cons 'html NIL (cddr L))) )
+                  Prg ) ) ) )
       (prinl "</HTML>") ) )
 
 (undef 'urlN)
@@ -128,12 +128,12 @@
       (ht:Prin S)
       (prinl "</H" N ">") ) )
 
-(de <font> ("Col" "Siz" . "Prg")
+(de <font> (Col Siz . Prg)
    (prin "<FONT")
-   (and "Col" (prin " COLOR=\"" "Col" "\""))
-   (and "Siz" (prin " SIZE=\"" "Siz" "\""))
+   (and Col (prin " COLOR=\"" Col "\""))
+   (and Siz (prin " SIZE=\"" Siz "\""))
    (prin ">")
-   (prEval "Prg")
+   (prEval Prg 2)
    (prinl "</FONT>") )
 
 (de <b> @
@@ -153,19 +153,19 @@
 (de <hr> ()
    (prinl '<hr>) )
 
-(de <center> "Prg"
+(de <center> Prg
    (prin "<center>")
-   (prEval "Prg")
+   (prEval Prg 2)
    (prinl "</center>") )
 
-(de <p> ("X" . "Prg")
-   (prin "<p" (_htAlign "X") ">")
-   (prEval "Prg")
+(de <p> (X . Prg)
+   (prin "<p" (_htAlign X) ">")
+   (prEval Prg 2)
    (prinl "</p>") )
 
-(de <name> ("Name" . "Prg")
-   (prin "<a NAME=\"" "Name" "\">")
-   (prEval "Prg")
+(de <name> (Name . Prg)
+   (prin "<a NAME=\"" Name "\">")
+   (prEval Prg 2)
    (prinl "</a>") )
 
 (de <href> (S Url Tar)
@@ -187,9 +187,9 @@
    (prin "<IMG SRC=\"" (sesId S) "\" ALT=\"" A "\"" (_htAlign X) ">")
    (and Url (prin "</A>")) )
 
-(de <pre> "Prg"
+(de <pre> Prg
    (prinl "<PRE>")
-   (prEval "Prg")
+   (prEval Prg 2)
    (prinl "</PRE>") )
 
 (de <list> @
@@ -394,14 +394,14 @@
 
 
 ### HTML Form ###
-(de <post> ("S" . "Prg")
+(de <post> (S . Prg)
    (prinl
       "<FORM ENCTYPE=\"multipart/form-data\" ACTION=\""
-      (sesId "S")
+      (sesId S)
       "\" METHOD=POST"
       (and *Frame " TARGET=\"MAIN\"")
       ">" )
-   (prEval "Prg")
+   (prEval Prg 2)
    (prinl "</FORM>") )
 
 (de htmlVar ("Var")

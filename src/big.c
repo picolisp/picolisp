@@ -1,4 +1,4 @@
-/* 09jun06abu
+/* 05may07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -16,6 +16,14 @@ any boxWord2(word2 t) {
    Push(c1, hi(t)? consNum(num(t), box(hi(t))) : box(num(t)));
    digMul2(data(c1));
    return Pop(c1);
+}
+
+word2 unBoxWord2(any x) {
+   word2 n = unDig(x);
+
+   if (isNum(x = cdr(numCell(x))))
+      n = n << 32 + unDig(x);
+   return n / 2;
 }
 
 /* Bignum copy */

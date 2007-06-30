@@ -1,4 +1,4 @@
-# 27mar07abu
+# 13jun07abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -22,7 +22,6 @@
 "Font" "フォント"
 "Font Size" "フォントサイズ"
 "Foreground" "前面"
-"New/Copy" "作成/コピー"
 "Next record" "次のデータ"
 "Please wait" "お待ちください"
 "Settings" "セッティング"
@@ -35,7 +34,9 @@
 "Permission denied" "認証できません"
 "Permissions" "許可"
 "Role" "役割"
+"Roles" "役割"
 "User" "ユーザー"
+"Users" "ユーザー"
 "login" "ログイン"
 "logout" "ログアウト"
 
@@ -48,12 +49,18 @@
 "Data not found" "データが見つかりません"
 "Delete" "消去"
 "Delete @1?" "@1を消しますか？"
+"Delete row?" "行を消しますか？"
 "Edit" "編集"
 "New" "作成"
+"New/Copy" "作成/コピー"
 "No" "いいえ"
+"Reset" "リセット"
 "Restore" "もとへ戻す"
 "Restore @1?" "@1もとへ戻しますか？"
 "Save" "保存"
 "Search" "検索"
 "Select" "選択"
+"Show" "表示"
 "Yes" "はい"
+"female" "女性"
+"male" "男性"

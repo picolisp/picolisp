@@ -1,4 +1,4 @@
-/* 25mar07abu
+/* 01jun07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,8 +8,8 @@
 .clr {clear: both;}
 .norm {text-align: left;}
 .align {text-align: right;}
-.red {color: red}
-.blue {color: blue}
+.red {color: red;}
+.blue {color: blue;}
 .bold {font-weight: bold;}
 .btn {width: 12px;}
 
@@ -74,6 +74,10 @@ caption {
 }
 
 /* Tabulators */
+.tab {
+   margin-bottom: 9px;
+}
+
 .tab a {
    color: black;
    text-decoration: none;
@@ -110,6 +114,11 @@ caption {
 
 .chart td.T {
    background-color: rgb(80%,80%,80%);
+}
+
+/* Edit Mode */
+.edit {
+   font-weight: bold;
 }
 
 /* Errors */

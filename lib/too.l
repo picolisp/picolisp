@@ -1,4 +1,4 @@
-# 25jun07abu
+# 31jul07abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -98,7 +98,7 @@
       quote
       '((Base Root Var Cls Hook)
          (println Base Root Var Cls Hook)
-         (unless (= (car Root) (check (cdr Root)))
+         (unless (= (car Root) (chkTree (cdr Root)))
             (quit "Tree size mismatch") )
          (when Var
             (scan (tree Var Cls Hook)
@@ -215,9 +215,9 @@
 ### Rebuild tree ###
 (de rebuild (Lst Var Cls Hook)
    (when (get (or Hook *DB) Cls)
+      (zapTree (get @ Var -1))
       (put @ Var NIL)
-      (commit)
-      (dbgc) )
+      (commit) )
    (for Obj Lst
       (when (and (not (get Obj T)) (get Obj Var))
          (rel> (meta Obj Var) Obj NIL
@@ -372,13 +372,6 @@
             (dbfReloc (cdr X))
             Dbf ) )
       (commit) ) )
-
-(de zapTree (Node)
-   (let? Lst (val Node)
-      (zapTree (car Lst))
-      (for X (cdr Lst)
-         (zapTree (cadr X)) )
-      (zap Node) ) )
 
 
 ### DB Unload/Load ###

@@ -1,11 +1,11 @@
-# 21jan07abu
+# 04aug07abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
 # *White *Black *WKPos *BKPos *Pinned
 # *Depth *Moved *Undo *Redo *Me *You
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 ### Fields/Board ###
 # x y color piece whAtt blAtt
@@ -463,14 +463,16 @@
 
 
 ### Game ###
-(de display ()
-   (disp *Board T
-      '((This)
-         (cond
-            ((: piece) (name> @))
-            ((: color) " - ")
-            (T "   ") ) ) )
-   (and (inCheck *You) (prinl "(+)")) )
+(de display (Res)
+   (when Res
+      (disp *Board T
+         '((This)
+            (cond
+               ((: piece) (name> @))
+               ((: color) " - ")
+               (T "   ") ) ) ) )
+   (and (inCheck *You) (prinl "(+)"))
+   Res )
 
 (de moved? (Lst)
    (or
@@ -494,7 +496,6 @@
          (T (bookMove 'd2 'd4)) )
       (move (car (push '*Undo (cadr M))))
       (off *Redo)
-      (display)
       (cons (car M) (mapcar cdar (cdr M))) ) )
 
 (de yourMove (From To)
@@ -510,7 +511,13 @@
          (off *Redo)
          (move @) ) ) )
 
-(de main (Depth You Init)
+(de undo ()
+   (move (cdr (push '*Redo (pop '*Undo)))) )
+
+(de redo ()
+   (move (car (push '*Undo (pop '*Redo)))) )
+
+(de setup (Depth You Init)
    (setq *Depth (or Depth 5)  *You You  *Me (not You))
    (off *White *Black *Moved *Undo *Redo)
    (for Lst *Board
@@ -528,22 +535,19 @@
             (piece '(+Black +Pawn) 0 (get Lst 7))
             (piece (list '+Black Cls) 0 (get Lst 8)) )
          '(+Rook +Knight +Bishop +Queen +King +Bishop +Knight +Rook)
-         *Board ) )
-   (display) )
+         *Board ) ) )
+
+(de main (Depth You Init)
+   (setup Depth You Init)
+   (display T) )
 
 (de go Args
-   (cond
-      ((not Args) (xchg '*Me '*You) (myMove))
-      ((== '- (car Args))
-         (when *Undo
-            (move (cdr (push '*Redo (pop '*Undo))))
-            (display) ) )
-      ((== '+ (car Args))
-         (when *Redo
-            (move (car (push '*Undo (pop '*Redo))))
-            (display) ) )
-      ((yourMove (car Args) (cadr Args)) (myMove))
-      (T '?) ) )
+   (display
+      (cond
+         ((not Args) (xchg '*Me '*You) (myMove))
+         ((== '- (car Args)) (and *Undo (undo)))
+         ((== '+ (car Args)) (and *Redo (redo)))
+         ((yourMove (car Args) (cadr Args)) (display T) (myMove)) ) ) )
 
 # Print position to file
 (de ppos (File)
@@ -558,3 +562,5 @@
                         (val This)
                         (not (memq This *Moved)) ) )
                   (append *White *Black) ) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

@@ -1,9 +1,10 @@
-/* 18jun07abu
+/* 10sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -18,6 +19,7 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <syslog.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -25,13 +27,22 @@
 
 typedef enum {NO,YES} bool;
 
-static int Http1;
+static bool Bin;
+static int Http1, Timeout;
 
 static char Head_200[] =
    "HTTP/1.0 200 OK\r\n"
    "Server: PicoLisp\r\n"
    "Content-Type: text/html; charset=utf-8\r\n"
    "\r\n";
+
+static void logger(char *fmt, ...) {
+   va_list ap;
+
+   va_start(ap,fmt);
+   vsyslog(LOG_ERR, fmt, ap);
+   va_end(ap);
+}
 
 static void giveup(char *msg) {
    fprintf(stderr, "httpGate: %s\n", msg);
@@ -49,7 +60,7 @@ static char *ses(char *buf, int port, int *len) {
    int np;
    char *p, *q;
 
-   if (Http1 == 0)
+   if (Bin || Http1 == 0)
       return buf;
    if (pre(buf, "GET /")) {
       np = (int)strtol(buf+5, &q, 10);
@@ -86,27 +97,42 @@ static char *ses(char *buf, int port, int *len) {
    return buf;
 }
 
+static int slow(SSL *ssl, int fd, char *p, int cnt) {
+   int n;
+
+   while ((n = ssl? SSL_read(ssl, p, cnt) : read(fd, p, cnt)) < 0)
+      if (errno != EINTR)
+         return 0;
+   return n;
+}
+
 static void wrBytes(int fd, char *p, int cnt) {
    int n;
 
    do
       if ((n = write(fd, p, cnt)) >= 0)
          p += n, cnt -= n;
-      else if (errno != EINTR)
+      else if (errno != EINTR) {
+         logger("%d wrBytes error", fd);
          exit(1);
+      }
    while (cnt);
 }
 
 static void sslWrite(SSL *ssl, void *p, int cnt) {
-   if (SSL_write(ssl, p, cnt) <= 0)
+   if (SSL_write(ssl, p, cnt) <= 0) {
+      logger("SSL_write error");
       exit(1);
+   }
 }
 
 static int gateSocket(void) {
    int sd;
 
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+      logger("socket error");
       exit(1);
+   }
    return sd;
 }
 
@@ -119,10 +145,14 @@ static int gatePort(int port) {
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    addr.sin_port = htons((unsigned short)port);
    n = 1,  setsockopt(sd = gateSocket(), SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n));
-   if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+   if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+      logger("%d bind error", sd);
       exit(1);
-   if (listen(sd,5) < 0)
+   }
+   if (listen(sd,5) < 0) {
+      logger("%d listen error", sd);
       exit(1);
+   }
    return sd;
 }
 
@@ -142,8 +172,13 @@ static int gateConnect(unsigned short port) {
 static pid_t Buddy;
 
 static void doSigAlarm(int n __attribute__((unused))) {
+   logger("Timeout %d", Timeout);
    kill(Buddy, SIGTERM);
    exit(0);
+}
+
+static void doSigUsr1(int n __attribute__((unused))) {
+   alarm(Timeout);
 }
 
 int main(int ac, char *av[]) {
@@ -182,6 +217,7 @@ int main(int ac, char *av[]) {
       return 0;
    setsid();
 
+   openlog("httpGate", LOG_CONS|LOG_PID, 0);
    for (;;) {
       socklen_t len = sizeof(addr);
       if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
@@ -189,11 +225,11 @@ int main(int ac, char *av[]) {
             close(cli);
          else {
             int fd, port;
-            char *p, *q, buf[32768], buf2[64];
+            char *p, *q, buf[4096], buf2[64];
 
             close(sd);
 
-            alarm(60);
+            alarm(Timeout = 420);
             if (ssl) {
                SSL_set_fd(ssl, cli);
                if (SSL_accept(ssl) < 0)
@@ -212,8 +248,9 @@ int main(int ac, char *av[]) {
              * "POST /url HTTP/1.x"
              * "POST /8080/url HTTP/1.x"
              */
+            Bin = NO;
             if (buf[0] == '@')
-               p = buf + 1;
+               p = buf + 1,  Bin = YES,  Timeout = 3600;
             else if (pre(buf, "GET /"))
                p = buf + 5;
             else if (pre(buf, "POST /"))
@@ -230,18 +267,22 @@ int main(int ac, char *av[]) {
                return 1;
 
             if ((srv = gateConnect((unsigned short)port)) < 0) {
-               if (!memchr(q,'~', buf + n - q))
+               logger("Can't connect to %d", port);
+               if (!memchr(q,'~', buf + n - q)) {
+                  buf[n] = '\0';
+                  logger("Bad request: %s", buf);
                   return 1;
+               }
                if ((fd = open("void", O_RDONLY)) < 0)
                   return 1;
-               alarm(60);
+               alarm(Timeout);
                if (ssl)
                   sslWrite(ssl, Head_200, strlen(Head_200));
                else
                   wrBytes(cli, Head_200, strlen(Head_200));
                alarm(0);
                while ((n = read(fd, buf, sizeof(buf))) > 0) {
-                  alarm(60);
+                  alarm(Timeout);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else
@@ -260,8 +301,11 @@ int main(int ac, char *av[]) {
                   ++q;
                p = q;
                while (*p++ != '\n')
-                  if (p >= buf + n)
+                  if (p >= buf + n) {
+                     buf[n] = '\0';
+                     logger("Bad header: %s", buf);
                      return 1;
+                  }
                wrBytes(srv, q, p - q);
                if (pre(p-10, "HTTP/1."))
                   Http1 = *(p-3) - '0';
@@ -270,21 +314,24 @@ int main(int ac, char *av[]) {
             wrBytes(srv, p, buf + n - p);
 
             signal(SIGALRM, doSigAlarm);
+            signal(SIGUSR1, doSigUsr1);
             if (Buddy = fork()) {
-               if (ssl)
-                  while (alarm(60), (n = SSL_read(ssl,buf,sizeof(buf))) > 0 && (p = ses(buf, port, &n)))
-                     alarm(0),  wrBytes(srv, p, n);
-               else
-                  while (alarm(60), (n = read(cli,buf,sizeof(buf))) > 0 && (p = ses(buf, port, &n)))
-                     alarm(0),  wrBytes(srv, p, n);
-               alarm(0);
+               for (;;) {
+                  alarm(Timeout);
+                  n = slow(ssl, cli, buf, sizeof(buf));
+                  alarm(0);
+                  if (!n || !(p = ses(buf, port, &n)))
+                     break;
+                  wrBytes(srv, p, n);
+               }
                shutdown(cli, SHUT_RD);
                shutdown(srv, SHUT_WR);
             }
             else {
                Buddy = getppid();
                while ((n = read(srv, buf, sizeof(buf))) > 0) {
-                  alarm(60);
+                  kill(Buddy, SIGUSR1);
+                  alarm(Timeout);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else

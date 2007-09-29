@@ -40,6 +40,9 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
       </ul>
    <li><a href="#urlSyntax">URL Syntax</a>
    <li><a href="#security">Security</a>
+      <ul>
+      <li><a href="#pw">The ".pw" File</a>
+      </ul>
    <li><a href="#htmlFoo">The <code>html</code> Function</a>
    <li><a href="#cssAttr">CSS Attributes</a>
    <li><a href="#tags">Tag Functions</a>
@@ -275,6 +278,24 @@ to the directories "img/" and "demo/", to the function 'start', and to the files
 allowed items.
 
 
+<h4><a name="pw">The ".pw" File</a></h4>
+
+<p>For a variety of security checks (most notably for using the <code>psh</code>
+function, as in some later examples) it is necessary to create a file named
+".pw" in the Pico Lisp installation directory. This file should contain a single
+line of arbitrary data, to be used as a password for identifying local
+resources.
+
+<p>The recommeded way to create this file is to call the <code>pw</code>
+function, defined in "lib/http.l"
+
+<p><pre><code>
+$ ./p lib/http.l -'pw 12' -bye
+</code></pre>
+
+<p>Please execute this command.
+
+
 <p><hr>
 <h3><a name="htmlFoo">The <code>html</code> Function</a></h3>
 
@@ -296,7 +317,8 @@ allowed items.
 
 <p>Moreover, <code>html</code> <b>is</b> nothing more than a printing function.
 You can see this easily if you connect a Pico Lisp Shell (<code>psh</code>) to
-the server process, and enter the <code>html</code> statement
+the server process (you must have generated a <a href="#pw">".pw" file</a> for
+this), and enter the <code>html</code> statement
 
 <p><pre><code>
 $ bin/psh 8080
@@ -318,7 +340,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-: # (type ENTER here to terminate the Pico Lisp Shell)
+:  # (type ENTER here to terminate the Pico Lisp Shell)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -425,7 +447,8 @@ editing the "project.l" file.
 
 <p>For a suitable Pico Lisp prompt, either execute (in a separate terminal
 window) the Pico Lisp Shell (<code>psh</code>) command (works only if the
-application server is running)
+application server is running, and you did generate a <a href="#pw">".pw"
+file</a>)
 
 <p><pre><code>
 $ bin/psh 8080
@@ -1337,8 +1360,7 @@ internal representation is a (one-dimensional) list of customer objects, 'put'
 expands each object to a list with, say, the customer's first and second name,
 telephone number, address and so on. When the user enters a customer's name,
 'get' locates the matching object in the database and stores it in the internal
-representation. In the following, 'put' will in turn expand it to the GUI. We
-will write more about this in the chapter on <a href="#db">DB-Integration</a>.
+representation. In the following, 'put' will in turn expand it to the GUI.
 
 <p>For now, let's stick with a simpler example: A chart that holds just a list
 of numbers, but expands in the GUI to show also a textual form of each number
@@ -1459,6 +1481,7 @@ view of the class hierarchy can be obtained with the <code>dep</code>
       +DelRowButton
       +BubbleButton
       +ChoButton
+         +Hint
       +ClrButton
       +PickButton
          +DstButton

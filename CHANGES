@@ -1,3 +1,26 @@
+* 30sep07 picoLisp-2.3.0
+   Extended "lib/test.l" unit tests
+   'full' function
+   Bug in 'wipe'
+   Bug in 'digSub1()'
+   Changed internal symbol structure
+   'pid' selector for 'tell'
+   'vi' and 'ld' source code access
+   Restored 'in'/'out' negative channel offsets
+   Abandoned 'stdio' in I/O functions
+   Improved signal handling
+   'leaf' function
+   Restored 'gc' unit to "megabytes"
+   Changed 'heap' return values
+   Bug in 'tell'
+   'chess' XBoard interface
+   '*Sig1', '*Sig2' global variables
+   'ipid' and 'opid' functions
+   Bug in writing blobs
+   Timeout bug in 'httpGate'
+   '*Zap' global variable
+   '*OS' global variable
+
 * 30jun07 picoLisp-2.2.7
    Extended "doc/ref.html"
    'cons' multiple arguments
@@ -181,7 +204,7 @@
    'del' delete-and-set function
    '*Fork' global variable
    Changed URL encoding of Lisp objects
-   Removed traffic throttle from "httpGate"
+   Removed traffic throttle from 'httpGate'
    Synchronized ".picoHistory" in "lib/led.l"
    Fixed exception handling in debug breakpoint
    Revised subclass handling in 'db' and 'collect'

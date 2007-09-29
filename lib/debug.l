@@ -1,4 +1,4 @@
-# 25jun07abu
+# 09sep07abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -32,16 +32,6 @@
          (T (atom "M") (prinl))
          (T (line) T)
          ("Foo" (pop '"M")) ) ) )
-
-(de stat ()
-   (let *Dbg NIL
-      (let (F (heap)  H (heap T))
-         (prinl
-            (*/ H 1000000)
-            " "
-            (- 100 (*/ 100 F H))
-            "%" )
-         (- H F) ) ) )
 
 (de depth (Idx)
    (if (atom Idx)
@@ -143,6 +133,21 @@
             (println "X")
             (dep2 (+ 3 N) "X") ) ) ) )
 
+# Source code
+(off "*Vi")
+
+(de vi ("X" C)
+   (when (pair "X")
+      (setq C (cdr "X")  "X" (car "X")) )
+   (when (setq "*Vi" (if C (get C "X") (get "X" '*Dbg)))
+      (call 'vim
+         "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
+         (pack "+" (car "*Vi"))
+         (cdr "*Vi") ) ) )
+
+(de ld ()
+   (and "*Vi" (load (cdr "*Vi"))) )
+
 # Single-Stepping
 (de _dbg (Lst)
    (or
@@ -188,17 +193,17 @@
 
 (de d () (let *Dbg NIL (dbg ^)))
 
-(de debug ("X" "C")
-   (ifn (traced? "X" "C")
+(de debug ("X" C)
+   (ifn (traced? "X" C)
       (let *Dbg NIL
          (when (pair "X")
-            (setq  "C" (cdr "X")  "X" (car "X")) )
+            (setq C (cdr "X")  "X" (car "X")) )
          (or
-            (dbg (if "C" (method "X" "C") (getd "X")))
+            (dbg (if C (method "X" C) (getd "X")))
             (quit "Can't debug" "X") ) )
-      (untrace "X" "C")
-      (debug "X" "C")
-      (trace "X" "C") ) )
+      (untrace "X" C)
+      (debug "X" C)
+      (trace "X" C) ) )
 
 (de ubg (Lst)
    (when (pair Lst)
@@ -213,19 +218,19 @@
 
 (de u () (let *Dbg NIL (ubg ^)))
 
-(de unbug ("X" "C")
+(de unbug ("X" C)
    (let *Dbg NIL
       (when (pair "X")
-         (setq  "C" (cdr "X")  "X" (car "X")) )
+         (setq C (cdr "X")  "X" (car "X")) )
       (or
-         (ubg (if "C" (method "X" "C") (getd "X")))
+         (ubg (if C (method "X" C) (getd "X")))
          (quit "Can't unbug" "X") ) ) )
 
 # Tracing
-(de traced? ("X" "C")
+(de traced? ("X" C)
    (setq "X"
-      (if "C"
-         (method "X" "C")
+      (if C
+         (method "X" C)
          (getd "X") ) )
    (and
       (pair "X")
@@ -233,17 +238,17 @@
       (== '$ (caadr "X")) ) )
 
 # Convert ((X Y) A B) --> ((X Y) ($ foo (X Y) A B))
-(de trace ("X" "C")
+(de trace ("X" C)
    (let *Dbg NIL
       (when (pair "X")
-         (setq  "C" (cdr "X")  "X" (car "X")) )
-      (if "C"
-         (unless (traced? "X" "C")
-            (or (method "X" "C") (quit "Can't trace" "X"))
+         (setq C (cdr "X")  "X" (car "X")) )
+      (if C
+         (unless (traced? "X" C)
+            (or (method "X" C) (quit "Can't trace" "X"))
             (con @
                (cons
                   (conc
-                     (list '$ (cons "X" "C") (car @))
+                     (list '$ (cons "X" C) (car @))
                      (cdr @) ) ) ) )
          (unless (traced? "X")
             (and (sym? (getd "X")) (quit "Can't trace" "X"))
@@ -255,15 +260,15 @@
       "X" ) )
 
 # Convert ((X Y) ($ foo (X Y) A B)) --> ((X Y) A B)
-(de untrace ("X" "C")
+(de untrace ("X" C)
    (let *Dbg NIL
       (when (pair "X")
-         (setq  "C" (cdr "X")  "X" (car "X")) )
-      (if "C"
-         (when (traced? "X" "C")
+         (setq C (cdr "X")  "X" (car "X")) )
+      (if C
+         (when (traced? "X" C)
             (con
-               (method "X" "C")
-               (cdddr (cadr (method "X" "C"))) ) )
+               (method "X" C)
+               (cdddr (cadr (method "X" C))) ) )
          (when (traced? "X")
             (let X (set "X" (cddr (cadr (getd "X"))))
                (and
@@ -278,7 +283,7 @@
 (de *NoTrace
    @ @@ @@@
    pp show more led
-   stat what who can dep d e debug u unbug trace untrace )
+   what who can dep d e debug u unbug trace untrace )
 
 (de traceAll (Excl)
    (let *Dbg NIL
@@ -318,5 +323,12 @@
                (for N L
                   (prin (if (<= 32 N 127) (char N) ".")) )
                (prinl) ) ) ) ) )
+
+# Benchmarking
+(de bench Prg
+   (let (U (usec)  X (run Prg 1))
+      (out 2
+         (prinl (format (*/ (- (usec) U) 1000) 3) " sec") )
+      X ) )
 
 # vi:et:ts=3:sw=3

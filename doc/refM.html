@@ -269,6 +269,7 @@ href="ref.html#cmp">Comparing</a>.
 <code>any1</code> and/or a maximal key <code>any2</code> is given, the largest
 key from that range is returned. See also <code><a
 href="refT.html#tree">tree</a></code>, <code><a
+href="refL.html#leaf">leaf</a></code>, <code><a
 href="refM.html#minKey">minKey</a></code> and <code><a
 href="refG.html#genKey">genKey</a></code>.
 
@@ -326,7 +327,7 @@ href="refD.html#delq">delq</a></code>.
 <p><pre><code>
 : (memq 'c '(a b c d e f))
 -> (c d e f)
-: (memq 3 (1 2 3 4 5 6))
+: (memq (2) ((1) (2) (3)))
 -> NIL
 </code></pre>
 
@@ -397,8 +398,10 @@ href="ref.html#cmp">Comparing</a>.
 <dd>Returns the smallest key in a database tree. If a minimal key
 <code>any1</code> and/or a maximal key <code>any2</code> is given, the smallest
 key from that range is returned. See also <code><a
-href="refT.html#tree">tree</a></code> and <code><a
-href="refM.html#maxKey">maxKey</a></code>.
+href="refT.html#tree">tree</a></code>, <code><a
+href="refL.html#leaf">leaf</a></code>, <code><a
+href="refM.html#maxKey">maxKey</a></code> and <code><a
+href="refG.html#genKey">genKey</a></code>.
 
 <p><pre><code>
 : (minKey (tree 'nr '+Item))

@@ -1,4 +1,4 @@
-10apr07abu
+03aug07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -31,6 +31,12 @@ Please follow these steps:
 
    $ (cd src; make picolisp)
 
+4. Optional (but recommended) are two symbolic links from /usr/lib and /usr/bin
+   to the installation directory
+
+   $ ln -s /<installdir> /usr/lib/picolisp
+   $ ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+
 
          Invocation
          ==========
@@ -56,9 +62,9 @@ or simply type an empy line (Return).
          Documentation
          =============
 
-For further information, please read the Pico Lisp Reference Manual in
-'doc/ref.html', the Pico Lisp tutorials in 'doc/tut.html' and 'doc/app.html',
-and the frequently asked questions in 'doc/faq.html'.
+For further information, please look at "doc/index.html". There you find the
+Pico Lisp Reference Manual (doc/ref.html), the Pico Lisp tutorials (doc/tut.html
+and doc/app.html), and the frequently asked questions (doc/faq.html).
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including

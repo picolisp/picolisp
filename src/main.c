@@ -1,12 +1,12 @@
-/* 25jun07abu
+/* 10sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-bool SigInt, SigTerm;
-int Chr, Spkr, Mic, Slot, Hear, Tell, Trace, Children;
+bool Signal;
+int Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
 char **AV, *Home;
 child *Child;
 heap *Heaps;
@@ -14,14 +14,18 @@ cell *Avail;
 stkEnv Env;
 catchFrame *CatchPtr;
 struct termios *Termio;
-FILE *InFile, *OutFile;
-int (*getBin)(int);
+FILE *StdOut;
+int InFDs, OutFDs;
+inFile *InFile, **InFiles;
+outFile *OutFile, **OutFiles;
+int (*getBin)(void);
 void (*putBin)(int);
 any TheKey, TheCls;
 any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Solo, Up, Meth, Quote, T, At, At2, At3, This;
-any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+any Nil, DB, Meth, Quote, T;
+any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
+any Run, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
 
 static int TtyPid;
 static word2 USec;
@@ -44,8 +48,12 @@ void giveup(char *msg) {
 }
 
 void bye(int n) {
+   cell c1;
+
+   Push(c1,val(Bye)), val(Bye) = Nil;
    unwind(NULL);
-   prog(val(Bye));
+   Signal = 0;
+   prog(data(c1));
    finish(n);
 }
 
@@ -54,39 +62,55 @@ void execError(char *s) {
    exit(127);
 }
 
-static void sigterm(void) {
+/* Install interrupting signal */
+static void iSignal(int n, void (*foo)(int)) {
+   struct sigaction act, old;
+
+   act.sa_handler = foo;
+   sigemptyset (&act.sa_mask);
+   act.sa_flags = 0;
+   if (sigaction(n, &act, &old) < 0)
+      giveup("Bad signal handler");
+}
+
+/* Signal handler */
+void sighandler(any ex) {
    int i;
 
-   if (Env.protect)
-      return;
-   for (i = 0; i < Children; ++i)
-      if (Child[i].pid)
+   switch (Signal) {
+   case SIGINT:
+      Signal = 0,  brkLoad(ex);
+      break;
+   case SIGUSR1:
+      Signal = 0,  run(val(Sig1));
+      break;
+   case SIGUSR2:
+      Signal = 0,  run(val(Sig2));
+      break;
+   case SIGALRM:
+      fprintf(stderr, "%d SIGALRM\n", (int)getpid());
+   case SIGTERM:
+      if (Env.protect)
          return;
-   bye(0);
+      for (i = 0; i < Children; ++i)
+         if (Child[i].pid)
+            return;
+      bye(0);
+   }
 }
 
-static void doSigInt1(int n __attribute__((unused))) {
+static void doSigTerm(int n) {
    if (TtyPid)
-      kill(TtyPid, SIGINT);
+      kill(TtyPid, n);
    else
-      sigterm();
+      Signal = SIGTERM;
 }
 
-static void doSigInt(int n __attribute__((unused))) {
+static void doSignal(int n) {
    if (TtyPid)
-      kill(TtyPid, SIGINT);
+      kill(TtyPid, n);
    else
-      SigInt = YES;
-}
-
-static void doSigAlarm(int n __attribute__((unused))) {
-   fprintf(stderr, "%d SIGALRM\n", (int)getpid());
-   raise(SIGTERM);
-}
-
-static void doSigTerm(int n __attribute__((unused))) {
-   SigTerm = YES;
-   sigterm();
+      Signal = n;
 }
 
 static void doSigChld(int n __attribute__((unused))) {
@@ -148,18 +172,11 @@ any doDie(any x) {
    return x;
 }
 
-void protect(bool flg) {
-   if (flg)
-      ++Env.protect;
-   else if (Env.protect && !--Env.protect && SigTerm)
-      raise(SIGTERM);
-}
-
 // (protect . prg) -> any
 any doProtect(any x) {
-   protect(YES);
+   ++Env.protect;
    x = prog(cdr(x));
-   protect(NO);
+   --Env.protect;
    return x;
 }
 
@@ -189,16 +206,16 @@ any doHeap(any x) {
    long n = 0;
 
    x = cdr(x);
-   if (isNil(EVAL(car(x))))
-      for (x = Avail;  x;  x = cdr(x))
-         ++n;
-   else {
+   if (isNil(EVAL(car(x)))) {
       heap *h = Heaps;
       do
-         n += CELLS;
+         ++n;
       while (h = h->next);
+      return boxCnt(n);
    }
-   return boxCnt(n);
+   for (x = Avail;  x;  x = cdr(x))
+      ++n;
+   return boxCnt(n / CELLS);
 }
 
 // (env ['lst] | ['sym 'val] ..) -> lst
@@ -245,48 +262,48 @@ any doEnv(any x) {
 
 // (up [cnt] sym ['val]) -> any
 any doUp(any x) {
-   any y;
-   int i;
+   any y, *val;
+   int cnt, i;
    bindFrame *p;
 
-   x = cdr(x),  y = car(x);
-   if (!(p = Env.bind))
-      return Nil;
-   if (isNum(y)) {
-      i = (int)unBox(y),  x = cdr(x),  y = car(x);
-      for (;;) {
-         if (p->i <= 0  &&  p->cnt  &&  p->bnd[0].sym == At  &&  !--i)
-            break;
-         if (!(p = p->link))
-            return Nil;
+   x = cdr(x);
+   if (!isNum(y = car(x)))
+      cnt = 1;
+   else
+      cnt = (int)unBox(y),  x = cdr(x),  y = car(x);
+   for (p = Env.bind, val = &val(y);  p;  p = p->link) {
+      if (p->i <= 0) {
+         for (i = 0;  i < p->cnt;  ++i)
+            if (p->bnd[i].sym == y) {
+               if (!--cnt) {
+                  if (isCell(x = cdr(x)))
+                     return p->bnd[i].val = EVAL(car(x));
+                  return p->bnd[i].val;
+               }
+               val = &p->bnd[i].val;
+               break;
+            }
       }
    }
-   for (;;) {
-      if (p->i <= 0)
-         for (i = p->cnt;  --i >= 0;)
-            if (p->bnd[i].sym == y) {
-               if (isCell(x = cdr(x)))
-                  return p->bnd[i].val = EVAL(car(x));
-               return p->bnd[i].val;
-            }
-      if (!(p = p->link))
-         return Nil;
-   }
+   if (isCell(x = cdr(x)))
+      return *val = EVAL(car(x));
+   return *val;
 }
 
 // (stk any ..) -> T
 any doStk(any x) {
    any p;
-   FILE *oSave = OutFile;
+   outFile *oSave = OutFile;
+   FILE *stdSave = StdOut;
 
-   OutFile = stderr;
+   OutFile = NULL,  StdOut = stderr;
    print(cdr(x)), crlf();
    for (p = Env.stack; p; p = cdr(p)) {
-      printf("%lX ", num(p)),  fflush_unlocked(stderr);
+      fprintf(stderr, "%lX ", num(p)),  fflush_unlocked(stderr);
       print(car(p)), crlf();
    }
    crlf();
-   OutFile = oSave;
+   OutFile = oSave,  StdOut = stdSave;
    return T;
 }
 
@@ -402,8 +419,6 @@ static void reset(void) {
    if (Env.alarm)
       alarm(Env.alarm = 0);
    Env.protect = 0;
-   if (SigTerm)
-      raise(SIGTERM);
    popOutFiles();
    unwind(NULL);
    Env.stack = NULL;
@@ -411,7 +426,7 @@ static void reset(void) {
    Env.next = -1;
    Env.make = NULL;
    Env.parser = NULL;
-   Trace = 0;
+   Env.trace = 0;
 }
 
 void err(any ex, any x, char *fmt, ...) {
@@ -421,10 +436,11 @@ void err(any ex, any x, char *fmt, ...) {
 
    Line = Nil;
    Env.brk = NO;
-   f.pid = -1,  f.fp = stderr;
-   pushOutFiles(&f);
+   f.pid = -1,  f.fd = 2,  pushOutFiles(&f);
    while (*AV  &&  strcmp(*AV,"-") != 0)
       ++AV;
+   if (InFile && InFile->name)
+      fprintf(stderr, "[%s:%d] ", InFile->name, InFile->src);
    if (ex)
       outString("!? "), print(val(Up) = ex), crlf();
    if (x)
@@ -444,6 +460,7 @@ void err(any ex, any x, char *fmt, ...) {
       load(NULL, '?', Nil);
    }
    reset();
+   StdOut = stdout;
    longjmp(ErrRst, +1);
 }
 
@@ -497,8 +514,6 @@ void unwind(catchFrame *p) {
       if (Env.alarm && !q->env.alarm)
          alarm(0);
       Env = q->env;
-      if (!Env.protect && SigTerm)
-         raise(SIGTERM);
       if (q == p)
          return;
       if (!isSym(q->tag)) {
@@ -613,8 +628,8 @@ any evList(any ex) {
    if (!isSym(foo = car(ex))) {
       if (isNum(foo))
          return ex;
-      if (SigInt)
-         SigInt = NO,  brkLoad(ex);
+      if (Signal)
+         sighandler(ex);
       if (isNum(foo = evList(foo)))
          return evSubr(foo,ex);
       if (isCell(foo))
@@ -623,8 +638,8 @@ any evList(any ex) {
    for (;;) {
       if (isNil(val(foo)))
          undefined(foo,ex);
-      if (SigInt)
-         SigInt = NO,  brkLoad(ex);
+      if (Signal)
+         sighandler(ex);
       if (isNum(foo = val(foo)))
          return evSubr(foo,ex);
       if (isCell(foo))
@@ -959,13 +974,16 @@ int MAIN(int ac, char *av[]) {
    heapAlloc();
    initSymbols();
    Line = Nil;
-   InFile = stdin,  Env.get = getStdin;
-   OutFile = stdout,  Env.put = putStdout;
+   StdOut = stdout;
+   Env.get = getStdin;
+   Env.put = putStdout;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
-   signal(SIGINT, doSigInt1);
-   signal(SIGALRM, doSigAlarm);
-   signal(SIGTERM, doSigTerm);
+   iSignal(SIGINT, doSigTerm);
+   iSignal(SIGUSR1, doSignal);
+   iSignal(SIGUSR2, doSignal);
+   iSignal(SIGALRM, doSignal);
+   iSignal(SIGTERM, doSignal);
    signal(SIGCHLD, doSigChld);
    signal(SIGPIPE, SIG_IGN);
    signal(SIGTTIN, SIG_IGN);
@@ -977,7 +995,7 @@ int MAIN(int ac, char *av[]) {
    else {
       while (*AV  &&  strcmp(*AV,"-") != 0)
          load(NULL, 0, mkStr(*AV++));
-      signal(SIGINT, doSigInt);
+      iSignal(SIGINT, doSignal);
       load(NULL, ':', Nil);
    }
    bye(0);

@@ -132,10 +132,10 @@ href="refU.html#use">use</a></code>.
 <p><pre><code>
 : (setq X 123)                               # X is 123
 -> 123
-: (bind 'X '((setq X "Hello") (println X)))  # Set X to "Hello", print it
+: (bind 'X (setq X "Hello") (println X))  # Set X to "Hello", print it
 "Hello"
 -> "Hello"
-: (bind '((X . 3) (Y . 4)) '((println X Y) (* X Y)))
+: (bind '((X . 3) (Y . 4)) (println X Y) (* X Y))
 3 4
 -> 12
 : X

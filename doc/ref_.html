@@ -199,7 +199,8 @@ following arguments.
 <p><pre><code>
 : (/ 12 3)
 -> 4
-: (/ 60 3 2 2)
+: (/ 60 -3 2 2)
+-> -5
 </code></pre>
 
 <dt><a name=":"><code>(: sym|0 [sym1|cnt ..]) -> any</code></a>
@@ -329,7 +330,7 @@ and <code><a href="ref_.html#::">::</a></code>.
 -> T
 : (== 'NIL NIL (val NIL) (car NIL) (cdr NIL))
 -> T
-: (== 6 (* 1 2 3))
+: (== (1 2 3) (1 2 3))
 -> NIL
 </code></pre>
 

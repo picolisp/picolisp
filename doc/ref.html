@@ -254,8 +254,8 @@ of that digit represents the sign.
 <h4><a name="symbol">Symbols</a></h4>
 
 <p>A symbol is more complex than a number. Each symbol has a value, and
-optionally a name and an arbitrary number of properties. The CAR of a symbol
-cell is also called VAL, and the CDR points to the symbol's tail. As a minimum,
+optionally a name and an arbitrary number of properties. The CDR of a symbol
+cell is also called VAL, and the CAR points to the symbol's tail. As a minimum,
 a symbol consists of a single cell, and has no name or properties:
 
 <p><pre><code>
@@ -263,7 +263,7 @@ a symbol consists of a single cell, and has no name or properties:
             |
             V
       +-----+-----+
-      | VAL |  /  |
+      |  /  | VAL |
       +-----+-----+
 </code></pre>
 
@@ -277,9 +277,7 @@ from the cell's start address. Therefore, the bit pattern of a symbol will be:
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx100
 </code></pre>
 
-<p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero. In
-addition, it is possible that bit(1) is also set for a symbol (This is the case
-for external symbols).
+<p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero.
 
 <p>A property is a key-value-pair, represented as a cell in the symbol's tail.
 This is called a "property list". The property list may be terminated by a
@@ -291,10 +289,9 @@ the name <code>"abc"</code> has three properties:
             |
             V
       +-----+-----+
-      | VAL |  ---+---+
-      +-----+-----+   | tail
-                      |
-         +------------+
+      |  |  | VAL |
+      +--+--+-----+
+         | tail
          |
          V                                                      name
          +-----+-----+     +-----+-----+     +-----+-----+     +-----+-----+
@@ -1704,7 +1701,7 @@ abbreviations:
 <dd><code>
    <a href="refA.html#atom">atom</a>
    <a href="refP.html#pair">pair</a>
-   <a href="refL.html#list?">lst?</a>
+   <a href="refL.html#lst?">lst?</a>
    <a href="refN.html#num?">num?</a>
    <a href="refS.html#sym?">sym?</a>
    <a href="refF.html#flg?">flg?</a>
@@ -1793,6 +1790,7 @@ abbreviations:
    <a href="refR.html#rot">rot</a>
    <a href="refL.html#list">list</a>
    <a href="refN.html#need">need</a>
+   <a href="refF.html#full">full</a>
    <a href="refM.html#make">make</a>
    <a href="refM.html#made">made</a>
    <a href="refC.html#chain">chain</a>
@@ -1859,6 +1857,7 @@ abbreviations:
    <a href="refP.html#pass">pass</a>
    <a href="refQ.html#quote">quote</a>
    <a href="refA.html#as">as</a>
+   <a href="refP.html#pid">pid</a>
    <a href="refL.html#lit">lit</a>
    <a href="refE.html#eval">eval</a>
    <a href="refR.html#run">run</a>
@@ -1922,6 +1921,8 @@ abbreviations:
    <a href="refS.html#sys">sys</a>
    <a href="refC.html#call">call</a>
    <a href="refT.html#tick">tick</a>
+   <a href="refI.html#ipid">ipid</a>
+   <a href="refO.html#opid">opid</a>
    <a href="refK.html#kill">kill</a>
    <a href="refQ.html#quit">quit</a>
    <a href="refT.html#task">task</a>
@@ -1960,7 +1961,9 @@ abbreviations:
 <dd><code>
    <a href="refP.html#path">path</a>
    <a href="refI.html#in">in</a>
+   <a href="refI.html#ipid">ipid</a>
    <a href="refO.html#out">out</a>
+   <a href="refO.html#opid">opid</a>
    <a href="refP.html#pipe">pipe</a>
    <a href="refC.html#ctl">ctl</a>
    <a href="refA.html#any">any</a>
@@ -2067,6 +2070,7 @@ abbreviations:
    <a href="refF.html#fetch">fetch</a>
    <a href="refS.html#store">store</a>
    <a href="refC.html#count">count</a>
+   <a href="refL.html#leaf">leaf</a>
    <a href="refM.html#minKey">minKey</a>
    <a href="refM.html#maxKey">maxKey</a>
    <a href="refG.html#genKey">genKey</a>
@@ -2076,7 +2080,8 @@ abbreviations:
    <a href="refS.html#scan">scan</a>
    <a href="refI.html#iter">iter</a>
    <a href="refP.html#prune">prune</a>
-   <a href="refC.html#check">check</a>
+   <a href="refZ.html#zapTree">zapTree</a>
+   <a href="refC.html#chkTree">chkTree</a>
    <a href="refD.html#db">db</a>
    <a href="refA.html#aux">aux</a>
    <a href="refC.html#collect">collect</a>
@@ -2098,8 +2103,9 @@ abbreviations:
    <a href="refP.html#pp">pp</a>
    <a href="refS.html#show">show</a>
    <a href="refL.html#loc">loc</a>
-   <a href="refS.html#stat">stat</a>
    <a href="refD.html#debug">debug</a>
+   <a href="refV.html#vi">vi</a>
+   <a href="refL.html#ld">ld</a>
    <a href="refT.html#trace">trace</a>
    <a href="refL.html#lint">lint</a>
    <a href="refL.html#lintAll">lintAll</a>
@@ -2118,7 +2124,6 @@ abbreviations:
    <a href="refE.html#env">env</a>
    <a href="refU.html#up">up</a>
    <a href="refS.html#stk">stk</a>
-   <a href="refS.html#stat">stat</a>
    <a href="refD.html#date">date</a>
    <a href="refT.html#time">time</a>
    <a href="refU.html#usec">usec</a>
@@ -2162,26 +2167,30 @@ abbreviations:
 <dt>Globals
 <dd><code>
    <a href="#nilSym">NIL</a>
+   <a href="refO.html#*OS">*OS</a>
    <a href="refD.html#*DB">*DB</a>
+   <a href="refT.html#T">T</a>
    <a href="refS.html#*Solo">*Solo</a>
-   <a href="ref_.html#^">^</a>
+   <a href="refP.html#*PPid">*PPid</a>
+   <a href="refP.html#*Pid">*Pid</a>
    <a href="ref_.html#@">@</a>
    <a href="ref_.html#@@">@@</a>
    <a href="ref_.html#@@@">@@@</a>
    <a href="refT.html#This">This</a>
-   <a href="refT.html#T">T</a>
    <a href="refD.html#*Dbg">*Dbg</a>
-   <a href="refP.html#*PPid">*PPid</a>
-   <a href="refP.html#*Pid">*Pid</a>
+   <a href="refZ.html#*Zap">*Zap</a>
    <a href="refS.html#*Scl">*Scl</a>
    <a href="refC.html#*Class">*Class</a>
    <a href="refD.html#*Dbs">*Dbs</a>
    <a href="refR.html#*Run">*Run</a>
-   <a href="refL.html#*Led">*Led</a>
+   <a href="refS.html#*Sig1">*Sig1</a>
+   <a href="refS.html#*Sig2">*Sig2</a>
+   <a href="ref_.html#^">^</a>
    <a href="refE.html#*Err">*Err</a>
    <a href="refR.html#*Rst">*Rst</a>
    <a href="refM.html#*Msg">*Msg</a>
    <a href="refU.html#*Uni">*Uni</a>
+   <a href="refL.html#*Led">*Led</a>
    <a href="refA.html#*Adr">*Adr</a>
    <a href="refA.html#*Allow">*Allow</a>
    <a href="refF.html#*Fork">*Fork</a>

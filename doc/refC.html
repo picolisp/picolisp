@@ -314,7 +314,7 @@ href="refP.html#pwd">pwd</a></code>.
 -> "/usr/abu/pico"
 </code></pre>
 
-<dt><a name="check"><code>(check 'sym ['fun]) -> num</code></a>
+<dt><a name="chkTree"><code>(chkTree 'sym ['fun]) -> num</code></a>
 <dd>Checks a database tree node (and recursively all sub-nodes) for consistency.
 Returns the total number of nodes checked. Optionally, <code>fun</code> is
 called with the key and value of each node, and should return <code>NIL</code>
@@ -329,7 +329,7 @@ for failure. See also <code><a href="refT.html#tree">tree</a></code> and
    pr (7 . {7-4})
    nm (77 . {7-6})
 -> {C}
-: (check '{7-1})     # Check that node
+: (chkTree '{7-1})   # Check that node
 -> 7
 </code></pre>
 
@@ -390,15 +390,16 @@ href="refT.html#trim">trim</a></code>.
 -> (a " " b)
 </code></pre>
 
-<dt><a name="close"><code>(close 'cnt) -> flg</code></a>
-<dd>Closes a file descriptor <code>cnt</code>, and returns non-<code>NIL</code>
-when successful. See also <code><a href="refO.html#open">open</a></code>,
+<dt><a name="close"><code>(close 'cnt) -> cnt | NIL</code></a>
+<dd>Closes a file descriptor <code>cnt</code>, and returns it when successful.
+Should not be called inside an <code><a href="refO.html#out">out</a></code> body
+for that descriptor. See also <code><a href="refO.html#open">open</a></code>,
 <code><a href="refL.html#listen">listen</a></code> and <code><a
 href="refC.html#connect">connect</a></code>.
 
 <p><pre><code>
 : (close 2)                            # Close standard error
--> T
+-> 2
 </code></pre>
 
 <dt><a name="cnt"><code>(cnt 'fun 'lst ..) -> cnt</code></a>
@@ -491,7 +492,7 @@ href="refA.html#append">append</a></code>.
 -> (1 2 3 a b c)                    # Side effect: List in 'A' is modified!
 </code></pre>
 
-<dt><a name="cond"><code>(cond (('any1 . prg1) ('any2 . prg2) ..)) -> any</code></a>
+<dt><a name="cond"><code>(cond ('any1 . prg1) ('any2 . prg2) ..) -> any</code></a>
 <dd>Multi-way conditional: If any of the <code>anyN</code> conditions evaluates
 to non-<code>NIL</code>, <code>prgN</code> is executed and the result returned.
 Otherwise (all conditions evaluate to <code>NIL</code>), <code>NIL</code> is

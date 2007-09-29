@@ -1,4 +1,4 @@
-# 25jun07abu
+# 23jul07abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -40,8 +40,8 @@
                (locale (car V) (cdr V) "app/loc/") ) ) )
       (form NIL
          (<grid> 2
-            ,"Name" (gui 'nm '(+Able +TextField) '(not *Login) 30)
-            ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 30) )
+            ,"Name" (gui 'nm '(+Able +TextField) '(not *Login) 20)
+            ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
          (<spread>
             (when *Login
                (<span> "bold red"

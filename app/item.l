@@ -1,4 +1,4 @@
-# 25jun07abu
+# 23jul07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
@@ -17,7 +17,7 @@
             ,"Description" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Item" 30) NIL
             ,"Supplier" (gui '(+ChoButton) '(choCuSu (field 1)))
             (gui '(+E/R +Obj +TextField) '(sup : home obj) '(nm +CuSu) 30)
-            (gui '(+Lock +/R +TextField) '(ort : home obj sup) 30)
+            (gui '(+View +TextField) '(field -1 'obj 'ort) 30)
             ,"Inventory" NIL (gui '(+E/R +NumField) '(inv : home obj) 12)
             (gui '(+View +NumField) '(cnt> (: home obj)) 12)
             ,"Price" NIL (gui '(+E/R +FixField) '(pr : home obj) 2 12) )

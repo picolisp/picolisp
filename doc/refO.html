@@ -11,6 +11,27 @@
 
 <dl>
 
+<dt><a name="*OS"><code>*OS</code></a>
+<dd>A global constant holding the name of the operating system. Possible values
+include <code>"Linux"</code>, <code>"FreeBSD"</code>, <code>"Darwin"</code> or
+<code>"Cygwin"</code>.
+
+<p><pre><code>
+: *OS
+-> "Linux"
+</code></pre>
+
+<dt><a name="obj"><code>(obj (typ var [hook] val ..) var2 val2 ..) -> obj</code></a>
+<dd>Finds or creates a database object (using <code><a
+href="refR.html#request">request</a></code>) corresponding to <code>(typ var
+[hook] val ..)</code>, and initializes additional properties using the
+<code>varN</code> and <code>valN</code> arguments.
+
+<p><pre><code>
+: (obj ((+Item) nr 2) nm "Spare Part" sup `(db 'nr '+CuSu 2) inv 100 pr 1250)
+-> {3-2}
+</code></pre>
+
 <dt><a name="object"><code>(object 'sym 'typ ['sym 'any ..]) -> obj</code></a>
 <dd>Defines <code>sym</code> to be an object of type <code>typ</code>. The
 property list is initialized with all optionally supplied key-value pairs. See
@@ -139,6 +160,19 @@ href="refC.html#close">close</a></code>.
 -> 3
 </code></pre>
 
+<dt><a name="opid"><code>(opid) -> pid | NIL</code></a>
+<dd>Returns the corresponding process ID when the current output channel is
+writing to a pipe, otherwise <code>NIL</code>. See also <code><a
+href="refI.html#ipid">ipid</a></code> and <code><a
+href="refO.html#out">out</a></code>.
+
+<p><pre><code>
+: (out '(cat) (call 'ps "-p" (opid)))
+  PID TTY          TIME CMD
+ 7127 pts/3    00:00:00 cat
+-> T
+</code></pre>
+
 <dt><a name="opt"><code>(opt) -> sym</code></a>
 <dd>Return the next command line argument (option) as a string, and remove it
 from the remaining command line arguments. See also <code><a
@@ -168,13 +202,16 @@ abc
 <code>prg</code>. The current output channel will be saved and restored
 appropriately. If the argument is <code>NIL</code>, standard output is used. If
 the argument is a symbol, it is used as a file name (opened in "append" mode if
-the first character is "<code>+</code>"). If it is a number, it is used as the
-descriptor of an open file. Otherwise (if it is a list), it is taken as a
-command with arguments, and a pipe is opened for output. See also <code><a
+the first character is "<code>+</code>"). If it is a positve number, it is used
+as the descriptor of an open file. If it is a negative number, the saved output
+channel such many levels above the current one is used. Otherwise (if it is a
+list), it is taken as a command with arguments, and a pipe is opened for output.
+See also <code><a href="refO.html#opid">opid</a></code>, <code> <a
 href="refC.html#call">call</a></code>, <code><a
 href="refI.html#in">in</a></code>, <code> <a
 href="refP.html#pipe">pipe</a></code>, <code> <a
-href="refC.html#ctl">ctl</a></code> and <code><a
+href="refC.html#ctl">ctl</a></code>, <code><a
+href="refC.html#close">close</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
 <p><pre><code>

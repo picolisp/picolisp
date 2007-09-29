@@ -1,4 +1,4 @@
-/* 23dec06abu
+/* 20sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -36,7 +36,7 @@ any Prin(any x) {
    any y;
 
    while (isCell(x = cdr(x))) {
-      if (isNum(y = EVAL(car(x))) || isExt(y))
+      if (isNum(y = EVAL(car(x))) || isCell(y) || isExt(y))
          prin(y);
       else {
          int c;
@@ -283,6 +283,6 @@ any Out(any x) {
       Env.put = Put;
       outString("0\r\n\r\n");
    }
-   fflush_unlocked(OutFile);
+   flush(OutFile);
    return x;
 }

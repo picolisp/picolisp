@@ -25,12 +25,27 @@ href="refS.html#scl">scl</a></code>.
 -> (123450)
 </code></pre>
 
+<dt><a name="*Sig1"><code>*Sig1</code></a>
+<dt><a name="*Sig2"><code>*Sig2</code></a>
+<dd>Global variables holding (possibly empty) <code>prg</code> bodies, which
+will be executed when a SIGUSR1 signal (or a SIGUSR2 signal, respectively) is
+sent to the current process. Note that this mechanism is "unreliable", in the
+way that when a second signal (it may be SIGINT, or another SIGUSR1/2) arrives
+before the first signal's <code>prg</code> is running, the first signal will be
+lost. See also <code><a href="refR.html#*Run">*Run</a></code> and <code><a
+href="refE.html#*Err">*Err</a></code>.
+
+<p><pre><code>
+: (de *Sig1 (msg 'SIGUSR1))
+-> *Sig1
+</code></pre>
+
 <dt><a name="*Solo"><code>*Solo</code></a>
 <dd>A global variable indicating exclusive database access. Its value is
 <code>0</code> initially, set to <code>T</code> (or <code>NIL</code>) during
 cooperative database locks when <code><a href="refL.html#lock">lock</a></code>
 is successfully called with a <code>NIL</code> (or non-<code>NIL</code>)
-argument.
+argument. See also <code><a href="refZ.html#*Zap">*Zap</a></code>.
 
 <p><pre><code>
 : *Solo
@@ -245,6 +260,8 @@ href="refL.html#length">length</a></code>.
 -> 1
 : (size (1 (2) 3))
 -> 4
+: (size (1 2 3 .))
+-> 3
 </code></pre>
 
 <dt><a name="skip"><code>(skip ['sym]) -> sym</code></a>
@@ -338,17 +355,6 @@ href="refT.html#time">time</a></code>.
 -> "2000-01-01 12:00:00"
 </code></pre>
 
-<dt><a name="stat"><code>(stat) -> num</code></a>
-<dd>Prints memory usage statistics. The total size of the heap (in million
-cells), followed by the percentage of used cells. Returns the number of
-currently used cells. See also <code><a href="refH.html#heap">heap</a></code>.
-
-<p><pre><code>
-: (stat)
-1 7%
--> 66892
-</code></pre>
-
 <dt><a name="state"><code>(state 'var ((sym|lst sym [. prg]) . prg) ..) -> any</code></a>
 <dd>Implements a finite state machine. The variable <code>var</code> holds the
 current state as a symbolic value. When a clause is found that contains the
@@ -407,7 +413,8 @@ href="refS.html#split">split</a></code>.
 <dd>Single-steps iteratively through a database tree. <code>lst</code> is a
 structure as received from <code><a href="refI.html#init">init</a></code>. If
 <code>flg</code> is non-<code>NIL</code>, partial keys are skipped. See also
-<code><a href="refT.html#tree">tree</a></code> and <code><a
+<code><a href="refT.html#tree">tree</a></code>, <code><a
+href="refL.html#leaf">leaf</a></code> and <code><a
 href="refF.html#fetch">fetch</a></code>.
 
 <p><pre><code>

@@ -1,4 +1,4 @@
-# 27jun07abu
+# 08sep07abu
 # (c) Software Lab. Alexander Burger
 
 # *Top *Gui *Get *Form *Event *Lock
@@ -73,6 +73,7 @@
                      (with
                         (cond
                            ((pair (next)) (pass new @))
+                           ((not (arg)) (pass new))
                            ((num? (arg))
                               (with "*Chart"
                                  (let (I (arg)  L (last (: gui)))
@@ -281,15 +282,15 @@
       (del (asoq App (car L)) L) ) )
 
 (de closeButton (Lbl Exe)
-   (when (: top)
+   (when (get "*App" 'top)
       (gui '(+Close +Button) Lbl Exe) ) )
 
 (de okButton (Exe)
-   (when (: top)
+   (when (get "*App" 'top)
       (gui '(+Close +Button) "Ok" Exe) ) )
 
 (de cancelButton ()
-   (when (: top)
+   (when (get "*App" 'top)
       (gui '(+Close +Button) ',"Cancel") ) )
 
 (de yesButton (Exe)
@@ -334,6 +335,22 @@
    (super
       (fill '(val> (field @F)))
       (fill '(set> '@Dst (val> (field @F)))) ) )
+
+
+(class +Hint +ChoButton)
+# ttl exe
+
+(dm T (Ttl Exe)
+   (=: ttl Ttl)
+   (=: exe Exe)
+   (super
+      '(dialog (env 'Ttl (eval (: ttl))  'Lst (eval (: exe))  'Dst (field 1))
+         (<table> 'chart Ttl '(NIL (btn))
+            (for X Lst
+               (<row> NIL
+                  (ht:Prin (if (atom X) X (car X)))
+                  (gui '(+Close +PickButton) (list 'set> 'Dst (lit (fin X)))) ) ) )
+         (cancelButton) ) ) )
 
 
 ### Field Prefix Classes ###
@@ -414,6 +431,13 @@
    (=: cue (pack "<" Str ">"))
    (pass extra) )
 
+(dm show> ("Var")
+   (<style>
+      (list
+         (cons 'onfocus (pack "if (this.value=='" (: cue) "') this.value=''"))
+         (cons 'onblur (pack "if (this.value=='') this.value='" (: cue) "'")) )
+      (extra "Var") ) )
+
 (dm set> (Val Dn)
    (extra (or Val (: cue)) Dn) )
 
@@ -447,6 +471,25 @@
             (: map) )
          (cdr @)
          V ) ) )
+
+
+# Case conversions
+(class +Uppc)
+
+(dm set> (Val Dn)
+   (extra (uppc Val) Dn) )
+
+(dm val> ()
+   (uppc (extra)) )
+
+
+(class +Lowc)
+
+(dm set> (Val Dn)
+   (extra (lowc Val) Dn) )
+
+(dm val> ()
+   (lowc (extra)) )
 
 
 # Field enable/disable
@@ -519,10 +562,46 @@
    (eval (: chk)) )
 
 
+(class +Tip)
+# tip
+
+(dm T (Exe . @)
+   (=: tip Exe)
+   (pass extra) )
+
+(dm show> ("Var")
+   (<tip> (eval (: tip)) (extra "Var")) )
+
+(dm js> ()
+   (pack (extra) "&?" (ht:Fmt (eval (: tip)))) )
+
+
 (class +Tiny)
 
 (dm show> ("Var")
    (<style> 'tiny (extra "Var")) )
+
+
+### Styles ###
+(class +Style)
+# style
+
+(dm T (Exe . @)
+   (=: style Exe)
+   (pass extra) )
+
+(dm show> ("Var")
+   (<style> (eval (: style)) (extra "Var")) )
+
+(dm js> ()
+   (pack (extra) "&#" (eval (: style))) )
+
+
+# Signum field
+(class +Sgn +Style)
+
+(dm T @
+   (pass super '(if (lt0 (val> This)) 'red 'black)) )
 
 
 ### Form field classes ###
@@ -935,9 +1014,9 @@
 
 (dm js> ()
    (if2 (or (: dx) (: lst)) (ht:Fmt (val> This))
-      (pack (super) "&*" (sesId `(path "@img/go.png")) '& ((: url) @))
-      (pack (super) "&*" (sesId `(path "@img/no.png")) '&)
-      (pack @ "&+" ((: url) @))
+      (pack (super) "&*" (sesId (ht:Fmt `(path "@img/go.png"))) '& (ht:Fmt ((: url) @)))
+      (pack (super) "&*" (sesId (ht:Fmt `(path "@img/no.png"))) '&)
+      (pack @ "&+" (ht:Fmt ((: url) @)))
       (super) ) )
 
 (dm show> ("Var")
@@ -1115,22 +1194,26 @@
       (apply url (url> @)) ) )
 
 
-# (choDlg Dst Ttl Rel [Hook] [(+TextField) [pre [post]]])
+# (choDlg Dst Ttl Rel [Hook] [((+XyzField) ..) Exe [Rel2 [Hook2]]])
 (de choDlg (Dst Ttl Rel . @)
    (let
       (Hook (and (meta (cdr Rel) (car Rel) 'hook) (next))
-         Fld (or (next) '(+TextField))
+         Fld (or (next) '((+TextField) 40))
          Gui
-         (make
-            (link (append '(+Lock +Obj) Fld))
-            (and (next) (link @))
-            (link Rel)
-            (and Hook (link (lit Hook)))
-            (and (next) (link @)) ) )
+         (if (next)
+            (list '(+ObjView +TextField) @)
+            (list (list '+ObjView (last (car Fld))) (list ': (car Rel))) ) )
+      (nond
+         ((next)
+            (setq Ttl (list Ttl (car Rel) (cadr Rel) Hook)) )
+         ((=T (arg))
+            (setq Ttl (list Ttl (car (arg)) (cadr (arg)) (next))) ) )
       (diaform '(Dst Ttl Rel Hook Fld Gui)
-         (gui (cons '+Var Fld)
-            (cdr (or (assoc Rel "*Cho") (push '"*Cho" (list Rel NIL))))
-            40 )
+         (apply gui
+            (cons
+               (cons '+Var (car Fld))
+               (cdr (or (assoc Rel "*Cho") (push '"*Cho" (list Rel NIL))))
+               (cdr Fld) ) )
          (searchButton '(init> (: home query)))
          (gui 'query '(+QueryChart) 6
             '(goal
@@ -1138,7 +1221,7 @@
                   (list 'db (car Rel) (last Rel) Hook (val> (: home gui 1)) '@@) ) )
             (if (flg? Dst) 1 2)
             cons car )
-         (<table> 'chart (choTtl Ttl (car Rel) (cadr Rel) Hook) '(NIL (btn))
+         (<table> 'chart (if (atom Ttl) Ttl (apply choTtl Ttl)) '(NIL (btn))
             (do 6
                (<row> (alternating)
                   (apply gui Gui 1)
@@ -1308,7 +1391,7 @@
 (class +obj)
 # msg obj
 
-# ([msg] ..)
+# ([T|msg] ..)
 (dm T ()
    (ifn (atom (next))
       (=: msg 'url>)
@@ -1316,14 +1399,17 @@
       (next) ) )
 
 (dm js> ()
-   (if2 (or (: dx) (: lst)) (try (: msg) (: obj))
-      (pack (extra) "&*" (sesId `(path "@img/go.png")) '& (sesId (ht:Fmt (mkUrl @))))
-      (pack (extra) "&*" (sesId `(path "@img/no.png")) '&)
-      (pack (ht:Fmt (str> This)) "&+" (sesId (ht:Fmt (mkUrl @))))
-      (extra) ) )
+   (if (=T (: msg))
+      (extra)
+      (if2 (or (: dx) (: lst)) (try (: msg) (: obj))
+         (pack (extra) "&*" (sesId (ht:Fmt `(path "@img/go.png"))) '& (sesId (ht:Fmt (mkUrl @))))
+         (pack (extra) "&*" (sesId (ht:Fmt `(path "@img/no.png"))) '&)
+         (pack (ht:Fmt (nonblank (str> This))) "&+" (sesId (ht:Fmt (mkUrl @))))
+         (extra) ) ) )
 
 (dm show> ("Var")
    (cond
+      ((=T (: msg)) (extra "Var"))
       ((or (: dx) (: lst))
          (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
          (extra "Var")
@@ -1333,14 +1419,14 @@
             (<img> `(path "@img/no.png")) )
          (prinl "</td></table>") )
       ((try (: msg) (: obj))
-         (showFld (<href> (str> This) (mkUrl @))) )
+         (showFld (<href> (nonblank (str> This)) (mkUrl @))) )
       (T (extra "Var")) ) )
 
 
 (class +Obj +obj)
 # objVar objTyp objHook
 
-# ([msg] (var . typ) [hook] [T] ..)
+# ([T|msg] (var . typ) [hook] [T] ..)
 (dm T @
    (super)
    (=: objVar (car (arg)))
@@ -1394,7 +1480,7 @@
 (class +ObjView +obj)
 # disp obj
 
-# ([msg] exe ..)
+# ([T|msg] exe ..)
 (dm T @
    (super)
    (=: disp (arg))
@@ -1488,7 +1574,7 @@
          (cond
             ((=T Able) Del)
             ((=T Del) Able)
-            ((and Able Del) (list Able Del)) )
+            ((and Able Del) (list 'and Able Del)) )
          (list 'text Txt (list ': 'top 1 'obj Var)) )
       (choButton Dlg)
       (stepBtn Var Cls Hook Msg) )

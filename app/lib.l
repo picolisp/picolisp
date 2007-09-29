@@ -1,13 +1,13 @@
-# 25jun07abu
+# 18jul07abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
 (dm (ps> . +Ord) ()
    (a4)
-   (font (12 . "Arial"))
+   (font (12 . "Helvetica"))
    (eps "img/7fach.eps" 340 150 75)
    (window 380 120 120 30
-      (font (21 . "TimesNewRoman") (ps ,"Order" 0)) )
+      (font (21 . "Times-Roman") (ps ,"Order" 0)) )
    (brief NIL 8 "7fach GmbH, Bawaria"
       (ps)
       (with (: cus)
@@ -24,7 +24,7 @@
    (let (Page 1  Fmt (14 6 200 80 80 80))
       (width "0.5"
          (hline 0 470 -8)
-         (font "Arial-Bold"
+         (font "Helvetica-Bold"
             (table Fmt NIL NIL
                (ps ,"Item")
                (ps ,"Price" T)

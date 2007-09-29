@@ -1,4 +1,4 @@
-/* 11feb06abu
+/* 20sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,40 +6,14 @@
 
 /* Mark data */
 static void mark(any x) {
-#ifndef NRGC
    cell *p;
 
    while (num((p = cellPtr(x))->cdr) & 1) {
-      *(long*)&cdr(p) &= ~1;
+      *(word*)&cdr(p) &= ~1;
       if (!isNum(x))
          mark(p->car);
       x = p->cdr;
    }
-#else  // Non-Recursive Garbage Collector
-   any tos, tmp;
-   cell *p;
-
-   for (tos = NULL;;) {
-      while (num((p = cellPtr(x))->cdr) & 1) {
-         *(long*)&cdr(p) &= ~1;
-         if (isNum(x)) {
-            while (isNum(p->cdr))
-               *(long*)&cdr(p = numCell(p->cdr)) &= ~1;
-            mark(p->cdr);
-            break;
-         }
-         tmp = x,  x = p->car,  p->car = (any)(num(tos) | 1),  tos = tmp;
-      }
-      for (;;) {
-         if (!tos)
-            return;
-         if (num((p = cellPtr(tos))->car) & 1)
-            break;
-         tmp = tos,  tos = p->cdr,  p->cdr = x,  x = tmp;
-      }
-      tmp = (any)(num(p->car) & ~1),  p->car = x,  x = p->cdr,  p->cdr = tmp;
-   }
-#endif
 }
 
 /* Garbage collector */
@@ -53,7 +27,7 @@ static void gc(long c) {
    do {
       p = h->cells + CELLS-1;
       do
-         *(long*)&cdr(p) |= 1;
+         *(word*)&cdr(p) |= 1;
       while (--p >= h->cells);
    } while (h = h->next);
    /* Mark */
@@ -79,31 +53,53 @@ static void gc(long c) {
       mark(Env.parser->name);
    for (i = 0; i < HASH; ++i)
       for (p = Extern[i];  isCell(p);  p = (any)(num(p->cdr) & ~1))
-         if (num(tail(p->car)) & 1) {
-            for (x = (any)(num(tail(p->car)) & ~1); !isSym(x); x = cdr(cellPtr(x)));
+         if (num(val(p->car)) & 1) {
+            for (x = tail1(p->car); !isSym(x); x = cdr(cellPtr(x)));
             if ((x = (any)(num(x) & ~1)) == At2  ||  x == At3)
                mark(p->car);  // Keep if dirty or deleted
          }
-   if (num(tail(val(DB) = DbVal)) & 1)
-      val(DbVal) = cdr(numCell(tail(DbVal) = DbTail)) = Nil;
+   if (num(val(val(DB) = DbVal)) & 1) {
+      val(DbVal) = cdr(numCell(DbTail)) = Nil;
+      tail(DbVal) = ext(DbTail);
+   }
    for (i = 0; i < HASH; ++i)
       for (pp = Extern + i;  isCell(p = *pp);)
-         if (num(tail(p->car)) & 1)
+         if (num(val(p->car)) & 1)
             *pp = (cell*)(num(p->cdr) & ~1);
          else
-            *(long*)(pp = &cdr(p)) &= ~1;
+            *(word*)(pp = &cdr(p)) &= ~1;
    /* Sweep */
    Avail = NULL;
    h = Heaps;
-   do {
-      p = h->cells + CELLS-1;
-      do
-         if (num(p->cdr) & 1)
-            Free(p),  --c;
-      while (--p >= h->cells);
-   } while (h = h->next);
-   while (c >= 0)
-      heapAlloc(),  c -= CELLS;
+   if (c) {
+      do {
+         p = h->cells + CELLS-1;
+         do
+            if (num(p->cdr) & 1)
+               Free(p),  --c;
+         while (--p >= h->cells);
+      } while (h = h->next);
+      while (c >= 0)
+         heapAlloc(),  c -= CELLS;
+   }
+   else {
+      heap **hp = &Heaps;
+      cell *av;
+
+      do {
+         c = CELLS;
+         av = Avail;
+         p = h->cells + CELLS-1;
+         do
+            if (num(p->cdr) & 1)
+               Free(p),  --c;
+         while (--p >= h->cells);
+         if (c)
+            hp = &h->next,  h = h->next;
+         else
+            Avail = av,  h = h->next,  free(*hp),  *hp = h;
+      } while (h);
+   }
 }
 
 // (gc ['cnt]) -> cnt | NIL
@@ -146,9 +142,10 @@ any consSym(any v, any x) {
       p = Avail;
    }
    Avail = p->cdr;
-   car(p) = v;
-   cdr(p) = x;
-   return symPtr(p);
+   p = symPtr(p);
+   tail(p) = x;
+   val(p) = v;
+   return p;
 }
 
 /* Construct a string */
@@ -164,8 +161,8 @@ any consStr(any x) {
       p = Avail;
    }
    Avail = p->cdr;
-   cdr(p) = x;
    p = symPtr(p);
+   tail(p) = x;
    val(p) = p;
    return p;
 }

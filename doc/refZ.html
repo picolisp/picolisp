@@ -11,6 +11,19 @@
 
 <dl>
 
+<dt><a name="*Zap"><code>*Zap</code></a>
+<dd>A global variable holding a list of lists and a pathname. If given, and the
+value of <code><a href="refS.html#*Solo">*Solo</a></code> is <code>NIL</code>,
+external symbols which are no longer accessible can be collected in the CAR of
+the list, e.g. during DB tree processing, and written to that file at the next
+<code><a href="refC.html#commit">commit</a></code>. A (typically periodic) call
+to <code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
+
+<p><pre><code>
+: (setq *Zap '(NIL . "db/app/Z"))
+-> "db/app/Z"
+</code></pre>
+
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
 <dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
 remove it from the internal hash table, effectively transforming it to a
@@ -34,6 +47,40 @@ href="refI.html#intern">intern</a></code>.
 !? (car (1 2 3))
 car -- Undefined
 ?
+</code></pre>
+
+<dt><a name="zapTree"><code>(zapTree 'sym)</code></a>
+<dd>Recursively deletes a tree structure from the database. See also <code><a
+href="refT.html#tree">tree</a></code>, <code><a
+href="refC.html#chkTree">chkTree</a></code> and <code><a
+href="refP.html#prune">prune</a></code>.
+
+<p><pre><code>
+: (zapTree (cdr (root (tree 'nm '+Item))))
+</code></pre>
+
+<dt><a name="zap_"><code>(zap_)</code></a>
+<dd>Delayed deletion (with <code><a href="refZ.html#zap">zap</a></code>) of
+external symbols which were collected e.g. during DB tree processing. An
+auxiliary file (with the name taken from the <code><a
+href="refF.html#fin">fin</a></code> of the value of <code><a
+href="refZ.html#*Zap">*Zap</a></code>, concatenated with a "<code>_</code>"
+character) is used as an intermediary file.
+
+<p><pre><code>
+: *Zap
+-> (NIL . "db/app/Z")
+: (call 'ls "-l" "db/app")
+...
+-rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z
+-rw-r--r-- 1 abu abu     1280 2007-05-23 12:15 Z_
+...
+: (zap_)
+...
+: (call 'ls "-l" "db/app")
+...
+-rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z_
+...
 </code></pre>
 
 <dt><a name="zero"><code>(zero sym ..) -> 0</code></a>

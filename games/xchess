@@ -1,0 +1,49 @@
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
+# 24sep07abu
+# (c) Software Lab. Alexander Burger
+
+(load "@games/chess.l")
+
+(de reply @
+   (prinl (glue " " (rest)))
+   (flush) )
+
+(de xmove ()
+   (when (myMove)
+      (let L (car *Undo)
+         (reply "move"
+            (pack
+               (cdr (assoc (caar L) (cdr L)))
+               (pick cdr (cdar L)) ) ) ) ) )
+
+(in NIL
+   (loop
+      (case (read)
+         (protover
+            (read)
+            (reply "feature" "myname=\"Pico Lisp Chess\"")
+            (reply "feature" "time=0" "sigint=0" "usermove=1")
+            (reply "feature" "done=1") )
+         (accepted (read))
+         (new
+            (seed (in "/dev/urandom" (rd 3)))
+            (setup (format (sys "XCHESS_DEPTH"))) )
+         (level (line T))
+         (sd (setup (read)))
+         (black (off *Me) (on *You))
+         (white (on *Me) (off *You))
+         (usermove
+            (let (L (line)  From (pack (head 2 L))  To (pack (head 2 (cddr L)))  F (get L 5))
+               (if (and (yourMove (intern From) (intern To)) (or (not F) (= "q" F)))
+                  (xmove)
+                  (reply "Illegal move:" (pack L)) ) ) )
+         (go (xchg '*Me '*You) (xmove))
+         (undo (undo))
+         (remove (undo) (undo))
+         (result (line T))
+         (random)
+         (hard)
+         (quit (bye))
+         (T (reply "Error (unknown command):" @)) ) ) )
+
+# vi:et:ts=3:sw=3

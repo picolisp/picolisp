@@ -43,8 +43,34 @@ href="refP.html#pipe">pipe</a></code>'ed child process. The return value of
 <p><pre><code>
 : (prog1  # Parallel background calculation of square numbers
    (mapcan '((N) (later (cons) (* N N))) (1 2 3 4))
-   (wait NIL (not (memq NIL @))) )
+   (wait NIL (full @)) )
 -> (1 4 9 16)
+</code></pre>
+
+<dt><a name="ld"><code>(ld) -> any</code></a>
+<dd><code><a href="refL.html#load">load</a></code>s the last file edited with
+<code><a href="refV.html#vi">vi</a></code>.
+
+<p><pre><code>
+: (vi 'main)
+-> T
+: (ld)
+# main redefined
+-> go
+</code></pre>
+
+<dt><a name="leaf"><code>(leaf 'tree) -> any</code></a>
+<dd>Returns the first leaf (i.e. the value of the smallest key) in a database
+tree. See also <code><a href="refT.html#tree">tree</a></code>, <code><a
+href="refM.html#minKey">minKey</a></code>, <code><a
+href="refM.html#maxKey">maxKey</a></code> and <code><a
+href="refS.html#step">step</a></code>.
+
+<p><pre><code>
+: (leaf (tree 'nr '+Item))
+-> {3-1}
+: (db 'nr '+Item (minKey (tree 'nr '+Item)))
+-> {3-1}
 </code></pre>
 
 <dt><a name="length"><code>(length 'any) -> cnt | T</code></a>
@@ -226,7 +252,7 @@ href="refA.html#all">all</a></code> symbols, and returns a list of diagnoses.
 -> (a (2 3) "Ok")
 </code></pre>
 
-<dt><a name="list?"><code>(lst? 'any) -> flg</code></a>
+<dt><a name="lst?"><code>(lst? 'any) -> flg</code></a>
 <dd>Returns <code>T</code> when the argument <code>any</code> is a (possibly
 empty) list (<code>NIL</code> or a cons pair cell). See also <code><a
 href="refP.html#pair">pair</a></code>.
@@ -294,9 +320,11 @@ and <code>load</code> terminates when an empty line is entered. In any case,
 The hash table for transient symbols is cleared before and after the load, so
 that all transient symbols in the file have a local scope. Returns the value of
 the last evaluated expression. See also <code><a
+href="refI.html#ipid">ipid</a></code>, <code><a
 href="refC.html#call">call</a></code>, <code><a
-href="refI.html#in">in</a></code>, <code><a href="refO.html#out">out</a></code>
-and <code><a href="refS.html#str">str</a></code>.
+href="refI.html#in">in</a></code>, <code><a
+href="refO.html#out">out</a></code> and <code><a
+href="refS.html#str">str</a></code>.
 
 <p><pre><code>
 : (load "lib.l" "-* 1 2 3")

@@ -191,6 +191,18 @@ href="refF.html#find">find</a></code>.
 -> "Hello"
 </code></pre>
 
+<dt><a name="pid"><code>(pid 'pid|lst . exe) -> any</code></a>
+<dd>Evaluates <code>exe</code> when the value of the global <code><a
+href="refP.html#*Pid">*Pid</a></code> is equal to the <code>pid</code> argument,
+or a member of the <code>lst</code> argument. Used typically in combination with
+<code><a href="refT.html#tell">tell</a></code> to send a command selectively to
+another process.
+
+<p><pre><code>
+: (tell 'pid 20290 'gc 0)  # Tell process 20290 to purge unused heap blocks
+-> 0
+</code></pre>
+
 <dt><a name="pipe"><code>(pipe exe) -> cnt<br>
 (pipe exe . prg) -> any</code></a>
 <dd>Executes <code>exe</code> in a <code><a
@@ -199,7 +211,8 @@ thereafter). In the first form, <code>pipe</code> just returns a file descriptor
 to read from the standard output of that process. In the second form, it opens
 the standard output of that process as input channel during the execution of
 <code>prg</code>. The current input channel will be saved and restored
-appropriately. See also <code><a href="refI.html#in">in</a></code> and <code><a
+appropriately. See also <code><a href="refI.html#ipid">ipid</a></code>, <code><a
+href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>.
 
 <p><pre><code>
@@ -231,14 +244,14 @@ href="refR.html#replace">replace</a></code>.
 -> (a b c d e 777)
 </code></pre>
 
-<dt><a name="poll"><code>(poll 'cnt) -> flg</code></a>
+<dt><a name="poll"><code>(poll 'cnt) -> cnt | NIL</code></a>
 <dd>Checks for the availability of data for reading on the file descriptor
 <code>cnt</code>. See also <code><a href="refO.html#open">open</a></code>,
 <code><a href="refI.html#in">in</a></code> and <code><a
 href="refC.html#close">close</a></code>.
 
 <p><pre><code>
-: (and (poll *Fd) (in *Fd (read)))  # Prevent blocking
+: (and (poll *Fd) (in @ (read)))  # Prevent blocking
 </code></pre>
 
 <dt><a name="pool"><code>(pool ['sym1 ['lst] ['sym2]]) -> flg</code></a>
@@ -316,7 +329,9 @@ instead, it should be a range of numbers which are tried in turn. When
 (pp '(sym . cls)) -> sym</code></a>
 <dd>Pretty-prints the function or method definition of <code>sym</code>. The
 output format would regenerate that same definition when read and executed. See
-also <code><a href="refP.html#pretty">pretty</a></code>.
+also <code><a href="refP.html#pretty">pretty</a></code>, <code><a
+href="refD.html#debug">debug</a></code> and <code><a
+href="refV.html#vi">vi</a></code>.
 
 <p><pre><code>
 : (pp 'tab)

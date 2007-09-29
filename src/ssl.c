@@ -1,4 +1,4 @@
-/* 18jun07abu
+/* 06sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <syslog.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -25,6 +26,7 @@ typedef enum {NO,YES} bool;
 
 static char *File, *Dir, *Data;
 static off_t Size;
+static bool Log;
 
 static char Get[] =
    "GET /%s HTTP/1.0\r\n"
@@ -32,12 +34,15 @@ static char Get[] =
    "Host: %s:%s\r\n"
    "Accept-Charset: utf-8\r\n\r\n";
 
-static void errmsg(char *msg) {
-   fprintf(stderr, "ssl: %s\n", msg);
+static void logger(char *msg) {
+   if (Log)
+      syslog(LOG_ERR, "%s", msg);
+   else
+      fprintf(stderr, "ssl: %s\n", msg);
 }
 
 static void giveup(char *msg) {
-   errmsg(msg);
+   logger(msg);
    exit(1);
 }
 
@@ -61,7 +66,7 @@ static int sslConnect(SSL *ssl, char *host, int port) {
    }
 
    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-      errmsg("No socket");
+      logger("No socket");
       return -1;
    }
    addr.sin_family = AF_INET;
@@ -151,7 +156,7 @@ int main(int ac, char *av[]) {
 
    if (ac <= 6) {
       if (sslConnect(ssl, av[1], atoi(av[2])) < 0) {
-         errmsg("Can't connect");
+         logger("Can't connect");
          return 1;
       }
       sslChk(SSL_write(ssl, get, getLen));
@@ -173,6 +178,8 @@ int main(int ac, char *av[]) {
       return 0;
    setsid();
 
+   openlog("ssl", LOG_CONS|LOG_PID, 0);
+   Log = YES;
    File = av[5];
    Dir = av[6];
    sec = atoi(av[7]);
@@ -198,7 +205,7 @@ int main(int ac, char *av[]) {
             if (read(fd, Data, Size) != Size)
                giveup("Can't read");
             if (ftruncate(fd,0) < 0)
-               errmsg("Can't truncate");
+               logger("Can't truncate");
             close(fd);
             for (;;) {
                if ((sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0) {
@@ -212,8 +219,10 @@ int main(int ac, char *av[]) {
                      break;
                   }
                   sslClose(ssl,sd);
+                  logger("Transmit failed");
                }
                sleep(sec);
+               logger("Try to retransmit");
             }
             free(Data),  Data = NULL;
          }

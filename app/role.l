@@ -1,4 +1,4 @@
-# 25jun07abu
+# 21aug07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -12,8 +12,10 @@
       (form NIL
          (<h2> NIL (<id> (: nm)))
          (panel T ,"Role '@1'" '(may Delete) '(choDlg T ,"Roles" '(nm +Role)) 'nm '+Role)
-         (<grid> 2
-            ,"Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30)
+         (<table> NIL NIL NIL
+            (<row> NIL
+               ,"Name"
+               (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30) )
             (gui '(+E/R +Fmt +Chart)
                '(perm : home obj)
                '((Val) (mapcar '((S) (list S (memq S Val))) *Perms))

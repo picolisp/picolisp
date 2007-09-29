@@ -1,8 +1,8 @@
-# 25jun07abu
+# 24sep07abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
-# *Sock *Agent *MPartLim *MPartEnd *ContLen
+# *Sock *Agent *MPartLim *MPartEnd
 # *Post *Url *Timeout *SesId *ConId
 
 (default
@@ -52,8 +52,10 @@
          (close Sock) ) ) )
 
 # Local Password
-(de pw ()
-   (in ".pw" (line T)) )
+(de pw (N)
+   (if N
+      (out ".pw" (prinl (fmt64 (in "/dev/random" (rd N)))))
+      (in ".pw" (line T)) ) )
 
 # Pico Shell
 (de psh (Pw Tty)
@@ -73,20 +75,19 @@
       *Port P
       *Port1 P
       *Home (cons H (chop H))
-      P (port P) )
+      P (port *Port) )
    (gc)
-   (use S
-      (loop
-         (setq S (listen P))
-         (NIL (fork) (close P))
-         (close S) )
-      (task S (http @))
-      (http S)
-      (or *SesId (bye))
-      (task *Sock
-         (when (accept *Sock)
-            (task @ (http @))
-            (http @) ) ) ) )
+   (loop
+      (setq *Sock (listen P))
+      (NIL (fork) (close P))
+      (close *Sock) )
+   (task *Sock (http @))
+   (http *Sock)
+   (or *SesId (bye))
+   (task *Sock
+      (when (accept *Sock)
+         (task @ (http @))
+         (http @) ) ) )
 
 (de baseHRef (Port)
    (pack
@@ -112,88 +113,85 @@
    (use (L @U @H @X)
       (catch "http"
          (in S
-            (die 120
-               (cond
-                  ((not (setq L (line)))
-                     (close S)
-                     (task S)
-                     (off S)
-                     (throw "http") )
-                  ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
-                     (off *Post)
-                     (_htHead) )
-                  ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
-                     (on *Post)
-                     (off *MPartLim *MPartEnd)
-                     (_htHead)
-                     (if (and *MPartLim *MPartEnd)
-                        (_htMultipart)
-                        (for L (split (line) '&)
-                           (when (cdr (setq L (split L "=")))
-                              (_htSet (car L) (ht:Pack (cadr L))) ) ) ) )
-                  ((and
-                        (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
-                        (member @U
-                           (quote
-                              ("O" "P" "T" "I" "O" "N" "S")
-                              ("H" "E" "A" "D")
-                              ("P" "U" "T")
-                              ("D" "E" "L" "E" "T" "E")
-                              ("T" "R" "A" "C" "E")
-                              ("C" "O" "N" "N" "E" "C" "T") ) ) )
-                     (out S
-                        (httpStat 501 "Method Not Implemented"
-                           "Allow: GET, POST" ) )
-                     (throw "http") )
-                  (T (out S (httpStat 400 "Bad Request")) (throw "http")) ) )
-            (out S
-               (cond
-                  ((<> *ConId *SesId)
-                     (if *ConId
-                        (http404)
-                        (close S)
-                        (task S)
-                        (off S) ) )
-                  ((match '("-" @X "." "h" "t" "m" "l") @U)
-                     (try 'html> (extern (ht:Pack @X))) )
-                  ((prog
-                        (setq
-                           L (split @U "?")
-                           @U (car L)
-                           L (mapcan
-                              '((L)
-                                 (ifn (cdr (setq L (split L "=")))
-                                    (cons (htArg (car L)))
-                                    (_htSet (car L) (htArg (cadr L)))
-                                    NIL ) )
-                              (split (cadr L) "&") ) )
-                        (>= '("9") @U '("0")) )
-                     (urlN (car @U)) )
-                  ((prog
-                        (unless (setq *Url (ht:Pack @U))
-                           (setq  *Url (car *Home)  @U (cdr *Home)) )
-                        (= '@ (car @U)) )
-                     (if (and *Allow (not (idx *Allow *Url)))
-                        (prog (msg *Url " not allowed") (http404))
+            (cond
+               ((not (setq L (line)))
+                  (close S)
+                  (task S)
+                  (off S)
+                  (throw "http") )
+               ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
+                  (off *Post)
+                  (_htHead) )
+               ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
+                  (on *Post)
+                  (off *MPartLim *MPartEnd)
+                  (_htHead)
+                  (if (and *MPartLim *MPartEnd)
+                     (_htMultipart)
+                     (for L (split (line) '&)
+                        (when (cdr (setq L (split L "=")))
+                           (_htSet (car L) (ht:Pack (cadr L))) ) ) ) )
+               ((and
+                     (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
+                     (member @U
+                        (quote
+                           ("O" "P" "T" "I" "O" "N" "S")
+                           ("H" "E" "A" "D")
+                           ("P" "U" "T")
+                           ("D" "E" "L" "E" "T" "E")
+                           ("T" "R" "A" "C" "E")
+                           ("C" "O" "N" "N" "E" "C" "T") ) ) )
+                  (out S
+                     (httpStat 501 "Method Not Implemented"
+                        "Allow: GET, POST" ) )
+                  (throw "http") )
+               (T (out S (httpStat 400 "Bad Request")) (throw "http")) )
+            (if (<> *ConId *SesId)
+               (if *ConId
+                  (out S (http404))
+                  (close S)
+                  (task S)
+                  (off S) )
+               (setq
+                  L (split @U "?")
+                  @U (car L)
+                  L (mapcan
+                     '((L)
+                        (ifn (cdr (setq L (split L "=")))
+                           (cons (htArg (car L)))
+                           (_htSet (car L) (htArg (cadr L)))
+                           NIL ) )
+                     (split (cadr L) "&") ) )
+               (unless (setq *Url (ht:Pack @U))
+                  (setq  *Url (car *Home)  @U (cdr *Home)) )
+               (out S
+                  (cond
+                     ((match '("-" @X "." "h" "t" "m" "l") @U)
+                        (try 'html> (extern (ht:Pack @X))) )
+                     ((= '@ (car @U))
+                        (if (and *Allow (not (idx *Allow *Url)))
+                           (prog (msg *Url " not allowed") (http404))
+                           (and *SesId (timeout *Timeout))
+                           (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
+                     ((and *Allow
+                           (not (idx *Allow *Url))
+                           (or
+                              (sub? ".." *Url)
+                              (nor
+                                 (and *Tmp (pre? *Tmp *Url))
+                                 (find pre? (cdr *Allow) (circ *Url)) ) ) )
+                        (msg *Url " not allowed")
+                        (http404) )
+                     ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
-                  ((and *Allow
-                        (not (idx *Allow *Url))
-                        (or
-                           (sub? ".." *Url)
-                           (nor
-                              (and *Tmp (pre? *Tmp *Url))
-                              (find pre? (cdr *Allow) (circ *Url)) ) ) )
-                     (msg *Url " not allowed")
-                     (http404) )
-                  ((tail '("." "l") @U)
-                     (and *SesId (timeout *Timeout))
-                     (load *Url) )
-                  ((assoc (stem @U ".") *Mimes)
-                     (apply httpEcho (cdr @) *Url) )
-                  ((=T (car (info *Url)))
-                     (load (pack *Url "default")) )
-                  (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) )
+                        (load *Url) )
+                     ((assoc (stem @U ".") *Mimes)
+                        (apply httpEcho (cdr @) *Url) )
+                     ((=T (car (info *Url)))
+                        (if (info (setq *Url (pack *Url "default")))
+                           (load *Url)
+                           (http404) ) )
+                     (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (close S) (task S)) ) )
 
 (de _htHead ()
@@ -217,9 +215,7 @@
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)
-                  *MPartEnd (append *MPartLim '(- -)) ) )
-            ((match '(~(chop "Content-@ength: ") . @X) L)
-               (setq *ContLen (format (pack @X))) ) ) ) ) )
+                  *MPartEnd (append *MPartLim '(- -)) ) ) ) ) ) )
 
 # rfc1867 multipart/form-data
 (de _htMultipart ()
@@ -250,9 +246,7 @@
                      (unless (out F (echo (pack "^M^J" *MPartLim)))
                         (call 'rm "-f" F) ) )
                   (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
-               (let C (char)
-                  (and (= "^M" C) (setq C (char)))
-                  (setq L (if (= "^J" C) *MPartLim *MPartEnd)) ) ) ) ) ) )
+               (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) )
 
 (de _htSet ("Var" Val)
    (use (@N @V @Z)
@@ -375,7 +369,5 @@
 
 (de http404 ()
    (httpStat 404 "Not Found") )
-
-(de urlN . `http404)
 
 # vi:et:ts=3:sw=3

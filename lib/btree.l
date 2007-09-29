@@ -1,4 +1,4 @@
-# 25jun07abu
+# 14aug07abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -52,7 +52,9 @@
    (ifn Val
       (when (and (cdr Root) (_del @))
          (touch Base)
-         (and *Solo (zap (cdr Root)))
+         (cond
+            (*Solo (zap (cdr Root)))
+            (*Zap (push @ (cdr Root))) )
          (con Root) )
       (and (= Val (fin Key)) (off Val))
       (if (cdr Root)
@@ -105,10 +107,10 @@
             (def (new (car Dbf))
                (cons (cadr X) (nth V (+ 2 N))) ) )
          (cons
-            (ifn *Solo
-               (def (new (car Dbf)) (head N V))
-               (set Top (head N V))
-               Top )
+            (if *Solo
+               (prog (set Top (head N V)) Top)
+               (and *Zap (push @ Top))
+               (def (new (car Dbf)) (head N V)) )
             X ) ) ) )
 
 # Del
@@ -118,7 +120,9 @@
          ((not R)
             (when (and (car V) (_del @))
                (touch Top)
-               (and *Solo (zap (car V)))
+               (cond
+                  (*Solo (zap (car V)))
+                  (*Zap (push @ (car V))) )
                (set V)
                (not (cdr V)) ) )
          ((= Key (car R))
@@ -129,7 +133,9 @@
                   (xchg R (cadr X))
                   (con (cdr R) (cddr (cadr X)))
                   (when (_del (cadr R))
-                     (and *Solo (zap (cadr R)))
+                     (cond
+                        (*Solo (zap (cadr R)))
+                        (*Zap (push @ (cadr R))) )
                      (set (cdr R)) ) )
                (touch Base)
                (dec Root)
@@ -141,12 +147,34 @@
          ((cadr R)
             (when (_del @)
                (touch Top)
-               (and *Solo (zap (cadr R)))
+               (cond
+                  (*Solo (zap (cadr R)))
+                  (*Zap (push @ (cadr R))) )
                (set (cdr R)) ) ) ) ) )
+
+
+# Delayed deletion
+(de zap_ ()
+   (let (F (fin *Zap)  Z (pack F "_"))
+      (cond
+         ((info Z)
+            (in Z (while (rd) (zap @)))
+            (if (info F)
+               (call 'mv F Z)
+               (call 'rm Z) ) )
+         ((info F) (call 'mv F Z)) ) ) )
+
 
 # Tree node count
 (de count (Tree)
    (or (car (root Tree)) 0) )
+
+# Return first leaf
+(de leaf (Tree)
+   (let (Node (cdr (root Tree))  X)
+      (while (val Node)
+         (setq X (cadr @)  Node (car @)) )
+      (cddr X) ) )
 
 # Reverse node
 (de revNode (Node)
@@ -374,9 +402,16 @@
                   (wipe (lieu (cddr X))) ) ) ) ) )
    (setq *Prune (not Done)) )
 
+# Delete Tree
+(de zapTree (Node)
+   (let? V (val Node)
+      (zapTree (car V))
+      (for L (cdr V)
+         (zapTree (cadr L)) )
+      (zap Node) ) )
 
 # Check tree structure
-(de check ("Node" "Foo")
+(de chkTree ("Node" "Foo")
    (let ("N" 0  "X")
       (when "Node"
          (recur ("Node")

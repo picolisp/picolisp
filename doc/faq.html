@@ -210,11 +210,10 @@ garbage collector, and other parts of the interpreter know about them.
 
 <h3>Application Server</h3>
 <p>Stand-alone system: Does not depend on external programs like Apache or
-MySQL. Provides a "live" user interface on the client side, via a TCP connection
-between each Java applet and its corresponding application server session. The
-GUI layout and behavior (both in plain HTML and in Java applets) is described
-with s-expressions, generated dynamically at runtime, and maps directly to the
-database structures.
+MySQL. Provides a "live" user interface on the client side, with an application
+server session for each connected client. The GUI layout and behavior is
+described with s-expressions, generated dynamically at runtime, and maps
+directly to the database structures.
 
 <h3>Localization</h3>
 <p>Internal exclusive and full use of UTF-8 encoding, and self-translating
@@ -317,8 +316,8 @@ POSIX systems. The first versions were even fully portable between DOS, SCO-Unix
 and Macintosh systems. But today we have Linux. Linux itself is very portable,
 and you can get access to a Linux system almost everywhere. So why bother?
 
-<p>The GUI is completely platform independent (Browser/Applet), and in the times
-of Internet an application <u>server</u> does not really need to be portable.
+<p>The GUI is completely platform independent (Browser), and in the times of
+Internet an application <u>server</u> does not really need to be portable.
 
 
 <p><hr>
@@ -328,9 +327,9 @@ of Internet an application <u>server</u> does not really need to be portable.
 
 <p>Historically it was the other way round: We had a plain X11 GUI for our
 applications, and needed something platform independent. The solution was
-obvious: Browsers with Java are installed virtually everywhere. So we developed
-a protocol which persuades a browser to function as a GUI frontend to our
-applications. This is much simpler than to develop a full-blown web server.
+obvious: Browsers are installed virtually everywhere. So we developed a protocol
+which persuades a browser to function as a GUI frontend to our applications.
+This is much simpler than to develop a full-blown web server.
 
 <p>In a sense, Pico Lisp is a "pure" application server, not a web server
 handling "web applications".

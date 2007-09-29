@@ -1,4 +1,4 @@
-/* 31aug06abu
+/* 20sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -198,7 +198,7 @@ any doMaps(any ex) {
    x = cdr(x),  Push(c[0], EVAL(car(x)));
    NeedSym(ex, data(c[0]));
    Fetch(ex, data(c[0]));
-   data(c[0]) = tail(data(c[0]));
+   data(c[0]) = tail1(data(c[0]));
    for (n = 1; isCell(x = cdr(x)); ++n)
       Push(c[n], EVAL(car(x)));
    while (isCell(data(c[0]))) {

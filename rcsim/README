@@ -1,4 +1,4 @@
-31dec05abu
+29sep07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -22,38 +22,17 @@ are not known exactly, but it is a fun project anyway, and I hope it comes
 close.
 
 
-The simulator comes with two different kinds of user interface. The "official"
-version runs in an Applet in any Java-enabled browser. To run it locally,
-start the Pico Lisp server with
-
-   $ ./p rcsim/main.l -main -go -wait
-
-or (to get an interactive Pico Lisp command line) with
-
-   $ ./p dbg.l rcsim/main.l -main -go
-
-and then point your browser to "http://localhost:8080".
-
-If you don't have Pico Lisp installed, you might want to try the online version
-at:
-
-   http://rcsim.software-lab.biz
-
-(please take care not to use a proxy for that address)
-
-In both cases, click onto the image to set the keyboard focus.
-
-
-The second version uses the same graphical frontend, but written in 'C' instead
-of Java. This is much faster on older machines. You'll have to build it once:
+The simulator supports two different kinds of user interface. The version in the
+standard release uses a plain Xlib frontend. To use it, you'll have to build it
+once:
 
    $ (cd src; make x11)
 
 Then start the Pico Lisp server with
 
-   $ ./p dbg.l rcsim/xlib.main.l -main -go
+   $ ./p dbg.l rcsim/main.l -main -go
 
-and the Z3d-Client from another X-terminal
+and then the Z3d-Client from another X-terminal
 
    $ bin/z3dClient localhost 8080
 
@@ -63,6 +42,31 @@ started the simulator from, _not_ the Z3d-Client window).
 Hitting ENTER at the Pico Lisp prompt (the colon ':') will terminate the
 simulation process and close the Z3d-Client window. As always, you can stop the
 Pico Lisp servers with 'killall picolisp'.
+
+
+   The second version runs in an Applet in any Java-enabled browser.To run it
+   locally, please download and unpack the "picoJavaGUI.tgz" tarball. It
+   contains the Java applet GUI which is no longer part of the standard PicoLisp
+   release.
+
+   You can start the Pico Lisp server with
+
+      $ ./p rcsim/applet.main.l -main -go -wait
+
+   or (to get an interactive Pico Lisp command line) with
+
+      $ ./p dbg.l rcsim/main.l -main -go
+
+   and then point your browser to "http://localhost:8080".
+
+   If you don't have Pico Lisp installed, you might want to try the online version
+   at:
+
+      http://rcsim.software-lab.biz
+
+   (please take care not to use a proxy for that address)
+
+   In both cases, click onto the image to set the keyboard focus.
 
 
 The simulator runs in the background, so if it is started interactively (see
@@ -88,22 +92,22 @@ The simulator is controlled by the following 10 keys:
 
 - The cursor (arrow) keys UP and DOWN control the elevator
 - The LEFT and RIGHT cursor keys control the combined rudder/ailerons
-- The HOME key sets full throttle
-- The END key turns the engine off
-- PAGE UP/DOWN increase/decrease the throttle
-- INS/DEL zoom in/out
+- The HOME key sets full throttle (F8)
+- PAGE UP/DOWN increase/decrease the throttle (F7/F6)
+- The END key turns the engine off (F5)
+- INS/DEL zoom in/out (or F4/F3)
 
 For a first flight, just hit the HOME key as the plane sits waiting on the
 runway, and watch it accelerate. After some time, when it starts to jump a bit
 nervously, give a little up-elevator (the DOWN arrow key) to gain height. Then
-hit the PAGE DOWN key once or twice to decrease the throttle, and cautiosly
+hit the PAGE DOWN key once or twice to decrease the throttle, and cautiously
 experiment with with the arrow keys.
 
 
-There is some rudimentary sound implemented. It is not inteded to be realistic
+There is some rudimentary sound implemented. It is not intended to be realistic
 (the graphic isn't either ;-) but to give some audible feedback to the user. It
 produces a simple square wave sound, depending on the engine's thrust, the
-airspeed, the distance, and the doppler effect.
+airspeed, the distance, and the Doppler effect.
 
 If you are using the Java/Applet version, you might simply click on the "Sound"
 checkbox. Be warned, however, that this induces additional load on the client

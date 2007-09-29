@@ -2,7 +2,7 @@
          Primary data types:
 
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx010 Number
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx1x0 Symbol
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx100 Symbol
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000 Cell
 
 
@@ -26,10 +26,9 @@
             |
             V
       +-----+-----+
-      | VAL |  ---+---+
-      +-----+-----+   | tail
-                      |
-         +------------+
+      |  |  | VAL |
+      +--+--+-----+
+         | tail
          |
          V                                                      name
          +-----+-----+     +-----+-----+     +-----+-----+     +-----+-----+
@@ -81,10 +80,10 @@
       Assumptions:
 
    - 8 bits per byte
-   - word: sizeof(void*) == sizeof(unsigned long) == 4
+   - word: sizeof(void*) == sizeof(unsigned long)
+   - word2: sizeof(unsigned long long) == 2 * sizeof(unsigned long)
    - gcc
       Functions aligned to 4-byte boundaries
-      64-bit "long long" integers
       Zero- or variable-length arrays
       Conditionals with Omitted Operands
       Unused argument attributes

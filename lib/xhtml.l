@@ -1,4 +1,4 @@
-# 27jun07abu
+# 13sep07abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -17,9 +17,13 @@
 (de htStyle (Attr)
    (cond
       ((atom Attr)
-         (prin " class=\"" Attr "\"") )
+         (prin " class=\"")
+         (ht:Prin Attr)
+         (prin "\"") )
       ((and (atom (car Attr)) (atom (cdr Attr)))
-         (prin " " (car Attr) "=\"" (cdr Attr) "\"") )
+         (prin " " (car Attr) "=\"")
+         (ht:Prin (cdr Attr))
+         (prin "\"") )
       (T (mapc htStyle Attr)) ) )
 
 (de dfltCss (Cls)
@@ -76,6 +80,9 @@
 
 (de <style> ("X" . "Prg")
    (style "X" "Prg") )
+
+(de nonblank (Str)
+   (or Str `(pack (char 160) (char 160))) )
 
 
 ### XHTML output ###
@@ -217,19 +224,20 @@
       (quote
          (let (L Prg  H (up "Head"))
             (while L
-               (let
-                  (X (pop 'L)
-                     C (pack Cls (and Cls (caar H) " ") (car (pop 'H)))
-                     N 1 )
+               (let (X (pop 'L)  C (pack Cls (and Cls (caar H) " ") (caar H))  N 1)
                   (while (== '- (car L))
                      (inc 'N)
                      (pop 'L)
                      (pop 'H) )
-                  (tag 'td
+                  (setq C
                      (if2 C (> N 1)
                         (list C (cons 'colspan N))
                         C
-                        (cons 'colspan N) )
+                        (cons 'colspan N) ) )
+                  (tag 'td
+                     (if (== 'align (car (pop 'H)))
+                        (list '(align . right) C)
+                        C )
                      1
                      (quote
                         (if (atom X)
@@ -281,10 +289,10 @@
 (de <menu> Lst
    (let (M 1  N 1  E 2  U)
       (recur (Lst N E)
-         (for L Lst
-            (<ul> NIL
+         (<ul> NIL
+            (for L Lst
                (nond
-                  ((car L) (htPrin (cdr L) 2))
+                  ((car L) (<li> NIL (htPrin (cdr L) 2)))
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
                         (<li> (pack (if (= U *Url) 'act 'cmd) N)

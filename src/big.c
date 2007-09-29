@@ -1,10 +1,11 @@
-/* 05may07abu
+/* 29sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-#define MAX       num(-1)           /* Maximal digit size */
+#define MAX    MASK           // Max digit size    0xFFFF....
+#define OVFL   ((1<<BITS-1))  // Carry/Overflow    0x8000....
 
 
 static void divErr(any ex) {err(ex,NULL,"Div/0");}
@@ -22,7 +23,7 @@ word2 unBoxWord2(any x) {
    word2 n = unDig(x);
 
    if (isNum(x = cdr(numCell(x))))
-      n = n << 32 + unDig(x);
+      n = n << BITS + unDig(x);
    return n / 2;
 }
 
@@ -54,11 +55,11 @@ void digMul2(any x) {
    any y;
    word n, carry;
 
-   n = unDig(x),  setDig(x, n + n),  carry = n & 0x80000000;
+   n = unDig(x),  setDig(x, n + n),  carry = n & OVFL;
    while (isNum(x = cdr(numCell(y = x)))) {
       n = unDig(x);
       setDig(x, n + n + (carry? 1 : 0));
-      carry = n & 0x80000000;
+      carry = n & OVFL;
    }
    if (carry)
       cdr(numCell(y)) = box(1);
@@ -72,7 +73,7 @@ void digDiv2(any x) {
    setDig(x, unDig(x) / 2);
    while (isNum(x = cdr(numCell(y = x)))) {
       if (unDig(x) & 1)
-         setDig(y, unDig(y) | 0x80000000);
+         setDig(y, unDig(y) | OVFL);
       setDig(x, unDig(x) / 2);
       r = y;
    }
@@ -189,7 +190,7 @@ void digSub1(any x) {
    word borrow;
 
    r = NULL;
-   borrow = MAX == num(setDig(x, unDig(x) - 2));
+   borrow = MAX-1 == num(setDig(x, unDig(x) - 2));
    while (isNum(x = cdr(numCell(y = x)))) {
       if (!borrow)
          return;
@@ -211,7 +212,7 @@ static any bigMul(any x1, any x2) {
    for (;;) {
       n = unDig(x2) / 2;
       if (isNum(x2 = cdr(numCell(x2)))  &&  unDig(x2) & 1)
-         n |= 0x80000000;
+         n |= OVFL;
       t = (word2)n * unDig(z = x1);  // x += n * x1
       carry = (lo(t) > num(setDig(y, unDig(y) + lo(t)))) + hi(t);
       while (isNum(z = cdr(numCell(z)))) {
@@ -309,7 +310,7 @@ static any bigDiv(any u, any v, bool rem) {
       return box(0);
    }
    cdr(numCell(z)) = box(0);
-   for (d = 0;  (unDig(x) & 0x80000000) == 0;  ++d)
+   for (d = 0;  (unDig(x) & OVFL) == 0;  ++d)
       digMul2(u),  digMul2(v);
    v1 = unDig(x);
    v2 = y? unDig(y) : 0;
@@ -323,10 +324,10 @@ static any bigDiv(any u, any v, bool rem) {
          u3 = u2,  u2 = u1,  u1 = unDig(y),  y = cdr(numCell(y));
       while (--i >= 0);
 
-      t = ((word2)u1 << 32) + u2;                           // Calculate q
+      t = ((word2)u1 << BITS) + u2;                         // Calculate q
       q = u1 == v1? MAX : t / v1;
       r = t - (word2)q*v1;
-      while (r <= MAX  &&  (word2)q*v2 > (r << 32) + u3)
+      while (r <= MAX  &&  (word2)q*v2 > (r << BITS) + u3)
          --q,  r += v1;
 
       z = x;                                                // x -= q*v
@@ -519,7 +520,7 @@ any numToSym(any x, int scl, int sep, int ign) {
    }
 }
 
-#define DMAX 4294967296.0
+#define DMAX ((double)((word2)MASK+1))
 
 /* Make number from double */
 any doubleToNum(double d) {
@@ -666,7 +667,7 @@ any doInc(any ex) {
       if (!isNeg(data(c1)))
          digAdd(data(c1), 2);
       else {
-         digSub1(data(c1));
+         pos(data(c1)), digSub1(data(c1)), neg(data(c1));
          if (unDig(data(c1)) == 1  &&  !isNum(cdr(numCell(data(c1)))))
             setDig(data(c1), 0);
       }
@@ -1116,10 +1117,10 @@ any doSqrt(any ex) {
    return data(c3);
 }
 
-static word2 Seed;
+static u_int64_t Seed;
 
-static word2 initSeed(any x) {
-   word2 n;
+static u_int64_t initSeed(any x) {
+   u_int64_t n;
 
    for (n = 0; isCell(x); x = cdr(x))
       n += initSeed(car(x));

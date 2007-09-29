@@ -1,4 +1,4 @@
-/* 25jun07abu
+/* 27sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -116,6 +116,7 @@ static symInit Symbols[] = {
    {doFormat, "format"},
    {doFree, "free"},
    {doFrom, "from"},
+   {doFull, "full"},
    {doFunQ, "fun?"},
    {doGc, "gc"},
    {doGe, ">="},
@@ -140,6 +141,7 @@ static symInit Symbols[] = {
    {doIndex, "index"},
    {doInfo, "info"},
    {doIntern, "intern"},
+   {doIpid, "ipid"},
    {doIsa, "isa"},
    {doJob, "job"},
    {doJournal, "journal"},
@@ -212,6 +214,7 @@ static symInit Symbols[] = {
    {doOne, "one"},
    {doOnOff, "onOff"},
    {doOpen, "open"},
+   {doOpid, "opid"},
    {doOpt, "opt"},
    {doOr, "or"},
    {doOut, "out"},
@@ -221,6 +224,7 @@ static symInit Symbols[] = {
    {doPath, "path"},
    {doPatQ, "pat?"},
    {doPeek, "peek"},
+   {doPid, "pid"},
    {doPick, "pick"},
    {doPipe, "pipe"},
    {doPoll, "poll"},
@@ -346,34 +350,38 @@ void initSymbols(void) {
    One = box(2);
    for (i = 0; i < HASH; ++i)
       Intern[i] = Transient[i] = Extern[i] = Nil;
+   initSym(mkStr(_OS), "*OS");
    DB    = initSym(Nil, "*DB");
-   Solo  = initSym(Zero, "*Solo");
-   Up    = initSym(Nil, "^");
    Meth  = initSym(box(num(doMeth)), "meth");
    Quote = initSym(box(num(doQuote)), "quote");
    T     = initSym(Nil, "T"),  val(T) = T;  // Last protected symbol
 
+   mkExt(val(DB) = DbVal = consStr(DbTail = box('1')));
+   Extern['1'] = cons(DbVal, Nil);
+
+   Solo  = initSym(Zero, "*Solo");
+   PPid  = initSym(Nil, "*PPid");
+   Pid   = initSym(boxCnt(getpid()), "*Pid");
    At    = initSym(Nil, "@");
    At2   = initSym(Nil, "@@");
    At3   = initSym(Nil, "@@@");
    This  = initSym(Nil, "This");
    Dbg   = initSym(Nil, "*Dbg");
-   PPid  = initSym(Nil, "*PPid");
-   Pid   = initSym(boxCnt(getpid()), "*Pid");
+   Zap   = initSym(Nil, "*Zap");
    Scl   = initSym(Zero, "*Scl");
    Class = initSym(Nil, "*Class");
    Run   = initSym(Nil, "*Run");
-   Led   = initSym(Nil, "*Led");
+   Sig1  = initSym(Nil, "*Sig1");
+   Sig2  = initSym(Nil, "*Sig2");
+   Up    = initSym(Nil, "^");
    Err   = initSym(Nil, "*Err");
    Rst   = initSym(Nil, "*Rst");
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");
+   Led   = initSym(Nil, "*Led");
    Adr   = initSym(Nil, "*Adr");
    Fork  = initSym(Nil, "*Fork");
    Bye   = initSym(Nil, "*Bye");  // Last unremovable symbol
-
-   val(DB) = DbVal = extSym(consStr(DbTail = box('1')));
-   Extern['1'] = cons(DbVal, Nil);
 
    for (i = 0; i < (int)(sizeof(Symbols)/sizeof(symInit)); ++i)
       initSym(box(num(Symbols[i].code)), Symbols[i].name);

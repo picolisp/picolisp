@@ -1,4 +1,4 @@
-# 15feb07abu
+# 26jul07abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -11,21 +11,14 @@
    (for "X" (env)
       (unless (== (car "X") (cdr "X"))
          (println (car "X") (cdr "X")) ) )
-   (rollback)
-   (when *Top
-      (alert "Sorry!"
-         (list
-            (pack "(" *Msg ")")
-            "An internal error occurred."
-            "Connection will be closed." ) ) ) )
+   (rollback) )
 
 # User identification
 (de user (Pid1 Pid2 Nm To)
    (nond
       (Pid1 (tell 'user *Pid))
       (Pid2
-         (tell 'user Pid1 *Pid
-            (with *Login (lit (cons (: nm) (: name))))
+         (tell 'user Pid1 *Pid (get *Login 'nm)
             (/ (- *Timeout (cadr (assoc -1 *Run))) 60000) ) )
       ((<> *Pid Pid1) (println Pid2 Nm To)) ) )
 

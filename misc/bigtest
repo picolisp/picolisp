@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 26nov06abu
+# 21sep07abu
 # misc/bigtest <seed>
 
 (load "lib/misc.l")
@@ -54,7 +54,9 @@
          (prinl N2)
          (prinl N1 " + " N2)
          (prinl N1 " + 1")
+         (prinl N1 " + 1")
          (prinl N1 " - " N2)
+         (prinl N1 " - 1")
          (prinl N1 " - 1")
          (prinl N1 " * " N2)
          (prinl N1 " * 2")
@@ -71,8 +73,10 @@
             N2 (read) )
          (test2 '+ N1 N2)
          (test2 '+ N1 1)
+         (test1 'inc N1)
          (test2 '- N1 N2)
          (test2 '- N1 1)
+         (test1 'dec N1)
          (test2 '* N1 N2)
          (test2 '* N1 2)
          (test2 '% N1 N2)

@@ -1,27 +1,39 @@
-/* 18jun07abu
+/* 20sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 static void redefMsg(any x, any y) {
-   FILE *oSave = OutFile;
+   outFile *oSave = OutFile;
+   FILE *stdSave = StdOut;
 
-   OutFile = stderr;
+   OutFile = NULL,  StdOut = stderr;
    outString("# ");
    print(x);
    if (y)
       space(), print(y);
    outString(" redefined\n");
-   OutFile = oSave;
+   OutFile = oSave,  StdOut = stdSave;
+}
+
+static void putSrc(any s, any k) {
+   if (!isNil(val(Dbg)) && InFile && InFile->name) {
+      cell c1;
+
+      Push(c1, boxCnt(InFile->src));
+      put(s, k, cons(data(c1), mkStr(InFile->name)));
+      drop(c1);
+   }
 }
 
 static void redefine(any ex, any s, any x) {
    NeedSym(ex,s);
    CheckVar(ex,s);
    if (!isNil(val(s))  &&  s != val(s)  &&  !equal(x,val(s)))
-      redefMsg(s,NULL);
+      redefMsg(s, NULL);
    val(s) = x;
+   putSrc(s, Dbg);
 }
 
 // (quote . any) -> any
@@ -35,10 +47,24 @@ any doAs(any x) {
    return cdr(x);
 }
 
+// (pid 'pid|lst . exe) -> any
+any doPid(any x) {
+   any y;
+
+   x = cdr(x);
+   if (!isCell(y = EVAL(car(x))))
+      return equal(y, val(Pid))? EVAL(cdr(x)) : Nil;
+   do
+      if (equal(car(y), val(Pid)))
+         return EVAL(cdr(x));
+   while (isCell(y = cdr(y)));
+   return Nil;
+}
+
 // (lit 'any) -> any
 any doLit(any x) {
    x = cadr(x);
-   if (isNil(x = EVAL(x)) || x==T || isNum(x) || isCell(x) && isNum(car(x)))
+   if (isNum(x = EVAL(x)) || isSym(x) && x==val(x) || isCell(x) && isNum(car(x)))
       return x;
    return cons(Quote, x);
 }
@@ -158,10 +184,11 @@ any doDef(any ex) {
    if (!isCell(cdr(x))) {
       if (!equal(data(c2), y = val(data(c1)))) {
          if (!isNil(y)  &&  data(c1) != y)
-            redefMsg(data(c1),NULL);
+            redefMsg(data(c1), NULL);
          Touch(ex,data(c1));
          val(data(c1)) = data(c2);
       }
+      putSrc(data(c1), Dbg);
    }
    else {
       x = cdr(x),  Push(c3, EVAL(car(x)));
@@ -171,6 +198,7 @@ any doDef(any ex) {
          Touch(ex,data(c1));
          put(data(c1), data(c2), data(c3));
       }
+      putSrc(data(c1), data(c2));
    }
    return Pop(c1);
 }
@@ -212,14 +240,16 @@ any doDm(any ex) {
    for (y = val(cls);  isCell(y) && isCell(car(y));  y = cdr(y))
       if (caar(y) == msg) {
          if (!equal(cdr(x), cdar(y)))
-            redefMsg(msg,cls);
+            redefMsg(msg, cls);
          cdar(y) = cdr(x);
+         putSrc(cls, msg);
          return msg;
       }
    if (!isCell(car(x)))
       val(cls) = cons(x, val(cls));
    else
       val(cls) = cons(cons(caar(x), cdr(x)), val(cls));
+   putSrc(cls, msg);
    return msg;
 }
 
@@ -341,8 +371,8 @@ any doNew(any ex) {
       val(data(c1)) = y;
    else {
       if (!isNil(y)) {
-         data(c1) = extSym(data(c1));
          p = Extern + hash(tail(data(c1)) = newId(isNum(y)? (int)unDig(y)/2 : 1));
+         mkExt(data(c1));
          *p = cons(data(c1),*p);
       }
       x = cdr(x),  y = EVAL(car(x));
@@ -854,7 +884,7 @@ any doIf(any x) {
 // (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
 any doIf2(any x) {
    x = cdr(x);
-   if (isNil(EVAL(car(x)))) {
+   if (isNil(val(At) = EVAL(car(x)))) {
       x = cdr(x);
       if (isNil(val(At) = EVAL(car(x))))
          return prog(cddddr(x));
@@ -895,7 +925,7 @@ any doUnless(any x) {
    return prog(cdr(x));
 }
 
-// (cond (('any1 . prg1) ('any2 . prg2) ..)) -> any
+// (cond ('any1 . prg1) ('any2 . prg2) ..) -> any
 any doCond(any x) {
    while (isCell(x = cdr(x)))
       if (!isNil(val(At) = EVAL(caar(x))))
@@ -903,7 +933,7 @@ any doCond(any x) {
    return Nil;
 }
 
-// (nond (('any1 . prg1) ('any2 . prg2) ..)) -> any
+// (nond ('any1 . prg1) ('any2 . prg2) ..) -> any
 any doNond(any x) {
    while (isCell(x = cdr(x)))
       if (isNil(val(At) = EVAL(caar(x))))
@@ -1263,7 +1293,7 @@ void brkLoad(any x) {
       Brk.bnd[1].sym = Run,  Brk.bnd[1].val = val(Run),  val(Run) = Nil;
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At);
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
-      Out.pid = -1,  Out.fp = stdout,  pushOutFiles(&Out);
+      Out.pid = -1,  Out.fd = 1,  pushOutFiles(&Out);
       print(x), crlf();
       load(NULL, '!', Nil);
       popOutFiles();
@@ -1291,14 +1321,23 @@ any doE(any ex) {
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
    Push(at, val(At)),  val(At) = Brk.bnd[2].val;
    Push(key, val(Run)),  val(Run) = Brk.bnd[1].val;
-   if (Env.inFiles && Env.inFiles->link)
-      Chr = Env.inFiles->next,  Env.get = Env.inFiles->get,  InFile = Env.inFiles->link->fp;
+   if (Env.inFiles) {
+      Env.get = Env.inFiles->get;
+      if (!Env.inFiles->link  || Env.inFiles->link->pid < 0)
+         InFile = NULL,  Chr = Next0;
+      else if (InFile = InFiles[Env.inFiles->link->fd])
+         Chr = InFile->next;
+      else
+         Chr = Next0;
+   }
    popOutFiles();
    x = isCell(cdr(ex))? prog(cdr(ex)) : EVAL(val(Up));
    pushOutFiles(&Out);
-   if (Env.inFiles && Env.inFiles->link)
-      Env.inFiles->next = Chr,  Chr = 0;
-   InFile = stdin,  OutFile = stdout;
+   if (InFile)
+      InFile->next = Chr;
+   else
+      Next0 = Chr;
+   InFile = NULL,  OutFile = NULL,  Chr = 0;
    val(Run) = data(key);
    val(At) = data(at);
    val(Dbg) = Pop(c1);
@@ -1331,30 +1370,28 @@ static void traceSym(any x) {
 // ($ sym|lst lst . prg) -> any
 any doTrace(any x) {
    any foo, body;
-   FILE *oSave;
-   void (*putSave)(int);
+   outFile *oSave = OutFile;
+   FILE *stdSave = StdOut;
+   void (*putSave)(int) = Env.put;
    cell c1;
 
    if (isNil(val(Dbg)))
       return prog(cdddr(x));
-   oSave = OutFile,  OutFile = stderr;
-   putSave = Env.put,  Env.put = putStdout;
+   OutFile = NULL,  StdOut = stderr,  Env.put = putStdout;
    x = cdr(x),  foo = car(x);
    x = cdr(x),  body = cdr(x);
-   traceIndent(++Trace, foo, " :");
+   traceIndent(++Env.trace, foo, " :");
    for (x = car(x);  isCell(x);  x = cdr(x))
       traceSym(car(x));
    if (!isNil(x) && isSym(x))
       traceSym(x);
    crlf();
-   Env.put = putSave;
-   OutFile = oSave;
+   Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
    Push(c1, prog(body));
-   OutFile = stderr;
+   OutFile = NULL,  StdOut = stderr;
    Env.put = putStdout;
-   traceIndent(Trace--, foo, " = "),  print(data(c1)),  crlf();
-   Env.put = putSave;
-   OutFile = oSave;
+   traceIndent(Env.trace--, foo, " = "),  print(data(c1)),  crlf();
+   Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
    return Pop(c1);
 }
 
@@ -1407,9 +1444,12 @@ any doCall(any ex) {
    if (Termio)
       tcsetpgrp(0,pid);
    for (;;) {
-      while (waitpid(pid, &res, WUNTRACED) < 0)
+      while (waitpid(pid, &res, WUNTRACED) < 0) {
          if (errno != EINTR)
             err(ex, NULL, "wait pid");
+         if (Signal)
+            sighandler(ex);
+      }
       if (Termio)
          tcsetpgrp(0,getpgrp());
       if (!WIFSTOPPED(res))
@@ -1440,6 +1480,20 @@ any doTick(any ex) {
    return x;
 }
 
+// (ipid) -> pid | NIL
+any doIpid(any ex __attribute__((unused))) {
+   if (Env.inFiles  &&  Env.inFiles->pid > 0)
+      return boxCnt((long)Env.inFiles->pid);
+   return Nil;
+}
+
+// (opid) -> pid | NIL
+any doOpid(any ex __attribute__((unused))) {
+   if (Env.outFiles  &&  Env.outFiles->pid > 0)
+      return boxCnt((long)Env.outFiles->pid);
+   return Nil;
+}
+
 // (kill 'pid ['cnt]) -> flg
 any doKill(any ex) {
    pid_t pid;
@@ -1467,8 +1521,8 @@ static void allocChildren(void) {
 
 pid_t forkLisp(any ex) {
    pid_t n;
-   inFrame *inFile;
-   outFrame *outFile;
+   inFrame *in;
+   outFrame *out;
    int i, hear[2], tell[2];
    static int mic[2];
 
@@ -1485,12 +1539,12 @@ pid_t forkLisp(any ex) {
       err(ex, NULL, "fork");
    if (n == 0) {
       /* Child Process */
-      for (inFile = Env.inFiles; inFile; inFile = inFile->link)
-         if (inFile->pid > 0)
-            inFile->pid = 0;
-      for (outFile = Env.outFiles; outFile; outFile = outFile->link)
-         if (outFile->pid > 0)
-            outFile->pid = 0;
+      for (in = Env.inFiles; in; in = in->link)
+         if (in->pid > 0)
+            in->pid = 0;
+      for (out = Env.outFiles; out; out = out->link)
+         if (out->pid > 0)
+            out->pid = 0;
       free(Termio),  Termio = NULL;
       if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(mic[0]) < 0)
          pipeError(ex, "close");
@@ -1502,8 +1556,8 @@ pid_t forkLisp(any ex) {
             close(Child[i].hear), close(Child[i].tell),  free(Child[i].buf);
       Children = 0,  free(Child),  Child = NULL;
       if (Hear)
-         close(Hear);
-      Hear = hear[0];
+         close(Hear),  closeInFile(Hear);
+      initInFile(Hear = hear[0], NULL);
       if (Tell)
          close(Tell);
       Tell = tell[1];

@@ -1,4 +1,4 @@
-08feb07abu
+14aug07abu
 (c) Software Lab. Alexander Burger
 
 
@@ -24,7 +24,7 @@ can continue the game with
 
 : (go)
 
-possibly aftre re-initializing it with
+possibly after re-initializing it with
 
 : (main)
 
@@ -40,8 +40,8 @@ Start 'nim' as
 
 $ ./p dbg.l games/nim.l
 
-and then find the the optimal move path for, let's say, three heaps of four
-matches each:
+and then find the optimal move path for, let's say, three heaps of four matches
+each:
 
 : (nim 4 4 4)
 -> (-100 ((1 . 4) 1 . -4) ((2 . 4) 2 . -4) ((3 . 4) 3 . -4))
@@ -72,7 +72,7 @@ Your positions are marked with 'T', the computer's with '0'.
 
 
 
-The 'chess' game is minimalistic (440 lines of code). Nevertheless, it plays
+The 'chess' game is minimalistic (441 lines of code). Nevertheless, it plays
 some slow - though correct - chess. Start it as:
 
 $ ./p dbg.l games/chess.l -main
@@ -98,8 +98,18 @@ $ ./p dbg.l games/chess.l -main
 The pieces are indicated by the letters 'K'ing, 'Q'ueen, 'R'ook, 'B'ishop,
 k'N'ight and 'P'awn, with black pieces in angular brackets.
 
-Enter your moves with the field names (in lower case) for the "from" and "to"
-positions:
+
+Alternatively, you can also run it through XBoard (in the X Window System):
+
+$ xboard -fcp games/xchess
+
+This requires the symbolic links in "/usr/lib/" and "/usr/bin/", as recommended
+in INSTALL. If this is not an option, please modify the first line ("#!") of
+"games/xchess".
+
+
+Without XBoard, you may enter your moves with the field names (in lower case)
+for the "from" and "to" positions:
 
 : (go e2 e4)
 

@@ -1,4 +1,4 @@
-/* 18feb07abu
+/* 09sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -33,6 +33,7 @@ static any tcpAccept(any ex, int sd) {
       if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
          blocking(YES, ex, sd2);
          val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+         initInFile(sd2,NULL), initOutFile(sd2);
          return boxCnt(sd2);
       }
       nanosleep(&tv,NULL);
@@ -160,6 +161,7 @@ any doConnect(any ex) {
       close(sd);
       return Nil;
    }
+   initInFile(sd,NULL), initOutFile(sd);
    return boxCnt(sd);
 }
 
@@ -186,7 +188,7 @@ static void putUdp(int c) {
       err(NULL, NULL, "UDP overflow");
 }
 
-static int getUdp(int n __attribute__((unused))) {
+static int getUdp(void) {
    if (UdpPtr == UdpBuf + UDPMAX)
       return -1;
    return *UdpPtr++;

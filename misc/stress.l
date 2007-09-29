@@ -1,4 +1,4 @@
-# 21jan07abu
+# 21aug07abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -65,5 +65,5 @@
          (rollback)
          (verify) ) )
    (pool "db/test2")
-   (in "jnl" (journal))
+   (journal "jnl")
    (call 'cmp "db/test" "db/test2") )

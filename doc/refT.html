@@ -179,8 +179,9 @@ members (i.e. all children of the current process, and all other children of the
 parent process, see <code><a href="refF.html#fork">fork</a></code>) for
 automatic execution. <code>tell</code> can also be used by <code><a
 href="refC.html#commit">commit</a></code> to notify about database changes. See
-also <code><a href="refR.html#rpc">rpc</a></code> and <code><a
-href="refH.html#hear">hear</a></code>.
+also <code><a href="refH.html#hear">hear</a></code>, <code><a
+href="refP.html#pid">pid</a></code> and <code><a
+href="refR.html#rpc">rpc</a></code>.
 
 <p><pre><code>
 : (call 'ps "x")                            # Show processes
@@ -199,16 +200,17 @@ href="refH.html#hear">hear</a></code>.
 </code></pre>
 
 <dt><a name="test"><code>(test 'any . prg)</code></a>
-<dd>Executes <code>prg</code>, and prints a message if the result does not match
-the <code>any</code> argument. If <code>any</code> is atomic, <code><a
-href="ref_.html#=">=</a></code> is used for comparison, otherwise it should be a
-pattern suitable for <code><a href="refM.html#match">match</a></code>.
+<dd>Executes <code>prg</code>, and issues an <code><a
+href="ref.html#errors">error</a></code> if the result does not <code><a
+href="refM.html#match">match</a></code> the <code>any</code> argument.
 
 <p><pre><code>
 : (test 12 (* 3 4))
 -> NIL
 : (test 12 (+ 3 4))
-fail ((+ 3 4))
+((+ 3 4))
+12 -- fail
+?
 </code></pre>
 
 <dt><a name="text"><code>(text 'sym 'any ..) -> sym</code></a>
@@ -413,14 +415,16 @@ object. See also <code><a href="refR.html#root">root</a></code>, <code><a
 href="refF.html#fetch">fetch</a></code>, <code><a
 href="refS.html#store">store</a></code>, <code><a
 href="refC.html#count">count</a></code>, <code><a
+href="refL.html#leaf">leaf</a></code>, <code><a
 href="refM.html#minKey">minKey</a></code>, <code><a
 href="refM.html#maxKey">maxKey</a></code>, <code><a
 href="refI.html#init">init</a></code>, <code><a
 href="refS.html#step">step</a></code>, <code><a
 href="refS.html#scan">scan</a></code>, <code><a
 href="refI.html#iter">iter</a></code>, <code><a
-href="refP.html#prune">prune</a></code> and <code><a
-href="refC.html#check">check</a></code>.
+href="refP.html#prune">prune</a></code>, <code><a
+href="refZ.html#zapTree">zapTree</a></code> and <code><a
+href="refC.html#chkTree">chkTree</a></code>.
 
 <p><pre><code>
 : (tree 'nm '+Item)

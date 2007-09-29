@@ -47,12 +47,13 @@ href="refS.html#state">state</a></code>.
 -> tst
 </code></pre>
 
-<dt><a name="journal"><code>(journal) -> T</code></a>
-<dd>Reads journal data from the current input channel, and writes all changes to
-the database. See also <code><a href="refP.html#pool">pool</a></code>.
+<dt><a name="journal"><code>(journal 'any ..) -> T</code></a>
+<dd>Reads journal data from the files with the names <code>any</code>, and
+writes all changes to the database. See also <code><a
+href="refP.html#pool">pool</a></code>.
 
 <p><pre><code>
-: (in "db.log" (journal))
+: (journal "db.log")
 -> T
 </code></pre>
 

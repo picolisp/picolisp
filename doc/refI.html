@@ -129,9 +129,12 @@ Ok
 appropriately. If the argument is <code>NIL</code>, standard input is used. If
 the argument is a symbol, it is used as a file name (opened for reading
 <i>and</i> writing if the first character is "<code>+</code>"). If it is a
-number, it is used as the descriptor of an open file. Otherwise (if it is a
-list), it is taken as a command with arguments, and a pipe is opened for input.
-See also <code><a href="refC.html#call">call</a></code>, <code><a
+positive number, it is used as the descriptor of an open file. If it is a
+negative number, the saved input channel such many levels above the current one
+is used. Otherwise (if it is a list), it is taken as a command with arguments,
+and a pipe is opened for input. See also <code><a
+href="refI.html#ipid">ipid</a></code>, <code><a
+href="refC.html#call">call</a></code>, <code><a
 href="refL.html#load">load</a></code>, <code><a
 href="refO.html#out">out</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
@@ -250,6 +253,20 @@ href="ref_.html#====">====</a></code>.
 -> 1
 </code></pre>
 
+<dt><a name="ipid"><code>(ipid) -> pid | NIL</code></a>
+<dd>Returns the corresponding process ID when the current input channel is
+reading from a pipe, otherwise <code>NIL</code>. See also <code><a
+href="refO.html#opid">opid</a></code>, <code><a
+href="refI.html#in">in</a></code>, <code><a
+href="refP.html#pipe">pipe</a></code> and <code><a
+href="refL.html#load">load</a></code>.
+
+<p><pre><code>
+: (in '(ls "-l") (println (line T)) (kill (ipid)))
+"total 7364"
+-> T
+</code></pre>
+
 <dt><a name="isa"><code>(isa 'cls|typ 'obj) -> obj | NIL</code></a>
 <dd>Returns <code>obj</code> when it is an object that inherits from
 <code>cls</code> or <code>type</code>. See also <code><a href="ref.html#oop">OO
@@ -260,7 +277,7 @@ href="refO.html#object">object</a></code>.
 
 <p><pre><code>
 : (isa '+Address Obj)
--> T
+-> {1-17}
 : (isa '(+Male +Person) Obj)
 -> NIL
 </code></pre>

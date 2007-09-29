@@ -19,7 +19,7 @@
 <p><pre><code>
 : (n== 'a 'a)
 -> NIL
-: (n== 1 1)
+: (n== (1) (1))
 -> T
 </code></pre>
 
@@ -146,7 +146,7 @@ href="refC.html#class">class</a></code>, <code><a
 href="refT.html#type">type</a></code>, <code><a
 href="refI.html#isa">isa</a></code>, <code><a
 href="refS.html#send">send</a></code> and <code><a
-href="ref.html#dbase">dbase</a></code>.
+href="ref.html#dbase">Database</a></code>.
 
 <p><pre><code>
 : (new)
@@ -186,7 +186,7 @@ Ok
 -> NIL
 </code></pre>
 
-<dt><a name="nond"><code>(nond (('any1 . prg1) ('any2 . prg2) ..)) -> any</code></a>
+<dt><a name="nond"><code>(nond ('any1 . prg1) ('any2 . prg2) ..) -> any</code></a>
 <dd>Negated ("non-cond") multi-way conditional: If any of the <code>anyN</code>
 conditions evaluates to <code>NIL</code>, <code>prgN</code> is executed and the
 result returned. Otherwise (all conditions evaluate to non-<code>NIL</code>),

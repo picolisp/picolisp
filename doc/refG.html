@@ -13,19 +13,20 @@
 
 <dt><a name="gc"><code>(gc ['cnt]) -> cnt | NIL</code></a>
 <dd>Forces a garbage collection. When <code>cnt</code> is given, so many
-millions of free cells are reserved, increasing the heap size if necessary.
+megabytes of free cells are reserved, increasing the heap size if necessary. If
+<code>cnt</code> is zero, all currently unused heap blocks are purged,
+decreasing the heap size if possible. See also <code><a
+href="refH.html#heap">heap</a></code>.
 
 <p><pre><code>
 : (gc)
 -> NIL
-: (stat)
-2 3%
--> 53299
+: (heap)
+-> 2
 : (gc 4)
 -> 4
-: (stat)
-5 1%
--> 53322
+: (heap)
+-> 5
 </code></pre>
 
 <dt><a name="ge0"><code>(ge0 'any) -> num | NIL</code></a>

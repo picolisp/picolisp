@@ -1,4 +1,4 @@
-/* 01jun07abu
+/* 08sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,6 +8,7 @@
 .clr {clear: both;}
 .norm {text-align: left;}
 .align {text-align: right;}
+.black {color: black;}
 .red {color: red;}
 .blue {color: blue;}
 .bold {font-weight: bold;}
@@ -35,10 +36,10 @@ caption {
 /* Navigation */
 #menu {
    position: absolute;
-   top: 2%;
-   left: 2%;
-   width: 20%;
-   height: 96%;
+   top: 0;
+   left: 0;
+   width: 15em;
+   height: 100%;
    padding: 0;
    margin: 0;
    background-color: rgb(70%,70%,70%);
@@ -47,7 +48,6 @@ caption {
 #menu ul {
    list-style: none;
    padding: 0;
-   margin: 6px auto 6px 0;
 }
 
 #menu a {
@@ -64,11 +64,11 @@ caption {
    padding: 0 0 0 12px;
 }
 
-#menu .act1, .act2, .act3 {
+#menu .act1, .act2, .act3, .act4 {
 	list-style-type: disc;
 }
 
-#menu .sub1, .top1, .sub2, .top2, .sub3, .top3 {
+#menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
    list-style-position: inside;
    padding: 4px 0 4px 12px;
 }
@@ -89,18 +89,18 @@ caption {
 }
 
 .tab .top {
-   background-color: rgb(90%,90%,90%);
+   background-color: rgb(70%,70%,70%);
 }
 
 .tab .sub {
-   background-color: rgb(70%,70%,70%);
+   background-color: rgb(90%,90%,90%);
 }
 
 /* Main area */
 #main {
    position: absolute;
-   top: 2%;
-   left: 26%;
+   top: 0;
+   left: 16em;
 }
 
 /* Charts */

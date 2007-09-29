@@ -1,4 +1,4 @@
-# 25jun07abu
+# 25sep07abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -16,7 +16,6 @@
 (de *DateFmt @Y "-" @M "-" @D)
 (de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
 (de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
-(de *Help "@loc/help/en.l")
 
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
@@ -425,7 +424,8 @@
 
 ### Testing ###
 (de test (Pat . Prg)
-   (unless ((if (atom Pat) = match) Pat (run Prg 1))
-      (println 'fail Prg) ) )
+   (unless (match Pat (run Prg 1))
+      (msg Prg)
+      (quit 'fail Pat) ) )
 
 # vi:et:ts=3:sw=3

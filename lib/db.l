@@ -1,4 +1,4 @@
-# 25jun07abu
+# 17jul07abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -395,13 +395,11 @@
    (pack *Blob (glue "/" (chop Obj)) "." Var) )
 
 (dm put> (Obj Old New)
+   (and New (call 'mkdir "-p" (dirname (blob Obj))))
    (if (flg? New)
       New
       (in New (out (blob Obj (: var)) (echo)))
       T ) )
-
-(dm rel> (Obj Old New)
-   (and New (call 'mkdir "-p" (dirname (blob Obj)))) )
 
 (dm zap> (Obj Val)
    (and Val (call 'rm "-f" (blob Obj (: var)))) )

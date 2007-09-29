@@ -31,9 +31,9 @@ href="refS.html#store">store</a></code>.
 -> {3-2}
 </code></pre>
 
-<dt><a name="fifo"><code>(fifo 'var ['any]) -> any</code></a>
+<dt><a name="fifo"><code>(fifo 'var ['any ..]) -> any</code></a>
 <dd>Implements a first-in-first-out structure using a circular list. When called
-with an <code>any</code> argument, it will be concatenated to end of the
+with <code>any</code> arguments, they will be concatenated to end of the
 structure. Otherwise, the first element is removed from the structure and
 returned. See also <code><a href="refQ.html#queue">queue</a></code>, <code><a
 href="refP.html#push">push</a></code>, <code><a
@@ -44,9 +44,7 @@ href="refC.html#circ">circ</a></code>.
 <p><pre><code>
 : (fifo 'X 1)
 -> 1
-: (fifo 'X 2)
--> 2
-: (fifo 'X 3)
+: (fifo 'X 2 3)
 -> 3
 : X
 -> (3 1 2 .)
@@ -364,6 +362,20 @@ href="refE.html#echo">echo</a></code>.
 : (and (from "val='") (till "'" T))
 test val='abc'
 -> "abc"
+</code></pre>
+
+<dt><a name="full"><code>(full 'any) -> bool</code></a>
+<dd>Returns <code>NIL</code> if <code>any</code> is a non-empty list with at
+least one <code>NIL</code> element, otherwise <code>T</code>. <code>(full
+X)</code> is equivalent to <code>(not (memq NIL X))</code>.
+
+<p><pre><code>
+: (full (1 2 3))
+-> T
+: (full (1 NIL 3))
+-> NIL
+: (full 123)
+-> T
 </code></pre>
 
 <dt><a name="fun?"><code>(fun? 'any) -> any</code></a>

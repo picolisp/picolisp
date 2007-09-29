@@ -1,4 +1,4 @@
-# 25jun07abu
+# 18jul07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -180,7 +180,7 @@
                      (in (tmp "Contemporaries.txt")
                         (let (Page 1  Fmt (200 120 50 50 120 120 120)  Ttl (line T))
                            (a4L)
-                           (font (7 . "Arial"))
+                           (font (7 . "Helvetica"))
                            (indent 30 10)
                            (down 12)
                            (font 9 (ps Ttl))
@@ -197,7 +197,7 @@
                               (let L (split (line) "^I")
                                  (down 8)
                                  (table Fmt
-                                    (font "Arial-Bold" (ps (head 50 (car L))))
+                                    (font "Helvetica-Bold" (ps (head 50 (car L))))
                                     (ps (head 30 (cadr L)))
                                     (ps (get L 3))
                                     (ps (get L 4))

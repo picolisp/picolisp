@@ -1,4 +1,4 @@
-/* 25jun07abu
+/* 27sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -37,9 +37,12 @@
 #define fwrite_unlocked fwrite
 #endif
 
-#define CELLS     1000000     // Heap allocation unit 1 million cells
-#define HASH      4999        // Hash table size (should be prime)
-#define TOP       0x10000     // Character Top
+#define WORD ((int)sizeof(long))
+#define BITS (8*WORD)
+#define MASK ((word)-1)
+#define CELLS (1024*1024/sizeof(cell)) // Heap allocation unit 1MB
+#define HASH  4999                     // Hash table size (should be prime)
+#define TOP   0x10000                  // Character Top
 
 typedef unsigned long word;
 typedef unsigned char byte;
@@ -78,19 +81,30 @@ typedef struct methFrame {
    any key, cls;
 } methFrame;
 
+typedef struct inFile {
+   int fd, ix, cnt, next;
+   int line, src;
+   char *name;
+   byte buf[BUFSIZ];
+} inFile;
+
+typedef struct outFile {
+   int fd, ix;
+   byte buf[BUFSIZ];
+} outFile;
+
 typedef struct inFrame {
    struct inFrame *link;
    void (*get)(void);
-   FILE *fp;
-   int next;
    pid_t pid;
+   int fd;
 } inFrame;
 
 typedef struct outFrame {
    struct outFrame *link;
    void (*put)(int);
-   FILE *fp;
    pid_t pid;
+   int fd;
 } outFrame;
 
 typedef struct ctlFrame {
@@ -107,7 +121,7 @@ typedef struct stkEnv {
    cell *stack, *arg;
    bindFrame *bind;
    methFrame *meth;
-   int next, alarm, protect;
+   int next, alarm, protect, trace;
    any make;
    inFrame *inFiles;
    outFrame *outFiles;
@@ -127,26 +141,29 @@ typedef struct catchFrame {
 
 /*** Macros ***/
 #define Free(p)         ((p)->cdr=Avail, Avail=(p))
-#define cellPtr(x)      ((any)(num(x) & ~7))
+#define cellPtr(x)      ((any)((word)(x) & ~(2*WORD-1)))
 
 /* Number access */
 #define num(x)          ((word)(x))
-#define numPtr(x)       ((any)(num(x)+2))
-#define numCell(n)      ((any)(num(n)-2))
+#define numPtr(x)       ((any)(num(x)+(WORD/2)))
+#define numCell(n)      ((any)(num(n)-(WORD/2)))
 #define box(n)          (consNum(n,Nil))
 #define unDig(x)        num(car(numCell(x)))
 #define setDig(x,v)     (car(numCell(x))=(any)(v))
 #define isNeg(x)        (unDig(x) & 1)
 #define pos(x)          (car(numCell(x)) = (any)(unDig(x) & ~1))
 #define neg(x)          (car(numCell(x)) = (any)(unDig(x) ^ 1))
-#define lo(w)           num((w) & 0xFFFFFFFF)
-#define hi(w)           num((w) >> 32)
+#define lo(w)           num((w)&MASK)
+#define hi(w)           num((w)>>BITS)
 
 /* Symbol access */
-#define symPtr(x)       ((any)(num(x)+4))
-#define val(x)          (cellPtr(x)->car)
-#define tail(x)         (cellPtr(x)->cdr)
-#define extSym(s)       ((any)(num(s)|2))
+#define symPtr(x)       ((any)&(x)->cdr)
+#define val(x)          ((x)->car)
+#define tail(s)         (((s)-1)->cdr)
+#define tail1(s)        ((any)(num(tail(s)) & ~1))
+#define Tail(s,v)       (tail(s) = (any)(num(v) | num(tail(s)) & 1))
+#define ext(x)          ((any)(num(x) | 1))
+#define mkExt(s)        (*(word*)&tail(s) |= 1)
 
 /* Cell access */
 #define car(x)          ((x)->car)
@@ -178,14 +195,14 @@ typedef struct catchFrame {
 
 /* Predicates */
 #define isNil(x)        ((x)==Nil)
-#define isNum(x)        ((num(x)&6)==2)
-#define isSym(x)        (num(x)&4)
-#define isExt(x)        ((num(x)&6)==6)
-#define isCell(x)       (!(num(x)&6))
-#define IsZero(x)       (!unDig(x) && !isNum(cdr(numCell(x))))
+#define isNum(x)        (num(x)&(WORD/2))
+#define isSym(x)        (num(x)&WORD)
+#define isCell(x)       (!(num(x)&(2*WORD-2)))
+#define isExt(s)        (num(tail(s))&1)
+#define IsZero(n)       (!unDig(n) && !isNum(cdr(numCell(n))))
 
 /* Evaluation */
-#define EVAL(x)         (isSym(x)? val(x) : (isCell(x)? evList(x) : x))
+#define EVAL(x)         (isNum(x)? x : isSym(x)? val(x) : evList(x))
 #define evSubr(f,x)     (*(fun)unDig(f))(x)
 
 /* Error checking */
@@ -205,8 +222,8 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern bool SigInt, SigTerm;
-extern int Chr, Spkr, Mic, Slot, Hear, Tell, Trace, Children;
+extern bool Signal;
+extern int Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
 extern char **AV, *Home;
 extern child *Child;
 extern heap *Heaps;
@@ -214,14 +231,18 @@ extern cell *Avail;
 extern stkEnv Env;
 extern catchFrame *CatchPtr;
 extern struct termios *Termio;
-extern FILE *InFile, *OutFile;
-extern int (*getBin)(int);
+extern FILE *StdOut;
+extern int InFDs, OutFDs;
+extern inFile *InFile, **InFiles;
+extern outFile *OutFile, **OutFiles;
+extern int (*getBin)(void);
 extern void (*putBin)(int);
 extern any TheKey, TheCls;
 extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Solo, Up, Meth, Quote, T, At, At2, At3, This;
-extern any Dbg, PPid, Pid, Scl, Class, Run, Led, Err, Rst, Msg, Uni, Adr, Fork, Bye;
+extern any Nil, DB, Meth, Quote, T;
+extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
+extern any Run, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -246,6 +267,8 @@ void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
+void closeInFile(int);
+void closeOutFile(int);
 void cntError(any,any) __attribute__ ((noreturn));
 int compare(any,any);
 any cons(any,any);
@@ -273,6 +296,7 @@ void execError(char*) __attribute__ ((noreturn));
 void extError(any,any) __attribute__ ((noreturn));
 any findHash(any,any*);
 int firstByte(any);
+bool flush(outFile*);
 pid_t forkLisp(any);
 any get(any,any);
 int getChar(void);
@@ -281,6 +305,8 @@ void giveup(char*) __attribute__ ((noreturn));
 unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
+void initInFile(int,char*);
+void initOutFile(int);
 void initSymbols(void);
 any intern(char*);
 bool isBlank(any);
@@ -314,7 +340,6 @@ void prin(any);
 void print(any);
 void prn(long);
 void protError(any,any) __attribute__ ((noreturn));
-void protect(bool);
 void pushInFiles(inFrame*);
 void pushOutFiles(outFrame*);
 void pushCtlFiles(ctlFrame*);
@@ -326,6 +351,7 @@ bool rdBytes(int,byte*,int);
 int secondByte(any);
 void setCooked(void);
 void setRaw(void);
+void sighandler(any);
 int slow(int,byte*,int);
 void space(void);
 int symByte(any);
@@ -452,6 +478,7 @@ any doFork(any);
 any doFormat(any);
 any doFree(any);
 any doFrom(any);
+any doFull(any);
 any doFunQ(any);
 any doGc(any);
 any doGe(any);
@@ -476,6 +503,7 @@ any doInc(any);
 any doIndex(any);
 any doInfo(any);
 any doIntern(any);
+any doIpid(any);
 any doIsa(any);
 any doJob(any);
 any doJournal(any);
@@ -549,6 +577,7 @@ any doOn(any);
 any doOne(any);
 any doOnOff(any);
 any doOpen(any);
+any doOpid(any);
 any doOpt(any);
 any doOr(any);
 any doOut(any);
@@ -559,6 +588,7 @@ any doPath(any);
 any doPatQ(any);
 any doPeek(any);
 any doPick(any);
+any doPid(any);
 any doPipe(any);
 any doPoll(any);
 any doPool(any);

@@ -1,4 +1,4 @@
-# 25jun07abu
+# 02jul07abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -54,8 +54,7 @@ x11: $(bin)/z3dClient
 all: picolisp tools gate x11
 
 .c.o:
-	@echo $*.c:
-	gcc $(CFLAGS) $*.c
+	gcc $(CFLAGS) -D_OS='"$(OS)"' $*.c
 
 
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
@@ -64,13 +63,11 @@ $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
 ifeq ($(OS), Cygwin)
 
 $(bin)/picolisp$(dll): $(picoFiles:.c=.o)
-	@echo "  " picolisp shared library $(dll):
 	gcc -o $(bin)/picolisp$(dll) $(DYNAMIC-LIB-FLAGS) $(picoFiles:.c=.o)
 	$(STRIP) $(bin)/picolisp$(dll)
 
 $(bin)/picolisp: $(picoFiles:.c=.o) $(bin)/picolisp$(dll) start.o
 	mkdir -p $(bin) $(lib)
-	@echo "  " link picolisp:
 	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) start.o -L$(bin) -l$(bin)/picolisp
 	$(STRIP) $(bin)/picolisp$(exe)
 
@@ -78,7 +75,6 @@ else
 
 $(bin)/picolisp: $(picoFiles:.c=.o)
 	mkdir -p $(bin) $(lib)
-	@echo "  " link picolisp:
 	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) $(picoFiles:.c=.o)
 	$(STRIP) $(bin)/picolisp$(exe)
 
@@ -86,48 +82,39 @@ endif
 
 
 $(lib)/ext$(dll): ext.o
-	@echo "  " link ext:
 	gcc -o $(lib)/ext$(dll) $(DYNAMIC-LIB-FLAGS) ext.o $(DLL-DEFS)
 	$(STRIP) $(lib)/ext$(dll)
 
 $(lib)/ht$(dll): ht.o
-	@echo "  " link ht:
 	gcc -o $(lib)/ht$(dll) $(DYNAMIC-LIB-FLAGS) ht.o $(DLL-DEFS)
 	$(STRIP) $(lib)/ht$(dll)
 
 $(lib)/z3d$(dll): z3d.o
-	@echo "  " link z3d:
 	gcc -o $(lib)/z3d$(dll)  $(DYNAMIC-LIB-FLAGS) z3d.o $(DLL-DEFS)
 	$(STRIP) $(lib)/z3d$(dll)
 
 
 $(bin)/lat1: lat1.o
-	@echo "  " link lat1:
 	gcc -o $(bin)/lat1$(exe) lat1.o
 	$(STRIP) $(bin)/lat1$(exe)
 
 $(bin)/utf2: utf2.o
-	@echo "  " link utf2:
 	gcc -o $(bin)/utf2$(exe) utf2.o
 	$(STRIP) $(bin)/utf2$(exe)
 
 $(bin)/balance: balance.o
-	@echo "  " link balance:
 	gcc -o $(bin)/balance$(exe) balance.o
 	$(STRIP) $(bin)/balance$(exe)
 
 $(bin)/ssl: ssl.o
-	@echo "  " link ssl:
 	gcc -o $(bin)/ssl$(exe) ssl.o -lssl -lcrypto
 	$(STRIP) $(bin)/ssl$(exe)
 
 $(bin)/httpGate: httpGate.o
-	@echo "  " link httpGate:
 	gcc -o $(bin)/httpGate$(exe) httpGate.o -lssl -lcrypto
 	$(STRIP) $(bin)/httpGate$(exe)
 
 $(bin)/z3dClient: z3dClient.o
-	@echo "  " link z3dClient:
 	gcc -o $(bin)/z3dClient$(exe) z3dClient.o  -L/usr/X11R6/lib -lXext -lX11
 	$(STRIP) $(bin)/z3dClient$(exe)
 

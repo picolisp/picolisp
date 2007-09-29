@@ -33,15 +33,17 @@ to the head of the second argument, and <code>NIL</code> otherwise. See also
 </code></pre>
 
 <dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
-<dd>Returns the number of <i>free</i> cells currently available (if
-<code>flg</code> is <code>NIL</code>), or the <i>total</i> number of cells in
-the system (if <code>flg</code> is non-<code>NIL</code>).
+<dd>Returns the total size of the cell heap space in megabytes. If
+<code>flg</code> is non-<code>NIL</code>, the size of the currently free space
+is returned. See also <code><a href="refG.html#gc">gc</a></code>.
 
 <p><pre><code>
+: (gc 4)
+-> 4
 : (heap)
--> 126999
+-> 5
 : (heap T)
--> 262144
+-> 4
 </code></pre>
 
 <dt><a name="hear"><code>(hear 'num|sym) -> any</code></a>

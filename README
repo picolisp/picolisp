@@ -1,4 +1,4 @@
-29apr07abu
+13sep07abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -64,8 +64,8 @@ You can download the latest release version at
       Journaling, Replication
    User Interface
       Browser GUI
-      HTML/WML generation
-      Applet I/O
+      (X)HTML/CSS
+      XMLHttpRequest/JavaScript
    Application Server
       Process management
       Process family communication
@@ -75,18 +75,15 @@ You can download the latest release version at
       Internationalization
       Security
       Object linkage
-      Java reflection
       Postscript/Printing
 
 Pico Lisp is not an IDE. All program development in Software Lab. is done using
 the console, bash, vim and the Lisp interpreter.
 
 The only type of GUI supported for applications is through a browser via HTML.
-This makes the client side completely platform idependent. Applets are created
-dynamically. They connect back to the Pico server and establish an interactive
-user interface frontend, while all application logic runs on the server. Each
-key press or mouse click is propagated to the server and can cause immediate
-actions like in a local desktop application.
+This makes the client side completely platform independent. The GUI is created
+dynamically. Though it uses JavaScript and XMLHttpRequest for speed
+improvements, it is fully functional also without JavaScript or CSS.
 
 The GUI is deeply integrated with - and generated dynamically from - the
 application's data model. Because the application logic runs on the server,

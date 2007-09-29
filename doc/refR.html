@@ -176,9 +176,9 @@ href="refW.html#wr">wr</a></code>.
 upon end of file. When called without arguments, an arbitrary Lisp expression is
 read. Otherwise, a token (a number, or an internal or transient symbol) is read.
 In that case, <code>sym1</code> specifies which set of characters to accept for
-internal symbols (in addition to the standard alphanumerical characters), and
-<code>sym2</code> an optional comment character. See also <code><a
-href="refA.html#any">any</a></code>, <code><a
+continuous symbol namess (in addition to the standard alphanumerical
+characters), and <code>sym2</code> an optional comment character. See also
+<code><a href="refA.html#any">any</a></code>, <code><a
 href="refS.html#str">str</a></code>, <code><a
 href="refS.html#skip">skip</a></code> and <code><a
 href="refE.html#eof">eof</a></code>.
@@ -195,7 +195,7 @@ jkl
 : (make (while (read "_" "#") (link @)))
 abc = def_ghi("xyz"+-123) # Comment
 ""
--> (abc "=" def_ghi "(" "xyz" "+" -123 ")")
+-> (abc = def_ghi "(" "xyz" + - 123 ")")
 </code></pre>
 
 <dt><a name="recur"><code>(recur fun) -> any</code></a><br>
@@ -321,6 +321,17 @@ href="refP.html#place">place</a></code>.
 -> (B A A B)
 </code></pre>
 
+<dt><a name="request"><code>(request 'typ 'var ['hook] 'val ..) -> obj</code></a>
+<dd>Returns a database object. If a matching object cannot be found (using
+<code><a href="refD.html#db">db</a></code>), a new object of the given type is
+created (using <code><a href="refN.html#new">new</a></code>). See also <code><a
+href="refO.html#obj">obj</a></code>.
+
+<p><pre><code>
+: (request '(+Item) 'nr 2)
+-> {3-2}
+</code></pre>
+
 <dt><a name="rest"><code>(rest) -> lst</code></a>
 <dd>Can only be used inside functions with a variable number of arguments (with
 <code>@</code>). Returns the list of all remaining arguments from the internal
@@ -353,6 +364,17 @@ beginning of the file, and truncates the file length to zero. Returns
 href="refF.html#flush">flush</a></code>.
 
 <p><pre><code>
+: (out "a" (prinl "Hello world"))
+-> "Hello world"
+: (in "a" (echo))
+Hello world
+-> T
+: (info "a")
+-> (12 733216 . 53888)
+: (out "a" (rewind))
+-> T
+: (info "a")
+-> (0 733216 . 53922)
 </code></pre>
 
 <dt><a name="rollback"><code>(rollback) -> flg</code></a>

@@ -1,5 +1,5 @@
-(load "lib/html.l")
+(load "lib/xhtml.l")
 
-(html "Hello"
-   (<head> "Hello world")
+(html 0 "Hello" NIL NIL
+   (<h3> NIL "Hello world")
    "This is Pico Lisp" )

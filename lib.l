@@ -1,4 +1,4 @@
-# 25jun07abu
+# 12sep07abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -200,10 +200,12 @@
 
 ### OOP ###
 (de class Lst
-   (or
-      (= (cdr Lst) (type (setq *Class (car Lst))))
-      (def *Class (cdr Lst)) )
-   *Class )
+   (let L (val (setq *Class (car Lst)))
+      (def *Class
+         (recur (L)
+            (if (atom (car L))
+               (cdr Lst)
+               (cons (car L) (recurse (cdr L))) ) ) ) ) )
 
 (de object ("Sym" "Typ" . @)
    (def "Sym" "Typ")
@@ -226,7 +228,7 @@
 (de "*PP"
    T NIL if if2 ifn when unless while until do case state for
    with catch finally ! setq default push job use let let?
-   later recur redef =: in out ctl new )
+   prog1 later recur redef =: in out ctl tab new )
 (de "*PP1" if2 let let? for redef)
 (de "*PP2" setq default)
 

@@ -38,9 +38,13 @@ the program).
 </code></pre>
 
 <dt><a name="*Dbg"><code>*Dbg</code></a>
-<dd>A boolean variable controlling the <code><a href="ref_.html#$">$</a></code>
-(tracing) and <code><a href="ref_.html#!">!</a></code> (breakpoint) functions.
-They are enabled when <code>*Dbg</code> is non-<code>NIL</code>.
+<dd>A boolean variable indicating "debug mode". When non-<code>NIL</code>, the
+<code><a href="ref_.html#$">$</a></code> (tracing) and <code><a
+href="ref_.html#!">!</a></code> (breakpoint) functions are enabled, and the
+current line number and file name will be stored in symbol properties by
+<code><a href="refD.html#de">de</a></code>, <code><a
+href="refD.html#def">def</a></code> and <code><a
+href="refD.html#dm">dm</a></code>.
 
 <p><pre><code>
 : (de foo (A B) (* A B))
@@ -199,13 +203,15 @@ href="refS.html#strDat">strDat</a></code>.
 -> "Fr"
 </code></pre>
 
-<dt><a name="db"><code>(db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym</code></a>
+<dt><a name="db"><code>(db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym | NIL</code></a>
 <dd>Returns a database object of class <code>cls</code>, where the values for
-the <code>var</code> arguments correspond to the <code>any</code> arguments.
+the <code>var</code> arguments correspond to the <code>any</code> arguments. If
+a matching object cannot be found, <code>NIL</code> is returned.
 <code>var</code>, <code>cls</code> and <code>hook</code> should specify a
 <code><a href="refT.html#tree">tree</a></code> for <code>cls</code> or one of
 its superclasses. See also <code><a href="refA.html#aux">aux</a></code>,
 <code><a href="refC.html#collect">collect</a></code>, <code><a
+href="refR.html#request">request</a></code>, <code><a
 href="refF.html#fetch">fetch</a></code>, <code><a
 href="refI.html#init">init</a></code> and <code><a
 href="refF.html#step">step</a></code>.
@@ -290,9 +296,12 @@ into the list. See also <code><a href="refD.html#dbs">dbs</a></code>.
 <dt><a name="de"><code>(de sym . any) -> sym</code></a>
 <dd>Assigns a definition to the <code>sym</code> argument, by setting its
 <code>VAL</code> to the <code>any</code> argument. If the symbol has already
-another value, a "redefined" message is issued. <code>de</code> is the standard
-way to define a function. See also <code><a href="refD.html#def">def</a></code>,
-<code><a href="refD.html#dm">dm</a></code> and <code><a
+another value, a "redefined" message is issued. When the value of the global
+variable <a href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current
+line number and file name (if any) are stored in the <code>*Dbg</code> property
+of <code>sym</code>. <code>de</code> is the standard way to define a function.
+See also <code><a href="refD.html#def">def</a></code>, <code><a
+href="refD.html#dm">dm</a></code> and <code><a
 href="refU.html#undef">undef</a></code>.
 
 <p><pre><code>
@@ -371,13 +380,18 @@ second form decrements the <code>VAL</code> of <code>var</code> by 1, or by
 </code></pre>
 
 <dt><a name="def"><code>(def 'sym 'any) -> sym<br>
-(def 'sym 'sym 'any) -> sym</code></a>
+(def 'sym1 'sym2 'any) -> sym1</code></a>
 <dd>The first form assigns a definition to the first <code>sym</code> argument,
 by setting its <code>VAL</code>'s to <code>any</code>. The second form defines a
-property value <code>any</code> for the second argument's <code>sym</code> key.
+property value <code>any</code> for the first argument's <code>sym2</code> key.
 If any of these values existed and was changed in the process, a "redefined"
-message is issued. See also <code><a href="refD.html#de">de</a></code> and
-<code><a href="refD.html#dm">dm</a></code>.
+message is issued. When the value of the global variable <a
+href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
+and file name (if any) are stored in the <code>*Dbg</code> property of
+<code>sym</code> (for the first form), or in the <code>sym2</code> property of
+<code>sym1</code> (for the second form). See also <code><a
+href="refD.html#de">de</a></code> and <code><a
+href="refD.html#dm">dm</a></code>.
 
 <p><pre><code>
 : (def 'b '((X Y) (* X (+ X Y))))
@@ -448,8 +462,8 @@ href="refM.html#mmeq">mmeq</a></code>.
 <p><pre><code>
 : (delq 'b '(a b c))
 -> (a c)
-: (delq 2 (1 2 3))
--> (1 2 3)
+: (delq (2) (1 (2) 3))
+-> (1 (2) 3)
 </code></pre>
 
 <dt><a name="die"><code>(die 'cnt . prg) -> any</code></a>
@@ -504,8 +518,12 @@ href="refC.html#*Class">*Class</a></code>, or - in the second form - for the
 explicitly given class <code>cls</code>. In the third form, the class object is
 obtained by <code><a href="refG.html#get">get</a></code>ing <code>sym</code>
 from <code><a href="refC.html#*Class">*Class</a></code> (or <code>cls</code> if
-given). See also <code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
-href="refD.html#de">de</a></code>, <code><a
+given). If any of these methods existed and was changed in the process, a
+"redefined" message is issued. When the value of the global variable <a
+href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
+and file name (if any) are stored in the <code>sym</code> property of
+<code>cls</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
+<code><a href="refD.html#de">de</a></code>, <code><a
 href="refU.html#undef">undef</a></code>, <a href="refC.html#class">class</a>, <a
 href="refR.html#rel">rel</a>, <a href="refV.html#var">var</a>, <a
 href="refM.html#method">method</a>, <a href="refS.html#send">send</a> and <a

@@ -1,4 +1,4 @@
-# 25jun07abu
+# 18sep07abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -30,6 +30,8 @@
       (load "app/init.l") ) )
 
 (de go ()
+   (pw 12)
+   (rollback)
    (server 8080 "@start") )
 
 # vi:et:ts=3:sw=3

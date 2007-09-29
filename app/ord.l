@@ -1,4 +1,4 @@
-# 25jun07abu
+# 08sep07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -19,7 +19,7 @@
                '(text ,"(@1 Positions)" (length (: home obj pos))) )
             ,"Customer" (gui '(+ChoButton) '(choCuSu (field 1)))
             (gui '(+E/R +Obj +TextField) '(cus : home obj) '(nm +CuSu) 30)
-            (gui '(+Lock +/R +TextField) '(ort : home obj cus) 30) )
+            (gui '(+View +TextField) '(field -1 'obj 'ort) 30) )
          (----)
          (gui '(+Set +E/R +Chart) '((L) (filter bool L)) '(pos : home obj) 8
             '((Pos I)
@@ -45,11 +45,11 @@
                   (gui 3 '(+Obj +TextField) '(nm +Item) 30)
                   (gui 4 '(+FixField) 2 12)
                   (gui 5 '(+NumField) 8)
-                  (gui 6 '(+Lock +FixField) 2 12)
+                  (gui 6 '(+Sgn +Lock +FixField) 2 12)
                   (gui 7 '(+DelRowButton))
                   (gui 8 '(+BubbleButton)) ) )
             (<row> NIL NIL NIL (scroll 8) NIL NIL
-               (gui '(+View +FixField) '(sum> (: home obj)) 2 12) ) )
+               (gui '(+Sgn +View +FixField) '(sum> (: home obj)) 2 12) ) )
          (<spread>
             (gui '(+Rid +Button) ,"PDF-Print"
                '(psOut 0 "print" (ps> (: home obj))) )

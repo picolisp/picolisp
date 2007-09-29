@@ -1025,8 +1025,8 @@ and efficient, because the overhead of a subshell is avoided.
 and put links to the executable and the installation directory as:
 
 <p><pre><code>
-$ ln -s /home/foo/picolisp/bin/picolisp /usr/bin/picolisp
 $ ln -s /home/foo/picolisp /usr/lib/picolisp
+$ ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
 </code></pre>
 
 Then a simple hello-world script might look like:
@@ -1830,9 +1830,8 @@ possibly more efficient) searches can be performed.
 <h2><a name="gui">User Interface (GUI) Programming</a></h2>
 
 <p>The only types of GUI supported by the Pico Lisp application server framework
-is either dynamically generated (but static by nature) HTML, an interactive
-frontend using Java applets, or an XHTML/CSS framework with the optional use of
-JavaScript.
+is either dynamically generated (but static by nature) HTML, or an interactive
+XHTML/CSS framework with the optional use of JavaScript.
 
 <p>Before we explain the GUI of our demo database application, we present a
 minimal example for a plain HTML-GUI in <code><a
@@ -1933,9 +1932,9 @@ $ ./p doc/family.l -main -go -wait
 <p>In that case, no debug prompt will appear. In both cases, however, two
 <code>picolisp</code> processes will be running now. One is the initial server
 process which will continue to run until it is killed. The other is a child
-process which is connected to the applet in the browser, it will terminate when
-the browser is closed, or when <code>(bye)</code> or a plain ENTER is entered at
-the Pico Lisp prompt.
+process holding the state of the GUI in the browser. It will terminate some time
+after the browser is closed, or when <code>(bye)</code> or a plain ENTER is
+entered at the Pico Lisp prompt.
 
 <p>Now back to the explanation of the GUI function <code>person</code>:
 

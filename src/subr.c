@@ -1,4 +1,4 @@
-/* 15may07abu
+/* 27sep07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -242,6 +242,15 @@ any doNeed(any ex) {
          x = cdr(x) = cons(data(c2),Nil);
    }
    return Pop(c1);
+}
+
+// (full 'any) -> bool
+any doFull(any x) {
+   x = cdr(x);
+   for (x = EVAL(car(x)); isCell(x); x = cdr(x))
+      if (isNil(car(x)))
+         return Nil;
+   return T;
 }
 
 // (make .. [(made 'lst ..)] .. [(link 'any ..)] ..) -> any

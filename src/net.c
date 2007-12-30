@@ -1,4 +1,4 @@
-/* 09sep07abu
+/* 20nov07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -85,7 +85,8 @@ any doPort(any ex) {
       Save(c1);
       NeedVar(ex,data(c1));
       CheckVar(ex,data(c1));
-      Touch(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       val(data(c1)) = boxCnt(ntohs(addr.sin_port));
       drop(c1);
    }

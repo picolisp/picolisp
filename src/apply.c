@@ -1,4 +1,4 @@
-/* 20sep07abu
+/* 10dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -170,20 +170,6 @@ any doPass(any ex) {
    for (i = Env.next;  --i >= 0;  ++n)
       Push(c[n], data(Env.arg[i]));
    x = apply(ex, data(foo), NO, n, c);
-   drop(foo);
-   return x;
-}
-
-// (all 'fun) -> any
-any doAll(any ex) {
-   any x;
-   int i;
-   cell foo, c1;
-
-   x = cdr(ex),  Push(foo, EVAL(car(x)));
-   for (i = 0; i < HASH; ++i)
-      for (data(c1) = Intern[i];  !isNil(data(c1));  data(c1) = cdr(data(c1)))
-         x = apply(ex, data(foo), YES, 1, &c1);
    drop(foo);
    return x;
 }

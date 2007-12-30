@@ -1,4 +1,4 @@
-/* 20sep07abu
+/* 22nov07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -32,7 +32,7 @@ static void gc(long c) {
    } while (h = h->next);
    /* Mark */
    mark(Nil+1);
-   mark(Line),  mark(Zero),  mark(One);
+   mark(Alarm),  mark(Line),  mark(Zero),  mark(One);
    for (i = 0; i < HASH; ++i)
       mark(Intern[i]),  mark(Transient[i]);
    mark(ApplyArgs),  mark(ApplyBody);
@@ -122,7 +122,7 @@ any cons(any x, any y) {
       drop(c1);
       p = Avail;
    }
-   Avail = p->cdr;
+   Avail = p->car;
    p->car = x;
    p->cdr = y;
    return p;
@@ -141,7 +141,7 @@ any consSym(any v, any x) {
       drop(c1);
       p = Avail;
    }
-   Avail = p->cdr;
+   Avail = p->car;
    p = symPtr(p);
    tail(p) = x;
    val(p) = v;
@@ -160,7 +160,7 @@ any consStr(any x) {
       drop(c1);
       p = Avail;
    }
-   Avail = p->cdr;
+   Avail = p->car;
    p = symPtr(p);
    tail(p) = x;
    val(p) = p;
@@ -179,7 +179,7 @@ any consNum(word n, any x) {
       drop(c1);
       p = Avail;
    }
-   Avail = p->cdr;
+   Avail = p->car;
    p->car = (any)n;
    p->cdr = x;
    return numPtr(p);

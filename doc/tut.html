@@ -260,7 +260,7 @@ file.
 
 <p><pre><code>
 A (This is the value)
-key1 val111
+key1 val1
 key2 val2
 
 (********)
@@ -303,15 +303,16 @@ href="refP.html#print">print</a></code>). Here, often <code>show</code> or
 <p><pre><code>
 : (more '(A B))            # Step through 'A' and 'B'
 A
-B-> T
+B
+-> NIL
 : (more '(A B) show)       # Step through 'A' and 'B' with 'show'
 A (This is the value)      # showing 'A'
    key2 val2
-   key1 val111
+   key1 val1
                            # Hit ENTER
 B NIL                      # showing 'B'
    a A
--> T
+-> NIL
 </code></pre>
 
 <p>The <i>pretty-print</i> function <code>pp</code> takes a symbol that has a
@@ -385,7 +386,7 @@ characters ) is given, only symbols matching that pattern are returned.
 
 <p><pre><code>
 : (what "prin@")
--> (println printsp print> prinl print prin)
+-> (prin print prinl print> printsp println)
 </code></pre>
 
 <p>The function <code>who</code> returns <i>"who contains that"</i>, i.e. a list
@@ -419,10 +420,15 @@ href="refM.html#match">match</a></code>):
 <p><pre><code>
 : (who '(print @ (val @)))
 -> (show)
-: (more (who '(+ @ 1)) pp)
+
+: (more (who '(% @ 7)) pp)
+(de day (Dat Lst)
+   (get
+      (or Lst *DayFmt)
+      (inc (% (inc Dat) 7)) ) )
+
 (de _week (Dat)
-   (/ (- Dat (% (+ Dat 1) 7)) 7) )
-   ...
+   (/ (- Dat (% (inc Dat) 7)) 7) )
 </code></pre>
 
 <p>The function <code>can</code> returns a list which indicates which classes
@@ -1046,8 +1052,9 @@ argument to Pico Lisp (useful during debugging).
 <p>The fact that a hyphen causes evaluation of command line arguments can be
 used to simulate something like command line options. The following script
 defines two functions <code>a</code> and <code>f</code>, and then calls
-<code>(load T)</code> to process the rest of the command line (which otherwise
-would be ignored because of the <code>(bye)</code> statement):
+<code>(<a href="refL.html#load">load</a> T)</code> to process the rest of the
+command line (which otherwise would be ignored because of the <code>(<a
+href="refB.html#bye">bye</a>)</code> statement):
 
 <p><pre><code>
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
@@ -1061,6 +1068,9 @@ would be ignored because of the <code>(bye)</code> statement):
 (load T)
 (bye)
 </code></pre>
+
+(<code><a href="refO.html#opt">opt</a></code> retrieves the next command line
+option)
 
 <p>Calling this script (let's say we named it "testOpts") gives:
 

@@ -11,6 +11,24 @@
 
 <dl>
 
+<dt><a name="*Hup"><code>*Hup</code></a>
+<dd>Global variable holding a (possibly empty) <code>prg</code> body, which
+will be executed when a SIGHUP signal is sent to the current process. Note that
+this mechanism is "unreliable", in the way that when a second signal (it may be
+SIGINT, SIGUSR1/2, SIGALRM or SIGTERM) arrives before the first signal's
+<code>prg</code> is running, the first signal will be lost. If the value of
+<code>*Hup</code> is <code>NIL</code>, the current process will terminate (as if
+SIGTERM had been sent). See also <code><a
+href="refA.html#alarm">alarm</a></code>, <code><a
+href="refR.html#*Run">*Run</a></code>, <code><a
+href="refS.html#*Sig1">*Sig[12]</a> and <code><a
+href="refE.html#*Err">*Err</a></code>.
+
+<p><pre><code>
+: (de *Hup (msg 'SIGHUP))
+-> *Hup
+</code></pre>
+
 <dt><a name="head"><code>(head 'cnt|lst 'lst) -> lst</code></a>
 <dd>Returns a new list made of the first <code>cnt</code> elements of
 <code>lst</code>. If <code>cnt</code> is negative, it is added to the length of

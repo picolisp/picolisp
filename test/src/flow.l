@@ -1,4 +1,4 @@
-# 25sep07abu
+# 29oct07abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -262,6 +262,10 @@
 ### nond ###
 (test 2 (nond ((= 3 3) 1) (NIL 2)))
 (test 1 (nond ((= 3 4) 1) (NIL 2)))
+(test (1 . a)
+   (nond ((num? 'a) (cons 1 'a)) (NIL (cons 2 @))) )
+(test (2 . 7)
+   (nond ((num? 7) (cons 1 7)) (NIL (cons 2 @))) )
 
 
 ### case ###
@@ -318,6 +322,10 @@
          (loop
             (link N)
             (NIL (>= 7 (inc 'N))) ) ) ) )
+
+(test
+   '(a . 3)
+   (loop (T NIL (cons @ 1)) (NIL 'a (cons @ 2)) (NIL NIL (cons @ 3))) )
 
 
 ### do ###

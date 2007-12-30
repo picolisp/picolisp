@@ -1,4 +1,4 @@
-# 17jul07abu
+# 10oct07abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -1077,7 +1077,7 @@
 ### Utilities ###
 # Define object variables as relations
 (de rel Lst
-   (put *Class
+   (def *Class
       (car Lst)
       (new (cadr Lst) (car Lst) (cddr Lst)) ) )
 

@@ -1,4 +1,4 @@
-# 13sep07abu
+# 30dec07abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -295,8 +295,8 @@
                   ((car L) (<li> NIL (htPrin (cdr L) 2)))
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
-                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
-                           (<href> (eval (car L) E) (urlMT U *Menu 1)) )
+                        (<li> (pack (if (or (<> U *Url) (caddr L)) 'cmd 'act) N)
+                           (<href> (eval (car L) E) (urlMT U *Menu 1 (caddr L))) )
                         (<li> (pack 'cmd N)
                            (ht:Prin (eval (car L) E)) ) ) )
                   ((bit? M *Menu)
@@ -393,7 +393,7 @@
 
 # Interactive tree
 (de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
-   (default "Print" ht:Prin)
+   (default "Print" 'ht:Prin)
    (let ("Pos" "Tree"  "F" (pop '"Path")  "A" 0)
       (when "Path"
          (loop

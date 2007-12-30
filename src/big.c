@@ -1,4 +1,4 @@
-/* 29sep07abu
+/* 20nov07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -675,7 +675,8 @@ any doInc(any ex) {
    }
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
-      Touch(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       if (isNil(val(data(c1))))
          return Nil;
       NeedNum(ex,val(data(c1)));
@@ -692,7 +693,8 @@ any doInc(any ex) {
    else {
       Save(c1);
       Push(c2, EVAL(car(x)));
-      Touch(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;
@@ -737,7 +739,8 @@ any doDec(any ex) {
    }
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
-      Touch(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       if (isNil(val(data(c1))))
          return Nil;
       NeedNum(ex,val(data(c1)));
@@ -753,7 +756,8 @@ any doDec(any ex) {
    else {
       Save(c1);
       Push(c2, EVAL(car(x)));
-      Touch(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;

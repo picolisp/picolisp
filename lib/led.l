@@ -1,4 +1,4 @@
-# 21jan07abu
+# 10dec07abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -53,7 +53,7 @@
 
 # Check for delimiter
 (de delim? (C)
-   (member C '`(chop '" \"'()[]`~")) )
+   (member C '`(chop '" ^I^J^M\"'()[]`~")) )
 
 # Move left
 (de lMove ()
@@ -224,7 +224,13 @@
                   (let "N" (inc (length "S"))
                      (mapcar
                         '((X)
-                           (setq X (nth (chop X) "N"))
+                           (setq X
+                              (nth
+                                 (mapcar
+                                    '((C)
+                                       (if (delim? C) (pack "\\" C) C) )
+                                    (chop X) )
+                                 "N" ) )
                            (cons
                               (+ "LPos" (length X))
                               (append "L" X (nth "Line" "LPos")) ) )
@@ -345,7 +351,7 @@
 
 # Main editing functions
 (de _led ("Line1" "tabFoo" "skipFoo")
-   (default "tabFoo" '((S) (make (all '((X) (and (pre? S X) (link X)))))))
+   (default "tabFoo" '((S) (filter '((X) (pre? S X)) (all))))
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFoo" delim?))
    (prinl) )
@@ -356,7 +362,7 @@
       (pack "Line") ) )
 
 (de saveHistory ()
-   (in "+@.picoHistory" 
+   (in "+@.picoHistory"
       (ctl T
          (let (Old (make (until (eof) (link (line))))  New "History"  N "HistMax")
             (out "@.picoHistory"

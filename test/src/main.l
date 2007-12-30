@@ -1,8 +1,13 @@
-# 27sep07abu
+# 22nov07abu
 # (c) Software Lab. Alexander Burger
 
-### die ###
-(test 7 (pipe (die 2 (pr (+ 3 4))) (rd)))
+### alarm ###
+(let N 6
+   (alarm 1 (inc 'N))
+   (test 6 N)
+   (wait 2000)
+   (test 7 N)
+   (alarm 0) )
 
 
 ### protect ###
@@ -42,7 +47,7 @@
 ### usec ###
 (let U (usec)
    (wait 400)
-   (test 40 (*/ (- (usec) U) 10000)) )
+   (test 4 (*/ (- (usec) U) 100000)) )
 
 
 ### pwd ###

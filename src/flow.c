@@ -1,4 +1,4 @@
-/* 20sep07abu
+/* 22dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,11 +18,29 @@ static void redefMsg(any x, any y) {
 }
 
 static void putSrc(any s, any k) {
-   if (!isNil(val(Dbg)) && InFile && InFile->name) {
+   if (!isNil(val(Dbg)) && !isExt(s) && InFile && InFile->name) {
+      any x, y;
       cell c1;
 
       Push(c1, boxCnt(InFile->src));
-      put(s, k, cons(data(c1), mkStr(InFile->name)));
+      data(c1) = cons(data(c1), mkStr(InFile->name));
+      if (!k) {
+         if (isNil(x = get(s, Dbg)))
+            put(s, Dbg, cons(data(c1), Nil));
+         else
+            car(x) = data(c1);
+      }
+      else if (isNil(x = get(s, Dbg)))
+         put(s, Dbg, cons(Nil, cons(data(c1), Nil)));
+      else {
+         for (y = cdr(x); isCell(y); y = cdr(y))
+            if (caar(y) == k) {
+               cdar(y) = data(c1);
+               drop(c1);
+               return;
+            }
+         cdr(x) = cons(cons(k, data(c1)), cdr(x));
+      }
       drop(c1);
    }
 }
@@ -33,7 +51,7 @@ static void redefine(any ex, any s, any x) {
    if (!isNil(val(s))  &&  s != val(s)  &&  !equal(x,val(s)))
       redefMsg(s, NULL);
    val(s) = x;
-   putSrc(s, Dbg);
+   putSrc(s, NULL);
 }
 
 // (quote . any) -> any
@@ -188,7 +206,7 @@ any doDef(any ex) {
          Touch(ex,data(c1));
          val(data(c1)) = data(c2);
       }
-      putSrc(data(c1), Dbg);
+      putSrc(data(c1), NULL);
    }
    else {
       x = cdr(x),  Push(c3, EVAL(car(x)));
@@ -470,6 +488,7 @@ any doMethod(any ex) {
 
    x = cdr(ex),  y = EVAL(car(x));
    x = cdr(x),  x = EVAL(car(x));
+   NeedSym(ex,x);
    Fetch(ex,x);
    TheKey = y;
    return method(x)? : Nil;
@@ -778,41 +797,55 @@ any doUse(any x) {
 
 // (and 'any ..) -> any
 any doAnd(any x) {
+   any a;
+
    x = cdr(x);
-   do
-      if (isNil(val(At) = EVAL(car(x))))
+   do {
+      if (isNil(a = EVAL(car(x))))
          return Nil;
+      val(At) = a;
+   }
    while (isCell(x = cdr(x)));
-   return val(At);
+   return a;
 }
 
 // (or 'any ..) -> any
 any doOr(any x) {
+   any a;
+
    x = cdr(x);
    do
-      if (!isNil(val(At) = EVAL(car(x))))
-         return val(At);
+      if (!isNil(a = EVAL(car(x))))
+         return val(At) = a;
    while (isCell(x = cdr(x)));
    return Nil;
 }
 
 // (nand 'any ..) -> flg
 any doNand(any x) {
+   any a;
+
    x = cdr(x);
-   do
-      if (isNil(val(At) = EVAL(car(x))))
+   do {
+      if (isNil(a = EVAL(car(x))))
          return T;
+      val(At) = a;
+   }
    while (isCell(x = cdr(x)));
    return Nil;
 }
 
 // (nor 'any ..) -> flg
 any doNor(any x) {
+   any a;
+
    x = cdr(x);
-   do
-      if (!isNil(val(At) = EVAL(car(x))))
+   do {
+      if (!isNil(a = EVAL(car(x)))) {
+         val(At) = a;
          return Nil;
-   while (isCell(x = cdr(x)));
+      }
+   } while (isCell(x = cdr(x)));
    return T;
 }
 
@@ -874,70 +907,98 @@ any doProg2(any x) {
 
 // (if 'any1 'any2 . prg) -> any
 any doIf(any x) {
+   any a;
+
    x = cdr(x);
-   if (isNil(val(At) = EVAL(car(x))))
+   if (isNil(a = EVAL(car(x))))
       return prog(cddr(x));
+   val(At) = a;
    x = cdr(x);
    return EVAL(car(x));
 }
 
 // (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
 any doIf2(any x) {
+   any a;
+
    x = cdr(x);
-   if (isNil(val(At) = EVAL(car(x)))) {
+   if (isNil(a = EVAL(car(x)))) {
       x = cdr(x);
-      if (isNil(val(At) = EVAL(car(x))))
+      if (isNil(a = EVAL(car(x))))
          return prog(cddddr(x));
+      val(At) = a;
       x = cdddr(x);
       return EVAL(car(x));
    }
+   val(At) = a;
    x = cdr(x);
-   if (isNil(val(At) = EVAL(car(x)))) {
+   if (isNil(a = EVAL(car(x)))) {
       x = cddr(x);
       return EVAL(car(x));
    }
+   val(At) = a;
    x = cdr(x);
    return EVAL(car(x));
 }
 
 // (ifn 'any1 'any2 . prg) -> any
 any doIfn(any x) {
+   any a;
+
    x = cdr(x);
-   if (!isNil(val(At) = EVAL(car(x))))
+   if (!isNil(a = EVAL(car(x)))) {
+      val(At) = a;
       return prog(cddr(x));
+   }
    x = cdr(x);
    return EVAL(car(x));
 }
 
 // (when 'any . prg) -> any
 any doWhen(any x) {
+   any a;
+
    x = cdr(x);
-   if (isNil(val(At) = EVAL(car(x))))
+   if (isNil(a = EVAL(car(x))))
       return Nil;
+   val(At) = a;
    return prog(cdr(x));
 }
 
 // (unless 'any . prg) -> any
 any doUnless(any x) {
+   any a;
+
    x = cdr(x);
-   if (!isNil(val(At) = EVAL(car(x))))
+   if (!isNil(a = EVAL(car(x)))) {
+      val(At) = a;
       return Nil;
+   }
    return prog(cdr(x));
 }
 
 // (cond ('any1 . prg1) ('any2 . prg2) ..) -> any
 any doCond(any x) {
-   while (isCell(x = cdr(x)))
-      if (!isNil(val(At) = EVAL(caar(x))))
+   any a;
+
+   while (isCell(x = cdr(x))) {
+      if (!isNil(a = EVAL(caar(x)))) {
+         val(At) = a;
          return prog(cdar(x));
+      }
+   }
    return Nil;
 }
 
 // (nond ('any1 . prg1) ('any2 . prg2) ..) -> any
 any doNond(any x) {
-   while (isCell(x = cdr(x)))
-      if (isNil(val(At) = EVAL(caar(x))))
+   any a;
+
+   while (isCell(x = cdr(x))) {
+      if (isNil(a = EVAL(caar(x))))
          return prog(cdar(x));
+      val(At) = a;
+   }
    return Nil;
 }
 
@@ -962,7 +1023,7 @@ any doCase(any x) {
 
 // (state 'var ((sym|lst sym [. prg]) . prg) ..) -> any
 any doState(any ex) {
-   any x, y, z;
+   any x, y, z, a;
    cell c1;
 
    x = cdr(ex);
@@ -973,8 +1034,13 @@ any doState(any ex) {
       y = caar(x),  z = car(y);
       if (z==T || z==val(data(c1)) || isCell(z) && memq(val(data(c1)),z)) {
          y = cdr(y);
-         if (!isCell(cdr(y)) || !isNil(val(At) = prog(cdr(y)))) {
-            Touch(ex,data(c1));
+         if (!isCell(cdr(y)))
+            goto st1;
+         if (!isNil(a = prog(cdr(y)))) {
+            val(At) = a;
+         st1:
+            if (isSym(data(c1)))
+               Touch(ex,data(c1));
             val(data(c1)) = car(y);
             drop(c1);
             return prog(cdar(x));
@@ -987,31 +1053,34 @@ any doState(any ex) {
 
 // (while 'any . prg) -> any
 any doWhile(any x) {
-   any cond;
+   any cond, a;
    cell c1;
 
    cond = car(x = cdr(x)),  x = cdr(x);
    Push(c1, Nil);
-   while (!isNil(val(At) = EVAL(cond)))
+   while (!isNil(a = EVAL(cond))) {
+      val(At) = a;
       data(c1) = prog(x);
+   }
    return Pop(c1);
 }
 
 // (until 'any . prg) -> any
 any doUntil(any x) {
-   any cond;
+   any cond, a;
    cell c1;
 
    cond = car(x = cdr(x)),  x = cdr(x);
    Push(c1, Nil);
-   while (isNil(val(At) = EVAL(cond)))
+   while (isNil(a = EVAL(cond)))
       data(c1) = prog(x);
+   val(At) = a;
    return Pop(c1);
 }
 
 // (loop ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doLoop(any ex) {
-   any x, y;
+   any x, y, a;
 
    for (;;) {
       x = cdr(ex);
@@ -1019,13 +1088,16 @@ any doLoop(any ex) {
          if (isCell(y = car(x))) {
             if (isNil(car(y))) {
                y = cdr(y);
-               if (isNil(val(At) = EVAL(car(y))))
+               if (isNil(a = EVAL(car(y))))
                   return prog(cdr(y));
+               val(At) = a;
             }
             else if (car(y) == T) {
                y = cdr(y);
-               if (!isNil(val(At) = EVAL(car(y))))
+               if (!isNil(a = EVAL(car(y)))) {
+                  val(At) = a;
                   return prog(cdr(y));
+               }
             }
             else
                evList(y);
@@ -1036,7 +1108,7 @@ any doLoop(any ex) {
 
 // (do 'flg|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doDo(any x) {
-   any y, z;
+   any y, z, a;
    cell c1;
 
    x = cdr(x);
@@ -1066,15 +1138,17 @@ any doDo(any x) {
                z = val(z);
             else if (isNil(car(z))) {
                z = cdr(z);
-               if (isNil(val(At) = EVAL(car(z)))) {
+               if (isNil(a = EVAL(car(z)))) {
                   drop(c1);
                   return prog(cdr(z));
                }
+               val(At) = a;
                z = Nil;
             }
             else if (car(z) == T) {
                z = cdr(z);
-               if (!isNil(val(At) = EVAL(car(z)))) {
+               if (!isNil(a = EVAL(car(z)))) {
+                  val(At) = a;
                   drop(c1);
                   return prog(cdr(z));
                }
@@ -1104,7 +1178,7 @@ any doAt(any ex) {
 // (for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 // (for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doFor(any ex) {
-   any x, y, body, cond;
+   any x, y, body, cond, a;
    cell c1;
    struct {  // bindFrame
       struct bindFrame *link;
@@ -1143,15 +1217,17 @@ any doFor(any ex) {
                   y = val(y);
                else if (isNil(car(y))) {
                   y = cdr(y);
-                  if (isNil(val(At) = EVAL(car(y)))) {
+                  if (isNil(a = EVAL(car(y)))) {
                      y = prog(cdr(y));
                      goto for1;
                   }
+                  val(At) = a;
                   y = Nil;
                }
                else if (car(y) == T) {
                   y = cdr(y);
-                  if (!isNil(val(At) = EVAL(car(y)))) {
+                  if (!isNil(a = EVAL(car(y)))) {
+                     val(At) = a;
                      y = prog(cdr(y));
                      goto for1;
                   }
@@ -1189,7 +1265,8 @@ any doFor(any ex) {
    y = cdr(y),  cond = car(y),  y = cdr(y);
    Push(c1,Nil);
    body = x = cdr(x);
-   while (!isNil(val(At) = EVAL(cond))) {
+   while (!isNil(a = EVAL(cond))) {
+      val(At) = a;
       if (f.cnt == 2) {
          val(f.bnd[1].sym) = bigCopy(val(f.bnd[1].sym));
          digAdd(val(f.bnd[1].sym), 2);
@@ -1200,15 +1277,17 @@ any doFor(any ex) {
                data(c1) = val(data(c1));
             else if (isNil(car(data(c1)))) {
                data(c1) = cdr(data(c1));
-               if (isNil(val(At) = EVAL(car(data(c1))))) {
+               if (isNil(a = EVAL(car(data(c1))))) {
                   data(c1) = prog(cdr(data(c1)));
                   goto for2;
                }
+               val(At) = a;
                data(c1) = Nil;
             }
             else if (car(data(c1)) == T) {
                data(c1) = cdr(data(c1));
-               if (!isNil(val(At) = EVAL(car(data(c1))))) {
+               if (!isNil(a = EVAL(car(data(c1))))) {
+                  val(At) = a;
                   data(c1) = prog(cdr(data(c1)));
                   goto for2;
                }

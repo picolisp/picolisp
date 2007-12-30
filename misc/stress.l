@@ -1,4 +1,4 @@
-# 21aug07abu
+# 22dec07abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -51,7 +51,7 @@
    (commit) )
 
 (de go ()
-   (do 12
+   (do 10
       (let Pids
          (make
             (do 40
@@ -62,8 +62,8 @@
                   (bye) ) ) )
          (while (find '((P) (kill P 0)) Pids)
             (wait 1000) )
-         (rollback)
-         (verify) ) )
+         (rollback) ) )
+   (verify)
    (pool "db/test2")
    (journal "jnl")
    (call 'cmp "db/test" "db/test2") )

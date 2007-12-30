@@ -1,3 +1,16 @@
+* 30dec07 picoLisp-2.3.1
+   'str' extended to parse tokens
+   '*Hup' global variable
+   Changed/extended 'all' semantics
+   Replaced 'die' with 'alarm'
+   Bug in 'glue'
+   Improved '@' handling
+   Bug in 'bye()'
+   'eol' end-of-line function
+   Escape delimiter characters in symbol names
+   'lint' also file contents
+   'noLint' function
+
 * 30sep07 picoLisp-2.3.0
    Extended "lib/test.l" unit tests
    'full' function

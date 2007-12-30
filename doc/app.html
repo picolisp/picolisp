@@ -794,7 +794,7 @@ client.
 
 <p>You can terminate this process (like any interactive Pico Lisp) by hitting
 ENTER on an empty line. Otherwise, it will terminate by itself if no other
-browser requests arrive within a default timeout period of 15 minutes.
+browser requests arrive within a default timeout period of 5 minutes.
 
 <p>To start a (non-debug) production version, the server is commonly started
 without "dbg.l", and with <code>-wait</code>
@@ -1456,37 +1456,37 @@ view of the class hierarchy can be obtained with the <code>dep</code>
 <p><pre><code>
 : (dep '+gui)
 +gui
-   +field
-      +TextField
-         +TimeField
-         +TelField
-         +ListTextField
-         +PwField
-         +SexField
-         +UpField
-         +SymField
-         +DateField
-         +BlobField
-         +numField
-            +FixField
-            +NumField
-         +UrlField
-            +HttpField
-            +MailField
-         +ClassField
-      +Checkbox
+   +JsField
    +Button
-      +DnButton
-      +ShowButton
-      +DelRowButton
-      +BubbleButton
-      +ChoButton
-         +Hint
-      +ClrButton
+      +UpButton
       +PickButton
          +DstButton
-      +UpButton
-   +JsField
+      +ClrButton
+      +ChoButton
+         +Hint
+      +BubbleButton
+      +DelRowButton
+      +ShowButton
+      +DnButton
+   +field
+      +Checkbox
+      +TextField
+         +ClassField
+         +UrlField
+            +MailField
+            +HttpField
+         +numField
+            +NumField
+            +FixField
+         +BlobField
+         +DateField
+         +SymField
+         +UpField
+         +SexField
+         +PwField
+         +ListTextField
+         +TelField
+         +TimeField
 -> +gui
 </code></pre>
 

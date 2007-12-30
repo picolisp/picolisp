@@ -1,4 +1,4 @@
-# 18jul07abu
+# 27dec07abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -67,20 +67,19 @@
                   (tolr @Mate @@ mate nm)
                   (head @Job @@ job)
                   (range @Dat @@ dat) ) ) )
-         (if (flg? Dst) 6 7)
-         '((This) (list This (: pa) (: ma) (: mate) (: job) (: dat))) )
+         7
+         '((This) (list This This (: pa) (: ma) (: mate) (: job) (: dat))) )
       (<table> NIL NIL
-         '((NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
+         '((btn) (NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
          (do 8
             (<row> NIL
-               (gui 1 '(+ObjView +TextField) '(: nm) 20)
-               (gui 2 '(+ObjView +TextField) '(: nm) 10)
+               (gui 1 '(+DstButton) Dst)
+               (gui 2 '(+ObjView +TextField) '(: nm) 20)
                (gui 3 '(+ObjView +TextField) '(: nm) 10)
                (gui 4 '(+ObjView +TextField) '(: nm) 10)
-               (gui 5 '(+Lock +TextField) 10)
-               (gui 6 '(+Lock +DateField) 10)
-               (unless (flg? Dst)
-                  (gui 7 '(+DstButton) Dst -6) ) ) ) )
+               (gui 5 '(+ObjView +TextField) '(: nm) 10)
+               (gui 6 '(+Lock +TextField) 10)
+               (gui 7 '(+Lock +DateField) 10) ) ) )
       (<spread>
          (scroll 8)
          (when (=T Dst)

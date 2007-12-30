@@ -1,11 +1,11 @@
-# 25jun07abu
+# 29dec07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
 
 (menu
    (ifn *ID
-      (<p> NIL
+      (prog
          (<h3> NIL ,"Select" " " ,"Customer/Supplier")
          (form 'dialog (choCuSu T)) )
       (<h3> NIL ,"Customer/Supplier")

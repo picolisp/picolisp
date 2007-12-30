@@ -1,4 +1,4 @@
-# 08sep07abu
+# 30dec07abu
 # (c) Software Lab. Alexander Burger
 
 # *Top *Gui *Get *Form *Event *Lock
@@ -110,12 +110,14 @@
    (and Flg (=: able)) )
 
 # Click button
-(de <click> ()
+(de <click> (N)
    (unless *Post
       (prinl
-         "<script type=\"text/javascript\">document.getElementById(\""
+         "<script type=\"text/javascript\">window.setTimeout(\"document.getElementById(\\\""
          *Form "--" "*Ix"
-         "\").click();</script>" ) ) )
+         "\\\").click()\", "
+         N
+         ");</script>" ) ) )
 
 # Handle form actions
 (de action Prg
@@ -329,12 +331,33 @@
    (super "@" Exe) )
 
 
-(class +DstButton +Able +Close +PickButton)
+(class +DstButton +Set +Able +Close +PickButton)
+# msg obj
 
-(dm T (@Dst @F)
+(dm T (Dst Msg)
+   (=: msg (or Msg 'url>))
    (super
-      (fill '(val> (field @F)))
-      (fill '(set> '@Dst (val> (field @F)))) ) )
+      '((Obj) (=: obj (ext? Obj)))
+      '(: obj)
+      (unless (flg? Dst)
+         (list 'set> (lit Dst) '(: obj)) ) ) )
+
+(dm js> ()
+   (cond
+      ((: act) (super))
+      ((try (: msg) (: obj))
+         (pack "@&+" (ht:Fmt (sesId (mkUrl @)))) )
+      (T "@") ) )
+
+(dm show> ("Var")
+   (cond
+      ((: act) (super "Var"))
+      ((try (: msg) (: obj))
+         (prin
+            "<a href="
+            (sesId (mkUrl @))
+            " class=\"tiny\" id=\"" *Form '- (: id) "\">@</a>" ) )
+      (T (prin "<span class=\"tiny\" id=\"" *Form '- (: id) "\">@</span>")) ) )
 
 
 (class +Hint +ChoButton)
@@ -345,11 +368,11 @@
    (=: exe Exe)
    (super
       '(dialog (env 'Ttl (eval (: ttl))  'Lst (eval (: exe))  'Dst (field 1))
-         (<table> 'chart Ttl '(NIL (btn))
+         (<table> 'chart Ttl '((btn) NIL)
             (for X Lst
                (<row> NIL
-                  (ht:Prin (if (atom X) X (car X)))
-                  (gui '(+Close +PickButton) (list 'set> 'Dst (lit (fin X)))) ) ) )
+                  (gui '(+Close +PickButton) (list 'set> 'Dst (lit (fin X))))
+                  (ht:Prin (if (atom X) X (car X))) ) ) )
          (cancelButton) ) ) )
 
 
@@ -763,14 +786,18 @@
 
 # Delete row
 (class +DelRowButton +Tiny +JS +Able +Button)
-# exe
+# exe del
 
-(dm T (Exe)
+(dm T (Exe Txt)
    (=: exe Exe)
+   (=: del Txt)
    (super '(nth (: chart 1 data) (row)) "x"
       '(if (curr)
          (alert (env 'Fld This 'Exe (: exe))
-            ,"Delete row?"
+            (ht:Prin
+               (if (get Fld 'del)
+                  (with Fld (eval @))
+                  ,"Delete row?" ) )
             (----)
             (yesButton '(with Fld (_delRow)))
             (noButton) )
@@ -1005,6 +1032,27 @@
       ,"Bad time format" ) )
 
 
+(class +Icon)
+# icon url
+
+(dm T (Exe1 Exe2 . @)
+   (=: icon Exe1)
+   (=: url Exe2)
+   (pass extra) )
+
+(dm js> ()
+   (pack (extra) "&*"
+      (ht:Fmt (sesId (eval (: icon)))) '&
+      (and (eval (: url)) (ht:Fmt (sesId @))) ) )
+
+(dm show> ("Var")
+   (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
+   (extra "Var")
+   (prin "</td><td>")
+   (<img> (eval (: icon)) 'icon (: url))
+   (prinl "</td></table>") )
+
+
 (class +UrlField +TextField)
 # url
 
@@ -1013,10 +1061,10 @@
    (pass super) )
 
 (dm js> ()
-   (if2 (or (: dx) (: lst)) (ht:Fmt (val> This))
-      (pack (super) "&*" (sesId (ht:Fmt `(path "@img/go.png"))) '& (ht:Fmt ((: url) @)))
-      (pack (super) "&*" (sesId (ht:Fmt `(path "@img/no.png"))) '&)
-      (pack @ "&+" (ht:Fmt ((: url) @)))
+   (if2 (or (: dx) (: lst)) (val> This)
+      (pack (super) "&*" (ht:Fmt (sesId `(path "@img/go.png"))) '& (ht:Fmt (sesId ((: url) @))))
+      (pack (super) "&*" (ht:Fmt (sesId `(path "@img/no.png"))) '&)
+      (pack @ "&+" (ht:Fmt (sesId ((: url) @))))
       (super) ) )
 
 (dm show> ("Var")
@@ -1037,7 +1085,7 @@
 (class +HttpField +UrlField)
 
 (dm T @
-   (pass super '((S) (pack "http://" S))) )
+   (pass super '((S) (pack (or *Gate "http") "://" S))) )
 
 
 (class +MailField +UrlField)
@@ -1093,7 +1141,7 @@
 (class +Chart)
 # home gui rows cols ofs lock put get data clip
 
-# (.. cols [put [get]])
+# (cols [put [get]])
 (dm T (N Put Get)
    (setq "*Chart" This)
    (put (=: home "*App") 'chart
@@ -1145,7 +1193,9 @@
          ((: put) L I) ) ) )
 
 (dm set> (Lst)
-   (=: ofs (max 1 (min (: ofs) (length (=: data Lst)))))
+   (=: ofs
+      (max 1
+         (min (: ofs) (length (=: data (copy Lst)))) ) )
    (put> This)
    Lst )
 
@@ -1179,11 +1229,9 @@
 
 (class +Chart1 +Chart)
 
-(dm set> (Lst)
-   (super (cons Lst)) )
-
-(dm val> ()
-   (car (super)) )
+# (cols)
+(dm T (N)
+   (super N cons car) )
 
 
 ### DB GUI ###
@@ -1219,14 +1267,12 @@
             '(goal
                (list
                   (list 'db (car Rel) (last Rel) Hook (val> (: home gui 1)) '@@) ) )
-            (if (flg? Dst) 1 2)
-            cons car )
-         (<table> 'chart (if (atom Ttl) Ttl (apply choTtl Ttl)) '(NIL (btn))
+            2 '((Obj) (list Obj Obj)) car )
+         (<table> 'chart (if (atom Ttl) Ttl (apply choTtl Ttl)) '((btn) NIL)
             (do 6
                (<row> (alternating)
-                  (apply gui Gui 1)
-                  (unless (flg? Dst)
-                     (gui 2 '(+DstButton) Dst -1) ) ) ) )
+                  (gui 1 '(+DstButton) Dst)
+                  (apply gui Gui 2) ) ) )
          (<spread>
             (scroll 6)
             (when (=T Dst)
@@ -1311,6 +1357,7 @@
                (noButton) ) ) ) ) )
 
 
+# Relations
 (class +/R)
 # erVar erObj
 
@@ -1325,6 +1372,16 @@
    (set> This (get (eval (: erObj)) (: erVar))) )
 
 
+# Symbol/Relation
+(class +S/R +/R)
+
+(dm set> (Val Dn)
+   (when (eval (: erObj))
+      (put! @ (: erVar) Val) )
+   (extra Val Dn) )
+
+
+# Entity/Relation
 (class +E/R +/R)
 
 (dm set> (Val Dn)
@@ -1402,9 +1459,9 @@
    (if (=T (: msg))
       (extra)
       (if2 (or (: dx) (: lst)) (try (: msg) (: obj))
-         (pack (extra) "&*" (sesId (ht:Fmt `(path "@img/go.png"))) '& (sesId (ht:Fmt (mkUrl @))))
-         (pack (extra) "&*" (sesId (ht:Fmt `(path "@img/no.png"))) '&)
-         (pack (ht:Fmt (nonblank (str> This))) "&+" (sesId (ht:Fmt (mkUrl @))))
+         (pack (extra) "&*" (ht:Fmt (sesId `(path "@img/go.png"))) '& (ht:Fmt (sesId (mkUrl @))))
+         (pack (extra) "&*" (ht:Fmt (sesId `(path "@img/no.png"))) '&)
+         (pack (ht:Fmt (nonblank (str> This))) "&+" (ht:Fmt (sesId (mkUrl @))))
          (extra) ) ) )
 
 (dm show> ("Var")
@@ -1509,7 +1566,7 @@
 (class +QueryChart +Chart)
 # iniR iniq query
 
-# (.. iniR iniQ cols [put [get]])
+# (iniR iniQ cols [put [get]])
 (dm T (R Q . @)
    (=: iniR R)
    (=: iniQ Q)
@@ -1579,5 +1636,10 @@
       (choButton Dlg)
       (stepBtn Var Cls Hook Msg) )
    (----) )
+
+`*Dbg
+(noLint 'gui)
+(noLint 'choDlg 'gui)
+(noLint 'jsForm 'action)
 
 # vi:et:ts=3:sw=3

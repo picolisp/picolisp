@@ -1,4 +1,4 @@
-# 25jun07abu
+# 22dec07abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -24,10 +24,12 @@
          Pdf ) ) )
 
 (de _pdf ()
-   (call 'ps2pdf
-      (pack "-dDEVICEWIDTHPOINTS=" "*PgX")
-      (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
-      Ps Pdf ) )
+   (if (= *OS "Darwin")
+      (call 'pstopdf Ps)
+      (call 'ps2pdf
+         (pack "-dDEVICEWIDTHPOINTS=" "*PgX")
+         (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
+         Ps Pdf ) ) )
 
 (de psHead (DX DY)
    (prinl "%!PS-Adobe-1.0")

@@ -388,10 +388,8 @@ If any of these values existed and was changed in the process, a "redefined"
 message is issued. When the value of the global variable <a
 href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
 and file name (if any) are stored in the <code>*Dbg</code> property of
-<code>sym</code> (for the first form), or in the <code>sym2</code> property of
-<code>sym1</code> (for the second form). See also <code><a
-href="refD.html#de">de</a></code> and <code><a
-href="refD.html#dm">dm</a></code>.
+<code>sym</code>. See also <code><a href="refD.html#de">de</a></code> and
+<code><a href="refD.html#dm">dm</a></code>.
 
 <p><pre><code>
 : (def 'b '((X Y) (* X (+ X Y))))
@@ -466,18 +464,6 @@ href="refM.html#mmeq">mmeq</a></code>.
 -> (1 (2) 3)
 </code></pre>
 
-<dt><a name="die"><code>(die 'cnt . prg) -> any</code></a>
-<dd> If the execution of <code>prg</code> does not finish within
-<code>cnt</code> seconds, the current process will receive a SIGTERM signal. See
-also <code><a href="refB.html#bye">bye</a></code> and <code><a
-href="refP.html#protect">protect</a></code>.
-
-<p><pre><code>
-: (die 6 (finally (msg 'Bye) (loop)))
-Bye
-$
-</code></pre>
-
 <dt><a name="diff"><code>(diff 'lst 'lst) -> lst</code></a>
 <dd>Returns the difference of the <code>lst</code> arguments. See also <code><a
 href="refS.html#sect">sect</a></code>.
@@ -521,8 +507,8 @@ from <code><a href="refC.html#*Class">*Class</a></code> (or <code>cls</code> if
 given). If any of these methods existed and was changed in the process, a
 "redefined" message is issued. When the value of the global variable <a
 href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
-and file name (if any) are stored in the <code>sym</code> property of
-<code>cls</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
+and file name (if any) are stored in the <code>*Dbg</code> property of
+<code>sym</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
 <code><a href="refD.html#de">de</a></code>, <code><a
 href="refU.html#undef">undef</a></code>, <a href="refC.html#class">class</a>, <a
 href="refR.html#rel">rel</a>, <a href="refV.html#var">var</a>, <a

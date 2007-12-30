@@ -1,4 +1,4 @@
-# 31jul07abu
+# 16nov07abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -18,7 +18,7 @@
          (quote
             (sys "MACOSX_DEPLOYMENT_TARGET" "10.4")
             (apply call L 'gcc "-o" (tmp S)
-               "-dynamiclib" "-undefined" "dynamic_lookup" "-export-dynamic"
+               "-dynamiclib" "-undefined" "dynamic_lookup"
                "-O" "-falign-functions" "-fomit-frame-pointer"
                "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
                "-Wuninitialized" "-Wstrict-prototypes"

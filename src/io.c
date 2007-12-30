@@ -1,4 +1,4 @@
-/* 26sep07abu
+/* 26dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -7,7 +7,6 @@
 #ifdef __CYGWIN__
 #include <sys/file.h>
 #define fcntl(fd,cmd,fl) 0
-#define fileno_unlocked(f) fileno(f)
 #endif
 
 static any read0(bool);
@@ -186,7 +185,7 @@ bool flush(outFile *p) {
    int n;
 
    if (!p)
-      return !fflush_unlocked(StdOut);
+      return !fflush(StdOut);
    if (n = p->ix) {
       p->ix = 0;
       return wrBytes(p->fd, p->buf, n);
@@ -197,7 +196,7 @@ bool flush(outFile *p) {
 /*** Low level I/O ***/
 static int getBinary(void) {
    if (InFile->ix == InFile->cnt) {
-      InFile->ix = 0;
+      InFile->ix = InFile->cnt = 0;
       if (!(InFile->cnt = slow(InFile->fd, InFile->buf, BUFSIZ)))
          return -1;
    }
@@ -768,7 +767,7 @@ void ctOpen(any ex, any x, ctlFrame *f) {
 void getStdin(void) {
    if (InFile) {
       if (InFile->ix == InFile->cnt) {
-         InFile->ix = 0;
+         InFile->ix = InFile->cnt = 0;
          if (!(InFile->cnt = slow(InFile->fd, InFile->buf, BUFSIZ))) {
             Chr = -1;
             return;
@@ -1110,9 +1109,17 @@ static any read0(bool top) {
    }
    if (strchr(Delim, Chr))
       err(NULL, NULL, "Bad input '%c' (%d)", isprint(Chr)? Chr:'?', Chr);
+   if (Chr == '\\')
+      Env.get();
    i = 0,  Push(c1, y = box(Chr));
-   while (Env.get(), !strchr(Delim, Chr))
+   for (;;) {
+      Env.get();
+      if (strchr(Delim, Chr))
+         break;
+      if (Chr == '\\')
+         Env.get();
       byteSym(Chr, &i, &y);
+   }
    y = Pop(c1);
    if (unDig(y) == ('L'<<16 | 'I'<<8 | 'N'))
       return Nil;
@@ -1149,7 +1156,7 @@ any token(any x, int c) {
    if (!Chr)
       Env.get();
    if (skip(c) < 0)
-      return Nil;
+      return NULL;
    if (Chr == '"') {
       Env.get();
       if (Chr == '"') {
@@ -1201,16 +1208,19 @@ any token(any x, int c) {
 
 // (read ['sym1 ['sym2]]) -> any
 any doRead(any ex) {
-   any x, y;
+   any x;
 
    if (!isCell(x = cdr(ex)))
       x = read1(0);
    else {
-      y = EVAL(car(x));
-      NeedSym(ex,y);
+      cell c1;
+
+      Push(c1, EVAL(car(x)));
+      NeedSym(ex, data(c1));
       x = cdr(x),  x = EVAL(car(x));
       NeedSym(ex,x);
-      x = token(y, symChar(name(x)));
+      x = token(data(c1), symChar(name(x))) ?: Nil;
+      drop(c1);
    }
    if (!InFile  &&  Chr == '\n')
       Chr = 0;
@@ -1498,7 +1508,7 @@ any doKey(any ex) {
    int c;
    byte buf[2];
 
-   fflush_unlocked(stdout);
+   fflush(stdout);
    setRaw();
    x = cdr(ex);
    if (!waitFd(ex, STDIN_FILENO, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
@@ -1556,6 +1566,11 @@ any doSkip(any ex) {
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
    return skip(symChar(name(x)))<0? Nil : mkChar(Chr);
+}
+
+// (eol) -> flg
+any doEol(any ex __attribute__((unused))) {
+   return InFile && Chr=='\n' || Chr<=0? T : Nil;
 }
 
 // (eof ['flg]) -> flg
@@ -1743,7 +1758,7 @@ any doLines(any ex) {
    return boxCnt(cnt);
 }
 
-static any parse(any x, bool skp) {
+static any parse(any x, bool skp, any s) {
    int c;
    parseFrame *save, parser;
    void (*getSave)(void);
@@ -1753,11 +1768,23 @@ static any parse(any x, bool skp) {
       Push(c1, Env.parser->name);
    Env.parser = &parser;
    parser.dig = unDig(parser.name = name(x));
-   parser.eof = 0xFF00 | ']';
+   parser.eof = s? 0xFF : 0xFF00 | ']';
    getSave = Env.get,  Env.get = getParse,  c = Chr,  Chr = 0;
    if (skp)
       getParse();
-   x = rdList();
+   if (!s)
+      x = rdList();
+   else {
+      any y;
+      cell c2;
+
+      if (!(x = token(s,0)))
+         return Nil;
+      Push(c2, y = cons(x,Nil));
+      while (x = token(s,0))
+         y = cdr(y) = cons(x,Nil);
+      x = Pop(c2);
+   }
    Chr = c,  Env.get = getSave;
    if (Env.parser = save)
       drop(c1);
@@ -1821,15 +1848,24 @@ any doSym(any x) {
    return endString();
 }
 
-// (str 'sym) -> lst
+// (str 'sym ['sym1]) -> lst
 // (str 'lst) -> sym
 any doStr(any ex) {
    any x;
-   cell c1;
+   cell c1, c2;
 
    x = cdr(ex);
-   if (isSym(x = EVAL(car(x))))
-      return isNil(x)? Nil : parse(x,NO);
+   if (isNil(x = EVAL(car(x))))
+      return Nil;
+   if (isSym(x)) {
+      if (!isCell(cddr(ex)))
+         return parse(x, NO, NULL);
+      Push(c1, x);
+      Push(c2, evSym(cddr(ex)));
+      x = parse(x, NO, data(c2));
+      drop(c1);
+      return x;
+   }
    NeedCell(ex,x);
    begString();
    Push(c1,x);
@@ -1844,7 +1880,7 @@ any load(any ex, int pr, any x) {
    inFrame f;
 
    if (isSym(x) && firstByte(x) == '-') {
-      Push(c1, parse(x,YES));
+      Push(c1, parse(x, YES, NULL));
       x = evList(data(c1));
       drop(c1);
       return x;
@@ -2117,22 +2153,12 @@ static void outSym(int c) {
    while (c = symByte(NULL));
 }
 
-static void outStr(int c) {
-   do {
-      if (c == '"'  ||  c == '^'  ||  c == '\\')
-         Env.put('\\');
-      else if (c == 127)
-         Env.put('^'),  c = '?';
-      else if (c < ' ')
-         Env.put('^'),  c |= 0x40;
-      Env.put(c);
-   } while (c = symByte(NULL));
-}
-
 void outName(any s) {outSym(symByte(name(s)));}
 
 /* Print one expression */
 void print(any x) {
+   if (Signal)
+      sighandler(T);
    if (isNum(x))
       outName(numToSym(x, 0, 0, 0));
    else if (isNil(x))
@@ -2144,10 +2170,26 @@ void print(any x) {
          Env.put('$'),  outWord(num(x)/sizeof(cell));
       else if (isExt(x))
          Env.put('{'),  outSym(c),  Env.put('}');
-      else if (hashed(x, hash(name(x)), Intern))
-         outSym(c);
-      else
-         Env.put('"'),  outStr(c),  Env.put('"');
+      else if (hashed(x, hash(name(x)), Intern)) {
+         do {
+            if (strchr(Delim, c))
+               Env.put('\\');
+            Env.put(c);
+         } while (c = symByte(NULL));
+      }
+      else {
+         Env.put('"');
+         do {
+            if (c == '"'  ||  c == '^'  ||  c == '\\')
+               Env.put('\\');
+            else if (c == 127)
+               Env.put('^'),  c = '?';
+            else if (c < ' ')
+               Env.put('^'),  c |= 0x40;
+            Env.put(c);
+         } while (c = symByte(NULL));
+         Env.put('"');
+      }
    }
    else if (car(x) == Quote  &&  x != cdr(x))
       Env.put('\''),  print(cdr(x));
@@ -2167,8 +2209,6 @@ void print(any x) {
             break;
          }
          space();
-         if (Signal)
-            sighandler(T);
       }
       Env.put(')');
       drop(c1);
@@ -2176,6 +2216,8 @@ void print(any x) {
 }
 
 void prin(any x) {
+   if (Signal)
+      sighandler(T);
    if (!isNil(x)) {
       if (isNum(x))
          outName(numToSym(x, 0, 0, 0));
@@ -2274,7 +2316,7 @@ any doFlush(any ex __attribute__((unused))) {
 // (rewind) -> flg
 any doRewind(any ex __attribute__((unused))) {
    if (!OutFile)
-      return fseek(StdOut, 0L, SEEK_SET) || ftruncate(fileno_unlocked(StdOut), 0)? Nil : T;
+      return fseek(StdOut, 0L, SEEK_SET) || ftruncate(fileno(StdOut), 0)? Nil : T;
    OutFile->ix = 0;
    return lseek(OutFile->fd, 0L, SEEK_SET) || ftruncate(OutFile->fd, 0)? Nil : T;
 }
@@ -2379,7 +2421,7 @@ any doRpc(any x) {
    while (isCell(x = cdr(x)))
       y = EVAL(car(x)),  putBin = putChar,  binPrint(y);
    putBin(END);
-   return fflush_unlocked(stdout)? Nil : T;
+   return fflush(stdout)? Nil : T;
 }
 
 /*** DB-I/O ***/
@@ -2540,9 +2582,9 @@ static void blkPoke(off_t pos, void *buf, int siz) {
       byte a[BLK];
 
       putc_unlocked(siz == BlkSize[F]? BLKSIZE : siz, Journal);
-      a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite_unlocked(a, 2, 1, Journal);
-      setAdr(pos >> BlkShift[F], a),  fwrite_unlocked(a, BLK, 1, Journal);
-      fwrite_unlocked(buf, siz, 1, Journal);
+      a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite(a, 2, 1, Journal);
+      setAdr(pos >> BlkShift[F], a),  fwrite(a, BLK, 1, Journal);
+      fwrite(buf, siz, 1, Journal);
    }
 }
 
@@ -2582,10 +2624,10 @@ any newId(int i) {
       dbfErr();
    wrLock();
    if (Journal)
-      lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
+      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
    n = newBlock();
    if (Journal)
-      fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
+      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
    rwUnlock(1);
    return new64(n/BLKSIZE, At2);  // dirty
 }
@@ -2752,13 +2794,13 @@ any doJournal(any ex) {
          if (!(fp = fopen(nm, "r")))
             openErr(ex, nm);
          while ((siz = getc_unlocked(fp)) >= 0) {
-            if (fread_unlocked(a, 2, 1, fp) != 1)
+            if (fread(a, 2, 1, fp) != 1)
                jnlErr();
             if ((F = a[0] | a[1]<<8) >= Files)
                dbfErr();
             if (siz == BLKSIZE)
                siz = BlkSize[F];
-            if (fread_unlocked(a, BLK, 1, fp) != 1 || fread_unlocked(buf, siz, 1, fp) != 1)
+            if (fread(a, BLK, 1, fp) != 1 || fread(buf, siz, 1, fp) != 1)
                jnlErr();
             blkPoke(getAdr(a) << BlkShift[F], buf, siz);
          }
@@ -3028,7 +3070,7 @@ any doCommit(any ex) {
    if (force = !Transactions || !isNil(flg)) {
       wrLock();
       if (Journal)
-         lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
+         lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
       ++Env.protect;
       x = cddr(ex),  EVAL(car(x));
       if (note = Tell && !isNil(flg) && flg != T)
@@ -3094,7 +3136,7 @@ any doCommit(any ex) {
          tellEnd(&pbSave, &ppSave);
       x = cdddr(ex),  EVAL(car(x));
       if (Journal)
-         fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
+         fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
       if (isCell(x = val(Zap))) {
          for (z = cdr(x); isCell(z); z = cdr(z));
          {
@@ -3263,7 +3305,7 @@ any doDbck(any x) {
    BlkLink = getAdr(buf);
    next = getAdr(buf+BLK);
    if (Journal)
-      lockFile(fileno_unlocked(Journal), F_SETLKW, F_WRLCK);
+      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
    ++Env.protect;
    while (BlkLink) {  // Check free list
       rdBlock(BlkLink);
@@ -3298,7 +3340,7 @@ any doDbck(any x) {
          Block[0] &= BLKMASK,  wrBlock();
    }
    if (Journal)
-      fflush_unlocked(Journal),  lockFile(fileno_unlocked(Journal), F_SETLK, F_UNLCK);
+      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
    --Env.protect;
    if (cnt != next)
       return mkStr("Bad count");

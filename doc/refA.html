@@ -21,6 +21,23 @@ href="refA.html#accept">accept</a></code>.
 -> "127.0.0.1"
 </code></pre>
 
+<dt><a name="alarm"><code>(alarm 'cnt . prg) -> cnt</code></a>
+<dd>Sets an alarm timer scheduling <code>prg</code> to be executed after
+<code>cnt</code> seconds, and returns the number of seconds remaining until any
+previously scheduled alarm was due to be delivered. Calling <code>(alarm
+0)</code> will cancel an alarm.
+
+<p><pre><code>
+: (prinl (tim$ (time) T)) (alarm 10 (prinl (tim$ (time) T)))
+16:36:14
+-> 0
+: 16:36:24
+
+: (alarm 10 (bye 0))
+-> 0
+$
+</code></pre>
+
 <dt><a name="*Allow"><code>*Allow</code></a>
 <dd>A global variable holding allowed access patterns. If its value is
 non-<code>NIL</code>, it should contain a list where the CAR is an <code><a
@@ -109,18 +126,20 @@ href="refW.html#wrap">wrap</a></code>.
 -> "   a  12   b"
 </code></pre>
 
-<dt><a name="all"><code>(all 'fun) -> any</code></a>
-<dd>Applies <code>fun</code> to all internal symbols in the system. Returns the
-result of the last application.
+<dt><a name="all"><code>(all ['T | 0]) -> lst</code></a>
+<dd>Returns a list of all <a href="ref.html#internal">internal</a> symbols in
+the system (if called without arguments, or with <code>NIL</code>). Otherwise
+(if the argument is <code>T</code>), all current <a
+href="ref.html#transient">transient</a> symbols are returned. Else all current
+<a href="ref.html#external">external</a> symbols are returned.
 
 <p><pre><code>
-: (all printsp)  # Print the names of all internal symbols
-delWord +PwField +Fmt tail char cons month ..
-.. conc cond -> cond
+: (all)  # All internal symbols
+-> (inc> leaf nil inc! accept ...
 
 # Find all symbols starting with an underscore character
-: (make (all '((X) (and (= "_" (car (chop X))) (link X)))))
--> (_ed _isa _delL _delR _dbg _del _query _scan _hex _boxSend _put)
+: (filter '((X) (= "_" (car (chop X)))) (all))
+-> (_put _nacs _oct _lintq _lst _map _iter _dbg2 _getLine _led ...
 </code></pre>
 
 <dt><a name="allow"><code>(allow 'sym ['flg]) -> sym</code></a>
@@ -197,6 +216,8 @@ href="refR.html#remove">remove</a></code>.
 <dt><a name="apply"><code>(apply 'fun 'lst ['any ..]) -> any</code></a>
 <dd>Applies <code>fun</code> to <code>lst</code>. If additional <code>any</code>
 arguments are given, they are applied as leading elements of <code>lst</code>.
+<code>(apply 'fun 'lst 'any1 'any2)</code> is equivalent to <code>(apply 'fun
+(cons 'any1 'any2 'lst))</code>.
 
 <p><pre><code>
 : (apply + (1 2 3))
@@ -205,6 +226,9 @@ arguments are given, they are applied as leading elements of <code>lst</code>.
 -> 360
 : (apply '((X Y Z) (* X (+ Y Z))) (3 4 5))
 -> 27
+: (apply println (3 4) 1 2)
+1 2 3 4
+-> 4
 </code></pre>
 
 <dt><a name="arg"><code>(arg ['cnt]) -> any</code></a>

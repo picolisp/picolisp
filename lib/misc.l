@@ -1,4 +1,4 @@
-# 25sep07abu
+# 16oct07abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -424,8 +424,9 @@
 
 ### Testing ###
 (de test (Pat . Prg)
-   (unless (match Pat (run Prg 1))
-      (msg Prg)
-      (quit 'fail Pat) ) )
+   (bind (fish pat? Pat)
+      (unless (match Pat (run Prg 1))
+         (msg Prg)
+         (quit 'fail Pat) ) ) )
 
 # vi:et:ts=3:sw=3

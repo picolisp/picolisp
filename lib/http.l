@@ -1,13 +1,14 @@
-# 24sep07abu
+# 27nov07abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
 # *Sock *Agent *MPartLim *MPartEnd
 # *Post *Url *Timeout *SesId *ConId
+# *Cookies "*Cookies"
 
 (default
    *HPorts 0
-   *Timeout (* 15 60 1000) )
+   *Timeout (* 300 1000) )
 
 (zero *Http1)
 
@@ -108,8 +109,15 @@
          *Sock (port *HPorts '*Port) )
       (timeout *Timeout) ) )
 
+# Set a cookie
+(de cookie (Key Val)
+   (if (assoc Key "*Cookies")
+      (con @ Val)
+      (push '"*Cookies" (cons Key Val)) ) )
+
 # Handle HTTP-Transaction
 (de http (S)
+   (off *Cookies "*Cookies")
    (use (L @U @H @X)
       (catch "http"
          (in S
@@ -212,6 +220,15 @@
                      (*Gate @X)
                      ((index ":" @X) (head (dec @) @X))
                      (T @X) ) ) )
+            ((match '(~(chop "Cookie: ") . @X) L)
+               (setq *Cookies
+                  (mapcar
+                     '((L)
+                        (setq L (split L "="))
+                        (cons
+                           (pack (clip (car L)))
+                           (pack (clip (cadr L))) ) )
+                     (split @X ";") ) ) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)
@@ -241,7 +258,7 @@
             ((match '(@N ~(chop "; filename=") . @V) @X)
                (match '("\"" @N "\"") @N)
                (match '("\"" @V "\"") @V)
-               (if (_htSet @N (pack (stem @V '/ '\)))
+               (if (_htSet @N (pack (stem @V '/ "\\")))
                   (let F (tmp @)
                      (unless (out F (echo (pack "^M^J" *MPartLim)))
                         (call 'rm "-f" F) ) )
@@ -307,6 +324,8 @@
 (de httpHead (Typ Upd Att)
    (_http Typ Upd Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
+   (for L "*Cookies"
+      (prinl "Set-Cookie: " (car L) "=" (cdr L) "; path=/") )
    (prinl "^M") )
 
 (de httpDate (Dat Tim)

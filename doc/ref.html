@@ -661,6 +661,9 @@ character, except for the following meta characters:
    "  '  (  )  [  ]  `  ~
 </code></pre>
 
+<p>It is possible, though, to include these special characters into symbol names
+by escaping them with a backslash '<code>\</code>'.
+
 <p>As a rule, anything not recognized by the reader as another data type will be
 returned as an internal symbol.
 
@@ -1115,10 +1118,10 @@ makes the assignment to temporary variables unnecessary.
 
 <p><dl>
 
-<dt><code><a href="refL.html#load">load</a></code> <dd>In read-eval loops, the
-last three results which were printed at the console are available in
-<code>@@@</code>, <code>@@</code> and <code>@</code>, in that order (i.e the
-latest result is in <code>@</code>).
+<dt><code><a href="refL.html#load">load</a></code>
+<dd>In read-eval loops, the last three results which were printed at the console
+are available in <code>@@@</code>, <code>@@</code> and <code>@</code>, in that
+order (i.e the latest result is in <code>@</code>).
 
 <p><pre><code>
 : (+ 1 2 3)
@@ -1130,8 +1133,9 @@ latest result is in <code>@</code>).
 </code></pre>
 
 <p><dt>Flow functions
-<dd>Flow- and logic-functions store the result of evaluating their conditional
-expression in <code>@</code>.
+<dd>Flow- and logic-functions store the result of their controlling expression -
+respectively non-<code>NIL</code> results of their conditional expression - in
+<code>@</code>.
 
 <p><pre><code>
 : (while (read) (println 'got: @))
@@ -1150,11 +1154,15 @@ NIL
 -> (1 2 3 4 5 1 2 999 4 5)
 </code></pre>
 
-<p>These functions include
-   <a href="refA.html#and">and</a>,
+<p>Functions with controlling expressions are
    <a href="refC.html#case">case</a>,
+   <a href="refP.html#prog1">prog1</a>,
+   <a href="refP.html#prog2">prog2</a>,
+and the bodies of <code><a href="refR.html#*Run">*Run</a></code> tasks.
+
+<p>Functions with conditional expressions are
+   <a href="refA.html#and">and</a>,
    <a href="refC.html#cond">cond</a>,
-   <a href="refN.html#nond">nond</a>,
    <a href="refD.html#do">do</a>,
    <a href="refF.html#for">for</a>,
    <a href="refI.html#if">if</a>,
@@ -1162,16 +1170,14 @@ NIL
    <a href="refI.html#ifn">ifn</a>,
    <a href="refL.html#loop">loop</a>,
    <a href="refN.html#nand">nand</a>,
+   <a href="refN.html#nond">nond</a>,
    <a href="refN.html#nor">nor</a>,
    <a href="refO.html#or">or</a>,
-   <a href="refP.html#prog1">prog1</a>,
-   <a href="refP.html#prog2">prog2</a>,
    <a href="refS.html#state">state</a>,
    <a href="refU.html#unless">unless</a>,
    <a href="refU.html#until">until</a>,
-   <a href="refW.html#when">when</a>,
-   <a href="refW.html#while">while</a>,
-and the bodies of <code><a href="refR.html#*Run">*Run</a></code> tasks.
+   <a href="refW.html#when">when</a> and
+   <a href="refW.html#while">while</a>.
 
 </dl>
 
@@ -1385,8 +1391,12 @@ in Pilog:
 </code></pre>
 
 <p>As in Prolog, the difference between facts and rules is that the latter ones
-have conditions and usually contain variables. A variable in Pilog is any symbol
-starting with an at-mark ("<code>@</code>").
+have conditions, and usually contain variables.
+
+<p>A variable in Pilog is any symbol starting with an at-mark character
+("<code>@</code>"). The symbol <code>@</code> itself can be used as an anonymous
+variable: It will match during unification, but will not be bound to the matched
+values.
 
 <p>The <i>cut</i> operator of Prolog (usually written as an exclamation mark
 (<code>!</code>)) is the symbol <code>T</code> in Pilog.
@@ -1508,7 +1518,7 @@ Lisp, is completely missing (and <code>quote</code> is used instead).
 <dt><code>PROG</code>
 <dd>The <code>PROG</code> function of traditional Lisp, with its GOTO and ENTER
 functionality, is also missing. Pico Lisp's <code>prog</code> function is just a
-simple sequencer (as <code>PROGN</code> ins some Lisps).
+simple sequencer (as <code>PROGN</code> in some Lisps).
 
 <dt>Function/Value
 <dd>In Pico Lisp, a symbol cannot have a value <i>and</i> a function definition
@@ -1617,6 +1627,7 @@ abbreviations:
    <a href="refS.html#sp?">sp?</a>
    <a href="refP.html#pat?">pat?</a>
    <a href="refF.html#fun?">fun?</a>
+   <a href="refA.html#all">all</a>
    <a href="refI.html#intern">intern</a>
    <a href="refE.html#extern">extern</a>
    <a href="ref_.html#====">====</a>
@@ -1937,7 +1948,6 @@ abbreviations:
 <dd><code>
    <a href="refA.html#apply">apply</a>
    <a href="refP.html#pass">pass</a>
-   <a href="refA.html#all">all</a>
    <a href="refM.html#maps">maps</a>
    <a href="refM.html#map">map</a>
    <a href="refM.html#mapc">mapc</a>
@@ -1977,6 +1987,7 @@ abbreviations:
    <a href="refP.html#peek">peek</a>
    <a href="refC.html#char">char</a>
    <a href="refS.html#skip">skip</a>
+   <a href="refE.html#eol">eol</a>
    <a href="refE.html#eof">eof</a>
    <a href="refF.html#from">from</a>
    <a href="refT.html#till">till</a>
@@ -2043,6 +2054,7 @@ abbreviations:
    <a href="refE.html#extend">extend</a>
    <a href="refS.html#super">super</a>
    <a href="refE.html#extra">extra</a>
+   <a href="refW.html#with">with</a>
    <a href="refT.html#This">This</a>
 </code>
 
@@ -2118,7 +2130,7 @@ abbreviations:
    <a href="refO.html#opt">opt</a>
    <a href="refG.html#gc">gc</a>
    <a href="refR.html#raw">raw</a>
-   <a href="refD.html#die">die</a>
+   <a href="refD.html#alarm">alarm</a>
    <a href="refP.html#protect">protect</a>
    <a href="refH.html#heap">heap</a>
    <a href="refE.html#env">env</a>
@@ -2183,6 +2195,7 @@ abbreviations:
    <a href="refC.html#*Class">*Class</a>
    <a href="refD.html#*Dbs">*Dbs</a>
    <a href="refR.html#*Run">*Run</a>
+   <a href="refR.html#*Hup">*Hup</a>
    <a href="refS.html#*Sig1">*Sig1</a>
    <a href="refS.html#*Sig2">*Sig2</a>
    <a href="ref_.html#^">^</a>

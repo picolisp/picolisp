@@ -1,4 +1,4 @@
-# 25jun07abu
+# 27nov07abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Users *Perms
@@ -10,7 +10,7 @@
       (msg *Pid " * " (stamp) " " Nm)
       (tell 'hi *Pid Nm)
       (push1 '*Bye '(logout))
-      (timeout (setq *Timeout `(* 4 60 60 1000))) )
+      (timeout (setq *Timeout `(* 3600 1000))) )
    *Login )
 
 (de logout ()
@@ -19,7 +19,7 @@
       (off *Login)
       (tell 'hi *Pid)
       (msg *Pid " / " (stamp))
-      (timeout (setq *Timeout `(* 15 60 1000))) ) )
+      (timeout (setq *Timeout `(* 300 1000))) ) )
 
 (de hi (Pid Nm)
    (hi2 Pid Nm)

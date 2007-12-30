@@ -1,4 +1,4 @@
-/* 27sep07abu
+/* 20dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,6 +10,7 @@ static symInit Symbols[] = {
    {doAbs, "abs"},
    {doAccept, "accept"},
    {doAdd, "+"},
+   {doAlarm, "alarm"},
    {doAll, "all"},
    {doAnd, "and"},
    {doAny, "any"},
@@ -82,7 +83,6 @@ static symInit Symbols[] = {
    {doDel, "del"},
    {doDelete, "delete"},
    {doDelq, "delq"},
-   {doDie, "die"},
    {doDiff, "diff"},
    {doDir, "dir"},
    {doDiv, "/"},
@@ -92,6 +92,7 @@ static symInit Symbols[] = {
    {doEcho, "echo"},
    {doEnv, "env"},
    {doEof, "eof"},
+   {doEol, "eol"},
    {doEq, "=="},
    {doEqual, "="},
    {doEqual0, "=0"},
@@ -344,7 +345,7 @@ static any initSym(any v, char *s) {
 void initSymbols(void) {
    int i;
 
-   Nil = symPtr(Avail),  Avail = Avail->cdr->cdr;  // Allocate 2 cells for NIL
+   Nil = symPtr(Avail),  Avail = Avail->car->car;  // Allocate 2 cells for NIL
    val(Nil) = tail(Nil) = val(Nil+1) = tail(Nil+1) = Nil;
    Zero = box(0);
    One = box(2);
@@ -371,6 +372,7 @@ void initSymbols(void) {
    Scl   = initSym(Zero, "*Scl");
    Class = initSym(Nil, "*Class");
    Run   = initSym(Nil, "*Run");
+   Hup   = initSym(Nil, "*Hup");
    Sig1  = initSym(Nil, "*Sig1");
    Sig2  = initSym(Nil, "*Sig2");
    Up    = initSym(Nil, "^");

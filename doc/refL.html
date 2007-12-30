@@ -75,8 +75,8 @@ href="refS.html#step">step</a></code>.
 
 <dt><a name="length"><code>(length 'any) -> cnt | T</code></a>
 <dd>Returns the "length" of <code>any</code>. For numbers this is the number of
-digits in the value (plus 1 for negative values), for symbols it is the number
-of characters in the name, and for lists it is the number of elements (or
+decimal digits in the value (plus 1 for negative values), for symbols it is the
+number of characters in the name, and for lists it is the number of elements (or
 <code>T</code> for circular lists). See also <code><a
 href="refS.html#size">size</a></code>.
 
@@ -216,10 +216,12 @@ href="refM.html#made">made</a></code>.
 <dt><a name="lint"><code>(lint 'sym) -> lst<br>
 (lint 'sym 'cls) -> lst<br>
 (lint '(sym . cls)) -> lst</code></a>
-<dd>Checks the function definition or method body of sym for possible pitfalls.
-Returns a list of diagnoses, where <code>var</code> indicates an improper
-variable, <code>def</code> an undefined function, <code>bnd</code> an unbound
-variable, and <code>use</code> an unused variable. See also <code><a
+<dd>Checks the function definition or file contents (in the first form), or the
+method body of sym (second and third form), for possible pitfalls. Returns a
+list of diagnoses, where <code>var</code> indicates an improper variable,
+<code>def</code> an undefined function, <code>bnd</code> an unbound variable,
+and <code>use</code> an unused variable. See also <code><a
+href="refN.html#noLint">noLint</a></code>, <code><a
 href="refL.html#lintAll">lintAll</a></code>, <code><a
 href="refD.html#debug">debug</a></code> and <code><a
 href="refT.html#trace">trace</a></code>.
@@ -233,12 +235,14 @@ href="refT.html#trace">trace</a></code>.
 -> ((var T) (def bar) (bnd Y X) (use N))
 </code></pre>
 
-<dt><a name="lintAll"><code>(lintAll) -> lst</code></a>
+<dt><a name="lintAll"><code>(lintAll ['sym ..]) -> lst</code></a>
 <dd>Applies <code><a href="refL.html#lint">lint</a></code> to <code><a
-href="refA.html#all">all</a></code> symbols, and returns a list of diagnoses.
+href="refA.html#all">all</a></code> internal symbols - and optionally to all
+files <code>sym</code> - and returns a list of diagnoses. See also <code><a
+href="refN.html#noLint">noLint</a></code>.
 
 <p><pre><code>
-: (more (lintAll))
+: (more (lintAll "file1.l" "file2.l"))
 ...
 </code></pre>
 
@@ -451,7 +455,7 @@ and <code><a href="refN.html#n0">n0</a></code>.
 <dt><a name="lup"><code>(lup 'lst 'any) -> lst<br>
 (lup 'lst 'any 'any2) -> lst</code></a>
 <dd>Looks up <code>any</code> in the CAR-elements of cells stored in the index
-tree <code>lst</code>, as built up by <code><a
+tree <code>lst</code>, as built-up by <code><a
 href="refI.html#idx">idx</a></code>. In the first form, the first found cell is
 returned, in the second form a list of all cells whose CAR is in the range
 <code>any</code> .. <code>any2</code>. See also <code><a

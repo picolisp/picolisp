@@ -1,4 +1,4 @@
-# 25sep07abu
+# 10dec07abu
 # (c) Software Lab. Alexander Burger
 
 ### apply ###
@@ -9,11 +9,6 @@
 
 ### pass ###
 (test 24 ((quote (N . @) (* N (pass + 6))) 2 1 2 3))
-
-
-### all ###
-(test '(test)
-   (make (all '((S) (and (= S "test") (link S))))) )
 
 
 ### maps ###

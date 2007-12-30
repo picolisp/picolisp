@@ -1,7 +1,8 @@
-# 27sep07abu
+# 29oct07abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
+# /path/to/p dbg.l lib/test.l
 
 (test T (pool (tmp "db")))
 
@@ -17,5 +18,7 @@
 
 (load "test/lib.l")
 (load "test/lib/misc.l")
+
+(load "test/lib/lint.l")
 
 # vi:et:ts=3:sw=3

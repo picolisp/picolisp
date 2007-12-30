@@ -119,13 +119,13 @@ href="refR.html#rollback">rollback</a></code>.
 </code></pre>
 
 <dt><a name="bind"><code>(bind 'sym|lst . prg) -> any</code></a>
-<dd>Binds value(s) to symbol(s). The first argument <code>sym</code> must
-evaluate to a symbol, a list of symbols, or to a list of symbol-value pairs. The
-values of these symbols are saved (and the symbols bound to the values in the
-last case), <code>prg</code> is executed, then the symbols are restored to their
-original values. During execution of <code>prg</code>, the values of the symbols
-can be temporarily modified. The return value is the result of <code>prg</code>.
-See also <code><a href="refL.html#let">let</a></code>, <code><a
+<dd>Binds value(s) to symbol(s). The first argument must evaluate to a symbol, a
+list of symbols, or to a list of symbol-value pairs. The values of these symbols
+are saved (and the symbols bound to the values in the last case),
+<code>prg</code> is executed, then the symbols are restored to their original
+values. During execution of <code>prg</code>, the values of the symbols can be
+temporarily modified. The return value is the result of <code>prg</code>. See
+also <code><a href="refL.html#let">let</a></code>, <code><a
 href="refJ.html#job">job</a></code> and <code><a
 href="refU.html#use">use</a></code>.
 

@@ -1,12 +1,11 @@
-/* 10sep07abu
+/* 20dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-bool Signal;
-int Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
+int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
 char **AV, *Home;
 child *Child;
 heap *Heaps;
@@ -21,11 +20,11 @@ outFile *OutFile, **OutFiles;
 int (*getBin)(void);
 void (*putBin)(int);
 any TheKey, TheCls;
-any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
+any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Meth, Quote, T;
 any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
-any Run, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
+any Run, Hup, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
 
 static int TtyPid;
 static word2 USec;
@@ -48,12 +47,13 @@ void giveup(char *msg) {
 }
 
 void bye(int n) {
-   cell c1;
+   static bool b;
 
-   Push(c1,val(Bye)), val(Bye) = Nil;
-   unwind(NULL);
-   Signal = 0;
-   prog(data(c1));
+   if (!b) {
+      b = YES;
+      unwind(NULL);
+      prog(val(Bye));
+   }
    finish(n);
 }
 
@@ -77,25 +77,31 @@ static void iSignal(int n, void (*foo)(int)) {
 void sighandler(any ex) {
    int i;
 
-   switch (Signal) {
-   case SIGINT:
-      Signal = 0,  brkLoad(ex);
-      break;
-   case SIGUSR1:
-      Signal = 0,  run(val(Sig1));
-      break;
-   case SIGUSR2:
-      Signal = 0,  run(val(Sig2));
-      break;
-   case SIGALRM:
-      fprintf(stderr, "%d SIGALRM\n", (int)getpid());
-   case SIGTERM:
-      if (Env.protect)
-         return;
-      for (i = 0; i < Children; ++i)
-         if (Child[i].pid)
-            return;
-      bye(0);
+   if (!Env.protect) {
+      switch (Signal) {
+      case SIGINT:
+         Signal = 0,  brkLoad(ex);
+         break;
+      case SIGUSR1:
+         Signal = 0,  run(val(Sig1));
+         break;
+      case SIGUSR2:
+         Signal = 0,  run(val(Sig2));
+         break;
+      case SIGALRM:
+         Signal = 0,  run(Alarm);
+         break;
+      case SIGHUP:
+         if (!isNil(val(Hup))) {
+            Signal = 0,  run(val(Hup));
+            break;
+         }
+      case SIGTERM:
+         for (i = 0; i < Children; ++i)
+            if (Child[i].pid)
+               return;
+         Signal = 0,  bye(0);
+      }
    }
 }
 
@@ -164,12 +170,11 @@ any doRaw(any x) {
    return T;
 }
 
-// (die 'cnt . prg) -> any
-any doDie(any x) {
-   alarm(Env.alarm = evCnt(x,cdr(x)));
-   x = prog(cddr(x));
-   alarm(Env.alarm = 0);
-   return x;
+// (alarm 'cnt . prg) -> cnt
+any doAlarm(any x) {
+   int n = alarm((int)evCnt(x,cdr(x)));
+   Alarm = cddr(x);
+   return boxCnt(n);
 }
 
 // (protect . prg) -> any
@@ -213,7 +218,7 @@ any doHeap(any x) {
       while (h = h->next);
       return boxCnt(n);
    }
-   for (x = Avail;  x;  x = cdr(x))
+   for (x = Avail;  x;  x = car(x))
       ++n;
    return boxCnt(n / CELLS);
 }
@@ -299,7 +304,7 @@ any doStk(any x) {
    OutFile = NULL,  StdOut = stderr;
    print(cdr(x)), crlf();
    for (p = Env.stack; p; p = cdr(p)) {
-      fprintf(stderr, "%lX ", num(p)),  fflush_unlocked(stderr);
+      fprintf(stderr, "%lX ", num(p)),  fflush(stderr);
       print(car(p)), crlf();
    }
    crlf();
@@ -416,10 +421,7 @@ int compare(any x, any y) {
 
 /*** Error handling ***/
 static void reset(void) {
-   if (Env.alarm)
-      alarm(Env.alarm = 0);
    Env.protect = 0;
-   popOutFiles();
    unwind(NULL);
    Env.stack = NULL;
    Env.meth = NULL;
@@ -434,8 +436,9 @@ void err(any ex, any x, char *fmt, ...) {
    char msg[240];
    outFrame f;
 
-   Line = Nil;
+   Chr = 0;
    Env.brk = NO;
+   Alarm = Line = Nil;
    f.pid = -1,  f.fd = 2,  pushOutFiles(&f);
    while (*AV  &&  strcmp(*AV,"-") != 0)
       ++AV;
@@ -511,8 +514,6 @@ void unwind(catchFrame *p) {
          popOutFiles();
       while (Env.ctlFiles != q->env.ctlFiles)
          popCtlFiles();
-      if (Env.alarm && !q->env.alarm)
-         alarm(0);
       Env = q->env;
       if (q == p)
          return;
@@ -537,7 +538,6 @@ void unwind(catchFrame *p) {
 }
 
 /*** Evaluation ***/
-/* Evaluate symbolic expression */
 any evExpr(any expr, any x) {
    any y = car(expr);
    struct {  // bindFrame
@@ -973,12 +973,13 @@ int MAIN(int ac, char *av[]) {
    AV = av+1;
    heapAlloc();
    initSymbols();
-   Line = Nil;
    StdOut = stdout;
    Env.get = getStdin;
    Env.put = putStdout;
+   Alarm = Line = Nil;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
+   iSignal(SIGHUP, doSignal);
    iSignal(SIGINT, doSigTerm);
    iSignal(SIGUSR1, doSignal);
    iSignal(SIGUSR2, doSignal);

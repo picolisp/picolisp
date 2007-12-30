@@ -1,11 +1,11 @@
-# 23jul07abu
+# 29dec07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
 
 (menu
    (ifn *ID
-      (<p> NIL
+      (prog
          (<h3> NIL ,"Select" " " ,"Item")
          (form 'dialog (choItem T)) )
       (<h3> NIL ,"Item")

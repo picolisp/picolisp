@@ -1,4 +1,4 @@
-# 02jul07abu
+# 22dec07abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -6,7 +6,7 @@ lib = ../lib
 
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
-CFLAGS := -c -O3 -pipe \
+CFLAGS := -c -O2 -m32 -pipe \
 	-falign-functions -fomit-frame-pointer \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
@@ -27,9 +27,8 @@ ifeq ($(shell uname), FreeBSD)
 else
 ifeq ($(shell uname), Darwin)
 	OS = Darwin
-	export MACOSX_DEPLOYMENT_TARGET=10.4
 	PICOLISP-FLAGS = -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup -export-dynamic
+	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup
 	STRIP = :
 else
 ifeq ($(shell uname -o), Cygwin)

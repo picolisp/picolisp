@@ -1,11 +1,11 @@
-# 08sep07abu
+# 29dec07abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
 
 (menu
    (ifn *ID
-      (<p> NIL
+      (prog
          (<h3> NIL ,"Select" " " ,"Order")
          (form 'dialog (choOrd T)) )
       (<h3> NIL ,"Order")

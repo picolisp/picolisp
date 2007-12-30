@@ -1,4 +1,4 @@
-# 15may07abu
+# 11oct07abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -147,7 +147,7 @@
          (dec 'N) )
       (unless (> (default X 1) 26)
          (space (inc Sp))
-         (for L Grid
+         (for @ Grid
             (prin " " (and How "  ") (char (+ 96 X)))
             (T (> (inc 'X) 26)) )
          (prinl) ) ) )

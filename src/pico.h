@@ -1,4 +1,4 @@
-/* 27sep07abu
+/* 20dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,12 +31,6 @@
 #define MAIN main2
 #endif
 
-#ifndef __linux__
-#define fflush_unlocked fflush
-#define fread_unlocked fread
-#define fwrite_unlocked fwrite
-#endif
-
 #define WORD ((int)sizeof(long))
 #define BITS (8*WORD)
 #define MASK ((word)-1)
@@ -49,6 +43,7 @@ typedef unsigned char byte;
 typedef unsigned char *ptr;
 typedef unsigned long long word2;
 
+#undef bool
 typedef enum {NO,YES} bool;
 
 typedef struct cell {            // Pico primary data type
@@ -121,7 +116,7 @@ typedef struct stkEnv {
    cell *stack, *arg;
    bindFrame *bind;
    methFrame *meth;
-   int next, alarm, protect, trace;
+   int next, protect, trace;
    any make;
    inFrame *inFiles;
    outFrame *outFiles;
@@ -140,7 +135,7 @@ typedef struct catchFrame {
 } catchFrame;
 
 /*** Macros ***/
-#define Free(p)         ((p)->cdr=Avail, Avail=(p))
+#define Free(p)         ((p)->car=Avail, Avail=(p))
 #define cellPtr(x)      ((any)((word)(x) & ~(2*WORD-1)))
 
 /* Number access */
@@ -209,7 +204,7 @@ typedef struct catchFrame {
 #define NeedNum(ex,x)   if (!isNum(x)) numError(ex,x)
 #define NeedCnt(ex,x)   if (!isNum(x) || isNum(cdr(numCell(x)))) cntError(ex,x)
 #define NeedSym(ex,x)   if (!isSym(x)) symError(ex,x)
-#define NeedExt(ex,x)   if (!isExt(x)) extError(ex,x)
+#define NeedExt(ex,x)   if (!isSym(x) || !isExt(x)) extError(ex,x)
 #define NeedCell(ex,x)  if (!isCell(x)) cellError(ex,x)
 #define NeedAtom(ex,x)  if (isCell(x)) atomError(ex,x)
 #define NeedLst(ex,x)   if (!isCell(x) && !isNil(x)) lstError(ex,x)
@@ -222,8 +217,7 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern bool Signal;
-extern int Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
+extern int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
 extern char **AV, *Home;
 extern child *Child;
 extern heap *Heaps;
@@ -238,11 +232,11 @@ extern outFile *OutFile, **OutFiles;
 extern int (*getBin)(void);
 extern void (*putBin)(int);
 extern any TheKey, TheCls;
-extern any Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
+extern any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Meth, Quote, T;
 extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
-extern any Run, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
+extern any Run, Hup, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -372,6 +366,7 @@ void zapZero(any);
 any doAbs(any);
 any doAccept(any);
 any doAdd(any);
+any doAlarm(any);
 any doAll(any);
 any doAnd(any);
 any doAny(any);
@@ -444,7 +439,6 @@ any doDefault(any);
 any doDel(any);
 any doDelete(any);
 any doDelq(any);
-any doDie(any);
 any doDiff(any);
 any doDir(any);
 any doDiv(any);
@@ -454,6 +448,7 @@ any doE(any);
 any doEcho(any);
 any doEnv(any);
 any doEof(any);
+any doEol(any);
 any doEq(any);
 any doEqual(any);
 any doEqual0(any);

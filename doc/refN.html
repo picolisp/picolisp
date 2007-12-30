@@ -139,7 +139,10 @@ non-<code>NIL</code>, the new object will be an external symbol (created in
 database file 1 if <code>T</code>, or in the corresponding database file if
 <code>num</code> is given). <code>typ</code> (typically a list of classes) is
 assigned to the <code>VAL</code>, and the initial <code>T</code> message is sent
-with the arguments <code>any</code> to the new object. See also <code><a
+with the arguments <code>any</code> to the new object. If no <code>T</code>
+message is defined for the classes in <code>typ</code> or their superclasses,
+the <code>any</code> arguments should evaluate to alternating keys and values
+for the initialization of the new object. See also <code><a
 href="refB.html#box">box</a></code>, <code><a
 href="refO.html#object">object</a></code>, <code><a
 href="refC.html#class">class</a></code>, <code><a
@@ -183,6 +186,28 @@ href="refP.html#prog2">prog2</a></code>.
 <p><pre><code>
 : (nil (println 'Ok))
 Ok
+-> NIL
+</code></pre>
+
+<dt><a name="noLint"><code>(noLint 'sym)<br>
+(noLint 'sym|(sym . cls) 'sym2)</code></a>
+<dd>Excludes the check for a function definition of <code>sym</code> (in the
+first form), or for variable binding and usage of <code>sym2</code> in the
+function definition, file contents or method body of <code>sym</code> (second
+form), during calls to <code><a href="refL.html#lint">lint</a></code>. See also
+<code><a href="refL.html#lintAll">lintAll</a></code>.
+
+<p><pre><code>
+: (de foo ()
+   (bar FreeVariable) )
+-> foo
+: (lint 'foo)
+-> ((def bar) (bnd FreeVariable))
+: (noLint 'bar)
+-> bar
+: (noLint 'foo 'FreeVariable)
+-> (foo . FreeVariable)
+: (lint 'foo)
 -> NIL
 </code></pre>
 

@@ -1,4 +1,4 @@
-# 26sep07abu
+# 10dec07abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -31,6 +31,11 @@
 (test NIL (fun? (1 2 3 4)))
 (test NIL (fun? '((A 2 B) (* A B))))
 (test T (fun? '(NIL (* 3 4))))
+
+
+### all ###
+(test '(test)
+   (filter '((S) (= S "test")) (all)) )
 
 
 ### intern ###

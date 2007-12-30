@@ -1,5 +1,12 @@
-# 25jun07abu
+# 10dec07abu
 # (c) Software Lab. Alexander Burger
+
+# *NoLint
+
+(de noLint (X V)
+   (if V
+      (push1 '*NoLint (cons X V))
+      (or (memq X *NoLint) (push '*NoLint X)) ) )
 
 (de global? (S)
    (or
@@ -28,6 +35,7 @@
                   (or
                      (getd "X")
                      (global? "X")
+                     (member (cons "*X" "X") *NoLint)
                      (memq "X" "*Bnd")
                      (push '"*Bnd" "X") ) ) ) ) )
       ((num? (car "X")))
@@ -38,9 +46,22 @@
                (if (and (pair (fun? (cdr "X"))) (not (cdr (tail 1 @))))
                   (use "*L" (lintFoo (cdr "X")))
                   (lint2 (cdr "X")) ) )
+            ((de dm)
+               (let "*X" (cadr "X")
+                  (lintFoo (cddr "X")) ) )
             (recur
                (let recurse (cdr "X")
                   (lintFoo recurse) ) )
+            (task
+               (lint1 (cadr "X"))
+               (let "Y" (cddr "X")
+                  (use "*L"
+                     (while (num? (car "Y"))
+                        (pop '"Y") )
+                     (while (and (car "Y") (sym? @))
+                        (lintVar (pop '"Y"))
+                        (pop '"Y") )
+                     (mapc lint1 "Y") ) ) )
             (let?
                (use "*L"
                   (lintVar (cadr "X"))
@@ -129,6 +150,7 @@
                      (or
                         (str? (car "X"))
                         (dlsym? (car "X"))
+                        (memq (car "X") *NoLint)
                         (memq (car "X") "*Def")
                         (push '"*Def" (car "X")) )
                      (mapc lint1 (cdr "X")) ) ) ) ) ) ) )
@@ -146,7 +168,11 @@
       ((or (not (sym? X)) (memq X '(NIL *DB *Solo ^ meth quote T)))
          (push '"*Var" X) )
       ((not (global? X))
-         (or Flg (memq X "*Use") (push '"*Use" X))
+         (or
+            Flg
+            (member (cons "*X" X) *NoLint)
+            (memq X "*Use")
+            (push '"*Use" X) )
          (push '"*L" X) ) ) )
 
 (de lintLoop ("Lst")
@@ -174,7 +200,17 @@
    (let ("*L" NIL  "*Var" NIL  "*Def" NIL  "*Bnd" NIL  "*Use" NIL)
       (when (pair "X")
          (setq  "C" (cdr "X")  "X" (car "X")) )
-      (lintFoo (if "C" (method "X" "C") (val "X")))
+      (cond
+         ("C"  # Method
+            (let "*X" (cons "X" "C")
+               (lintFoo (method "X" "C")) ) )
+         ((pair (val "X"))  # Function
+            (let "*X" "X"
+               (lintFoo (val "X")) ) )
+         ((info "X")  # File name
+            (let "*X" "X"
+               (in "X" (while (read) (lint1 @))) ) )
+         (T (quit "Can't lint" "X")) )
       (when (or "*Var" "*Def" "*Bnd" "*Use")
          (make
             # Bad variables
@@ -186,20 +222,21 @@
             # Unused variables
             (and "*Use" (link (cons 'use "*Use"))) ) ) ) )
 
-(de lintAll ()
+(de lintAll @
    (let *Dbg NIL
       (make
-         (all
-            '(("X")
-               (cond
-                  ((= `(char "+") (char "X"))
-                     (for "Y" (val "X")
-                        (and
-                           (pair "Y")
-                           (fun? (cdr "Y"))
-                           (lint (car "Y") "X")
-                           (link (cons (cons (car "Y") "X") @)) ) ) )
-                  ((and (not (global? "X")) (pair (getd "X")) (lint "X"))
-                     (link (cons "X" @)) ) ) ) ) ) ) )
+         (for "X" (all)
+            (cond
+               ((= `(char "+") (char "X"))
+                  (for "Y" (val "X")
+                     (and
+                        (pair "Y")
+                        (fun? (cdr "Y"))
+                        (lint (car "Y") "X")
+                        (link (cons (cons (car "Y") "X") @)) ) ) )
+               ((and (not (global? "X")) (pair (getd "X")) (lint "X"))
+                  (link (cons "X" @)) ) ) )
+         (while (args)
+            (and (lint (next)) (link (cons (arg) @))) ) ) ) )
 
 # vi:et:ts=3:sw=3

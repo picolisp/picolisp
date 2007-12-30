@@ -1,4 +1,4 @@
-# 27sep07abu
+# 17oct07abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -407,15 +407,16 @@
 
 
 ### match ###
-(test T
-   (match '(@A is @B) '(This is a test)) )
-(test '(This) @A)
-(test '(a test) @B)
-(test T
-   (match '(@X (d @Y) @Z) '((a b c) (d (e f) g) h i)) )
-(test '((a b c)) @X)
-(test '((e f) g) @Y)
-(test '(h i) @Z)
+(use (@A @B @X @Y @Z)
+   (test T
+      (match '(@A is @B) '(This is a test)) )
+   (test '(This) @A)
+   (test '(a test) @B)
+   (test T
+      (match '(@X (d @Y) @Z) '((a b c) (d (e f) g) h i)) )
+   (test '((a b c)) @X)
+   (test '((e f) g) @Y)
+   (test '(h i) @Z) )
 
 
 ### fill ###

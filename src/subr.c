@@ -1,4 +1,4 @@
-/* 27sep07abu
+/* 10oct07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -705,15 +705,12 @@ any doFin(any x) {
 
 // (last 'lst) -> any
 any doLast(any x) {
-   any y;
-
    x = cdr(x),  x = EVAL(car(x));
    if (!isCell(x))
       return x;
-   do
-      y = x;
-   while (isCell(x = cdr(x)));
-   return car(y);
+   while (isCell(cdr(x)))
+      x = cdr(x);
+   return car(x);
 }
 
 // (== 'any ..) -> flg

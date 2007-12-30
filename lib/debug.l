@@ -1,4 +1,4 @@
-# 09sep07abu
+# 10dec07abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -44,35 +44,34 @@
 (de what (S)
    (let *Dbg NIL
       (ifn S
-         (make (all link))
+         (all)
          (setq S (chop S))
-         (make
-            (all
-               '(("X")
-                  (and (match S (chop "X")) (link "X")) ) ) ) ) ) )
+         (filter
+            '(("X") (match S (chop "X")))
+            (all) ) ) ) )
 
 
 (de who ("X" . "*Prg")
    (let (*Dbg NIL  "Who" '("Who" @ @@ @@@))
-      (make (all "who")) ) )
+      (make (mapc "who" (all))) ) )
 
 (de "who" ("Y")
    (unless (or (ext? "Y") (memq "Y" "Who"))
       (push '"Who" "Y")
-      (if (= `(char "+") (char "Y"))
+      (ifn (= `(char "+") (char "Y"))
+         (and (pair (val "Y")) ("nest" @) (link "Y"))
          (for "Z" (val "Y")
             (if (atom "Z")
                (and ("match" "Z") (link "Y"))
                (when ("nest" (cdr "Z"))
                   (link (cons (car "Z") "Y")) ) ) )
-         (and (pair (val "Y")) ("nest" @) (link "Y")) )
-      (maps
-         '(("Z")
-            (if (atom "Z")
-               (and ("match" "Z") (link "Y"))
-               (when ("nest" (car "Z"))
-                  (link (cons (cdr "Z") "Y")) ) ) )
-         "Y" ) ) )
+         (maps
+            '(("Z")
+               (if (atom "Z")
+                  (and ("match" "Z") (link "Y"))
+                  (when ("nest" (car "Z"))
+                     (link (cons (cdr "Z") "Y")) ) ) )
+            "Y" ) ) ) )
 
 (de "nest" ("Y")
    ("nst1" "Y")
@@ -102,15 +101,17 @@
          (T (match "X" "D")) )
       (or (not "*Prg") (run "*Prg")) ) )
 
+
 (de can (X)
    (let *Dbg NIL
-      (make
-         (all
-            '(("Y")
-               (and
-                  (= `(char "+") (char "Y"))
-                  (asoq X (val "Y"))
-                  (link (cons X "Y")) ) ) ) ) ) )
+      (mapcan
+         '(("Y")
+            (and
+               (= `(char "+") (char "Y"))
+               (asoq X (val "Y"))
+               (cons (cons X "Y")) ) )
+         (all) ) ) )
+
 
 # Class dependencies
 (de dep ("C")
@@ -126,12 +127,14 @@
    (println "C") )
 
 (de dep2 (N "C")
-   (all
-      '(("X")
-         (when (memq "C" (type "X"))
-            (space N)
-            (println "X")
-            (dep2 (+ 3 N) "X") ) ) ) )
+   (for "X" (all)
+      (when
+         (and
+            (= `(char "+") (char "X"))
+            (memq "C" (type "X")) )
+         (space N)
+         (println "X")
+         (dep2 (+ 3 N) "X") ) ) )
 
 # Source code
 (off "*Vi")
@@ -139,7 +142,11 @@
 (de vi ("X" C)
    (when (pair "X")
       (setq C (cdr "X")  "X" (car "X")) )
-   (when (setq "*Vi" (if C (get C "X") (get "X" '*Dbg)))
+   (when
+      (setq "*Vi"
+         (if C
+            (get C '*Dbg -1 "X")
+            (get "X" '*Dbg 1) ) )
       (call 'vim
          "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
          (pack "+" (car "*Vi"))
@@ -287,24 +294,29 @@
 
 (de traceAll (Excl)
    (let *Dbg NIL
-      (all
-         '(("X")
-            (or
-               (memq "X" Excl)
-               (memq "X" *NoTrace)
-               (= `(char "*") (char "X"))
-               (cond
-                  ((= `(char "+") (char "X"))
-                     (mapc trace
-                        (mapcan
-                           '(("Y")
-                              (and
-                                 (pair "Y")
-                                 (fun? (cdr "Y"))
-                                 (list (cons (car "Y") "X")) ) )
-                           (val "X") ) ) )
-                  ((pair (getd "X"))
-                     (trace "X") ) ) ) ) ) ) )
+      (for "X" (all)
+         (or
+            (memq "X" Excl)
+            (memq "X" *NoTrace)
+            (= `(char "*") (char "X"))
+            (cond
+               ((= `(char "+") (char "X"))
+                  (mapc trace
+                     (mapcan
+                        '(("Y")
+                           (and
+                              (pair "Y")
+                              (fun? (cdr "Y"))
+                              (list (cons (car "Y") "X")) ) )
+                        (val "X") ) ) )
+               ((pair (getd "X"))
+                  (trace "X") ) ) ) ) ) )
+
+# Process Listing
+(de proc @
+   (apply call
+      (make (while (args) (link "-C" (next))))
+      'ps "-H" "-o" "pid,start,size,pcpu,wchan,cmd" ) )
 
 # Hex Dump
 (de hd (File Cnt)

@@ -80,8 +80,8 @@ href="refA.html#align">align</a></code>.
 <dt><a name="pass"><code>(pass 'fun ['any ..]) -> any</code></a>
 <dd>Passes to <code>fun</code> all arguments <code>any</code>, and all remaining
 variable arguments (<code>@</code>) as they would be returned by <code><a
-href="refR.html#rest">rest</a></code>. <code>(pass 'fun 'any)</code> is equivalent to
-<code>(apply 'fun (cons 'any (rest)))</code>. See also <code><a
+href="refR.html#rest">rest</a></code>. <code>(pass 'fun 'any)</code> is
+equivalent to <code>(apply 'fun (rest) 'any)</code>. See also <code><a
 href="refA.html#apply">apply</a></code>.
 
 <p><pre><code>
@@ -451,7 +451,7 @@ href="refP.html#pp">pp</a></code>.
 <dt><a name="prin"><code>(prin 'any ..) -> any</code></a>
 <dd>Prints the string representation of all <code>any</code> arguments to the
 current output channel. No space or newline is printed between individual items,
-of after the last item. For lists, all elements are <code>prin</code>'ted
+or after the last item. For lists, all elements are <code>prin</code>'ted
 recursively. See also <code><a href="refP.html#prinl">prinl</a></code>.
 
 <p><pre><code>
@@ -570,9 +570,11 @@ just its value) is returned, suitable for direct (destructive) manipulations.
 
 <dt><a name="protect"><code>(protect . prg) -> any</code></a>
 <dd>Executes <code>prg</code>, and returns the result of the last expression. If
-a SIGTERM signal is received during that time, termination of the process will
-be delayed until the execution of <code>prg</code> is completed. See also
-<code><a href="refK.html#kill">kill</a></code>.
+a signal is received during that time, its handling will be delayed until the
+execution of <code>prg</code> is completed. See also <code><a
+href="refA.html#alarm">alarm</a></code>, <a href="refH.html#*Hup">*Hup</a>, <a
+href="refS.html#*Sig1">*Sig[12]</a> and <code><a
+href="refK.html#kill">kill</a></code>.
 
 <p><pre><code>
 : (protect (journal "db1.log" "db2.log"))

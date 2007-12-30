@@ -1,4 +1,4 @@
-/* 08sep07abu
+/* 13dec07abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -38,7 +38,7 @@ caption {
    position: absolute;
    top: 0;
    left: 0;
-   width: 15em;
+   width: 18em;
    height: 100%;
    padding: 0;
    margin: 0;
@@ -100,7 +100,7 @@ caption {
 #main {
    position: absolute;
    top: 0;
-   left: 16em;
+   left: 20em;
 }
 
 /* Charts */

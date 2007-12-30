@@ -90,11 +90,22 @@ href="refT.html#till">till</a></code>, <code><a
 href="refR.html#read">read</a></code> or <code><a
 href="refS.html#skip">skip</a></code> will return <code>NIL</code>. Note that
 <code>eof</code> <i>cannot</i> be used with the binary <code><a
-href="refR.html#rd">rd</a></code> function.
+href="refR.html#rd">rd</a></code> function. See also <code><a
+href="refE.html#eol">eol</a></code>.
 
 <p><pre><code>
 : (in "file" (until (eof) (println (line T))))
 ...
+</code></pre>
+
+<dt><a name="eol"><code>(eol) -> flg</code></a>
+<dd>Returns the end-of-line status of the current input channel.
+See also <code><a href="refE.html#eof">eof</a></code>.
+
+<p><pre><code>
+: (make (until (prog (link (read)) (eol))))  # Read line into a list
+a b c (d e f) 123
+-> (a b c (d e f) 123)
 </code></pre>
 
 <dt><a name="eval"><code>(eval 'any ['cnt]) -> any</code></a>

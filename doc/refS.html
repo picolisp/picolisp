@@ -30,9 +30,12 @@ href="refS.html#scl">scl</a></code>.
 <dd>Global variables holding (possibly empty) <code>prg</code> bodies, which
 will be executed when a SIGUSR1 signal (or a SIGUSR2 signal, respectively) is
 sent to the current process. Note that this mechanism is "unreliable", in the
-way that when a second signal (it may be SIGINT, or another SIGUSR1/2) arrives
-before the first signal's <code>prg</code> is running, the first signal will be
-lost. See also <code><a href="refR.html#*Run">*Run</a></code> and <code><a
+way that when a second signal (it may be SIGHUP, SIGINT, another SIGUSR1/2,
+SIGALRM or SIGTERM) arrives before the first signal's <code>prg</code> is
+running, the first signal will be lost. See also <code><a
+href="refA.html#alarm">alarm</a></code>, <code><a
+href="refR.html#*Run">*Run</a></code>, <code><a
+href="refH.html#*Hup">*Hup</a></code> and <code><a
 href="refE.html#*Err">*Err</a></code>.
 
 <p><pre><code>
@@ -296,11 +299,11 @@ not given.
 
 <p><pre><code>
 : (space)
- -> T
+ -> 1
 : (space 1)
- -> T
+ -> 1
 : (space 2)
-  -> T
+  -> 2
 </code></pre>
 
 <dt><a name="sp?"><code>(sp? 'any) -> flg</code></a>
@@ -458,12 +461,15 @@ href="refF.html#fetch">fetch</a></code>.
 : (store (tree 'nr '+Item) 2 '{3-2})
 </code></pre>
 
-<dt><a name="str"><code>(str 'sym) -> lst<br>
+<dt><a name="str"><code>(str 'sym ['sym1]) -> lst<br>
 (str 'lst) -> sym</code></a>
 <dd>In the first form, the string <code>sym</code> is parsed into a list. This
-mechanism is also used by <code><a href="refL.html#load">load</a></code>. The
-second form does the reverse operation by building a string from a list. See
-also <code><a href="refA.html#any">any</a></code>, <code><a
+mechanism is also used by <code><a href="refL.html#load">load</a></code>. If
+<code>sym1</code> is given, it should specify a set of characters, and
+<code>str</code> will then return a list of tokens analog to <code><a
+href="refR.html#read">read</a></code>. The second form does the reverse
+operation by building a string from a list. See also <code><a
+href="refA.html#any">any</a></code>, <code><a
 href="refN.html#name">name</a></code> and <code><a
 href="refS.html#sym">sym</a></code>.
 
@@ -472,6 +478,8 @@ href="refS.html#sym">sym</a></code>.
 -> (a (1 2) b)
 : (str '(a "Hello" DEF))
 -> "a \"Hello\" DEF"
+: (str "a*3+b*4" "_")
+-> (a * 3 + b * 4)
 </code></pre>
 
 <dt><a name="strDat"><code>(strDat 'sym) -> dat</code></a>

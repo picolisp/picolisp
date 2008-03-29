@@ -1,4 +1,4 @@
-# 22nov07abu
+# 07mar08abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -67,6 +67,12 @@
    (info (tmp "info")) )
 
 
+### file ###
+(test (cons (tmp) "file" 1)
+   (out (tmp "file") (println '(file)))
+   (load (tmp "file")) )
+
+
 ### dir ###
 (call 'mkdir "-p" (tmp "dir"))
 (out (tmp "dir/a"))
@@ -100,19 +106,18 @@
 
 
 ### date time ###
-(use (Tim1 Tim2 Dat1 Dat2 T1 T2 D1 D2)
+(use (Dat1 Tim1 Dat2 Tim2 D1 T1 D2 T2)
    (until
       (=
-         (setq Tim1 (time))
+         (setq Dat1 (date)  Tim1 (time T))
          (prog
             (setq
-               Tim2 (time T)
-               Dat1 (date)
                Dat2 (date T)
-               T1 (in '(date "+%H %M %S") (list (read) (read) (read)))
-               T2 (in '(date "-u" "+%H %M %S") (list (read) (read) (read)))
+               Tim2 (time T)
                D1 (in '(date "+%Y %m %d") (list (read) (read) (read)))
-               D2 (in '(date "-u" "+%Y %m %d") (list (read) (read) (read))) )
+               T1 (in '(date "+%H %M %S") (list (read) (read) (read)))
+               D2 (in '(date "-u" "+%Y %m %d") (list (read) (read) (read)))
+               T2 (in '(date "-u" "+%H %M %S") (list (read) (read) (read))) )
             (time) ) ) )
    (test Tim1 (time T1))
    (test Tim1 (apply time T1))

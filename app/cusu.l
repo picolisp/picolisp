@@ -1,9 +1,9 @@
-# 29dec07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
 
-(menu
+(menu ,"Customer/Supplier"
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Customer/Supplier")
@@ -12,12 +12,17 @@
       (form NIL
          (<h2> NIL (<id> (: nr) " -- " (: nm)))
          (panel T ,"Customer/Supplier No. @1" '(may Delete) '(choCuSu T) 'nr '+CuSu)
+         (<hr>)
          (<tab>
             (,"Name"
-               (<grid> 2
-                  ,"Number" (gui '(+E/R +NumField) '(nr : home obj) 10)
-                  ,"Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Name" 40)
-                  ,"Name 2" (gui '(+E/R +TextField) '(nm2 : home obj) 40) ) )
+               (<grid> 3
+                  ,"Number" NIL (gui '(+E/R +NumField) '(nr : home obj) 10)
+                  ,"Salutation"
+                  (gui '(+Hint) ,"Salutation"
+                     '(mapcar '((This) (cons (: nm) This)) (collect 'nm '+Sal)) )
+                  (gui '(+Hint2 +E/R +Obj +TextField) '(sal : home obj) '(nm +Sal) 20)
+                  ,"Name" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Name" 40)
+                  ,"Name 2" NIL (gui '(+E/R +TextField) '(nm2 : home obj) 40) ) )
             (,"Address"
                (<grid> 2
                   ,"Street" (gui '(+E/R +TextField) '(str : home obj) 40)
@@ -33,6 +38,7 @@
                   ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) ) )
             (,"Memo"
                (gui '(+BlobField) '(txt : home obj) 60 8) ) )
+         (<hr>)
          (<spread> NIL (editButton T)) ) ) )
 
 # vi:et:ts=3:sw=3

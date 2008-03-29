@@ -1,8 +1,8 @@
-# 27nov07abu
+# 21mar08abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
-# *Sock *Agent *MPartLim *MPartEnd
+# *Sock *Agent *MPartLim *MPartEnd "*HtSet"
 # *Post *Url *Timeout *SesId *ConId
 # *Cookies "*Cookies"
 
@@ -117,7 +117,7 @@
 
 # Handle HTTP-Transaction
 (de http (S)
-   (off *Cookies "*Cookies")
+   (off *Cookies "*Cookies" "*HtSet")
    (use (L @U @H @X)
       (catch "http"
          (in S
@@ -291,13 +291,19 @@
                ((and @Z (val "Var")) (set "Var" Val))
                ((car Val) (con (val "Var") (cdr Val)))
                (NIL (set (val "Var") (car Val))) ) )
+         ((not (memq "Var" "*HtSet"))
+            (push '"*HtSet" "Var")
+            (set "Var" (cons (cons @N Val)))
+            Val )
          ((assoc @N (val "Var"))
             (let X @
                (cond
                   ((nand @Z (cdr X)) (con X Val))
                   ((car Val) (set (cdr X) @))
                   (T (con (cdr X) (cdr Val))) ) ) )
-         (T (cdr (queue "Var" (cons @N Val)))) ) ) )
+         (T
+            (queue "Var" (cons @N Val))
+            Val ) ) ) )
 
 (de htArg (Lst)
    (case (car Lst)
@@ -308,7 +314,7 @@
       (T (ht:Pack Lst)) ) )
 
 # Http Transfer Header
-(de _http (Typ Upd Att)
+(de _http (Typ Upd File Att)
    (prinl "HTTP/1." *Http1 " 200 OK^M")
    (prinl "Server: PicoLisp^M")
    (prin "Date: ")
@@ -318,11 +324,14 @@
       (when (=0 Upd)
          (prinl "Cache-Control: no-cache^M") ) )
    (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M")
-   (when Att
-      (prinl "Content-Disposition: attachment; filename=\"" Att "\"^M") ) )
+   (when File
+      (prinl
+         "Content-Disposition: "
+         (if Att "attachment" "inline")
+         "; filename=\"" File "\"^M" ) ) )
 
-(de httpHead (Typ Upd Att)
-   (_http Typ Upd Att)
+(de httpHead (Typ Upd File Att)
+   (_http Typ Upd File Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
    (for L "*Cookies"
       (prinl "Set-Cookie: " (car L) "=" (cdr L) "; path=/") )
@@ -344,7 +353,8 @@
       (_http
          Typ
          (if (and *Tmp (pre? *Tmp File)) 1 Upd)
-         (and Att (stem (chop File) "/")) )
+         (stem (chop File) "/")
+         Att )
       (prinl "Content-Length: " (car @) "^M")
       (prin "Last-Modified: ")
       (httpDate (cadr @) (cddr @))

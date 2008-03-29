@@ -1,4 +1,4 @@
-/* 26dec07abu
+/* 23feb08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -429,9 +429,9 @@ int symByte(any s) {
       n = unDig(x);
    }
    else if ((n >>= 8) == 0) {
-      if (!isNum(x = cdr(numCell(x))))
+      if (!isNum(cdr(numCell(x))))
          return 0;
-      n = unDig(x);
+      n = unDig(x = cdr(numCell(x)));
    }
    return n & 0xFF;
 }
@@ -2433,7 +2433,7 @@ any doRpc(any x) {
 typedef long long adr;
 
 static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
-static FILE *Journal;
+static FILE *Journal, *Log;
 static adr BlkIndex, BlkLink;
 static word2 *Marks;
 static byte *Locks, *Ptr, **Mark;
@@ -2450,6 +2450,8 @@ static void setAdr(adr n, byte *p) {
 }
 
 static void jnlErr(void) {err(NULL, NULL, "Bad Journal");}
+static void fsyncErr(any ex, char *s) {err(ex, NULL, "%s fsync error: %s", s, strerror(errno));}
+static void ignLog(void) {fprintf(stderr, "Discarding incomplete transaction.\n");}
 
 any new64(word2 n, any x) {
    int c, i;
@@ -2594,6 +2596,14 @@ static void rdBlock(adr n) {
    Ptr = Block + BLK;
 }
 
+static void logBlock(void) {
+   byte a[BLK];
+
+   a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite(a, 2, 1, Log);
+   setAdr(BlkIndex, a),  fwrite(a, BLK, 1, Log);
+   fwrite(Block, BlkSize[F], 1, Log);
+}
+
 static void wrBlock(void) {blkPoke(BlkIndex << BlkShift[F], Block, BlkSize[F]);}
 
 static adr newBlock(void) {
@@ -2697,7 +2707,55 @@ static void putBlock(int c) {
    *Ptr++ = (byte)c;
 }
 
-// (pool ['sym1 ['lst] ['sym2]]) -> flg
+// Test for existing transaction
+static bool transaction(void) {
+   byte a[BLK];
+
+   fseek(Log, 0L, SEEK_SET);
+   if (fread(a, 2, 1, Log) == 0) {
+      if (!feof(Log))
+         ignLog();
+      return NO;
+   }
+   for (;;) {
+      if (a[0] == 0xFF && a[1] == 0xFF)
+         return YES;
+      if ((F = a[0] | a[1]<<8) >= Files  ||
+            fread(a, BLK, 1, Log) != 1  ||
+            fseek(Log, BlkSize[F], SEEK_CUR) != 0  ||
+            fread(a, 2, 1, Log) != 1 ) {
+         ignLog();
+         return NO;
+      }
+   }
+}
+
+static void restore(any ex) {
+   byte dirty[Files], a[BLK], buf[MaxBlkSize];
+
+   fseek(Log, 0L, SEEK_SET);
+   for (F = 0; F < Files; ++F)
+      dirty[F] = 0;
+   for (;;) {
+      if (fread(a, 2, 1, Log) == 0)
+         jnlErr();
+      if (a[0] == 0xFF && a[1] == 0xFF)
+         break;
+      if ((F = a[0] | a[1]<<8) >= Files  ||
+            fread(a, BLK, 1, Log) != 1  ||
+            fread(buf, BlkSize[F], 1, Log) != 1 )
+         jnlErr();
+      while (pwrite(BlkFile[F], buf, BlkSize[F], getAdr(a) << BlkShift[F]) != (ssize_t)BlkSize[F])
+         if (errno != EINTR)
+            dbErr("write");
+      dirty[F] = 1;
+   }
+   for (F = 0; F < Files; ++F)
+      if (dirty[F] && fsync(BlkFile[F]) < 0)
+         fsyncErr(ex, "DB");
+}
+
+// (pool ['sym1 ['lst] ['sym2] ['sym3]]) -> flg
 any doPool(any ex) {
    any x, db;
    byte buf[2*BLK+1];
@@ -2716,6 +2774,8 @@ any doPool(any ex) {
    }
    if (Journal)
       fclose(Journal),  Journal = NULL;
+   if (Log)
+      fclose(Log),  Log = NULL;
    x = cdr(ex),  db = EVAL(car(x));
    NeedSym(ex,db);
    if (!isNil(db)) {
@@ -2773,6 +2833,21 @@ any doPool(any ex) {
          pathString(x, nm);
          if (!(Journal = fopen(nm, "a")))
             openErr(ex, nm);
+      }
+      x = cddddr(ex),  x = EVAL(car(x));
+      NeedSym(ex,x);
+      if (!isNil(x)) {
+         char nm[pathSize(x)];
+
+         pathString(x, nm);
+         if (!(Log = fopen(nm, "a+")))
+            openErr(ex, nm);
+         if (transaction()) {
+            fprintf(stderr, "Last transaction not completed: Rollback\n");
+            restore(ex);
+         }
+         fseek(Log, 0L, SEEK_SET);
+         ftruncate(fileno(Log), 0);
       }
    }
    return T;
@@ -3064,14 +3139,44 @@ any doCommit(any ex) {
    int i;
    any flg, x, y, z;
    ptr pbSave, ppSave;
-   byte buf[PIPE_BUF];
+   byte dirty[Files], buf[PIPE_BUF];
 
    x = cdr(ex),  flg = EVAL(car(x));
    if (force = !Transactions || !isNil(flg)) {
       wrLock();
       if (Journal)
          lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
-      ++Env.protect;
+      if (!Log)
+         ++Env.protect;
+      else {
+         for (F = 0; F < Files; ++F)
+            dirty[F] = 0;
+         for (i = 0; i < HASH; ++i) {  // Save objects
+            for (x = Extern[i];  isCell(x);  x = cdr(x)) {
+               for (y = tail1(car(x)); isCell(y); y = cdr(y));
+               z = numCell(y);
+               while (isNum(cdr(z)))
+                  z = numCell(cdr(z));
+               if (cdr(z) == At2 || cdr(z) == At3) {  // dirty or deleted
+                  rdBlock(blk64(y)*BLKSIZE),  logBlock();
+                  while (BlkLink)
+                     rdBlock(BlkLink),  logBlock();
+                  dirty[F] = 1;
+               }
+            }
+         }
+         for (F = 0; F < Files; ++F) {
+            if (dirty[F]) {
+               rdBlock(0),  logBlock();   // Save Block 0
+               while (BlkLink)            // Save free list
+                  rdBlock(BlkLink),  logBlock();
+            }
+         }
+         putc_unlocked(0xFF, Log),  putc_unlocked(0xFF, Log);
+         fflush(Log);
+         if (fsync(fileno(Log)) < 0)
+            fsyncErr(ex, "Transaction");
+      }
       x = cddr(ex),  EVAL(car(x));
       if (note = Tell && !isNil(flg) && flg != T)
          tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
@@ -3162,7 +3267,15 @@ any doCommit(any ex) {
          }
          car(x) = Nil;
       }
-      --Env.protect;
+      if (!Log)
+         --Env.protect;
+      else {
+         for (F = 0; F < Files; ++F)
+            if (dirty[F] && fsync(BlkFile[F]) < 0)
+               fsyncErr(ex, "DB");
+         fseek(Log, 0L, SEEK_SET);
+         ftruncate(fileno(Log), 0);
+      }
       rwUnlock(0);  // Unlock all
       Transactions = 0;
       return T;

@@ -418,11 +418,12 @@ optional arguments.
 -> (1 2)
 </code></pre>
 
-<dt><a name="del"><code>(del 'any 'var) -> any</code></a>
-<dd>Deletes <code>any</code> from the list in the value of <code>var</code>.
-<code>(del 'any 'var)</code> is equivalent to <code>(set 'var (delete 'any
-var))</code>. See also <code><a href="refD.html#delete">delete</a></code>,
-<code><a href="refC.html#cut">cut</a></code> and <code><a
+<dt><a name="del"><code>(del 'any 'var) -> lst</code></a>
+<dd>Deletes <code>any</code> from the list in the value of <code>var</code>, and
+returns the remaining list. <code>(del 'any 'var)</code> is equivalent to
+<code>(set 'var (delete 'any var))</code>. See also <code><a
+href="refD.html#delete">delete</a></code>, <code><a
+href="refC.html#cut">cut</a></code> and <code><a
 href="refP.html#pop">pop</a></code>.
 
 <p><pre><code>

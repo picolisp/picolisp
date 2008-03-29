@@ -335,10 +335,10 @@ href="refM.html#mmeq">mmeq</a></code>.
 -> (b . 7)
 </code></pre>
 
-<dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a>
-<dd>Searches an association list. Returns the first element from
-<code>lst</code> with its <code>CAR</code> equal to <code>any</code>, or
-<code>NIL</code> if no match is found.
+<dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a> <dd>Searches an
+association list. Returns the first element from <code>lst</code> with its
+<code>CAR</code> equal to <code>any</code>, or <code>NIL</code> if no match is
+found. See also <code><a href="refA.html#asoq">asoq</a></code>.
 
 <p><pre><code>
 : (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
@@ -351,8 +351,8 @@ href="refM.html#mmeq">mmeq</a></code>.
 
 <dt><a name="at"><code>(at '(cnt1 . cnt2) . prg) -> any</code></a>
 <dd>Increments <code>cnt1</code> (destructively), and returns <code>NIL</code>
-when it is less than <code>cnt2</code>. Otherwise, <code>prg</code> is executed
-and <code>cnt1</code> is reset to zero. Returns the result of <code>prg</code>.
+when it is less than <code>cnt2</code>. Otherwise, <code>cnt1</code> is reset to
+zero and <code>prg</code> is executed. Returns the result of <code>prg</code>.
 
 <p><pre><code>
 : (do 11 (prin ".") (at (0 . 3) (prin "!")))

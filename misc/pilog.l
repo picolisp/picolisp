@@ -1,4 +1,4 @@
-# 05apr03abu
+# 31jan08abu
 # (c) Software Lab. Alexander Burger
 
 (be sister (@X @Y) (parents @X @M @F) (parents @Y @M @F) (different @X @Y))
@@ -80,7 +80,7 @@
    (mapcar @P @L @M) )
 
 
-### Tests ###
+### Test ###
 (test NIL (solve '((equal A B))))
 (test '(T) (solve '((equal A A))))
 
@@ -126,3 +126,5 @@
 (test
    '(((@Z I (am not) a computer)))
    (solve '((mapcar change (you are a computer) @Z) T)) )
+
+# vi:et:ts=3:sw=3

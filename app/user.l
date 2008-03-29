@@ -1,9 +1,9 @@
-# 09sep07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
 
-(menu
+(menu ,"User Administration"
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"User")

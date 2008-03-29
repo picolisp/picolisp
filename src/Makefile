@@ -1,4 +1,5 @@
 # 22dec07abu
+# 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -16,6 +17,12 @@ CFLAGS := -c -O2 -m32 -pipe \
 ifeq ($(shell uname), Linux)
 	OS = Linux
 	PICOLISP-FLAGS = -rdynamic -lc -lm -ldl
+	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
+	STRIP = strip
+else
+ifeq ($(shell uname), OpenBSD)
+	OS = OpenBSD
+	PICOLISP-FLAGS = -rdynamic -lc -lm
 	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
 	STRIP = strip
 else
@@ -39,6 +46,7 @@ ifeq ($(shell uname -o), Cygwin)
 	STRIP = strip
 	exe = .exe
 	dll = .dll
+endif
 endif
 endif
 endif

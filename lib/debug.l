@@ -1,4 +1,4 @@
-# 10dec07abu
+# 26mar08abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -179,6 +179,11 @@
             (_dbg Lst)
             (for L (cdr Lst)
                (map _dbg (cdr L)) ) )
+         (state
+            (_dbg Lst)
+            (for L (cdr Lst)
+               (map _dbg (cddar L))
+               (map _dbg (cdr L)) ) )
          ((cond nond)
             (for L Lst
                (map _dbg L) ) )
@@ -189,7 +194,7 @@
             (map _dbg (cdr Lst)) )
          (loop
             (_dbg2 Lst) )
-         (do
+         ((bind do)
             (_dbg Lst)
             (_dbg2 (cdr Lst)) )
          (for

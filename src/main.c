@@ -1,4 +1,4 @@
-/* 20dec07abu
+/* 28mar08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -12,7 +12,7 @@ heap *Heaps;
 cell *Avail;
 stkEnv Env;
 catchFrame *CatchPtr;
-struct termios *Termio;
+struct termios OrgTermio, *Termio;
 FILE *StdOut;
 int InFDs, OutFDs;
 inFile *InFile, **InFiles;
@@ -29,8 +29,7 @@ any Run, Hup, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
 static int TtyPid;
 static word2 USec;
 static struct timeval Tv;
-static bool Jam;
-static struct termios RawTermio;
+static bool Tio, Jam;
 static jmp_buf ErrRst;
 static void finish(int) __attribute__ ((noreturn));
 
@@ -76,9 +75,13 @@ static void iSignal(int n, void (*foo)(int)) {
 /* Signal handler */
 void sighandler(any ex) {
    int i;
+   bool flg;
 
    if (!Env.protect) {
       switch (Signal) {
+      case SIGHUP:
+         Signal = 0,  run(val(Hup));
+         break;
       case SIGINT:
          Signal = 0,  brkLoad(ex);
          break;
@@ -91,16 +94,15 @@ void sighandler(any ex) {
       case SIGALRM:
          Signal = 0,  run(Alarm);
          break;
-      case SIGHUP:
-         if (!isNil(val(Hup))) {
-            Signal = 0,  run(val(Hup));
-            break;
-         }
       case SIGTERM:
-         for (i = 0; i < Children; ++i)
-            if (Child[i].pid)
-               return;
-         Signal = 0,  bye(0);
+         for (flg = NO, i = 0; i < Children; ++i)
+            if (Child[i].pid) {
+               flg = YES;
+               kill(Child[i].pid, SIGTERM);
+            }
+         if (!flg)
+            Signal = 0,  bye(0);
+         break;
       }
    }
 }
@@ -131,31 +133,32 @@ static void doSigChld(int n __attribute__((unused))) {
 static void doTermStop(int n __attribute__((unused))) {
    sigset_t mask;
 
-   tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+   tcsetattr(STDIN_FILENO, TCSADRAIN, &OrgTermio);
    sigemptyset(&mask);
    sigaddset(&mask, SIGTSTP);
    sigprocmask(SIG_UNBLOCK, &mask, NULL);
    signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, doTermStop);
-   tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
+   tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
 }
 
 void setRaw(void) {
-   if (!Termio  &&  tcgetattr(STDIN_FILENO, &RawTermio) == 0) {
-      *(Termio = malloc(sizeof(struct termios))) = RawTermio;
-      RawTermio.c_iflag = 0;
-      RawTermio.c_lflag = ISIG;
-      RawTermio.c_cc[VMIN] = 1;
-      RawTermio.c_cc[VTIME] = 0;
-      tcsetattr(STDIN_FILENO, TCSADRAIN, &RawTermio);
+   if (Tio && !Termio) {
+      *(Termio = malloc(sizeof(struct termios))) = OrgTermio;
+      Termio->c_iflag = 0;
+      Termio->c_lflag = ISIG;
+      Termio->c_cc[VMIN] = 1;
+      Termio->c_cc[VTIME] = 0;
+      tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
       if (signal(SIGTSTP,SIG_IGN) == SIG_DFL)
          signal(SIGTSTP, doTermStop);
    }
 }
 
 void setCooked(void) {
-   if (Termio)
-      tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
-   Termio = NULL;
+   if (Termio) {
+      tcsetattr(STDIN_FILENO, TCSADRAIN, &OrgTermio);
+      free(Termio),  Termio = NULL;
+   }
 }
 
 // (raw ['flg]) -> flg
@@ -718,6 +721,8 @@ any doRest(any x) {
    return Pop(c1);
 }
 
+static struct tm *TM;
+
 any mkDat(int y, int m, int d) {
    int n;
    static char mon[13] = {31,31,28,31,30,31,30,31,31,30,31,30,31};
@@ -737,17 +742,16 @@ any doDate(any ex) {
    int y, m, d, n;
    cell c1;
    time_t tim;
-   struct tm *p;
 
    if (!isCell(x = cdr(ex))) {
       time(&tim);
-      p = localtime(&tim);
-      return mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday);
+      TM = localtime(&tim);
+      return mkDat(TM->tm_year+1900,  TM->tm_mon+1,  TM->tm_mday);
    }
    if ((z = EVAL(car(x))) == T) {
       time(&tim);
-      p = gmtime(&tim);
-      return mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday);
+      TM = gmtime(&tim);
+      return mkDat(TM->tm_year+1900,  TM->tm_mon+1,  TM->tm_mday);
    }
    if (isNil(z))
       return Nil;
@@ -789,11 +793,8 @@ any doTime(any ex) {
       p = localtime(&tim);
       return boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec);
    }
-   if ((z = EVAL(car(x))) == T) {
-      time(&tim);
-      p = gmtime(&tim);
-      return boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec);
-   }
+   if ((z = EVAL(car(x))) == T)
+      return TM? boxCnt(TM->tm_hour * 3600 + TM->tm_min * 60 + TM->tm_sec) : Nil;
    if (isNil(z))
       return Nil;
    if (isNum(z) && !isCell(x = cdr(x))) {
@@ -887,6 +888,28 @@ any doInfo(any x) {
    }
 }
 
+// (file) -> (sym1 sym2 . num) | NIL
+any doFile(any ex __attribute__((unused))) {
+   char *s, *p;
+   cell c1;
+
+   if (!InFile || !InFile->name)
+      return Nil;
+   Push(c1, boxCnt(InFile->src));
+   s = strdup(InFile->name);
+   if (p = strrchr(s, '/')) {
+      data(c1) = cons(mkStr(p+1), data(c1));
+      *(p+1) = '\0';
+      data(c1) = cons(mkStr(s), data(c1));
+   }
+   else {
+      data(c1) = cons(mkStr(s), data(c1));
+      data(c1) = cons(mkStr("./"), data(c1));
+   }
+   free(s);
+   return Pop(c1);
+}
+
 // (dir ['any]) -> lst
 any doDir(any x) {
    any y;
@@ -977,6 +1000,7 @@ int MAIN(int ac, char *av[]) {
    Env.get = getStdin;
    Env.put = putStdout;
    Alarm = Line = Nil;
+   Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
    iSignal(SIGHUP, doSignal);

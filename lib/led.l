@@ -1,4 +1,4 @@
-# 10dec07abu
+# 23mar08abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -333,10 +333,10 @@
          (member
             (setq "C" (let *Dbg "*Dbg" (key)))
             '("^J" "^M") )
-         (or "C" (bye))
-         (when (= "C" "^X")
-            (prinl)
-            (quit) )
+         (case "C"
+            (NIL (bye))
+            ("^D" (prinl) (tell 'bye) (bye))
+            ("^X" (prinl) (quit)) )
          ((if "Insert" insMode cmdMode) "C") ) ) )
 
 # Function keys

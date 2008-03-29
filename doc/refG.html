@@ -67,8 +67,8 @@ or a property (if the next argument is a symbol) from a symbol, the <code><a
 href="refA.html#asoq">asoq</a></code>ed element (if the next argument is a
 symbol), the n'th element (if the next argument is a positive number) or the
 n'th <code>CDR</code> (if the next argument is a negative number) from a list.
-See also <code><a href="refP.html#put">put</a></code> and <code><a
-href="ref_.html#:">:</a></code>.
+See also <code><a href="refP.html#put">put</a></code>, <code><a
+href="ref_.html#;">;</a></code> and <code><a href="ref_.html#:">:</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -153,12 +153,17 @@ See also <code><a href="refP.html#prove">prove</a></code>.
 <dd>Builds a list of lists, by grouping all elements of <code>lst</code> with
 the same CAR into a common sublist. See also <a
 href="ref.html#cmp">Comparing</a>, <code><a
+href="refB.html#by">by</a>, <code><a
 href="refS.html#sort">sort</a></code> and <code><a
 href="refU.html#uniq">uniq</a></code>.
 
 <p><pre><code>
 : (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f)))
 -> ((1 a b c) (2 d e f))
+: (by name group '("x" "x" "y" "z" "x" "z")))
+-> (("x" "x" "x") ("y") ("z" "z"))
+: (by length group '(123 (1 2) "abcd" "xyz" (1 2 3 4) "XY"))
+-> ((123 "xyz") ((1 2) "XY") ("abcd" (1 2 3 4))
 </code></pre>
 
 <dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>

@@ -1,4 +1,4 @@
-/* 10sep07abu
+/* 14feb08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -221,9 +221,7 @@ int main(int ac, char *av[]) {
    for (;;) {
       socklen_t len = sizeof(addr);
       if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
-         if (n)
-            close(cli);
-         else {
+         if (!n) {
             int fd, port;
             char *p, *q, buf[4096], buf2[64];
 
@@ -343,6 +341,7 @@ int main(int ac, char *av[]) {
             }
             return 0;
          }
+         close(cli);
       }
    }
 }

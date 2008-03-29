@@ -227,9 +227,10 @@ href="ref_.html#*/">*/</a></code>, <code><a href="ref_.html#+">+</a></code> and
 <dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
 list, by applying the <code><a href="refG.html#get">get</a></code> algorithm to
 <code>This</code> and the following arguments. Used typically in methods or
-<code><a href="refW.html#with">with</a></code> bodies. See also <code><a
-href="refG.html#get">get</a></code>, <code><a href="ref_.html#=:">=:</a></code>
-and <code><a href="ref_.html#::">::</a></code>.
+<code><a href="refW.html#with">with</a></code> bodies. <code>(: ..)</code> is
+equivalent to <code>(; This ..)</code>. See also <code><a
+href="ref_.html#;">;</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
+<code><a href="ref_.html#::">::</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)
@@ -251,6 +252,26 @@ href="ref_.html#=:">=:</a></code> and <code><a href="ref_.html#:">:</a></code>.
 <p><pre><code>
 : (with 'X (=: cnt 0) (inc (:: cnt)) (: cnt))
 -> 1
+</code></pre>
+
+<dt><a name=";"><code>(; 'sym1|lst [sym2|cnt ..]) -> any</code></a>
+<dd>Fetches a value <code>any</code> from the properties of a symbol, or from a
+list, by applying the <code><a href="refG.html#get">get</a></code> algorithm to
+<code>sym1|lst</code> and the following arguments. See also <code><a
+href="ref_.html#:">:</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
+<code><a href="ref_.html#::">::</a></code>.
+
+<p><pre><code>
+: (put 'A 'a 1)
+-> 1
+: (put 'A 'b 'B)
+-> B
+: (put 'B 'c 7)
+-> 7
+: (; 'A a)
+-> 1
+: (; 'A b c)
+-> 7
 </code></pre>
 
 <dt><a name="<"><code>(< 'any ..) -> flg</code></a>

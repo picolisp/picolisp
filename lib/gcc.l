@@ -1,4 +1,4 @@
-# 16nov07abu
+# 04feb08abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -16,7 +16,6 @@
                "-pipe" "-D_GNU_SOURCE" "-D_FILE_OFFSET_BITS=64" (tmp S ".c") ) ) )
       ("Darwin"
          (quote
-            (sys "MACOSX_DEPLOYMENT_TARGET" "10.4")
             (apply call L 'gcc "-o" (tmp S)
                "-dynamiclib" "-undefined" "dynamic_lookup"
                "-O" "-falign-functions" "-fomit-frame-pointer"

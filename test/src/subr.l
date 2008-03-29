@@ -1,4 +1,4 @@
-# 17oct07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -60,7 +60,7 @@
 
 ### list ###
 (test (1 2 3 4) (list 1 2 3 4))
-(test '(a (2 3) "Ok") (list 'a (2 3) "Ok"))
+(test '(a (2 3) "OK") (list 'a (2 3) "OK"))
 
 
 ### need ###

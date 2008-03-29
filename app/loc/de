@@ -1,4 +1,4 @@
-# 13jun07abu
+# 22jan08abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(@1 Positionen)"
@@ -18,12 +18,15 @@
 
 "Data" "Daten"
 "Date" "Datum"
+"Dear Sir or Madam," "Sehr geehrte Damen und Herren,"
 "Description" "Bezeichnung"
 
 "eMail" "eMail"
 
 "Fax" "Fax"
 "Full Name" "Vollständiger Name"
+
+"Greeting" "Gruß"
 
 "Home" "Startseite"
 
@@ -58,6 +61,10 @@
 "Role Administration" "Rollenverwaltung"
 
 "Sales" "Verkauf"
+"Salutation" "Anrede"
+"Salutation '@1'" "Anrede '@1'"
+"Salutations" "Anreden"
+"Sex" "Geschlecht"
 "Street" "Straße"
 "Supplier" "Lieferant"
 "System" "System"

@@ -1,4 +1,4 @@
-# 10nov04abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
@@ -73,11 +73,11 @@
 
 # Optimum hit percentage
 (de tst (Cnt)
-   (let Ok 0
+   (let OK 0
       (do 100
          (when
             (=
                (trip Cnt 'Rheine 'Paderborn)
                '(Rheine Muenster Warendorf Rheda Paderborn) )
-            (inc 'Ok) ) )
-      Ok ) )
+            (inc 'OK) ) )
+      OK ) )

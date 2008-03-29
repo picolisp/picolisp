@@ -1,4 +1,4 @@
-# 27dec07abu
+# 23jan08abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -14,7 +14,7 @@
 (rel fin    (+Ref +Date))                       # died
 (rel txt    (+String))                          # Info
 
-(dm url> ()
+(dm url> (Tab)
    (list "@person" '*ID This) )
 
 
@@ -35,7 +35,7 @@
 (de choPerson (Dst)
    (diaform '(Dst)
       (<grid> "--.-.-."
-         "Name" (gui 'nm '(+Var +TextField) '*PrsNm 20)
+         "Name" (gui 'nm '(+Focus +Var +TextField) '*PrsNm 20)
          "Occupation" (gui 'job '(+Var +TextField) '*PrsJob 20)
          "born" (prog
             (gui 'dat1 '(+Var +DateField) '*PrsDat1 10)
@@ -45,7 +45,7 @@
          "Mother" (gui 'ma '(+Var +TextField) '*PrsMa 20)
          "Partner" (gui 'mate '(+Var +TextField) '*PrsMate 20)
          (resetButton '(nm pa ma mate job dat1 dat2 query)) )
-      (gui 'query '(+QueryChart) 8
+      (gui 'query '(+QueryChart) (cho)
          '(goal
             (quote
                @Nm *PrsNm
@@ -69,19 +69,19 @@
                   (range @Dat @@ dat) ) ) )
          7
          '((This) (list This This (: pa) (: ma) (: mate) (: job) (: dat))) )
-      (<table> NIL NIL
+      (<table> 'chart NIL
          '((btn) (NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
-         (do 8
-            (<row> NIL
+         (do (cho)
+            (<row> (alternating)
                (gui 1 '(+DstButton) Dst)
-               (gui 2 '(+ObjView +TextField) '(: nm) 20)
-               (gui 3 '(+ObjView +TextField) '(: nm) 10)
-               (gui 4 '(+ObjView +TextField) '(: nm) 10)
-               (gui 5 '(+ObjView +TextField) '(: nm) 10)
-               (gui 6 '(+Lock +TextField) 10)
-               (gui 7 '(+Lock +DateField) 10) ) ) )
+               (gui 2 '(+ObjView +TextField) '(: nm))
+               (gui 3 '(+ObjView +TextField) '(: nm))
+               (gui 4 '(+ObjView +TextField) '(: nm))
+               (gui 5 '(+ObjView +TextField) '(: nm))
+               (gui 6 '(+TextField))
+               (gui 7 '(+DateField)) ) ) )
       (<spread>
-         (scroll 8)
+         (scroll (cho))
          (when (=T Dst)
             (gui '(+Button) "New Man" '(newUrl '(+Man)))
             (gui '(+Button) "New Woman" '(newUrl '(+Woman))) )
@@ -212,10 +212,10 @@
       (<h3> NIL "Family Tree View")
       (<ul> NIL
          (recur (This)
-            (when (try 'url> This)
+            (when (try 'url> This 1)
                (<li> NIL
                   (<href> (: nm) (mkUrl @))
-                  (when (try 'url> (: mate))
+                  (when (try 'url> (: mate) 1)
                      (prin " -- ")
                      (<href> (: mate nm) (mkUrl @)) ) )
                (when (: kids)

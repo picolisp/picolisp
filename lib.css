@@ -1,4 +1,4 @@
-/* 13dec07abu
+/* 20feb08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -12,24 +12,33 @@
 .red {color: red;}
 .blue {color: blue;}
 .bold {font-weight: bold;}
-.btn {width: 12px;}
+.mono {font-family: monospace;}
 
 /* Defaults */
 body {
    background-color: white;
    font-family: Arial, Helvetica, sans-serif;
-   font-size: 12px;
+   font-size: small;
    margin: 0;
 }
 
-img {border: 0;}
-fieldset {border-style: none;}
-input, textarea, select {background-color: rgb(90%,90%,90%);}
+img {
+   border: 0;
+}
+
+fieldset {
+   border-style: none;
+}
+
+input, textarea, select {
+   font-size: small;
+   background-color: rgb(90%,90%,90%);
+}
 
 caption {
-   padding: 2px 6px;
+   padding: 0 1em;
    text-align: left;
-   margin-top: 12px;
+   margin-top: 2ex;
    background-color: rgb(70%,70%,70%);
 }
 
@@ -38,16 +47,16 @@ caption {
    position: absolute;
    top: 0;
    left: 0;
-   width: 18em;
+   width: 15em;
    height: 100%;
-   padding: 0;
-   margin: 0;
+   padding: 1ex 0;
    background-color: rgb(70%,70%,70%);
 }
 
 #menu ul {
    list-style: none;
    padding: 0;
+   margin: 0;
 }
 
 #menu a {
@@ -61,7 +70,7 @@ caption {
 #menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
    list-style-position: inside;
 	list-style-type: circle;
-   padding: 0 0 0 12px;
+   padding: 0 0 0 2em;
 }
 
 #menu .act1, .act2, .act3, .act4 {
@@ -70,12 +79,12 @@ caption {
 
 #menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
    list-style-position: inside;
-   padding: 4px 0 4px 12px;
+   padding: 0 0 0 1em;
 }
 
 /* Tabulators */
 .tab {
-   margin-bottom: 9px;
+   margin-bottom: 1ex;
 }
 
 .tab a {
@@ -84,28 +93,32 @@ caption {
 }
 
 .tab td {
-   padding: 4px 8px;
-   margin: 4px;
+   padding: 1ex 1em;
 }
 
 .tab .top {
-   background-color: rgb(70%,70%,70%);
+   border-top: 1px solid;
+   border-left: 1px solid;
+   border-right: 1px solid;
 }
 
 .tab .sub {
    background-color: rgb(90%,90%,90%);
+   border-bottom: 1px solid;
 }
 
 /* Main area */
 #main {
    position: absolute;
    top: 0;
-   left: 20em;
+   left: 16em;
+   padding: 1ex 0;
 }
 
 /* Charts */
 .chart {
    width: 100%;
+   white-space: nowrap;
 }
 
 .chart td {
@@ -114,6 +127,11 @@ caption {
 
 .chart td.T {
    background-color: rgb(80%,80%,80%);
+}
+
+.btn {
+   width: 1em;
+   color: rgb(60%,60%,60%);
 }
 
 /* Edit Mode */
@@ -125,27 +143,26 @@ caption {
 .err {
    color: red;
    background-color: yellow;
-   margin-bottom: 12px;
 }
 
 /* +Tiny */
 .tiny {
-   font-size: 9px;
+   font-size: smaller;
    padding: 0;
 }
 
 /* Alerts */
 .alert {
    display: inline;
-   padding: 6px;
-   margin: 12px 0 12px 60px;
+   padding: 1ex;
+   margin: 1ex 0 1ex 5em;
    background-color: yellow;
-   border: dotted 2px;
+   border: dashed thin;
 }
 
 /* Dialogs */
 .dialog {
-   padding: 6px;
-   margin: 12px 60px 12px 60px;
-   border: dotted 2px;
+   padding: 1ex;
+   margin: 1ex 5em 1ex 1em;
+   border: dashed thin;
 }

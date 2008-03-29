@@ -1,4 +1,4 @@
-# 13jun07abu
+# 22jan08abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(銘柄数：@1)"
@@ -18,12 +18,15 @@
 
 "Data" "データ"
 "Date" "日付"
+"Dear Sir or Madam," "拝啓,"
 "Description" "仕様"
 
 "eMail" "eメール"
 
 "Fax" "Fax"
 "Full Name" "フルネーム"
+
+"Greeting" "手紙の書きだし"
 
 "Home" "ホーム"
 
@@ -58,6 +61,10 @@
 "Role Administration" "役割管理"
 
 "Sales" "セールス"
+"Salutation" "敬称"
+"Salutation '@1'" "敬称 '@1'"
+"Salutations" "敬称"
+"Sex" "性別"
 "Street" "住所"
 "Supplier" "注文先"
 "System" "システム"

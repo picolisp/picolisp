@@ -1,11 +1,10 @@
-# 25jun07abu
+# 05mar08abu
 # (c) Software Lab. Alexander Burger
 
 ### Role ###
 (obj ((+Role) nm "Administration") perm `*Perms)
 (obj ((+Role) nm "Accounting") perm (Customer Item Order Report Delete))
 (obj ((+Role) nm "Assistance") perm (Order))
-
 (commit)
 
 ### User ###
@@ -15,6 +14,17 @@
 (obj ((+User) nm "sandy") pw "sandy" nam "Sandra Bullock" role `(db 'nm '+Role "Accounting"))
 (obj ((+User) nm "depp") pw "depp" nam "Johnny Depp" role `(db 'nm '+Role "Assistance"))
 (obj ((+User) nm "tom") pw "tom" nam "Tom Hanks" role `(db 'nm '+Role "Assistance"))
+(commit)
+
+(obj ((+Sal) nm "Department") hi "Dear Sir or Madam,")
+(obj ((+Sal) nm "Mr.") hi "Dear Mr. @1,"  sex T)
+(obj ((+Sal) nm "Mrs.") hi "Dear Mrs. @1,"  sex 0)
+(obj ((+Sal) nm "Ms.") hi "Dear Ms. @1,"  sex 0)
+(obj ((+Sal) nm "Mme") hi "Bonjour Mme @1,"  sex 0)
+(obj ((+Sal) nm "Herr") hi "Sehr geehrter Herr @1,"  sex T)
+(obj ((+Sal) nm "Frau") hi "Sehr geehrte Frau @1,"  sex 0)
+(obj ((+Sal) nm "Señor") hi "Estimado Señor @1,"  sex T)
+(obj ((+Sal) nm "Señora") hi "Estimada Señora @1,"  sex 0)
 (commit)
 
 ### Customer/Supplier ###
@@ -39,6 +49,7 @@
    fax "37 6295 58557"
    em "info@7oaks.tld" )
 (obj ((+CuSu) nr 3)
+   sal `(db 'nm '+Sal "Mr.")
    nm "Miller"
    nm2 "Thomas Edwin"
    str "Running Lane 17"

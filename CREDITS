@@ -4,11 +4,14 @@ Alexander Burger <abu@software-lab.de>
 # For many years, ideas and application concepts were contributed by
 Josef Bartl <josef.bartl@7fach.org>
 
-# The build procedure for Mac OS X (Darwin) was supplied by
+# Build procedure for Mac OS X (Darwin)
 Rick Hanson <rick@tamos.net>
 
-# The port to Cygwin/Win32 was done by
+# Port to Cygwin/Win32
 Doug Snead <doug@drugsense.org>
 
 # Documentation and Mac OS support
 Jon Kleiser <jon.kleiser@usit.uio.no>
+
+# Russian localization
+Mansur Mamkin <mmamkin@mail.ru>

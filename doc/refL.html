@@ -246,8 +246,9 @@ href="refN.html#noLint">noLint</a></code>.
 ...
 </code></pre>
 
-<dt><a name="list"><code>(list 'any ..) -> lst</code></a>
-<dd>Returns a list of all <code>any</code> arguments.
+<dt><a name="list"><code>(list 'any ['any ..]) -> lst</code></a>
+<dd>Returns a list of all <code>any</code> arguments. See also <code><a
+href="refC.html#cons">cons</a></code>.
 
 <p><pre><code>
 : (list 1 2 3 4)
@@ -326,6 +327,7 @@ that all transient symbols in the file have a local scope. Returns the value of
 the last evaluated expression. See also <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a
 href="refC.html#call">call</a></code>, <code><a
+href="refF.html#file">file</a></code>, <code><a
 href="refI.html#in">in</a></code>, <code><a
 href="refO.html#out">out</a></code> and <code><a
 href="refS.html#str">str</a></code>.

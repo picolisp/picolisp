@@ -1,4 +1,4 @@
-/* 20dec07abu
+/* 23mar08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -224,7 +224,7 @@ extern heap *Heaps;
 extern cell *Avail;
 extern stkEnv Env;
 extern catchFrame *CatchPtr;
-extern struct termios *Termio;
+extern struct termios OrgTermio, *Termio;
 extern FILE *StdOut;
 extern int InFDs, OutFDs;
 extern inFile *InFile, **InFiles;
@@ -458,6 +458,7 @@ any doExtern(any);
 any doExtQ(any);
 any doExtra(any);
 any doFifo(any);
+any doFile(any);
 any doFill(any);
 any doFilter(any);
 any doFin(any);
@@ -628,6 +629,7 @@ any doRun(any);
 any doSect(any);
 any doSeed(any);
 any doSeek(any);
+any doSemicol(any);
 any doSend(any);
 any doSeq(any);
 any doSet(any);

@@ -1,29 +1,29 @@
-# 25jun07abu
+# 23feb08abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
 #
-#         nr    nm                     nr    nm               nm
-#          |    |                       |    |                |
-#        +-*----*-+                   +-*----*-+           +--*-----+
-#        |        |               sup |        |           |        |
-#  str --*  CuSu  O-------------------*  Item  *-- inv     |  Role  @-- perm
-#        |        |                   |        |           |        |
-#        +-*---O--+                   +---O----+           +----@---+
-#          |   |                          |                     | usr
-#    tel --+   |                          |                     |
-#              |                          | itm                 | role
-#              |     +-------+        +---*---+            +----*---+
-#              |     |       |    ord |       |            |        |
-#              +-----*  Ord  @--------*  Pos  |       nm --*  User  *-- pw
-#                cus |       | pos    |       |            |        |
-#                    +-*---*-+        +-*---*-+            +--------+
-#                      |   |            |   |
-#                     nr  dat          pr   cnt
+#           nr    nm                   nr    nm               nm
+#            |    |                     |    |                |
+#          +-*----*-+                 +-*----*-+           +--*-----+
+#          |        |             sup |        |           |        |
+#    str --*  CuSu  O-----------------*  Item  *-- inv     |  Role  @-- perm
+#          |        |                 |        |           |        |
+#          +-*-*--O-+                 +----O---+           +----@---+
+#            | |  |                        |                    | usr
+#   nm  tel -+ |  |                        |                    |
+#    |         |  |                        | itm                | role
+#  +-*-----+   |  |   +-------+        +---*---+           +----*---+
+#  |       |   |  |   |       |    ord |       |           |        |
+#  |  Sal  +---+  +---*  Ord  @--------*  Pos  |      nm --*  User  *-- pw
+#  |       |      cus |       | pos    |       |           |        |
+#  +-*---*-+          +-*---*-+        +-*---*-+           +--------+
+#    |   |              |   |            |   |
+#   hi   sex           nr  dat          pr   cnt
 
 (extend +Role)
 
-(dm url> ()
+(dm url> (Tab)
    (and (may RoleAdmin) (list "app/role.l" '*ID This)) )
 
 
@@ -32,13 +32,27 @@
 (rel tel (+String))                             # Phone
 (rel em  (+String))                             # EMail
 
-(dm url> ()
+(dm url> (Tab)
    (and (may UserAdmin) (list "app/user.l" '*ID This)) )
+
+
+# Salutation
+(class +Sal +Entity)
+(rel nm  (+Key +String))                        # Salutation
+(rel hi  (+String))                             # Greeting
+(rel sex (+Any))                                # T:male, 0:female
+
+(dm url> (Tab)
+   (and (may Customer) (list "app/sal.l" '*ID This)) )
+
+(dm hi> (Nm)
+   (or (text (: hi) Nm) ,"Dear Sir or Madam,") )
 
 
 # Customer/Supplier
 (class +CuSu +Entity)
 (rel nr  (+Need +Key +Number))                  # Customer/Supplier Number
+(rel sal (+Link) (+Sal))                        # Salutation
 (rel nm  (+Sn +Idx +String))                    # Name
 (rel nm2 (+String))                             # Name 2
 (rel str (+Ref +String))                        # Street
@@ -51,8 +65,8 @@
 (rel em  (+String))                             # EMail
 (rel txt (+Blob))                               # Memo
 
-(dm url> ()
-   (and (may Customer) (list "app/cusu.l" '*Tab 1  '*ID This)) )
+(dm url> (Tab)
+   (and (may Customer) (list "app/cusu.l"  '*Tab Tab  '*ID This)) )
 
 
 # Item
@@ -65,7 +79,7 @@
 (rel txt (+Blob))                               # Memo
 (rel jpg (+Blob))                               # Picture
 
-(dm url> ()
+(dm url> (Tab)
    (and (may Item) (list "app/item.l" '*ID This)) )
 
 (dm cnt> ()
@@ -82,7 +96,7 @@
 (rel cus (+Ref +Link) NIL (+CuSu))              # Customer
 (rel pos (+List +Joint) ord (+Pos))             # Positions
 
-(dm url> ()
+(dm url> (Tab)
    (and (may Order) (list "app/ord.l" '*ID This)) )
 
 (dm sum> ()
@@ -101,11 +115,11 @@
 
 # Database sizes
 (dbs
-   (1 +Role +User)                              # (1 . 128)
+   (1 +Role +User +Sal)                         # (1 . 128)
    (2 +CuSu)                                    # (2 . 256)
    (1 +Item +Ord)                               # (3 . 128)
    (0 +Pos)                                     # (4 . 64)
-   (2 (+Role nm) (+User nm))                    # (5 . 256)
+   (2 (+Role nm) (+User nm) (+Sal nm))          # (5 . 256)
    (3 (+CuSu nr nm str plz ort cty tel mob))    # (6 . 512)
    (3 (+Item nr nm sup pr))                     # (7 . 512)
    (3 (+Ord nr dat cus) (+Pos itm)) )           # (8 . 512)

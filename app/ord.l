@@ -1,9 +1,9 @@
-# 29dec07abu
+# 16mar08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
 
-(menu
+(menu ,"Order"
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Order")
@@ -37,7 +37,7 @@
                         'ord (: home obj)
                         'itm (caddr L) ) ) ) ) )
          (<table> NIL NIL
-            '((align) NIL (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total") (btn) (btn))
+            '((align) (btn) (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total") (btn) (btn))
             (do 8
                (<row> NIL
                   (gui 1 '(+NumField))
@@ -52,7 +52,7 @@
                (gui '(+Sgn +View +FixField) '(sum> (: home obj)) 2 12) ) )
          (<spread>
             (gui '(+Rid +Button) ,"PDF-Print"
-               '(psOut 0 "print" (ps> (: home obj))) )
+               '(psOut 0 ,"Order" (ps> (: home obj))) )
             (editButton T) ) ) ) )
 
 # vi:et:ts=3:sw=3

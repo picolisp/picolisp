@@ -1,4 +1,4 @@
-# 10oct07abu
+# 13jan08abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -800,8 +800,7 @@
       (let V (or (atom X) (pop 'X))
          (and (meta This X) (zap> @ This V)) ) ) )
 
-(dm dlg> ())
-(dm url> ())
+(dm url> (Tab))
 
 (dm upd> (X Old))
 

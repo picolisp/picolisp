@@ -1,9 +1,9 @@
-# 25jun07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
 
-(menu
+(menu ,"Sales"
    (<h3> NIL ,"Sales")
    (form NIL
       (<grid> "-.-"
@@ -15,7 +15,7 @@
          ,"Customer" (gui '(+ChoButton) '(choCuSu (field 1)))
          (gui '(+Var +Obj +TextField) '*SalCus '(nm +CuSu) 30) )
       (----)
-      (gui '(+ShowButton)
+      (gui '(+ShowButton) NIL
          '(csv ,"Sales"
             (<table> 'chart NIL
                '((align) (NIL ,"Date") (NIL ,"Customer") NIL (NIL ,"Zip") (NIL ,"City") (align ,"Total"))

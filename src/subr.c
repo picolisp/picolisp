@@ -1,4 +1,4 @@
-/* 10oct07abu
+/* 30jan08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -207,7 +207,7 @@ any doRot(any ex) {
    return Pop(c1);
 }
 
-// (list 'any ..) -> lst
+// (list 'any ['any ..]) -> lst
 any doList(any x) {
    any y;
    cell c1;

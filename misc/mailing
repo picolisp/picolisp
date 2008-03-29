@@ -1,0 +1,90 @@
+#!bin/picolisp lib.l
+# 24mar08abu
+# (c) Software Lab. Alexander Burger
+
+# Configuration
+(setq
+   *MailingList "picolisp@software-lab.de"
+   *SpoolFile "/var/spool/mail/picolisp"
+   *MailingDomain "software-lab.de"
+   *Mailings (make (in "Mailings" (while (line T) (link @))))
+   *SmtpHost "localhost"
+   *SmtpPort 25 )
+
+# Process mails
+(loop
+   (when (gt0 (car (info *SpoolFile)))
+      (protect
+         (in *SpoolFile
+            (unless (= "From" (till " " T))
+               (quit "Bad mbox file") )
+            (char)
+            (while (setq *From (lowc (till " " T)))
+               (off
+                  *Name *Subject *Date *MessageID *InReplyTo *MimeVersion
+                  *ContentType *ContentDisposition *UserAgent )
+               (while (split (line) " ")
+                  (setq *Line (glue " " (cdr @)))
+                  (case (pack (car @))
+                     ("From:" (setq *Name *Line))
+                     ("Subject:" (setq *Subject *Line))
+                     ("Date:" (setq *Date *Line))
+                     ("Message-ID:" (setq *MessageID *Line))
+                     ("In-Reply-To:" (setq *InReplyTo *Line))
+                     ("MIME-Version:" (setq *MimeVersion *Line))
+                     ("Content-Type:" (setq *ContentType *Line))
+                     ("Content-Disposition:" (setq *ContentDisposition *Line))
+                     ("User-Agent:" (setq *UserAgent *Line)) ) )
+               (if (nor (member *From *Mailings) (= "subscribe" (lowc *Subject)))
+                  (out "/dev/null" (echo "^JFrom ") (msg *From " discarded"))
+                  (unless (setq *Sock (connect *SmtpHost *SmtpPort))
+                     (quit "Can't connect to SMTP server") )
+                  (unless
+                     (and
+                        (pre? "220 " (in *Sock (line T)))
+                        (out *Sock (prinl "HELO " *MailingDomain "^M"))
+                        (pre? "250 " (in *Sock (line T)))
+                        (out *Sock (prinl "MAIL FROM:" *MailingList "^M"))
+                        (pre? "250 " (in *Sock (line T))) )
+                     (quit "Can't HELO") )
+                  (when (= "subscribe" (lowc *Subject))
+                     (push1 '*Mailings *From)
+                     (out "Mailings" (mapc prinl *Mailings)) )
+                  (for To *Mailings
+                     (out *Sock (prinl "RCPT TO:" To "^M"))
+                     (unless (pre? "250 " (in *Sock (line T)))
+                        (msg T " can't mail") ) )
+                  (when (and (out *Sock (prinl "DATA^M")) (pre? "354 " (in *Sock (line T))))
+                     (out *Sock
+                        (prinl "From: " (or *Name *From) "^M")
+                        (prinl "Sender: " *MailingList "^M")
+                        (prinl "Reply-To: " *MailingList "^M")
+                        (prinl "To: " *MailingList "^M")
+                        (prinl "Subject: " *Subject "^M")
+                        (and *Date (prinl "Date: " @ "^M"))
+                        (and *MessageID (prinl "Message-ID: " @ "^M"))
+                        (and *InReplyTo (prinl "In-Reply-To: " @ "^M"))
+                        (and *MimeVersion (prinl "MIME-Version: " @ "^M"))
+                        (and *ContentType (prinl "Content-Type: " @ "^M"))
+                        (and *ContentDisposition (prinl "Content-Disposition: " @ "^M"))
+                        (and *UserAgent (prinl "User-Agent: " @ "^M"))
+                        (cond
+                           ((= "subscribe" (lowc *Subject))
+                              (prinl "Hello " (or *Name *From) " :-)^M")
+                              (prinl "You are now subscribed^M")
+                              (prinl "****^M^J^M") )
+                           ((= "unsubscribe" (lowc *Subject))
+                              (out "Mailings"
+                                 (println (del *From '*Mailings)) )
+                              (prinl "Good bye " (or *Name *From) " :-(^M")
+                              (prinl "You are now unsubscribed^M")
+                              (prinl "****^M^J^M") ) )
+                        (echo "^JFrom ")
+                        (prinl ".^M")
+                        (prinl "QUIT^M") ) )
+                  (close *Sock) ) ) )
+         (out *SpoolFile (rewind)) ) )
+   (call "fetchmail" "-as")
+   (wait `(* 5 60 1000)) )
+
+# vi:et:ts=3:sw=3

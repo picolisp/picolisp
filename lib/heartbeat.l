@@ -1,4 +1,4 @@
-# 01mar07abu
+# 16feb08abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "fifo/beat")
@@ -9,7 +9,7 @@
          (pr
             (cons *Pid
                (cons
-                  (+ 300 (time T) (* 86400 (date T)))  # Busy period 5 minutes
+                  (+ (* 86400 (date T)) (time T) 300)  # Busy period 5 minutes
                   (rest) ) ) ) ) )
 
    (task -54321 0 (heartbeat))

@@ -72,7 +72,7 @@ argument. See also <code><a href="refZ.html#*Zap">*Zap</a></code>.
 </code></pre>
 
 <dt><a name="scan"><code>(scan 'tree ['fun] ['any1] ['any2] ['flg])</code></a>
-<dd>Scan through a database tree by applying <code>fun</code> to all key-value
+<dd>Scans through a database tree by applying <code>fun</code> to all key-value
 pairs. <code>fun</code> should be a function accepting two arguments for key and
 value. It defaults to <code><a href="refP.html#println">println</a></code>.
 <code>any1</code> and <code>any2</code> may specify a range of keys. If
@@ -109,7 +109,7 @@ href="refS.html#step">step</a></code>.
 </code></pre>
 
 <dt><a name="scl"><code>(scl 'num . prg) -> any</code></a>
-<dd>Dynamically bind <code><a href="refS.html#*Scl">*Scl</a></code> to
+<dd>Binds <code><a href="refS.html#*Scl">*Scl</a></code> dynamically to
 <code>num</code> during the execution of <code>prg</code>. See also <a
 href="ref.html#num-io">Numbers</a>.
 
@@ -322,7 +322,8 @@ characters.
 
 <dt><a name="split"><code>(split 'lst 'any ..) -> lst</code></a>
 <dd>Splits <code>lst</code> at all places containing an element <code>any</code>
-and returns the resulting list of sublists.
+and returns the resulting list of sublists. See also <code><a
+href="refS.html#stem">stem</a></code>.
 
 <p><pre><code>
 : (split (1 a 2 b 3 c 4 d 5 e 6) 'e 3 'a)
@@ -434,10 +435,10 @@ href="refF.html#fetch">fetch</a></code>.
 </code></pre>
 
 <dt><a name="stk"><code>(stk any ..) -> T</code></a>
-<dd>Displays a dump of the internal runtime stack. All (unevaluated)
-<code>any</code> arguments are printed as a header, then each stack entry is
-printed per line, preceded by its (hexadecimal) address. See also <code><a
-href="refE.html#env">env</a></code>.
+<dd>Displays a dump of the internal runtime stack to standard error. All
+(unevaluated) <code>any</code> arguments are printed as a header, then each
+stack entry is printed per line, preceded by its (hexadecimal) address. See also
+<code><a href="refE.html#env">env</a></code>.
 
 <p><pre><code>
 : (cons 'A (stk Test))

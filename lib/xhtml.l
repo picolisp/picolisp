@@ -1,4 +1,4 @@
-# 30dec07abu
+# 15mar08abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -47,7 +47,7 @@
          (if (atom X)
             (ht:Prin (eval X Ofs))
             (eval X Ofs) ) ) )
-   (prinl "</" Nm '>) )
+   (prin "</" Nm '>) )
 
 (de <tag> (Nm Attr . Prg)
    (tag Nm Attr 2 Prg) )
@@ -98,7 +98,7 @@
          (or *Lang "en")
          "\">" )
       (prinl "<head>")
-      (and Ttl (<tag> 'title NIL Ttl))
+      (and Ttl (<tag> 'title NIL Ttl) (prinl))
       (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
       (when Css
          (if (atom Css) ("css" Css) (mapc "css" Css)) )
@@ -121,7 +121,8 @@
          "\" type=\"text/javascript\"></script>" ) ) )
 
 (de <div> (Attr . Prg)
-   (tag 'div Attr 2 Prg) )
+   (tag 'div Attr 2 Prg)
+   (prinl) )
 
 (de <span> (Attr . Prg)
    (tag 'span Attr 2 Prg) )
@@ -152,37 +153,48 @@
    (tag 'strong NIL 2 Prg) )
 
 (de <h1> (Attr . Prg)
-   (tag 'h1 Attr 2 Prg) )
+   (tag 'h1 Attr 2 Prg)
+   (prinl) )
 
 (de <h2> (Attr . Prg)
-   (tag 'h2 Attr 2 Prg) )
+   (tag 'h2 Attr 2 Prg)
+   (prinl) )
 
 (de <h3> (Attr . Prg)
-   (tag 'h3 Attr 2 Prg) )
+   (tag 'h3 Attr 2 Prg)
+   (prinl) )
 
 (de <h4> (Attr . Prg)
-   (tag 'h4 Attr 2 Prg) )
+   (tag 'h4 Attr 2 Prg)
+   (prinl) )
 
 (de <h5> (Attr . Prg)
-   (tag 'h5 Attr 2 Prg) )
+   (tag 'h5 Attr 2 Prg)
+   (prinl) )
 
 (de <h6> (Attr . Prg)
-   (tag 'h6 Attr 2 Prg) )
+   (tag 'h6 Attr 2 Prg)
+   (prinl) )
 
 (de <p> (Attr . Prg)
-   (tag 'p Attr 2 Prg) )
+   (tag 'p Attr 2 Prg)
+   (prinl) )
 
 (de <pre> (Attr . Prg)
-   (tag 'pre Attr 2 Prg) )
+   (tag 'pre Attr 2 Prg)
+   (prinl) )
 
 (de <ol> (Attr . Prg)
-   (tag 'ol Attr 2 Prg) )
+   (tag 'ol Attr 2 Prg)
+   (prinl) )
 
 (de <ul> (Attr . Prg)
-   (tag 'ul Attr 2 Prg) )
+   (tag 'ul Attr 2 Prg)
+   (prinl) )
 
 (de <li> (Attr . Prg)
-   (tag 'li Attr 2 Prg) )
+   (tag 'li Attr 2 Prg)
+   (prinl) )
 
 (de <href> (Str Url JS)
    (prin "<a href=\"" (sesId Url) "\"")
@@ -217,7 +229,8 @@
                (quote
                   (for X "Head"
                      (tag 'th (car X) 2 (cdr X)) ) ) ) )
-         (htPrin Prg 2) ) ) )
+         (htPrin Prg 2) ) )
+   (prinl) )
 
 (de <row> (Cls . Prg)
    (tag 'tr NIL 1
@@ -270,7 +283,8 @@
                               (quote
                                  (if (atom (car Lst))
                                     (ht:Prin (eval (pop 'Lst) 1))
-                                    (eval (pop 'Lst) 1) ) ) ) ) ) ) ) ) ) ) ) )
+                                    (eval (pop 'Lst) 1) ) ) ) ) ) ) ) ) ) ) )
+   (prinl) )
 
 (de <spread> Lst
    (<table> '(width . "100%") NIL '((norm) (align))
@@ -296,7 +310,7 @@
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
                         (<li> (pack (if (or (<> U *Url) (caddr L)) 'cmd 'act) N)
-                           (<href> (eval (car L) E) (urlMT U *Menu 1 (caddr L))) )
+                           (<href> (eval (car L) E) (urlMT U *Menu 1 (eval (caddr L)))) )
                         (<li> (pack 'cmd N)
                            (ht:Prin (eval (car L) E)) ) ) )
                   ((bit? M *Menu)
@@ -346,7 +360,7 @@
    (cond
       ((not Obj) (ht:Prin Str))
       ((=T Obj) (<href> Str (pack Msg Str)))
-      ((send (or Msg 'url>) Obj)
+      ((send (or Msg 'url>) Obj 1)
          (<href> Str (mkUrl @)) )
       (T (ht:Prin Str)) ) )
 
@@ -365,12 +379,12 @@
             Q1 (init (tree Var Cls Hook) K NIL)
             Q2 (init (tree Var Cls Hook) K T) )
          (or (get *ID T) (step Q1 T))
-         (if (and (step Q1 T) (send Msg @))
+         (if (and (step Q1 T) (send Msg @ *Tab))
             (<href> "<<<" (mkUrl @))
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
          (or (get *ID T) (step Q2 T))
-         (if (and (step Q2 T) (send Msg @))
+         (if (and (step Q2 T) (send Msg @ *Tab))
             (<href> ">>>" (mkUrl @))
             (prin "&gt;&gt;&gt;") ) ) ) )
 
@@ -378,9 +392,19 @@
 (off "*CSV")
 
 (de csv ("Nm" . "Prg")
-   (let "*CSV" (pack "+" (tmp "Nm" ".txt"))
-      (run "Prg")
-      (<href> "CSV" (tmp "Nm" ".txt")) ) )
+   (call 'rm "-f" (tmp "Nm" ".csv"))
+   (let "*CSV" (pack "+" (tmp "Nm" ".csv"))
+      (run "Prg") )
+   (<href> "CSV" (tmp "Nm" ".csv")) )
+
+(de <0> (Str)
+   (and "*CSV" (out @ (prinl Str "^M"))) )
+
+(de <%> @
+   (prog1 (pass pack)
+      (ht:Prin @)
+      (prinl "<br/>")
+      (<0> @) ) )
 
 (de <+> (Str Obj Msg)
    (<$> Str Obj Msg)
@@ -388,7 +412,7 @@
 
 (de <-> (Str Obj Msg)
    (<$> Str Obj Msg)
-   (and "*CSV" (out @ (prinl Str))) )
+   (<0> Str) )
 
 
 # Interactive tree

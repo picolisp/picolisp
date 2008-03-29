@@ -1,0 +1,51 @@
+# 22mar08
+# Mansur Mamkin (mmamkin@mail.ru)
+
+"Language" "Язык"
+
+# lib/db.l
+"Boolean input expected" "Ожидается тип Boolean"
+"Numeric input expected" "Ожидается числовой тип"
+"Symbolic type expected" "Ожидается тип Symbol"
+"String type expected" "Ожидается тип String"
+"Type error" "Ошибка типа"
+"Not unique" "Не уникальный"
+"Input required" "Требуется ввод"
+
+# lib/form.l
+"Cancel" "Отмена"
+"Yes" "Да"
+"No" "Нет"
+"Select" "Выбрать"
+"Delete row?" "Удалить строку?"
+"Show" "Показать"
+"Bad date format" "Неверный формат даты"
+"Bad time format" "Неверный формат времени"
+"Bad phone number format" "Неверный формат телефонного номера"
+"male" "муж."
+"female" "жен."
+"New" "Новый"
+"Save" "Сохранить"
+"Edit" "Редактировать"
+"Currently edited by '@2' (@1)" "Редактируется '@2' (@1)"
+"Search" "Искать"
+"Reset" "Сброс"
+"New/Copy" "Новый/Копировать"
+"Restore" "Восстановить"
+"Restore @1?" "Восстановить @1?"
+"Delete" "Удалить"
+"Delete @1?" "Удалить @1?"
+"Data not found" "Данные не найдены"
+
+# General
+"login" "Войти"
+"logout" "Выйти"
+"' logged in" "' вошел"
+"Name" "Имя"
+"Password" "Пароль"
+"Permission denied" "Доступ запрещен"
+"Permissions" "Разрешения"
+"Role" "Роль"
+"Roles" "Роли"
+"User" "Пользователь"
+"Users" "Пользователи"

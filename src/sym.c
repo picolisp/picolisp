@@ -1,4 +1,4 @@
-/* 10dec07abu
+/* 09mar08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -728,7 +728,7 @@ any doCut(any ex) {
    return val(Pop(c1));
 }
 
-// (del 'any 'var) -> any
+// (del 'any 'var) -> lst
 any doDel(any ex) {
    any x, y;
    cell c1, c2, c3;
@@ -828,29 +828,40 @@ any doFifo(any ex) {
 any doIdx(any ex) {
    any x, y, z, *p;
    int flg, n;
-   cell c1, c2;
+   cell c1, c2, c3;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
    if (!isCell(x = cdr(x))) {
+      if (!isCell(data(c1) = val(data(c1)))) {
+         drop(c1);
+         return Nil;
+      }
       Push(c2, Nil);
-      for (data(c1) = val(data(c1)), x = Nil;;) {
-         while (isCell(data(c1)))
-            y = data(c1),  data(c1) = cddr(y),  cddr(y) = x,  x = y;
+      Push(c3, Nil);
+      for (;;) {
+         while (isCell(cddr(data(c1))))
+            z = data(c1),  data(c1) = cddr(z),  cddr(z) = data(c2),  data(c2) = z;
          for (;;) {
-            if (isNil(x)) {
-               drop(c1);
-               return data(c2);
-            }
-            if (isCell(x))
+            data(c3) = cons(car(data(c1)), data(c3));
+            if (isCell(cadr(data(c1)))) {
+               z = data(c1),  data(c1) = cadr(z),  cadr(z) = data(c2),  data(c2) = symPtr(z);
                break;
-            y = cellPtr(x),  x = cadr(y),  cadr(y) = data(c1),  data(c1) = y;
+            }
+            for (;;) {
+               if (isNil(data(c2))) {
+                  drop(c1);
+                  return data(c3);
+               }
+               if (isCell(data(c2))) {
+                  z = data(c2),  data(c2) = cddr(z),  cddr(z) = data(c1),  data(c1) = z;
+                  break;
+               }
+               else
+                  z = cellPtr(data(c2)),  data(c2) = cadr(z),  cadr(z) = data(c1),  data(c1) = z;
+            }
          }
-         data(c2) = cons(x, data(c2));
-         car(data(c2)) = caar(data(c2));
-         y = cddr(x),  cddr(x) = data(c1),  data(c1) = cadr(x),  cadr(x) = y;
-         x = symPtr(x);
       }
    }
    Push(c2, EVAL(car(x)));
@@ -922,42 +933,49 @@ any doIdx(any ex) {
    }
 }
 
-static any From, To;
-static cell LupCell;
-
-static void lup(any x) {
-   if (isCell(x)) {
-      if (car(x) == T)
-         lup(cadr(x));
-      else if (!isCell(car(x)))
-         lup(cddr(x));
-      else if (compare(To, caar(x)) >= 0) {
-         lup(cddr(x));
-         if (compare(From, caar(x)) <= 0) {
-            data(LupCell) = cons(car(x), data(LupCell));
-            lup(cadr(x));
-         }
-      }
-      else if (compare(From, caar(x)) <= 0)
-         lup(cadr(x));
-   }
-}
-
 // (lup 'lst 'any) -> lst
 // (lup 'lst 'any 'any2) -> lst
 any doLup(any x) {
    int n;
-   cell c1, c2;
+   cell c1, c2, c3, c4, c5;
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  Push(c2, EVAL(car(x)));
+   x = cdr(x),  Push(c2, EVAL(car(x)));  // from
    x = cdr(x);
-   if (!isNil(To = EVAL(car(x)))) {
-      From = data(c2);
-      Push(LupCell, Nil);
-      lup(data(c1));
-      drop(c1);
-      return data(LupCell);
+   if (!isNil(data(c3) = EVAL(car(x)))) {
+      if (!isCell(data(c1))) {
+         drop(c1);
+         return Nil;
+      }
+      Save(c3);  // to
+      Push(c4, Nil);  // tos
+      Push(c5, Nil);  // result
+      for (;;) {
+         while (isCell(cddr(data(c1))) && car(data(c1)) != T && (!isCell(car(data(c1))) || compare(data(c3), caar(data(c1))) >= 0))
+            x = data(c1),  data(c1) = cddr(x),  cddr(x) = data(c4),  data(c4) = x;
+         for (;;) {
+            if (isCell(car(data(c1))) && compare(data(c2), caar(data(c1))) <= 0) {
+               if (compare(data(c3), caar(data(c1))) >= 0)
+                  data(c5) = cons(car(data(c1)), data(c5));
+               if (isCell(cadr(data(c1)))) {
+                  x = data(c1),  data(c1) = cadr(x),  cadr(x) = data(c4),  data(c4) = symPtr(x);
+                  break;
+               }
+            }
+            for (;;) {
+               if (isNil(data(c4))) {
+                  drop(c1);
+                  return data(c5);
+               }
+               if (isCell(data(c4))) {
+                  x = data(c4),  data(c4) = cddr(x),  cddr(x) = data(c1),  data(c1) = x;
+                  break;
+               }
+               else
+                  x = cellPtr(data(c4)),  data(c4) = cadr(x),  cadr(x) = data(c1),  data(c1) = x;
+            }
+         }
+      }
    }
    while (isCell(data(c1))) {
       if (car(data(c1)) == T)
@@ -1154,6 +1172,27 @@ any doProp(any ex) {
    return prop(Pop(c1), y);
 }
 
+// (; 'sym1|lst [sym2|cnt ..]) -> any
+any doSemicol(any ex) {
+   any x;
+   cell c1;
+
+   x = cdr(ex),  data(c1) = EVAL(car(x));
+   if (!isCell(x = cdr(x)))
+      return data(c1);
+   Save(c1);
+   do {
+      if (isCell(data(c1)))
+         data(c1) = getn(car(x), data(c1));
+      else {
+         NeedSym(ex,data(c1));
+         Fetch(ex,data(c1));
+         data(c1) = isNum(car(x)) && !unDig(car(x))? val(data(c1)) : get(data(c1), car(x));
+      }
+   } while (isCell(x = cdr(x)));
+   return Pop(c1);
+}
+
 // (=: sym|0 [sym1|cnt .. sym2] 'any) -> any
 any doSetCol(any ex) {
    any x, y, z;
@@ -1225,7 +1264,7 @@ any doPropCol(any ex) {
 // (putl 'sym1|lst1 ['sym2|cnt ..] 'lst) -> lst
 any doPutl(any ex) {
    any x;
-   cell c1, c2, c3;
+   cell c1, c2;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    x = cdr(x),  Push(c2, EVAL(car(x)));
@@ -1245,12 +1284,11 @@ any doPutl(any ex) {
    Touch(ex,data(c1));
    while (isCell(tail(data(c1))))
       Tail(data(c1), cdr(tail1(data(c1))));
-   if (isCell(data(c2))) {
-      Push(c3, x = cons(car(data(c2)), cdr(data(c2))));
-      while (isCell(cdr(x)))
-         cdr(x) = cons(cadr(x), cddr(x)),  x = cdr(x);
-      cdr(x) = tail1(data(c1));
-      Tail(data(c1), data(c3));
+   for (x = data(c2);  isCell(x);  x = cdr(x)) {
+      if (!isCell(car(x)))
+         Tail(data(c1), cons(car(x), tail1(data(c1))));
+      else if (!isNil(caar(x)))
+         Tail(data(c1), cons(caar(x)==T? cdar(x) : car(x), tail1(data(c1))));
    }
    drop(c1);
    return data(c2);

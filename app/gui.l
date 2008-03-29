@@ -1,10 +1,10 @@
-# 28dec07abu
+# 25mar08abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
-(de menu Prg
+(de menu (Ttl . Prg)
    (action
-      (html 0 "Pico App" *Css NIL
+      (html 0 Ttl *Css NIL
          (<div> '(id . menu)
             (<menu>
                (,"Home" "@start")
@@ -13,7 +13,8 @@
                (T ,"Data"
                   (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
                   (,"Items" (and (may Item) "app/item.l"))
-                  (,"Orders" (and (may Order) "app/ord.l")) )
+                  (,"Orders" (and (may Order) "app/ord.l"))
+                  (,"Salutations" (and (may Customer) "app/sal.l")) )
                (T ,"Report"
                   (,"Inventory" (and (may Report) "app/inventory.l"))
                   (,"Sales" (and (may Report) "app/sales.l")) )
@@ -25,22 +26,26 @@
 (de start ()
    (setq *Url "@start")
    (and (app) (setq *Menu 3))
-   (menu
+   (menu "Pico App"
       (<h2> NIL "Pico App")
       (<img> "img/7fach.gif" "7fach Logo")
       (----)
       (form NIL
          (gui '(+Init +Map +TextField)
             (cons *Ctry *Lang)
-            '(("English" NIL . NIL) ("Deutsch" "DE" . "de") ("日本語" "JP" . "jp"))
-            '("English" "Deutsch" "日本語")
+            (quote
+               ("English" NIL . NIL)
+               ("Deutsch" "DE" . "de")
+               ("Русский" "RU" . "ru")
+               ("日本語" "JP" . "jp") )
+            '("English" "Deutsch" "Русский" "日本語")
             ,"Language" )
          (gui '(+Button) ',"Change"
             '(let V (val> (field -1))
                (locale (car V) (cdr V) "app/loc/") ) ) )
       (form NIL
          (<grid> 2
-            ,"Name" (gui 'nm '(+Able +TextField) '(not *Login) 20)
+            ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
             ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
          (<spread>
             (when *Login
@@ -62,14 +67,14 @@
    (diaform '(Dst)
       (<grid> "--.-.-."
          ,"Number" (gui 'nr '(+Var +NumField) '*CuSuNr 10)
-         ,"Name" (gui 'nm '(+Var +TextField) '*CuSuNm 30)
+         ,"Name" (gui 'nm '(+Focus +Var +TextField) '*CuSuNm 30)
          ,"Phone" (gui 'tel '(+Var +TelField) '*CuSuTel 20)
          (searchButton '(init> (: home query)))
          ,"Zip" (gui 'plz '(+Var +TextField) '*CuSuPlz 10)
          ,"City" (gui 'ort '(+Var +TextField) '*CuSuOrt 30)
          ,"Mobile" (gui 'mob '(+Var +TelField) '*CuSuMob 20)
          (resetButton '(nr nm tel plz ort mob query)) )
-      (gui 'query '(+QueryChart) 8
+      (gui 'query '(+QueryChart) (cho)
          '(goal
             (quote
                @Nr (and *CuSuNr (cons @ T))
@@ -100,7 +105,7 @@
             (NIL ,"City")
             (NIL ,"Phone")
             (NIL ,"Mobile") )
-         (do 8
+         (do (cho)
             (<row> (alternating)
                (gui 1 '(+DstButton) Dst)
                (gui 2 '(+NumField))
@@ -112,7 +117,7 @@
                (gui 8 '(+TelField))
                (gui 9 '(+TelField)) ) ) )
       (<spread>
-         (scroll 8)
+         (scroll (cho))
          (when (=T Dst)
             (gui '(+Button) ,"New"
                '(newUrl '(+CuSu) '(nr genKey 'nr '+CuSu)) ) )
@@ -121,13 +126,13 @@
 (de choItem (Dst)
    (diaform '(Dst)
       (<grid> "--.-."
-         ,"Number" (gui 'nr '(+Var +NumField) '*ItemNr 10)
+         ,"Number" (gui 'nr '(+Focus +Var +NumField) '*ItemNr 10)
          ,"Supplier" (gui 'sup '(+Var +TextField) '*ItemSup 20)
          (searchButton '(init> (: home query)))
          ,"Description" (gui 'nm '(+Var +TextField) '*ItemNm 30)
          ,"Price" (gui 'pr '(+Var +FixField) '*ItemPr 2 12)
          (resetButton '(nr nm pr sup query)) )
-      (gui 'query '(+QueryChart) 8
+      (gui 'query '(+QueryChart) (cho)
          '(goal
             (quote
                @Nr (and *ItemNr (cons @ T))
@@ -150,7 +155,7 @@
             (NIL ,"Supplier")
             (NIL ,"City")
             (align ,"Price") )
-         (do 8
+         (do (cho)
             (<row> (alternating)
                (gui 1 '(+DstButton) Dst)
                (gui 2 '(+NumField))
@@ -159,7 +164,7 @@
                (gui 5 '(+TextField))
                (gui 6 '(+FixField) 2) ) ) )
       (<spread>
-         (scroll 8)
+         (scroll (cho))
          (when (=T Dst)
             (gui '(+Button) ,"New"
                '(newUrl '(+Item) '(nr genKey 'nr '+Item)) ) )
@@ -168,7 +173,7 @@
 (de choOrd (Dst)
    (diaform '(Dst)
       (<grid> "--.-.-."
-         ,"Number" (gui 'nr '(+Var +NumField) '*OrdNr 10)
+         ,"Number" (gui 'nr '(+Focus +Var +NumField) '*OrdNr 10)
          ,"Customer" (gui 'cus '(+Var +TextField) '*OrdCus 20)
          ,"City" (gui 'ort '(+Var +TextField) '*OrdOrt 20)
          (searchButton '(init> (: home query)))
@@ -176,7 +181,7 @@
          ,"Supplier" (gui 'sup '(+Var +TextField) '*OrdSup 20)
          ,"Item" (gui 'item '(+Var +TextField) '*OrdItem 20)
          (resetButton '(nr cus ort dat sup item query)) )
-      (gui 'query '(+QueryChart) 8
+      (gui 'query '(+QueryChart) (cho)
          '(goal
             (quote
                @Nr (cons (or *OrdNr T))
@@ -214,7 +219,7 @@
             (NIL ,"Item" "(1)")
             (NIL ,"Supplier" "(2)")
             (NIL ,"Item" "(2)") )
-         (do 8
+         (do (cho)
             (<row> (alternating)
                (gui 1 '(+DstButton) Dst)
                (gui 2 '(+NumField))
@@ -226,7 +231,7 @@
                (gui 8 '(+ObjView +TextField) '(: nm))
                (gui 9 '(+ObjView +TextField) '(: nm)) ) ) )
       (<spread>
-         (scroll 8)
+         (scroll (cho))
          (when (=T Dst)
             (gui '(+Button) ,"New"
                '(newUrl '(+Ord) '(nr genKey 'nr '+Ord) 'dat (date)) ) )

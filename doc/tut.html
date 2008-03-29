@@ -44,7 +44,8 @@ do some special handling during character input.
 
 <p>If you feel that you absolutely have to use an input frontend, please remove
 the entry "@lib/led.l" from "dbg.l". Note that in this case, however, you will
-not have the TAB symbol expansion feature available during command line editing.
+not have the TAB symbol completion feature available during command line
+editing.
 
 <p>We recommend that you have a terminal window open, and try the examples by
 yourself. You may either type them in, directly to the Pico Lisp interpreter, or
@@ -181,6 +182,10 @@ directory. The length of the history is limited to 4000 lines.
 
 </ul>
 
+<p>The key combination <code>Ctrl-D</code> will immediately terminate the
+current process, and also all of its sister processes (i.e. children of the same
+parent process, typically an application server during debugging).
+
 <p>The key combination <code>Ctrl-X</code> is useful when the program stopped at
 a breakpoint, or after program execution was interrupted with
 <code>Ctrl-C</code>, to abandon all further processing and return to the
@@ -195,7 +200,7 @@ href="refQ.html#quit">quit</a></code>.
 
 <li><code>Ctrl-V</code> inserts the next key literally
 
-<li>TAB performs symbol expansion: When a symbol name is entered partially and
+<li>TAB performs symbol completion: When a symbol name is entered partially and
 TAB is pressed subsequently, all internal symbols matching the partial input are
 shown in sequence.
 
@@ -798,7 +803,7 @@ href="refS.html#stamp">stamp</a></code> system function.
 <p><pre><code>
 : (pp 'stamp)
 (de stamp (Dat Tim)
-   (default  Dat (date)  Tim (time))
+   (default  Dat (date)  Tim (time T))
    (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 -> stamp
 </code></pre>
@@ -807,7 +812,7 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (debug 'stamp)                       # Debug it
 -> T
 : (stamp)                              # Call it again
-(default Dat (date) Tim (time))        # stopped at first expression
+(default Dat (date) Tim (time T))      # stopped at first expression
 !                                      # ENTER
 (pack (dat$ Dat "-") " " (tim$ ...     # second expression
 ! Tim                                  # inspect 'Tim' variable
@@ -823,7 +828,7 @@ inside the second expression.
 
 <p><pre><code>
 : (stamp)                              # Call it again
-(default Dat (date) Tim (time))
+(default Dat (date) Tim (time T))
 !                                      # ENTER
 (pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
 ! (d)                                  # debug this expression
@@ -846,7 +851,7 @@ pretty-print it:
 <p><pre><code>
 : (pp 'stamp)
 (de stamp (Dat Tim)
-   (! default Dat (date) Tim (time))
+   (! default Dat (date) Tim (time T))
    (! pack
       (! dat$ Dat "-")
       " "
@@ -1859,7 +1864,7 @@ with the '<code>&lt;&lt;&lt;</code>' link in the upper right corner.
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
 '<code>killall picolisp</code>'), or type the <code>Ctrl-C</code> key in the
-console window.
+console window (usually following Ctrl-D to terminate all child processes).
 
 <p>In our demo database application, a single function <code>person</code> is
 responsible for the whole GUI. Again, please look at <code><a

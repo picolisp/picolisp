@@ -1,4 +1,4 @@
-24dec07abu
+12feb08abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -91,15 +91,12 @@ multiple users can view and modify the same database object without conflicts,
 everyone seeing changes done by other users on her screen immediately due to the
 internal process and database synchronization.
 
-Pico Lisp is free software, and you are welcome to redistribute it under
-the conditions of the GNU General Public License (GPL).
+Pico Lisp is free software, and you are welcome to redistribute it under the
+conditions of the GNU General Public License (GPL).
 
-It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X
-(Darwin), Cygwin/Win32 (and possibly other) systems. A native 64-bit
-version is under development.
-
-Pico Lisp is supported by 7fach, SmApper Technologies, Becker Marine Systems
-Communication, and others.
+It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),
+Cygwin/Win32 (and possibly other) systems. A native 64-bit version is under
+development.
 
 --------------------------------------------------------------------------------
 

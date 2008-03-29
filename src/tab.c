@@ -1,4 +1,4 @@
-/* 20dec07abu
+/* 07mar08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -102,6 +102,7 @@ static symInit Symbols[] = {
    {doExtQ, "ext?"},
    {doExtra, "extra"},
    {doFifo, "fifo"},
+   {doFile, "file"},
    {doFill, "fill"},
    {doFilter, "filter"},
    {doFin, "fin"},
@@ -270,6 +271,7 @@ static symInit Symbols[] = {
    {doSect, "sect"},
    {doSeed, "seed"},
    {doSeek, "seek"},
+   {doSemicol, ";"},
    {doSend, "send"},
    {doSeq, "seq"},
    {doSet, "set"},

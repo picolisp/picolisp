@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 13oct06abu
+# 09mar08abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -30,7 +30,7 @@
             ((num? X)
                (del (assoc X *Watch) '*Watch) )
             ((atom X)  # bin/picolisp -"out 'fifo/beat (pr '$(tty))" -bye
-               (let D (+ (time T) (* 86400 (date T)))
+               (let D (+ (* 86400 (date T)) (time T))
                   (out X
                      (for W *Watch
                         (prinl
@@ -51,7 +51,7 @@
             (T (push '*Watch (list (car X) (cadr X) NIL (cddr X)))) ) ) ) )
 
 (task -54321 54321
-   (let D (+ (time T) (* 86400 (date T)))
+   (let D (+ (* 86400 (date T)) (time T))
       (for W (filter '((X) (> D (cadr X))) *Watch)
          (if (caddr W)
             (prog
@@ -62,10 +62,7 @@
             (set (cddr W) T)
             (let Sub (pack "Timeout " (car W) " " (cdddr W))
                (msg (car W) " " (stamp))
-               (for To *MailTo
-                  (unless (mail *MailHost *MailPort *MailFrom To Sub)
-                     (msg (list *MailHost *MailPort *MailFrom To Sub)
-                        " mail failed "
-                        (stamp) ) ) ) ) ) ) ) )
+               (unless (mail *MailHost *MailPort *MailFrom *MailTo Sub)
+                  (msg (cons Sub *MailTo) " mail failed " (stamp)) ) ) ) ) ) )
 
 (wait)

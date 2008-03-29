@@ -254,14 +254,17 @@ href="refC.html#close">close</a></code>.
 : (and (poll *Fd) (in @ (read)))  # Prevent blocking
 </code></pre>
 
-<dt><a name="pool"><code>(pool ['sym1 ['lst] ['sym2]]) -> flg</code></a>
+<dt><a name="pool"><code>(pool ['sym1 ['lst] ['sym2] ['sym3]]) -> flg</code></a>
 <dd>Opens the file <code>sym1</code> as a database file in read/write mode. If
 the file does not exist, it is created. A currently open database is closed.
 <code>lst</code> is a list of block size scale factors (i.e. numbers),
 defaulting to (2) (for a single file with a 256 byte block size). If
 <code>lst</code> is given, an individual database file is opened for each item.
-If <code>sym2</code> is non-<code>NIL</code>, it is opened in append-mode as a
-journal file. Returns <code>T</code> when successful. See also <code><a
+If <code>sym2</code> is non-<code>NIL</code>, it is opened in append-mode as an
+asynchronous replication journal. If <code>sym3</code> is non-<code>NIL</code>,
+it is opened for reading and appending, to be used as a synchronous transaction
+log during <code><a href="refC.html#commit">commit</a></code>s. Returns
+<code>T</code> when successful. See also <code><a
 href="refD.html#dbs">dbs</a></code>, <code><a
 href="refD.html#*Dbs">*Dbs</a></code> and <code><a
 href="refJ.html#journal">journal</a></code>.

@@ -1,4 +1,4 @@
-# 10dec07abu
+# 15feb08abu
 # (c) Software Lab. Alexander Burger
 
 ### apply ###
@@ -13,7 +13,7 @@
 
 ### maps ###
 (let L '((1 . a) (2 . b) flg)
-   (test L (let X (box) (putl X L) (make (maps link X)))) )
+   (test L (let X (box) (putl X (reverse L)) (make (maps link X)))) )
 
 
 ### map ###
@@ -91,5 +91,9 @@
    (by '((N) (bit? 1 N))
       group
       (3 11 6 2 9 5 4 10 12 7 8 1) ) )
+(test '(("x" "x" "x") ("y") ("z" "z"))
+   (by name group '("x" "x" "y" "z" "x" "z")) )
+(test '((123 "xyz") ((1 2) "XY") ("abcd" (1 2 3 4)))
+   (by length group '(123 (1 2) "abcd" "xyz" (1 2 3 4) "XY")) )
 
 # vi:et:ts=3:sw=3

@@ -1,9 +1,9 @@
-# 21aug07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
 
-(menu
+(menu ,"Role Administration"
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Role")

@@ -1,9 +1,9 @@
-# 29dec07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
 
-(menu
+(menu ,"Item"
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Item")
@@ -29,10 +29,8 @@
                (gui '(+Able +UpField) '(not (: home obj jpg)) 30)
                (gui '(+Button) '(if (: home obj jpg) ,"Uninstall" ,"Install")
                   '(if (: home obj jpg)
-                     (alert NIL ,"Uninstall Picture?"
-                        (----)
-                        (yesButton '(put!> (: home top 1 obj) 'jpg NIL))
-                        (noButton) )
+                     (ask ,"Uninstall Picture?"
+                        (put!> (: home top 1 obj) 'jpg NIL) )
                      (let? F (val> (field -1))
                         (blob! (: home obj) 'jpg (tmp F)) ) ) ) ) )
          (<spread> NIL (editButton T))

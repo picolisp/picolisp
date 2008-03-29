@@ -1,4 +1,4 @@
-# 16oct07abu
+# 08mar08abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -309,7 +309,7 @@
          (or (format (pack (caddr S))) 0) ) ) )
 
 (de stamp (Dat Tim)
-   (default  Dat (date)  Tim (time))
+   (default  Dat (date)  Tim (time T))
    (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 
 ### I/O ###
@@ -348,7 +348,7 @@
 # Send mail
 (de mail (Host Port From To Sub Att . Prg)
    (let? S (connect Host Port)
-      (let (B (pack "==" (date) "-" (time) "=="))
+      (let B (pack "==" (date) "-" (time T) "==")
          (prog1
             (and
                (pre? "220 " (in S (line T)))
@@ -356,13 +356,14 @@
                (pre? "250 " (in S (line T)))
                (out S (prinl "MAIL FROM:" From "^M"))
                (pre? "250 " (in S (line T)))
-               (out S (prinl "RCPT TO:" To "^M"))
-               (pre? "250 " (in S (line T)))
+               (if (atom To)
+                  (_rcpt To)
+                  (find bool (mapcar _rcpt To)) )
                (out S (prinl "DATA^M"))
                (pre? "354 " (in S (line T)))
                (out S
                   (prinl "From: " From "^M")
-                  (prinl "To: " To "^M")
+                  (prinl "To: " (or (fin To) (glue "," To)) "^M")
                   (prinl "Subject: " Sub "^M")
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
@@ -400,6 +401,10 @@
                   (prinl "QUIT^M") )
                T )
             (close S) ) ) ) )
+
+(de _rcpt (To)
+   (out S (prinl "RCPT TO:" To "^M"))
+   (pre? "250 " (in S (line T))) )
 
 ### Base 64 ###
 (de fmt64 (X)

@@ -1,9 +1,9 @@
-# 25jun07abu
+# 25jan08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
 
-(menu
+(menu ,"Inventory"
    (<h3> NIL ,"Inventory")
    (form NIL
       (<grid> "-.-"
@@ -16,7 +16,7 @@
          ,"Supplier" (gui '(+ChoButton) '(choCuSu (field 1)))
          (gui '(+Var +Obj +TextField) '*InvSup '(nm +CuSu) 30) )
       (----)
-      (gui '(+ShowButton)
+      (gui '(+ShowButton) NIL
          '(csv ,"Inventory"
             (<table> 'chart NIL
                (quote

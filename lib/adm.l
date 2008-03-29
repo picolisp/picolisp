@@ -1,4 +1,4 @@
-# 27nov07abu
+# 12jan08abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Users *Perms
@@ -8,7 +8,7 @@
    (ifn (setq *Login (db 'nm '+User Nm 'pw Pw))
       (msg *Pid " ? " Nm)
       (msg *Pid " * " (stamp) " " Nm)
-      (tell 'hi *Pid Nm)
+      (tell 'hi *Pid Nm *Adr)
       (push1 '*Bye '(logout))
       (timeout (setq *Timeout `(* 3600 1000))) )
    *Login )
@@ -21,9 +21,11 @@
       (msg *Pid " / " (stamp))
       (timeout (setq *Timeout `(* 300 1000))) ) )
 
-(de hi (Pid Nm)
-   (hi2 Pid Nm)
-   (tell 'hi2 *Pid (get *Login 'nm)) )
+(de hi (Pid Nm Adr)
+   (if (and (= Nm (get *Login 'nm)) (= Adr *Adr))
+      (bye)
+      (hi2 Pid Nm)
+      (tell 'hi2 *Pid (get *Login 'nm)) ) )
 
 (de hi2 (Pid Nm)
    (if2 Nm (lup *Users Pid)

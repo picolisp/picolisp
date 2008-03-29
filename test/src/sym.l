@@ -1,4 +1,4 @@
-# 10dec07abu
+# 23feb08abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -237,10 +237,19 @@
    (test '((2 . f) (3 . g)) (lup X 1 4))
    (test '(17 . @) (idx 'X 17 NIL))
    (test '(A d (2 . f) (3 . g) (a b c) T)
-      (idx 'X) ) )
+      (idx 'X) )
+   (off X)
+   (for N '((4 . D) 3 (2 . B) Y (3 . C) Z (6 . F) 7 (7 . G) X (1 . A) T (5 . E) 5)
+      (idx 'X N T) )
+   (test '(3 5 7 X Y Z (1 . A) (2 . B) (3 . C) (4 . D) (5 . E) (6 . F) (7 . G) T)
+      (idx 'X) )
+   (test '((3 . C) (4 . D) (5 . E))
+      (lup X 3 5) )
+   (test '((1 . A) (2 . B) (3 . C) (4 . D) (5 . E) (6 . F) (7 . G))
+         (lup X 0 9) ) )
 
 
-### put get prop =: : :: putl getl ###
+### put get prop ; =: : :: putl getl ###
 (let (A (box)  B (box A)  C (box (cons A B)))
    (put B 'a A)
    (put C 'b B)
@@ -248,19 +257,23 @@
    (put B 'a 'y 2)
    (put C 0 -1 'a 'z 3)
    (test 1 (get A 'x))
+   (test 1 (; A x))
    (test 2 (with A (: y)))
    (test 2 (get A 'y))
+   (test 2 (; A y))
    (test 2 (with B (: 0 y)))
    (test 2 (get B 0 'y))
+   (test 2 (; B 0 y))
    (test 3 (with C (: b a z)))
    (test 3 (with C (: 0 1 z)))
    (test 3 (with C (: 0 -1 a z)))
    (test 3 (get C 0 1 'z))
    (test 3 (get C 0 -1 'a 'z))
+   (test 3 (; C 0 -1 a z))
    (test (3 . z) (prop C 0 -1 'a 'z))
    (test 9 (with C (=: 0 -1 a z (* 3 3))))
    (test (9 . z) (with C (:: 0 -1 a z)))
-   (test (putl C 0 -1 'a '((1 . x) (2 . y))) (getl C 'b 0)) )
+   (test (putl C 0 -1 'a '((1 . x) (2 . y))) (flip (getl C 'b 0))) )
 
 (test NIL (get (1 2 3) 0))
 (test 1 (get (1 2 3) 1))

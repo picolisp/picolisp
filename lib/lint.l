@@ -1,4 +1,4 @@
-# 10dec07abu
+# 26mar08abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -107,6 +107,11 @@
             (case
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
+                  (mapc lint1 (cdr "X")) ) )
+            (state
+               (lint1 (cadr "X"))
+               (for "X" (cddr "X")
+                  (mapc lint1 (cddar "X"))
                   (mapc lint1 (cdr "X")) ) )
             ((cond nond)
                (for "X" (cdr "X")

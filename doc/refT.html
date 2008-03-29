@@ -323,13 +323,13 @@ abc:def
 (time '(h m [s])) -> tim | NIL</code></a>
 <dd>Calculates the time of day, represented as the number of seconds since
 midnight. When called without arguments, the current local time is returned.
-When called with a <code>T</code> argument, the current Coordinated Universal
-Time (UTC) is returned. When called with a single number <code>tim</code>, it is
-taken as a time value and a list with the corresponding hour, minute and second
-is returned. When called with two or three numbers (or a list of two or three
-numbers) for the hour, minute (and optionally the second), the corresponding
-time value is returned (or <code>NIL</code> if they do not represent a legal
-time). See also <code><a href="refD.html#date">date</a></code>, <code><a
+When called with a <code>T</code> argument, the time of the last call to
+<code><a href="refD.html#date">date</a></code> is returned. When called with a
+single number <code>tim</code>, it is taken as a time value and a list with the
+corresponding hour, minute and second is returned. When called with two or three
+numbers (or a list of two or three numbers) for the hour, minute (and optionally
+the second), the corresponding time value is returned (or <code>NIL</code> if
+they do not represent a legal time). See also <code><a
 href="refU.html#usec">usec</a></code>, <code><a
 href="refT.html#tim$">tim$</a></code> and <code><a
 href="ref_.html#$tim">$tim</a></code>.

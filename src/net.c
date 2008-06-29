@@ -1,4 +1,4 @@
-/* 20nov07abu
+/* 13jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,6 +19,7 @@ static int ipSocket(any ex, int type) {
 
    if ((sd = socket(AF_INET, type, 0)) < 0)
       ipErr(ex, "socket");
+   closeOnExec(ex, sd);
    return sd;
 }
 
@@ -209,7 +210,7 @@ any doUdp(any ex) {
       if (recv((int)xCnt(ex, data(c1)), buf, UDPMAX, 0) < 0)
          return Nil;
       getBin = getUdp,  UdpPtr = UdpBuf = buf;
-      return binRead() ?: Nil;
+      return binRead(ExtN) ?: Nil;
    }
    Save(c1);
    if (!server(xSym(data(c1)), (unsigned short)evCnt(ex,x), &addr))
@@ -217,7 +218,7 @@ any doUdp(any ex) {
    else {
       x = cdr(x),  x = EVAL(car(x));
       sd = ipSocket(ex, SOCK_DGRAM);
-      putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(x);
+      putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(ExtN, x);
       sendto(sd, buf, UdpPtr-buf, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
       close(sd);
    }

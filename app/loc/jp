@@ -1,11 +1,11 @@
-# 22jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
-"(@1 Positions)" "(銘柄数：@1)"
-"Page @1" "@1 ページ"
+"(@1 Positions)" "(ポジション数：@1)"
 
 "Address" "住所"
 
+"Can't print order" "注文書の印刷ができない"
 "Change" "変換"
 "City" "都市"
 "Contact" "問い合わせ"
@@ -14,7 +14,6 @@
 "Customer" "カスタマー"
 "Customer/Supplier" "カスタマー/注文先"
 "Customers/Suppliers" "カスタマー/注文先"
-"Customer/Supplier No. @1" "カスタマー/注文先 No. @1"
 
 "Data" "データ"
 "Date" "日付"
@@ -30,11 +29,11 @@
 
 "Home" "ホーム"
 
+"Incomplete customer address" "カスタマーの住所不十分"
 "Install" "インストール"
 "Inventory" "在庫目録"
 "Item" "商品"
 "Items" "商品"
-"Item No. @1" "商品 No. @1"
 
 "Login Name" "ログイン名"
 
@@ -43,26 +42,35 @@
 
 "Name" "名前"
 "Name 2" "名前 2"
+"No customer" "カスタマーなし"
+"No customer name" "カスタマー名なし"
+"No customer number" "カスタマー番号なし"
+"No item description" "商品仕様なし"
+"No item number" "商品番号なし"
+"No order date" "注文書日付なし"
+"No order number" "注文番号なし"
+"No positions" "ポジションなし"
 "Number" "番号"
 
 "Order" "注文"
 "Orders" "注文"
-"Order No. @1" "注文 No. @1"
 
-"Picture" "写真"
+"Page @1" "@1 ページ"
 "PDF-Print" "PDF印刷"
 "Phone" "電話番号"
+"Picture" "写真"
+"Position without item" "ポジションに商品がない"
+"Position without price" "ポジションに価格がない"
+"Position without quantity" "ポジションに数量がない"
 "Price" "価格"
 
 "Quantity" "数量"
 
 "Report" "レポート"
-"Role '@1'" "役割 '@1'"
 "Role Administration" "役割管理"
 
 "Sales" "セールス"
 "Salutation" "敬称"
-"Salutation '@1'" "敬称 '@1'"
 "Salutations" "敬称"
 "Sex" "性別"
 "Street" "住所"
@@ -73,7 +81,6 @@
 
 "Uninstall" "アンインストール"
 "Uninstall Picture?" "写真をアンインストールしますか？"
-"User '@1'" "ユーザー '@1'"
 "User Administration" "ユーザー管理"
 
 "Zip" "郵便番号"

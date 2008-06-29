@@ -11,40 +11,6 @@
 
 <dl>
 
-<dt><a name="*Rst"><code>*Rst</code></a>
-<dd>A global variable holding a (possibly empty) <code>prg</code> body, which
-will be executed after error processing. This makes it possible to restart an
-application despite of a failure. See also <code><a href="ref.html#errors">Error
-Handling</a></code>, <code><a href="refE.html#*Err">*Err</a></code> and <code><a
-href="refM.html#*Msg">*Msg</a></code>.
-
-<p><pre><code>
-: (de loopTest ()
-   (let N 4
-      (loop
-         (println (/ 100 (dec 'N))) ) ) )
--> loopTest
-: (de *Rst
-   (prinl "Loop Failed!")
-   (wait 4000)
-   (loopTest) )  # restart
--> *Rst
-: (loopTest)
-33
-50
-100
-!? (/ 100 (dec 'N))
-Div/0
-Loop Failed!
-33
-50
-100
-!? (/ 100 (dec 'N))
-Div/0
-Loop Failed!
-...
-</code></pre>
-
 <dt><a name="*Run"><code>*Run</code></a>
 <dd>This global variable can hold a list of <code>prg</code> expressions which
 are used during <code><a href="refK.html#key">key</a></code>, <code><a
@@ -82,9 +48,9 @@ href="refS.html#seed">seed</a></code>.
 
 <dt><a name="rank"><code>(rank 'any 'lst ['flg]) -> lst</code></a>
 <dd>Searches a ranking list. <code>lst</code> should be sorted. Returns the
-element from <code>lst</code> with a maximal <code>CAR</code> less or equal to
+element from <code>lst</code> with a maximal CAR less or equal to
 <code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a minimal
-<code>CAR</code> greater or equal to <code>any</code> (if <code>flg</code> is
+CAR greater or equal to <code>any</code> (if <code>flg</code> is
 non-<code>NIL</code>), or <code>NIL</code> if no match is found. See also <a
 href="ref.html#cmp">Comparing</a>.
 

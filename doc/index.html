@@ -80,8 +80,7 @@ function upperLoad(upperFrame) {
 		var anchors = upDoc.getElementsByTagName("a");
 		for (var i=0; i<anchors.length; i++) {
 			var ai = anchors[i];
-			var ls = ai.href.lastIndexOf("/");
-			if (ai.href.substring(ls+1, ls+4) == "ref") {
+			if (ai.href.match(/\/ref\w\.html/)) {
 				ai.target = "lower";
 			}
 		}

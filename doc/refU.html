@@ -12,8 +12,9 @@
 <dl>
 
 <dt><a name="*Uni"><code>*Uni</code></a>
-<dd>A global variable holding all unique data that were collected with the comma
-(<code>,</code>) read-macro. Typically used for localization. See also <code><a
+<dd>A global variable holding an <code><a href="refI.html#idx">idx</a></code>
+tree, with all unique data that were collected with the comma (<code>,</code>)
+read-macro. Typically used for localization. See also <code><a
 href="ref.html#macro-io">Read-Macros</a></code> and <code><a
 href="refL.html#locale">locale</a></code>.
 
@@ -25,7 +26,7 @@ href="refL.html#locale">locale</a></code>.
 : ,(1 2 3)              # Collect a list
 -> (1 2 3)
 : *Uni
--> ((1 2 3) "abc")
+-> ("abc" NIL (1 2 3))
 </code></pre>
 
 <dt><a name="udp"><code>(udp 'any1 'cnt 'any2) -> any<br>

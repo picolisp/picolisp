@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 21sep07abu
+# 14apr08abu
 # misc/bigtest <seed>
 
 (load "lib/misc.l")
@@ -47,7 +47,7 @@
 
 (pipe
    (out '("/usr/bin/bc")
-      (do 9600000
+      (do 10000000
          (setq N1 (rnd))
          (while (=0 (setq N2 (rnd))))
          (prinl N1)
@@ -66,7 +66,7 @@
          (prinl N1 " >= " N2)
          (prinl N1 " > " N2)
          (prinl "sqrt(" (abs N1) ")") ) )
-   (do 96
+   (do 100
       (do 100000
          (setq
             N1 (read)

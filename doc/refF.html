@@ -99,9 +99,9 @@ href="refF.html#fish">fish</a></code>.
 </code></pre>
 
 <dt><a name="fin"><code>(fin 'any) -> num|sym</code></a>
-<dd>Returns <code>any</code> if it is an atom, otherwise the <code>CDR</code> of
-its last cell. See also <code><a href="refL.html#last">last</a></code> and
-<code><a href="refT.html#tail">tail</a></code>.
+<dd>Returns <code>any</code> if it is an atom, otherwise the CDR of its last
+cell. See also <code><a href="refL.html#last">last</a></code> and <code><a
+href="refT.html#tail">tail</a></code>.
 
 <p><pre><code>
 : (fin 'a)
@@ -256,12 +256,11 @@ it is treated as a counter variable, first bound to 1 and then incremented for
 each execution of the body. While the condition <code>any2</code> evaluates to
 non-<code>NIL</code>, the body is repeatedly executed and, if <code>prg</code>
 is given, <code>sym</code> is re-bound to the result of its evaluation. If a
-clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
-clause's second element is evaluated as a condition and - if the result is
-<code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
-executed and the result returned. If the body is never executed,
-<code>NIL</code> is returned. See also <code><a
-href="refD.html#do">do</a></code> and <code><a
+clause has <code>NIL</code> or <code>T</code> as its CAR, the clause's second
+element is evaluated as a condition and - if the result is <code>NIL</code> or
+non-<code>NIL</code>, respectively - the <code>prg</code> is executed and the
+result returned. If the body is never executed, <code>NIL</code> is returned.
+See also <code><a href="refD.html#do">do</a></code> and <code><a
 href="refL.html#loop">loop</a></code>.
 
 <p><pre><code>

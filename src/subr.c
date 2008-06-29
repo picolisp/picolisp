@@ -1,4 +1,4 @@
-/* 30jan08abu
+/* 13may08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1322,12 +1322,13 @@ static any uniFill(any x) {
 // (prove 'lst ['lst]) -> lst
 any doProve(any x) {
    int i;
-   cell *envSave, *nlSave, q, dbg, env, n, nl, alt, tp1, tp2, e;
+   cell *envSave, *nlSave, at, q, dbg, env, n, nl, alt, tp1, tp2, e;
 
    x = cdr(x);
    if (!isCell(data(q) = EVAL(car(x))))
       return Nil;
    Save(q);
+   Push(at,val(At));
    envSave = Penv,  Penv = &env,  nlSave = Pnl,  Pnl = &nl;
    if (x = cdr(x), isNil(x = EVAL(car(x))))
       data(dbg) = NULL;
@@ -1357,7 +1358,7 @@ any doProve(any x) {
             if (data(dbg)  &&  memq(caar(data(tp1)), data(dbg))) {
                outWord(indx(car(data(alt)), get(caar(data(tp1)), T)));
                space();
-               print(uniFill(car(data(tp1)))), crlf();
+               print(uniFill(car(data(tp1)))), newline();
             }
             if (isCell(cdr(data(alt))))
                car(data(q)) =
@@ -1417,6 +1418,7 @@ any doProve(any x) {
    for (data(e) = Nil,  x = data(env);  isCell(cdr(x));  x = cdr(x))
       if (!unDig(caaar(x)))
          data(e) = cons(cons(cdaar(x), lookup(Zero, cdaar(x))), data(e));
+   val(At) = data(at);
    drop(q);
    Penv = envSave,  Pnl = nlSave;
    return isCell(data(e))? data(e) : isCell(data(env))? T : Nil;

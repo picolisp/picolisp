@@ -1,4 +1,4 @@
-# 07mar08abu
+# 09jun08abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -13,6 +13,10 @@
 ### protect ###
 (test NIL (pipe (prog (kill *Pid) (pr 7)) (rd)))
 (test 7 (pipe (protect (kill *Pid) (pr 7)) (rd)))
+
+
+### quit ###
+(test "Quit" (catch '("Quit") (quit "Quit")))
 
 
 ### env ###

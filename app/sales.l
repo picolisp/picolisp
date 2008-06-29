@@ -1,4 +1,4 @@
-# 25jan08abu
+# 15apr08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
@@ -39,7 +39,7 @@
                               (<+> (: cus ort))
                               (<-> (money N)) )
                            (inc 'Sum N) ) ) )
-                  (<row> NIL
+                  (<row> 'nil
                      (<strong> ,"Total") - - - - -
                      (<strong> (prin (money Sum))) ) ) ) ) ) ) )
 

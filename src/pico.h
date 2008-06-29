@@ -1,4 +1,4 @@
-/* 23mar08abu
+/* 18jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -42,6 +42,7 @@ typedef unsigned long word;
 typedef unsigned char byte;
 typedef unsigned char *ptr;
 typedef unsigned long long word2;
+typedef long long adr;
 
 #undef bool
 typedef enum {NO,YES} bool;
@@ -129,7 +130,7 @@ typedef struct stkEnv {
 
 typedef struct catchFrame {
    struct catchFrame *link;
-   any tag;
+   any tag, fin;
    stkEnv env;
    jmp_buf rst;
 } catchFrame;
@@ -217,7 +218,7 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
+extern int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
 extern char **AV, *Home;
 extern child *Child;
 extern heap *Heaps;
@@ -231,12 +232,12 @@ extern inFile *InFile, **InFiles;
 extern outFile *OutFile, **OutFiles;
 extern int (*getBin)(void);
 extern void (*putBin)(int);
-extern any TheKey, TheCls;
+extern any TheKey, TheCls, Thrown;
 extern any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 extern any ApplyArgs, ApplyBody, DbVal, DbTail;
 extern any Nil, DB, Meth, Quote, T;
-extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
-extern any Run, Hup, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
+extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
+extern any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -248,9 +249,9 @@ void bigAdd(any,any);
 int bigCompare(any,any);
 any bigCopy(any);
 void bigSub(any,any);
-void binPrint(any);
-any binRead(void);
-word2 blk64(any);
+void binPrint(int,any);
+any binRead(int);
+adr blk64(any);
 void blocking(bool,any,int);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
@@ -262,6 +263,7 @@ void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
 void closeInFile(int);
+void closeOnExec(any,int);
 void closeOutFile(int);
 void cntError(any,any) __attribute__ ((noreturn));
 int compare(any,any);
@@ -269,7 +271,7 @@ any cons(any,any);
 any consNum(word,any);
 any consStr(any);
 any consSym(any,any);
-void crlf(void);
+void newline(void);
 void ctOpen(any,any,ctlFrame*);
 void db(any,any,int);
 int dbSize(any,any);
@@ -288,6 +290,7 @@ any evList(any);
 any evSym(any);
 void execError(char*) __attribute__ ((noreturn));
 void extError(any,any) __attribute__ ((noreturn));
+any extOffs(int,any);
 any findHash(any,any*);
 int firstByte(any);
 bool flush(outFile*);
@@ -299,6 +302,7 @@ void giveup(char*) __attribute__ ((noreturn));
 unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
+any idx(any,any,int);
 void initInFile(int,char*);
 void initOutFile(int);
 void initSymbols(void);
@@ -313,13 +317,14 @@ any mkDat(int,int,int);
 any mkName(char*);
 any mkStr(char*);
 any name(any);
-any new64(word2,any);
-any newId(int);
+any new64(adr,any);
+any newId(any,int);
 int numBytes(any);
 void numError(any,any) __attribute__ ((noreturn));
 double numToDouble(any);
 any numToSym(any,int,int,int);
 void outName(any);
+void outNum(any);
 void outString(char*);
 void outWord(word);
 void pack(any,int*,any*,cell*);
@@ -329,7 +334,7 @@ void pipeError(any,char*);
 void popCtlFiles(void);
 void popInFiles(void);
 void popOutFiles(void);
-void pr(any);
+void pr(int,any);
 void prin(any);
 void print(any);
 void prn(long);
@@ -348,6 +353,7 @@ void setRaw(void);
 void sighandler(any);
 int slow(int,byte*,int);
 void space(void);
+bool subStr(any,any);
 int symByte(any);
 int symChar(any);
 void symError(any,any) __attribute__ ((noreturn));
@@ -454,6 +460,7 @@ any doEqual(any);
 any doEqual0(any);
 any doEqualT(any);
 any doEval(any);
+any doExt(any);
 any doExtern(any);
 any doExtQ(any);
 any doExtra(any);

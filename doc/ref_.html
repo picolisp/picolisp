@@ -343,13 +343,13 @@ href="refG.html#gt0">gt0</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="=:"><code>(=: sym [sym1|cnt .. sym2] 'any)</code></a>
+<dt><a name="=:"><code>(=: sym|0 [sym1|cnt .. sym2|0] 'any)</code></a>
 <dd>Stores a new value <code>any</code> for a property key <code>sym</code> or
-<code>sym2</code> in a symbol. That symbol is <code>This</code> (if no other
-arguments are given), or a symbol found by applying the <code><a
-href="refG.html#get">get</a></code> algorithm to <code>This</code> and the
-following arguments. Used typically in methods or <code><a
-href="refW.html#with">with</a></code> bodies. See also <code><a
+<code>sym2</code> (or in the value cell for zero) in a symbol. That symbol is
+<code>This</code> (if no other arguments are given), or a symbol found by
+applying the <code><a href="refG.html#get">get</a></code> algorithm to
+<code>This</code> and the following arguments. Used typically in methods or
+<code><a href="refW.html#with">with</a></code> bodies. See also <code><a
 href="refP.html#put">put</a></code>, <code><a href="ref_.html#:">:</a></code>
 and <code><a href="ref_.html#::">::</a></code>.
 

@@ -1,4 +1,4 @@
-# 26mar08abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -19,19 +19,19 @@
             (path "@doc/ref")
             C ".html#" Sym ) ) ) )
 
-(de more ("M" "Foo")
+(de more ("M" "Fun")
    (let *Dbg NIL
-      (default "Foo" print)
+      (default "Fun" print)
       (if (pair "M")
-         ("Foo" (pop '"M"))
-         ("Foo" (type "M"))
+         ("Fun" (pop '"M"))
+         ("Fun" (type "M"))
          (setq
-            "Foo" (list '(X) (list 'pp 'X (lit "M")))
+            "Fun" (list '(X) (list 'pp 'X (lit "M")))
             "M" (mapcar car (filter pair (val "M"))) ) )
       (loop
          (T (atom "M") (prinl))
          (T (line) T)
-         ("Foo" (pop '"M")) ) ) )
+         ("Fun" (pop '"M")) ) ) )
 
 (de depth (Idx)
    (if (atom Idx)
@@ -99,7 +99,9 @@
          ((str? "X") (and (str? "D") (= "X" "D")))
          ((sym? "X") (== "X" "D"))
          (T (match "X" "D")) )
-      (or (not "*Prg") (run "*Prg")) ) )
+      (or
+         (not "*Prg")
+         (let *Dbg (up 2 *Dbg) (run "*Prg")) ) ) )
 
 
 (de can (X)

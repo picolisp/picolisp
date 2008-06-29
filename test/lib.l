@@ -1,4 +1,4 @@
-# 27sep07abu
+# 24apr08abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -125,6 +125,14 @@
 (test '((1 a b c) (2 d e f))
    (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f))) )
 
+
+### qsym ###
+(let "A" 1234
+   (put '"A" 'a 1)
+   (put '"A" 'b 2)
+   (put '"A" 'f T)
+   (test (1234 f (2 . b) (1 . a))
+      (qsym . "A") ) )
 
 ### loc ###
 (let (X 'foo  bar '((A B) (foo B A)))

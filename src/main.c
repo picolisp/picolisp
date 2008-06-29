@@ -1,11 +1,11 @@
-/* 28mar08abu
+/* 18jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children;
+int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
 char **AV, *Home;
 child *Child;
 heap *Heaps;
@@ -19,12 +19,12 @@ inFile *InFile, **InFiles;
 outFile *OutFile, **OutFiles;
 int (*getBin)(void);
 void (*putBin)(int);
-any TheKey, TheCls;
+any TheKey, TheCls, Thrown;
 any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Meth, Quote, T;
-any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Scl, Class;
-any Run, Hup, Sig1, Sig2, Up, Err, Rst, Msg, Uni, Led, Adr, Fork, Bye;
+any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
+any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
 
 static int TtyPid;
 static word2 USec;
@@ -78,6 +78,7 @@ void sighandler(any ex) {
    bool flg;
 
    if (!Env.protect) {
+      Env.protect = 1;
       switch (Signal) {
       case SIGHUP:
          Signal = 0,  run(val(Hup));
@@ -96,14 +97,13 @@ void sighandler(any ex) {
          break;
       case SIGTERM:
          for (flg = NO, i = 0; i < Children; ++i)
-            if (Child[i].pid) {
+            if (Child[i].pid  &&  kill(Child[i].pid, SIGTERM) == 0)
                flg = YES;
-               kill(Child[i].pid, SIGTERM);
-            }
          if (!flg)
             Signal = 0,  bye(0);
          break;
       }
+      Env.protect = 0;
    }
 }
 
@@ -200,8 +200,7 @@ void heapAlloc(void) {
    heap *h;
    cell *p;
 
-   h = (heap*)((long)alloc(NULL,
-      sizeof(heap) + sizeof(cell)) + (sizeof(cell)-1) & ~(sizeof(cell)-1) );
+   h = (heap*)alloc(NULL, sizeof(heap) + sizeof(cell));
    h->next = Heaps,  Heaps = h;
    p = h->cells + CELLS-1;
    do
@@ -305,12 +304,12 @@ any doStk(any x) {
    FILE *stdSave = StdOut;
 
    OutFile = NULL,  StdOut = stderr;
-   print(cdr(x)), crlf();
+   print(cdr(x)), newline();
    for (p = Env.stack; p; p = cdr(p)) {
       fprintf(stderr, "%lX ", num(p)),  fflush(stderr);
-      print(car(p)), crlf();
+      print(car(p)), newline();
    }
-   crlf();
+   newline();
    OutFile = oSave,  StdOut = stdSave;
    return T;
 }
@@ -423,23 +422,31 @@ int compare(any x, any y) {
 }
 
 /*** Error handling ***/
-static void reset(void) {
-   Env.protect = 0;
-   unwind(NULL);
-   Env.stack = NULL;
-   Env.meth = NULL;
-   Env.next = -1;
-   Env.make = NULL;
-   Env.parser = NULL;
-   Env.trace = 0;
-}
-
 void err(any ex, any x, char *fmt, ...) {
    va_list ap;
    char msg[240];
    outFrame f;
 
-   Chr = 0;
+   va_start(ap,fmt);
+   vsnprintf(msg, sizeof(msg), fmt, ap);
+   va_end(ap);
+   if (msg[0]) {
+      any y;
+      catchFrame *p;
+
+      val(Msg) = mkStr(msg);
+      for (p = CatchPtr;  p;  p = p->link)
+         if (y = p->tag)
+            while (isCell(y)) {
+               if (subStr(car(y), val(Msg))) {
+                  Thrown = car(y);
+                  unwind(p);
+                  longjmp(p->rst, 1);
+               }
+               y = cdr(y);
+            }
+   }
+   Chr = ExtN = 0;
    Env.brk = NO;
    Alarm = Line = Nil;
    f.pid = -1,  f.fd = 2,  pushOutFiles(&f);
@@ -448,24 +455,25 @@ void err(any ex, any x, char *fmt, ...) {
    if (InFile && InFile->name)
       fprintf(stderr, "[%s:%d] ", InFile->name, InFile->src);
    if (ex)
-      outString("!? "), print(val(Up) = ex), crlf();
+      outString("!? "), print(val(Up) = ex), newline();
    if (x)
       print(x), outString(" -- ");
-   va_start(ap,fmt);
-   vsnprintf(msg, sizeof(msg), fmt, ap);
-   va_end(ap);
    if (msg[0]) {
-      outString(msg), crlf();
-      val(Msg) = mkStr(msg);
+      outString(msg), newline();
       if (!isNil(val(Err)) && !Jam)
          Jam = YES,  prog(val(Err)),  Jam = NO;
-      if (!isNil(val(Rst)))
-         reset(),  longjmp(ErrRst, -1);
       if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
          bye(1);
       load(NULL, '?', Nil);
    }
-   reset();
+   Env.protect = 0;
+   unwind(NULL);
+   Env.stack = NULL;
+   Env.meth = NULL;
+   Env.next = -1;
+   Env.make = NULL;
+   Env.parser = NULL;
+   Env.trace = 0;
    StdOut = stdout;
    longjmp(ErrRst, +1);
 }
@@ -501,10 +509,8 @@ void pipeError(any ex, char *s) {err(ex, NULL, "Pipe %s error", s);}
 void unwind(catchFrame *p) {
    int i;
    catchFrame *q;
-   cell c1;
 
-   while (CatchPtr) {
-      q = CatchPtr,  CatchPtr = CatchPtr->link;
+   while (q = CatchPtr) {
       while (Env.bind != q->env.bind) {
          if (Env.bind->i == 0)
             for (i = Env.bind->cnt;  --i >= 0;)
@@ -518,13 +524,10 @@ void unwind(catchFrame *p) {
       while (Env.ctlFiles != q->env.ctlFiles)
          popCtlFiles();
       Env = q->env;
+      EVAL(q->fin);
+      CatchPtr = q->link;
       if (q == p)
          return;
-      if (!isSym(q->tag)) {
-         Push(c1, q->tag);
-         EVAL(data(c1));
-         drop(c1);
-      }
    }
    while (Env.bind) {
       if (Env.bind->i == 0)
@@ -1015,13 +1018,10 @@ int MAIN(int ac, char *av[]) {
    signal(SIGTTOU, SIG_IGN);
    gettimeofday(&Tv,NULL);
    USec = (word2)Tv.tv_sec*1000000 + Tv.tv_usec;
-   if (setjmp(ErrRst) < 0)
-      prog(val(Rst));
-   else {
-      while (*AV  &&  strcmp(*AV,"-") != 0)
-         load(NULL, 0, mkStr(*AV++));
-      iSignal(SIGINT, doSignal);
-      load(NULL, ':', Nil);
-   }
+   setjmp(ErrRst);
+   while (*AV  &&  strcmp(*AV,"-") != 0)
+      load(NULL, 0, mkStr(*AV++));
+   iSignal(SIGINT, doSignal);
+   load(NULL, ':', Nil);
    bye(0);
 }

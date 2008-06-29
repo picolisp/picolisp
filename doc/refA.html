@@ -320,10 +320,10 @@ href="refQ.html#quote">quote</a></code>.
 
 <dt><a name="asoq"><code>(asoq 'any 'lst) -> lst</code></a>
 <dd>Searches an association list. Returns the first element from
-<code>lst</code> with <code>any</code> as its <code>CAR</code>, or
-<code>NIL</code> if no match is found. <code><a
-href="ref_.html#==">==</a></code> is used for comparison (pointer equality). See
-also <code><a href="refA.html#assoc">assoc</a></code>, <code><a
+<code>lst</code> with <code>any</code> as its CAR, or <code>NIL</code> if no
+match is found. <code><a href="ref_.html#==">==</a></code> is used for
+comparison (pointer equality). See also <code><a
+href="refA.html#assoc">assoc</a></code>, <code><a
 href="refD.html#delq">delq</a></code>, <code><a
 href="refM.html#memq">memq</a></code> and <code><a
 href="refM.html#mmeq">mmeq</a></code>.
@@ -336,9 +336,9 @@ href="refM.html#mmeq">mmeq</a></code>.
 </code></pre>
 
 <dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a> <dd>Searches an
-association list. Returns the first element from <code>lst</code> with its
-<code>CAR</code> equal to <code>any</code>, or <code>NIL</code> if no match is
-found. See also <code><a href="refA.html#asoq">asoq</a></code>.
+association list. Returns the first element from <code>lst</code> with its CAR
+equal to <code>any</code>, or <code>NIL</code> if no match is found. See also
+<code><a href="refA.html#asoq">asoq</a></code>.
 
 <p><pre><code>
 : (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))

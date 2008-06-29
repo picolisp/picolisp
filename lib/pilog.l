@@ -1,4 +1,4 @@
-# 25jun07abu
+# 26apr08abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -432,21 +432,28 @@
 
 (de "select" (Lst Flg)
    (let? X
-      (if (atom (car Lst))
-         (let
-            (Var (pop 'Lst)
-               Cls (pop 'Lst)
-               Hook (and (get Cls Var 'hook) (pop 'Lst))
-               Val (pop 'Lst) )
-            (and (or Val Flg) ("initSel")) )
-         (make
-            (for (L (pop 'Lst) L)
-               (let
-                  (Var (pop 'L)
-                     Cls (pop 'L)
-                     Hook (and (get Cls Var 'hook) (pop 'L))
-                     Val (pop 'L) )
-                  (and (or Val Flg) (chain ("initSel"))) ) ) ) )
+      (nond
+         ((atom (car Lst))
+            (make
+               (for (L (pop 'Lst) L)
+                  (let
+                     (Var (pop 'L)
+                        Cls (pop 'L)
+                        Hook (and (get Cls Var 'hook) (pop 'L))
+                        Val (pop 'L) )
+                     (and (or Val Flg) (chain ("initSel"))) ) ) ) )
+         ((pat? (car Lst))
+            (let
+               (Var (pop 'Lst)
+                  Cls (pop 'Lst)
+                  Hook (and (get Cls Var 'hook) (pop 'Lst))
+                  Val (pop 'Lst) )
+               (and (or Val Flg) ("initSel")) ) )
+         (NIL
+            (let (Var (pop 'Lst) Val (pop 'Lst))
+               (and
+                  (or Flg (apply or Val))
+                  (cons Var (goal (pop 'Lst))) ) ) ) )
       (cons
          (cons
             (for (L NIL Lst)
@@ -468,37 +475,39 @@
          (T (initQuery Var (: cls) Hook Val)) ) ) )
 
 (de _gen (Lst Q)
-   (ifn Lst
-      (step Q (= '(NIL) (caaar Q)))
-      (use X
-         (loop
-            (T
-               (cond
-                  ((atom (car Lst))
-                     (prog1 (car Lst) (set Lst)) )
-                  ((atom (caar Lst)) (pop Lst))
-                  (T
-                     (prog1
-                        (step (car Lst) (= '(NIL) (caar (caar Lst))))
-                        (or (cdaar Lst) (set Lst)) ) ) )
-               @ )
-            (NIL (setq X (_gen (cddr Lst) Q)))
-            (set Lst
-               (let Y (cadr Lst)
+   (cond
+      (Lst
+         (use X
+            (loop
+               (T
                   (cond
-                     ((atom Y) (get X Y))
-                     ((=T (caddr Y))
-                        (initQuery (car Y) (cadr Y) X (cadddr Y)) )  # X = Hook
+                     ((atom (car Lst))
+                        (prog1 (car Lst) (set Lst)) )
+                     ((atom (caar Lst)) (pop Lst))
                      (T
-                        (initQuery
-                           (car Y)
-                           (cadr Y)
-                           (caddr Y)
-                           (if (cadddr Y)
-                              (cons
-                                 (cons X (car @))
-                                 (cons X (cdr @)) )
-                              X ) ) ) ) ) ) ) ) ) )
+                        (prog1
+                           (step (car Lst) (= '(NIL) (caar (caar Lst))))
+                           (or (cdaar Lst) (set Lst)) ) ) )
+                  @ )
+               (NIL (setq X (_gen (cddr Lst) Q)))
+               (set Lst
+                  (let Y (cadr Lst)
+                     (cond
+                        ((atom Y) (get X Y))
+                        ((=T (caddr Y))
+                           (initQuery (car Y) (cadr Y) X (cadddr Y)) )  # X = Hook
+                        (T
+                           (initQuery
+                              (car Y)
+                              (cadr Y)
+                              (caddr Y)
+                              (if (cadddr Y)
+                                 (cons
+                                    (cons X (car @))
+                                    (cons X (cdr @)) )
+                                 X ) ) ) ) ) ) ) ) )
+      ((pat? (car Q)) (get (prove (cdr Q)) @))
+      (T (step Q (= '(NIL) (caaar Q)))) ) )
 
 (be select (("@Obj" . "@X") . "@Lst")
    (@ unify (-> "@X"))
@@ -533,5 +542,36 @@
    (@ let C (cdr (val (-> "@C" 2)))
       (set C (or (cdar C) (cdr C))) )
    (fail) )
+
+### Remote queries ###
+(de rqry Args
+   (for (Q (goal (cdr Args)) (prove Q))
+      (pr (get @ (car Args)))
+      (NIL (flush)) )
+   (bye) )
+
+(be remote ("@Lst" . "@CL")
+   (@Sockets box
+      (mapcan
+         '((Rsrc)  # (ext . exe)
+            (let? Sock (eval (cdr Rsrc))
+               (out Sock (pr (cons 'rqry (car (-> "@Lst")) (-> "@CL"))))
+               (cons (cons Sock (car Rsrc))) ) )  # (.. (sock . ext) ..)
+         (cdr (-> "@Lst")) ) )
+   (@ unify (car (-> "@Lst")))
+   (_remote "@Lst") )
+
+(be _remote ((@Obj . @))
+   (@ not (val (-> @Sockets 2)))
+   T
+   (fail) )
+
+(be _remote ((@Obj . @))
+   (@Obj let (Box (-> @Sockets 2)  Lst (val Box))
+      (rot Lst)
+      (loop
+         (T (in (caar Lst) (ext (cdar Lst) (rd))) @)
+         (NIL (set Box (setq Lst (cdr Lst)))) ) ) )
+(repeat)
 
 # vi:et:ts=3:sw=3

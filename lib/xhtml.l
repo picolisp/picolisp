@@ -1,4 +1,4 @@
-# 15mar08abu
+# 03jun08abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -108,17 +108,14 @@
       (prinl "</html>") ) )
 
 (de "css" (Css)
-   (prinl
-      "<link rel=\"stylesheet\" href=\""
-      (srcUrl Css)
-      "\" type=\"text/css\"/>" ) )
+   (prinl "<link rel=\"stylesheet\" type=\"text/css\" href=\"" (srcUrl Css) "\"/>") )
 
-(de javascript (JS)
+(de javascript (JS . @)
    (when *JS
-      (prinl
-         "<script src=\""
-         (srcUrl JS)
-         "\" type=\"text/javascript\"></script>" ) ) )
+      (when JS
+         (prinl "<script type=\"text/javascript\" src=\"" (srcUrl JS) "\"></script>") )
+      (when (rest)
+         (prinl "<script type=\"text/javascript\">" @ "</script>") ) ) )
 
 (de <div> (Attr . Prg)
    (tag 'div Attr 2 Prg)
@@ -206,7 +203,8 @@
 
 (de <img> (Src Alt Url DX DY)
    (and Url (prin "<a href=\"" (sesId Url) "\">"))
-   (prin "<img src=\"" (sesId Src) "\" alt=\"" Alt "\"")
+   (prin "<img src=\"" (sesId Src) "\"")
+   (and Alt (prin " alt=\"" Alt "\""))
    (and DX (prin " width=\"" DX "\""))
    (and DY (prin " height=\"" DY "\""))
    (and *Style (htStyle @))

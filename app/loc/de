@@ -1,11 +1,11 @@
-# 22jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(@1 Positionen)"
-"Page @1" "Seite @1"
 
 "Address" "Adresse"
 
+"Can't print order" "Beleg kann nicht gedruckt werden"
 "Change" "Ändern"
 "City" "Ort"
 "Contact" "Kontakt"
@@ -14,7 +14,6 @@
 "Customer" "Kunde"
 "Customer/Supplier" "Kunde/Lieferant"
 "Customers/Suppliers" "Kunden/Lieferanten"
-"Customer/Supplier No. @1" "Kunden/Lieferanten Nr. @1"
 
 "Data" "Daten"
 "Date" "Datum"
@@ -30,11 +29,11 @@
 
 "Home" "Startseite"
 
+"Incomplete customer address" "Unvollständige Kundenadresse"
 "Install" "Installieren"
 "Inventory" "Lagerbestand"
 "Item" "Artikel"
 "Items" "Artikel"
-"Item No. @1" "Artikel Nr. @1"
 
 "Login Name" "Login-Name"
 
@@ -43,26 +42,35 @@
 
 "Name" "Name"
 "Name 2" "Name 2"
+"No customer" "Kunde fehlt"
+"No customer name" "Kundenname fehlt"
+"No customer number" "Kundennummer fehlt"
+"No item description" "Artikelbezeichnung fehlt"
+"No item number" "Artikelnummer fehlt"
+"No order date" "Belegdatum fehlt"
+"No order number" "Belegnummer fehlt"
+"No positions" "Keine Positionen"
 "Number" "Nummer"
 
 "Order" "Bestellung"
 "Orders" "Bestellungen"
-"Order No. @1" "Bestellung Nr. @1"
 
-"Picture" "Bild"
+"Page @1" "Seite @1"
 "PDF-Print" "PDF-Druck"
 "Phone" "Telefon"
+"Picture" "Bild"
+"Position without item" "Position ohne Artikel"
+"Position without price" "Position ohne Preis"
+"Position without quantity" "Position ohne Menge"
 "Price" "Preis"
 
 "Quantity" "Menge"
 
 "Report" "Auswertung"
-"Role '@1'" "Rolle '@1'"
 "Role Administration" "Rollenverwaltung"
 
 "Sales" "Verkauf"
 "Salutation" "Anrede"
-"Salutation '@1'" "Anrede '@1'"
 "Salutations" "Anreden"
 "Sex" "Geschlecht"
 "Street" "Straße"
@@ -73,7 +81,6 @@
 
 "Uninstall" "De-installieren"
 "Uninstall Picture?" "Bild de-installieren?"
-"User '@1'" "Benutzer '@1'"
 "User Administration" "Benutzerverwaltung"
 
 "Zip" "PLZ"

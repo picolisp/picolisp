@@ -1,4 +1,4 @@
-/* 20nov07abu
+/* 28may08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -243,12 +243,12 @@ static void digMul(any x, word n) {
    any y;
 
    t = (word2)n * unDig(x);
-   setDig(x, num(t));
-   t = hi(t);
-   while (isNum(x = cdr(numCell(y = x)))) {
-      t += (word2)n * unDig(x);
+   for (;;) {
       setDig(x, num(t));
       t = hi(t);
+      if (!isNum(x = cdr(numCell(y = x))))
+         break;
+      t += (word2)n * unDig(x);
    }
    if (t)
       cdr(numCell(y)) = box(num(t));

@@ -1,4 +1,4 @@
-/* 22nov07abu
+/* 09jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -43,14 +43,15 @@ static void gc(long c) {
          mark(((bindFrame*)p)->bnd[i].sym);
          mark(((bindFrame*)p)->bnd[i].val);
       }
-   for (p = (any)CatchPtr; p; p = (any)((catchFrame*)p)->link)
-      mark(((catchFrame*)p)->tag);
+   for (p = (any)CatchPtr; p; p = (any)((catchFrame*)p)->link) {
+      if (((catchFrame*)p)->tag)
+         mark(((catchFrame*)p)->tag);
+      mark(((catchFrame*)p)->fin);
+   }
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)
       mark(((methFrame*)p)->key),  mark(((methFrame*)p)->cls);
    if (Env.make)
       mark(car(Env.make));
-   if (Env.parser)
-      mark(Env.parser->name);
    for (i = 0; i < HASH; ++i)
       for (p = Extern[i];  isCell(p);  p = (any)(num(p->cdr) & ~1))
          if (num(val(p->car)) & 1) {

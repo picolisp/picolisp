@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 24mar08abu
+# 13may08abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
@@ -68,6 +68,7 @@
                         (and *ContentType (prinl "Content-Type: " @ "^M"))
                         (and *ContentDisposition (prinl "Content-Disposition: " @ "^M"))
                         (and *UserAgent (prinl "User-Agent: " @ "^M"))
+                        (prinl "^M")
                         (cond
                            ((= "subscribe" (lowc *Subject))
                               (prinl "Hello " (or *Name *From) " :-)^M")
@@ -75,11 +76,13 @@
                               (prinl "****^M^J^M") )
                            ((= "unsubscribe" (lowc *Subject))
                               (out "Mailings"
-                                 (println (del *From '*Mailings)) )
+                                 (mapc prinl (del *From '*Mailings)) )
                               (prinl "Good bye " (or *Name *From) " :-(^M")
                               (prinl "You are now unsubscribed^M")
                               (prinl "****^M^J^M") ) )
                         (echo "^JFrom ")
+                        (prinl "-- ^M")
+                        (prinl "UNSUBSCRIBE: mailto:" *MailingList "?subject=Unsubscribe^M")
                         (prinl ".^M")
                         (prinl "QUIT^M") ) )
                   (close *Sock) ) ) )

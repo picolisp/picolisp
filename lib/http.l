@@ -1,4 +1,4 @@
-# 21mar08abu
+# 18jun08abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -24,6 +24,7 @@
    (`(chop "png") "image/png" 86400)
    (`(chop "jpg") "image/jpeg" 86400)
    (`(chop "txt") "text/octet-stream" 1 T)
+   (`(chop "csv") "text/csv; charset=utf-8" 1 T)
    (`(chop "css") "text/css" 86400)
    (`(chop "js") "application/x-javascript" 86400)
    (`(chop "ps") "application/postscript" 1)
@@ -60,13 +61,11 @@
 
 # Pico Shell
 (de psh (Pw Tty)
-   (when
-      (and
-         (= Pw (pw))
-         (in (list "ps" (pack "t" Tty)) (from "/psh "))
-         (ctty Tty) )
+   (off *Run)
+   (when (and (= Pw (pw)) (ctty Tty))
       (prinl *Pid)
       (load "@dbg.l")
+      (off *Err)
       (quit) ) )
 
 
@@ -105,7 +104,7 @@
 (de app ()
    (unless *SesId
       (setq
-         *SesId (pack (% (in "/dev/urandom" (rd 5)) 100000000000) "~")
+         *SesId (pack (in "/dev/urandom" (rd 7)) "~")
          *Sock (port *HPorts '*Port) )
       (timeout *Timeout) ) )
 
@@ -314,7 +313,7 @@
       (T (ht:Pack Lst)) ) )
 
 # Http Transfer Header
-(de _http (Typ Upd File Att)
+(de http1 (Typ Upd File Att)
    (prinl "HTTP/1." *Http1 " 200 OK^M")
    (prinl "Server: PicoLisp^M")
    (prin "Date: ")
@@ -331,7 +330,7 @@
          "; filename=\"" File "\"^M" ) ) )
 
 (de httpHead (Typ Upd File Att)
-   (_http Typ Upd File Att)
+   (http1 Typ Upd File Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
    (for L "*Cookies"
       (prinl "Set-Cookie: " (car L) "=" (cdr L) "; path=/") )
@@ -350,7 +349,7 @@
 (de httpEcho (File Typ Upd Att)
    (ifn (info File)
       (http404)
-      (_http
+      (http1
          Typ
          (if (and *Tmp (pre? *Tmp File)) 1 Upd)
          (stem (chop File) "/")

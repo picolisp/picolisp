@@ -16,9 +16,7 @@
 be executed when a SIGHUP signal is sent to the current process. Note that this
 mechanism is "unreliable", in the way that when a second signal (it may be
 SIGINT, SIGUSR1/2, SIGALRM or SIGTERM) arrives before the first signal's
-<code>prg</code> is running, the first signal will be lost. If the value of
-<code>*Hup</code> is <code>NIL</code>, the current process will terminate (as if
-SIGTERM had been sent). See also <code><a
+<code>prg</code> is running, the first signal will be lost. See also <code><a
 href="refA.html#alarm">alarm</a></code>, <code><a
 href="refR.html#*Run">*Run</a></code>, <code><a
 href="refS.html#*Sig1">*Sig[12]</a></code> and <code><a
@@ -73,6 +71,8 @@ href="refT.html#tell">tell</a></code>), <code>hear</code> is usually only called
 explicitly by a top level parent process.
 
 <p><pre><code>
+: (call 'mkfifo "fifo/cmd")
+-> T
 : (hear "fifo/cmd")
 -> "fifo/cmd"
 </code></pre>

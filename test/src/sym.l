@@ -1,4 +1,4 @@
-# 23feb08abu
+# 09jun08abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -115,12 +115,17 @@
 
 
 ### pre? ###
+(test T (pre? "" "abcdef")))
+(test NIL (pre? "abc" "")))
 (test T (pre? "abc" "abcdef")))
 (test NIL (pre? "def" "abcdef"))
 (test T (pre? "" "abcdef"))
 
 
 ### sub? ###
+(test T (sub? "" "abcdef")))
+(test NIL (sub? "abc" "")))
+(test T (sub? "cde" "abcdef"))
 (test T (sub? "def" "abcdef"))
 (test NIL (sub? "abb" "abcdef"))
 (test T (sub? "" "abcdef"))

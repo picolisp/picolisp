@@ -11,6 +11,25 @@
 
 <dl>
 
+<dt><a name="qsym"><code>(qsym . sym) -> lst</code></a>
+<dd>Returns a cons pair of the value and property list of <code>sym</code>. See
+also <code><a href="refQ.html#quote">quote</a></code>, <code><a
+href="refV.html#val">val</a></code> and <code><a
+href="refG.html#getl">getl</a></code>.
+
+<p><pre><code>
+: (setq A 1234)
+-> 1234
+: (put 'A 'a 1)
+-> 1
+: (put 'A 'b 2)
+-> 2
+: (put 'A 'f T)
+-> T
+: (qsym . A)
+-> (1234 f (2 . b) (1 . a))
+</code></pre>
+
 <dt><a name="quote"><code>(quote . any) -> any</code></a>
 <dd>Returns <code>any</code> unevaluated. The reader recognizes the single quote
 char <code>'</code> as a macro for this function. See also <code><a

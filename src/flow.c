@@ -1,4 +1,4 @@
-/* 22dec07abu
+/* 14jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -389,7 +389,7 @@ any doNew(any ex) {
       val(data(c1)) = y;
    else {
       if (!isNil(y)) {
-         p = Extern + hash(tail(data(c1)) = newId(isNum(y)? (int)unDig(y)/2 : 1));
+         p = Extern + hash(tail(data(c1)) = newId(ex, isNum(y)? (int)unDig(y)/2 : 1));
          mkExt(data(c1));
          *p = cons(data(c1),*p);
       }
@@ -1309,15 +1309,12 @@ for2:
    return Pop(c1);
 }
 
-static any Thrown;
-
-// (catch 'sym . prg) -> any
-any doCatch(any ex) {
-   any x, y;
+// (catch 'any . prg) -> any
+any doCatch(any x) {
+   any y;
    catchFrame f;
 
-   x = cdr(ex),  f.tag = EVAL(car(x));
-   NeedSym(ex,f.tag);
+   x = cdr(x),  f.tag = EVAL(car(x)),  f.fin = Zero;
    f.link = CatchPtr,  CatchPtr = &f;
    f.env = Env;
    y = setjmp(f.rst)? Thrown : prog(cdr(x));
@@ -1346,11 +1343,11 @@ any doFinally(any x) {
    cell c1;
 
    x = cdr(x);
-   f.tag = car(x);
+   f.tag = NULL,  f.fin = car(x);
    f.link = CatchPtr,  CatchPtr = &f;
    f.env = Env;
    Push(c1, prog(cdr(x)));
-   EVAL(f.tag);
+   EVAL(f.fin);
    CatchPtr = f.link;
    return Pop(c1);
 }
@@ -1373,7 +1370,7 @@ void brkLoad(any x) {
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At);
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
       Out.pid = -1,  Out.fd = 1,  pushOutFiles(&Out);
-      print(x), crlf();
+      print(x), newline();
       load(NULL, '!', Nil);
       popOutFiles();
       val(At) = Brk.bnd[2].val;
@@ -1464,12 +1461,12 @@ any doTrace(any x) {
       traceSym(car(x));
    if (!isNil(x) && isSym(x))
       traceSym(x);
-   crlf();
+   newline();
    Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
    Push(c1, prog(body));
    OutFile = NULL,  StdOut = stderr;
    Env.put = putStdout;
-   traceIndent(Env.trace--, foo, " = "),  print(data(c1)),  crlf();
+   traceIndent(Env.trace--, foo, " = "),  print(data(c1)),  newline();
    Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
    return Pop(c1);
 }
@@ -1613,6 +1610,9 @@ pid_t forkLisp(any ex) {
    }
    if (pipe(hear) < 0  ||  pipe(tell) < 0)
       pipeError(ex, "open");
+   closeOnExec(ex, mic[0]), closeOnExec(ex, mic[1]);
+   closeOnExec(ex, hear[0]), closeOnExec(ex, hear[1]);
+   closeOnExec(ex, tell[0]), closeOnExec(ex, tell[1]);
    i = allocChild();
    if ((n = fork()) < 0)
       err(ex, NULL, "fork");
@@ -1643,6 +1643,7 @@ pid_t forkLisp(any ex) {
       val(PPid) = val(Pid);
       val(Pid) = boxCnt(getpid());
       run(val(Fork));
+      val(Fork) = Nil;
       return 0;
    }
    if (i == Children)

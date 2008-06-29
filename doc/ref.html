@@ -404,16 +404,13 @@ href="refN.html#new">new</a></code> functions.
 <p><hr>
 <h5><a name="external">External Symbols</a></h5>
 
-<p>External symbols reside in a database file, and are loaded into memory - and
-written back to the file - dynamically as needed, and transparent to the
+<p>External symbols reside in a database file (or a similar resources (see
+<code><a href="refE.html#*Ext">*Ext</a></code>)), and are loaded into memory -
+and written back to the file - dynamically as needed, and transparent to the
 programmer.
 
-<p>The interpreter recognizes external symbols, because in addition to the
-symbol bit(2), also bit(1) is set:
-
-<p><pre><code>
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx110
-</code></pre>
+<p>The interpreter recognizes external symbols internally by an additional tag
+bit in the tail structure.
 
 <p>There cannot be two different external symbols with the same name. External
 symbols are maintained in hash structures while they are loaded into memory, and
@@ -726,11 +723,11 @@ address).
 <p>External symbol names are surrounded by braces (<code>'{'</code> and
 <code>'}'</code>). The characters of the symbol's name itself identify the
 physical location of the external object. This is currently the number of the
-starting block in the database file, encoded in base-64 notation (characters
-'<code>0</code>' through '<code>9</code>', '<code>:</code>' through
-'<code>;</code>', '<code>A</code>' through '<code>Z</code>' and '<code>a</code>'
-through '<code>z</code>'). Later versions might include other formats like
-Internet URL's.
+database file, and - separated by a hyphen - the starting block in the database
+file. Both numbers are encoded in base-64 notation (characters '<code>0</code>'
+through '<code>9</code>', '<code>:</code>' through '<code>;</code>',
+'<code>A</code>' through '<code>Z</code>' and '<code>a</code>' through
+'<code>z</code>').
 
 
 <p><hr>
@@ -791,10 +788,11 @@ character is also printed instead of the full function name.
 </code></pre>
 
 <p>A comma (<code>,</code>) will cause the reader to collect the following data
-item into the global variable <code><a href="refU.html#*Uni">*Uni</a></code>,
-and to return a previously inserted equal item if present. This makes it
-possible to create a unique list of references to data which do normally not
-follow the rules of pointer equality.
+item into an <code><a href="refI.html#idx">idx</a></code> tree in the global
+variable <code><a href="refU.html#*Uni">*Uni</a></code>, and to return a
+previously inserted equal item if present. This makes it possible to create a
+unique list of references to data which do normally not follow the rules of
+pointer equality.
 
 <p>A single backquote character <code>`</code> will cause the reader to evaluate
 the following expression, and return the result.
@@ -1089,11 +1087,6 @@ all variable bindings restored, and all files closed. If the standard input is
 not from a terminal, the interpreter terminates. Otherwise it is reset to its
 top-level state.
 
-<p>If the VAL of the global <code><a href="refR.html#*Rst">*Rst</a></code> is
-non-<code>NIL</code>, no interactive read-eval-print loop will be entered, and
-that VAL will be executed instead - after the above cleanup was done - as a
-<code>prg</code> body.
-
 <p><pre><code>
 : (de foo (A B) (badFoo A B))       # 'foo' calls an undefined symbol
 -> foo
@@ -1107,6 +1100,10 @@ badFoo -- Undefined
 ?                                   # Empty line: Exit
 :
 </code></pre>
+
+<p>Errors can be caught with <code><a href="refC.html#catch">catch</a></code>,
+if a list of substrings of possible error messages is supplied for the first
+argument. In such a case, the matching substring is returned.
 
 
 <p><hr>
@@ -1288,6 +1285,10 @@ and <code><a href="ref_.html#::">::</a></code>.
 href="#external">external symbols</a>. They reside in a database file, and are
 dynamically swapped in and out of memory. Only one database can be open at a
 time (<code><a href="refP.html#pool">pool</a></code>).
+
+<p>In addition, further external symbols can be specified to originate from
+arbitrary sources via the <code><a href="refE.html#*Ext">*Ext</a></code>
+mechanism.
 
 <p>The symbols in the database can be used to store arbitrary information
 structures. In typical use, some symbols represent nodes of search trees, by
@@ -1730,7 +1731,7 @@ abbreviations:
    <a href="ref_.html#=">=</a>
    <a href="ref_.html#<>"><&gt</a>
    <a href="ref_.html#=0">=0</a>
-   <a href="refT.html#=T">=T</a>
+   <a href="ref_.html#=T">=T</a>
    <a href="refN.html#n0">n0</a>
    <a href="refN.html#nT">nT</a>
    <a href="ref_.html#<">&lt;</a>
@@ -2202,7 +2203,6 @@ abbreviations:
    <a href="refS.html#*Sig2">*Sig2</a>
    <a href="ref_.html#^">^</a>
    <a href="refE.html#*Err">*Err</a>
-   <a href="refR.html#*Rst">*Rst</a>
    <a href="refM.html#*Msg">*Msg</a>
    <a href="refU.html#*Uni">*Uni</a>
    <a href="refL.html#*Led">*Led</a>

@@ -1,3 +1,12 @@
+* 29jun08 picoLisp-2.3.3
+   Removed '*Rst' global variable
+   Catch error messages
+   Remote Pilog queries
+   DB extension with '*Ext' and 'ext'
+   Extended 'put'-syntax to zero keys
+   Wrong '@@' result in 'load'
+   Handling of "#" in 'str'
+
 * 29mar08 picoLisp-2.3.2
    Ctrl-D termination
    Improved termios restore

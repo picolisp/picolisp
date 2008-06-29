@@ -1,4 +1,4 @@
-/* 20sep07abu
+/* 31mar08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -251,7 +251,7 @@ any In(any x) {
 
 static void wrChunk(void) {
    int i;
-   char buf[16];
+   char buf[BITS/2];
 
    sprintf(buf, "%x\r\n", Cnt);
    i = 0;

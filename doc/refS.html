@@ -152,13 +152,12 @@ href="refR.html#rand">rand</a></code>.
 </code></pre>
 
 <dt><a name="seek"><code>(seek 'fun 'lst ..) -> lst</code></a>
-<dd>Applies <code>fun</code> to <code>lst</code> and all successive
-<code>CDR</code>'s, until non-<code>NIL</code> is returned. Returns the tail of
-<code>lst</code> starting with that element, or <code>NIL</code> if
-<code>fun</code> did not return non-<code>NIL</code> for any element of
-<code>lst</code>. When additional <code>lst</code> arguments are given, they are
-passed to <code>fun</code> in the same way. See also <code><a
-href="refF.html#find">find</a></code>, <code><a
+<dd>Applies <code>fun</code> to <code>lst</code> and all successive CDRs, until
+non-<code>NIL</code> is returned. Returns the tail of <code>lst</code> starting
+with that element, or <code>NIL</code> if <code>fun</code> did not return
+non-<code>NIL</code> for any element of <code>lst</code>. When additional
+<code>lst</code> arguments are given, they are passed to <code>fun</code> in the
+same way. See also <code><a href="refF.html#find">find</a></code>, <code><a
 href="refP.html#pick">pick</a></code>.
 
 <p><pre><code>

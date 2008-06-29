@@ -1,16 +1,16 @@
-# 13oct06abu
+# 03may08abu
 # (c) Software Lab. Alexander Burger
 
-# *Boss
+# "tmp+" "tmp-"
 
-(unless *Boss
-   (call 'mkdir "-p" "fifo")
-   (call 'mkfifo (setq *Boss (pack "fifo/boss" *Pid)))
-   (hear (open *Boss)) )
-
-(push1 '*Fork '(del '(call 'rm *Boss) '*Bye))
-(push1 '*Bye '(call 'rm *Boss))
+(unless (info (tmp "+"))
+   (call 'mkfifo (setq "tmp+" (tmp "+")))
+   (call 'mkfifo (setq "tmp-" (tmp "-")))
+   (hear (open "tmp+")) )
 
 # (boss 'sym ['any ..])
 (de boss @
-   (out *Boss (pr (rest))) )
+   (out "tmp+" (pr (rest))) )
+
+(de reply Exe  #-> any
+   (out "tmp-" (pr (eval Exe))) )

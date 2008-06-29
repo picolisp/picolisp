@@ -286,9 +286,9 @@ abu:~/pico  ls -l dbFile*
 </code></pre>
 
 <dt><a name="pop"><code>(pop 'var) -> any</code></a>
-<dd>Pops the first element (<code>CAR</code>) from the stack in
-<code>var</code>. See also <code><a href="refP.html#push">push</a></code>,
-<code><a href="refQ.html#queue">queue</a></code>, <code><a
+<dd>Pops the first element (CAR) from the stack in <code>var</code>. See also
+<code><a href="refP.html#push">push</a></code>, <code><a
+href="refQ.html#queue">queue</a></code>, <code><a
 href="refC.html#cut">cut</a></code>, <code><a
 href="refD.html#del">del</a></code> and <code><a
 href="refF.html#fifo">fifo</a></code>.
@@ -669,11 +669,12 @@ href="refQ.html#queue">queue</a></code>.
 -> (4 3 2 1)
 </code></pre>
 
-<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym 'any) -> any</code></a>
-<dd>Stores a new value <code>any</code> for a property key <code>sym</code> in a
-symbol. That symbol is <code>sym1</code> (if no other arguments are given), or a
-symbol found by applying the <code><a href="refG.html#get">get</a></code>
-algorithm to <code>sym1|lst</code> and the following arguments.
+<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) -> any</code></a>
+<dd>Stores a new value <code>any</code> for a property key <code>sym</code> (or
+in the value cell for zero) in a symbol. That symbol is <code>sym1</code> (if no
+other arguments are given), or a symbol found by applying the <code><a
+href="refG.html#get">get</a></code> algorithm to <code>sym1|lst</code> and the
+following arguments. See also <code><a href="ref_.html#=:">=:</a></code>.
 
 <p><pre><code>
 : (put 'X 'a 1)

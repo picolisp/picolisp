@@ -1,4 +1,4 @@
-# 25jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -11,7 +11,7 @@
       (<h3> NIL ,"Role Administration")
       (form NIL
          (<h2> NIL (<id> (: nm)))
-         (panel T ,"Role '@1'" '(may Delete) '(choDlg T ,"Roles" '(nm +Role)) 'nm '+Role)
+         (panel T (pack ,"Role" " '@1'") '(may Delete) '(choDlg T ,"Roles" '(nm +Role)) 'nm '+Role)
          (<table> NIL NIL NIL
             (<row> NIL
                ,"Name"

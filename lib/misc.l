@@ -1,4 +1,4 @@
-# 08mar08abu
+# 03jun08abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -20,18 +20,24 @@
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
    (ifn (setq *Lang Lang)
-      (for "S" *Uni (set "S" "S"))
-      (locStr (pack "@loc/" Lang))
-      (and App (locStr (pack App Lang))) ) )
+      (for S (idx '*Uni)
+         (set S S) )
+      (let L
+         (sort
+            (make
+               ("loc" (pack "@loc/" Lang))
+               (and App ("loc" (pack App Lang))) ) )
+         (balance '*Uni L T)
+         (for S L
+            (set (car (idx '*Uni S)) (val S)) ) ) ) )
 
-(de locStr (F)
+(de "loc" (F)
    (in F
-      (for ("K" (read) "K" (read))
-         (let "V" (read)
-            (if (member "K" *Uni)
-               (set (car @) "V")
-               (set "K" "V")
-               (push '*Uni "K") ) ) ) ) )
+      (use X
+         (while (setq X (read))
+            (if (=T X)
+               ("loc" (read))
+               (set (link @) (read)) ) ) ) ) )
 
 ### Math ###
 # (Knuth Vol.2, p.442)
@@ -94,35 +100,38 @@
    (pack (need N (chop Val) "0")) )
 
 (de oct (X)
-   (if (num? X)
-      (let L (_oct X)
-         (until (=0 (setq X (>> 3 X)))
-            (push 'L (_oct X)) )
-         (pack L) )
-      (setq X (chop X))
-      (let N 0
-         (while X
-            (setq N
-               (+
-                  (- (char (pop 'X)) `(char "0"))
-                  (>> -3 N) ) ) )
-         N ) ) )
+   (cond
+      ((num? X)
+         (let L (_oct X)
+            (until (=0 (setq X (>> 3 X)))
+               (push 'L (_oct X)) )
+            (pack L) ) )
+      ((setq X (chop X))
+         (let N 0
+            (while X
+               (setq N
+                  (+
+                     (- (char (pop 'X)) `(char "0"))
+                     (>> -3 N) ) ) )
+            N ) ) ) )
 
 (de _oct (N)
    (char (+ (& N 7) `(char "0"))) )
 
 (de hex (X)
-   (if (num? X)
-      (let L (_hex X)
-         (until (=0 (setq X (>> 4 X)))
-            (push 'L (_hex X)) )
-         (pack L) )
-      (let N 0
-         (for C (chop X)
-            (setq C (- (char C) `(char "0")))
-            (and (> C 9) (dec 'C 7))
-            (setq N (+ C (>> -4 N))) )
-         N ) ) )
+   (cond
+      ((num? X)
+         (let L (_hex X)
+            (until (=0 (setq X (>> 4 X)))
+               (push 'L (_hex X)) )
+            (pack L) ) )
+      (X
+         (let N 0
+            (for C (chop X)
+               (setq C (- (char C) `(char "0")))
+               (and (> C 9) (dec 'C 7))
+               (setq N (+ C (>> -4 N))) )
+            N ) ) ) )
 
 (de _hex (N)
    (let C (& 15 N)
@@ -319,15 +328,13 @@
          (run "Prg") ) ) )
 
 (de dirname (F)
-   (pack
-      (flip (cdr (member '/ (reverse (chop F))))) ) )
+   (pack (flip (member '/ (flip (chop F))))) )
 
 # Temporary Files
-(push1 '*Fork '(off *Tmp))
-(push1 '*Bye '(and *Tmp (call 'rm "-r" *Tmp)))
-
 (de tmp @
    (unless *Tmp
+      (push '*Bye '(call 'rm "-r" *Tmp))
+      (push '*Fork '(off *Tmp) '(del '(call 'rm "-r" *Tmp) '*Bye))
       (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 

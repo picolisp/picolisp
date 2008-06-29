@@ -1,4 +1,4 @@
-# 26sep07abu
+# 24may08abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -7,6 +7,10 @@
 
 
 ### read ###
+(test (1 2 3) (~(1 2) 3))
+(test (1 3) (~(1 . 2) 3))
+(test (1 2 3 4) (1 ~(2 3) 4))
+(test (1 2 4) (1 ~(2 . 3) 4))
 (test (1 abc (d e f))
    (pipe (prinl "(1 abc (d e f))")
       (read) ) )
@@ -98,6 +102,8 @@
 ### str ###
 (test '(a (1 2) b)
    (str "a (1 2) b") )
+(test '(a (1 2))
+   (str "a (1 2) # b") )
 (test "a \"Hello\" DEF"
    (str '(a "Hello" DEF)) )
 
@@ -162,7 +168,14 @@
 (test "def" (in (tmp "prin") (line T)))
 
 
-### rd pr ###
+### ext rd pr ###
+(out (tmp "ext")
+   (ext 5
+      (pr '({6-2} ({8-9} . a) ({7-7} . b))) ) )
+(test '({2} ({3-9} . a) ({2-7} . b))
+   (in (tmp "ext") (rd)) )
+(test '({6-2} ({8-9} . a) ({7-7} . b))
+   (in (tmp "ext") (ext 5 (rd))) )
 (pipe
    (for (N 1 (>= 4096 N) (inc N))
       (pr N) )

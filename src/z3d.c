@@ -1,4 +1,4 @@
-/* 18aug04abu
+/* 22apr08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -349,7 +349,7 @@ static void doDraw(any ex, any mdl, matrix *r, double x, double y, double z) {
             n = length(face) / 3;
             prn(n+2);
             shadowPt(pt1.x + dx + pt1.z + pos.z, pt1.y + dy);
-            pr(txt);
+            pr(0,txt);
             shadowPt(pt2.x + dx + pt2.z + pos.z, pt2.y + dy);
             shadowPt(pt3.x + dx + pt3.z + pos.z, pt3.y + dy);
             while (--n >= 0) {
@@ -390,7 +390,7 @@ static void doDraw(any ex, any mdl, matrix *r, double x, double y, double z) {
             n = length(face) / 3;
             prn(n+2);
             transPt(pt1.x, pt1.y, pt1.z);
-            pr(txt);
+            pr(0,txt);
             transPt(pt2.x + dx, pt2.y + dy, pt2.z + dz);
             transPt(pt3.x + dx, pt3.y + dy, pt3.z + dz);
             while (--n >= 0) {

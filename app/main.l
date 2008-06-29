@@ -1,4 +1,4 @@
-# 24oct07abu
+# 10may08abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -22,6 +22,15 @@
    UserAdmin   ,"User Administration"
    Password    ,"Password"
    Delete      ,"Delete" )
+
+(de *Locales
+   ("English" NIL)
+   ("English (US)" "US")
+   ("English (UK)" "UK")
+   ("Deutsch (DE)" "DE" . "de")
+   ("Deutsch (CH)" "CH" . "ch")
+   ("Русский" "RU" . "ru")
+   ("日本語" "JP" . "jp") )
 
 # Entry point
 (de main ()

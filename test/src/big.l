@@ -1,8 +1,9 @@
-# 26sep07abu
+# 28may08abu
 # (c) Software Lab. Alexander Burger
 
 ### format ###
 (test "123456789" (format 123456789))
+(test "12346" (format 12345.6789))
 (test "1234567.89" (format 123456789 2))
 (test "1234567,89" (format 123456789 2 ","))
 (test "1.234.567,89" (format 123456789 2 "," "."))

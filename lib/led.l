@@ -1,4 +1,4 @@
-# 23mar08abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -211,7 +211,7 @@
 # TAB expansion
 (de expandTab ()
    (let ("L" (head (dec "LPos") "Line")  "S" "L")
-      (while (find "skipFoo" "S")
+      (while (find "skipFun" "S")
          (pop '"S") )
       (ifn "S"
          (prog
@@ -234,7 +234,7 @@
                            (cons
                               (+ "LPos" (length X))
                               (append "L" X (nth "Line" "LPos")) ) )
-                        ("tabFoo" (pack "S")) ) ) ) )
+                        ("tabFun" (pack "S")) ) ) ) )
             (beep)
             (chgLine (cdar "Complete") (caar "Complete"))
             (rot "Complete") ) ) ) )
@@ -325,7 +325,7 @@
       (T (beep)) ) )
 
 # Get a line from console
-(de _getLine ("L" "skipFoo")
+(de _getLine ("L" "skipFun")
    (use "C"
       (chgLine "L" (inc (length "L")))
       (on "Insert")
@@ -350,15 +350,15 @@
          (T (cons (cons Key Prg) "FKey")) ) ) )
 
 # Main editing functions
-(de _led ("Line1" "tabFoo" "skipFoo")
-   (default "tabFoo" '((S) (filter '((X) (pre? S X)) (all))))
+(de _led ("Line1" "tabFun" "skipFun")
+   (default "tabFun" '((S) (filter '((X) (pre? S X)) (all))))
    (setq "LPos" 1  "HPos" 0)
-   (_getLine "Line1" (or "skipFoo" delim?))
+   (_getLine "Line1" (or "skipFun" delim?))
    (prinl) )
 
-(de revise ("X" "tabFoo" "skipFoo")
+(de revise ("X" "tabFun" "skipFun")
    (let ("*Dbg" *Dbg  *Dbg NIL)
-      (_led (chop "X") "tabFoo" "skipFoo")
+      (_led (chop "X") "tabFun" "skipFun")
       (pack "Line") ) )
 
 (de saveHistory ()

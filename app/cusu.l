@@ -1,4 +1,4 @@
-# 25jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -11,7 +11,7 @@
       (<h3> NIL ,"Customer/Supplier")
       (form NIL
          (<h2> NIL (<id> (: nr) " -- " (: nm)))
-         (panel T ,"Customer/Supplier No. @1" '(may Delete) '(choCuSu T) 'nr '+CuSu)
+         (panel T (pack ,"Customer/Supplier" " @1") '(may Delete) '(choCuSu T) 'nr '+CuSu)
          (<hr>)
          (<tab>
             (,"Name"

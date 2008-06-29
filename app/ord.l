@@ -1,4 +1,4 @@
-# 16mar08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -11,7 +11,7 @@
       (<h3> NIL ,"Order")
       (form NIL
          (<h2> NIL (<id> (: nr)))
-         (panel T ,"Order No. @1" '(may Delete) '(choOrd T) 'nr '+Ord)
+         (panel T (pack ,"Order" " @1") '(may Delete) '(choOrd T) 'nr '+Ord)
          (<grid> 4
             ,"Date" NIL
             (gui '(+E/R +DateField) '(dat : home obj) 10)
@@ -52,7 +52,9 @@
                (gui '(+Sgn +View +FixField) '(sum> (: home obj)) 2 12) ) )
          (<spread>
             (gui '(+Rid +Button) ,"PDF-Print"
-               '(psOut 0 ,"Order" (ps> (: home obj))) )
+               '(if (check> (: home obj))
+                  (note ,"Can't print order" (uniq @))
+                  (psOut 0 ,"Order" (ps> (: home obj))) ) )
             (editButton T) ) ) ) )
 
 # vi:et:ts=3:sw=3

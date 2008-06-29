@@ -1,11 +1,11 @@
-# 25mar08
+# 25apr08
 # Mansur Mamkin <mmamkin@mail.ru>
 
 "(@1 Positions)" "(@1 позиций)"
-"Page @1" "Страница @1"
 
 "Address" "Адрес"
 
+"Can't print order" "Невозможно напечатать заказ"
 "Change" "Изменить"
 "City" "Город"
 "Contact" "Контакт"
@@ -14,10 +14,10 @@
 "Customer" "Покупатель"
 "Customer/Supplier" "Покупатель/Поставщик"
 "Customers/Suppliers" "Покупатели/Поставщики"
-"Customer/Supplier No. @1" "Покупатель/Поставщик N. @1"
 
 "Data" "Данные"
 "Date" "Дата"
+"Dear Sir or Madam," "Уважаемый(ая)"
 "Description" "Описание"
 
 "eMail" "емейл"
@@ -25,13 +25,15 @@
 "Fax" "Факс"
 "Full Name" "Полное имя"
 
+"Greeting" "Приветствие"
+
 "Home" "Домой"
 
+"Incomplete customer address" "Неполный адрес покупателя"
 "Install" "Установить"
 "Inventory" "Инвентаризация"
 "Item" "Товар"
 "Items" "Товары"
-"Item No. @1" "Артикул N. @1"
 
 "Login Name" "Имя регистрации"
 
@@ -40,24 +42,37 @@
 
 "Name" "Имя"
 "Name 2" "Имя 2"
+"No customer" "Нет покупателя"
+"No customer name" "Нет имени покупателя"
+"No customer number" "Нет номера покупателя"
+"No item description" "Нет описания товара"
+"No item number" "Нет номера товара"
+"No order date" "Нет даты заказа"
+"No order number" "Нет номера заказа"
+"No positions" "Нет позиций"
 "Number" "Номер"
 
 "Order" "Заказ"
 "Orders" "Заказы"
-"Order No. @1" "Заказ N. @1"
 
-"Picture" "Картинка"
+"Page @1" "Страница @1"
 "PDF-Print" "Печать PDF"
 "Phone" "Телефон"
+"Picture" "Картинка"
+"Position without item" "Позиция без товара"
+"Position without price" "Позиция без цены"
+"Position without quantity" "Позиция без количества"
 "Price" "Цена"
 
 "Quantity" "Количество"
 
 "Report" "Отчет"
-"Role '@1'" "Роль '@1'"
 "Role Administration" "Управление ролями"
 
 "Sales" "Продажи"
+"Salutation" "Приветствие"
+"Salutations" "Приветствия"
+"Sex" "Пол"
 "Street" "Улица"
 "Supplier" "Поставщик"
 "System" "Система"
@@ -66,7 +81,6 @@
 
 "Uninstall" "Удалить"
 "Uninstall Picture?" "Удалить картинку?"
-"User '@1'" "Пользователь '@1'"
 "User Administration" "Управление пользователями"
 
 "Zip" "Индекс"

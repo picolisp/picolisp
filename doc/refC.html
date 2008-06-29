@@ -127,9 +127,9 @@ successfully.
 </code></pre>
 
 <dt><a name="case"><code>(case 'any (any1 . prg1) (any2 . prg2) ..) -> any</code></a>
-<dd>Multi-way branch: <code>any</code> is evaluated and compared to the
-<code>CAR</code> elements <code>anyN</code> of each clause. If one of them is a
-list, <code>any</code> is in turn compared to all elements of that list.
+<dd>Multi-way branch: <code>any</code> is evaluated and compared to the CAR
+elements <code>anyN</code> of each clause. If one of them is a list,
+<code>any</code> is in turn compared to all elements of that list.
 <code>T</code> is a catch-all for any value. If a comparison succeeds,
 <code>prgN</code> is executed, and the result returned. Otherwise
 <code>NIL</code> is returned.
@@ -139,19 +139,26 @@ list, <code>any</code> is in turn compared to all elements of that list.
 -> "Bambi"
 </code></pre>
 
-<dt><a name="catch"><code>(catch 'sym . prg) -> any</code></a>
-<dd>Sets up the environment for a non-local jump with <code><a
-href="refT.html#throw">throw</a></code>. <code>sym</code> is used by
-<code>throw</code> as a jump label (with <code>T</code> being a catch-all for
-any label). If <code>throw</code> is called during the execution of
-<code>prg</code>, the value thrown is returned immediately. Otherwise, the
-result of <code>prg</code> is returned. See also <code><a
-href="refF.html#finally">finally</a></code>.
+<dt><a name="catch"><code>(catch 'any . prg) -> any</code></a>
+<dd>Sets up the environment for a non-local jump which may be caused by <code><a
+href="refT.html#throw">throw</a></code> or by a runtime error. If
+<code>any</code> is an atom, it is used by <code>throw</code> as a jump label
+(with <code>T</code> being a catch-all for any label), and a <code>throw</code>
+called during the execution of <code>prg</code> will immediately return the
+thrown value. Otherwise, <code>any</code> should be a list of strings, to catch
+any error whose message contains one of these strings, and this will immediately
+return the matching string. If neither <code>throw</code> nor an error occurs,
+the result of <code>prg</code> is returned. See also <code><a
+href="refF.html#finally">finally</a></code>, <code><a
+href="refQ.html#quit">quit</a></code> and
+<code><a href="ref.html#errors">Error Handling</a></code>.
 
 <p><pre><code>
 : (catch 'Ok (println 1) (throw 'Ok 999) (println 2))
 1
 -> 999
+: (catch '("No such file") (in "doesntExist" (foo)))
+-> "No such file"
 </code></pre>
 
 <dt><a name="cd"><code>(cd 'any) -> sym</code></a>
@@ -348,7 +355,7 @@ is returned. A list argument is returned unchanged.
 <dt><a name="circ"><code>(circ 'any ..) -> lst</code></a>
 <dd>Produces a circular list of all <code>any</code> arguments by <code><a
 href="refC.html#cons">cons</a></code>ing them to a list and then connecting the
-<code>CDR</code> of the last cell to the first cell. See also <code><a
+CDR of the last cell to the first cell. See also <code><a
 href="refL.html#list">list</a></code>.
 
 <p><pre><code>
@@ -467,8 +474,7 @@ href="refR.html#rollback">rollback</a></code>.
 
 <dt><a name="con"><code>(con 'lst 'any) -> any</code></a>
 <dd>Connects <code>any</code> to the first cell of <code>lst</code>, by
-(destructively) storing <code>any</code> in the <code>CDR</code> of
-<code>lst</code>.
+(destructively) storing <code>any</code> in the CDR of <code>lst</code>.
 
 <p><pre><code>
 : (setq C (1 . a))
@@ -523,11 +529,11 @@ be established. See also <code><a href="refL.html#listen">listen</a></code> and
 </code></pre>
 
 <dt><a name="cons"><code>(cons 'any ['any ..]) -> lst</code></a>
-<dd>Constructs a new list cell with the first argument in the <code>CAR</code>
-and the second argument in the <code>CDR</code>. If more than two arguments are
-given, a corresponding chain of cells is built. <code>(cons 'a 'b 'c 'd)</code>
-is equivalent to <code>(cons 'a (cons 'b (cons 'c 'd)))</code>. See also
-<code><a href="refL.html#list">list</a></code>.
+<dd>Constructs a new list cell with the first argument in the CAR and the second
+argument in the CDR. If more than two arguments are given, a corresponding chain
+of cells is built. <code>(cons 'a 'b 'c 'd)</code> is equivalent to <code>(cons
+'a (cons 'b (cons 'c 'd)))</code>. See also <code><a
+href="refL.html#list">list</a></code>.
 
 <p><pre><code>
 : (cons 1 2)
@@ -597,8 +603,8 @@ $ cat count                               # Check "count"
 <dt><a name="ctty"><code>(ctty 'sym|pid) -> flg</code></a>
 <dd>When called with a symbolic argument, <code>ctty</code> changes the current
 TTY device to <code>sym</code>. Otherwise, the local console is prepared for
-serving the remote Pico Lisp process <code>pid</code>. See also <code><a
-href="refR.html#raw">raw</a></code>.
+serving the Pico Lisp process with the process ID <code>pid</code>. See also
+<code><a href="refR.html#raw">raw</a></code>.
 
 <p><pre><code>
 : (ctty "/dev/tty")
@@ -655,8 +661,8 @@ href="refJ.html#job">job</a></code> environment.
 </code></pre>
 
 <dt><a name="cut"><code>(cut 'cnt 'var) -> lst</code></a>
-<dd>Pops the first <code>cnt</code> elements (<code>CAR</code>) from the stack
-in <code>var</code>. See also <code><a href="refP.html#pop">pop</a></code> and
+<dd>Pops the first <code>cnt</code> elements (CAR) from the stack in
+<code>var</code>. See also <code><a href="refP.html#pop">pop</a></code> and
 <code><a href="refD.html#del">del</a></code>.
 
 <p><pre><code>

@@ -1,4 +1,4 @@
-# 23feb08abu
+# 19apr08abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -68,6 +68,13 @@
 (dm url> (Tab)
    (and (may Customer) (list "app/cusu.l"  '*Tab Tab  '*ID This)) )
 
+(dm check> ()
+   (make
+      (or (: nr) (link ,"No customer number"))
+      (or (: nm) (link ,"No customer name"))
+      (unless (and (: str) (: plz) (: ort))
+         (link ,"Incomplete customer address") ) ) )
+
 
 # Item
 (class +Item +Entity)
@@ -88,6 +95,11 @@
       (sum '((This) (: cnt))
          (collect 'itm '+Pos This) ) ) )
 
+(dm check> ()
+   (make
+      (or (: nr) (link ,"No item number"))
+      (or (: nm) (link ,"No item description")) ) )
+
 
 # Order
 (class +Ord +Entity)
@@ -102,6 +114,17 @@
 (dm sum> ()
    (sum 'sum> (: pos)) )
 
+(dm check> ()
+   (make
+      (or (: nr) (link ,"No order number"))
+      (or (: dat) (link ,"No order date"))
+      (if (: cus)
+         (chain (check> @))
+         (link ,"No customer") )
+      (if (: pos)
+         (chain (mapcan 'check> @))
+         (link ,"No positions") ) ) )
+
 
 (class +Pos +Entity)
 (rel ord (+Dep +Joint) (art) pos (+Ord))        # Order
@@ -111,6 +134,14 @@
 
 (dm sum> ()
    (* (: pr) (: cnt)) )
+
+(dm check> ()
+   (make
+      (if (: itm)
+         (chain (check> @))
+         (link ,"Position without item") )
+      (or (: pr) (link ,"Position without price"))
+      (or (: cnt) (link ,"Position without quantity")) ) )
 
 
 # Database sizes

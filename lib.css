@@ -1,4 +1,4 @@
-/* 20feb08abu
+/* 10jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -47,7 +47,7 @@ caption {
    position: absolute;
    top: 0;
    left: 0;
-   width: 15em;
+   width: 18em;
    height: 100%;
    padding: 1ex 0;
    background-color: rgb(70%,70%,70%);
@@ -111,7 +111,7 @@ caption {
 #main {
    position: absolute;
    top: 0;
-   left: 16em;
+   left: 19em;
    padding: 1ex 0;
 }
 
@@ -129,12 +129,16 @@ caption {
    background-color: rgb(80%,80%,80%);
 }
 
+.chart td.nil {
+   background-color: white;
+}
+
 .btn {
    width: 1em;
    color: rgb(60%,60%,60%);
 }
 
-/* Edit Mode */
+/* Edit mode */
 .edit {
    font-weight: bold;
 }
@@ -145,10 +149,14 @@ caption {
    background-color: yellow;
 }
 
-/* +Tiny */
+/* Fonts */
 .tiny {
    font-size: smaller;
    padding: 0;
+}
+
+.note, .ask {
+   font-weight: bold;
 }
 
 /* Alerts */
@@ -158,6 +166,10 @@ caption {
    margin: 1ex 0 1ex 5em;
    background-color: yellow;
    border: dashed thin;
+}
+
+.alert input {
+   margin-top: 1ex;
 }
 
 /* Dialogs */

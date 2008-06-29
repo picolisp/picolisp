@@ -1,4 +1,4 @@
-# 29oct07abu
+# 09jun08abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -379,6 +379,19 @@
 (test NIL (catch NIL (throw)))
 (test 'b (catch 'a (throw 'a 'b)))
 (test 123 (catch T (throw 'a 123)))
+(test "Undefined"
+   (catch '("Undefined") (mist)) )
+(test "No such file"
+   (catch '("No such file")
+      (in "doesntExist" (foo)) ) )
+(test 6
+   (case
+      (catch '("No such file" "Undefined" "expected")
+         (+ 1 2 3) )
+      ("No such file" (shouldNotComeHere))
+      ("Undefined" (shouldNotComeHere))
+      ("expected" (shouldNotComeHere))
+      (T @) ) )
 
 
 ### finally ###

@@ -1,4 +1,4 @@
-# 12sep07abu
+# 24apr08abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -189,6 +189,9 @@
                (cons (caar Lst) (cons (cdr (pop 'Lst)))) ) ) ) ) )
 
 ### Symbol ###
+(de qsym Sym
+   (cons (val Sym) (getl Sym)) )
+
 (de loc (S X)
    (if (and (str? X) (= S X))
       X

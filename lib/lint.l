@@ -1,4 +1,4 @@
-# 26mar08abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -44,14 +44,14 @@
             ((: ::))
             (quote
                (if (and (pair (fun? (cdr "X"))) (not (cdr (tail 1 @))))
-                  (use "*L" (lintFoo (cdr "X")))
+                  (use "*L" (lintFun (cdr "X")))
                   (lint2 (cdr "X")) ) )
             ((de dm)
                (let "*X" (cadr "X")
-                  (lintFoo (cddr "X")) ) )
+                  (lintFun (cddr "X")) ) )
             (recur
                (let recurse (cdr "X")
-                  (lintFoo recurse) ) )
+                  (lintFun recurse) ) )
             (task
                (lint1 (cadr "X"))
                (let "Y" (cddr "X")
@@ -193,7 +193,7 @@
       (cdr "X")
       Lst ) )
 
-(de lintFoo ("Lst")
+(de lintFun ("Lst")
    (let "A" (and (pair "Lst") (car "Lst"))
       (while (pair "A")
          (lintVar (pop '"A") T) )
@@ -208,10 +208,10 @@
       (cond
          ("C"  # Method
             (let "*X" (cons "X" "C")
-               (lintFoo (method "X" "C")) ) )
+               (lintFun (method "X" "C")) ) )
          ((pair (val "X"))  # Function
             (let "*X" "X"
-               (lintFoo (val "X")) ) )
+               (lintFun (val "X")) ) )
          ((info "X")  # File name
             (let "*X" "X"
                (in "X" (while (read) (lint1 @))) ) )

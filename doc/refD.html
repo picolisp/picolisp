@@ -493,7 +493,7 @@ See also <code><a href="refP.html#path">path</a></code>.
 
 <p><pre><code>
 : (dirname "a/b/c/d")
--> "a/b/c"
+-> "a/b/c/"
 </code></pre>
 
 <dt><a name="dm"><code>(dm sym . fun) -> sym<br>
@@ -527,13 +527,12 @@ href="refT.html#try">try</a>.
 <dd>Counted loop with multiple conditional exits: The body is executed at most
 <code>num</code> times (or never (if the first argument is <code>NIL</code>), or
 an infinite number of times (if the first argument is <code>T</code>)). If a
-clause has <code>NIL</code> or <code>T</code> as its <code>CAR</code>, the
-clause's second element is evaluated as a condition and - if the result is
-<code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
-executed and the result returned. Otherwise (if count drops to zero), the result
-of the last expression is returned. See also <code><a
-href="refL.html#loop">loop</a></code> and <code><a
-href="refF.html#for">for</a></code>.
+clause has <code>NIL</code> or <code>T</code> as its CAR, the clause's second
+element is evaluated as a condition and - if the result is <code>NIL</code> or
+non-<code>NIL</code>, respectively - the <code>prg</code> is executed and the
+result returned. Otherwise (if count drops to zero), the result of the last
+expression is returned. See also <code><a href="refL.html#loop">loop</a></code>
+and <code><a href="refF.html#for">for</a></code>.
 
 <p><pre><code>
 : (do 4 (printsp 'Ok))

@@ -14,8 +14,7 @@
 <dt><a name="*Err"><code>*Err</code></a>
 <dd>A global variable holding a (possibly empty) <code>prg</code> body, which
 will be executed during error processing. See also <code><a
-href="ref.html#errors">Error Handling</a></code>, <code><a
-href="refR.html#*Rst">*Rst</a></code> and <code><a
+href="ref.html#errors">Error Handling</a></code> and <code><a
 href="refM.html#*Msg">*Msg</a></code>.
 
 <p><pre><code>
@@ -26,6 +25,55 @@ href="refM.html#*Msg">*Msg</a></code>.
 Div/0
 Fatal error!
 $
+</code></pre>
+
+<dt><a name="*Ext"><code>*Ext</code></a>
+<dd>A global variable holding a sorted list of cons pairs. The CAR of each pair
+specifies an external symbol offset (suitable for <code><a
+href="refE.html#ext">ext</a></code>), and the CDR should be a function taking a
+single external symbol as an argument. This function should return a list, with
+the value for that symbol in its CAR, and the property list (in the format used
+by <code><a href="refG.html#getl">getl</a></code> and <code><a
+href="refP.html#putl">putl</a></code>) in its CDR. The symbol will be set to
+this value and property list upon access. Typically this function will access
+the corresponding symbol in a remote database process. See also <code><a
+href="ref.html#external">external symbols</a></code>.
+
+<p><pre><code>
+### On the local machine ###
+: (setq *Ext  # Define extension functions
+   (mapcar
+      '((V)
+         (let (@Ext (car V)  @Host (cddr V)  @Port (cadr V) Sock)
+            (cons @Ext
+               (curry (@Ext @Host @Port Sock) (Obj)
+                  (when (or Sock (setq Sock (connect @Host @Port)))
+                     (out Sock (ext @Ext (pr (cons 'qsym Obj))))
+                     (prog1 (in Sock (ext @Ext (rd)))
+                        (unless @
+                           (close Sock)
+                           (off Sock) ) ) ) ) ) ) )
+      (quote
+         (20 4000 . "10.10.12.1")
+         (40 4000 . "10.10.12.2")
+         (60 4000 . "10.10.12.3")
+         (80 4000 . "10.10.12.4") ) ) )
+
+### On the remote machines ###
+(de go ()
+   ...
+   (task (port 4000)  # Set up the object server in the background
+      (when (setq Sock (accept @))
+         (unless (fork)  # Child process
+            (task P)
+            (close P)
+            (in Sock
+               (while (rd)
+                  (out Sock (pr (eval @))) ) )
+            (bye) )
+         (close Sock) ) )
+   ...
+
 </code></pre>
 
 <dt><a name="e"><code>(e . prg) -> any</code></a>
@@ -199,6 +247,27 @@ href="refS.html#subr">subr</a></code>.
 -> (@ (pass $134533847))
 : (sqrt 64)
 -> 8
+</code></pre>
+
+<dt><a name="ext"><code>(ext 'cnt . prg) -> any</code></a>
+<dd>During the execution of <code>prg</code>, all <code><a
+href="ref.html#external">external symbols</a></code> processed by <code><a
+href="refR.html#rd">rd</a></code>, <code><a href="refP.html#pr">pr</a></code>,
+<code><a href="refR.html#rpc">rpc</a></code> or <code><a
+href="refU.html#udp">udp</a></code> are modified by an offset <code>cnt<code>
+suitable for mapping via the <code><a href="refE.html#*Ext">*Ext</a></code>
+mechanism. All external symbol's file numbers are incremented by <code>cnt<code>
+during output, and decremented by <code>cnt<code> during input.
+
+<p><pre><code>
+: (out 'a (ext 5 (pr '({6-2} ({8-9} . a) ({7-7} . b)))))
+-> ({6-2} ({8-9} . a) ({7-7} . b))
+
+: (in 'a (rd))
+-> ({2} ({3-9} . a) ({2-7} . b))
+
+: (in 'a (ext 5 (rd)))
+-> ({6-2} ({8-9} . a) ({7-7} . b))
 </code></pre>
 
 <dt><a name="ext?"><code>(ext? 'any) -> sym | NIL</code></a>

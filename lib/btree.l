@@ -1,4 +1,4 @@
-# 14aug07abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -301,8 +301,8 @@
 (====)
 
 # Scan tree nodes
-(de scan ("Tree" "Foo" "Beg" "End" "Flg")
-   (default "Foo" println)
+(de scan ("Tree" "Fun" "Beg" "End" "Flg")
+   (default "Fun" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _scan _nacs)
       (cdr (root "Tree")) ) )
@@ -320,7 +320,7 @@
             (cdr "V") )
          (T (> (car "X") "End"))
          (unless (and "Flg" (flg? (fin (car "X"))))
-            ("Foo"
+            ("Fun"
                (car "X")
                (or (cddr "X") (fin (car "X"))) ) )
          (_scan (cadr "X")) )
@@ -339,7 +339,7 @@
             (cdr "V") )
          (T (> "End" (car "X")))
          (unless (and "Flg" (flg? (fin (car "X"))))
-            ("Foo"
+            ("Fun"
                (car "X")
                (or (cddr "X") (fin (car "X"))) ) )
          (_nacs (cadr "X")) )
@@ -348,8 +348,8 @@
 (====)
 
 # Iterate tree values
-(de iter ("Tree" "Foo" "Beg" "End" "Flg")
-   (default "Foo" println)
+(de iter ("Tree" "Fun" "Beg" "End" "Flg")
+   (default "Fun" println)
    (or "Beg" "End" (on "End"))
    ((if (>= "End" "Beg") _iter _reti)
       (cdr (root "Tree")) ) )
@@ -367,7 +367,7 @@
             (cdr "V") )
          (T (> (car "X") "End"))
          (unless (and "Flg" (flg? (fin (car "X"))))
-            ("Foo" (or (cddr "X") (fin (car "X")))) )
+            ("Fun" (or (cddr "X") (fin (car "X")))) )
          (_iter (cadr "X")) )
       (wipe "Node") ) )
 
@@ -384,7 +384,7 @@
             (cdr "V") )
          (T (> "End" (car "X")))
          (unless (and "Flg" (flg? (fin (car "X"))))
-            ("Foo" (or (cddr "X") (fin (car "X")))) )
+            ("Fun" (or (cddr "X") (fin (car "X")))) )
          (_reti (cadr "X")) )
       (wipe "Node") ) )
 
@@ -411,7 +411,7 @@
       (zap Node) ) )
 
 # Check tree structure
-(de chkTree ("Node" "Foo")
+(de chkTree ("Node" "Fun")
    (let ("N" 0  "X")
       (when "Node"
          (recur ("Node")
@@ -427,8 +427,8 @@
                      (setq "X" (car "Y"))
                      (inc '"N")
                      (and
-                        "Foo"
-                        (not ("Foo" (car "Y") (cddr "Y")))
+                        "Fun"
+                        (not ("Fun" (car "Y") (cddr "Y")))
                         (quit "Check fail" "Node") )
                      (setq "L" (cadr "Y")) )
                   (and "L" (recurse "L")) ) )

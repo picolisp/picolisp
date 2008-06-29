@@ -1,4 +1,4 @@
-# 25jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
@@ -11,7 +11,7 @@
       (<h3> NIL ,"Item")
       (form NIL
          (<h2> NIL (<id> (: nr) " -- " (: nm)))
-         (panel T ,"Item No. @1" '(may Delete) '(choItem T) 'nr '+Item)
+         (panel T (pack ,"Item" " @1") '(may Delete) '(choItem T) 'nr '+Item)
          (<grid> 4
             ,"Number" NIL (gui '(+E/R +NumField) '(nr : home obj) 10) NIL
             ,"Description" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Item" 30) NIL

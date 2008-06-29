@@ -1,4 +1,4 @@
-/* 07mar08abu
+/* 18jun08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -98,6 +98,7 @@ static symInit Symbols[] = {
    {doEqual0, "=0"},
    {doEqualT, "=T"},
    {doEval, "eval"},
+   {doExt, "ext"},
    {doExtern, "extern"},
    {doExtQ, "ext?"},
    {doExtra, "extra"},
@@ -371,6 +372,7 @@ void initSymbols(void) {
    This  = initSym(Nil, "This");
    Dbg   = initSym(Nil, "*Dbg");
    Zap   = initSym(Nil, "*Zap");
+   Ext   = initSym(Nil, "*Ext");
    Scl   = initSym(Zero, "*Scl");
    Class = initSym(Nil, "*Class");
    Run   = initSym(Nil, "*Run");
@@ -379,7 +381,6 @@ void initSymbols(void) {
    Sig2  = initSym(Nil, "*Sig2");
    Up    = initSym(Nil, "^");
    Err   = initSym(Nil, "*Err");
-   Rst   = initSym(Nil, "*Rst");
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");
    Led   = initSym(Nil, "*Led");

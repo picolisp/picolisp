@@ -1,4 +1,4 @@
-# 25jan08abu
+# 09may08abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
@@ -11,7 +11,7 @@
       (<h3> NIL ,"User Administration")
       (form NIL
          (<h2> NIL (<id> (: nm)))
-         (panel T ,"User '@1'" '(may Delete) '(choDlg T ,"Users" '(nm +User)) 'nm '+User)
+         (panel T (pack ,"User" " '@1'") '(may Delete) '(choDlg T ,"Users" '(nm +User)) 'nm '+User)
          (<grid> 2
             ,"Login Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"User" 30)
             ,"Password"

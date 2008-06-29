@@ -1,4 +1,4 @@
-# 21oct07abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -254,20 +254,20 @@
 (de dbfMigrate (Pool Dbs)
    (let
       (scan
-         '(("Tree" "Foo")
+         '(("Tree" "Fun")
             (let "Node" (cdr (root "Tree"))
                (if (ext? (fin (val "Node")))
                   (recur ("Node")
                      (let? "X" (val "Node")
                         (recurse (cadr "X"))
-                        ("Foo" (car "X") (cdddr "X"))
+                        ("Fun" (car "X") (cdddr "X"))
                         (recurse (caddr "X"))
                         (wipe "Node") ) )
                   (recur ("Node")
                      (let? "X" (val "Node")
                         (recurse (car "X"))
                         (for "Y" (cdr "X")
-                           ("Foo" (car "Y") (or (cddr "Y") (fin (car "Y"))))
+                           ("Fun" (car "Y") (or (cddr "Y") (fin (car "Y"))))
                            (recurse (cadr "Y")) )
                         (wipe "Node") ) ) ) ) )
          iter

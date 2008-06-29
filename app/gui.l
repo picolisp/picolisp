@@ -1,4 +1,4 @@
-# 25mar08abu
+# 10may08abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -33,12 +33,8 @@
       (form NIL
          (gui '(+Init +Map +TextField)
             (cons *Ctry *Lang)
-            (quote
-               ("English" NIL . NIL)
-               ("Deutsch" "DE" . "de")
-               ("Русский" "RU" . "ru")
-               ("日本語" "JP" . "jp") )
-            '("English" "Deutsch" "Русский" "日本語")
+            *Locales
+            (mapcar car *Locales)
             ,"Language" )
          (gui '(+Button) ',"Change"
             '(let V (val> (field -1))
@@ -47,16 +43,17 @@
          (<grid> 2
             ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
             ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
-         (<spread>
-            (when *Login
-               (<span> "bold red"
-                  (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) )
-            (gui '(+Button) '(if *Login ,"logout" ,"login")
-               '(cond
-                  (*Login (logout))
-                  ((login (val> (: home nm)) (val> (: home pw)))
-                     (clr> (: home pw)) )
-                  (T (err ,"Permission denied")) ) ) ) ) ) )
+         (----)
+         (gui '(+Button) '(if *Login ,"logout" ,"login")
+            '(cond
+               (*Login (logout))
+               ((login (val> (: home nm)) (val> (: home pw)))
+                  (clr> (: home pw)) )
+               (T (err ,"Permission denied")) ) )
+         (when *Login
+            (<nbsp> 4)
+            (<span> "bold red"
+               (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) ) ) ) ) )
 
 (de stop ()
    (logout)

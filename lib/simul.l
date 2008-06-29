@@ -1,4 +1,4 @@
-# 11oct07abu
+# 17apr08abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -125,7 +125,7 @@
 (de north (This)
    (: 0 -1 -1) )
 
-(de disp (Grid How Foo X Y DX DY)
+(de disp (Grid How Fun X Y DX DY)
    (setq Grid
       (if X
          (mapcar
@@ -139,7 +139,7 @@
             (and How (if (and (nT How) (west (caar Grid))) " " '|)) )
          (for L Grid
             (prin
-               (Foo (car L))
+               (Fun (car L))
                (and How (if (and (nT How) (east (car L))) " " '|)) ) )
          (prinl)
          ("border" south)

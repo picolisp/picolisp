@@ -1,4 +1,4 @@
-# 27sep07abu
+# 03jun08abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -198,7 +198,7 @@
 
 
 ### dirname ###
-(test "a/b/c" (dirname "a/b/c/d"))
+(test "a/b/c/" (dirname "a/b/c/d"))
 
 
 ### fmt64 ###

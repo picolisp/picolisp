@@ -1,4 +1,4 @@
-/* 14jun08abu
+/* 14jul08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -82,7 +82,7 @@ any doPid(any x) {
 // (lit 'any) -> any
 any doLit(any x) {
    x = cadr(x);
-   if (isNum(x = EVAL(x)) || isSym(x) && x==val(x) || isCell(x) && isNum(car(x)))
+   if (isNum(x = EVAL(x)) || isNil(x) || x == T || isCell(x) && isNum(car(x)))
       return x;
    return cons(Quote, x);
 }

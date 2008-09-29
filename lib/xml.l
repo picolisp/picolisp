@@ -1,5 +1,5 @@
-# 25mar07abu
-# (c) Software Lab. Alexander Burger
+# 09aug08abu
+# 09aug08 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
 (de xml? (Flg)
@@ -11,6 +11,11 @@
          (char) ) ) )
 
 # Generate/Parse XML data
+# expects well formed XML
+# encoding by picolisp (utf8 "only", no utf16 etc.)
+# trim whitespace except in cdata
+# ignore <? <!-- <!DOCTYPE
+# non-builtin entities as normal text: &ent; => ent
 (de xml (Lst N)
    (if Lst
       (let Tag (pop 'Lst)
@@ -36,42 +41,83 @@
                      (prinl) ) )
                (space N)
                (prinl "</" Tag ">") ) ) )
+      (_xml) ) )
+
+(de _xml (In Char)
+   (unless Char
       (skip)
       (unless (= "<" (char))
-         (quit "Bad XML") )
-      (_xml (till " /<>" T)) ) )
-
-(de _xml (Tok)
-   (if (= "!--" Tok)
-      (nil (from "-->"))
-      (use X
-         (make
-            (link (intern Tok))
-            (let L
+         (quit "Bad XML") ) )
+   (case (peek)
+      ("?"
+         (from "?>")
+         (unless In (_xml In)) )
+      ("!"
+         (char)
+         (case (peek)
+            ("-"
+               (ifn (= "-" (char) (char))
+                  (quit "XML comment expected")
+                  (from "-->")
+                  (unless In (_xml In)) ) )
+            ("D"
+               (if (find '((C) (<> C (char))) '`(chop "DOCTYPE"))
+                  (quit "XML DOCTYPE expected")
+                  (when (= "[" (from "[" ">"))
+                     (use X
+                        (loop
+                           (T (= "]" (setq X (from "]" "\"" "'" "<!--"))))
+                           (case X
+                              ("\"" (from "\""))
+                              ("'" (from "'"))
+                              ("<!--" (from "-->"))
+                              (NIL (quit "Unbalanced XML DOCTYPE")) ) ) )
+                     (from ">") )
+                  (unless In (_xml In)) ) )
+            ("["
+               (if (find '((C) (<> C (char))) '`(chop "[CDATA["))
+                  (quit "XML CDATA expected")
+                  (pack
+                     (head -3
+                        (make
+                           (loop
+                              (NIL (link (char)) (quit "Unbalanced XML CDATA"))
+                              (T (= '`(chop "]]>") (tail 3 (made)))) ) ) ) ) ) )
+            (T (quit "Unhandled XML tag")) ) )
+      (T
+         (let Tok (till " ^I^M^J/>" T)
+            (use X
                (make
-                  (loop
-                     (NIL (skip) (quit "XML parse error"))
-                     (T (member @ '`(chop "/>")))
-                     (NIL (setq X (intern (till "=" T))))
-                     (char)
-                     (unless (= "\"" (char))
-                        (quit "XML parse error" X) )
-                     (link (cons X (pack (xmlEsc (till "\"")))))
-                     (char) ) )
-               (if (= "/" (char))
-                  (prog (char) (and L (link L)))
-                  (link L)
-                  (loop
-                     (NIL (skip) (quit "XML parse error" Tok))
-                     (T (and (= "<" (setq X (char))) (= "/" (peek)))
-                        (char)
-                        (unless (= Tok (till " /<>" T))
-                           (quit "Unbalanced XML" Tok) )
-                        (char) )
-                     (if (= "<" X)
-                        (and (_xml (till " /<>" T)) (link @))
-                        (link
-                           (pack (xmlEsc (trim (cons X (till "^J<"))))) ) ) ) ) ) ) ) ) )
+                  (link (intern (pack Tok)))
+                  (let L
+                     (make
+                        (loop
+                           (NIL (skip) (quit "Unexpected end of XML" Tok))
+                           (T (member @ '("/" ">")))
+                           (NIL (setq X (intern (pack (trim (till "="))))))
+                           (char)
+                           (skip)
+                           (let C (char)
+                              (unless (member C '("\"" "'"))
+                                 (quit "XML attribute quote expected" X) )
+                              (link (cons X (pack (xmlEsc (till C))))) )
+                           (char) ) )
+                     (if (= "/" (char))
+                        (prog (char) (and L (link L)))
+                        (link L)
+                        (loop
+                           (NIL (skip) (quit "Unexpected end of XML" Tok))
+                           (T (and (= "<" (setq X (char))) (= "/" (peek)))
+                              (char)
+                              (unless (= Tok (till " ^I^M^J/>" T))
+                                 (quit "Unbalanced XML" Tok) )
+                              (skip)
+                              (char) )
+                           (if (= "<" X)
+                              (when (_xml T "<")
+                                 (link @) )
+                              (link
+                                 (pack (xmlEsc (trim (cons X (till "^M^J<"))))) ) ) ) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
    (use (@A @X @Z)

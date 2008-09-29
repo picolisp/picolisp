@@ -1,4 +1,4 @@
-/* 13jun08abu
+/* 16aug08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2822,9 +2822,16 @@ static void restore(any ex) {
 
 // (pool ['sym1 ['lst] ['sym2] ['sym3]]) -> flg
 any doPool(any ex) {
-   any x, db;
+   any x;
    byte buf[2*BLK+1];
+   cell c1, c2, c3, c4;
 
+   x = cdr(ex),  Push(c1, EVAL(car(x)));  // db
+   NeedSym(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));  // lst
+   NeedLst(ex,data(c2));
+   Push(c3, evSym(cdr(x)));  // sym2
+   Push(c4, evSym(cddr(x)));  // sym3
    val(Solo) = Zero;
    if (Files) {
       while (isNil(doRollback(Nil)));
@@ -2841,11 +2848,8 @@ any doPool(any ex) {
       fclose(Journal),  Journal = NULL;
    if (Log)
       fclose(Log),  Log = NULL;
-   x = cdr(ex),  db = EVAL(car(x));
-   NeedSym(ex,db);
-   if (!isNil(db)) {
-      x = cddr(ex),  x = EVAL(car(x));
-      NeedLst(ex,x);
+   if (!isNil(data(c1))) {
+      x = data(c2);
       Files = length(x) ?: 1;
       BlkShift = alloc(BlkShift, Files * sizeof(int));
       BlkFile = alloc(BlkFile, Files * sizeof(int));
@@ -2853,9 +2857,9 @@ any doPool(any ex) {
       Locks = alloc(Locks, Files),  memset(Locks, 0, Files);
       MaxBlkSize = 0;
       for (F = 0; F < Files; ++F) {
-         char nm[pathSize(db) + 8];
+         char nm[pathSize(data(c1)) + 8];
 
-         pathString(db, nm);
+         pathString(data(c1), nm);
          if (isCell(x))
             sprintf(nm + strlen(nm), "%d", F+1);
          BlkShift[F] = isNum(car(x))? (int)unDig(car(x))/2 : 2;
@@ -2867,6 +2871,7 @@ any doPool(any ex) {
             if (errno != ENOENT  ||
                      (BlkFile[F] = open(nm, O_CREAT|O_EXCL|O_RDWR, 0666)) < 0) {
                Files = 0;
+               drop(c1);
                return Nil;
             }
             BlkSize[F] = BLKSIZE << BlkShift[F];
@@ -2891,22 +2896,18 @@ any doPool(any ex) {
       Block = alloc(Block, MaxBlkSize);
       IniBlk = alloc(IniBlk, MaxBlkSize);
       memset(IniBlk, 0, MaxBlkSize);
-      x = cdddr(ex),  x = EVAL(car(x));
-      NeedSym(ex,x);
-      if (!isNil(x)) {
-         char nm[pathSize(x)];
+      if (!isNil(data(c3))) {
+         char nm[pathSize(data(c3))];
 
-         pathString(x, nm);
+         pathString(data(c3), nm);
          if (!(Journal = fopen(nm, "a")))
             openErr(ex, nm);
          closeOnExec(ex, fileno(Journal));
       }
-      x = cddddr(ex),  x = EVAL(car(x));
-      NeedSym(ex,x);
-      if (!isNil(x)) {
-         char nm[pathSize(x)];
+      if (!isNil(data(c4))) {
+         char nm[pathSize(data(c4))];
 
-         pathString(x, nm);
+         pathString(data(c4), nm);
          if (!(Log = fopen(nm, "a+")))
             openErr(ex, nm);
          if (transaction()) {
@@ -2918,6 +2919,7 @@ any doPool(any ex) {
          ftruncate(fileno(Log), 0);
       }
    }
+   drop(c1);
    return T;
 }
 

@@ -13,8 +13,9 @@
 
 <dt><a name="*Msg"><code>*Msg</code></a>
 <dd>A global variable holding the last recently issued error message. See also
-<code><a href="ref.html#errors">Error Handling</a></code> and <code><a
-href="refE.html#*Err">*Err</a></code>.
+<code><a href="ref.html#errors">Error Handling</a></code>, <code><a
+href="refE.html#*Err">*Err</a></code> and <code><a
+href="ref_.html#^">^</a></code>.
 
 <p><pre><code>
 : (+ 'A 2)
@@ -113,6 +114,12 @@ internally.
 <dd>Applies <code>fun</code> to <code>lst</code> and all successive CDRs. When
 additional <code>lst</code> arguments are given, they are passed to
 <code>fun</code> in the same way. Returns the result of the last application.
+See also <code><a href="refM.html#mapc">mapc</a></code>, <code><a
+href="refM.html#maplist">maplist</a></code>, <code><a
+href="refM.html#mapcar">mapcar</a></code>, <code><a
+href="refM.html#mapcon">mapcon</a></code>, <code><a
+href="refM.html#mapcan">mapcan</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (map println (1 2 3 4) '(A B C))
@@ -126,7 +133,13 @@ additional <code>lst</code> arguments are given, they are passed to
 <dt><a name="mapc"><code>(mapc 'fun 'lst ..) -> any</code></a>
 <dd>Applies <code>fun</code> to each element of <code>lst</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed
-to <code>fun</code>. Returns the result of the last application.
+to <code>fun</code>. Returns the result of the last application. See also
+<code><a href="refM.html#map">map</a></code>, <code><a
+href="refM.html#maplist">maplist</a></code>, <code><a
+href="refM.html#mapcar">mapcar</a></code>, <code><a
+href="refM.html#mapcon">mapcon</a></code>, <code><a
+href="refM.html#mapcan">mapcan</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (mapc println (1 2 3 4) '(A B C))
@@ -141,6 +154,12 @@ to <code>fun</code>. Returns the result of the last application.
 <dd>Applies <code>fun</code> to each element of <code>lst</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns a (destructively) concatenated list of all results.
+See also <code><a href="refM.html#map">map</a></code>, <code><a
+href="refM.html#mapc">mapc</a></code>, <code><a
+href="refM.html#maplist">maplist</a></code>, <code><a
+href="refM.html#mapcar">mapcar</a></code>, <code><a
+href="refM.html#mapcon">mapcon</a></code>, <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (mapcan reverse '((a b c) (d e f) (g h i)))
@@ -150,7 +169,13 @@ to <code>fun</code>. Returns a (destructively) concatenated list of all results.
 <dt><a name="mapcar"><code>(mapcar 'fun 'lst ..) -> lst</code></a>
 <dd>Applies <code>fun</code> to each element of <code>lst</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed
-to <code>fun</code>. Returns a list of all results.
+to <code>fun</code>. Returns a list of all results. See also <code><a
+href="refM.html#map">map</a></code>, <code><a
+href="refM.html#mapc">mapc</a></code>, <code><a
+href="refM.html#maplist">maplist</a></code>, <code><a
+href="refM.html#mapcon">mapcon</a></code>, <code><a
+href="refM.html#mapcan">mapcan</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (mapcar + (1 2 3) (4 5 6))
@@ -163,7 +188,12 @@ to <code>fun</code>. Returns a list of all results.
 <dd>Applies <code>fun</code> to <code>lst</code> and all successive CDRs. When
 additional <code>lst</code> arguments are given, they are passed to
 <code>fun</code> in the same way. Returns a (destructively) concatenated list of
-all results.
+all results. See also <code><a href="refM.html#map">map</a></code>, <code><a
+href="refM.html#mapc">mapc</a></code>, <code><a
+href="refM.html#maplist">maplist</a></code>, <code><a
+href="refM.html#mapcar">mapcar</a></code>, <code><a
+href="refM.html#mapcan">mapcan</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (mapcon copy '(1 2 3 4 5))
@@ -173,7 +203,13 @@ all results.
 <dt><a name="maplist"><code>(maplist 'fun 'lst ..) -> lst</code></a>
 <dd>Applies <code>fun</code> to <code>lst</code> and all successive CDRs. When
 additional <code>lst</code> arguments are given, they are passed to
-<code>fun</code> in the same way. Returns a list of all results.
+<code>fun</code> in the same way. Returns a list of all results. See also
+<code><a href="refM.html#map">map</a></code>, <code><a
+href="refM.html#mapc">mapc</a></code>, <code><a
+href="refM.html#mapcar">mapcar</a></code>, <code><a
+href="refM.html#mapcon">mapcon</a></code>, <code><a
+href="refM.html#mapcan">mapcan</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (maplist cons (1 2 3) '(A B C))

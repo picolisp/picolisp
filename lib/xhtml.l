@@ -1,4 +1,4 @@
-# 03jun08abu
+# 09aug08abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -126,6 +126,9 @@
 
 (de <br> Prg
    (htPrin Prg 2)
+   (prinl "<br/>") )
+
+(de -- ()
    (prinl "<br/>") )
 
 (de ---- ()
@@ -295,8 +298,8 @@
 
 
 # Menus
-(de urlMT (Url Menu Tab Id)
-   (pack Url '?  "*Menu=+" Menu  "&*Tab=+" Tab  "&*ID=" (ht:Fmt Id)) )
+(de urlMT (Url Menu Tab Id Str)
+   (pack Url '?  "*Menu=+" Menu  "&*Tab=+" Tab  "&*ID=" (ht:Fmt Id) Str) )
 
 (de <menu> Lst
    (let (M 1  N 1  E 2  U)
@@ -308,14 +311,19 @@
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
                         (<li> (pack (if (or (<> U *Url) (caddr L)) 'cmd 'act) N)
-                           (<href> (eval (car L) E) (urlMT U *Menu 1 (eval (caddr L)))) )
+                           (<tip> "-->"
+                              (<href> (eval (car L) E)
+                                 (urlMT U *Menu (if (= U *Url) *Tab 1)
+                                    (eval (caddr L))
+                                    (eval (cadddr L)) ) ) ) )
                         (<li> (pack 'cmd N)
                            (ht:Prin (eval (car L) E)) ) ) )
                   ((bit? M *Menu)
                      (<li> (pack 'sub N)
-                        (<href>
-                           (eval (cadr L) E)
-                           (urlMT *Url (| M *Menu) *Tab *ID) ) )
+                        (<tip> ,"Open submenu"
+                           (<href>
+                              (eval (cadr L) E)
+                              (urlMT *Url (| M *Menu) *Tab *ID) ) ) )
                      (setq M (>> -1 M))
                      (recur (L)
                         (for X (cddr L)
@@ -324,12 +332,17 @@
                               (setq M (>> -1 M)) ) ) ) )
                   (NIL
                      (<li> (pack 'top N)
-                        (<href>
-                           (eval (cadr L) E)
-                           (urlMT *Url (x| M *Menu) *Tab *ID) )
+                        (<tip> ,"Close submenu"
+                           (<href>
+                              (eval (cadr L) E)
+                              (urlMT *Url (x| M *Menu) *Tab *ID) ) )
                         (setq M (>> -1 M))
                         (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
 
+# Update link
+(de updLink ()
+   (<tip> ,"Update"
+      (<span> 'step (<href> "@" (urlMT *Url *Menu *Tab *ID))) ) )
 
 # Tabs
 (de <tab> Lst
@@ -378,12 +391,14 @@
             Q2 (init (tree Var Cls Hook) K T) )
          (or (get *ID T) (step Q1 T))
          (if (and (step Q1 T) (send Msg @ *Tab))
-            (<href> "<<<" (mkUrl @))
+            (<tip> ,"Next object of the same type"
+               (<href> "<<<" (mkUrl @)) )
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
          (or (get *ID T) (step Q2 T))
          (if (and (step Q2 T) (send Msg @ *Tab))
-            (<href> ">>>" (mkUrl @))
+            (<tip> ,"Next object of the same type"
+               (<href> ">>>" (mkUrl @)) )
             (prin "&gt;&gt;&gt;") ) ) ) )
 
 # Character Separated Values
@@ -499,7 +514,7 @@
       (prin N "\"") )
    (and Max (prin " maxlength=\"" Max "\""))
    (dfltCss "field")
-   (and Flg (prin " readonly=\"readonly\""))
+   (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
 
 (de <hidden> ("Var" Val)
@@ -535,7 +550,7 @@
    (htmlVar "Var")
    (prin " cols=\"" Cols "\" rows=\"" Rows "\" wrap=\"off\"")
    (dfltCss "area")
-   (and Flg (prin " readonly=\"readonly\""))
+   (and Flg (prin " disabled=\"disabled\""))
    (prin '>)
    (ht:Prin (htmlVal "Var"))
    (prinl "</textarea>") )

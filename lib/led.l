@@ -1,4 +1,4 @@
-# 17apr08abu
+# 24sep08abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -320,7 +320,7 @@
       ("~"
          (doUndo)
          (rplChar
-            ((if (<= "A" (setq "C" (get "Line" "LPos")) "Z") lowc uppc) "C") )
+            ((if (low? (setq "C" (get "Line" "LPos"))) uppc lowc) "C") )
          (rMove) )
       (T (beep)) ) )
 

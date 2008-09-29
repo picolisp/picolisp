@@ -71,10 +71,14 @@ and <code><a href="refD.html#dbs+">dbs+</a></code>.
 </code></pre>
 
 <dt><a name="daemon"><code>(daemon 'sym . prg) -> fun<br>
-(daemon '(sym . cls) . prg) -> fun</code></a>
-<dd>Inserts <code>prg</code> in the beginning of the function or method body of
-<code>sym</code>. Built-in functions (C-function pointer) are automatically
-converted to Lisp expressions. See also <code><a
+(daemon '(sym . cls) . prg) -> fun</code><br>
+(daemon '(sym sym2 [. cls]) . prg) -> fun</code></a>
+<dd>Inserts <code>prg</code> in the beginning of the function (first form), the
+method body of <code>sym</code> in <code>cls</code> (second form) or in the
+class obtained by <code><a href="refG.html#get">get</a></code>ing
+<code>sym2</code> from <code><a href="refC.html#*Class">*Class</a></code> (or
+<code>cls</code> if given) (third form). Built-in functions (C-function pointer)
+are automatically converted to Lisp expressions. See also <code><a
 href="refE.html#expr">expr</a></code>, <code><a
 href="refP.html#patch">patch</a></code> and <code><a
 href="refR.html#redef">redef</a></code>.
@@ -362,9 +366,11 @@ href="refL.html#lint">lint</a></code>.
 (dec 'var ['num]) -> num</code></a>
 <dd>The first form returns the value of <code>num</code> decremented by 1. The
 second form decrements the <code>VAL</code> of <code>var</code> by 1, or by
-<code>num</code>. <code>(dec 'num)</code> is equivalent to <code>(- 'num
-1)</code> and <code>(dec 'var)</code> is equivalent to <code>(set 'var (- var
-1))</code>.
+<code>num</code>. If the first argument is <code>NIL</code>, it is returned
+immediately. <code>(dec 'num)</code> is equivalent to <code>(- 'num 1)</code>
+and <code>(dec 'var)</code> is equivalent to <code>(set 'var (- var 1))</code>.
+See also <code><a href="refI.html#inc">inc</a></code> and <code><a
+href="ref_.html#-">-</a></code>.
 
 <p><pre><code>
 : (dec -1)
@@ -498,12 +504,12 @@ See also <code><a href="refP.html#path">path</a></code>.
 
 <dt><a name="dm"><code>(dm sym . fun) -> sym<br>
 (dm (sym . cls) . fun) -> sym<br>
-(dm (sym sym [. cls]) . fun) -> sym</code></a>
+(dm (sym sym2 [. cls]) . fun) -> sym</code></a>
 <dd>Defines a method for the message <code>sym</code> in the current class,
 implicitly given by the value of the global variable <code><a
 href="refC.html#*Class">*Class</a></code>, or - in the second form - for the
 explicitly given class <code>cls</code>. In the third form, the class object is
-obtained by <code><a href="refG.html#get">get</a></code>ing <code>sym</code>
+obtained by <code><a href="refG.html#get">get</a></code>ing <code>sym2</code>
 from <code><a href="refC.html#*Class">*Class</a></code> (or <code>cls</code> if
 given). If any of these methods existed and was changed in the process, a
 "redefined" message is issued. When the value of the global variable <a

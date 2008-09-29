@@ -1,4 +1,4 @@
-# 24apr08abu
+# 08sep08abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -85,6 +85,20 @@
 (test 123 (scl 0 (any "123.45")))
 (test 1235 (scl 1 (any "123.45")))
 (test 123450 (scl 3 (any "123.45")))
+
+
+### script ###
+(out (tmp "script")
+   (println '(pass * 7)) )
+(test 42 (script (tmp "script") 2 3))
+
+
+### once ###
+(let N 0
+   (test 1
+      (once (inc 'N))
+      (once (inc 'N))
+      N ) )
 
 
 ### rc ###

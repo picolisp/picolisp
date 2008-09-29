@@ -1,4 +1,4 @@
-# 17apr08abu
+# 22sep08abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -106,12 +106,12 @@
 
 (de can (X)
    (let *Dbg NIL
-      (mapcan
+      (extract
          '(("Y")
             (and
                (= `(char "+") (char "Y"))
                (asoq X (val "Y"))
-               (cons (cons X "Y")) ) )
+               (cons X "Y") ) )
          (all) ) ) )
 
 
@@ -309,12 +309,12 @@
             (cond
                ((= `(char "+") (char "X"))
                   (mapc trace
-                     (mapcan
+                     (extract
                         '(("Y")
                            (and
                               (pair "Y")
                               (fun? (cdr "Y"))
-                              (list (cons (car "Y") "X")) ) )
+                              (cons (car "Y") "X") ) )
                         (val "X") ) ) )
                ((pair (getd "X"))
                   (trace "X") ) ) ) ) ) )
@@ -323,7 +323,7 @@
 (de proc @
    (apply call
       (make (while (args) (link "-C" (next))))
-      'ps "-H" "-o" "pid,start,size,pcpu,wchan,cmd" ) )
+      'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) )
 
 # Hex Dump
 (de hd (File Cnt)

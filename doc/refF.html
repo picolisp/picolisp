@@ -91,7 +91,10 @@ pattern symbol. See also <code><a href="refM.html#match">match</a></code>.
 additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns a list of all elements of <code>lst</code> where
 <code>fun</code> returned non-<code>NIL</code>. See also <code><a
-href="refF.html#fish">fish</a></code>.
+href="refF.html#fish">fish</a></code>, <code><a
+href="refF.html#find">find</a></code>, <code><a
+href="refP.html#pick">pick</a></code> and <code><a
+href="refE.html#extract">extract</a></code>.
 
 <p><pre><code>
 : (filter num? (1 A 2 (B) 3 CDE))
@@ -148,7 +151,8 @@ non-<code>NIL</code> is returned. Returns that element, or <code>NIL</code> if
 <code>lst</code>. When additional <code>lst</code> arguments are given, their
 elements are also passed to <code>fun</code>. See also <code><a
 href="refS.html#seek">seek</a></code>, <code><a
-href="refP.html#pick">pick</a></code>.
+href="refP.html#pick">pick</a></code> and <code><a
+href="refF.html#filter">filter</a></code>.
 
 <p><pre><code>
 : (find pair (1 A 2 (B) 3 CDE))

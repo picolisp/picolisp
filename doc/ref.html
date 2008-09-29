@@ -1077,7 +1077,8 @@ entered.
 <p>The error handler resets the I/O channels to the console, and displays the
 location (if possible) and the reason of the error, followed by an error
 message. That message is also stored in the global <code><a
-href="refM.html#*Msg">*Msg</a></code>. If the VAL of the global <code><a
+href="refM.html#*Msg">*Msg</a></code>, and the location of the error in <code><a
+href="ref_.html#^">^</a></code>. If the VAL of the global <code><a
 href="refE.html#*Err">*Err</a></code> is non-<code>NIL</code> it is executed as
 a <code>prg</code> body. If the standard input is from a terminal, a
 read-eval-print loop (with a question mark "<code>?</code>" as prompt) is
@@ -1632,6 +1633,7 @@ abbreviations:
    <a href="refI.html#intern">intern</a>
    <a href="refE.html#extern">extern</a>
    <a href="ref_.html#====">====</a>
+   <a href="refQ.html#qsym">qsym</a>
    <a href="refL.html#loc">loc</a>
    <a href="refB.html#box?">box?</a>
    <a href="refS.html#str?">str?</a>
@@ -1958,6 +1960,7 @@ abbreviations:
    <a href="refM.html#mapcon">mapcon</a>
    <a href="refM.html#mapcan">mapcan</a>
    <a href="refF.html#filter">filter</a>
+   <a href="refE.html#extract">extract</a>
    <a href="refS.html#seek">seek</a>
    <a href="refF.html#find">find</a>
    <a href="refP.html#pick">pick</a>
@@ -2028,6 +2031,8 @@ abbreviations:
    <a href="refC.html#connect">connect</a>
    <a href="refN.html#nagle">nagle</a>
    <a href="refU.html#udp">udp</a>
+   <a href="refS.html#script">script</a>
+   <a href="refO.html#once">once</a>
    <a href="refR.html#rc">rc</a>
    <a href="refP.html#pretty">pretty</a>
    <a href="refP.html#pp">pp</a>
@@ -2129,6 +2134,7 @@ abbreviations:
 
 <dt>System Functions
 <dd><code>
+   <a href="refC.html#cmd">cmd</a>
    <a href="refA.html#argv">argv</a>
    <a href="refO.html#opt">opt</a>
    <a href="refG.html#gc">gc</a>

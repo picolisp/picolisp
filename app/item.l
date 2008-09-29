@@ -1,4 +1,4 @@
-# 09may08abu
+# 30jul08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
@@ -21,7 +21,7 @@
             ,"Inventory" NIL (gui '(+E/R +NumField) '(inv : home obj) 12)
             (gui '(+View +NumField) '(cnt> (: home obj)) 12)
             ,"Price" NIL (gui '(+E/R +FixField) '(pr : home obj) 2 12) )
-         (----)
+         (--)
          (<grid> 2
             ,"Memo" (gui '(+BlobField) '(txt : home obj) 60 8)
             ,"Picture"

@@ -1,4 +1,4 @@
-# 21jan07abu
+# 10jul08abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
@@ -43,18 +43,17 @@
                   (setq X (make (do Siz (link (char)))))
                   (when (<> "*" (pop 'X))
                      (link
-                        (mapcan
+                        (extract
                            '((F)
                               (let? S (pack (clip (cut (caddr F) 'X)))
                                  (cons
-                                    (cons
-                                       (car F)
-                                       (case (cadr F)
-                                          ("C" S)
-                                          ("D" ($dat S))
-                                          ("L" (bool (member S `(chop "JjTt"))))
-                                          ("N" (format S (cdddr F)))
-                                          (T "?") ) ) ) ) )
+                                    (car F)
+                                    (case (cadr F)
+                                       ("C" S)
+                                       ("D" ($dat S))
+                                       ("L" (bool (member S `(chop "JjTt"))))
+                                       ("N" (format S (cdddr F)))
+                                       (T "?") ) ) ) )
                            Fld ) ) ) ) )
             (unless (= "^Z" (char))
                (quit "Missing EOF") ) ) ) ) )

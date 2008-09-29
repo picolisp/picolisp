@@ -1,4 +1,4 @@
-# 18jun08abu
+# 27sep08abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -6,31 +6,32 @@
 # *Post *Url *Timeout *SesId *ConId
 # *Cookies "*Cookies"
 
-(default
-   *HPorts 0
-   *Timeout (* 300 1000) )
+(once
+   (default
+      *HPorts 0
+      *Timeout (* 300 1000) )
 
-(zero *Http1)
+   (zero *Http1)
 
-(de *Mimes
-   (`(chop "html"))
-   (`(chop "au") "audio/basic" 86400)
-   (`(chop "wav") "audio/x-wav" 86400)
-   (`(chop "mp3") "audio/x-mpeg" 86400)
-   (`(chop "gif") "image/gif" 86400)
-   (`(chop "tif") "image/tiff" 86400)
-   (`(chop "tiff") "image/tiff" 86400)
-   (`(chop "bmp") "image/bmp" 86400)
-   (`(chop "png") "image/png" 86400)
-   (`(chop "jpg") "image/jpeg" 86400)
-   (`(chop "txt") "text/octet-stream" 1 T)
-   (`(chop "csv") "text/csv; charset=utf-8" 1 T)
-   (`(chop "css") "text/css" 86400)
-   (`(chop "js") "application/x-javascript" 86400)
-   (`(chop "ps") "application/postscript" 1)
-   (`(chop "pdf") "application/pdf" 1)
-   (`(chop "zip") "application/zip" 1)
-   (`(chop "jar") "application/java-archive" 86400) )
+   (de *Mimes
+      (`(chop "html"))
+      (`(chop "au") "audio/basic" 86400)
+      (`(chop "wav") "audio/x-wav" 86400)
+      (`(chop "mp3") "audio/x-mpeg" 86400)
+      (`(chop "gif") "image/gif" 86400)
+      (`(chop "tif") "image/tiff" 86400)
+      (`(chop "tiff") "image/tiff" 86400)
+      (`(chop "bmp") "image/bmp" 86400)
+      (`(chop "png") "image/png" 86400)
+      (`(chop "jpg") "image/jpeg" 86400)
+      (`(chop "txt") "text/octet-stream" 1 T)
+      (`(chop "csv") "text/csv; charset=utf-8" 1 T)
+      (`(chop "css") "text/css" 86400)
+      (`(chop "js") "application/x-javascript" 86400)
+      (`(chop "ps") "application/postscript" 1)
+      (`(chop "pdf") "application/pdf" 1)
+      (`(chop "zip") "application/zip" 1)
+      (`(chop "jar") "application/java-archive" 86400) ) )
 
 (de mime (S . @)
    (let L (chop S)
@@ -40,15 +41,18 @@
 
 
 ### HTTP-Client ###
-(de client (Host Port Nm . Prg)
+(de client (Host Port How . Prg)
    (let? Sock (connect Host Port)
       (prog1
          (out Sock
-            (prinl "GET /" Nm " HTTP/1.0^M")
+            (if (atom How)
+               (prinl "GET /" How " HTTP/1.0^M")
+               (prinl "POST /" (car How) " HTTP/1.0^M") )
             (prinl "User-Agent: PicoLisp^M")
             (prinl "Host: " Host "^M")
             (prinl "Accept-Charset: utf-8^M")
             (prinl "^M")
+            (and (pair How) (prinl (cdr @) "^M"))
             (flush)
             (in Sock (run Prg 1)) )
          (close Sock) ) ) )
@@ -191,12 +195,12 @@
                         (http404) )
                      ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (load *Url) )
+                        (apply script L *Url) )
                      ((assoc (stem @U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (if (info (setq *Url (pack *Url "default")))
-                           (load *Url)
+                           (apply script L *Url)
                            (http404) ) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (close S) (task S)) ) )
@@ -224,9 +228,7 @@
                   (mapcar
                      '((L)
                         (setq L (split L "="))
-                        (cons
-                           (pack (clip (car L)))
-                           (pack (clip (cadr L))) ) )
+                        (cons (htArg (car L)) (htArg (cadr L))) )
                      (split @X ";") ) ) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
@@ -282,7 +284,7 @@
                (T (msg @Z " bad suffix") (throw "http")) ) ) )
       (cond
          ((and *Allow (not (idx *Allow "Var")))
-            (msg "Var" " not allowed")
+            (msg "Var" ': " not allowed")
             (throw "http") )
          ((not @N)
             (nond
@@ -333,7 +335,7 @@
    (http1 Typ Upd File Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
    (for L "*Cookies"
-      (prinl "Set-Cookie: " (car L) "=" (cdr L) "; path=/") )
+      (prinl "Set-Cookie: " (ht:Fmt (car L)) "=" (ht:Fmt (cdr L)) "; path=/") )
    (prinl "^M") )
 
 (de httpDate (Dat Tim)

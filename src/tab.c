@@ -1,4 +1,4 @@
-/* 18jun08abu
+/* 08aug08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -62,6 +62,7 @@ static symInit Symbols[] = {
    {doCirc, "circ"},
    {doClip, "clip"},
    {doClose, "close"},
+   {doCmd, "cmd"},
    {doCnt, "cnt"},
    {doCol, ":"},
    {doCommit, "commit"},
@@ -102,6 +103,7 @@ static symInit Symbols[] = {
    {doExtern, "extern"},
    {doExtQ, "ext?"},
    {doExtra, "extra"},
+   {doExtract, "extract"},
    {doFifo, "fifo"},
    {doFile, "file"},
    {doFill, "fill"},

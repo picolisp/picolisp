@@ -14,8 +14,9 @@
 <dt><a name="*Err"><code>*Err</code></a>
 <dd>A global variable holding a (possibly empty) <code>prg</code> body, which
 will be executed during error processing. See also <code><a
-href="ref.html#errors">Error Handling</a></code> and <code><a
-href="refM.html#*Msg">*Msg</a></code>.
+href="ref.html#errors">Error Handling</a></code>, <code><a
+href="refM.html#*Msg">*Msg</a></code> and <code><a
+href="ref_.html#^">^</a></code>.
 
 <p><pre><code>
 : (de *Err (prinl "Fatal error!"))
@@ -37,6 +38,7 @@ by <code><a href="refG.html#getl">getl</a></code> and <code><a
 href="refP.html#putl">putl</a></code>) in its CDR. The symbol will be set to
 this value and property list upon access. Typically this function will access
 the corresponding symbol in a remote database process. See also <code><a
+href="refQ.html#qsym">qsym</a></code> and <code><a
 href="ref.html#external">external symbols</a></code>.
 
 <p><pre><code>
@@ -48,11 +50,12 @@ href="ref.html#external">external symbols</a></code>.
             (cons @Ext
                (curry (@Ext @Host @Port Sock) (Obj)
                   (when (or Sock (setq Sock (connect @Host @Port)))
-                     (out Sock (ext @Ext (pr (cons 'qsym Obj))))
-                     (prog1 (in Sock (ext @Ext (rd)))
-                        (unless @
-                           (close Sock)
-                           (off Sock) ) ) ) ) ) ) )
+                     (ext @Ext
+                        (out Sock (pr (cons 'qsym Obj)))
+                        (prog1 (in Sock (rd))
+                           (unless @
+                              (close Sock)
+                              (off Sock) ) ) ) ) ) ) ) )
       (quote
          (20 4000 . "10.10.12.1")
          (40 4000 . "10.10.12.2")
@@ -69,6 +72,7 @@ href="ref.html#external">external symbols</a></code>.
             (close P)
             (in Sock
                (while (rd)
+                  (sync)
                   (out Sock (pr (eval @))) ) )
             (bye) )
          (close Sock) ) )
@@ -97,8 +101,8 @@ of two <code>cnt</code> arguments, the first one specifies the number of bytes
 to skip in the input stream. Otherwise, if one or more <code>sym</code>
 arguments are given, the echo process stops as soon as one of the symbol's names
 is encountered in the input stream (in that case, the name will be read (and
-returned), but not written). Returns non-<code>NIL</code> if the operation was
-successfully completed.
+that symbol returned), but not written). Returns non-<code>NIL</code> if the
+operation was successfully completed.
 
 <p><pre><code>
 : (in "x.l" (echo))                    # Display file on console
@@ -333,6 +337,27 @@ href="refT.html#try">try</a></code>.
 <p><pre><code>
 (dm key> (C)            # 'key>' method of the '+Uppc' class
    (uppc (extra C)) )   # Convert 'key>' of extra classes to upper case
+</code></pre>
+
+<dt><a name="extract"><code>(extract 'fun 'lst ..) -> lst</code></a>
+<dd>Applies <code>fun</code> to each element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>fun</code>. Returns a list of all non-<code>NIL</code> values returned
+by <code>fun</code>. <code>(extract 'fun 'lst)</code> is equivalent to
+<code>(mapcar 'fun (filter 'fun 'lst))</code> or <code>(mapcan '((X) (and (fun X)
+(cons @))) 'lst)</code>. See also <code><a
+href="refF.html#filter">filter</a></code>, <code><a
+href="refF.html#find">find</a></code>, <code><a
+href="refP.html#pick">pick</a></code> and <code><a
+href="refM.html#mapcan">mapcan</a></code>.
+
+<p><pre><code>
+: (setq A NIL  B 1  C NIL  D 2  E NIL  F 3)
+-> 3
+: (filter val '(A B C D E F))
+-> (B D F)
+: (extract val '(A B C D E F))
+-> (1 2 3)
 </code></pre>
 
 </dl>

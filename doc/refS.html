@@ -123,6 +123,24 @@ href="ref.html#num-io">Numbers</a>.
 -> (123450)
 </code></pre>
 
+<dt><a name="script"><code>(script 'any ..) -> any</code></a>
+<dd>The first <code>any</code> argument is <code><a
+href="refL.html#load">load</a></code>ed, with the remaining arguments <code><a
+href="refP.html#pass">pass</a></code>ed as variable arguments. They can be
+accessed with <code><a href="refN.html#next">next</a></code>, <code><a
+href="refA.html#arg">arg</a></code>, <code><a
+href="refA.html#args">args</a></code> and <code><a
+href="refR.html#rest">rest</a></code>.
+
+<p><pre><code>
+$ cat x
+(* (next) (next))
+
+$ ./p dbg.l
+:  (script "x" 3 4)
+-> 12
+</code></pre>
+
 <dt><a name="sect"><code>(sect 'lst 'lst) -> lst</code></a>
 <dd>Returns the intersection of the <code>lst</code> arguments. See also
 <code><a href="refD.html#diff">diff</a></code>.
@@ -201,7 +219,10 @@ href="refF.html#free">free</a></code>.
 </code></pre>
 
 <dt><a name="set"><code>(set 'var 'any ..) -> any</code></a>
-<dd>Stores new values <code>any</code> in the <code>var</code> arguments.
+<dd>Stores new values <code>any</code> in the <code>var</code> arguments. See
+also <code><a href="refS.html#setq">setq</a></code>, <code><a
+href="refV.html#val">val</a></code> and <code><a
+href="refD.html#def">def</a></code>.
 
 <p><pre><code>
 : (set 'L '(a b c)  (cdr L) '999)
@@ -211,7 +232,10 @@ href="refF.html#free">free</a></code>.
 </code></pre>
 
 <dt><a name="setq"><code>(setq var 'any ..) -> any</code></a>
-<dd>Stores new values <code>any</code> in the <code>var</code> arguments.
+<dd>Stores new values <code>any</code> in the <code>var</code> arguments. See
+also <code><a href="refS.html#set">set</a></code>, <code><a
+href="refV.html#val">val</a></code> and <code><a
+href="refD.html#def">def</a></code>.
 
 <p><pre><code>
 : (setq  A 123  B (list A A))  # Set 'A' to 123, then 'B' to (123 123)
@@ -597,8 +621,8 @@ href="refT.html#try">try</a></code>.
 
 <dt><a name="sym"><code>(sym 'any) -> sym</code></a>
 <dd>Generate the printed representation of <code>any</code> into the name of a
-new symbol <code>sym</code>. See also <code><a
-href="refA.html#any">any</a></code>, <code><a
+new symbol <code>sym</code>. This is the reverse operation of <code><a
+href="refA.html#any">any</a></code>. See also <code><a
 href="refN.html#name">name</a></code> and <code><a
 href="refS.html#str">str</a></code>.
 

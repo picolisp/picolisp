@@ -1,4 +1,4 @@
-# 22dec07abu
+# 25jul08abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -16,8 +16,8 @@ CFLAGS := -c -O2 -m32 -pipe \
 
 ifeq ($(shell uname), Linux)
 	OS = Linux
-	PICOLISP-FLAGS = -rdynamic -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
+	PICOLISP-FLAGS = -m32 -rdynamic -lc -lm -ldl
+	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), OpenBSD)

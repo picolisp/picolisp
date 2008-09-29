@@ -95,7 +95,10 @@ href="ref_.html#$dat">$dat</a></code>.
 
 <dt><a name="%"><code>(% 'num ..) -> num</code></a>
 <dd>Returns the remainder from the divisions of successive <code>num</code>
-arguments. The sign of the result is that of the first argument.
+arguments. The sign of the result is that of the first argument. When one of the
+arguments evaluates to <code>NIL</code>, it is returned immediately. See also
+<code><a href="ref_.html#/">/</a></code> and <code><a
+href="ref_.html#*/">*/</a></code> .
 
 <p><pre><code>
 : (% 17 5)
@@ -111,8 +114,9 @@ arguments. The sign of the result is that of the first argument.
 </code></pre>
 
 <dt><a name="&"><code>(& 'num ..) -> num</code></a>
-<dd>Returns the bitwise <code>AND</code> of all <code>num</code> arguments. See
-also <code><a href="ref_.html#|">|</a></code>, <code><a
+<dd>Returns the bitwise <code>AND</code> of all <code>num</code> arguments. When
+one of the arguments evaluates to <code>NIL</code>, it is returned immediately.
+See also <code><a href="ref_.html#|">|</a></code>, <code><a
 href="refX.html#x|">x|</a></code> and <code><a
 href="refB.html#bit?">bit?</a></code>.
 
@@ -124,10 +128,11 @@ href="refB.html#bit?">bit?</a></code>.
 </code></pre>
 
 <dt><a name="*"><code>(* 'num ..) -> num</code></a>
-<dd>Returns the product of all <code>num</code> arguments. See also <code><a
-href="ref_.html#/">/</a></code>, <code><a href="ref_.html#*/">*/</a></code>,
-<code><a href="ref_.html#+">+</a></code> and <code><a
-href="ref_.html#-">-</a></code>.
+<dd>Returns the product of all <code>num</code> arguments. When one of the
+arguments evaluates to <code>NIL</code>, it is returned immediately. See also
+<code><a href="ref_.html#/">/</a></code>, <code><a
+href="ref_.html#*/">*/</a></code>, <code><a href="ref_.html#+">+</a></code> and
+<code><a href="ref_.html#-">-</a></code>.
 
 <p><pre><code>
 : (* 1 2 3)
@@ -151,11 +156,12 @@ href="ref_.html#-">-</a></code>.
 <dt><a name="*/"><code>(*/ 'num1 ['num2 ..] 'num3) -> num</code></a>
 <dd>Returns the product of <code>num1</code> and all following <code>num2</code>
 arguments, divided by the <code>num3</code> argument. The result is rounded to
-the nearest integer value. Note this is especially useful for fixed point
-arithmetic, by multiplying with (or dividing by) the scale factor. See also
-<code><a href="ref_.html#*">*</a></code>, <code><a
-href="ref_.html#/">/</a></code>, <code><a href="ref_.html#+">+</a></code> and
-<code><a href="ref_.html#-">-</a></code>.
+the nearest integer value. When one of the arguments evaluates to
+<code>NIL</code>, it is returned immediately. Note that <code>*/</code> is
+especially useful for fixed point arithmetic, by multiplying with (or dividing
+by) the scale factor. See also <code><a href="ref_.html#*">*</a></code>,
+<code><a href="ref_.html#/">/</a></code>, <code><a
+href="ref_.html#+">+</a></code> and <code><a href="ref_.html#-">-</a></code>.
 
 <p><pre><code>
 : (*/ 3 4 2)
@@ -172,19 +178,22 @@ href="ref_.html#/">/</a></code>, <code><a href="ref_.html#+">+</a></code> and
 </code></pre>
 
 <dt><a name="+"><code>(+ 'num ..) -> num</code></a>
-<dd>Returns the sum of all <code>num</code> arguments. See also <code><a
-href="ref_.html#-">-</a></code>, <code><a href="ref_.html#*">*</a></code>,
-<code><a href="ref_.html#/">/</a></code> and <code><a
-href="ref_.html#*/">*/</a></code>.
+<dd>Returns the sum of all <code>num</code> arguments. When one of the arguments
+evaluates to <code>NIL</code>, it is returned immediately. See also <code><a
+href="refI.html#inc">inc</a></code>, <code><a href="ref_.html#-">-</a></code>,
+<code><a href="ref_.html#*">*</a></code>, <code><a
+href="ref_.html#/">/</a></code> and <code><a href="ref_.html#*/">*/</a></code>.
 
 <p><pre><code>
 : (+ 1 2 3)
 -> 6
 </code></pre>
 
-<dt><a name="-"><code>(- 'num ..) -> num</code></a> <dd>Returns the difference
-of the first <code>num</code> argument and all following arguments. If only a
-single argument is given, it is negated. See also <code><a
+<dt><a name="-"><code>(- 'num ..) -> num</code></a>
+<dd>Returns the difference of the first <code>num</code> argument and all
+following arguments. If only a single argument is given, it is negated. When one
+of the arguments evaluates to <code>NIL</code>, it is returned immediately. See
+also <code><a href="refD.html#dec">dec</a></code>, <code><a
 href="ref_.html#+">+</a></code>, <code><a href="ref_.html#*">*</a></code>,
 <code><a href="ref_.html#/">/</a></code> and <code><a
 href="ref_.html#*/">*/</a></code>.
@@ -212,8 +221,10 @@ X = (1 2 3 4 5 6)
 
 <dt><a name="/"><code>(/ 'num ..) -> num</code></a>
 <dd>Returns the first <code>num</code> argument successively divided by all
-following arguments. See also <code><a href="ref_.html#*">*</a></code>, <code><a
-href="ref_.html#*/">*/</a></code>, <code><a href="ref_.html#+">+</a></code> and
+following arguments. When one of the arguments evaluates to <code>NIL</code>, it
+is returned immediately. See also <code><a href="ref_.html#*">*</a></code>,
+<code><a href="ref_.html#*/">*/</a></code>, <code><a
+href="ref_.html#%">%</a></code>, <code><a href="ref_.html#+">+</a></code> and
 <code><a href="ref_.html#-">-</a></code>.
 
 <p><pre><code>
@@ -247,7 +258,9 @@ href="refG.html#get">get</a></code> algorithm to <code>This</code> and the
 following arguments. The property (the cell, not just its value) is returned,
 suitable for direct (destructive) manipulations. Used typically in methods or
 <code><a href="refW.html#with">with</a></code> bodies. See also <code><a
-href="ref_.html#=:">=:</a></code> and <code><a href="ref_.html#:">:</a></code>.
+href="ref_.html#=:">=:</a></code>, <code><a
+href="refP.html#prop">prop</a></code> and <code><a
+href="ref_.html#:">:</a></code>.
 
 <p><pre><code>
 : (with 'X (=: cnt 0) (inc (:: cnt)) (: cnt))
@@ -498,8 +511,9 @@ Div/0
 </code></pre>
 
 <dt><a name="|"><code>(| 'num ..) -> num</code></a>
-<dd>Returns the bitwise <code>OR</code> of all <code>num</code> arguments. See
-also <code><a href="refX.html#x|">x|</a></code>, <code><a
+<dd>Returns the bitwise <code>OR</code> of all <code>num</code> arguments. When
+one of the arguments evaluates to <code>NIL</code>, it is returned immediately.
+See also <code><a href="refX.html#x|">x|</a></code>, <code><a
 href="ref_.html#&">&</a></code> and <code><a
 href="refB.html#bit?">bit?</a></code>.
 

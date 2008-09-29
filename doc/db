@@ -1,4 +1,4 @@
-   Max DB-Size: 7 digits -> 2**42 (10**12) Blocks
+   Max DB-Size: 7 digits -> 2**42 (4 Tera) Blocks
       Blocksize 64 -> (2**48 Bytes (256 TB))
 
    Tree

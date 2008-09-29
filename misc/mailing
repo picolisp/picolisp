@@ -1,11 +1,11 @@
 #!bin/picolisp lib.l
-# 13may08abu
+# 05sep08abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
 (setq
    *MailingList "picolisp@software-lab.de"
-   *SpoolFile "/var/spool/mail/picolisp"
+   *SpoolFile "/var/mail/picolisp"
    *MailingDomain "software-lab.de"
    *Mailings (make (in "Mailings" (while (line T) (link @))))
    *SmtpHost "localhost"

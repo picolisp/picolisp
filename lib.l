@@ -1,4 +1,4 @@
-# 24apr08abu
+# 09sep08abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -87,9 +87,13 @@
 
 (de daemon ("X" . Prg)
    (prog1
-      (if (pair "X")
-         (method (car "X") (cdr "X"))
-         (or (pair (getd "X")) (expr "X")) )
+      (nond
+         ((pair "X")
+            (or (pair (getd "X")) (expr "X")) )
+         ((pair (cdr "X"))
+            (method (car "X") (cdr "X")) )
+         (NIL
+            (method (car "X") (get (or (cddr "X") *Class) (cadr "X"))) ) )
       (con @ (append Prg (cdr @))) ) )
 
 (de patch ("Lst" "Pat" . "Prg")
@@ -142,6 +146,13 @@
       (pass prinl)
       (flush) )
    X )
+
+(de script (File . @)
+   (load File) )
+
+(de once Prg
+   (unless (idx '*Once (file) T)
+      (run Prg 1) ) )
 
 (de rc (File Key . @)
    (ctl File

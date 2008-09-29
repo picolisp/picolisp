@@ -1,4 +1,4 @@
-/* 10dec07abu
+/* 10jul08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -392,6 +392,40 @@ any doFilter(any ex) {
             data(c[i]) = cdr(data(c[i]));
          if (!isNil(apply(ex, data(foo), YES, n, c)))
             x = cdr(x) = cons(car(data(c[0])), Nil);
+      }
+   }
+   return Pop(res);
+}
+
+// (extract 'fun 'lst ..) -> lst
+any doExtract(any ex) {
+   any x = cdr(ex);
+   any y;
+   cell res, foo;
+
+   Push(res, Nil);
+   Push(foo, EVAL(car(x)));
+   if (isCell(x = cdr(x))) {
+      int i, n = 0;
+      cell c[length(x)];
+
+      do
+         Push(c[n], EVAL(car(x))), ++n;
+      while (isCell(x = cdr(x)));
+      if (!isCell(data(c[0])))
+         return Pop(res);
+      while (isNil(y = apply(ex, data(foo), YES, n, c))) {
+         if (!isCell(data(c[0]) = cdr(data(c[0]))))
+            return Pop(res);
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+      }
+      data(res) = x = cons(y, Nil);
+      while (isCell(data(c[0]) = cdr(data(c[0])))) {
+         for (i = 1; i < n; ++i)
+            data(c[i]) = cdr(data(c[i]));
+         if (!isNil(y = apply(ex, data(foo), YES, n, c)))
+            x = cdr(x) = cons(y, Nil);
       }
    }
    return Pop(res);

@@ -1,3 +1,13 @@
+* 30sep08 picoLisp-2.3.4
+   'once' function
+   'hex' and 'oct' negative arguments
+   Bug in 'pool'
+   'cmd' function
+   'script' function
+   Bug in 'idx'
+   Bug in 'lit'
+   'extract' function
+
 * 29jun08 picoLisp-2.3.3
    Removed '*Rst' global variable
    Catch error messages

@@ -1,4 +1,4 @@
-# 15feb08abu
+# 12jul08abu
 # (c) Software Lab. Alexander Burger
 
 ### apply ###
@@ -43,6 +43,14 @@
 
 ### filter ###
 (test (1 2 3) (filter num? (1 A 2 (B) 3 CDE)))
+
+
+### extract ###
+(let (A NIL  B 1  C NIL  D 2  E NIL  F 3)
+   (test (1 2 3)
+      (extract val '(A B C D E F)) )
+   (test (1 2 3)
+      (extract val '(B D E F)) ) )
 
 
 ### seek ###

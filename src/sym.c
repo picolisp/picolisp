@@ -1,4 +1,4 @@
-/* 09jun08abu
+/* 20jul08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -824,33 +824,35 @@ any doFifo(any ex) {
 any idx(any var, any key, int flg) {
    any x, y, z, *p;
    int n;
-   cell c1, c2;
 
    if (!key) {
+      cell c1, c2, c3;
+
       if (!isCell(x = val(var)))
          return Nil;
-      Push(c1, Nil);
-      Push(c2, Nil);
+      Push(c1, x);    // x
+      Push(c2, Nil);  // y
+      Push(c3, Nil);  // result
       for (;;) {
-         while (isCell(cddr(x)))
-            z = x,  x = cddr(z),  cddr(z) = data(c1),  data(c1) = z;
+         while (isCell(cddr(data(c1))))
+            z = data(c1),  data(c1) = cddr(z),  cddr(z) = data(c2),  data(c2) = z;
          for (;;) {
-            data(c2) = cons(car(x), data(c2));
-            if (isCell(cadr(x))) {
-               z = x,  x = cadr(z),  cadr(z) = data(c1),  data(c1) = symPtr(z);
+            data(c3) = cons(car(data(c1)), data(c3));
+            if (isCell(cadr(data(c1)))) {
+               z = data(c1),  data(c1) = cadr(z),  cadr(z) = data(c2),  data(c2) = symPtr(z);
                break;
             }
             for (;;) {
-               if (isNil(data(c1))) {
-                  drop(c1);
-                  return data(c2);
+               if (isNil(data(c2))) {
+                  drop(c2);
+                  return data(c3);
                }
-               if (isCell(data(c1))) {
-                  z = data(c1),  data(c1) = cddr(z),  cddr(z) = x,  x = z;
+               if (isCell(data(c2))) {
+                  z = data(c2),  data(c2) = cddr(z),  cddr(z) = data(c1),  data(c1) = z;
                   break;
                }
                else
-                  z = cellPtr(data(c1)),  data(c1) = cadr(z),  cadr(z) = x,  x = z;
+                  z = cellPtr(data(c2)),  data(c2) = cadr(z),  cadr(z) = data(c1),  data(c1) = z;
             }
          }
       }

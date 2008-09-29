@@ -1,4 +1,4 @@
-# 22dec07abu
+# 13aug08abu
 # (c) Software Lab. Alexander Burger
 
 # "*PgX" "*PgY"
@@ -83,6 +83,12 @@
          (let ("*Size" "N" "*Font" "F")
             (_font)
             (psEval "Prg") ) ) )
+   (_font) )
+
+(de bold "Prg"
+   (let "*Font" (pack "*Font" "-Bold")
+      (_font)
+      (psEval "Prg") )
    (_font) )
 
 (de width ("N" . "Prg")

@@ -1,4 +1,4 @@
-# 09jun08abu
+# 25aug08abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -203,9 +203,14 @@
 
 
 ### del ###
-(let L '((a b c) (d e f))
+(let (L '((a b c) (d e f))  S (new))
+   (put S 'lst L)
    (test '((a b c)) (del '(d e f) 'L))
-   (test '(a c) (del 'b L)) )
+   (test '(a c) (del 'b L))
+   (with S
+      (test '((a b c)) (del '(d e f) (:: lst)))
+      (test NIL (del '(a b c) (:: lst)))
+      (test NIL (: lst)) ) )
 
 
 ### queue ###

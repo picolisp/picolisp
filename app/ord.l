@@ -1,4 +1,4 @@
-# 09may08abu
+# 30jul08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -20,7 +20,7 @@
             ,"Customer" (gui '(+ChoButton) '(choCuSu (field 1)))
             (gui '(+E/R +Obj +TextField) '(cus : home obj) '(nm +CuSu) 30)
             (gui '(+View +TextField) '(field -1 'obj 'ort) 30) )
-         (----)
+         (--)
          (gui '(+Set +E/R +Chart) '((L) (filter bool L)) '(pos : home obj) 8
             '((Pos I)
                (with Pos

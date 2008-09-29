@@ -1,4 +1,4 @@
-# 13jan08abu
+# 10jul08abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -371,7 +371,7 @@
 
 (dm rel> (Obj Old New Hook)
    (let L
-      (mapcan
+      (extract
          '((X)
             (and (atom X) (setq X (cons T X)))
             (and
@@ -380,7 +380,7 @@
                   (find
                      '((B) (== (: var) (get B 'hook)))
                      (meta Obj (cdr X) 'bag) ) )
-               (cons X) ) )
+               X ) )
          (getl Obj) )
       (for X L
          (rel> (meta Obj (cdr X)) Obj (car X) NIL (or Old *DB))
@@ -954,11 +954,11 @@
    (unless (= Val (val This))
       (let
          (L
-            (mapcan
+            (extract
                '((X)
                   (pop 'X)
                   (unless (== (meta Val X) (meta (val This) X))
-                     (cons X) ) )
+                     X ) )
                (getl This) )
             V (mapcar
                '((X)
@@ -983,11 +983,11 @@
       (dbSync)
       (let
          (L
-            (mapcan
+            (extract
                '((X)
                   (pop 'X)
                   (unless (== (meta Val X) (meta (val This) X))
-                     (cons X) ) )
+                     X ) )
                (getl This) )
             V (mapcar
                '((X)

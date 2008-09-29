@@ -1,4 +1,4 @@
-# 19apr08abu
+# 22aug08abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -108,6 +108,10 @@
 (rel cus (+Ref +Link) NIL (+CuSu))              # Customer
 (rel pos (+List +Joint) ord (+Pos))             # Positions
 
+(dm lose> ()
+   (mapc 'lose> (: pos))
+   (super) )
+
 (dm url> (Tab)
    (and (may Order) (list "app/ord.l" '*ID This)) )
 
@@ -127,7 +131,7 @@
 
 
 (class +Pos +Entity)
-(rel ord (+Dep +Joint) (art) pos (+Ord))        # Order
+(rel ord (+Dep +Joint) (itm) pos (+Ord))        # Order
 (rel itm (+Ref +Link) NIL (+Item))              # Item
 (rel pr  (+Number) 2)                           # Price
 (rel cnt (+Number))                             # Quantity

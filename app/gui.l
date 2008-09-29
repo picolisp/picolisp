@@ -1,4 +1,4 @@
-# 10may08abu
+# 02aug08abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -43,7 +43,7 @@
          (<grid> 2
             ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
             ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
-         (----)
+         (--)
          (gui '(+Button) '(if *Login ,"logout" ,"login")
             '(cond
                (*Login (logout))
@@ -52,7 +52,7 @@
                (T (err ,"Permission denied")) ) )
          (when *Login
             (<nbsp> 4)
-            (<span> "bold red"
+            (<span> "bold green"
                (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) ) ) ) ) )
 
 (de stop ()
@@ -116,7 +116,7 @@
       (<spread>
          (scroll (cho))
          (when (=T Dst)
-            (gui '(+Button) ,"New"
+            (newButton
                '(newUrl '(+CuSu) '(nr genKey 'nr '+CuSu)) ) )
          (cancelButton) ) ) )
 
@@ -163,7 +163,7 @@
       (<spread>
          (scroll (cho))
          (when (=T Dst)
-            (gui '(+Button) ,"New"
+            (newButton
                '(newUrl '(+Item) '(nr genKey 'nr '+Item)) ) )
          (cancelButton) ) ) )
 
@@ -230,7 +230,7 @@
       (<spread>
          (scroll (cho))
          (when (=T Dst)
-            (gui '(+Button) ,"New"
+            (newButton
                '(newUrl '(+Ord) '(nr genKey 'nr '+Ord) 'dat (date)) ) )
          (cancelButton) ) ) )
 

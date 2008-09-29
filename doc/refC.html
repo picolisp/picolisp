@@ -409,6 +409,24 @@ href="refC.html#connect">connect</a></code>.
 -> 2
 </code></pre>
 
+<dt><a name="cmd"><code>(cmd [any]) -> sym</code></a>
+<dd>When called without an argument, the name of the command that invoked the
+picolisp interpreter is returned. Otherwise, the command name is set to
+<code>any</code>. Setting the name may not work on some operating systems. Note
+that the new name must not be longer than the original one. See also <code><a
+href="refA.html#argv">argv</a></code> and <code><a
+href="ref.html#invoc">Invocation</a></code>.
+
+<p><pre><code>
+$ ./p dbg.l
+: (cmd)
+-> "./bin/picolisp"
+: (cmd "!/bin/picolust")
+-> "!/bin/picolust"
+: (cmd)
+-> "!/bin/picolust"
+</code></pre>
+
 <dt><a name="cnt"><code>(cnt 'fun 'lst ..) -> cnt</code></a>
 <dd>Applies <code>fun</code> to each element of <code>lst</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed
@@ -614,10 +632,9 @@ serving the Pico Lisp process with the process ID <code>pid</code>. See also
 <dt><a name="curry"><code>(curry lst . fun) -> fun</code></a>
 <dd>Builds a new function from the list of symbols <code>lst</code> and the
 functional expression <code>fun</code>. Each member in <code>lst</code> that is
-a <code><a href="refP.html#pat?">pat?</a></code> symbol is immediately
-substituted inside <code>fun</code> by its value. All other symbols in
-<code>lst</code> are collected into a <code><a
-href="refJ.html#job">job</a></code> environment.
+a <code><a href="refP.html#pat?">pat?</a></code> symbol is substituted inside
+<code>fun</code> by its value. All other symbols in <code>lst</code> are
+collected into a <code><a href="refJ.html#job">job</a></code> environment.
 
 <p><pre><code>
 : (de multiplier (@X)

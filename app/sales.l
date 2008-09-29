@@ -1,4 +1,4 @@
-# 15apr08abu
+# 30jul08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
@@ -14,7 +14,7 @@
             (gui '(+Var +DateField) '*SalTill 10) )
          ,"Customer" (gui '(+ChoButton) '(choCuSu (field 1)))
          (gui '(+Var +Obj +TextField) '*SalCus '(nm +CuSu) 30) )
-      (----)
+      (--)
       (gui '(+ShowButton) NIL
          '(csv ,"Sales"
             (<table> 'chart NIL

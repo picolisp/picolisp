@@ -33,12 +33,13 @@ number or a pair of numbers.
 <code>any</code>. If <code>any</code> is contained in <code>var</code>, the
 corresponding subtree is returned, otherwise <code>NIL</code>. In the first
 form, <code>any</code> is destructively inserted into the tree if
-<code>flg</code> is non-<code>NIL</code>, or deleted from the tree if
-<code>flg</code> is <code>NIL</code>. The second form only checks for existence,
-but does not change the index tree. In the third form (when called with a single
-<code>var</code> argument) the contents of the tree are returned as a sorted
-list. If all elements are inserted in sorted order, the tree degenerates into a
-linear list. See also <code><a href="refL.html#lup">lup</a></code>, <code><a
+<code>flg</code> is non-<code>NIL</code> (and <code>any</code> was not already
+there), or deleted from the tree if <code>flg</code> is <code>NIL</code>. The
+second form only checks for existence, but does not change the index tree. In
+the third form (when called with a single <code>var</code> argument) the
+contents of the tree are returned as a sorted list. If all elements are inserted
+in sorted order, the tree degenerates into a linear list. See also <code><a
+href="refL.html#lup">lup</a></code>, <code><a
 href="refS.html#sort">sort</a></code>, <code><a
 href="refB.html#balance">balance</a></code> and <code><a
 href="refM.html#member">member</a></code>.
@@ -150,9 +151,11 @@ href="refC.html#ctl">ctl</a></code>.
 (inc 'var ['num]) -> num</code></a>
 <dd>The first form returns the value of <code>num</code> incremented by 1. The
 second form increments the <code>VAL</code> of <code>var</code> by 1, or by
-<code>num</code>. <code>(inc 'num)</code> is equivalent to <code>(+ 'num
-1)</code> and <code>(inc 'var)</code> is equivalent to <code>(set 'var (+ var
-1))</code>.
+<code>num</code>. If the first argument is <code>NIL</code>, it is returned
+immediately. <code>(inc 'num)</code> is equivalent to <code>(+ 'num 1)</code>
+and <code>(inc 'var)</code> is equivalent to <code>(set 'var (+ var 1))</code>.
+See also <code><a href="refD.html#dec">dec</a></code> and <code><a
+href="ref_.html#+">+</a></code>.
 
 <p><pre><code>
 : (inc 7)

@@ -1,4 +1,4 @@
-/* 28may08abu
+/* 19sep08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -259,8 +259,6 @@ static int bigCmp(any x, any y) {
    int res;
    any x1, y1, x2, y2;
 
-   if (x == y)
-      return 0;
    x1 = y1 = Nil;
    while (isNum(x2 = cdr(numCell(x)))  &&  isNum(y2 = cdr(numCell(y)))) {
       cdr(numCell(x)) = x1,  x1 = x,  x = x2;
@@ -378,8 +376,6 @@ static any bigDiv(any u, any v, bool rem) {
 
 /* Compare two numbers */
 int bigCompare(any x, any y) {
-   if (IsZero(x) && IsZero(y))
-      return 0;
    if (isNeg(x)) {
       if (!isNeg(y))
          return -1;

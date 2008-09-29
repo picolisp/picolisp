@@ -11,6 +11,17 @@
 
 <dl>
 
+<dt><a name="*Once"><code>*Once</code></a>
+<dd>Holds an <code><a href="refI.html#idx">idx</a></code> tree of already
+<code><a href="refL.html#load">load</a></code>ed source locations (as returned
+by <code><a href="refF.html#file">file</a></code>) See also <code><a
+href="refO.html#once">once</a></code>.
+
+<p><pre><code>
+: *Once
+-> (("lib/" "misc.l" . 11) (("lib/" "http.l" . 9) (("lib/" "form.l" . 11))))
+</code></pre>
+
 <dt><a name="*OS"><code>*OS</code></a>
 <dd>A global constant holding the name of the operating system. Possible values
 include <code>"Linux"</code>, <code>"FreeBSD"</code>, <code>"Darwin"</code> or
@@ -107,6 +118,18 @@ href="refO.html#one">one</a></code>.
 -> T
 : B
 -> T
+</code></pre>
+
+<dt><a name="once"><code>(once . prg) -> any</code></a>
+<dd>Executes <code>prg</code> once, when the current file is <code><a
+href="refL.html#load">load</a></code>ed the first time. Subsequent loads at a
+later time will not execute <code>prg</code>, and <code>once</code> returns
+<code>NIL</code>. See also <code><a href="refO.html#*Once">*Once</a></code>.
+
+<p><pre><code>
+(once
+   (zero *Cnt1 *Cnt2)            # Init counters
+   (load "file1.l" "file2.l") )  # Load other files
 </code></pre>
 
 <dt><a name="one"><code>(one sym ..) -> 1</code></a>

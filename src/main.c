@@ -1,4 +1,4 @@
-/* 18jun08abu
+/* 11aug08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,7 +6,7 @@
 
 /* Globals */
 int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
-char **AV, *Home;
+char **AV, *AV0, *Home;
 child *Child;
 heap *Heaps;
 cell *Avail;
@@ -200,7 +200,7 @@ void heapAlloc(void) {
    heap *h;
    cell *p;
 
-   h = (heap*)alloc(NULL, sizeof(heap) + sizeof(cell));
+   h = (heap*)alloc(NULL, sizeof(heap));
    h->next = Heaps,  Heaps = h;
    p = h->cells + CELLS-1;
    do
@@ -944,6 +944,14 @@ any doDir(any x) {
    return Pop(c1);
 }
 
+// (cmd [any]) -> sym
+any doCmd(any x) {
+   if (isNil(x = evSym(cdr(x))))
+      return mkStr(AV0);
+   bufString(x, AV0);
+   return x;
+}
+
 // (argv [sym ..] [. sym]) -> lst|sym
 any doArgv(any ex) {
    any x, y;
@@ -996,7 +1004,8 @@ int MAIN(int ac, char *av[]) {
          }
          break;
       }
-   AV = av+1;
+   AV0 = *av++;
+   AV = av;
    heapAlloc();
    initSymbols();
    StdOut = stdout;

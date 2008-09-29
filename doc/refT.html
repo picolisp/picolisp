@@ -110,10 +110,11 @@ F      1812158119   -1999783937
 <code>cnt</code> is negative, it is added to the length of <code>lst</code>. If
 the first argument is a <code>lst</code>, <code>tail</code> is a predicate
 function returning that argument list if it is <code>equal</code> to the tail of
-the second argument, and <code>NIL</code> otherwise. See also <code><a
-href="refH.html#head">head</a></code> and <code><a
-href="refS.html#stem">stem</a></code>. <code>(tail -2 Lst)</code> is equivalent
-to <code>(nth Lst 3)</code>.
+the second argument, and <code>NIL</code> otherwise. <code>(tail -2 Lst)</code>
+is equivalent to <code>(nth Lst 3)</code>. See also <code><a
+href="refH.html#head">head</a></code>, <code><a
+href="refL.html#last">last</a></code> and <code><a
+href="refS.html#stem">stem</a></code>.
 
 <p><pre><code>
 : (tail 3 '(a b c d e f))

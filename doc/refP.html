@@ -180,15 +180,19 @@ $ ./p dbg.l
 non-<code>NIL</code> is returned. Returns that value, or <code>NIL</code> if
 <code>fun</code> did not return non-<code>NIL</code> for any element of
 <code>lst</code>. When additional <code>lst</code> arguments are given, their
-elements are also passed to <code>fun</code>. See also <code><a
+elements are also passed to <code>fun</code>. <code>(pick 'fun 'lst)</code> is
+equivalent to <code>(fun (find 'fun 'lst))</code>. See also <code><a
 href="refS.html#seek">seek</a></code>, <code><a
-href="refF.html#find">find</a></code>.
+href="refF.html#find">find</a></code> and <code><a
+href="refE.html#extract">extract</a></code>.
 
 <p><pre><code>
-: (put 'D 'str "Hello")
--> "Hello"
-: (pick '((X) (get X 'str)) '(A B C D E F))
--> "Hello"
+: (setq A NIL  B 1  C NIL  D 2  E NIL  F 3)
+-> 3
+: (find val '(A B C D E))
+-> B
+: (pick val '(A B C D E))
+-> 1
 </code></pre>
 
 <dt><a name="pid"><code>(pid 'pid|lst . exe) -> any</code></a>
@@ -559,6 +563,7 @@ symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
 by applying the <code><a href="refG.html#get">get</a></code> algorithm to
 <code>sym1|lst</code> and the following arguments. The property (the cell, not
 just its value) is returned, suitable for direct (destructive) manipulations.
+See also <code><a href="ref_.html#::">::</a></code>.
 
 <p><pre><code>
 : (put 'X 'cnt 0)

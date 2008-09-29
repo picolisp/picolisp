@@ -1,5 +1,5 @@
-# 22mar08
-# Mansur Mamkin (mmamkin@mail.ru)
+# 11aug08
+# Mansur Mamkin <mmamkin@mail.ru>
 
 "Language" "Язык"
 
@@ -49,3 +49,26 @@
 "Roles" "Роли"
 "User" "Пользователь"
 "Users" "Пользователи"
+
+# Tooltips
+"Open submenu" "Открыть подменю"
+"Close submenu" "Закрыть подменю"
+"Next object of the same type" "Следующий объект такого же типа"
+"Find or create an object of the same type" "Найти или создать объект такого же типа"
+"Choose a suitable value" "Выберите подходящее значение"
+"Adopt this value" "Принять это значение"
+"Scroll up one page" "Прокрутить вверх на одну страницу"
+"Scroll up one line" "Прокрутить вверх на одну строку"
+"Scroll down one line" "Прокрутить вниз на одну строку"
+"Scroll down one page" "Прокрутить вниз на одну страницу"
+"Delete row" "Удалить строку"
+"Shift row up" "Переместить строку вверх"
+"Clear all input fields" "Очистить все поля ввода"
+"Release exclusive write access for this object" "Закрыть эксклюзивный доступ для записи этого объекта"
+"Gain exclusive write access for this object" "Получить эксклюзивный доступ для записи этого объекта"
+"Start search" "Начать поиск"
+"Create new object" "Создать новый объект"
+"Create a new copy of this object" "Создать новую копию этого объекта"
+"Mark this object as \"not deleted\"" "Отметить этот объект как \"не удалённый\""
+"Mark this object as \"deleted\"" "Отметить этот объект как \"удалённый\""
+"Update" "Обновить"

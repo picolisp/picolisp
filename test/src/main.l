@@ -1,4 +1,4 @@
-# 09jun08abu
+# 08aug08abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -85,6 +85,10 @@
 
 (test '("a" "b" "c") (sort (dir (tmp "dir"))))
 
+
+### cmd ###
+(cmd "test")
+(test "test" (cmd))
 
 ### argv ###
 (test '("abc" "123")

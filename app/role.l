@@ -1,4 +1,4 @@
-# 09may08abu
+# 16jul08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -12,14 +12,12 @@
       (form NIL
          (<h2> NIL (<id> (: nm)))
          (panel T (pack ,"Role" " '@1'") '(may Delete) '(choDlg T ,"Roles" '(nm +Role)) 'nm '+Role)
+         (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30 ,"Name")
          (<table> NIL NIL NIL
-            (<row> NIL
-               ,"Name"
-               (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30) )
             (gui '(+E/R +Fmt +Chart)
                '(perm : home obj)
                '((Val) (mapcar '((S) (list S (memq S Val))) *Perms))
-               '((Lst) (mapcan '((L P) (and (cadr L) (cons P))) Lst *Perms))
+               '((Lst) (extract '((L P) (and (cadr L) P)) Lst *Perms))
                2 )
             (do (length *Perms)
                (<row> NIL
@@ -27,9 +25,9 @@
                   (gui 2 '(+Checkbox)) ) ) )
          (gui '(+/R +Chart) '(usr : home obj) 1 list)
          (<table> 'chart ,"User" NIL
-            (do 6
+            (do 8
                (<row> (alternating)
                   (gui 1 '(+Obj +TextField) '(nm +User)) ) ) )
-         (<spread> (scroll 6) (editButton T)) ) ) )
+         (<spread> (scroll 8) (editButton T)) ) ) )
 
 # vi:et:ts=3:sw=3

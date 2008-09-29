@@ -1,4 +1,4 @@
-# 06sep07abu
+# 03aug08abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -49,3 +49,26 @@
 "Roles" "Rollen"
 "User" "Benutzer"
 "Users" "Benutzer"
+
+# Tooltips
+"Open submenu" "Untermenü öffnen"
+"Close submenu" "Untermenü schließen"
+"Next object of the same type" "Nächstes Objekt vom gleichen Typ"
+"Find or create an object of the same type" "Ein Objekt vom gleichen Typ suchen oder neu anlegen"
+"Choose a suitable value" "Einen passenden Wert auswählen"
+"Adopt this value" "Diesen Wert übernehmen"
+"Scroll up one page" "Eine Seite nach oben scrollen"
+"Scroll up one line" "Eine Zeile nach oben scrollen"
+"Scroll down one line" "Eine Zeile nach unten scrollen"
+"Scroll down one page" "Eine Seite nach unten scrollen"
+"Delete row" "Zeile löschen"
+"Shift row up" "Zeile nach oben schieben"
+"Clear all input fields" "Alle Eingabefelder löschen"
+"Release exclusive write access for this object" "Exklusiven Schreibzugriff auf dieses Objekt freigeben"
+"Gain exclusive write access for this object" "Exklusiven Schreibzugriff auf dieses Objekt erhalten"
+"Start search" "Suche starten"
+"Create new object" "Neues Objekt anlegen"
+"Create a new copy of this object" "Eine neue Kopie dieses Objektes anlegen"
+"Mark this object as \"not deleted\"" "Dieses Objekt als \"nicht gelöscht\" markieren"
+"Mark this object as \"deleted\"" "Dieses Objekt als \"gelöscht\" markieren"
+"Update" "Aktualisieren"

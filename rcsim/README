@@ -1,4 +1,4 @@
-29sep07abu
+05sep08abu
 (c) Software Lab. Alexander Burger
 
 
@@ -62,7 +62,7 @@ Pico Lisp servers with 'killall picolisp'.
    If you don't have Pico Lisp installed, you might want to try the online version
    at:
 
-      http://rcsim.software-lab.biz
+      http://rcsim.7fach.de
 
    (please take care not to use a proxy for that address)
 

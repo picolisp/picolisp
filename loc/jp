@@ -1,4 +1,4 @@
-# 06sep07abu
+# 31aug08abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -49,3 +49,26 @@
 "Roles" "役割"
 "User" "ユーザー"
 "Users" "ユーザー"
+
+# Tooltips
+"Open submenu" "サブメニューを開く"
+"Close submenu" "サブメニューを閉じる"
+"Next object of the same type" "次の同じタイプへ"
+"Find or create an object of the same type" "同じタイプを探す/新規"
+"Choose a suitable value" "適したバリューを選ぶ"
+"Adopt this value" "このバリューを採用する"
+"Scroll up one page" "一ページ上へスクロール"
+"Scroll up one line" "一行上へスクロール"
+"Scroll down one line" "一行下へスクロール"
+"Scroll down one page" "一ページ下へスクロール"
+"Delete row" "行を消す"
+"Shift row up" "行を上へ移す"
+"Clear all input fields" "全ての入力フィールドを消す"
+"Release exclusive write access for this object" "Release exclusive write access for this object"
+"Gain exclusive write access for this object" "Gain exclusive write access for this object"
+"Start search" "検索スタート"
+"Create new object" "オブジェクトを新規"
+"Create a new copy of this object" "このオブジェクトを新しくコピーする"
+"Mark this object as \"not deleted\"" "このオブジェクトを消さない状態にする"
+"Mark this object as \"deleted\"" "このオブジェクトを消された状態にする"
+"Update" "更新"

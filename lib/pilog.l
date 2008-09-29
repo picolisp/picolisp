@@ -1,4 +1,4 @@
-# 26apr08abu
+# 25aug08abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -462,7 +462,7 @@
             X ) ) ) )
 
 (de "initSel" ()
-   (with (get Cls Var)
+   (with (or (get Cls Var) (meta Cls Var))
       (when (find '((B) (isa '+Index B)) (: bag))
          (setq This @) )
       (cond
@@ -552,12 +552,10 @@
 
 (be remote ("@Lst" . "@CL")
    (@Sockets box
-      (mapcan
-         '((Rsrc)  # (ext . exe)
-            (let? Sock (eval (cdr Rsrc))
-               (out Sock (pr (cons 'rqry (car (-> "@Lst")) (-> "@CL"))))
-               (cons (cons Sock (car Rsrc))) ) )  # (.. (sock . ext) ..)
-         (cdr (-> "@Lst")) ) )
+      (prog1 (cdr (-> "@Lst"))
+         (for X @  # (out . in)
+            ((car X)
+               (cons 'rqry (car (-> "@Lst")) (-> "@CL")) ) ) ) )
    (@ unify (car (-> "@Lst")))
    (_remote "@Lst") )
 
@@ -570,7 +568,7 @@
    (@Obj let (Box (-> @Sockets 2)  Lst (val Box))
       (rot Lst)
       (loop
-         (T (in (caar Lst) (ext (cdar Lst) (rd))) @)
+         (T ((cdar Lst)) @)
          (NIL (set Box (setq Lst (cdr Lst)))) ) ) )
 (repeat)
 

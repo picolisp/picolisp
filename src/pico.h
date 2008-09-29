@@ -1,4 +1,4 @@
-/* 18jun08abu
+/* 08aug08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -219,7 +219,7 @@ typedef struct catchFrame {
 
 /* Globals */
 extern int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
-extern char **AV, *Home;
+extern char **AV, *AV0, *Home;
 extern child *Child;
 extern heap *Heaps;
 extern cell *Avail;
@@ -424,6 +424,7 @@ any doChop(any);
 any doCirc(any);
 any doClip(any);
 any doClose(any);
+any doCmd(any);
 any doCnt(any);
 any doCol(any);
 any doCommit(any);
@@ -464,6 +465,7 @@ any doExt(any);
 any doExtern(any);
 any doExtQ(any);
 any doExtra(any);
+any doExtract(any);
 any doFifo(any);
 any doFile(any);
 any doFill(any);

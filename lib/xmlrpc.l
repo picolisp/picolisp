@@ -1,4 +1,4 @@
-# 11may07abu
+# 10jul08abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -52,11 +52,10 @@
                      (and (== 'value (car L)) (xmlrpcValue (caddr L))) )
                   (cddr X) ) ) )
          (struct
-            (mapcan
+            (extract
                '((L)
                   (when (== 'member (car L))
                      (cons
-                        (cons
-                           (xmlrpcKey (caddr (assoc 'name L)))
-                           (xmlrpcValue (caddr (assoc 'value L))) ) ) ) )
+                        (xmlrpcKey (caddr (assoc 'name L)))
+                        (xmlrpcValue (caddr (assoc 'value L))) ) ) )
                (cddr Lst) ) ) ) ) )

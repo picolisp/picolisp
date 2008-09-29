@@ -1,4 +1,4 @@
-# 03jun08abu
+# 08sep08abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -8,14 +8,15 @@
 (de *mon . (jan feb mar apr may jun jul aug sep oct nov dec .))
 
 ### Locale ###
-(de *Ctry)
-(de *Lang)
-(de *Sep0 . ".")
-(de *Sep3 . ",")
-(de *CtryCode)
-(de *DateFmt @Y "-" @M "-" @D)
-(de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
-(de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
+(once
+   (de *Ctry)
+   (de *Lang)
+   (de *Sep0 . ".")
+   (de *Sep3 . ",")
+   (de *CtryCode)
+   (de *DateFmt @Y "-" @M "-" @D)
+   (de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
+   (de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December") )
 
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
    (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
@@ -102,38 +103,38 @@
 (de oct (X)
    (cond
       ((num? X)
-         (let L (_oct X)
+         (let (S (and (lt0 X) '-)  L (oct1 X))
             (until (=0 (setq X (>> 3 X)))
-               (push 'L (_oct X)) )
-            (pack L) ) )
+               (push 'L (oct1 X)) )
+            (pack S L) ) )
       ((setq X (chop X))
-         (let N 0
+         (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (while X
                (setq N
                   (+
                      (- (char (pop 'X)) `(char "0"))
                      (>> -3 N) ) ) )
-            N ) ) ) )
+            (if S (- N) N) ) ) ) )
 
-(de _oct (N)
+(de oct1 (N)
    (char (+ (& N 7) `(char "0"))) )
 
 (de hex (X)
    (cond
       ((num? X)
-         (let L (_hex X)
+         (let (S (and (lt0 X) '-)  L (hex1 X))
             (until (=0 (setq X (>> 4 X)))
-               (push 'L (_hex X)) )
-            (pack L) ) )
-      (X
-         (let N 0
-            (for C (chop X)
+               (push 'L (hex1 X)) )
+            (pack S L) ) )
+      ((setq X (chop X))
+         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+            (for C X
                (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
                (setq N (+ C (>> -4 N))) )
-            N ) ) ) )
+            (if S (- N) N) ) ) ) )
 
-(de _hex (N)
+(de hex1 (N)
    (let C (& 15 N)
       (and (> C 9) (inc 'C 7))
       (char (+ C `(char "0"))) ) )

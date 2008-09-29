@@ -1,4 +1,4 @@
-# 03jun08abu
+# 04sep08abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -57,6 +57,7 @@
 ### hex ###
 (test "111" (hex (+ 256 16 1)))
 (test (+ 256 16 1) (hex "111"))
+(test "-FFFF" (hex -65535))
 
 
 ### money ###

@@ -1,4 +1,4 @@
-# 09jun08abu
+# 14jul08abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -17,12 +17,13 @@
 
 
 ### lit ###
-(test T (lit T))
 (test 123 (lit 123))
+(test NIL (lit NIL))
+(test T (lit T))
 (test (1) (lit '(1)))
-(test "abc" (lit "abc"))
+(test ''"abc" (lit "abc"))
 (test ''a (lit 'a))
-(test (1 2 3) (lit (1 2 3)))
+(test (1 2 3) (lit '(1 2 3)))
 (test ''(a b c) (lit '(a b c)))
 
 

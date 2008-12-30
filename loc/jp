@@ -1,4 +1,4 @@
-# 31aug08abu
+# 22dec08abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -25,8 +25,9 @@
 "male" "男性"
 "female" "女性"
 "New" "作成"
-"Save" "保存"
 "Edit" "編集"
+"Save" "保存"
+"Done" "終了"
 "Currently edited by '@2' (@1)" "現在'@2'(@1)が編集中です"
 "Search" "検索"
 "Reset" "リセット"
@@ -57,10 +58,12 @@
 "Find or create an object of the same type" "同じタイプを探す/新規"
 "Choose a suitable value" "適したバリューを選ぶ"
 "Adopt this value" "このバリューを採用する"
+"Go to first line" "最初の列にいく"
 "Scroll up one page" "一ページ上へスクロール"
 "Scroll up one line" "一行上へスクロール"
 "Scroll down one line" "一行下へスクロール"
 "Scroll down one page" "一ページ下へスクロール"
+"Go to last line" "最後の列にいく"
 "Delete row" "行を消す"
 "Shift row up" "行を上へ移す"
 "Clear all input fields" "全ての入力フィールドを消す"

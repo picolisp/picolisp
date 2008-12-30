@@ -1,4 +1,4 @@
-# 08aug08abu
+# 16oct08abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -90,6 +90,7 @@
 (cmd "test")
 (test "test" (cmd))
 
+
 ### argv ###
 (test '("abc" "123")
    (pipe
@@ -110,7 +111,6 @@
    (pipe
       (call "bin/picolisp" "-de f () (println (opt))" "-f" "abc" "-bye")
       (read) ) )
-
 
 
 ### date time ###

@@ -1,8 +1,8 @@
-# 27sep08abu
+# 01dec08abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
-# *Sock *Agent *MPartLim *MPartEnd "*HtSet"
+# *Sock *Agent *ContLen *MPartLim *MPartEnd "*HtSet"
 # *Post *Url *Timeout *SesId *ConId
 # *Cookies "*Cookies"
 
@@ -47,12 +47,13 @@
          (out Sock
             (if (atom How)
                (prinl "GET /" How " HTTP/1.0^M")
-               (prinl "POST /" (car How) " HTTP/1.0^M") )
+               (prinl "POST /" (car How) " HTTP/1.0^M")
+               (prinl "Content-Length: " (size (cdr How)) "^M") )
             (prinl "User-Agent: PicoLisp^M")
             (prinl "Host: " Host "^M")
             (prinl "Accept-Charset: utf-8^M")
             (prinl "^M")
-            (and (pair How) (prinl (cdr @) "^M"))
+            (and (pair How) (prin (cdr @)))
             (flush)
             (in Sock (run Prg 1)) )
          (close Sock) ) ) )
@@ -120,7 +121,7 @@
 
 # Handle HTTP-Transaction
 (de http (S)
-   (off *Cookies "*Cookies" "*HtSet")
+   (off *ContLen *Cookies "*Cookies" "*HtSet")
    (use (L @U @H @X)
       (catch "http"
          (in S
@@ -139,7 +140,7 @@
                   (_htHead)
                   (if (and *MPartLim *MPartEnd)
                      (_htMultipart)
-                     (for L (split (line) '&)
+                     (for L (split (if *ContLen (ht:Read @) (line)) '&)
                         (when (cdr (setq L (split L "=")))
                            (_htSet (car L) (ht:Pack (cadr L))) ) ) ) )
                ((and
@@ -215,8 +216,6 @@
          (cond
             ((match '(~(chop "Gate: ") @X " " . @Y) L)
                (setq *Gate (pack @X)  *Adr (pack @Y)) )
-            ((match '(~(chop "User-Agent: ") . @X) L)
-               (setq *Agent @X) )
             ((match '(~(chop "Host: ") . @X) L)
                (setq *Host
                   (cond
@@ -228,8 +227,12 @@
                   (mapcar
                      '((L)
                         (setq L (split L "="))
-                        (cons (htArg (car L)) (htArg (cadr L))) )
+                        (cons (htArg (clip (car L))) (htArg (cadr L))) )
                      (split @X ";") ) ) )
+            ((match '(~(chop "User-Agent: ") . @X) L)
+               (setq *Agent @X) )
+            ((match '(~(chop "Content-@ength: ") . @X) L)
+               (setq *ContLen (format (pack @X))) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)

@@ -1,11 +1,11 @@
-/* 11aug08abu
+/* 21dec08abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
+int Signal, Chr, Next0, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
 char **AV, *AV0, *Home;
 child *Child;
 heap *Heaps;
@@ -32,6 +32,7 @@ static struct timeval Tv;
 static bool Tio, Jam;
 static jmp_buf ErrRst;
 static void finish(int) __attribute__ ((noreturn));
+static struct rlimit ULim = {RLIM_INFINITY, RLIM_INFINITY};
 
 
 /*** System ***/
@@ -68,8 +69,7 @@ static void iSignal(int n, void (*foo)(int)) {
    act.sa_handler = foo;
    sigemptyset (&act.sa_mask);
    act.sa_flags = 0;
-   if (sigaction(n, &act, &old) < 0)
-      giveup("Bad signal handler");
+   sigaction(n, &act, &old);
 }
 
 /* Signal handler */
@@ -990,8 +990,14 @@ any doOpt(any ex __attribute__((unused))) {
    return *AV && strcmp(*AV,"-")? mkStr(*AV++) : Nil;
 }
 
+any loadAll(any ex, any x) {
+   while (*AV  &&  strcmp(*AV,"-") != 0)
+      x = load(ex, 0, mkStr(*AV++));
+   return x;
+}
+
 /*** Main ***/
-int MAIN(int ac, char *av[]) {
+static void init(int ac, char *av[]) {
    int i;
    char *p;
 
@@ -1012,6 +1018,7 @@ int MAIN(int ac, char *av[]) {
    Env.get = getStdin;
    Env.put = putStdout;
    Alarm = Line = Nil;
+   setrlimit(RLIMIT_STACK, &ULim);
    Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
@@ -1027,9 +1034,12 @@ int MAIN(int ac, char *av[]) {
    signal(SIGTTOU, SIG_IGN);
    gettimeofday(&Tv,NULL);
    USec = (word2)Tv.tv_sec*1000000 + Tv.tv_usec;
+}
+
+int MAIN(int ac, char *av[]) {
+   init(ac,av);
    setjmp(ErrRst);
-   while (*AV  &&  strcmp(*AV,"-") != 0)
-      load(NULL, 0, mkStr(*AV++));
+   loadAll(NULL,NULL);
    iSignal(SIGINT, doSignal);
    load(NULL, ':', Nil);
    bye(0);

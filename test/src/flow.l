@@ -1,4 +1,4 @@
-# 14jul08abu
+# 24oct08abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -36,7 +36,8 @@
          ((quote (N)
                (test 3 N)
                (test 2 (eval 'N 1))
-               (test 1 (eval 'N 2)) )
+               (test 1 (eval 'N 2))
+               (test 3 (eval 'N 2 '(N))) )
             3 ) )
       2 ) )
 
@@ -218,6 +219,7 @@
 (let N 7
    (test 3
       (prog (dec 'N) (dec 'N) (dec 'N) (dec 'N) N) ) )
+
 
 ### prog1 prog2 ###
 (test 1 (prog1 1 2 3))

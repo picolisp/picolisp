@@ -1,4 +1,4 @@
-/* 13jun08abu
+/* 09oct08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -12,15 +12,6 @@
 
 static void ipErr(any ex, char *s) {
    err(ex, NULL, "IP %s error: %s", s, strerror(errno));
-}
-
-static int ipSocket(any ex, int type) {
-   int sd;
-
-   if ((sd = socket(AF_INET, type, 0)) < 0)
-      ipErr(ex, "socket");
-   closeOnExec(ex, sd);
-   return sd;
 }
 
 static any tcpAccept(any ex, int sd) {
@@ -58,7 +49,9 @@ any doPort(any ex) {
    type = SOCK_STREAM;
    if ((y = EVAL(car(x))) == T)
       type = SOCK_DGRAM,  x = cdr(x),  y = EVAL(car(x));
-   sd = ipSocket(ex, type);
+   if ((sd = socket(AF_INET, type, 0)) < 0)
+      ipErr(ex, "socket");
+   closeOnExec(ex, sd);
    if (isNum(y)) {
       if ((port = (unsigned short)xCnt(ex,y)) != 0) {
          n = 1;
@@ -158,7 +151,9 @@ any doConnect(any ex) {
    port = evCnt(ex, cddr(ex));
    if (!server(Pop(c1), (unsigned short)port, &addr))
       return Nil;
-   sd = ipSocket(ex, SOCK_STREAM);
+   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+      ipErr(ex, "socket");
+   closeOnExec(ex, sd);
    if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
       close(sd);
       return Nil;
@@ -217,7 +212,8 @@ any doUdp(any ex) {
       x = Nil;
    else {
       x = cdr(x),  x = EVAL(car(x));
-      sd = ipSocket(ex, SOCK_DGRAM);
+      if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+         ipErr(ex, "socket");
       putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(ExtN, x);
       sendto(sd, buf, UdpPtr-buf, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
       close(sd);

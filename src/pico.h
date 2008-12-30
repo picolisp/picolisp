@@ -1,4 +1,4 @@
-/* 08aug08abu
+/* 21dec08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,9 +18,11 @@
 #include <signal.h>
 #include <dlfcn.h>
 #include <time.h>
+#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 #ifndef NOWAIT
 #include <sys/wait.h> // tcc doen't like it
 #endif
@@ -218,7 +220,7 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern int Signal, Chr, Next0, Spkr, Mic, Slot, Hear, Tell, Children, ExtN;
+extern int Signal, Chr, Next0, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
 extern char **AV, *AV0, *Home;
 extern child *Child;
 extern heap *Heaps;
@@ -281,6 +283,7 @@ void digMul2(any);
 void digSub1(any);
 any doubleToNum(double);
 any endString(void);
+bool eol(void);
 bool equal(any,any);
 void err(any,any,char*,...) __attribute__ ((noreturn));
 any evExpr(any,any);
@@ -294,6 +297,7 @@ any extOffs(int,any);
 any findHash(any,any*);
 int firstByte(any);
 bool flush(outFile*);
+void flushAll(void);
 pid_t forkLisp(any);
 any get(any,any);
 int getChar(void);
@@ -311,6 +315,7 @@ bool isBlank(any);
 bool isLife(any);
 void lstError(any,any) __attribute__ ((noreturn));
 any load(any,int,any);
+any loadAll(any,any);
 any method(any);
 any mkChar(int);
 any mkDat(int,int,int);

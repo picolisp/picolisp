@@ -1,4 +1,4 @@
-# 04feb08abu
+# 10oct08abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (S L . @)
@@ -8,7 +8,7 @@
    ~(case *OS
       (("Linux" "FreeBSD")
          (quote
-            (apply call L 'gcc "-o" (tmp S)
+            (apply call L 'gcc "-m32" "-o" (tmp S)
                "-shared" "-export-dynamic"
                "-O" "-falign-functions" "-fomit-frame-pointer"
                "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"

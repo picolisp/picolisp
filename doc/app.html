@@ -2285,11 +2285,11 @@ because all changes were immediately reflected in the GUIs of other users).
 
 <p>So if you want to modify an object, you have to gain exclusive access by
 clicking on the "Edit" button. The form will be enabled, and the "Edit" button
-changes to "Save". Should any other user already have reserved this object, you
+changes to "Done". Should any other user already have reserved this object, you
 will see a message telling his name and process ID.
 
 <p>An exception to this are objects that were just created with "New". They will
-automatically be reserved for you, and the "Edit" button will show up as "Save".
+automatically be reserved for you, and the "Edit" button will show up as "Done".
 
 <p>The "Delete" button pops up an alert, asking for confirmation. If the object
 is indeed deleted, this button changes to "Restore" and allows to undelete the
@@ -2306,16 +2306,15 @@ let you step sequentially through all objects of this class, in the order of the
 identifier's index.
 
 <p>Other buttons, depending on the entity, are usually arranged at the bottom of
-the form. The bottom rightmost one should always be another "Edit" / "Save"
+the form. The bottom rightmost one should always be another "Edit" / "Done"
 button.
 
-<p>The name of the "Save" button is actually a misnomer. As we said in the
-chapter on <a href="#scrolling">Scrolling</a>, any button in the form will save
-changes to the underlying data model. As a special case, however, the "Save"
-button releases the object and reverts to "Edit". Besides this, the edit mode
-will also cease as soon as another objects is displayed, be it by clicking on an
-object link (the pencil icon), the top right navigation links, or a link in a
-search dialog.
+<p>As we said in the chapter on <a href="#scrolling">Scrolling</a>, any button
+in the form will save changes to the underlying data model. As a special case,
+however, the "Done" button releases the object and reverts to "Edit". Besides
+this, the edit mode will also cease as soon as another object is displayed, be
+it by clicking on an object link (the pencil icon), the top right navigation
+links, or a link in a search dialog.
 
 
 <h4><a name="btnLinks">Buttons vs. Links</a></h4>
@@ -2419,7 +2418,7 @@ helps to reduce traffic, with possibly better GUI response. In this case, four
 tabs are perhaps overkill, but ok for demonstration purposes, and they leave
 room for extensions.
 
-<p>Be aware that when data were modified in one of the tabs, the "Save" button
+<p>Be aware that when data were modified in one of the tabs, the "Done" button
 has to be pressed before another tab is clicked, because tabs are implemented as
 HTML links (see <a href="#btnLinks">Buttons vs. Links</a>).
 
@@ -2499,7 +2498,7 @@ automatically recalculated to show the total prices for this position and the
 whole order.
 
 <p>Instead of the "+" or scroll buttons, as recommended above, you could of
-course also press the "Save" button to commit changes. This is all right, but
+course also press the "Done" button to commit changes. This is all right, but
 has the disadvantage that the button must be pressed a second time (now "Edit")
 if you want to continue with the entry of more positions.
 

@@ -1,4 +1,4 @@
-# 08sep08abu
+# 16oct08abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -131,6 +131,7 @@
             (for C X
                (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
+               (and (> C 22) (dec 'C 32))
                (setq N (+ C (>> -4 N))) )
             (if S (- N) N) ) ) ) )
 

@@ -1,4 +1,4 @@
-/* 19sep08abu
+/* 12dec08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -260,27 +260,34 @@ static int bigCmp(any x, any y) {
    any x1, y1, x2, y2;
 
    x1 = y1 = Nil;
-   while (isNum(x2 = cdr(numCell(x)))  &&  isNum(y2 = cdr(numCell(y)))) {
-      cdr(numCell(x)) = x1,  x1 = x,  x = x2;
-      cdr(numCell(y)) = y1,  y1 = y,  y = y2;
-   }
-   if (isNum(cdr(numCell(x))))
-      res = +1;
-   else if (isNum(cdr(numCell(y))))
-      res = -1;
-   else for (;;) {
-      if (unDig(x) < unDig(y)) {
+   for (;;) {
+      if ((x2 = cdr(numCell(x))) == (y2 = cdr(numCell(y)))) {
+         for (;;) {
+            if (unDig(x) < unDig(y)) {
+               res = -1;
+               break;
+            }
+            if (unDig(x) > unDig(y)) {
+               res = +1;
+               break;
+            }
+            if (!isNum(x1))
+               return 0;
+            x2 = cdr(numCell(x1)),  cdr(numCell(x1)) = x,  x = x1,  x1 = x2;
+            y2 = cdr(numCell(y1)),  cdr(numCell(y1)) = y,  y = y1,  y1 = y2;
+         }
+         break;
+      }
+      if (!isNum(x2)) {
          res = -1;
          break;
       }
-      if (unDig(x) > unDig(y)) {
+      if (!isNum(y2)) {
          res = +1;
          break;
       }
-      if (!isNum(x1))
-         return 0;
-      x2 = cdr(numCell(x1)),  cdr(numCell(x1)) = x,  x = x1,  x1 = x2;
-      y2 = cdr(numCell(y1)),  cdr(numCell(y1)) = y,  y = y1,  y1 = y2;
+      cdr(numCell(x)) = x1,  x1 = x,  x = x2;
+      cdr(numCell(y)) = y1,  y1 = y,  y = y2;
    }
    while (isNum(x1)) {
       x2 = cdr(numCell(x1)),  cdr(numCell(x1)) = x,  x = x1,  x1 = x2;
@@ -681,7 +688,7 @@ any doInc(any ex) {
       if (!isNeg(val(data(c1))))
          digAdd(val(data(c1)), 2);
       else {
-         digSub1(val(data(c1)));
+         pos(val(data(c1))), digSub1(val(data(c1))), neg(val(data(c1)));
          if (unDig(val(data(c1))) == 1  &&  !isNum(cdr(numCell(val(data(c1))))))
             setDig(val(data(c1)), 0);
       }

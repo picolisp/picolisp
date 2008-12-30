@@ -1,4 +1,4 @@
-# 08sep08abu
+# 06nov08abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -16,6 +16,11 @@
    (let *Run NIL
       (timeout 3600000)
       *Run ) )
+
+
+### abort ###
+(test 6 (abort 2 (+ 1 2 3)))
+(test NIL (abort 2 (wait 4000)))
 
 
 ### macro ###

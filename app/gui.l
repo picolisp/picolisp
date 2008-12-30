@@ -1,4 +1,4 @@
-# 02aug08abu
+# 24nov08abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -35,7 +35,7 @@
             (cons *Ctry *Lang)
             *Locales
             (mapcar car *Locales)
-            ,"Language" )
+            ',"Language" )
          (gui '(+Button) ',"Change"
             '(let V (val> (field -1))
                (locale (car V) (cdr V) "app/loc/") ) ) )

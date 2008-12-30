@@ -21,23 +21,6 @@ href="refA.html#accept">accept</a></code>.
 -> "127.0.0.1"
 </code></pre>
 
-<dt><a name="alarm"><code>(alarm 'cnt . prg) -> cnt</code></a>
-<dd>Sets an alarm timer scheduling <code>prg</code> to be executed after
-<code>cnt</code> seconds, and returns the number of seconds remaining until any
-previously scheduled alarm was due to be delivered. Calling <code>(alarm
-0)</code> will cancel an alarm.
-
-<p><pre><code>
-: (prinl (tim$ (time) T)) (alarm 10 (prinl (tim$ (time) T)))
-16:36:14
--> 0
-: 16:36:24
-
-: (alarm 10 (bye 0))
--> 0
-$
-</code></pre>
-
 <dt><a name="*Allow"><code>*Allow</code></a>
 <dd>A global variable holding allowed access patterns. If its value is
 non-<code>NIL</code>, it should contain a list where the CAR is an <code><a
@@ -62,6 +45,17 @@ href="refP.html#pre?">pre?</a></code>.
 -> ("@myFoo" "@psh" "@start" "@stop" "favicon.ico" "lib.css")
 : (cdr *Allow)                                                # prefixes
 -> ("app/" "img/" "myDir/")
+</code></pre>
+
+<dt><a name="abort"><code>(abort 'cnt . prg) -> any</code></a>
+<dd>Aborts the execution of <code>prg</code> if it takes longer than
+<code>cnt</code> seconds, and returns <code>NIL</code>. Otherwise, the result of
+<code>prg</code> is returned. <code><a href="refA.html#alarm">alarm</a></code>
+is used internally, so care must be taken not to interfer with other calls to
+<code>alarm</code>.
+
+<p><pre><code>
+: (abort 20 (in Sock (rd)))  # Wait maximally 20 seconds for socket data
 </code></pre>
 
 <dt><a name="abs"><code>(abs 'num) -> num</code></a>
@@ -104,6 +98,23 @@ href="refA.html#assoc">assoc</a></code>.
 -> (22 . 100)
 : Sum
 -> ((22 . 100) (a . 6))
+</code></pre>
+
+<dt><a name="alarm"><code>(alarm 'cnt . prg) -> cnt</code></a>
+<dd>Sets an alarm timer scheduling <code>prg</code> to be executed after
+<code>cnt</code> seconds, and returns the number of seconds remaining until any
+previously scheduled alarm was due to be delivered. Calling <code>(alarm
+0)</code> will cancel an alarm.
+
+<p><pre><code>
+: (prinl (tim$ (time) T)) (alarm 10 (prinl (tim$ (time) T)))
+16:36:14
+-> 0
+: 16:36:24
+
+: (alarm 10 (bye 0))
+-> 0
+$
 </code></pre>
 
 <dt><a name="align"><code>(align 'cnt 'any) -> sym<br>

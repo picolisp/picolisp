@@ -1,4 +1,4 @@
-# 27sep08abu
+# 22dec08abu
 # (c) Software Lab. Alexander Burger
 
 # *Top *Gui *Get *Form *Event *Lock
@@ -26,16 +26,17 @@
             (=: event 0) )
          (conc (get "*Lst" (- "*Cnt" *Get)) (cons *Top))
          *Top )
-      (for ("F" . "L") (get "*Lst" (- "*Cnt" *Get) 1)
-         (let *Form (- "F")
-            (cond
-               ((and (== *Post (car "L")) (memq "App" (get *Post 'top)))
-                  (apply "form" "L") )
-               ((or (== *Post "App") (memq "App" (get *Post 'top)))
-                  (if (get "L" 1 'top)
-                     (apply "form" "L")
-                     (put (car "L") 'top (cons *Post (get *Post 'top)))
-                     (let *Post NIL (apply "form" "L")) ) ) ) ) )
+      (let "Lst" (get "*Lst" (- "*Cnt" *Get) 1)
+         (for ("F" . "L") "Lst"
+            (let *Form (- "F" (length "Lst"))
+               (cond
+                  ((and (== *Post (car "L")) (memq "App" (get *Post 'top)))
+                     (apply "form" "L") )
+                  ((or (== *Post "App") (memq "App" (get *Post 'top)))
+                     (if (get "L" 1 'top)
+                        (apply "form" "L")
+                        (put (car "L") 'top (cons *Post (get *Post 'top)))
+                        (let *Post NIL (apply "form" "L")) ) ) ) ) ) )
       ("form" "App" "Attr" "Prg") ) )
 
 (de "form" ("*App" "Attr" "Prg")
@@ -46,6 +47,7 @@
             (<hidden> '*Form *Form)
             (<hidden> '*Event (inc (:: event)))
             (zero "*Ix")
+            (off "*Chart")
             (if *Post
                (let gui
                   '(()
@@ -64,10 +66,6 @@
                   (and (== *Post "*App") (setq *Top "*App"))
                   (htPrin "Prg") )
                (set "*App")
-               (put "*App" 'top (: top))
-               (put "*App" 'able (: able))
-               (put "*App" 'event (: event))
-               (put "*App" 'env (: env))
                (let gui
                   '(@
                      (inc '"*Ix")
@@ -76,24 +74,26 @@
                            ((pair (next)) (pass new @))
                            ((not (arg)) (pass new))
                            ((num? (arg))
-                              (with "*Chart"
-                                 (let (I (arg)  L (last (: gui)))
-                                    (when (get L I)
-                                       (inc (:: rows))
-                                       (conc (: gui)
-                                          (list (setq L (need (: cols)))) ) )
-                                    (let Fld (pass new)
-                                       (set (nth L I) Fld)
-                                       (and (get Fld 'chg) (get Fld 'able) (=: lock))
-                                       (set> Fld
-                                          (get
-                                             ((: put)
-                                                (get (nth (: data) (: ofs)) (: rows))
-                                                (+ (: ofs) (: rows) -1) )
-                                             I )
-                                          T )
-                                       (put Fld 'chart (list This (: rows) I))
-                                       Fld ) ) ) )
+                              (ifn "*Chart"
+                                 (quit "no chart" (rest))
+                                 (with "*Chart"
+                                    (let (I (arg)  L (last (: gui)))
+                                       (when (get L I)
+                                          (inc (:: rows))
+                                          (conc (: gui)
+                                             (list (setq L (need (: cols)))) ) )
+                                       (let Fld (pass new)
+                                          (set (nth L I) Fld)
+                                          (and (get Fld 'chg) (get Fld 'able) (=: lock))
+                                          (set> Fld
+                                             (get
+                                                ((: put)
+                                                   (get (nth (: data) (: ofs)) (: rows))
+                                                   (+ (: ofs) (: rows) -1) )
+                                                I )
+                                             T )
+                                          (put Fld 'chart (list This (: rows) I))
+                                          Fld ) ) ) ) )
                            ((get "*App" (arg)) (quit "gui conflict" (arg)))
                            (T (put "*App" (arg) (pass new))) )
                         (=: home gui (conc (: home gui) (cons This)))
@@ -157,7 +157,7 @@
             (load *Url) ) ) ) )
 
 (de postForm ()
-   (let Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
+   (let? Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
       (setq
          *Form (format *Form)
          *Event (format *Event)
@@ -165,7 +165,7 @@
          (or "*Post2"
             (if (gt0 *Form)
                (get Lst *Form)
-               (get Lst 1 (- *Form) 1) ) ) )
+               (get Lst 1 (+ (length (car Lst)) *Form) 1) ) ) )
       (set Lst
          (filter
             '((L) (not (memq *Post (get L 1 'top))))
@@ -204,7 +204,7 @@
                         (let? A (assoc (: id) (val *Post))
                            (when (cdr A)
                               (con A)
-                              (and (able) (act> This)) ) ) ) ) ) )
+                              (act> This) ) ) ) ) ) )
             (for This (: gui)
                (or (: id) (setq "*Chart" This))
                (upd> This) ) ) ) ) )
@@ -251,6 +251,12 @@
       (get> This)
       (unless (gt0 (inc (:: ofs) N))
          (=: ofs 1) )
+      (put> This) ) )
+
+(de "goto" (N)
+   (with "*Chart"
+      (get> This)
+      (=: ofs (max 1 N))
       (put> This) ) )
 
 
@@ -442,10 +448,17 @@
       (extra "Var") ) )
 
 (de jsHint (Ix)
-   (let (Lst (get "*Lst" (- "*Cnt" (format *Get)))  F (format *Form))
-      (httpHead "text/plain; charset=utf-8")
-      (ht:Out T
-         (let? L (hint> (get (if (gt0 F) (get Lst F) (get Lst 1 (- F) 1) ) 'gui (format Ix)))
+   (httpHead "text/plain; charset=utf-8")
+   (ht:Out T
+      (let? Lst (get "*Lst" (- "*Cnt" (format *Get)))
+         (let? L
+            (try 'hint>
+               (get
+                  (if (gt0 (format *Form))
+                     (get Lst @)
+                     (get Lst 1 (+ (length (car Lst)) (format *Form)) 1) )
+                  'gui
+                  (format Ix) ) )
             (prin
                (ht:Fmt
                   (if (atom (car L))
@@ -506,23 +519,6 @@
    ((: val) (extra)) )
 
 
-(class +Chg)
-# old new
-
-(dm T (Fun . @)
-   (=: new Fun)
-   (pass extra) )
-
-(dm set> (Val Dn)
-   (extra (=: old Val) Dn) )
-
-(dm val> ()
-   (let Val (extra)
-      (if (= (: old) Val)
-         Val
-         ((: new) Val) ) ) )
-
-
 (class +Fmt)
 # set val
 
@@ -536,6 +532,22 @@
 
 (dm val> ()
    ((: val) (extra)) )
+
+
+(class +Chg)
+# old new
+
+(dm T (Fun . @)
+   (=: new Fun)
+   (pass extra) )
+
+(dm set> (Val Dn)
+   (extra (=: old Val) Dn) )
+
+(dm val> ()
+   (let Val (extra)
+      (or (= (: old) Val) ((: new) Val))
+      Val ) )
 
 
 (class +Upd)
@@ -927,8 +939,8 @@
       (=: home auto
          (cons
             (eval (car (: auto)))
-            (eval (cdr (: auto))) ) ) )
-   (extra) )
+            (eval (cdr (: auto))) ) )
+      (extra) ) )
 
 
 (class +DnButton +Tiny +Rid +JS +Able +Button)
@@ -948,11 +960,27 @@
       (or Lbl "<")
       (list '"scrl" (list '- Exe)) ) )
 
-(de scroll (N)
+(class +GoButton +Tiny +Rid +JS +Able +Button)
+
+(dm T (Exe Lbl)
+   (super
+      (list 'and
+         (list '>= '(length (chart 'data)) Exe)
+         (list '<> '(chart 'ofs) Exe) )
+      Lbl
+      (list '"goto" Exe) ) )
+
+(de scroll (N Flg)
+   (when Flg
+      (gui '(+Tip +GoButton) ,"Go to first line" 1 "|<") )
    (gui '(+Tip +UpButton) ,"Scroll up one page" N "<<")
-   (gui '(+Tip +UpButton) ,"Scroll up one line" 1 "<")
-   (gui '(+Tip +DnButton) ,"Scroll down one line" 1 ">")
-   (gui '(+Tip +DnButton) ,"Scroll down one page" N ">>") )
+   (gui '(+Tip +UpButton) ,"Scroll up one line" 1)
+   (gui '(+Tip +DnButton) ,"Scroll down one line" 1)
+   (gui '(+Tip +DnButton) ,"Scroll down one page" N ">>")
+   (when Flg
+      (gui '(+Tip +GoButton) ,"Go to last line"
+         (list '- '(length (chart 'data)) (dec N))
+         ">|" ) ) )
 
 
 # Delete row
@@ -965,7 +993,8 @@
    (super '(nth (: chart 1 data) (row))
       ,"Delete row"
       "x"
-      '(if (curr)
+      '(if (or (: home del) (not (curr)))
+         (_delRow)
          (alert (env 'Fld This)
             (<span> 'ask
                (ht:Prin
@@ -973,9 +1002,11 @@
                      (with Fld (eval @))
                      ,"Delete row?" ) ) )
             (--)
-            (yesButton '(with Fld (_delRow (: exe))))
-            (noButton) )
-         (_delRow) ) ) )
+            (yesButton
+               '(with Fld
+                  (=: home del T)
+                  (_delRow (: exe)) ) )
+            (noButton) ) ) ) )
 
 (de _delRow (Exe)
    (eval Exe)
@@ -1455,14 +1486,14 @@
 
 (dm chk> ())
 
-(dm cut> ()
+(dm cut> (N)
    (get> This)
    (=: clip (get (: data) (: ofs)))
-   (set> This (remove (: ofs) (: data))) )
+   (set> This (remove (or N (: ofs)) (: data))) )
 
-(dm paste> (Flg)
+(dm paste> (Flg N)
    (get> This)
-   (set> This (insert (: ofs) (: data) (unless Flg (: clip)))) )
+   (set> This (insert (or N (: ofs)) (: data) (unless Flg (: clip)))) )
 
 
 (class +Chart1 +Chart)
@@ -1552,7 +1583,7 @@
       '(if (: home able)
          ,"Release exclusive write access for this object"
          ,"Gain exclusive write access for this object" )
-      '(if (: home able) ,"Save" ,"Edit")
+      '(if (: home able) ,"Done" ,"Edit")
       '(if (: home able)
          (when (able)
             (eval (: save))
@@ -1586,7 +1617,12 @@
    (gui '(+Rid +Able +Tip +Button) (or Able T)
       ,"Create a new copy of this object"
       ,"New/Copy"
-      '(apply url (url> (clone!> (: home obj)) 1)) ) )
+      '(apply url
+         (url>
+            (prog1
+               (clone!> (: home obj))
+               (lock (setq *Lock @)) )
+            1 ) ) ) )
 
 # Delete object in form
 (de delButton (Able @Txt)

@@ -1,4 +1,4 @@
-# 09aug08abu
+# 28nov08abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -52,31 +52,30 @@
 (de <tag> (Nm Attr . Prg)
    (tag Nm Attr 2 Prg) )
 
-(de style ("X" "Prg")
+(de style (X Prg)
    (let *Style
       (nond
-         ("X" *Style)
-         (*Style "X")
-         ((pair "X")
+         (X *Style)
+         (*Style X)
+         ((pair X)
             (cond
-               ((atom *Style) (pack *Style " " "X"))
+               ((atom *Style) (pack *Style " " X))
                ((and (atom (car *Style)) (atom (cdr *Style)))
-                  (list "X" *Style) )
+                  (list X *Style) )
                ((find atom *Style)
-                  (replace *Style @ (pack @ " " "X")) )
-               (T (cons "X" *Style)) ) )
-         ((or (pair (car "X")) (pair (cdr "X")))
+                  (replace *Style @ (pack @ " " X)) )
+               (T (cons X *Style)) ) )
+         ((or (pair (car X)) (pair (cdr X)))
             (cond
-               ((atom *Style) (list *Style "X"))
+               ((atom *Style) (list *Style X))
                ((and (atom (car *Style)) (atom (cdr *Style)))
-                  (if (= (car "X") (car *Style))
-                     "X"
-                     (list *Style "X") ) )
+                  (if (= (car X) (car *Style))
+                     X
+                     (list *Style X) ) )
                (T
-                  (cons "X" (delete (assoc (car "X") *Style) *Style)) ) ) )
-         (NIL "X") )
-      (and (up 2 @))
-      (run "Prg") ) )
+                  (cons X (delete (assoc (car X) *Style) *Style)) ) ) )
+         (NIL X) )
+      (run Prg 2 '(*Style)) ) )
 
 (de <style> ("X" . "Prg")
    (style "X" "Prg") )
@@ -379,24 +378,34 @@
 (de stepBtn (Var Cls Hook Msg)
    (default Msg 'url>)
    (<span> 'step
-      (let
-         (K
-            (cond
-               ((isa '+Key (meta *ID Var))
-                  (get *ID Var) )
-               ((isa '+Fold (meta *ID Var))
-                  (cons (fold (get *ID Var)) *ID) )
-               (T (cons (get *ID Var) *ID)) )
-            Q1 (init (tree Var Cls Hook) K NIL)
-            Q2 (init (tree Var Cls Hook) K T) )
-         (or (get *ID T) (step Q1 T))
-         (if (and (step Q1 T) (send Msg @ *Tab))
+      (use (Rel S1 S2)
+         (if (isa '+Joint (setq Rel (meta *ID Var)))
+            (let Lst (get *ID Var (; Rel slot))
+               (setq
+                  S2 (lit (cadr (memq *ID Lst)))
+                  S1 (lit (car (seek '((L) (== *ID (cadr L))) Lst))) ) )
+            (let
+               (K
+                  (cond
+                     ((isa '+Key Rel)
+                        (get *ID Var) )
+                     ((isa '+Fold Rel)
+                        (cons (fold (get *ID Var)) *ID) )
+                     (T (cons (get *ID Var) *ID)) )
+                  Q1 (init (tree Var Cls Hook) K NIL)
+                  Q2 (init (tree Var Cls Hook) K T) )
+               (unless (get *ID T)
+                  (step Q1 T)
+                  (step Q2 T) )
+               (setq
+                  S1 (list 'step (lit Q1) T)
+                  S2 (list 'step (lit Q2) T) ) ) )
+         (if (and (eval S1) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
                (<href> "<<<" (mkUrl @)) )
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
-         (or (get *ID T) (step Q2 T))
-         (if (and (step Q2 T) (send Msg @ *Tab))
+         (if (and (eval S2) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
                (<href> ">>>" (mkUrl @)) )
             (prin "&gt;&gt;&gt;") ) ) ) )
@@ -410,8 +419,13 @@
       (run "Prg") )
    (<href> "CSV" (tmp "Nm" ".csv")) )
 
-(de <0> (Str)
-   (and "*CSV" (out @ (prinl Str "^M"))) )
+(de <0> @
+   (when "*CSV"
+      (out @
+         (prin (next))
+         (while (args)
+            (prin "^I" (next)) )
+         (prinl "^M") ) ) )
 
 (de <%> @
    (prog1 (pass pack)

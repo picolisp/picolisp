@@ -1,4 +1,4 @@
-# 24may08abu
+# 16dec08abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -119,7 +119,9 @@
    (println '(d e f)) )
 (in (tmp "file")
    (test 123 (read))
-   (test 'abc (read))
+   (in (tmp "file")
+      (test 123 (read))
+      (test 'abc (in -1 (read))) )
    (test '(d e f) (read)) )
 
 

@@ -1,4 +1,4 @@
-/* 14jul08abu
+/* 16dec08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -87,26 +87,30 @@ any doLit(any x) {
    return cons(Quote, x);
 }
 
-// (eval 'any ['cnt]) -> any
+// (eval 'any ['cnt ['lst]]) -> any
 any doEval(any x) {
+   any y;
    cell c1;
    bindFrame *p;
 
    x = cdr(x),  Push(c1, EVAL(car(x))),  x = cdr(x);
-   if (!isNum(x = EVAL(car(x))) || !(p = Env.bind))
+   if (!isNum(y = EVAL(car(x))) || !(p = Env.bind))
       data(c1) = EVAL(data(c1));
    else {
       int cnt, n, i;
       bindFrame *q;
 
-      for (cnt = (int)unBox(x), n = 0;;) {
+      x = cdr(x),  x = EVAL(car(x));
+      for (cnt = (int)unBox(y), n = 0;;) {
          ++n;
          if (p->i <= 0) {
             if (p->i-- == 0) {
                for (i = 0;  i < p->cnt;  ++i) {
-                  x = val(p->bnd[i].sym);
-                  val(p->bnd[i].sym) = p->bnd[i].val;
-                  p->bnd[i].val = x;
+                  if (!memq(p->bnd[i].sym, x)) {
+                     y = val(p->bnd[i].sym);
+                     val(p->bnd[i].sym) = p->bnd[i].val;
+                     p->bnd[i].val = y;
+                  }
                }
                if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
                   break;
@@ -122,9 +126,11 @@ any doEval(any x) {
          if (p->i < 0) {
             if (++p->i == 0)
                for (i = p->cnt;  --i >= 0;) {
-                  x = val(p->bnd[i].sym);
-                  val(p->bnd[i].sym) = p->bnd[i].val;
-                  p->bnd[i].val = x;
+                  if (!memq(p->bnd[i].sym, x)) {
+                     y = val(p->bnd[i].sym);
+                     val(p->bnd[i].sym) = p->bnd[i].val;
+                     p->bnd[i].val = y;
+                  }
                }
          }
          if (!--n)
@@ -136,30 +142,34 @@ any doEval(any x) {
    return Pop(c1);
 }
 
-// (run 'any ['cnt]) -> any
+// (run 'any ['cnt ['lst]]) -> any
 any doRun(any x) {
+   any y;
    cell c1;
    bindFrame *p;
 
    x = cdr(x),  data(c1) = EVAL(car(x)),  x = cdr(x);
    if (!isNum(data(c1))) {
       Save(c1);
-      if (!isNum(x = EVAL(car(x))) || !(p = Env.bind))
+      if (!isNum(y = EVAL(car(x))) || !(p = Env.bind))
          data(c1) = isSym(data(c1))? val(data(c1)) : run(data(c1));
       else {
          int cnt, n, i;
          bindFrame *q;
 
-         for (cnt = (int)unBox(x), n = 0;;) {
+         x = cdr(x),  x = EVAL(car(x));
+         for (cnt = (int)unBox(y), n = 0;;) {
             ++n;
             if (p->i <= 0) {
                if (p->i-- == 0) {
                   for (i = 0;  i < p->cnt;  ++i) {
-                     x = val(p->bnd[i].sym);
-                     val(p->bnd[i].sym) = p->bnd[i].val;
-                     p->bnd[i].val = x;
+                     if (!memq(p->bnd[i].sym, x)) {
+                        y = val(p->bnd[i].sym);
+                        val(p->bnd[i].sym) = p->bnd[i].val;
+                        p->bnd[i].val = y;
+                     }
                   }
-                  if (p->cnt  &&  p->bnd[0].sym==At  &&  !--cnt)
+                  if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
                      break;
                }
             }
@@ -173,9 +183,11 @@ any doRun(any x) {
             if (p->i < 0) {
                if (++p->i == 0)
                   for (i = p->cnt;  --i >= 0;) {
-                     x = val(p->bnd[i].sym);
-                     val(p->bnd[i].sym) = p->bnd[i].val;
-                     p->bnd[i].val = x;
+                     if (!memq(p->bnd[i].sym, x)) {
+                        y = val(p->bnd[i].sym);
+                        val(p->bnd[i].sym) = p->bnd[i].val;
+                        p->bnd[i].val = y;
+                     }
                   }
             }
             if (!--n)
@@ -1369,7 +1381,7 @@ void brkLoad(any x) {
       Brk.bnd[1].sym = Run,  Brk.bnd[1].val = val(Run),  val(Run) = Nil;
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At);
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
-      Out.pid = -1,  Out.fd = 1,  pushOutFiles(&Out);
+      Out.pid = -1,  Out.fd = STDOUT_FILENO,  pushOutFiles(&Out);
       print(x), newline();
       load(NULL, '!', Nil);
       popOutFiles();
@@ -1401,7 +1413,7 @@ any doE(any ex) {
       Env.get = Env.inFiles->get;
       if (!Env.inFiles->link  || Env.inFiles->link->pid < 0)
          InFile = NULL,  Chr = Next0;
-      else if (InFile = InFiles[Env.inFiles->link->fd])
+      else if (InFile = InFiles[Env.inFiles->link->fd - 3])
          Chr = InFile->next;
       else
          Chr = Next0;
@@ -1597,12 +1609,10 @@ static void allocChildren(void) {
 
 pid_t forkLisp(any ex) {
    pid_t n;
-   inFrame *in;
-   outFrame *out;
    int i, hear[2], tell[2];
    static int mic[2];
 
-   fflush(NULL);
+   flushAll();
    if (!Spkr) {
       if (pipe(mic) < 0)
          pipeError(ex, "open");
@@ -1617,29 +1627,32 @@ pid_t forkLisp(any ex) {
    if ((n = fork()) < 0)
       err(ex, NULL, "fork");
    if (n == 0) {
-      /* Child Process */
-      for (in = Env.inFiles; in; in = in->link)
-         if (in->pid > 0)
-            in->pid = 0;
-      for (out = Env.outFiles; out; out = out->link)
-         if (out->pid > 0)
-            out->pid = 0;
-      free(Termio),  Termio = NULL;
-      if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(mic[0]) < 0)
-         pipeError(ex, "close");
+      void *p;
+
       Slot = i;
       Spkr = 0;
       Mic = mic[1];
-      for (i = 0; i < Children; ++i)
-         if (Child[i].pid)
-            close(Child[i].hear), close(Child[i].tell),  free(Child[i].buf);
-      Children = 0,  free(Child),  Child = NULL;
+      if (close(hear[1]) < 0  ||  close(tell[0]) < 0  ||  close(mic[0]) < 0)
+         pipeError(ex, "close");
       if (Hear)
          close(Hear),  closeInFile(Hear);
       initInFile(Hear = hear[0], NULL);
       if (Tell)
          close(Tell);
       Tell = tell[1];
+      for (i = 0; i < Children; ++i)
+         if (Child[i].pid)
+            close(Child[i].hear), close(Child[i].tell),  free(Child[i].buf);
+      Children = 0,  free(Child),  Child = NULL;
+      for (p = Env.inFiles; p; p = ((inFrame*)p)->link)
+         if (((inFrame*)p)->pid > 0)
+            ((inFrame*)p)->pid = 0;
+      for (p = Env.outFiles; p; p = ((outFrame*)p)->link)
+         if (((outFrame*)p)->pid > 0)
+            ((outFrame*)p)->pid = 0;
+      for (p = CatchPtr; p; p = ((catchFrame*)p)->link)
+         ((catchFrame*)p)->fin = Zero;
+      free(Termio),  Termio = NULL;
       val(PPid) = val(Pid);
       val(Pid) = boxCnt(getpid());
       run(val(Fork));

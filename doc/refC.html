@@ -492,7 +492,8 @@ href="refR.html#rollback">rollback</a></code>.
 
 <dt><a name="con"><code>(con 'lst 'any) -> any</code></a>
 <dd>Connects <code>any</code> to the first cell of <code>lst</code>, by
-(destructively) storing <code>any</code> in the CDR of <code>lst</code>.
+(destructively) storing <code>any</code> in the CDR of <code>lst</code>. See
+also <code><a href="refC.html#conc">conc</a></code>.
 
 <p><pre><code>
 : (setq C (1 . a))
@@ -505,7 +506,8 @@ href="refR.html#rollback">rollback</a></code>.
 
 <dt><a name="conc"><code>(conc 'lst ..) -> lst</code></a>
 <dd>Concatenates all argument lists (destructively). See also <code><a
-href="refA.html#append">append</a></code>.
+href="refA.html#append">append</a></code> and <code><a
+href="refC.html#con">con</a></code>.
 
 <p><pre><code>
 : (setq  A (1 2 3)  B '(a b c))

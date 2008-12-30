@@ -1,4 +1,4 @@
-# 30jul08abu
+# 22dec08abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -48,7 +48,7 @@
                   (gui 6 '(+Sgn +Lock +FixField) 2 12)
                   (gui 7 '(+DelRowButton))
                   (gui 8 '(+BubbleButton)) ) )
-            (<row> NIL NIL NIL (scroll 8) NIL NIL
+            (<row> NIL NIL NIL (scroll 8 T) NIL NIL
                (gui '(+Sgn +View +FixField) '(sum> (: home obj)) 2 12) ) )
          (<spread>
             (gui '(+Rid +Button) ,"PDF-Print"

@@ -1,4 +1,4 @@
-# 28may08abu
+# 16dec08abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
@@ -14,11 +14,15 @@
    "test/src/subr.l"
    "test/src/big.l"
    "test/src/io.l"
-   "test/src/net.l" )
+   "test/src/net.l"
+   "test/src/ext.l"
+   "test/src/ht.l" )
 
 (load "test/lib.l")
 (load "test/lib/misc.l")
 
 (load "test/lib/lint.l")
+
+(msg 'OK)
 
 # vi:et:ts=3:sw=3

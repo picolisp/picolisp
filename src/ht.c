@@ -1,4 +1,4 @@
-/* 31mar08abu
+/* 29nov08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -99,11 +99,35 @@ static int getHex(any *p) {
 
    n = firstByte(car(*p)),  *p = cdr(*p);
    if ((n -= '0') > 9)
-      n -= 7;
+      n = (n & 0xDF) - 7;
    m = firstByte(car(*p)),  *p = cdr(*p);
    if ((m -= '0') > 9)
-      m -= 7;
+      m = (m & 0xDF) - 7;
    return n << 4 | m;
+}
+
+static int getUnicode(any *p) {
+   int c, n = 0;
+   any x = cdr(*p);
+
+   while ((c = firstByte(car(x))) >= '0' && c <= '9') {
+      n = n * 10 + c - '0';
+      x = cdr(x);
+   }
+   if (n  &&  firstByte(car(x)) == ';') {
+      *p = cdr(x);
+      return n;
+   }
+   return 0;
+}
+
+static bool head(char *s, any x) {
+   while (*s) {
+      if (*s++ != firstByte(car(x)))
+         return NO;
+      x = cdr(x);
+   }
+   return YES;
 }
 
 static void htEncode(char *p) {
@@ -177,13 +201,63 @@ any Pack(any x) {
    begString();
    Push(c1,x);
    while (isCell(x)) {
-      if ((c = symChar(name(car(x)))) == '%')
+      if ((c = firstByte(car(x))) == '%')
          x = cdr(x),  Env.put(getHex(&x));
-      else
+      else if (c != '&')
          outName(car(x)), x = cdr(x);
+      else if (head("lt;", x = cdr(x)))
+         Env.put('<'), x = cdddr(x);
+      else if (head("gt;", x))
+         Env.put('>'), x = cdddr(x);
+      else if (head("amp;", x))
+         Env.put('&'), x = cddddr(x);
+      else if (head("quot;", x))
+         Env.put('"'), x = cddr(cdddr(x));
+      else if (head("nbsp;", x))
+         Env.put(' '), x = cddr(cdddr(x));
+      else if (firstByte(car(x)) == '#' && (c = getUnicode(&x)))
+         outName(mkChar(c));
+      else
+         Env.put('&');
    }
    return endString();
 }
+
+/*** Read content length bytes */
+// (ht:Read 'cnt) -> lst
+any Read(any ex) {
+   any x;
+   int n, c;
+   cell c1;
+
+   if ((n = evCnt(ex, cdr(ex))) <= 0)
+      return Nil;
+   if (!Chr)
+      Env.get();
+   if (Chr < 0)
+      return Nil;
+   if ((c = getChar()) < 128)
+      --n;
+   else if (c < 2048)
+      n -= 2;
+   else
+      n -= 3;
+   if (n < 0)
+      return Nil;
+   Push(c1, x = cons(mkChar(c), Nil));
+   while (n > 0 && (Env.get(), Chr > 0)) {
+      if ((c = getChar()) < 128)
+         --n;
+      else if (c < 2048)
+         n -= 2;
+      else
+         n -= 3;
+      x = cdr(x) = cons(mkChar(c), Nil);
+   }
+   Chr = 0;
+   return Pop(c1);
+}
+
 
 /*** Chunked Encoding ***/
 #define CHUNK 4000

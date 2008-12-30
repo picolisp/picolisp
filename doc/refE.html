@@ -160,13 +160,13 @@ a b c (d e f) 123
 -> (a b c (d e f) 123)
 </code></pre>
 
-<dt><a name="eval"><code>(eval 'any ['cnt]) -> any</code></a>
+<dt><a name="eval"><code>(eval 'any ['cnt ['lst]]) -> any</code></a>
 <dd>Evaluates <code>any</code>. Note that because of the standard argument
 evaluation, <code>any</code> is actually evaluated twice. If a binding
 environment offset <code>cnt</code> is given, the second evaluation takes place
-in the corresponding environment. See also <code><a
-href="refR.html#run">run</a></code> and <code><a
-href="refU.html#up">up</a></code>.
+in the corresponding environment, and an optional <code>lst</code> of excluded
+symbols can be supplied. See also <code><a href="refR.html#run">run</a></code>
+and <code><a href="refU.html#up">up</a></code>.
 
 <p><pre><code>
 : (eval (list '+ 1 2 3))
@@ -258,10 +258,11 @@ href="refS.html#subr">subr</a></code>.
 href="ref.html#external">external symbols</a></code> processed by <code><a
 href="refR.html#rd">rd</a></code>, <code><a href="refP.html#pr">pr</a></code>,
 <code><a href="refR.html#rpc">rpc</a></code> or <code><a
-href="refU.html#udp">udp</a></code> are modified by an offset <code>cnt<code>
+href="refU.html#udp">udp</a></code> are modified by an offset <code>cnt</code>
 suitable for mapping via the <code><a href="refE.html#*Ext">*Ext</a></code>
-mechanism. All external symbol's file numbers are incremented by <code>cnt<code>
-during output, and decremented by <code>cnt<code> during input.
+mechanism. All external symbol's file numbers are incremented by
+<code>cnt</code> during output, and decremented by <code>cnt</code> during
+input.
 
 <p><pre><code>
 : (out 'a (ext 5 (pr '({6-2} ({8-9} . a) ({7-7} . b)))))

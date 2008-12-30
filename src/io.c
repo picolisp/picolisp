@@ -1,4 +1,4 @@
-/* 16aug08abu
+/* 30dec08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,13 +25,14 @@ static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
 static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
+static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
+static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
+static void utfErr(void) {err(NULL, NULL, "Bad UTF-8");}
 static void badFd(any ex, any x) {err(ex, x, "Bad FD");}
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
 static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void dbfErr(any ex) {err(ex, NULL, "Bad DB file");}
-static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
-static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
 
 static void lockFile(int fd, int cmd, int typ) {
    struct flock fl;
@@ -64,23 +65,25 @@ void blocking(bool flg, any ex, int fd) {
 }
 
 static inline bool inReady(int fd) {
+   int i;
    inFile *p;
 
-   return fd < InFDs  &&  (p = InFiles[fd])  &&  p->ix < p->cnt;
+   return (i=fd-3) >= 0  &&  i < InFDs  &&  (p=InFiles[i])  &&  p->ix < p->cnt;
 }
 
 void initInFile(int fd, char *nm) {
+   int n;
    inFile *p;
 
-   if (fd >= InFDs) {
+   if ((n = fd - 3) >= InFDs) {
       int i = InFDs;
 
-      InFiles = alloc(InFiles, (InFDs = fd + 1) * sizeof(inFile*));
+      InFiles = alloc(InFiles, (InFDs = n + 1) * sizeof(inFile*));
       do
          InFiles[i] = NULL;
       while (++i < InFDs);
    }
-   p = InFiles[fd] = alloc(InFiles[fd], sizeof(inFile));
+   p = InFiles[n] = alloc(InFiles[n], sizeof(inFile));
    p->fd = fd;
    p->ix = p->cnt = p->next = 0;
    p->line = p->src = 1;
@@ -88,31 +91,35 @@ void initInFile(int fd, char *nm) {
 }
 
 void initOutFile(int fd) {
+   int n;
    outFile *p;
 
-   if (fd >= OutFDs) {
+   if ((n = fd - 3) >= OutFDs) {
       int i = OutFDs;
 
-      OutFiles = alloc(OutFiles, (OutFDs = fd + 1) * sizeof(outFile*));
+      OutFiles = alloc(OutFiles, (OutFDs = n + 1) * sizeof(outFile*));
       do
          OutFiles[i] = NULL;
       while (++i < OutFDs);
    }
-   p = OutFiles[fd] = alloc(OutFiles[fd], sizeof(outFile));
+   p = OutFiles[n] = alloc(OutFiles[n], sizeof(outFile));
    p->fd = fd;
    p->ix = 0;
 }
 
 void closeInFile(int fd) {
+   int i;
    inFile *p;
 
-   if (fd < InFDs && (p = InFiles[fd]))
-      free(p->name),  free(p),  InFiles[fd] = NULL;
+   if ((i = fd-3) < InFDs && (p = InFiles[i]))
+      free(p->name),  free(p),  InFiles[i] = NULL;
 }
 
 void closeOutFile(int fd) {
-   if (fd < OutFDs)
-      free(OutFiles[fd]),  OutFiles[fd] = NULL;
+   int i;
+
+   if ((i = fd-3) < OutFDs)
+      free(OutFiles[i]),  OutFiles[i] = NULL;
 }
 
 int slow(int fd, byte *p, int cnt) {
@@ -196,6 +203,16 @@ bool flush(outFile *p) {
       return wrBytes(p->fd, p->buf, n);
    }
    return YES;
+}
+
+void flushAll(void) {
+   int i;
+
+   fflush(stdout);
+   fflush(stderr);
+   for (i = 0; i < OutFDs; ++i)
+      if (OutFiles[i])
+         flush(OutFiles[i]);
 }
 
 /*** Low level I/O ***/
@@ -420,7 +437,7 @@ static any rdHear(void) {
    any x;
    inFile *iSave = InFile;
 
-   InFile = InFiles[Hear];
+   InFile = InFiles[Hear-3];
    getBin = getBinary;
    x = binRead(0);
    InFile = iSave;
@@ -581,7 +598,7 @@ static int currFd(any ex, char *p) {
 
 void rdOpen(any ex, any x, inFrame *f) {
    if (isNil(x))
-      f->pid = -1,  f->fd = 0;
+      f->pid = -1,  f->fd = STDIN_FILENO;
    else if (isNum(x)) {
       int n = (int)unBox(x);
 
@@ -597,11 +614,14 @@ void rdOpen(any ex, any x, inFrame *f) {
             }
          }
       }
-      if ((f->fd = n) <= 2)
+      if ((f->fd = n) <= 2) {
          f->pid = -1;
+         if (n < 0)
+            badFd(ex,x);
+      }
       else {
          f->pid = 0;
-         if (f->fd >= InFDs || !InFiles[f->fd])
+         if ((n -= 3) >= InFDs || !InFiles[n])
             badFd(ex,x);
       }
    }
@@ -663,7 +683,7 @@ void rdOpen(any ex, any x, inFrame *f) {
 
 void wrOpen(any ex, any x, outFrame *f) {
    if (isNil(x))
-      f->pid = -1,  f->fd = 1;
+      f->pid = -1,  f->fd = STDOUT_FILENO;
    else if (isNum(x)) {
       int n = (int)unBox(x);
 
@@ -679,11 +699,14 @@ void wrOpen(any ex, any x, outFrame *f) {
             }
          }
       }
-      if ((f->fd = n) <= 2)
+      if ((f->fd = n) <= 2) {
          f->pid = -1;
+         if (n < 0)
+            badFd(ex,x);
+      }
       else {
          f->pid = 0;
-         if (f->fd >= OutFDs || !OutFiles[f->fd])
+         if ((n -= 3) >= OutFDs || !OutFiles[n])
             badFd(ex,x);
       }
    }
@@ -825,7 +848,7 @@ void pushInFiles(inFrame *f) {
       Next0 = Chr;
    if (f->pid < 0)
       InFile = NULL,  Chr = Next0;
-   else if (InFile = InFiles[f->fd])
+   else if (InFile = InFiles[f->fd - 3])
       Chr = InFile->next;
    else
       Chr = Next0;
@@ -837,7 +860,7 @@ void pushOutFiles(outFrame *f) {
    if (f->pid < 0)
       OutFile = NULL,  StdOut = f->fd == 2? stderr : stdout;
    else
-      OutFile = OutFiles[f->fd];
+      OutFile = OutFiles[f->fd - 3];
    f->put = Env.put,  Env.put = putStdout;
    f->link = Env.outFiles,  Env.outFiles = f;
 }
@@ -860,7 +883,7 @@ void popInFiles(void) {
    Env.get = Env.inFiles->get;
    if (!(Env.inFiles = Env.inFiles->link) || Env.inFiles->pid < 0)
       InFile = NULL,  Chr = Next0;
-   else if (InFile = InFiles[Env.inFiles->fd])
+   else if (InFile = InFiles[Env.inFiles->fd - 3])
       Chr = InFile->next;
    else
       Chr = Next0;
@@ -882,7 +905,7 @@ void popOutFiles(void) {
    if (!(Env.outFiles = Env.outFiles->link))
       OutFile = NULL,  StdOut = stdout;
    else if (Env.outFiles->pid >= 0)
-      OutFile = OutFiles[Env.outFiles->fd];
+      OutFile = OutFiles[Env.outFiles->fd - 3];
    else
       OutFile = NULL,  StdOut = Env.outFiles->fd == 2? stderr : stdout;
 }
@@ -902,13 +925,20 @@ int getChar(void) {
    if ((c = Chr) == 0xFF)
       return TOP;
    if (c & 0x80) {
+      if ((c & 0x40) == 0)
+         utfErr();
       Env.get();
       if ((c & 0x20) == 0)
          c &= 0x1F;
-      else
+      else {
+         if (c & 0x10 || (Chr & 0xC0) != 0x80)
+            utfErr();
          c = (c & 0xF) << 6 | Chr & 0x3F,  Env.get();
+      }
       if (Chr < 0)
          eofErr();
+      if ((Chr & 0xC0) != 0x80)
+         utfErr();
       c = c << 6 | Chr & 0x3F;
    }
    return c;
@@ -1127,7 +1157,7 @@ static any read0(bool top) {
    i = 0,  Push(c1, y = box(Chr));
    for (;;) {
       Env.get();
-      if (strchr(Delim, Chr))
+      if (Chr <= 0 || strchr(Delim, Chr))
          break;
       if (Chr == '\\')
          Env.get();
@@ -1155,7 +1185,7 @@ any read1(int end) {
    if (Chr == end)
       return Nil;
    x = read0(YES);
-   while (Chr  &&  strchr(" \t)]", Chr))
+   while (Chr > 0  &&  strchr(" \t)]", Chr))
       Env.get();
    return x;
 }
@@ -1406,7 +1436,7 @@ long waitFd(any ex, int fd, long ms) {
          }
       if (Signal)
          sighandler(ex);
-   } while (ms  &&  fd >= 0 && !FD_ISSET(fd, &rdSet));
+   } while (ms  &&  fd >= 0 && !inReady(fd) && !FD_ISSET(fd, &rdSet));
    drop(c1);
    return ms;
 }
@@ -1453,15 +1483,15 @@ any doSync(any ex) {
 // (hear 'num|sym) -> any
 any doHear(any ex) {
    any x;
-   int fd;
+   int i, fd;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedAtom(ex,x);
    if (Hear)
-      close(Hear),  closeInFile(Hear);
+      close(Hear),  closeInFile(Hear),  Hear = 0;
    if (isNum(x)) {
-      fd = (int)xCnt(ex,x);
-      if (fd >= InFDs || !InFiles[fd])
+      i = (fd = (int)xCnt(ex,x)) - 3;
+      if (i < 0 || i >= InFDs || !InFiles[i])
          badFd(ex,x);
       Hear = fd;
    }
@@ -1675,7 +1705,7 @@ any doTill(any ex) {
    }
 }
 
-static inline bool eol(void) {
+bool eol(void) {
    if (Chr < 0)
       return YES;
    if (Chr == '\n') {
@@ -1914,7 +1944,7 @@ any load(any ex, int pr, any x) {
       if (isNil(data(c1)))
          break;
       Save(c1);
-      if (InFile || Chr)
+      if (InFile || Chr || !pr)
          x = EVAL(data(c1));
       else {
          Push(c2, val(At));
@@ -1938,8 +1968,7 @@ any doLoad(any ex) {
       if ((y = EVAL(car(x))) != T)
          y = load(ex, '>', y);
       else
-         while (*AV  &&  strcmp(*AV,"-") != 0)
-            y = load(ex, '>', mkStr(*AV++));
+         y = loadAll(ex,y);
    } while (isCell(x = cdr(x)));
    return y;
 }
@@ -1950,7 +1979,7 @@ any doIn(any ex) {
    inFrame f;
 
    x = cdr(ex),  x = EVAL(car(x));
-   rdOpen(ex,x,&f);
+   rdOpen(ex, x, &f);
    pushInFiles(&f);
    x = prog(cddr(ex));
    popInFiles();
@@ -1963,7 +1992,7 @@ any doOut(any ex) {
    outFrame f;
 
    x = cdr(ex),  x = EVAL(car(x));
-   wrOpen(ex,x,&f);
+   wrOpen(ex, x, &f);
    pushOutFiles(&f);
    x = prog(cddr(ex));
    popOutFiles();
@@ -1974,31 +2003,36 @@ any doOut(any ex) {
 // (pipe exe . prg) -> any
 any doPipe(any ex) {
    any x;
-   inFrame f;
+   union {
+      inFrame in;
+      outFrame out;
+   } f;
    int pfd[2];
 
    if (pipe(pfd) < 0)
       err(ex, NULL, "Can't pipe");
    closeOnExec(ex, pfd[0]), closeOnExec(ex, pfd[1]);
-   if ((f.pid = forkLisp(ex)) == 0) {
+   if ((f.in.pid = forkLisp(ex)) == 0) {
       if (isCell(cddr(ex)))
          setpgid(0,0);
       close(pfd[0]);
       if (pfd[1] != STDOUT_FILENO)
          dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
+      wrOpen(ex, Nil, &f.out);
+      pushOutFiles(&f.out);
       EVAL(cadr(ex));
       bye(0);
    }
    close(pfd[1]);
-   if (f.pid < 0)
+   if (f.in.pid < 0)
       err(ex, NULL, "fork");
    if (!isCell(cddr(ex))) {
       initInFile(pfd[0], NULL);
       return boxCnt(pfd[0]);
    }
-   initInFile(f.fd = pfd[0], NULL);
-   setpgid(f.pid,0);
-   pushInFiles(&f);
+   initInFile(f.in.fd = pfd[0], NULL);
+   setpgid(f.in.pid,0);
+   pushInFiles(&f.in);
    x = prog(cddr(ex));
    popInFiles();
    return x;

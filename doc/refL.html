@@ -315,7 +315,7 @@ href="refQ.html#quote">quote</a></code> function if necessary.
 taken as a file to be executed in a read-eval loop. The argument semantics are
 identical to that of <code><a href="refI.html#in">in</a></code>, with the
 exception that if an argument is a symbol and its first character is a hyphen
-'-', then that argument is parsed as a function call (without the surrounding
+'-', then that argument is parsed as an executable list (without the surrounding
 parentheses). When <code>any</code> is <code>T</code>, all remaining command
 line arguments are loaded recursively. When <code>any</code> is
 <code>NIL</code>, standard input is read, a prompt is issued before each read
@@ -329,9 +329,8 @@ href="refS.html#script">script</a></code>, <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a
 href="refC.html#call">call</a></code>, <code><a
 href="refF.html#file">file</a></code>, <code><a
-href="refI.html#in">in</a></code>, <code><a
-href="refO.html#out">out</a></code> and <code><a
-href="refS.html#str">str</a></code>.
+href="refI.html#in">in</a></code>, <code><a href="refO.html#out">out</a></code>
+and <code><a href="refS.html#str">str</a></code>.
 
 <p><pre><code>
 : (load "lib.l" "-* 1 2 3")

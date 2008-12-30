@@ -1,4 +1,4 @@
-# 09sep08abu
+# 17dec08abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -30,14 +30,20 @@
       (push '*Run (list -1 (+ N) '(bye)))
       (del @ '*Run) ) )
 
+(de abort ("N" . "Prg")
+   (catch 'abort
+      (alarm "N" (throw 'abort))
+      (finally (alarm 0) (run "Prg")) ) )
+
 (de macro "Prg"
    (run (fill "Prg")) )
 
 (de later ("@Var" . "@Prg")
    (macro
       (task (pipe (pr (prog . "@Prg")))
-         (task @)
-         (in @ (setq "@Var" (rd))) ) )
+         (setq "@Var" (in @ (rd)))
+         (close @)
+         (task @) ) )
    "@Var" )
 
 (de recur recurse
@@ -134,7 +140,7 @@
       (let V (next)
          (and (gt0 N) (space (- N (length V))))
          (prin V)
-         (and (lt0 N) (space (- 0 N (length V)))) ) )
+         (and (lt0 N) (args) (space (- 0 N (length V)))) ) )
    (prinl) )
 
 (de beep ()

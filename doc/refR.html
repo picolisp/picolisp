@@ -142,9 +142,9 @@ href="refW.html#wr">wr</a></code>.
 upon end of file. When called without arguments, an arbitrary Lisp expression is
 read. Otherwise, a token (a number, or an internal or transient symbol) is read.
 In that case, <code>sym1</code> specifies which set of characters to accept for
-continuous symbol namess (in addition to the standard alphanumerical
-characters), and <code>sym2</code> an optional comment character. See also
-<code><a href="refA.html#any">any</a></code>, <code><a
+continuous symbol names (in addition to the standard alphanumerical characters),
+and <code>sym2</code> an optional comment character. See also <code><a
+href="refA.html#any">any</a></code>, <code><a
 href="refS.html#str">str</a></code>, <code><a
 href="refS.html#skip">skip</a></code> and <code><a
 href="refE.html#eof">eof</a></code>.
@@ -227,6 +227,15 @@ After 2
 : (* 1 2 3)
 (1 2 3)
 -> 6
+
+: (redef + @
+   (pass (ifn (num? (next)) pack +) (arg)) )
+-> "+"
+: (+ 1 2 3)
+-> 6
+: (+ "a" 'b '(c d e))
+-> "abcde"
+
 </code></pre>
 
 <dt><a name="rel"><code>(rel var lst [any ..]) -> any</code></a>
@@ -400,13 +409,14 @@ Ok
 Ok
 </code></pre>
 
-<dt><a name="run"><code>(run 'any ['cnt]) -> any</code></a>
+<dt><a name="run"><code>(run 'any ['cnt ['lst]]) -> any</code></a>
 <dd>If <code>any</code> is an atom, <code>run</code> behaves like
 <code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
 sequence. The last result is returned. If a binding environment offset
 <code>cnt</code> is given, that evaluation takes place in the corresponding
-environment. See also <code><a href="refE.html#eval">eval</a></code> and
-<code><a href="refU.html#up">up</a></code>.
+environment, and an optional <code>lst</code> of excluded symbols can be
+supplied. See also <code><a href="refE.html#eval">eval</a></code> and <code><a
+href="refU.html#up">up</a></code>.
 
 <p><pre><code>
 : (run '((println (+ 1 2 3)) (println 'Ok)))

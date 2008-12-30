@@ -1,4 +1,4 @@
-# 03aug08abu
+# 22dec08abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -25,8 +25,9 @@
 "male" "männlich"
 "female" "weiblich"
 "New" "Neu"
-"Save" "Speichern"
 "Edit" "Bearbeiten"
+"Save" "Speichern"
+"Done" "Fertig"
 "Currently edited by '@2' (@1)" "Zur Zeit von '@2' (@1) bearbeitet"
 "Search" "Suchen"
 "Reset" "Zurücksetzen"
@@ -57,10 +58,12 @@
 "Find or create an object of the same type" "Ein Objekt vom gleichen Typ suchen oder neu anlegen"
 "Choose a suitable value" "Einen passenden Wert auswählen"
 "Adopt this value" "Diesen Wert übernehmen"
+"Go to first line" "Zur ersten Zeile gehen"
 "Scroll up one page" "Eine Seite nach oben scrollen"
 "Scroll up one line" "Eine Zeile nach oben scrollen"
 "Scroll down one line" "Eine Zeile nach unten scrollen"
 "Scroll down one page" "Eine Seite nach unten scrollen"
+"Go to last line" "Zur letzten Zeile gehen"
 "Delete row" "Zeile löschen"
 "Shift row up" "Zeile nach oben schieben"
 "Clear all input fields" "Alle Eingabefelder löschen"

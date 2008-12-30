@@ -1,4 +1,4 @@
-/* 14feb08abu
+/* 15oct08abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,8 +27,7 @@
 
 typedef enum {NO,YES} bool;
 
-static bool Bin;
-static int Http1, Timeout;
+static int Http1;
 
 static char Head_200[] =
    "HTTP/1.0 200 OK\r\n"
@@ -60,7 +59,7 @@ static char *ses(char *buf, int port, int *len) {
    int np;
    char *p, *q;
 
-   if (Bin || Http1 == 0)
+   if (Http1 == 0)
       return buf;
    if (pre(buf, "GET /")) {
       np = (int)strtol(buf+5, &q, 10);
@@ -172,13 +171,13 @@ static int gateConnect(unsigned short port) {
 static pid_t Buddy;
 
 static void doSigAlarm(int n __attribute__((unused))) {
-   logger("Timeout %d", Timeout);
+   logger("Timeout");
    kill(Buddy, SIGTERM);
    exit(0);
 }
 
 static void doSigUsr1(int n __attribute__((unused))) {
-   alarm(Timeout);
+   alarm(420);
 }
 
 int main(int ac, char *av[]) {
@@ -227,7 +226,7 @@ int main(int ac, char *av[]) {
 
             close(sd);
 
-            alarm(Timeout = 420);
+            alarm(420);
             if (ssl) {
                SSL_set_fd(ssl, cli);
                if (SSL_accept(ssl) < 0)
@@ -240,16 +239,12 @@ int main(int ac, char *av[]) {
             if (n < 6)
                return 1;
 
-            /* "@8080 "
-             * "GET /url HTTP/1.x"
+            /* "GET /url HTTP/1.x"
              * "GET /8080/url HTTP/1.x"
              * "POST /url HTTP/1.x"
              * "POST /8080/url HTTP/1.x"
              */
-            Bin = NO;
-            if (buf[0] == '@')
-               p = buf + 1,  Bin = YES,  Timeout = 3600;
-            else if (pre(buf, "GET /"))
+            if (pre(buf, "GET /"))
                p = buf + 5;
             else if (pre(buf, "POST /"))
                p = buf + 6;
@@ -273,14 +268,14 @@ int main(int ac, char *av[]) {
                }
                if ((fd = open("void", O_RDONLY)) < 0)
                   return 1;
-               alarm(Timeout);
+               alarm(420);
                if (ssl)
                   sslWrite(ssl, Head_200, strlen(Head_200));
                else
                   wrBytes(cli, Head_200, strlen(Head_200));
                alarm(0);
                while ((n = read(fd, buf, sizeof(buf))) > 0) {
-                  alarm(Timeout);
+                  alarm(420);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else
@@ -291,31 +286,27 @@ int main(int ac, char *av[]) {
             }
 
             Http1 = 0;
-            if (buf[0] == '@')
-               p = q + 1;
-            else {
-               wrBytes(srv, buf, p - buf);
-               if (*q == '/')
-                  ++q;
-               p = q;
-               while (*p++ != '\n')
-                  if (p >= buf + n) {
-                     buf[n] = '\0';
-                     logger("Bad header: %s", buf);
-                     return 1;
-                  }
-               wrBytes(srv, q, p - q);
-               if (pre(p-10, "HTTP/1."))
-                  Http1 = *(p-3) - '0';
-               wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
-            }
+            wrBytes(srv, buf, p - buf);
+            if (*q == '/')
+               ++q;
+            p = q;
+            while (*p++ != '\n')
+               if (p >= buf + n) {
+                  buf[n] = '\0';
+                  logger("Bad header: %s", buf);
+                  return 1;
+               }
+            wrBytes(srv, q, p - q);
+            if (pre(p-10, "HTTP/1."))
+               Http1 = *(p-3) - '0';
+            wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
             wrBytes(srv, p, buf + n - p);
 
             signal(SIGALRM, doSigAlarm);
             signal(SIGUSR1, doSigUsr1);
             if (Buddy = fork()) {
                for (;;) {
-                  alarm(Timeout);
+                  alarm(420);
                   n = slow(ssl, cli, buf, sizeof(buf));
                   alarm(0);
                   if (!n || !(p = ses(buf, port, &n)))
@@ -329,7 +320,7 @@ int main(int ac, char *av[]) {
                Buddy = getppid();
                while ((n = read(srv, buf, sizeof(buf))) > 0) {
                   kill(Buddy, SIGUSR1);
-                  alarm(Timeout);
+                  alarm(420);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else

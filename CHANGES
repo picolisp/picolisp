@@ -1,3 +1,12 @@
+* 31dec08 picoLisp-2.3.5
+   Bug in 'pipe'
+   Bug in 'later'
+   Dialog and chart bugs in "lib/form.l"
+   HTTP protocol bug in "lib/http.l"
+   Bug in 'inc' and 'bigCmp()'
+   'abort' function
+   'eval' and 'run' optional 'lst' argument
+
 * 30sep08 picoLisp-2.3.4
    'once' function
    'hex' and 'oct' negative arguments

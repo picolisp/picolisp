@@ -1,4 +1,4 @@
-/* 29nov08abu
+/* 29jan09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -245,13 +245,22 @@ any Read(any ex) {
    if (n < 0)
       return Nil;
    Push(c1, x = cons(mkChar(c), Nil));
-   while (n > 0 && (Env.get(), Chr > 0)) {
+   while (n) {
+      Env.get();
+      if (Chr < 0) {
+         data(c1) = Nil;
+         break;
+      }
       if ((c = getChar()) < 128)
          --n;
       else if (c < 2048)
          n -= 2;
       else
          n -= 3;
+      if (n < 0) {
+         data(c1) = Nil;
+         break;
+      }
       x = cdr(x) = cons(mkChar(c), Nil);
    }
    Chr = 0;

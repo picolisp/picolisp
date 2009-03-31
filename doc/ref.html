@@ -365,7 +365,7 @@ its CAR and for its CDR
 <h5><a name="internal">Internal Symbols</a></h5>
 
 <p>Internal Symbols are all those "normal" symbols, as they are used for
-function definitions and variable names. They are "interned" into a hashed list
+function definitions and variable names. They are "interned" into an index
 structure, so that it is possible to find an internal symbol by searching for
 its name.
 
@@ -377,10 +377,10 @@ its name.
 <p><hr>
 <h5><a name="transient">Transient Symbols</a></h5>
 
-<p>Transient symbols are only interned into a hashed list structure for a
-certain time (e.g. while reading the current source file), and are released
-after that. That means, a transient symbol cannot be accessed then by its name,
-and there may be several transient symbols in the system having the same name.
+<p>Transient symbols are only interned into a index structure for a certain time
+(e.g. while reading the current source file), and are released after that. That
+means, a transient symbol cannot be accessed then by its name, and there may be
+several transient symbols in the system having the same name.
 
 <p>Transient symbols are used
 
@@ -413,9 +413,9 @@ programmer.
 bit in the tail structure.
 
 <p>There cannot be two different external symbols with the same name. External
-symbols are maintained in hash structures while they are loaded into memory, and
-have their external location (disk block, network URL, etc.) directly coded into
-their names.
+symbols are maintained in index structures while they are loaded into memory,
+and have their external location (disk file and block offset) directly coded
+into their names.
 
 <p>Initially, a new external symbol's VAL is <code>NIL</code>, unless otherwise
 specified at creation time.
@@ -703,9 +703,9 @@ can be written with a preceding hat '<code>^</code>' character.
 -> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
 </code></pre>
 
-<p>The hash table for transient symbols is cleared automatically before and
-after <code><a href="refL.html#load">load</a></code>ing a source file, or it can
-be reset explicitly with the <code><a href="ref_.html#====">====</a></code>
+<p>The index for transient symbols is cleared automatically before and after
+<code><a href="refL.html#load">load</a></code>ing a source file, or it can be
+reset explicitly with the <code><a href="ref_.html#====">====</a></code>
 function. With that mechanism, it is possible to create symbols with a local
 access scope, not accessible from other parts of the program.
 

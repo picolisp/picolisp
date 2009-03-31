@@ -1,4 +1,4 @@
-# 28nov08abu
+# 25mar09abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -366,11 +366,11 @@
             (link (ht:Fmt (pop 'Lst)))
             (and Lst (link '&)) ) ) ) )
 
-(de <$> (Str Obj Msg)
+(de <$> (Str Obj Msg Tab)
    (cond
       ((not Obj) (ht:Prin Str))
       ((=T Obj) (<href> Str (pack Msg Str)))
-      ((send (or Msg 'url>) Obj 1)
+      ((send (or Msg 'url>) Obj (or Tab 1))
          (<href> Str (mkUrl @)) )
       (T (ht:Prin Str)) ) )
 
@@ -433,12 +433,12 @@
       (prinl "<br/>")
       (<0> @) ) )
 
-(de <+> (Str Obj Msg)
-   (<$> Str Obj Msg)
+(de <+> (Str Obj Msg Tab)
+   (<$> Str Obj Msg Tab)
    (and "*CSV" (out @ (prin Str "^I"))) )
 
-(de <-> (Str Obj Msg)
-   (<$> Str Obj Msg)
+(de <-> (Str Obj Msg Tab)
+   (<$> Str Obj Msg Tab)
    (<0> Str) )
 
 
@@ -497,7 +497,7 @@
    (prin
       "<form enctype=\"multipart/form-data\" action=\""
       (sesId Url)
-      (and *JS "\" onsubmit=\"return doPost(this);")
+      (and *JS "\" onsubmit=\"return doPost(this)\"; onkeydown=\"return formKey(this,event);")
       "\" method=\"post\">" )
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )
@@ -527,6 +527,7 @@
       (prin (- N) "\" style=\"text-align: right;\"")
       (prin N "\"") )
    (and Max (prin " maxlength=\"" Max "\""))
+   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
    (dfltCss "field")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -545,6 +546,7 @@
    (ht:Prin (htmlVal "Var"))
    (prin "\" size=\"" N "\"")
    (and Max (prin " maxlength=\"" Max "\""))
+   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
    (dfltCss "passwd")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -555,6 +557,7 @@
    (prin " value=\"")
    (ht:Prin (htmlVal "Var"))
    (prin "\" size=\"" N "\"")
+   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
    (dfltCss "upload")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -563,6 +566,7 @@
    (prin "<textarea ")
    (htmlVar "Var")
    (prin " cols=\"" Cols "\" rows=\"" Rows "\" wrap=\"off\"")
+   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
    (dfltCss "area")
    (and Flg (prin " disabled=\"disabled\""))
    (prin '>)
@@ -572,6 +576,7 @@
 (de <select> (Lst "Var" Flg)
    (prin "<select ")
    (htmlVar "Var")
+   (and *JS (prin " onchange=\"return fldChg(this);\""))
    (dfltCss "select")
    (prin '>)
    (for "X" Lst
@@ -590,10 +595,11 @@
 (de <check> ("Var" Flg)
    (prin "<input type=\"hidden\" ")
    (htmlVar "Var")
-   (prin " value=\"" (and Flg (htmlVal "Var")) "\">")
+   (prin " value=\"\">")
    (prin "<input type=\"checkbox\" ")
    (htmlVar "Var")
    (prin " value=\"T\"" (and (htmlVal "Var") " checked=\"checked\""))
+   (and *JS (prin " onchange=\"return fldChg(this);\""))
    (dfltCss "check")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -604,6 +610,7 @@
    (prin
       " value=\"" Val "\""
       (and (= Val (htmlVal "Var")) " checked=\"checked\"") )
+   (and *JS (prin " onchange=\"return fldChg(this);\""))
    (dfltCss "radio")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )

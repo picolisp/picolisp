@@ -1,4 +1,4 @@
-# 25jan08abu
+# 23feb09abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -56,6 +56,7 @@
 ### rot ###
 (test (4 1 2 3) (rot (1 2 3 4)))
 (test (3 1 2 4 5 6) (rot (1 2 3 4 5 6) 3))
+(test (3 1 2 . @Z) (rot (1 2 3 .)))
 
 
 ### list ###
@@ -330,6 +331,9 @@
 ### memq ###
 (test '(c d e f) (memq 'c '(a b c d e f)))
 (test NIL (memq (2) ((1) (2) (3))))
+(test 'c (memq 'c '(a b . c)))
+(test '(b c a . @Z) (memq 'b '(a b c .)))
+(test NIL (memq 'd '(a b c .)))
 
 
 ### mmeq ###
@@ -450,5 +454,7 @@
 ### sort ###
 (test '(NIL 1 2 3 4 a b c d (1 2 3) (a b c) (x y z) T)
    (sort '(a 3 1 (1 2 3) d b 4 T NIL (a b c) (x y z) c 2)) )
+(test '(T (x y z) (a b c) (1 2 3) d c b a 4 3 2 1 NIL)
+   (sort '(a 3 1 (1 2 3) d b 4 T NIL (a b c) (x y z) c 2) >) )
 
 # vi:et:ts=3:sw=3

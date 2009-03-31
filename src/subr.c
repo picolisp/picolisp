@@ -1,4 +1,4 @@
-/* 13may08abu
+/* 28feb09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -197,8 +197,8 @@ any doRot(any ex) {
    cell c1;
 
    x = cdr(ex),  Push(c1, y = EVAL(car(x)));
+   n = isCell(x = cdr(x))? evCnt(ex,x) : 0;
    if (isCell(y)) {
-      n = isCell(x = cdr(x))? evCnt(ex,x) : 0;
       x = car(y);
       while (--n  &&  isCell(y = cdr(y))  &&  y != data(c1))
          z = car(y),  car(y) = x,  x = z;
@@ -255,18 +255,19 @@ any doFull(any x) {
 
 // (make .. [(made 'lst ..)] .. [(link 'any ..)] ..) -> any
 any doMake(any x) {
-   any make;
-   cell c1, c2;
+   any *make, *yoke;
+   cell c1;
 
-   if (make = Env.make)
-      Push(c1, car(make));
-   Env.make = &c2,  c2.car = Nil;
+   Push(c1, Nil);
+   make = Env.make;
+   yoke = Env.yoke;
+   Env.make = Env.yoke = &data(c1);
    while (isCell(x = cdr(x)))
       if (isCell(car(x)))
          evList(car(x));
-   if (Env.make = make)
-      drop(c1);
-   return c2.car;
+   Env.yoke = yoke;
+   Env.make = make;
+   return Pop(c1);
 }
 
 static void makeError(any ex) {err(ex, NULL, "Not making");}
@@ -276,12 +277,14 @@ any doMade(any x) {
    if (!Env.make)
       makeError(x);
    if (isCell(x = cdr(x))) {
-      car(Env.make) = EVAL(car(x));
-      if (x = cdr(x), !isCell(x = EVAL(car(x))))
-         for (x = car(Env.make);  isCell(cdr(x));  x = cdr(x));
-      cdr(Env.make) = x;
+      *Env.yoke = EVAL(car(x));
+      if (x = cdr(x), !isCell(x = EVAL(car(x)))) {
+         x = *Env.yoke;
+         while (isCell(cdr(x = cdr(x))));
+      }
+      Env.make = &cdr(x);
    }
-   return car(Env.make);
+   return *Env.yoke;
 }
 
 // (chain 'lst ..) -> lst
@@ -293,13 +296,10 @@ any doChain(any x) {
    x = cdr(x);
    do {
       if (isCell(y = EVAL(car(x)))) {
-         if (isCell(car(Env.make)))
-            cddr(Env.make) = y;
-         else
-            car(Env.make) = y;
-         cdr(Env.make) = y;
-         while (isCell(cddr(Env.make)))
-            cdr(Env.make) = cddr(Env.make);
+         *Env.make = y;
+         do
+            Env.make = &cdr(*Env.make);
+         while (isCell(*Env.make));
       }
    } while (isCell(x = cdr(x)));
    return y;
@@ -307,20 +307,16 @@ any doChain(any x) {
 
 // (link 'any ..) -> any
 any doLink(any x) {
-   any y, z;
+   any y;
 
    if (!Env.make)
       makeError(x);
    x = cdr(x);
    do {
-      y = cons(z = EVAL(car(x)), Nil);
-      if (isCell(car(Env.make)))
-         cddr(Env.make) = y;
-      else
-         car(Env.make) = y;
-      cdr(Env.make) = y;
+      y = EVAL(car(x));
+      Env.make = &cdr(*Env.make = cons(y, Nil));
    } while (isCell(x = cdr(x)));
-   return z;
+   return y;
 }
 
 // (yoke 'any ..) -> any
@@ -331,11 +327,11 @@ any doYoke(any x) {
       makeError(x);
    x = cdr(x);
    do {
-      if (isCell(car(Env.make)))
-         car(Env.make) = cons(y = EVAL(car(x)), car(Env.make));
-      else
-         car(Env.make) = cdr(Env.make) = cons(y = EVAL(car(x)), Nil);
+      y = EVAL(car(x));
+      *Env.yoke = cons(y, *Env.yoke);
    } while (isCell(x = cdr(x)));
+   while (isCell(*Env.make))
+      Env.make = &cdr(*Env.make);
    return y;
 }
 
@@ -348,12 +344,12 @@ any doCopy(any x) {
    if (!isCell(x = EVAL(car(x))))
       return x;
    Push(c1, y = cons(car(x), cdr(z = x)));
-   while (isCell(x = cdr(x))) {
+   while (isCell(x = cdr(y))) {
       if (x == z) {
          cdr(y) = data(c1);
          break;
       }
-      y = cdr(y) = cons(car(x),cdr(x));
+      y = cdr(y) = cons(car(x), cdr(x));
    }
    return Pop(c1);
 }
@@ -383,26 +379,24 @@ any doMix(any x) {
 
 // (append 'lst ..) -> lst
 any doAppend(any x) {
-   any y;
-   cell c1, c2;
+   any y, z;
+   cell c1;
 
    while (isCell(cdr(x = cdr(x)))) {
-      if (isCell(data(c1) = EVAL(car(x)))) {
-         Save(c1);
-         Push(c2, y = cons(car(data(c1)),cdr(data(c1))));
-         while (isCell(data(c1) = cdr(data(c1))))
-            y = cdr(y) = cons(car(data(c1)),cdr(data(c1)));
+      if (isCell(y = EVAL(car(x)))) {
+         Push(c1, z = cons(car(y), cdr(y)));
+         while (isCell(y = cdr(z)))
+            z = cdr(z) = cons(car(y), cdr(y));
          while (isCell(cdr(x = cdr(x)))) {
-            data(c1) = EVAL(car(x));
-            while (isCell(data(c1))) {
-               y = cdr(y) = cons(car(data(c1)),cdr(data(c1)));
-               data(c1) = cdr(data(c1));
+            y = EVAL(car(x));
+            while (isCell(y)) {
+               z = cdr(z) = cons(car(y), cdr(y));
+               y = cdr(z);
             }
-            cdr(y) = data(c1);
+            cdr(z) = y;
          }
-         cdr(y) = EVAL(car(x));
-         drop(c1);
-         return data(c2);
+         cdr(z) = EVAL(car(x));
+         return Pop(c1);
       }
    }
    return EVAL(car(x));
@@ -1450,71 +1444,84 @@ any doUnify(any x) {
 }
 
 /* List Merge Sort: Bill McDaniel, DDJ Jun99 */
+static bool cmp(any ex, any foo, cell c[2]) {
+   if (isNil(foo))
+      return compare(car(data(c[0])), car(data(c[1]))) < 0;
+   return !isNil(apply(ex, foo, YES, 2, c));
+}
+
 // (sort 'lst) -> lst
-any doSort(any x) {
+any doSort(any ex) {
    int i;
-   any p, in[2], out[2], last;
+   any x, foo;
+   cell p, in[2], out[2], last[2];
    any *tail[2];
 
-   x = cdr(x);
-   if (!isCell(out[0] = EVAL(car(x))))
-      return out[0];
-
-   out[1] = Nil;
-
+   x = cdr(ex);
+   if (!isCell(data(out[0]) = EVAL(car(x))))
+      return data(out[0]);
+   Save(out[0]);
+   x = cdr(x),  foo = EVAL(car(x));
+   Push(out[1], Nil);
+   Save(in[0]);
+   Save(in[1]);
+   Push(p, Nil);
+   Push(last[1], Nil);
    do {
-      in[0] = out[0];
-      in[1] = out[1];
+      data(in[0]) = data(out[0]);
+      data(in[1]) = data(out[1]);
 
-      i  =  isCell(in[1])  &&  compare(in[0], in[1]) >= 0;
-      if (isCell(p = in[i]))
-         in[i] = cdr(in[i]);
-      out[0] = p;
-      tail[0] = &cdr(p);
-      last = out[0];
-      cdr(p) = Nil;
+      i = isCell(data(in[1]))  &&  !cmp(ex, foo, in);
+      if (isCell(data(p) = data(in[i])))
+         data(in[i]) = cdr(data(in[i]));
+      data(out[0]) = data(p);
+      tail[0] = &cdr(data(p));
+      data(last[1]) = data(out[0]);
+      cdr(data(p)) = Nil;
       i = 0;
-      out[1] = Nil;
-      tail[1] = &out[1];
-
-      while (isCell(in[0]) || isCell(in[1])) {
-         if (!isCell(in[1])) {
-            if (isCell(p = in[0]))
-               in[0] = cdr(in[0]);
-            if (compare(p,last) < 0)
-               i = 1-i;
+      data(out[1]) = Nil;
+      tail[1] = &data(out[1]);
+      while (isCell(data(in[0])) || isCell(data(in[1]))) {
+         if (!isCell(data(in[1]))) {
+            if (isCell(data(p) = data(in[0])))
+               data(in[0]) = cdr(data(in[0]));
+            data(last[0]) = data(p);
+            if (cmp(ex, foo, last))
+               i = 1 - i;
          }
-         else if (!isCell(in[0])) {
-            p = in[1],  in[1] = cdr(in[1]);
-            if (compare(p,last) < 0)
-               i = 1-i;
+         else if (!isCell(data(in[0]))) {
+            data(last[0]) = data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
+            if (cmp(ex, foo, last))
+               i = 1 - i;
          }
-         else if (compare(in[0],last) < 0) {
-            if (compare(in[1],last) >= 0)
-               p = in[1],  in[1] = cdr(in[1]);
+         else if (data(last[0]) = data(in[0]),  cmp(ex, foo, last)) {
+            data(last[0]) = data(in[1]);
+            if (!cmp(ex, foo, last))
+               data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
             else {
-               if (compare(in[0],in[1]) < 0)
-                  p = in[0],  in[0] = cdr(in[0]);
+               if (cmp(ex, foo, in))
+                  data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
                else
-                  p = in[1],  in[1] = cdr(in[1]);
-               i = 1-i;
+                  data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
+               i = 1 - i;
             }
          }
          else {
-            if (compare(in[1],last) < 0)
-               p = in[0],  in[0] = cdr(in[0]);
+            data(last[0]) = data(in[1]);
+            if (cmp(ex, foo, last))
+               data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
             else {
-               if (compare(in[0],in[1]) < 0)
-                  p = in[0],  in[0] = cdr(in[0]);
+               if (cmp(ex, foo, in))
+                  data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
                else
-                  p = in[1],  in[1] = cdr(in[1]);
+                  data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
             }
          }
-         *tail[i] = p;
-         tail[i] = &cdr(p);
-         cdr(p) = Nil;
-         last = p;
+         *tail[i] = data(p);
+         tail[i] = &cdr(data(p));
+         cdr(data(p)) = Nil;
+         data(last[1]) = data(p);
       }
-   } while (isCell(out[1]));
-   return out[0];
+   } while (isCell(data(out[1])));
+   return Pop(out[0]);
 }

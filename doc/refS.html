@@ -306,15 +306,18 @@ $ ./p dbg.l
 -> "a"
 </code></pre>
 
-<dt><a name="sort"><code>(sort 'lst) -> lst</code></a>
-<dd>Sorts <code>lst</code> by destructively exchanging its elements. See also <a
-href="ref.html#cmp">Comparing</a>, <code><a
+<dt><a name="sort"><code>(sort 'lst ['fun]) -> lst</code></a>
+<dd>Sorts <code>lst</code> by destructively exchanging its elements. If
+<code>fun</code> is given, it is used as a "less than" predicate for
+comparisons. See also <a href="ref.html#cmp">Comparing</a>, <code><a
 href="refG.html#group">group</a></code> and <code><a
 href="refU.html#uniq">uniq</a></code>.
 
 <p><pre><code>
 : (sort '(a 3 1 (1 2 3) d b 4 T NIL (a b c) (x y z) c 2))
 -> (NIL 1 2 3 4 a b c d (1 2 3) (a b c) (x y z) T)
+: (sort '(a 3 1 (1 2 3) d b 4 T NIL (a b c) (x y z) c 2) >)
+-> (T (x y z) (a b c) (1 2 3) d c b a 4 3 2 1 NIL)
 </code></pre>
 
 <dt><a name="space"><code>(space ['cnt]) -> cnt</code></a>
@@ -467,7 +470,7 @@ stack entry is printed per line, preceded by its (hexadecimal) address. See also
 <p><pre><code>
 : (cons 'A (stk Test))
 (Test)
-BFFFF69C A
+BFFFF69C (A)
 BFFFF70C (cons 'A (stk Test))
 
 -> (A . T)

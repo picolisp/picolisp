@@ -1,4 +1,4 @@
-/* 09jun08abu
+/* 27feb09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -50,8 +50,6 @@ static void gc(long c) {
    }
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)
       mark(((methFrame*)p)->key),  mark(((methFrame*)p)->cls);
-   if (Env.make)
-      mark(car(Env.make));
    for (i = 0; i < HASH; ++i)
       for (p = Extern[i];  isCell(p);  p = (any)(num(p->cdr) & ~1))
          if (num(val(p->car)) & 1) {

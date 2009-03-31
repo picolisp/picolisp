@@ -1,4 +1,4 @@
-# 09may08abu
+# 03jan09abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
@@ -7,11 +7,11 @@
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"User")
-         (form 'dialog (choDlg T ,"Users" '(nm +User))) )
+         (form 'dialog (choDlg NIL ,"Users" '(nm +User))) )
       (<h3> NIL ,"User Administration")
       (form NIL
          (<h2> NIL (<id> (: nm)))
-         (panel T (pack ,"User" " '@1'") '(may Delete) '(choDlg T ,"Users" '(nm +User)) 'nm '+User)
+         (panel T (pack ,"User" " '@1'") '(may Delete) '(choDlg NIL ,"Users" '(nm +User)) 'nm '+User)
          (<grid> 2
             ,"Login Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"User" 30)
             ,"Password"

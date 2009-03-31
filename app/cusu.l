@@ -1,4 +1,4 @@
-# 09may08abu
+# 03jan09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -7,11 +7,11 @@
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Customer/Supplier")
-         (form 'dialog (choCuSu T)) )
+         (form 'dialog (choCuSu)) )
       (<h3> NIL ,"Customer/Supplier")
       (form NIL
          (<h2> NIL (<id> (: nr) " -- " (: nm)))
-         (panel T (pack ,"Customer/Supplier" " @1") '(may Delete) '(choCuSu T) 'nr '+CuSu)
+         (panel T (pack ,"Customer/Supplier" " @1") '(may Delete) '(choCuSu) 'nr '+CuSu)
          (<hr>)
          (<tab>
             (,"Name"

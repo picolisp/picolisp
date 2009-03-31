@@ -1,5 +1,5 @@
-# 09aug08abu
-# 09aug08 Tomas Hlavaty <kvietaag@seznam.cz>
+# 03jan09abu
+# 21jan09 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
 (de xml? (Flg)
@@ -18,30 +18,41 @@
 # non-builtin entities as normal text: &ent; => ent
 (de xml (Lst N)
    (if Lst
-      (let Tag (pop 'Lst)
-         (space (default N 0))
-         (prin "<" Tag)
-         (for X (pop 'Lst)
-            (prin " " (car X) "=\"")
-            (escXml (cdr X))
-            (prin "\"") )
-         (nond
-            (Lst (prinl "/>"))
-            ((or (cdr Lst) (pair (car Lst)))
-               (prin ">")
-               (escXml (car Lst))
-               (prinl "</" Tag ">") )
-            (NIL
-               (prinl ">")
+      (let (Nn NIL Nl NIL Pre NIL)
+         (when N
+            (do (abs N)
+               (push 'Nn (if (lt0 N) "^I" " ")) ) )
+         (_xml_ Lst) )
+      (_xml) ) )
+
+(de _xml_ (Lst)
+   (let Tag (pop 'Lst)
+      (when Nl
+         (prinl)
+         (when Pre
+            (prin Pre) ) )
+      (prin "<" Tag)
+      (for X (pop 'Lst)
+         (prin " " (car X) "=\"")
+         (escXml (cdr X))
+         (prin "\"") )
+      (ifn Lst
+         (prin "/>")
+         (prin ">")
+         (use Nlx
+            (let (Nl N
+                  Pre (cons Pre Nn) )
                (for X Lst
                   (if (pair X)
-                     (xml X (+ 3 N))
-                     (space (+ 3 N))
-                     (escXml X)
-                     (prinl) ) )
-               (space N)
-               (prinl "</" Tag ">") ) ) )
-      (_xml) ) )
+                     (_xml_ X)
+                     (off Nl)
+                     (escXml X) ) )
+               (setq Nlx Nl) )
+            (when Nlx
+               (prinl)
+               (when Pre
+                  (prin Pre) ) ) )
+         (prin "</" Tag ">") ) ) )
 
 (de _xml (In Char)
    (unless Char
@@ -120,7 +131,7 @@
                                  (pack (xmlEsc (trim (cons X (till "^M^J<"))))) ) ) ) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
-   (use (@A @X @Z)
+   (use (@X @Z)
       (make
          (while L
             (ifn (match '("&" @X ";" @Z) L)
@@ -142,9 +153,12 @@
 
 (de escXml (X)
    (for C (chop X)
-      (if (member C '`(chop "\"&<"))
-         (prin "&#" (char C) ";")
-         (prin C) ) ) )
+      (prin (case C
+               ("\"" "&quot;")
+               ("&" "&amp;")
+               ("<" "&lt;")
+               (">" "&gt;")
+               (T C) ) ) ) )
 
 
 # Simple XML string
@@ -178,3 +192,95 @@
          Lst (assoc Key (cddr Lst))
          Key (next) ) )
    (cdr (assoc Key (cadr Lst))) )
+
+# <xml> output
+(de "xmlL" Lst
+   (push '"Xml"
+      (make
+         (link (pop 'Lst))
+         (let Att (make
+                     (while (and Lst (car Lst) (atom (car Lst)))
+                        (let K (pop 'Lst)
+                           (if (=T K)
+                              (for X (eval (pop 'Lst) 1)
+                                 (if (=T (car X))
+                                    (link (cons (cdr X) NIL))
+                                    (when (cdr X)
+                                       (link X) ) ) )
+                              (when (eval (pop 'Lst) 1)
+                                 (link (cons K @)) ) ) ) ) )
+            (let "Xml" NIL
+               (xrun Lst)
+               (ifn "Xml"
+                  (when Att
+                     (link Att) )
+                  (link Att)
+                  (chain (flip "Xml")) ) ) ) ) ) )
+
+(de "xmlO" Lst
+   (let Tag (pop 'Lst)
+      (when "Nl"
+         (prinl)
+         (when "Pre"
+            (prin "Pre") ) )
+      (prin "<" Tag)
+      (while (and Lst (car Lst) (atom (car Lst)))
+         (let K (pop 'Lst)
+            (if (=T K)
+               (for X (eval (pop 'Lst) 1)
+                  (if (=T (car X))
+                     (prin " " (cdr X) "=\"\"")
+                     (when (cdr X)
+                        (prin " " (car X) "=\"")
+                        (escXml (cdr X))
+                        (prin "\"") ) ) )
+               (when (eval (pop 'Lst) 1)
+                  (prin " " K "=\"")
+                  (escXml @)
+                  (prin "\"") ) ) ) )
+      (ifn Lst
+         (prin "/>")
+         (prin ">")
+         (use Nl
+            (let ("Nl" "N"
+                  "Pre" (cons "Pre" "Nn") )
+               (xrun Lst)
+               (setq Nl "Nl") )
+            (when Nl
+               (prinl)
+               (when "Pre"
+                  (prin "Pre") ) ) )
+         (prin "</" Tag ">") ) ) )
+
+(de <xml> ("N" . Lst)
+   (if (=T "N")
+      (let (<xml> "xmlL"
+            xprin '(@ (push '"Xml" (pass pack)))
+            xrun '((Lst Ofs)
+                   (default Ofs 2)
+                   (for X Lst
+                      (if (pair X)
+                         (eval X Ofs '("Xml"))
+                         (when (eval X Ofs '("Xml"))
+                            (xprin @) ) ) ) )
+            "Xml" NIL )
+         (run Lst 1 '(<xml> xprin xrun "Xml"))
+         (car (flip "Xml")) )
+      (let (<xml> "xmlO"
+            xprin '(@ (off "Nl") (mapc escXml (rest)))
+            xrun '((Lst Ofs)
+                   (default Ofs 2)
+                   (for X Lst
+                      (if (pair X)
+                         (eval X Ofs '("Nl" "Pre"))
+                         (when (eval X Ofs '("Nl" "Pre"))
+                            (xprin @) ) ) ) )
+            "Nn" NIL
+            "Nl" NIL
+            "Pre" NIL )
+         (when "N"
+            (do (abs "N")
+               (push '"Nn" (if (lt0 "N") "^I" " ")) ) )
+         (run Lst 1 '(<xml> xprin xrun "N" "Nn" "Nl" "Pre")) ) ) )
+
+# vi:et:ts=3:sw=3

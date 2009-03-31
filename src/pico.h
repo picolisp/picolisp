@@ -1,4 +1,4 @@
-/* 21dec08abu
+/* 28feb09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -88,6 +88,7 @@ typedef struct inFile {
 
 typedef struct outFile {
    int fd, ix;
+   bool tty;
    byte buf[BUFSIZ];
 } outFile;
 
@@ -120,10 +121,10 @@ typedef struct stkEnv {
    bindFrame *bind;
    methFrame *meth;
    int next, protect, trace;
-   any make;
-   inFrame *inFiles;
-   outFrame *outFiles;
-   ctlFrame *ctlFiles;
+   any *make, *yoke;
+   inFrame *inFrames;
+   outFrame *outFrames;
+   ctlFrame *ctlFrames;
    parseFrame *parser;
    void (*get)(void);
    void (*put)(int);
@@ -220,26 +221,25 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern int Signal, Chr, Next0, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
-extern char **AV, *AV0, *Home;
-extern child *Child;
-extern heap *Heaps;
-extern cell *Avail;
-extern stkEnv Env;
-extern catchFrame *CatchPtr;
-extern struct termios OrgTermio, *Termio;
-extern FILE *StdOut;
-extern int InFDs, OutFDs;
-extern inFile *InFile, **InFiles;
-extern outFile *OutFile, **OutFiles;
-extern int (*getBin)(void);
-extern void (*putBin)(int);
-extern any TheKey, TheCls, Thrown;
-extern any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
-extern any ApplyArgs, ApplyBody, DbVal, DbTail;
-extern any Nil, DB, Meth, Quote, T;
-extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
-extern any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
+int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
+char **AV, *AV0, *Home;
+child *Child;
+heap *Heaps;
+cell *Avail;
+stkEnv Env;
+catchFrame *CatchPtr;
+struct termios OrgTermio, *Termio;
+int InFDs, OutFDs;
+inFile *InFile, **InFiles;
+outFile *OutFile, **OutFiles;
+int (*getBin)(void);
+void (*putBin)(int);
+any TheKey, TheCls, Thrown;
+any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
+any ApplyArgs, ApplyBody, DbVal, DbTail;
+any Nil, DB, Meth, Quote, T;
+any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
+any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -307,8 +307,8 @@ unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
 any idx(any,any,int);
-void initInFile(int,char*);
-void initOutFile(int);
+inFile *initInFile(int,char*);
+outFile *initOutFile(int);
 void initSymbols(void);
 any intern(char*);
 bool isBlank(any);
@@ -347,7 +347,7 @@ void protError(any,any) __attribute__ ((noreturn));
 void pushInFiles(inFrame*);
 void pushOutFiles(outFrame*);
 void pushCtlFiles(ctlFrame*);
-any put(any,any,any);
+void put(any,any,any);
 void putStdout(int);
 void rdOpen(any,any,inFrame*);
 any read1(int);

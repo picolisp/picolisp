@@ -1,4 +1,4 @@
-# 09dec08abu
+# 29jan09abu
 # (c) Software Lab. Alexander Burger
 
 ### ht:Prin ###
@@ -26,7 +26,13 @@
 (test NIL
    (pipe (prin "abcde") (ht:Read 0)) )
 (test NIL
+   (pipe (prin "abcde") (ht:Read 6)) )
+(test NIL
    (pipe NIL (ht:Read 3)) )
+(test NIL
+   (pipe (prin "äö") (ht:Read 3)) )
+(test '("ä" "ö")
+   (pipe (prin "äö") (ht:Read 4)) )
 (test '("a" "b" "c")
    (pipe (prin "abcde") (ht:Read 3)) )
 (test '("ä" "ö" "ü")

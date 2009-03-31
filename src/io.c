@@ -1,4 +1,4 @@
-/* 30dec08abu
+/* 27mar09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,12 +27,9 @@ static byte TBuf[] = {INTERN+4, 'T'};
 static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
 static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
-static void utfErr(void) {err(NULL, NULL, "Bad UTF-8");}
 static void badFd(any ex, any x) {err(ex, x, "Bad FD");}
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
-static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
-static void dbfErr(any ex) {err(ex, NULL, "Bad DB file");}
 
 static void lockFile(int fd, int cmd, int typ) {
    struct flock fl;
@@ -65,61 +62,65 @@ void blocking(bool flg, any ex, int fd) {
 }
 
 static inline bool inReady(int fd) {
-   int i;
    inFile *p;
 
-   return (i=fd-3) >= 0  &&  i < InFDs  &&  (p=InFiles[i])  &&  p->ix < p->cnt;
+   return fd >= 0 && fd < InFDs && (p = InFiles[fd]) && p->ix < p->cnt;
 }
 
-void initInFile(int fd, char *nm) {
-   int n;
+inFile *initInFile(int fd, char *nm) {
    inFile *p;
 
-   if ((n = fd - 3) >= InFDs) {
+   if (fd >= InFDs) {
       int i = InFDs;
 
-      InFiles = alloc(InFiles, (InFDs = n + 1) * sizeof(inFile*));
+      InFiles = alloc(InFiles, (InFDs = fd + 1) * sizeof(inFile*));
       do
          InFiles[i] = NULL;
       while (++i < InFDs);
    }
-   p = InFiles[n] = alloc(InFiles[n], sizeof(inFile));
+   p = InFiles[fd] = alloc(InFiles[fd], sizeof(inFile));
    p->fd = fd;
    p->ix = p->cnt = p->next = 0;
    p->line = p->src = 1;
    p->name = nm;
+   return p;
 }
 
-void initOutFile(int fd) {
-   int n;
+outFile *initOutFile(int fd) {
    outFile *p;
 
-   if ((n = fd - 3) >= OutFDs) {
+   if (fd >= OutFDs) {
       int i = OutFDs;
 
-      OutFiles = alloc(OutFiles, (OutFDs = n + 1) * sizeof(outFile*));
+      OutFiles = alloc(OutFiles, (OutFDs = fd + 1) * sizeof(outFile*));
       do
          OutFiles[i] = NULL;
       while (++i < OutFDs);
    }
-   p = OutFiles[n] = alloc(OutFiles[n], sizeof(outFile));
-   p->fd = fd;
+   p = OutFiles[fd] = alloc(OutFiles[fd], sizeof(outFile));
+   p->tty = isatty(p->fd = fd);
    p->ix = 0;
+   return p;
 }
 
 void closeInFile(int fd) {
-   int i;
    inFile *p;
 
-   if ((i = fd-3) < InFDs && (p = InFiles[i]))
-      free(p->name),  free(p),  InFiles[i] = NULL;
+   if (fd < InFDs && (p = InFiles[fd])) {
+      if (p == InFile)
+         InFile = NULL;
+      free(p->name),  free(p),  InFiles[fd] = NULL;
+   }
 }
 
 void closeOutFile(int fd) {
-   int i;
+   outFile *p;
 
-   if ((i = fd-3) < OutFDs)
-      free(OutFiles[i]),  OutFiles[i] = NULL;
+   if (fd < OutFDs && (p = OutFiles[fd])) {
+      if (p == OutFile)
+         OutFile = NULL;
+      free(p),  OutFiles[fd] = NULL;
+   }
 }
 
 int slow(int fd, byte *p, int cnt) {
@@ -196,9 +197,7 @@ static void wrChild(int i, byte *p, int cnt) {
 bool flush(outFile *p) {
    int n;
 
-   if (!p)
-      return !fflush(StdOut);
-   if (n = p->ix) {
+   if (p && (n = p->ix)) {
       p->ix = 0;
       return wrBytes(p->fd, p->buf, n);
    }
@@ -208,15 +207,14 @@ bool flush(outFile *p) {
 void flushAll(void) {
    int i;
 
-   fflush(stdout);
-   fflush(stderr);
    for (i = 0; i < OutFDs; ++i)
-      if (OutFiles[i])
-         flush(OutFiles[i]);
+      flush(OutFiles[i]);
 }
 
 /*** Low level I/O ***/
 static int getBinary(void) {
+   if (!InFile)
+      return -1;
    if (InFile->ix == InFile->cnt) {
       InFile->ix = InFile->cnt = 0;
       if (!(InFile->cnt = slow(InFile->fd, InFile->buf, BUFSIZ)))
@@ -290,7 +288,7 @@ any binRead(int extn) {
          }
          return Pop(c1);
       }
-      return (any)(long)c;  // NIX, DOT or END
+      return (any)(long)c;  // DOT or END
    }
    if ((y = rdNum(c / 4)) == NULL)
       return NULL;
@@ -437,7 +435,7 @@ static any rdHear(void) {
    any x;
    inFile *iSave = InFile;
 
-   InFile = InFiles[Hear-3];
+   InFile = InFiles[Hear];
    getBin = getBinary;
    x = binRead(0);
    InFile = iSave;
@@ -586,24 +584,24 @@ void charSym(int c, int *i, any *p) {
 }
 
 static int currFd(any ex, char *p) {
-   if (!Env.inFiles && !Env.outFiles)
+   if (!Env.inFrames && !Env.outFrames)
       err(ex, NULL, "No current fd");
-   if (!Env.inFiles)
-      return OutFile? OutFile->fd : STDOUT_FILENO;
-   if (!Env.outFiles)
-      return InFile? InFile->fd : STDIN_FILENO;
-   return labs((char*)Env.outFiles - p) > labs((char*)Env.inFiles - p)?
-      (InFile? InFile->fd : STDIN_FILENO) : (OutFile? OutFile->fd : STDOUT_FILENO);
+   if (!Env.inFrames)
+      return OutFile->fd;
+   if (!Env.outFrames)
+      return InFile->fd;
+   return labs((char*)Env.outFrames - p) > labs((char*)Env.inFrames - p)?
+      InFile->fd : OutFile->fd;
 }
 
 void rdOpen(any ex, any x, inFrame *f) {
    if (isNil(x))
-      f->pid = -1,  f->fd = STDIN_FILENO;
+      f->pid = 0,  f->fd = STDIN_FILENO;
    else if (isNum(x)) {
       int n = (int)unBox(x);
 
       if (n < 0) {
-         inFrame *g = Env.inFiles;
+         inFrame *g = Env.inFrames;
 
          for (;;) {
             if (!(g = g->link))
@@ -614,16 +612,9 @@ void rdOpen(any ex, any x, inFrame *f) {
             }
          }
       }
-      if ((f->fd = n) <= 2) {
-         f->pid = -1;
-         if (n < 0)
-            badFd(ex,x);
-      }
-      else {
-         f->pid = 0;
-         if ((n -= 3) >= InFDs || !InFiles[n])
-            badFd(ex,x);
-      }
+      f->pid = 0,  f->fd = n;
+      if (n >= InFDs || !InFiles[n])
+         badFd(ex,x);
    }
    else if (isSym(x)) {
       char nm[pathSize(x)];
@@ -683,12 +674,12 @@ void rdOpen(any ex, any x, inFrame *f) {
 
 void wrOpen(any ex, any x, outFrame *f) {
    if (isNil(x))
-      f->pid = -1,  f->fd = STDOUT_FILENO;
+      f->pid = 0,  f->fd = STDOUT_FILENO;
    else if (isNum(x)) {
       int n = (int)unBox(x);
 
       if (n < 0) {
-         outFrame *g = Env.outFiles;
+         outFrame *g = Env.outFrames;
 
          for (;;) {
             if (!(g = g->link))
@@ -699,16 +690,9 @@ void wrOpen(any ex, any x, outFrame *f) {
             }
          }
       }
-      if ((f->fd = n) <= 2) {
-         f->pid = -1;
-         if (n < 0)
-            badFd(ex,x);
-      }
-      else {
-         f->pid = 0;
-         if ((n -= 3) >= OutFDs || !OutFiles[n])
-            badFd(ex,x);
-      }
+      f->pid = 0,  f->fd = n;
+      if (n >= OutFDs || !OutFiles[n])
+         badFd(ex,x);
    }
    else if (isSym(x)) {
       char nm[pathSize(x)];
@@ -803,7 +787,9 @@ void ctOpen(any ex, any x, ctlFrame *f) {
 
 /*** Reading ***/
 void getStdin(void) {
-   if (InFile) {
+   if (!InFile)
+      Chr = -1;
+   else if (InFile != InFiles[STDIN_FILENO]) {
       if (InFile->ix == InFile->cnt) {
          InFile->ix = InFile->cnt = 0;
          if (!(InFile->cnt = slow(InFile->fd, InFile->buf, BUFSIZ))) {
@@ -844,78 +830,60 @@ static void getParse(void) {
 void pushInFiles(inFrame *f) {
    if (InFile)
       InFile->next = Chr;
-   else
-      Next0 = Chr;
-   if (f->pid < 0)
-      InFile = NULL,  Chr = Next0;
-   else if (InFile = InFiles[f->fd - 3])
-      Chr = InFile->next;
-   else
-      Chr = Next0;
+   Chr = (InFile = InFiles[f->fd])? InFile->next : -1;
    f->get = Env.get,  Env.get = getStdin;
-   f->link = Env.inFiles,  Env.inFiles = f;
+   f->link = Env.inFrames,  Env.inFrames = f;
 }
 
 void pushOutFiles(outFrame *f) {
-   if (f->pid < 0)
-      OutFile = NULL,  StdOut = f->fd == 2? stderr : stdout;
-   else
-      OutFile = OutFiles[f->fd - 3];
+   OutFile = OutFiles[f->fd];
    f->put = Env.put,  Env.put = putStdout;
-   f->link = Env.outFiles,  Env.outFiles = f;
+   f->link = Env.outFrames,  Env.outFrames = f;
 }
 
 void pushCtlFiles(ctlFrame *f) {
-   f->link = Env.ctlFiles,  Env.ctlFiles = f;
+   f->link = Env.ctlFrames,  Env.ctlFrames = f;
 }
 
 void popInFiles(void) {
-   if (Env.inFiles->pid > 0) {
-      close(Env.inFiles->fd),  closeInFile(Env.inFiles->fd);
-      if (Env.inFiles->pid > 1)
-         while (waitpid(Env.inFiles->pid, NULL, 0) < 0) {
+   if (Env.inFrames->pid) {
+      close(Env.inFrames->fd),  closeInFile(Env.inFrames->fd);
+      if (Env.inFrames->pid > 1)
+         while (waitpid(Env.inFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr("Read pipe");
             if (Signal)
                sighandler(T);
          }
    }
-   Env.get = Env.inFiles->get;
-   if (!(Env.inFiles = Env.inFiles->link) || Env.inFiles->pid < 0)
-      InFile = NULL,  Chr = Next0;
-   else if (InFile = InFiles[Env.inFiles->fd - 3])
-      Chr = InFile->next;
-   else
-      Chr = Next0;
+   Env.get = Env.inFrames->get;
+   Chr =
+      (InFile = InFiles[(Env.inFrames = Env.inFrames->link)? Env.inFrames->fd : STDIN_FILENO])?
+         InFile->next : -1;
 }
 
 void popOutFiles(void) {
    flush(OutFile);
-   if (Env.outFiles->pid > 0) {
-      close(Env.outFiles->fd),  closeOutFile(Env.outFiles->fd);
-      if (Env.outFiles->pid > 1)
-         while (waitpid(Env.outFiles->pid, NULL, 0) < 0) {
+   if (Env.outFrames->pid) {
+      close(Env.outFrames->fd),  closeOutFile(Env.outFrames->fd);
+      if (Env.outFrames->pid > 1)
+         while (waitpid(Env.outFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr("Write pipe");
             if (Signal)
                sighandler(T);
          }
    }
-   Env.put = Env.outFiles->put;
-   if (!(Env.outFiles = Env.outFiles->link))
-      OutFile = NULL,  StdOut = stdout;
-   else if (Env.outFiles->pid >= 0)
-      OutFile = OutFiles[Env.outFiles->fd - 3];
-   else
-      OutFile = NULL,  StdOut = Env.outFiles->fd == 2? stderr : stdout;
+   Env.put = Env.outFrames->put;
+   OutFile = OutFiles[(Env.outFrames = Env.outFrames->link)? Env.outFrames->fd : STDOUT_FILENO];
 }
 
 void popCtlFiles(void) {
-   if (Env.ctlFiles->fd >= 0)
-      close(Env.ctlFiles->fd);
+   if (Env.ctlFrames->fd >= 0)
+      close(Env.ctlFrames->fd);
    else
-      lockFile(currFd(NULL, (char*)Env.ctlFiles), F_SETLK, F_UNLCK);
-   Env.ctlFiles = Env.ctlFiles->link;
+      lockFile(currFd(NULL, (char*)Env.ctlFrames), F_SETLK, F_UNLCK);
+   Env.ctlFrames = Env.ctlFrames->link;
 }
 
 /* Get full char from input channel */
@@ -925,20 +893,13 @@ int getChar(void) {
    if ((c = Chr) == 0xFF)
       return TOP;
    if (c & 0x80) {
-      if ((c & 0x40) == 0)
-         utfErr();
       Env.get();
       if ((c & 0x20) == 0)
          c &= 0x1F;
-      else {
-         if (c & 0x10 || (Chr & 0xC0) != 0x80)
-            utfErr();
+      else
          c = (c & 0xF) << 6 | Chr & 0x3F,  Env.get();
-      }
       if (Chr < 0)
          eofErr();
-      if ((Chr & 0xC0) != 0x80)
-         utfErr();
       c = c << 6 | Chr & 0x3F;
    }
    return c;
@@ -1265,7 +1226,7 @@ any doRead(any ex) {
       x = token(data(c1), symChar(name(x))) ?: Nil;
       drop(c1);
    }
-   if (!InFile  &&  Chr == '\n')
+   if (InFile == InFiles[STDIN_FILENO]  &&  Chr == '\n')
       Chr = 0;
    return x;
 }
@@ -1480,34 +1441,17 @@ any doSync(any ex) {
    return T;
 }
 
-// (hear 'num|sym) -> any
+// (hear 'num) -> num
 any doHear(any ex) {
    any x;
-   int i, fd;
+   int fd;
 
    x = cdr(ex),  x = EVAL(car(x));
-   NeedAtom(ex,x);
+   if ((fd = (int)xCnt(ex,x)) < 0 || fd >= InFDs || !InFiles[fd])
+      badFd(ex,x);
    if (Hear)
-      close(Hear),  closeInFile(Hear),  Hear = 0;
-   if (isNum(x)) {
-      i = (fd = (int)xCnt(ex,x)) - 3;
-      if (i < 0 || i >= InFDs || !InFiles[i])
-         badFd(ex,x);
-      Hear = fd;
-   }
-   else {
-      char nm[pathSize(x)];
-
-      pathString(x, nm);
-      while ((fd = open(nm, O_RDONLY)) < 0) {
-         if (errno != EINTR)
-            openErr(ex, nm);
-         if (Signal)
-            sighandler(ex);
-      }
-      closeOnExec(ex, fd);
-      initInFile(Hear = fd, strdup(nm));
-   }
+      close(Hear),  closeInFile(Hear),  closeOutFile(Hear);
+   Hear = fd;
    return x;
 }
 
@@ -1552,7 +1496,7 @@ any doKey(any ex) {
    int c;
    byte buf[2];
 
-   fflush(stdout);
+   flushAll();
    setRaw();
    x = cdr(ex);
    if (!waitFd(ex, STDIN_FILENO, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
@@ -1614,7 +1558,7 @@ any doSkip(any ex) {
 
 // (eol) -> flg
 any doEol(any ex __attribute__((unused))) {
-   return InFile && Chr=='\n' || Chr<=0? T : Nil;
+   return Chr=='\n' || Chr<=0? T : Nil;
 }
 
 // (eof ['flg]) -> flg
@@ -1783,6 +1727,7 @@ any doLine(any ex) {
 any doLines(any ex) {
    any x, y;
    int c, cnt = 0;
+   bool flg = NO;
    FILE *fp;
 
    for (x = cdr(ex); isCell(x); x = cdr(x)) {
@@ -1791,15 +1736,16 @@ any doLines(any ex) {
          char nm[pathSize(y)];
 
          pathString(y, nm);
-         if (!(fp = fopen(nm, "r")))
-            openErr(ex, nm);
-         while ((c = getc_unlocked(fp)) >= 0)
-            if (c == '\n')
-               ++cnt;
-         fclose(fp);
+         if (fp = fopen(nm, "r")) {
+            flg = YES;
+            while ((c = getc_unlocked(fp)) >= 0)
+               if (c == '\n')
+                  ++cnt;
+            fclose(fp);
+         }
       }
    }
-   return boxCnt(cnt);
+   return flg? boxCnt(cnt) : Nil;
 }
 
 static any parse(any x, bool skp, any s) {
@@ -1932,11 +1878,11 @@ any load(any ex, int pr, any x) {
    pushInFiles(&f);
    x = Nil;
    for (;;) {
-      if (InFile)
+      if (InFile != InFiles[STDIN_FILENO])
          data(c1) = read1(0);
       else {
          if (pr && !Chr)
-            Env.put(pr), space(), flush(OutFile);
+            Env.put(pr), space(), flushAll();
          data(c1) = read1('\n');
          if (Chr == '\n')
             Chr = 0;
@@ -1944,13 +1890,14 @@ any load(any ex, int pr, any x) {
       if (isNil(data(c1)))
          break;
       Save(c1);
-      if (InFile || Chr || !pr)
+      if (InFile != InFiles[STDIN_FILENO] || Chr || !pr)
          x = EVAL(data(c1));
       else {
+         flushAll();
          Push(c2, val(At));
          x = val(At) = EVAL(data(c1));
          val(At3) = val(At2),  val(At2) = data(c2);
-         outString("-> "),  flush(OutFile),  print(x),  newline();
+         outString("-> "),  flushAll(),  print(x),  newline();
       }
       drop(c1);
    }
@@ -2173,16 +2120,19 @@ any doEcho(any ex) {
    return T;
 }
 
-/*** Prining ***/
+/*** Printing ***/
 void putStdout(int c) {
-   if (!OutFile)
-      putc_unlocked(c, StdOut);
-   else {
+   if (OutFile) {
       if (OutFile->ix == BUFSIZ) {
          OutFile->ix = 0;
          wrBytes(OutFile->fd, OutFile->buf, BUFSIZ);
       }
-      OutFile->buf[OutFile->ix++] = c;
+      if ((OutFile->buf[OutFile->ix++] = c) == '\n' && OutFile->tty) {
+         int n = OutFile->ix;
+
+         OutFile->ix = 0;
+         wrBytes(OutFile->fd, OutFile->buf, n);
+      }
    }
 }
 
@@ -2382,7 +2332,7 @@ any doFlush(any ex __attribute__((unused))) {
 // (rewind) -> flg
 any doRewind(any ex __attribute__((unused))) {
    if (!OutFile)
-      return fseek(StdOut, 0L, SEEK_SET) || ftruncate(fileno(StdOut), 0)? Nil : T;
+      return Nil;
    OutFile->ix = 0;
    return lseek(OutFile->fd, 0L, SEEK_SET) || ftruncate(OutFile->fd, 0)? Nil : T;
 }
@@ -2408,12 +2358,12 @@ any doRd(any x) {
    cell c1;
 
    x = cdr(x),  x = EVAL(car(x));
-   if (!InFile)
-      return Nil;
    if (!isNum(x)) {
       getBin = getBinary;
       return binRead(ExtN) ?: x;
    }
+   if (!InFile)
+      return Nil;
    if ((cnt = unBox(x)) < 0) {
       byte buf[cnt = -cnt];
 
@@ -2509,7 +2459,7 @@ any doRpc(any x) {
 #define BLKMASK (~TAGMASK)
 
 static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
-static FILE *Journal, *Log;
+static FILE *Jnl, *Log;
 static adr BlkIndex, BlkLink;
 static adr *Marks;
 static byte *Locks, *Ptr, **Mark;
@@ -2525,8 +2475,11 @@ static void setAdr(adr n, byte *p) {
    p[3] = (byte)(n >> 24),  p[4] = (byte)(n >> 32),  p[5] = (byte)(n >> 40);
 }
 
+static void dbfErr(any ex) {err(ex, NULL, "Bad DB file");}
+static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void jnlErr(void) {err(NULL, NULL, "Bad Journal");}
 static void fsyncErr(any ex, char *s) {err(ex, NULL, "%s fsync error: %s", s, strerror(errno));}
+static void truncErr(any ex, char *s) {err(ex, NULL, "%s truncate error: %s", s, strerror(errno));}
 static void ignLog(void) {fprintf(stderr, "Discarding incomplete transaction.\n");}
 
 any new64(adr n, any x) {
@@ -2664,13 +2617,13 @@ static void blkPoke(off_t pos, void *buf, int siz) {
    while (pwrite(BlkFile[F], buf, siz, pos) != (ssize_t)siz)
       if (errno != EINTR)
          dbErr("write");
-   if (Journal) {
-      byte a[BLK];
+   if (Jnl) {
+      byte a[BLK+2];
 
-      putc_unlocked(siz == BlkSize[F]? BLKSIZE : siz, Journal);
-      a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite(a, 2, 1, Journal);
-      setAdr(pos >> BlkShift[F], a),  fwrite(a, BLK, 1, Journal);
-      fwrite(buf, siz, 1, Journal);
+      putc_unlocked(siz == BlkSize[F]? BLKSIZE : siz, Jnl);
+      a[0] = (byte)F,  a[1] = (byte)(F >> 8),  setAdr(pos >> BlkShift[F], a+2);
+      if (fwrite(a, BLK+2, 1, Jnl) != 1 || fwrite(buf, siz, 1, Jnl) != 1)
+         writeErr("Journal");
    }
 }
 
@@ -2681,11 +2634,11 @@ static void rdBlock(adr n) {
 }
 
 static void logBlock(void) {
-   byte a[BLK];
+   byte a[BLK+2];
 
-   a[0] = (byte)F,  a[1] = (byte)(F >> 8),  fwrite(a, 2, 1, Log);
-   setAdr(BlkIndex, a),  fwrite(a, BLK, 1, Log);
-   fwrite(Block, BlkSize[F], 1, Log);
+   a[0] = (byte)F,  a[1] = (byte)(F >> 8),  setAdr(BlkIndex, a+2);
+   if (fwrite(a, BLK+2, 1, Log) != 1 || fwrite(Block, BlkSize[F], 1, Log) != 1)
+      writeErr("Log");
 }
 
 static void wrBlock(void) {blkPoke(BlkIndex << BlkShift[F], Block, BlkSize[F]);}
@@ -2717,13 +2670,13 @@ any newId(any ex, int i) {
    if ((F = i-1) >= Files)
       dbfErr(ex);
    wrLock();
-   if (Journal)
-      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+   if (Jnl)
+      lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
    if (!Log)
       ++Env.protect;
    n = newBlock();
-   if (Journal)
-      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+   if (Jnl)
+      fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
    if (!Log)
       --Env.protect;
    rwUnlock(1);
@@ -2878,8 +2831,8 @@ any doPool(any ex) {
       free(Mark), Mark = NULL, free(Marks), Marks = NULL;
       Files = 0;
    }
-   if (Journal)
-      fclose(Journal),  Journal = NULL;
+   if (Jnl)
+      fclose(Jnl),  Jnl = NULL;
    if (Log)
       fclose(Log),  Log = NULL;
    if (!isNil(data(c1))) {
@@ -2934,9 +2887,9 @@ any doPool(any ex) {
          char nm[pathSize(data(c3))];
 
          pathString(data(c3), nm);
-         if (!(Journal = fopen(nm, "a")))
+         if (!(Jnl = fopen(nm, "a")))
             openErr(ex, nm);
-         closeOnExec(ex, fileno(Journal));
+         closeOnExec(ex, fileno(Jnl));
       }
       if (!isNil(data(c4))) {
          char nm[pathSize(data(c4))];
@@ -2950,7 +2903,8 @@ any doPool(any ex) {
          }
          fseek(Log, 0L, SEEK_SET);
          closeOnExec(ex, fileno(Log));
-         ftruncate(fileno(Log), 0);
+         if (ftruncate(fileno(Log), 0))
+            truncErr(ex, "Log");
       }
    }
    drop(c1);
@@ -3049,8 +3003,8 @@ any doSeq(any ex) {
       n2 = blk64(name(y))*BLKSIZE;
       x = cdr(x),  free = blk64(EVAL(car(x)));
       wrLock();
-      if (Journal)
-         lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+      if (Jnl)
+         lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
       if (!Log)
          ++Env.protect;
       while ((n += BLKSIZE) < n2) {
@@ -3069,8 +3023,8 @@ any doSeq(any ex) {
       blkPeek(0, buf, 2*BLK),  next = getAdr(buf+BLK);  // Get Next
       if (n >= next)
          setAdr(n+BLKSIZE, buf+BLK),  blkPoke(0, buf, 2*BLK);  // Set new Next
-      if (Journal)
-         fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+      if (Jnl)
+         fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
       if (!Log)
          --Env.protect;
       rwUnlock(1);
@@ -3287,8 +3241,8 @@ any doCommit(any ex) {
    x = cdr(ex),  flg = EVAL(car(x));
    if (force = !Transactions || !isNil(flg)) {
       wrLock();
-      if (Journal)
-         lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+      if (Jnl)
+         lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
       if (!Log)
          ++Env.protect;
       else {
@@ -3392,8 +3346,8 @@ any doCommit(any ex) {
       if (note)
          tellEnd(&pbSave, &ppSave);
       x = cdddr(ex),  EVAL(car(x));
-      if (Journal)
-         fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+      if (Jnl)
+         fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
       if (isCell(x = val(Zap))) {
          for (z = cdr(x); isCell(z); z = cdr(z));
          {
@@ -3426,7 +3380,8 @@ any doCommit(any ex) {
             if (dirty[F] && fsync(BlkFile[F]) < 0)
                fsyncErr(ex, "DB");
          fseek(Log, 0L, SEEK_SET);
-         ftruncate(fileno(Log), 0);
+         if (ftruncate(fileno(Log), 0))
+            truncErr(ex, "Log");
       }
       rwUnlock(0);  // Unlock all
       Transactions = 0;
@@ -3569,8 +3524,8 @@ any doDbck(any ex) {
    cnt = BLKSIZE;
    blks = syms = 0;
    wrLock();
-   if (Journal)
-      lockFile(fileno(Journal), F_SETLKW, F_WRLCK);
+   if (Jnl)
+      lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
    ++Env.protect;
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    BlkLink = getAdr(buf);
@@ -3607,8 +3562,8 @@ any doDbck(any ex) {
       if (Block[0] & TAGMASK)
          Block[0] &= BLKMASK,  wrBlock();
    }
-   if (Journal)
-      fflush(Journal),  lockFile(fileno(Journal), F_SETLK, F_UNLCK);
+   if (Jnl)
+      fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
    --Env.protect;
    rwUnlock(1);
    if (cnt != next)

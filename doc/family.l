@@ -1,4 +1,4 @@
-# 23jan08abu
+# 04jan09abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
@@ -82,9 +82,13 @@
                (gui 7 '(+DateField)) ) ) )
       (<spread>
          (scroll (cho))
-         (when (=T Dst)
-            (gui '(+Button) "New Man" '(newUrl '(+Man)))
-            (gui '(+Button) "New Woman" '(newUrl '(+Woman))) )
+         (<nbsp> 4)
+         (prin "Man")
+         (newButton T Dst '(+Man) 'nm *PrsNm)
+         (<nbsp>)
+         (prin "Woman")
+         (newButton T Dst '(+Woman) 'nm *PrsNm)
+         (<nbsp> 4)
          (cancelButton) ) ) )
 
 # Person HTML Page
@@ -94,7 +98,7 @@
       (html 0 (get (default *ID (val *DB)) 'nm) "lib.css" NIL
          (form NIL
             (<h2> NIL (<id> (: nm)))
-            (panel T "Person '@1'" T '(choPerson T) 'nm '+Person)
+            (panel T "Person '@1'" T '(choPerson) 'nm '+Person)
             (<p> NIL
                (gui '(+E/R +TextField) '(nm : home obj) 40 "Name")
                (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman))) )

@@ -71,7 +71,7 @@ and <code><a href="refD.html#dbs+">dbs+</a></code>.
 </code></pre>
 
 <dt><a name="daemon"><code>(daemon 'sym . prg) -> fun<br>
-(daemon '(sym . cls) . prg) -> fun</code><br>
+(daemon '(sym . cls) . prg) -> fun<br>
 (daemon '(sym sym2 [. cls]) . prg) -> fun</code></a>
 <dd>Inserts <code>prg</code> in the beginning of the function (first form), the
 method body of <code>sym</code> in <code>cls</code> (second form) or in the
@@ -502,17 +502,19 @@ See also <code><a href="refP.html#path">path</a></code>.
 -> "a/b/c/"
 </code></pre>
 
-<dt><a name="dm"><code>(dm sym . fun) -> sym<br>
-(dm (sym . cls) . fun) -> sym<br>
-(dm (sym sym2 [. cls]) . fun) -> sym</code></a>
+<dt><a name="dm"><code>(dm sym . fun|cls2) -> sym<br>
+(dm (sym . cls) . fun|cls2) -> sym<br>
+(dm (sym sym2 [. cls]) . fun|cls2) -> sym</code></a>
 <dd>Defines a method for the message <code>sym</code> in the current class,
 implicitly given by the value of the global variable <code><a
 href="refC.html#*Class">*Class</a></code>, or - in the second form - for the
 explicitly given class <code>cls</code>. In the third form, the class object is
 obtained by <code><a href="refG.html#get">get</a></code>ing <code>sym2</code>
 from <code><a href="refC.html#*Class">*Class</a></code> (or <code>cls</code> if
-given). If any of these methods existed and was changed in the process, a
-"redefined" message is issued. When the value of the global variable <a
+given). If the method for that class existed and was changed in the process, a
+"redefined" message is issued. If - instead of a method <code>fun</code> - a
+symbol specifying another class <code>cls2</code> is given, the method from that
+class is used (explicit inheritance). When the value of the global variable <a
 href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
 and file name (if any) are stored in the <code>*Dbg</code> property of
 <code>sym</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
@@ -527,6 +529,8 @@ href="refT.html#try">try</a>.
    (super)
    (mapc 'start> (: fields))
    (mapc 'start> (: arrays)) )
+
+: (dm foo> . +OtherClass)  # Explicitly inherit 'foo>' from '+OtherClass'
 </code></pre>
 
 <dt><a name="do"><code>(do 'flg|num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>

@@ -1,4 +1,4 @@
-# 17apr08abu
+# 26mar09abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -71,6 +71,10 @@
                   (if (atom (cadr "X"))
                      (lintVar (cadr "X"))
                      (for (L (cadr "X") L (cddr L))
+                        (lintDup (car L)
+                           (extract '((X F) (and F X))
+                              (cddr L)
+                              '(T NIL .) ) )
                         (lintVar (car L))
                         (lint1 (cadr L)) ) )
                   (mapc lint1 (cddr "X")) ) )
@@ -180,6 +184,10 @@
             (push '"*Use" X) )
          (push '"*L" X) ) ) )
 
+(de lintDup (X Lst)
+   (when (memq X Lst)
+      (push '"*Dup" X) ) )
+
 (de lintLoop ("Lst")
    (for "Y" "Lst"
       (if (and (pair "Y") (or (=T (car "Y")) (not (car "Y"))))
@@ -196,13 +204,14 @@
 (de lintFun ("Lst")
    (let "A" (and (pair "Lst") (car "Lst"))
       (while (pair "A")
+         (lintDup (car "A") (cdr "A"))
          (lintVar (pop '"A") T) )
       (when "A"
          (lintVar "A") )
       (mapc lint1 (cdr "Lst")) ) )
 
 (de lint ("X" "C")
-   (let ("*L" NIL  "*Var" NIL  "*Def" NIL  "*Bnd" NIL  "*Use" NIL)
+   (let ("*L" NIL  "*Var" NIL  "*Dup" NIL  "*Def" NIL  "*Bnd" NIL  "*Use" NIL)
       (when (pair "X")
          (setq  "C" (cdr "X")  "X" (car "X")) )
       (cond
@@ -216,10 +225,12 @@
             (let "*X" "X"
                (in "X" (while (read) (lint1 @))) ) )
          (T (quit "Can't lint" "X")) )
-      (when (or "*Var" "*Def" "*Bnd" "*Use")
+      (when (or "*Var" "*Dup" "*Def" "*Bnd" "*Use")
          (make
             # Bad variables
             (and "*Var" (link (cons 'var "*Var")))
+            # Duplicate parameters
+            (and "*Dup" (link (cons 'dup "*Dup")))
             # Undefined functions
             (and "*Def" (link (cons 'def "*Def")))
             # Unbound variables

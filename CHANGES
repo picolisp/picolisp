@@ -1,9 +1,15 @@
+* 31mar09 picoLisp-2.3.6
+   'lines' returns 'NIL' on failure
+   Only numeric argument to 'hear'
+   'sort' optional 'fun' argument
+   Bugs in 'evList()' and 'date'
+
 * 31dec08 picoLisp-2.3.5
    Bug in 'pipe'
    Bug in 'later'
    Dialog and chart bugs in "lib/form.l"
    HTTP protocol bug in "lib/http.l"
-   Bug in 'inc' and 'bigCmp()'
+   Bugs in 'inc' and 'bigCmp()'
    'abort' function
    'eval' and 'run' optional 'lst' argument
 

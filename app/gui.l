@@ -1,4 +1,4 @@
-# 24nov08abu
+# 08jan09abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -11,9 +11,9 @@
                (,"logout" (and *Login "@stop"))
                (NIL (<hr>))
                (T ,"Data"
-                  (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
-                  (,"Items" (and (may Item) "app/item.l"))
                   (,"Orders" (and (may Order) "app/ord.l"))
+                  (,"Items" (and (may Item) "app/item.l"))
+                  (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
                   (,"Salutations" (and (may Customer) "app/sal.l")) )
                (T ,"Report"
                   (,"Inventory" (and (may Report) "app/inventory.l"))
@@ -115,9 +115,13 @@
                (gui 9 '(+TelField)) ) ) )
       (<spread>
          (scroll (cho))
-         (when (=T Dst)
-            (newButton
-               '(newUrl '(+CuSu) '(nr genKey 'nr '+CuSu)) ) )
+         (newButton T Dst '(+CuSu)
+            '(nr genKey 'nr '+CuSu)
+            'nm *CuSuNm
+            'plz *CuSuPlz
+            'ort *CuSuOrt
+            'tel *CuSuTel
+            'mob *CuSuMob )
          (cancelButton) ) ) )
 
 (de choItem (Dst)
@@ -162,9 +166,10 @@
                (gui 6 '(+FixField) 2) ) ) )
       (<spread>
          (scroll (cho))
-         (when (=T Dst)
-            (newButton
-               '(newUrl '(+Item) '(nr genKey 'nr '+Item)) ) )
+         (newButton T Dst '(+Item)
+            '(nr genKey 'nr '+Item)
+            'nm *ItemNm
+            'pr *ItemPr )
          (cancelButton) ) ) )
 
 (de choOrd (Dst)
@@ -229,9 +234,9 @@
                (gui 9 '(+ObjView +TextField) '(: nm)) ) ) )
       (<spread>
          (scroll (cho))
-         (when (=T Dst)
-            (newButton
-               '(newUrl '(+Ord) '(nr genKey 'nr '+Ord) 'dat (date)) ) )
+         (newButton T Dst '(+Ord)
+            '(nr genKey 'nr '+Ord)
+            'dat (date) )
          (cancelButton) ) ) )
 
 # vi:et:ts=3:sw=3

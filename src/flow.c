@@ -1,4 +1,4 @@
-/* 16dec08abu
+/* 28mar09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -6,15 +6,14 @@
 
 static void redefMsg(any x, any y) {
    outFile *oSave = OutFile;
-   FILE *stdSave = StdOut;
 
-   OutFile = NULL,  StdOut = stderr;
+   OutFile = OutFiles[STDERR_FILENO];
    outString("# ");
    print(x);
    if (y)
       space(), print(y);
    outString(" redefined\n");
-   OutFile = oSave,  StdOut = stdSave;
+   OutFile = oSave;
 }
 
 static void putSrc(any s, any k) {
@@ -24,13 +23,14 @@ static void putSrc(any s, any k) {
 
       Push(c1, boxCnt(InFile->src));
       data(c1) = cons(data(c1), mkStr(InFile->name));
+      x = get(s, Dbg);
       if (!k) {
-         if (isNil(x = get(s, Dbg)))
+         if (isNil(x))
             put(s, Dbg, cons(data(c1), Nil));
          else
             car(x) = data(c1);
       }
-      else if (isNil(x = get(s, Dbg)))
+      else if (isNil(x))
          put(s, Dbg, cons(Nil, cons(data(c1), Nil)));
       else {
          for (y = cdr(x); isCell(y); y = cdr(y))
@@ -103,18 +103,16 @@ any doEval(any x) {
       x = cdr(x),  x = EVAL(car(x));
       for (cnt = (int)unBox(y), n = 0;;) {
          ++n;
-         if (p->i <= 0) {
-            if (p->i-- == 0) {
-               for (i = 0;  i < p->cnt;  ++i) {
-                  if (!memq(p->bnd[i].sym, x)) {
-                     y = val(p->bnd[i].sym);
-                     val(p->bnd[i].sym) = p->bnd[i].val;
-                     p->bnd[i].val = y;
-                  }
+         if (p->i <= 0  &&  p->i-- == 0) {
+            for (i = 0;  i < p->cnt;  ++i) {
+               if (!memq(p->bnd[i].sym, x)) {
+                  y = val(p->bnd[i].sym);
+                  val(p->bnd[i].sym) = p->bnd[i].val;
+                  p->bnd[i].val = y;
                }
-               if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
-                  break;
             }
+            if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
+               break;
          }
          if (!(q = Env.bind->link))
             break;
@@ -123,19 +121,16 @@ any doEval(any x) {
       Env.bind = p;
       data(c1) = EVAL(data(c1));
       for (;;) {
-         if (p->i < 0) {
-            if (++p->i == 0)
-               for (i = p->cnt;  --i >= 0;) {
-                  if (!memq(p->bnd[i].sym, x)) {
-                     y = val(p->bnd[i].sym);
-                     val(p->bnd[i].sym) = p->bnd[i].val;
-                     p->bnd[i].val = y;
-                  }
+         if (p->i < 0  &&  ++p->i == 0)
+            for (i = p->cnt;  --i >= 0;)
+               if (!memq(p->bnd[i].sym, x)) {
+                  y = val(p->bnd[i].sym);
+                  val(p->bnd[i].sym) = p->bnd[i].val;
+                  p->bnd[i].val = y;
                }
-         }
          if (!--n)
             break;
-         q = Env.bind->link, Env.bind->link = q->link,  q->link = p,  p = q;
+         q = Env.bind->link,  Env.bind->link = q->link,  q->link = p,  p = q;
       }
       Env.bind = p;
    }
@@ -160,18 +155,16 @@ any doRun(any x) {
          x = cdr(x),  x = EVAL(car(x));
          for (cnt = (int)unBox(y), n = 0;;) {
             ++n;
-            if (p->i <= 0) {
-               if (p->i-- == 0) {
-                  for (i = 0;  i < p->cnt;  ++i) {
-                     if (!memq(p->bnd[i].sym, x)) {
-                        y = val(p->bnd[i].sym);
-                        val(p->bnd[i].sym) = p->bnd[i].val;
-                        p->bnd[i].val = y;
-                     }
+            if (p->i <= 0  &&  p->i-- == 0) {
+               for (i = 0;  i < p->cnt;  ++i) {
+                  if (!memq(p->bnd[i].sym, x)) {
+                     y = val(p->bnd[i].sym);
+                     val(p->bnd[i].sym) = p->bnd[i].val;
+                     p->bnd[i].val = y;
                   }
-                  if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
-                     break;
                }
+               if (p->cnt  &&  p->bnd[0].sym == At  &&  !--cnt)
+                  break;
             }
             if (!(q = Env.bind->link))
                break;
@@ -180,19 +173,16 @@ any doRun(any x) {
          Env.bind = p;
          data(c1) = isSym(data(c1))? val(data(c1)) : prog(data(c1));
          for (;;) {
-            if (p->i < 0) {
-               if (++p->i == 0)
-                  for (i = p->cnt;  --i >= 0;) {
-                     if (!memq(p->bnd[i].sym, x)) {
-                        y = val(p->bnd[i].sym);
-                        val(p->bnd[i].sym) = p->bnd[i].val;
-                        p->bnd[i].val = y;
-                     }
+            if (p->i < 0  &&  ++p->i == 0)
+               for (i = p->cnt;  --i >= 0;)
+                  if (!memq(p->bnd[i].sym, x)) {
+                     y = val(p->bnd[i].sym);
+                     val(p->bnd[i].sym) = p->bnd[i].val;
+                     p->bnd[i].val = y;
                   }
-            }
             if (!--n)
                break;
-            q = Env.bind->link, Env.bind->link = q->link,  q->link = p,  p = q;
+            q = Env.bind->link,  Env.bind->link = q->link,  q->link = p,  p = q;
          }
          Env.bind = p;
       }
@@ -212,22 +202,18 @@ any doDef(any ex) {
    CheckVar(ex,data(c1));
    x = cdr(x),  Push(c2, EVAL(car(x)));
    if (!isCell(cdr(x))) {
-      if (!equal(data(c2), y = val(data(c1)))) {
-         if (!isNil(y)  &&  data(c1) != y)
-            redefMsg(data(c1), NULL);
-         Touch(ex,data(c1));
-         val(data(c1)) = data(c2);
-      }
+      Touch(ex,data(c1));
+      if (!isNil(y = val(data(c1)))  &&  y != data(c1)  &&  !equal(data(c2), y))
+         redefMsg(data(c1), NULL);
+      val(data(c1)) = data(c2);
       putSrc(data(c1), NULL);
    }
    else {
       x = cdr(x),  Push(c3, EVAL(car(x)));
-      if (!equal(data(c3), y = get(data(c1), data(c2)))) {
-         if (!isNil(y))
-            redefMsg(data(c1), data(c2));
-         Touch(ex,data(c1));
-         put(data(c1), data(c2), data(c3));
-      }
+      Touch(ex,data(c1));
+      if (!isNil(y = get(data(c1), data(c2)))  &&  !equal(data(c3), y))
+         redefMsg(data(c1), data(c2));
+      put(data(c1), data(c2), data(c3));
       putSrc(data(c1), data(c2));
    }
    return Pop(c1);
@@ -239,9 +225,9 @@ any doDe(any ex) {
    return cadr(ex);
 }
 
-// (dm sym . fun) -> sym
-// (dm (sym . cls) . fun) -> sym
-// (dm (sym sym [. cls]) . fun) -> sym
+// (dm sym . fun|cls2) -> sym
+// (dm (sym . cls) . fun|cls2) -> sym
+// (dm (sym sym2 [. cls]) . fun|cls2) -> sym
 any doDm(any ex) {
    any x, y, msg, cls;
 
@@ -278,7 +264,7 @@ any doDm(any ex) {
    if (!isCell(car(x)))
       val(cls) = cons(x, val(cls));
    else
-      val(cls) = cons(cons(caar(x), cdr(x)), val(cls));
+      val(cls) = cons(cons(msg, cdr(x)), val(cls));
    putSrc(cls, msg);
    return msg;
 }
@@ -310,9 +296,7 @@ static any evMethod(any o, any expr, any x) {
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
       }
-      f.bnd[f.cnt].sym = This;
-      f.bnd[f.cnt++].val = val(This);
-      val(This) = o;
+      f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
       Env.meth = &m;
       x = prog(cdr(expr));
    }
@@ -341,9 +325,7 @@ static any evMethod(any o, any expr, any x) {
       }
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
-      f.bnd[f.cnt].sym = This;
-      f.bnd[f.cnt++].val = val(This);
-      val(This) = o;
+      f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
       Env.meth = &m;
       x = prog(cdr(expr));
       if (cnt)
@@ -496,14 +478,17 @@ any doIsa(any ex) {
 
 // (method 'msg 'obj) -> fun
 any doMethod(any ex) {
-   any x, y;
+   any x;
+   cell c1, c2;
 
-   x = cdr(ex),  y = EVAL(car(x));
-   x = cdr(x),  x = EVAL(car(x));
-   NeedSym(ex,x);
-   Fetch(ex,x);
-   TheKey = y;
-   return method(x)? : Nil;
+   x = cdr(ex),  Push(c1,  EVAL(car(x)));
+   NeedSym(ex,data(c1));
+   x = cdr(x),  Push(c2,  EVAL(car(x)));
+   NeedSym(ex,data(c2));
+   Fetch(ex,data(c2));
+   TheKey = data(c1);
+   drop(c1);
+   return method(data(c2))? : Nil;
 }
 
 // (meth 'obj ..) -> any
@@ -670,7 +655,7 @@ any doBind(any ex) {
 
       f.link = Env.bind,  Env.bind = (bindFrame*)&f;
       f.i = f.cnt = 0;
-      while (isCell(y)) {
+      do {
          if (isNum(car(y)))
             argError(ex, car(y));
          if (isSym(car(y))) {
@@ -682,8 +667,8 @@ any doBind(any ex) {
             f.bnd[f.cnt].val = val(caar(y));
             val(caar(y)) = cdar(y);
          }
-         ++f.cnt,  y = cdr(y);
-      }
+         ++f.cnt;
+      } while (isCell(y = cdr(y)));
       x = prog(cdr(x));
       while (--f.cnt >= 0)
          val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
@@ -1044,15 +1029,13 @@ any doState(any ex) {
    CheckVar(ex,data(c1));
    while (isCell(x = cdr(x))) {
       y = caar(x),  z = car(y);
-      if (z==T || z==val(data(c1)) || isCell(z) && memq(val(data(c1)),z)) {
+      if (z==T || memq(val(data(c1)),z)) {
          y = cdr(y);
          if (!isCell(cdr(y)))
             goto st1;
          if (!isNil(a = prog(cdr(y)))) {
             val(At) = a;
          st1:
-            if (isSym(data(c1)))
-               Touch(ex,data(c1));
             val(data(c1)) = car(y);
             drop(c1);
             return prog(cdar(x));
@@ -1381,7 +1364,7 @@ void brkLoad(any x) {
       Brk.bnd[1].sym = Run,  Brk.bnd[1].val = val(Run),  val(Run) = Nil;
       Brk.bnd[2].sym = At,  Brk.bnd[2].val = val(At);
       Brk.link = Env.bind,  Env.bind = (bindFrame*)&Brk;
-      Out.pid = -1,  Out.fd = STDOUT_FILENO,  pushOutFiles(&Out);
+      Out.pid = 0,  Out.fd = STDOUT_FILENO,  pushOutFiles(&Out);
       print(x), newline();
       load(NULL, '!', Nil);
       popOutFiles();
@@ -1402,6 +1385,7 @@ any doBreak(any ex) {
 // (e . prg) -> any
 any doE(any ex) {
    any x;
+   inFrame *in;
    cell c1, at, key;
 
    if (!Env.brk)
@@ -1409,23 +1393,11 @@ any doE(any ex) {
    Push(c1,val(Dbg)),  val(Dbg) = Nil;
    Push(at, val(At)),  val(At) = Brk.bnd[2].val;
    Push(key, val(Run)),  val(Run) = Brk.bnd[1].val;
-   if (Env.inFiles) {
-      Env.get = Env.inFiles->get;
-      if (!Env.inFiles->link  || Env.inFiles->link->pid < 0)
-         InFile = NULL,  Chr = Next0;
-      else if (InFile = InFiles[Env.inFiles->link->fd - 3])
-         Chr = InFile->next;
-      else
-         Chr = Next0;
-   }
+   in =  Env.inFrames,  popInFiles();
    popOutFiles();
    x = isCell(cdr(ex))? prog(cdr(ex)) : EVAL(val(Up));
    pushOutFiles(&Out);
-   if (InFile)
-      InFile->next = Chr;
-   else
-      Next0 = Chr;
-   InFile = NULL,  OutFile = NULL,  Chr = 0;
+   pushInFiles(in);
    val(Run) = data(key);
    val(At) = data(at);
    val(Dbg) = Pop(c1);
@@ -1459,13 +1431,12 @@ static void traceSym(any x) {
 any doTrace(any x) {
    any foo, body;
    outFile *oSave = OutFile;
-   FILE *stdSave = StdOut;
    void (*putSave)(int) = Env.put;
    cell c1;
 
    if (isNil(val(Dbg)))
       return prog(cdddr(x));
-   OutFile = NULL,  StdOut = stderr,  Env.put = putStdout;
+   OutFile = OutFiles[STDERR_FILENO],  Env.put = putStdout;
    x = cdr(x),  foo = car(x);
    x = cdr(x),  body = cdr(x);
    traceIndent(++Env.trace, foo, " :");
@@ -1474,12 +1445,12 @@ any doTrace(any x) {
    if (!isNil(x) && isSym(x))
       traceSym(x);
    newline();
-   Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
+   Env.put = putSave,  OutFile = oSave;
    Push(c1, prog(body));
-   OutFile = NULL,  StdOut = stderr;
-   Env.put = putStdout;
-   traceIndent(Env.trace--, foo, " = "),  print(data(c1)),  newline();
-   Env.put = putSave,  OutFile = oSave,  StdOut = stdSave;
+   OutFile = OutFiles[STDERR_FILENO],  Env.put = putStdout;
+   traceIndent(Env.trace--, foo, " = "),  print(data(c1));
+   newline();
+   Env.put = putSave,  OutFile = oSave;
    return Pop(c1);
 }
 
@@ -1518,6 +1489,7 @@ any doCall(any ex) {
       av[i] = alloc(NULL, bufSize(y)),  bufString(y, av[i]);
    } while (++i < ac);
    av[ac] = NULL;
+   flushAll();
    if ((pid = fork()) == 0) {
       setpgid(0,0);
       execvp(av[0], (char**)av);
@@ -1570,15 +1542,15 @@ any doTick(any ex) {
 
 // (ipid) -> pid | NIL
 any doIpid(any ex __attribute__((unused))) {
-   if (Env.inFiles  &&  Env.inFiles->pid > 0)
-      return boxCnt((long)Env.inFiles->pid);
+   if (Env.inFrames  &&  Env.inFrames->pid > 1)
+      return boxCnt((long)Env.inFrames->pid);
    return Nil;
 }
 
 // (opid) -> pid | NIL
 any doOpid(any ex __attribute__((unused))) {
-   if (Env.outFiles  &&  Env.outFiles->pid > 0)
-      return boxCnt((long)Env.outFiles->pid);
+   if (Env.outFrames  &&  Env.outFrames->pid > 1)
+      return boxCnt((long)Env.outFrames->pid);
    return Nil;
 }
 
@@ -1644,12 +1616,10 @@ pid_t forkLisp(any ex) {
          if (Child[i].pid)
             close(Child[i].hear), close(Child[i].tell),  free(Child[i].buf);
       Children = 0,  free(Child),  Child = NULL;
-      for (p = Env.inFiles; p; p = ((inFrame*)p)->link)
-         if (((inFrame*)p)->pid > 0)
-            ((inFrame*)p)->pid = 0;
-      for (p = Env.outFiles; p; p = ((outFrame*)p)->link)
-         if (((outFrame*)p)->pid > 0)
-            ((outFrame*)p)->pid = 0;
+      for (p = Env.inFrames; p; p = ((inFrame*)p)->link)
+         ((inFrame*)p)->pid = 0;
+      for (p = Env.outFrames; p; p = ((outFrame*)p)->link)
+         ((outFrame*)p)->pid = 0;
       for (p = CatchPtr; p; p = ((catchFrame*)p)->link)
          ((catchFrame*)p)->fin = Zero;
       free(Termio),  Termio = NULL;

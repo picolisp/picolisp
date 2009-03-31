@@ -1,4 +1,4 @@
-/* 24nov08abu
+/* 30jan09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -14,11 +14,12 @@
 .blue {color: blue;}
 .bold {font-weight: bold;}
 .mono {font-family: monospace;}
+.entry {background-color: #C0C0C0;}
 
 /* Defaults */
 body {
    font-family: Arial, Helvetica, sans-serif;
-   background-color: rgb(96%,96%,96%);
+   background-color: #F0F0F0;
    font-size: small;
    margin: 0;
 }
@@ -40,7 +41,7 @@ caption {
    padding: 0 1em;
    text-align: left;
    margin-top: 2ex;
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
 }
 
 a {
@@ -48,7 +49,7 @@ a {
 }
 
 .step a {
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
    padding: 2px;
 }
 
@@ -64,7 +65,7 @@ a:hover {
    width: 18em;
    height: 100%;
    padding: 1ex 0;
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
 }
 
 #menu ul {
@@ -105,7 +106,7 @@ a:hover {
 }
 
 .tab .sub {
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
    border-bottom: 1px solid;
 }
 
@@ -124,11 +125,11 @@ a:hover {
 }
 
 .chart td {
-   background-color: rgb(90%,90%,90%);
+   background-color: #E0E0E0;
 }
 
 .chart td.T {
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
 }
 
 .chart td.nil {
@@ -137,17 +138,16 @@ a:hover {
 
 .btn {
    width: 1em;
-   color: rgb(60%,60%,60%);
 }
 
 /* Buttons */
 .submit {
    font-weight: bold;
-   background-color: rgb(84%,84%,84%);
+   background-color: #D0D0D0;
 }
 
 .edit {
-   background-color: rgb(40%,100%,60%);
+   background-color: #66FF66;
 }
 
 /* Errors */

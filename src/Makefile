@@ -1,4 +1,4 @@
-# 25jul08abu
+# 11jan09abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -8,7 +8,7 @@ lib = ../lib
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
 CFLAGS := -c -O2 -m32 -pipe \
-	-falign-functions -fomit-frame-pointer \
+	-falign-functions -fomit-frame-pointer -fno-strict-aliasing \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
 	-D_GNU_SOURCE  -D_FILE_OFFSET_BITS=64

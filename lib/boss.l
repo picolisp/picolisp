@@ -1,12 +1,12 @@
-# 03may08abu
+# 26feb09abu
 # (c) Software Lab. Alexander Burger
 
 # "tmp+" "tmp-"
 
 (unless (info (tmp "+"))
    (call 'mkfifo (setq "tmp+" (tmp "+")))
-   (call 'mkfifo (setq "tmp-" (tmp "-")))
-   (hear (open "tmp+")) )
+   (call 'mkfifo (setq "tmp-" (tmp "-"))) )
+(hear (open "tmp+"))
 
 # (boss 'sym ['any ..])
 (de boss @

@@ -26,11 +26,10 @@ to <code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
 
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
 <dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
-remove it from the internal hash table, effectively transforming it to a
-transient symbol. For external symbols, it means to mark it as "deleted", so
-that upon a later <code><a href="refC.html#commit">commit</a></code> it will be
-removed from the database file. See also <code><a
-href="refI.html#intern">intern</a></code>.
+remove it from the internal index, effectively transforming it to a transient
+symbol. For external symbols, it means to mark it as "deleted", so that upon a
+later <code><a href="refC.html#commit">commit</a></code> it will be removed from
+the database file. See also <code><a href="refI.html#intern">intern</a></code>.
 
 <p><pre><code>
 : (de foo (Lst) (car Lst))          # 'foo' calls 'car'

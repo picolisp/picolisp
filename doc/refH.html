@@ -62,19 +62,18 @@ is returned. See also <code><a href="refG.html#gc">gc</a></code>.
 -> 4
 </code></pre>
 
-<dt><a name="hear"><code>(hear 'num|sym) -> any</code></a>
-<dd>Uses the file descriptor <code>num</code>, or opens the file
-<code>sym</code>, as an asynchronous command input channel. Any executable list
-received via this channel will be executed in the background. As this mechanism
-is also used for inter-family communication (see <code><a
-href="refT.html#tell">tell</a></code>), <code>hear</code> is usually only called
-explicitly by a top level parent process.
+<dt><a name="hear"><code>(hear 'num) -> num</code></a>
+<dd>Uses the file descriptor <code>num</code> as an asynchronous command input
+channel. Any executable list received via this channel will be executed in the
+background. As this mechanism is also used for inter-family communication (see
+<code><a href="refT.html#tell">tell</a></code>), <code>hear</code> is usually
+only called explicitly by a top level parent process.
 
 <p><pre><code>
 : (call 'mkfifo "fifo/cmd")
 -> T
-: (hear "fifo/cmd")
--> "fifo/cmd"
+: (hear (open "fifo/cmd"))
+-> 3
 </code></pre>
 
 <dt><a name="here"><code>(here ['sym]) -> sym</code></a>

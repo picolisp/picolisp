@@ -1,4 +1,4 @@
-# 22dec08abu
+# 03jan09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -7,11 +7,11 @@
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Order")
-         (form 'dialog (choOrd T)) )
+         (form 'dialog (choOrd)) )
       (<h3> NIL ,"Order")
       (form NIL
          (<h2> NIL (<id> (: nr)))
-         (panel T (pack ,"Order" " @1") '(may Delete) '(choOrd T) 'nr '+Ord)
+         (panel T (pack ,"Order" " @1") '(may Delete) '(choOrd) 'nr '+Ord)
          (<grid> 4
             ,"Date" NIL
             (gui '(+E/R +DateField) '(dat : home obj) 10)

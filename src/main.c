@@ -1,31 +1,10 @@
-/* 21dec08abu
+/* 27mar09abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-int Signal, Chr, Next0, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
-char **AV, *AV0, *Home;
-child *Child;
-heap *Heaps;
-cell *Avail;
-stkEnv Env;
-catchFrame *CatchPtr;
-struct termios OrgTermio, *Termio;
-FILE *StdOut;
-int InFDs, OutFDs;
-inFile *InFile, **InFiles;
-outFile *OutFile, **OutFiles;
-int (*getBin)(void);
-void (*putBin)(int);
-any TheKey, TheCls, Thrown;
-any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
-any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Meth, Quote, T;
-any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
-any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
-
 static int TtyPid;
 static word2 USec;
 static struct timeval Tv;
@@ -47,13 +26,14 @@ void giveup(char *msg) {
 }
 
 void bye(int n) {
-   static bool b;
+   static bool flg;
 
-   if (!b) {
-      b = YES;
+   if (!flg) {
+      flg = YES;
       unwind(NULL);
       prog(val(Bye));
    }
+   flushAll();
    finish(n);
 }
 
@@ -301,16 +281,16 @@ any doUp(any x) {
 any doStk(any x) {
    any p;
    outFile *oSave = OutFile;
-   FILE *stdSave = StdOut;
+   char buf[BITS/2];
 
-   OutFile = NULL,  StdOut = stderr;
+   OutFile = OutFiles[STDERR_FILENO];
    print(cdr(x)), newline();
    for (p = Env.stack; p; p = cdr(p)) {
-      fprintf(stderr, "%lX ", num(p)),  fflush(stderr);
+      sprintf(buf, "%lX ", num(p)),  outString(buf);
       print(car(p)), newline();
    }
    newline();
-   OutFile = oSave,  StdOut = stdSave;
+   OutFile = oSave;
    return T;
 }
 
@@ -449,11 +429,14 @@ void err(any ex, any x, char *fmt, ...) {
    Chr = ExtN = 0;
    Env.brk = NO;
    Alarm = Line = Nil;
-   f.pid = -1,  f.fd = 2,  pushOutFiles(&f);
+   f.pid = 0,  f.fd = STDERR_FILENO,  pushOutFiles(&f);
    while (*AV  &&  strcmp(*AV,"-") != 0)
       ++AV;
-   if (InFile && InFile->name)
-      fprintf(stderr, "[%s:%d] ", InFile->name, InFile->src);
+   if (InFile && InFile->name) {
+      Env.put('[');
+      outString(InFile->name), Env.put(':'), outWord(InFile->src);
+      Env.put(']'), space();
+   }
    if (ex)
       outString("!? "), print(val(Up) = ex), newline();
    if (x)
@@ -471,10 +454,9 @@ void err(any ex, any x, char *fmt, ...) {
    Env.stack = NULL;
    Env.meth = NULL;
    Env.next = -1;
-   Env.make = NULL;
+   Env.make = Env.yoke = NULL;
    Env.parser = NULL;
    Env.trace = 0;
-   StdOut = stdout;
    longjmp(ErrRst, +1);
 }
 
@@ -517,11 +499,11 @@ void unwind(catchFrame *p) {
                val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
          Env.bind = Env.bind->link;
       }
-      while (Env.inFiles != q->env.inFiles)
+      while (Env.inFrames != q->env.inFrames)
          popInFiles();
-      while (Env.outFiles != q->env.outFiles)
+      while (Env.outFrames != q->env.outFrames)
          popOutFiles();
-      while (Env.ctlFiles != q->env.ctlFiles)
+      while (Env.ctlFrames != q->env.ctlFrames)
          popCtlFiles();
       Env = q->env;
       EVAL(q->fin);
@@ -535,11 +517,11 @@ void unwind(catchFrame *p) {
             val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
       Env.bind = Env.bind->link;
    }
-   while (Env.inFiles)
+   while (Env.inFrames)
       popInFiles();
-   while (Env.outFiles)
+   while (Env.outFrames)
       popOutFiles();
-   while (Env.ctlFiles)
+   while (Env.ctlFrames)
       popCtlFiles();
 }
 
@@ -627,6 +609,33 @@ void undefined(any x, any ex) {
    }
 }
 
+static any evList2(any foo, any ex) {
+   cell c1;
+
+   Push(c1, foo);
+   if (isCell(foo)) {
+      foo = evExpr(foo, cdr(ex));
+      drop(c1);
+      return foo;
+   }
+   for (;;) {
+      if (isNil(val(foo)))
+         undefined(foo,ex);
+      if (Signal)
+         sighandler(ex);
+      if (isNum(foo = val(foo))) {
+         foo = evSubr(foo,ex);
+         drop(c1);
+         return foo;
+      }
+      if (isCell(foo)) {
+         foo = evExpr(foo, cdr(ex));
+         drop(c1);
+         return foo;
+      }
+   }
+}
+
 /* Evaluate a list */
 any evList(any ex) {
    any foo;
@@ -638,8 +647,7 @@ any evList(any ex) {
          sighandler(ex);
       if (isNum(foo = evList(foo)))
          return evSubr(foo,ex);
-      if (isCell(foo))
-         return evExpr(foo, cdr(ex));
+      return evList2(foo,ex);
    }
    for (;;) {
       if (isNil(val(foo)))
@@ -775,9 +783,11 @@ any doDate(any ex) {
       data(c1) = cons(boxCnt(y), data(c1));
       return Pop(c1);
    }
-   if (!isCell(z))
-      return mkDat(xCnt(ex,z), evCnt(ex,x), evCnt(ex,cdr(x)));
-   return mkDat(xCnt(ex, car(z)),  xCnt(ex, cadr(z)),  xCnt(ex, caddr(z)));
+   if (isCell(z))
+      return mkDat(xCnt(ex, car(z)),  xCnt(ex, cadr(z)),  xCnt(ex, caddr(z)));
+   y = xCnt(ex,z);
+   m = evCnt(ex,x);
+   return mkDat(y, m, evCnt(ex,cdr(x)));
 }
 
 // (time ['T]) -> tim
@@ -866,6 +876,7 @@ any doCtty(any ex) {
       bufString(x, tty);
       if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
          return Nil;
+      OutFiles[STDOUT_FILENO]->tty = YES;
    }
    return T;
 }
@@ -1014,9 +1025,11 @@ static void init(int ac, char *av[]) {
    AV = av;
    heapAlloc();
    initSymbols();
-   StdOut = stdout;
    Env.get = getStdin;
+   InFile = initInFile(STDIN_FILENO, NULL);
    Env.put = putStdout;
+   initOutFile(STDERR_FILENO)->tty = YES;
+   OutFile = initOutFile(STDOUT_FILENO);
    Alarm = Line = Nil;
    setrlimit(RLIMIT_STACK, &ULim);
    Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;

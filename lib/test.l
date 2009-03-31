@@ -1,8 +1,10 @@
-# 16dec08abu
+# 27mar09abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
-# $(pwd)/p dbg.l lib/test.l
+# $(pwd)/p lib/test.l
+
+(load "dbg.l")
 
 (test T (pool (tmp "db")))
 

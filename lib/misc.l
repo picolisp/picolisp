@@ -1,4 +1,4 @@
-# 16oct08abu
+# 20jan09abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -38,7 +38,7 @@
          (while (setq X (read))
             (if (=T X)
                ("loc" (read))
-               (set (link @) (read)) ) ) ) ) )
+               (set (link @) (name (read))) ) ) ) ) )
 
 ### Math ###
 # (Knuth Vol.2, p.442)
@@ -212,11 +212,11 @@
             (or (format (pack (cadr S))) 0)        # Month
             (or (format (pack (caddr S))) 0) ) )   # Day
       (and
-         (setq S (format S))
+         (format S)
          (date
-            (/ S 10000)       # Year
-            (% (/ S 100) 100) # Month
-            (% S 100) ) ) ) )
+            (/ @ 10000)       # Year
+            (% (/ @ 100) 100) # Month
+            (% @ 100) ) ) ) )
 
 (de datSym (Dat)
    (when (date Dat)

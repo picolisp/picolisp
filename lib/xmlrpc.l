@@ -1,4 +1,4 @@
-# 10jul08abu
+# 02jan09abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -59,3 +59,5 @@
                         (xmlrpcKey (caddr (assoc 'name L)))
                         (xmlrpcValue (caddr (assoc 'value L))) ) ) )
                (cddr Lst) ) ) ) ) )
+
+# vi:et:ts=3:sw=3

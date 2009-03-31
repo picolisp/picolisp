@@ -188,7 +188,8 @@ abcdefghijkl
 
 <dt><a name="lines"><code>(lines 'any ..) -> cnt</code></a>
 <dd>Returns the sum of the number of lines in the files with the names
-<code>any</code>. See also <code><a href="refI.html#info">info</a></code>.
+<code>any</code>, or <code>NIL</code> if none was found. See also <code><a
+href="refI.html#info">info</a></code>.
 
 <p><pre><code>
 : (lines "x.l")
@@ -218,21 +219,21 @@ href="refM.html#made">made</a></code>.
 (lint '(sym . cls)) -> lst</code></a>
 <dd>Checks the function definition or file contents (in the first form), or the
 method body of sym (second and third form), for possible pitfalls. Returns a
-list of diagnoses, where <code>var</code> indicates an improper variable,
-<code>def</code> an undefined function, <code>bnd</code> an unbound variable,
-and <code>use</code> an unused variable. See also <code><a
-href="refN.html#noLint">noLint</a></code>, <code><a
+list of diagnoses, where <code>var</code> indicates improper variables,
+<code>dup</code> duplicate parameters, <code>def</code> an undefined function,
+<code>bnd</code> an unbound variable, and <code>use</code> unused variables.
+See also <code><a href="refN.html#noLint">noLint</a></code>, <code><a
 href="refL.html#lintAll">lintAll</a></code>, <code><a
 href="refD.html#debug">debug</a></code> and <code><a
 href="refT.html#trace">trace</a></code>.
 
 <p><pre><code>
-: (de foo (R S T)       # 'T' is a improper parameter
+: (de foo (R S T R)     # 'T' is a improper parameter, 'R' is duplicated
    (let N 7             # 'N' is unused
       (bar X Y) ) )     # 'bar' is undefined, 'X' and 'Y' are not bound
 -> foo
 : (lint 'foo)
--> ((var T) (def bar) (bnd Y X) (use N))
+-> ((var T) (dup R) (def bar) (bnd Y X) (use N))
 </code></pre>
 
 <dt><a name="lintAll"><code>(lintAll ['sym ..]) -> lst</code></a>
@@ -322,9 +323,9 @@ line arguments are loaded recursively. When <code>any</code> is
 operation, the results are printed to standard output (read-eval-print loop),
 and <code>load</code> terminates when an empty line is entered. In any case,
 <code>load</code> terminates upon end of file, or when <code>NIL</code> is read.
-The hash table for transient symbols is cleared before and after the load, so
-that all transient symbols in the file have a local scope. Returns the value of
-the last evaluated expression. See also <code><a
+The index for transient symbols is cleared before and after the load, so that
+all transient symbols in the file have a local scope. Returns the value of the
+last evaluated expression. See also <code><a
 href="refS.html#script">script</a></code>, <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a
 href="refC.html#call">call</a></code>, <code><a

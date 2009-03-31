@@ -1,4 +1,4 @@
-/* 20jul08abu
+/* 09mar09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -992,7 +992,7 @@ any doLup(any x) {
    return Nil;
 }
 
-any put(any x, any key, any val) {
+void put(any x, any key, any val) {
    any y, z;
 
    if (isCell(y = tail1(x))) {
@@ -1004,7 +1004,7 @@ any put(any x, any key, any val) {
                car(y) = key;
             else
                caar(y) = val;
-            return val;
+            return;
          }
       }
       else if (key == car(y)) {
@@ -1012,7 +1012,7 @@ any put(any x, any key, any val) {
             Tail(x, cdr(y));
          else if (val != T)
             car(y) = cons(val,key);
-         return val;
+         return;
       }
       while (isCell(z = cdr(y))) {
          if (isCell(car(z))) {
@@ -1026,7 +1026,7 @@ any put(any x, any key, any val) {
                      caar(z) = val;
                   cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
                }
-               return val;
+               return;
             }
          }
          else if (key == car(z)) {
@@ -1037,14 +1037,13 @@ any put(any x, any key, any val) {
                   car(z) = cons(val,key);
                cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
             }
-            return val;
+            return;
          }
          y = z;
       }
    }
    if (!isNil(val))
       Tail(x, cons(val==T? key : cons(val,key), tail1(x)));
-   return val;
 }
 
 any get(any x, any key) {
@@ -1123,9 +1122,9 @@ any doPut(any ex) {
    Push(c3, EVAL(car(x)));
    Touch(ex,data(c1));
    if (isNum(data(c2)) && IsZero(data(c2)))
-      x = val(data(c1)) = data(c3);
+      val(data(c1)) = x = data(c3);
    else
-      x = put(data(c1), data(c2), data(c3));
+      put(data(c1), data(c2), x = data(c3));
    drop(c1);
    return x;
 }
@@ -1154,24 +1153,24 @@ any doGet(any ex) {
 
 // (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym
 any doProp(any ex) {
-   any x, y;
-   cell c1;
+   any x;
+   cell c1, c2;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = EVAL(car(x));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
    while (isCell(x = cdr(x))) {
       if (isCell(data(c1)))
-         data(c1) = getn(y, data(c1));
+         data(c1) = getn(data(c2), data(c1));
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = isNum(y) && !unDig(y)? val(data(c1)) : get(data(c1), y);
+         data(c1) = isNum(data(c2)) && !unDig(data(c2))? val(data(c1)) : get(data(c1), data(c2));
       }
-      y = EVAL(car(x));
+      data(c2) = EVAL(car(x));
    }
    NeedSym(ex,data(c1));
    Fetch(ex,data(c1));
-   return prop(Pop(c1), y);
+   return prop(Pop(c1), data(c2));
 }
 
 // (; 'sym1|lst [sym2|cnt ..]) -> any
@@ -1219,9 +1218,9 @@ any doSetCol(any ex) {
    Push(c1, EVAL(car(x)));
    Touch(ex,y);
    if (isNum(z) && IsZero(z))
-      x = val(y) = data(c1);
+      val(y) = x = data(c1);
    else
-      x = put(y, z, data(c1));
+      put(y, z, x = data(c1));
    drop(c1);
    return x;
 }
@@ -1251,19 +1250,19 @@ any doPropCol(any ex) {
 
    x = cdr(ex),  y = val(This);
    Fetch(ex,y);
-   if (!isCell(cdr(x)))
-      return prop(y, car(x));
-   y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
-   while (isCell(cdr(x = cdr(x)))) {
-      if (isCell(y))
-         y = getn(car(x), y);
-      else {
-         NeedSym(ex,y);
-         Fetch(ex,y);
-         y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
+   if (isCell(cdr(x))) {
+      y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
+      while (isCell(cdr(x = cdr(x)))) {
+         if (isCell(y))
+            y = getn(car(x), y);
+         else {
+            NeedSym(ex,y);
+            Fetch(ex,y);
+            y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
+         }
       }
    }
-   return prop(y,car(x));
+   return prop(y, car(x));
 }
 
 // (putl 'sym1|lst1 ['sym2|cnt ..] 'lst) -> lst
@@ -1284,7 +1283,6 @@ any doPutl(any ex) {
       data(c2) = EVAL(car(x));
    }
    NeedSym(ex,data(c1));
-   NeedLst(ex,data(c2));
    CheckNil(ex,data(c1));
    Touch(ex,data(c1));
    while (isCell(tail(data(c1))))

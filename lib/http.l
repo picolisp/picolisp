@@ -1,4 +1,4 @@
-# 01dec08abu
+# 19feb09abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -15,23 +15,23 @@
 
    (de *Mimes
       (`(chop "html"))
-      (`(chop "au") "audio/basic" 86400)
-      (`(chop "wav") "audio/x-wav" 86400)
-      (`(chop "mp3") "audio/x-mpeg" 86400)
-      (`(chop "gif") "image/gif" 86400)
-      (`(chop "tif") "image/tiff" 86400)
-      (`(chop "tiff") "image/tiff" 86400)
-      (`(chop "bmp") "image/bmp" 86400)
-      (`(chop "png") "image/png" 86400)
-      (`(chop "jpg") "image/jpeg" 86400)
+      (`(chop "au") "audio/basic" 3600)
+      (`(chop "wav") "audio/x-wav" 3600)
+      (`(chop "mp3") "audio/x-mpeg" 3600)
+      (`(chop "gif") "image/gif" 3600)
+      (`(chop "tif") "image/tiff" 3600)
+      (`(chop "tiff") "image/tiff" 3600)
+      (`(chop "bmp") "image/bmp" 3600)
+      (`(chop "png") "image/png" 3600)
+      (`(chop "jpg") "image/jpeg" 3600)
       (`(chop "txt") "text/octet-stream" 1 T)
       (`(chop "csv") "text/csv; charset=utf-8" 1 T)
-      (`(chop "css") "text/css" 86400)
-      (`(chop "js") "application/x-javascript" 86400)
+      (`(chop "css") "text/css" 3600)
+      (`(chop "js") "application/x-javascript" 3600)
       (`(chop "ps") "application/postscript" 1)
       (`(chop "pdf") "application/pdf" 1)
       (`(chop "zip") "application/zip" 1)
-      (`(chop "jar") "application/java-archive" 86400) ) )
+      (`(chop "jar") "application/java-archive" 3600) ) )
 
 (de mime (S . @)
    (let L (chop S)
@@ -138,11 +138,13 @@
                   (on *Post)
                   (off *MPartLim *MPartEnd)
                   (_htHead)
-                  (if (and *MPartLim *MPartEnd)
-                     (_htMultipart)
-                     (for L (split (if *ContLen (ht:Read @) (line)) '&)
-                        (when (cdr (setq L (split L "=")))
-                           (_htSet (car L) (ht:Pack (cadr L))) ) ) ) )
+                  (cond
+                     (*MPartLim (_htMultipart))
+                     ((if *ContLen (ht:Read @) (line))
+                        (for L (split @ '&)
+                           (when (cdr (setq L (split L "=")))
+                              (_htSet (car L) (ht:Pack (cadr L))) ) ) )
+                     (T (throw "http")) ) )
                ((and
                      (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
                      (member @U
@@ -256,6 +258,8 @@
                            (or
                               (= *MPartLim (setq L (line)))
                               (= *MPartEnd L) )
+                           (when (eof)
+                              (throw "http") )
                            (when (made)
                               (link "^J") )
                            (link (trim L)) ) ) ) ) )
@@ -270,8 +274,7 @@
                (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) )
 
 (de _htSet ("Var" Val)
-   (use (@N @V @Z)
-      (off @N)
+   (let (@N NIL  @Z NIL  @V)
       (setq "Var"
          (intern
             (ht:Pack

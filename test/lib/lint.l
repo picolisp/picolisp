@@ -1,4 +1,4 @@
-# 17oct08abu
+# 26mar09abu
 # (c) Software Lab. Alexander Burger
 
 ### noLint ###
@@ -10,8 +10,8 @@
 
 
 ### lint ###
-(let foo '((R S T) (let N 7 (bar X Y)))
-    (test '((var T) (def bar) (bnd Y X) (use N))
+(let foo '((R S T R) (let N 7 (bar X Y)))
+    (test '((var T) (dup R) (def bar) (bnd Y X) (use N))
        (lint 'foo) ) )
 
 (let foo '(() (task -6000 0 X 7 (println N)))

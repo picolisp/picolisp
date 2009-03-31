@@ -1,4 +1,4 @@
-# 16jul08abu
+# 03jan09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -7,11 +7,11 @@
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " ,"Role")
-         (form 'dialog (choDlg T ,"Roles" '(nm +Role))) )
+         (form 'dialog (choDlg NIL ,"Roles" '(nm +Role))) )
       (<h3> NIL ,"Role Administration")
       (form NIL
          (<h2> NIL (<id> (: nm)))
-         (panel T (pack ,"Role" " '@1'") '(may Delete) '(choDlg T ,"Roles" '(nm +Role)) 'nm '+Role)
+         (panel T (pack ,"Role" " '@1'") '(may Delete) '(choDlg NIL ,"Roles" '(nm +Role)) 'nm '+Role)
          (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30 ,"Name")
          (<table> NIL NIL NIL
             (gui '(+E/R +Fmt +Chart)

@@ -1,0 +1,54 @@
+04feb09abu
+(c) Software Lab. Alexander Burger
+
+
+         Release Notes for picoLisp-2.3.6
+         ================================
+
+A. There were serious bugs in 'evList()' and 'date', they were not gc-safe. This
+   could cause a crash if garbage collection occurred at an unlucky moment.
+
+B. The syntax of the 'newButton' GUI function changed slightly. This requires
+   the modification of existing applications:
+
+   1. In search dialogs, replace
+
+         (when (=T Dst)
+            (newButton
+               '(newUrl '(+Cls) ...) ) )
+   
+      with
+
+         (newButton T Dst '(+Cls) ...)
+
+   i.e. an "able" expression becomes the first, and the 'Dst' parameter the
+   second argument of 'newButton'
+
+
+   2. In calls to search dialogs, if the first argument is 'T', it has to be
+      replaced with 'NIL', e.g.
+
+      (choDlg T ...)  ->  (choDlg NIL ...)
+
+   or
+
+      (choMyClass T)  ->  (choMyClass)
+
+
+   3. If desired, additional attributes from the search fields of search dialogs
+      can now be to the 'newButton' function. "app/gui.l" contains some
+      examples.
+
+C. When the "Esc" key is hit in the GUI, and JavaScript is enabled, an Ajax POST
+   is done for the current form. User input is sent to the server, validated,
+   and possible error messages are displayed. Thus, "Esc" has a new meaning:
+   "Entry save and check".
+
+D. 'hear' cannot be called any more with a symbolic file name. Instead, only a
+   numeric file descriptor is allowed.
+
+E. The two optional arguments to '+DelRowButton' are reversed. Now there is
+   first the question for the confirmation alert, and then the additional
+   action. This is more conformant with the usual button syntax, e.g.
+
+      (gui 7 '(+DelRowButton) "Delete this stuff?" '(doSomethineElse))

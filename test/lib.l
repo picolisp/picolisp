@@ -1,4 +1,4 @@
-# 06nov08abu
+# 06apr09abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -58,8 +58,8 @@
 
 ### getd ###
 (test car (getd 'car))
-(test '(("X") (and (sym? "X") (fun? (val "X")) (val "X")))
-   (getd 'getd) )
+(test '((File . @) (load File))
+   (getd 'script) )
 (test NIL (getd 1))
 
 

@@ -1,4 +1,4 @@
-/* 08aug08abu
+/* 16jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,6 +19,7 @@ static symInit Symbols[] = {
    {doArg, "arg"},
    {doArgs, "args"},
    {doArgv, "argv"},
+   {doArrow, "->"},
    {doAs, "as"},
    {doAsoq, "asoq"},
    {doAssoc, "assoc"},
@@ -95,9 +96,9 @@ static symInit Symbols[] = {
    {doEof, "eof"},
    {doEol, "eol"},
    {doEq, "=="},
+   {doEq0, "=0"},
+   {doEqT, "=T"},
    {doEqual, "="},
-   {doEqual0, "=0"},
-   {doEqualT, "=T"},
    {doEval, "eval"},
    {doExt, "ext"},
    {doExtern, "extern"},
@@ -127,6 +128,7 @@ static symInit Symbols[] = {
    {doGe, ">="},
    {doGe0, "ge0"},
    {doGet, "get"},
+   {doGetd, "getd"},
    {doGetl, "getl"},
    {doGlue, "glue"},
    {doGt, ">"},
@@ -167,7 +169,6 @@ static symInit Symbols[] = {
    {doLstQ, "lst?"},
    {doLoad, "load"},
    {doLock, "lock"},
-   {doLookup, "->"},
    {doLoop, "loop"},
    {doLowQ, "low?"},
    {doLowc, "lowc"},
@@ -287,10 +288,8 @@ static symInit Symbols[] = {
    {doSpace, "space"},
    {doSplit, "split"},
    {doSpQ, "sp?"},
-   {doSqrt, "sqrt"},
    {doState, "state"},
    {doStem, "stem"},
-   {doStk, "stk"},
    {doStr, "str"},
    {doStrip, "strip"},
    {doStrQ, "str?"},
@@ -341,7 +340,7 @@ static symInit Symbols[] = {
 static any initSym(any v, char *s) {
    any x, *h;
 
-   h = Intern + hash(x = mkName(s));
+   h = Intern + ihash(x = mkName(s));
    x = consSym(v,x);
    *h = cons(x,*h);
    return x;
@@ -354,8 +353,10 @@ void initSymbols(void) {
    val(Nil) = tail(Nil) = val(Nil+1) = tail(Nil+1) = Nil;
    Zero = box(0);
    One = box(2);
-   for (i = 0; i < HASH; ++i)
-      Intern[i] = Transient[i] = Extern[i] = Nil;
+   for (i = 0; i < IHASH; ++i)
+      Intern[i] = Transient[i] = Nil;
+   for (i = 0; i < EHASH; ++i)
+      Extern[i] = Nil;
    initSym(mkStr(_OS), "*OS");
    DB    = initSym(Nil, "*DB");
    Meth  = initSym(box(num(doMeth)), "meth");

@@ -1,4 +1,4 @@
-/* 27feb09abu
+/* 04may09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -33,7 +33,7 @@ static void gc(long c) {
    /* Mark */
    mark(Nil+1);
    mark(Alarm),  mark(Line),  mark(Zero),  mark(One);
-   for (i = 0; i < HASH; ++i)
+   for (i = 0; i < IHASH; ++i)
       mark(Intern[i]),  mark(Transient[i]);
    mark(ApplyArgs),  mark(ApplyBody);
    for (p = Env.stack; p; p = cdr(p))
@@ -50,7 +50,7 @@ static void gc(long c) {
    }
    for (p = (any)Env.meth;  p;  p = (any)((methFrame*)p)->link)
       mark(((methFrame*)p)->key),  mark(((methFrame*)p)->cls);
-   for (i = 0; i < HASH; ++i)
+   for (i = 0; i < EHASH; ++i)
       for (p = Extern[i];  isCell(p);  p = (any)(num(p->cdr) & ~1))
          if (num(val(p->car)) & 1) {
             for (x = tail1(p->car); !isSym(x); x = cdr(cellPtr(x)));
@@ -61,7 +61,7 @@ static void gc(long c) {
       val(DbVal) = cdr(numCell(DbTail)) = Nil;
       tail(DbVal) = ext(DbTail);
    }
-   for (i = 0; i < HASH; ++i)
+   for (i = 0; i < EHASH; ++i)
       for (pp = Extern + i;  isCell(p = *pp);)
          if (num(val(p->car)) & 1)
             *pp = (cell*)(num(p->cdr) & ~1);

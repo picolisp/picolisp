@@ -1,4 +1,4 @@
-# 17dec08abu
+# 06jun09abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -59,12 +59,6 @@
 
 (====)
 
-(de getd ("X")
-   (and
-      (sym? "X")
-      (fun? (val "X"))
-      (val "X") ) )
-
 (de expr ("F")
    (set "F"
       (list '@ (list 'pass (box (getd "F")))) ) )
@@ -86,7 +80,7 @@
 (de redef "Lst"
    (let ("Old" (car "Lst")  "New" (name "Old"))
       (set
-         "New" (val "Old")
+         "New" (getd "Old")
          "Old" "New"
          "Old" (fill (cdr "Lst") "Old") )
       "New" ) )
@@ -206,8 +200,8 @@
                (cons (caar Lst) (cons (cdr (pop 'Lst)))) ) ) ) ) )
 
 ### Symbol ###
-(de qsym Sym
-   (cons (val Sym) (getl Sym)) )
+(de qsym "Sym"
+   (cons (val "Sym") (getl "Sym")) )
 
 (de loc (S X)
    (if (and (str? X) (= S X))

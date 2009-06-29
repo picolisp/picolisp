@@ -154,7 +154,7 @@ href="refQ.html#quit">quit</a></code> and
 <code><a href="ref.html#errors">Error Handling</a></code>.
 
 <p><pre><code>
-: (catch 'Ok (println 1) (throw 'Ok 999) (println 2))
+: (catch 'OK (println 1) (throw 'OK 999) (println 2))
 1
 -> 999
 : (catch '("No such file") (in "doesntExist" (foo)))
@@ -263,7 +263,7 @@ href="refW.html#wrap">wrap</a></code>.
 <dd>Concatenates (destructively) one or several new list elements
 <code>lst</code> to the end of the list in the current <code><a
 href="refM.html#make">make</a></code> environment. This operation is efficient
-also for long lists, because a pointer to the last element of the list is
+also for long lists, because a pointer to the last element of the result list is
 maintained. <code>chain</code> returns the last linked argument. See also
 <code><a href="refL.html#link">link</a></code>, <code><a
 href="refY.html#yoke">yoke</a></code> and <code><a
@@ -409,7 +409,7 @@ href="refC.html#connect">connect</a></code>.
 -> 2
 </code></pre>
 
-<dt><a name="cmd"><code>(cmd [any]) -> sym</code></a>
+<dt><a name="cmd"><code>(cmd ['any]) -> sym</code></a>
 <dd>When called without an argument, the name of the command that invoked the
 picolisp interpreter is returned. Otherwise, the command name is set to
 <code>any</code>. Setting the name may not work on some operating systems. Note
@@ -418,7 +418,7 @@ href="refA.html#argv">argv</a></code> and <code><a
 href="ref.html#invoc">Invocation</a></code>.
 
 <p><pre><code>
-$ ./p dbg.l
+$ ./dbg
 : (cmd)
 -> "./bin/picolisp"
 : (cmd "!/bin/picolust")
@@ -608,7 +608,7 @@ some operating systems.
 
 <p><pre><code>
 $ echo 9 >count                           # Write '9' to file "count"
-$ ./p dbg.l
+$ ./dbg
 : (ctl ".ctl"                             # Exclusive control, using ".ctl"
    (in "count"
       (let Cnt (read)                     # Read '9'

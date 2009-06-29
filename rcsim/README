@@ -1,4 +1,4 @@
-05sep08abu
+09jun09abu
 (c) Software Lab. Alexander Burger
 
 
@@ -30,7 +30,7 @@ once:
 
 Then start the Pico Lisp server with
 
-   $ ./p dbg.l rcsim/main.l -main -go
+   $ ./dbg rcsim/main.l -main -go
 
 and then the Z3d-Client from another X-terminal
 
@@ -55,7 +55,7 @@ Pico Lisp servers with 'killall picolisp'.
 
    or (to get an interactive Pico Lisp command line) with
 
-      $ ./p dbg.l rcsim/main.l -main -go
+      $ ./dbg rcsim/main.l -main -go
 
    and then point your browser to "http://localhost:8080".
 

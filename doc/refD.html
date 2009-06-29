@@ -405,8 +405,8 @@ and file name (if any) are stored in the <code>*Dbg</code> property of
 -> b
 </code></pre>
 
-<dt><a name="default"><code>(default sym 'any ..) -> any</code></a>
-<dd>Stores new values <code>any</code> in the <code>sym</code> arguments only if
+<dt><a name="default"><code>(default var 'any ..) -> any</code></a>
+<dd>Stores new values <code>any</code> in the <code>var</code> arguments only if
 their current values are <code>NIL</code>. Otherwise, their values are left
 unchanged. <code>default</code> is used typically in functions to initialize
 optional arguments.
@@ -545,10 +545,10 @@ expression is returned. See also <code><a href="refL.html#loop">loop</a></code>
 and <code><a href="refF.html#for">for</a></code>.
 
 <p><pre><code>
-: (do 4 (printsp 'Ok))
-Ok Ok Ok Ok -> Ok
-: (do 4 (printsp 'Ok) (T (= 3 3) (printsp 'done)))
-Ok done -> done
+: (do 4 (printsp 'OK))
+OK OK OK OK -> OK
+: (do 4 (printsp 'OK) (T (= 3 3) (printsp 'done)))
+OK done -> done
 </code></pre>
 
 </dl>

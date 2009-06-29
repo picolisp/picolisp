@@ -298,13 +298,13 @@ executed. See also <code><a href="refP.html#pipe">pipe</a></code> and <code><a
 href="refT.html#tell">tell</a></code>.
 
 <p><pre><code>
-: (unless (fork) (do 5 (println 'Ok) (wait 1000)) (bye))
+: (unless (fork) (do 5 (println 'OK) (wait 1000)) (bye))
 -> NIL
-Ok                                              # Child's output
-: Ok
-Ok
-Ok
-Ok
+OK                                              # Child's output
+: OK
+OK
+OK
+OK
 </code></pre>
 
 <dt><a name="format"><code>(format 'num ['cnt ['sym1 ['sym2]]]) -> sym<br>

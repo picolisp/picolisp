@@ -1,4 +1,4 @@
-/* 28feb09abu
+/* 16jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -294,14 +294,12 @@ any doChain(any x) {
    if (!Env.make)
       makeError(x);
    x = cdr(x);
-   do {
-      if (isCell(y = EVAL(car(x)))) {
-         *Env.make = y;
+   do
+      if (isCell(*Env.make = y = EVAL(car(x))))
          do
             Env.make = &cdr(*Env.make);
          while (isCell(*Env.make));
-      }
-   } while (isCell(x = cdr(x)));
+   while (isCell(x = cdr(x)));
    return y;
 }
 
@@ -611,9 +609,9 @@ any doHead(any ex) {
    x = cdr(ex);
    if (isNil(data(c1) = EVAL(car(x))))
       return Nil;
+   x = cdr(x);
    if (isCell(data(c1))) {
       Save(c1);
-      x = cdr(x);
       if (isCell(x = EVAL(car(x)))) {
          for (y = data(c1);  equal(car(y), car(x));  x = cdr(x))
             if (!isCell(y = cdr(y)))
@@ -624,7 +622,6 @@ any doHead(any ex) {
    }
    if ((n = xCnt(ex,data(c1))) == 0)
       return Nil;
-   x = cdr(x);
    if (!isCell(x = EVAL(car(x))))
       return x;
    if (n < 0  &&  (n += length(x)) <= 0)
@@ -646,9 +643,9 @@ any doTail(any ex) {
    x = cdr(ex);
    if (isNil(data(c1) = EVAL(car(x))))
       return Nil;
+   x = cdr(x);
    if (isCell(data(c1))) {
       Save(c1);
-      x = cdr(x);
       if (isCell(x = EVAL(car(x)))) {
          do
             if (equal(x,data(c1)))
@@ -660,7 +657,6 @@ any doTail(any ex) {
    }
    if ((n = xCnt(ex,data(c1))) == 0)
       return Nil;
-   x = cdr(x);
    if (!isCell(x = EVAL(car(x))))
       return x;
    if (n < 0)
@@ -683,8 +679,10 @@ any doStem(any x) {
       x = cdr(x),  Push(c[i], EVAL(car(x)));
    for (x = data(c1); isCell(x); x = cdr(x)) {
       for (i = 0;  i < n;  ++i)
-         if (equal(car(x), data(c[i])))
+         if (equal(car(x), data(c[i]))) {
             data(c1) = cdr(x);
+            break;
+         }
    }
    return Pop(c1);
 }
@@ -763,14 +761,14 @@ any doNEqual(any x) {
    return Nil;
 }
 
-// (=0 'any) -> num | NIL
-any doEqual0(any x) {
+// (=0 'any) -> 0 | NIL
+any doEq0(any x) {
    x = cdr(x);
    return isNum(x = EVAL(car(x))) && IsZero(x)? x : Nil;
 }
 
 // (=T 'any) -> flg
-any doEqualT(any x) {
+any doEqT(any x) {
    x = cdr(x);
    return T == EVAL(car(x))? T : Nil;
 }
@@ -1056,13 +1054,12 @@ static int size(any x) {
          return n;
       ++n;
    }
-   y = x;
-   if (isCell(car(x)))
-      n += size(car(x));
-   while (isCell(x = cdr(x))  &&  x != y) {
-      ++n;
+   for (y = x;;) {
       if (isCell(car(x)))
          n += size(car(x));
+      if (!isCell(x = cdr(x))  ||  x == y)
+         break;
+      ++n;
    }
    return n;
 }
@@ -1156,7 +1153,7 @@ bool match(any p, any d) {
             val(p) = d;
             return YES;
          }
-         return !isCell(d) && equal(p,d);
+         return equal(p,d);
       }
       if (isSym(x = car(p))  &&  firstByte(x) == '@') {
          if (!isCell(d)) {
@@ -1419,7 +1416,7 @@ any doProve(any x) {
 }
 
 // (-> sym [num]) -> any
-any doLookup(any x) {
+any doArrow(any x) {
    int i;
    any y;
 
@@ -1450,18 +1447,18 @@ static bool cmp(any ex, any foo, cell c[2]) {
    return !isNil(apply(ex, foo, YES, 2, c));
 }
 
-// (sort 'lst) -> lst
+// (sort 'lst ['fun]) -> lst
 any doSort(any ex) {
    int i;
-   any x, foo;
-   cell p, in[2], out[2], last[2];
+   any x;
+   cell p, foo, in[2], out[2], last[2];
    any *tail[2];
 
    x = cdr(ex);
    if (!isCell(data(out[0]) = EVAL(car(x))))
       return data(out[0]);
    Save(out[0]);
-   x = cdr(x),  foo = EVAL(car(x));
+   x = cdr(x),  Push(foo, EVAL(car(x)));
    Push(out[1], Nil);
    Save(in[0]);
    Save(in[1]);
@@ -1471,7 +1468,7 @@ any doSort(any ex) {
       data(in[0]) = data(out[0]);
       data(in[1]) = data(out[1]);
 
-      i = isCell(data(in[1]))  &&  !cmp(ex, foo, in);
+      i = isCell(data(in[1]))  &&  !cmp(ex, data(foo), in);
       if (isCell(data(p) = data(in[i])))
          data(in[i]) = cdr(data(in[i]));
       data(out[0]) = data(p);
@@ -1486,20 +1483,20 @@ any doSort(any ex) {
             if (isCell(data(p) = data(in[0])))
                data(in[0]) = cdr(data(in[0]));
             data(last[0]) = data(p);
-            if (cmp(ex, foo, last))
+            if (cmp(ex, data(foo), last))
                i = 1 - i;
          }
          else if (!isCell(data(in[0]))) {
             data(last[0]) = data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
-            if (cmp(ex, foo, last))
+            if (cmp(ex, data(foo), last))
                i = 1 - i;
          }
-         else if (data(last[0]) = data(in[0]),  cmp(ex, foo, last)) {
+         else if (data(last[0]) = data(in[0]),  cmp(ex, data(foo), last)) {
             data(last[0]) = data(in[1]);
-            if (!cmp(ex, foo, last))
+            if (!cmp(ex, data(foo), last))
                data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
             else {
-               if (cmp(ex, foo, in))
+               if (cmp(ex, data(foo), in))
                   data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
                else
                   data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));
@@ -1508,10 +1505,10 @@ any doSort(any ex) {
          }
          else {
             data(last[0]) = data(in[1]);
-            if (cmp(ex, foo, last))
+            if (cmp(ex, data(foo), last))
                data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
             else {
-               if (cmp(ex, foo, in))
+               if (cmp(ex, data(foo), in))
                   data(p) = data(in[0]),  data(in[0]) = cdr(data(in[0]));
                else
                   data(p) = data(in[1]),  data(in[1]) = cdr(data(in[1]));

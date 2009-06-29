@@ -1,0 +1,2 @@
+#!/bin/sh
+exec ${0%/*}/bin/picolisp -"on *Dbg" ${0%/*}/lib.l @ext.l @dbg.l "$@"

@@ -1,4 +1,4 @@
-# 20jan09abu
+# 02jun09abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -41,6 +41,22 @@
                (set (link @) (name (read))) ) ) ) ) )
 
 ### Math ###
+(de sqrt (N)
+   (cond
+      ((lt0 N) (quit "Bad argument" N))
+      (N
+         (let (A 1  B 0)
+            (while (>= N A)
+               (setq A (>> -2 A)) )
+            (loop
+               (if (> (inc 'B A) N)
+                  (dec 'B A)
+                  (dec 'N B)
+                  (inc 'B A) )
+               (setq B (>> 1 B)  A (>> 2 A))
+               (T (=0 A)) )
+            B ) ) ) )
+
 # (Knuth Vol.2, p.442)
 (de ** (X N)  # N th power of X
    (let Y 1

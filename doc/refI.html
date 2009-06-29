@@ -84,10 +84,10 @@ href="refW.html#when">when</a></code> and <code><a
 href="refI.html#if2">if2</a></code>.
 
 <p><pre><code>
-: (if (> 4 3) (println 'Ok) (println 'Bad))
-Ok
--> Ok
-: (if (> 3 4) (println 'Ok) (println 'Bad))
+: (if (> 4 3) (println 'OK) (println 'Bad))
+OK
+-> OK
+: (if (> 3 4) (println 'OK) (println 'Bad))
 Bad
 -> Bad
 </code></pre>
@@ -119,9 +119,9 @@ evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
 Otherwise, <code>prg</code> is executed and the result returned.
 
 <p><pre><code>
-: (ifn (= 3 4) (println 'Ok) (println 'Bad))
-Ok
--> Ok
+: (ifn (= 3 4) (println 'OK) (println 'Bad))
+OK
+-> OK
 </code></pre>
 
 <dt><a name="in"><code>(in 'any . prg) -> any</code></a>
@@ -203,7 +203,7 @@ href="refL.html#lines">lines</a></code>.
 <p><pre><code>
 $ ls -l x.l
 -rw-r--r--   1 abu      users         208 Jun 17 08:58 x.l
-$ ./p dbg.l
+$ ./dbg
 : (info "x.l")
 -> (208 730594 . 32315)
 : (stamp 730594 32315)

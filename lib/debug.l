@@ -1,4 +1,4 @@
-# 22sep08abu
+# 17jun09abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -33,13 +33,19 @@
          (T (line) T)
          ("Fun" (pop '"M")) ) ) )
 
-(de depth (Idx)
-   (if (atom Idx)
-      0
-      (inc
-         (max
-            (depth (cadr Idx))
-            (depth (cddr Idx)) ) ) ) )
+(de depth (Idx)  #> (max . average)
+   (let (C 0  D 0  N 0)
+      (cons
+         (recur (Idx N)
+            (ifn Idx
+               0
+               (inc 'C)
+               (inc 'D (inc 'N))
+               (inc
+                  (max
+                     (recurse (cadr Idx) N)
+                     (recurse (cddr Idx) N) ) ) ) )
+         (or (=0 C) (*/ D C)) ) ) )
 
 (de what (S)
    (let *Dbg NIL
@@ -145,10 +151,12 @@
    (when (pair "X")
       (setq C (cdr "X")  "X" (car "X")) )
    (when
-      (setq "*Vi"
-         (if C
-            (get C '*Dbg -1 "X")
-            (get "X" '*Dbg 1) ) )
+      (if "X"
+         (setq "*Vi"
+            (if C
+               (get C '*Dbg -1 "X")
+               (get "X" '*Dbg 1) ) )
+         "*Vi" )
       (call 'vim
          "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
          (pack "+" (car "*Vi"))

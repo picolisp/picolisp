@@ -79,7 +79,7 @@ href="refK.html#key">key</a></code>.
 $ ./p
 : (raw)
 -> NIL
-$ ./p dbg.l
+$ ./dbg
 : (raw)
 -> T
 </code></pre>
@@ -402,11 +402,11 @@ href="refT.html#tell">tell</a></code> and <code><a
 href="refH.html#hear">hear</a></code>.
 
 <p><pre><code>
-: (hear (pipe (do 3 (wait 2000) (rpc 'println ''Ok))))
+: (hear (pipe (do 3 (wait 2000) (rpc 'println ''OK))))
 -> 3
-: Ok  # every two seconds
-Ok
-Ok
+: OK  # every two seconds
+OK
+OK
 </code></pre>
 
 <dt><a name="run"><code>(run 'any ['cnt ['lst]]) -> any</code></a>
@@ -419,10 +419,10 @@ supplied. See also <code><a href="refE.html#eval">eval</a></code> and <code><a
 href="refU.html#up">up</a></code>.
 
 <p><pre><code>
-: (run '((println (+ 1 2 3)) (println 'Ok)))
+: (run '((println (+ 1 2 3)) (println 'OK)))
 6
-Ok
--> Ok
+OK
+-> OK
 </code></pre>
 
 </dl>

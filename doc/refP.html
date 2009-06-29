@@ -142,8 +142,8 @@ We said: Hello world!
 -> "Hello world!"
 </code></pre>
 
-<dt><a name="path"><code>(path 'sym) -> sym</code></a>
-<dd>Substitutes any leading "<code>@</code>" character in the <code>sym</code>
+<dt><a name="path"><code>(path 'any) -> sym</code></a>
+<dd>Substitutes any leading "<code>@</code>" character in the <code>any</code>
 argument with the <u>Pico Lisp Home Directory</u>, as it was remembered during
 interpreter startup. Optionally, the name may be preceded by a "<code>+</code>"
 character (as used by <code><a href="refO.html#out">out</a></code>). This
@@ -170,7 +170,7 @@ href="refS.html#skip">skip</a></code>.
 $ cat a
 # Comment
 abcd
-$ ./p dbg.l
+$ ./dbg
 : (in "a" (list (peek) (char)))
 -> ("#" "#")
 </code></pre>
@@ -420,16 +420,18 @@ abc
 -> 987
 </code></pre>
 
-<dt><a name="pre?"><code>(pre? 'sym1 'sym2) -> flg</code></a>
-<dd>Returns non-<code>NIL</code> when the name of the first symbol
-<code>sym1</code> is a prefix string of the name of the second symbol
-<code>sym2</code>. See also <code><a href="refS.html#sub?">sub?</a></code>.
+<dt><a name="pre?"><code>(pre? 'any1 'any2) -> any2 | NIL</code></a>
+<dd>Returns <code>any2</code> when the string representation of
+<code>any1</code> is a prefix of the string representation of <code>any2</code>.
+See also <code><a href="refS.html#sub?">sub?</a></code>.
 
 <p><pre><code>
 : (pre? "abc" "abcdef")
 -> T
 : (pre? "def" "abcdef")
 -> NIL
+: (pre? (+ 3 4) "7fach")
+-> T
 : (pre? "" "abcdef")
 -> T
 </code></pre>

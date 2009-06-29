@@ -531,11 +531,11 @@ $ ./p myProject.l -main
 </code></pre>
 
 <p>For interactive development and debugging it is recommended also to load
-"dbg.l", to get the vi-style command line editor, single-stepping, tracing and
-other debugging utilities.
+"dbg.l" (or use './dbg' instead of './p'), to get the vi-style command line
+editor, single-stepping, tracing and other debugging utilities.
 
 <p><pre><code>
-$ ./p dbg.l myProject.l -main
+$ ./dbg myProject.l -main
 </code></pre>
 
 <p>In any case, the directory part of the first file name supplied on the
@@ -565,6 +565,10 @@ character. Everything up to the end of that line will be ignored by the reader.
 : (* 1 2 3)  # This is a comment
 -> 6
 </code></pre>
+
+<p>A comment spanning several lines may be enclosed between <code>#{</code> and
+<code>}#</code>.
+
 
 <p>Here is the I/O syntax for the individual Pico Lisp data types:
 
@@ -2145,7 +2149,6 @@ abbreviations:
    <a href="refH.html#heap">heap</a>
    <a href="refE.html#env">env</a>
    <a href="refU.html#up">up</a>
-   <a href="refS.html#stk">stk</a>
    <a href="refD.html#date">date</a>
    <a href="refT.html#time">time</a>
    <a href="refU.html#usec">usec</a>

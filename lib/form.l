@@ -1,12 +1,12 @@
-# 25mar09abu
+# 23may09abu
 # (c) Software Lab. Alexander Burger
 
-# *Top *Gui *Get *Form *Event *Lock
+# *Top *Gui *Get *Form *Lock
 # "*Cnt" "*Lst" "*App" "*Err" "*Foc" "*Post2" "*Stat" "*Ix" "*Chart" "*Cho"
 
 (allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
-(mapc allow '(*Gui *Get *Form *Event "@jsForm" "@jsHint"))
+(mapc allow '(*Gui *Get *Form "@jsForm" "@jsHint"))
 
 (once
    (one "*Cnt")
@@ -21,7 +21,7 @@
    (let "App"
       (if *Post
          (get "*Lst" (- "*Cnt" *Get) *Form)
-         (prog1 (setq *Top (new NIL NIL  'able T  'event 0))
+         (prog1 (setq *Top (new NIL NIL  'able T))
             (conc
                (get "*Lst" (- "*Cnt" *Get))
                (cons *Top) ) ) )
@@ -44,7 +44,6 @@
          (<post> "Attr" (urlMT *Url *Menu *Tab *ID)
             (<hidden> '*Get *Get)
             (<hidden> '*Form *Form)
-            (<hidden> '*Event (inc (:: event)))
             (zero "*Ix")
             (off "*Chart")
             (if *Post
@@ -117,10 +116,7 @@
    (catch "stop"
       (if *Post
          (with (postForm) (postGui))
-         (push '"*Lst" (cons))
-         (and (nth "*Lst" 99) (con @))
-         (setq *Get "*Cnt")
-         (inc '"*Cnt") )
+         (pushForm (cons)) )
       (one *Form)
       (run Prg 1)
       (setq "*Stat"
@@ -128,6 +124,12 @@
             (pair "*Err")
             (copy (get "*Lst" (- "*Cnt" *Get))) ) ) )
    (off "*Post2") )
+
+(de pushForm (L)
+   (push '"*Lst" L)
+   (and (nth "*Lst" 99) (con @))
+   (setq *Get "*Cnt")
+   (inc '"*Cnt") )
 
 (de jsForm (Url)
    (setq *Url Url  Url (chop Url))
@@ -162,7 +164,6 @@
    (let? Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
       (setq
          *Form (format *Form)
-         *Event (format *Event)
          *Post
          (or "*Post2"
             (if (gt0 *Form)
@@ -170,7 +171,7 @@
                (get Lst 1 (+ (length (car Lst)) *Form) 1) ) ) ) ) )
 
 (de postGui ()
-   (if (or "*Post2" (<> *Event (: event)))
+   (if "*Post2"
       (off *Gui)
       (while *Gui
          (con
@@ -279,11 +280,15 @@
 
 # Dialogs
 (de _dlg (Attr Env)
-   (push (get "*Lst" (- "*Cnt" *Get))
-      (list
-         (new NIL NIL  'btn This  'able T  'event 0  'env Env)
-         Attr
-         Prg ) ) )
+   (let L (get "*Lst" (- "*Cnt" *Get))
+      (while (and (car L) (n== *Post (caar @)))
+         (pop L) )
+      (push L
+         (list
+            (new NIL NIL  'btn This  'able T  'env Env)
+            Attr
+            Prg ) )
+      (pushForm L) ) )
 
 (de dialog (Env . Prg)
    (_dlg 'dialog Env) )
@@ -362,10 +367,12 @@
    (when (able)
       (and
          (get "*Lst" (- "*Cnt" *Get))
-         (set @
-            (filter
-               '((L) (memq (car L) (: home top)))
-               (car @) ) ) )
+         (pushForm
+            (cons
+               (filter
+                  '((L) (memq (car L) (: home top)))
+                  (car @) )
+               (cdr @) ) ) )
       (extra)
       (for This (: home top)
          (for This (: gui)
@@ -1616,7 +1623,7 @@
    (gui '(+JS +Tip +Button) ,"Start search" ,"Search" Exe) )
 
 (de resetButton (Lst)
-   (gui '(+ClrButton) ,"Reset" Lst) )
+   (gui '(+Force +ClrButton) T ,"Reset" Lst) )
 
 (de newButton (Able Dst . Args)
    (gui '(+Able +Close +Tip +Button) Able ,"Create new object" ',"New"
@@ -1647,11 +1654,18 @@
          ,"Mark this object as \"deleted\"" )
       '(if (: home obj T) ,"Restore" ,"Delete")
       (fill
-         '(if (: home obj T)
-            (ask (text ,"Restore @1?" @Txt)
-               (keep!> (: home top 1 obj)) )
-            (ask (text ,"Delete @1?" @Txt)
-               (lose!> (: home top 1 obj)) ) ) ) ) )
+         '(nond
+            ((: home obj T)
+               (ask (text ,"Delete @1?" @Txt)
+                  (lose!> (: home top 1 obj)) ) )
+            ((keep?> (: home obj))
+               (ask (text ,"Restore @1?" @Txt)
+                  (keep!> (: home top 1 obj)) ) )
+            (NIL
+               (note ,"Restore"
+                  (mapcar
+                     '((X) (text "'@1' -- @2" (car X) (cdr X)))
+                     @ ) ) ) ) ) ) )
 
 
 # Relations

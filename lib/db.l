@@ -1,4 +1,4 @@
-# 10jul08abu
+# 09jun09abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs upd
@@ -938,6 +938,16 @@
                (meta This X)
                (keep> @ This V) ) ) )
       (upd> This T) ) )
+
+(dm keep?> (Lst)
+   (extract
+      '((X)
+         (with (and (pair X) (meta This (cdr X)))
+            (and
+               (isa '+Key This)
+               (fetch (tree (: var) (: cls) (get (up This) (: hook))) (car X))
+               (cons (car X) ,"Not unique") ) ) )
+      (getl This) ) )
 
 (dm keep!> ()
    (dbSync)

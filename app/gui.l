@@ -1,4 +1,4 @@
-# 08jan09abu
+# 28may09abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -53,7 +53,7 @@
          (when *Login
             (<nbsp> 4)
             (<span> "bold green"
-               (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) ) ) ) ) )
+               (<big> (ht:Prin "'" (get *Login 'nm) ,"' logged in")) ) ) ) ) )
 
 (de stop ()
    (logout)

@@ -1,54 +1,33 @@
-04feb09abu
+11jun09abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-2.3.6
+         Release Notes for picoLisp-2.3.7
          ================================
 
-A. There were serious bugs in 'evList()' and 'date', they were not gc-safe. This
-   could cause a crash if garbage collection occurred at an unlucky moment.
+A. 'getd' is now more intelligent. It also checks for a shared library if the
+   symbol is of the form 'lib:Foo', and loads the corresponding code if
+   necessary like it is done during normal execution. This makes it possible to
+   'trace' such functions before initial execution.
 
-B. The syntax of the 'newButton' GUI function changed slightly. This requires
-   the modification of existing applications:
+B. The function 'mkChar()' (and all functions that call it, like 'char', 'key',
+   'line', 'skip', 'till', 'chop', and others), interned single-character values
+   into the transient symbol table for efficiency reasons. This should actually
+   be considered a bug, because it breaks the static scope rules of transient
+   symbols. Now these characters are not interned any more (as was, btw, always
+   the case in miniPicoLisp).
 
-   1. In search dialogs, replace
+C. It was found that the hash table for external symbols was too small, and the
+   hash function was not optimal. Now the lookup of external objects for large
+   databases (> 100 million objects, typically caching 1 million objects) is
+   about 20 times faster.
 
-         (when (=T Dst)
-            (newButton
-               '(newUrl '(+Cls) ...) ) )
-   
-      with
+D. There is now a block comment from Kriangkrai Soatthiyanont, using #{...}#
 
-         (newButton T Dst '(+Cls) ...)
+E. The 'stk' runtime stack dump function was removed, as it was only of limited
+   (or no) use.
 
-   i.e. an "able" expression becomes the first, and the 'Dst' parameter the
-   second argument of 'newButton'
-
-
-   2. In calls to search dialogs, if the first argument is 'T', it has to be
-      replaced with 'NIL', e.g.
-
-      (choDlg T ...)  ->  (choDlg NIL ...)
-
-   or
-
-      (choMyClass T)  ->  (choMyClass)
-
-
-   3. If desired, additional attributes from the search fields of search dialogs
-      can now be to the 'newButton' function. "app/gui.l" contains some
-      examples.
-
-C. When the "Esc" key is hit in the GUI, and JavaScript is enabled, an Ajax POST
-   is done for the current form. User input is sent to the server, validated,
-   and possible error messages are displayed. Thus, "Esc" has a new meaning:
-   "Entry save and check".
-
-D. 'hear' cannot be called any more with a symbolic file name. Instead, only a
-   numeric file descriptor is allowed.
-
-E. The two optional arguments to '+DelRowButton' are reversed. Now there is
-   first the question for the confirmation alert, and then the additional
-   action. This is more conformant with the usual button syntax, e.g.
-
-      (gui 7 '(+DelRowButton) "Delete this stuff?" '(doSomethineElse))
+F. The 'dbg' startup script is a convenient shortcut for './p dbg.l', with the
+   additional advantage that debug mode (the '*Dbg' global) is switched on
+   earlier, so that (vi 'foo) also works for system functions loaded by "lib.l"
+   and "ext.l" etc.

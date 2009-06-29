@@ -1,4 +1,4 @@
-/* 27mar09abu
+/* 29jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,11 +25,12 @@ static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
 static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
-static void closeErr(char *s) {err(NULL, NULL, "%s close: %s", s, strerror(errno));}
+static void closeErr(void) {err(NULL, NULL, "Close error: %s", strerror(errno));}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
 static void badFd(any ex, any x) {err(ex, x, "Bad FD");}
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
+static void selectErr(any ex) {err(ex, NULL, "Select error: %s", strerror(errno));}
 
 static void lockFile(int fd, int cmd, int typ) {
    struct flock fl;
@@ -171,9 +172,9 @@ static void wrChild(int i, byte *p, int cnt) {
    if (Child[i].cnt == 0) {
       for (;;) {
          if ((n = write(Child[i].tell, p, cnt)) >= 0) {
-            p += n;
             if ((cnt -= n) == 0)
                return;
+            p += n;
          }
          else if (errno == EAGAIN)
             break;
@@ -233,21 +234,14 @@ static any rdNum(int cnt) {
    i = 0,  Push(c1, x = box(n));
    if (--cnt == 62) {
       do {
-         if ((n = getBin()) < 0)
-            return NULL;
-         byteSym(n, &i, &x);
-      } while (--cnt);
-      for (;;) {
-         if ((cnt = getBin()) < 0)
-            return NULL;
-         if (cnt != 255)
-            break;
          do {
             if ((n = getBin()) < 0)
                return NULL;
             byteSym(n, &i, &x);
          } while (--cnt);
-      }
+         if ((cnt = getBin()) < 0)
+            return NULL;
+      } while (cnt == 255);
    }
    while (--cnt >= 0) {
       if ((n = getBin()) < 0)
@@ -299,13 +293,13 @@ any binRead(int extn) {
    if (c == EXTERN) {
       if (extn)
          y = extOffs(extn, y);
-      if (x = findHash(y, h = Extern + hash(y)))
+      if (x = findHash(y, h = Extern + ehash(y)))
          return x;
       mkExt(x = consSym(Nil,y));
       *h = cons(x,*h);
       return x;
    }
-   if (x = findHash(y, h = Intern + hash(y)))
+   if (x = findHash(y, h = Intern + ihash(y)))
       return x;
    x = consSym(Nil,y);
    *h = cons(x,*h);
@@ -375,7 +369,7 @@ void binPrint(int extn, any x) {
       if (!isNum(y = name(x)))
          binPrint(extn, y);
       else if (!isExt(x))
-         prNum(hashed(x, hash(y), Intern)? INTERN : TRANSIENT, y);
+         prNum(hashed(x, ihash(y), Intern)? INTERN : TRANSIENT, y);
       else {
          if (extn)
             y = extOffs(-extn, y);
@@ -401,7 +395,11 @@ void binPrint(int extn, any x) {
 }
 
 void pr(int extn, any x) {putBin = putStdout,  binPrint(extn, x);}
-void prn(long n) {putBin = putStdout,  prDig(0, n >= 0? n * 2 : -n * 2 + 1);}
+
+void prn(long n) {
+   putBin = putStdout;
+   prDig(NUMBER, n >= 0? n * 2 : -n * 2 + 1);
+}
 
 /* Family IPC */
 static void putTell(int c) {
@@ -441,7 +439,6 @@ static any rdHear(void) {
    InFile = iSave;
    return x;
 }
-
 
 /* Return next byte from symbol name */
 int symByte(any s) {
@@ -525,12 +522,9 @@ void pathString(any x, char *p) {
    }
 }
 
-// (path 'sym) -> sym
-any doPath(any ex) {
-   any x;
-
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+// (path 'any) -> sym
+any doPath(any x) {
+   x = evSym(cdr(x));
    {
       char nm[pathSize(x)];
 
@@ -605,7 +599,7 @@ void rdOpen(any ex, any x, inFrame *f) {
 
          for (;;) {
             if (!(g = g->link))
-               break;
+               badFd(ex,x);
             if (!++n) {
                n = g->fd;
                break;
@@ -658,7 +652,7 @@ void rdOpen(any ex, any x, inFrame *f) {
          close(pfd[0]);
          if (pfd[1] != STDOUT_FILENO)
             dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
-         execvp(av[0], (char**)av);
+         execvp(av[0], av);
          execError(av[0]);
       }
       i = 0;  do
@@ -683,7 +677,7 @@ void wrOpen(any ex, any x, outFrame *f) {
 
          for (;;) {
             if (!(g = g->link))
-               break;
+               badFd(ex,x);
             if (!++n) {
                n = g->fd;
                break;
@@ -735,7 +729,7 @@ void wrOpen(any ex, any x, outFrame *f) {
          close(pfd[1]);
          if (pfd[0] != STDIN_FILENO)
             dup2(pfd[0], STDIN_FILENO),  close(pfd[0]);
-         execvp(av[0], (char**)av);
+         execvp(av[0], av);
          execError(av[0]);
       }
       i = 0;  do
@@ -851,7 +845,7 @@ void popInFiles(void) {
       if (Env.inFrames->pid > 1)
          while (waitpid(Env.inFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
-               closeErr("Read pipe");
+               closeErr();
             if (Signal)
                sighandler(T);
          }
@@ -869,7 +863,7 @@ void popOutFiles(void) {
       if (Env.outFrames->pid > 1)
          while (waitpid(Env.outFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
-               closeErr("Write pipe");
+               closeErr();
             if (Signal)
                sighandler(T);
          }
@@ -917,9 +911,23 @@ static int skip(int c) {
       }
       if (Chr != c)
          return Chr;
-      while (Env.get(), Chr != '\n')
-         if (Chr < 0)
-            return Chr;
+      Env.get();
+      if (c != '#' || Chr != '{') {
+         while (Chr != '\n') {
+            if (Chr < 0)
+               return Chr;
+            Env.get();
+         }
+      }
+      else {
+         for (;;) {  // #{block-comment}# from Kriangkrai Soatthiyanont
+            Env.get();
+            if (Chr < 0)
+               return Chr;
+            if (Chr == '}' && (Env.get(), Chr == '#'))
+               break;
+         }
+      }
       Env.get();
    }
 }
@@ -1019,7 +1027,7 @@ static any anonymous(any s) {
    n *= sizeof(cell);
    h = Heaps;
    do
-      if ((any)n > h->cells  &&  (any)n < h->cells + CELLS)
+      if ((any)n >= h->cells  &&  (any)n < h->cells + CELLS)
          return symPtr((any)n);
    while (h = h->next);
    return NULL;
@@ -1085,7 +1093,7 @@ static any read0(bool top) {
          byteSym(Chr, &i, &y);
       }
       y = Pop(c1),  Env.get();
-      if (x = findHash(y, h = Transient + hash(y)))
+      if (x = findHash(y, h = Transient + ihash(y)))
          return x;
       x = consStr(y);
       if (Env.get == getStdin)
@@ -1105,7 +1113,7 @@ static any read0(bool top) {
          byteSym(Chr, &i, &y);
       }
       y = Pop(c1),  Env.get();
-      if (x = findHash(y, h = Extern + hash(y)))
+      if (x = findHash(y, h = Extern + ehash(y)))
          return x;
       mkExt(x = consSym(Nil,y));
       *h = cons(x,*h);
@@ -1129,9 +1137,9 @@ static any read0(bool top) {
       return Nil;
    if (x = symToNum(y, (int)unDig(val(Scl)) / 2, '.', 0))
       return x;
-   if (x = findHash(y, h = Intern + hash(y)))
-      return x;
    if (x = anonymous(y))
+      return x;
+   if (x = findHash(y, h = Intern + ihash(y)))
       return x;
    x = consSym(Nil,y);
    *h = cons(x,*h);
@@ -1196,7 +1204,7 @@ any token(any x, int c) {
             byteSym(Chr, &i, &y);
          }
          y = Pop(c1);
-         if (x = findHash(y, h = Intern + hash(y)))
+         if (x = findHash(y, h = Intern + ihash(y)))
             return x;
          x = consSym(Nil,y);
          *h = cons(x,*h);
@@ -1205,7 +1213,7 @@ any token(any x, int c) {
    }
    y = box(c = getChar());
    Env.get();
-   if (x = findHash(y, Intern + hash(y)))
+   if (x = findHash(y, Intern + ihash(y)))
       return x;
    return mkChar(c);
 }
@@ -1243,7 +1251,8 @@ long waitFd(any ex, int fd, long ms) {
    struct timeval tt;
 #endif
 
-   Save(c1);
+   Push(c1, val(At));
+   Save(c2);
    do {
       if (ms >= 0)
          t = ms,  tp = &tv;
@@ -1258,7 +1267,7 @@ long waitFd(any ex, int fd, long ms) {
          else
             FD_SET(m = fd, &rdSet);
       }
-      if (Hear) {
+      if (Hear && Hear != fd) {
          if (inReady(Hear))
             tp = &tv,  t = 0;
          else {
@@ -1267,17 +1276,19 @@ long waitFd(any ex, int fd, long ms) {
                m = Hear;
          }
       }
-      for (x = data(c1) = val(Run); isCell(x); x = cdr(x)) {
+      for (x = data(c2) = val(Run); isCell(x); x = cdr(x)) {
          if (isNeg(caar(x))) {
             if ((n = (int)unDig(cadar(x)) / 2) < t)
                tp = &tv,  t = n;
          }
-         else if (inReady(n = (int)unDig(caar(x)) / 2))
-            tp = &tv,  t = 0;
-         else {
-            FD_SET(n, &rdSet);
-            if (n > m)
-               m = n;
+         else if ((n = (int)unDig(caar(x)) / 2) != fd) {
+            if (inReady(n))
+               tp = &tv,  t = 0;
+            else {
+               FD_SET(n, &rdSet);
+               if (n > m)
+                  m = n;
+            }
          }
       }
       if (Spkr) {
@@ -1308,7 +1319,7 @@ long waitFd(any ex, int fd, long ms) {
       while (select(m+1, &rdSet, &wrSet, NULL, tp) < 0) {
          if (errno != EINTR) {
             val(Run) = Nil;
-            err(ex, NULL, "Select error: %s", strerror(errno));
+            selectErr(ex);
          }
          if (Signal)
             sighandler(ex);
@@ -1365,40 +1376,34 @@ long waitFd(any ex, int fd, long ms) {
       }
       if (!flg && Spkr && FD_ISSET(Spkr,&rdSet) && rdBytes(Spkr,(byte*)&m,sizeof(int)) && Child[m].pid)
          wrChild(m, TBuf, sizeof(TBuf));
-      for (x = data(c1); isCell(x); x = cdr(x))
+      for (x = data(c2); isCell(x); x = cdr(x))
          if (isNeg(caar(x))) {
             if ((n = (int)(unDig(cadar(x)) / 2 - t)) > 0)
                setDig(cadar(x), (long)2*n);
             else {
                setDig(cadar(x), unDig(caar(x)));
-               Push(c2,val(At)),  val(At) = caar(x);
+               val(At) = caar(x);
                prog(cddar(x));
-               val(At) = Pop(c2);
             }
          }
-      if (Hear  &&  (inReady(Hear) || FD_ISSET(Hear, &rdSet))) {
+         else if ((n = (int)unDig(caar(x)) / 2) != fd) {
+            if (inReady(n) || FD_ISSET(n, &rdSet)) {
+               val(At) = caar(x);
+               prog(cdar(x));
+            }
+         }
+      if (Hear && Hear != fd  &&  (inReady(Hear) || FD_ISSET(Hear, &rdSet))) {
          if ((data(c2) = rdHear()) == NULL)
-            close(Hear),  closeInFile(Hear),  Hear = 0;
+            close(Hear),  closeInFile(Hear),  closeOutFile(Hear),  Hear = 0;
          else if (data(c2) == T)
             Sync = YES;
-         else {
-            Save(c2);
+         else
             evList(data(c2));
-            drop(c2);
-         }
-         FD_SET(Hear, &rdSet);
       }
-      for (x = data(c1); isCell(x); x = cdr(x))
-         if (!isNeg(caar(x)) &&  (inReady(n = (int)unDig(caar(x))/2) || FD_ISSET(n, &rdSet))) {
-            Push(c2,val(At)),  val(At) = caar(x);
-            prog(cdar(x));
-            val(At) = Pop(c2);
-            FD_SET(n, &rdSet);
-         }
       if (Signal)
          sighandler(ex);
    } while (ms  &&  fd >= 0 && !inReady(fd) && !FD_ISSET(fd, &rdSet));
-   drop(c1);
+   val(At) = Pop(c1);
    return ms;
 }
 
@@ -1426,22 +1431,21 @@ any doSync(any ex) {
    p = (byte*)&Slot;
    cnt = sizeof(int);
    do {
-      if ((n = write(Mic, p, cnt)) < 0) {
-         if (errno != EINTR)
-            writeErr("sync");
-         if (Signal)
-            sighandler(ex);
-      }
-      p += n;
-   } while (cnt -= n);
+      if ((n = write(Mic, p, cnt)) >= 0)
+         p += n, cnt -= n;
+      else if (errno != EINTR)
+         writeErr("sync");
+      if (Signal)
+         sighandler(ex);
+   } while (cnt);
    Sync = NO;
    do
-      waitFd(ex, Hear, -1);
+      waitFd(ex, -1, -1);
    while (!Sync);
    return T;
 }
 
-// (hear 'num) -> num
+// (hear 'cnt) -> cnt
 any doHear(any ex) {
    any x;
    int fd;
@@ -1486,7 +1490,7 @@ any doPoll(any ex) {
    tv.tv_sec = tv.tv_usec = 0;
    while (select(fd+1, &fdSet, NULL, NULL, &tv) < 0)
       if (errno != EINTR)
-         err(ex, NULL, "Poll error: %s", strerror(errno));
+         selectErr(ex);
    return FD_ISSET(fd, &fdSet)? x : Nil;
 }
 
@@ -1547,12 +1551,9 @@ any doChar(any ex) {
    atomError(ex,x);
 }
 
-// (skip ['sym]) -> sym
-any doSkip(any ex) {
-   any x;
-
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
+// (skip ['any]) -> sym
+any doSkip(any x) {
+   x = evSym(cdr(x));
    return skip(symChar(name(x)))<0? Nil : mkChar(Chr);
 }
 
@@ -1574,9 +1575,8 @@ any doEof(any x) {
 }
 
 // (from 'any ..) -> sym
-any doFrom(any ex) {
-   any x;
-   int res, i, j, ac = length(x = cdr(ex)), p[ac];
+any doFrom(any x) {
+   int i, j, ac = length(x = cdr(x)), p[ac];
    cell c[ac];
    char *av[ac];
 
@@ -1590,7 +1590,6 @@ any doFrom(any ex) {
          break;
       x = cdr(x);
    }
-   res = -1;
    if (!Chr)
       Env.get();
    while (Chr >= 0) {
@@ -1600,7 +1599,7 @@ any doFrom(any ex) {
                if (av[i][++p[i]])
                   break;
                Env.get();
-               res = i;
+               x = data(c[i]);
                goto done;
             }
             if (!p[i])
@@ -1612,12 +1611,13 @@ any doFrom(any ex) {
       }
       Env.get();
    }
+   x = Nil;
 done:
    i = 0;  do
       free(av[i]);
    while (++i < ac);
    drop(c[0]);
-   return res < 0? Nil : data(c[res]);
+   return x;
 }
 
 // (till 'any ['flg]) -> lst|sym
@@ -1724,13 +1724,13 @@ any doLine(any ex) {
 }
 
 // (lines 'any ..) -> cnt
-any doLines(any ex) {
-   any x, y;
+any doLines(any x) {
+   any y;
    int c, cnt = 0;
    bool flg = NO;
    FILE *fp;
 
-   for (x = cdr(ex); isCell(x); x = cdr(x)) {
+   for (x = cdr(x); isCell(x); x = cdr(x)) {
       y = evSym(x);
       {
          char nm[pathSize(y)];
@@ -1827,12 +1827,9 @@ any doAny(any ex) {
 
 // (sym 'any) -> sym
 any doSym(any x) {
-   cell c1;
-
    x = EVAL(cadr(x));
    begString();
-   Push(c1,x);
-   print(data(c1));
+   print(x);
    return endString();
 }
 
@@ -1845,6 +1842,8 @@ any doStr(any ex) {
    x = cdr(ex);
    if (isNil(x = EVAL(car(x))))
       return Nil;
+   if (isNum(x))
+      argError(ex,x);
    if (isSym(x)) {
       if (!isCell(cddr(ex)))
          return parse(x, NO, NULL);
@@ -1854,12 +1853,9 @@ any doStr(any ex) {
       drop(c1);
       return x;
    }
-   NeedCell(ex,x);
    begString();
-   Push(c1,x);
-   print(car(x));
-   while (isCell(x = cdr(x)))
-      space(),  print(car(x));
+   while (print(car(x)), isCell(x = cdr(x)))
+      space();
    return endString();
 }
 
@@ -1897,7 +1893,7 @@ any load(any ex, int pr, any x) {
          Push(c2, val(At));
          x = val(At) = EVAL(data(c1));
          val(At3) = val(At2),  val(At2) = data(c2);
-         outString("-> "),  flushAll(),  print(x),  newline();
+         outString("-> "),  flushAll(),  print1(x),  newline();
       }
       drop(c1);
    }
@@ -1915,7 +1911,7 @@ any doLoad(any ex) {
       if ((y = EVAL(car(x))) != T)
          y = load(ex, '>', y);
       else
-         y = loadAll(ex,y);
+         y = loadAll(ex);
    } while (isCell(x = cdr(x)));
    return y;
 }
@@ -1967,17 +1963,14 @@ any doPipe(any ex) {
          dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
       wrOpen(ex, Nil, &f.out);
       pushOutFiles(&f.out);
+      val(Run) = Nil;
       EVAL(cadr(ex));
       bye(0);
    }
    close(pfd[1]);
-   if (f.in.pid < 0)
-      err(ex, NULL, "fork");
-   if (!isCell(cddr(ex))) {
-      initInFile(pfd[0], NULL);
-      return boxCnt(pfd[0]);
-   }
    initInFile(f.in.fd = pfd[0], NULL);
+   if (!isCell(cddr(ex)))
+      return boxCnt(pfd[0]);
    setpgid(f.in.pid,0);
    pushInFiles(&f.in);
    x = prog(cddr(ex));
@@ -1998,27 +1991,22 @@ any doCtl(any ex) {
    return x;
 }
 
-// (open 'sym) -> cnt | NIL
+// (open 'any) -> cnt | NIL
 any doOpen(any ex) {
-   any x;
+   any x = evSym(cdr(ex));
+   char nm[pathSize(x)];
+   int fd;
 
-   x = cdr(ex),  x = EVAL(car(x));
-   NeedSym(ex,x);
-   {
-      int fd;
-      char nm[pathSize(x)];
-
-      pathString(x, nm);
-      while ((fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0) {
-         if (errno != EINTR)
-            return Nil;
-         if (Signal)
-            sighandler(ex);
-      }
-      closeOnExec(ex, fd);
-      initInFile(fd, strdup(nm)), initOutFile(fd);
-      return boxCnt(fd);
+   pathString(x, nm);
+   while ((fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0) {
+      if (errno != EINTR)
+         return Nil;
+      if (Signal)
+         sighandler(ex);
    }
+   closeOnExec(ex, fd);
+   initInFile(fd, strdup(nm)), initOutFile(fd);
+   return boxCnt(fd);
 }
 
 // (close 'cnt) -> cnt | NIL
@@ -2047,7 +2035,7 @@ any doEcho(any ex) {
       return T;
    }
    if (isSym(y)) {
-      int res, m, n, i, j, ac = length(x), p[ac], om, op;
+      int m, n, i, j, ac = length(x), p[ac], om, op;
       cell c[ac];
       char *av[ac];
 
@@ -2059,7 +2047,7 @@ any doEcho(any ex) {
             break;
          y = evSym(x = cdr(x));
       }
-      res = m = -1;
+      m = -1;
       while (Chr >= 0) {
          if ((om = m) >= 0)
             op = p[m];
@@ -2072,10 +2060,10 @@ any doEcho(any ex) {
                      break;
                   }
                   if (om >= 0)
-                     for (j = 0, n = op-p[i]+1; j < n; ++j)
+                     for (j = 0, n = op-p[i]; j <= n; ++j)
                         Env.put(av[om][j]);
                   Env.get();
-                  res = i;
+                  x = data(c[i]);
                   goto done;
                }
                if (!p[i])
@@ -2096,16 +2084,17 @@ any doEcho(any ex) {
             Env.put(Chr);
          }
          else if (om >= 0)
-            for (i = 0, n = op-p[m]+1; i < n; ++i)
+            for (i = 0, n = op-p[m]; i <= n; ++i)
                Env.put(av[om][i]);
          Env.get();
       }
+      x = Nil;
    done:
       i = 0;  do
          free(av[i]);
       while (++i < ac);
       drop(c[0]);
-      return res < 0? Nil : data(c[res]);
+      return x;
    }
    if (isCell(x = cdr(x))) {
       for (cnt = xCnt(ex,y), y = EVAL(car(x)); --cnt >= 0; Env.get())
@@ -2173,6 +2162,14 @@ void outNum(any x) {
 
 /* Print one expression */
 void print(any x) {
+   cell c1;
+
+   Push(c1,x);
+   print1(x);
+   drop(c1);
+}
+
+void print1(any x) {
    if (Signal)
       sighandler(T);
    if (isNum(x))
@@ -2186,7 +2183,7 @@ void print(any x) {
          Env.put('$'),  outWord(num(x)/sizeof(cell));
       else if (isExt(x))
          Env.put('{'),  outSym(c),  Env.put('}');
-      else if (hashed(x, hash(name(x)), Intern)) {
+      else if (hashed(x, ihash(name(x)), Intern)) {
          do {
             if (strchr(Delim, c))
                Env.put('\\');
@@ -2208,30 +2205,35 @@ void print(any x) {
       }
    }
    else if (car(x) == Quote  &&  x != cdr(x))
-      Env.put('\''),  print(cdr(x));
+      Env.put('\''),  print1(cdr(x));
    else {
-      cell c1;
-
-      Push(c1,x);
+      any y = x;
       Env.put('(');
-      while (print(car(x)), !isNil(x = cdr(x))) {
-         if (x == data(c1)) {
+      while (print1(car(x)), !isNil(x = cdr(x))) {
+         if (x == y) {
             outString(" .");
             break;
          }
          if (!isCell(x)) {
             outString(" . ");
-            print(x);
+            print1(x);
             break;
          }
          space();
       }
       Env.put(')');
-      drop(c1);
    }
 }
 
 void prin(any x) {
+   cell c1;
+
+   Push(c1,x);
+   prin1(x);
+   drop(c1);
+}
+
+void prin1(any x) {
    if (Signal)
       sighandler(T);
    if (!isNil(x)) {
@@ -2245,16 +2247,12 @@ void prin(any x) {
             Env.put('}');
       }
       else {
-         cell c1;
-
-         Push(c1,x);
-         while (prin(car(x)), !isNil(x = cdr(x))) {
+         while (prin1(car(x)), !isNil(x = cdr(x))) {
             if (!isCell(x)) {
-               prin(x);
+               prin1(x);
                break;
             }
          }
-         drop(c1);
       }
    }
 }
@@ -2359,7 +2357,9 @@ any doRd(any x) {
 
    x = cdr(x),  x = EVAL(car(x));
    if (!isNum(x)) {
+      Push(c1,x);
       getBin = getBinary;
+      drop(c1);
       return binRead(ExtN) ?: x;
    }
    if (!InFile)
@@ -2421,13 +2421,14 @@ any doRd(any x) {
 any doPr(any x) {
    any y;
 
-   x = cdr(x),  pr(ExtN, y = EVAL(car(x)));
-   while (isCell(x = cdr(x)))
+   x = cdr(x);
+   do
       pr(ExtN, y = EVAL(car(x)));
+   while (isCell(x = cdr(x)));
    return y;
 }
 
-// (wr 'num ..) -> num
+// (wr 'cnt ..) -> cnt
 any doWr(any x) {
    any y;
 
@@ -2444,11 +2445,12 @@ static void putChar(int c) {putchar_unlocked(c);}
 any doRpc(any x) {
    any y;
 
-   x = cdr(x),  y = EVAL(car(x));
-   putBin = putChar,  putBin(BEG),  binPrint(ExtN, y);
-   while (isCell(x = cdr(x)))
+   x = cdr(x);
+   putChar(BEG);
+   do
       y = EVAL(car(x)),  putBin = putChar,  binPrint(ExtN, y);
-   putBin(END);
+   while (isCell(x = cdr(x)));
+   putChar(END);
    return fflush(stdout)? Nil : T;
 }
 
@@ -2826,7 +2828,7 @@ any doPool(any ex) {
          if (Marks)
             free(Mark[F]);
          if (close(BlkFile[F]) < 0)
-            closeErr("DB");
+            closeErr();
       }
       free(Mark), Mark = NULL, free(Marks), Marks = NULL;
       Files = 0;
@@ -2947,7 +2949,7 @@ static any mkId(adr n) {
    any x, y, *h;
 
    x = new64(n, Nil);
-   if (y = findHash(x, h = Extern + hash(x)))
+   if (y = findHash(x, h = Extern + ehash(x)))
       return y;
    mkExt(y = consSym(Nil,x));
    *h = cons(y,*h);
@@ -3198,7 +3200,7 @@ any doBegin(any x) {
    int i;
    any y, z;
 
-   for (i = 0; i < HASH; ++i) {
+   for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail1(car(x)); isCell(y); y = cdr(y));
          y = numCell(y);
@@ -3248,7 +3250,7 @@ any doCommit(any ex) {
       else {
          for (F = 0; F < Files; ++F)
             dirty[F] = 0;
-         for (i = 0; i < HASH; ++i) {  // Save objects
+         for (i = 0; i < EHASH; ++i) {  // Save objects
             for (x = Extern[i];  isCell(x);  x = cdr(x)) {
                for (y = tail1(car(x)); isCell(y); y = cdr(y));
                z = numCell(y);
@@ -3281,7 +3283,7 @@ any doCommit(any ex) {
       if (note = Tell && !isNil(flg) && flg != T)
          tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
    }
-   for (i = 0; i < HASH; ++i) {
+   for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail1(car(x)); isCell(y); y = cdr(y));
          z = numCell(y);
@@ -3405,7 +3407,7 @@ any doRollback(any x) {
    int i;
    any y, z;
 
-   for (i = 0; i < HASH; ++i) {
+   for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail1(car(x)); isCell(y); y = cdr(y));
          z = numCell(y);

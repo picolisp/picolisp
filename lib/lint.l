@@ -1,4 +1,4 @@
-# 26mar09abu
+# 24jun09abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -185,7 +185,9 @@
          (push '"*L" X) ) ) )
 
 (de lintDup (X Lst)
-   (when (memq X Lst)
+   (and
+      (memq X Lst)
+      (not (member (cons "*X" X) *NoLint))
       (push '"*Dup" X) ) )
 
 (de lintLoop ("Lst")

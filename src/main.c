@@ -1,4 +1,4 @@
-/* 27mar09abu
+/* 26jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -47,7 +47,7 @@ static void iSignal(int n, void (*foo)(int)) {
    struct sigaction act, old;
 
    act.sa_handler = foo;
-   sigemptyset (&act.sa_mask);
+   sigemptyset(&act.sa_mask);
    act.sa_flags = 0;
    sigaction(n, &act, &old);
 }
@@ -87,21 +87,21 @@ void sighandler(any ex) {
    }
 }
 
-static void doSigTerm(int n) {
-   if (TtyPid)
-      kill(TtyPid, n);
-   else
-      Signal = SIGTERM;
-}
-
-static void doSignal(int n) {
+static void sig(int n) {
    if (TtyPid)
       kill(TtyPid, n);
    else
       Signal = n;
 }
 
-static void doSigChld(int n __attribute__((unused))) {
+static void sigTerm(int n) {
+   if (TtyPid)
+      kill(TtyPid, n);
+   else
+      Signal = SIGTERM;
+}
+
+static void sigChld(int n __attribute__((unused))) {
    pid_t pid;
    int stat;
 
@@ -110,14 +110,14 @@ static void doSigChld(int n __attribute__((unused))) {
          fprintf(stderr, "%d SIG-%d\n", (int)pid, WTERMSIG(stat));
 }
 
-static void doTermStop(int n __attribute__((unused))) {
+static void sigTermStop(int n __attribute__((unused))) {
    sigset_t mask;
 
    tcsetattr(STDIN_FILENO, TCSADRAIN, &OrgTermio);
    sigemptyset(&mask);
    sigaddset(&mask, SIGTSTP);
    sigprocmask(SIG_UNBLOCK, &mask, NULL);
-   signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, doTermStop);
+   signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, sigTermStop);
    tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
 }
 
@@ -130,7 +130,7 @@ void setRaw(void) {
       Termio->c_cc[VTIME] = 0;
       tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
       if (signal(SIGTSTP,SIG_IGN) == SIG_DFL)
-         signal(SIGTSTP, doTermStop);
+         signal(SIGTSTP, sigTermStop);
    }
 }
 
@@ -268,30 +268,12 @@ any doUp(any x) {
                   return p->bnd[i].val;
                }
                val = &p->bnd[i].val;
-               break;
             }
       }
    }
    if (isCell(x = cdr(x)))
       return *val = EVAL(car(x));
    return *val;
-}
-
-// (stk any ..) -> T
-any doStk(any x) {
-   any p;
-   outFile *oSave = OutFile;
-   char buf[BITS/2];
-
-   OutFile = OutFiles[STDERR_FILENO];
-   print(cdr(x)), newline();
-   for (p = Env.stack; p; p = cdr(p)) {
-      sprintf(buf, "%lX ", num(p)),  outString(buf);
-      print(car(p)), newline();
-   }
-   newline();
-   OutFile = oSave;
-   return T;
 }
 
 /*** Primitives ***/
@@ -410,6 +392,7 @@ void err(any ex, any x, char *fmt, ...) {
    va_start(ap,fmt);
    vsnprintf(msg, sizeof(msg), fmt, ap);
    va_end(ap);
+   val(Up) = ex ?: Nil;
    if (msg[0]) {
       any y;
       catchFrame *p;
@@ -430,15 +413,13 @@ void err(any ex, any x, char *fmt, ...) {
    Env.brk = NO;
    Alarm = Line = Nil;
    f.pid = 0,  f.fd = STDERR_FILENO,  pushOutFiles(&f);
-   while (*AV  &&  strcmp(*AV,"-") != 0)
-      ++AV;
    if (InFile && InFile->name) {
       Env.put('[');
       outString(InFile->name), Env.put(':'), outWord(InFile->src);
       Env.put(']'), space();
    }
    if (ex)
-      outString("!? "), print(val(Up) = ex), newline();
+      outString("!? "), print(ex), newline();
    if (x)
       print(x), outString(" -- ");
    if (msg[0]) {
@@ -462,15 +443,14 @@ void err(any ex, any x, char *fmt, ...) {
 
 // (quit ['any ['any]])
 any doQuit(any x) {
-   cell c1;
+   any y;
 
-   x = cdr(x),  Push(c1, evSym(x));
-   x = isCell(x = cdr(x))?  EVAL(car(x)) : NULL;
+   x = cdr(x),  y = evSym(x);
    {
-      char msg[bufSize(data(c1))];
+      char msg[bufSize(y)];
 
-      bufString(data(c1), msg);
-      drop(c1);
+      bufString(y, msg);
+      x = isCell(x = cdr(x))?  EVAL(car(x)) : NULL;
       err(NULL, x, "%s", msg);
    }
 }
@@ -488,12 +468,31 @@ void protError(any ex, any x) {err(ex, x, "Protected symbol");}
 
 void pipeError(any ex, char *s) {err(ex, NULL, "Pipe %s error", s);}
 
-void unwind(catchFrame *p) {
-   int i;
+void unwind(catchFrame *catch) {
+   any x;
+   int i, j, n;
+   bindFrame *p;
    catchFrame *q;
 
    while (q = CatchPtr) {
-      while (Env.bind != q->env.bind) {
+      while (p = Env.bind) {
+         if ((i = Env.bind->i) < 0) {
+            j = i, n = 0;
+            while (++n, ++j && (p = p->link))
+               if (p->i >= 0 || p->i < i)
+                  --j;
+            do {
+               for (p = Env.bind, j = n;  --j;  p = p->link);
+               if (p->i < 0  &&  ((p->i -= i) > 0? (p->i = 0) : p->i) == 0)
+                  for (j = p->cnt;  --j >= 0;) {
+                     x = val(p->bnd[j].sym);
+                     val(p->bnd[j].sym) = p->bnd[j].val;
+                     p->bnd[j].val = x;
+                  }
+            } while (--n);
+         }
+         if (Env.bind == q->env.bind)
+            break;
          if (Env.bind->i == 0)
             for (i = Env.bind->cnt;  --i >= 0;)
                val(Env.bind->bnd[i].sym) = Env.bind->bnd[i].val;
@@ -508,7 +507,7 @@ void unwind(catchFrame *p) {
       Env = q->env;
       EVAL(q->fin);
       CatchPtr = q->link;
-      if (q == p)
+      if (q == catch)
          return;
    }
    while (Env.bind) {
@@ -584,13 +583,44 @@ any evExpr(any expr, any x) {
    return x;
 }
 
-void undefined(any x, any ex) {
+any funq(any x) {
+   any y;
+
+   if (isSym(x))
+      return Nil;
+   if (isNum(x))
+      return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : x;
+   for (y = cdr(x); isCell(y); y = cdr(y)) {
+      if (y == x)
+         return Nil;
+      if (isCell(car(y))) {
+         if (isNum(caar(y))) {
+            if (isCell(cdr(y)))
+               return Nil;
+         }
+         else if (isNil(caar(y)) || caar(y) == T)
+            return Nil;
+      }
+      else if (!isNil(cdr(y)))
+         return Nil;
+   }
+   if (!isNil(y))
+      return Nil;
+   if (isNil(x = car(x)))
+      return T;
+   for (y = x; isCell(y);)
+      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T || x==(y=cdr(y)))
+         return Nil;
+   return isNum(y) || y==T? Nil : x;
+}
+
+bool sharedLib(any x) {
    void *h;
    char *p, nm[bufSize(x)];
 
    bufString(x, nm);
    if (!(p = strchr(nm,':'))  ||  p == nm  ||  p[1] == '\0')
-      err(ex, x, "Undefined");
+      return NO;
    *p++ = '\0';
    {
       int n = Home? strlen(Home) : 0;
@@ -604,9 +634,15 @@ void undefined(any x, any ex) {
          strcpy(buf + n, "lib/"),  strcpy(buf + n + 4, nm);
       }
       if (!(h = dlopen(buf, RTLD_LAZY | RTLD_GLOBAL))  ||  !(h = dlsym(h,p)))
-         err(ex, x, "%s", (char*)dlerror());
+         return NO;
       val(x) = box(num(h));
    }
+   return YES;
+}
+
+void undefined(any x, any ex) {
+   if (!sharedLib(x))
+      err(ex, x, "Undefined");
 }
 
 static any evList2(any foo, any ex) {
@@ -766,7 +802,9 @@ any doDate(any ex) {
    }
    if (isNil(z))
       return Nil;
-   if (isNum(z) && !isCell(x = cdr(x))) {
+   if (isCell(z))
+      return mkDat(xCnt(ex, car(z)),  xCnt(ex, cadr(z)),  xCnt(ex, caddr(z)));
+   if (!isCell(x = cdr(x))) {
       n = xCnt(ex,z);
       y = (100*n - 20) / 3652425;
       n += (y - y/4);
@@ -783,11 +821,15 @@ any doDate(any ex) {
       data(c1) = cons(boxCnt(y), data(c1));
       return Pop(c1);
    }
-   if (isCell(z))
-      return mkDat(xCnt(ex, car(z)),  xCnt(ex, cadr(z)),  xCnt(ex, caddr(z)));
    y = xCnt(ex,z);
    m = evCnt(ex,x);
    return mkDat(y, m, evCnt(ex,cdr(x)));
+}
+
+any mkTime(int h, int m, int s) {
+   if (h < 0 || h > 23  ||  m < 0 || m > 59  ||  s < 0 || s > 60)
+      return Nil;
+   return boxCnt(h * 3600 + m * 60 + s);
 }
 
 // (time ['T]) -> tim
@@ -810,26 +852,18 @@ any doTime(any ex) {
       return TM? boxCnt(TM->tm_hour * 3600 + TM->tm_min * 60 + TM->tm_sec) : Nil;
    if (isNil(z))
       return Nil;
-   if (isNum(z) && !isCell(x = cdr(x))) {
+   if (isCell(z))
+      return mkTime(xCnt(ex, car(z)), xCnt(ex, cadr(z)), isCell(cddr(z))? xCnt(ex, caddr(z)) : 0);
+   if (!isCell(x = cdr(x))) {
       s = xCnt(ex,z);
       Push(c1, cons(boxCnt(s % 60), Nil));
       data(c1) = cons(boxCnt(s / 60 % 60), data(c1));
       data(c1) = cons(boxCnt(s / 3600), data(c1));
       return Pop(c1);
    }
-   if (!isCell(z)) {
-      h = xCnt(ex, z);
-      m = evCnt(ex, x);
-      s = isCell(cdr(x))? evCnt(ex, cdr(x)) : 0;
-   }
-   else {
-      h = xCnt(ex, car(z));
-      m = xCnt(ex, cadr(z));
-      s = isCell(cddr(z))? xCnt(ex, caddr(z)) : 0;
-   }
-   if (h < 0 || h > 23  ||  m < 0 || m > 59  ||  s < 0 || s > 60)
-      return Nil;
-   return boxCnt(h * 3600 + m * 60 + s);
+   h = xCnt(ex, z);
+   m = evCnt(ex, x);
+   return mkTime(h, m, isCell(cdr(x))? evCnt(ex, cdr(x)) : 0);
 }
 
 // (usec) -> num
@@ -868,15 +902,19 @@ any doCd(any x) {
 any doCtty(any ex) {
    any x;
 
-   if (!isSym(x = EVAL(cadr(ex))))
-      TtyPid = xCnt(ex,x);
+   if (isNum(x = EVAL(cadr(ex))))
+      TtyPid = unDig(x) / 2;
    else {
-      char tty[bufSize(x)];
+      if (!isSym(x))
+         argError(ex,x);
+      {
+         char tty[bufSize(x)];
 
-      bufString(x, tty);
-      if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
-         return Nil;
-      OutFiles[STDOUT_FILENO]->tty = YES;
+         bufString(x, tty);
+         if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
+            return Nil;
+         OutFiles[STDOUT_FILENO]->tty = YES;
+      }
    }
    return T;
 }
@@ -955,7 +993,7 @@ any doDir(any x) {
    return Pop(c1);
 }
 
-// (cmd [any]) -> sym
+// (cmd ['any]) -> sym
 any doCmd(any x) {
    if (isNil(x = evSym(cdr(x))))
       return mkStr(AV0);
@@ -963,7 +1001,7 @@ any doCmd(any x) {
    return x;
 }
 
-// (argv [sym ..] [. sym]) -> lst|sym
+// (argv [var ..] [. sym]) -> lst|sym
 any doArgv(any ex) {
    any x, y;
    char **p;
@@ -982,6 +1020,7 @@ any doArgv(any ex) {
    do {
       if (!isCell(x)) {
          NeedSym(ex,x);
+         CheckVar(ex,x);
          if (!*p)
             return val(x) = Nil;
          Push(c1, y = cons(mkStr(*p++), Nil));
@@ -990,7 +1029,8 @@ any doArgv(any ex) {
          return val(x) = Pop(c1);
       }
       y = car(x);
-      NeedSym(ex,y);
+      NeedVar(ex,y);
+      CheckVar(ex,y);
       val(y) = *p? mkStr(*p++) : Nil;
    } while (!isNil(x = cdr(x)));
    return val(y);
@@ -1001,7 +1041,9 @@ any doOpt(any ex __attribute__((unused))) {
    return *AV && strcmp(*AV,"-")? mkStr(*AV++) : Nil;
 }
 
-any loadAll(any ex, any x) {
+any loadAll(any ex) {
+   any x = Nil;
+
    while (*AV  &&  strcmp(*AV,"-") != 0)
       x = load(ex, 0, mkStr(*AV++));
    return x;
@@ -1011,6 +1053,7 @@ any loadAll(any ex, any x) {
 static void init(int ac, char *av[]) {
    int i;
    char *p;
+   sigset_t sigs;
 
    for (i = 1; i < ac; ++i)
       if (*av[i] != '-') {
@@ -1035,13 +1078,15 @@ static void init(int ac, char *av[]) {
    Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);
    ApplyBody = cons(Nil,Nil);
-   iSignal(SIGHUP, doSignal);
-   iSignal(SIGINT, doSigTerm);
-   iSignal(SIGUSR1, doSignal);
-   iSignal(SIGUSR2, doSignal);
-   iSignal(SIGALRM, doSignal);
-   iSignal(SIGTERM, doSignal);
-   signal(SIGCHLD, doSigChld);
+   sigfillset(&sigs);
+   sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+   iSignal(SIGHUP, sig);
+   iSignal(SIGINT, sigTerm);
+   iSignal(SIGUSR1, sig);
+   iSignal(SIGUSR2, sig);
+   iSignal(SIGALRM, sig);
+   iSignal(SIGTERM, sig);
+   signal(SIGCHLD, sigChld);
    signal(SIGPIPE, SIG_IGN);
    signal(SIGTTIN, SIG_IGN);
    signal(SIGTTOU, SIG_IGN);
@@ -1051,9 +1096,10 @@ static void init(int ac, char *av[]) {
 
 int MAIN(int ac, char *av[]) {
    init(ac,av);
-   setjmp(ErrRst);
-   loadAll(NULL,NULL);
-   iSignal(SIGINT, doSignal);
+   if (!setjmp(ErrRst)) {
+      loadAll(NULL);
+      iSignal(SIGINT, sig);
+   }
    load(NULL, ':', Nil);
    bye(0);
 }

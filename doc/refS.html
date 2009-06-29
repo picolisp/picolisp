@@ -136,7 +136,7 @@ href="refR.html#rest">rest</a></code>.
 $ cat x
 (* (next) (next))
 
-$ ./p dbg.l
+$ ./dbg
 :  (script "x" 3 4)
 -> 12
 </code></pre>
@@ -283,16 +283,18 @@ href="refL.html#length">length</a></code>.
 -> 3
 : (size "äbc")
 -> 4
-: (size 123)
+: (size 127)  # One byte
 -> 1
+: (size 128)  # Two bytes (eight bits plus sign bit!)
+-> 2
 : (size (1 (2) 3))
 -> 4
 : (size (1 2 3 .))
 -> 3
 </code></pre>
 
-<dt><a name="skip"><code>(skip ['sym]) -> sym</code></a>
-<dd>Skips all white space (and comments if <code>sym</code> is given) in the
+<dt><a name="skip"><code>(skip ['any]) -> sym</code></a>
+<dd>Skips all white space (and comments if <code>any</code> is given) in the
 input stream. Returns the next available character, or <code>NIL</code> upon end
 of file. See also <code><a href="refP.html#peek">peek</a></code> and <code><a
 href="refE.html#eof">eof</a></code>.
@@ -301,7 +303,7 @@ href="refE.html#eof">eof</a></code>.
 $ cat a
 # Comment
 abcd
-$ ./p dbg.l
+$ ./dbg
 : (in "a" (skip "#"))
 -> "a"
 </code></pre>
@@ -461,21 +463,6 @@ href="refF.html#fetch">fetch</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="stk"><code>(stk any ..) -> T</code></a>
-<dd>Displays a dump of the internal runtime stack to standard error. All
-(unevaluated) <code>any</code> arguments are printed as a header, then each
-stack entry is printed per line, preceded by its (hexadecimal) address. See also
-<code><a href="refE.html#env">env</a></code>.
-
-<p><pre><code>
-: (cons 'A (stk Test))
-(Test)
-BFFFF69C (A)
-BFFFF70C (cons 'A (stk Test))
-
--> (A . T)
-</code></pre>
-
 <dt><a name="store"><code>(store 'tree 'any1 'any2 ['(num1 . num2)])</code></a>
 <dd>Stores a value <code>any2</code> for the key <code>any1</code> in a database
 tree. <code>num1</code> is a database file number, as used in <code><a
@@ -561,9 +548,9 @@ href="refE.html#ext?">ext?</a></code>.
 -> "abc"
 </code></pre>
 
-<dt><a name="sub?"><code>(sub? 'sym1 'sym2) -> flg</code></a>
-<dd>Returns non-<code>NIL</code> when the name of the first symbol
-<code>sym1</code> is a substring of the name of the second symbol
+<dt><a name="sub?"><code>(sub? 'any1 'any2) -> any2 | NIL</code></a>
+<dd>Returns <code>any2</code> when the string representation of
+<code>sym1</code> is a substring of the string representation of
 <code>sym2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>.
 
 <p><pre><code>
@@ -580,12 +567,14 @@ href="refE.html#ext?">ext?</a></code>.
 href="refE.html#expr">expr</a></code> back to a C-function.
 
 <p><pre><code>
-: sqrt
--> 67325664
-: (expr 'sqrt)
--> (@ (pass $134533847))
-: (subr 'sqrt)
--> 67325664
+: car
+-> 67313448
+: (expr 'car)
+-> (@ (pass $385260187))
+: (subr 'car)
+-> 67313448
+: car
+-> 67313448
 </code></pre>
 
 <dt><a name="sum"><code>(sum 'fun 'lst ..) -> num</code></a>

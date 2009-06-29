@@ -62,8 +62,8 @@ is returned. See also <code><a href="refG.html#gc">gc</a></code>.
 -> 4
 </code></pre>
 
-<dt><a name="hear"><code>(hear 'num) -> num</code></a>
-<dd>Uses the file descriptor <code>num</code> as an asynchronous command input
+<dt><a name="hear"><code>(hear 'cnt) -> cnt</code></a>
+<dd>Uses the file descriptor <code>cnt</code> as an asynchronous command input
 channel. Any executable list received via this channel will be executed in the
 background. As this mechanism is also used for inter-family communication (see
 <code><a href="refT.html#tell">tell</a></code>), <code>hear</code> is usually

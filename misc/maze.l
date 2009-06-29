@@ -1,7 +1,7 @@
-# 21jan07abu
+# 09jun09abu
 # (c) Software Lab. Alexander Burger
 
-# ./p dbg.l maze.l -"setq M (maze 16 10)" -"display M"
+# ./dbg maze.l -"setq M (maze 16 10)" -"display M"
 
 (load "lib/simul.l")
 

@@ -75,8 +75,8 @@ href="refP.html#prog1">prog1</a></code> and <code><a
 href="refP.html#prog2">prog2</a></code>.
 
 <p><pre><code>
-: (t (println 'Ok))
-Ok
+: (t (println 'OK))
+OK
 -> T
 </code></pre>
 
@@ -214,14 +214,14 @@ href="refM.html#match">match</a></code> the <code>any</code> argument.
 ?
 </code></pre>
 
-<dt><a name="text"><code>(text 'sym 'any ..) -> sym</code></a>
-<dd>Builds a new transient symbol (string) from <code>sym</code>, by replacing
-all occurrences of an at-mark "<code>@</code>", followed by one of the letters
-"<code>1</code>" through "<code>9</code>", and "<code>A</code>" through
-"<code>Z</code>", with the corresponding <code>any</code> argument. In this
-context "<code>@A</code>" refers to the 10th argument. A literal at-mark in the
-text can be represented by two successive at-marks. See also <code><a
-href="refP.html#pack">pack</a></code> and <code><a
+<dt><a name="text"><code>(text 'any1 'any ..) -> sym</code></a>
+<dd>Builds a new transient symbol (string) from the string representation of
+<code>any1</code>, by replacing all occurrences of an at-mark "<code>@</code>",
+followed by one of the letters "<code>1</code>" through "<code>9</code>", and
+"<code>A</code>" through "<code>Z</code>", with the corresponding
+<code>any</code> argument. In this context "<code>@A</code>" refers to the 10th
+argument. A literal at-mark in the text can be represented by two successive
+at-marks. See also <code><a href="refP.html#pack">pack</a></code> and <code><a
 href="refG.html#glue">glue</a></code>.
 
 <p><pre><code>
@@ -271,9 +271,9 @@ from that <code>catch</code>.
 <p><pre><code>
 : (de foo (N)
    (println N)
-   (throw 'Ok) )
+   (throw 'OK) )
 -> foo
-: (let N 1  (catch 'Ok (foo 7))  (println N))
+: (let N 1  (catch 'OK (foo 7))  (println N))
 7
 1
 -> 1
@@ -364,12 +364,12 @@ href="refB.html#*Bye">*Bye</a></code> .
 -> "tmp/27140/foo123"
 : (dir "tmp/")
 -> ("27140")
-: (out (tmp "foo" 123) (println 'Ok))
--> Ok
+: (out (tmp "foo" 123) (println 'OK))
+-> OK
 : (dir (tmp))
 -> ("foo123")
 : (in (tmp "foo" 123) (read))
--> Ok
+-> OK
 </code></pre>
 
 <dt><a name="touch"><code>(touch 'sym) -> sym</code></a>

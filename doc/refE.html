@@ -115,7 +115,6 @@ operation was successfully completed.
 <dd>Return a list of symbol-value pairs of all dynamically bound symbols if
 called without arguments, or of the symbols in <code>lst</code>, or the
 explicitly given <code>sym</code>-<code>val</code> pairs. See also <code><a
-href="refS.html#stk">stk</a></code>, <code><a
 href="refB.html#bind">bind</a></code> and <code><a
 href="refJ.html#job">job</a></code>.
 
@@ -240,17 +239,17 @@ href="refL.html#locale">locale</a></code>.
 </code></pre>
 
 <dt><a name="expr"><code>(expr 'sym) -> fun</code></a>
-<dd>Converts a C-function ("subr") to a Lisp-function. Defined only for normal
+<dd>Converts a C-function ("subr") to a Lisp-function. Useful only for normal
 functions (i.e. functions that evaluate all arguments). See also <code><a
 href="refS.html#subr">subr</a></code>.
 
 <p><pre><code>
-: sqrt
--> 67325664
-: (expr 'sqrt)
--> (@ (pass $134533847))
-: (sqrt 64)
--> 8
+: car
+-> 67313448
+: (expr 'car)
+-> (@ (pass $385260187))
+: (car (1 2 3))
+-> 1
 </code></pre>
 
 <dt><a name="ext"><code>(ext 'cnt . prg) -> any</code></a>

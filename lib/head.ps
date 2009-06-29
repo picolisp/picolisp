@@ -1,0 +1,28 @@
+%%DocumentFonts: (atend)
+/PicoEncoding
+   ISOLatin1Encoding  dup length array  copy
+def
+/isoLatin1 {
+   dup dup findfont  dup length  dict begin
+      {1 index /FID ne {def} {pop pop} ifelse} forall
+      /Encoding PicoEncoding def  currentdict
+   end  definefont
+} def
+/glyphArrayShow {
+   {
+      dup type /stringtype eq {show} {glyphshow} ifelse
+   } forall
+} def
+/glyphArrayWidth {
+   0 exch
+   {
+      dup type /stringtype eq {
+         stringwidth pop
+      } {
+         matrix currentmatrix gsave
+         newpath nulldevice setmatrix 0 0 moveto glyphshow
+         currentpoint grestore pop
+      } ifelse
+      add
+   } forall
+} def

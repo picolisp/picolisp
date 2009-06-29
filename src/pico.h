@@ -1,4 +1,4 @@
-/* 28feb09abu
+/* 24jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -37,8 +37,9 @@
 #define BITS (8*WORD)
 #define MASK ((word)-1)
 #define CELLS (1024*1024/sizeof(cell)) // Heap allocation unit 1MB
-#define HASH  4999                     // Hash table size (should be prime)
-#define TOP   0x10000                  // Character Top
+#define IHASH 4999                     // Internal hash table size (should be prime)
+#define EHASH 49999                    // External hash table size (should be prime)
+#define TOP 0x10000                    // Character Top
 
 typedef unsigned long word;
 typedef unsigned char byte;
@@ -235,7 +236,7 @@ outFile *OutFile, **OutFiles;
 int (*getBin)(void);
 void (*putBin)(int);
 any TheKey, TheCls, Thrown;
-any Alarm, Line, Zero, One, Intern[HASH], Transient[HASH], Extern[HASH];
+any Alarm, Line, Zero, One, Intern[IHASH], Transient[IHASH], Extern[EHASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Meth, Quote, T;
 any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
@@ -257,7 +258,7 @@ adr blk64(any);
 void blocking(bool,any,int);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
-void brkLoad(any);
+any brkLoad(any);
 int bufSize(any);
 void bufString(any,char*);
 void bye(int) __attribute__ ((noreturn));
@@ -282,6 +283,7 @@ void digDiv2(any);
 void digMul2(any);
 void digSub1(any);
 any doubleToNum(double);
+unsigned long ehash(any);
 any endString(void);
 bool eol(void);
 bool equal(any,any);
@@ -299,14 +301,15 @@ int firstByte(any);
 bool flush(outFile*);
 void flushAll(void);
 pid_t forkLisp(any);
+any funq(any);
 any get(any,any);
 int getChar(void);
 void getStdin(void);
 void giveup(char*) __attribute__ ((noreturn));
-unsigned long hash(any);
 bool hashed(any,long,any*);
 void heapAlloc(void);
 any idx(any,any,int);
+unsigned long ihash(any);
 inFile *initInFile(int,char*);
 outFile *initOutFile(int);
 void initSymbols(void);
@@ -315,12 +318,13 @@ bool isBlank(any);
 bool isLife(any);
 void lstError(any,any) __attribute__ ((noreturn));
 any load(any,int,any);
-any loadAll(any,any);
+any loadAll(any);
 any method(any);
 any mkChar(int);
 any mkDat(int,int,int);
 any mkName(char*);
 any mkStr(char*);
+any mkTime(int,int,int);
 any name(any);
 any new64(adr,any);
 any newId(any,int);
@@ -341,7 +345,9 @@ void popInFiles(void);
 void popOutFiles(void);
 void pr(int,any);
 void prin(any);
+void prin1(any);
 void print(any);
+void print1(any);
 void prn(long);
 void protError(any,any) __attribute__ ((noreturn));
 void pushInFiles(inFrame*);
@@ -355,6 +361,7 @@ bool rdBytes(int,byte*,int);
 int secondByte(any);
 void setCooked(void);
 void setRaw(void);
+bool sharedLib(any);
 void sighandler(any);
 int slow(int,byte*,int);
 void space(void);
@@ -386,6 +393,7 @@ any doApply(any);
 any doArg(any);
 any doArgs(any);
 any doArgv(any);
+any doArrow(any);
 any doAsoq(any);
 any doAs(any);
 any doAssoc(any);
@@ -462,9 +470,9 @@ any doEnv(any);
 any doEof(any);
 any doEol(any);
 any doEq(any);
+any doEq0(any);
+any doEqT(any);
 any doEqual(any);
-any doEqual0(any);
-any doEqualT(any);
 any doEval(any);
 any doExt(any);
 any doExtern(any);
@@ -494,6 +502,7 @@ any doGc(any);
 any doGe(any);
 any doGe0(any);
 any doGet(any);
+any doGetd(any);
 any doGetl(any);
 any doGlue(any);
 any doGt(any);
@@ -534,7 +543,6 @@ any doLit(any);
 any doLstQ(any);
 any doLoad(any);
 any doLock(any);
-any doLookup(any);
 any doLoop(any);
 any doLowQ(any);
 any doLowc(any);
@@ -656,10 +664,8 @@ any doSort(any);
 any doSpace(any);
 any doSplit(any);
 any doSpQ(any);
-any doSqrt(any);
 any doState(any);
 any doStem(any);
-any doStk(any);
 any doStr(any);
 any doStrip(any);
 any doStrQ(any);

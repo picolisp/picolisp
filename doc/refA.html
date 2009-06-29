@@ -137,7 +137,7 @@ href="refW.html#wrap">wrap</a></code>.
 -> "   a  12   b"
 </code></pre>
 
-<dt><a name="all"><code>(all ['T | 0]) -> lst</code></a>
+<dt><a name="all"><code>(all ['T | '0]) -> lst</code></a>
 <dd>Returns a list of all <a href="ref.html#internal">internal</a> symbols in
 the system (if called without arguments, or with <code>NIL</code>). Otherwise
 (if the argument is <code>T</code>), all current <a
@@ -293,18 +293,18 @@ T
 -> T
 </code></pre>
 
-<dt><a name="argv"><code>(argv [sym ..] [. sym]) -> lst|sym</code></a>
+<dt><a name="argv"><code>(argv [var ..] [. sym]) -> lst|sym</code></a>
 <dd>If called without arguments, <code>argv</code> returns a list of strings
-containing all remaining command line arguments. Otherwise, the <code>sym</code>
-arguments are subsequently bound to the command line arguments. A hyphen
-"<code>-</code>" can be used to stop <code>load</code>ing further arguments. See
-also <code><a href="refC.html#cmd">cmd</a></code>, <code><a
-href="ref.html#invoc">Invocation</a></code> and <code><a
+containing all remaining command line arguments. Otherwise, the
+<code>var/sym</code> arguments are subsequently bound to the command line
+arguments. A hyphen "<code>-</code>" can be used to stop <code>load</code>ing
+further arguments. See also <code><a href="refC.html#cmd">cmd</a></code>,
+<code><a href="ref.html#invoc">Invocation</a></code> and <code><a
 href="refO.html#opt">opt</a></code>.
 
 <p><pre><code>
-$ ./p -"println 'Ok" - abc 123
-Ok
+$ ./p -"println 'OK" - abc 123
+OK
 : (argv)
 -> ("abc" "123")
 : (argv A B)

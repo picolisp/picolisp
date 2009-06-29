@@ -1,4 +1,4 @@
-# 25mar09abu
+# 17jun09abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -215,6 +215,7 @@
 
 (de <this> (Var Val . Prg)
    (prin "<a href=\"" (sesId *Url) '? Var '= (ht:Fmt Val) "\"")
+   (and *JS (prin " onclick=\"return commit();\""))
    (and *Style (htStyle @))
    (prin '>)
    (htPrin Prg 2)
@@ -314,7 +315,8 @@
                               (<href> (eval (car L) E)
                                  (urlMT U *Menu (if (= U *Url) *Tab 1)
                                     (eval (caddr L))
-                                    (eval (cadddr L)) ) ) ) )
+                                    (eval (cadddr L)) )
+                                 "return commit()" ) ) )
                         (<li> (pack 'cmd N)
                            (ht:Prin (eval (car L) E)) ) ) )
                   ((bit? M *Menu)
@@ -322,7 +324,8 @@
                         (<tip> ,"Open submenu"
                            (<href>
                               (eval (cadr L) E)
-                              (urlMT *Url (| M *Menu) *Tab *ID) ) ) )
+                              (urlMT *Url (| M *Menu) *Tab *ID)
+                              "return commit()" ) ) )
                      (setq M (>> -1 M))
                      (recur (L)
                         (for X (cddr L)
@@ -334,7 +337,8 @@
                         (<tip> ,"Close submenu"
                            (<href>
                               (eval (cadr L) E)
-                              (urlMT *Url (x| M *Menu) *Tab *ID) ) )
+                              (urlMT *Url (x| M *Menu) *Tab *ID)
+                              "return commit()" ) )
                         (setq M (>> -1 M))
                         (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
 
@@ -350,7 +354,9 @@
          (if (= N *Tab)
             (<td> 'top (ht:Prin (eval (car L) 1)))
             (<td> 'sub
-               (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
+               (<href> (eval (car L) 1)
+                  (urlMT *Url *Menu N *ID)
+                  "return commit()" ) ) ) ) )
    (htPrin (get Lst *Tab -1) 2) )
 
 
@@ -402,12 +408,12 @@
                   S2 (list 'step (lit Q2) T) ) ) )
          (if (and (eval S1) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
-               (<href> "<<<" (mkUrl @)) )
+               (<href> "<<<" (mkUrl @) "return commit()") )
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
          (if (and (eval S2) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
-               (<href> ">>>" (mkUrl @)) )
+               (<href> ">>>" (mkUrl @) "return commit()") )
             (prin "&gt;&gt;&gt;") ) ) ) )
 
 # Character Separated Values
@@ -432,6 +438,15 @@
       (ht:Prin @)
       (prinl "<br/>")
       (<0> @) ) )
+
+(de <!> ("Lst")
+   (when "*CSV"
+      (out @
+         (prin (eval (cadar "Lst")))
+         (for "S" (cdr "Lst")
+            (prin "^I" (eval (cadr "S"))) )
+         (prinl "^M") ) )
+   "Lst" )
 
 (de <+> (Str Obj Msg Tab)
    (<$> Str Obj Msg Tab)

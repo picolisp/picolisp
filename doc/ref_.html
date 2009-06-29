@@ -11,13 +11,13 @@
 
 <dl>
 
-<dt><a name="!"><code>(! . prg) -> any</code></a>
+<dt><a name="!"><code>(! . exe) -> any</code></a>
 <dd>Low level breakpoint function: The current execution environment is saved
-and the I/O channels are redirected to the console. Then <code>prg</code> is
+and the I/O channels are redirected to the console. Then <code>exe</code> is
 displayed, and a read-eval-print-loop is entered (with <code>!</code> as its
 prompt character), to evaluate expressions and examine the current program
 environment. An empty input line terminates the read-eval-print-loop, the
-environment and I/O channels are restored, and the result of <code>prg</code> is
+environment and I/O channels are restored, and the result of <code>exe</code> is
 returned. <code>!</code> is normally inserted into existing programs with the
 <code><a href="refD.html#debug">debug</a></code> function. See also <code><a
 href="refE.html#e">e</a></code>, <code><a href="ref_.html#^">^</a></code> and
@@ -342,7 +342,7 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 -> T
 </code></pre>
 
-<dt><a name="=0"><code>(=0 'any) -> num | NIL</code></a>
+<dt><a name="=0"><code>(=0 'any) -> 0 | NIL</code></a>
 <dd>Returns <code>0</code> when <code>any</code> is a number with value zero.
 See also <code><a href="refN.html#n0">n0</a></code>, <code><a
 href="refL.html#lt0">lt0</a></code>, <code><a

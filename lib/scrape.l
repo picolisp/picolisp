@@ -1,4 +1,4 @@
-# 03dec08abu
+# 08apr09abu
 # (c) Software Lab. Alexander Burger
 
 # *ScrHost *ScrPort *Title *Expect *Found
@@ -35,8 +35,12 @@
             ("<a href=\""
                (let Url (till "\"" T)
                   (from ">")
-                  (when (till "<")
-                     (queue '*Links (cons (ht:Pack @) Url)) ) ) )
+                  (cond
+                     ((till "<")
+                        (queue '*Links (cons (ht:Pack @) Url)) )
+                     ((= "<img" (till " " T))
+                        (from "alt=\"")
+                        (queue '*Links (cons (ht:Pack (till "\"")) Url)) ) ) ) )
             (" action=\""
                (queue '*Forms (list (till "\"" T))) )  # (action . fields)
             ("<input type=\"submit\" name=\""
@@ -128,15 +132,20 @@
    *Title )
 
 (de target (Lst Lbl Cnt)
-   (default Cnt 1)
-   (or
-      (find
-         '((L)
-            (and
-               (= Lbl (car L))
-               (=0 (dec 'Cnt)) ) )
-         Lst )
-      (quit "Target not found" Lbl) ) )
+   (cond
+      ((num? Lbl)
+         (get Lst Lbl) )
+      ((pair Lbl) Lbl)
+      (T
+         (default Cnt 1)
+         (or
+            (find
+               '((L)
+                  (and
+                     (pre? Lbl (car L))
+                     (=0 (dec 'Cnt)) ) )
+               Lst )
+            (quit "Target not found" Lbl) ) ) ) )
 
 (de field (Fld Cnt)
    (or

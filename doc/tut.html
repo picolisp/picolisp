@@ -24,11 +24,18 @@ Lisp, and its differences to other Lisp dialects.
 the shell prompt as
 
 <p><pre><code>
+$ ./dbg
+:
+</code></pre>
+
+<p>This is equivalent to
+
+<p><pre><code>
 $ ./p dbg.l
 :
 </code></pre>
 
-<p>This loads the Pico Lisp base system and the debugging environment, and waits
+<p>It loads the Pico Lisp base system and the debugging environment, and waits
 for you to enter input lines at the interpreter prompt (<code>:</code>). You can
 terminate the interpreter and return to the shell at any time, by either hitting
 the ENTER key (i.e. by entering an empty line), or by executing the function
@@ -1000,7 +1007,7 @@ href="refL.html#load">load</a></code>ed as a file. A typical invocation might
 look like:
 
 <p><pre><code>
-$ ./p dbg.l app/file1.l -main app/file2.l
+$ ./dbg app/file1.l -main app/file2.l
 </code></pre>
 
 <p>It loads the debugging environment, an application source file, calls the
@@ -1009,7 +1016,7 @@ development and debugging session, this line is often modified using the shell's
 history mechanisms, e.g. by inserting debugging statements:
 
 <p><pre><code>
-$ ./p dbg.l app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l
+$ ./dbg app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l
 </code></pre>
 
 <p>Another convenience during debugging and testing is to put things into the
@@ -1017,7 +1024,7 @@ command line (shell history) which would otherwise have to be done each time in
 the application's user interface:
 
 <p><pre><code>
-$ ./p dbg.l app/file1.l -main app/file2.l -go -'login "name" "password"'
+$ ./dbg app/file1.l -main app/file2.l -go -'login "name" "password"'
 </code></pre>
 
 <p>The final production release of an application usually includes a shell
@@ -1117,7 +1124,7 @@ file names with that pathname. Thus, to run the above example in some other
 place, simply write:
 
 <p><pre><code>
-$ /home/foo/picolisp/p @dbg.l @app/file1.l -main @app/file2.l
+$ /home/foo/picolisp/dbg @app/file1.l -main @app/file2.l
 </code></pre>
 
 <p>that is, supply a full path name to the initial command (here 'p'), or put it
@@ -1207,7 +1214,7 @@ don't have to type it in. Just <code><a href="refL.html#load">load</a></code>
 the file, or start it from the shell as:
 
 <p><pre><code>
-$ ./p dbg.l doc/shape.l
+$ ./dbg doc/shape.l
 </code></pre>
 
 <p>Let's look at it piece by piece. Here's the base class:
@@ -1570,7 +1577,7 @@ $                    # back to the shell
 <p>So, the next time when ..
 
 <p><pre><code>
-$ ./p dbg.l             # .. we start Pico Lisp
+$ ./dbg                 # .. we start Pico Lisp
 : (pool "test.db")      # and open the database file,
 -> T
 : (show *DB)            # our two symbols are there again
@@ -1598,7 +1605,7 @@ which allows a close mapping of the application data structure to the database.
 for test purposes in the following way:
 
 <p><pre><code>
-$ ./p dbg.l doc/family.l -main
+$ ./dbg doc/family.l -main
 :
 </code></pre>
 
@@ -1873,7 +1880,7 @@ href="family.l">doc/family.l</a></code>.
 <p>To start the database <i>and</i> the application server, call:
 
 <p><pre><code>
-$ ./p dbg.l doc/family.l -main -go
+$ ./dbg doc/family.l -main -go
 </code></pre>
 
 <p>As before, the database is opened with <code>main</code>. The function

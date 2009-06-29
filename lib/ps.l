@@ -1,20 +1,36 @@
-# 13aug08abu
+# 05jun09abu
 # (c) Software Lab. Alexander Burger
 
-# "*PgX" "*PgY"
+# "*Glyph" "*PgX" "*PgY"
 # "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF" "*UL"
+
+(once
+   (balance '"*Glyph"
+      (sort
+         (make
+            (in "@lib/glyphlist.txt"
+               (use (L C)
+                  (while (setq L (line))
+                     (unless (or (= "#" (car L)) (member " " L))
+                        (setq
+                           L (split L ";")
+                           C (char (hex (pack (cadr L)))) )
+                        (set (link C) (pack (car L))) ) ) ) ) ) ) ) )
+
+(de glyph (C)
+   (val (car (idx '"*Glyph" C))) )
 
 (de pdf (Nm . Prg)
    (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
-      (out (list "bin/lat1" Ps) (run Prg 1))
+      (out Ps (run Prg 1))
       (_pdf)
       Pdf ) )
 
 (de psOut (How Nm . Prg)
    (ifn Nm
-      (out (list "bin/lat1" "-lpr" (pack "-P" How)) (run Prg 1))
+      (out (list "lpr" (pack "-P" How)) (run Prg 1))
       (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
-         (out (list "bin/lat1" Ps) (run Prg 1))
+         (out Ps (run Prg 1))
          (cond
             ((not How) (_pdf) (url Pdf "PDF"))
             ((=0 How) (_pdf) (url Pdf))
@@ -37,17 +53,7 @@
    (prinl "%%BoundingBox: 0 0 "
       (setq "*DX" DX "*PgX" DX) " "
       (setq "*DY" DY "*PgY" DY) )
-   (prinl "%%DocumentFonts: (atend)")
-   (prinl "/PicoEncoding")
-   (prinl "   ISOLatin1Encoding  dup length array  copy")
-   (prinl "   dup 164  /Euro  put")
-   (prinl "def")
-   (prinl "/isoLatin1 {")
-   (prinl "   dup dup findfont  dup length  dict begin")
-   (prinl "      {1 index /FID ne {def} {pop pop} ifelse} forall")
-   (prinl "      /Encoding PicoEncoding def  currentdict")
-   (prinl "   end  definefont")
-   (prinl "} def")
+   (in "@lib/head.ps" (echo))
    (zero "*Pos")
    (off "*Fonts" "*Lim" "*UL")
    (setq "*Size" 12) )
@@ -167,22 +173,18 @@
       (T (mapc _ps (split (chop "X") "^J"))) ) )
 
 (de ps+ ("X")
+   (fmtPs (chop "X"))
    (?ul1)
-   (prinl
-      "("
-      (escPs (if (atom "X") (chop "X") "X"))
-      ") show" )
+   (prinl " glyphArrayShow")
    (?ul2) )
 
 (de _ps ("L")
    ("?ff")
-   (setq "L" (escPs "L"))
-   (cond
-      ((not "H")
-         (prin 0) )
-      ((=0 "H")
-         (prin "*DX" " (" "L" ") stringwidth pop sub 2 div") )
-      (T (prin "*DX" " (" "L" ") stringwidth pop sub")) )
+   (fmtPs "L")
+   (ifn "H"
+      (prin " 0")
+      (prin " dup glyphArrayWidth " "*DX" " exch sub")
+      (and (=0 "H") (prin " 2 div")) )
    (prin
       " "
       (-
@@ -193,28 +195,35 @@
             ((=0 "V")
                (setq "*Pos" (+ (/ "*Size" 4) (/ "*DY" 2))) )
             (T (setq "*Pos" "*DY")) ) ) )
-   (prin " moveto ")
+   (prin " moveto")
    (?ul1)
-   (prinl "(" "L" ") show")
+   (prinl " glyphArrayShow")
    (?ul2) )
 
-(de escPs (L)
-   (mapcan
-      '((C)
-         (if (sub? C "\\()")
-            (list "\\" C)
-            (list C) ) )
-      L ) )
+(de escPs (C)
+   (and (sub? C "\\()") (prin "\\"))
+   (prin C) )
+
+(de fmtPs (Lst)
+   (prin "[")
+   (while Lst
+      (if (>= (car Lst) `(char 128))
+         (prin "/" (or (glyph (pop 'Lst)) ".notdef"))
+         (prin "(")
+         (escPs (pop 'Lst))
+         (while (and Lst (>= `(char 127) (car Lst)))
+            (escPs (pop 'Lst)) )
+         (prin ")") )
+      (and Lst (space)) )
+   (prin "]") )
 
 (de ?ul1 ()
-   (and "*UL" (prinl "currentpoint " "*UL" " sub")) )
+   (and "*UL" (prin " currentpoint " "*UL" " sub 3 -1 roll")) )
 
 (de ?ul2 ()
    (when "*UL"
       (prinl "currentpoint " "*UL" " sub")
-      (prinl "gsave")
-      (prinl "newpath 4 -2 roll moveto lineto stroke")
-      (prinl "grestore") ) )
+      (prinl "gsave  newpath 4 -2 roll moveto lineto stroke grestore") ) )
 
 (de pos (N)
    (if N (+ N "*Pos") "*Pos") )

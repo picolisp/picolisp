@@ -1,4 +1,4 @@
-# 23feb09abu
+# 22may09abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -169,6 +169,7 @@
 
 ### head ###
 (test '(a b c) (head 3 '(a b c d e f)))
+(test NIL (head NIL '(a b c d e f)))
 (test NIL (head 0 '(a b c d e f)))
 (test '(a b c d e f) (head 10 '(a b c d e f)))
 (test '(a b c d) (head -2 '(a b c d e f)))
@@ -178,6 +179,7 @@
 ### tail ###
 (test '(d e f) (tail 3 '(a b c d e f)))
 (test '(c d e f) (tail -2 '(a b c d e f)))
+(test NIL (tail NIL '(a b c d e f)))
 (test NIL (tail 0 '(a b c d e f)))
 (test '(a b c d e f) (tail 10 '(a b c d e f)))
 (test '(d e f) (tail '(d e f) '(a b c d e f)))
@@ -185,6 +187,7 @@
 
 ### stem ###
 (test '("g" "h" "i") (stem (chop "abc/def\\ghi") "/" "\\"))
+(test '("g" "h" "i") (stem (chop "abc/def\\ghi") "\\" "/"))
 
 
 ### fin ###
@@ -374,9 +377,12 @@
 ### size ###
 (test 3 (size "abc"))
 (test 4 (size "äbc"))
-(test 1 (size 123))
+(test 1 (size 127))
+(test 2 (size 128))
 (test 4 (size (1 (2) 3)))
 (test 3 (size (1 2 3 .)))
+(test 8 (size '((1 2 3) (4 5 6))))
+(test 6 (size '((1 2 .) (4 5 .))))
 
 
 ### assoc ###

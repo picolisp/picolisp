@@ -1,7 +1,7 @@
-# 19feb09abu
+# 24jun09abu
 # (c) Software Lab. Alexander Burger
 
-# *Home *Gate *Host *Port *Port1 *Http1 *Chunked
+# *Home *Gate *Host *Port *Port1 *Http1 *HtRun *Chunked
 # *Sock *Agent *ContLen *MPartLim *MPartEnd "*HtSet"
 # *Post *Url *Timeout *SesId *ConId
 # *Cookies "*Cookies"
@@ -114,10 +114,10 @@
       (timeout *Timeout) ) )
 
 # Set a cookie
-(de cookie (Key Val)
-   (if (assoc Key "*Cookies")
-      (con @ Val)
-      (push '"*Cookies" (cons Key Val)) ) )
+(de cookie @
+   (if (assoc (next) "*Cookies")
+      (con @ (rest))
+      (push '"*Cookies" (cons (arg) (rest))) ) )
 
 # Handle HTTP-Transaction
 (de http (S)
@@ -181,12 +181,13 @@
                (out S
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
-                        (try 'html> (extern (ht:Pack @X))) )
+                        (_htRun (try 'html> (extern (ht:Pack @X)))) )
                      ((= '@ (car @U))
                         (if (and *Allow (not (idx *Allow *Url)))
                            (prog (msg *Url " not allowed") (http404))
                            (and *SesId (timeout *Timeout))
-                           (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
+                           (_htRun
+                              (apply (val (intern (ht:Pack (cdr @U)))) L) ) ) )
                      ((and *Allow
                            (not (idx *Allow *Url))
                            (or
@@ -198,15 +199,22 @@
                         (http404) )
                      ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (apply script L *Url) )
+                        (_htRun (apply script L *Url)) )
                      ((assoc (stem @U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (if (info (setq *Url (pack *Url "default")))
-                           (apply script L *Url)
+                           (_htRun (apply script L *Url))
                            (http404) ) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (close S) (task S)) ) )
+
+(de _htRun "Prg"
+   (let http '((S) (fifo '*HtRun (assoc S *Run)) (task S))
+      (run "Prg") )
+   (while *HtRun
+      (when (fifo '*HtRun)
+         (run (cddr (push '*Run @))) ) ) )
 
 (de _htHead ()
    (use (L @X @Y)
@@ -337,11 +345,23 @@
          (if Att "attachment" "inline")
          "; filename=\"" File "\"^M" ) ) )
 
+(de httpCookies ()
+   (mapc
+      '((L)
+         (prin "Set-Cookie: "
+            (ht:Fmt (pop 'L)) "=" (ht:Fmt (pop 'L))
+            "; path=" (or (pop 'L) "/") )
+         (and (pop 'L) (prin "; expires=" @))
+         (and (pop 'L) (prin "; domain=" @))
+         (and (pop 'L) (prin "; secure"))
+         (and (pop 'L) (prin "; HttpOnly"))
+         (prinl) )
+      "*Cookies" ) )
+
 (de httpHead (Typ Upd File Att)
    (http1 Typ Upd File Att)
    (and *Chunked (prinl "Transfer-Encoding: chunked^M"))
-   (for L "*Cookies"
-      (prinl "Set-Cookie: " (ht:Fmt (car L)) "=" (ht:Fmt (cdr L)) "; path=/") )
+   (httpCookies)
    (prinl "^M") )
 
 (de httpDate (Dat Tim)
@@ -389,6 +409,7 @@
    (while (args)
       (prinl (next) "^M") )
    (prinl "Content-Type: text/html^M")
+   (httpCookies)
    (prinl "Content-Length: " (+ 68 (length N) (* 2 (length Str))) "^M")
    (prinl "^M")
    (prinl "<HTML>")
@@ -405,5 +426,9 @@
 
 (de http404 ()
    (httpStat 404 "Not Found") )
+
+`*Dbg
+(noLint 'http '"O")
+(noLint '_htRun 'http)
 
 # vi:et:ts=3:sw=3

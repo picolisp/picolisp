@@ -1,4 +1,4 @@
-# 25aug08abu
+# 17jun09abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -115,20 +115,21 @@
 
 
 ### pre? ###
-(test T (pre? "" "abcdef")))
+(test "abcdef" (pre? "" "abcdef")))
 (test NIL (pre? "abc" "")))
-(test T (pre? "abc" "abcdef")))
+(test "abcdef" (pre? "abc" "abcdef")))
 (test NIL (pre? "def" "abcdef"))
-(test T (pre? "" "abcdef"))
+(test "abcdef" (pre? "" "abcdef"))
+(test "7fach" (pre? (+ 3 4) "7fach"))
 
 
 ### sub? ###
-(test T (sub? "" "abcdef")))
+(test "abcdef" (sub? "" "abcdef")))
 (test NIL (sub? "abc" "")))
-(test T (sub? "cde" "abcdef"))
-(test T (sub? "def" "abcdef"))
+(test "abcdef" (sub? "cde" "abcdef"))
+(test "abcdef" (sub? "def" "abcdef"))
 (test NIL (sub? "abb" "abcdef"))
-(test T (sub? "" "abcdef"))
+(test "abcdef" (sub? "" "abcdef"))
 
 
 ### val ###

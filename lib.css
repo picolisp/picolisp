@@ -1,4 +1,4 @@
-/* 30jan09abu
+/* 21apr09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -8,6 +8,7 @@
 .clr {clear: both;}
 .norm {text-align: left;}
 .align {text-align: right;}
+.center {text-align: center;}
 .black {color: black;}
 .red {color: red;}
 .green {color: green;}

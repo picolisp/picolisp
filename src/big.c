@@ -1,4 +1,4 @@
-/* 12dec08abu
+/* 16jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -413,7 +413,7 @@ any symToNum(any s, int scl, int sep, int ign) {
    frac = NO;
    Push(c1, s);
    Push(c2, box(c+c));
-   while ((c = symByte(NULL))  &&  (!frac || scl)) {
+   while ((c = symChar(NULL))  &&  (!frac || scl)) {
       if ((int)c == sep) {
          if (frac) {
             drop(c1);
@@ -507,7 +507,7 @@ any numToSym(any x, int scl, int sep, int ign) {
       byteSym('-', &i, &x);
    if ((scl = ta - acc - scl) < 0) {
       byteSym('0', &i, &x);
-      byteSym(sep, &i, &x);
+      charSym(sep, &i, &x);
       while (scl < -1)
          byteSym('0', &i, &x),  ++scl;
    }
@@ -516,9 +516,9 @@ any numToSym(any x, int scl, int sep, int ign) {
       if (--ta < acc)
          return consStr(Pop(c1));
       if (scl == 0)
-         byteSym(sep, &i, &x);
+         charSym(sep, &i, &x);
       else if (ign  &&  scl > 0  &&  scl % 3 == 0)
-         byteSym(ign, &i, &x);
+         charSym(ign, &i, &x);
       --scl;
    }
 }
@@ -677,9 +677,9 @@ any doInc(any ex) {
       return Pop(c1);
    }
    CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
    if (!isCell(x = cdr(x))) {
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isNil(val(data(c1))))
          return Nil;
       NeedNum(ex,val(data(c1)));
@@ -696,8 +696,6 @@ any doInc(any ex) {
    else {
       Save(c1);
       Push(c2, EVAL(car(x)));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;
@@ -741,9 +739,9 @@ any doDec(any ex) {
       return Pop(c1);
    }
    CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
    if (!isCell(x = cdr(x))) {
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isNil(val(data(c1))))
          return Nil;
       NeedNum(ex,val(data(c1)));
@@ -759,8 +757,6 @@ any doDec(any ex) {
    else {
       Save(c1);
       Push(c2, EVAL(car(x)));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isNil(val(data(c1))) || isNil(data(c2))) {
          drop(c1);
          return Nil;
@@ -1092,38 +1088,7 @@ any doBitXor(any ex) {
    return Pop(c1);
 }
 
-// Needs to be optimized!
-// (sqrt 'num) -> num
-any doSqrt(any ex) {
-   any x;
-   cell c1, c2, c3;
-
-   x = cdr(ex);
-   if (isNil(x = EVAL(car(x))))
-      return Nil;
-   NeedNum(ex,x);
-   if (isNeg(x))
-      err(ex, x, "Bad argument");
-   Push(c1, bigCopy(x));
-   Push(c2, box(2));
-   for (x = data(c1);  isNum(cdr(numCell(x)));  x = cdr(numCell(x)))
-      data(c2) = consNum(0, data(c2));
-   while (bigCmp(data(c2),data(c1)) <= 0)
-      digMul2(data(c2)),  digMul2(data(c2));
-   Push(c3, box(0));
-   do {
-      bigAdd(data(c3),data(c2));
-      if (bigCmp(data(c3),data(c1)) > 0)
-         bigSub(data(c3),data(c2));
-      else
-         bigSub(data(c1),data(c3)),  bigAdd(data(c3),data(c2));
-      digDiv2(data(c3));
-      digDiv2(data(c2)),  digDiv2(data(c2));
-   } while (!IsZero(data(c2)));
-   drop(c1);
-   return data(c3);
-}
-
+/* Random numbers */
 static u_int64_t Seed;
 
 static u_int64_t initSeed(any x) {

@@ -1,4 +1,4 @@
-03aug07abu
+09jun09abu
 (c) Software Lab. Alexander Burger
 
 
@@ -41,20 +41,20 @@ Please follow these steps:
          Invocation
          ==========
 
-The shell script 'p' is usually called to start up Pico Lisp, typically with
-'dbg.l' to load the interactive debugging environment.
+The shell script 'dbg' is usually called to start up Pico Lisp in interactive
+debugging mode
 
-$ ./p dbg.l
-:
+   $ ./dbg
+   :
 
 The colon ':' is Pico's prompt. You may enter some Lisp expression,
 
-: (+ 1 2 3)
--> 6
+   : (+ 1 2 3)
+   -> 6
 
-To exit the interpreter, you may enter
+To exit the interpreter, enter
 
-: (bye)
+   : (bye)
 
 or simply type an empy line (Return).
 

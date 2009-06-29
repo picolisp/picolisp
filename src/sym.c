@@ -1,18 +1,29 @@
-/* 09mar09abu
+/* 24jun09abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-/* ELF hash algorithm */
-unsigned long hash(any x) {
+/* Internal/transient hash */
+unsigned long ihash(any x) {
    unsigned long g, h;
    word n;
 
    for (h = 0; isNum(x); x = cdr(numCell(x)))
       for (n = unDig(x); n; n >>= 8)
          g = (h = (h<<4) + (n&0xFF)) & 0xF0000000,  h = (h ^ g>>24) & ~g;
-   return h % HASH;
+   return h % IHASH;
+}
+
+/* External hash */
+unsigned long ehash(any x) {
+   unsigned long h;
+   word n;
+
+   for (h = 0; isNum(x); x = cdr(numCell(x)))
+      for (n = unDig(x); n; n >>= 11)
+         h += n;
+   return h % EHASH;
 }
 
 bool hashed(any s, long h, any *tab) {
@@ -66,7 +77,7 @@ any doName(any ex) {
    y = name(data(c1));
    if (!isCell(x = cdr(x)))
       return isNum(y)? consStr(y) : Nil;
-   if (isNil(data(c1)) || isExt(data(c1)) || hashed(data(c1), hash(y), Intern))
+   if (isNil(data(c1)) || isExt(data(c1)) || hashed(data(c1), ihash(y), Intern))
       err(ex, data(c1), "Can't rename");
    Save(c1);
    x = EVAL(car(x));
@@ -78,23 +89,15 @@ any doName(any ex) {
 
 /* Find or create single-char symbol */
 any mkChar(int c) {
-   any x;
-
-   if (c == TOP)
-      c = 0xFF;
-   else if (c >= 0x80) {
+   if (c >= 0x80) {
       if (c < 0x800)
          c = 0xC0 | c>>6 & 0x1F  |  (0x80 | c & 0x3F) << 8;
+      else if (c == TOP)
+         c = 0xFF;
       else
          c = 0xE0 | c>>12 & 0x0F  |  (0x80 | c>>6 & 0x3F) << 8  |  (0x80 | c & 0x3F) << 16;
-      return consStr(box(c));
    }
-   for (x = Transient[c];  isCell(x);  x = cdr(x))
-      if (num(c) == unDig(name(car(x))))
-         return car(x);
-   x = consStr(box(c));
-   Transient[c] = cons(x, Transient[c]);
-   return x;
+   return consStr(box(c));
 }
 
 /* Make name */
@@ -115,7 +118,7 @@ any intern(char *s) {
    if (!*s)
       return Nil;
    nm = mkName(s);
-   if (x = findHash(nm, h = Intern + hash(nm)))
+   if (x = findHash(nm, h = Intern + ihash(nm)))
       return x;
    *h = cons(x = consStr(nm), *h);
    return x;
@@ -158,43 +161,34 @@ any doPatQ(any x) {
 
 // (fun? 'any) -> any
 any doFunQ(any x) {
-   any y;
-
    x = cdr(x);
-   if (isSym(x = EVAL(car(x))))
-      return Nil;
-   if (isNum(x))
-      return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : x;
-   for (y = cdr(x); isCell(y) && y != x; y = cdr(y)) {
-      if (isCell(car(y))) {
-         if (isCell(cdr(y)) && isNum(caar(y)))
-            return Nil;
-         if (isNil(caar(y)) || caar(y) == T)
-            return Nil;
-      }
-      else if (!isNil(cdr(y)))
-         return Nil;
-   }
-   if (!isNil(y))
-      return Nil;
-   if (isNil(x = car(x)))
-      return T;
-   for (y = x; isCell(y);)
-      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T || x==(y=cdr(y)))
-         return Nil;
-   return isNum(y) || y==T? Nil : x;
+   return funq(EVAL(car(x)));
 }
 
-// (all ['T | 0]) -> lst
+// (getd 'any) -> fun | NIL
+any doGetd(any x) {
+   x = cdr(x);
+   if (!isSym(x = EVAL(car(x))))
+      return Nil;
+   return !isNil(funq(val(x))) || isNil(val(x)) && sharedLib(x)?
+      val(x) : Nil;
+}
+
+// (all ['T | '0]) -> lst
 any doAll(any x) {
    any *p;
-   int i;
+   int mod, i;
    cell c1;
 
    x = cdr(x),  x = EVAL(car(x));
-   p = isNil(x)? Intern : x==T? Transient : Extern;
+   if isNil(x)
+      p = Intern,  mod = IHASH;
+   else if (x == T)
+      p = Transient,  mod = IHASH;
+   else
+      p = Extern,  mod = EHASH;
    Push(c1, Nil);
-   for (i = 0; i < HASH; ++i)
+   for (i = 0; i < mod; ++i)
       for (x = p[i]; isCell(x); x = cdr(x))
          data(c1) = cons(car(x), data(c1));
    return Pop(c1);
@@ -208,7 +202,9 @@ any doIntern(any ex) {
    NeedSym(ex,x);
    if (!isNum(y = name(x)))
       return Nil;
-   if (z = findHash(y, h = Intern + hash(y)))
+   if (unDig(y) == ('L'<<16 | 'I'<<8 | 'N'))
+      return Nil;
+   if (z = findHash(y, h = Intern + ihash(y)))
       return z;
    *h = cons(x,*h);
    return x;
@@ -224,14 +220,14 @@ any doExtern(any ex) {
    NeedSym(ex,x);
    if (!isNum(x = name(x)))
       return Nil;
-   if (!(y = findHash(x, Extern + hash(x)))) {
+   if (!(y = findHash(x, Extern + ehash(x)))) {
       Push(c1, x);
       if ((c = symChar(x)) == '{')
          c = symChar(NULL);
       Push(c2, boxChar(c, &i, &nm));
       while ((c = symChar(NULL)) && c != '}')
          charSym(c, &i, &nm);
-      if (!(y = findHash(data(c2), h = Extern + hash(data(c2))))) {
+      if (!(y = findHash(data(c2), h = Extern + ehash(data(c2))))) {
          mkExt(y = consSym(Nil,data(c2)));
          *h = cons(y,*h);
       }
@@ -245,12 +241,12 @@ any doHide(any ex) {
    any x, y, z, *h;
    int i;
 
-   for (i = 0; i < HASH; ++i)
+   for (i = 0; i < IHASH; ++i)
       Transient[i] = Nil;
    for (x = cdr(ex); isCell(x); x = cdr(x)) {
       y = EVAL(car(x));
       NeedSym(ex,y);
-      if (isNum(z = name(y)) && !findHash(z, h = Transient + hash(z)))
+      if (isNum(z = name(y)) && !findHash(z, h = Transient + ihash(z)))
          *h = cons(y,*h);
    }
    return Nil;
@@ -266,7 +262,7 @@ any doBoxQ(any x) {
 any doStrQ(any x) {
    x = cdr(x);
    return isSym(x = EVAL(car(x))) &&
-         !isExt(x) && !hashed(x,hash(name(x)),Intern)? x : Nil;
+         !isExt(x) && !hashed(x, ihash(name(x)), Intern)? x : Nil;
 }
 
 // (ext? 'any) -> sym | NIL
@@ -295,7 +291,7 @@ any doZap(any ex) {
    else {
       if (x >= Nil  &&  x <= Bye)
          protError(ex,x);
-      for (h = Intern + hash(name(x)); isCell(y = *h); h = &y->cdr)
+      for (h = Intern + ihash(name(x)); isCell(y = *h); h = &y->cdr)
          if (x == car(y)) {
             *h = cdr(y);
             break;
@@ -396,7 +392,7 @@ any doGlue(any x) {
    return nm? consStr(data(c3)) : Nil;
 }
 
-// (text 'sym 'any ..) -> sym
+// (text 'any1 'any ..) -> sym
 any doText(any x) {
    int c, n, i;
    any nm;
@@ -444,7 +440,7 @@ any doText(any x) {
    }
 }
 
-static bool cmpStr(word n1, any y, word n2, any x) {
+static bool pre(word n1, any y, word n2, any x) {
    for (;;) {
       if ((n1 & 0xFF) != (n2 & 0xFF))
          return NO;
@@ -470,7 +466,7 @@ bool subStr(any y, any x) {
       return NO;
    n = unDig(x);
    for (;;) {
-      if (cmpStr(unDig(y), y, n, x))
+      if (pre(unDig(y), y, n, x))
          return YES;
       if ((n >>= 8) == 0) {
          if (!isNum(x = cdr(numCell(x))))
@@ -480,34 +476,29 @@ bool subStr(any y, any x) {
    }
 }
 
-// (pre? 'sym1 'sym2) -> flg
-any doPreQ(any ex) {
-   any x, y;
+// (pre? 'any1 'any2) -> any2 | NIL
+any doPreQ(any x) {
+   any y, z;
    cell c1;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
-   NeedSym(ex,data(c1));
-   x = cdr(x),  x = EVAL(car(x));
-   NeedSym(ex,x);
+   x = cdr(x),  Push(c1, evSym(x));
+   x = cdr(x),  x = evSym(x);
    drop(c1);
    if (!isNum(y = name(data(c1))))
-      return T;
-   if (!isNum(x = name(x)))
+      return x;
+   if (!isNum(z = name(x)))
       return Nil;
-   return cmpStr(unDig(y), y, unDig(x), x)? T : Nil;
+   return pre(unDig(y), y, unDig(z), z)? x : Nil;
 }
 
-// (sub? 'sym1 'sym2) -> flg
-any doSubQ(any ex) {
-   any x;
+// (sub? 'any1 'any2) -> any2 | NIL
+any doSubQ(any x) {
    cell c1;
 
-   x = cdr(ex),  Push(c1, EVAL(car(x)));
-   NeedSym(ex,data(c1));
-   x = cdr(x),  x = EVAL(car(x));
-   NeedSym(ex,x);
+   x = cdr(x),  Push(c1, evSym(x));
+   x = cdr(x),  x = evSym(x);
    drop(c1);
-   return subStr(data(c1), x)? T : Nil;
+   return subStr(data(c1), x)? x : Nil;
 }
 
 // (val 'var) -> any
@@ -531,9 +522,9 @@ any doSet(any ex) {
       Push(c1, EVAL(car(x))),  x = cdr(x);
       NeedVar(ex,data(c1));
       CheckVar(ex,data(c1));
-      Push(c2, EVAL(car(x))),  x = cdr(x);
       if (isSym(data(c1)))
          Touch(ex,data(c1));
+      Push(c2, EVAL(car(x))),  x = cdr(x);
       val(data(c1)) = data(c2);
       drop(c1);
    } while (isCell(x));
@@ -564,11 +555,11 @@ any doXchg(any ex) {
       Push(c1, EVAL(car(x))),  x = cdr(x);
       NeedVar(ex,data(c1));
       CheckVar(ex,data(c1));
+      if (isSym(data(c1)))
+         Touch(ex,data(c1));
       Push(c2, EVAL(car(x))),  x = cdr(x);
       NeedVar(ex,data(c2));
       CheckVar(ex,data(c2));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isSym(data(c2)))
          Touch(ex,data(c2));
       y = val(data(c1)),  val(data(c1)) = val(data(c2)),  val(data(c2)) = y;
@@ -577,66 +568,72 @@ any doXchg(any ex) {
    return y;
 }
 
-// (on sym ..) -> T
+// (on var ..) -> T
 any doOn(any ex) {
    any x = cdr(ex);
    do {
-      NeedSym(ex,car(x));
+      NeedVar(ex,car(x));
+      CheckVar(ex,car(x));
       val(car(x)) = T;
    } while (isCell(x = cdr(x)));
    return T;
 }
 
-// (off sym ..) -> NIL
+// (off var ..) -> NIL
 any doOff(any ex) {
    any x = cdr(ex);
    do {
-      NeedSym(ex,car(x));
+      NeedVar(ex,car(x));
+      CheckVar(ex,car(x));
       val(car(x)) = Nil;
    } while (isCell(x = cdr(x)));
    return Nil;
 }
 
-// (onOff sym ..) -> flg
+// (onOff var ..) -> flg
 any doOnOff(any ex) {
    any x = cdr(ex);
    any y;
 
    do {
-      NeedSym(ex,car(x));
+      NeedVar(ex,car(x));
+      CheckVar(ex,car(x));
       y = val(car(x)) = isNil(val(car(x)))? T : Nil;
    } while (isCell(x = cdr(x)));
    return y;
 }
 
-// (zero sym ..) -> 0
+// (zero var ..) -> 0
 any doZero(any ex) {
    any x = cdr(ex);
    do {
-      NeedSym(ex,car(x));
+      NeedVar(ex,car(x));
+      CheckVar(ex,car(x));
       val(car(x)) = Zero;
    } while (isCell(x = cdr(x)));
    return Zero;
 }
 
-// (one sym ..) -> 1
+// (one var ..) -> 1
 any doOne(any ex) {
    any x = cdr(ex);
    do {
-      NeedSym(ex,car(x));
+      NeedVar(ex,car(x));
+      CheckVar(ex,car(x));
       val(car(x)) = One;
    } while (isCell(x = cdr(x)));
    return One;
 }
 
-// (default sym 'any ..) -> any
+// (default var 'any ..) -> any
 any doDefault(any ex) {
    any x, y;
 
    x = cdr(ex);
    do {
       y = car(x),  x = cdr(x);
-      NeedSym(ex,y);
+      NeedVar(ex,y);
+      CheckVar(ex,y);
       if (isNil(val(y)))
          val(y) = EVAL(car(x));
    } while (isCell(x = cdr(x)));
@@ -651,14 +648,12 @@ any doPush(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
-   x = cdr(x),  Push(c2, EVAL(car(x)));
    if (isSym(data(c1)))
       Touch(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
    val(data(c1)) = cons(data(c2), val(data(c1)));
    while (isCell(x = cdr(x))) {
       data(c2) = EVAL(car(x));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       val(data(c1)) = cons(data(c2), val(data(c1)));
    }
    drop(c1);
@@ -673,18 +668,14 @@ any doPush1(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
    x = cdr(x),  Push(c2, EVAL(car(x)));
-   if (!member(data(c2), val(data(c1)))) {
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
+   if (!member(data(c2), val(data(c1))))
       val(data(c1)) = cons(data(c2), val(data(c1)));
-   }
    while (isCell(x = cdr(x)))
-      if (!member(data(c2) = EVAL(car(x)), val(data(c1)))) {
-         if (isSym(data(c1)))
-            Touch(ex,data(c1));
+      if (!member(data(c2) = EVAL(car(x)), val(data(c1))))
          val(data(c1)) = cons(data(c2), val(data(c1)));
-      }
    drop(c1);
    return data(c2);
 }
@@ -715,9 +706,9 @@ any doCut(any ex) {
    x = cdr(x),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
    if (isCell(val(data(c1)))) {
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       Push(c2, y = cons(car(val(data(c1))), Nil));
       while (isCell(val(data(c1)) = cdr(val(data(c1)))) && --n)
          y = cdr(y) = cons(car(val(data(c1))), Nil);
@@ -736,10 +727,10 @@ any doDel(any ex) {
    x = cdr(x),  Push(c2, EVAL(car(x)));
    NeedVar(ex,data(c2));
    CheckVar(ex,data(c2));
+   if (isSym(data(c2)))
+      Touch(ex,data(c2));
    if (isCell(x = val(data(c2)))) {
       if (equal(data(c1), car(x))) {
-         if (isSym(data(c2)))
-            Touch(ex,data(c2));
          drop(c1);
          return val(data(c2)) = cdr(x);
       }
@@ -747,8 +738,6 @@ any doDel(any ex) {
       while (isCell(x = cdr(x))) {
          if (equal(data(c1), car(x))) {
             cdr(y) = cdr(x);
-            if (isSym(data(c2)))
-               Touch(ex,data(c2));
             drop(c1);
             return val(data(c2)) = data(c3);
          }
@@ -767,9 +756,9 @@ any doQueue(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
-   x = cdr(x),  x = EVAL(car(x));
    if (isSym(data(c1)))
       Touch(ex,data(c1));
+   x = cdr(x),  x = EVAL(car(x));
    if (!isCell(y = val(data(c1))))
       val(data(c1)) = cons(x,Nil);
    else {
@@ -789,25 +778,20 @@ any doFifo(any ex) {
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
    if (isCell(x = cdr(x))) {
       y = EVAL(car(x));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (isCell(z = val(data(c1))))
          val(data(c1)) = z = cdr(z) = cons(y,cdr(z));
       else
          cdr(z) = z = val(data(c1)) = cons(y,Nil);
-      while (isCell(x = cdr(x))) {
-         if (isSym(data(c1)))
-            Touch(ex,data(c1));
+      while (isCell(x = cdr(x)))
          val(data(c1)) = z = cdr(z) = cons(y = EVAL(car(x)), cdr(z));
-      }
    }
    else if (!isCell(z = val(data(c1))))
       y = Nil;
    else {
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
       if (z == cdr(z)) {
          y = car(z);
          val(data(c1)) = Nil;
@@ -826,33 +810,32 @@ any idx(any var, any key, int flg) {
    int n;
 
    if (!key) {
-      cell c1, c2, c3;
+      cell c1, c2;
 
       if (!isCell(x = val(var)))
          return Nil;
-      Push(c1, x);    // x
-      Push(c2, Nil);  // y
-      Push(c3, Nil);  // result
+      y = Nil;  // Result
+      Push(c1, x);  // Tree
+      Push(c2, Nil);  // TOS
       for (;;) {
          while (isCell(cddr(data(c1))))
             z = data(c1),  data(c1) = cddr(z),  cddr(z) = data(c2),  data(c2) = z;
          for (;;) {
-            data(c3) = cons(car(data(c1)), data(c3));
+            y = cons(car(data(c1)), y);
             if (isCell(cadr(data(c1)))) {
                z = data(c1),  data(c1) = cadr(z),  cadr(z) = data(c2),  data(c2) = symPtr(z);
                break;
             }
             for (;;) {
                if (isNil(data(c2))) {
-                  drop(c2);
-                  return data(c3);
+                  drop(c1);
+                  return y;
                }
                if (isCell(data(c2))) {
                   z = data(c2),  data(c2) = cddr(z),  cddr(z) = data(c1),  data(c1) = z;
                   break;
                }
-               else
-                  z = cellPtr(data(c2)),  data(c2) = cadr(z),  cadr(z) = data(c1),  data(c1) = z;
+               z = cellPtr(data(c2)),  data(c2) = cadr(z),  cadr(z) = data(c1),  data(c1) = z;
             }
          }
       }
@@ -921,11 +904,8 @@ any doIdx(any ex) {
       Push(c2, EVAL(car(x)));
       if (!isCell(cdr(x)))
          flg = 0;
-      else {
+      else
          flg = isNil(EVAL(cadr(x)))? -1 : +1;
-         if (isSym(data(c1)))
-            Touch(ex,data(c1));
-      }
       x = idx(data(c1), data(c2), flg);
    }
    drop(c1);
@@ -938,15 +918,13 @@ any doLup(any x) {
    int n;
    cell c1, c2, c3, c4, c5;
 
-   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  data(c1) = EVAL(car(x));
+   if (!isCell(data(c1)))
+      return data(c1);
+   Save(c1);
    x = cdr(x),  Push(c2, EVAL(car(x)));  // from
-   x = cdr(x);
-   if (!isNil(data(c3) = EVAL(car(x)))) {
-      if (!isCell(data(c1))) {
-         drop(c1);
-         return Nil;
-      }
-      Save(c3);  // to
+   if (isCell(x = cdr(x))) {
+      Push(c3, EVAL(car(x)));  // to
       Push(c4, Nil);  // tos
       Push(c5, Nil);  // result
       for (;;) {
@@ -976,7 +954,7 @@ any doLup(any x) {
          }
       }
    }
-   while (isCell(data(c1))) {
+   do {
       if (car(data(c1)) == T)
          data(c1) = cadr(data(c1));
       else if (!isCell(car(data(c1))))
@@ -987,7 +965,7 @@ any doLup(any x) {
          drop(c1);
          return car(data(c1));
       }
-   }
+   } while (isCell(data(c1)));
    drop(c1);
    return Nil;
 }
@@ -1332,7 +1310,7 @@ static void wipe(any x) {
    for (y = tail1(x); isCell(y); y = cdr(y));
    if (!isNum(y)) {
       val(x) = Nil;
-      Tail(x, y);
+      tail(x) = y;
    }
    else {
       z = numCell(y);
@@ -1347,18 +1325,17 @@ static void wipe(any x) {
 }
 
 // (wipe 'sym|lst) -> sym
-any doWipe(any ex) {
-   any x, y;
+any doWipe(any x) {
+   any y;
 
-   x = cdr(ex);
+   x = cdr(x);
    if (!isNil(x = EVAL(car(x))))
-      if (isSym(x))
+      if (!isCell(x))
          wipe(x);
-      else if (isCell(x)) {
-         y = x; do {
-            NeedSym(ex,car(y));
+      else {
+         y = x; do
             wipe(car(y));
-         } while (isCell(y = cdr(y)));
+         while (isCell(y = cdr(y)));
       }
    return x;
 }
@@ -1381,22 +1358,20 @@ any doMeta(any ex) {
    cell c1;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
-   x = cdr(x),  y = EVAL(car(x));
    if (isSym(data(c1))) {
       Fetch(ex,data(c1));
       data(c1) = val(data(c1));
    }
+   x = cdr(x),  y = EVAL(car(x));
    data(c1) = meta(data(c1), y);
    while (isCell(x = cdr(x))) {
       y = EVAL(car(x));
-      if (isCell(data(c1))) {
-         NeedNum(ex,y);
-         data(c1) = car(nth(unDig(y)/2, data(c1)));
-      }
+      if (isCell(data(c1)))
+         data(c1) = getn(y, data(c1));
       else {
          NeedSym(ex,data(c1));
          Fetch(ex,data(c1));
-         data(c1) = get(data(c1), y);
+         data(c1) = isNum(y) && !unDig(y)? val(data(c1)) : get(data(c1), y);
       }
    }
    return Pop(c1);

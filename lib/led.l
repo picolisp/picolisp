@@ -1,4 +1,4 @@
-# 24sep08abu
+# 19jun09abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -20,12 +20,12 @@
    "Found"     NIL      # Find stack
    "Complete"  NIL      # Input completion
 
-   "HistMax"   4000     # History limit
+   "HistMax"   1000     # History limit
 
    "History"            # History of input lines
    (in "+@.picoHistory"
       (ctl NIL
-         (make (until (eof) (link (line)))) ) )
+         (make (until (eof) (link (line T)))) ) )
    "Hist0"     "History" )
 
 
@@ -193,19 +193,18 @@
    (chgLine
       (if (=0 (setq "HPos" N))
          "Line1"
-         (get "History" "HPos") )
+         (chop (get "History" "HPos")) )
       1 ) )
 
 # Searching
 (de ledSearch (L)
-   (use (H S)
-      (setq H (nth "History" (inc "HPos")))
+   (let (H (nth "History" (inc "HPos"))  S (find '((X) (match "Item" (chop X))) H))
       (chgLine
-         (ifn (setq S (find '((X) (match "Item" X)) H))
+         (ifn S
             (prog (beep) L)
             (push '"Found" "HPos")
             (inc '"HPos" (index S H))
-            S )
+            (chop S) )
          1 ) ) )
 
 # TAB expansion
@@ -364,7 +363,7 @@
 (de saveHistory ()
    (in "+@.picoHistory"
       (ctl T
-         (let (Old (make (until (eof) (link (line))))  New "History"  N "HistMax")
+         (let (Old (make (until (eof) (link (line T))))  New "History"  N "HistMax")
             (out "@.picoHistory"
                (while (and New (n== New "Hist0"))
                   (prinl (pop 'New))
@@ -380,10 +379,11 @@
       (push1 '*Bye '(saveHistory))
       (push1 '*Fork '(del '(saveHistory) '*Bye))
       (_led)
-      (or
-         (>= 3 (length "Line"))
-         (sp? (car "Line"))
-         (= "Line" (car "History"))
-         (push '"History" "Line") )
-      (and (nth "History" "HistMax") (con @))
-      (pack "Line") ) )
+      (let L (pack "Line")
+         (or
+            (>= 3 (length "Line"))
+            (sp? (car "Line"))
+            (= L (car "History"))
+            (push '"History" L) )
+         (and (nth "History" "HistMax") (con @))
+         L ) ) )

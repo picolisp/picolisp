@@ -20,6 +20,9 @@ Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
 flexible in layout design, and does not depend on plugins, JavaScript or
 cookies.
 
+<p>A plain HTTP/HTML GUI has various advantages: It runs on any browser, and can
+be fully driven by scripts ("lib/scrape.l").
+
 <p>To be precise: CSS <i>can</i> be used to enhance the layout. And browsers
 <i>with</i> JavaScript will respond faster and smoother. But this framework
 works just fine in browsers which do not know anything about CSS or JavaScript.
@@ -151,7 +154,7 @@ browser to view the effects)
 <p>Open a second terminal window, and start a Pico Lisp application server
 
 <p><pre><code>
-$ ./p dbg.l lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+$ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
 </code></pre>
 
 <p>No prompt appears. The server just sits, and waits for connections. You can
@@ -167,10 +170,10 @@ browser. You should see an empty page with a single line of text.
 
 <h4><a name="how">How does it work?</a></h4>
 
-<p>The above line loads the debugger ("dbg.l"), the HTTP server code
-("lib/http.l"), the XHTML functions ("lib/xhtml.l") and the input form framework
-("lib/form.l", it will be needed later for <a href="#forms">interactive
-forms</a>).
+<p>The above line loads the debugger ('./dbg', which is equivalent to "./p
+dbg.l"), the HTTP server code ("lib/http.l"), the XHTML functions
+("lib/xhtml.l") and the input form framework ("lib/form.l", it will be needed
+later for <a href="#forms">interactive forms</a>).
 
 <p>Then the <code>server</code> function is called with a port number and a
 default URL. It will listen on that port for incoming HTTP requests in an
@@ -458,7 +461,7 @@ $ bin/psh 8080
 <p>or start the interpreter stand-alone, with "lib/xhtml.l" loaded
 
 <p><pre><code>
-$ ./p dbg.l lib/http.l lib/xhtml.l
+$ ./dbg lib/http.l lib/xhtml.l
 :
 </code></pre>
 
@@ -772,7 +775,7 @@ your browser and then look at the terminal window where you started the
 application server, you'll notice a colon, the Pico Lisp prompt
 
 <p><pre><code>
-$ ./p dbg.l lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+$ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
 :
 </code></pre>
 
@@ -796,8 +799,8 @@ client.
 ENTER on an empty line. Otherwise, it will terminate by itself if no other
 browser requests arrive within a default timeout period of 5 minutes.
 
-<p>To start a (non-debug) production version, the server is commonly started
-without "dbg.l", and with <code>-wait</code>
+<p>To start a (non-debug) production version, the server is commonly started not
+as 'dbg' but with a 'p', and with <code>-wait</code>
 
 <p><pre><code>
 $ ./p lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"' -wait
@@ -1058,10 +1061,8 @@ beginning, it displays a simple form, with a locked text field, and two buttons
                (gui '(+Button) "Re-Submit"
                   '(alert NIL "Are you sure? "
                      (yesButton
-                        '(prog
-                           (set&gt; (: home top 2 gui 1)
-                              (val&gt; (: home top 1 gui 1)) )
-                           (dispose (: home top 1)) ) )
+                        '(set&gt; (: home top 2 gui 1)
+                           (val&gt; (: home top 1 gui 1)) ) )
                      (noButton) ) )
                (cancelButton) ) ) ) ) )
 ########################################################################
@@ -1072,7 +1073,7 @@ string "Initial Text". As the field is locked, you cannot modify this value
 directly.
 
 <p>The first button brings up an alert saying "This is an alert.". You can
-dispose it by pressing "Ok".
+dispose it by pressing "OK".
 
 <p>The second button brings up a dialog with an editable text field, containing
 a copy of the value from the form's locked text field. You can modify this
@@ -1105,7 +1106,7 @@ href="tut.html#script">Scripting</a> section of the Pico Lisp Tutorial.
 <p>If you like to get a Pico Lisp prompt for inspection, start it instead as
 
 <p><pre><code>
-$ ./p dbg.l misc/calc.l -main -go
+$ ./dbg misc/calc.l -main -go
 </code></pre>
 
 <p>Then - as before - point your browser to '<code><a
@@ -2168,8 +2169,8 @@ products (items), orders, and other data. The order input form performs live
 updates of customer and product selections, price, inventory and totals
 calculations, and generates on-the-fly PDF documents. Fine-grained access
 permissions are controlled via users, roles and permissions. It comes localized
-in three languages (English, German and Japanese), with a some initial data and
-two sample reports.
+in four languages (English, German, Russian and Japanese), with a some initial
+data and two sample reports.
 
 
 <p><hr>
@@ -2178,7 +2179,7 @@ two sample reports.
 <p>As ever, you may start up the application in debugging mode
 
 <p><pre><code>
-$ ./p dbg.l app/main.l -main -go
+$ ./dbg app/main.l -main -go
 </code></pre>
 
 <p>or in (non-debug) production mode
@@ -2239,6 +2240,10 @@ by name), other entities can be searched by a variety of criteria. In those
 cases, a "Reset" button clears the contents of the whole dialog. A new object
 can be created with bottom right "New" button.
 
+<p>In any case, the first column will contain either a "@"-link (to jump to that
+object) or a "@"-button (to insert a reference to that object into the current
+form).
+
 <p>By default, the search will list all database objects with an attribute value
 greater than or equal to the search criterion. The comparison is done
 arithmetically for numbers, and alphabetically (case sensitive!) for text. This
@@ -2290,6 +2295,17 @@ will see a message telling his name and process ID.
 
 <p>An exception to this are objects that were just created with "New". They will
 automatically be reserved for you, and the "Edit" button will show up as "Done".
+
+<p>Whenever the contents of a form are changed (i.e. they become "dirty"), this
+is indicated by a slight darkening of the background. To process the changes,
+you could either
+
+<ul>
+<li>press an arbitrary button,
+<li>or hit the ESC key.
+</ul>
+
+Thus, the ESC key is a fast and convenient way for [E]ntry [S]ave and [C]heck.
 
 <p>The "Delete" button pops up an alert, asking for confirmation. If the object
 is indeed deleted, this button changes to "Restore" and allows to undelete the
@@ -2443,8 +2459,8 @@ large pieces of text, as it gets stored in a database blob internally.
 
 <p>To assign a supplier, click on the "+" button. The Customer/Supplier search
 dialog will appear, and you can pick the desired supplier with the "@" button in
-the rightmost column. Alternatively, if you are sure to know the exact spelling
-of the supplier's name, you can also enter it directly into the text field.
+the first column. Alternatively, if you are sure to know the exact spelling of
+the supplier's name, you can also enter it directly into the text field.
 
 <p>In the search dialog you may also click on a link, for example to inspect a
 possible supplier, and then return to the search dialog with the browser's back
@@ -2487,7 +2503,7 @@ month.
 
 <p>To assign a customer to this order, click on the "+" button. The
 Customer/Supplier search dialog will appear, and you can pick the desired
-customer with the "@" button in the rightmost column (or enter the name directly
+customer with the "@" button in the first column (or enter the name directly
 into the text field), just as described above for <a href="#item">Item</a>s.
 
 <p>Now enter order the positions: Choose an item with the "+" button. The

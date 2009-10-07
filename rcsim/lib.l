@@ -1,4 +1,4 @@
-# 29nov04abu
+# 26aug09abu
 # (c) Software Lab. Alexander Burger
 
 # *Pilot *Scene *Model
@@ -36,11 +36,14 @@
             (link (pop 'Args)) )
          (link D) ) ) )
 
+(de dist (X Y)
+   (sqrt (+ (* X X) (* Y Y))) )
+
 (de damp ("Var" Val)
    (set "Var" (>> 1 (+ Val (val "Var")))) )
 
 (de doppler (F X Y VX VY)
-   (let N (ext:Dist X Y)
+   (let N (dist X Y)
       (if (=0 N)
          F
          (- F
@@ -231,7 +234,7 @@
       (tone> *Scene
          (max 0
             (- 100
-               (/ (ext:Dist (car Body) (cadr Body)) 40.0) ) )
+               (/ (dist (car Body) (cadr Body)) 40.0) ) )
          (cond
             ((=0 (: thrust)) 0)
             ((> 22 (: thrust)) 11)

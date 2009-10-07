@@ -1,4 +1,4 @@
-# 03jan09abu
+# 01sep09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -36,7 +36,7 @@
                   ,"Fax" (gui '(+E/R +TelField) '(fax : home obj) 40)
                   ,"Mobile" (gui '(+E/R +TelField) '(mob : home obj) 40)
                   ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) ) )
-            (,"Memo"
+            ((pack (and (: obj txt) "@ ") ,"Memo")
                (gui '(+BlobField) '(txt : home obj) 60 8) ) )
          (<hr>)
          (<spread> NIL (editButton T)) ) ) )

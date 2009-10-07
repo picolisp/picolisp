@@ -11,15 +11,17 @@
 
 <dl>
 
-<dt><a name="id"><code>(id 'num 'num) -> sym<br>
+<dt><a name="id"><code>(id 'num ['num]) -> sym<br>
 (id 'sym [NIL]) -> num<br>
 (id 'sym T) -> (num . num)</code></a>
-<dd>Converts two numbers to an external symbol, or an external symbol to a
-number or a pair of numbers.
+<dd>Converts one or two numbers to an external symbol, or an external symbol to
+a number or a pair of numbers.
 
 <p><pre><code>
+: (id 7)
+-> {7}
 : (id 1 2)
--> {1-2}
+-> {2}
 : (id '{1-2})
 -> 2
 : (id '{1-2} T)

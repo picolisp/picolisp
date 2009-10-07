@@ -1,37 +1,36 @@
-# 24jun09abu
+# 03oct09abu
 # (c) Software Lab. Alexander Burger
 
-# *Home *Gate *Host *Port *Port1 *Http1 *HtRun *Chunked
+# *Home *Gate *Host *Port *Port1 *Http1 *Chunked
 # *Sock *Agent *ContLen *MPartLim *MPartEnd "*HtSet"
 # *Post *Url *Timeout *SesId *ConId
 # *Cookies "*Cookies"
 
-(once
-   (default
-      *HPorts 0
-      *Timeout (* 300 1000) )
+(default
+   *HPorts 0
+   *Timeout (* 300 1000) )
 
-   (zero *Http1)
+(zero *Http1)
 
-   (de *Mimes
-      (`(chop "html"))
-      (`(chop "au") "audio/basic" 3600)
-      (`(chop "wav") "audio/x-wav" 3600)
-      (`(chop "mp3") "audio/x-mpeg" 3600)
-      (`(chop "gif") "image/gif" 3600)
-      (`(chop "tif") "image/tiff" 3600)
-      (`(chop "tiff") "image/tiff" 3600)
-      (`(chop "bmp") "image/bmp" 3600)
-      (`(chop "png") "image/png" 3600)
-      (`(chop "jpg") "image/jpeg" 3600)
-      (`(chop "txt") "text/octet-stream" 1 T)
-      (`(chop "csv") "text/csv; charset=utf-8" 1 T)
-      (`(chop "css") "text/css" 3600)
-      (`(chop "js") "application/x-javascript" 3600)
-      (`(chop "ps") "application/postscript" 1)
-      (`(chop "pdf") "application/pdf" 1)
-      (`(chop "zip") "application/zip" 1)
-      (`(chop "jar") "application/java-archive" 3600) ) )
+(de *Mimes
+   (`(chop "html"))
+   (`(chop "au") "audio/basic" 3600)
+   (`(chop "wav") "audio/x-wav" 3600)
+   (`(chop "mp3") "audio/x-mpeg" 3600)
+   (`(chop "gif") "image/gif" 3600)
+   (`(chop "tif") "image/tiff" 3600)
+   (`(chop "tiff") "image/tiff" 3600)
+   (`(chop "bmp") "image/bmp" 3600)
+   (`(chop "png") "image/png" 3600)
+   (`(chop "jpg") "image/jpeg" 3600)
+   (`(chop "txt") "text/octet-stream" 1 T)
+   (`(chop "csv") "text/csv; charset=utf-8" 1 T)
+   (`(chop "css") "text/css" 3600)
+   (`(chop "js") "application/x-javascript" 3600)
+   (`(chop "ps") "application/postscript" 1)
+   (`(chop "pdf") "application/pdf" 1)
+   (`(chop "zip") "application/zip" 1)
+   (`(chop "jar") "application/java-archive" 3600) )
 
 (de mime (S . @)
    (let L (chop S)
@@ -126,13 +125,12 @@
       (catch "http"
          (in S
             (cond
-               ((not (setq L (line)))
+               ((or *Post (not (setq L (line))))
                   (close S)
                   (task S)
                   (off S)
                   (throw "http") )
                ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
-                  (off *Post)
                   (_htHead) )
                ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
                   (on *Post)
@@ -181,13 +179,12 @@
                (out S
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
-                        (_htRun (try 'html> (extern (ht:Pack @X)))) )
+                        (try 'html> (extern (ht:Pack @X))) )
                      ((= '@ (car @U))
                         (if (and *Allow (not (idx *Allow *Url)))
                            (prog (msg *Url " not allowed") (http404))
                            (and *SesId (timeout *Timeout))
-                           (_htRun
-                              (apply (val (intern (ht:Pack (cdr @U)))) L) ) ) )
+                           (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
                      ((and *Allow
                            (not (idx *Allow *Url))
                            (or
@@ -199,22 +196,16 @@
                         (http404) )
                      ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (_htRun (apply script L *Url)) )
+                        (apply script L *Url) )
                      ((assoc (stem @U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
                         (if (info (setq *Url (pack *Url "default")))
-                           (_htRun (apply script L *Url))
+                           (apply script L *Url)
                            (http404) ) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
-      (and S (=0 *Http1) (close S) (task S)) ) )
-
-(de _htRun "Prg"
-   (let http '((S) (fifo '*HtRun (assoc S *Run)) (task S))
-      (run "Prg") )
-   (while *HtRun
-      (when (fifo '*HtRun)
-         (run (cddr (push '*Run @))) ) ) )
+      (and S (=0 *Http1) (close S) (task S))
+      (off *Post) ) )
 
 (de _htHead ()
    (use (L @X @Y)
@@ -337,7 +328,7 @@
    (when Upd
       (prinl "Cache-Control: max-age=" Upd "^M")
       (when (=0 Upd)
-         (prinl "Cache-Control: no-cache^M") ) )
+         (prinl "Cache-Control: private, no-store, no-cache^M") ) )
    (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M")
    (when File
       (prinl
@@ -375,13 +366,10 @@
 
 # Http Echo
 (de httpEcho (File Typ Upd Att)
+   (and *Tmp (pre? *Tmp File) (one Upd))
    (ifn (info File)
       (http404)
-      (http1
-         Typ
-         (if (and *Tmp (pre? *Tmp File)) 1 Upd)
-         (stem (chop File) "/")
-         Att )
+      (http1 Typ Upd (stem (chop File) "/") Att)
       (prinl "Content-Length: " (car @) "^M")
       (prin "Last-Modified: ")
       (httpDate (cadr @) (cddr @))
@@ -418,7 +406,7 @@
    (prinl "</HTML>") )
 
 (de redirect @
-   (httpStat 302 "Found" (pass pack "Location: ")) )
+   (httpStat 303 "See Other" (pass pack "Location: ")) )
 
 (de forbidden ()
    (httpStat 403 "No Permission")
@@ -429,6 +417,5 @@
 
 `*Dbg
 (noLint 'http '"O")
-(noLint '_htRun 'http)
 
 # vi:et:ts=3:sw=3

@@ -161,7 +161,7 @@ jkl
 : (make (while (read "_" "#") (link @)))
 abc = def_ghi("xyz"+-123) # Comment
 ""
--> (abc = def_ghi "(" "xyz" + - 123 ")")
+-> (abc "=" def_ghi "(" "xyz" "+" "-" 123 ")")
 </code></pre>
 
 <dt><a name="recur"><code>(recur fun) -> any</code></a><br>
@@ -352,21 +352,15 @@ Hello world
 -> (0 733216 . 53922)
 </code></pre>
 
-<dt><a name="rollback"><code>(rollback) -> flg</code></a>
+<dt><a name="rollback"><code>(rollback) -> T</code></a>
 <dd>Cancels a transaction, by discarding all modifications of external symbols.
-For nested transactions, only the changes since the last call to <code><a
-href="refB.html#begin">begin</a></code> are discarded. Returns <code>T</code>
-when the topmost transaction is cancelled. See also <code><a
-href="refC.html#commit">commit</a></code>.
+See also <code><a href="refC.html#commit">commit</a></code>.
 
 <p><pre><code>
 : (pool "db")
 -> T
-: (begin)
--> T
-: (rollback)            # Rollback second level
--> NIL
-: (rollback)            # Rollback top level
+# .. Modify external objects ..
+: (rollback)            # Rollback
 -> T
 </code></pre>
 

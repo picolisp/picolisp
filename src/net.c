@@ -1,4 +1,4 @@
-/* 09oct08abu
+/* 17aug09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -14,37 +14,13 @@ static void ipErr(any ex, char *s) {
    err(ex, NULL, "IP %s error: %s", s, strerror(errno));
 }
 
-static any tcpAccept(any ex, int sd) {
-   int i, sd2;
-   struct sockaddr_in addr;
-   struct timespec tv = {0,100000000};  // 100 ms
-
-   blocking(NO, ex, sd);
-   i = 200; do {
-      socklen_t len = sizeof(addr);
-      if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
-         blocking(YES, ex, sd2);
-         val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
-         initInFile(sd2,NULL), initOutFile(sd2);
-         return boxCnt(sd2);
-      }
-      nanosleep(&tv,NULL);
-   } while (errno == EAGAIN  &&  --i >= 0);
-   blocking(YES, ex, sd);
-   return NULL;
-}
-
 // (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
 any doPort(any ex) {
    any x, y;
    int type, n, sd;
    unsigned short port;
-   cell c1;
    struct sockaddr_in addr;
 
-   memset(&addr, 0, sizeof(addr));
-   addr.sin_family = AF_INET;
-   addr.sin_addr.s_addr = htonl(INADDR_ANY);
    x = cdr(ex);
    type = SOCK_STREAM;
    if ((y = EVAL(car(x))) == T)
@@ -52,6 +28,9 @@ any doPort(any ex) {
    if ((sd = socket(AF_INET, type, 0)) < 0)
       ipErr(ex, "socket");
    closeOnExec(ex, sd);
+   memset(&addr, 0, sizeof(addr));
+   addr.sin_family = AF_INET;
+   addr.sin_addr.s_addr = htonl(INADDR_ANY);
    if (isNum(y)) {
       if ((port = (unsigned short)xCnt(ex,y)) != 0) {
          n = 1;
@@ -72,19 +51,39 @@ any doPort(any ex) {
    }
    if (type == SOCK_STREAM  &&  listen(sd,5) < 0)
       close(sd),  ipErr(ex, "listen");
-   if (!isNil(data(c1) = EVAL(cadr(x)))) {
+   if (!isNil(y = EVAL(cadr(x)))) {
       socklen_t len = sizeof(addr);
       if (getsockname(sd, (struct sockaddr*)&addr, &len) < 0)
          close(sd),  ipErr(ex, "getsockname");
-      Save(c1);
-      NeedVar(ex,data(c1));
-      CheckVar(ex,data(c1));
-      if (isSym(data(c1)))
-         Touch(ex,data(c1));
-      val(data(c1)) = boxCnt(ntohs(addr.sin_port));
-      drop(c1);
+      NeedVar(ex,y);
+      CheckVar(ex,y);
+      val(y) = boxCnt(ntohs(addr.sin_port));
    }
    return boxCnt(sd);
+}
+
+static any tcpAccept(int sd) {
+   int i, f, sd2;
+   struct sockaddr_in addr;
+
+   f = nonblocking(sd);
+   i = 200; do {
+      socklen_t len = sizeof(addr);
+      if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
+         fcntl(sd, F_SETFL, f);
+         val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+         initInFile(sd2,NULL), initOutFile(sd2);
+         return boxCnt(sd2);
+      }
+      usleep(100000);  // 100 ms
+   } while (errno == EAGAIN  &&  --i >= 0);
+   fcntl(sd, F_SETFL, f);
+   return NULL;
+}
+
+// (accept 'cnt) -> cnt | NIL
+any doAccept(any ex) {
+   return tcpAccept((int)evCnt(ex, cdr(ex))) ?: Nil;
 }
 
 // (listen 'cnt1 ['cnt2]) -> cnt | NIL
@@ -99,14 +98,9 @@ any doListen(any ex) {
    for (;;) {
       if (!waitFd(ex, sd, ms))
          return Nil;
-      if (x = tcpAccept(ex,sd))
+      if (x = tcpAccept(sd))
          return x;
    }
-}
-
-// (accept 'cnt) -> cnt | NIL
-any doAccept(any ex) {
-   return tcpAccept(ex, (int)evCnt(ex, cdr(ex))) ?: Nil;
 }
 
 // (host 'any) -> sym
@@ -129,15 +123,15 @@ static bool server(any host, unsigned short port, struct sockaddr_in *addr) {
    struct hostent *p;
    char nm[bufSize(host)];
 
-   bufString(host, nm);
    memset(addr, 0, sizeof(struct sockaddr_in));
+   addr->sin_port = htons(port);
+   addr->sin_family = AF_INET;
+   bufString(host, nm);
    if (!inet_aton(nm, &addr->sin_addr)) {
       if (!(p = gethostbyname(nm))  ||  p->h_length == 0)
          return NO;
       addr->sin_addr.s_addr = ((struct in_addr*)p->h_addr_list[0])->s_addr;
    }
-   addr->sin_port = htons(port);
-   addr->sin_family = AF_INET;
    return YES;
 }
 
@@ -180,9 +174,9 @@ any doNagle(any ex) {
 static byte *UdpBuf, *UdpPtr;
 
 static void putUdp(int c) {
-   *UdpPtr++ = c;
    if (UdpPtr == UdpBuf + UDPMAX)
       err(NULL, NULL, "UDP overflow");
+   *UdpPtr++ = c;
 }
 
 static int getUdp(void) {
@@ -212,9 +206,9 @@ any doUdp(any ex) {
       x = Nil;
    else {
       x = cdr(x),  x = EVAL(car(x));
+      putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(ExtN, x);
       if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
          ipErr(ex, "socket");
-      putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(ExtN, x);
       sendto(sd, buf, UdpPtr-buf, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
       close(sd);
    }

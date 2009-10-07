@@ -1,4 +1,4 @@
-# 22dec07abu
+# 20aug09abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -26,7 +26,6 @@
       (commit 'upd) ) )
 
 (de verify ()
-   (and (dbck) (quit 'dbck @))
    (dbCheck)
    (let N 0
       (scan (tree 'dat '+A)

@@ -1,0 +1,86 @@
+# 20aug09art
+# Armadillo <tc.rucho@gmail.com>
+
+"(@1 Positions)" "(@1 Posiciones)"
+
+"Address" "Dirección"
+
+"Can't print order" "No se puede imprimir la órden"
+"Change" "Cambiar"
+"City" "Ciudad"
+"Contact" "Contacto"
+"Continued on page @1" "Continuado en la página @1"
+"Country" "País"
+"Customer" "Cliente"
+"Customer/Supplier" "Cliente/Proveedor"
+"Customers/Suppliers" "Clientes/Proveedores"
+
+"Data" "Datos"
+"Date" "Fecha"
+"Dear Sir or Madam," "Estimado/a Sr/a,"
+"Description" "Descripción"
+
+"eMail" "eMail"
+
+"Fax" "Fax"
+"Full Name" "Nombre Completo"
+
+"Greeting" "Saludos"
+
+"Home" "Inicio"
+
+"Incomplete customer address" "Dirección del cliente incompleta"
+"Install" "Instalar"
+"Inventory" "Inventario"
+"Item" "Artículo"
+"Items" "Artículos"
+
+"Login Name" "Nombre de usuario"
+
+"Memo" "Memo"
+"Mobile" "Móbil"
+
+"Name" "Nombre"
+"Name 2" "Segundo nombre"
+"No customer" "No cliente"
+"No customer name" "Nombre de cliente indefinido"
+"No customer number" "Número de cliente indefinido"
+"No item description" "Descripción de artículo indefinida"
+"No item number" "Número de artículo no definido"
+"No order date" "Fecha de órden, indefinida"
+"No order number" "Número de órden indefinido"
+"No positions" "Posiciones indefinidas"
+"Number" "Número"
+
+"Order" "Orden"
+"Orders" "Órdenes"
+
+"Page @1" "Página @1"
+"PDF-Print" "Imprimir-PDF"
+"Phone" "Teléfono"
+"Picture" "Foto"
+"Position without item" "Posición sin artículo"
+"Position without price" "Posición sin precio"
+"Position without quantity" "Posición sin cantidad"
+"Price" "Precio"
+
+"Quantity" "Cantidad"
+
+"Report" "Reporte"
+"Role Administration" "Administración de roles"
+
+"Sales" "Ventas"
+"Salutation" "Saludo"
+"Salutations" "Saludos"
+"Sex" "Género"
+"Street" "Calle"
+"Supplier" "Proveedor"
+"System" "Sistema"
+
+"Total" "Total"
+
+"Uninstall" "Desinstalar"
+"Uninstall Picture?" "Desinstalar foto?"
+"User Administration" "Administración de usuarios"
+
+"Zip" "Código Postal"

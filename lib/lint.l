@@ -1,4 +1,4 @@
-# 24jun09abu
+# 16sep09abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -42,6 +42,7 @@
       (T
          (case (car "X")
             ((: ::))
+            (; (lint1 (cadr "X")))
             (quote
                (if (and (pair (fun? (cdr "X"))) (not (cdr (tail 1 @))))
                   (use "*L" (lintFun (cdr "X")))

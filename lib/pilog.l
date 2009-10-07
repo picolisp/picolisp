@@ -1,4 +1,4 @@
-# 25aug08abu
+# 07jul09abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -44,18 +44,18 @@
 
 ### Pilog Interpreter ###
 (de goal ("CL" . @)
-   (let Env '(T)
+   (let "Env" '(T)
       (while (args)
-         (push 'Env
+         (push '"Env"
             (cons (cons 0 (next)) 1 (next)) ) )
       (while (and "CL" (pat? (car "CL")))
-         (push 'Env
+         (push '"Env"
             (cons
                (cons 0 (pop '"CL"))
                (cons 1 (eval (pop '"CL"))) ) ) )
       (cons
          (cons
-            (conc (list 1 (0) NIL "CL" NIL) Env) ) ) ) )
+            (conc (list 1 (0) NIL "CL" NIL) "Env") ) ) ) )
 
 (de fail ()
    (goal '((NIL))) )

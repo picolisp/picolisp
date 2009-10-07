@@ -1,0 +1,133 @@
+07oct09abu
+(c) Software Lab. Alexander Burger
+
+
+         64-bit Pico Lisp 
+         ================
+
+The 64-bit version of Pico Lisp is a complete rewrite of the 32-bit version.
+
+While the 32-bit version was written in C, the 64-bit version is implemented in
+a generic assembler, which in turn is written in Pico Lisp. In most respects,
+the two versions are compatible (see "Differences" below).
+
+
+      Building the Kernel
+      -------------------
+
+No C-compiler is needed to build the interpreter kernel, only a 64-bit version
+of the GNU assembler for the target architecture. The kernel sources are the
+"*.l" files in the "src64/" directory. The Pico Lisp assembler parses them, and
+generates a few "*.s" files (already pre-generated in the distribution), which
+the GNU assembler accepts to build the executable binary file.
+
+In case of modifying "*.l" source files, a running Pico Lisp system (32-bit or
+64-bit) is required to re-generate the "*.s" files. Due to the pre-generated
+distribution, it is not necessary to compile a 32-bit version first.
+
+The generic assembler is in "src64/lib/asm.l". It is driven by the script
+"src64/mkAsm" which is called by "src64/Makefile".
+
+The CPU registers and instruction set of the Pico Lisp processor are described
+in "doc64/asm", and the internal data structures of the Pico Lisp machine in
+"doc64/structures".
+
+Currently, only Linux on the x86-64 architecture is supported. The platform
+dependent files are in the "src64/arch/" for the target architecture, and in
+"src64/sys/" for the target operating system.
+
+
+      Reasons for the Use of Assembly Language
+      ----------------------------------------
+
+Contrary to the common expectation: Runtime execution speed was not a primary
+design decision factor. In general, pure code efficiency has not much influence
+on the overall execution speed of an application program, as memory bandwidth
+(and later I/O bandwidth) is the main bottleneck.
+
+The reasons to choose assembly language (instead of C) were, in decreasing order
+of importance:
+
+   1. Stack manipulations
+      Alignment to cell boundaries: To be able to directly express the desired
+      stack data structures (see "doc64/structures", e.g. "Apply frame"), a
+      better control over the stack (as compared to C) was required.
+
+      Indefinite pushs and pops: A Lisp interpreter operates on list structures
+      of unknown length all the time. The C version always required two passes,
+      the first to determine the length of the list to allocate the necessary
+      stack structures, and then the second to do the actual work. An assembly
+      version can simply push as many items as are encountered, and clean up the
+      stack with pop's and stack pointer arithmetics.
+
+   2. Alignments and memory layout control
+      Similar to the stack structures, there are also heap data structures that
+      can be directly expressed in assembly declarations (built at assembly
+      time), while a C implementation has to defer that to runtime.
+
+      Built-in functions (SUBRs) need to be aligned to to a multiple of 16+2,
+      reflecting the data type tag requirements, and thus allow direct jumps to
+      the SUBR code without further pointer arithmetic and masking, as is
+      necessary in the C version.
+
+   3. Multi-precision arithmetics (Carry-Flag)
+      The bignum functions demand an extensive use of CPU flags. Overflow and
+      carry/borrow have to emulated in C with awkward comparisons of signed
+      numbers.
+
+   4. Register allocation
+      A manual assembly implementation can probably handle register allocation
+      more flexibly, with minimal context saves and reduced stack space, and
+      multiple values can be returned from functions in registers. As mentioned
+      above, this has no measurable effect on execution speed, but the binary's
+      overall size is significantly reduced.
+
+   5. Return status register flags from functions
+      Functions can return condition codes directly. The callee does not need to
+      re-check returned values. Again, this has only a negligible impact on
+      performance.
+
+   6. Multiple function entry points
+      Some things can be handled more flexibly, and existing code may be easier
+      to re-use. This is on the same level as wild jumps within functions
+      ('goto's), but acceptable in the context of an often-used but rarely
+      modified program like a Lisp kernel.
+
+It would indeed be feasible to write only certain parts of the system in
+assembly, and the rest in C. But this would be rather unsatisfactory. And it
+gives a nice feeling to be independent of a heavy-weight C compiler.
+
+
+      Differences to the 32-bit Version
+      ---------------------------------
+
+Except for the following six cases, the 64-bit version should behave identically
+to the 32-bit version.
+
+1. Internal format and printed representation of external symbols
+   This is probably the most significant change. External (i.e. database)
+   symbols are coded more efficiently internally (occupying only a single cell),
+   and have a slightly different printed representation. Existing databases need
+   to be converted.
+
+2. Short numbers are pointer-equal
+   As there is now an internal "short number" type, an expression like
+
+      (== 64 64)
+
+   will evaluate to 'T' on a 64-bit system, but to 'NIL' on a 32-bit system.
+
+3. Bit-manipulation functions may differ for negative arguments
+   Numbers are represented internally in a different format. Bit-manipulations
+   are not really defined for negative numbers, but (& -15 -6) will give -6 on
+   32 bits, and 6 on 64 bits.
+
+4. CD*AD*R functions accept also symbols
+   As both symbols and lists are represented by the same internal cell type, the
+   CAR of a symbol is equivalent to its value (see "doc64/structures").
+
+5. 'do' takes only a 'cnt' argument (not a bignum)
+   For the sake of simplicity, a short number (60 bits) is considered to be
+   enough for counted loops.
+
+6. Bugs (in the implementation, or in this list ;-)

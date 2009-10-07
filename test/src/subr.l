@@ -1,4 +1,4 @@
-# 22may09abu
+# 30sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -333,7 +333,7 @@
 
 ### memq ###
 (test '(c d e f) (memq 'c '(a b c d e f)))
-(test NIL (memq (2) ((1) (2) (3))))
+(test NIL (memq (2) '((1) (2) (3))))
 (test 'c (memq 'c '(a b . c)))
 (test '(b c a . @Z) (memq 'b '(a b c .)))
 (test NIL (memq 'd '(a b c .)))
@@ -358,6 +358,7 @@
 
 ### index ###
 (test 3 (index 'c '(a b c d e f)))
+(test NIL (index 'z '(a b c d e f)))
 (test 3 (index '(5 6) '((1 2) (3 4) (5 6) (7 8))))
 
 
@@ -396,9 +397,9 @@
 
 ### asoq ###
 (test NIL
-   (asoq 999 '((999 1 2 3) (b . 7) ("ok" "Hello"))) )
+   (asoq (9) '(((9) 1 2 3) (b . 7) ("ok" "Hello"))) )
 (test '(b . 7)
-   (asoq 'b '((999 1 2 3) (b . 7) ("ok" "Hello"))) )
+   (asoq 'b '(((9) 1 2 3) (b . 7) ("ok" "Hello"))) )
 
 
 ### rank ###

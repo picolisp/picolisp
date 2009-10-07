@@ -1,10 +1,9 @@
-/* 15oct08abu
+/* 20jul09abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -19,7 +18,6 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
-#include <syslog.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -29,19 +27,11 @@ typedef enum {NO,YES} bool;
 
 static int Http1;
 
-static char Head_200[] =
-   "HTTP/1.0 200 OK\r\n"
+static char Head_410[] =
+   "HTTP/1.0 410 Gone\r\n"
    "Server: PicoLisp\r\n"
    "Content-Type: text/html; charset=utf-8\r\n"
    "\r\n";
-
-static void logger(char *fmt, ...) {
-   va_list ap;
-
-   va_start(ap,fmt);
-   vsyslog(LOG_ERR, fmt, ap);
-   va_end(ap);
-}
 
 static void giveup(char *msg) {
    fprintf(stderr, "httpGate: %s\n", msg);
@@ -111,27 +101,21 @@ static void wrBytes(int fd, char *p, int cnt) {
    do
       if ((n = write(fd, p, cnt)) >= 0)
          p += n, cnt -= n;
-      else if (errno != EINTR) {
-         logger("%d wrBytes error", fd);
+      else if (errno != EINTR)
          exit(1);
-      }
    while (cnt);
 }
 
 static void sslWrite(SSL *ssl, void *p, int cnt) {
-   if (SSL_write(ssl, p, cnt) <= 0) {
-      logger("SSL_write error");
+   if (SSL_write(ssl, p, cnt) <= 0)
       exit(1);
-   }
 }
 
 static int gateSocket(void) {
    int sd;
 
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-      logger("socket error");
+   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       exit(1);
-   }
    return sd;
 }
 
@@ -144,14 +128,10 @@ static int gatePort(int port) {
    addr.sin_addr.s_addr = htonl(INADDR_ANY);
    addr.sin_port = htons((unsigned short)port);
    n = 1,  setsockopt(sd = gateSocket(), SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n));
-   if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-      logger("%d bind error", sd);
+   if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
       exit(1);
-   }
-   if (listen(sd,5) < 0) {
-      logger("%d listen error", sd);
+   if (listen(sd,5) < 0)
       exit(1);
-   }
    return sd;
 }
 
@@ -171,7 +151,6 @@ static int gateConnect(unsigned short port) {
 static pid_t Buddy;
 
 static void doSigAlarm(int n __attribute__((unused))) {
-   logger("Timeout");
    kill(Buddy, SIGTERM);
    exit(0);
 }
@@ -216,7 +195,6 @@ int main(int ac, char *av[]) {
       return 0;
    setsid();
 
-   openlog("httpGate", LOG_CONS|LOG_PID, 0);
    for (;;) {
       socklen_t len = sizeof(addr);
       if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
@@ -260,19 +238,15 @@ int main(int ac, char *av[]) {
                return 1;
 
             if ((srv = gateConnect((unsigned short)port)) < 0) {
-               logger("Can't connect to %d", port);
-               if (!memchr(q,'~', buf + n - q)) {
-                  buf[n] = '\0';
-                  logger("Bad request: %s", buf);
+               if (!memchr(q,'~', buf + n - q))
                   return 1;
-               }
                if ((fd = open("void", O_RDONLY)) < 0)
                   return 1;
                alarm(420);
                if (ssl)
-                  sslWrite(ssl, Head_200, strlen(Head_200));
+                  sslWrite(ssl, Head_410, strlen(Head_410));
                else
-                  wrBytes(cli, Head_200, strlen(Head_200));
+                  wrBytes(cli, Head_410, strlen(Head_410));
                alarm(0);
                while ((n = read(fd, buf, sizeof(buf))) > 0) {
                   alarm(420);
@@ -291,11 +265,8 @@ int main(int ac, char *av[]) {
                ++q;
             p = q;
             while (*p++ != '\n')
-               if (p >= buf + n) {
-                  buf[n] = '\0';
-                  logger("Bad header: %s", buf);
+               if (p >= buf + n)
                   return 1;
-               }
             wrBytes(srv, q, p - q);
             if (pre(p-10, "HTTP/1."))
                Http1 = *(p-3) - '0';

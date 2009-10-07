@@ -1,33 +1,44 @@
-11jun09abu
+06oct09abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-2.3.7
+         Release Notes for picoLisp-3.0
          ================================
 
-A. 'getd' is now more intelligent. It also checks for a shared library if the
-   symbol is of the form 'lib:Foo', and loads the corresponding code if
-   necessary like it is done during normal execution. This makes it possible to
-   'trace' such functions before initial execution.
+A. Now a native 64-bit version is available. Not fully debugged yet, but
+   basically operational and compatible to the 32-bit version. Currently, only
+   Linux on the x86-64 architecture is supported.
 
-B. The function 'mkChar()' (and all functions that call it, like 'char', 'key',
-   'line', 'skip', 'till', 'chop', and others), interned single-character values
-   into the transient symbol table for efficiency reasons. This should actually
-   be considered a bug, because it breaks the static scope rules of transient
-   symbols. Now these characters are not interned any more (as was, btw, always
-   the case in miniPicoLisp).
+   It is a complete rewrite. While the 32-bit version was written in C, the
+   64-bit version is implemented in a generic assembler, which in turn is
+   written in Pico Lisp. The output of that assembler is assembly language for
+   the target system. Refer to "doc64/README" for further details.
 
-C. It was found that the hash table for external symbols was too small, and the
-   hash function was not optimal. Now the lookup of external objects for large
-   databases (> 100 million objects, typically caching 1 million objects) is
-   about 20 times faster.
+B. The functions 'begin' (nested transactions) and 'nagle' (socket option) are
+   deprecated. They will be removed in the next release. This was announced in
+   the mailing list, in
 
-D. There is now a block comment from Kriangkrai Soatthiyanont, using #{...}#
+      http://www.mail-archive.com/picolisp@software-lab.de/msg00951.html
 
-E. The 'stk' runtime stack dump function was removed, as it was only of limited
-   (or no) use.
+   and the following thread, and no objections were raised. There was also some
+   discussion about how to use a replacement for 'nagle'.
 
-F. The 'dbg' startup script is a convenient shortcut for './p dbg.l', with the
-   additional advantage that debug mode (the '*Dbg' global) is switched on
-   earlier, so that (vi 'foo) also works for system functions loaded by "lib.l"
-   and "ext.l" etc.
+C. The naming schema of the localization country files changed. Files like "DE"
+   and "JP" are renamed to "DE.l" and "JP.l". The primary reason for this is to
+   distinguish them from the language files "de" and "jp" on systems with a case
+   insensitive file system (Mac OS, Cygwin). In addition, the extension ".l" is
+   more to the point, because these files do indeed contain executable Lisp
+   code.
+
+D. The 'form' GUI now follows the "Post/Redirect/Get" pattern. Whenever a
+   (non-JavaScript) Button is pressed, the HTTP POST request will be immediately
+   redirected to a GET. This allows for a cleaner handling of the browser's
+   history and "Back" button. As a consequence, applications cannot use the
+   global variable '*Post' any longer to determine the state of an action.
+   Instead, the new global '*PRG' should be used. It is non-'NIL' when 'action'
+   was invoked by a button press.
+
+E. The reader was slightly changed. The dot '.' is now also allowed as the first
+   character of an internal symbol. This implies, however, that for a dotted
+   pair the dot has to be surrounded by delimiters. And - as before - a symbol
+   consisting of a single dot character needs to be escaped.

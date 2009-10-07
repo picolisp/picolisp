@@ -1,4 +1,4 @@
-12feb08abu
+03oct09abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -55,7 +55,6 @@ You can download the latest release version at
 (2) As an application server framework, Pico Lisp provides for
    Database Management
       Index trees
-      Nested transactions
       Object local indexes
       Entity/Relation classes
       Pilog (Pico Prolog) queries
@@ -95,8 +94,8 @@ Pico Lisp is free software, and you are welcome to redistribute it under the
 conditions of the GNU General Public License (GPL).
 
 It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),
-Cygwin/Win32 (and possibly other) systems. A native 64-bit version is under
-development.
+Cygwin/Win32 (and possibly other) systems. A native 64-bit version is available
+for Linux on x86-64.
 
 --------------------------------------------------------------------------------
 

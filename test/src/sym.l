@@ -1,9 +1,9 @@
-# 17jun09abu
+# 09sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
 (test "abc" (name 'abc))
-(test "abc" (name '{abc}))
+(test "A123" (name '{A123}))
 (let X (box)
    (test NIL (name X))
    (name X "xxx")
@@ -24,8 +24,7 @@
 
 ### fun? ###
 (test 1000000000 (fun? 1000000000))
-(test NIL (fun? 100000000000000))
-(test NIL (fun? 1000000001))
+(test NIL (fun? 12345678901234567890))
 (test '(A B) (fun? '((A B) (* A B))))
 (test NIL (fun? '((A B) (* A B) . C)))
 (test NIL (fun? (1 2 3 4)))
@@ -64,7 +63,7 @@
 
 ### str? ###
 (test NIL (str? 123))
-(test NIL (str? '{ABC}))
+(test NIL (str? '{A123}))
 (test NIL (str? 'abc))
 (test "abc" (str? "abc"))
 
@@ -207,6 +206,7 @@
 (let (L '((a b c) (d e f))  S (new))
    (put S 'lst L)
    (test '((a b c)) (del '(d e f) 'L))
+   (test '(a b c) (del 'x L))
    (test '(a c) (del 'b L))
    (with S
       (test '((a b c)) (del '(d e f) (:: lst)))

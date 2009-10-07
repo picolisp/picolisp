@@ -1,4 +1,4 @@
-# 28may08abu
+# 09sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### format ###
@@ -150,10 +150,10 @@
 
 
 ### seed rand ###
-(test 2015582081 (seed "init string"))
-(test -706917003 (rand))
-(test 1224196082 (rand))
-(test 8 (rand 3 9))
-(test 5 (rand 3 9))
+(test (if (== 64 64) 963569716595329593 2015582081) (seed "init string"))
+(test (if (== 64 64) 881495644906500132 -706917003) (rand))
+(test (if (== 64 64) -510782208671386616 1224196082) (rand))
+(test (if (== 64 64) 4 8) (rand 3 9))
+(test (if (== 64 64) 5 5) (rand 3 9))
 
 # vi:et:ts=3:sw=3

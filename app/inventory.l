@@ -1,4 +1,4 @@
-# 30jul08abu
+# 06aug09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
@@ -19,15 +19,16 @@
       (gui '(+ShowButton) NIL
          '(csv ,"Inventory"
             (<table> 'chart NIL
-               (quote
-                  (align)
-                  (NIL ,"Description")
-                  (align ,"Inventory")
-                  (NIL ,"Supplier")
-                  NIL
-                  (NIL ,"Zip")
-                  (NIL ,"City")
-                  (align ,"Price") )
+               (<!>
+                  (quote
+                     (align)
+                     (NIL ,"Description")
+                     (align ,"Inventory")
+                     (NIL ,"Supplier")
+                     NIL
+                     (NIL ,"Zip")
+                     (NIL ,"City")
+                     (align ,"Price") ) )
                (pilog
                   (quote
                      @Rng (cons *InvFrom (or *InvTill T))

@@ -1,4 +1,4 @@
-/* 24jun09abu
+/* 01aug09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -255,7 +255,6 @@ void bigSub(any,any);
 void binPrint(int,any);
 any binRead(int);
 adr blk64(any);
-void blocking(bool,any,int);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
 any brkLoad(any);
@@ -328,6 +327,7 @@ any mkTime(int,int,int);
 any name(any);
 any new64(adr,any);
 any newId(any,int);
+int nonblocking(int);
 int numBytes(any);
 void numError(any,any) __attribute__ ((noreturn));
 double numToDouble(any);
@@ -357,13 +357,13 @@ void put(any,any,any);
 void putStdout(int);
 void rdOpen(any,any,inFrame*);
 any read1(int);
-bool rdBytes(int,byte*,int);
+int rdBytes(int,byte*,int,bool);
 int secondByte(any);
 void setCooked(void);
 void setRaw(void);
 bool sharedLib(any);
 void sighandler(any);
-int slow(int,byte*,int);
+int slow(inFile*,bool);
 void space(void);
 bool subStr(any,any);
 int symByte(any);

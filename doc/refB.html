@@ -92,32 +92,6 @@ href="refC.html#char">char</a></code>.
 -> "^G"
 </code></pre>
 
-<dt><a name="begin"><code>(begin) -> T</code></a>
-<dd>Opens a nested transaction. Not needed for normal single-level transaction
-processing with <code><a href="refC.html#commit">commit</a></code> and <code><a
-href="refR.html#rollback">rollback</a></code>.
-
-<p><pre><code>
-: (pool "db")
--> T
-: (put '{1} 'str "Hello")        # Set property in first level
--> "Hello"
-: (begin)                        # Start second level
--> T
-: (put '{1} 'str "abc")          # Set another value
--> "abc"
-: (get '{1} 'str)
--> "abc"
-: (rollback)                     # Rollback second level
--> NIL
-: (get '{1} 'str)                # Value is restored
--> "Hello"
-: (rollback)                     # Rollback top level
--> T
-: (get '{1} 'str)                # Value is cleared
--> NIL
-</code></pre>
-
 <dt><a name="bind"><code>(bind 'sym|lst . prg) -> any</code></a>
 <dd>Binds value(s) to symbol(s). The first argument must evaluate to a symbol,
 or a list of symbols or symbol-value pairs. The values of these symbols are

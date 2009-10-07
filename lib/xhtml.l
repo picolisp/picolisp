@@ -1,11 +1,10 @@
-# 17jun09abu
+# 30sep09abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
 
 (mapc allow '(*Menu *Tab *ID))
-
-(default *Menu 0  *Tab 1)
+(setq *Menu 0  *Tab 1)
 
 (de htPrin (Prg Ofs)
    (default Ofs 1)
@@ -608,16 +607,17 @@
    (prinl "</select>") )
 
 (de <check> ("Var" Flg)
-   (prin "<input type=\"hidden\" ")
-   (htmlVar "Var")
-   (prin " value=\"\">")
-   (prin "<input type=\"checkbox\" ")
-   (htmlVar "Var")
-   (prin " value=\"T\"" (and (htmlVal "Var") " checked=\"checked\""))
-   (and *JS (prin " onchange=\"return fldChg(this);\""))
-   (dfltCss "check")
-   (and Flg (prin " disabled=\"disabled\""))
-   (prinl "/>") )
+   (let Val (htmlVal "Var")
+      (prin "<input type=\"hidden\" ")
+      (htmlVar "Var")
+      (prin " value=\"" (and Flg Val T) "\">")
+      (prin "<input type=\"checkbox\" ")
+      (htmlVar "Var")
+      (prin " value=\"T\"" (and Val " checked=\"checked\""))
+      (and *JS (prin " onchange=\"return fldChg(this);\""))
+      (dfltCss "check")
+      (and Flg (prin " disabled=\"disabled\""))
+      (prinl "/>") ) )
 
 (de <radio> ("Var" Val Flg)
    (prin "<input type=\"radio\" ")

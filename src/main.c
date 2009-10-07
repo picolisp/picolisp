@@ -1,4 +1,4 @@
-/* 26jun09abu
+/* 02oct09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -102,12 +102,14 @@ static void sigTerm(int n) {
 }
 
 static void sigChld(int n __attribute__((unused))) {
+   int e, stat;
    pid_t pid;
-   int stat;
 
+   e = errno;
    while ((pid = waitpid(0, &stat, WNOHANG)) > 0)
       if (WIFSIGNALED(stat))
          fprintf(stderr, "%d SIG-%d\n", (int)pid, WTERMSIG(stat));
+   errno = e;
 }
 
 static void sigTermStop(int n __attribute__((unused))) {

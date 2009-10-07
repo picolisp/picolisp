@@ -1,4 +1,4 @@
-# 03jan09abu
+# 03sep09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -30,14 +30,12 @@
                   (D
                      (put!> D 'itm (caddr L))
                      (put!> D 'pr (cadddr L))
-                     (put!> D 'cnt (get L 5))
-                     (and (get D 'itm) D) )
+                     (put!> D 'cnt (; L 5))
+                     (and (; D itm) D) )
                   ((caddr L)
-                     (new! '(+Pos)
-                        'ord (: home obj)
-                        'itm (caddr L) ) ) ) ) )
+                     (new! '(+Pos) 'itm (caddr L)) ) ) ) )
          (<table> NIL NIL
-            '((align) (btn) (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total") (btn) (btn))
+            '((align) (btn) (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total"))
             (do 8
                (<row> NIL
                   (gui 1 '(+NumField))

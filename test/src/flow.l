@@ -1,4 +1,4 @@
-# 24oct08abu
+# 19sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -36,6 +36,8 @@
          ((quote (N)
                (test 3 N)
                (test 2 (eval 'N 1))
+               (test 2 (eval 'N 1 '(X)))
+               (test 3 (eval 'N 1 '(N)))
                (test 1 (eval 'N 2))
                (test 3 (eval 'N 2 '(N))) )
             3 ) )
@@ -409,7 +411,8 @@
 
 
 ### sys ###
-(test (pwd) (sys "PWD"))
+(test "PicoLisp" (sys "TEST" "PicoLisp"))
+(test "PicoLisp" (sys "TEST"))
 
 
 ### call ###

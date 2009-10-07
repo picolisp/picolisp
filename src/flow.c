@@ -1,4 +1,4 @@
-/* 24jun09abu
+/* 19aug09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -406,19 +406,25 @@ any doBox(any x) {
 
 // (new ['flg|num] ['typ ['any ..]]) -> obj
 any doNew(any ex) {
-   any x, y, *p;
+   any x, y, *h;
    cell c1, c2;
 
    x = cdr(ex);
-   Push(c1, consSym(Nil,Nil));
-   if (!isCell(y = EVAL(car(x)))) {
-      if (!isNil(y)) {
-         p = Extern + ehash(tail(data(c1)) = newId(ex, isNum(y)? (int)unDig(y)/2 : 1));
+   if (isCell(y = EVAL(car(x))))
+      Push(c1, consSym(Nil,Nil));
+   else {
+      if (isNil(y))
+         data(c1) = consSym(Nil,Nil);
+      else {
+         y = newId(ex, isNum(y)? (int)unDig(y)/2 : 1);
+         if (data(c1) = findHash(y, h = Extern + ehash(y)))
+            tail(data(c1)) = y;
+         else
+            *h = cons(data(c1) = consSym(Nil,y), *h);
          mkExt(data(c1));
-         *p = cons(data(c1),*p);
       }
+      Save(c1);
       x = cdr(x),  y = EVAL(car(x));
-      NeedLst(ex,y);
    }
    val(data(c1)) = y;
    TheKey = T,  TheCls = Nil;
@@ -1652,7 +1658,7 @@ pid_t forkLisp(any ex) {
    close(hear[0]), close(tell[1]);
    Child[i].pid = n;
    Child[i].hear = tell[0];
-   blocking(NO, ex, Child[i].tell = hear[1]);
+   nonblocking(Child[i].tell = hear[1]);
    Child[i].ofs = Child[i].cnt = 0;
    Child[i].buf = NULL;
    return n;

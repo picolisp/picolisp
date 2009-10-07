@@ -1,8 +1,8 @@
-# 27mar09abu
+# 09sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
-# $(pwd)/p lib/test.l
+# $(/bin/pwd)/p lib/test.l -bye
 
 (load "dbg.l")
 
@@ -16,6 +16,7 @@
    "test/src/subr.l"
    "test/src/big.l"
    "test/src/io.l"
+   "test/src/db.l"
    "test/src/net.l"
    "test/src/ext.l"
    "test/src/ht.l" )

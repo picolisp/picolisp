@@ -12,16 +12,16 @@
 <dl>
 
 <dt><a name="*Zap"><code>*Zap</code></a>
-<dd>A global variable holding a list of lists and a pathname. If given, and the
-value of <code><a href="refS.html#*Solo">*Solo</a></code> is <code>NIL</code>,
-external symbols which are no longer accessible can be collected in the CAR of
-the list, e.g. during DB tree processing, and written to that file at the next
-<code><a href="refC.html#commit">commit</a></code>. A (typically periodic) call
-to <code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
+<dd>A global variable holding a list and a pathname. If given, and the value of
+<code><a href="refS.html#*Solo">*Solo</a></code> is <code>NIL</code>, external
+symbols which are no longer accessible can be collected in the CAR, e.g. during
+DB tree processing, and written to the file in the CDR at the next <code><a
+href="refC.html#commit">commit</a></code>. A (typically periodic) call to
+<code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
 
 <p><pre><code>
-: (setq *Zap '(NIL . "db/app/Z"))
--> "db/app/Z"
+: (setq *Zap '(NIL . "db/app/_zap"))
+-> "db/app/_zap"
 </code></pre>
 
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>

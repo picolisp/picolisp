@@ -659,11 +659,15 @@ as CAR.
 character, except for the following meta characters:
 
 <p><pre><code>
-   "  '  (  )  [  ]  `  ~
+   "  '  (  )  ,  [  ]  `  ~ { }
 </code></pre>
 
 <p>It is possible, though, to include these special characters into symbol names
 by escaping them with a backslash '<code>\</code>'.
+
+<p>The dot '<code>.</code>' has a dual nature. It is a meta character when
+standing alone, denoting a <a href="#dotted">dotted pair</a>, but can otherwise
+be used in symbol names.
 
 <p>As a rule, anything not recognized by the reader as another data type will be
 returned as an internal symbol.
@@ -746,8 +750,9 @@ through '<code>9</code>', '<code>:</code>' through '<code>;</code>',
 <code>A</code>, <code>B</code> and <code>C</code> respectively in their CAR, and
 <code>NIL</code> in the last cell's CDR.
 
-<p><code>(A . B)</code> is a "dotted pair", a list consisting of a single cell,
-with the symbol <code>A</code> in its CAR, and <code>B</code> in its CDR.
+<p><a name="dotted"><code>(A . B)</code> is a "dotted pair", a list consisting
+of a single cell, with the symbol <code>A</code> in its CAR, and <code>B</code>
+in its CDR.
 
 <p>Pico Lisp has built-in support for reading and printing simple circular
 lists. If the dot in a dotted-pair notation is immediately followed by a closing
@@ -2079,7 +2084,6 @@ abbreviations:
    <a href="refS.html#seq">seq</a>
    <a href="refL.html#lieu">lieu</a>
    <a href="refL.html#lock">lock</a>
-   <a href="refB.html#begin">begin</a>
    <a href="refC.html#commit">commit</a>
    <a href="refR.html#rollback">rollback</a>
    <a href="refM.html#mark">mark</a>

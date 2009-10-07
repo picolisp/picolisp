@@ -199,15 +199,11 @@ href="refE.html#extra">extra</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="seq"><code>(seq 'cnt|sym1 ['sym2 ['num]]) -> sym | num | NIL</code></a>
+<dt><a name="seq"><code>(seq 'cnt|sym1) -> sym | NIL</code></a>
 <dd>Sequential single step: Returns the <i>first</i> external symbol in the
 <code>cnt</code>'th database file, or the <i>next</i> external symbol following
 <code>sym1</code> in the database, or <code>NIL</code> when the end of the
-database is reached. When <code>sym2</code> is given, the database is extended
-up to (including the creation of) <code>sym2</code>. If <code>num</code> is
-given, it should be the return value of a previous call to <code>seq</code>, and
-is used as an internal free list link. See also <code><a
-href="refF.html#free">free</a></code>.
+database is reached. See also <code><a href="refF.html#free">free</a></code>.
 
 <p><pre><code>
 : (pool "db")

@@ -1,4 +1,4 @@
-# 10may08abu
+# 20aug09abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -27,6 +27,8 @@
    ("English" NIL)
    ("English (US)" "US")
    ("English (UK)" "UK")
+   ("Español (AR)" "AR" . "ar")
+   ("Español (ES)" "ES" . "es")
    ("Deutsch (DE)" "DE" . "de")
    ("Deutsch (CH)" "CH" . "ch")
    ("Русский" "RU" . "ru")

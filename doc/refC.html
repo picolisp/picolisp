@@ -464,21 +464,15 @@ href="refS.html#step">step</a></code>.
 -> ({3-1})
 </code></pre>
 
-<dt><a name="commit"><code>(commit ['any] [exe1] [exe2]) -> flg</code></a>
-<dd>Closes a transaction, by writing all new or modified external symbols to the
-database, and by removing all deleted symbols from the database. For nested
-transactions, only the changes since the last call to <code><a
-href="refB.html#begin">begin</a></code> are taken into account. A
-non-<code>NIL</code> <code>any</code> argument forces modifications of the
-current transaction level to be written out, even if this is not the top level.
-When <code>any</code> is anything other than <code>T</code>, it is implicitly
-sent (with all modified objects) via the <code><a
-href="refT.html#tell">tell</a></code> mechanism to all family members. If
-<code>exe1</code> or <code>exe2</code> are given, they are executed as pre- or
-post-expressions while the database is <code><a
+<dt><a name="commit"><code>(commit ['any] [exe1] [exe2]) -> T</code></a>
+<dd>Closes a transaction, by writing all new or modified external symbols to,
+and removing all deleted external symbols from the database. When
+<code>any</code> is given, it is implicitly sent (with all modified objects) via
+the <code><a href="refT.html#tell">tell</a></code> mechanism to all family
+members. If <code>exe1</code> or <code>exe2</code> are given, they are executed
+as pre- or post-expressions while the database is <code><a
 href="refL.html#lock">lock</a></code>ed and <code><a
-href="refP.html#protect">protect</a></code>ed. Returns <code>T</code> when the
-topmost transaction is closed. See also <code><a
+href="refP.html#protect">protect</a></code>ed. See also <code><a
 href="refR.html#rollback">rollback</a></code>.
 
 <p><pre><code>

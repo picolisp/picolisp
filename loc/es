@@ -1,0 +1,52 @@
+# 26aug09art
+# Armadillo <tc.rucho@gmail.com>
+
+"Language" "Idioma"
+
+# lib/db.l
+"Boolean input expected" "Se espera el ingreso de datos tipo buliano"
+"Numeric input expected" "Se espera el ingreso de datos tipo numérico"
+"Symbolic type expected" "Se esperan datos del tipo simbólico"
+"String type expected" "Se esperan datos del tipo String"
+"Type error" "Error de tipado"
+"Not unique" "No único"
+"Input required" "Se require ingreso de datos"
+
+# lib/form.l
+"Cancel" "Cancelar"
+"Yes" "Sí"
+"No" "No"
+"Select" "Seleccionar"
+"Delete row?" "¿Borrar fila?"
+"Show" "Mostrar"
+"Bad date format" "El formato de la fecha no es válido"
+"Bad time format" "El formato de la hora no es válido"
+"Bad phone number format" "El formato del número telefónico no es válido"
+"male" "hombre"
+"female" "mujer"
+"New" "Nuevo"
+"Edit" "Editar"
+"Save" "Guardar"
+"Done" "Terminar"
+"Currently edited by '@2' (@1)" "Actualmente editado por '@2' (@1)"
+"Search" "Buscar"
+"Reset" "Vaciar/Limpiar"
+"New/Copy" "Nuevo/Copiar"
+"Restore" "Restaurar"
+"Restore @1?" "¿Restaurar @1?"
+"Delete" "Borrar"
+"Delete @1?" "¿Borrar @1?"
+"Data not found" "No se encontraron datos"
+
+# General
+"login" "Ingresar al Sistema"
+"logout" "Salir del Sistema"
+"' logged in" "' ingresó al sistema"
+"Name" "Nombre"
+"Password" "Contraseña"
+"Permission denied" "Permiso denegado"
+"Permissions" "Permisos"
+"Role" "Rol"
+"Roles" "Roles"
+"User" "Usuario"
+"Users" "Usuarios"

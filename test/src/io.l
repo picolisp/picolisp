@@ -1,4 +1,4 @@
-# 16dec08abu
+# 09sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -14,7 +14,7 @@
 (test (1 abc (d e f))
    (pipe (prinl "(1 abc (d e f))")
       (read) ) )
-(test '(abc = def_ghi "(" "xyz" + - 123 ")")
+(test '(abc "=" def_ghi "(" "xyz" "+" "-" 123 ")")
    (pipe (prinl "abc = def_ghi(\"xyz\"+-123) # Comment")
       (make
          (while (read "_" "#")
@@ -171,13 +171,15 @@
 
 
 ### ext rd pr ###
-(out (tmp "ext")
-   (ext 5
-      (pr '({6-2} ({8-9} . a) ({7-7} . b))) ) )
-(test '({2} ({3-9} . a) ({2-7} . b))
-   (in (tmp "ext") (rd)) )
-(test '({6-2} ({8-9} . a) ({7-7} . b))
-   (in (tmp "ext") (ext 5 (rd))) )
+(let L (list (id 1 2) (cons (id 3 9) 'a) (cons (id 2 7) 'b))
+   (let L5 (list (id 6 2) (cons (id 8 9) 'a) (cons (id 7 7) 'b))
+      (out (tmp "ext")
+         (ext 5 (pr L5)) )
+      (test L
+         (in (tmp "ext") (rd)) )
+      (test L5
+         (in (tmp "ext") (ext 5 (rd))) ) ) )
+
 (pipe
    (for (N 1 (>= 4096 N) (inc N))
       (pr N) )
@@ -214,46 +216,5 @@
 ### rpc ###
 (test *Pid
    (pipe (rpc '*Pid) (run (rd))) )
-
-
-### id ###
-(test *DB (id 1 1))
-(test 1 (id *DB))
-(test (1 . 1) (id *DB T))
-
-
-### lieu ###
-(rollback)
-(test NIL (lieu *DB))
-(test *DB (val *DB) (lieu *DB))
-
-
-### begin commit rollback ###
-(let (X (new T)  Y (new T))
-   (set X 1  Y 2)
-   (commit)
-   (test 1 (val X))
-   (test 2 (val Y))
-   (set X 111)
-   (begin)
-   (set Y 222)
-   (commit T)
-   (test 111 (val X))
-   (test 222 (val Y))
-   (rollback)
-   (test 1 (val X))
-   (test 222 (val Y)) )
-
-
-### mark ###
-(test NIL (mark *DB))
-(test NIL (mark *DB T))
-(test T (mark *DB))
-(test T (mark *DB 0))
-(test NIL (mark *DB))
-
-
-### dbck ###
-(test NIL (dbck))
 
 # vi:et:ts=3:sw=3

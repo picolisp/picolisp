@@ -1,4 +1,4 @@
-# 06jun09abu
+# 25sep09abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -301,10 +301,10 @@
                (method (if (pair "X") (car "X") "X") C)
                (val "X") ) )
          (cond
-            ((atom "X") (print '. "X"))
+            ((atom "X") (print '\. "X"))
             ((atom (cdr "X"))
                (if (cdr "X")
-                  (print (car "X") '. @)
+                  (print (car "X") '\. @)
                   (print (car "X")) ) )
             (T (print (pop '"X"))
                (while (pair "X")

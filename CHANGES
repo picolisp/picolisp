@@ -1,3 +1,11 @@
+* 07oct09 picoLisp-3.0
+   64-bit version for x86-64
+   Allowed '.' in symbol names
+   Changed GUI to Post/Redirect/Get pattern
+   Changed event handling to non-blocking I/O
+   Extension ".l" on localization country files
+   Deprecated 'begin' and 'nagle'
+
 * 30jun09 picoLisp-2.3.7
    'dbg' startup script
    Removed 'stk' function

@@ -1,16 +1,15 @@
-# 23may09abu
+# 07oct09abu
 # (c) Software Lab. Alexander Burger
 
-# *Top *Gui *Get *Form *Lock
+# *PRG *Top *Gui *Get *Got *Form *Lock
 # "*Cnt" "*Lst" "*App" "*Err" "*Foc" "*Post2" "*Stat" "*Ix" "*Chart" "*Cho"
 
 (allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
-(mapc allow '(*Gui *Get *Form "@jsForm" "@jsHint"))
+(mapc allow '(*Gui *Get *Got *Form "@jsForm" "@jsHint"))
 
-(once
-   (one "*Cnt")
-   (off "*Lst" "*Post2" "*Cho") )
+(one "*Cnt")
+(off "*Lst" "*Post2" "*Cho")
 
 (de *Throbber
    ("+---" "-+--" "--+-" "---+" "--+-" "-+--" .) )
@@ -19,7 +18,7 @@
 (de form ("Attr" . "Prg")
    (inc '*Form)
    (let "App"
-      (if *Post
+      (if *PRG
          (get "*Lst" (- "*Cnt" *Get) *Form)
          (prog1 (setq *Top (new NIL NIL  'able T))
             (conc
@@ -29,13 +28,13 @@
          (for ("F" . "L") "Lst"
             (let *Form (- "F" (length "Lst"))
                (cond
-                  ((and (== *Post (car "L")) (memq "App" (get *Post 'top)))
+                  ((and (== *PRG (car "L")) (memq "App" (get *PRG 'top)))
                      (apply "form" "L") )
-                  ((or (== *Post "App") (memq "App" (get *Post 'top)))
+                  ((or (== *PRG "App") (memq "App" (get *PRG 'top)))
                      (if (get "L" 1 'top)
                         (apply "form" "L")
-                        (put (car "L") 'top (cons *Post (get *Post 'top)))
-                        (let *Post NIL (apply "form" "L")) ) ) ) ) ) )
+                        (put (car "L") 'top (cons *PRG (get *PRG 'top)))
+                        (let *PRG NIL (apply "form" "L")) ) ) ) ) ) )
       ("form" "App" "Attr" "Prg") ) )
 
 (de "form" ("*App" "Attr" "Prg")
@@ -46,7 +45,7 @@
             (<hidden> '*Form *Form)
             (zero "*Ix")
             (off "*Chart")
-            (if *Post
+            (if *PRG
                (let gui
                   '(()
                      (with (get "*App" 'gui (inc '"*Ix"))
@@ -61,7 +60,7 @@
                               (show> This (cons '*Gui @)) )
                            (setq "*Chart" This) )
                         This ) )
-                  (and (== *Post "*App") (setq *Top "*App"))
+                  (and (== *PRG "*App") (setq *Top "*App"))
                   (htPrin "Prg") )
                (set "*App")
                (let gui
@@ -112,18 +111,33 @@
 # Handle form actions
 (de action Prg
    (off "*Foc")
-   (unless "*Post2" (off "*Err"))
+   (or *PRG "*Post2" (off "*Err"))
    (catch "stop"
-      (if *Post
-         (with (postForm) (postGui))
-         (pushForm (cons)) )
-      (one *Form)
-      (run Prg 1)
-      (setq "*Stat"
-         (cons
-            (pair "*Err")
-            (copy (get "*Lst" (- "*Cnt" *Get))) ) ) )
-   (off "*Post2") )
+      (nond
+         (*Post
+            (finally (off *PRG *Got)
+               (nond
+                  (*PRG (pushForm (cons)))
+                  ((= *Get *Got)
+                     (redirect (baseHRef) *SesId *Url)
+                     (throw "stop") ) )
+               (one *Form)
+               (run Prg 1)
+               (setq "*Stat"
+                  (cons
+                     (pair "*Err")
+                     (copy (get "*Lst" (- "*Cnt" *Get))) ) ) ) )
+         (*PRG
+            (with (postForm)
+               (postGui)
+               (redirect
+                  (baseHRef)
+                  *SesId
+                  (urlMT *Url *Menu *Tab *ID)
+                  "&*Got=+" *Get ) ) )
+         (NIL
+            (off *PRG *Got)
+            (redirect (baseHRef) *SesId *Url) ) ) ) )
 
 (de pushForm (L)
    (push '"*Lst" L)
@@ -136,8 +150,8 @@
    (let action
       '(Prg
          (off "*Err")
-         (catch "stop"
-            (with (postForm)
+         (with (postForm)
+            (catch "stop"
                (postGui)
                (httpHead "text/plain; charset=utf-8")
                (if
@@ -146,14 +160,15 @@
                      (= (cdr "*Stat") (get "*Lst" (- "*Cnt" *Get))) )
                   (ht:Out *Chunked
                      (when (: auto)
-                        (prin *Form '- (: auto 1 id) ': (: auto -1))
+                        (prin "i" *Form '- (: auto 1 id) ': (: auto -1))
                         (=: auto) )
                      (for This (: gui)
                         (if (: id)
-                           (prin '& *Form '- @ '& (js> This))
+                           (prin '& "i" *Form '- @ '& (js> This))
                            (setq "*Chart" This) ) ) )
-                  (setq "*Post2" *Post)
-                  (ht:Out *Chunked (prin T)) ) ) ) )
+                  (setq "*Post2" (cons *Get *PRG))
+                  (ht:Out *Chunked (prin T)) ) ) )
+         (off *PRG) )
       (cond
          ((= '@ (car Url))
             ((intern (pack (cdr Url)))) )
@@ -164,18 +179,19 @@
    (let? Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
       (setq
          *Form (format *Form)
-         *Post
-         (or "*Post2"
-            (if (gt0 *Form)
-               (get Lst *Form)
-               (get Lst 1 (+ (length (car Lst)) *Form) 1) ) ) ) ) )
+         *PRG
+         (cond
+            ((= *Get (car "*Post2")) (cdr "*Post2"))
+            ((off "*Post2"))
+            ((gt0 *Form) (get Lst *Form))
+            (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) ) ) )
 
 (de postGui ()
    (if "*Post2"
-      (off *Gui)
+      (off *Gui "*Post2")
       (while *Gui
          (con
-            (assoc (caar *Gui) (val *Post))
+            (assoc (caar *Gui) (val *PRG))
             (cdr (pop '*Gui)) ) )
       (job (: env)
          (for This (: gui)
@@ -199,7 +215,7 @@
                   (nond
                      ((: id) (setq "*Chart" This))
                      ((ge0 (: id))
-                        (let? A (assoc (: id) (val *Post))
+                        (let? A (assoc (: id) (val *PRG))
                            (when (cdr A)
                               (con A)
                               (act> This) ) ) ) ) ) )
@@ -214,22 +230,19 @@
 
 (de url (Url . @)
    (when Url
-      (setq *Url Url  Url (chop Url))
-      (off *Post)
-      (let L
-         (make
-            (while (args)
-               (if (and (sym? (next)) (= `(char '*) (char (arg))))
-                  (set (arg) (next))
-                  (link (arg)) ) ) )
-         (cond
-            ((= '@ (car Url))
-               (apply (intern (pack (cdr Url))) L) )
-            ((tail '("." "l") Url)
-               (apply script L *Url) )
-            ((assoc (stem Url ".") *Mimes)
-               (apply httpEcho (cdr @) *Url) )
-            (T (httpEcho *Url "application/octet-stream" 1 T)) ) )
+      (off *PRG)
+      (redirect (baseHRef) *SesId Url '?
+         (pack
+            (make
+               (loop
+                  (and
+                     (sym? (next))
+                     (= `(char '*) (char (arg)))
+                     (link (arg) '=)
+                     (next) )
+                  (link (ht:Fmt (arg)))
+                  (NIL (args))
+                  (link '&) ) ) ) )
       (throw "stop") ) )
 
 # Return chart property
@@ -281,7 +294,7 @@
 # Dialogs
 (de _dlg (Attr Env)
    (let L (get "*Lst" (- "*Cnt" *Get))
-      (while (and (car L) (n== *Post (caar @)))
+      (while (and (car L) (n== *PRG (caar @)))
          (pop L) )
       (push L
          (list
@@ -311,19 +324,24 @@
       (noButton) ) )
 
 (de diaform (Lst . Prg)
-   (if (and *Post (not (: diaform)))
+   (if (and *PRG (not (: diaform)))
       (_dlg 'dialog (env Lst))
       (=: env (env Lst))
       (=: diaform T)
       (run Prg 1) ) )
 
+(de saveButton ()
+   (gui '(+Button) ,"Save") )
+
 (de closeButton (Lbl Exe)
    (when (get "*App" 'top)
-      (gui '(+Close +Button) Lbl Exe) ) )
+      (gui '(+Rid +Close +Button) Lbl Exe) ) )
 
 (de okButton (Exe)
    (when (get "*App" 'top)
-      (gui '(+Close +Button) "OK" Exe) ) )
+      (if (=T Exe)
+         (gui '(+Force +Close +Button) T "OK")
+         (gui '(+Close +Button) "OK" Exe) ) ) )
 
 (de cancelButton ()
    (when (get "*App" 'top)
@@ -351,9 +369,9 @@
 (dm chk> ()
    (when
       (and
-         (cdr (assoc (: id) (val *Post)))
+         (cdr (assoc (: id) (val *PRG)))
          (eval (: force)) )
-      (for A (val *Post)
+      (for A (val *PRG)
          (and
             (lt0 (car A))
             (<> (: id) (car A))
@@ -405,7 +423,10 @@
       (when Dst
          (or
             (pair Dst)
-            (list 'set> (lit Dst) '(: obj)) ) ) ) )
+            (list 'chgDst (lit Dst) '(: obj)) ) ) ) )
+
+(de chgDst (This Val)
+   (set> This (if (: new) (@ Val) Val)) )
 
 (dm js> ()
    (cond
@@ -417,7 +438,7 @@
 (dm show> ("Var")
    (if (: act)
       (super "Var")
-      (<style> (cons 'id (pack *Form '- (: id)))
+      (<style> (cons 'id (pack "i" *Form '- (: id)))
          (if (try (: msg) (: obj) 1)
             (<tip> "-->" (<href> "@" (mkUrl @)))
             (<span> *Style "@") ) ) ) )
@@ -576,26 +597,33 @@
    (set> This (: init)) )
 
 
-(class +Cue)
+(class +Dflt)
 # cue
 
-(dm T (Str . @)
-   (=: cue (pack "<" Str ">"))
+(dm T (Exe . @)
+   (=: cue Exe)
    (pass extra) )
 
-(dm show> ("Var")
-   (<style>
-      (list
-         (cons "onfocus" (pack "if (this.value=='" (: cue) "') this.value=''"))
-         (cons "onblur" (pack "if (this.value=='') this.value='" (: cue) "'")) )
-      (extra "Var") ) )
-
 (dm set> (Val Dn)
-   (extra (or Val (: cue)) Dn) )
+   (extra (or Val (eval (: cue))) Dn) )
 
 (dm val> ()
    (let Val (extra)
-      (unless (= Val (: cue)) Val) ) )
+      (unless (= Val (eval (: cue))) Val) ) )
+
+
+(class +Cue +Dflt)
+
+(dm T (Str . @)
+   (pass super (pack "<" Str ">")) )
+
+(dm show> ("Var")
+   (<style>
+      (let V (eval (: cue))
+         (list
+            (cons "onfocus" (pack "if (this.value=='" V "') this.value=''"))
+            (cons "onblur" (pack "if (this.value=='') this.value='" V "'")) ) )
+      (extra "Var") ) )
 
 
 (class +Trim)
@@ -763,18 +791,20 @@
 (class +Click)
 # clk
 
-(dm T (N . @)
-   (=: clk N)
+(dm T (Exe . @)
+   (=: clk Exe)
    (pass extra) )
 
 (dm show> ("Var")
    (extra "Var")
-   (unless (or (pair "*Err") (get "*Lst" (- "*Cnt" *Get) 1))
+   (and
+      (atom "*Err")
+      (eval (: clk))
       (javascript NIL
          "window.setTimeout(\"document.getElementById(\\\""
-         *Form '- (: id)
+         "i" *Form '- (: id)
          "\\\").click()\","
-         (: clk)
+         @
          ")" ) ) )
 
 
@@ -786,7 +816,7 @@
       (on "*Foc")
       (javascript NIL
          "window.setTimeout(\"document.getElementById(\\\""
-         *Form '- (: id)
+         "i" *Form '- (: id)
          "\\\").focus()\",420)" ) ) )
 
 
@@ -830,7 +860,7 @@
    (when (: lbl)
       (ht:Prin (eval @))
       (<nbsp>) )
-   (style (cons 'id (pack *Form '- (: id))) "Prg") )
+   (style (cons 'id (pack "i" *Form '- (: id))) "Prg") )
 
 
 (class +gui)
@@ -867,7 +897,7 @@
    Val )
 
 (dm js> ()
-   (let S (ht:Fmt (cdr (assoc (: id) (val *Post))))
+   (let S (ht:Fmt (cdr (assoc (: id) (val *PRG))))
       (if (able) S (pack S "&=")) ) )
 
 (dm set> (Str Dn)
@@ -923,7 +953,7 @@
          (pack (if (: img) (sesId Str) Str) "&=") ) ) )
 
 (dm show> ("Var")
-   (<style> (cons 'id (pack *Form '- (: id)))
+   (<style> (cons 'id (pack "i" *Form '- (: id)))
       (if (able)
          (let Str (eval (: lbl))
             ((if (: img) <image> <submit>) Str "Var" NIL (: js)) )
@@ -1149,7 +1179,7 @@
                   "Var"
                   (not (able)) ) ) )
          (T
-            (<style> (cons 'id (pack *Form '- (: id)))
+            (<style> (cons 'id (pack "i" *Form '- (: id)))
                (<span> *Style
                   (if (str> This) (ht:Prin @) (<nbsp>)) ) ) ) ) ) )
 
@@ -1446,21 +1476,25 @@
 
 (dm get> ()
    (unless (: lock)
-      (map
-         '((G D)
-            (set D
-               (trim
-                  ((: get)
-                     (mapcar 'val> (car G))
-                     (car D)
-                     (car G) ) ) ) )
-         (: gui)
-         (nth
-            (=: data
-               (need
-                  (- 1 (: ofs) (: rows))
-                  (: data) ) )
-            (: ofs) ) )
+      (let I (: ofs)
+         (map
+            '((G D)
+               (set D
+                  (trim
+                     ((: get)
+                        (mapcar 'val> (car G))
+                        (car D)
+                        (car G) ) ) )
+               (mapc 'set>
+                  (car G)
+                  ((: put) (car D) I)
+                  '(T .) )
+               (inc 'I) )
+            (: gui)
+            (nth
+               (=: data
+                  (need (- 1 I (: rows)) (: data)) )
+               I ) ) )
       (=: data (trim (: data))) ) )
 
 (dm txt> (Flg)
@@ -1525,7 +1559,7 @@
       (apply url (url> @ 1)) ) )
 
 
-# (choDlg Dst Ttl Rel [Hook] [((+XyzField) ..) Exe [Rel2 [Hook2]]])
+# (choDlg Dst Ttl Rel [Hook] [((+XyzField) ..) Exe Able [Rel2 [Hook2]]])
 (de choDlg (Dst Ttl Rel . @)
    (let
       (Hook (and (meta (cdr Rel) (car Rel) 'hook) (next))
@@ -1533,13 +1567,14 @@
          Gui
          (if (next)
             (list '(+ObjView +TextField) @)
-            (list (list '+ObjView (last (car Fld))) (list ': (car Rel))) ) )
+            (list (list '+ObjView (last (car Fld))) (list ': (car Rel))) )
+         Able (if (args) (next) T) )
       (nond
          ((next)
-            (setq Ttl (list Ttl (car Rel) (cadr Rel) Hook)) )
+            (setq Ttl (list Ttl (car Rel) (last Rel) Hook)) )
          ((=T (arg))
             (setq Ttl (list Ttl (car (arg)) (cadr (arg)) (next))) ) )
-      (diaform '(Dst Ttl Rel Hook Fld Gui)
+      (diaform '(Dst Ttl Rel Hook Fld Gui Able)
          (apply gui
             (cons
                (cons '+Focus '+Var (car Fld))
@@ -1559,12 +1594,16 @@
          (<spread>
             (scroll (cho))
             (if (meta (cdr Rel) (car Rel) 'hook)
-               (newButton T Dst (cdr Rel) @ Hook
+               (newButton Able Dst (cdr Rel) @ Hook
                   (car Rel)
-                  (val> (: home gui 1)) )
-               (newButton T Dst (cdr Rel)
+                  (let? Val (val> (: home gui 1))
+                     (unless (db (car Rel) (last Rel) Hook Val)
+                        Val ) ) )
+               (newButton Able Dst (cdr Rel)
                   (car Rel)
-                  (val> (: home gui 1)) ) )
+                  (let? Val (val> (: home gui 1))
+                     (unless (db (car Rel) (last Rel) Val)
+                        Val ) ) ) )
             (cancelButton) ) ) ) )
 
 (de choTtl (Ttl Var Cls Hook)
@@ -1675,7 +1714,6 @@
 (dm T (Lst . @)
    (=: erVar (car Lst))
    (=: erObj (cdr Lst))
-   (pass extra)
    (pass super
       '(and (eval (: erObj)) (not (get @ T))) ) )
 
@@ -1712,18 +1750,6 @@
          (mis> @ (: erVar) (val> This)) ) ) )
 
 
-(class +Blob/R +/R)
-
-(dm set> (Val Dn)
-   (extra
-      (and
-         (: home able)
-         (eval (: erObj))
-         (put!> @ (: erVar) (bool Val))
-         (allow (blob (eval (: erObj)) (: erVar))) )
-      Dn ) )
-
-
 (class +BlobField +/R +TextField)
 # org
 
@@ -1731,20 +1757,21 @@
    (and
       (: home able)
       (<> Val (: org))
-      (eval (: erObj))
-      (put!> @ (: erVar) (bool Val))
-      (out (allow (blob (eval (: erObj)) (: erVar)))
-         (prin (=: org Val)) ) )
+      (let? Obj (eval (: erObj))
+         (protect
+            (when (put!> Obj (: erVar) (bool Val))
+               (and *Jnl (blob+ Obj (: erVar)))
+               (out (blob Obj (: erVar))
+                  (prin (=: org Val)) ) ) ) ) )
    (super Val Dn) )
 
 (dm upd> ()
    (set> This
       (=: org
-         (and
-            (eval (: erObj))
-            (get @ (: erVar))
-            (in (allow (blob (eval (: erObj)) (: erVar)))
-               (till NIL T) ) ) ) ) )
+         (let? Obj (eval (: erObj))
+            (when (get Obj (: erVar))
+               (in (blob Obj (: erVar))
+                  (till NIL T) ) ) ) ) ) )
 
 
 (class +ClassField +Map +TextField)
@@ -1935,7 +1962,7 @@
 
 # Form object
 (de <id> "Lst"
-   (with (if *Post (: obj) (=: obj *ID))
+   (with (if *PRG (: obj) (=: obj *ID))
       (and (: T) (prin "["))
       (for "X" (if (=T (car "Lst")) (cdr "Lst") "Lst")
          (ht:Prin (eval "X")) )

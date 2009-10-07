@@ -1,7 +1,7 @@
-# 09jun09abu
+# 16sep09abu
 # (c) Software Lab. Alexander Burger
 
-# *Dbs upd
+# *Dbs *Jnl *Blob upd
 
 ### DB Sizes ###
 (de dbs Lst
@@ -19,6 +19,8 @@
                (if (atom Cls)
                   (put Cls 'dbf Dbf)
                   (for Var (cdr Cls)
+                     (unless (get Cls 1 Var)
+                        (quit "Bad relation" (cons Var (car Cls))) )
                      (put (get (car Cls) Var) 'dbf Dbf) ) ) ) )
          (inc 'N)
          (car L) )
@@ -779,13 +781,15 @@
       (inc (prop Obj Var) (or Val 1))
       (commit 'upd) ) )
 
-(de blob! (Obj Var File Flg)
-   (put!> Obj Var File)
-   (when Flg
-      (chdir *Blob
-         (call 'ln "-sf"
-            (pack (glue "/" (chop Obj)) "." Var)
-            (pack (name Obj) "." Var) ) ) ) )
+(de blob! (Obj Var File)
+   (and *Jnl (blob+ Obj Var))
+   (put!> Obj Var File) )
+
+(de blob+ (Obj Var)
+   (chdir *Blob
+      (call 'ln "-sf"
+         (pack (glue "/" (chop Obj)) "." Var)
+         (pack (name Obj) "." Var) ) ) )
 
 (dm T @
    (while (args)

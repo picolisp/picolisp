@@ -1,4 +1,4 @@
-# 02jun09abu
+# 30sep09abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -8,18 +8,17 @@
 (de *mon . (jan feb mar apr may jun jul aug sep oct nov dec .))
 
 ### Locale ###
-(once
-   (de *Ctry)
-   (de *Lang)
-   (de *Sep0 . ".")
-   (de *Sep3 . ",")
-   (de *CtryCode)
-   (de *DateFmt @Y "-" @M "-" @D)
-   (de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
-   (de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December") )
+(de *Ctry)
+(de *Lang)
+(de *Sep0 . ".")
+(de *Sep3 . ",")
+(de *CtryCode)
+(de *DateFmt @Y "-" @M "-" @D)
+(de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
+(de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
 
 (de locale (Ctry Lang App)  # "DE" "de" ["app/loc/"]
-   (load (if (setq *Ctry Ctry) (pack "@loc/" @) "@loc/NIL"))
+   (load (if (setq *Ctry Ctry) (pack "@loc/" @ ".l") "@loc/NIL.l"))
    (ifn (setq *Lang Lang)
       (for S (idx '*Uni)
          (set S S) )

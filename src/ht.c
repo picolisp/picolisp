@@ -1,4 +1,4 @@
-/* 04may09abu
+/* 14sep09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -86,6 +86,7 @@ any Prin(any x) {
 static void putHex(int c) {
    int n;
 
+   Env.put('%');
    if ((n = c >> 4 & 0xF) > 9)
       n += 7;
    Env.put(n + '0');
@@ -94,48 +95,12 @@ static void putHex(int c) {
    Env.put(n + '0');
 }
 
-static int getHex(any *p) {
-   int n, m;
-
-   n = firstByte(car(*p)),  *p = cdr(*p);
-   if ((n -= '0') > 9)
-      n = (n & 0xDF) - 7;
-   m = firstByte(car(*p)),  *p = cdr(*p);
-   if ((m -= '0') > 9)
-      m = (m & 0xDF) - 7;
-   return n << 4 | m;
-}
-
-static int getUnicode(any *p) {
-   int c, n = 0;
-   any x = cdr(*p);
-
-   while ((c = firstByte(car(x))) >= '0' && c <= '9') {
-      n = n * 10 + c - '0';
-      x = cdr(x);
-   }
-   if (n  &&  firstByte(car(x)) == ';') {
-      *p = cdr(x);
-      return n;
-   }
-   return 0;
-}
-
-static bool head(char *s, any x) {
-   while (*s) {
-      if (*s++ != firstByte(car(x)))
-         return NO;
-      x = cdr(x);
-   }
-   return YES;
-}
-
 static void htEncode(char *p) {
 	int c;
 
    while (c = *p++) {
       if (strchr(" \"#%&:;<=>?_", c))
-         Env.put('%'), putHex(c);
+         putHex(c);
       else {
          Env.put(c);
          if ((c & 0x80) != 0) {
@@ -164,8 +129,8 @@ static void htFmt(any x) {
          Env.put('-'),  htEncode(nm);
       else if (hashed(x, ihash(y), Intern))
          Env.put('$'),  htEncode(nm);
-      else if (strchr("$+.", *nm)) {
-         Env.put('%'), putHex(*nm);
+      else if (strchr("$+-", *nm)) {
+         putHex(*nm);
          htEncode(nm+1);
       }
       else
@@ -190,6 +155,42 @@ any Fmt(any x) {
    if (n)
       drop(c[0]);
    return x;
+}
+
+static int getHex(any *p) {
+   int n, m;
+
+   n = firstByte(car(*p)),  *p = cdr(*p);
+   if ((n -= '0') > 9)
+      n = (n & 0xDF) - 7;
+   m = firstByte(car(*p)),  *p = cdr(*p);
+   if ((m -= '0') > 9)
+      m = (m & 0xDF) - 7;
+   return n << 4 | m;
+}
+
+static bool head(char *s, any x) {
+   while (*s) {
+      if (*s++ != firstByte(car(x)))
+         return NO;
+      x = cdr(x);
+   }
+   return YES;
+}
+
+static int getUnicode(any *p) {
+   int c, n = 0;
+   any x = cdr(*p);
+
+   while ((c = firstByte(car(x))) >= '0' && c <= '9') {
+      n = n * 10 + c - '0';
+      x = cdr(x);
+   }
+   if (n  &&  c == ';') {
+      *p = cdr(x);
+      return n;
+   }
+   return 0;
 }
 
 // (ht:Pack 'lst) -> sym
@@ -236,13 +237,12 @@ any Read(any ex) {
       Env.get();
    if (Chr < 0)
       return Nil;
-   if ((c = getChar()) < 128)
+   if ((c = getChar()) >= 128) {
       --n;
-   else if (c < 2048)
-      n -= 2;
-   else
-      n -= 3;
-   if (n < 0)
+      if (c >= 2048)
+         --n;
+   }
+   if (--n < 0)
       return Nil;
    Push(c1, x = cons(mkChar(c), Nil));
    while (n) {
@@ -251,13 +251,12 @@ any Read(any ex) {
          data(c1) = Nil;
          break;
       }
-      if ((c = getChar()) < 128)
+      if ((c = getChar()) >= 128) {
          --n;
-      else if (c < 2048)
-         n -= 2;
-      else
-         n -= 3;
-      if (n < 0) {
+         if (c >= 2048)
+            --n;
+      }
+      if (--n < 0) {
          data(c1) = Nil;
          break;
       }

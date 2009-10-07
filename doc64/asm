@@ -1,0 +1,187 @@
+# 05sep09abu
+# (c) Software Lab. Alexander Burger
+
+
+   CPU Registers:
+
+      +---+---+---+---+---+---+---+---+
+      |               A           | B |  \      [A]ccumulator
+      +---+---+---+---+---+---+---+---+   D     [B]yte register
+      |               C               |  /      [C]ount register
+      +---+---+---+---+---+---+---+---+         [D]ouble register
+      |               E               |         [E]xpression register
+      +---+---+---+---+---+---+---+---+
+
+
+      +---+---+---+---+---+---+---+---+
+      |               X               |         [X] Index register
+      +---+---+---+---+---+---+---+---+         [Y] Index register
+      |               Y               |         [Z] Index register
+      +---+---+---+---+---+---+---+---+
+      |               Z               |
+      +---+---+---+---+---+---+---+---+
+
+
+      +---+---+---+---+---+---+---+---+
+      |               L               |         [L]ink register
+      +---+---+---+---+---+---+---+---+         [S]tack pointer
+      |               S               |
+      +---+---+---+---+---+---+---+---+
+
+
+      +-------------------------------+
+      |  [z]ero    [s]ign    [c]arry  |         [F]lags
+      +-------------------------------+
+
+========================================================================
+
+   Source Addressing Modes:
+      ld A 1234            # Immediate
+      ld A R               # Register
+      ld A Label           # Direct
+      ld A (R)             # Indexed
+      ld A (R 8)           # Indexed with offset
+      ld A (R OFFS)
+      ld A (Global)        # Indirect
+      ld A (Global OFFS)   # Indirect with offset
+      ld A ((R))           # Indexed indirect
+      ld A ((R 8))         # Indexed with offset indirect
+      ld A ((R 8) OFFS)
+      ...
+
+   Destination Addressing Modes:
+      ld (Global) A        # Indirect
+      ld (Global OFFS) A   # Indirect with offset
+      ld X A               # Register
+      ld (X) A             # Indexed
+      ld (X 8) A           # Indexed with offset
+      ld (X OFFS) A
+      ld ((X)) A           # Indexed indirect
+      ld ((X 8)) A         # Indexed with offset indirect
+      ld ((R 8) OFFS) A
+      ...
+
+   Target Addressing Modes:
+      jmp 1234             # Absolute
+      jmp Label
+      jmp (R)              # Indexed
+      jmp (Global)         # Indirect
+
+========================================================================
+
+   Instruction set:
+      nop                  # No operation
+
+   Move Instructions:
+      ld dst src           # Load 'dst' from 'src'
+      ld2 src              # Load 'A' from two bytes 'src' (signed)
+      ld4 src              # Load 'A' from four bytes 'src' (signed)
+      ldc dst src          # Load if Carry 'dst' from 'src'
+      ldnc dst src         # Load if not Carry 'dst' from 'src'
+      ldz dst src          # Load if Zero 'dst' from 'src'
+      ldnz dst src         # Load if not Zero 'dst' from 'src'
+      lea dst src          # Load 'dst' with effective address of 'src'
+      st2 dst              # Store two bytes from 'A' into 'dst'
+      st4 dst              # Store four bytes from 'A' into 'dst'
+      xchg dst dst         # Exchange 'dst's
+      movm dst src end     # Move memory between 'src' and 'end' to 'dst'
+      movn dst src cnt     # Move 'cnt' bytes from 'src' to 'dst'
+      mset dst cnt         # Set 'cnt' bytes of memory to B
+
+   Arithmetics:
+      add dst src          # Add 'src' to 'dst'
+      addc dst src         # Add 'src' to 'dst' with Carry
+      sub dst src          # Subtract 'src' from 'dst'
+      subc dst src         # Subtract 'src' from 'dst' with Carry
+
+      not dst              # One's complement negation of 'dst'
+      neg dst              # Two's complement negation of 'dst'
+
+      and dst src          # Bitwise AND 'dst' with 'src'
+      or dst src           # Bitwise OR 'dst' with 'src'
+      xor dst src          # Bitwise XOR 'dst' with 'src'
+      off dst src          # Clear 'src' bits in 'src'
+      test dst src         # Bit-test 'dst' with 'src'
+
+      shl dst src          # Shift 'dst' left into Carry by 'src' bits
+      shr dst src          # Shift 'dst' right into Carry by 'src' bits
+      rol dst src          # Rotate 'dst' left by 'src' bits
+      ror dst src          # Rotate 'dst' right by 'src' bits
+      rcl dst src          # Rotate 'dst' with Carry left by 'src' bits
+      rcr dst src          # Rotate 'dst' with Carry right by 'src' bits
+
+      mul src              # Multiplication of 'A' and 'src' into 'D'
+      div src              # Division of 'D' by 'src' into 'A', 'C'
+
+      zxt                  # Zero-extend 'B' to 'A'
+      sxt                  # Sign-extend 'B' to 'A'
+      int                  # Sign-extend 32 bits to 64 bits in 'A'
+
+      setc                 # Set Carry flag
+      clrc                 # Clear Carry flag
+      setz                 # Set Zero flag
+      clrz                 # Clear Zero flag
+
+   Comparisons:
+      cmp dst src          # Compare 'dst' with 'src'
+      cmp4 src             # Compare four bytes in 'A' with 'src'
+      cmpm dst src end     # Compare 'dst' with with memory between 'src' and 'end'
+      cmpn dst src cnt     # Compare 'cnt' bytes 'dst' with 'src'
+      slen dst src         # Set 'dst' to the string length of 'src'
+      memb src cnt         # Find B in 'cnt' bytes of memory
+      null src             # Compare 'src' with 0
+      zero src             # 'z' if ZERO
+      nul4                 # Compare four bytes in 'A' with 0
+
+   Byte addressing:
+      set dst src          # Set 'dst' byte to 'src'
+      nul src              # Compare byte 'src' with 0
+
+   Types:
+      cnt src              # Non-'z' if small number
+      big src              # Non-'z' if bignum
+      num src              # Non-'z' if number
+      sym src              # Non-'z' if symbol
+      atom src             # Non-'z' if atom
+
+   Flow Control:
+      jmp adr              # Jump to 'adr'
+      jz adr               # Jump to 'adr' if Zero
+      jnz adr              # Jump to 'adr' if not Zero
+      js adr               # Jump to 'adr' if Sign
+      jns adr              # Jump to 'adr' if not Sign
+      jc adr               # Jump to 'adr' if Carry
+      jnc adr              # Jump to 'adr' if not Carry
+
+      call adr             # Call 'adr'
+      cc adr(src ..)       # C-Call to 'adr' with 'src' arguments
+      cc adr reg           # C-Call to 'adr' with end of stacked args in 'reg'
+
+      ret                  # Return
+      begin src            # Called from C-function with 'src' arguments
+      return src           # Return to C-function
+
+   Stack Manipulations:
+      push src             # Push 'src'
+      pop dst              # Pop 'dst'
+      link                 # Setup frame
+      tuck src             # Extend frame
+      drop                 # Drop frame
+
+   Evaluation:
+      eval                 # Evaluate expression in 'E'
+      eval+                # Evaluate expression in partial stack frame
+      eval/ret             # Evaluate expression and return
+      exec reg             # Execute lists in 'reg', ignore results
+      prog reg             # Evaluate expressions in 'reg', return last result
+
+   System:
+      init                 # Init runtime system
+      dbg                  # Debug breakpoint
+
+========================================================================
+
+   Naming conventions:
+
+   Lisp level functions, which would be all of the form 'doXyzE_E', are written
+   as 'doXyz' for brevity.

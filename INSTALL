@@ -1,4 +1,4 @@
-09jun09abu
+04oct09abu
 (c) Software Lab. Alexander Burger
 
 
@@ -13,33 +13,36 @@ without problems.
 By default, Pico Lisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.
 
-Note: In Cygwin, the directory where you unpack the distribution should be
-mounted with the "managed" option, to avoid file name conflicts.
-
 
 Please follow these steps:
 
 1. Unpack the distribution
 
-   $ tar xfz picoLisp-XXX.tgz
+      $ tar xfz picoLisp-XXX.tgz
 
 2. Change the directory
 
-   $ cd picoLisp-XXX
+      $ cd picoLisp-XXX
 
 3. Compile the Pico Lisp interpreter
 
-   $ (cd src; make picolisp)
+      $ (cd src; make picolisp)
+
+   or, if you have an x86-64 Linux system, you can try the 64-bit version
+
+      $ (cd src64; make picolisp)
+
+   In both cases the executable bin/picolisp will be created.
 
 4. Optional (but recommended) are two symbolic links from /usr/lib and /usr/bin
    to the installation directory
 
-   $ ln -s /<installdir> /usr/lib/picolisp
-   $ ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+      $ ln -s /<installdir> /usr/lib/picolisp
+      $ ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
 
 
-         Invocation
-         ==========
+      Invocation
+      ----------
 
 The shell script 'dbg' is usually called to start up Pico Lisp in interactive
 debugging mode
@@ -59,12 +62,15 @@ To exit the interpreter, enter
 or simply type an empy line (Return).
 
 
-         Documentation
-         =============
+      Documentation
+      -------------
 
 For further information, please look at "doc/index.html". There you find the
 Pico Lisp Reference Manual (doc/ref.html), the Pico Lisp tutorials (doc/tut.html
 and doc/app.html), and the frequently asked questions (doc/faq.html).
+
+For details about the 64-bit version, refer to "doc64/README", "doc64/asm" and
+"doc64/structures".
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including

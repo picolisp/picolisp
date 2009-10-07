@@ -114,7 +114,7 @@ operation was successfully completed.
 <dt><a name="env"><code>(env ['lst] | ['sym 'val] ..) -> lst</code></a>
 <dd>Return a list of symbol-value pairs of all dynamically bound symbols if
 called without arguments, or of the symbols in <code>lst</code>, or the
-explicitly given <code>sym</code>-<code>val</code> pairs. See also <code><a
+explicitly given <code>sym</code>-<code>val</code> arguments. See also <code><a
 href="refB.html#bind">bind</a></code> and <code><a
 href="refJ.html#job">job</a></code>.
 
@@ -259,8 +259,8 @@ href="refR.html#rd">rd</a></code>, <code><a href="refP.html#pr">pr</a></code>,
 <code><a href="refR.html#rpc">rpc</a></code> or <code><a
 href="refU.html#udp">udp</a></code> are modified by an offset <code>cnt</code>
 suitable for mapping via the <code><a href="refE.html#*Ext">*Ext</a></code>
-mechanism. All external symbol's file numbers are incremented by
-<code>cnt</code> during output, and decremented by <code>cnt</code> during
+mechanism. All external symbol's file numbers are decremented by
+<code>cnt</code> during output, and incremented by <code>cnt</code> during
 input.
 
 <p><pre><code>

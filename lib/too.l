@@ -1,4 +1,4 @@
-# 17apr08abu
+# 16sep09abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -240,16 +240,18 @@
 
 ### Database file management ###
 (de dbfCheck ()
-   (dbMap
-      '((Obj)
-         (when (isa '+Entity Obj)
-            (unless (meta Obj 'dbf)
-               (prin "### ")
-               (println 'dbfCheck Obj (val Obj))) ) )
-      '((Base Root Var Cls Hook)
-         (when (and Var (not (get Cls Var 'dbf)))
-            (prin "### ")
-            (println 'dbfCheck Var Cls) ) ) ) )
+   (for "Cls" (all)
+      (when (and (= `(char "+") (char "Cls")) (isa '+Entity "Cls"))
+         (or
+            (get "Cls" 'dbf)
+            (meta "Cls" 'dbf)
+            (println 'dbfCheck "Cls") )
+         (for Rel (getl "Cls")
+            (and
+               (pair Rel)
+               (isa '+Index (car Rel))
+               (unless (get @ 'dbf)
+                  (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) ) )
 
 (de dbfMigrate (Pool Dbs)
    (let
@@ -386,25 +388,6 @@
             (dbfReloc (cdr X))
             Dbf ) )
       (commit) ) )
-
-
-### DB Unload/Load ###
-(de dbUnload (File N)
-   (out File
-      (for (S (seq N) S (seq S))
-         (println (cons S (val S) (getl S))) ) ) )
-
-(de dbLoad (File N)
-   (in File
-      (let (P (seq N)  F)
-         (for (L (read) L (read))
-            (setq F (seq P (setq P (car L)) F))
-            (commit) ) ) )
-   (in File
-      (for (L (read) L (read))
-         (set (car L) (cadr L))
-         (putl (car L) (cddr L))
-         (commit) ) ) )
 
 
 ### Dump Objects ###

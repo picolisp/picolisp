@@ -1,4 +1,4 @@
-# 30jul08abu
+# 06aug09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
@@ -18,7 +18,15 @@
       (gui '(+ShowButton) NIL
          '(csv ,"Sales"
             (<table> 'chart NIL
-               '((align) (NIL ,"Date") (NIL ,"Customer") NIL (NIL ,"Zip") (NIL ,"City") (align ,"Total"))
+               (<!>
+                  (quote
+                     (align)
+                     (NIL ,"Date")
+                     (NIL ,"Customer")
+                     NIL
+                     (NIL ,"Zip")
+                     (NIL ,"City")
+                     (align ,"Total") ) )
                (let Sum 0
                   (pilog
                      (quote

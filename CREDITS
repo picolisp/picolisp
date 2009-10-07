@@ -10,7 +10,7 @@ Rick Hanson <rick@tamos.net>
 # Port to Cygwin/Win32
 Doug Snead <doug@drugsense.org>
 
-# Documentation and Mac OS support
+# Documentation, Mac OS support, OpenGL library
 Jon Kleiser <jon.kleiser@usit.uio.no>
 
 # Russian localization
@@ -18,3 +18,6 @@ Mansur Mamkin <mmamkin@mail.ru>
 
 # XML parser (and other) improvements
 Tomas Hlavaty <kvietaag@seznam.cz>
+
+# Spanish localization
+Armadillo <tc.rucho@gmail.com>

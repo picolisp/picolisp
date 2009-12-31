@@ -1,4 +1,4 @@
-# 16jul09abu
+# 12nov09abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -26,8 +26,8 @@
 (de start ()
    (setq *Url "@start")
    (and (app) (setq *Menu 3))
-   (menu "Pico App"
-      (<h2> NIL "Pico App")
+   (menu "PicoLisp App"
+      (<h2> NIL "PicoLisp App")
       (<img> "img/7fach.gif" "7fach Logo")
       (----)
       (form NIL
@@ -87,7 +87,7 @@
                   (tolr @Nm @@ nm)
                   (fold @Tel @@ tel)
                   (head @Plz @@ plz)
-                  (head @Ort @@ ort)
+                  (part @Ort @@ ort)
                   (fold @Mob @@ mob) ) ) )
          9
          '((This) (list This (: nr) This (: nm2) (: em) (: plz) (: ort) (: tel) (: mob))) )
@@ -143,7 +143,7 @@
                (select (@@)
                   ((nr +Item @Nr) (nm +Item @Nm) (pr +Item @Pr) (nm +CuSu @Sup (sup +Item)))
                   (range @Nr @@ nr)
-                  (tolr @Nm @@ nm)
+                  (part @Nm @@ nm)
                   (range @Pr @@ pr)
                   (tolr @Sup @@ sup nm) ) ) )
          6
@@ -201,8 +201,8 @@
                   (range @Nr @@ nr)
                   (range @Dat @@ dat)
                   (tolr @Cus @@ cus nm)
-                  (head @Ort @@ cus ort)
-                  (tolr @Item @@ pos itm nm)
+                  (part @Ort @@ cus ort)
+                  (part @Item @@ pos itm nm)
                   (tolr @Sup @@ pos itm sup nm) ) ) )
          9
          '((This)

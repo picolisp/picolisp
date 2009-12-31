@@ -1,4 +1,4 @@
-# 30sep09abu
+# 29dec09abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -298,10 +298,12 @@
 
 # Week of the year
 (de week (Dat)
-   (-
-      (_week Dat)
-      (_week (date (car (date Dat)) 1 4))
-      -1 ) )
+   (let W
+      (-
+         (_week Dat)
+         (_week (date (car (date Dat)) 1 4))
+         -1 )
+      (if (=0 W) 53 W) ) )
 
 (de _week (Dat)
    (/ (- Dat (% (inc Dat) 7)) 7) )

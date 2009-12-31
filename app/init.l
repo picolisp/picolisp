@@ -1,4 +1,4 @@
-# 05mar08abu
+# 05nov09abu
 # (c) Software Lab. Alexander Burger
 
 ### Role ###
@@ -22,7 +22,9 @@
 (obj ((+Sal) nm "Ms.") hi "Dear Ms. @1,"  sex 0)
 (obj ((+Sal) nm "Mme") hi "Bonjour Mme @1,"  sex 0)
 (obj ((+Sal) nm "Herr") hi "Sehr geehrter Herr @1,"  sex T)
+(obj ((+Sal) nm "Herr Dr.") hi "Sehr geehrter Herr Dr. @1,"  sex T)
 (obj ((+Sal) nm "Frau") hi "Sehr geehrte Frau @1,"  sex 0)
+(obj ((+Sal) nm "Frau Dr.") hi "Sehr geehrte Frau Dr. @1,"  sex 0)
 (obj ((+Sal) nm "Señor") hi "Estimado Señor @1,"  sex T)
 (obj ((+Sal) nm "Señora") hi "Estimada Señora @1,"  sex 0)
 (commit)
@@ -34,7 +36,6 @@
    str "Wildcat Lane"
    plz "3425"
    ort "Freetown"
-   cty "Atlantica"
    tel "37 4967 6846-0"
    fax "37 4967 68462"
    mob "37 176 86303"
@@ -44,7 +45,6 @@
    str "Sunny Side Heights 202"
    plz "1795"
    ort "Winterburg"
-   cty "Atlantica"
    tel "37 6295 5855-0"
    fax "37 6295 58557"
    em "info@7oaks.tld" )
@@ -55,7 +55,6 @@
    str "Running Lane 17"
    plz "1208"
    ort "Kaufstadt"
-   cty "Atlantica"
    tel "37 4773 82534"
    mob "37 129 276877"
    em "tem@shoppers.tld" )

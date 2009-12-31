@@ -1,4 +1,4 @@
-# 04oct09abu
+# 25nov09abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -201,7 +201,7 @@
       end
       nul (Signal)  # Signal?
       if nz  # Yes
-         call sighandlerT
+         call sighandler0
       end
    loop
 
@@ -234,7 +234,7 @@
       end
       nul (Signal)  # Signal?
       if nz  # Yes
-         call sighandlerT
+         call sighandler0
       end
    loop
 
@@ -250,7 +250,7 @@
          jne Retz  # No: Return 'z'
          nul (Signal)  # Signal?
          if nz  # Yes
-            call sighandlerT
+            call sighandler0
          end
       loop
       add X A  # Increment buffer pointer
@@ -287,7 +287,7 @@
                jne Retz  # No: Return 'z'
                nul (Signal)  # Signal?
                if nz  # Yes
-                  call sighandlerT
+                  call sighandler0
                end
             loop
          loop
@@ -303,7 +303,7 @@
       jne Retz  # No: Return 'z'
       nul (Signal)  # Signal?
       if nz  # Yes
-         call sighandlerT
+         call sighandler0
       end
    loop
 
@@ -328,7 +328,7 @@
       end
       nul (Signal)  # Signal?
       if nz  # Yes
-         call sighandlerT
+         call sighandler0
       end
    loop
 
@@ -1753,7 +1753,7 @@
             jne closeErrX
             nul (Signal)  # Signal?
             if nz  # Yes
-               call sighandlerT
+               call sighandler0
             end
          loop
       end
@@ -1800,7 +1800,7 @@
             jne closeErrX
             nul (Signal)  # Signal?
             if nz  # Yes
-               call sighandlerT
+               call sighandler0
             end
          loop
       end
@@ -2035,13 +2035,13 @@
       if ne  # No
          ld A 0
          call readA_E  # Read expression
-         ld A E
-         call consE_E  # Make a pair
-         ld (E) A
-         ld (E CDR) Nil
+         call consE_A  # Make a pair
+         ld (A) E
+         ld (A CDR) Nil
          link
-         push E  # <L I> Save it
+         push A  # <L I> Save it
          link
+         ld E A  # Keep last cell in E
          jmp 10  # Exit
       end
       call (EnvGet_A)  # Skip tilde
@@ -2086,8 +2086,8 @@
             if eq  # Yes
 20             ld (E CDR) (L I)  # Store list in CDR
             else
-               ld A 0
                push E
+               ld A 0
                call readA_E  # Read expression
                ld A E
                pop E
@@ -2114,31 +2114,31 @@
          ld Y A  # Save first char
          ld B (char ".")  # Restore dot
          call rdAtomBYL_E  # Read atom
-         ld A E
-         call consE_E  # Make a pair
-         ld (E) A
-         ld (E CDR) Nil
-         pop A
-         ld (A CDR) E  # Store in last cell
+         call consE_A  # Make a pair
+         ld (A) E
+         ld (A CDR) Nil
+         pop E
+         ld (E CDR) A  # Store in last cell
+         ld E A
          drop
          pop Y
          pop X
       else
          cmp B (char "~")  # Tilde?
          if ne  # No
-            ld A 0
             push E
+            ld A 0
             call readA_E  # Read expression
-            ld A E
-            call consE_E  # Make a pair
-            ld (E) A
-            ld (E CDR) Nil
-            pop A
-            ld (A CDR) E  # Store in last cell
+            call consE_A  # Make a pair
+            ld (A) E
+            ld (A CDR) Nil
+            pop E
+            ld (E CDR) A  # Store in last cell
+            ld E A
          else
             call (EnvGet_A)  # Skip tilde
-            ld A 0
             push E
+            ld A 0
             call readA_E  # Read expression
             ld A (S)
             ld (A CDR) E  # Save in last cell
@@ -2617,9 +2617,10 @@
 (code 'waitFdCEX_A)
    push Y
    push Z
+   push (EnvTask)  # <L IV> Save task list
    link
    push (At)  # <L II> '@'
-   push ZERO  # <L I> Safe
+   push ZERO  # <L I> '*Run'
    link
    push C  # <L -I> File descriptor
    push E  # <L -II> Milliseconds
@@ -2640,32 +2641,21 @@
             add Z 1  # Increment count
          end
       end
-      ld A (Hear)  # RPC listener?
-      null A
-      if nz  # Yes
-         cmp A (L -I)  # Different from argument-fd?
-         if ne  # Yes
-            call inFilesA_FC  # Still open?
-            if nz  # Yes
-               call inReadyC_F  # Data in buffer?
-               if nz  # Yes
-                  ld (L -III) 0  # Timeout = 0
-               else
-                  sub S POLLFD  # Create 'poll' structure
-                  st4 (S)  # Store 'Hear'
-                  ld A POLLIN  # Poll input
-                  st2 (S POLL_EVENTS)  # Store 'events'
-                  add Z 1  # Increment count
-               end
-            end
-         end
-      end
       ld Y (Run)  # Get '*Run'
       ld (L I) Y  # Save it
+      ld (EnvTask) Y
       do
          atom Y  # '*Run' elements?
       while z  # Yes
          ld E (Y)  # Next element
+         ld A (L IV)  # memq in saved tasklist?
+         do
+            atom A  # End of tasklist?
+         while z  # No
+            cmp E (A)  # Member?
+            jeq 10  # Yes: Skip
+            ld A (A CDR)
+         loop
          ld A (E)  # Get fd or timeout value
          shr A 4  # Negative?
          if c  # Yes
@@ -2690,8 +2680,28 @@
                end
             end
          end
-         ld Y (Y CDR)
+10       ld Y (Y CDR)
       loop
+      ld A (Hear)  # RPC listener?
+      null A
+      if nz  # Yes
+         cmp A (L -I)  # Different from argument-fd?
+         if ne  # Yes
+            call inFilesA_FC  # Still open?
+            if nz  # Yes
+               call inReadyC_F  # Data in buffer?
+               if nz  # Yes
+                  ld (L -III) 0  # Timeout = 0
+               else
+                  sub S POLLFD  # Create 'poll' structure
+                  st4 (S)  # Store 'Hear'
+                  ld A POLLIN  # Poll input
+                  st2 (S POLL_EVENTS)  # Store 'events'
+                  add Z 1  # Increment count
+               end
+            end
+         end
+      end
       ld A (Spkr)  # Speaker open?
       null A
       if nz  # Yes
@@ -2867,11 +2877,49 @@
             end
          end
       end
+      ld A (Hear)  # RPC listener?
+      null A
+      if nz  # Yes
+         cmp A (L -I)  # Different from argument-fd?
+         if ne  # Yes
+            call rdSetRdyASL_F  # Ready?
+            if nz  # Yes
+               call rdHear_FE  # Read expression?
+               if nc  # Yes
+                  cmp E TSym  # Read 'T'?
+                  if eq  # Yes
+                     set (Sync) 1  # Set sync flag
+                  else
+                     link
+                     push E  # Save expression
+                     link
+                     call evListE_E  # Execute it
+                     drop
+                  end
+               else
+                  call closeAX  # Close 'Hear'
+                  ld A (Hear)
+                  call closeInFileA
+                  ld A (Hear)
+                  call closeOutFileA
+                  ld (Hear) 0  # Clear value
+               end
+            end
+         end
+      end
       ld Y (L I)  # Get '*Run'
       do
          atom Y  # More elements?
       while z  # Yes
          ld E (Y)  # Next element
+         ld A (L IV)  # memq in saved tasklist?
+         do
+            atom A  # End of tasklist?
+         while z  # No
+            cmp E (A)  # Member?
+            jeq 20  # Yes: Skip
+            ld A (A CDR)
+         loop
          ld A (E)  # Get fd or timeout value
          shr A 4  # Negative?
          if c  # Yes
@@ -2901,35 +2949,8 @@
                end
             end
          end
-         ld Y (Y CDR)
+20       ld Y (Y CDR)
       loop
-      ld A (Hear)  # RPC listener?
-      null A
-      if nz  # Yes
-         cmp A (L -I)  # Different from argument-fd?
-         if ne  # Yes
-            call rdSetRdyASL_F  # Ready?
-            if nz  # Yes
-               call rdHear_FE  # Read expression?
-               if nc  # Yes
-                  cmp E TSym  # Read 'T'?
-                  if eq  # Yes
-                     set (Sync) 1  # Set sync flag
-                  else
-                     ld (L I) Y  # Save expression
-                     call evListE_E  # Execute it
-                  end
-               else
-                  call closeAX  # Close 'Hear'
-                  ld A (Hear)
-                  call closeInFileA
-                  ld A (Hear)
-                  call closeOutFileA
-                  ld (Hear) 0  # Clear value
-               end
-            end
-         end
-      end
       nul (Signal)  # Signal?
       if nz  # Yes
          call sighandlerX
@@ -2955,6 +2976,7 @@
    ld (At) (L II)  # Restore '@'
    ld A (L -II)  # Return milliseconds
    drop
+   pop (EnvTask)
    pop Z
    pop Y
    ret
@@ -3383,6 +3405,7 @@
 # (till 'any ['flg]) -> lst|sym
 (code 'doTill 2)
    push X
+   push Z
    ld X (E CDR)  # Args
    call evSymX_E  # Evaluate to a symbol
    call bufStringE_SZ  # <S I/IV> Stack buffer
@@ -3443,12 +3466,14 @@
          end
          drop
          ld S Z  # Drop buffer
+         pop Z
          pop X
          ret
       end
    end
    ld E Nil  # Return NIL
    ld S Z  # Drop buffer
+   pop Z
    pop X
    ret
 
@@ -3662,15 +3687,16 @@
    ret
 
 (code 'parseBCE_E)
-   link  # Save old parser status
-   push (EnvParseX)
-   link
+   push (EnvParseX)  # Save old parser status
    push (EnvParseC)
    push (EnvParseEOF)
    push (EnvGet_A)  # Save 'get' status
    push (Chr)
    ld E (E TAIL)
    call nameE_E  # Get name
+   link
+   push E  # Save it
+   link
    ld (EnvParseX) E  # Set new parser status
    ld (EnvParseC) 0
    null C  # Token?
@@ -3724,13 +3750,12 @@
       pop A  # Drop set
       pop X
    end
+   drop
    pop (Chr)  # Retrieve 'get' status
    pop (EnvGet_A)
    pop (EnvParseEOF)  # Restore old parser status
    pop (EnvParseC)
-   pop L
    pop (EnvParseX)
-   pop L
    ret
 
 # (any 'sym) -> any
@@ -3745,15 +3770,16 @@
    jz symErrEX
    cmp E Nil  # NIL?
    if ne  # No
-      link  # Save old parser status
-      push (EnvParseX)
-      link
+      push (EnvParseX)  # Save old parser status
       push (EnvParseC)
       push (EnvParseEOF)
       push (EnvGet_A)  # Save 'get' status
       push (Chr)
       ld E (E TAIL)
       call nameE_E  # Get name
+      link
+      push E  # Save it
+      link
       ld (EnvParseX) E  # Set new parser status
       ld (EnvParseC) 0
       ld (EnvParseEOF) (hex "FFFFFFFFFFFF2000")  # Blank, EOF
@@ -3762,13 +3788,12 @@
       call getParse_A  # Skip first char
       ld A 1  # Top level
       call readA_E  # Read expression
+      drop
       pop (Chr)  # Retrieve 'get' status
       pop (EnvGet_A)
       pop (EnvParseEOF)  # Restore old parser status
       pop (EnvParseC)
-      pop L
       pop (EnvParseX)
-      pop L
    end
    pop X
    ret
@@ -3889,6 +3914,9 @@
             end
          end
          ld C 10  # Linefeed terminator
+         cc isatty(0)  # STDIN
+         nul4  # on a tty?
+         ldz C 0  # No
          call readC_E  # Read expression
          cmp (Chr) 10  # Hit linefeed?
          if eq  # Yes
@@ -4494,7 +4522,7 @@
 (code 'printE 0)
    nul (Signal)  # Signal?
    if nz  # Yes
-      call sighandlerT
+      call sighandler0
    end
    cnt E  # Short number?
    jnz outNumE  # Yes
@@ -4561,9 +4589,15 @@
             call (EnvPutB)  # Put byte
             call symByteCX_FACX  # Next byte
          until z  # Done
-      else
-         ld B (char "\"")  # Else transient symbol
-         call (EnvPutB)
+      else  # Else transient symbol
+         call tsm_F  # Transient symbol markup?
+         if z  # No
+            ld B (char "\"")
+            call (EnvPutB)
+         else
+            ld E ((Tsm))  # Get CAR
+            call outNameE  # Write transient symbol markup
+         end
          ld C 0
          call symByteCX_FACX  # Get first byte
          do
@@ -4597,8 +4631,14 @@
             call (EnvPutB)  # Put byte
             call symByteCX_FACX  # Next byte
          until z  # Done
-         ld B (char "\"")  # Final double quote
-         call (EnvPutB)
+         call tsm_F  # Transient symbol markup?
+         if z  # No
+            ld B (char "\"")  # Final double quote
+            call (EnvPutB)
+         else
+            ld E ((Tsm) CDR)  # Get CDR
+            call outNameE  # Write transient symbol markup
+         end
       end
       pop Y
       pop X
@@ -4650,6 +4690,14 @@
    pop X
    ret
 
+(code 'tsm_F 0)
+   cmp (Tsm) Nil  # Transient symbol markup?
+   jeq ret  # No
+   cmp (EnvPutB) putStdoutB  # to stdout?
+   jne Retz  # No
+   null ((OutFile) II)  # and 'tty'?
+   ret  # Return 'nz'
+
 # Print string representation
 (code 'prinE_E 0)
    push E  # Save expression
@@ -4660,7 +4708,7 @@
 (code 'prinE 0)
    nul (Signal)  # Signal?
    if nz  # Yes
-      call sighandlerT
+      call sighandler0
    end
    cmp E Nil  # NIL?
    if ne  # No

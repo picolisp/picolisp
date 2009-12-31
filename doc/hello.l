@@ -2,4 +2,4 @@
 
 (html 0 "Hello" NIL NIL
    (<h3> NIL "Hello world")
-   "This is Pico Lisp" )
+   "This is PicoLisp" )

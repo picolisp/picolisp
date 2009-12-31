@@ -11,6 +11,24 @@
 
 <dl>
 
+<dt><a name="+Joint"><code>+Joint</code></a>
+<dd>Class for bidirectional object relations, a subclass of <code><a
+href="refL.html#+Link">+Link</a></code>. Expects a (symbolic) attribute, and
+list of classes as <code><a href="refT.html#type">type</a></code> of the
+referred database object (of class <code><a
+href="refE.html#+Entity">+Entity</a></code>). A <code>+Joint</code> corresponds
+to two <code>+Link</code>s, where the attribute argument is the relation of the
+back-link in the referred object. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(class +Ord +Entity)                   # Order class
+(rel pos (+List +Joint) ord (+Pos))    # List of positions in that order
+...
+(class +Pos +Entity)    # Position class
+(rel ord (+Joint)       # Back-link to the parent order
+</code></pre>
+
 <dt><a name="job"><code>(job 'lst . prg) -> any</code></a>
 <dd>Executes a job within its own environment (as specified by symbol-value
 pairs in <code>lst</code>). The current values of all symbols are saved, the
@@ -26,7 +44,7 @@ href="refL.html#let">let</a></code>, <code><a
 href="refU.html#use">use</a></code> and <code><a
 href="refS.html#state">state</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de tst ()
    (job '((A . 0) (B . 0))
       (println (inc 'A) (inc 'B 2)) ) )
@@ -52,8 +70,8 @@ href="refS.html#state">state</a></code>.
 writes all changes to the database. See also <code><a
 href="refP.html#pool">pool</a></code>.
 
-<p><pre><code>
-: (journal "db.log")
+<pre><code>
+: (journal <u>db.log</u>)
 -> T
 </code></pre>
 

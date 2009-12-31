@@ -1,20 +1,20 @@
-03oct09abu
+12nov09abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
                                            not when there is nothing left to add
                                      but when there is nothing left to take away
                                                      (Antoine de Saint-Exupery)
-         The Pico Lisp System
-         ====================
+         The PicoLisp System
+         ===================
 
      _PI_co Lisp is not _CO_mmon Lisp
 
-Pico Lisp can be viewed from two different aspects: As a general purpose
+PicoLisp can be viewed from two different aspects: As a general purpose
 programming language, and a dedicated application server framework.
 
 
-(1) As a programming language, Pico Lisp provides a 1-to-1 mapping of a clean
+(1) As a programming language, PicoLisp provides a 1-to-1 mapping of a clean
 and powerful Lisp derivate, to a simple and efficient virtual machine. It
 supports persistent objects as a first class data type, resulting in a database
 system of Entity/Relation classes and a Prolog-like query language tightly
@@ -35,8 +35,8 @@ The virtual machine was designed to be
       matters like memory management, dynamic symbol binding, and late method
       binding.
    Practical
-      Pico is not just a toy of theoretical value. Pico is used since 1988 in
-      actual application development, research and production.
+      PicoLisp is not just a toy of theoretical value. PicoLisp is used since
+      1988 in actual application development, research and production.
 
 The language inherits the major advantages of classical Lisp systems like
    - Dynamic data types and structures
@@ -44,7 +44,7 @@ The language inherits the major advantages of classical Lisp systems like
    - Functional programming style
    - An interactive environment
 
-Pico Lisp is very different from any other Lisp dialect. This is partly due to
+PicoLisp is very different from any other Lisp dialect. This is partly due to
 the above design principles, and partly due to its long development history
 since 1984.
 
@@ -52,12 +52,12 @@ You can download the latest release version at
 "http://software-lab.de/down.html".
 
 
-(2) As an application server framework, Pico Lisp provides for
+(2) As an application server framework, PicoLisp provides for
    Database Management
       Index trees
       Object local indexes
       Entity/Relation classes
-      Pilog (Pico Prolog) queries
+      Pilog (PicoLisp Prolog) queries
       Multi-user synchronization
       DB Garbage collection
       Journaling, Replication
@@ -76,7 +76,7 @@ You can download the latest release version at
       Object linkage
       Postscript/Printing
 
-Pico Lisp is not an IDE. All program development in Software Lab. is done using
+PicoLisp is not an IDE. All program development in Software Lab. is done using
 the console, bash, vim and the Lisp interpreter.
 
 The only type of GUI supported for applications is through a browser via HTML.
@@ -90,7 +90,7 @@ multiple users can view and modify the same database object without conflicts,
 everyone seeing changes done by other users on her screen immediately due to the
 internal process and database synchronization.
 
-Pico Lisp is free software, and you are welcome to redistribute it under the
+PicoLisp is free software, and you are welcome to redistribute it under the
 conditions of the GNU General Public License (GPL).
 
 It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),

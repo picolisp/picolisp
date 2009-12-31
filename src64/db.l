@@ -1,4 +1,4 @@
-# 02oct09abu
+# 28oct09abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -455,17 +455,6 @@
    add S (+ BLK 2)  # Drop buffer
    ret
 
-(code 'logBlocksZ)
-   call rdBlockZ_Z  # Read first block
-   call logBlock  # Write to transaction log
-   do
-      null (BlkLink)  # More blocks?
-   while nz  # Yes
-      call rdBlockLinkZ_Z  # Read next block
-      call logBlock  # Write to transaction log
-   loop
-   ret
-
 (code 'newBlock_X)
    push Z
    ld C (* 2 BLK)  # Read 'free' and 'next'
@@ -474,16 +463,20 @@
    call blkPeekCEZ
    call getAdrZ_A  # 'free'?
    null A
+   jz 10  # No
+   null ((DbFile) VII)  # 'fluse'?
    if nz  # Yes
-      ld X A  # Keep in X
-      shl A ((DbFile) II)  # Shift 'free'
+      ld X A  # Keep 'free' in X
+      ld C (DbFile)
+      shl A (C II)  # Shift 'free'
+      sub (C VII) 1  # Decrement 'fluse'
       ld E A  # Read 'free' link
       ld C BLK
       call blkPeekCEZ  # into 'Buf'
       ld E 0  # Restore block zero in E
       ld C (* 2 BLK)  # and poke size in C
    else
-      add Z BLK  # Get 'next'
+10    add Z BLK  # Get 'next'
       call getAdrZ_A
       cmp A (hex "FFFFFFFFFFC0")  # Max object ID
       jeq dbSizErr  # DB Oversize
@@ -612,7 +605,11 @@
       ld A (BlkLink)  # Next block?
       null A
       jz ret  # No: Return 0
+      push C
+      push E
       call rdBlockIndexAZ_Z  # Read block
+      pop E
+      pop C
    end
    ld B (Z)  # Next byte
    add Z 1  # (nc)
@@ -734,8 +731,6 @@
       ld Y A  # Index in Y
       add A E
       push A  # <S> Limit
-      ld B 0  # Clear all
-      mset (Y) E
       ld (MaxBlkSize) 0  # Init block size maximum
       do
          ld C (S I)  # Get DB name end pointer
@@ -817,6 +812,10 @@
          if gt
             ld (MaxBlkSize) A
          end
+         ld (Y IV) 0  # Clear 'flgs'
+         ld (Y V) 0  # mark vector size
+         ld (Y VI) 0  # and mark bit vector
+         ld (Y VII) -1  # Init 'fluse'
          add Y VIII  # Increment index by sizeof(dbFile)
          ld A Y  # Get index
          sub A (DbFiles)  # Advanced so far
@@ -1527,6 +1526,7 @@
       ld C (DBs)  # Count
       do
          set (E (+ IV 1)) 0  # Clear dirty flag
+         ld (E VII) 0  # and 'fluse'
          sub C VIII  # Done?
       until z  # Yes
       push X
@@ -1555,8 +1555,19 @@
                cmp A (DBs)  # Local file?
                if lt  # Yes
                   call setBlockAC_Z  # Set up block env
-                  call logBlocksZ  # Write all blocks to transaction log
-                  set ((DbFile) (+ IV 1)) 1  # Set dirty flag
+                  call rdBlockZ_Z  # Read first block
+                  do
+                     call logBlock  # Write to transaction log
+                     null (BlkLink)  # More blocks?
+                  while nz  # Yes
+                     call rdBlockLinkZ_Z  # Read next block
+                  loop
+                  ld C (DbFile)
+                  set (C (+ IV 1)) 1  # Set dirty flag
+                  rcl Y 2  # Deleted?
+                  if nc  # No
+                     add (C VII) 1  # Increment 'fluse'
+                  end
                end
                pop Y
             end
@@ -1593,12 +1604,23 @@
 20    ld X (DbFiles)  # Iterate DB files
       ld Y (DBs)  # Count
       do
-         nul (X (+ IV 1))  # Dirty?
+         ld A (X VII)  # Get 'fluse'
+         null A  # Any?
          if nz  # Yes
+            push A  # Save as count
             ld A X
             ld C 0  # Save Block 0 and free list
             call setBlkAC_Z  # Set up block env
-            call logBlocksZ  # Write all blocks to transaction log
+            call rdBlockZ_Z  # Read first block
+            do
+               call logBlock  # Write to transaction log
+               null (BlkLink)  # More blocks?
+            while nz  # Yes
+               sub (S) 1  # Decrement count
+            while nc
+               call rdBlockLinkZ_Z  # Read next block
+            loop
+            pop A  # Drop count
          end
          sub Y VIII  # Done?
       until z  # Yes
@@ -1845,6 +1867,11 @@
    if z  # No
       sub (EnvProtect) 1  # Unprotect
    end
+   ld E (DbFiles)  # Iterate DB files
+   ld C (DBs)  # Count
+   do
+      ld (E VII) -1  # Init 'fluse'
+   until z  # Yes
    drop
    pop Z
    pop Y

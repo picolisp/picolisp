@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Pico Lisp FAQ</title>
+<title>PicoLisp FAQ</title>
 <link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
@@ -15,26 +15,26 @@
 <i>Joshu: "Well, then carry it out."</i><br>
 <i>(Zen koan)</i><br>
 
-<h1>Pico Lisp Frequently Asked Questions</h1>
+<h1>PicoLisp Frequently Asked Questions</h1>
 
 <p align=right>(c) Software Lab. Alexander Burger
 
 <p><ul>
 <li><a href="#yet">Why did you write yet another Lisp?</a>
-<li><a href="#who">Who can use Pico Lisp?</a>
+<li><a href="#who">Who can use PicoLisp?</a>
 <li><a href="#advantages">What are the advantages over other Lisp systems?</a>
 <li><a href="#performance">How is the performance compared to other Lisp systems?</a>
 <li><a href="#interpreted">What means "interpreted"?</a>
 <li><a href="#compiler">Is there (or will be in the future) a compiler available?</a>
 <li><a href="#portable">Is it portable?</a>
-<li><a href="#webServer">Is Pico Lisp a web server?</a>
-<li><a href="#lambda">I cannot find the LAMBDA keyword in Pico Lisp</a>
+<li><a href="#webServer">Is PicoLisp a web server?</a>
+<li><a href="#lambda">I cannot find the LAMBDA keyword in PicoLisp</a>
 <li><a href="#dynamic">Why do you use dynamic variable binding?</a>
 <li><a href="#problems">Are there no problems caused by dynamic binding?</a>
 <li><a href="#closures">But with dynamic binding I cannot implement closures!</a>
 <li><a href="#macros">Do you have macros?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
-<li><a href="#hardware">Would it make sense to build Pico Lisp in hardware?</a>
+<li><a href="#hardware">Would it make sense to build PicoLisp in hardware?</a>
 <li><a href="#few">Why are there only a few questions in this FAQ?</a>
 </ul>
 
@@ -49,9 +49,9 @@ are the case-insensitivity and complexity of current Lisp systems.
 
 
 <p><hr>
-<h2><a name="who">Who can use Pico Lisp?</a></h2>
+<h2><a name="who">Who can use PicoLisp?</a></h2>
 
-<p>Pico Lisp is for programmers who want to control their programming
+<p>PicoLisp is for programmers who want to control their programming
 environment, at all levels, from the application domain down to the bare metal.
 Who want use a transparent and simple - yet universal - programming model, and
 want to know exactly what is going on. This is an aspect influenced by Forth.
@@ -67,7 +67,7 @@ better protects them from their own mistakes.
 <h2><a name="advantages">What are the advantages over other Lisp systems?</a></h2>
 
 <h3>Simplicity</h3>
-<p>Pico Lisp is easy to understand and adapt. There is no compiler enforcing
+<p>PicoLisp is easy to understand and adapt. There is no compiler enforcing
 special rules, and the interpreter is simple and straightforward. There are only
 three data types: Numbers, symbols and lists ("LISP" means "List-, Integer- and
 Symbol Processing" after all ;-). The memory footprint is minimal, and the
@@ -79,11 +79,11 @@ to follow the specifications. Therefore, language designers try to be as
 abstract and general as possible, leaving many questions and ambiguities to the
 users of the language.
 
-<p>Pico Lisp does the opposite. Initially, only the single-cell data structure
+<p>PicoLisp does the opposite. Initially, only the single-cell data structure
 was defined, and then the structure of numbers, symbols and lists as they are
 composed of these cells. Everything else in the whole system follows from these
 axioms. This is documented in the chapter about the <a href="ref.html#vm">The
-Pico Machine</a> in the reference manual.
+PicoLisp Machine</a> in the reference manual.
 
 <h3>Orthogonality</h3>
 <p>There is only one symbolic data type, no distinction (confusion) between
@@ -92,7 +92,7 @@ symbols, strings, variables, special variables and identifiers.
 <p>Most data-manipulation functions operate on the value cells of symbols as
 well as the CARs of list cells:
 
-<p><pre><code>
+<pre><code>
 : (let (N 7  L (7 7 7)) (inc 'N) (inc (cdr L)) (cons N L))
 -> (8 7 8 7)
 </code></pre>
@@ -102,12 +102,12 @@ compiler, functions can be used instead of macros. No special "syntax"
 constructs are needed. This allows a completely orthogonal use of functions. For
 example, most other Lisps do not allow calls like
 
-<p><pre><code>
+<pre><code>
 : (mapcar if '(T NIL T NIL) '(1 2 3 4) '(5 6 7 8))
 -> (1 6 3 8)
 </code></pre>
 
-<p>Pico Lisp has no such restrictions. It favors the principle of "Least
+<p>PicoLisp has no such restrictions. It favors the principle of "Least
 Astonishment".
 
 <h3>Object System</h3>
@@ -115,7 +115,7 @@ Astonishment".
 simple:
 
 <p><ul>
-<li>In other systems you have to statically declare "slots". In Pico Lisp,
+<li>In other systems you have to statically declare "slots". In PicoLisp,
 classes and objects are completely dynamic, they are created and extended at
 runtime. "Slots" don't even exist at creation time. They spring into existence
 purely dynamically. You can add any new property or any new method to any single
@@ -134,7 +134,7 @@ href="refE.html#extra">extra</a></code>.
 </ul>
 
 <h3>Pragmatism</h3>
-<p>Pico Lisp has many practical features not found in other Lisp dialects. Among
+<p>PicoLisp has many practical features not found in other Lisp dialects. Among
 them are:
 
 <p><ul>
@@ -202,7 +202,7 @@ queries.
 </ul>
 
 <h3>Persistent Symbols</h3>
-<p>Database objects ("external" symbols) are a primary data type in Pico Lisp.
+<p>Database objects ("external" symbols) are a primary data type in PicoLisp.
 They look like normal symbols to the programmer, but are managed (fetched from
 and stored to the data base) automatically by the system. Symbol manipulation
 functions like <code>set</code>, <code>put</code> or <code>get</code>, the
@@ -224,28 +224,28 @@ language-independent applications.
 <p><hr>
 <h2><a name="performance">How is the performance compared to other Lisp systems?</a></h2>
 
-<p>Despite the fact that Pico Lisp is an interpreted-only system, the
-performance is quite good. Typical Lisp programs, operating on list data
-structures, execute in (interpreted) Pico Lisp at about the same speed as in
-(compiled) CMUCL, and about two or three times faster than in CLisp or Scheme48.
-Programs with lots of numeric calculations, however, are several times slower,
-probably due to Pico Lisp's somewhat inefficient implementation of bignums.
+<p>Despite the fact that PicoLisp is an interpreted-only system, the performance
+is quite good. Typical Lisp programs, operating on list data structures, execute
+in (interpreted) PicoLisp at about the same speed as in (compiled) CMUCL, and
+about two or three times faster than in CLisp or Scheme48. Programs with lots of
+numeric calculations, however, are several times slower, probably due to
+PicoLisp's somewhat inefficient implementation of bignums.
 
 <p>But in practice, speed was never a problem, even with the first versions of
-Pico Lisp in 1988 on a Mac II with a 12 MHz CPU. And certain things are cleaner
-and easier to do in plain C anyway. It is very easy to write C functions in Pico
-Lisp, either in the kernel, as shared object libraries, or even inline in the
-Lisp code.
+PicoLisp in 1988 on a Mac II with a 12 MHz CPU. And certain things are cleaner
+and easier to do in plain C anyway. It is very easy to write C functions in
+PicoLisp, either in the kernel, as shared object libraries, or even inline in
+the Lisp code.
 
-<p>Pico Lisp is very space-effective. Other Lisp systems reserve heap space
-twice as much as needed, or use rather large internal structures to store cells
-and symbols. The cells (and also the minimal symbols) in Pico Lisp use only 8
-bytes each. No additional tags are stored, because they are implied in the
-pointer encodings. No gaps remain in the heap during allocation, as there are
-only objects of a single size. As a result, consing and garbage collection are
-very fast, and overall performance benefits from a better cache efficiency. Heap
-and stack grow automatically, and are limited only by hardware and operating
-system constraints.
+<p>PicoLisp is very space-effective. Other Lisp systems reserve heap space twice
+as much as needed, or use rather large internal structures to store cells and
+symbols. The cells (and also the minimal symbols) in PicoLisp use only 8 bytes
+each. No additional tags are stored, because they are implied in the pointer
+encodings. No gaps remain in the heap during allocation, as there are only
+objects of a single size. As a result, consing and garbage collection are very
+fast, and overall performance benefits from a better cache efficiency. Heap and
+stack grow automatically, and are limited only by hardware and operating system
+constraints.
 
 
 <p><hr>
@@ -264,7 +264,7 @@ href="refP.html#print">print</a></code>ing interfaces).
 <p>The following example builds a function and immediately calls it with two
 arguments:
 
-<p><pre><code>
+<pre><code>
 : ((list (list 'X 'Y) (list '* 'X 'Y)) 3 4)
 -> 12
 </code></pre>
@@ -272,11 +272,11 @@ arguments:
 <p>Note that no time is wasted to build up a lexical environment. Variable
 bindings take place dynamically during interpretation.
 
-<p>A Pico Lisp function is able to inspect or modify itself while it is running
+<p>A PicoLisp function is able to inspect or modify itself while it is running
 (though this is rarely done in application programming). The following function
 modifies itself by incrementing the '0' in its body:
 
-<p><pre><code>
+<pre><code>
 (de incMe ()
    (do 8
       (printsp 0)
@@ -289,20 +289,20 @@ modifies itself by incrementing the '0' in its body:
 </code></pre>
 
 <p>Only an interpreted Lisp can fully support such "Equivalence of Code and
-Data". If executable pieces of data are used frequently, like in Pico Lisp's
+Data". If executable pieces of data are used frequently, like in PicoLisp's
 dynamically generated GUI, a fast interpreter is preferable over any compiler.
 
 
 <p><hr>
 <h2><a name="compiler">Is there (or will be in the future) a compiler available?</a></h2>
 
-<p>No. That would contradict the idea of Pico's simple virtual machine
+<p>No. That would contradict the idea of PicoLisp's simple virtual machine
 structure. A compiler transforms it to another (physical) machine, with the
 result that many assumptions about the machine's behavior won't hold any more.
-Besides that, Pico Lisp primitive functions evaluate their arguments
+Besides that, PicoLisp primitive functions evaluate their arguments
 independently and are not very much suited for being called from compiled code.
 Finally, the gain in execution speed would probably not be worth the effort.
-Typical Pico Lisp applications often use single-pass code which is loaded,
+Typical PicoLisp applications often use single-pass code which is loaded,
 executed and thrown away; a process that would be considerably slowed down by
 compilation.
 
@@ -310,7 +310,7 @@ compilation.
 <p><hr>
 <h2><a name="portable">Is it portable?</a></h2>
 
-<p>Yes and No. Though we wrote and tested Pico Lisp originally only on Linux, it
+<p>Yes and No. Though we wrote and tested PicoLisp originally only on Linux, it
 now also runs on FreeBSD, Mac OS X (Darwin), Cygwin/Win32, and probably other
 POSIX systems. The first versions were even fully portable between DOS, SCO-Unix
 and Macintosh systems. But today we have Linux. Linux itself is very portable,
@@ -321,7 +321,7 @@ Internet an application <u>server</u> does not really need to be portable.
 
 
 <p><hr>
-<h2><a name="webServer">Is Pico Lisp a web server?</a></h2>
+<h2><a name="webServer">Is PicoLisp a web server?</a></h2>
 
 <p>Not really, but it evolved a great deal into that direction.
 
@@ -331,20 +331,20 @@ obvious: Browsers are installed virtually everywhere. So we developed a protocol
 which persuades a browser to function as a GUI frontend to our applications.
 This is much simpler than to develop a full-blown web server.
 
-<p>In a sense, Pico Lisp is a "pure" application server, not a web server
+<p>In a sense, PicoLisp is a "pure" application server, not a web server
 handling "web applications".
 
 
 <p><hr>
-<h2><a name="lambda">I cannot find the LAMBDA keyword in Pico Lisp</a></h2>
+<h2><a name="lambda">I cannot find the LAMBDA keyword in PicoLisp</a></h2>
 
 <p>Because it isn't there. The reason is that it is redundant; it is equivalent
 to the <code>quote</code> function in all practical aspects, because there's no
-distinction between code and data in Pico Lisp, and <code>quote</code> returns
+distinction between code and data in PicoLisp, and <code>quote</code> returns
 the whole (unevaluated) argument list. If you insist on it, you can define your
 own <code>lambda</code>:
 
-<p><pre><code>
+<pre><code>
 : (setq lambda quote)
 -> 67293272
 : ((lambda (X Y) (+ X Y)) 3 4)
@@ -370,11 +370,11 @@ establishing form. Therefore, most Lisps with lexical binding introduce "special
 variables" to support dynamic binding as well, and constructs like
 <code>labels</code> to extend the scope of variables beyond a single function.
 
-<p>In Pico Lisp, function definitions are normal symbol values. They can be
+<p>In PicoLisp, function definitions are normal symbol values. They can be
 dynamically rebound like other variables. As a useful real-world example, take
 this little gem:
 
-<p><pre><code>
+<pre><code>
 (de recur recurse
    (run (cdr recurse)) )
 </code></pre>
@@ -385,7 +385,7 @@ a name for a function (like the following one) which is used only in a single
 place. But with <code>recur</code> and <code>recurse</code> you can simply
 write:
 
-<p><pre><code>
+<pre><code>
 : (mapcar
    '((N)
       (recur (N)
@@ -405,9 +405,9 @@ so elegantly with lexical binding?
 <h2><a name="problems">Are there no problems caused by dynamic binding?</a></h2>
 
 <p>You mean the <i>funarg</i> problem, or problems that arise when a variable
-might be bound to <i>itself</i>? For that reason we have a convention in Pico
-Lisp to use <a href="ref.html#transient-io">transient</a> (instead of internal)
-symbols
+might be bound to <i>itself</i>? For that reason we have a convention in
+PicoLisp to use <a href="ref.html#transient-io">transient</a> (instead of
+internal) symbols
 
 <ol>
 
@@ -428,7 +428,7 @@ symbols, similar to the <code>static</code> keyword in C.
 can be avoided, however, when the above conventions are observed. As an example,
 consider a function which doubles the value in a variable:
 
-<p><pre><code>
+<pre><code>
 (de double (Var)
    (set Var (* 2 (val Var))) )
 </code></pre>
@@ -437,7 +437,7 @@ consider a function which doubles the value in a variable:
 break if we call it as <code>(double 'Var)</code>. Therefore, the correct
 implementation of <code>double</code> should be:
 
-<p><pre><code>
+<pre><code>
 (de double ("Var")
    (set "Var" (* 2 (val "Var"))) )
 </code></pre>
@@ -477,15 +477,16 @@ compiler, and can then be accessed as stack frames at runtime.
 <p>For an interpreter, however, this is quite an overhead. So it should not be
 done automatically at each and every function invocation, but only if needed.
 
-<p>You have several options in Pico Lisp. For simple cases, you can take
-advantage of the static scope of transient symbols. For the general case, Pico
-Lisp has built-in functions like <code><a href="refB.html#bind">bind</a></code>
-or <code><a href="refJ.html#job">job</a></code>, which dynamically manage
-statically scoped environments.
+<p>You have several options in PicoLisp. For simple cases, you can take
+advantage of the static scope of transient symbols. For the general case,
+PicoLisp has built-in functions like <code><a
+href="refB.html#bind">bind</a></code> or <code><a
+href="refJ.html#job">job</a></code>, which dynamically manage statically scoped
+environments.
 
 <p>As an example, consider a currying function:
 
-<p><pre><code>
+<pre><code>
 (de curry Args
    (list (car Args)
       (list 'list
@@ -499,14 +500,14 @@ statically scoped environments.
 <p>When called, it returns a function-building function which may be applied to
 some argument:
 
-<p><pre><code>
+<pre><code>
 : ((curry (X) (N) (* X N)) 3)
 -> ((N) (job '((X . 3)) (* X N)))
 </code></pre>
 
 <p>or used as:
 
-<p><pre><code>
+<pre><code>
 : (((curry (X) (N) (* X N)) 3) 4)
 -> 12
 </code></pre>
@@ -514,7 +515,7 @@ some argument:
 <p>In other cases, you are free to choose a shorter and faster solution. If (as
 in the example above) the curried argument is known to be immutable:
 
-<p><pre><code>
+<pre><code>
 (de curry Args
    (list
       (cadr Args)
@@ -525,7 +526,7 @@ in the example above) the curried argument is known to be immutable:
 
 <p>Then the function built above will just be:
 
-<p><pre><code>
+<pre><code>
 : ((curry (X) (N) (* X N)) 3)
 -> ((X) (* X 3))
 </code></pre>
@@ -542,11 +543,11 @@ to build.
 <p><hr>
 <h2><a name="macros">Do you have macros?</a></h2>
 
-<p>Yes, there is a macro mechanism in Pico Lisp, to build and immediately
-execute a list of expressions. But it is seldom used. Macros are a kludge. Most
-things where you need macros in other Lisps are directly expressible as
-functions in Pico Lisp, which (as opposed to macros) can be applied, passed
-around, and debugged.
+<p>Yes, there is a macro mechanism in PicoLisp, to build and immediately execute
+a list of expressions. But it is seldom used. Macros are a kludge. Most things
+where you need macros in other Lisps are directly expressible as functions in
+PicoLisp, which (as opposed to macros) can be applied, passed around, and
+debugged.
 
 
 <p><hr>
@@ -556,7 +557,7 @@ around, and debugged.
 dynamic context the system may crash. Therefore we have a convention to use an
 upper case first letter for locally bound symbols:
 
-<p><pre><code>
+<pre><code>
 (de findCar (Car List)
    (when (member Car (cdr List))
       (list Car (car List)) ) )
@@ -566,7 +567,7 @@ upper case first letter for locally bound symbols:
 
 
 <p><hr>
-<h2><a name="hardware">Would it make sense to build Pico Lisp in hardware?</a></h2>
+<h2><a name="hardware">Would it make sense to build PicoLisp in hardware?</a></h2>
 
 <p>At least it should be interesting. It would be a machine executing list
 (tree) structures instead of linear instruction sequences. "Instruction

@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 14apr08abu
+# 23oct09abu
 # misc/bigtest <seed>
 
 (load "lib/misc.l")
@@ -85,7 +85,7 @@
          (cmp2 '>= N1 N2)
          (cmp2 '> N1 N2)
          (test1 'sqrt (abs N1)) )
-      (prin '.)
+      (prin ".")
       (flush) )
    (prinl) )
 

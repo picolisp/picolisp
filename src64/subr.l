@@ -1,7 +1,7 @@
-# 30sep09abu
+# 07nov09abu
 # (c) Software Lab. Alexander Burger
 
-# (c....r 'lst) -> any
+# (car 'var) -> any
 (code 'doCar 2)
    push X
    ld X E
@@ -13,6 +13,7 @@
    pop X
    ret
 
+# (cdr 'lst) -> any
 (code 'doCdr 2)
    push X
    ld X E
@@ -851,19 +852,18 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'lst'
    eval
-   link
-   push E  # <L I> Safe
-   link
-   ld Y (Y CDR)
-   atom Y  # Second arg?
-   if nz  # No
-      ld E 0
-   else
-      call evCntXY_FE  # Eval 'cnt'
-   end
-   ld Y (L I)  # Retrieve 'lst'
-   atom Y  # Cell?
+   atom E  # Cell?
    if z  # Yes
+      link
+      push E  # <L I> Safe
+      link
+      ld Y (Y CDR)
+      atom Y  # Second arg?
+      ldnz E 0  # Yes
+      if z  # No
+         call evCntXY_FE  # Eval 'cnt'
+      end
+      ld Y (L I)  # Retrieve 'lst'
       ld X (Y)  # Keep CAR
       do
          sub E 1  # Decrement count
@@ -876,9 +876,9 @@
          xchg X (Y)  # Swap
       loop
       ld ((L I)) X  # Store new CAR
+      ld E (L I)
+      drop
    end
-   ld E (L I)
-   drop
    pop Y
    pop X
    ret
@@ -979,6 +979,84 @@
          ld E (L II)  # Get result
       end
    end
+   drop
+   pop Y
+   pop X
+   ret
+
+# (range 'num1 'num2 ['num3]) -> lst
+(code 'doRange 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval 'num1'
+   eval
+   num E  # Number?
+   jz numErrEX  # No
+   link
+   push E  # <L IV> Start value
+   ld Y (Y CDR)
+   ld E (Y)  # Eval 'num2'
+   eval+
+   num E  # Number?
+   jz numErrEX  # No
+   push E  # <L III> End value
+   push ONE  # <L II> Increment
+   ld E ((Y CDR))  # Eval 'num3'
+   eval+
+   cmp E Nil  # NIL?
+   if ne  # No
+      num E  # Number?
+      jz numErrEX  # No
+      zero E  # Zero?
+      jeq argErrEX  # Yes
+      test E SIGN  # Negative?
+      jnz argErrEX  # Yes
+      ld (S) E  # Else set increment
+   end
+   link
+   call cons_X  # Build first cell
+   tuck X  # <L I> Result
+   link
+   ld (X) (L IV)  # Start value
+   ld (X CDR) Nil
+   ld A (L IV)  # Get start value
+   ld E (L III)  # and end value
+   call cmpNumAE_F  # Start <= end?
+   ld A (L IV)  # Get start value again
+   if le  # Yes
+      do
+         ld E (L II)  # Increment start value
+         call addAE_A
+         push A
+         ld E (L III)  # Start <= end?
+         call cmpNumAE_F
+      while le  # Yes
+         pop A
+         call consA_Y  # Append to result
+         ld (Y) A
+         ld (Y CDR) Nil
+         ld (X CDR) Y
+         ld X Y
+      loop
+   else
+      do
+         ld E (L II)  # Decrement start value
+         call subAE_A
+         push A
+         ld E (L III)  # Start >= end?
+         call cmpNumAE_F
+      while ge  # Yes
+         pop A
+         call consA_Y  # Append to result
+         ld (Y) A
+         ld (Y CDR) Nil
+         ld (X CDR) Y
+         ld X Y
+      loop
+   end
+   ld E (L I)
    drop
    pop Y
    pop X
@@ -1604,24 +1682,64 @@
    drop
    ret
 
-# (flip 'lst) -> lst
+# (flip 'lst ['cnt]) -> lst
 (code 'doFlip 2)
-   ld E ((E CDR))  # Get arg
-   eval  # Eval 'lst'
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval 'lst'
+   eval
    atom E  # Cell?
-   jnz ret  # No
-   ld C (E CDR)  # More than one element?
-   atom C
-   jnz ret  # No
-   ld (E CDR) Nil  # Make it the last cell
-   do
-      ld A (C CDR)  # Get next cell
-      ld (C CDR) E  # Concat previous
-      ld E C  # Set to first
-      atom A  # Done?
-      jnz ret  # Yes
-      ld C A
-   loop
+   if z  # Yes
+      ld Y (Y CDR)
+      atom Y  # Second arg?
+      if nz  # No
+         ld C (E CDR)  # More than one element?
+         atom C
+         if z  # Yes
+            ld (E CDR) Nil  # Make it the last cell
+            do
+               ld A (C CDR)  # Get next cell
+               ld (C CDR) E  # Concat previous
+               ld E C  # Set to first
+               atom A  # Done?
+               jnz 90  # Yes
+               ld C A
+            loop
+         end
+      end
+      link
+      push E  # <L I> 'lst'
+      link
+      call evCntXY_FE  # Eval 'cnt'
+      ld C (L I)  # Retrieve 'lst'
+      drop
+      ld X (C CDR)  # More than one element?
+      atom X
+      if z  # Yes
+         sub E 1  # 'cnt' > 1?
+         if nsz  # Yes
+            ld (C CDR) (X CDR)  # Swap first two cells
+            ld (X CDR) C
+            do
+               sub E 1  # Done?
+            while nz  # No
+               ld A (C CDR)  # More cells?
+               atom A
+            while z  # Yes
+               ld (C CDR) (A CDR)  # Swap next two cells
+               ld (A CDR) X
+               ld X A
+            loop
+            ld C X  # Return 'lst'
+         end
+      end
+      ld E C  # Return 'lst'
+   end
+90 pop Y
+   pop X
+   ret
 
 # (trim 'lst) -> lst
 (code 'doTrim 2)

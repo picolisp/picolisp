@@ -1,4 +1,4 @@
-# 30sep09abu
+# 07nov09abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -69,6 +69,15 @@
 (test '(NIL NIL a b c) (need 5 '(a b c)))
 (test '(a b c NIL NIL) (need -5 '(a b c)))
 (test '(" " " " a b c) (need 5 '(a b c) " "))
+
+
+### range ###
+(test (1 2 3 4 5 6) (range 1 6))
+(test (1 2 3 4 5 6) (range 1 6))
+(test (6 5 4 3 2 1) (range 6 1))
+(test (-3 -2 -1 0 1 2 3) (range -3 3))
+(test (3 1 -1 -3) (range 3 -3 2))
+(test (-3 -2 -1) (range -3 -1))
 
 
 ### full ###
@@ -154,6 +163,7 @@
 
 ### flip ###
 (test (4 3 2 1) (flip (1 2 3 4)))
+(test (3 2 1 4 5 6) (flip (1 2 3 4 5 6) 3))
 (test NIL (flip NIL))
 
 

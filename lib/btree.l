@@ -1,4 +1,4 @@
-# 17apr08abu
+# 08oct09abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -155,7 +155,7 @@
 
 # Delayed deletion
 (de zap_ ()
-   (let (F (fin *Zap)  Z (pack F "_"))
+   (let (F (cdr *Zap)  Z (pack F "_"))
       (cond
          ((info Z)
             (in Z (while (rd) (zap @)))

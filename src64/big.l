@@ -1,4 +1,4 @@
-# 06oct09abu
+# 13oct09abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -76,9 +76,7 @@
       shl E 4  # Make short number
       or E CNT
    else
-      call boxNum_C  # New cell
-      ld (C DIG) E
-      ld E C
+      call boxNumE_E  # New cell
    end
    ld (A BIG) E  # Store in final cell
    pop A  # Return bignum
@@ -161,12 +159,10 @@
       shr A 4  # Normalize
       mul 10  # Multiply by 10
       test A (hex "F000000000000000")  # Fit in short number?
-      if z  # Yes
-         shl A 4  # Make short number
-         or A CNT
-         ret
-      end
-      jmp boxNumA_A  # Return bignum
+      jnz boxNumA_A  # No: Return bignum
+      shl A 4  # Make short number
+      or A CNT
+      ret
    end
    push X
    push A  # Save bignum

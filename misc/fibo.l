@@ -1,28 +1,27 @@
-# 27jan08abu
+# 04nov09abu
 # (c) Software Lab. Alexander Burger
 
-# Standard version (slowest)
+# Standard version
 (de fibo (N)
    (if (>= 2 N)
       1
       (+ (fibo (dec N)) (fibo (- N 2))) ) )
 
 
-# Coded in 'C' (faster)
-(load "lib/gcc.l")
-
-(gcc "tst" NIL 'cFibo)
-
-static int fibo(int n) {
-   if (n <= 2)
-      return 1;
-   return fibo(n-1) + fibo(n-2);
-}
-
-any cFibo(any ex) {
-   return boxCnt(fibo(evCnt(ex, cdr(ex))));
-}
-/**/
+# Parallelized version
+(de fibo+ (D N)  # Uses 2**D processes
+   (cond
+      ((>= 1 (dec 'N)) 1)
+      ((ge0 (dec 'D))
+         (let (A NIL B NIL)
+            (later 'A (fibo+ D N))
+            (later 'B (fibo+ D (dec N)))
+            (wait NIL (and A B))
+            (+ A B) ) )
+      (T
+         (+
+            (fibo+ D N)
+            (fibo+ D (dec N)) ) ) ) )
 
 
 # Using a cache (fastest)
@@ -31,3 +30,21 @@ any cFibo(any ex) {
       (if (>= 2 N)
          1
          (+ (cachedFibo (dec N)) (cachedFibo (- N 2))) ) ) )
+
+
+# Coded in 'C'
+`(== 64 64)  # Only in the 64-bit version
+
+(load "lib/native.l")
+
+(gcc "fibo" NIL
+   (cFibo (N) 'I N) )
+
+int cFibo(int n) {
+   if (n <= 2)
+      return 1;
+   return cFibo(n-1) + cFibo(n-2);
+}
+/**/
+
+# vi:et:ts=3:sw=3

@@ -22,9 +22,36 @@ href="refR.html#*Run">*Run</a></code>, <code><a
 href="refS.html#*Sig1">*Sig[12]</a></code> and <code><a
 href="refE.html#*Err">*Err</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de *Hup (msg 'SIGHUP))
 -> *Hup
+</code></pre>
+
+<dt><a name="+Hook"><code>+Hook</code></a>
+<dd>Prefix class for <code><a href="refR.html#+relation">+relation</a></code>s,
+typically <code><a href="refL.html#+Link">+Link</a></code> or <code><a
+href="refJ.html#+Joint">+Joint</a></code>. In essence, this maintains an local
+database in the referred object. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel Sup (+Hook +Link) (+Sup))   # Supplier
+(rel nr (+Key +Number) Sup)      # Item number, unique per supplier
+(rel dsc (+Ref +String) Sup)     # Item description, indexed per supplier
+</code></pre>
+
+<dt><a name="hd"><code>(hd 'sym ['cnt]) -> NIL</code></a>
+<dd>Displays a hexadecimal dump of the file given by <code>sym</code>, limited
+to <code>cnt</code> lines. See also <code><a
+href="refP.html#proc">proc</a></code>.
+
+<pre><code>
+:  (hd "lib.l" 4)
+00000000  23 20 32 33 64 65 63 30 39 61 62 75 0A 23 20 28  # 23dec09abu.# (
+00000010  63 29 20 53 6F 66 74 77 61 72 65 20 4C 61 62 2E  c) Software Lab.
+00000020  20 41 6C 65 78 61 6E 64 65 72 20 42 75 72 67 65   Alexander Burge
+00000030  72 0A 0A 28 64 65 20 74 61 73 6B 20 28 4B 65 79  r..(de task (Key
+-> NIL
 </code></pre>
 
 <dt><a name="head"><code>(head 'cnt|lst 'lst) -> lst</code></a>
@@ -35,7 +62,7 @@ is a predicate function returning that argument list if it is <code>equal</code>
 to the head of the second argument, and <code>NIL</code> otherwise. See also
 <code><a href="refT.html#tail">tail</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (head 3 '(a b c d e f))
 -> (a b c)
 : (head 0 '(a b c d e f))
@@ -48,12 +75,41 @@ to the head of the second argument, and <code>NIL</code> otherwise. See also
 -> (a b c)
 </code></pre>
 
+<dt><a name="head/3"><code>head/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
+(string) argument is a prefix of the string representation of the result of
+applying the <code><a href="refG.html#get">get</a></code> algorithm to the
+following arguments. Typically used as filter predicate in <code><a
+href="refS.html#select/3">select/3</a></code> database queries. See also
+<code><a href="refP.html#pre?">pre?</a></code>, <code><a
+href="refI.html#isa/2">isa/2</a></code>, <code><a
+href="refS.html#same/3">same/3</a></code>, <code><a
+href="refB.html#bool/3">bool/3</a></code>, <code><a
+href="refR.html#range/3">range/3</a></code>, <code><a
+href="refF.html#fold/3">fold/3</a></code>, <code><a
+href="refP.html#part/3">part/3</a></code> and <code><a
+href="refT.html#tolr/3">tolr/3</a></code>.
+
+<pre><code>
+: (?
+   @Nm <u>Muller</u>
+   @Tel <u>37</u>
+   (select (@CuSu)
+      ((nm +CuSu @Nm) (tel +CuSu @Tel))
+      (tolr @Nm @CuSu nm)
+      (head @Tel @CuSu tel) )
+   (val @Name @CuSu nm)
+   (val @Phone @CuSu tel) )
+ @Nm=<u>Muller</u> @Tel=<u>37</u> @CuSu={2-3} @Name=<u>Miller</u> @Phone=<u>37 4773 82534</u>
+-> NIL
+</code></pre>
+
 <dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
 <dd>Returns the total size of the cell heap space in megabytes. If
 <code>flg</code> is non-<code>NIL</code>, the size of the currently free space
 is returned. See also <code><a href="refG.html#gc">gc</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (gc 4)
 -> 4
 : (heap)
@@ -69,10 +125,10 @@ background. As this mechanism is also used for inter-family communication (see
 <code><a href="refT.html#tell">tell</a></code>), <code>hear</code> is usually
 only called explicitly by a top level parent process.
 
-<p><pre><code>
-: (call 'mkfifo "fifo/cmd")
+<pre><code>
+: (call 'mkfifo <u>fifo/cmd</u>)
 -> T
-: (hear (open "fifo/cmd"))
+: (hear (open <u>fifo/cmd</u>))
 -> 3
 </code></pre>
 
@@ -80,10 +136,10 @@ only called explicitly by a top level parent process.
 <dd>Echoes the current input stream until <code>sym</code> is encountered, or
 until end of file. See also <code><a href="refE.html#echo">echo</a></code>.
 
-<p><pre><code>
+<pre><code>
 $ cat hello.l
-(html 0 "Hello" "lib.css" NIL
-   (&lt;h2&gt; NIL "Hello")
+(html 0 <u>Hello</u> <u>lib.css</u> NIL
+   (&lt;h2&gt; NIL <u>Hello</u>)
    (here) )
 &lt;p&gt;Hello!&lt;/p&gt;
 &lt;p&gt;This is a test.&lt;/p&gt;
@@ -109,17 +165,17 @@ Content-Type: text/html; charset=utf-8
 &lt;/html&gt;
 </code></pre>
 
-<dt><a name="hex"><code>(hex 'num) -> sym<br>
-(hex 'sym) -> num</code></a>
+<dt><a name="hex"><code>(hex 'num) -> sym</code></a>
+<dt><code>(hex 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a hexadecimal string, or a hexadecimal
 string <code>sym</code> to a number. See also <code><a
 href="refO.html#oct">oct</a></code> and <code><a
 href="refF.html#format">format</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (hex 273)
--> "111"
-: (hex "111")
+-> <u>111</u>
+: (hex <u>111</u>)
 -> 273
 </code></pre>
 
@@ -127,9 +183,9 @@ href="refF.html#format">format</a></code>.
 <dd>Returns the hostname corresponding to the given IP address. See also
 <code><a href="refA.html#*Adr">*Adr</a></code>.
 
-<p><pre><code>
-: (host "80.190.158.9")
--> "www.leo.org"
+<pre><code>
+: (host <u>80.190.158.9</u>)
+-> <u>www.leo.org</u>
 </code></pre>
 
 </dl>

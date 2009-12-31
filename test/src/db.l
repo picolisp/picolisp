@@ -1,4 +1,4 @@
-# 09sep09abu
+# 08oct09abu
 # (c) Software Lab. Alexander Burger
 
 ### id ###
@@ -14,7 +14,7 @@
 (test *DB (val *DB) (lieu *DB))
 
 
-### begin commit rollback ###
+### commit rollback ###
 (let (X (new T)  Y (new T))
    (set X 1  Y 2)
    (commit)

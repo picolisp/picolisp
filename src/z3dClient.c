@@ -1,4 +1,4 @@
-/* 17sep05abu
+/* 12nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -425,7 +425,7 @@ int main(int ac, char *av[]) {
    /* Create Window */
    Win = XCreateSimpleWindow(Disp, RootWindow(Disp,Scrn), 0, 0, SizX, SizY,
                         1, BlackPixel(Disp,Scrn), WhitePixel(Disp,Scrn) );
-   XStoreName(Disp, Win, "Pico Lisp z3d");
+   XStoreName(Disp, Win, "PicoLisp z3d");
    XSelectInput(Disp, Win,
       ExposureMask |
       KeyPressMask | KeyReleaseMask |

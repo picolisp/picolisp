@@ -17,13 +17,33 @@ href="refS.html#setq">setq</a></code>, <code><a
 href="refS.html#set">set</a></code> and <code><a
 href="refD.html#def">def</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq L '(a b c))
 -> (a b c)
 : (val 'L)
 -> (a b c)
 : (val (cdr L))
 -> b
+</code></pre>
+
+<dt><a name="val/3"><code>val/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that returns the value of an
+object's attribute. Typically used in database queries. The first argument is a
+Pilog variable to bind the value, the second is the object, and the third and
+following arguments are used to apply the <code><a
+href="refG.html#get">get</a></code> algorithm to that object. See also <code><a
+href="refD.html#db/3">db/3</a></code> and <code><a
+href="refS.html#select/3">select/3</a></code>.
+
+<pre><code>
+: (?
+   (db nr +Item (2 . 5) @Item)   # Fetch articles 2 through 5
+   (val @Nm @Item nm)            # Get item description
+   (val @Sup @Item sup nm) )     # and supplier's name
+ @Item={3-2} @Nm="Spare Part" @Sup="Seven Oaks Ltd."                             @Item={3-3} @Nm="Auxiliary Construction" @Sup="Active Parts Inc."
+ @Item={3-4} @Nm="Enhancement Additive" @Sup="Seven Oaks Ltd."
+ @Item={3-5} @Nm="Metal Fittings" @Sup="Active Parts Inc."
+-> NIL
 </code></pre>
 
 <dt><a name="var"><code>(var sym . any) -> any</code></a>
@@ -33,7 +53,7 @@ href="refC.html#*Class">*Class</a></code>). See also <code><a
 href="ref.html#oop">OO Concepts</a></code> and <code><a
 href="refV.html#var:">var:</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (class +A)
 -> +A
 : (var a . 1)
@@ -58,26 +78,27 @@ href="refM.html#meta">meta</a></code>, <code><a href="ref_.html#:">:</a></code>,
 <code><a href="ref_.html#=:">=:</a></code> and <code><a
 href="ref_.html#::">::</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (object 'O '(+A) 'a 9 'b 8)
 -> O
 : (with 'O (list (: a) (: b) (var: a) (var: b)))
 -> (9 8 1 2)
 </code></pre>
 
-<dt><a name="vi"><code>(vi 'sym)<br>
-(vi 'sym 'cls)<br>
-(vi '(sym . cls))<br>
-(vi)</code></a>
+<dt><a name="vi"><code>(vi 'sym)</code></a>
+<dt><code>(vi 'sym 'cls)</code>
+<dt><code>(vi '(sym . cls))</code>
+<dt><code>(vi)</code>
 <dd>Opens the "vi" editor on the function or method definition of
 <code>sym</code>. A call to <code><a href="refL.html#ld">ld</a></code>
 thereafter will <code><a href="refL.html#load">load</a></code> the modified
-file. See also <code><a href="refP.html#pp">pp</a></code>, <code><a
+file. See also <code><a href="refD.html#doc">doc</a></code>, <code><a
+href="refP.html#pp">pp</a></code>, <code><a
 href="refD.html#*Dbg">*Dbg</a></code>, <code><a
 href="refD.html#debug">debug</a></code> and <code><a
 href="refP.html#pp">pp</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (vi 'url> '+CuSu)  # Edit the method's source code, then exit from 'vi'
 -> T
 </code></pre>
@@ -87,7 +108,7 @@ href="refP.html#pp">pp</a></code>.
 href="refP.html#pretty">pretty</a></code> and <code><a
 href="refS.html#show">show</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (view '(a (b c d) (e (f (g) (h) (i)) (j (k) (l) (m))) (n o p) q))
 +-- a
 |

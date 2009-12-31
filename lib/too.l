@@ -1,4 +1,4 @@
-# 16sep09abu
+# 10dec09abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -58,7 +58,7 @@
                   (not (isa '+Entity (car "X")))
                   (sym? (cdr "X"))
                   (find
-                     '(("X") (isa '+Relation (car "X")))
+                     '(("X") (isa '+relation (car "X")))
                      (getl (cdr "X")) ) )
                (let ("Base" (car "X")  "Cls" (cdr "X"))
                   (dbMapT "Base")
@@ -223,19 +223,23 @@
 
 
 ### Rebuild tree ###
-(de rebuild (Lst Var Cls Hook)
+(de rebuild (X Var Cls Hook)
    (when (get (or Hook *DB) Cls)
       (zapTree (get @ Var -1))
       (put @ Var NIL)
       (commit) )
-   (for Obj Lst
-      (re-index Obj Var)
-      (commit) ) )
+   (if (pair X)
+      (for Obj X (re-index Obj Var))
+      (for (Obj X Obj (seq Obj))
+         (and (isa Cls Obj) (re-index Obj Var)) ) )
+   (commit) )
 
 (de re-index (Obj Var)
-   (when (and (not (get Obj T)) (get Obj Var))
-      (rel> (meta Obj Var) Obj NIL
-         (put> (meta Obj Var) Obj NIL @) ) ) )
+   (unless (get Obj T)
+      (when (get Obj Var)
+         (rel> (meta Obj Var) Obj NIL
+            (put> (meta Obj Var) Obj NIL @) )
+         (at (0 . 10000) (commit)) ) ) )
 
 
 ### Database file management ###
@@ -243,13 +247,13 @@
    (for "Cls" (all)
       (when (and (= `(char "+") (char "Cls")) (isa '+Entity "Cls"))
          (or
-            (get "Cls" 'dbf)
-            (meta "Cls" 'dbf)
+            (get "Cls" 'Dbf)
+            (meta "Cls" 'Dbf)
             (println 'dbfCheck "Cls") )
          (for Rel (getl "Cls")
             (and
                (pair Rel)
-               (isa '+Index (car Rel))
+               (isa '+index (car Rel))
                (unless (get @ 'dbf)
                   (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) ) )
 
@@ -314,7 +318,7 @@
 (de dbfUpdate ()
    (dbMap  # Move
       '((Obj)
-         (let N (or (meta Obj 'dbf 1) 1)
+         (let N (or (meta Obj 'Dbf 1) 1)
             (unless (= N (car (id Obj T)))
                (let New (new N)
                   (set New (val Obj))

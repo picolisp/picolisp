@@ -1,4 +1,4 @@
-# 31jan08abu
+# 25dec09abu
 # (c) Software Lab. Alexander Burger
 
 (be sister (@X @Y) (parents @X @M @F) (parents @Y @M @F) (different @X @Y))
@@ -73,11 +73,6 @@
 (be change (are (am not)))
 (be change (french german))
 (be change (@X @X))
-
-(be mapcar (@ NIL NIL))
-(be mapcar (@P (@X . @L) (@Y . @M))
-   (call @P @X @Y)
-   (mapcar @P @L @M) )
 
 
 ### Test ###

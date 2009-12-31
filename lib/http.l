@@ -1,4 +1,4 @@
-# 03oct09abu
+# 20nov09abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -63,7 +63,7 @@
       (out ".pw" (prinl (fmt64 (in "/dev/random" (rd N)))))
       (in ".pw" (line T)) ) )
 
-# Pico Shell
+# PicoLisp Shell
 (de psh (Pw Tty)
    (off *Run)
    (when (and (= Pw (pw)) (ctty Tty))
@@ -90,8 +90,7 @@
    (or *SesId (bye))
    (task *Sock
       (when (accept *Sock)
-         (task @ (http @))
-         (http @) ) ) )
+         (task @ (http @)) ) ) )
 
 (de baseHRef (Port)
    (pack
@@ -120,12 +119,12 @@
 
 # Handle HTTP-Transaction
 (de http (S)
-   (off *ContLen *Cookies "*Cookies" "*HtSet")
-   (use (L @U @H @X)
+   (use (*Post L @U @H @X)
+      (off *Post *ContLen *Cookies "*Cookies" "*HtSet")
       (catch "http"
          (in S
             (cond
-               ((or *Post (not (setq L (line))))
+               ((not (setq L (line)))
                   (close S)
                   (task S)
                   (off S)
@@ -143,21 +142,25 @@
                            (when (cdr (setq L (split L "=")))
                               (_htSet (car L) (ht:Pack (cadr L))) ) ) )
                      (T (throw "http")) ) )
-               ((and
-                     (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
-                     (member @U
-                        (quote
-                           ("O" "P" "T" "I" "O" "N" "S")
-                           ("H" "E" "A" "D")
-                           ("P" "U" "T")
-                           ("D" "E" "L" "E" "T" "E")
-                           ("T" "R" "A" "C" "E")
-                           ("C" "O" "N" "N" "E" "C" "T") ) ) )
+               (T
                   (out S
-                     (httpStat 501 "Method Not Implemented"
-                        "Allow: GET, POST" ) )
-                  (throw "http") )
-               (T (out S (httpStat 400 "Bad Request")) (throw "http")) )
+                     (if
+                        (and
+                           (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
+                           (member @U
+                              (quote
+                                 ("O" "P" "T" "I" "O" "N" "S")
+                                 ("H" "E" "A" "D")
+                                 ("P" "U" "T")
+                                 ("D" "E" "L" "E" "T" "E")
+                                 ("T" "R" "A" "C" "E")
+                                 ("C" "O" "N" "N" "E" "C" "T") ) ) )
+                        (httpStat 501 "Method Not Implemented" "Allow: GET, POST")
+                        (httpStat 400 "Bad Request") ) )
+                  (close S)
+                  (task S)
+                  (off S)
+                  (throw "http") ) )
             (if (<> *ConId *SesId)
                (if *ConId
                   (out S (http404))
@@ -204,8 +207,7 @@
                            (apply script L *Url)
                            (http404) ) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
-      (and S (=0 *Http1) (close S) (task S))
-      (off *Post) ) )
+      (and S (=0 *Http1) (close S) (task S)) ) )
 
 (de _htHead ()
    (use (L @X @Y)
@@ -277,9 +279,9 @@
       (setq "Var"
          (intern
             (ht:Pack
-               (ifn (match '(@V "(" @N ")" @Z) "Var")
+               (ifn (match '(@V ":" @N ":" @Z) "Var")
                   "Var"
-                  (setq @N (htArg @N))
+                  (setq @N (format (pack @N)))
                   @V ) ) ) )
       (when @Z
          (setq Val
@@ -404,6 +406,9 @@
    (prinl "<HEAD><TITLE>" N " " Str "</TITLE></HEAD>")
    (prinl "<BODY><H1>" Str "</H1></BODY>")
    (prinl "</HTML>") )
+
+(de noContent ()
+   (httpStat 204 "No Content") )
 
 (de redirect @
    (httpStat 303 "See Other" (pass pack "Location: ")) )

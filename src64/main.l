@@ -1,4 +1,4 @@
-# 05oct09abu
+# 25nov09abu
 # (c) Software Lab. Alexander Burger
 
 ### Global return labels ###
@@ -97,7 +97,6 @@
    ld (EnvPutB) putStdoutB
    ld A 2  # Standard error
    call initOutFileA_A  # Create output file
-   ld (A II) 1  # Set 'tty' flag for stderr
    ld A 1  # Standard output
    call initOutFileA_A  # Create output file
    ld (OutFile) A  # Set to default OutFile
@@ -235,9 +234,9 @@
    ret
 
 # Signal handler
-(code 'sighandlerT)
+(code 'sighandler0)
    push E
-   ld E TSym
+   ld E 0
    call sighandlerE
    pop E
    ret
@@ -265,6 +264,8 @@
          cmp B SIGINT
          if eq
             set (Signal) 0  # Clear signal
+            null E  # Runtime expression?
+            ldz E Nil  # No: Default to NIL
             call brkLoadE_E  # Enter debug breakpoint
          else
             cmp B SIGUSR1
@@ -655,7 +656,9 @@
    end
    sym A  # A symbolic?
    if nz  # Yes
-      sym E  # E also symbolic?
+      num E  # E also symbolic?
+      jnz Retnz
+      sym E
       jz Retnz  # No: 'ne'
       ld A (A TAIL)
       call nameA_A  # Get name of A
@@ -1170,31 +1173,86 @@
    pop C
    ret
 
-# (native 'sym1 'sym2 'any1 'any2 ..) -> any
+# (errno) -> cnt
+(code 'doErrno 2)
+   call errno_A  # Get 'errno'
+   ld E A
+   shl E 4  # Make short number
+   or E CNT
+   ret
+
+# (native 'cnt1|sym1 'cnt2|sym2 'sym|lst 'any ..) -> any
 (code 'doNative 2)
    push X
    push Y
    push Z
    ld X E
    ld Y (E CDR)  # Y on args
-   call evSymY_E  # Eval library 'sym1'
-   call bufStringE_SZ  # Write to stack buffer
-   ld C 0  # Preload NULL
-   nul (S)  # Library name empty?
-   ldnz C S  # No: Use buffer
-   cc dlopen(C (| RTLD_LAZY RTLD_GLOBAL))  # Open dynamic library
-   null A  # OK?
-   jz dlErrX  # No
-   ld S Z  # Drop buffer
-   push A  # <Z> Library handle
+   ld E (Y)  # Eval library 'cnt1|sym1'
+   eval
+   cnt E  # Library handle?
+   if nz  # Yes
+      shr E 4  # Normalize
+      push E  # <S> Library handle
+   else
+      big E  # Library handle?
+      if nz  # Yes
+         push (E DIG)  # <S> Library handle
+      else
+         call needSymEX  # Check symbol
+         call bufStringE_SZ  # Write to stack buffer
+         ld C S  # Preload name pointer
+         ld B (S)  # Check for main program library
+         cmp B (char "@")  # "@"?
+         if eq
+            nul (S 1)
+            ldz C 0  # Yes: Use NULL pointer
+         end
+         cc dlopen(C (| RTLD_LAZY RTLD_GLOBAL))  # Open dynamic library
+         null A  # OK?
+         jz dlErrX  # No
+         ld S Z  # Drop buffer
+         push A  # <S> Library handle
+         test A (hex "F000000000000000")  # Fit in short number?
+         if z  # Yes
+            shl A 4  # Make short number
+            or A CNT
+         else
+            call boxNumA_A  # Make bignum
+         end
+         ld (E) A  # Set value of 'sym1'
+      end
+   end
    ld Y (Y CDR)  # Second arg
-   call evSymY_E  # Eval function 'sym2'
-   call bufStringE_SZ  # Write to stack buffer
-   cc dlsym((Z) S)  # Find dynamic symbol
-   null A  # OK?
-   jz dlErrX  # No
-   ld S Z  # Drop buffer
-   ld (Z) A  # <Z> Function pointer
+   ld E (Y)  # Eval function 'cnt2|sym2'
+   eval
+   ld Z S  # Stack marker in Z
+   cnt E  # Function pointer?
+   if nz  # Yes
+      shr E 4  # Normalize
+      ld (S) E  # <Z> Function pointer
+   else
+      big E  # Function pointer??
+      if nz  # Yes
+         ld (S) (E DIG)  # <Z> Function pointer
+      else
+         call needSymEX  # Check symbol
+         call bufStringE_SZ  # Write to stack buffer
+         cc dlsym((Z) S)  # Find dynamic symbol
+         null A  # OK?
+         jz dlErrX  # No
+         ld S Z  # Drop buffer
+         ld (S) A  # <Z> Function pointer
+         test A (hex "F000000000000000")  # Fit in short number?
+         if z  # Yes
+            shl A 4  # Make short number
+            or A CNT
+         else
+            call boxNumA_A  # Make bignum
+         end
+         ld (E) A  # Set value
+      end
+   end
    ld Y (Y CDR)  # Third arg
    ld E (Y)  # Eval result specification
    eval
@@ -1251,7 +1309,8 @@
             ld E A  # Get string pointer
             ld S Z  # Drop buffer
          else
-            ld C (E)  # Get buffer size
+            ld E (E CDR)  # Ignore variable
+            ld C ((E))  # Get buffer size
             shr C 4  # Normalize
             cc malloc(C)  # Allocate buffer
             push A  # Save it
@@ -1260,11 +1319,8 @@
                ld E (E CDR)
                cnt E  # Fill rest?
                if nz  # Yes
-                  shr E 4  # Normalize
-                  if c  # Sign?
-                     neg E  # Yes
-                  end
-                  ld A E  # Byte in B
+                  ld A E  # Byte value
+                  shr A 4  # in B
                   do
                      sub C 1  # Done?
                   while ns  # No
@@ -1275,13 +1331,9 @@
                end
                atom E  # Fill bytes?
             while z  # Yes
-               ld B (E)  # Next byte
-               zxt
-               shr A 4  # Normalize
-               if c  # Sign?
-                  neg A  # Yes
-               end
-               ld (Z) B  # Store byte in buffer
+               ld A (E)  # Next byte value
+               shr A 4  # in B
+               ld (Z) B  # Store in buffer
                add Z 1  # Increment buffer pointer
                sub C 1  # Buffer full?
             until z  # Yes
@@ -1302,18 +1354,30 @@
    ld E (Z -II)  # Get result specification
    ld C 0  # No pointer yet
    call natRetACE_CE  # Extract return value
-   lea X (Z -III)  # Clean up allocated C args
+   ld (Z -II) E  # Save result
+   lea Y (Z -III)  # Clean up allocated C args
    do
-      cmp X L  # Args?
+      cmp Y L  # Args?
    while ne  # Yes
-      pop C  # Next C arg
-      ld A (X)  # Next Lisp arg
-      sub X I
-      num A  # Number?
+      pop X  # Next C arg
+      ld E (Y)  # Next Lisp arg
+      num E  # Number?
       if z  # No
-         cc free(C)  # Free string or buffer
+         sym E  # String?
+         if z  # No
+            cmp (E) Nil  # Variable?
+            if ne  # Yes
+               ld C X  # Structure pointer
+               ld E (((E CDR)) CDR)  # Result specification
+               call natRetACE_CE  # Extract value
+               ld (((Y))) E  # Store in variable
+            end
+         end
+         cc free(X)  # Free string or buffer
       end
+      sub Y I
    loop
+   ld E (Z -II)  # Get result
    drop
    pop A  # Drop library handle
    pop Z
@@ -1321,151 +1385,142 @@
    pop X
    ret
 
-# (errno) -> cnt
-(code 'doErrno 2)
-   call errno_A  # Get 'errno'
-   ld E A
-   shl E 4  # Make short number
-   or E CNT
-   ret
-
 (code 'natRetACE_CE 0)
    cmp E Nil  # NIL?
    if ne
-      cmp E TSym  # 'T'?
+      cmp E ISym  # 'I'?
       if eq  # Yes
          null C  # Pointer?
          if nz  # Yes
-            ld B (C)
-            add C 1  # Size of byte
+            ld4 (C)
+            add C 4  # Size of int
          end
-         or B B  # Bolean
-         ldz E Nil
+         int  # Integer
+         ld E A
+         null E  # Negative?
+         if ns  # No
+            shl E 4  # Make short number
+            or E CNT
+         else
+            neg E  # Negate
+            shl E 4  # Make negative short number
+            or E (| SIGN CNT)
+         end
       else
-         cmp E ISym  # 'I'?
+         cmp E NSym  # 'N'?
          if eq  # Yes
             null C  # Pointer?
             if nz  # Yes
-               ld4 (C)
-               add C 4  # Size of int
+               ld A (C)
+               add C 8  # Size of long/pointer
             end
-            int  # Integer
-            ld E A
+            ld E A  # Number
             null E  # Negative?
             if ns  # No
-               shl E 4  # Make short number
-               or E CNT
-            else
-               neg E  # Negate
-               shl E 4  # Make negative short number
-               or E (| SIGN CNT)
-            end
-         else
-            cmp E NSym  # 'N'?
-            if eq  # Yes
-               null C  # Pointer?
-               if nz  # Yes
-                  ld A (C)
-                  add C 8  # Size of long/pointer
-               end
-               ld E A  # Number
                test E (hex "F000000000000000")  # Fit in short?
                if z  # Yes
                   shl E 4  # Make short number
                   or E CNT
                else
-                  call boxNum_A  # New cell
-                  ld (A DIG) E
-                  ld E A
+                  call boxNumE_E  # Make bignum
                end
             else
-               cmp E SSym  # 'S'?
+               neg E  # Negate
+               test E (hex "F000000000000000")  # Fit in short?
+               if z  # Yes
+                  shl E 4  # Make negative short number
+                  or E (| SIGN CNT)
+               else
+                  call boxNumE_E  # Make bignum
+                  or E SIGN  # Set negative
+               end
+            end
+         else
+            cmp E SSym  # 'S'?
+            if eq  # Yes
+               null C  # Pointer?
+               if nz  # Yes
+                  ld A (C)
+                  add C 8  # Size of pointer
+               end
+               ld E A  # Make transient symbol
+               call mkStrE_E
+            else
+               cmp E CSym  # 'C'?
                if eq  # Yes
                   null C  # Pointer?
                   if nz  # Yes
-                     ld A (C)
-                     add C 8  # Size of pointer
+                     call fetchCharC_AC  # Fetch char
                   end
-                  ld E A  # Make transient symbol
-                  call mkStrE_E
+                  ld E Nil  # Preload
+                  null A  # Char?
+                  if nz  # Yes
+                     call mkCharA_A  # Make char
+                     ld E A
+                  end
                else
-                  cmp E CSym  # 'C'?
+                  cmp E BSym  # 'B'?
                   if eq  # Yes
                      null C  # Pointer?
                      if nz  # Yes
-                        call fetchCharC_AC  # Fetch char
+                        ld B (C)
+                        add C 1  # Size of byte
                      end
-                     ld E Nil  # Preload
-                     null A  # Char?
-                     if nz  # Yes
-                        call mkCharA_A  # Make char
-                        ld E A
-                     end
+                     zxt  # Byte
+                     ld E A
+                     shl E 4  # Make short number
+                     or E CNT
                   else
-                     cmp E BSym  # 'B'?
-                     if eq  # Yes
+                     atom E  # Atomic?
+                     if z  # No: Arrary or structure
                         null C  # Pointer?
-                        if nz  # Yes
-                           ld B (C)
-                           add C 1  # Size of byte
-                        end
-                        zxt  # Byte
-                        ld E A
-                        shl E 4  # Make short number
-                        or E CNT
-                     else
-                        atom E  # Atomic?
-                        if z  # No: Arrary or structure
-                           null C  # Pointer?
-                           ldz C A  # Yes: Load into C
-                           push X
-                           push Y
-                           push Z
-                           ld X E  # Get specification in X
-                           ld A (C)  # C item
-                           ld E (X)
-                           call natRetACE_CE  # First item
-                           call cons_Y  # Make cell
-                           ld (Y) E
-                           ld (Y CDR) Nil
-                           link
-                           push Y  # <L I> Result
-                           link
-                           do
-                              ld Z (X CDR)
-                              cnt Z  # (sym . cnt)
-                              if nz
-                                 shr Z 4  # Normalize
-                                 do
-                                    sub Z 1  # Decrement count
-                                 while nz
-                                    ld E (X)  # Repeat last type
-                                    call natRetACE_CE  # Next item
-                                    call cons_A  # Cons into cell
-                                    ld (A) E
-                                    ld (A CDR) Nil
-                                    ld (Y CDR) A  # Append to result
-                                    ld Y A
-                                 loop
-                                 break T
-                              end
-                              atom Z  # End of specification?
-                           while z  # No
-                              ld X Z
-                              ld E (X)  # Next type
-                              call natRetACE_CE  # Next item
-                              call cons_A  # Cons into cell
-                              ld (A) E
-                              ld (A CDR) Nil
-                              ld (Y CDR) A  # Append to result
-                              ld Y A
-                           loop
-                           ld E (L I)  # Get result
-                           drop
-                           pop Z
-                           pop Y
-                           pop X
-                        end
+                        ldz C A  # Yes: Load into C
+                        push X
+                        push Y
+                        push Z
+                        ld X E  # Get specification in X
+                        ld E (X)
+                        call natRetACE_CE  # First item
+                        call cons_Y  # Make cell
+                        ld (Y) E
+                        ld (Y CDR) Nil
+                        link
+                        push Y  # <L I> Result
+                        link
+                        do
+                           ld Z (X CDR)
+                           cnt Z  # (sym . cnt)
+                           if nz
+                              shr Z 4  # Normalize
+                              do
+                                 sub Z 1  # Decrement count
+                              while nz
+                                 ld E (X)  # Repeat last type
+                                 call natRetACE_CE  # Next item
+                                 call cons_A  # Cons into cell
+                                 ld (A) E
+                                 ld (A CDR) Nil
+                                 ld (Y CDR) A  # Append to result
+                                 ld Y A
+                              loop
+                              break T
+                           end
+                           atom Z  # End of specification?
+                        while z  # No
+                           ld X Z
+                           ld E (X)  # Next type
+                           call natRetACE_CE  # Next item
+                           call cons_A  # Cons into cell
+                           ld (A) E
+                           ld (A CDR) Nil
+                           ld (Y CDR) A  # Append to result
+                           ld Y A
+                        loop
+                        ld E (L I)  # Get result
+                        drop
+                        pop Z
+                        pop Y
+                        pop X
                      end
                   end
                end

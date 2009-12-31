@@ -16,9 +16,41 @@
 executed after a call to <code><a href="refF.html#fork">fork</a></code> in the
 child process.
 
-<p><pre><code>
+<pre><code>
 : (push '*Fork '(off *Tmp))   # Clear '*Tmp' in child process
 -> (off *Tmp)
+</code></pre>
+
+<dt><a name="+Fold"><code>+Fold</code></a>
+<dd>Prefix class for maintaining <code><a
+href="refF.html#fold">fold</a></code>ed indexes to <code><a
+href="refS.html#+String">+String</a></code> relations. Typically used in
+combination with the <code><a href="refR.html#+Ref">+Ref</a></code> or <code><a
+href="refI.html#+Idx">+Idx</a></code> prefix classes. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel nm (+Fold +Idx +String))   # Item Description
+...
+(rel tel (+Fold +Ref +String))  # Phone number
+</code></pre>
+
+<dt><a name="fail"><code>(fail) -> lst</code></a>
+<dd>Constructs an empty <a href="ref.html#pilog">Pilog</a> query, i.e. a query
+that will aways fail. See also <code><a href="refG.html#goal">goal</a></code>.
+
+<pre><code>
+(dm clr> ()                # Clear query chart in search dialogs
+   (query> This (fail)) )
+</code></pre>
+
+<dt><a name="fail/0"><code>fail/0</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that always fails. See also
+<code><a href="refT.html#true/0">true/0</a></code>.
+
+<pre><code>
+:  (? (fail))
+-> NIL
 </code></pre>
 
 <dt><a name="fetch"><code>(fetch 'tree 'any) -> any</code></a>
@@ -26,7 +58,7 @@ child process.
 <code><a href="refT.html#tree">tree</a></code> and <code><a
 href="refS.html#store">store</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fetch (tree 'nr '+Item) 2)
 -> {3-2}
 </code></pre>
@@ -41,7 +73,7 @@ href="refP.html#pop">pop</a></code>, <code><a
 href="refR.html#rot">rot</a></code> and <code><a
 href="refC.html#circ">circ</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fifo 'X 1)
 -> 1
 : (fifo 'X 2 3)
@@ -64,8 +96,8 @@ the current input channel is not a file, <code>NIL</code> is returned. See also
 href="refI.html#in">in</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
-<p><pre><code>
-: (load (pack (car (file)) "localFile.l"))  # Load a file in same directory
+<pre><code>
+: (load (pack (car (file)) <u>localFile.l</u>))  # Load a file in same directory
 </code></pre>
 
 <dt><a name="fill"><code>(fill 'any ['sym|lst]) -> any</code></a>
@@ -75,7 +107,7 @@ symbol in <code>any</code> (see <code><a href="refP.html#pat?">pat?</a></code>),
 with its current value. In that case, <code>@</code> itself is not considered a
 pattern symbol. See also <code><a href="refM.html#match">match</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq  @X 1234  @Y (1 2 3 4))
 -> (1 2 3 4)
 : (fill '@X)
@@ -96,7 +128,7 @@ href="refF.html#find">find</a></code>, <code><a
 href="refP.html#pick">pick</a></code> and <code><a
 href="refE.html#extract">extract</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (filter num? (1 A 2 (B) 3 CDE))
 -> (1 2 3)
 </code></pre>
@@ -106,7 +138,7 @@ href="refE.html#extract">extract</a></code>.
 cell. See also <code><a href="refL.html#last">last</a></code> and <code><a
 href="refT.html#tail">tail</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fin 'a)
 -> a
 : (fin '(a . b))
@@ -127,15 +159,15 @@ href="refC.html#catch">catch</a></code>, <code><a
 href="refQ.html#quit">quit</a></code> and <code><a href="ref.html#errors">Error
 Handling</a></code>.
 
-<p><pre><code>
-: (finally (prinl "Done!")
+<pre><code>
+: (finally (prinl <u>Done!</u>)
    (println 123)
    (quit)
    (println 456) )
 123
 Done!
 : (catch 'A
-   (finally (prinl "Done!")
+   (finally (prinl <u>Done!</u>)
       (println 1)
       (throw 'A 123)
       (println 2) ) )
@@ -154,7 +186,7 @@ href="refS.html#seek">seek</a></code>, <code><a
 href="refP.html#pick">pick</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (find pair (1 A 2 (B) 3 CDE))
 -> (B)
 : (find '((A B) (> A B)) (1 2 3 4 5 6) (6 5 4 3 2 1))
@@ -169,7 +201,7 @@ of <code>lst</code>. Returns a list of all items where <code>fun</code> returned
 non-<code>NIL</code>. See also <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fish gt0 '(a -2 (1 b (-3 c 2)) 3 d -1))
 -> (1 2 3)
 : (fish sym? '(a -2 (1 b (-3 c 2)) 3 d -1))
@@ -182,7 +214,7 @@ href="refF.html#filter">filter</a></code>.
 href="refB.html#bool">bool</a></code>. <code>(flg? X)</code> is equivalent to
 <code>(or (not X) (=T X))</code>.
 
-<p><pre><code>
+<pre><code>
 : (flg? (= 3 3))
 -> T
 : (flg? (= 3 4))
@@ -191,13 +223,18 @@ href="refB.html#bool">bool</a></code>. <code>(flg? X)</code> is equivalent to
 -> NIL
 </code></pre>
 
-<dt><a name="flip"><code>(flip 'lst) -> lst</code></a>
-<dd>Returns <code>lst</code> (destructively) reversed. See also <code><a
-href="refR.html#reverse">reverse</a></code>.
+<dt><a name="flip"><code>(flip 'lst ['cnt]) -> lst</code></a>
+<dd>Returns <code>lst</code> (destructively) reversed. Without the optional
+<code>cnt</code> argument, the whole list is flipped, otherwise only the first
+<code>cnt</code> elements. See also <code><a
+href="refR.html#reverse">reverse</a></code> and <code><a
+href="refR.html#rot">rot</a></code>.
 
-<p><pre><code>
-: (flip (1 2 3 4))
+<pre><code>
+: (flip (1 2 3 4))         # Flip all  four elements
 -> (4 3 2 1)
+: (flip (1 2 3 4 5 6) 3)   # Flip only the first three elements
+-> (3 2 1 4 5 6)
 </code></pre>
 
 <dt><a name="flush"><code>(flush) -> flg</code></a>
@@ -206,13 +243,13 @@ href="refR.html#reverse">reverse</a></code>.
 <code><a href="refK.html#key">key</a></code>. Returns <code>T</code> when
 successful. See also <code><a href="refR.html#rewind">rewind</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (flush)
 -> T
 </code></pre>
 
-<dt><a name="fmt64"><code>(fmt64 'num) ->sym<br>
-(fmt64 'sym) -> num</code></a>
+<dt><a name="fmt64"><code>(fmt64 'num) ->sym</code></a>
+<dt><code>(fmt64 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a string in base-64, or a base-64
 formatted string to a number. The digits are represented with the characters
 <code>0</code>-<code>9</code>, <code>:</code>, <code>;</code>,
@@ -221,16 +258,16 @@ used internally for the names of <code><a href="ref.html#external-io">external
 symbols</a></code>. See also <code><a href="refH.html#hex">hex</a></code> and
 <code><a href="refO.html#oct">oct</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fmt64 9)
--> "9"
+-> <u>9</u>
 : (fmt64 10)
--> ":"
+-> <u>:</u>
 : (fmt64 11)
--> ";"
+-> <u>;</u>
 : (fmt64 12)
--> "A"
-: (fmt64 "100")
+-> <u>A</u>
+: (fmt64 <u>100</u>)
 -> 4096
 </code></pre>
 
@@ -242,15 +279,43 @@ the <code>cnt</code> argument is given, the result is truncated to that length
 (or not truncated if <code>cnt</code> is zero). Otherwise <code>cnt</code>
 defaults to 24. See also <code><a href="refL.html#lowc">lowc</a></code>.
 
-<p><pre><code>
-: (fold " 1A 2-b/3")
--> "1a2b3"
-: (fold " 1A 2-B/3" 3)
--> "1a2"
+<pre><code>
+: (fold <u> 1A 2-b/3</u>)
+-> <u>1a2b3</u>
+: (fold <u> 1A 2-B/3</u> 3)
+-> <u>1a2</u>
 </code></pre>
 
-<dt><a name="for"><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any<br>
-(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dt><a name="fold/3"><code>fold/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
+argument, after <code><a href="refF.html#fold">fold</a></code>ing it to a
+canonical form, is a <i>prefix</i> of the folded string representation of the
+result of applying the <code><a href="refG.html#get">get</a></code> algorithm to
+the following arguments. Typically used as filter predicate in <code><a
+href="refS.html#select/3">select/3</a></code> database queries. See also
+<code><a href="refP.html#pre?">pre?</a></code>, <code><a
+href="refI.html#isa/2">isa/2</a></code>, <code><a
+href="refS.html#same/3">same/3</a></code>, <code><a
+href="refB.html#bool/3">bool/3</a></code>, <code><a
+href="refR.html#range/3">range/3</a></code>, <code><a
+href="refH.html#head/3">head/3</a></code>, <code><a
+href="refP.html#part/3">part/3</a></code> and <code><a
+href="refT.html#tolr/3">tolr/3</a></code>.
+
+<pre><code>
+: (?
+   @Nr (1 . 5)
+   @Nm "main"
+   (select (@Item)
+      ((nr +Item @Nr) (nm +Item @Nm))
+      (range @Nr @Item nr)
+      (fold @Nm @Item nm) ) )
+ @Nr=(1 . 5) @Nm="main" @Item={3-1}
+-> NIL
+</code></pre>
+
+<dt><a name="for"><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dt><code>(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
 <dd>Conditional loop with local variable(s) and multiple conditional exits: In
 the first form, the value of <code>sym</code> is saved, <code>sym</code> is
 subsequently bound to the elements of <code>lst</code>, and the body is executed
@@ -267,7 +332,7 @@ result returned. If the body is never executed, <code>NIL</code> is returned.
 See also <code><a href="refD.html#do">do</a></code> and <code><a
 href="refL.html#loop">loop</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (for (N 1 (>= 8 N) (inc N)) (printsp N))
 1 2 3 4 5 6 7 8 -> 8
 : (for (L (1 2 3 4 5 6 7 8) L) (printsp (pop 'L)))
@@ -297,7 +362,7 @@ href="refF.html#*Fork">*Fork</a></code> (should be a <code>prg</code>) is
 executed. See also <code><a href="refP.html#pipe">pipe</a></code> and <code><a
 href="refT.html#tell">tell</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (unless (fork) (do 5 (println 'OK) (wait 1000)) (bye))
 -> NIL
 OK                                              # Child's output
@@ -307,35 +372,52 @@ OK
 OK
 </code></pre>
 
-<dt><a name="format"><code>(format 'num ['cnt ['sym1 ['sym2]]]) -> sym<br>
-(format 'sym ['cnt ['sym1 ['sym2]]]) -> num</code></a>
+<dt><a name="forked"><code>(forked)</code></a>
+<dd>Installs maintenance code in <code><a
+href="refF.html#*Fork">*Fork</a></code> to close server sockets and clean up
+<code><a href="refR.html#*Run">*Run</a></code> code in child processes. Should
+only be called immediately after <code><a href="refT.html#task">task</a></code>.
+
+<pre><code>
+: (task -60000 60000 (msg 'OK))     # Install timer task
+-> (-60000 60000 (msg 'OK))
+: (forked)                          # No timer in child processes
+-> (task -60000)
+: *Run
+-> ((-60000 56432 (msg 'OK)))
+: *Fork
+-> ((task -60000) (del '(saveHistory) '*Bye))
+</code></pre>
+
+<dt><a name="format"><code>(format 'num ['cnt ['sym1 ['sym2]]]) -> sym</code></a>
+<dt><code>(format 'sym ['cnt ['sym1 ['sym2]]]) -> num</code>
 <dd>Converts a number <code>num</code> to a string, or a string <code>sym</code>
 to a number. In both cases, optionally a precision <code>cnt</code>, a
 decimal-separator <code>sym1</code> and a thousands-separator <code>sym2</code>
 can be supplied. Returns <code>NIL</code> if the conversion is unsuccessful. See
 also <code><a href="ref.html#num-io">Numbers</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (format 123456789)                   # Integer conversion
--> "123456789"
+-> <u>123456789</u>
 : (format 123456789 2)                 # Fixed point
--> "1234567.89"
-: (format 123456789 2 ",")             # Comma as decimal-separator
--> "1234567,89"
-: (format 123456789 2 "," ".")         # and period as thousands-separator
--> "1.234.567,89"
+-> <u>1234567.89</u>
+: (format 123456789 2 <u>,</u>)               # Comma as decimal-separator
+-> <u>1234567,89</u>
+: (format 123456789 2 <u>,</u> <u>.</u>)             # and period as thousands-separator
+-> <u>1.234.567,89</u>
 :
-: (format "123456789")                 # String to number
+: (format <u>123456789</u>)                   # String to number
 -> 123456789
-: (format "1234567.89" 4)              # scaled to four digits
+: (format <u>1234567.89</u> 4)                # scaled to four digits
 -> 12345678900
-: (format "1.234.567,89")              # separators not recognized
+: (format <u>1.234.567,89</u>)                # separators not recognized
 -> NIL
-: (format "1234567,89" 4 ",")
+: (format <u>1234567,89</u> 4 <u>,</u>)
 -> 12345678900
-: (format "1.234.567,89" 4 ",")        # thousands-separator not recognized
+: (format <u>1.234.567,89</u> 4 <u>,</u>)            # thousands-separator not recognized
 -> NIL
-: (format "1.234.567,89" 4 "," ".")
+: (format <u>1.234.567,89</u> 4 <u>,</u> <u>.</u>)
 -> 12345678900
 </code></pre>
 
@@ -347,8 +429,8 @@ href="refS.html#seq">seq</a></code>, <code><a
 href="refZ.html#zap">zap</a></code> and <code><a
 href="refD.html#dbck">dbck</a></code>.
 
-<p><pre><code>
-: (pool "x")      # A new database
+<pre><code>
+: (pool <u>x</u>)        # A new database
 -> T
 : (new T)         # Create a new symbol
 -> {2}
@@ -373,10 +455,10 @@ argument, or <code>NIL</code> (if none is found) is returned. See also <code><a
 href="refT.html#till">till</a></code> and <code><a
 href="refE.html#echo">echo</a></code>.
 
-<p><pre><code>
-: (and (from "val='") (till "'" T))
+<pre><code>
+: (and (from <u>val='</u>) (till <u>'</u> T))
 test val='abc'
--> "abc"
+-> <u>abc</u>
 </code></pre>
 
 <dt><a name="full"><code>(full 'any) -> bool</code></a>
@@ -384,7 +466,7 @@ test val='abc'
 least one <code>NIL</code> element, otherwise <code>T</code>. <code>(full
 X)</code> is equivalent to <code>(not (memq NIL X))</code>.
 
-<p><pre><code>
+<pre><code>
 : (full (1 2 3))
 -> T
 : (full (1 NIL 3))
@@ -401,7 +483,7 @@ for a function without arguments, and a single formal parameter or a list of
 formal parameters for a function. See also <code><a
 href="refG.html#getd">getd</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (fun? 1000000000)              # Might be a code pointer
 -> 1000000000
 : (fun? 100000000000000)         # Too big for a code pointer

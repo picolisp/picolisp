@@ -11,6 +11,17 @@
 
 <dl>
 
+<dt><a name="+Key"><code>+Key</code></a>
+<dd>Prefix class for maintaining unique indexes to <code><a
+href="refR.html#+relation">+relation</a></code>s, a subclass of <code><a
+href="refI.html#+index">+index</a></code>. Accepts an optional argument for a
+<code><a href="refH.html#+Hook">+Hook</a></code> attribute. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel nr (+Need +Key +Number))  # Mandatory, unique Customer/Supplier number
+</code></pre>
+
 <dt><a name="key"><code>(key ['cnt]) -> sym</code></a>
 <dd>Returns the next character from standard input as a single-character
 transient symbol. The console is set to raw mode. While waiting for a key press,
@@ -22,9 +33,9 @@ non-<code>NIL</code>, that amount of milliseconds is waited maximally, and
 href="refR.html#raw">raw</a></code> and <code><a
 href="refW.html#wait">wait</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (key)                    # Wait for a key
--> "a"                     # 'a' pressed
+-> <u>a</u>                       # 'a' pressed
 </code></pre>
 
 <dt><a name="kill"><code>(kill 'pid ['cnt]) -> flg</code></a>
@@ -32,7 +43,7 @@ href="refW.html#wait">wait</a></code>.
 <code>cnt</code> is not given) to the process with the ID <code>pid</code>.
 Returns <code>T</code> if successful.
 
-<p><pre><code>
+<pre><code>
 : (kill *Pid 20)                                # Stop current process
 
 [2]+  Stopped               bin/picolisp        # Unix shell

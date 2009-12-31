@@ -1,4 +1,4 @@
-# 19jun09abu
+# 16nov09abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -29,27 +29,58 @@
    "Hist0"     "History" )
 
 
-# Line positioning
-(de posLine (N)
-   (if (> "LPos" N)
-      (until (>= N "LPos")  # Output backspaces
-         (dec '"LPos")
-         (prin "^H") )
-      (until (>= "LPos" N)  # Output characters
-         (let C (get "Line" "LPos")
-            (prin (if (> " " C) "_" C)) )
-         (inc '"LPos") ) )
-   (flush) )
-
 # Basic editing routine
 (de chgLine (L N)
-   (posLine 1)  # To start of old line
-   (let (Len (length L)  D (- (length "Line") Len))
-      (setq "Line" L)
-      (posLine (inc Len))  # Draw new line
+   (let (D (length "Line")  Tsm)
+      (for (P (dec "LPos") (>= P 1) (dec P))  # To start of old line
+         (unless
+            (and
+               *Tsm
+               (= "\"" (get "Line" P))
+               ("skipQ" "LPos" P "Line") )
+            (prin "^H") ) )
+      (for (P . C) (setq "Line" L)  # Output new line
+         (cond
+            ((> " " C)
+               (dec 'D)
+               (prin "_") )
+            ((or (not *Tsm) (<> "\"" C) ("escQ" P L))
+               (dec 'D)
+               (prin C) )
+            (T
+               (prin
+                  (and Tsm (cdr *Tsm))
+                  (unless ("skipQ" N P L)
+                     (dec 'D)
+                     C )
+                  (and (onOff Tsm) (car *Tsm)) ) ) ) )
+      (and Tsm (prin (cdr *Tsm)))
       (space D)  # Clear rest of old line
-      (do D (prin "^H")) )
-   (posLine N) )  # To new position
+      (do D (prin "^H"))
+      (setq "LPos" (inc (length L)))
+      (until (= N "LPos")  # To new position
+         (unless
+            (and
+               *Tsm
+               (= "\"" (get "Line" "LPos"))
+               ("skipQ" N "LPos" "Line") )
+            (prin "^H") )
+         (dec '"LPos") ) )
+   (flush) )
+
+# Skipped double quote
+(de "skipQ" (N P L)
+   (nor
+      (>= (inc N) P (dec N))
+      (= "\""  (get L (dec P)))
+      (= "\"" (get L (inc P)))
+      ("escQ" P L) ) )
+
+# Escaped double quote
+(de "escQ" ()
+   (let Esc NIL
+      (for (I 1 (> P I) (inc I))
+         ((if (= "\\" (get L I)) onOff off) Esc) ) ) )
 
 # Check for delimiter
 (de delim? (C)
@@ -57,31 +88,31 @@
 
 # Move left
 (de lMove ()
-   (posLine (max 1 (dec "LPos"))) )
+   (chgLine "Line" (max 1 (dec "LPos"))) )
 
 # Move to beginning
 (de bMove ()
-   (posLine 1) )
+   (chgLine "Line" 1) )
 
 # Move right
 (de rMove ()
-   (posLine
+   (chgLine "Line"
       (if (>= "LPos" (length "Line"))
          "LPos"
          (inc "LPos") ) ) )
 
 # Move to end of line
 (de eMove ()
-   (posLine (length "Line")) )
+   (chgLine "Line" (length "Line")) )
 
 # Move beyond end of line
 (de xMove ()
-   (posLine (inc (length "Line"))) )
+   (chgLine "Line" (inc (length "Line"))) )
 
 # Move word left
 (de lWord ()
    (use (N L)
-      (posLine
+      (chgLine "Line"
          (if (>= 1 (setq N "LPos"))
             1
             (loop
@@ -94,7 +125,7 @@
 (de rWord ()
    (use (M N L)
       (setq M (length "Line"))
-      (posLine
+      (chgLine "Line"
          (if (<= M (setq N "LPos"))
             M
             (loop
@@ -111,7 +142,7 @@
          (case (get "Line" I)
             (")" (inc 'N))
             ("(" (dec 'N)) )
-         (T (=0 N) (posLine I))
+         (T (=0 N) (chgLine "Line" I))
          (dec 'I) ) ) )
 
 # Match right parenthesis
@@ -122,7 +153,7 @@
          (case (get "Line" I)
             ("(" (inc 'N))
             (")" (dec 'N)) )
-         (T (=0 N) (posLine I))
+         (T (=0 N) (chgLine "Line" I))
          (inc 'I) ) ) )
 
 # Clear to end of line
@@ -263,7 +294,7 @@
                (NIL "C") ) )
          (T
             (when (= "C" ")")
-               (posLine (prog1 "LPos" (lPar) (wait 200))) )
+               (chgLine "Line" (prog1 "LPos" (lPar) (wait 200))) )
             (insChar "C") ) ) ) )
 
 # Command mode
@@ -294,7 +325,7 @@
       ("f"
          (ifn (setq "C" (index (key) (nth "Line" (inc "LPos"))))
             (beep)
-            (posLine (+ "C" "LPos")) ) )
+            (chgLine "Line" (+ "C" "LPos")) ) )
       ("h" (lMove))
       ("i" (doUndo) (on "Insert"))
       ("I" (doUndo) (bMove) (on "Insert"))
@@ -335,7 +366,7 @@
          (case "C"
             (NIL (bye))
             ("^D" (prinl) (tell 'bye) (bye))
-            ("^X" (prinl) (quit)) )
+            ("^X" (prin (cdr *Tsm)) (prinl) (quit)) )
          ((if "Insert" insMode cmdMode) "C") ) ) )
 
 # Function keys
@@ -353,7 +384,7 @@
    (default "tabFun" '((S) (filter '((X) (pre? S X)) (all))))
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFun" delim?))
-   (prinl) )
+   (prinl (cdr *Tsm)) )
 
 (de revise ("X" "tabFun" "skipFun")
    (let ("*Dbg" *Dbg  *Dbg NIL)

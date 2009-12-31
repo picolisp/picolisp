@@ -19,9 +19,9 @@ DB tree processing, and written to the file in the CDR at the next <code><a
 href="refC.html#commit">commit</a></code>. A (typically periodic) call to
 <code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
 
-<p><pre><code>
-: (setq *Zap '(NIL . "db/app/_zap"))
--> "db/app/_zap"
+<pre><code>
+: (setq *Zap '(NIL . <u>db/app/_zap</u>))
+-> <u>db/app/_zap</u>
 </code></pre>
 
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
@@ -31,14 +31,14 @@ symbol. For external symbols, it means to mark it as "deleted", so that upon a
 later <code><a href="refC.html#commit">commit</a></code> it will be removed from
 the database file. See also <code><a href="refI.html#intern">intern</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo (Lst) (car Lst))          # 'foo' calls 'car'
 -> foo
 : (zap 'car)                        # Delete the symbol 'car'
--> "car"
+-> <u>car</u>
 : (pp 'foo)
 (de foo (Lst)
-   ("car" Lst) )                    # 'car' is now a transient symbol
+   (<u>car</u> Lst) )                      # 'car' is now a transient symbol
 -> foo
 : (foo (1 2 3))                     # 'foo' still works
 -> 1
@@ -54,29 +54,28 @@ href="refT.html#tree">tree</a></code>, <code><a
 href="refC.html#chkTree">chkTree</a></code> and <code><a
 href="refP.html#prune">prune</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (zapTree (cdr (root (tree 'nm '+Item))))
 </code></pre>
 
 <dt><a name="zap_"><code>(zap_)</code></a>
 <dd>Delayed deletion (with <code><a href="refZ.html#zap">zap</a></code>) of
 external symbols which were collected e.g. during DB tree processing. An
-auxiliary file (with the name taken from the <code><a
-href="refF.html#fin">fin</a></code> of the value of <code><a
+auxiliary file (with the name taken from the CDR of the value of <code><a
 href="refZ.html#*Zap">*Zap</a></code>, concatenated with a "<code>_</code>"
 character) is used as an intermediary file.
 
-<p><pre><code>
+<pre><code>
 : *Zap
--> (NIL . "db/app/Z")
-: (call 'ls "-l" "db/app")
+-> (NIL . <u>db/app/Z</u>)
+: (call 'ls <u>-l</u> <u>db/app</u>)
 ...
 -rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z
 -rw-r--r-- 1 abu abu     1280 2007-05-23 12:15 Z_
 ...
 : (zap_)
 ...
-: (call 'ls "-l" "db/app")
+: (call 'ls <u>-l</u> <u>db/app</u>)
 ...
 -rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z_
 ...
@@ -88,7 +87,7 @@ href="refO.html#one">one</a></code>, <code><a href="refO.html#on">on</a></code>,
 <code><a href="refO.html#off">off</a></code> and <code><a
 href="refO.html#onOff">onOff</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (zero A B)
 -> 0
 : A

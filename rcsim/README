@@ -1,14 +1,14 @@
-09jun09abu
+12nov09abu
 (c) Software Lab. Alexander Burger
 
 
          RC Flight Simulator
          ===================
 
-The Pico Lisp RC Flight Simulator is a very simple toy simulator, allowing you
-to fly an airplane in a way similar to a radio controlled model plane.
+The PicoLisp RC Flight Simulator is a very simple toy simulator, allowing you to
+fly an airplane in a way similar to a radio controlled model plane.
 
-It is all implemented within the Pico Lisp system, so that no additional
+It is all implemented within the PicoLisp system, so that no additional
 libraries like OpenGL or GL4Java are needed. It may be regarded as a proof of
 concept, because a flight simulator is one of the least typical things to do in
 Lisp.
@@ -28,7 +28,7 @@ once:
 
    $ (cd src; make x11)
 
-Then start the Pico Lisp server with
+Then start the PicoLisp server with
 
    $ ./dbg rcsim/main.l -main -go
 
@@ -39,9 +39,9 @@ and then the Z3d-Client from another X-terminal
 Then make sure that your keyboard focus is on the first X-terminal (where you
 started the simulator from, _not_ the Z3d-Client window).
 
-Hitting ENTER at the Pico Lisp prompt (the colon ':') will terminate the
+Hitting ENTER at the PicoLisp prompt (the colon ':') will terminate the
 simulation process and close the Z3d-Client window. As always, you can stop the
-Pico Lisp servers with 'killall picolisp'.
+PicoLisp servers with 'killall picolisp'.
 
 
    The second version runs in an Applet in any Java-enabled browser.To run it
@@ -49,18 +49,18 @@ Pico Lisp servers with 'killall picolisp'.
    contains the Java applet GUI which is no longer part of the standard PicoLisp
    release.
 
-   You can start the Pico Lisp server with
+   You can start the PicoLisp server with
 
       $ ./p rcsim/applet.main.l -main -go -wait
 
-   or (to get an interactive Pico Lisp command line) with
+   or (to get an interactive PicoLisp command line) with
 
       $ ./dbg rcsim/main.l -main -go
 
    and then point your browser to "http://localhost:8080".
 
-   If you don't have Pico Lisp installed, you might want to try the online version
-   at:
+   If you don't have PicoLisp installed, you might want to try the online
+   version at:
 
       http://rcsim.7fach.de
 

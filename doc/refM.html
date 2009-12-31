@@ -17,14 +17,30 @@
 href="refE.html#*Err">*Err</a></code> and <code><a
 href="ref_.html#^">^</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (+ 'A 2)
 !? (+ 'A 2)
 A -- Number expected
 ?
 :
 : *Msg
--> "Number expected"
+-> <u>Number expected</u>
+</code></pre>
+
+<dt><a name="+Mis"><code>+Mis</code></a>
+<dd>Prefix class to explicitly specify validation functions for <code><a
+href="refR.html#+relation">+relation</a></code>s. Expects a function that takes
+a value and an entity object, and returns <code>NIL</code> if everything is
+correct, or an error string. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(class +Ord +Entity)            # Order class
+(rel pos (+Mis +List +Joint)    # List of positions in that order
+   ((Val Obj)
+      (when (memq NIL Val)
+         "There are empty positions" ) )
+   ord (+Pos) )
 </code></pre>
 
 <dt><a name="macro"><code>(macro prg) -> any</code></a>
@@ -33,7 +49,7 @@ A -- Number expected
 executes the result with <code><a href="refR.html#run">run</a></code>. Used
 occasionally to call functions which otherwise do not evaluate their arguments.
 
-<p><pre><code>
+<pre><code>
 : (de timerMessage (@N . @Prg)
    (setq @N (- @N))
    (macro
@@ -62,7 +78,7 @@ cell, otherwise the last cell of <code>lst1</code> is used. When called without
 arguments, <code>made</code> does not modify the environment. In any case, the
 current list is returned.
 
-<p><pre><code>
+<pre><code>
 : (make
    (link 'a 'b 'c)         # Link three items
    (println (made))        # Print current list (a b c)
@@ -81,17 +97,17 @@ for path, name and mime type. <code>prg</code> generates the mail body with
 <code><a href="refP.html#prEval">prEval</a></code>. See also <code><a
 href="refC.html#connect">connect</a></code>.
 
-<p><pre><code>
-(mail "localhost" 25                               # Local mail server
-   "a@bc.de"                                       # "From" address
-   "abu@software-lab.de"                           # "To" address
-   "Testmail"                                      # Subject
+<pre><code>
+(mail <u>localhost</u> 25                                 # Local mail server
+   <u>a@bc.de</u>                                         # "From" address
+   <u>abu@software-lab.de</u>                             # "To" address
+   <u>Testmail</u>                                        # Subject
    (quote
-      "img/go.png" "go.png" "image/png"            # First attachment
-      "img/7fach.gif" "7fach.gif" "image/gif" )    # Second attachment
-   "Hello,"                                        # First line
+      <u>img/go.png</u> <u>go.png</u> <u>image/png</u>                  # First attachment
+      <u>img/7fach.gif</u> <u>7fach.gif</u> <u>image/gif</u> )          # Second attachment
+   <u>Hello,</u>                                          # First line
    NIL                                             # (empty line)
-   (prinl (pack "This is mail #" (+ 3 4))) )       # Third line
+   (prinl (pack <u>This is mail #</u> (+ 3 4))) )         # Third line
 </code></pre>
 
 <dt><a name="make"><code>(make .. [(made 'lst ..)] .. [(link 'any ..)] ..) -> any</code></a>
@@ -103,7 +119,7 @@ href="refY.html#yoke">yoke</a></code> functions, and returns the result list.
 For efficiency, pointers to the head and the tail of the list are maintained
 internally.
 
-<p><pre><code>
+<pre><code>
 : (make (link 1) (link 2 3) (link 4))
 -> (1 2 3 4)
 : (make (made (1 2 3)) (link 4))
@@ -121,12 +137,27 @@ href="refM.html#mapcon">mapcon</a></code>, <code><a
 href="refM.html#mapcan">mapcan</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (map println (1 2 3 4) '(A B C))
 (1 2 3 4) (A B C)
 (2 3 4) (B C)
 (3 4) (C)
 (4) NIL
+-> NIL
+</code></pre>
+
+<dt><a name="map/3"><code>map/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that returns a list and
+subsequent CDRs of that list, after applying the <code><a
+href="refG.html#get">get</a></code> algorithm to that object and the following
+arguments. Often used in database queries. See also <code><a
+href="refL.html#lst/3">lst/3</a></code>.
+
+<pre><code>
+: (? (db nr +Ord 1 @Ord) (map @L @Ord pos))
+ @Ord={3-7} @L=({4-1} {4-2} {4-3})
+ @Ord={3-7} @L=({4-2} {4-3})
+ @Ord={3-7} @L=({4-3})
 -> NIL
 </code></pre>
 
@@ -141,7 +172,7 @@ href="refM.html#mapcon">mapcon</a></code>, <code><a
 href="refM.html#mapcan">mapcan</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (mapc println (1 2 3 4) '(A B C))
 1 A
 2 B
@@ -161,7 +192,7 @@ href="refM.html#mapcar">mapcar</a></code>, <code><a
 href="refM.html#mapcon">mapcon</a></code>, <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (mapcan reverse '((a b c) (d e f) (g h i)))
 -> (c b a f e d i h g)
 </code></pre>
@@ -177,7 +208,7 @@ href="refM.html#mapcon">mapcon</a></code>, <code><a
 href="refM.html#mapcan">mapcan</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (mapcar + (1 2 3) (4 5 6))
 -> (5 7 9)
 : (mapcar '((X Y) (+ X (* Y Y))) (1 2 3 4) (5 6 7 8))
@@ -195,7 +226,7 @@ href="refM.html#mapcar">mapcar</a></code>, <code><a
 href="refM.html#mapcan">mapcan</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (mapcon copy '(1 2 3 4 5))
 -> (1 2 3 4 5 2 3 4 5 3 4 5 4 5 5)
 </code></pre>
@@ -211,7 +242,7 @@ href="refM.html#mapcon">mapcon</a></code>, <code><a
 href="refM.html#mapcan">mapcan</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (maplist cons (1 2 3) '(A B C))
 -> (((1 2 3) A B C) ((2 3) B C) ((3) C))
 </code></pre>
@@ -223,7 +254,7 @@ to <code>fun</code>. Returns the result of the last application. See also
 <code><a href="refP.html#putl">putl</a></code> and <code><a
 href="refG.html#getl">getl</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'X 'a 1)
 -> 1
 : (put 'X 'b 2)
@@ -246,8 +277,8 @@ respectively), and returns the old value. The marks are local to the current
 process (not stored in the database), and vanish when the process terminates. If
 the first argument is zero, all marks are cleared.
 
-<p><pre><code>
-: (pool "db")
+<pre><code>
+: (pool <u>db</u>)
 -> T
 : (mark '{1} T)      # Mark
 -> NIL
@@ -270,7 +301,7 @@ zero, one or more elements, and are bound to the corresponding data. See also
 href="refS.html#split">split</a></code> and <code><a
 href="refF.html#fill">fill</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (match '(@A is @B) '(This is a test))
 -> T
 : @A
@@ -291,7 +322,7 @@ href="refF.html#fill">fill</a></code>.
 <dd>Returns the largest of all <code>any</code> arguments. See also <a
 href="refM.html#min">min</a> and <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (max 2 'a 'z 9)
 -> z
 : (max (5) (2 3) 'X)
@@ -307,7 +338,7 @@ href="refL.html#leaf">leaf</a></code>, <code><a
 href="refM.html#minKey">minKey</a></code> and <code><a
 href="refG.html#genKey">genKey</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (maxKey (tree 'nr '+Item))
 -> 7
 : (maxKey (tree 'nr '+Item) 3 5)
@@ -321,7 +352,7 @@ to <code>fun</code>. Returns that element from <code>lst</code> for that
 <code>fun</code> returned a maximal value. See also <code><a
 href="refM.html#mini">mini</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq A 1  B 2  C 3)
 -> 3
 : (maxi val '(A B C))
@@ -340,13 +371,27 @@ See also <code><a href="refM.html#memq">memq</a></code>, <code><a
 href="refA.html#assoc">assoc</a></code> and <code><a
 href="refI.html#idx">idx</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (member 3 (1 2 3 4 5 6))
 -> (3 4 5 6)
 : (member 9 (1 2 3 4 5 6))
 -> NIL
 : (member '(d e f) '((a b c) (d e f) (g h i)))
 -> ((d e f) (g h i))
+</code></pre>
+
+<dt><a name="member/2"><code>member/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the the first
+argument is a member of the list in the second argument. See also <code><a
+href="refE.html#equal/2">equal/2</a></code> and <code><a
+href="refM.html#member">member</a></code>.
+
+<pre><code>
+:  (? (member @X (a b c)))
+ @X=a
+ @X=b
+ @X=c
+-> NIL
 </code></pre>
 
 <dt><a name="memq"><code>(memq 'any 'lst) -> any</code></a>
@@ -358,7 +403,7 @@ href="refM.html#mmeq">mmeq</a></code>, <code><a
 href="refA.html#asoq">asoq</a></code> and <code><a
 href="refD.html#delq">delq</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (memq 'c '(a b c d e f))
 -> (c d e f)
 : (memq (2) ((1) (2) (3)))
@@ -372,7 +417,7 @@ of the classes and superclasses of <code>obj</code>, or the classes in
 <code><a href="refG.html#get">get</a></code> algorithm to the following optional
 arguments.
 
-<p><pre><code>
+<pre><code>
 : (setq A '(B))            # Be 'A' an object of class 'B'
 -> (B)
 : (put 'B 'a 123)
@@ -392,7 +437,7 @@ href="refM.html#method">method</a></code>, <code><a
 href="refS.html#send">send</a></code> and <code><a
 href="refT.html#try">try</a></code>.
 
-<p><pre><code>
+<pre><code>
 : meth
 -> 67283504    # Value of 'meth'
 : stop>
@@ -412,16 +457,16 @@ href="refS.html#super">super</a></code>, <code><a
 href="refE.html#extra">extra</a></code>, <code><a
 href="refC.html#class">class</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (method 'mis> '+Number)
--> ((Val Obj) (and Val (not (num? Val)) "Numeric input expected"))
+-> ((Val Obj) (and Val (not (num? Val)) <u>Numeric input expected</u>))
 </code></pre>
 
 <dt><a name="min"><code>(min 'any ..) -> any</code></a>
 <dd>Returns the smallest of all <code>any</code> arguments. See also <a
 href="refM.html#max">max</a> and <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (min 2 'a 'z 9)
 -> 2
 : (min (5) (2 3) 'X)
@@ -437,7 +482,7 @@ href="refL.html#leaf">leaf</a></code>, <code><a
 href="refM.html#maxKey">maxKey</a></code> and <code><a
 href="refG.html#genKey">genKey</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (minKey (tree 'nr '+Item))
 -> 1
 : (minKey (tree 'nr '+Item) 3 5)
@@ -451,7 +496,7 @@ to <code>fun</code>. Returns that element from <code>lst</code> for that
 <code>fun</code> returned a minimal value. See also <code><a
 href="refM.html#maxi">maxi</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq A 1  B 2  C 3)
 -> 3
 : (mini val '(A B C))
@@ -464,7 +509,7 @@ specified by the following <code>cnt|'any</code> arguments. If such an argument
 is a number, the <code>cnt</code>'th element from <code>lst</code> is taken,
 otherwise that arguments is evaluated and the result is used.
 
-<p><pre><code>
+<pre><code>
 : (mix '(a b c d) 3 4 1 2)
 -> (c d a b)
 : (mix '(a b c d) 1 'A 4 'D)
@@ -480,7 +525,7 @@ href="refM.html#memq">memq</a></code>, <code><a
 href="refA.html#asoq">asoq</a></code> and <code><a
 href="refD.html#delq">delq</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (mmeq '(a b c) '(d e f))
 -> NIL
 : (mmeq '(a b c) '(d b x))
@@ -496,15 +541,64 @@ href="refT.html#telStr">telStr</a></code>, <code><a
 href="refD.html#datStr">datStr</a></code> and <code><a
 href="refF.html#format">format</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (money 123456789)
--> "1,234,567.89"
-: (money 12345 "EUR")
--> "123.45 EUR"
-: (locale "DE" "de")
+-> <u>1,234,567.89</u>
+: (money 12345 <u>EUR</u>)
+-> <u>123.45 EUR</u>
+: (locale <u>DE</u> <u>de</u>)
 -> NIL
-: (money 123456789 "EUR")
--> "1.234.567,89 EUR"
+: (money 123456789 <u>EUR</u>)
+-> <u>1.234.567,89 EUR</u>
+</code></pre>
+
+<dt><a name="more"><code>(more 'lst ['fun]) -> flg</code></a>
+<dt><code>(more 'cls) -> any</code>
+<dd>Displays the elements of <code>lst</code> (first form), or the type and
+methods of <code>cls</code> (second form). <code>fun</code> defaults to <code><a
+href="refP.html#print">print</a></code>. In the second form, the method
+definitions of <code>cls</code> are pretty-printed with <code><a
+href="refP.html#pp">pp</a></code>. After each step, <code>more</code> waits for
+console input, and terminates when a non-empty line is entered. In that case,
+<code>T</code> is returned, otherwise (when end of data is reached)
+<code>NIL</code>. See also <code><a href="refQ.html#query">query</a></code> and
+<code><a href="refS.html#show">show</a></code>.
+
+<pre><code>
+: (more (all))                         # Display all internal symbols
+inc>
+leaf
+nil
+inc!
+accept.                                # Stop
+-> T
+
+: (more (all) show)                    # 'show' all internal symbols
+inc> 67292896
+   *Dbg ((859 . <u>lib/db.l</u>))
+
+leaf ((Tree) (let (Node (cdr (root Tree)) X) (while (val Node) (setq X (cadr @) Node (car @))) (cddr X)))
+   *Dbg ((173 . <u>lib/btree.l</u>))
+
+nil 67284680
+   T (((@X) (@ not (-> @X))))
+.                                      # Stop
+-> T
+
+: (more '+Link)                        # Display a class
+(+relation)
+
+(dm mis> (Val Obj)
+   (and
+      Val
+      (nor (isa (: type) Val) (canQuery Val))
+      <u>Type error</u> ) )
+
+(dm T (Var Lst)
+   (unless (=: type (car Lst)) (quit <u>No Link</u> Var))
+   (super Var (cdr Lst)) )
+
+-> NIL
 </code></pre>
 
 <dt><a name="msg"><code>(msg 'any ['any ..]) -> any</code></a>
@@ -513,8 +607,8 @@ href="refP.html#print">print</a></code>, followed by all <code>any</code>
 arguments (printed with <code><a href="refP.html#prin">prin</a></code>) and a
 newline, to standard error. The first <code>any</code> argument is returned.
 
-<p><pre><code>
-: (msg (1 a 2 b 3 c) " is a mixed " "list")
+<pre><code>
+: (msg (1 a 2 b 3 c) <u> is a mixed </u> <u>list</u>)
 (1 a 2 b 3 c) is a mixed list
 -> (1 a 2 b 3 c)
 </code></pre>

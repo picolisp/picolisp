@@ -1,4 +1,4 @@
-/* 25sep09abu
+/* 25nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -21,7 +21,6 @@ static cell StrCell, *StrP;
 static bool Sync;
 static byte *PipeBuf, *PipePtr;
 static void (*PutSave)(int);
-static int Transactions;
 static byte TBuf[] = {INTERN+4, 'T'};
 
 static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
@@ -129,7 +128,7 @@ int slow(inFile *p, bool nb) {
       if (errno != EINTR)
          return 0;
       if (Signal)
-         sighandler(T);
+         sighandler(NULL);
    }
 }
 
@@ -151,7 +150,7 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
                if (!n || errno != EINTR)
                   return 0;
                if (Signal)
-                  sighandler(T);
+                  sighandler(NULL);
             }
          }
       }
@@ -162,7 +161,7 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
       if (errno != EINTR)
          return 0;
       if (Signal)
-         sighandler(T);
+         sighandler(NULL);
    }
 }
 
@@ -177,7 +176,7 @@ bool wrBytes(int fd, byte *p, int cnt) {
       else if (errno != EINTR)
          writeErr("bytes");
       if (Signal)
-         sighandler(T);
+         sighandler(NULL);
    } while (cnt);
    return YES;
 }
@@ -861,7 +860,7 @@ void popInFiles(void) {
             if (errno != EINTR)
                closeErr();
             if (Signal)
-               sighandler(T);
+               sighandler(NULL);
          }
    }
    Env.get = Env.inFrames->get;
@@ -879,7 +878,7 @@ void popOutFiles(void) {
             if (errno != EINTR)
                closeErr();
             if (Signal)
-               sighandler(T);
+               sighandler(NULL);
          }
    }
    Env.put = Env.outFrames->put;
@@ -1279,8 +1278,8 @@ static bool isSet(int fd, fd_set *fds) {
 }
 
 long waitFd(any ex, int fd, long ms) {
-   any x;
-   cell c1, c2;
+   any x, taskSave;
+   cell c1, c2, c3;
    int i, j, m, n;
    long t;
    bool flg;
@@ -1290,6 +1289,7 @@ long waitFd(any ex, int fd, long ms) {
    struct timeval tt;
 #endif
 
+   taskSave = Env.task;
    Push(c1, val(At));
    Save(c2);
    do {
@@ -1306,6 +1306,23 @@ long waitFd(any ex, int fd, long ms) {
          else
             FD_SET(m = fd, &rdSet);
       }
+      for (x = data(c2) = Env.task = val(Run); isCell(x); x = cdr(x)) {
+         if (!memq(car(x), taskSave)) {
+            if (isNeg(caar(x))) {
+               if ((n = (int)unDig(cadar(x)) / 2) < t)
+                  tp = &tv,  t = n;
+            }
+            else if ((n = (int)unDig(caar(x)) / 2) != fd) {
+               if (n < InFDs  &&  InFiles[n]  &&  inReady(InFiles[n]))
+                  tp = &tv,  t = 0;
+               else {
+                  FD_SET(n, &rdSet);
+                  if (n > m)
+                     m = n;
+               }
+            }
+         }
+      }
       if (Hear  &&  Hear != fd  &&  InFiles[Hear]) {
          if (inReady(InFiles[Hear]))
             tp = &tv,  t = 0;
@@ -1313,21 +1330,6 @@ long waitFd(any ex, int fd, long ms) {
             FD_SET(Hear, &rdSet);
             if (Hear > m)
                m = Hear;
-         }
-      }
-      for (x = data(c2) = val(Run); isCell(x); x = cdr(x)) {
-         if (isNeg(caar(x))) {
-            if ((n = (int)unDig(cadar(x)) / 2) < t)
-               tp = &tv,  t = n;
-         }
-         else if ((n = (int)unDig(caar(x)) / 2) != fd) {
-            if (n < InFDs  &&  InFiles[n]  &&  inReady(InFiles[n]))
-               tp = &tv,  t = 0;
-            else {
-               FD_SET(n, &rdSet);
-               if (n > m)
-                  m = n;
-            }
          }
       }
       if (Spkr) {
@@ -1415,33 +1417,40 @@ long waitFd(any ex, int fd, long ms) {
       if (!flg  &&  Spkr  &&  FD_ISSET(Spkr,&rdSet)  &&
             rdBytes(Spkr, (byte*)&m, sizeof(int), YES) > 0  &&  Child[m].pid )
          wrChild(m, TBuf, sizeof(TBuf));
-      for (x = data(c2); isCell(x); x = cdr(x))
-         if (isNeg(caar(x))) {
-            if ((n = (int)(unDig(cadar(x)) / 2 - t)) > 0)
-               setDig(cadar(x), (long)2*n);
-            else {
-               setDig(cadar(x), unDig(caar(x)));
-               val(At) = caar(x);
-               prog(cddar(x));
-            }
-         }
-         else if ((n = (int)unDig(caar(x)) / 2) != fd) {
-            if (isSet(n, &rdSet)) {
-               val(At) = caar(x);
-               prog(cdar(x));
-            }
-         }
       if (Hear && Hear != fd && isSet(Hear, &rdSet)) {
-         if ((data(c2) = rdHear()) == NULL)
+         if ((data(c3) = rdHear()) == NULL)
             close(Hear),  closeInFile(Hear),  closeOutFile(Hear),  Hear = 0;
-         else if (data(c2) == T)
+         else if (data(c3) == T)
             Sync = YES;
-         else
-            evList(data(c2));
+         else {
+            Save(c3);
+            evList(data(c3));
+            drop(c3);
+         }
+      }
+      for (x = data(c2); isCell(x); x = cdr(x)) {
+         if (!memq(car(x), taskSave)) {
+            if (isNeg(caar(x))) {
+               if ((n = (int)(unDig(cadar(x)) / 2 - t)) > 0)
+                  setDig(cadar(x), (long)2*n);
+               else {
+                  setDig(cadar(x), unDig(caar(x)));
+                  val(At) = caar(x);
+                  prog(cddar(x));
+               }
+            }
+            else if ((n = (int)unDig(caar(x)) / 2) != fd) {
+               if (isSet(n, &rdSet)) {
+                  val(At) = caar(x);
+                  prog(cdar(x));
+               }
+            }
+         }
       }
       if (Signal)
          sighandler(ex);
    } while (ms  &&  fd >= 0 && !isSet(fd, &rdSet));
+   Env.task = taskSave;
    val(At) = Pop(c1);
    return ms;
 }
@@ -1925,7 +1934,7 @@ any load(any ex, int pr, any x) {
       else {
          if (pr && !Chr)
             Env.put(pr), space(), flushAll();
-         data(c1) = read1('\n');
+         data(c1) = read1(isatty(STDIN_FILENO)? '\n' : 0);
          if (Chr == '\n')
             Chr = 0;
       }
@@ -2217,7 +2226,7 @@ void print(any x) {
 
 void print1(any x) {
    if (Signal)
-      sighandler(T);
+      sighandler(NULL);
    if (isNum(x))
       outNum(x);
    else if (isNil(x))
@@ -2238,7 +2247,14 @@ void print1(any x) {
          } while (c = d);
       }
       else {
-         Env.put('"');
+         bool tsm = !isNil(val(Tsm)) && Env.put == putStdout && OutFile->tty;
+
+         if (!tsm)
+            Env.put('"');
+         else {
+            outName(car(val(Tsm)));
+            c = symByte(name(x));
+         }
          do {
             if (c == '"'  ||  c == '^'  ||  c == '\\')
                Env.put('\\');
@@ -2248,7 +2264,10 @@ void print1(any x) {
                Env.put('^'),  c |= 0x40;
             Env.put(c);
          } while (c = symByte(NULL));
-         Env.put('"');
+         if (!tsm)
+            Env.put('"');
+         else
+            outName(cdr(val(Tsm)));
       }
    }
    else if (car(x) == Quote  &&  x != cdr(x))
@@ -2282,7 +2301,7 @@ void prin(any x) {
 
 void prin1(any x) {
    if (Signal)
-      sighandler(T);
+      sighandler(NULL);
    if (!isNil(x)) {
       if (isNum(x))
          outNum(x);
@@ -2508,7 +2527,7 @@ any doRpc(any x) {
 #define TAGMASK (BLKSIZE-1)
 #define BLKMASK (~TAGMASK)
 
-static int F, Files, *BlkShift, *BlkFile, *BlkSize, MaxBlkSize;
+static int F, Files, *BlkShift, *BlkFile, *BlkSize, *Fluse, MaxBlkSize;
 static FILE *Jnl, *Log;
 static adr BlkIndex, BlkLink;
 static adr *Marks;
@@ -2696,19 +2715,16 @@ static adr newBlock(void) {
    byte buf[2*BLK];
 
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
-   setAdr(0, IniBlk);
-   if (n = getAdr(buf)) {
+   if ((n = getAdr(buf)) && Fluse[F]) {
       blkPeek(n << BlkShift[F], buf, BLK);  // Get free link
-      blkPoke(0, buf, 2*BLK);
-      blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
+      --Fluse[F];
    }
-   else if ((n = getAdr(buf+BLK)) < 281474976710592LL) {
+   else if ((n = getAdr(buf+BLK)) != 281474976710592LL)
       setAdr(n + BLKSIZE, buf+BLK);  // Increment next
-      blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
-      blkPoke(0, buf, 2*BLK);
-   }
    else
       err(NULL, NULL, "DB Oversize");
+   blkPoke(0, buf, 2*BLK);
+   setAdr(0, IniBlk),  blkPoke(n << BlkShift[F], IniBlk, BlkSize[F]);
    return n;
 }
 
@@ -2862,7 +2878,7 @@ any doPool(any ex) {
    Push(c4, evSym(cdr(x)));  // sym3
    val(Solo) = Zero;
    if (Files) {
-      while (isNil(doRollback(Nil)));
+      doRollback(Nil);
       for (F = 0; F < Files; ++F) {
          if (Marks)
             free(Mark[F]);
@@ -2882,6 +2898,7 @@ any doPool(any ex) {
       BlkShift = alloc(BlkShift, Files * sizeof(int));
       BlkFile = alloc(BlkFile, Files * sizeof(int));
       BlkSize = alloc(BlkSize, Files * sizeof(int));
+      Fluse = alloc(Fluse, Files * sizeof(int));
       Locks = alloc(Locks, Files),  memset(Locks, 0, Files);
       MaxBlkSize = 0;
       for (F = 0; F < Files; ++F) {
@@ -2918,6 +2935,7 @@ any doPool(any ex) {
          closeOnExec(ex, BlkFile[F]);
          if (BlkSize[F] > MaxBlkSize)
             MaxBlkSize = BlkSize[F];
+         Fluse[F] = -1;
          x = cdr(x);
       }
       Block = alloc(Block, MaxBlkSize);
@@ -3201,248 +3219,166 @@ void db(any ex, any s, int a) {
    }
 }
 
-// (begin) -> T
-any doBegin(any x) {
-   int i;
-   any y, z;
-
-   for (i = 0; i < EHASH; ++i) {
-      for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-         for (y = tail1(car(x)); isCell(y); y = cdr(y));
-         y = numCell(y);
-         while (isNum(cdr(y)))
-            y = numCell(cdr(y));
-         if (!isSym(z = cdr(y)))
-            z = car(z);
-         if (z == At2  ||  z == At3) {  // dirty or deleted
-            cell c1, c2;
-
-            Push(c1, cdr(y));
-            Push(c2, car(x));
-            cdr(y) = cons(z, cons(val(car(x)), Nil)),  y = cddr(y);
-            for (z = tail1(car(x));  isCell(z);  z = cdr(z)) {
-               if (!isCell(car(z)))
-                  cdr(y) = cons(car(z),Nil);
-               else
-                  cdr(y) = cons(cons(caar(z),cdar(z)), Nil);
-               y = cdr(y);
-            }
-            cdr(y) = Pop(c1);
-         }
-      }
-   }
-   if (isCell(val(Zap)))
-      val(Zap) = cons(Nil, val(Zap));
-   ++Transactions;
-   return T;
-}
-
 // (commit ['any] [exe1] [exe2]) -> flg
 any doCommit(any ex) {
-   bool force, note;
+   bool note;
    int i;
    adr n;
-   any flg, x, y, z;
+   cell c1;
+   any x, y, z;
    ptr pbSave, ppSave;
    byte dirty[Files], buf[PIPE_BUF];
 
-   x = cdr(ex),  flg = EVAL(car(x));
-   if (force = !Transactions || !isNil(flg)) {
-      if (!Log)
-         ++Env.protect;
-      wrLock();
-      if (Jnl)
-         lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
-      if (Log) {
-         for (F = 0; F < Files; ++F)
-            dirty[F] = 0;
-         for (i = 0; i < EHASH; ++i) {  // Save objects
-            for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-               for (y = tail1(car(x)); isCell(y); y = cdr(y));
-               z = numCell(y);
-               while (isNum(cdr(z)))
-                  z = numCell(cdr(z));
-               if (cdr(z) == At2 || cdr(z) == At3) {  // dirty or deleted
-                  n = blk64(y);
-                  if (F < Files) {
-                     rdBlock(n*BLKSIZE),  logBlock();
-                     while (BlkLink)
-                        rdBlock(BlkLink),  logBlock();
-                     dirty[F] = 1;
-                  }
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   if (!Log)
+      ++Env.protect;
+   wrLock();
+   if (Jnl)
+      lockFile(fileno(Jnl), F_SETLKW, F_WRLCK);
+   if (Log) {
+      for (F = 0; F < Files; ++F)
+         dirty[F] = 0,  Fluse[F] = 0;
+      for (i = 0; i < EHASH; ++i) {  // Save objects
+         for (x = Extern[i];  isCell(x);  x = cdr(x)) {
+            for (y = tail1(car(x)); isCell(y); y = cdr(y));
+            z = numCell(y);
+            while (isNum(cdr(z)))
+               z = numCell(cdr(z));
+            if (cdr(z) == At2 || cdr(z) == At3) {  // dirty or deleted
+               n = blk64(y);
+               if (F < Files) {
+                  rdBlock(n*BLKSIZE);
+                  while (logBlock(), BlkLink)
+                     rdBlock(BlkLink);
+                  dirty[F] = 1;
+                  if (cdr(z) != At3)
+                     ++Fluse[F];
                }
             }
          }
-         for (F = 0; F < Files; ++F) {
-            if (dirty[F]) {
-               rdBlock(0),  logBlock();   // Save Block 0
-               while (BlkLink)            // Save free list
-                  rdBlock(BlkLink),  logBlock();
-            }
-         }
-         putc_unlocked(0xFF, Log),  putc_unlocked(0xFF, Log);
-         fflush(Log);
-         if (fsync(fileno(Log)) < 0)
-            fsyncErr(ex, "Transaction");
       }
-      x = cddr(ex),  EVAL(car(x));
-      if (note = !isNil(flg) && flg != T && (Tell || Children))
-         tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
+      for (F = 0; F < Files; ++F) {
+         if (i = Fluse[F]) {
+            rdBlock(0);                               // Save Block 0
+            while (logBlock(),  BlkLink && --i >= 0)  // and free list
+               rdBlock(BlkLink);
+         }
+      }
+      putc_unlocked(0xFF, Log),  putc_unlocked(0xFF, Log);
+      fflush(Log);
+      if (fsync(fileno(Log)) < 0)
+         fsyncErr(ex, "Transaction");
    }
+   x = cddr(ex),  EVAL(car(x));
+   if (note = !isNil(data(c1)) && (Tell || Children))
+      tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
    for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail1(car(x)); isCell(y); y = cdr(y));
          z = numCell(y);
          while (isNum(cdr(z)))
             z = numCell(cdr(z));
-         if (!isSym(cdr(z))) {
-            any t = car(y = cdr(z));
-            y = cdr(y);
-            while (!isSym(y = cdr(y))  &&  car(y) != At2  &&  car(y) != At3);
-            if (isSym(y))
-               cdr(z) = t;
-            else
-               cdr(z) = y,  car(y) = t;
-         }
-         else if (force) {
-            if (cdr(z) == At3) {  // deleted
-               n = blk64(y);
-               if (F < Files) {
-                  cleanUp(n*BLKSIZE);
-                  if (note) {
-                     if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
-                        tellEnd(&pbSave, &ppSave);
-                        tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
-                     }
-                     prTell(car(x));
-                  }
+         if (cdr(z) == At2) {  // dirty
+            n = blk64(y);
+            if (F < Files) {
+               rdBlock(n*BLKSIZE);
+               Block[0] |= 1;  // Might be new
+               putBin = putBlock;
+               binPrint(0, val(y = car(x)));
+               for (y = tail1(y);  isCell(y);  y = cdr(y)) {
+                  if (isCell(car(y)))
+                     binPrint(0, cdar(y)), binPrint(0, caar(y));
+                  else
+                     binPrint(0, car(y)), binPrint(0, T);
                }
-               cdr(z) = Nil;
-            }
-            else if (cdr(z) == At2) {  // dirty
-               n = blk64(y);
-               if (F < Files) {
-                  rdBlock(n*BLKSIZE);
-                  Block[0] |= 1;  // Might be new
-                  putBin = putBlock;
-                  binPrint(0, val(y = car(x)));
-                  for (y = tail1(y);  isCell(y);  y = cdr(y)) {
-                     if (isSym(car(y)))
-                        binPrint(0, car(y)), binPrint(0, T);
-                     else
-                        binPrint(0, cdar(y)), binPrint(0, caar(y));
+               putBlock(NIX);
+               setAdr(Block[0] & TAGMASK, Block);  // Clear Link
+               wrBlock();
+               if (BlkLink)
+                  cleanUp(BlkLink);
+               cdr(z) = At;  // loaded
+               if (note) {
+                  if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
+                     tellEnd(&pbSave, &ppSave);
+                     tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
                   }
-                  putBin(NIX);
-                  setAdr(Block[0] & TAGMASK, Block);  // Clear Link
-                  wrBlock();
-                  if (BlkLink)
-                     cleanUp(BlkLink);
-                  cdr(z) = At;  // loaded
-                  if (note) {
-                     if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
-                        tellEnd(&pbSave, &ppSave);
-                        tellBeg(&pbSave, &ppSave, buf),  prTell(flg);
-                     }
-                     prTell(car(x));
-                  }
+                  prTell(car(x));
                }
             }
          }
-      }
-   }
-   if (force) {
-      if (note)
-         tellEnd(&pbSave, &ppSave);
-      x = cdddr(ex),  EVAL(car(x));
-      if (Jnl)
-         fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
-      if (isCell(x = val(Zap))) {
-         for (z = cdr(x); isCell(z); z = cdr(z));
-         {
-            outFile f, *oSave;
-            char nm[pathSize(z)];
-
-            pathString(z, nm);
-            if ((f.fd = open(nm, O_APPEND|O_CREAT|O_WRONLY, 0666)) < 0)
-               openErr(ex, nm);
-            f.ix = 0;
-            f.tty = NO;
-            putBin = putStdout;
-            oSave = OutFile,  OutFile = &f;
-            for (;;) {
-               for (y = car(x); isCell(y); y = cdr(y))
-                  binPrint(0, car(y));
-               if (!isCell(cdr(x)))
-                  break;
-               x = cdr(x);
+         else if (cdr(z) == At3) {  // deleted
+            n = blk64(y);
+            if (F < Files) {
+               cleanUp(n*BLKSIZE);
+               if (note) {
+                  if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
+                     tellEnd(&pbSave, &ppSave);
+                     tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
+                  }
+                  prTell(car(x));
+               }
             }
-            OutFile = oSave;
-            wrBytes(f.fd, f.buf, f.ix);
-            close(f.fd);
+            cdr(z) = Nil;
          }
-         car(x) = Nil;
       }
-      if (Log) {
-         for (F = 0; F < Files; ++F)
-            if (dirty[F] && fsync(BlkFile[F]) < 0)
-               fsyncErr(ex, "DB");
-         fseek(Log, 0L, SEEK_SET);
-         if (ftruncate(fileno(Log), 0))
-            truncErr(ex);
-      }
-      rwUnlock(0);  // Unlock all
-      if (!Log)
-         --Env.protect;
-      Transactions = 0;
-      return T;
    }
-   rwUnlock(1);
+   if (note)
+      tellEnd(&pbSave, &ppSave);
+   x = cdddr(ex),  EVAL(car(x));
+   if (Jnl)
+      fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
    if (isCell(x = val(Zap))) {
-      if (isCell(y = car(x))) {
-         for (z = y; isCell(cdr(z)); z = cdr(z));
-         cdr(z) = cadr(x);
-         cadr(x) = y;
-      }
-      val(Zap) = cdr(x);
+      outFile f, *oSave;
+      char nm[pathSize(y = cdr(x))];
+
+      pathString(y, nm);
+      if ((f.fd = open(nm, O_APPEND|O_CREAT|O_WRONLY, 0666)) < 0)
+         openErr(ex, nm);
+      f.ix = 0;
+      f.tty = NO;
+      putBin = putStdout;
+      oSave = OutFile,  OutFile = &f;
+      for (y = car(x); isCell(y); y = cdr(y))
+         binPrint(0, car(y));
+      flush(&f);
+      close(f.fd);
+      car(x) = Nil;
+      OutFile = oSave;
    }
-   --Transactions;
-   return Nil;
+   if (Log) {
+      for (F = 0; F < Files; ++F)
+         if (dirty[F] && fsync(BlkFile[F]) < 0)
+            fsyncErr(ex, "DB");
+      fseek(Log, 0L, SEEK_SET);
+      if (ftruncate(fileno(Log), 0))
+         truncErr(ex);
+   }
+   rwUnlock(0);  // Unlock all
+   if (!Log)
+      --Env.protect;
+   for (F = 0; F < Files; ++F)
+      Fluse[F] = -1;
+   drop(c1);
+   return T;
 }
 
-// (rollback) -> flg
+// (rollback) -> T
 any doRollback(any x) {
    int i;
    any y, z;
 
    for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
-         for (y = tail1(car(x)); isCell(y); y = cdr(y));
-         z = numCell(y);
+         val(y = car(x)) = Nil;
+         for (z = tail1(y); isCell(z); z = cdr(z));
+         tail(y) = ext(z);
+         z = numCell(z);
          while (isNum(cdr(z)))
             z = numCell(cdr(z));
-         if (!isSym(cdr(z))) {
-            any *p = &tail(car(x));
-            val(car(x)) = caddr(z);
-            while (!isSym(cdddr(z)) && cadddr(z) != At2 && cadddr(z) != At3)
-               *p = cdddr(z),  cdddr(z) = cddddr(z),  p = &cdr(*p);
-            *p = y;
-            mkExt(car(x));
-            cdr(z) = cdddr(z);
-         }
-         else if (!isNil(cdr(z))) {
-            val(car(x)) = Nil;
-            tail(car(x)) = ext(y);
-            cdr(z) = Nil;
-         }
+         cdr(z) = Nil;
       }
    }
-   if (Transactions) {
-      if (isCell(val(Zap)))
-         val(Zap) = cdr(val(Zap));
-      --Transactions;
-      return Nil;
-   }
-   else if (isCell(x = val(Zap)))
+   if (isCell(x = val(Zap)))
       car(x) = Nil;
    rwUnlock(0);  // Unlock all
    return T;

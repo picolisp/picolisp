@@ -1,10 +1,30 @@
-/* 02oct09abu
+/* 16dec09abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
+int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
+char **AV, *AV0, *Home;
+child *Child;
+heap *Heaps;
+cell *Avail;
+stkEnv Env;
+catchFrame *CatchPtr;
+struct termios OrgTermio, *Termio;
+int InFDs, OutFDs;
+inFile *InFile, **InFiles;
+outFile *OutFile, **OutFiles;
+int (*getBin)(void);
+void (*putBin)(int);
+any TheKey, TheCls, Thrown;
+any Alarm, Line, Zero, One, Intern[IHASH], Transient[IHASH], Extern[EHASH];
+any ApplyArgs, ApplyBody, DbVal, DbTail;
+any Nil, DB, Meth, Quote, T;
+any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
+any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Tsm, Adr, Fork, Bye;
+
 static int TtyPid;
 static word2 USec;
 static struct timeval Tv;
@@ -64,7 +84,7 @@ void sighandler(any ex) {
          Signal = 0,  run(val(Hup));
          break;
       case SIGINT:
-         Signal = 0,  brkLoad(ex);
+         Signal = 0,  brkLoad(ex ?: Nil);
          break;
       case SIGUSR1:
          Signal = 0,  run(val(Sig1));
@@ -432,14 +452,14 @@ void err(any ex, any x, char *fmt, ...) {
          bye(1);
       load(NULL, '?', Nil);
    }
-   Env.protect = 0;
    unwind(NULL);
    Env.stack = NULL;
    Env.meth = NULL;
+   Env.protect = Env.trace = 0;
    Env.next = -1;
+   Env.task = Nil;
    Env.make = Env.yoke = NULL;
    Env.parser = NULL;
-   Env.trace = 0;
    longjmp(ErrRst, +1);
 }
 
@@ -1073,9 +1093,9 @@ static void init(int ac, char *av[]) {
    Env.get = getStdin;
    InFile = initInFile(STDIN_FILENO, NULL);
    Env.put = putStdout;
-   initOutFile(STDERR_FILENO)->tty = YES;
+   initOutFile(STDERR_FILENO);
    OutFile = initOutFile(STDOUT_FILENO);
-   Alarm = Line = Nil;
+   Env.task = Alarm = Line = Nil;
    setrlimit(RLIMIT_STACK, &ULim);
    Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
    ApplyArgs = cons(cons(consSym(Nil,Nil), Nil), Nil);

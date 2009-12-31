@@ -1,4 +1,4 @@
-# 12jan08abu
+# 30nov09abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Users *Perms
@@ -37,17 +37,17 @@
 ### Role ###
 (class +Role +Entity)
 
-(rel nm     (+Need +Key +String))               # Role name
-(rel perm   (+List +Symbol))                    # Permission list
-(rel usr    (+List +Joint) role (+User))        # Associated users
+(rel nm (+Need +Key +String))          # Role name
+(rel perm (+List +Symbol))             # Permission list
+(rel usr (+List +Joint) role (+User))  # Associated users
 
 
 ### User ###
 (class +User +Entity)
 
-(rel nm     (+Need +Key +String))               # User name
-(rel pw     (+String))                          # Password
-(rel role   (+Joint) usr (+Role))               # User role
+(rel nm (+Need +Key +String))          # User name
+(rel pw (+String))                     # Password
+(rel role (+Joint) usr (+Role))        # User role
 
 
 ### Permission management ###

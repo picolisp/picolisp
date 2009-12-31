@@ -20,7 +20,7 @@ temporarily sets <code>*DB</code> to <code>NIL</code> and restores its value
 after collection, thus disposing of all external symbols not currently used in
 the program).
 
-<p><pre><code>
+<pre><code>
 : (show *DB)
 {1} NIL
    +City {P}
@@ -44,9 +44,12 @@ href="ref_.html#!">!</a></code> (breakpoint) functions are enabled, and the
 current line number and file name will be stored in symbol properties by
 <code><a href="refD.html#de">de</a></code>, <code><a
 href="refD.html#def">def</a></code> and <code><a
-href="refD.html#dm">dm</a></code>.
+href="refD.html#dm">dm</a></code>. See also <code><a
+href="refD.html#debug">debug</a></code>, <code><a
+href="refT.html#trace">trace</a></code> and <code><a
+href="refL.html#lint">lint</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo (A B) (* A B))
 -> foo
 : (trace 'foo)
@@ -65,14 +68,57 @@ needed by <code><a href="refP.html#pool">pool</a></code>). It is typically set
 by <code><a href="refD.html#dbs">dbs</a></code>
 and <code><a href="refD.html#dbs+">dbs+</a></code>.
 
-<p><pre><code>
+<pre><code>
 : *Dbs
 -> (1 2 1 0 2 3 3 3)
 </code></pre>
 
-<dt><a name="daemon"><code>(daemon 'sym . prg) -> fun<br>
-(daemon '(sym . cls) . prg) -> fun<br>
-(daemon '(sym sym2 [. cls]) . prg) -> fun</code></a>
+<dt><a name="+Date"><code>+Date</code></a>
+<dd>Class for calender dates (as calculated by <code><a
+href="refD.html#date">date</a></code>), a subclass of <code><a
+href="refN.html#+Number">+Number</a></code>. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel dat (+Ref +Date))  # Indexed date
+</code></pre>
+
+<dt><a name="+Dep"><code>+Dep</code></a>
+<dd>Prefix class for maintaining depenencies between <code><a
+href="refR.html#+relation">+relation</a></code>s. Expects a list of (symbolic)
+attributes that depend on this relation. Whenever this relations is cleared
+(receives a value of <code>NIL</code>, or the whole entity is deleted with
+<code>lose&gt;</code>), the dependent relations will also be cleared, triggering
+all required side-effects. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<p>In the following example, the index entry for the item pointing to the
+position (and, therefore, to the order) is cleared in case the order is deleted,
+or this position is deleted from the order:
+
+<pre><code>
+(class +Pos +Entity)                # Position class
+(rel ord (+Dep +Joint)              # Order of that position
+   (itm)                               # 'itm' specifies the dependency
+   pos (+Ord) )                        # Arguments to '+Joint'
+(rel itm (+Ref +Link) NIL (+Item))  # Item depends on the order
+</code></pre>
+
+<dt><a name="d"><code>(d) -> T</code></a>
+<dd>Inserts <code><a href="ref_.html#!">!</a></code> breakpoints into all
+subexpressions of the current breakpoint. Typically used when single-stepping a
+function or method with <code><a href="refD.html#debug">debug</a></code>. See
+also <code><a href="refU.html#u">u</a></code> and <code><a
+href="refU.html#unbug">unbug</a></code>.
+
+<pre><code>
+! (d)                            # Debug subexpression(s) at breakpoint
+-> T
+</code></pre>
+
+<dt><a name="daemon"><code>(daemon 'sym . prg) -> fun</code></a>
+<dt><code>(daemon '(sym . cls) . prg) -> fun</code>
+<dt><code>(daemon '(sym sym2 [. cls]) . prg) -> fun</code>
 <dd>Inserts <code>prg</code> in the beginning of the function (first form), the
 method body of <code>sym</code> in <code>cls</code> (second form) or in the
 class obtained by <code><a href="refG.html#get">get</a></code>ing
@@ -83,16 +129,16 @@ href="refE.html#expr">expr</a></code>, <code><a
 href="refP.html#patch">patch</a></code> and <code><a
 href="refR.html#redef">redef</a></code>.
 
-<p><pre><code>
-: (de hello () (prinl "Hello world!"))
+<pre><code>
+: (de hello () (prinl <u>Hello world!</u>))
 -> hello
 
-: (daemon 'hello (prinl "# This is the hello world program"))
--> (NIL (prinl "# This is the hello world program") (prinl "Hello world!"))
+: (daemon 'hello (prinl <u># This is the hello world program</u>))
+-> (NIL (prinl <u># This is the hello world program</u>) (prinl <u>Hello world!</u>))
 : (hello)
 # This is the hello world program
 Hello world!
--> "Hello world!"
+-> <u>Hello world!</u>
 
 : (daemon '* (msg 'Multiplying))
 -> (@ (msg 'Multiplying) (pass $134532148))
@@ -111,11 +157,11 @@ href="refT.html#tim$">tim$</a></code>, <code><a
 href="refD.html#datStr">datStr</a></code> and <code><a
 href="refD.html#datSym">datSym</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (dat$ (date))
--> "20070601"
-: (dat$ (date) "-")
--> "2007-06-01"
+-> <u>20070601</u>
+: (dat$ (date) <u>-</u>)
+-> <u>2007-06-01</u>
 </code></pre>
 
 <dt><a name="datStr"><code>(datStr 'dat ['flg]) -> sym</code></a>
@@ -129,15 +175,15 @@ href="refE.html#expDat">expDat</a></code>, <code><a
 href="refE.html#expTel">expTel</a></code> and <code><a
 href="refD.html#day">day</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (datStr (date))
--> "2007-06-01"
-: (locale "DE" "de")
+-> <u>2007-06-01</u>
+: (locale <u>DE</u> <u>de</u>)
 -> NIL
 : (datStr (date))
--> "01.06.2007"
+-> <u>01.06.2007</u>
 : (datStr (date) T)
--> "01.06.07"
+-> <u>01.06.07</u>
 </code></pre>
 
 <dt><a name="datSym"><code>(datSym 'dat) -> sym</code></a>
@@ -146,19 +192,19 @@ in symbolic format (DDmmmYY). See also <code><a
 href="refD.html#dat$">dat$</a></code> and <code><a
 href="refD.html#datStr">datStr</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (datSym (date))
--> "01jun07"
+-> <u>01jun07</u>
 </code></pre>
 
-<dt><a name="date"><code>(date ['T]) -> dat<br>
-(date 'dat) -> (y m d)<br>
-(date 'y 'm 'd) -> dat | NIL<br>
-(date '(y m d)) -> dat | NIL</code></a>
-<dd>Calculates a calendar date, represented as the number of days since first of
-March in the year 0. When called without arguments, the current date is
-returned. When called with a <code>T</code> argument, the current Coordinated
-Universal Time (UTC) is returned. When called with a single number
+<dt><a name="date"><code>(date ['T]) -> dat</code></a>
+<dt><code>(date 'dat) -> (y m d)</code>
+<dt><code>(date 'y 'm 'd) -> dat | NIL</code>
+<dt><code>(date '(y m d)) -> dat | NIL</code>
+<dd>Calculates a (gregorian) calendar date, represented as the number of days
+since first of March in the year 0. When called without arguments, the current
+date is returned. When called with a <code>T</code> argument, the current
+Coordinated Universal Time (UTC) is returned. When called with a single number
 <code>dat</code>, it is taken as a date and a list with the corresponding year,
 month and day is returned. When called with three numbers (or a list of three
 numbers) for the year, month and day, the corresponding date is returned (or
@@ -174,7 +220,7 @@ href="refD.html#day">day</a></code>, <code><a
 href="refW.html#week">week</a></code> and <code><a
 href="refU.html#ultimo">ultimo</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (date)                         # Today
 -> 730589
 : (date 2000 6 12)               # 12-06-2000
@@ -196,15 +242,15 @@ href="refW.html#week">week</a></code>, <code><a
 href="refD.html#datStr">datStr</a></code> and <code><a
 href="refS.html#strDat">strDat</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (day (date))
--> "Friday"
-: (locale "DE" "de")
+-> <u>Friday</u>
+: (locale <u>DE</u> <u>de</u>)
 -> NIL
 : (day (date))
--> "Freitag"
-: (day (date) '("Mo" "Tu" "We" "Th" "Fr" "Sa" "Su"))
--> "Fr"
+-> <u>Freitag</u>
+: (day (date) '(<u>Mo</u> <u>Tu</u> <u>We</u> <u>Th</u> <u>Fr</u> <u>Sa</u> <u>Su</u>))
+-> <u>Fr</u>
 </code></pre>
 
 <dt><a name="db"><code>(db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym | NIL</code></a>
@@ -220,11 +266,60 @@ href="refF.html#fetch">fetch</a></code>, <code><a
 href="refI.html#init">init</a></code> and <code><a
 href="refF.html#step">step</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (db 'nr '+Item 1)
 -> {3-1}
-: (db 'nm '+Item "Main Part")
+: (db 'nm '+Item <u>Main Part</u>)
 -> {3-1}
+</code></pre>
+
+<dt><a name="db/3"><code>db/3</code></a>
+<dt><a name="db/4"><code>db/4</code></a>
+<dt><a name="db/5"><code>db/5</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> database predicate that returns objects
+matching the given key/value (and optional hook) relation. The relation should
+be of type <code><a href="refI.html#+index">+index</a></code>. For the key
+pattern applies:
+
+<p><ul>
+<li>a symbol (string) returns all entries which start with that string
+<li>other atoms (numbers, external symbols) match as they are
+<li>cons pairs constitute a range, returning objects
+   <ul>
+   <li>in increasing order if the CDR is greater than the CAR
+   <li>in decreasing order otherwise
+   </ul>
+<li>other lists are matched for <code><a href="refA.html#+Aux">+Aux</a></code>
+key combinations
+</ul>
+
+<p>The optional hook can be supplied as the third argument. See also <code><a
+href="refS.html#select/3">select/3</a></code> and <code><a
+href="refR.html#remote/2">remote/2</a></code>.
+
+<pre><code>
+: (? (db nr +Item @Item))              # No value given
+ @Item={3-1}
+ @Item={3-2}
+ @Item={3-3}
+ @Item={3-4}
+ @Item={3-5}
+ @Item={3-6}
+-> NIL
+
+: (? (db nr +Item 2 @Item))            # Get item no. 2
+ @Item={3-2}
+-> NIL
+
+: (? (db nm +Item Spare @Item) (show @Item))  # Search for "Spare.."
+{3-2} (+Item)
+   pr 1250
+   inv 100
+   sup {2-2}
+   nm <u>Spare Part</u>
+   nr 2
+ @Item={3-2}
+-> NIL
 </code></pre>
 
 <dt><a name="db:"><code>(db: cls ..) -> num</code></a>
@@ -233,9 +328,27 @@ href="refF.html#step">step</a></code>.
 href="refN.html#new">new</a></code> objects. See also <code><a
 href="refD.html#dbs">dbs</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (db: +Item)
 -> 3
+</code></pre>
+
+<dt><a name="dbSync"><code>(dbSync) -> flg</code></a>
+<dd>Starts a database transaction, by trying to obtain a <code><a
+href="refL.html#lock">lock</a></code> on the database root object <code><a
+href="refD.html#*DB">*DB</a></code>, and then calling <code><a
+href="refS.html#sync">sync</a></code> to synchronize with possible changes from
+other processes. When all desired modifications to external symbols are done,
+<code>(<a href="refC.html#commit">commit</a> 'upd)</code> should be called. See
+also <code><a href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(let? Obj (rd)             # Get object?
+   (dbSync)                # Yes: Start transaction
+   (put> Obj 'nm (rd))     # Update
+   (put> Obj 'nr (rd))
+   (put> Obj 'val (rd))
+   (commit 'upd) )         # Close transaction
 </code></pre>
 
 <dt><a name="dbck"><code>(dbck ['cnt] 'flg) -> any</code></a>
@@ -249,8 +362,8 @@ href="refC.html#commit">commit</a></code>ing newly allocated (<code><a
 href="refN.html#new">new</a></code>) external symbols) are appended to the free
 list.
 
-<p><pre><code>
-: (pool "db")
+<pre><code>
+: (pool <u>db</u>)
 -> T
 : (dbck)
 -> NIL
@@ -267,23 +380,27 @@ relations go into that file). See also <code><a
 href="refD.html#dbs+">dbs+</a></code> and <code><a
 href="refP.html#pool">pool</a></code>.
 
-<p><pre><code>
+<pre><code>
 (dbs
-   (1 +Role +User)                              # (1 . 128)
+   (1 +Role +User +Sal)                         # (1 . 128)
    (2 +CuSu)                                    # (2 . 256)
    (1 +Item +Ord)                               # (3 . 128)
    (0 +Pos)                                     # (4 . 64)
-   (2 (+Role nm) (+User nm))                    # (5 . 256)
-   (3 (+CuSu nr nm str plz ort cty tel mob))    # (6 . 512)
-   (3 (+Item nr nm sup pr))                     # (7 . 512)
-   (3 (+Ord nr dat cus) (+Pos itm)) )           # (8 . 512)
+   (2 (+Role nm) (+User nm) (+Sal nm))          # (5 . 256)
+   (4 (+CuSu nr plz tel mob))                   # (6 . 1024)
+   (4 (+CuSu nm))                               # (7 . 1024)
+   (4 (+CuSu ort))                              # (8 . 1024)
+   (4 (+Item nr sup pr))                        # (9 . 1024)
+   (4 (+Item nm))                               # (10 . 1024)
+   (4 (+Ord nr dat cus))                        # (11 . 1024)
+   (4 (+Pos itm)) )                             # (12 . 1024)
 
 : *Dbs
--> (1 2 1 0 2 3 3 3)
-: (get '+Item 'dbf)
+-> (1 2 1 0 2 4 4 4 4 4 4 4)
+: (get '+Item 'Dbf)
 -> (3 . 128)
 : (get '+Item 'nr 'dbf)
--> (7 . 512)
+-> (9 . 1024)
 </code></pre>
 
 <dt><a name="dbs+"><code>(dbs+ 'num . lst)</code></a>
@@ -291,7 +408,7 @@ href="refP.html#pool">pool</a></code>.
 href="refD.html#*Dbs">*Dbs</a></code>. <code>num</code> is the initial offset
 into the list. See also <code><a href="refD.html#dbs">dbs</a></code>.
 
-<p><pre><code>
+<pre><code>
 (dbs+ 9
    (1 +NewCls)                                  # (9 . 128)
    (3 (+NewCls nr nm)) )                        # (10 . 512)
@@ -308,7 +425,7 @@ See also <code><a href="refD.html#def">def</a></code>, <code><a
 href="refD.html#dm">dm</a></code> and <code><a
 href="refU.html#undef">undef</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo (X Y) (* X (+ X Y)))  # Define a function
 -> foo
 : (foo 3 4)
@@ -319,21 +436,22 @@ href="refU.html#undef">undef</a></code>.
 -> 123
 </code></pre>
 
-<dt><a name="debug"><code>(debug 'sym) -> T<br>
-(debug 'sym 'cls) -> T<br>
-(debug '(sym . cls)) -> T</code></a>
+<dt><a name="debug"><code>(debug 'sym) -> T</code></a>
+<dt><code>(debug 'sym 'cls) -> T</code>
+<dt><code>(debug '(sym . cls)) -> T</code>
 <dd>Inserts a <code><a href="ref_.html#!">!</a></code> breakpoint function call
 at the beginning and all top-level expressions of the function or method body of
-<code>sym</code>, to allow a stepwise execution. Typing <code>(d)</code> at a
-breakpoint will also debug the current subexpression, and <code>(<a
-href="refE.html#e">e</a>)</code> will evaluate the current subexpression. The
-current subexpression is stored in the global variable <code><a
-href="ref_.html#^">^</a></code>. See also <code><a
+<code>sym</code>, to allow a stepwise execution. Typing <code>(<a
+href="refD.html#d">d</a>)</code> at a breakpoint will also debug the current
+subexpression, and <code>(<a href="refE.html#e">e</a>)</code> will evaluate the
+current subexpression. The current subexpression is stored in the global
+variable <code><a href="ref_.html#^">^</a></code>. See also <code><a
+href="refU.html#unbug">unbug</a></code>, <code><a
 href="refD.html#*Dbg">*Dbg</a></code>, <code><a
 href="refT.html#trace">trace</a></code> and <code><a
 href="refL.html#lint">lint</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de tst (N)                    # Define tst
    (println (+ 3 N)) )
 -> tst
@@ -362,8 +480,8 @@ href="refL.html#lint">lint</a></code>.
 -> tst
 </code></pre>
 
-<dt><a name="dec"><code>(dec 'num) -> num<br>
-(dec 'var ['num]) -> num</code></a>
+<dt><a name="dec"><code>(dec 'num) -> num</code></a>
+<dt><code>(dec 'var ['num]) -> num</code>
 <dd>The first form returns the value of <code>num</code> decremented by 1. The
 second form decrements the <code>VAL</code> of <code>var</code> by 1, or by
 <code>num</code>. If the first argument is <code>NIL</code>, it is returned
@@ -372,7 +490,7 @@ and <code>(dec 'var)</code> is equivalent to <code>(set 'var (- var 1))</code>.
 See also <code><a href="refI.html#inc">inc</a></code> and <code><a
 href="ref_.html#-">-</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (dec -1)
 -> -2
 : (dec 7)
@@ -385,8 +503,8 @@ href="ref_.html#-">-</a></code>.
 -> 3
 </code></pre>
 
-<dt><a name="def"><code>(def 'sym 'any) -> sym<br>
-(def 'sym1 'sym2 'any) -> sym1</code></a>
+<dt><a name="def"><code>(def 'sym 'any) -> sym</code></a>
+<dt><code>(def 'sym1 'sym2 'any) -> sym1</code>
 <dd>The first form assigns a definition to the first <code>sym</code> argument,
 by setting its <code>VAL</code>'s to <code>any</code>. The second form defines a
 property value <code>any</code> for the first argument's <code>sym2</code> key.
@@ -397,7 +515,7 @@ and file name (if any) are stored in the <code>*Dbg</code> property of
 <code>sym</code>. See also <code><a href="refD.html#de">de</a></code> and
 <code><a href="refD.html#dm">dm</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (def 'b '((X Y) (* X (+ X Y))))
 -> b
 : (def 'b 999)
@@ -411,7 +529,7 @@ their current values are <code>NIL</code>. Otherwise, their values are left
 unchanged. <code>default</code> is used typically in functions to initialize
 optional arguments.
 
-<p><pre><code>
+<pre><code>
 : (de foo (A B)               # Function with two optional arguments
    (default  A 1  B 2)        # The default values are 1 and 2
    (list A B) )
@@ -432,7 +550,7 @@ href="refD.html#delete">delete</a></code>, <code><a
 href="refC.html#cut">cut</a></code> and <code><a
 href="refP.html#pop">pop</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq S '((a b c) (d e f)))
 -> ((a b c) (d e f))
 : (del '(d e f) 'S)
@@ -448,11 +566,23 @@ deleted. See also <code><a href="refD.html#delq">delq</a></code>, <code><a
 href="refR.html#remove">remove</a></code> and <code><a
 href="refI.html#insert">insert</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (delete 2 (1 2 3))
 -> (1 3)
 : (delete (3 4) '((1 2) (3 4) (5 6) (3 4)))
 -> ((1 2) (5 6) (3 4))
+</code></pre>
+
+<dt><a name="delete/3"><code>delete/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if deleting the
+first argument from the list in the second argument is equal to the third
+argument. See also <code><a href="refD.html#delete">delete</a></code> and
+<code><a href="refM.html#member/2">member/2</a></code>.
+
+<pre><code>
+: (? (delete b (a b c) @X))
+ @X=(a c)
+-> NIL
 </code></pre>
 
 <dt><a name="delq"><code>(delq 'any 'lst) -> lst</code></a>
@@ -464,22 +594,66 @@ deleted. <code><a href="ref_.html#==">==</a></code> is used for comparison
 href="refM.html#memq">memq</a></code> and <code><a
 href="refM.html#mmeq">mmeq</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (delq 'b '(a b c))
 -> (a c)
 : (delq (2) (1 (2) 3))
 -> (1 (2) 3)
 </code></pre>
 
+<dt><a name="dep"><code>(dep 'cls) -> cls</code></a>
+<dd>Displays the "dependencies" of <code>cls</code>, i.e. the tree of
+superclasses and the tree of subclasses. See also <code><a
+href="ref.html#oop">OO Concepts</a></code>, <code><a
+href="refC.html#class">class</a></code> and <code><a
+href="refC.html#can">can</a></code>.
+
+<pre><code>
+: (dep '+Number)           # Dependencies of '+Number'
+   +relation               # Single superclass is '+relation'
++Number
+   +Date                   # Subclasses are '+Date' and '+Time'
+   +Time
+-> +Number
+</code></pre>
+
+<dt><a name="depth"><code>(depth 'lst) -> (cnt1 . cnt2)</code></a>
+<dd>Returns the maximal (<code>cnt1</code>) and the average (<code>cnt2</code>)
+"depth" of a tree structure as maintained by <code><a
+href="refI.html#idx">idx</a></code>. See also <code><a
+href="refL.html#length">length</a></code> and <code><a
+href="refS.html#size">size</a></code>.
+
+<pre><code>
+: (off X)                                    # Clear variable
+-> NIL
+: (for N (1 2 3 4 5 6 7) (idx 'X N T))       # Build a degenerated tree
+-> NIL
+: X
+-> (1 NIL 2 NIL 3 NIL 4 NIL 5 NIL 6 NIL 7)   # Only right branches
+: (depth X)
+-> (7 . 4)                                   # Depth is 7, average 4
+</code></pre>
+
 <dt><a name="diff"><code>(diff 'lst 'lst) -> lst</code></a>
 <dd>Returns the difference of the <code>lst</code> arguments. See also <code><a
 href="refS.html#sect">sect</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (diff (1 2 3 4 5) (2 4))
 -> (1 3 5)
 : (diff (1 2 3) (1 2 3))
 -> NIL
+</code></pre>
+
+<dt><a name="different/2"><code>different/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the two
+arguments are different. See also <code><a
+href="refE.html#equal/2">equal/2</a></code>.
+
+<pre><code>
+: (? (different 3 4))
+-> T
 </code></pre>
 
 <dt><a name="dir"><code>(dir ['any]) -> lst</code></a>
@@ -488,23 +662,23 @@ starting with a dot '<code>.</code>' are ignored. See also <code><a
 href="refC.html#cd">cd</a></code> and <code><a
 href="refI.html#info">info</a></code>.
 
-<p><pre><code>
-: (filter '((F) (tail '(. c) (chop F))) (dir "src/"))
--> ("main.c" "subr.c" "gc.c" "io.c" "big.c" "sym.c" "tab.c" "flow.c" ..
+<pre><code>
+: (filter '((F) (tail '(. c) (chop F))) (dir <u>src/</u>))
+-> (<u>main.c</u> <u>subr.c</u> <u>gc.c</u> <u>io.c</u> <u>big.c</u> <u>sym.c</u> <u>tab.c</u> <u>flow.c</u> ..
 </code></pre>
 
 <dt><a name="dirname"><code>(dirname 'any) -> sym</code></a>
 <dd>Returns the directory part of a path name <code>any</code>.
 See also <code><a href="refP.html#path">path</a></code>.
 
-<p><pre><code>
-: (dirname "a/b/c/d")
--> "a/b/c/"
+<pre><code>
+: (dirname <u>a/b/c/d</u>)
+-> <u>a/b/c/</u>
 </code></pre>
 
-<dt><a name="dm"><code>(dm sym . fun|cls2) -> sym<br>
-(dm (sym . cls) . fun|cls2) -> sym<br>
-(dm (sym sym2 [. cls]) . fun|cls2) -> sym</code></a>
+<dt><a name="dm"><code>(dm sym . fun|cls2) -> sym</code></a>
+<dt><code>(dm (sym . cls) . fun|cls2) -> sym</code>
+<dt><code>(dm (sym sym2 [. cls]) . fun|cls2) -> sym</code>
 <dd>Defines a method for the message <code>sym</code> in the current class,
 implicitly given by the value of the global variable <code><a
 href="refC.html#*Class">*Class</a></code>, or - in the second form - for the
@@ -524,7 +698,7 @@ href="refR.html#rel">rel</a>, <a href="refV.html#var">var</a>, <a
 href="refM.html#method">method</a>, <a href="refS.html#send">send</a> and <a
 href="refT.html#try">try</a>.
 
-<p><pre><code>
+<pre><code>
 : (dm start> ()
    (super)
    (mapc 'start> (: fields))
@@ -544,11 +718,28 @@ result returned. Otherwise (if count drops to zero), the result of the last
 expression is returned. See also <code><a href="refL.html#loop">loop</a></code>
 and <code><a href="refF.html#for">for</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (do 4 (printsp 'OK))
 OK OK OK OK -> OK
 : (do 4 (printsp 'OK) (T (= 3 3) (printsp 'done)))
 OK done -> done
+</code></pre>
+
+<dt><a name="doc"><code>(doc 'sym1 ['sym2])</code></a>
+<dd>Opens a browser, and tries to display the reference documentation for
+<code>sym1</code>. <code>sym2</code> may be the name of a browser. If not given,
+the value of the environment variable <code>BROWSER</code>, or the
+<code>w3m</code> browser is tried. See also <code><a
+href="ref.html#fun">Function Reference</a></code> and <code><a
+href="refV.html#vi">vi</a></code>.
+
+<pre><code>
+: (doc '+)  # Function reference
+-> T
+: (doc '+relation)  # Class reference
+-> T
+:  (doc 'vi <u>firefox</u>)  # Use alternative browser
+-> T
 </code></pre>
 
 </dl>

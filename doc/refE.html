@@ -18,9 +18,9 @@ href="ref.html#errors">Error Handling</a></code>, <code><a
 href="refM.html#*Msg">*Msg</a></code> and <code><a
 href="ref_.html#^">^</a></code>.
 
-<p><pre><code>
-: (de *Err (prinl "Fatal error!"))
--> ((prinl "Fatal error!"))
+<pre><code>
+: (de *Err (prinl <u>Fatal error!</u>))
+-> ((prinl <u>Fatal error!</u>))
 : (/ 3 0)
 !? (/ 3 0)
 Div/0
@@ -41,43 +41,74 @@ the corresponding symbol in a remote database process. See also <code><a
 href="refQ.html#qsym">qsym</a></code> and <code><a
 href="ref.html#external">external symbols</a></code>.
 
-<p><pre><code>
+<pre><code>
 ### On the local machine ###
 : (setq *Ext  # Define extension functions
    (mapcar
-      '((V)
-         (let (@Ext (car V)  @Host (cddr V)  @Port (cadr V) Sock)
+      '((@Host @Ext)
+         (let Sock NIL
             (cons @Ext
-               (curry (@Ext @Host @Port Sock) (Obj)
-                  (when (or Sock (setq Sock (connect @Host @Port)))
+               (curry (@Host @Ext Sock) (Obj)
+                  (when (or Sock (setq Sock (connect @Host 4040)))
                      (ext @Ext
                         (out Sock (pr (cons 'qsym Obj)))
                         (prog1 (in Sock (rd))
                            (unless @
                               (close Sock)
                               (off Sock) ) ) ) ) ) ) ) )
-      (quote
-         (20 4000 . "10.10.12.1")
-         (40 4000 . "10.10.12.2")
-         (60 4000 . "10.10.12.3")
-         (80 4000 . "10.10.12.4") ) ) )
+      '(<u>10.10.12.1</u> <u>10.10.12.2</u> <u>10.10.12.3</u> <u>10.10.12.4</u>)
+      (20 40 60 80) ) )
 
 ### On the remote machines ###
 (de go ()
    ...
-   (task (port 4000)  # Set up the object server in the background
-      (when (setq Sock (accept @))
-         (unless (fork)  # Child process
-            (task P)
-            (close P)
+   (task (port 4040)                      # Set up background query server
+      (let? Sock (accept @)               # Accept a connection
+         (unless (fork)                   # In child process
             (in Sock
-               (while (rd)
+               (while (rd)                # Handle requests
                   (sync)
-                  (out Sock (pr (eval @))) ) )
-            (bye) )
+                  (out Sock
+                     (pr (eval @)) ) ) )
+            (bye) )                       # Exit child process
          (close Sock) ) )
+   (forked)                               # Close task in children
    ...
 
+</code></pre>
+
+<dt><a name="+Entity"><code>+Entity</code></a>
+<dd>Base class of all database objects. See also <code><a
+href="refR.html#+relation">+relation</a></code> and <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<p><a name="entityMesssages">Messages</a> to entity objects include
+
+<pre><code>
+zap> ()              # Clean up relational structures, for removal from the DB
+url> (Tab)           # Call the GUI on that object (in optional Tab)
+upd> (X Old)         # Callback method when object is created/modified/deleted
+has> (Var Val)       # Check if value is present
+put> (Var Val)       # Put a new value
+put!> (Var Val)      # Put a new value, single transaction
+del> (Var Val)       # Delete value (also partial)
+del!> (Var Val)      # Delete value (also partial), single transaction
+inc> (Var Val)       # Increment numeric value
+inc!> (Var Val)      # Increment numeric value, single transaction
+dec> (Var Val)       # Decrement numeric value
+dec!> (Var Val)      # Decrement numeric value, single transaction
+mis> (Var Val)       # Return error message if value or type mismatch
+lose1> (Var)         # Delete relational structures for a single attribute
+lose> (Lst)          # Delete relational structures (excluding 'Lst')
+lose!> ()            # Delete relational structures, single transaction
+keep1> (Var)         # Restore relational structures for single attribute
+keep> (Lst)          # Restore relational structures (excluding 'Lst')
+keep?> (Lst)         # Test for restauration (excluding 'Lst')
+keep!> ()            # Restore relational structures, single transaction
+set> (Val)           # Set the value (type, i.e. class list)
+set!> (Val)          # Set the value, single transaction
+clone> ()            # Object copy
+clone!> ()           # Object copy, single transaction
 </code></pre>
 
 <dt><a name="e"><code>(e . prg) -> any</code></a>
@@ -87,7 +118,7 @@ given. See also <code><a href="refD.html#debug">debug</a></code>, <code><a
 href="ref_.html#!">!</a></code>, <code><a href="ref_.html#^">^</a></code> and
 <code><a href="refD.html#*Dbg">*Dbg</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (! + 3 4)
 (+ 3 4)
 ! (e)
@@ -104,11 +135,74 @@ is encountered in the input stream (in that case, the name will be read (and
 that symbol returned), but not written). Returns non-<code>NIL</code> if the
 operation was successfully completed.
 
-<p><pre><code>
-: (in "x.l" (echo))                    # Display file on console
+<pre><code>
+: (in <u>x.l</u> (echo))  # Display file on console
  ..
 
-: (out "x2.l" (in "x.l" (echo)))       # Copy file "x.l" to "x2.l"
+: (out <u>x2.l</u> (in <u>x.l</u> (echo)))  # Copy file "x.l" to "x2.l"
+</code></pre>
+
+<dt><a name="edit"><code>(edit 'sym ..) -> NIL</code></a>
+<dd>Edits the value and property list of the argument symbol(s) by calling the
+<code>vim</code> editor on a temporary file with these data. When closing the
+editor, the modified data are read and stored into the symbol(s). During the
+edit session, individual symbols are separated by the pattern
+<code>(********)</code>. These separators should not be modified. When moving
+the cursor to the beginning of a symbol (no matter if internal, transient or
+external), and hitting '<code>K</code>', that symbol is added to the currently
+edited symbols. Hitting '<code>Q</code>' will go back one step and return to the
+previously edited list of symbols.
+
+<p><code>edit</code> is especially useful for browsing through the database
+(with '<code>K</code>' and '<code>Q</code>'), inspecting external symbols, but
+care must be taken when modifying any data as then the <a
+href="ref.html#er">entity/relation</a> mechanisms are circumvented, and
+<code><a href="refC.html#commit">commit</a></code> has to be called manually if
+the changes should be persistent.
+
+<p>Another typical use case is inserting or removing <code><a
+href="ref_.html#!">!</a></code> breakpoints at arbitrary code locations, or
+doing other temporary changes to the code for debugging purposes.
+
+<p>See also <code><a href="refU.html#update">update</a></code> and <code><a
+href="refS.html#show">show</a></code>.
+
+<pre><code>
+: (edit (db 'nr '+Item 1))  # Edit a database symbol
+### 'vim' shows this ###
+{3-1} (+Item)
+   nr 1
+   inv 100
+   pr 29900
+   sup {2-1}  # (+CuSu)
+   nm "Main Part"
+
+(********)
+### Hitting 'K' on the '{' of '{2-1} ###
+{2-1} (+CuSu)
+   nr 1
+   plz "3425"
+   mob "37 176 86303"
+   tel "37 4967 6846-0"
+   fax "37 4967 68462"
+   nm "Active Parts Inc."
+   nm2 "East Division"
+   ort "Freetown"
+   str "Wildcat Lane"
+   em "info@api.tld"
+
+(********)
+
+{3-1} (+Item)
+   nr 1
+   inv 100
+   pr 29900
+   sup {2-1}  # (+CuSu)
+   nm "Main Part"
+
+(********)
+### Entering ':q' in vim ###
+-> NIL
 </code></pre>
 
 <dt><a name="env"><code>(env ['lst] | ['sym 'val] ..) -> lst</code></a>
@@ -118,7 +212,7 @@ explicitly given <code>sym</code>-<code>val</code> arguments. See also <code><a
 href="refB.html#bind">bind</a></code> and <code><a
 href="refJ.html#job">job</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (env)
 -> NIL
 : (let (A 1 B 2) (env))
@@ -144,8 +238,8 @@ href="refS.html#skip">skip</a></code> will return <code>NIL</code>. Note that
 href="refR.html#rd">rd</a></code> function. See also <code><a
 href="refE.html#eol">eol</a></code>.
 
-<p><pre><code>
-: (in "file" (until (eof) (println (line T))))
+<pre><code>
+: (in <u>file</u> (until (eof) (println (line T))))
 ...
 </code></pre>
 
@@ -153,10 +247,36 @@ href="refE.html#eol">eol</a></code>.
 <dd>Returns the end-of-line status of the current input channel.
 See also <code><a href="refE.html#eof">eof</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (make (until (prog (link (read)) (eol))))  # Read line into a list
 a b c (d e f) 123
 -> (a b c (d e f) 123)
+</code></pre>
+
+<dt><a name="equal/2"><code>equal/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the two
+arguments are equal. See also <code><a href="ref_.html#=">=</a></code>, <code><a
+href="refD.html#different/2">different/2</a></code> and <code><a
+href="refM.html#member/2">member/2</a></code>.
+
+<pre><code>
+: (? (equal 3 4))
+-> NIL
+: (? (equal @N 7))
+ @N=7
+-> NIL
+</code></pre>
+
+<dt><a name="errno"><code>(errno) -> cnt</code></a>
+<dd>(64-bit version only) Returns the value of the standard I/O 'errno'
+variable.
+
+<pre><code>
+: (in <u>foo</u>)                             # Produce an error
+!? (in <u>foo</u>)
+<u>foo</u> -- Open error: No such file or directory
+? (errno)
+-> 2                                   # Returned 'ENOENT'
 </code></pre>
 
 <dt><a name="eval"><code>(eval 'any ['cnt ['lst]]) -> any</code></a>
@@ -167,7 +287,7 @@ in the corresponding environment, and an optional <code>lst</code> of excluded
 symbols can be supplied. See also <code><a href="refR.html#run">run</a></code>
 and <code><a href="refU.html#up">up</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (eval (list '+ 1 2 3))
 -> 6
 : (setq X 'Y  Y 7)
@@ -189,31 +309,31 @@ century. See also <code><a href="refD.html#datStr">datStr</a></code>, <code><a
 href="refD.html#day">day</a></code>, <code><a
 href="refE.html#expTel">expTel</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (date)
 -> 733133
 : (date (date))
 -> (2007 5 31)
-: (expDat "31")
+: (expDat <u>31</u>)
 -> 733133
-: (expDat "315")
+: (expDat <u>315</u>)
 -> 733133
-: (expDat "3105")
+: (expDat <u>3105</u>)
 -> 733133
-: (expDat "31057")
+: (expDat <u>31057</u>)
 -> 733133
-: (expDat "310507")
+: (expDat <u>310507</u>)
 -> 733133
-: (expDat "2007-05-31")
+: (expDat <u>2007-05-31</u>)
 -> 733133
-: (expDat "7-5-31")
+: (expDat <u>7-5-31</u>)
 -> 733133
 
-: (locale "DE" "de")
+: (locale <u>DE</u> <u>de</u>)
 -> NIL
-: (expDat "31.5")
+: (expDat <u>31.5</u>)
 -> 733133
-: (expDat "31.5.7")
+: (expDat <u>31.5.7</u>)
 -> 733133
 </code></pre>
 
@@ -225,17 +345,17 @@ returned. See also <code><a href="refT.html#telStr">telStr</a></code>, <code><a
 href="refE.html#expDat">expDat</a></code> and <code><a
 href="refL.html#locale">locale</a></code>.
 
-<p><pre><code>
-: (expTel "+49 1234 5678-0")
--> "49 1234 5678-0"
-: (expTel "0049 1234 5678-0")
--> "49 1234 5678-0"
-: (expTel "01234 5678-0")
+<pre><code>
+: (expTel <u>+49 1234 5678-0</u>)
+-> <u>49 1234 5678-0</u>
+: (expTel <u>0049 1234 5678-0</u>)
+-> <u>49 1234 5678-0</u>
+: (expTel <u>01234 5678-0</u>)
 -> NIL
-: (locale "DE" "de")
+: (locale <u>DE</u> <u>de</u>)
 -> NIL
-: (expTel "01234 5678-0")
--> "49 1234 5678-0"
+: (expTel <u>01234 5678-0</u>)
+-> <u>49 1234 5678-0</u>
 </code></pre>
 
 <dt><a name="expr"><code>(expr 'sym) -> fun</code></a>
@@ -243,7 +363,7 @@ href="refL.html#locale">locale</a></code>.
 functions (i.e. functions that evaluate all arguments). See also <code><a
 href="refS.html#subr">subr</a></code>.
 
-<p><pre><code>
+<pre><code>
 : car
 -> 67313448
 : (expr 'car)
@@ -263,7 +383,7 @@ mechanism. All external symbol's file numbers are decremented by
 <code>cnt</code> during output, and incremented by <code>cnt</code> during
 input.
 
-<p><pre><code>
+<pre><code>
 : (out 'a (ext 5 (pr '({6-2} ({8-9} . a) ({7-7} . b)))))
 -> ({6-2} ({8-9} . a) ({7-7} . b))
 
@@ -283,12 +403,12 @@ href="refS.html#str?">str?</a></code>, <code><a
 href="refE.html#extern">extern</a></code> and <code><a
 href="refL.html#lieu">lieu</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (ext? *DB)
 -> {1}
 : (ext? 'abc)
 -> NIL
-: (ext? "abc")
+: (ext? <u>abc</u>)
 -> NIL
 : (ext? 123)
 -> NIL
@@ -305,7 +425,7 @@ href="refD.html#dm">dm</a></code>, <code><a href="refV.html#var">var</a></code>,
 href="refT.html#type">type</a></code> and <code><a
 href="refI.html#isa">isa</a></code>.
 
-<p><pre><code>
+<pre><code>
 </code></pre>
 
 <dt><a name="extern"><code>(extern 'sym) -> sym | NIL</code></a>
@@ -316,10 +436,10 @@ exist in the database. See also <code><a
 href="refI.html#intern">intern</a></code> and <code><a
 href="refE.html#ext?">ext?</a></code>.
 
-<p><pre><code>
-: (extern "A1b")
+<pre><code>
+: (extern <u>A1b</u>)
 -> {A1b}
-: (extern "{A1b}")
+: (extern <u>{A1b}</u>)
 -> {A1b}
 </code></pre>
 
@@ -334,7 +454,7 @@ href="refM.html#meth">meth</a></code>, <code><a
 href="refS.html#send">send</a></code> and <code><a
 href="refT.html#try">try</a></code>.
 
-<p><pre><code>
+<pre><code>
 (dm key> (C)            # 'key>' method of the '+Uppc' class
    (uppc (extra C)) )   # Convert 'key>' of extra classes to upper case
 </code></pre>
@@ -351,7 +471,7 @@ href="refF.html#find">find</a></code>, <code><a
 href="refP.html#pick">pick</a></code> and <code><a
 href="refM.html#mapcan">mapcan</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq A NIL  B 1  C NIL  D 2  E NIL  F 3)
 -> 3
 : (filter val '(A B C D E F))

@@ -1,4 +1,4 @@
-/* 19aug09abu
+/* 06nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -766,8 +766,8 @@ any doLet(any x) {
       do {
          f.bnd[f.cnt].sym = car(y);
          f.bnd[f.cnt].val = val(car(y));
-         val(car(y)) = EVAL(cadr(y));
          ++f.cnt;
+         val(car(y)) = EVAL(cadr(y));
       } while (isCell(y = cddr(y)));
       x = prog(cdr(x));
       while (--f.cnt >= 0)

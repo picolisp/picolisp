@@ -1,4 +1,4 @@
-# 02oct09abu
+# 06nov09abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -61,8 +61,8 @@
                      ld A (S I)  # Put initial '*Dbg' properties
                      ld C Dbg
                      call putACE
-               else
-                  ld (X) E  # Set first '*Dbg' property
+                  else
+                     ld (X) E  # Set first '*Dbg' property
                   end
                else
                   cmp X Nil  # '*Dbg' properties?
@@ -81,7 +81,7 @@
                      do
                         atom C  # Any?
                         if nz  # No
-                           call cons_C
+                           call consE_C
                            ld (C) (S)  # Get key
                            ld (C CDR) E  # Cons with value
                            call consC_A  # Insert into list
@@ -1536,15 +1536,18 @@
       ld A (Y)  # Next sym
       push (A)  # Save old value
       push A  # and sym
+      link
+      ld (EnvBind) L  # Close bind frame
+      push 0  # Init env swap
       ld E ((Y CDR))  # Eval 'any'
-      eval+
+      eval
       ld ((Y)) E  # Set new value
       ld Y ((Y CDR) CDR)  # More symbols?
       atom Y
-   until nz  # No
-   link
-   ld (EnvBind) L  # Close bind frame
-   push 0  # Init env swap
+   while z  # Yes
+      pop A  # Drop env swap
+      pop L  # and link
+   loop
    prog X  # Run 'prg'
    pop A  # Drop env swap
    pop L  # Get link

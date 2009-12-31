@@ -1,44 +1,75 @@
-06oct09abu
+31dec09abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0
+         Release Notes for picoLisp-3.0.1
          ================================
 
-A. Now a native 64-bit version is available. Not fully debugged yet, but
-   basically operational and compatible to the 32-bit version. Currently, only
-   Linux on the x86-64 architecture is supported.
+A. The CAR and CDR combinator functions (e.g. 'caddr') exist now also in the
+   32-bit version in all combinations of up to four 'a' and 'd' letters.
 
-   It is a complete rewrite. While the 32-bit version was written in C, the
-   64-bit version is implemented in a generic assembler, which in turn is
-   written in Pico Lisp. The output of that assembler is assembly language for
-   the target system. Refer to "doc64/README" for further details.
+B. 'flip' now takes an optional 'cnt' argument, analog to 'rot'.
 
-B. The functions 'begin' (nested transactions) and 'nagle' (socket option) are
-   deprecated. They will be removed in the next release. This was announced in
-   the mailing list, in
+C. Fixed sporadic errors in the GUI involving nested calls to waitFd() and
+   out-of-band events in the Post/Redirect/Get protocol.
 
-      http://www.mail-archive.com/picolisp@software-lab.de/msg00951.html
+D. The HTML references (in "doc/ref*.html") for the core system with database,
+   Pilog and debug extensions are complete at last.
 
-   and the following thread, and no objections were raised. There was also some
-   discussion about how to use a replacement for 'nagle'.
+E. Analog to "lib/gcc.l" there is now a "lib/native.l" for the 64bit version. It
+   defines also a 'gcc' function, but with different semantics. While 'gcc' for
+   the 32-bit version takes a destination file name, a list of libraries, and an
+   arbitrary number of function symbols, e.g.
 
-C. The naming schema of the localization country files changed. Files like "DE"
-   and "JP" are renamed to "DE.l" and "JP.l". The primary reason for this is to
-   distinguish them from the language files "de" and "jp" on systems with a case
-   insensitive file system (Mac OS, Cygwin). In addition, the extension ".l" is
-   more to the point, because these files do indeed contain executable Lisp
-   code.
+      (gcc "tst" '("./lib1.so" "/usr/lib/lib2.so") 'foo 'bar)
 
-D. The 'form' GUI now follows the "Post/Redirect/Get" pattern. Whenever a
-   (non-JavaScript) Button is pressed, the HTTP POST request will be immediately
-   redirected to a GET. This allows for a cleaner handling of the browser's
-   history and "Back" button. As a consequence, applications cannot use the
-   global variable '*Post' any longer to determine the state of an action.
-   Instead, the new global '*PRG' should be used. It is non-'NIL' when 'action'
-   was invoked by a button press.
+   and the C code for the functions 'foo', 'bar' etc. has to interface to the
+   interpreter by knowing about Lisp arguments and return values, takes the
+   64-bit version a destination file name, a list of libraries, and an arbitrary
+   number of list arguments, e.g.
 
-E. The reader was slightly changed. The dot '.' is now also allowed as the first
-   character of an internal symbol. This implies, however, that for a dotted
-   pair the dot has to be surrounded by delimiters. And - as before - a symbol
-   consisting of a single dot character needs to be escaped.
+      (gcc "tst" '("./lib1.so" "/usr/lib/lib2.so")
+         (foo (X Y Z) '(Tim (8 B . 8))) X 3.14159 Y Z)
+         (bar (Fmt . @) 'I Fmt) )
+
+   Each list argument specifies the function symbol, a parameter list for the
+   function definition, and arguments to be passed to the 'native' function. The
+   C code does not need to care about interfacing to Lisp, accepting and
+   returning just plain C data types.
+
+F. After some discussion in IRC, we re-introduced a feature that had been there
+   already once, in 2006/2007. It is called "transient symbol markup", and
+   changes how transient symbols are printed and edited in a terminal window.
+
+   Per default, transient symbols are no longer surrounded by double quotes, but
+   are instead shown with _underlines_. The idea is to visually emphasize the
+   fact that these symbols are not strings. In addition, pretty-printed
+   functions and other structured data become more readable.
+
+   There is a new global variable '*Tsm', which holds two strings (typically
+   escape sequences) in a dotted pair. The CAR is sent to the terminal (instead
+   of the opening double quote) before the symbol name is written, and the CDR
+   after that (instead of the closing double quote). With (off *Tsm) this
+   behavior can be switched off, and the system will accept and output transient
+   symbols with plain double quotes as before.
+
+   When typing a transient symbol in the line editor, the double quote is
+   visible at the moment it is entered, but will be hidden after that. While
+   moving within a line (for example with the 'h' and 'l' commands) the double
+   quotes pop up whenever the cursor is in their neighborhood, to make it easier
+   to change them, or to insert characters before or after them, but disappear
+   when the cursor moves away.
+
+G. After the already mentioned discussion in IRC, an emacs mode has been created
+   to edit picolisp code with the "transient symbol markup" (Tsm).
+
+   The features it currently provides are:
+      * Syntax highlighting (a.k.a. font-locking).
+      * Closing parenthesis in multi-line s-exps are automatically spaced. #1
+      * Tsm rendering. #2
+      * Embedded picolisp repl in a buffer.
+      * Evaluate code on the go from any picolisp file buffer.
+
+   #1: This is user defined in the picolisp customization group.
+   #2: This is a sepparate minor-mode called "tsm-mode", which should be enabled
+       to make use of this feature.

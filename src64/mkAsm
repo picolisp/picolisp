@@ -1,5 +1,5 @@
-#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 18jun09abu
+#!../bin/picolisp ../lib.l
+# 27oct09abu
 
 (load "@lib/misc.l")
 (setq *Architecture (opt)  *System (opt)  *TargetOS (opt)  *Module (opt))

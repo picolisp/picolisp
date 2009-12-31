@@ -20,7 +20,7 @@ non-<code>NIL</code>, the waiting time is limited to <code>cnt</code>
 milliseconds. See also <code><a href="refK.html#key">key</a></code> and <code><a
 href="refS.html#sync">sync</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (wait 2000)                                # Wait 2 seconds
 -> NIL
 : (prog
@@ -47,9 +47,9 @@ href="refU.html#ultimo">ultimo</a></code>, <code><a
 href="refD.html#datStr">datStr</a></code> and <code><a
 href="refS.html#strDat">strDat</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (datStr (date))
--> "2007-06-01"
+-> <u>2007-06-01</u>
 : (week (date))
 -> 22
 </code></pre>
@@ -60,7 +60,7 @@ non-<code>NIL</code>, <code>prg</code> is executed and the result is returned.
 Otherwise <code>NIL</code> is returned. See also <code><a
 href="refU.html#unless">unless</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (when (> 4 3) (println 'OK) (println 'Good))
 OK
 Good
@@ -74,7 +74,7 @@ non-<code>NIL</code>, <code>prg</code> is repeatedly executed. If
 result of <code>prg</code> is returned. See also <code><a
 href="refU.html#until">until</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (while (read)
    (println 'got: @) )
 abc
@@ -85,13 +85,48 @@ NIL
 -> 1234
 </code></pre>
 
+<dt><a name="what"><code>(what 'sym) -> lst</code></a>
+<dd>Returns a list of all internal symbols that match the pattern string
+<code>sym</code>. See also <code><a href="refM.html#match">match</a></code>,
+<code><a href="refW.html#who">who</a></code> and <code><a
+href="refC.html#can">can</a></code>.
+
+<pre><code>
+: (what <u>cd@dr</u>)
+-> (cdaddr cdaadr cddr cddddr cdddr cddadr cdadr)
+</code></pre>
+
+<dt><a name="who"><code>(who 'any) -> lst</code></a>
+<dd>Returns a list of all functions or method definitions that contain the atom
+or pattern <code>any</code>. See also <code><a
+href="refM.html#match">match</a></code>, <code><a
+href="refW.html#what">what</a></code> and <code><a
+href="refC.html#can">can</a></code>.
+
+<pre><code>
+: (who 'caddr)                         # Who is using 'caddr'?
+-> ($dat lint1 expDat datStr $tim tim$ mail _gen dat$ datSym)
+
+: (who <u>Type error</u>)
+-> ((mis> . +Link) *Uni (mis> . +Joint))
+
+: (more (who <u>Type error</u>) pp)           # Pretty print all results
+(dm (mis> . +Link) (Val Obj)
+   (and
+      Val
+      (nor (isa (: type) Val) (canQuery Val))
+      <u>Type error</u> ) )
+.                                      # Stop
+-> T
+</code></pre>
+
 <dt><a name="wipe"><code>(wipe 'sym|lst) -> sym|lst</code></a>
 <dd>Clears the <code>VAL</code> and the property list of <code>sym</code>, or of
 all symbols in the list <code>lst</code>. When a symbol is an external symbol,
 its state is also set to "not loaded". Does nothing when <code>sym</code> is an
 external symbol that has been modified or deleted ("dirty").
 
-<p><pre><code>
+<pre><code>
 : (setq A (1 2 3 4))
 -> (1 2 3 4)
 : (put 'A 'a 1)
@@ -119,7 +154,7 @@ the same manner as inside a method body. <code>prg</code> is not executed (and
 <code>NIL</code> is returned) when <code>sym</code> is <code>NIL</code>.
 <code>(with 'X . prg)</code> is equivalent to <code>(let? This 'X . prg)</code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'X 'a 1)
 -> 1
 : (put 'X 'b 2)
@@ -133,10 +168,10 @@ the same manner as inside a method body. <code>prg</code> is not executed (and
 channel. See also <code><a href="refR.html#rd">rd</a></code> and <code><a
 href="refP.html#pr">pr</a></code>.
 
-<p><pre><code>
-: (out "x" (wr 1 255 257))                   # Write to "x"
+<pre><code>
+: (out <u>x</u> (wr 1 255 257))  # Write to "x"
 -> 257
-: (hd "x")
+: (hd <u>x</u>)
 00000000  01 FF 01                                         ...
 -> NIL
 </code></pre>
@@ -148,11 +183,11 @@ href="refP.html#pack">pack</a></code>ed in lines with a maximal length of
 <code><a href="refA.html#align">align</a></code> and <code><a
 href="refC.html#center">center</a></code>.
 
-<p><pre><code>
-: (wrap 20 (chop "The quick brown fox jumps over the lazy dog"))
--> "The quick brown fox^Jjumps over the lazy^Jdog"
-: (wrap 8 (chop "The quick brown fox jumps over the lazy dog"))
--> "The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog"
+<pre><code>
+: (wrap 20 (chop <u>The quick brown fox jumps over the lazy dog</u>))
+-> <u>The quick brown fox^Jjumps over the lazy^Jdog</u>
+: (wrap 8 (chop <u>The quick brown fox jumps over the lazy dog</u>))
+-> <u>The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog</u>
 </code></pre>
 
 </dl>

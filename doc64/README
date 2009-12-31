@@ -1,15 +1,15 @@
-07oct09abu
+12nov09abu
 (c) Software Lab. Alexander Burger
 
 
-         64-bit Pico Lisp 
-         ================
+         64-bit PicoLisp
+         ===============
 
-The 64-bit version of Pico Lisp is a complete rewrite of the 32-bit version.
+The 64-bit version of PicoLisp is a complete rewrite of the 32-bit version.
 
 While the 32-bit version was written in C, the 64-bit version is implemented in
-a generic assembler, which in turn is written in Pico Lisp. In most respects,
-the two versions are compatible (see "Differences" below).
+a generic assembler, which in turn is written in PicoLisp. In most respects, the
+two versions are compatible (see "Differences" below).
 
 
       Building the Kernel
@@ -17,19 +17,19 @@ the two versions are compatible (see "Differences" below).
 
 No C-compiler is needed to build the interpreter kernel, only a 64-bit version
 of the GNU assembler for the target architecture. The kernel sources are the
-"*.l" files in the "src64/" directory. The Pico Lisp assembler parses them, and
+"*.l" files in the "src64/" directory. The PicoLisp assembler parses them, and
 generates a few "*.s" files (already pre-generated in the distribution), which
 the GNU assembler accepts to build the executable binary file.
 
-In case of modifying "*.l" source files, a running Pico Lisp system (32-bit or
+In case of modifying "*.l" source files, a running PicoLisp system (32-bit or
 64-bit) is required to re-generate the "*.s" files. Due to the pre-generated
 distribution, it is not necessary to compile a 32-bit version first.
 
 The generic assembler is in "src64/lib/asm.l". It is driven by the script
 "src64/mkAsm" which is called by "src64/Makefile".
 
-The CPU registers and instruction set of the Pico Lisp processor are described
-in "doc64/asm", and the internal data structures of the Pico Lisp machine in
+The CPU registers and instruction set of the PicoLisp processor are described in
+"doc64/asm", and the internal data structures of the PicoLisp machine in
 "doc64/structures".
 
 Currently, only Linux on the x86-64 architecture is supported. The platform
@@ -117,17 +117,20 @@ to the 32-bit version.
 
    will evaluate to 'T' on a 64-bit system, but to 'NIL' on a 32-bit system.
 
-3. Bit-manipulation functions may differ for negative arguments
-   Numbers are represented internally in a different format. Bit-manipulations
+3. Bit manipulation functions may differ for negative arguments
+   Numbers are represented internally in a different format. Bit manipulations
    are not really defined for negative numbers, but (& -15 -6) will give -6 on
    32 bits, and 6 on 64 bits.
 
-4. CD*AD*R functions accept also symbols
-   As both symbols and lists are represented by the same internal cell type, the
-   CAR of a symbol is equivalent to its value (see "doc64/structures").
-
-5. 'do' takes only a 'cnt' argument (not a bignum)
+4. 'do' takes only a 'cnt' argument (not a bignum)
    For the sake of simplicity, a short number (60 bits) is considered to be
    enough for counted loops.
+
+5. Calling native functions is different. Direct calls using the 'lib:fun'
+   notation is still possible (see the 'ext' and 'ht' libraries), but the
+   corresponding functions must of course be coded in assembly and not in C. To
+   call C functions, the new 'native' function should be used, which can
+   interface to native C functions directly, without the need of glue code to
+   convert arguments and return values.
 
 6. Bugs (in the implementation, or in this list ;-)

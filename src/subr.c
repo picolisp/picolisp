@@ -1,17 +1,18 @@
-/* 16jun09abu
+/* 07nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
-// (c...r 'lst) -> any
+// (car 'var) -> any
 any doCar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return car(x);
 }
 
+// (cdr 'lst) -> any
 any doCdr(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
@@ -22,7 +23,7 @@ any doCdr(any ex) {
 any doCaar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return caar(x);
 }
 
@@ -36,7 +37,7 @@ any doCadr(any ex) {
 any doCdar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return cdar(x);
 }
 
@@ -50,7 +51,7 @@ any doCddr(any ex) {
 any doCaaar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return caaar(x);
 }
 
@@ -64,7 +65,7 @@ any doCaadr(any ex) {
 any doCadar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return cadar(x);
 }
 
@@ -78,7 +79,7 @@ any doCaddr(any ex) {
 any doCdaar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return cdaar(x);
 }
 
@@ -92,7 +93,7 @@ any doCdadr(any ex) {
 any doCddar(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
-   NeedLst(ex,x);
+   NeedVar(ex,x);
    return cddar(x);
 }
 
@@ -103,11 +104,109 @@ any doCdddr(any ex) {
    return cdddr(x);
 }
 
+any doCaaaar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return caaaar(x);
+}
+
+any doCaaadr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return caaadr(x);
+}
+
+any doCaadar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return caadar(x);
+}
+
+any doCaaddr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return caaddr(x);
+}
+
+any doCadaar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return cadaar(x);
+}
+
+any doCadadr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return cadadr(x);
+}
+
+any doCaddar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return caddar(x);
+}
+
 any doCadddr(any ex) {
    any x = cdr(ex);
    x = EVAL(car(x));
    NeedLst(ex,x);
    return cadddr(x);
+}
+
+any doCdaaar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return cdaaar(x);
+}
+
+any doCdaadr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return cdaadr(x);
+}
+
+any doCdadar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return cdadar(x);
+}
+
+any doCdaddr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return cdaddr(x);
+}
+
+any doCddaar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return cddaar(x);
+}
+
+any doCddadr(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedLst(ex,x);
+   return cddadr(x);
+}
+
+any doCdddar(any ex) {
+   any x = cdr(ex);
+   x = EVAL(car(x));
+   NeedVar(ex,x);
+   return cdddar(x);
 }
 
 any doCddddr(any ex) {
@@ -197,8 +296,8 @@ any doRot(any ex) {
    cell c1;
 
    x = cdr(ex),  Push(c1, y = EVAL(car(x)));
-   n = isCell(x = cdr(x))? evCnt(ex,x) : 0;
    if (isCell(y)) {
+      n = isCell(x = cdr(x))? (int)evCnt(ex,x) : 0;
       x = car(y);
       while (--n  &&  isCell(y = cdr(y))  &&  y != data(c1))
          z = car(y),  car(y) = x,  x = z;
@@ -242,6 +341,56 @@ any doNeed(any ex) {
          x = cdr(x) = cons(data(c2),Nil);
    }
    return Pop(c1);
+}
+
+// (range 'num1 'num2 ['num3]) -> lst
+any doRange(any ex) {
+   any x;
+   cell c1, c2, c3, c4;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));  // Start value
+   NeedNum(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));  // End value
+   NeedNum(ex,data(c2));
+   x = cdr(x),  Push(c3, One);  // Increment
+   if (!isNil(x = EVAL(car(x)))) {
+      NeedNum(ex, data(c3) = x);
+      if (IsZero(x) || isNeg(x))
+         argError(ex,x);
+   }
+   Push(c4, x = cons(data(c1), Nil));
+   if (bigCompare(data(c2), data(c1)) >= 0) {
+      for (;;) {
+         data(c1) = bigCopy(data(c1));
+         if (!isNeg(data(c1)))
+            bigAdd(data(c1), data(c3));
+         else {
+            bigSub(data(c1), data(c3));
+            if (!IsZero(data(c1)))
+               neg(data(c1));
+         }
+         if (bigCompare(data(c2), data(c1)) < 0)
+            break;
+         x = cdr(x) = cons(data(c1), Nil);
+      }
+   }
+   else {
+      for (;;) {
+         data(c1) = bigCopy(data(c1));
+         if (!isNeg(data(c1)))
+            bigSub(data(c1), data(c3));
+         else {
+            bigAdd(data(c1), data(c3));
+            if (!IsZero(data(c1)))
+               neg(data(c1));
+         }
+         if (bigCompare(data(c2), data(c1)) > 0)
+            break;
+         x = cdr(x) = cons(data(c1),Nil);
+      }
+   }
+   drop(c1);
+   return data(c4);
 }
 
 // (full 'any) -> bool
@@ -552,20 +701,33 @@ any doReverse(any x) {
    return y;
 }
 
-// (flip 'lst) -> lst
-any doFlip(any x) {
-   any y, z;
+// (flip 'lst ['cnt])) -> lst
+any doFlip(any ex) {
+   any x, y, z;
+   int n;
+   cell c1;
 
-   x = cdr(x);
-   if (!isCell(x = EVAL(car(x))) ||  !isCell(y = cdr(x)))
-      return x;
-   cdr(x) = Nil;
-   for (;;) {
-      z = cdr(y),  cdr(y) = x;
-      if (!isCell(z))
-         return y;
-      x = y,  y = z;
+   x = cdr(ex);
+   if (!isCell(y = EVAL(car(x))) || !isCell(z = cdr(y)))
+      return y;
+   if (!isCell(x = cdr(x))) {
+      cdr(y) = Nil;
+      for (;;) {
+         x = cdr(z),  cdr(z) = y;
+         if (!isCell(x))
+            return z;
+         y = z,  z = x;
+      }
    }
+   Push(c1, y);
+   n = (int)evCnt(ex,x) - 1;
+   drop(c1);
+   if (n <= 0)
+      return y;
+   cdr(y) = cdr(z),  cdr(z) = y;
+   while (--n && isCell(x = cdr(y)))
+      cdr(y) = cdr(x),  cdr(x) = z,  z = x;
+   return z;
 }
 
 static any trim(any x) {

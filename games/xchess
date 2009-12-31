@@ -1,5 +1,5 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 24sep07abu
+# 12nov09abu
 # (c) Software Lab. Alexander Burger
 
 (load "@games/chess.l")
@@ -21,7 +21,7 @@
       (case (read)
          (protover
             (read)
-            (reply "feature" "myname=\"Pico Lisp Chess\"")
+            (reply "feature" "myname=\"PicoLisp Chess\"")
             (reply "feature" "time=0" "sigint=0" "usermove=1")
             (reply "feature" "done=1") )
          (accepted (read))

@@ -1,4 +1,4 @@
-/* 16jun09abu
+/* 14nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -25,7 +25,6 @@ static symInit Symbols[] = {
    {doAssoc, "assoc"},
    {doAt, "at"},
    {doAtom, "atom"},
-   {doBegin, "begin"},
    {doBind, "bind"},
    {doBitAnd, "&"},
    {doBitOr, "|"},
@@ -37,10 +36,17 @@ static symInit Symbols[] = {
    {doBreak, "!"},
    {doBy, "by"},
    {doBye, "bye"},
+   {doCaaaar, "caaaar"},
+   {doCaaadr, "caaadr"},
    {doCaaar, "caaar"},
+   {doCaadar, "caadar"},
+   {doCaaddr, "caaddr"},
    {doCaadr, "caadr"},
    {doCaar, "caar"},
+   {doCadaar, "cadaar"},
+   {doCadadr, "cadadr"},
    {doCadar, "cadar"},
+   {doCaddar, "caddar"},
    {doCadddr, "cadddr"},
    {doCaddr, "caddr"},
    {doCadr, "cadr"},
@@ -48,11 +54,18 @@ static symInit Symbols[] = {
    {doCar, "car"},
    {doCase, "case"},
    {doCatch, "catch"},
-   {doCd, "cd"},
+   {doCdaaar, "cdaaar"},
+   {doCdaadr, "cdaadr"},
    {doCdaar, "cdaar"},
+   {doCdadar, "cdadar"},
+   {doCdaddr, "cdaddr"},
    {doCdadr, "cdadr"},
+   {doCd, "cd"},
    {doCdar, "cdar"},
+   {doCddaar, "cddaar"},
+   {doCddadr, "cddadr"},
    {doCddar, "cddar"},
+   {doCdddar, "cdddar"},
    {doCddddr, "cddddr"},
    {doCdddr, "cdddr"},
    {doCddr, "cddr"},
@@ -198,7 +211,6 @@ static symInit Symbols[] = {
    {doMmeq, "mmeq"},
    {doMul, "*"},
    {doMulDiv, "*/"},
-   {doNagle, "nagle"},
    {doName, "name"},
    {doNand, "nand"},
    {doNEq, "n=="},
@@ -259,6 +271,7 @@ static symInit Symbols[] = {
    {doQueue, "queue"},
    {doQuit, "quit"},
    {doRand, "rand"},
+   {doRange, "range"},
    {doRank, "rank"},
    {doRaw, "raw"},
    {doRd, "rd"},
@@ -387,6 +400,7 @@ void initSymbols(void) {
    Msg   = initSym(Nil, "*Msg");
    Uni   = initSym(Nil, "*Uni");
    Led   = initSym(Nil, "*Led");
+   Tsm   = initSym(Nil, "*Tsm");
    Adr   = initSym(Nil, "*Adr");
    Fork  = initSym(Nil, "*Fork");
    Bye   = initSym(Nil, "*Bye");  // Last unremovable symbol

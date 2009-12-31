@@ -1,4 +1,4 @@
-# 05jun09abu
+# 12nov09abu
 # (c) Software Lab. Alexander Burger
 
 # "*Glyph" "*PgX" "*PgY"
@@ -49,7 +49,7 @@
 
 (de psHead (DX DY)
    (prinl "%!PS-Adobe-1.0")
-   (prinl "%%Creator: Pico Lisp")
+   (prinl "%%Creator: PicoLisp")
    (prinl "%%BoundingBox: 0 0 "
       (setq "*DX" DX "*PgX" DX) " "
       (setq "*DY" DY "*PgY" DY) )

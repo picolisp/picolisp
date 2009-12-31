@@ -1,4 +1,4 @@
-/* 01aug09abu
+/* 23nov09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -50,7 +50,7 @@ typedef long long adr;
 #undef bool
 typedef enum {NO,YES} bool;
 
-typedef struct cell {            // Pico primary data type
+typedef struct cell {            // PicoLisp primary data type
    struct cell *car;
    struct cell *cdr;
 } cell, *any;
@@ -122,7 +122,7 @@ typedef struct stkEnv {
    bindFrame *bind;
    methFrame *meth;
    int next, protect, trace;
-   any *make, *yoke;
+   any task, *make, *yoke;
    inFrame *inFrames;
    outFrame *outFrames;
    ctlFrame *ctlFrames;
@@ -180,7 +180,21 @@ typedef struct catchFrame {
 #define cdadr(x)        (cdr(car(cdr(x))))
 #define cddar(x)        (cdr(cdr(car(x))))
 #define cdddr(x)        (cdr(cdr(cdr(x))))
+#define caaaar(x)       (car(car(car(car(x)))))
+#define caaadr(x)       (car(car(car(cdr(x)))))
+#define caadar(x)       (car(car(cdr(car(x)))))
+#define caaddr(x)       (car(car(cdr(cdr(x)))))
+#define cadaar(x)       (car(cdr(car(car(x)))))
+#define cadadr(x)       (car(cdr(car(cdr(x)))))
+#define caddar(x)       (car(cdr(cdr(car(x)))))
 #define cadddr(x)       (car(cdr(cdr(cdr(x)))))
+#define cdaaar(x)       (cdr(car(car(car(x)))))
+#define cdaadr(x)       (cdr(car(car(cdr(x)))))
+#define cdadar(x)       (cdr(car(cdr(car(x)))))
+#define cdaddr(x)       (cdr(car(cdr(cdr(x)))))
+#define cddaar(x)       (cdr(cdr(car(car(x)))))
+#define cddadr(x)       (cdr(cdr(car(cdr(x)))))
+#define cdddar(x)       (cdr(cdr(cdr(car(x)))))
 #define cddddr(x)       (cdr(cdr(cdr(cdr(x)))))
 
 #define data(c)         ((c).car)
@@ -222,25 +236,25 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
-char **AV, *AV0, *Home;
-child *Child;
-heap *Heaps;
-cell *Avail;
-stkEnv Env;
-catchFrame *CatchPtr;
-struct termios OrgTermio, *Termio;
-int InFDs, OutFDs;
-inFile *InFile, **InFiles;
-outFile *OutFile, **OutFiles;
-int (*getBin)(void);
-void (*putBin)(int);
-any TheKey, TheCls, Thrown;
-any Alarm, Line, Zero, One, Intern[IHASH], Transient[IHASH], Extern[EHASH];
-any ApplyArgs, ApplyBody, DbVal, DbTail;
-any Nil, DB, Meth, Quote, T;
-any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
-any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
+extern int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
+extern char **AV, *AV0, *Home;
+extern child *Child;
+extern heap *Heaps;
+extern cell *Avail;
+extern stkEnv Env;
+extern catchFrame *CatchPtr;
+extern struct termios OrgTermio, *Termio;
+extern int InFDs, OutFDs;
+extern inFile *InFile, **InFiles;
+extern outFile *OutFile, **OutFiles;
+extern int (*getBin)(void);
+extern void (*putBin)(int);
+extern any TheKey, TheCls, Thrown;
+extern any Alarm, Line, Zero, One, Intern[IHASH], Transient[IHASH], Extern[EHASH];
+extern any ApplyArgs, ApplyBody, DbVal, DbTail;
+extern any Nil, DB, Meth, Quote, T;
+extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
+extern any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Tsm, Adr, Fork, Bye;
 
 /* Prototypes */
 void *alloc(void*,size_t);
@@ -399,7 +413,6 @@ any doAs(any);
 any doAssoc(any);
 any doAt(any);
 any doAtom(any);
-any doBegin(any);
 any doBind(any);
 any doBitAnd(any);
 any doBitOr(any);
@@ -411,10 +424,17 @@ any doBoxQ(any);
 any doBreak(any);
 any doBy(any);
 any doBye(any) __attribute__ ((noreturn));
+any doCaaaar(any);
+any doCaaadr(any);
 any doCaaar(any);
+any doCaadar(any);
+any doCaaddr(any);
 any doCaadr(any);
 any doCaar(any);
+any doCadaar(any);
+any doCadadr(any);
 any doCadar(any);
+any doCaddar(any);
 any doCadddr(any);
 any doCaddr(any);
 any doCadr(any);
@@ -422,11 +442,18 @@ any doCall(any);
 any doCar(any);
 any doCase(any);
 any doCatch(any);
-any doCd(any);
+any doCdaaar(any);
+any doCdaadr(any);
 any doCdaar(any);
+any doCdadar(any);
+any doCdaddr(any);
 any doCdadr(any);
+any doCd(any);
 any doCdar(any);
+any doCddaar(any);
+any doCddadr(any);
 any doCddar(any);
+any doCdddar(any);
 any doCddddr(any);
 any doCdddr(any);
 any doCddr(any);
@@ -573,7 +600,6 @@ any doMix(any);
 any doMmeq(any);
 any doMul(any);
 any doMulDiv(any);
-any doNagle(any);
 any doName(any);
 any doNand(any);
 any doNEq(any);
@@ -635,6 +661,7 @@ any doQueue(any);
 any doQuit(any);
 any doQuote(any);
 any doRand(any);
+any doRange(any);
 any doRank(any);
 any doRaw(any);
 any doRd(any);

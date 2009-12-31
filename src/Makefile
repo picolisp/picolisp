@@ -1,4 +1,4 @@
-# 11jan09abu
+# 09dec09abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -16,26 +16,37 @@ CFLAGS := -c -O2 -m32 -pipe \
 
 ifeq ($(shell uname), Linux)
 	OS = Linux
-	PICOLISP-FLAGS = -m32 -rdynamic -lc -lm -ldl
+	PICOLISP-FLAGS = -m32 -rdynamic
+	LIB-FLAGS = -lc -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), OpenBSD)
 	OS = OpenBSD
-	PICOLISP-FLAGS = -rdynamic -lc -lm
-	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
+	PICOLISP-FLAGS = -m32 -rdynamic
+	LIB-FLAGS = -lc -lm
+	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), FreeBSD)
 	OS = FreeBSD
-	PICOLISP-FLAGS = -rdynamic -lc -lm
-	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
+	PICOLISP-FLAGS = -m32 -rdynamic
+	LIB-FLAGS = -lc -lm
+	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	STRIP = strip
+else
+ifeq ($(shell uname), NetBSD)
+	OS = NetBSD
+	PICOLISP-FLAGS = -m32 -rdynamic
+	LIB-FLAGS = -lc -lm
+	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	STRIP = strip
 else
 ifeq ($(shell uname), Darwin)
 	OS = Darwin
-	PICOLISP-FLAGS = -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup
+	PICOLISP-FLAGS = -m32
+	LIB-FLAGS = -lc -lm -ldl
+	DYNAMIC-LIB-FLAGS = -m32 -dynamiclib -undefined dynamic_lookup
 	STRIP = :
 else
 ifeq ($(shell uname -o), Cygwin)
@@ -46,6 +57,7 @@ ifeq ($(shell uname -o), Cygwin)
 	STRIP = strip
 	exe = .exe
 	dll = .dll
+endif
 endif
 endif
 endif
@@ -82,7 +94,7 @@ else
 
 $(bin)/picolisp: $(picoFiles:.c=.o)
 	mkdir -p $(bin) $(lib)
-	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) $(picoFiles:.c=.o)
+	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) $(picoFiles:.c=.o) $(LIB-FLAGS)
 	$(STRIP) $(bin)/picolisp$(exe)
 
 endif
@@ -102,27 +114,27 @@ $(lib)/z3d$(dll): z3d.o
 
 
 $(bin)/lat1: lat1.o
-	gcc -o $(bin)/lat1$(exe) lat1.o
+	gcc -m32 -o $(bin)/lat1$(exe) lat1.o
 	$(STRIP) $(bin)/lat1$(exe)
 
 $(bin)/utf2: utf2.o
-	gcc -o $(bin)/utf2$(exe) utf2.o
+	gcc -m32 -o $(bin)/utf2$(exe) utf2.o
 	$(STRIP) $(bin)/utf2$(exe)
 
 $(bin)/balance: balance.o
-	gcc -o $(bin)/balance$(exe) balance.o
+	gcc -m32 -o $(bin)/balance$(exe) balance.o
 	$(STRIP) $(bin)/balance$(exe)
 
 $(bin)/ssl: ssl.o
-	gcc -o $(bin)/ssl$(exe) ssl.o -lssl -lcrypto
+	gcc -m32 -o $(bin)/ssl$(exe) ssl.o -lssl -lcrypto
 	$(STRIP) $(bin)/ssl$(exe)
 
 $(bin)/httpGate: httpGate.o
-	gcc -o $(bin)/httpGate$(exe) httpGate.o -lssl -lcrypto
+	gcc -m32 -o $(bin)/httpGate$(exe) httpGate.o -lssl -lcrypto
 	$(STRIP) $(bin)/httpGate$(exe)
 
 $(bin)/z3dClient: z3dClient.o
-	gcc -o $(bin)/z3dClient$(exe) z3dClient.o  -L/usr/X11R6/lib -lXext -lX11
+	gcc -m32 -o $(bin)/z3dClient$(exe) z3dClient.o  -L/usr/X11R6/lib -lXext -lX11
 	$(STRIP) $(bin)/z3dClient$(exe)
 
 

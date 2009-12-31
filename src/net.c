@@ -1,4 +1,4 @@
-/* 17aug09abu
+/* 08oct09abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -154,19 +154,6 @@ any doConnect(any ex) {
    }
    initInFile(sd,NULL), initOutFile(sd);
    return boxCnt(sd);
-}
-
-// (nagle 'cnt 'flg) -> cnt
-any doNagle(any ex) {
-   any x, y;
-   int sd, opt;
-
-   x = cdr(ex),  y = EVAL(car(x));
-   sd = (int)xCnt(ex,y);
-   x = cdr(x),  opt = isNil(EVAL(car(x)))? 1 : 0;
-   if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (char*)&opt, sizeof(int)) < 0)
-      ipErr(ex, "setsockopt");
-   return y;
 }
 
 /*** UDP send/receive ***/

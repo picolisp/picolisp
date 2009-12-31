@@ -15,20 +15,60 @@
 <dd>A global variable holding the pathname of the database blob directory. See
 also <code><a href="refB.html#blob">blob</a></code>.
 
-<p><pre><code>
+<pre><code>
 : *Blob
--> "blob/app/"
+-> <u>blob/app/</u>
 </code></pre>
 
 <dt><a name="*Bye"><code>*Bye</code></a>
 <dd>A global variable holding a (possibly empty) <code>prg</code> body, to be
-executed just before the termination of the Pico Lisp interpreter. See also
+executed just before the termination of the PicoLisp interpreter. See also
 <code><a href="refB.html#bye">bye</a></code> and <code><a
 href="refT.html#tmp">tmp</a></code>.
 
-<p><pre><code>
-: (push1 '*Bye '(call 'rm "myfile.tmp"))   # Remove a temporary file
--> (call 'rm "myfile.tmp")
+<pre><code>
+: (push1 '*Bye '(call 'rm <u>myfile.tmp</u>))  # Remove a temporary file
+-> (call 'rm <u>myfile.tmp</u>)
+</code></pre>
+
+<dt><a name="+Bag"><code>+Bag</code></a>
+<dd>Class for a list of arbitrary relations, a subclass of <code><a
+href="refR.html#+relation">+relation</a></code>. Objects of that class maintain
+a list of heterogeneous relations. Typically used in combination with the
+<code><a href="refL.html#+List">+List</a></code> prefix class, to maintain small
+two-dimensional tables within oubjects. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel pos (+List +Bag)         # Positions
+   ((+Ref +Link) NIL (+Item))    # Item
+   ((+Number) 2)                 # Price
+   ((+Number))                   # Quantity
+   ((+String))                   # Memo text
+   ((+Number) 2) )               # Total amount
+</code></pre>
+
+<dt><a name="+Blob"><code>+Blob</code></a>
+<dd>Class for blob relations, a subclass of <code><a
+href="refR.html#+relation">+relation</a></code>. Objects of that class maintain
+blobs, as stubs in database objects pointing to actual files for arbitrary
+(often binary) data. The files themselves reside below the path specified by the
+<code><a href="refB.html#*Blob">*Blob</a></code> variable. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel jpg (+Blob))  # Picture
+</code></pre>
+
+<dt><a name="+Bool">+Bool<code></code></a>
+<dd>Class for boolean relations, a subclass of <code><a
+href="refR.html#+relation">+relation</a></code>. Objects of that class expect
+either <code>T</code> or <code>NIL</code> as value (though, as always, only
+non-<code>NIL</code> will be physically stored in objects). See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel ok (+Ref +Bool))  # Indexed flag
 </code></pre>
 
 <dt><a name="balance"><code>(balance 'var 'lst ['flg])</code></a>
@@ -41,7 +81,7 @@ non-<code>NIL</code>, the index tree will be augmented instead of being
 overwritten. See also <code><a href="ref.html#cmp">Comparing</a></code> and
 <code><a href="refS.html#sort">sort</a></code>.
 
-<p><pre><code>
+<pre><code>
 # Normal idx insert
 : (off I)
 -> NIL
@@ -67,10 +107,13 @@ overwritten. See also <code><a href="ref.html#cmp">Comparing</a></code> and
 <dd>Declares a <a href="ref.html#pilog">Pilog</a> fact or rule for the
 <code>sym</code> argument, by concatenating the <code>any</code> argument to the
 <code>T</code> property of <code>sym</code>. See also <code><a
+href="refA.html#asserta">asserta</a></code>, <code><a
+href="refA.html#assertz">assertz</a></code>, <code><a
+href="refR.html#retract">retract</a></code>, <code><a
 href="refG.html#goal">goal</a></code> and <code><a
 href="refP.html#prove">prove</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (be likes (John Mary))
 -> likes
 : (be likes (John @X) (likes @X wine) (likes @X food))
@@ -87,9 +130,19 @@ href="refP.html#prove">prove</a></code>.
 href="refP.html#prin">prin</a></code> and <code><a
 href="refC.html#char">char</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (beep)
--> "^G"
+-> <u>^G</u>
+</code></pre>
+
+<dt><a name="bench"><code>(bench . prg) -> any</code></a>
+<dd>Benchmarks <code>prg</code>, by printing the time it took to execute, and
+returns the result. See also <code><a href="refU.html#usec">usec</a></code>.
+
+<pre><code>
+: (bench (wait 2000))
+1.996 sec
+-> NIL
 </code></pre>
 
 <dt><a name="bind"><code>(bind 'sym|lst . prg) -> any</code></a>
@@ -103,12 +156,12 @@ also <code><a href="refL.html#let">let</a></code>, <code><a
 href="refJ.html#job">job</a></code> and <code><a
 href="refU.html#use">use</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq X 123)                               # X is 123
 -> 123
-: (bind 'X (setq X "Hello") (println X))  # Set X to "Hello", print it
-"Hello"
--> "Hello"
+: (bind 'X (setq X <u>Hello</u>) (println X))  # Set X to "Hello", print it
+<u>Hello</u>
+-> <u>Hello</u>
 : (bind '((X . 3) (Y . 4)) (println X Y) (* X Y))
 3 4
 -> 12
@@ -123,7 +176,7 @@ arguments evaluates to <code>NIL</code>, it is returned immediately. See also
 <code><a href="ref_.html#&">&</a></code>, <code><a
 href="ref_.html#|">|</a></code> and <code><a href="refX.html#x|">x|</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (bit? 7 15 255)
 -> 7
 : (bit? 1 3)
@@ -132,23 +185,33 @@ href="ref_.html#|">|</a></code> and <code><a href="refX.html#x|">x|</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="blob"><code>(blob 'obj 'var) -> sym</code></a>
+<dt><a name="blob"><code>(blob 'obj 'sym) -> sym</code></a>
 <dd>Returns the blob file name for <code>var</code> in <code>obj</code>. See
-also <code><a href="refB.html#*Blob">*Blob</a></code> and <code><a
+also <code><a href="refB.html#*Blob">*Blob</a></code>, <code><a
+href="refB.html#blob!">blob!</a></code> and <code><a
 href="refP.html#pack">pack</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (show (db 'nr '+Item 1))
 {3-1} (+Item)
    jpg
    pr 29900
    inv 100
    sup {2-1}
-   nm "Main Part"
+   nm <u>Main Part</u>
    nr 1
 -> {3-1}
 : (blob '{3-1} 'jpg)
--> "blob/app/3/-/1.jpg"
+-> <u>blob/app/3/-/1.jpg</u>
+</code></pre>
+
+<dt><a name="blob!"><code>(blob! 'obj 'sym 'file)</code></a>
+<dd>Stores the contents of <code>file</code> in a <code><a
+href="refB.html#blob">blob</a></code>. See also <code><a
+href="refE.html#entityMesssages">put!></a></code>.
+
+<pre><code>
+(blob! *ID 'jpg "picture.jpg")
 </code></pre>
 
 <dt><a name="bool"><code>(bool 'any) -> flg</code></a>
@@ -158,11 +221,34 @@ strictly required for a "true" condition (Usually, any non-<code>NIL</code>
 value is considered to be "true"). See also <code><a
 href="refF.html#flg?">flg?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (and 3 4)
 -> 4
 : (bool (and 3 4))
 -> T
+</code></pre>
+
+<dt><a name="bool/3"><code>bool/3</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
+argument has the same truth value as the result of applying the <code><a
+href="refG.html#get">get</a></code> algorithm to the following arguments.
+Typically used as filter predicate in <code><a
+href="refS.html#select/3">select/3</a></code> database queries. See also
+<code><a href="refB.html#bool">bool</a></code>, <code><a
+href="refI.html#isa/2">isa/2</a></code>, <code><a
+href="refS.html#same/3">same/3</a></code>, <code><a
+href="refR.html#range/3">range/3</a></code>, <code><a
+href="refH.html#head/3">head/3</a></code>, <code><a
+href="refF.html#fold/3">fold/3</a></code>, <code><a
+href="refP.html#part/3">part/3</a></code> and <code><a
+href="refT.html#tolr/3">tolr/3</a></code>.
+
+<pre><code>
+: (? @OK NIL         # Find orders where the 'ok' flag is not set
+   (db nr +Ord @Ord)
+   (bool @OK @Ord ok) )
+ @OK=NIL @Ord={3-7}
+-> NIL
 </code></pre>
 
 <dt><a name="box"><code>(box 'any) -> sym</code></a>
@@ -170,7 +256,7 @@ href="refF.html#flg?">flg?</a></code>.
 <code>any</code> argument. See also <code><a href="refN.html#new">new</a></code>
 and <code><a href="refB.html#box?">box?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (show (box '(A B C)))
 $134425627 (A B C)
 -> $134425627
@@ -183,7 +269,7 @@ href="refB.html#box">box</a></code>, <code><a
 href="refS.html#str?">str?</a></code> and <code><a
 href="refE.html#ext?">ext?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (box? (new))
 -> $134563468
 : (box? 123)
@@ -203,7 +289,7 @@ list which is passed to <code>fun2</code>. For the list returned from
 <code>fun2</code>, the CAR elements returned by <code>fun1</code> are
 (destructively) removed from each element.
 
-<p><pre><code>
+<pre><code>
 : (let (A 1 B 2 C 3) (by val sort '(C A B)))
 -> (A B C)
 : (by '((N) (bit? 1 N)) group (3 11 6 2 9 5 4 10 12 7 8 1))
@@ -214,10 +300,10 @@ list which is passed to <code>fun2</code>. For the list returned from
 <dd>Executes all pending <code><a href="refF.html#finally">finally</a></code>
 expressions, then the <code>VAL</code> of the global variable <code><a
 href="refB.html#*Bye">*Bye</a></code> (should be a <code>prg</code>), closes all
-open files, and exits the Pico Lisp interpreter. The process return value is
+open files, and exits the PicoLisp interpreter. The process return value is
 <code>cnt</code>, or 0 if the argument is missing or <code>NIL</code>.
 
-<p><pre><code>
+<pre><code>
 : (setq *Bye '((println 'OK) (println 'bye)))
 -> ((println 'OK) (println 'bye))
 : (bye)

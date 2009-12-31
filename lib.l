@@ -1,4 +1,4 @@
-# 25sep09abu
+# 23dec09abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -23,6 +23,12 @@
                                        (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) ) )
                            Prg ) ) ) ) ) ) )
       (NIL (quit "Key conflict" Key)) ) )
+
+(de forked ()
+   (let N (caar *Run)
+      (when (gt0 N)
+         (push '*Fork (list 'close N)) )
+      (push '*Fork (list 'task N)) ) )
 
 (de timeout (N)
    (if2 N (assoc -1 *Run)
@@ -301,11 +307,15 @@
                (method (if (pair "X") (car "X") "X") C)
                (val "X") ) )
          (cond
-            ((atom "X") (print '\. "X"))
+            ((atom "X")
+               (prin ". ")
+               (print "X") )
             ((atom (cdr "X"))
-               (if (cdr "X")
-                  (print (car "X") '\. @)
-                  (print (car "X")) ) )
+               (ifn (cdr "X")
+                  (print (car "X"))
+                  (print (car "X"))
+                  (prin " . ")
+                  (print @) ) )
             (T (print (pop '"X"))
                (while (pair "X")
                   (prinl)

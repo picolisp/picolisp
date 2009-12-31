@@ -1,4 +1,4 @@
-# 08sep09abu
+# 16dec09abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -144,9 +144,10 @@
       ld X 0  # Runtime expression
       call loadBEX_E
    end
-   ld (EnvProtect) 0  # Reset environments
    ld C 0  # Top frame
    call unwindC_Z  # Unwind
+   ld (EnvProtect) 0  # Reset environments
+   ld (EnvTask) Nil
    ld (EnvArgs) 0
    ld (EnvNext) 0
    ld (EnvMeth) 0

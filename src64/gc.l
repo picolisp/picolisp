@@ -1,4 +1,4 @@
-# 06oct09abu
+# 13oct09abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -307,7 +307,7 @@
          add Y II  # Next gc mark
          cmp Y Z  # End of frame?
       until ge  # Yes
-      ld Y (Y)  # Next frame
+      ld Y (Z)  # Next frame
    loop
    ### Sweep ###
    ld X 0  # Avail list
@@ -826,6 +826,20 @@
    or B BIG  # Make number
    ret
 
+(code 'boxNumE_E 0)
+   push E
+   ld E (Avail)  # Get avail list
+   null E  # Empty?
+   if eq  # Yes
+      call gc  # Collect garbage
+      ld E (Avail)  # Get avail list again
+   end
+   ld (Avail) (E)  # Set new avail list
+   pop (E)  # Set new cell's CAR
+   ld (E CDR) ZERO  # Set CDR to ZERO
+   or E BIG  # Make number
+   ret
+
 (code 'consNumAC_A 0)
    push A
    ld A (Avail)  # Get avail list
@@ -916,17 +930,16 @@
    ret
 
 (code 'consNumCE_E 0)
-   push E
-   ld E (Avail)  # Get avail list
-   null E  # Empty?
+   null (Avail)  # Avail list empty?
    if eq  # Yes
       link  # Save E
       push E
       link
       call gc  # Collect garbage
       drop
-      ld E (Avail)  # Get avail list again
    end
+   push E
+   ld E (Avail)  # Get avail list
    ld (Avail) (E)  # Set new avail list
    ld (E) C  # Set new cell's CAR
    pop (E CDR)  # Set CDR
@@ -934,17 +947,16 @@
    ret
 
 (code 'consNumEA_A 0)
-   push A
-   ld A (Avail)  # Get avail list
-   null A  # Empty?
+   null (Avail)  # Avail list empty?
    if eq  # Yes
       link  # Save A
       push A
       link
       call gc  # Collect garbage
       drop
-      ld A (Avail)  # Get avail list again
    end
+   push A
+   ld A (Avail)  # Get avail list
    ld (Avail) (A)  # Set new avail list
    ld (A) E  # Set new cell's CAR
    pop (A CDR)  # Set CDR

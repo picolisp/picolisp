@@ -1,4 +1,4 @@
-# 28sep09abu
+# 19nov09abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Globals 0)
@@ -113,6 +113,7 @@
    initSym Msg       "*Msg"      Nil
    initSym Uni       "*Uni"      Nil
    initSym Led       "*Led"      Nil
+   initSym Tsm       "*Tsm"      Nil
    initSym Adr       "*Adr"      Nil
    initSym Fork      "*Fork"     Nil
    initSym Bye       "*Bye"      Nil
@@ -125,8 +126,8 @@
    initSym NIL       "env"       doEnv
    initSym NIL       "up"        doUp
    initSym NIL       "quit"      doQuit
-   initSym NIL       "native"    doNative
    initSym NIL       "errno"     doErrno
+   initSym NIL       "native"    doNative
    initSym NIL       "args"      doArgs
    initSym NIL       "next"      doNext
    initSym NIL       "arg"       doArg
@@ -331,6 +332,7 @@
    initSym NIL       "rot"       doRot
    initSym NIL       "list"      doList
    initSym NIL       "need"      doNeed
+   initSym NIL       "range"     doRange
    initSym NIL       "full"      doFull
    initSym NIL       "make"      doMake
    initSym NIL       "made"      doMade
@@ -504,6 +506,7 @@
 : EnvNext      word  0        # Next vararg
 : EnvApply     word  0        # Apply frames
 : EnvMeth      word  0        # Method frames
+: EnvTask      word  Nil      # Task list
 : EnvMake      word  0        # 'make' env
 : EnvYoke      word  0
 : EnvParseX    word  0        # Parser status
@@ -511,8 +514,8 @@
 : EnvParseEOF  word  -1
 : EnvSort      word  0        # Sort function
 : EnvProtect   word  0        # Signal protection
-: EnvBrk       word  0        # Breakpoint
 : EnvTrace     word  0        # Trace level
+: EnvBrk       word  0        # Breakpoint
                align 8        # Padding
 : EnvEnd
 

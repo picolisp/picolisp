@@ -1,0 +1,89 @@
+--- /usr/share/emacs/site-lisp/paredit/paredit.el	2009-07-28 20:43:11.000000000 -0300
++++ src/el/paredit.el	2009-12-15 04:39:31.000000000 -0300
+@@ -683,7 +683,8 @@
+ (defun paredit-move-past-close (close)
+   (cond ((or (paredit-in-string-p)
+              (paredit-in-comment-p))
+-         (insert close))
++         (insert close)
++         (paredit-delete-leading-whitespace))
+         ((not (paredit-in-char-p))
+          (paredit-move-past-close-and-reindent close)
+          (paredit-blink-paren-match nil))))
+@@ -691,7 +692,8 @@
+ (defun paredit-move-past-close-and-newline (close)
+   (if (or (paredit-in-string-p)
+           (paredit-in-comment-p))
+-      (insert close)
++      (progn (insert close)
++             (paredit-delete-leading-whitespace))
+     (if (paredit-in-char-p) (forward-char))
+     (paredit-move-past-close-and-reindent close)
+     (let ((comment.point (paredit-find-comment-on-line)))
+@@ -747,6 +749,7 @@
+                             (point))))
+               (regionp (funcall forward (+ end (if spacep 2 1)))))
+         (insert close)
++        (paredit-delete-leading-whitespace)
+         (if (paredit-space-for-delimiter-p t close)
+             (insert " "))))))
+ 
+@@ -784,7 +787,8 @@
+         (if (eq close (matching-paren open))
+             (save-excursion
+               (message "Missing closing delimiter: %c" close)
+-              (insert close))
++              (insert close)
++              (paredit-delete-leading-whitespace))
+             (error "Mismatched missing closing delimiter: %c ... %c"
+                    open close))))
+   (let ((orig (point)))
+@@ -1543,6 +1547,7 @@
+                ((paredit-region-active-p) nil)
+                (t 1)))
+       (insert close)
++      (paredit-delete-leading-whitespace)
+       (backward-char)))
+   (save-excursion (backward-up-list) (indent-sexp)))
+ 
+@@ -1791,8 +1796,10 @@
+           (setq close                   ; adjusting for mixed
+                 (prog1 (char-before)    ;   delimiters as necessary,
+                   (backward-delete-char 1)
+-                  (insert close))))))
+-    (insert close)))                    ; to insert that delimiter.
++                  (insert close)
++                  (paredit-delete-leading-whitespace))))))
++    (insert close)                      ; to insert that delimiter.
++    (paredit-delete-leading-whitespace)))
+ 
+ (defun paredit-forward-slurp-into-string ()
+   (goto-char (1+ (cdr (paredit-string-start+end-points))))
+@@ -1802,7 +1809,8 @@
+   (let ((close (char-before)))
+     (backward-delete-char 1)
+     (paredit-forward-for-quote (save-excursion (forward-sexp) (point)))
+-    (insert close)))
++    (insert close)
++    (paredit-delete-leading-whitespace)))
+ 
+ (defun paredit-forward-barf-sexp ()
+   "Remove the last S-expression in the current list from that list
+@@ -1822,7 +1830,8 @@
+              (error "Barfing all subexpressions with no open-paren?"))
+             ((paredit-in-comment-p)     ; Don't put the close-paren in
+              (newline-and-indent)))     ;   a comment.
+-      (insert close))
++      (insert close)
++      (paredit-delete-leading-whitespace))
+     ;; Reindent all of the newly barfed S-expressions.
+     (paredit-forward-and-indent)))
+ 
+@@ -1919,6 +1928,7 @@
+                                         (char-before))))
+              (delete-horizontal-space)
+              (insert close)
++             (paredit-delete-leading-whitespace)
+              (save-excursion (insert ?\ )
+                              (insert open)
+                              (backward-char)

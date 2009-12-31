@@ -11,13 +11,39 @@
 
 <dl>
 
-<dt><a name="id"><code>(id 'num ['num]) -> sym<br>
-(id 'sym [NIL]) -> num<br>
-(id 'sym T) -> (num . num)</code></a>
+<dt><a name="+Idx"><code>+Idx</code></a>
+<dd>Prefix class for maintaining non-unique full-text indexes to <code><a
+href="refS.html#+String">+String</a></code> relations, a subclass of <code><a
+href="refR.html#+Ref">+Ref</a></code>. Accepts optional arguments for the
+minimally indexed substring length (defaults to 3), and a <code><a
+href="refH.html#+Hook">+Hook</a></code> attribute. Often used in combination
+with the <code><a href="refS.html#+Sn">+Sn</a></code> soundex index, or the
+<code><a href="refF.html#+Fold">+Fold</a></code> index prefix classes. See also
+<code><a href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel nm (+Sn +Idx +String))  # Name
+</code></pre>
+
+<dt><a name="+index"><code>+index</code></a>
+<dd>Abstract base class of all database B-Tree index relations (prefix classes
+for <code><a href="refR.html#+relation">+relation</a></code>s). The class
+hierarchy includes <code><a href="refK.html#+Key">+Key</a></code>, <code><a
+href="refR.html#+Ref">+Ref</a></code> and <code><a
+href="refI.html#+Idx">+Idx</a></code>. See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(isa '+index Rel)  # Check for an index relation
+</code></pre>
+
+<dt><a name="id"><code>(id 'num ['num]) -> sym</code></a>
+<dt><code>(id 'sym [NIL]) -> num</code>>
+<dt><code>(id 'sym T) -> (num . num)</code>
 <dd>Converts one or two numbers to an external symbol, or an external symbol to
 a number or a pair of numbers.
 
-<p><pre><code>
+<pre><code>
 : (id 7)
 -> {7}
 : (id 1 2)
@@ -42,11 +68,12 @@ the third form (when called with a single <code>var</code> argument) the
 contents of the tree are returned as a sorted list. If all elements are inserted
 in sorted order, the tree degenerates into a linear list. See also <code><a
 href="refL.html#lup">lup</a></code>, <code><a
+href="refD.html#depth">depth</a></code>, <code><a
 href="refS.html#sort">sort</a></code>, <code><a
 href="refB.html#balance">balance</a></code> and <code><a
 href="refM.html#member">member</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (idx 'X 'd T)                              # Insert data
 -> NIL
 : (idx 'X 2 T)
@@ -85,7 +112,7 @@ href="refC.html#cond">cond</a></code>, <code><a
 href="refW.html#when">when</a></code> and <code><a
 href="refI.html#if2">if2</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (if (> 4 3) (println 'OK) (println 'Bad))
 OK
 -> OK
@@ -104,7 +131,7 @@ conditions evaluate to non-<code>NIL</code>, <code>prg</code> is executed and
 the result returned. See also <code><a href="refI.html#if">if</a></code> and
 <code><a href="refC.html#cond">cond</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (if2 T T 'both 'first 'second 'none)
 -> both
 : (if2 T NIL 'both 'first 'second 'none)
@@ -120,7 +147,7 @@ the result returned. See also <code><a href="refI.html#if">if</a></code> and
 evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
 Otherwise, <code>prg</code> is executed and the result returned.
 
-<p><pre><code>
+<pre><code>
 : (ifn (= 3 4) (println 'OK) (println 'Bad))
 OK
 -> OK
@@ -144,8 +171,8 @@ href="refO.html#out">out</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
 href="refC.html#ctl">ctl</a></code>.
 
-<p><pre><code>
-: (in "a" (list (read) (read) (read)))    # Read three items from file "a"
+<pre><code>
+: (in <u>a</u> (list (read) (read) (read)))  # Read three items from file "a"
 -> (123 (a b c) def)
 </code></pre>
 
@@ -159,7 +186,7 @@ and <code>(inc 'var)</code> is equivalent to <code>(set 'var (+ var 1))</code>.
 See also <code><a href="refD.html#dec">dec</a></code> and <code><a
 href="ref_.html#+">+</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (inc 7)
 -> 8
 : (inc -1)
@@ -181,12 +208,25 @@ href="ref_.html#+">+</a></code>.
 -> (1 3 3 4)
 </code></pre>
 
+<dt><a name="inc!"><code>(inc! 'obj 'sym ['num]) -> num</code></a>
+<dd><a href="ref.html#trans">Transaction</a> wrapper function for <code><a
+href="refI.html#inc">inc</a></code>. <code>num</code> defaults to 1. Note that
+for incrementing a property value of an entity typically the <code><a
+href="refE.html#entityMesssages">inc!></a></code> message is used. See also
+<code><a href="refN.html#new!">new!</a></code>, <code><a
+href="refS.html#set!">set!</a></code> and <code><a
+href="refP.html#put!">put!</a></code>.
+
+<pre><code>
+(inc! Obj 'cnt 0)  # Incrementing a property of a non-entity object
+</code></pre>
+
 <dt><a name="index"><code>(index 'any 'lst) -> cnt | NIL</code></a>
 <dd>Returns the <code>cnt</code> position of <code>any</code> in
 <code>lst</code>, or <code>NIL</code> if it is not found. See also <code><a
 href="refO.html#offset">offset</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (index 'c '(a b c d e f))
 -> 3
 : (index '(5 6) '((1 2) (3 4) (5 6) (7 8)))
@@ -202,14 +242,14 @@ href="refD.html#date">date</a></code>, <code><a
 href="refT.html#time">time</a></code> and <code><a
 href="refL.html#lines">lines</a></code>.
 
-<p><pre><code>
+<pre><code>
 $ ls -l x.l
 -rw-r--r--   1 abu      users         208 Jun 17 08:58 x.l
 $ ./dbg
-: (info "x.l")
+: (info <u>x.l</u>)
 -> (208 730594 . 32315)
 : (stamp 730594 32315)
--> "2000-06-17 08:58:35"
+-> <u>2000-06-17 08:58:35</u>
 </code></pre>
 
 <dt><a name="init"><code>(init 'tree ['any1] ['any2]) -> lst</code></a>
@@ -221,7 +261,7 @@ opposite direction. See also <code><a href="refT.html#tree">tree</a></code>,
 href="refI.html#iter">iter</a></code> and <code><a
 href="refS.html#scan">scan</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (init (tree 'nr '+Item) 3 5)
 -> (((3 . 5) ((3 NIL . {3-3}) (4 NIL . {3-4}) (5 NIL . {3-5}) (6 NIL . {3-6}) (7 NIL . {3-8}))))
 </code></pre>
@@ -234,7 +274,7 @@ href="refA.html#append">append</a></code>, <code><a
 href="refD.html#delete">delete</a></code> and <code><a
 href="refR.html#replace">replace</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (insert 3 '(a b c d e) 777)
 -> (a b 777 c d e)
 : (insert 1 '(a b c d e) 777)
@@ -250,12 +290,12 @@ is interned and returned. See also <code><a href="refZ.html#zap">zap</a></code>,
 <code><a href="refE.html#extern">extern</a></code> and <code><a
 href="ref_.html#====">====</a></code>.
 
-<p><pre><code>
-: (intern "abc")
+<pre><code>
+: (intern <u>abc</u>)
 -> abc
 : (intern 'car)
 -> car
-: ((intern (pack "c" "a" "r")) (1 2 3))
+: ((intern (pack <u>c</u> <u>a</u> <u>r</u>)) (1 2 3))
 -> 1
 </code></pre>
 
@@ -267,9 +307,9 @@ href="refI.html#in">in</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
-<p><pre><code>
-: (in '(ls "-l") (println (line T)) (kill (ipid)))
-"total 7364"
+<pre><code>
+: (in '(ls <u>-l</u>) (println (line T)) (kill (ipid)))
+<u>total 7364</u>
 -> T
 </code></pre>
 
@@ -281,11 +321,33 @@ href="refT.html#type">type</a></code>, <code><a
 href="refN.html#new">new</a></code> and <code><a
 href="refO.html#object">object</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (isa '+Address Obj)
 -> {1-17}
 : (isa '(+Male +Person) Obj)
 -> NIL
+</code></pre>
+
+<dt><a name="isa/2"><code>isa/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the second
+argument is of the type or class given by the first argument, according to the
+<code><a href="refI.html#isa">isa</a></code> function. Typically used in
+<code><a href="refD.html#db/3">db/3</a></code> or <code><a
+href="refS.html#select/3">select/3</a></code> database queries. See also
+<code><a href="refS.html#same/3">same/3</a></code>, <code><a
+href="refB.html#bool/3">bool/3</a></code>, <code><a
+href="refR.html#range/3">range/3</a></code>, <code><a
+href="refH.html#head/3">head/3</a></code>, <code><a
+href="refF.html#fold/3">fold/3</a></code>, <code><a
+href="refP.html#part/3">part/3</a></code> and <code><a
+href="refT.html#tolr/3">tolr/3</a></code>.
+
+<pre><code>
+: (? (db nm +Person @Prs) (isa +Woman @Prs) (val @Nm @Prs nm))
+ @Prs={2-Y} @Nm=<u>Alexandra of Denmark</u>
+ @Prs={2-1I} @Nm=<u>Alice Maud Mary</u>
+ @Prs={2-F} @Nm=<u>Anne</u>
+ @Prs={2-j} @Nm=<u>Augusta Victoria</u>.       # Stop
 </code></pre>
 
 <dt><a name="iter"><code>(iter 'tree ['fun] ['any1] ['any2] ['flg])</code></a>
@@ -300,7 +362,7 @@ href="refS.html#scan">scan</a></code>, <code><a
 href="refI.html#init">init</a></code> and <code><a
 href="refS.html#step">step</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (iter (tree 'nr '+Item))
 {3-1}
 {3-2}
@@ -311,13 +373,13 @@ href="refS.html#step">step</a></code>.
 {3-8}
 -> {7-1}
 : (iter (tree 'nr '+Item) '((This) (println (: nm))))
-"Main Part"
-"Spare Part"
-"Auxiliary Construction"
-"Enhancement Additive"
-"Metal Fittings"
-"Gadget Appliance"
-"Testartikel"
+<u>Main Part</u>
+<u>Spare Part</u>
+<u>Auxiliary Construction</u>
+<u>Enhancement Additive</u>
+<u>Metal Fittings</u>
+<u>Gadget Appliance</u>
+<u>Testartikel</u>
 -> {7-1}
 </code></pre>
 

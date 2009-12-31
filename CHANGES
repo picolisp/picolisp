@@ -1,3 +1,12 @@
+* 31dec09 picoLisp-3.0.1
+   '*Tsm' transient symbol markup
+   'range' function
+   'gcc' for 64-bit in "lib/native.l"
+   'flip' optional 'cnt' argument
+   Up to four letters in 'c[ad]*ar' and 'c[ad]*dr'
+   Fixed sporadic GUI errors
+   GUI 'onchange' handling
+
 * 07oct09 picoLisp-3.0
    64-bit version for x86-64
    Allowed '.' in symbol names

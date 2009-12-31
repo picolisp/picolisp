@@ -23,7 +23,7 @@ returned. <code>!</code> is normally inserted into existing programs with the
 href="refE.html#e">e</a></code>, <code><a href="ref_.html#^">^</a></code> and
 <code><a href="refD.html#*Dbg">*Dbg</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo (N) (and (println 1) (! println N) (println 2)))
 -> foo
 : (foo 7)
@@ -54,7 +54,7 @@ similar way (this time with an equals sign <code>=</code> instead of a colon)
 and returned. <code>$</code> is normally inserted into existing programs with
 the <code><a href="refT.html#trace">trace</a></code> function.
 
-<p><pre><code>
+<pre><code>
 : (de foo (A B) ($ foo (A B) (* A B)))
 -> foo
 : (foo 3 4)
@@ -71,10 +71,10 @@ href="refD.html#date">date</a></code>, optionally using a delimiter character
 href="refS.html#strDat">strDat</a></code> and <code><a
 href="refE.html#expDat">expDat</a></code>.
 
-<p><pre><code>
-: ($dat "20070601")
+<pre><code>
+: ($dat <u>20070601</u>)
 -> 733134
-: ($dat "2007-06-01" "-")
+: ($dat <u>2007-06-01</u> <u>-</u>)
 -> 733134
 </code></pre>
 
@@ -84,12 +84,12 @@ minutes and seconds are optional and default to zero. See also <code><a
 href="refT.html#tim$">tim$</a></code> and <code><a
 href="ref_.html#$dat">$dat</a></code>.
 
-<p><pre><code>
-: (time ($tim "10:57:56"))
+<pre><code>
+: (time ($tim <u>10:57:56</u>))
 -> (10 57 56)
-: (time ($tim "10:57"))
+: (time ($tim <u>10:57</u>))
 -> (10 57 0)
-: (time ($tim "10"))
+: (time ($tim <u>10</u>))
 -> (10 0 0)
 </code></pre>
 
@@ -100,7 +100,7 @@ arguments evaluates to <code>NIL</code>, it is returned immediately. See also
 <code><a href="ref_.html#/">/</a></code> and <code><a
 href="ref_.html#*/">*/</a></code> .
 
-<p><pre><code>
+<pre><code>
 : (% 17 5)
 -> 2
 : (% -17 5)  # Sign is that of the first argument
@@ -120,7 +120,7 @@ See also <code><a href="ref_.html#|">|</a></code>, <code><a
 href="refX.html#x|">x|</a></code> and <code><a
 href="refB.html#bit?">bit?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (& 6 3)
 -> 2
 : (& 7 3 1)
@@ -134,7 +134,7 @@ arguments evaluates to <code>NIL</code>, it is returned immediately. See also
 href="ref_.html#*/">*/</a></code>, <code><a href="ref_.html#+">+</a></code> and
 <code><a href="ref_.html#-">-</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (* 1 2 3)
 -> 6
 : (* 5 3 2 2)
@@ -144,7 +144,7 @@ href="ref_.html#*/">*/</a></code>, <code><a href="ref_.html#+">+</a></code> and
 <dt><a name="**"><code>(** 'num1 'num2) -> num</code></a>
 <dd>Returns <code>num1</code> to the power of <code>num2</code>.
 
-<p><pre><code>
+<pre><code>
 : (** 2 3)
 -> 8
 : (** 100 100)
@@ -163,7 +163,7 @@ by) the scale factor. See also <code><a href="ref_.html#*">*</a></code>,
 <code><a href="ref_.html#/">/</a></code>, <code><a
 href="ref_.html#+">+</a></code> and <code><a href="ref_.html#-">-</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (*/ 3 4 2)
 -> 6
 : (*/ 1234 2 10)
@@ -174,7 +174,7 @@ href="ref_.html#+">+</a></code> and <code><a href="ref_.html#-">-</a></code>.
 : (setq *Scl 2)
 -> 2
 : (format (*/ 3.0 1.5 1.0) *Scl)
--> "4.50"
+-> <u>4.50</u>
 </code></pre>
 
 <dt><a name="+"><code>(+ 'num ..) -> num</code></a>
@@ -184,7 +184,7 @@ href="refI.html#inc">inc</a></code>, <code><a href="ref_.html#-">-</a></code>,
 <code><a href="ref_.html#*">*</a></code>, <code><a
 href="ref_.html#/">/</a></code> and <code><a href="ref_.html#*/">*/</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (+ 1 2 3)
 -> 6
 </code></pre>
@@ -198,7 +198,7 @@ href="ref_.html#+">+</a></code>, <code><a href="ref_.html#*">*</a></code>,
 <code><a href="ref_.html#/">/</a></code> and <code><a
 href="ref_.html#*/">*/</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (- 7)
 -> -7
 : (- 7 2 1)
@@ -212,7 +212,7 @@ href="ref.html#pilog">Pilog</a> environment. See also <code><a
 href="refP.html#prove">prove</a></code> and <code><a
 href="refU.html#unify">unify</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (? (append (1 2 3) (4 5 6) @X) (@ println 'X '= (-> @X)))
 X = (1 2 3 4 5 6)
  @X=(1 2 3 4 5 6)
@@ -227,7 +227,7 @@ is returned immediately. See also <code><a href="ref_.html#*">*</a></code>,
 href="ref_.html#%">%</a></code>, <code><a href="ref_.html#+">+</a></code> and
 <code><a href="ref_.html#-">-</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (/ 12 3)
 -> 4
 : (/ 60 -3 2 2)
@@ -243,7 +243,7 @@ equivalent to <code>(; This ..)</code>. See also <code><a
 href="ref_.html#;">;</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
 <code><a href="ref_.html#::">::</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'X 'a 1)
 -> 1
 : (with 'X (: a))
@@ -262,7 +262,7 @@ href="ref_.html#=:">=:</a></code>, <code><a
 href="refP.html#prop">prop</a></code> and <code><a
 href="ref_.html#:">:</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (with 'X (=: cnt 0) (inc (:: cnt)) (: cnt))
 -> 1
 </code></pre>
@@ -274,7 +274,7 @@ list, by applying the <code><a href="refG.html#get">get</a></code> algorithm to
 href="ref_.html#:">:</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
 <code><a href="ref_.html#::">::</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'A 'a 1)
 -> 1
 : (put 'A 'b 'B)
@@ -291,7 +291,7 @@ href="ref_.html#:">:</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
 increasing order. See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (< 3 4)
 -> T
 : (< 'a 'b 'c)
@@ -304,12 +304,12 @@ increasing order. See also <a href="ref.html#cmp">Comparing</a>.
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
 non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (<= 3 3)
 -> T
 : (<= 1 2 3)
 -> T
-: (<= "abc" "abc" "def")
+: (<= <u>abc</u> <u>abc</u> <u>def</u>)
 -> T
 </code></pre>
 
@@ -318,7 +318,7 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 (structure equality). <code>(<&gt 'any ..)</code> is equivalent to <code>(not (=
 'any ..))</code>. See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (<&gt 'a 'b)
 -> T
 : (<&gt 'a 'b 'b)
@@ -331,12 +331,12 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 <dd>Returns <code>T</code> when all <code>any</code> arguments are equal
 (structure equality). See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (= 6 (* 1 2 3))
 -> T
-: (= "a" "a")
+: (= <u>a</u> <u>a</u>)
 -> T
-: (== "a" "a")
+: (== <u>a</u> <u>a</u>)
 -> T
 : (= (1 (2) 3) (1 (2) 3))
 -> T
@@ -349,7 +349,7 @@ href="refL.html#lt0">lt0</a></code>, <code><a
 href="refG.html#ge0">ge0</a></code> and <code><a
 href="refG.html#gt0">gt0</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (=0 (- 6 3 2 1))
 -> 0
 : (=0 'a)
@@ -366,7 +366,7 @@ applying the <code><a href="refG.html#get">get</a></code> algorithm to
 href="refP.html#put">put</a></code>, <code><a href="ref_.html#:">:</a></code>
 and <code><a href="ref_.html#::">::</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (with 'X (=: a 1) (=: b 2))
 -> 2
 : (get 'X 'a)
@@ -379,7 +379,7 @@ and <code><a href="ref_.html#::">::</a></code>.
 <dd>Returns <code>T</code> when all <code>any</code> arguments are the same
 (pointer equality). See also <code><a href="refN.html#n==">n==</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (== 'a 'a)
 -> T
 : (== 'NIL NIL (val NIL) (car NIL) (cdr NIL))
@@ -395,14 +395,14 @@ optional <code>sym</code> arguments are (re-)inserted into the transient index.
 See also <code><a href="refE.html#extern">extern</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
-<p><pre><code>
-: (setq S "abc")           # Read "abc"
--> "abc"
-: (== S "abc")             # Read again, get the same symbol
+<pre><code>
+: (setq S <u>abc</u>)             # Read "abc"
+-> <u>abc</u>
+: (== S <u>abc</u>)               # Read again, get the same symbol
 -> T
 : (====)                   # Close scope
 -> NIL
-: (== S "abc")             # Read again, get another symbol
+: (== S <u>abc</u>)               # Read again, get another symbol
 -> NIL
 </code></pre>
 
@@ -411,10 +411,10 @@ href="refI.html#intern">intern</a></code>.
 <code>(=T X)</code> is equivalent to <code>(== T X)</code>. See also <a
 href="refN.html#nT">nT</a>.
 
-<p><pre><code>
+<pre><code>
 : (=T 0)
 -> NIL
-: (=T "T")
+: (=T <u>T</u>)
 -> NIL
 : (=T T)
 -> T
@@ -424,7 +424,7 @@ href="refN.html#nT">nT</a>.
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
 decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (> 4 3)
 -> T
 : (> 'A 999)
@@ -435,7 +435,7 @@ decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 <dd>Returns <code>T</code> when all arguments <code>any</code> are in strictly
 non-increasing order. See also <a href="ref.html#cmp">Comparing</a>.
 
-<p><pre><code>
+<pre><code>
 : (>= 'A 999)
 -> T
 : (>= 3 2 2 1)
@@ -447,7 +447,7 @@ non-increasing order. See also <a href="ref.html#cmp">Comparing</a>.
 bit-positions. If <code>cnt</code> is negative, a corresponding left shift is
 performed.
 
-<p><pre><code>
+<pre><code>
 : (>> 1 8)
 -> 4
 : (>> 3 16)
@@ -458,12 +458,19 @@ performed.
 -> -32
 </code></pre>
 
-<dt><a name="?"><code>(? [sym 'any ..] . lst) -> flg</code></a>
+<dt><a name="?"><code>(? [sym ..] [pat 'any ..] . lst) -> flg</code></a>
 <dd>Top-level function for interactive <a href="ref.html#pilog">Pilog</a>
-queries. It displays each result, waits for console input, and terminates when a
-non-empty line is entered.
+queries. <code>?</code> is a non-evaluating frontend to the <code><a
+href="refQ.html#query">query</a></code> function. It displays each result, waits
+for console input, and terminates when a non-empty line is entered. If a
+preceding list of (non-pattern-) symbols is given, they will be taken as rules
+to be traced by <code><a href="refP.html#prove">prove</a></code>. The list of
+variable/value pairs is passed to <code><a href="refG.html#goal">goal</a></code>
+for an initial Pilog environment. See also <code><a
+href="refP.html#pilog">pilog</a></code> and <code><a
+href="refS.html#solve">solve</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (? (append (a b c) (d e f) @X))
  @X=(a b c d e f)
 -> NIL
@@ -476,7 +483,15 @@ non-empty line is entered.
 -> NIL
 
 : (? (append @X @Y (a b c)))
- @X=NIL @Y=(a b c).                       # Stopped
+ @X=NIL @Y=(a b c).                    # Stopped
+-> NIL
+
+: (? append (append @X @Y (a b c)))    # Trace 'append'
+1 (append NIL (a b c) (a b c))
+ @X=NIL @Y=(a b c)                                  
+2 (append (a . @X) @Y (a b c))
+1 (append NIL (b c) (b c))
+ @X=(a) @Y=(b c).                      # Stopped                       
 -> NIL
 </code></pre>
 
@@ -502,7 +517,7 @@ also <code><a href="refD.html#debug">debug</a></code>, <code><a
 href="ref_.html#!">!</a></code>, <code><a href="refE.html#e">e</a></code> and
 <code><a href="refD.html#*Dbg">*Dbg</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (* (+ 3 4) (/ 7 0))
 !? (/ 7 0)
 Div/0
@@ -517,7 +532,7 @@ See also <code><a href="refX.html#x|">x|</a></code>, <code><a
 href="ref_.html#&">&</a></code> and <code><a
 href="refB.html#bit?">bit?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (| 1 2)
 -> 3
 : (| 1 2 4 8)

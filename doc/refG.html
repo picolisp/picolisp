@@ -18,7 +18,7 @@ megabytes of free cells are reserved, increasing the heap size if necessary. If
 decreasing the heap size if possible. See also <code><a
 href="refH.html#heap">heap</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (gc)
 -> NIL
 : (heap)
@@ -36,7 +36,7 @@ href="refG.html#gt0">gt0</a></code>, <code><a
 href="refL.html#lt0">lt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
 and <code><a href="refN.html#n0">n0</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (ge0 -2)
 -> NIL
 : (ge0 3)
@@ -52,7 +52,7 @@ range is returned. Otherwise, the current maximal key plus one is returned. See
 also <code><a href="refU.html#useKey">useKey</a></code> and <code><a
 href="refM.html#maxKey">maxKey</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (maxKey (tree 'nr '+Item))
 -> 8
 : (genKey 'nr '+Item)
@@ -70,7 +70,7 @@ n'th CDR (if the next argument is a negative number) from a list. See also
 <code><a href="refP.html#put">put</a></code>, <code><a
 href="ref_.html#;">;</a></code> and <code><a href="ref_.html#:">:</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'X 'a 1)
 -> 1
 : (get 'X 'a)
@@ -96,7 +96,7 @@ href="ref_.html#;">;</a></code> and <code><a href="ref_.html#:">:</a></code>.
 definition, otherwise <code>NIL</code>. See also <code><a
 href="refF.html#fun?">fun?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (getd '+)
 -> 67327232
 : (getd 'script)
@@ -113,7 +113,7 @@ by applying the <code><a href="refG.html#get">get</a></code> algorithm to
 href="refP.html#putl">putl</a></code> and <code><a
 href="refM.html#maps">maps</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (put 'X 'a 1)
 -> 1
 : (put 'X 'b 2)
@@ -130,19 +130,21 @@ href="refP.html#pack">pack</a></code>ing the <code>any</code> argument between
 the individual elements of <code>lst</code>. See also <code><a
 href="refT.html#text">text</a></code>.
 
-<p><pre><code>
-: (glue "," '(a b c d))
--> "a,b,c,d"
+<pre><code>
+: (glue <u>,</u> '(a b c d))
+-> <u>a,b,c,d</u>
 </code></pre>
 
-<dt><a name="goal"><code>(goal '([sym 'any ..] . lst) ['sym 'any ..]) -> lst</code></a>
+<dt><a name="goal"><code>(goal '([pat 'any ..] . lst) ['sym 'any ..]) -> lst</code></a>
 <dd>Constructs a <a href="ref.html#pilog">Pilog</a> query list from the list of
 clauses <code>lst</code>. The head of the argument list may consist of a
-sequence of symbols and expressions, which are used together with the optional
-<code>sym</code> and <code>any</code> arguments to form an initial environment.
-See also <code><a href="refP.html#prove">prove</a></code>.
+sequence of pattern symbols (Pilog variables) and expressions, which are used
+together with the optional <code>sym</code> and <code>any</code> arguments to
+form an initial environment. See also <code><a
+href="refP.html#prove">prove</a></code> and <code><a
+href="refF.html#fail">fail</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (goal '((likes John @X)))
 -> (((1 (0) NIL ((likes John @X)) NIL T)))
 : (goal '(@X 'John (likes @X @Y)))
@@ -157,13 +159,13 @@ href="refB.html#by">by</a></code>, <code><a
 href="refS.html#sort">sort</a></code> and <code><a
 href="refU.html#uniq">uniq</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f)))
 -> ((1 a b c) (2 d e f))
-: (by name group '("x" "x" "y" "z" "x" "z")))
--> (("x" "x" "x") ("y") ("z" "z"))
-: (by length group '(123 (1 2) "abcd" "xyz" (1 2 3 4) "XY"))
--> ((123 "xyz") ((1 2) "XY") ("abcd" (1 2 3 4))
+: (by name group '(<u>x</u> <u>x</u> <u>y</u> <u>z</u> <u>x</u> <u>z</u>)))
+-> ((<u>x</u> <u>x</u> <u>x</u>) (<u>y</u>) (<u>z</u> <u>z</u>))
+: (by length group '(123 (1 2) <u>abcd</u> <u>xyz</u> (1 2 3 4) <u>XY</u>))
+-> ((123 <u>xyz</u>) ((1 2) <u>XY</u>) (<u>abcd</u> (1 2 3 4))
 </code></pre>
 
 <dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>
@@ -173,7 +175,7 @@ href="refG.html#ge0">ge0</a></code>, <code><a
 href="refL.html#lt0">lt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
 and <code><a href="refN.html#n0">n0</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (gt0 -2)
 -> NIL
 : (gt0 3)

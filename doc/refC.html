@@ -20,35 +20,11 @@ href="refD.html#dm">dm</a></code> and <code><a
 href="refV.html#var">var</a></code> and <code><a
 href="refR.html#rel">rel</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (class +Test)
 -> +Test
 : *Class
 -> +Test
-</code></pre>
-
-<dt><a name="caaar"><code>(caaar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (car (car 'lst)))</code>.
-
-<p><pre><code>
-: (caaar '(((1 2) 3) 4))
--> 1
-</code></pre>
-
-<dt><a name="caadr"><code>(caadr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (car (cdr 'lst)))</code>.
-
-<p><pre><code>
-: (caadr '(1 (2 3)))
--> 2
-</code></pre>
-
-<dt><a name="caar"><code>(caar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (car 'lst))</code>.
-
-<p><pre><code>
-: (caar '((1 2) (3 4)))
--> 1
 </code></pre>
 
 <dt><a name="cache"><code>(cache 'var 'sym . prg) -> any</code></a>
@@ -57,7 +33,7 @@ href="refR.html#rel">rel</a></code>.
 must be a transient symbol representing a unique key for the argument(s) to the
 calculation.
 
-<p><pre><code>
+<pre><code>
 : (de fibonacci (N)
    (cache '*Fibonacci (format N)
       (if (< N 2)
@@ -72,58 +48,91 @@ calculation.
 -> 5443837311356528133873426099375038013538 ...  # (2090 digits)
 </code></pre>
 
-<dt><a name="cadar"><code>(cadar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (cdr (car 'lst)))</code>.
-
-<p><pre><code>
-: (cadar '((1 2 3)))
--> 2
-</code></pre>
-
-<dt><a name="cadddr"><code>(cadddr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (cdr (cdr (cdr
-'lst))))</code>, or the fourth element of <code>lst</code>.
-
-<p><pre><code>
-: (cadddr (1 2 3 4 5 6))
--> 4
-</code></pre>
-
-<dt><a name="caddr"><code>(caddr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (cdr (cdr 'lst)))</code>, or
-the third element of <code>lst</code>.
-
-<p><pre><code>
-: (caddr (1 2 3 4 5 6))
--> 3
-</code></pre>
-
-<dt><a name="cadr"><code>(cadr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(car (cdr 'lst))</code>, or the
-second element of <code>lst</code>.
-
-<p><pre><code>
-: (cadr (1 2 3 4 5 6))
--> 2
-</code></pre>
-
 <dt><a name="call"><code>(call 'any ..) -> flg</code></a>
 <dd>Calls an external system command. The <code>any</code> arguments specify the
 command and its arguments. Returns <code>T</code> if the command was executed
 successfully.
 
-<p><pre><code>
-: (when (call 'test "-r" "file.l")  # Test if file exists and is readable
-   (load "file.l")                  # Load it
-   (call 'rm "file.l") )            # Remove it
+<pre><code>
+: (when (call 'test <u>-r</u> <u>file.l</u>)  # Test if file exists and is readable
+   (load <u>file.l</u>)  # Load it
+   (call 'rm <u>file.l</u>) )  # Remove it
 </code></pre>
 
-<dt><a name="car"><code>(car 'lst) -> any</code></a>
-<dd>List access: Returns the first element of <code>lst</code>.
+<dt><a name="call/1"><code>call/1</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the argument
+term can be proven.
 
-<p><pre><code>
+<pre><code>
+: (be mapcar (@ NIL NIL))
+-> mapcar
+: (be mapcar (@P (@X . @L) (@Y . @M))
+   (call @P @X @Y)                        # Call the given predicate
+   (mapcar @P @L @M) )
+-> mapcar
+:  (? (mapcar change (you are a computer) @Z))
+-> NIL
+:  (? (mapcar change (you are a computer) @Z) T)
+-> NIL
+:  (? (mapcar permute ((a b c) (d e f)) @X))
+ @X=((a b c) (d e f))
+ @X=((a b c) (d f e))
+ @X=((a b c) (e d f))
+ ...
+ @X=((a c b) (d e f))
+ @X=((a c b) (d f e))
+ @X=((a c b) (e d f))
+ ...
+</code></pre>
+
+<dt><a name="can"><code>(can 'msg) -> lst</code></a>
+<dd>Returns a list of all classes that accept the message <code>msg</code>. See
+also <code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
+href="refC.html#class">class</a></code>, <code><a
+href="refD.html#dep">dep</a></code>, <code><a
+href="refW.html#what">what</a></code> and <code><a
+href="refW.html#who">who</a></code>.
+
+<pre><code>
+: (can 'zap>)
+-> ((zap> . +relation) (zap> . +Blob) (zap> . +Entity))
+: (more @ pp)
+(dm (zap> . +relation) (Obj Val))
+
+(dm (zap> . +Blob) (Obj Val)
+   (and
+      Val
+      (call 'rm <u>-f</u> (blob Obj (: var))) ) )
+
+(dm (zap> . +Entity) NIL
+   (for X (getl This)
+      (let V (or (atom X) (pop 'X))
+         (and (meta This X) (zap> @ This V)) ) ) )
+
+-> NIL
+</code></pre>
+
+<dt><a name="car"><code>(car 'var) -> any</code></a>
+<dd>List access: Returns the value of <code>var</code> if it is a symbol, or the
+first element if it is a list. See also <code><a
+href="refC.html#cdr">cdr</a></code> and <code><a
+href="refC.html#cXr">c..r</a></code>.
+
+<pre><code>
 : (car (1 2 3 4 5 6))
 -> 1
+</code></pre>
+
+<dt><a name="cXr"><code>(c[ad]*ar 'var) -> any</code></a>
+<dt><code>(c[ad]*dr 'lst) -> any</code>
+<dd>List access shortcuts. Combinations of the <code><a
+href="refC.html#car">car</a></code> and <code><a
+href="refC.html#cdr">cdr</a></code> functions, with up to four letters 'a' and
+'d'.
+
+<pre><code>
+: (cdar '((1 . 2) . 3))
+-> 2
 </code></pre>
 
 <dt><a name="case"><code>(case 'any (any1 . prg1) (any2 . prg2) ..) -> any</code></a>
@@ -134,9 +143,9 @@ elements <code>anyN</code> of each clause. If one of them is a list,
 <code>prgN</code> is executed, and the result returned. Otherwise
 <code>NIL</code> is returned.
 
-<p><pre><code>
-: (case (char 66) ("A" (+ 1 2 3)) (("B" "C") "Bambi") ("D" (* 1 2 3)))
--> "Bambi"
+<pre><code>
+: (case (char 66) (<u>A</u> (+ 1 2 3)) ((<u>B</u> <u>C</u>) <u>Bambi</u>) (<u>D</u> (* 1 2 3)))
+-> <u>Bambi</u>
 </code></pre>
 
 <dt><a name="catch"><code>(catch 'any . prg) -> any</code></a>
@@ -153,12 +162,12 @@ href="refF.html#finally">finally</a></code>, <code><a
 href="refQ.html#quit">quit</a></code> and
 <code><a href="ref.html#errors">Error Handling</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (catch 'OK (println 1) (throw 'OK 999) (println 2))
 1
 -> 999
-: (catch '("No such file") (in "doesntExist" (foo)))
--> "No such file"
+: (catch '(<u>No such file</u>) (in <u>doesntExist</u> (foo)))
+-> <u>No such file</u>
 </code></pre>
 
 <dt><a name="cd"><code>(cd 'any) -> sym</code></a>
@@ -167,96 +176,39 @@ returned on success, otherwise <code>NIL</code>. See also <code><a
 href="refD.html#dir">dir</a></code> and <code><a
 href="refP.html#pwd">pwd</a></code>.
 
-<p><pre><code>
-: (when (cd "lib")
+<pre><code>
+: (when (cd <u>lib</u>)
    (println (sum lines (dir)))
    (cd @) )
 10955
 </code></pre>
 
-<dt><a name="cdaar"><code>(cdaar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (car (car 'lst)))</code>.
-
-<p><pre><code>
-: (cdaar '(((1 2 3))))
--> (2 3)
-</code></pre>
-
-<dt><a name="cdadr"><code>(cdadr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (car (cdr 'lst)))</code>.
-
-<p><pre><code>
-: (cdadr '((1 2) (3 4)))
--> (4)
-</code></pre>
-
-<dt><a name="cdar"><code>(cdar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (car 'lst))</code>.
-
-<p><pre><code>
-: (cdar '((1 2) (3 4)))
--> (2)
-</code></pre>
-
-<dt><a name="cddar"><code>(cddar 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (cdr (car 'lst)))</code>.
-
-<p><pre><code>
-: (cddar '((1 2 3 4)))
--> (3 4)
-</code></pre>
-
-<dt><a name="cddddr"><code>(cddddr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (cdr (cdr (cdr
-'lst))))</code>. Returns all but the first four elements of <code>lst</code>.
-
-<p><pre><code>
-: (cddddr (1 2 3 4 5 6))
--> (5 6)
-</code></pre>
-
-<dt><a name="cdddr"><code>(cdddr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (cdr (cdr 'lst)))</code>.
-Returns all but the first three elements of <code>lst</code>.
-
-<p><pre><code>
-: (cdddr (1 2 3 4 5 6))
--> (4 5 6)
-</code></pre>
-
-<dt><a name="cddr"><code>(cddr 'lst) -> any</code></a>
-<dd>List access shortcut: Equivalent to <code>(cdr (cdr 'lst))</code>. Returns
-all but the first two elements of <code>lst</code>.
-
-<p><pre><code>
-: (cddr (1 2 3 4 5 6))
--> (3 4 5 6)
-</code></pre>
-
 <dt><a name="cdr"><code>(cdr 'lst) -> any</code></a>
-<dd>List access: Returns all but the first element of <code>lst</code>.
+<dd>List access: Returns all but the first element of <code>lst</code>. See also
+<code><a href="refC.html#car">car</a></code> and <code><a
+href="refC.html#cXr">c..r</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (cdr (1 2 3 4 5 6))
 -> (2 3 4 5 6)
 </code></pre>
 
-<dt><a name="center"><code>(center 'cnt|lst 'any ..) -> sym<br></code></a>
+<dt><a name="center"><code>(center 'cnt|lst 'any ..) -> sym</code></a>
 <dd>Returns a transient symbol with all <code>any</code> arguments <code><a
 href="refP.html#pack">pack</a></code>ed in a centered format. Trailing blanks
 are omitted. See also <code><a href="refA.html#align">align</a></code>, <code><a
 href="refT.html#tab">tab</a></code> and <code><a
 href="refW.html#wrap">wrap</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (center 4 12)
--> " 12"
-: (center 4 "a")
--> " a"
-: (center 7 "a")
--> "   a"
-: (center (3 3 3) "a" "b" "c")
--> " a  b  c"
+-> <u> 12</u>
+: (center 4 <u>a</u>)
+-> <u> a</u>
+: (center 7 <u>a</u>)
+-> <u>   a</u>
+: (center (3 3 3) <u>a</u> <u>b</u> <u>c</u>)
+-> <u> a  b  c</u>
 </code></pre>
 
 <dt><a name="chain"><code>(chain 'lst ..) -> lst</code></a>
@@ -269,15 +221,15 @@ maintained. <code>chain</code> returns the last linked argument. See also
 href="refY.html#yoke">yoke</a></code> and <code><a
 href="refM.html#made">made</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (make (chain (list 1 2 3) NIL (cons 4)) (chain (list 5 6)))
 -> (1 2 3 4 5 6)
 </code></pre>
 
-<dt><a name="char"><code>(char) -> sym<br>
-(char 'cnt) -> sym<br>
-(char T) -> sym<br>
-(char 'sym) -> cnt</code></a>
+<dt><a name="char"><code>(char) -> sym</code></a>
+<dt><code>(char 'cnt) -> sym</code>
+<dt><code>(char T) -> sym</code>
+<dt><code>(char 'sym) -> cnt</code>
 <dd>When called without arguments, the next character from the current input
 stream is returned as a single-character transient symbol, or <code>NIL</code>
 upon end of file. When called with a number <code>cnt</code>, a character with
@@ -293,15 +245,15 @@ href="refL.html#line">line</a></code>, <code><a
 href="refT.html#till">till</a></code> and <code><a
 href="refE.html#eof">eof</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (char)                   # Read character from console
 A                          # (typed 'A' and a space/return)
--> "A"
+-> <u>A</u>
 : (char 100)               # Convert unicode to symbol
--> "d"
+-> <u>d</u>
 : (char T)                 # Special case, catch all
 -> # (not printable)
-: (char "d")               # Convert symbol to unicode
+: (char <u>d</u>)                 # Convert symbol to unicode
 -> 100
 </code></pre>
 
@@ -312,13 +264,13 @@ the previous directory will be restored and the result of <code>prg</code>
 returned. See also <code><a href="refD.html#dir">dir</a></code> and <code><a
 href="refP.html#pwd">pwd</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (pwd)
--> "/usr/abu/pico"
-: (chdir "src" (pwd))
--> "/usr/abu/pico/src"
+-> <u>/usr/abu/pico</u>
+: (chdir <u>src</u> (pwd))
+-> <u>/usr/abu/pico/src</u>
 : (pwd)
--> "/usr/abu/pico"
+-> <u>/usr/abu/pico</u>
 </code></pre>
 
 <dt><a name="chkTree"><code>(chkTree 'sym ['fun]) -> num</code></a>
@@ -328,7 +280,7 @@ called with the key and value of each node, and should return <code>NIL</code>
 for failure. See also <code><a href="refT.html#tree">tree</a></code> and
 <code><a href="refR.html#root">root</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (show *DB '+Item)
 {C} NIL
    sup (7 . {7-3})
@@ -345,11 +297,11 @@ for failure. See also <code><a href="refT.html#tree">tree</a></code> and
 <code>any</code> is <code>NIL</code> or a symbol with no name, <code>NIL</code>
 is returned. A list argument is returned unchanged.
 
-<p><pre><code>
+<pre><code>
 : (chop 'car)
--> ("c" "a" "r")
-: (chop "Hello")
--> ("H" "e" "l" "l" "o")
+-> (<u>c</u> <u>a</u> <u>r</u>)
+: (chop <u>Hello</u>)
+-> (<u>H</u> <u>e</u> <u>l</u> <u>l</u> <u>o</u>)
 </code></pre>
 
 <dt><a name="circ"><code>(circ 'any ..) -> lst</code></a>
@@ -358,7 +310,7 @@ href="refC.html#cons">cons</a></code>ing them to a list and then connecting the
 CDR of the last cell to the first cell. See also <code><a
 href="refL.html#list">list</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (circ 'a 'b 'c)
 -> (a b c .)
 </code></pre>
@@ -374,7 +326,7 @@ href="refT.html#type">type</a></code>, <code><a
 href="refI.html#isa">isa</a></code> and <code><a
 href="refO.html#object">object</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (class +A +B +C +D)
 -> +A
 : +A
@@ -385,16 +337,30 @@ href="refO.html#object">object</a></code>.
 -> ((foo> (X) (bar X)) +B +C +D)
 </code></pre>
 
+<dt><a name="clause/2"><code>clause/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
+argument is a predicate which has the second argument defined as a clause.
+
+<pre><code>
+: (? (clause append ((NIL @X @X))))
+-> T
+
+: (? (clause append @C))
+ @C=((NIL @X @X))
+ @C=(((@A . @X) @Y (@A . @Z)) (append @X @Y @Z))
+-> NIL
+</code></pre>
+
 <dt><a name="clip"><code>(clip 'lst) -> lst</code></a>
 <dd>Returns a copy of <code>lst</code> with all white space characters or
 <code>NIL</code> elements removed from both sides. See also <code><a
 href="refT.html#trim">trim</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (clip '(NIL 1 NIL 2 NIL))
 -> (1 NIL 2)
-: (clip '(" " a " " b " "))
--> (a " " b)
+: (clip '(<u> </u> a <u> </u> b <u> </u>))
+-> (a <u> </u> b)
 </code></pre>
 
 <dt><a name="close"><code>(close 'cnt) -> cnt | NIL</code></a>
@@ -404,7 +370,7 @@ for that descriptor. See also <code><a href="refO.html#open">open</a></code>,
 <code><a href="refL.html#listen">listen</a></code> and <code><a
 href="refC.html#connect">connect</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (close 2)                            # Close standard error
 -> 2
 </code></pre>
@@ -417,14 +383,14 @@ that the new name must not be longer than the original one. See also <code><a
 href="refA.html#argv">argv</a></code> and <code><a
 href="ref.html#invoc">Invocation</a></code>.
 
-<p><pre><code>
+<pre><code>
 $ ./dbg
 : (cmd)
--> "./bin/picolisp"
-: (cmd "!/bin/picolust")
--> "!/bin/picolust"
+-> <u>./bin/picolisp</u>
+: (cmd <u>!/bin/picolust</u>)
+-> <u>!/bin/picolust</u>
 : (cmd)
--> "!/bin/picolust"
+-> <u>!/bin/picolust</u>
 </code></pre>
 
 <dt><a name="cnt"><code>(cnt 'fun 'lst ..) -> cnt</code></a>
@@ -433,7 +399,7 @@ additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns the count of non-<code>NIL</code> values returned
 from <code>fun</code>.
 
-<p><pre><code>
+<pre><code>
 : (cnt cdr '((1 . T) (2) (3 4) (5)))
 -> 2
 </code></pre>
@@ -453,14 +419,14 @@ href="refD.html#db">db</a></code>, <code><a href="refA.html#aux">aux</a></code>,
 href="refI.html#init">init</a></code> and <code><a
 href="refS.html#step">step</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (collect 'nr '+Item)
 -> ({3-1} {3-2} {3-3} {3-4} {3-5} {3-6} {3-8})
 : (collect 'nr '+Item 3 6 'nr)
 -> (3 4 5 6)
 : (collect 'nr '+Item 3 6 'nm)
--> ("Auxiliary Construction" "Enhancement Additive" "Metal Fittings" "Gadget Appliance")
-: (collect 'nm '+Item "Main Part")
+-> (<u>Auxiliary Construction</u> <u>Enhancement Additive</u> <u>Metal Fittings</u> <u>Gadget Appliance</u>)
+: (collect 'nm '+Item <u>Main Part</u>)
 -> ({3-1})
 </code></pre>
 
@@ -475,11 +441,11 @@ href="refL.html#lock">lock</a></code>ed and <code><a
 href="refP.html#protect">protect</a></code>ed. See also <code><a
 href="refR.html#rollback">rollback</a></code>.
 
-<p><pre><code>
-: (pool "db")
+<pre><code>
+: (pool <u>db</u>)
 -> T
-: (put '{1} 'str "Hello")
--> "Hello"
+: (put '{1} 'str <u>Hello</u>)
+-> <u>Hello</u>
 : (commit)
 -> T
 </code></pre>
@@ -489,7 +455,7 @@ href="refR.html#rollback">rollback</a></code>.
 (destructively) storing <code>any</code> in the CDR of <code>lst</code>. See
 also <code><a href="refC.html#conc">conc</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq C (1 . a))
 -> (1 . a)
 : (con C '(b c d))
@@ -503,7 +469,7 @@ also <code><a href="refC.html#conc">conc</a></code>.
 href="refA.html#append">append</a></code> and <code><a
 href="refC.html#con">con</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq  A (1 2 3)  B '(a b c))
 -> (a b c)
 : (conc A B)                        # Concatenate lists in 'A' and 'B'
@@ -520,7 +486,7 @@ returned. See also <code><a href="refN.html#nond">nond</a></code>, <code><a
 href="refI.html#if">if</a></code>, <code><a href="refI.html#if2">if2</a></code>
 and <code><a href="refW.html#when">when</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (cond
    ((= 3 4) (println 1))
    ((= 3 3) (println 2))
@@ -534,11 +500,10 @@ and <code><a href="refW.html#when">when</a></code>.
 <code>any</code>, port <code>cnt</code>. <code>any</code> may be either a
 hostname or a standard internet address in numbers-and-dots notation. Returns a
 socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
-be established. See also <code><a href="refL.html#listen">listen</a></code> and
-<code><a href="refN.html#nagle">nagle</a></code>.
+be established. See also <code><a href="refL.html#listen">listen</a></code>.
 
-<p><pre><code>
-: (connect "localhost" 4444)
+<pre><code>
+: (connect <u>localhost</u> 4444)
 -> 3
 </code></pre>
 
@@ -549,7 +514,7 @@ of cells is built. <code>(cons 'a 'b 'c 'd)</code> is equivalent to <code>(cons
 'a (cons 'b (cons 'c 'd)))</code>. See also <code><a
 href="refL.html#list">list</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (cons 1 2)
 -> (1 . 2)
 : (cons 'a '(b c d))
@@ -564,7 +529,7 @@ href="refL.html#list">list</a></code>.
 <dd>Copies the argument <code>any</code>. For lists, the top level cells are
 copied, while atoms are returned unchanged.
 
-<p><pre><code>
+<pre><code>
 : (=T (copy T))               # Atoms are not copied
 -> T
 : (setq L (1 2 3))
@@ -582,7 +547,7 @@ copied, while atoms are returned unchanged.
 href="refT.html#tree">tree</a></code> and <code><a
 href="refR.html#root">root</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (count (tree 'nr '+Item))
 -> 7
 </code></pre>
@@ -600,13 +565,13 @@ href="refO.html#out">out</a></code>. Note: It is not recommended to lock a file
 by name and then do I/O on the same file, as this may give unexpected results on
 some operating systems.
 
-<p><pre><code>
+<pre><code>
 $ echo 9 >count                           # Write '9' to file "count"
 $ ./dbg
-: (ctl ".ctl"                             # Exclusive control, using ".ctl"
-   (in "count"
+: (ctl <u>.ctl</u>                               # Exclusive control, using ".ctl"
+   (in <u>count</u>
       (let Cnt (read)                     # Read '9'
-         (out "count"
+         (out <u>count</u>
             (println (dec Cnt)) ) ) ) )   # Write '8'
 -> 8
 :
@@ -617,11 +582,11 @@ $ cat count                               # Check "count"
 <dt><a name="ctty"><code>(ctty 'sym|pid) -> flg</code></a>
 <dd>When called with a symbolic argument, <code>ctty</code> changes the current
 TTY device to <code>sym</code>. Otherwise, the local console is prepared for
-serving the Pico Lisp process with the process ID <code>pid</code>. See also
+serving the PicoLisp process with the process ID <code>pid</code>. See also
 <code><a href="refR.html#raw">raw</a></code>.
 
-<p><pre><code>
-: (ctty "/dev/tty")
+<pre><code>
+: (ctty <u>/dev/tty</u>)
 -> T
 </code></pre>
 
@@ -632,7 +597,7 @@ a <code><a href="refP.html#pat?">pat?</a></code> symbol is substituted inside
 <code>fun</code> by its value. All other symbols in <code>lst</code> are
 collected into a <code><a href="refJ.html#job">job</a></code> environment.
 
-<p><pre><code>
+<pre><code>
 : (de multiplier (@X)
    (curry (@X) (N) (* @X N)) )
 -> multiplier
@@ -678,7 +643,7 @@ collected into a <code><a href="refJ.html#job">job</a></code> environment.
 <code>var</code>. See also <code><a href="refP.html#pop">pop</a></code> and
 <code><a href="refD.html#del">del</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq S '(1 2 3 4 5 6 7 8))
 -> (1 2 3 4 5 6 7 8)
 : (cut 3 'S)

@@ -11,12 +11,33 @@
 
 <dl>
 
+<dt><a name="+Need"><code>+Need</code></a>
+<dd>Prefix class for mandatory <code><a
+href="refR.html#+relation">+relation</a></code>s. Note that this does not
+enforce any requirements by itself, it only returns an error message if the
+<code>mis&gt;</code> message is explicitly called, e.g. by GUI functions. See
+also <code><a href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel nr (+Need +Key +Number))  # Item number is mandatory
+</code></pre>
+
+<dt><a name="+Number"><code>+Number</code></a>
+<dd>Class for numeric relations, a subclass of <code><a
+href="refR.html#+relation">+relation</a></code>. Accepts an optional argument
+for the fixpoint scale (currently not used). See also <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(rel pr (+Number) 2)  # Price, with two decimal places
+</code></pre>
+
 <dt><a name="n=="><code>(n== 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when not all <code>any</code> arguments are the same
 (pointer equality). <code>(n== 'any ..)</code> is equivalent to <code>(not (==
 'any ..))</code>. See also <code><a href="ref_.html#==">==</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (n== 'a 'a)
 -> NIL
 : (n== (1) (1))
@@ -30,7 +51,7 @@ href="refL.html#lt0">lt0</a></code>, <code><a
 href="refG.html#ge0">ge0</a></code> and <code><a
 href="refG.html#gt0">gt0</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (n0 (- 6 3 2 1))
 -> NIL
 : (n0 'a)
@@ -41,25 +62,13 @@ href="refG.html#gt0">gt0</a></code>.
 <dd>Returns <code>T</code> when <code>any</code> is not the symbol
 <code>T</code>. See also <a href="ref_.html#=T">=T</a>.
 
-<p><pre><code>
+<pre><code>
 : (nT 0)
 -> T
-: (nT "T")
+: (nT <u>T</u>)
 -> T
 : (nT T)
 -> NIL
-</code></pre>
-
-<dt><a name="nagle"><code>(nagle 'cnt 'flg) -> cnt</code></a>
-<dd>Disables the "nagle" algorithm for the socket descriptor <code>cnt</code> if
-<code>flg</code> is <code>NIL</code>, or enables it if <code>flg</code> is
-non-<code>NIL</code>. Returns the socket descriptor. See also <code><a
-href="refL.html#listen">listen</a></code> and <code><a
-href="refC.html#connect">connect</a></code>.
-
-<p><pre><code>
-: (nagle (connect "localhost" 8080) NIL)  # Disable the nagle algorithm
--> 3
 </code></pre>
 
 <dt><a name="name"><code>(name 'sym ['sym2]) -> sym</code></a>
@@ -71,18 +80,18 @@ href="refS.html#sym">sym</a></code>, <code><a
 href="refZ.html#zap">zap</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (name 'abc)
--> "abc"
-: (name "abc")
--> "abc"
+-> <u>abc</u>
+: (name <u>abc</u>)
+-> <u>abc</u>
 : (name '{abc})
--> "abc"
+-> <u>abc</u>
 : (name (new))
 -> NIL
-: (de foo (Lst) (car Lst))          # 'foo' calls 'car'
+: (de foo (Lst) (car Lst))  # 'foo' calls 'car'
 -> foo
-: (intern (name (zap 'car) "xxx"))  # Globally change the name of 'car'
+: (intern (name (zap 'car) <u>xxx</u>))  # Globally change the name of 'car'
 -> xxx
 : (xxx (1 2 3))
 -> 1
@@ -104,7 +113,7 @@ right. If <code>NIL</code> is encountered, <code>T</code> is returned
 immediately. Else <code>NIL</code> is returned. <code>(nand ..)</code> is
 equivalent to <code>(not (and ..))</code>.
 
-<p><pre><code>
+<pre><code>
 : (nand (lt0 7) (read))
 -> T
 : (nand (lt0 -7) (read))
@@ -115,22 +124,74 @@ NIL
 -> T
 </code></pre>
 
+<dt><a name="native"><code>(native 'cnt1|sym1 'cnt2|sym2 'sym|lst 'any ..) -> any</code></a>
+<dd>(64-bit version only) Calls a native C function. The first argument should
+specify a shared object library, either <code>"@"</code> (the current main
+program), <code>sym1</code> (a library path name), or <code>cnt1</code> (a
+library handle obtained by a previous call). The second argument should be a
+symbol name <code>sym2</code>, or a function pointer <code>cnt2</code> obtained
+by a previous call). Practically, the first two arguments will be always passed
+as transient symbols, which will get the library handle and function pointer
+assigned as values to be cached and used in subsequent calls. The third
+<code>sym|lst</code> argument is a return value specification, while all
+following arguments are the arguments to the native function.
+
+<p>The return value specification may either be one of the symbols
+
+<pre><code>
+   NIL   void
+   B     byte     # Byte (unsigned)
+   C     char     # Character (UTF-8, 1-3 bytes)
+   I     int      # Integer (32 bit)
+   N     long     # Long or pointer (64 bit)
+   S     string   # String (UTF-8)
+</code></pre>
+
+<p>or a nested list of these symbols to denote arrays and structures, e.g.
+
+<pre><code>
+   (N . 4)        # long[4];           -> (1 2 3 4)
+   (N (C . 4))    # {long; char[4];}   -> (1234 ("a" "b" "c" NIL))
+   (N (B . 7))    # {long; byte[7];}   -> (1234 (1 2 3 4 5 6 7))
+</code></pre>
+
+<p>Arguments can be numbers (passed as 64-bit integers), symbols (passed as
+strings), or a list with a variable in the CAR (to recieve the returned
+structure data, ignored when the CAR is <code>NIL</code>), a cons pair for the
+size specification in the CADR, and an optional sequence of initialization bytes
+in the CDDR.
+
+<pre><code>
+: (native <u>@</u> <u>getenv</u> 'S <u>TERM</u>)  # Same as (sys <u>TERM</u>)
+-> <u>xterm</u>
+
+: (native <u>@</u> <u>printf</u> 'I <u>abc%d%s^J</u> (+ 3 4) (pack <u>X</u> <u>Y</u> <u>Z</u>))
+abc7XYZ
+-> 8
+
+: (use Tim
+   (native <u>@</u> <u>time</u> NIL '(Tim (8 B . 8)))  # time_t 8   # Get time_t structure
+   (native <u>@</u> <u>localtime</u> '(I . 9) (cons NIL (8) Tim)) ) # Read local time
+-> (32 18 13 31 11 109 4 364 0)  # 13:18:32, Dec. 31st, 2009
+</code></pre>
+
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
 <dd>Produces a list of at least <code>cnt</code> elements. When called without
 optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is returned.
 When <code>lst</code> is given, it is extended to the left (if <code>cnt</code>
 is positive) or (destructively) to the right (if <code>cnt</code> is negative)
-with <code>any</code> elements.
+with <code>any</code> elements. See also <code><a
+href="refR.html#range">range</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (need 5)
--> (NIL NIL NIL NIL NIL)            # Allocate 5 cells
+-> (NIL NIL NIL NIL NIL)  # Allocate 5 cells
 : (need 5 '(a b c))
 -> (NIL NIL a b c)
 : (need -5 '(a b c))
 -> (a b c NIL NIL)
-: (need 5 '(a b c) " ")             # String alignment
--> (" " " " a b c)
+: (need 5 '(a b c) <u> </u>)  # String alignment
+-> (<u> </u> <u> </u> a b c)
 </code></pre>
 
 <dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> obj</code></a>
@@ -151,11 +212,28 @@ href="refI.html#isa">isa</a></code>, <code><a
 href="refS.html#send">send</a></code> and <code><a
 href="ref.html#dbase">Database</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (new)
 -> $134426427
 : (new T '(+Address))
 -> {1A;3}
+</code></pre>
+
+<dt><a name="new!"><code>(new! 'typ ['any ..]) -> obj</code></a>
+<dd><a href="ref.html#trans">Transaction</a> wrapper function for <code><a
+href="refN.html#new">new</a></code>. <code>(new! '(+Cls) 'key 'val ...)</code>
+is equivalent to <code>(dbSync) (new (db: +Cls) 'key 'val ...) (commit
+'upd)</code>. See also <code><a href="refS.html#set!">set!</a></code>, <code><a
+href="refP.html#put!">put!</a></code> and <code><a
+href="refI.html#inc!">inc!</a></code>.
+
+<pre><code>
+: (new! (+Item)   # Create a new item
+   'nr 2                      # Item number
+   'nm "Spare Part"           # Description
+   'sup (db 'nr '+CuSu 2)     # Supplier
+   'inv 100                   # Inventory
+   pr 12.50 )                 # Price
 </code></pre>
 
 <dt><a name="next"><code>(next) -> any</code></a>
@@ -166,7 +244,7 @@ href="refA.html#arg">arg</a></code>, <code><a
 href="refR.html#rest">rest</a></code>, and <code><a
 href="refP.html#pass">pass</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo @ (println (next)))          # Print next argument
 -> foo
 : (foo)
@@ -183,21 +261,32 @@ href="refT.html#t">t</a></code>, <code><a href="refP.html#prog">prog</a></code>,
 <code><a href="refP.html#prog1">prog1</a></code> and <code><a
 href="refP.html#prog2">prog2</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (nil (println 'OK))
 OK
 -> NIL
 </code></pre>
 
-<dt><a name="noLint"><code>(noLint 'sym)<br>
-(noLint 'sym|(sym . cls) 'sym2)</code></a>
+<dt><a name="nil/1"><code>nil/1</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate expects an argument variable,
+and succeeds if that variable is bound to <code>NIL</code>. See also <code><a
+href="refN.html#not/1">not/1</a></code>.
+
+<pre><code>
+: (? @X NIL (nil @X))
+ @X=NIL
+-> NIL
+</code></pre>
+
+<dt><a name="noLint"><code>(noLint 'sym)</code></a>
+<dt><code>(noLint 'sym|(sym . cls) 'sym2)</code>
 <dd>Excludes the check for a function definition of <code>sym</code> (in the
 first form), or for variable binding and usage of <code>sym2</code> in the
 function definition, file contents or method body of <code>sym</code> (second
 form), during calls to <code><a href="refL.html#lint">lint</a></code>. See also
 <code><a href="refL.html#lintAll">lintAll</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (de foo ()
    (bar FreeVariable) )
 -> foo
@@ -220,7 +309,7 @@ href="refC.html#cond">cond</a></code>, <code><a
 href="refI.html#ifn">ifn</a></code> and <code><a
 href="refU.html#unless">unless</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (nond
    ((= 3 3) (println 1))
    ((= 3 4) (println 2))
@@ -235,7 +324,7 @@ right. If a non-<code>NIL</code> value is encountered, <code>NIL</code> is
 returned immediately. Else <code>T</code> is returned. <code>(nor ..)</code> is
 equivalent to <code>(not (or ..))</code>.
 
-<p><pre><code>
+<pre><code>
 : (nor (lt0 7) (= 3 4))
 -> T
 </code></pre>
@@ -244,10 +333,24 @@ equivalent to <code>(not (or ..))</code>.
 <dd>Logical negation. Returns <code>T</code> if <code>any</code> evaluates to
 <code>NIL</code>.
 
-<p><pre><code>
+<pre><code>
 : (not (== 'a 'a))
 -> NIL
 : (not (get 'a 'a))
+-> T
+</code></pre>
+
+<dt><a name="not/1"><code>not/1</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if and only if
+the goal cannot be proven. See also <code><a
+href="refN.html#nil/1">nil/1</a></code>, <code><a
+href="refT.html#true/0">true/0</a></code> and <code><a
+href="refF.html#fail/0">fail/0</a></code>.
+
+<pre><code>
+: (? (equal 3 4))
+-> NIL
+: (? (not (equal 3 4)))
 -> T
 </code></pre>
 
@@ -257,7 +360,7 @@ element of <code>lst</code>. Successive <code>cnt</code> arguments operate on
 the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
 <code>(cdr 'lst)</code>. See also <code><a href="refG.html#get">get</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (nth '(a b c d) 2)
 -> (b c d)
 : (nth '(a (b c) d) 2 2)
@@ -270,7 +373,7 @@ the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
 <dd>Returns <code>any</code> when the argument <code>any</code> is a number,
 otherwise <code>NIL</code>.
 
-<p><pre><code>
+<pre><code>
 : (num? 123)
 -> 123
 : (num? (1 2 3))

@@ -1,4 +1,4 @@
-# 20aug09abu
+# 27dec09abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -43,6 +43,17 @@
 
 (de go ()
    (pw 12)
+   (task (port 4040)  # Set up query server in the background
+      (let? Sock (accept @)
+         (unless (fork)  # Child process
+            (in Sock
+               (while (rd)
+                  (sync)
+                  (out Sock
+                     (pr (eval @)) ) ) )
+            (bye) )
+         (close Sock) ) )
+   (forked)
    (rollback)
    (server 8080 "@start") )
 

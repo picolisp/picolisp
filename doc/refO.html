@@ -17,9 +17,9 @@
 by <code><a href="refF.html#file">file</a></code>) See also <code><a
 href="refO.html#once">once</a></code>.
 
-<p><pre><code>
+<pre><code>
 : *Once
--> (("lib/" "misc.l" . 11) (("lib/" "http.l" . 9) (("lib/" "form.l" . 11))))
+-> ((<u>lib/</u> <u>misc.l</u> . 11) ((<u>lib/</u> <u>http.l</u> . 9) ((<u>lib/</u> <u>form.l</u> . 11))))
 </code></pre>
 
 <dt><a name="*OS"><code>*OS</code></a>
@@ -27,9 +27,9 @@ href="refO.html#once">once</a></code>.
 include <code>"Linux"</code>, <code>"FreeBSD"</code>, <code>"Darwin"</code> or
 <code>"Cygwin"</code>.
 
-<p><pre><code>
+<pre><code>
 : *OS
--> "Linux"
+-> <u>Linux</u>
 </code></pre>
 
 <dt><a name="obj"><code>(obj (typ var [hook] val ..) var2 val2 ..) -> obj</code></a>
@@ -38,8 +38,8 @@ href="refR.html#request">request</a></code>) corresponding to <code>(typ var
 [hook] val ..)</code>, and initializes additional properties using the
 <code>varN</code> and <code>valN</code> arguments.
 
-<p><pre><code>
-: (obj ((+Item) nr 2) nm "Spare Part" sup `(db 'nr '+CuSu 2) inv 100 pr 1250)
+<pre><code>
+: (obj ((+Item) nr 2) nm <u>Spare Part</u> sup `(db 'nr '+CuSu 2) inv 100 pr 1250)
 -> {3-2}
 </code></pre>
 
@@ -51,7 +51,7 @@ href="refN.html#new">new</a></code>, <code><a
 href="refT.html#type">type</a></code> and <code><a
 href="refI.html#isa">isa</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (object 'Obj '(+A +B +C) 'a 1 'b 2 'c 3)
 -> Obj
 : (show 'Obj)
@@ -62,17 +62,17 @@ Obj (+A +B +C)
 -> Obj
 </code></pre>
 
-<dt><a name="oct"><code>(oct 'num) -> sym<br>
-(oct 'sym) -> num</code></a>
+<dt><a name="oct"><code>(oct 'num) -> sym</code></a>
+<dt><code>(oct 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to an octal string, or an octal string
 <code>sym</code> to a number. See also <code><a
 href="refH.html#hex">hex</a></code> and <code><a
 href="refF.html#format">format</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (oct 73)
--> "111"
-: (oct "111")
+-> <u>111</u>
+: (oct <u>111</u>)
 -> 73
 </code></pre>
 
@@ -83,7 +83,7 @@ href="refO.html#onOff">onOff</a></code>, <code><a
 href="refZ.html#zero">zero</a></code> and <code><a
 href="refO.html#one">one</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (off A B)
 -> NIL
 : A
@@ -97,7 +97,7 @@ href="refO.html#one">one</a></code>.
 <code>lst2</code>, or <code>NIL</code> if it is not found. See also <code><a
 href="refI.html#index">index</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (offset '(c d e f) '(a b c d e f))
 -> 3
 : (offset '(c d e) '(a b c d e f))
@@ -111,7 +111,7 @@ href="refO.html#onOff">onOff</a></code>, <code><a
 href="refZ.html#zero">zero</a></code> and <code><a
 href="refO.html#one">one</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (on A B)
 -> T
 : A
@@ -126,10 +126,10 @@ href="refL.html#load">load</a></code>ed the first time. Subsequent loads at a
 later time will not execute <code>prg</code>, and <code>once</code> returns
 <code>NIL</code>. See also <code><a href="refO.html#*Once">*Once</a></code>.
 
-<p><pre><code>
+<pre><code>
 (once
-   (zero *Cnt1 *Cnt2)            # Init counters
-   (load "file1.l" "file2.l") )  # Load other files
+   (zero *Cnt1 *Cnt2)  # Init counters
+   (load <u>file1.l</u> <u>file2.l</u>) )  # Load other files
 </code></pre>
 
 <dt><a name="one"><code>(one var ..) -> 1</code></a>
@@ -138,7 +138,7 @@ href="refZ.html#zero">zero</a></code>, <code><a
 href="refO.html#on">on</a></code>, <code><a href="refO.html#off">off</a></code>
 and <code><a href="refO.html#onOff">onOff</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (one A B)
 -> 1
 : A
@@ -154,7 +154,7 @@ href="refO.html#on">on</a></code>, <code><a href="refO.html#off">off</a></code>,
 <code><a href="refZ.html#zero">zero</a></code> and <code><a
 href="refO.html#one">one</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (onOff A B)
 -> T
 : A
@@ -173,14 +173,14 @@ href="refO.html#one">one</a></code>.
 <dd>Opens the file with the name <code>any</code> in read/write mode, and
 returns a file descriptor <code>cnt</code> (or <code>NIL</code> on error). A
 leading "<code>@</code>" character in <code>any</code> is substituted with the
-<u>Pico Lisp Home Directory</u>, as it was remembered during interpreter
-startup. If the file does not exist, it is created. The file descriptor can be
-used in subsequent calls to <code><a href="refI.html#in">in</a></code> and
-<code><a href="refO.html#out">out</a></code>. See also <code><a
+<u>PicoLisp Home Directory</u>, as it was remembered during interpreter startup.
+If the file does not exist, it is created. The file descriptor can be used in
+subsequent calls to <code><a href="refI.html#in">in</a></code> and <code><a
+href="refO.html#out">out</a></code>. See also <code><a
 href="refC.html#close">close</a></code>.
 
-<p><pre><code>
-: (open "x")
+<pre><code>
+: (open <u>x</u>)
 -> 3
 </code></pre>
 
@@ -190,8 +190,8 @@ writing to a pipe, otherwise <code>NIL</code>. See also <code><a
 href="refI.html#ipid">ipid</a></code> and <code><a
 href="refO.html#out">out</a></code>.
 
-<p><pre><code>
-: (out '(cat) (call 'ps "-p" (opid)))
+<pre><code>
+: (out '(cat) (call 'ps <u>-p</u> (opid)))
   PID TTY          TIME CMD
  7127 pts/3    00:00:00 cat
 -> T
@@ -203,9 +203,9 @@ from the remaining command line arguments. See also <code><a
 href="ref.html#invoc">Invocation</a></code> and <code><a
 href="refA.html#argv">argv</a></code>.
 
-<p><pre><code>
-$ ./p  -"de f () (println 'opt (opt))"  -f abc  -bye
-opt "abc"
+<pre><code>
+$ ./p  -<u>de f () (println 'opt (opt))</u>  -f abc  -bye
+opt <u>abc</u>
 </code></pre>
 
 <dt><a name="or"><code>(or 'any ..) -> any</code></a>
@@ -213,13 +213,26 @@ opt "abc"
 right. If a non-<code>NIL</code> value is encountered, it is returned
 immediately. Else the result of the last expression is returned.
 
-<p><pre><code>
+<pre><code>
 : (or (= 3 3) (read))
 -> T
 : (or (= 3 4) (read))
 abc
 -> abc
 </code></pre>
+
+<dt><a name="or/2"><code>or/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that takes an arbitrary number
+of clauses, and succeeds if one of them can be proven. See also <code><a
+href="refN.html#not/1">not/1</a></code>.
+
+<pre><code>
+: (?
+   (or
+      ((equal 3 @X) (equal @X 4))
+      ((equal 7 @X) (equal @X 7)) ) )
+ @X=7
+-> NIL</code></pre>
 
 <dt><a name="out"><code>(out 'any . prg) -> any</code></a>
 <dd>Opens <code>any</code> as output channel during the execution of
@@ -238,8 +251,8 @@ href="refC.html#ctl">ctl</a></code>, <code><a
 href="refC.html#close">close</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
-<p><pre><code>
-: (out "a" (println 123 '(a b c) 'def))      # Write one line to file "a"
+<pre><code>
+: (out <u>a</u> (println 123 '(a b c) 'def))  # Write one line to file "a"
 -> def
 </code></pre>
 

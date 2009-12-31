@@ -1,4 +1,4 @@
-# 17jun09abu
+# 24dec09abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -21,10 +21,9 @@
 
 (de more ("M" "Fun")
    (let *Dbg NIL
-      (default "Fun" print)
       (if (pair "M")
-         ("Fun" (pop '"M"))
-         ("Fun" (type "M"))
+         ((default "Fun" print) (pop '"M"))
+         (println (type "M"))
          (setq
             "Fun" (list '(X) (list 'pp 'X (lit "M")))
             "M" (mapcar car (filter pair (val "M"))) ) )
@@ -49,12 +48,10 @@
 
 (de what (S)
    (let *Dbg NIL
-      (ifn S
-         (all)
-         (setq S (chop S))
-         (filter
-            '(("X") (match S (chop "X")))
-            (all) ) ) ) )
+      (setq S (chop S))
+      (filter
+         '(("X") (match S (chop "X")))
+         (all) ) ) )
 
 
 (de who ("X" . "*Prg")
@@ -353,9 +350,11 @@
 
 # Benchmarking
 (de bench Prg
-   (let (U (usec)  X (run Prg 1))
-      (out 2
-         (prinl (format (*/ (- (usec) U) 1000) 3) " sec") )
-      X ) )
+   (let U (usec)
+      (prog1 (run Prg 1)
+         (out 2
+            (prinl
+               (format (*/ (- (usec) U) 1000) 3)
+               " sec" ) ) ) ) )
 
 # vi:et:ts=3:sw=3

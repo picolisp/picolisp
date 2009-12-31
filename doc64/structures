@@ -1,4 +1,4 @@
-# 28sep09abu
+# 17nov09abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -183,7 +183,7 @@
          | |   zero   |
          | |   cdr1 --|---+   (gc)
          | +-> car1 --+   |
-         |     ...
+         |     ...        |
          |     valN <-+   |   (gc)
          |     zero   |   |
          |     NIL    |   |   (gc)

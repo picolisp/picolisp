@@ -1,16 +1,16 @@
-04oct09abu
+24nov09abu
 (c) Software Lab. Alexander Burger
 
 
-         Pico Lisp Installation
-         ======================
+         PicoLisp Installation
+         =====================
 
-There is no 'configure' procedure, but the Pico Lisp file structure is simple
+There is no 'configure' procedure, but the PicoLisp file structure is simple
 enough to get along without it (we hope). It should compile and run on
 GNU/Linux, FreeBSD, Mac OS X (Darwin), Cygwin/Win32, and possibly other systems
 without problems.
 
-By default, Pico Lisp installs completely in a local directory. No need to touch
+By default, PicoLisp installs completely in a local directory. No need to touch
 any system locations, so you don't have to be root.
 
 
@@ -24,7 +24,7 @@ Please follow these steps:
 
       $ cd picoLisp-XXX
 
-3. Compile the Pico Lisp interpreter
+3. Compile the PicoLisp interpreter
 
       $ (cd src; make picolisp)
 
@@ -33,6 +33,9 @@ Please follow these steps:
       $ (cd src64; make picolisp)
 
    In both cases the executable bin/picolisp will be created.
+
+   Note that on the BSD family of operating systems, 'gmake' must be used
+   instead of 'make'.
 
 4. Optional (but recommended) are two symbolic links from /usr/lib and /usr/bin
    to the installation directory
@@ -44,13 +47,13 @@ Please follow these steps:
       Invocation
       ----------
 
-The shell script 'dbg' is usually called to start up Pico Lisp in interactive
+The shell script 'dbg' is usually called to start up PicoLisp in interactive
 debugging mode
 
    $ ./dbg
    :
 
-The colon ':' is Pico's prompt. You may enter some Lisp expression,
+The colon ':' is PicoLisp's prompt. You may enter some Lisp expression,
 
    : (+ 1 2 3)
    -> 6
@@ -62,11 +65,20 @@ To exit the interpreter, enter
 or simply type an empy line (Return).
 
 
+         Console Underlines
+         ==================
+
+In case that your console (terminal) does not support underlining, you might
+want to remove or replace the first statement int "ext.l" which uses the
+terminfo database to initialize the global variable '*Tsm' (transient symbol
+markup). Unfortunately, the VGA text mode does not properly support underlines.
+
+
       Documentation
       -------------
 
 For further information, please look at "doc/index.html". There you find the
-Pico Lisp Reference Manual (doc/ref.html), the Pico Lisp tutorials (doc/tut.html
+PicoLisp Reference Manual (doc/ref.html), the PicoLisp tutorials (doc/tut.html
 and doc/app.html), and the frequently asked questions (doc/faq.html).
 
 For details about the 64-bit version, refer to "doc64/README", "doc64/asm" and

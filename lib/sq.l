@@ -1,4 +1,4 @@
-# 21jan07abu
+# 24dec09abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook|T] [var val ..])
@@ -23,7 +23,7 @@
                (car Vars)
                (and
                   (find
-                     '((X) (isa '(+Need +Index) (car X)))
+                     '((X) (isa '(+Need +index) (car X)))
                      (getl Cls) )
                   (get (car @) 'var) )
                (cdr
@@ -71,7 +71,7 @@
                   (print Obj) )
                (T (line) Obj) ) ) ) ) )
 
-(dm (print> . +Relation) (Val)
+(dm (print> . +relation) (Val)
    (print Val) )
 
 (dm (print> . +Number) (Val)
@@ -90,8 +90,8 @@
          (set!> Obj
             (any (revise (sym (val Obj)))) )
          (for X (getl Obj)
-            (_update (or (atom X) (pop 'X)) X) )
-         Obj ) ) )
+            (_update (or (atom X) (pop 'X)) X) ) )
+      Obj ) )
 
 (de _update (Val Var)
    (printsp Var)
@@ -105,7 +105,7 @@
             (put!> Obj Var New) ) ) ) )
 
 
-(dm (revise> . +Relation) (Val)
+(dm (revise> . +relation) (Val)
    (any (revise (sym Val))) )
 
 (dm (revise> . +Bag) (Lst)

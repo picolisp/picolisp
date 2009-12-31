@@ -18,19 +18,31 @@ read-macro. Typically used for localization. See also <code><a
 href="ref.html#macro-io">Read-Macros</a></code> and <code><a
 href="refL.html#locale">locale</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (off *Uni)            # Clear
 -> NIL
-: ,"abc"                # Collect a transient symbol
--> "abc"
+: ,<u>abc</u>                  # Collect a transient symbol
+-> <u>abc</u>
 : ,(1 2 3)              # Collect a list
 -> (1 2 3)
 : *Uni
--> ("abc" NIL (1 2 3))
+-> (<u>abc</u> NIL (1 2 3))
 </code></pre>
 
-<dt><a name="udp"><code>(udp 'any1 'cnt 'any2) -> any<br>
-(udp 'cnt) -> any</code></a>
+<dt><a name="u"><code>(u) -> T</code></a>
+<dd>Removes <code><a href="ref_.html#!">!</a></code> all breakpoints in all
+subexpressions of the current breakpoint. Typically used when single-stepping a
+function or method with <code><a href="refD.html#debug">debug</a></code>. See
+also <code><a href="refD.html#d">d</a></code> and <code><a
+href="refU.html#unbug">unbug</a></code>.
+
+<pre><code>
+! (u)                         # Unbug subexpression(s) at breakpoint
+-> T
+</code></pre>
+
+<dt><a name="udp"><code>(udp 'any1 'cnt 'any2) -> any</code></a>
+<dt><code>(udp 'cnt) -> any</code>
 <dd>Simple unidirectional sending/receiving of UDP packets. In the first form,
 <code>any2</code> is sent to a UDP server listening at host <code>any1</code>,
 port <code>cnt</code>. In the second form, one item is received from a UDP
@@ -38,14 +50,14 @@ socket <code>cnt</code>, established with <code><a
 href="refP.html#port">port</a></code>. See also <code><a
 href="refC.html#connect">connect</a></code>.
 
-<p><pre><code>
+<pre><code>
 # First session
 : (port T 6666)
 -> 3
 : (udp 3)  # Receive a datagram
 
 # Second session (on the same machine)
-: (udp "localhost" 6666 '(a b c))
+: (udp <u>localhost</u> 6666 '(a b c))
 -> (a b c)
 
 # First session
@@ -58,7 +70,7 @@ of the month <code>m</code> in the year <code>y</code>. See also <code><a
 href="refD.html#day">day</a></code> and <code><a
 href="refW.html#week">week</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (date (ultimo 2007 1))
 -> (2007 1 31)
 : (date (ultimo 2007 2))
@@ -71,21 +83,43 @@ href="refW.html#week">week</a></code>.
 -> (1900 2 28)
 </code></pre>
 
-<dt><a name="undef"><code>(undef 'sym) -> fun<br>
-(undef 'sym 'cls) -> fun<br>
-(undef '(sym . cls)) -> fun</code></a>
+<dt><a name="unbug"><code>(unbug 'sym) -> T</code></a>
+<dt><code>(unbug 'sym 'cls) -> T</code>
+<dt><code>(unbug '(sym . cls)) -> T</code>
+<dd>Removes all <code><a href="ref_.html#!">!</a></code> breakpoints in the
+function or method body of sym, as inserted with <code><a
+href="refD.html#debug">debug</a></code> or <code><a
+href="refD.html#d">d</a></code>, or directly with <code><a
+href="refE.html#edit">edit</a></code>. See also <code><a
+href="refU.html#u">u</a></code>.
+
+<pre><code>
+: (pp 'tst)
+(de tst (N)
+   (! println (+ 3 N)) )         # 'tst' has a breakpoint '!'
+-> tst
+: (unbug 'tst)                   # Unbug it
+-> T
+: (pp 'tst)                      # Restore
+(de tst (N)
+   (println (+ 3 N)) )
+</code></pre>
+
+<dt><a name="undef"><code>(undef 'sym) -> fun</code></a>
+<dt><code>(undef 'sym 'cls) -> fun</code>
+<dt><code>(undef '(sym . cls)) -> fun</code>
 <dd>Undefines the function or method <code>sym</code>. Returns the previous
 definition. See also <code><a href="refD.html#de">de</a></code>, <code><a
 href="refD.html#dm">dm</a></code>, <code><a href="refD.html#def">def</a></code>
 and <code><a href="refR.html#redef">redef</a></code>.
 
-<p><pre><code>
-: (de hello () "Hello world!")
+<pre><code>
+: (de hello () <u>Hello world!</u>)
 -> hello
 : hello
--> (NIL "Hello world!")
+-> (NIL <u>Hello world!</u>)
 : (undef 'hello)
--> (NIL "Hello world!")
+-> (NIL <u>Hello world!</u>)
 : hello
 -> NIL
 </code></pre>
@@ -97,7 +131,7 @@ returns the new environment or <code>NIL</code> if not successful. See also
 <code><a href="refP.html#prove">prove</a></code> and <code><a
 href="ref_.html#->">-&gt</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (? (@A unify '(@B @C)))
  @A=(((NIL . @C) 0 . @C) ((NIL . @B) 0 . @B) T)
 </code></pre>
@@ -108,9 +142,27 @@ href="ref_.html#->">-&gt</a></code>.
 href="refS.html#sort">sort</a></code> and <code><a
 href="refG.html#group">group</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (uniq (2 4 6 1 2 3 4 5 6 1 3 5))
 -> (2 4 6 1 3 5)
+</code></pre>
+
+<dt><a name="uniq/2"><code>uniq/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
+argument is not yet stored in the second argument's index structure. <code><a
+href="refI.html#idx">idx</a></code> is used internally storing for the values
+and checking for uniqueness. See also <code><a
+href="refM.html#member/2">member/2</a></code>.
+
+<pre><code>
+: (? (uniq a @Z))       # Remember 'a'
+ @Z=NIL                 # Succeeded
+
+: (? (uniq b @Z))       # Remember 'b'
+ @Z=NIL                 # Succeeded
+
+: (? (uniq a @Z))       # Remembered 'a'?
+-> NIL                  # Yes: Not unique
 </code></pre>
 
 <dt><a name="unless"><code>(unless 'any . prg) -> any</code></a>
@@ -119,7 +171,7 @@ non-<code>NIL</code>, <code>NIL</code> is returned. Otherwise <code>prg</code>
 is executed and the result returned. See also <code><a
 href="refW.html#when">when</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (unless (= 3 3) (println 'Strange 'result))
 -> NIL
 : (unless (= 3 4) (println 'Strange 'result))
@@ -134,7 +186,7 @@ is never executed, <code>NIL</code> is returned. Otherwise the result of
 <code>prg</code> is returned. See also <code><a
 href="refW.html#while">while</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (until (=T (setq N (read)))
    (println 'square (* N N)) )
 4
@@ -145,6 +197,28 @@ T
 -> 81
 </code></pre>
 
+<dt><a name="untrace"><code>(untrace 'sym) -> sym</code></a>
+<dt><code>(untrace 'sym 'cls) -> sym</code>
+<dt><code>(untrace '(sym . cls)) -> sym</code>
+<dd>Removes the <code><a href="ref_.html#$">$</a></code> trace function call at
+the beginning of the function or method body of <code>sym</code>, so that no
+more trace information will be printed before and after execution. Built-in
+functions (C-function pointer) are automatically converted to their original
+form (see <code><a href="refS.html#subr">subr</a></code>). See also <code><a
+href="refT.html#trace">trace</a></code> and <code><a
+href="refT.html#traceAll">traceAll</a></code>.
+
+<pre><code>
+: (trace '+)                           # Trace the '+' function
+-> +
+: +
+-> (@ ($ + @ (pass $385455126)))       # Modified for tracing
+: (untrace '+)                         # Untrace '+'
+-> +
+: +
+-> 67319120                            # Back to original form
+</code></pre>
+
 <dt><a name="up"><code>(up [cnt] sym ['val]) -> any</code></a>
 <dd>Looks up (or modifies) the <code>cnt</code>'th previously saved value of
 <code>sym</code> in the corresponding enclosing environment. If <code>cnt</code>
@@ -153,7 +227,7 @@ href="refE.html#eval">eval</a></code>, <code><a
 href="refR.html#run">run</a></code> and <code><a
 href="refE.html#env">env</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (let N 1 ((quote (N) (println N (up N))) 2))
 2 1
 -> 1
@@ -162,19 +236,57 @@ href="refE.html#env">env</a></code>.
 -> 7
 </code></pre>
 
+<dt><a name="upd"><code>(upd sym ..) -> lst</code></a>
+<dd>Synchronizes the internal state of all passed (external) symbols by passing
+them to <code><a href="refW.html#wipe">wipe</a></code>. <code>upd</code> is the
+standard function passed to <code><a href="refC.html#commit">commit</a></code>
+during database <code><a href="ref.html#trans">transactions</a></code>.
+
+<pre><code>
+(commit 'upd)  # Commit changes, informing all sister processes
+</code></pre>
+
+<dt><a name="update"><code>(update 'obj ['var]) -> obj</code></a>
+<dd>Interactive database function for modifying external symbols. When called
+only with an <code>obj</code> argument, <code>update</code> steps through the
+value and all properties of that object (and recursively also through
+substructures) and allows to edit them with the console line editor. When the
+<code>var</code> argument is given, only that single property is handed to the
+editor. To delete a propery, <code>NIL</code> must be explicitly entered.
+<code>update</code> will correctly handle all <a
+href="ref.html#er">entity/relation</a> mechanisms. See also <code><a
+href="refS.html#select">select</a></code>, <code><a
+href="refE.html#edit">edit</a></code> and <code><a
+href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+: (show '{3-1})            # Show item 1
+{3-1} (+Item)
+   nr 1
+   pr 29900
+   inv 100
+   sup {2-1}
+   nm <u>Main Part</u>
+-> {3-1}
+
+: (update '{3-1} 'pr)      # Update the prices of that item
+{3-1} pr 299.00            # The cursor is right behind "299.00"
+-> {3-1}
+</code></pre>
+
 <dt><a name="upp?"><code>(upp? 'any) -> sym | NIL</code></a>
 <dd>Returns <code>any</code> when the argument is a string (symbol) that starts
 with an uppercase character. See also <code><a
 href="refU.html#uppc">uppc</a></code>.
 
-<p><pre><code>
-: (upp? "A")
+<pre><code>
+: (upp? <u>A</u>)
 -> T
-: (upp? "a")
+: (upp? <u>a</u>)
 -> NIL
 : (upp? 123)
 -> NIL
-: (upp? ".")
+: (upp? <u>.</u>)
 -> NIL
 </code></pre>
 
@@ -186,17 +298,17 @@ href="refL.html#lowc">lowc</a></code>, <code><a
 href="refF.html#fold">fold</a></code> and <code><a
 href="refU.html#upp?">upp?</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (uppc 123)
 -> 123
-: (uppc "abc")
--> "ABC"
+: (uppc <u>abc</u>)
+-> <u>ABC</u>
 : (uppc 'car)
--> "CAR"
+-> <u>CAR</u>
 </code></pre>
 
-<dt><a name="use"><code>(use sym . prg) -> any<br>
-(use (sym ..) . prg) -> any</code></a>
+<dt><a name="use"><code>(use sym . prg) -> any</code></a>
+<dt><code>(use (sym ..) . prg) -> any</code>
 <dd>Defines local variables. The value of the symbol <code>sym</code> - or the
 values of the symbols <code>sym</code> in the list of the second form - are
 saved, <code>prg</code> is executed, then the symbols are restored to their
@@ -206,7 +318,7 @@ See also <code><a href="refB.html#bind">bind</a></code>, <code><a
 href="refJ.html#job">job</a></code> and <code><a
 href="refL.html#let">let</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (setq  X 123  Y 456)
 -> 456
 : (use (X Y) (setq  X 3  Y 4) (* X Y))
@@ -221,7 +333,7 @@ href="refL.html#let">let</a></code>.
 <dd>Generates or reuses a key for a database tree, by randomly trying to locate
 a free number. See also <code><a href="refG.html#genKey">genKey</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (maxKey (tree 'nr '+Item))
 -> 8
 : (useKey 'nr '+Item)
@@ -233,7 +345,7 @@ a free number. See also <code><a href="refG.html#genKey">genKey</a></code>.
 <code><a href="refT.html#time">time</a></code> and <code><a
 href="refT.html#tick">tick</a></code>.
 
-<p><pre><code>
+<pre><code>
 : (usec)
 -> 1154702479219050
 </code></pre>

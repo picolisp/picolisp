@@ -1,4 +1,4 @@
-# 28may09abu
+# 01dec09abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -55,10 +55,9 @@
 (rel sal (+Link) (+Sal))               # Salutation
 (rel nm (+Sn +Idx +String))            # Name
 (rel nm2 (+String))                    # Name 2
-(rel str (+Ref +String))               # Street
+(rel str (+String))                    # Street
 (rel plz (+Ref +String))               # Zip
-(rel ort (+Ref +String))               # City
-(rel cty (+Ref +String))               # Country
+(rel ort (+Fold +Idx +String))         # City
 (rel tel (+Fold +Ref +String))         # Phone
 (rel fax (+String))                    # Fax
 (rel mob (+Fold +Ref +String))         # Mobile
@@ -79,7 +78,7 @@
 # Item
 (class +Item +Entity)
 (rel nr (+Need +Key +Number))          # Item Number
-(rel nm (+Sn +Idx +String))            # Item Description
+(rel nm (+Fold +Idx +String))          # Item Description
 (rel sup (+Ref +Link) NIL (+CuSu))     # Supplier
 (rel inv (+Number))                    # Inventory
 (rel pr (+Ref +Number) NIL 2)          # Price
@@ -132,8 +131,8 @@
 
 (class +Pos +Entity)
 (rel ord (+Dep +Joint)                 # Order
-   (itm) pos
-   (+Ord) )
+   (itm)
+   pos (+Ord) )
 (rel itm (+Ref +Link) NIL (+Item))     # Item
 (rel pr (+Number) 2)                   # Price
 (rel cnt (+Number))                    # Quantity
@@ -152,13 +151,17 @@
 
 # Database sizes
 (dbs
-   (1 +Role +User +Sal)                                        # (1 . 128)
-   (2 +CuSu)                                                   # (2 . 256)
-   (1 +Item +Ord)                                              # (3 . 128)
-   (0 +Pos)                                                    # (4 . 64)
-   (2 (+Role nm) (+User nm) (+Sal nm))                         # (5 . 256)
-   (3 (+CuSu nr nm str plz ort cty tel mob))                   # (6 . 512)
-   (3 (+Item nr nm sup pr))                                    # (7 . 512)
-   (3 (+Ord nr dat cus) (+Pos itm)) )                          # (8 . 512)
+   (1 +Role +User +Sal)                         # (1 . 128)
+   (2 +CuSu)                                    # (2 . 256)
+   (1 +Item +Ord)                               # (3 . 128)
+   (0 +Pos)                                     # (4 . 64)
+   (2 (+Role nm) (+User nm) (+Sal nm))          # (5 . 256)
+   (4 (+CuSu nr plz tel mob))                   # (6 . 1024)
+   (4 (+CuSu nm))                               # (7 . 1024)
+   (4 (+CuSu ort))                              # (8 . 1024)
+   (4 (+Item nr sup pr))                        # (9 . 1024)
+   (4 (+Item nm))                               # (10 . 1024)
+   (4 (+Ord nr dat cus))                        # (11 . 1024)
+   (4 (+Pos itm)) )                             # (12 . 1024)
 
 # vi:et:ts=3:sw=3

@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Pico Lisp Application Development</title>
+<title>PicoLisp Application Development</title>
 <link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
 <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
 
-<h1>Pico Lisp Application Development</h1>
+<h1>PicoLisp Application Development</h1>
 
 <p align=right>(c) Software Lab. Alexander Burger
 
 <p>This document presents an introduction to writing browser-based applications
-in Pico Lisp.
+in PicoLisp.
 
 <p>It concentrates on the XHTML/CSS GUI-Framework (as opposed to the previous
 Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
@@ -28,10 +28,9 @@ be fully driven by scripts ("lib/scrape.l").
 works just fine in browsers which do not know anything about CSS or JavaScript.
 All examples were also tested using the w3m text browser.
 
-<p>For basic informations about the Pico Lisp system please look at the <a
-href="ref.html">Pico Lisp Reference</a> and the <a href="tut.html">Pico Lisp
+<p>For basic informations about the PicoLisp system please look at the <a
+href="ref.html">PicoLisp Reference</a> and the <a href="tut.html">PicoLisp
 Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
-
 
 <p><ul>
 <li><a href="#static">Static Pages</a>
@@ -124,7 +123,7 @@ Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
 <p><hr>
 <h2><a name="static">Static Pages</a></h2>
 
-<p>You can use Pico Lisp to generate static HTML pages. This does not make much
+<p>You can use PicoLisp to generate static HTML pages. This does not make much
 sense in itself, because you could directly write HTML code as well, but it
 forms the base for interactive applications, and allows us to introduce the
 application server and other fundamental concepts.
@@ -133,10 +132,10 @@ application server and other fundamental concepts.
 <h3><a name="hello">Hello World</a></h3>
 
 <p>To begin with a minimal application, please enter the following two lines
-into a generic source file named "project.l" in the Pico Lisp installation
+into a generic source file named "project.l" in the PicoLisp installation
 directory.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Hello" "lib.css" NIL
    "Hello World!" )
@@ -151,9 +150,9 @@ browser to view the effects)
 
 <h4><a name="server">Start the application server</a></h4>
 
-<p>Open a second terminal window, and start a Pico Lisp application server
+<p>Open a second terminal window, and start a PicoLisp application server
 
-<p><pre><code>
+<pre><code>
 $ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
 </code></pre>
 
@@ -189,7 +188,7 @@ HTML (or anything else the browser can understand).
 <p><hr>
 <h3><a name="urlSyntax">URL Syntax</a></h3>
 
-<p>The Pico Lisp application server uses a slightly specialized syntax when
+<p>The PicoLisp application server uses a slightly specialized syntax when
 communicating URLs to and from a client. The "path" part of an URL - which
 remains when
 
@@ -222,7 +221,7 @@ max-age values taken from that table.
 <p>An application is free to extend or modify the <code>*Mimes</code> table with
 the <code>mime</code> function. For example
 
-<p><pre><code>
+<pre><code>
 (mime "doc" "application/msword" 60)
 </code></pre>
 
@@ -259,7 +258,7 @@ contents.
 <code><a href="refA.html#allowed">allowed</a></code> and <code><a
 href="refA.html#allow">allow</a></code> functions
 
-<p><pre><code>
+<pre><code>
 (allowed ("img/" "demo/")
    "favicon.ico" "lib.css"
    "@start" "customer.l" "article.l")
@@ -272,7 +271,7 @@ to the directories "img/" and "demo/", to the function 'start', and to the files
 <p>Later in the program, <code>*Allow</code> may be dynamically extended with
 <code>allow</code>
 
-<p><pre><code>
+<pre><code>
 (allow "@foo")
 (allow "newdir/" T)
 </code></pre>
@@ -285,14 +284,14 @@ allowed items.
 
 <p>For a variety of security checks (most notably for using the <code>psh</code>
 function, as in some later examples) it is necessary to create a file named
-".pw" in the Pico Lisp installation directory. This file should contain a single
+".pw" in the PicoLisp installation directory. This file should contain a single
 line of arbitrary data, to be used as a password for identifying local
 resources.
 
 <p>The recommeded way to create this file is to call the <code>pw</code>
 function, defined in "lib/http.l"
 
-<p><pre><code>
+<pre><code>
 $ ./p lib/http.l -'pw 12' -bye
 </code></pre>
 
@@ -305,7 +304,7 @@ $ ./p lib/http.l -'pw 12' -bye
 <p>Now back to our "Hello World" example. In principle, you could write
 "project.l" as a sequence of print statements
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (prinl "HTTP/1.0 200 OK^M")
 (prinl "Content-Type: text/html; charset=utf-8")
@@ -319,11 +318,11 @@ $ ./p lib/http.l -'pw 12' -bye
 <p>but using the <code>html</code> function is much more convenient.
 
 <p>Moreover, <code>html</code> <b>is</b> nothing more than a printing function.
-You can see this easily if you connect a Pico Lisp Shell (<code>psh</code>) to
+You can see this easily if you connect a PicoLisp Shell (<code>psh</code>) to
 the server process (you must have generated a <a href="#pw">".pw" file</a> for
 this), and enter the <code>html</code> statement
 
-<p><pre><code>
+<pre><code>
 $ bin/psh 8080
 : (html 0 "Hello" "lib.css" NIL "Hello World!")
 HTTP/1.0 200 OK
@@ -343,7 +342,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-:  # (type ENTER here to terminate the Pico Lisp Shell)
+:  # (type ENTER here to terminate the PicoLisp Shell)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -383,7 +382,7 @@ of print statement).
 
 <p>Therefore, our source file might as well be written as:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Hello" "lib.css" NIL
    (prinl "Hello World!") )
@@ -392,7 +391,7 @@ of print statement).
 
 <p>The most typical print statements will be some HTML-tags:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Hello" "lib.css" NIL
    (&lt;h1&gt; NIL "Hello World!")
@@ -419,7 +418,7 @@ the effects with the <code>&lt;h1&gt;</code> tag function.
 
 <p>An atom (usually a symbol or a string) is taken as a CSS class name
 
-<p><pre><code>
+<pre><code>
 : (&lt;h1&gt; 'foo "Title")
 &lt;h1 class="foo"&gt;Title&lt;/h1&gt;
 </code></pre>
@@ -427,14 +426,14 @@ the effects with the <code>&lt;h1&gt;</code> tag function.
 <p>For a cons pair, the CAR is taken as an attribute name, and the CDR as the
 attribute's value
 
-<p><pre><code>
+<pre><code>
 : (&lt;h1&gt; '(id . bar) "Title")
 &lt;h1 id="bar"&gt;Title&lt;/h1&gt;
 </code></pre>
 
 <p>Consequently, a list of cons pairs gives a set of attribute-value pairs
 
-<p><pre><code>
+<pre><code>
 : (&lt;h1&gt; '((id . "abc") (lang . "de")) "Title")
 &lt;h1 id="abc" lang="de"&gt;Title&lt;/h1&gt;
 </code></pre>
@@ -445,22 +444,22 @@ attribute's value
 
 <p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
 recommend to look at their sources, and to experiment a bit, by executing them
-at a Pico Lisp prompt, or by pressing the browser's "Reload" button after
-editing the "project.l" file.
+at a PicoLisp prompt, or by pressing the browser's "Reload" button after editing
+the "project.l" file.
 
-<p>For a suitable Pico Lisp prompt, either execute (in a separate terminal
-window) the Pico Lisp Shell (<code>psh</code>) command (works only if the
+<p>For a suitable PicoLisp prompt, either execute (in a separate terminal
+window) the PicoLisp Shell (<code>psh</code>) command (works only if the
 application server is running, and you did generate a <a href="#pw">".pw"
 file</a>)
 
-<p><pre><code>
+<pre><code>
 $ bin/psh 8080
 :
 </code></pre>
 
 <p>or start the interpreter stand-alone, with "lib/xhtml.l" loaded
 
-<p><pre><code>
+<pre><code>
 $ ./dbg lib/http.l lib/xhtml.l
 :
 </code></pre>
@@ -474,7 +473,7 @@ evaluation rule</a> applies.
 <p>Most tag functions are simple and straightforward. Some of them just print
 their arguments
 
-<p><pre><code>
+<pre><code>
 : (&lt;br&gt; "Hello world")
 Hello world&lt;br/&gt;
 
@@ -485,7 +484,7 @@ Hello world&lt;br/&gt;
 <p>while most of them take a <a href="#cssAttr">CSS attribute specification</a>
 as their first argument (like the <code>&lt;h1&gt;</code> tag above)
 
-<p><pre><code>
+<pre><code>
 : (&lt;div&gt; 'main "Hello world")
 &lt;div class="main"&gt;Hello world&lt;/div&gt;
 
@@ -499,7 +498,7 @@ as their first argument (like the <code>&lt;h1&gt;</code> tag above)
 <p>All of these functions take an arbitrary number of arguments, and may nest to
 an arbitrary depth (as long as the resulting HTML is legal)
 
-<p><pre><code>
+<pre><code>
 : (&lt;div&gt; 'main
    (&lt;h1&gt; NIL "Head")
    (&lt;p&gt; NIL
@@ -520,7 +519,7 @@ Line&nbsp;2&lt;/p&gt;
 <code>&lt;ul&gt;</code> tags, let you define hierarchical structures. You might
 want to paste the following code into your copy of "project.l":
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Unordered List" "lib.css" NIL
    (&lt;ul&gt; NIL
@@ -552,7 +551,7 @@ two-dimensional tables with the <code>&lt;table&gt;</code> and
 
 <p>The following example prints a table of numbers and their squares:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Table" "lib.css" NIL
    (&lt;table&gt; NIL NIL NIL
@@ -579,7 +578,7 @@ the table itself (not recommended - better define such styles in a CSS file and
 then just pass the class name to <code>&lt;table&gt;</code>), right-align both
 columns, and print each row in an alternating red and blue color
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Table" "lib.css" NIL
    (&lt;table&gt;
@@ -605,7 +604,7 @@ functions.
 <p>If you just need a two-dimensional arrangement of components, the even
 simpler <code>&lt;grid&gt;</code> function might be convenient:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Grid" "lib.css" NIL
    (&lt;grid&gt; 3
@@ -620,7 +619,7 @@ you can also pass a list of CSS attributes. Then the length of that list will
 determine the number of columns. You can change the second line in the above
 example to
 
-<p><pre><code>
+<pre><code>
    (&lt;grid&gt; '(NIL NIL right)
 </code></pre>
 
@@ -643,7 +642,7 @@ navigation framework with
 to the same "project.l" page, but it should suffice to demonstrate the
 functionality:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Menu+Tab" "lib.css" NIL
    (&lt;div&gt; '(id . menu)
@@ -706,7 +705,7 @@ communicate with the server.
 collection of input tag functions, which allow direct programming of HTML forms.
 We will supply only one simple example:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (html 0 "Simple Form" "lib.css" NIL
    (&lt;post&gt; NIL "project.l"
@@ -759,7 +758,7 @@ href="#server">above</a>, which does not terminate immediately after it sent its
 page to the browser. It is achieved by calling the <code>app</code> function
 somewhere in the application's startup code.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)  # Start a session
 
@@ -772,9 +771,9 @@ somewhere in the application's startup code.
 
 <p>Nothing else changed from the previous example. However, when you connect
 your browser and then look at the terminal window where you started the
-application server, you'll notice a colon, the Pico Lisp prompt
+application server, you'll notice a colon, the PicoLisp prompt
 
-<p><pre><code>
+<pre><code>
 $ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
 :
 </code></pre>
@@ -787,22 +786,22 @@ second.
 window, press the submit button, and inspect the Lisp <code>*Text</code>
 variable,
 
-<p><pre><code>
+<pre><code>
 : *Text
 -> "abcdef"
 </code></pre>
 
-<p>you see that we now have a dedicated Pico Lisp process, "connected" to the
+<p>you see that we now have a dedicated PicoLisp process, "connected" to the
 client.
 
-<p>You can terminate this process (like any interactive Pico Lisp) by hitting
+<p>You can terminate this process (like any interactive PicoLisp) by hitting
 ENTER on an empty line. Otherwise, it will terminate by itself if no other
 browser requests arrive within a default timeout period of 5 minutes.
 
 <p>To start a (non-debug) production version, the server is commonly started not
 as 'dbg' but with a 'p', and with <code>-wait</code>
 
-<p><pre><code>
+<pre><code>
 $ ./p lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"' -wait
 </code></pre>
 
@@ -819,7 +818,7 @@ active GUI framework.
 <code>action</code>. Inside the body of <code>html</code> can be - in addition
 to all other kinds of tag functions - one or more calls to <code>form</code>
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)                                              # Start session
 
@@ -836,13 +835,13 @@ to all other kinds of tag functions - one or more calls to <code>form</code>
 hold the contents of the input field. Instead, we gave a local, symbolic name
 '<code>a</code>' to a <code>+TextField</code> component
 
-<p><pre><code>
+<pre><code>
          (gui 'a '(+TextField) 10)                 # Text Field
 </code></pre>
 
 <p>Other components can refer to it
 
-<p><pre><code>
+<pre><code>
             '(msg (val&gt; (: home a)))
 </code></pre>
 
@@ -861,7 +860,7 @@ mixed.
 
 <p>In general, a typical page may have the form
 
-<p><pre><code>
+<pre><code>
 (action                                            # Action handler
    (html ..                                        # HTTP/HTML protocol
       (&lt;h1&gt; ..)                                    # HTML tags
@@ -890,7 +889,7 @@ Otherwise, it takes an optional alias name, a list of classes, and additional
 arguments as needed by the constructors of these classes. We saw this example
 before
 
-<p><pre><code>
+<pre><code>
          (gui 'a '(+TextField) 10)                 # Text Field
 </code></pre>
 
@@ -948,7 +947,7 @@ be POSTed again.
 into the "Source" field, you can copy it in upper or lower case to the
 "Destination" field by pressing one of the buttons
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -984,7 +983,7 @@ of dynamically generated data.
 text area is exported either as a text file via the first button, or a PDF
 document via the second button
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (load "lib/ps.l")
 
@@ -1039,7 +1038,7 @@ which created them.
 <p>Let's look at an example which uses two alerts and a dialog. In the
 beginning, it displays a simple form, with a locked text field, and two buttons
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1083,27 +1082,27 @@ to the "Are you sure?" alert.
 
 <p>Now let's forget our "project.l" test file for a moment, and move on to a
 more substantial and practical, stand-alone, example. Using what we have learned
-so far, we want to build a simple bignum calculator. ("bignum" because Pico Lisp
+so far, we want to build a simple bignum calculator. ("bignum" because PicoLisp
 can do <i>only</i> bignums)
 
 <p>It uses a single form, a single numeric input field, and lots of buttons. It
-can be found in the Pico Lisp distribution in "misc/calc.l", together with a
+can be found in the PicoLisp distribution in "misc/calc.l", together with a
 directly executable wrapper script "misc/calc".
 
-<p>To use it, change to the Pico Lisp installation directory, and start it as
+<p>To use it, change to the PicoLisp installation directory, and start it as
 
-<p><pre><code>
+<pre><code>
 $ misc/calc
 </code></pre>
 
 <p>If you want to use it from other directories too, change the two relative
 path names in the first line to absolute paths. We recommend symbolic links in
 some global directories, as described in the <a
-href="tut.html#script">Scripting</a> section of the Pico Lisp Tutorial.
+href="tut.html#script">Scripting</a> section of the PicoLisp Tutorial.
 
-<p>If you like to get a Pico Lisp prompt for inspection, start it instead as
+<p>If you like to get a PicoLisp prompt for inspection, start it instead as
 
-<p><pre><code>
+<pre><code>
 $ ./dbg misc/calc.l -main -go
 </code></pre>
 
@@ -1119,7 +1118,7 @@ needed once the calculator is running.
 <p>Note that for a production application, we inserted an allow-statement (as
 recommended by the <a href="#security">Security</a> chapter)
 
-<p><pre><code>
+<pre><code>
 (allowed NIL "@calculator" "favicon.ico" "lib.css")
 </code></pre>
 
@@ -1151,7 +1150,7 @@ element, and delays the calculation if it is less.
 <p>The <code>calculator</code> function has one numeric input field, with a
 width of 60 characters
 
-<p><pre><code>
+<pre><code>
          (gui '(+Var +NumField) '*Accu 60)
 </code></pre>
 
@@ -1162,7 +1161,7 @@ variable, and modification of that variable's value will appear in the field.
 <p>The <a name="sqrtButton">square root operator button</a> has an
 <code>+Able</code> prefix class
 
-<p><pre><code>
+<pre><code>
          (gui '(+Able +JS +Button) '(ge0 *Accu) (char 8730)
             '(setq *Accu (sqrt *Accu)) )
 </code></pre>
@@ -1202,7 +1201,7 @@ properly during updates and user interactions.
 <p>Let's assume we want to collect textual and numerical data. We might create a
 table
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1246,7 +1245,7 @@ way to scroll down and make space for more.
 
 <p>A chart can handle these things:
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1297,7 +1296,7 @@ current form.
 <p>To enable scrolling, let's also insert two buttons. We use the pre-defined
 classes <code>+UpButton</code> and <code>+DnButton</code>
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1365,7 +1364,7 @@ representation. In the following, 'put' will in turn expand it to the GUI.
 of numbers, but expands in the GUI to show also a textual form of each number
 (in German).
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1395,7 +1394,7 @@ returns its wording in German.
 
 <p>Now look at the code
 
-<p><pre><code>
+<pre><code>
          (gui '(+Init +Chart) (1 5 7) 2
             '((N) (list N (zahlwort N)))
             car )
@@ -1405,14 +1404,14 @@ returns its wording in German.
 a list of numbers <code>(1 5 7)</code> for the initial value of the chart. Then,
 following the '2' (the chart has two columns), we pass a 'put' function
 
-<p><pre><code>
+<pre><code>
             '((N) (list N (zahlwort N)))
 </code></pre>
 
 <p>which takes a number and returns a list of that number and its wording, and a
 'get' function
 
-<p><pre><code>
+<pre><code>
             car )
 </code></pre>
 
@@ -1425,7 +1424,7 @@ locked) input fields).
 
 <p>The field in the second column
 
-<p><pre><code>
+<pre><code>
                   (gui 2 '(+Lock +TextField) 90) ) ) )
 </code></pre>
 
@@ -1449,10 +1448,10 @@ or <code>+Able</code>. Now we take a broader look at the whole hierarchy, and
 try more examples.
 
 <p>The abstract class <code>+gui</code> is the base of all GUI classes. A live
-view of the class hierarchy can be obtained with the <code>dep</code>
-("dependencies") function:
+view of the class hierarchy can be obtained with the <code><a
+href="refD.html#dep">dep</a></code> ("dependencies") function:
 
-<p><pre><code>
+<pre><code>
 : (dep '+gui)
 +gui
    +JsField
@@ -1494,7 +1493,7 @@ view of the class hierarchy can be obtained with the <code>dep</code>
 <code>+Button</code>, which in turn is a subclass of <code>+gui</code>.
 Inspecting <code>+DnButton</code> directly
 
-<p><pre><code>
+<pre><code>
 : (dep '+DnButton)
    +Tiny
    +Rid
@@ -1510,7 +1509,7 @@ Inspecting <code>+DnButton</code> directly
 <code>+Rid</code>, <code>+Able</code> and <code>+Button</code>. The actual
 definition of <code>+DnButton</code> can be found in "lib/form.l"
 
-<p><pre><code>
+<pre><code>
 (class +DnButton +Tiny +Rid +JS +Able +Button)
 ...
 </code></pre>
@@ -1546,28 +1545,28 @@ one of the above forms) depends on their arguments:
 <p>We saw already "normal" text fields. They are created with a single numeric
 argument. This example creates an editable field with a width of 10 characters:
 
-<p><pre><code>
+<pre><code>
    (gui '(+TextField) 10)
 </code></pre>
 
 <p>If you supply a second numeric for the line count ('4' in this case), you'll
 get a text area:
 
-<p><pre><code>
+<pre><code>
    (gui '(+TextField) 10 4)
 </code></pre>
 
 <p>Supplying a list of values instead of a count yields a drop-down selection
 (combo box):
 
-<p><pre><code>
+<pre><code>
    (gui '(+TextField) '("Value 1" "Value 2" "Value 3"))
 </code></pre>
 
 <p>In addition to these arguments, you can pass a string. Then the field is
 created with a label:
 
-<p><pre><code>
+<pre><code>
    (gui '(+TextField) 10 "Plain")
    (gui '(+TextField) 10 4 "Text Area")
    (gui '(+TextField) '("Value 1" "Value 2" "Value 3") "Selection")
@@ -1575,7 +1574,7 @@ created with a label:
 
 <p>Finally, without any arguments, the field will appear as a plain HTML text:
 
-<p><pre><code>
+<pre><code>
    (gui '(+TextField))
 </code></pre>
 
@@ -1593,7 +1592,7 @@ error message when user input cannot be converted to a number.
 <p>Large numbers are shown with a thousands-separator, as determined by the
 current locale.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1613,7 +1612,7 @@ accepts/returns scaled fixpoint numbers.
 
 <p>The decimal separator is determined by the current locale.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1634,7 +1633,7 @@ accepts/returns scaled fixpoint numbers.
 <p>A <code>+DateField</code> accepts and returns a <code><a
 href="refD.html#date">date</a></code> value.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1653,7 +1652,7 @@ href="refD.html#date">date</a></code> value.
 locale (see <code><a href="refD.html#datStr">datStr</a></code> and <code><a
 href="refE.html#expDat">expDat</a></code>). You can change it, for example to
 
-<p><pre><code>
+<pre><code>
 : (locale "DE" "de")
 -> NIL
 </code></pre>
@@ -1682,7 +1681,7 @@ year:
 <p>Similar is the <code>+TimeField</code>. It accepts and returns a <code><a
 href="refT.html#time">time</a></code> value.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1726,7 +1725,7 @@ href="refT.html#telStr">telStr</a></code>).
 single leading zero is replaced with the current locale's country code (see
 <code><a href="refE.html#expTel">expTel</a></code>).
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 (locale "DE" "de")
@@ -1749,7 +1748,7 @@ single leading zero is replaced with the current locale's country code (see
 to clicking it on and off. It accepts boolean (<code>NIL</code> or
 non-<code>NIL</code>) values, and returns <code>T</code> or <code>NIL</code>.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1790,7 +1789,7 @@ component. The <code>init&gt;</code> message is sent to a <code>+gui</code>
 component when the page is loaded for the first time (during a GET request).
 <code>+Init</code> takes an expression for the initial value of that field.
 
-<p><pre><code>
+<pre><code>
    (gui '(+Init +TextField) "This is the initial text" 30)
 </code></pre>
 
@@ -1806,7 +1805,7 @@ argument value, in angular brackets, if and only if the field's value is
 
 <p>Cause an empty field to display "&lt;Please enter some text here&gt;":
 
-<p><pre><code>
+<pre><code>
    (gui '(+Cue +TextField) "Please enter some text here" 30)
 </code></pre>
 
@@ -1822,7 +1821,7 @@ example for its usage already in the <a href="#sqrtButton">square root
 button</a> of the calculator example. Or, for illustration purposes, imagine a
 button which is supposed to be enabled only after Christmas
 
-<p><pre><code>
+<pre><code>
    (gui '(+Able +Button)
       '(>= (cdr (date (date))) (12 24))
       "Close this year"
@@ -1831,14 +1830,14 @@ button which is supposed to be enabled only after Christmas
 
 <p>or a password field that is disabled as long as somebody is logged in
 
-<p><pre><code>
+<pre><code>
    (gui '(+Able +PwField) '(not *Login) 10 "Password")
 </code></pre>
 
 <p>A special case is the <code>+Lock</code> prefix, which permanently and
 unconditionally disables a component. It takes no arguments
 
-<p><pre><code>
+<pre><code>
    (gui '(+Lock +NumField) 10 "Count")
 </code></pre>
 
@@ -1849,7 +1848,7 @@ read-only field.
 non-<code>NIL</code> argument. This affects all components in this form. Staying
 with the above example, we can make the form read-only until Christmas
 
-<p><pre><code>
+<pre><code>
    (form NIL
       (disable (> (12 24) (cdr (date (date)))))  # Disable whole form
       (gui ..)
@@ -1861,7 +1860,7 @@ re-enable certain components, as they are needed for navigation, scrolling, or
 other activities which don't affect the contents of the form. This is done by
 prefixing these fields with <code>+Rid</code> (i.e. getting "rid" of the lock).
 
-<p><pre><code>
+<pre><code>
    (form NIL
       (disable (> (12 24) (cdr (date (date)))))
       (gui ..)
@@ -1881,7 +1880,7 @@ and retrieved from - components. As in predefined classes like
 <p><code>+Set</code> takes an argument function which is called whenever that
 field is set to some value. To convert all user input to upper case
 
-<p><pre><code>
+<pre><code>
    (gui '(+Set +TextField) uppc 30)
 </code></pre>
 
@@ -1889,7 +1888,7 @@ field is set to some value. To convert all user input to upper case
 which is called whenever the field's value is retrieved. To return the square of
 a field's value
 
-<p><pre><code>
+<pre><code>
    (gui '(+Val +NumField) '((N) (* N N)) 10)
 </code></pre>
 
@@ -1897,7 +1896,7 @@ a field's value
 <code>+Val</code>, and takes two functional arguments. This example will display
 upper case characters, while returning lower case characters internally
 
-<p><pre><code>
+<pre><code>
    (gui '(+Fmt +TextField) uppc lowc 30)
 </code></pre>
 
@@ -1912,7 +1911,7 @@ incarnation of text fields (see <a href="#inputFields">Input Fields</a>). This
 example displays "One", "Two" and "Three" to the user, but returns a number 1, 2
 or 3 internally
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1941,7 +1940,7 @@ variables, or calculate a new value) to update its value.
 overridden in existing classes via the <code>+Upd</code> prefix class. Let's
 print updated values to standard error
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 (default *Number 0)
@@ -1975,7 +1974,7 @@ class. The following code only accepts numbers not bigger than 9: The
 <code>+NumField</code> class, and - if it does not give an error - returns an
 error string when the current value is greater than 9.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -1997,7 +1996,7 @@ class. It controls the <code>maxlength</code> attribute of the generated HTML
 input field component. Thus, it is impossible to type to more characters than
 allowed into the field.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -2025,7 +2024,7 @@ initialize a global variable with the value "abc", and let a
 <code>+TextField</code> operate on it. The "Print" button can be used to display
 its current value.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (app)
 
@@ -2049,7 +2048,7 @@ the <code>obj</code> property of the current form).
 the <code>nr</code> and <code>nm</code> properties of an object stored in a
 global variable <code>*Obj</code>.
 
-<p><pre><code>
+<pre><code>
 ########################################################################
 (when (app)                # On start of session
    (class +Tst +Entity)    # Define data model
@@ -2086,20 +2085,20 @@ way (via POST requests) for an application to communicate with the server.
 
 <p>Here is a minimal button, with just a label and an expression:
 
-<p><pre><code>
+<pre><code>
    (gui '(+Button) "Label" '(doSomething))
 </code></pre>
 
 <p>And this is a button displaying different labels, depending on the state:
 
-<p><pre><code>
+<pre><code>
    (gui '(+Button) "Enabled" "Disabled" '(doSomething))
 </code></pre>
 
 <p>To show an image instead of plain text, the label(s) must be preceeded by the
 <code>T</code> symbol:
 
-<p><pre><code>
+<pre><code>
    (gui '(+Button) T "img/enabled.png" "img/disabled.png" '(doSomething))
 </code></pre>
 
@@ -2156,9 +2155,9 @@ functionality and behavior, just a bit slower and not so smooth.
 <p><hr>
 <h2><a name="minApp">A Minimal Complete Application</a></h2>
 
-<p>The Pico Lisp release includes in the "app/" directory a minimal, yet
-complete reference application. This application is typical, in the sense that
-it implements many of the techniques described in this document, and it can be
+<p>The PicoLisp release includes in the "app/" directory a minimal, yet complete
+reference application. This application is typical, in the sense that it
+implements many of the techniques described in this document, and it can be
 easily modified and extended. In fact, we use it as templates for our own
 production application development.
 
@@ -2176,13 +2175,13 @@ data and two sample reports.
 
 <p>As ever, you may start up the application in debugging mode
 
-<p><pre><code>
+<pre><code>
 $ ./dbg app/main.l -main -go
 </code></pre>
 
 <p>or in (non-debug) production mode
 
-<p><pre><code>
+<pre><code>
 $ ./p app/main.l -main -go -wait
 </code></pre>
 
@@ -2283,7 +2282,7 @@ determined by its entity class.
 
 <p>The form is brought up initially in read-only mode. This is necessary to
 prevent more than one user from modifying an object at the same time (and
-contrary to the previous Pico Lisp Java frameworks, where this was not a problem
+contrary to the previous PicoLisp Java frameworks, where this was not a problem
 because all changes were immediately reflected in the GUIs of other users).
 
 <p>So if you want to modify an object, you have to gain exclusive access by
@@ -2293,17 +2292,6 @@ will see a message telling his name and process ID.
 
 <p>An exception to this are objects that were just created with "New". They will
 automatically be reserved for you, and the "Edit" button will show up as "Done".
-
-<p>Whenever the contents of a form are changed (i.e. they become "dirty"), this
-is indicated by a slight darkening of the background. To process the changes,
-you could either
-
-<ul>
-<li>press an arbitrary button,
-<li>or hit the ESC key.
-</ul>
-
-Thus, the ESC key is a fast and convenient way for [E]ntry [S]ave and [C]heck.
 
 <p>The "Delete" button pops up an alert, asking for confirmation. If the object
 is indeed deleted, this button changes to "Restore" and allows to undelete the
@@ -2348,6 +2336,9 @@ and buttons. Image buttons are not a good idea when in other places images are
 used for links. The standard button components should be preferred; they are
 usually rendered by the browser in a non-ambiguous three-dimensional look and
 feel.
+
+<p>Note that if JavaScript is enabled in the browser, changes will be
+automatically commited to the server.
 
 <p>The enabled or disabled state of a button is an integral part of the
 application logic. It must be indicated to the user with appropriate styles.

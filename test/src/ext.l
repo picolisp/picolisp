@@ -1,11 +1,11 @@
-# 26aug09abu
+# 12nov09abu
 # (c) Software Lab. Alexander Burger
 
 ### ext:Snx ###
 (test "PSLSFSNTSNNLSF"
-   (ext:Snx "Pico Lisp is not Common Lisp") )
+   (ext:Snx "PicoLisp is not Common Lisp") )
 (test "PSLSFSNT"
-   (ext:Snx "Pico Lisp is not Common Lisp" 8) )
+   (ext:Snx "PicoLisp is not Common Lisp" 8) )
 
 
 ### ext:Ulaw ###

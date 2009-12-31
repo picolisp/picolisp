@@ -1,4 +1,4 @@
-/* 06oct09 */
+/* 16dec09 */
 
    .data
 
@@ -274,6 +274,10 @@ Uni:
    .global  Led
 Led:
    .quad    Nil
+   .byte    162, 66, 53, 215, 6, 0, 0, 0
+   .global  Tsm
+Tsm:
+   .quad    Nil
    .byte    162, 18, 68, 38, 7, 0, 0, 0
    .global  Adr
 Adr:
@@ -300,10 +304,10 @@ Bye:
    .quad    doUp
    .byte    18, 87, 151, 70, 7, 0, 0, 0
    .quad    doQuit
-   .byte    226, 22, 70, 151, 102, 87, 6, 0
-   .quad    doNative
    .byte    82, 38, 39, 231, 246, 6, 0, 0
    .quad    doErrno
+   .byte    226, 22, 70, 151, 102, 87, 6, 0
+   .quad    doNative
    .byte    18, 38, 119, 54, 7, 0, 0, 0
    .quad    doArgs
    .byte    226, 86, 134, 71, 7, 0, 0, 0
@@ -692,6 +696,8 @@ Bye:
    .quad    doList
    .byte    226, 86, 86, 70, 6, 0, 0, 0
    .quad    doNeed
+   .byte    34, 23, 230, 118, 86, 6, 0, 0
+   .quad    doRange
    .byte    98, 86, 199, 198, 6, 0, 0, 0
    .quad    doFull
    .byte    210, 22, 182, 86, 6, 0, 0, 0
@@ -1002,6 +1008,8 @@ EnvApply:
    .quad    0
 EnvMeth:
    .quad    0
+EnvTask:
+   .quad    Nil
 EnvMake:
    .quad    0
 EnvYoke:
@@ -1016,9 +1024,9 @@ EnvSort:
    .quad    0
 EnvProtect:
    .quad    0
-EnvBrk:
-   .quad    0
 EnvTrace:
+   .quad    0
+EnvBrk:
    .quad    0
    .balign  8
 EnvEnd:
@@ -1730,7 +1738,6 @@ main_10:
    movq     $putStdoutB, EnvPutB
    mov      $2, %rax
    call     initOutFileA_A
-   movq     $1, 16(%rax)
    mov      $1, %rax
    call     initOutFileA_A
    mov      %rax, OutFile
@@ -1939,10 +1946,10 @@ heapAlloc:
    mov      %r13, Avail
    ret
 
-   .global  sighandlerT
-sighandlerT:
+   .global  sighandler0
+sighandler0:
    push     %rbx
-   mov      $TSym, %rbx
+   mov      %r12, %rbx
    call     sighandlerE
    pop      %rbx
    ret
@@ -1973,6 +1980,9 @@ sighandlerE:
    cmp      $2, %al
    jnz      .17
    mov      %r12b, Signal
+   cmp      %r12, %rbx
+   mov      $Nil, %r10
+   cmovzq   %r10, %rbx
    call     brkLoadE_E
    jmp      .16
 .17:
@@ -2562,6 +2572,8 @@ equalAE_F:
 .68:
    testb    $0x08, %al
    jz       .72
+   testb    $0x06, %bl
+   jnz      Retnz
    testb    $0x08, %bl
    jz       Retnz
    mov      -8(%rax), %rax
@@ -3187,6 +3199,17 @@ sharedLibC_FA_90:
    .balign  16
    nop
    nop
+   .global  doErrno
+doErrno:
+   call     errno_A
+   mov      %rax, %rbx
+   shl      $4, %rbx
+   orb      $2, %bl
+   ret
+
+   .balign  16
+   nop
+   nop
    .global  doNative
 doNative:
    push     %r13
@@ -3194,11 +3217,34 @@ doNative:
    push     %r15
    mov      %rbx, %r13
    mov      8(%rbx), %r14
-   call     evSymY_E
+   mov      (%r14), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   testb    $0x02, %bl
+   jz       .137
+   shr      $4, %rbx
+   push     %rbx
+   jmp      .138
+.137:
+   testb    $0x04, %bl
+   jz       .139
+   pushq    -4(%rbx)
+   jmp      .138
+.139:
+   call     needSymEX
    call     bufStringE_SZ
-   mov      %r12, %rdx
-   cmp      %r12b, (%rsp)
-   cmovnzq  %rsp, %rdx
+   mov      %rsp, %rdx
+   mov      (%rsp), %al
+   cmp      $64, %al
+   jnz      .141
+   cmp      %r12b, 1(%rsp)
+   cmovzq   %r12, %rdx
+.141:
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      $257, %rsi
@@ -3209,8 +3255,40 @@ doNative:
    jz       dlErrX
    mov      %r15, %rsp
    push     %rax
+   mov      $17293822569102704640, %r10
+   test     %r10, %rax
+   jnz      .142
+   shl      $4, %rax
+   orb      $2, %al
+   jmp      .143
+.142:
+   call     boxNumA_A
+.143:
+   mov      %rax, (%rbx)
+.138:
    mov      8(%r14), %r14
-   call     evSymY_E
+   mov      (%r14), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   mov      %rsp, %r15
+   testb    $0x02, %bl
+   jz       .144
+   shr      $4, %rbx
+   mov      %rbx, (%rsp)
+   jmp      .145
+.144:
+   testb    $0x04, %bl
+   jz       .146
+   mov      -4(%rbx), %r10
+   mov      %r10, (%rsp)
+   jmp      .145
+.146:
+   call     needSymEX
    call     bufStringE_SZ
    mov      %rdx, %r12
    mov      (%r15), %rdi
@@ -3221,7 +3299,18 @@ doNative:
    cmp      %r12, %rax
    jz       dlErrX
    mov      %r15, %rsp
-   mov      %rax, (%r15)
+   mov      %rax, (%rsp)
+   mov      $17293822569102704640, %r10
+   test     %r10, %rax
+   jnz      .148
+   shl      $4, %rax
+   orb      $2, %al
+   jmp      .149
+.148:
+   call     boxNumA_A
+.149:
+   mov      %rax, (%rbx)
+.145:
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -3234,10 +3323,10 @@ doNative:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
-.137:
+.150:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .138
+   jnz      .151
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -3250,25 +3339,25 @@ doNative:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .137
-.138:
+   jmp      .150
+.151:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
    lea      -16(%r15), %r14
-.139:
+.152:
    cmp      %r14, %r13
-   jz       .140
+   jz       .153
    mov      (%r13), %rbx
    testb    $0x06, %bl
-   jz       .141
+   jz       .154
    testb    $0x02, %bl
-   jz       .142
+   jz       .155
    shr      $4, %rbx
-   jnc      .146
+   jnc      .159
    neg      %rbx
-   jmp      .146
-.142:
+   jmp      .159
+.155:
    testb    $8, %bl
    pushf
    andb     $~12, %bl
@@ -3283,13 +3372,13 @@ doNative:
    shr      $1, %rax
    rcr      $1, %rbx
    popf
-   jz       .146
+   jz       .159
    neg      %rbx
-   jmp      .146
-.141:
+   jmp      .159
+.154:
    push     %r15
    testb    $0x08, %bl
-   jz       .147
+   jz       .160
    call     bufStringE_SZ
    mov      %rdx, %r12
    mov      %rsp, %rdi
@@ -3298,9 +3387,11 @@ doNative:
    xor      %r12, %r12
    mov      %rax, %rbx
    mov      %r15, %rsp
-   jmp      .148
-.147:
-   mov      (%rbx), %rdx
+   jmp      .161
+.160:
+   mov      8(%rbx), %rbx
+   mov      (%rbx), %r10
+   mov      (%r10), %rdx
    shr      $4, %rdx
    mov      %rdx, %r12
    mov      %r12, %rdi
@@ -3309,43 +3400,36 @@ doNative:
    xor      %r12, %r12
    push     %rax
    mov      %rax, %r15
-.149:
+.162:
    mov      8(%rbx), %rbx
    testb    $0x02, %bl
-   jz       .150
-   shr      $4, %rbx
-   jnc      .151
-   neg      %rbx
-.151:
+   jz       .163
    mov      %rbx, %rax
-.152:
-   sub      $1, %rdx
-   js       .154
-   mov      %al, (%r15)
-   add      $1, %r15
-   jmp      .152
-.150:
-   testb    $0x0E, %bl
-   jnz      .154
-   mov      (%rbx), %al
-   movzx    %al, %rax
    shr      $4, %rax
-   jnc      .155
-   neg      %rax
-.155:
+.164:
+   sub      $1, %rdx
+   js       .166
+   mov      %al, (%r15)
+   add      $1, %r15
+   jmp      .164
+.163:
+   testb    $0x0E, %bl
+   jnz      .166
+   mov      (%rbx), %rax
+   shr      $4, %rax
    mov      %al, (%r15)
    add      $1, %r15
    sub      $1, %rdx
-   jnz      .149
-.154:
+   jnz      .162
+.166:
    pop      %rbx
-.148:
+.161:
    pop      %r15
-.146:
+.159:
    push     %rbx
    add      $8, %r13
-   jmp      .139
-.140:
+   jmp      .152
+.153:
    mov      %rsp, %r13
    mov      %rbp, %rdx
    sub      %r13, %rdx
@@ -3384,22 +3468,38 @@ doNative:
    mov      -16(%r15), %rbx
    mov      %r12, %rdx
    call     natRetACE_CE
-   lea      -24(%r15), %r13
-.156:
-   cmp      %rbp, %r13
-   jz       .157
-   pop      %rdx
-   mov      (%r13), %rax
-   sub      $8, %r13
-   testb    $0x06, %al
-   jnz      .156
+   mov      %rbx, -16(%r15)
+   lea      -24(%r15), %r14
+.167:
+   cmp      %rbp, %r14
+   jz       .168
+   pop      %r13
+   mov      (%r14), %rbx
+   testb    $0x06, %bl
+   jnz      .169
+   testb    $0x08, %bl
+   jnz      .170
+   cmpq     $Nil, (%rbx)
+   jz       .170
+   mov      %r13, %rdx
+   mov      8(%rbx), %r10
+   mov      (%r10), %r10
+   mov      8(%r10), %rbx
+   call     natRetACE_CE
+   mov      (%r14), %r11
+   mov      (%r11), %r11
+   mov      %rbx, (%r11)
+.170:
    mov      %rdx, %r12
-   mov      %r12, %rdi
+   mov      %r13, %rdi
    call     free
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .156
-.157:
+.169:
+   sub      $8, %r14
+   jmp      .167
+.168:
+   mov      -16(%r15), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %rax
@@ -3409,119 +3509,107 @@ doNative:
    ret
 
    .balign  16
-   nop
-   nop
-   .global  doErrno
-doErrno:
-   call     errno_A
-   mov      %rax, %rbx
-   shl      $4, %rbx
-   orb      $2, %bl
-   ret
-
-   .balign  16
    .global  natRetACE_CE
 natRetACE_CE:
    cmp      $Nil, %rbx
-   jz       .159
-   cmp      $TSym, %rbx
-   jnz      .160
-   cmp      %r12, %rdx
-   jz       .161
-   mov      (%rdx), %al
-   add      $1, %rdx
-.161:
-   or       %al, %al
-   mov      $Nil, %r10
-   cmovzq   %r10, %rbx
-   jmp      .159
-.160:
+   jz       .172
    cmp      $ISym, %rbx
-   jnz      .163
-   cmp      %r12, %rdx
-   jz       .164
-   movslq   (%rdx), %rax
-   add      $4, %rdx
-.164:
-   movsx    %eax, %rax
-   mov      %rax, %rbx
-   cmp      %r12, %rbx
-   js       .165
-   shl      $4, %rbx
-   orb      $2, %bl
-   jmp      .159
-.165:
-   neg      %rbx
-   shl      $4, %rbx
-   orb      $10, %bl
-   jmp      .159
-.163:
-   cmp      $NSym, %rbx
-   jnz      .168
-   cmp      %r12, %rdx
-   jz       .169
-   mov      (%rdx), %rax
-   add      $8, %rdx
-.169:
-   mov      %rax, %rbx
-   mov      $17293822569102704640, %r10
-   test     %r10, %rbx
-   jnz      .170
-   shl      $4, %rbx
-   orb      $2, %bl
-   jmp      .159
-.170:
-   call     boxNum_A
-   mov      %rbx, -4(%rax)
-   mov      %rax, %rbx
-   jmp      .159
-.168:
-   cmp      $SSym, %rbx
    jnz      .173
    cmp      %r12, %rdx
    jz       .174
+   movslq   (%rdx), %rax
+   add      $4, %rdx
+.174:
+   movsx    %eax, %rax
+   mov      %rax, %rbx
+   cmp      %r12, %rbx
+   js       .175
+   shl      $4, %rbx
+   orb      $2, %bl
+   jmp      .172
+.175:
+   neg      %rbx
+   shl      $4, %rbx
+   orb      $10, %bl
+   jmp      .172
+.173:
+   cmp      $NSym, %rbx
+   jnz      .178
+   cmp      %r12, %rdx
+   jz       .179
    mov      (%rdx), %rax
    add      $8, %rdx
-.174:
+.179:
+   mov      %rax, %rbx
+   cmp      %r12, %rbx
+   js       .180
+   mov      $17293822569102704640, %r10
+   test     %r10, %rbx
+   jnz      .181
+   shl      $4, %rbx
+   orb      $2, %bl
+   jmp      .172
+.181:
+   call     boxNumE_E
+   jmp      .172
+.180:
+   neg      %rbx
+   mov      $17293822569102704640, %r10
+   test     %r10, %rbx
+   jnz      .184
+   shl      $4, %rbx
+   orb      $10, %bl
+   jmp      .172
+.184:
+   call     boxNumE_E
+   orb      $8, %bl
+   jmp      .172
+.178:
+   cmp      $SSym, %rbx
+   jnz      .187
+   cmp      %r12, %rdx
+   jz       .188
+   mov      (%rdx), %rax
+   add      $8, %rdx
+.188:
    mov      %rax, %rbx
    call     mkStrE_E
-   jmp      .159
-.173:
+   jmp      .172
+.187:
    cmp      $CSym, %rbx
-   jnz      .176
+   jnz      .190
    cmp      %r12, %rdx
-   jz       .177
+   jz       .191
    call     fetchCharC_AC
-.177:
+.191:
    mov      $Nil, %rbx
    cmp      %r12, %rax
-   jz       .159
+   jz       .172
    call     mkCharA_A
    mov      %rax, %rbx
-   jmp      .159
-.176:
+   jmp      .172
+.190:
    cmp      $BSym, %rbx
-   jnz      .180
+   jnz      .194
    cmp      %r12, %rdx
-   jz       .181
+   jz       .195
    mov      (%rdx), %al
    add      $1, %rdx
-.181:
+.195:
    movzx    %al, %rax
    mov      %rax, %rbx
    shl      $4, %rbx
    orb      $2, %bl
-   jmp      .159
-.180:
+   jmp      .172
+.194:
    testb    $0x0E, %bl
-   jnz      .159
+   jnz      .172
    cmp      %r12, %rdx
    cmovzq   %rax, %rdx
    push     %r13
    push     %r14
    push     %r15
    mov      %rbx, %r13
-   mov      (%rdx), %rax
    mov      (%r13), %rbx
    call     natRetACE_CE
    call     cons_Y
@@ -3532,14 +3620,14 @@ natRetACE_CE:
    push     %r14
    push     %rbp
    mov      %rsp, %rbp
-.184:
+.198:
    mov      8(%r13), %r15
    testb    $0x02, %r15b
-   jz       .185
+   jz       .199
    shr      $4, %r15
-.186:
+.200:
    sub      $1, %r15
-   jz       .188
+   jz       .202
    mov      (%r13), %rbx
    call     natRetACE_CE
    call     cons_A
@@ -3547,10 +3635,10 @@ natRetACE_CE:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r14)
    mov      %rax, %r14
-   jmp      .186
-.185:
+   jmp      .200
+.199:
    testb    $0x0E, %r15b
-   jnz      .188
+   jnz      .202
    mov      %r15, %r13
    mov      (%r13), %rbx
    call     natRetACE_CE
@@ -3559,15 +3647,15 @@ natRetACE_CE:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r14)
    mov      %rax, %r14
-   jmp      .184
-.188:
+   jmp      .198
+.202:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
    pop      %r14
    pop      %r13
-.159:
+.172:
    rep
    ret
 
@@ -3577,17 +3665,17 @@ fetchCharC_AC:
    mov      (%rdx), %al
    movzx    %al, %rax
    or       %al, %al
-   jz       .189
+   jz       .203
    add      $1, %rdx
    cmp      $128, %al
-   jc       .189
+   jc       .203
    testb    $32, %al
-   jnz      .191
+   jnz      .205
    and      $31, %al
    shl      $6, %rax
    push     %rax
-   jmp      .192
-.191:
+   jmp      .206
+.205:
    and      $15, %al
    shl      $6, %rax
    push     %rax
@@ -3598,14 +3686,14 @@ fetchCharC_AC:
    or       (%rsp), %rax
    shl      $6, %rax
    mov      %rax, (%rsp)
-.192:
+.206:
    mov      (%rdx), %al
    movzx    %al, %rax
    add      $1, %rdx
    and      $63, %al
    or       %rax, (%rsp)
    pop      %rax
-.189:
+.203:
    rep
    ret
 
@@ -3674,43 +3762,43 @@ funqE_FE:
    testb    $0x08, %bl
    jnz      ret
    mov      8(%rbx), %rdx
-.193:
+.207:
    testb    $0x0E, %dl
-   jnz      .194
+   jnz      .208
    cmp      %rbx, %rdx
    jz       retnz
    mov      (%rdx), %rax
    testb    $0x0E, %al
-   jnz      .195
+   jnz      .209
    testb    $0x06, (%rax)
-   jz       .196
+   jz       .210
    testb    $0x0E, 8(%rdx)
    jz       retnz
-   jmp      .198
-.196:
+   jmp      .212
+.210:
    cmpq     $Nil, (%rax)
    jz       retnz
    cmpq     $TSym, (%rax)
    jz       retnz
-   jmp      .198
-.195:
+   jmp      .212
+.209:
    cmpq     $Nil, 8(%rdx)
    jnz      ret
-.198:
+.212:
    mov      8(%rdx), %rdx
-   jmp      .193
-.194:
+   jmp      .207
+.208:
    cmp      $Nil, %rdx
    jnz      ret
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
    mov      $TSym, %r10
    cmovzq   %r10, %rbx
-   jz       .199
+   jz       .213
    mov      %rbx, %rdx
-.200:
+.214:
    testb    $0x0E, %dl
-   jnz      .201
+   jnz      .215
    mov      (%rdx), %rax
    testb    $0x06, %al
    jnz      ret
@@ -3723,13 +3811,13 @@ funqE_FE:
    mov      8(%rdx), %rdx
    cmp      %rbx, %rdx
    jz       retnz
-   jmp      .200
-.201:
+   jmp      .214
+.215:
    cmp      $TSym, %rdx
    jz       retnz
    testb    $0x06, %dl
    jnz      ret
-.199:
+.213:
    rep
    ret
 
@@ -3757,10 +3845,10 @@ evSymE_E:
    .global  xSymE_E
 xSymE_E:
    testb    $0x06, %bl
-   jnz      .202
+   jnz      .216
    testb    $0x08, %bl
    jnz      ret
-.202:
+.216:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -3800,9 +3888,9 @@ xCntEX_FE:
    testb    $0x02, %bl
    jz       cntErrEX
    shr      $4, %rbx
-   jnc      .203
+   jnc      .217
    neg      %rbx
-.203:
+.217:
    rep
    ret
 
@@ -3812,9 +3900,9 @@ xCntCX_FC:
    testb    $0x02, %dl
    jz       cntErrCX
    shr      $4, %rdx
-   jnc      .204
+   jnc      .218
    neg      %rdx
-.204:
+.218:
    rep
    ret
 
@@ -3824,9 +3912,9 @@ xCntAX_FA:
    testb    $0x02, %al
    jz       cntErrAX
    shr      $4, %rax
-   jnc      .205
+   jnc      .219
    neg      %rax
-.205:
+.219:
    rep
    ret
 
@@ -3834,11 +3922,11 @@ xCntAX_FA:
    .global  boxCntE_E
 boxCntE_E:
    cmp      %r12, %rbx
-   js       .206
+   js       .220
    shl      $4, %rbx
    orb      $2, %bl
    ret
-.206:
+.220:
    neg      %rbx
    shl      $4, %rbx
    orb      $10, %bl
@@ -3880,13 +3968,13 @@ endString_E:
    popq     EnvPutB
    mov      $Nil, %rbx
    cmpq     $2, 8(%rbp)
-   jz       .207
+   jz       .221
    call     cons_E
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
    orb      $8, %bl
    mov      %rbx, (%rbx)
-.207:
+.221:
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      *%rax
@@ -3945,11 +4033,11 @@ doArg:
    jz       retNil
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .208
+   jz       .222
    mov      EnvNext, %r10
    mov      (%r10), %rbx
    ret
-.208:
+.222:
    mov      (%rbx), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -3959,17 +4047,17 @@ doArg:
    call     evListE_E
 1:
    testb    $8, %bl
-   jnz      .209
+   jnz      .223
    shr      $1, %rbx
    andb     $~1, %bl
-   jz       .209
+   jz       .223
    mov      EnvNext, %rdx
    sub      %rbx, %rdx
    cmp      EnvArgs, %rdx
-   jc       .209
+   jc       .223
    mov      (%rdx), %rbx
    ret
-.209:
+.223:
    mov      $Nil, %rbx
    ret
 
@@ -3980,17 +4068,17 @@ doArg:
 doRest:
    mov      $Nil, %rbx
    mov      EnvArgs, %rdx
-.212:
+.226:
    cmp      EnvNext, %rdx
-   jz       .213
+   jz       .227
    call     consE_A
    mov      (%rdx), %r10
    mov      %r10, (%rax)
    mov      %rbx, 8(%rax)
    mov      %rax, %rbx
    add      $8, %rdx
-   jmp      .212
-.213:
+   jmp      .226
+.227:
    rep
    ret
 
@@ -4017,7 +4105,7 @@ dateXYZ_E:
    jbe      retNil
    mov      Month(%r14), %al
    cmp      %al, %r13b
-   jbe      .214
+   jbe      .228
    cmp      $2, %r14
    jnz      retNil
    cmp      $29, %r13
@@ -4029,13 +4117,13 @@ dateXYZ_E:
    mov      $100, %r10
    div      %r10
    cmp      %r12, %rdx
-   jnz      .214
+   jnz      .228
    mov      %r15, %rax
    mov      $400, %r10
    div      %r10
    cmp      %r12, %rdx
    jnz      retNil
-.214:
+.228:
    mov      %r15, %rax
    mov      $12, %r10
    mul      %r10
@@ -4085,7 +4173,7 @@ doDate:
    mov      %rbx, %r13
    mov      8(%rbx), %r14
    testb    $0x0E, %r14b
-   jz       .216
+   jz       .230
    mov      %rdx, %r12
    mov      $Buf, %rdi
    call     time
@@ -4096,8 +4184,8 @@ doDate:
    mov      %rax, Time
    mov      %rax, %rdx
    call     tmDateC_E
-   jmp      .217
-.216:
+   jmp      .231
+.230:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -4107,7 +4195,7 @@ doDate:
    call     evListE_E
 1:
    cmp      $TSym, %rbx
-   jnz      .218
+   jnz      .232
    mov      %rdx, %r12
    mov      $Buf, %rdi
    call     time
@@ -4118,12 +4206,12 @@ doDate:
    mov      %rax, Time
    mov      %rax, %rdx
    call     tmDateC_E
-   jmp      .217
-.218:
+   jmp      .231
+.232:
    cmp      $Nil, %rbx
-   jz       .217
+   jz       .231
    testb    $0x0E, %bl
-   jnz      .221
+   jnz      .235
    mov      (%rbx), %rdx
    call     xCntCX_FC
    mov      %rdx, %r15
@@ -4136,11 +4224,11 @@ doDate:
    call     xCntCX_FC
    mov      %rdx, %r13
    call     dateXYZ_E
-   jmp      .217
-.221:
+   jmp      .231
+.235:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .223
+   jz       .237
    call     xCntEX_FE
    mov      %rbx, %rax
    mov      $100, %r10
@@ -4184,13 +4272,13 @@ doDate:
    div      %r10
    mov      %rax, %r13
    cmp      $10, %r14
-   jnc      .224
+   jnc      .238
    add      $3, %r14
-   jmp      .225
-.224:
+   jmp      .239
+.238:
    add      $1, %r15
    sub      $9, %r14
-.225:
+.239:
    shl      $4, %r13
    orb      $2, %r13b
    call     cons_E
@@ -4206,8 +4294,8 @@ doDate:
    call     consC_E
    mov      %r15, (%rbx)
    mov      %rdx, 8(%rbx)
-   jmp      .217
-.223:
+   jmp      .231
+.237:
    call     xCntEX_FE
    mov      %rbx, %r15
    call     evCntXY_FE
@@ -4217,7 +4305,7 @@ doDate:
    mov      %rbx, %r13
    pop      %r14
    call     dateXYZ_E
-.217:
+.231:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -4249,7 +4337,7 @@ doTime:
    push     %r14
    mov      8(%rbx), %r14
    testb    $0x0E, %r14b
-   jz       .227
+   jz       .241
    mov      %rdx, %r12
    mov      $Buf, %rdi
    call     time
@@ -4259,8 +4347,8 @@ doTime:
    xor      %r12, %r12
    mov      %rax, %r14
    call     tmTimeY_E
-   jmp      .228
-.227:
+   jmp      .242
+.241:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -4270,20 +4358,20 @@ doTime:
    call     evListE_E
 1:
    cmp      $TSym, %rbx
-   jnz      .229
+   jnz      .243
    mov      Time, %r14
    cmp      %r12, %r14
-   jz       .230
+   jz       .244
    call     tmTimeY_E
-   jmp      .228
-.230:
+   jmp      .242
+.244:
    mov      $Nil, %rbx
-   jmp      .228
-.229:
+   jmp      .242
+.243:
    cmp      $Nil, %rbx
-   jz       .228
+   jz       .242
    testb    $0x0E, %bl
-   jnz      .234
+   jnz      .248
    mov      (%rbx), %rax
    call     xCntAX_FA
    mov      $3600, %r10
@@ -4298,18 +4386,18 @@ doTime:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
    cmovnzq  %r14, %rbx
-   jnz      .235
+   jnz      .249
    mov      (%rbx), %rbx
    call     xCntEX_FE
    add      %r14, %rbx
-.235:
+.249:
    shl      $4, %rbx
    orb      $2, %bl
-   jmp      .228
-.234:
+   jmp      .242
+.248:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .237
+   jz       .251
    call     xCntEX_FE
    mov      %rbx, %rax
    mov      %r12, %rdx
@@ -4341,8 +4429,8 @@ doTime:
    call     consX_E
    mov      %rax, (%rbx)
    mov      %r13, 8(%rbx)
-   jmp      .228
-.237:
+   jmp      .242
+.251:
    call     xCntEX_FE
    mov      %rbx, %rax
    mov      $3600, %r10
@@ -4355,14 +4443,14 @@ doTime:
    add      %rax, (%rsp)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .239
+   jnz      .253
    call     evCntXY_FE
    add      %rbx, (%rsp)
-.239:
+.253:
    pop      %rbx
    shl      $4, %rbx
    orb      $2, %bl
-.228:
+.242:
    pop      %r14
    pop      %r13
    ret
@@ -4429,7 +4517,7 @@ doCd:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .240
+   jz       .254
    push     %rax
    cmp      %r12b, 8(%rsp)
    jz       doCd_10
@@ -4439,17 +4527,17 @@ doCd:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jnz      .241
+   jnz      .255
 doCd_10:
    mov      (%rsp), %rbx
    call     mkStrE_E
-.241:
+.255:
    mov      %rdx, %r12
    pop      %rdi
    call     free
    mov      %r12, %rdx
    xor      %r12, %r12
-.240:
+.254:
    mov      %r15, %rsp
    pop      %r15
    ret
@@ -4471,12 +4559,12 @@ doCtty:
    call     evListE_E
 1:
    testb    $0x02, %bl
-   jz       .242
+   jz       .256
    shr      $4, %rbx
    mov      %rbx, TtyPid
    mov      $TSym, %rbx
-   jmp      .243
-.242:
+   jmp      .257
+.256:
    testb    $0x08, %bl
    jz       argErrEX
    push     %r15
@@ -4490,7 +4578,7 @@ doCtty:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .244
+   jz       .258
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $_w_, %rsi
@@ -4499,7 +4587,7 @@ doCtty:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .244
+   jz       .258
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $_w_, %rsi
@@ -4508,15 +4596,15 @@ doCtty:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .244
+   jz       .258
    mov      OutFiles, %r11
    mov      8(%r11), %r11
    movq     $1, 16(%r11)
    mov      $TSym, %rbx
-.244:
+.258:
    mov      %r15, %rsp
    pop      %r15
-.243:
+.257:
    pop      %r13
    ret
 
@@ -4542,7 +4630,7 @@ doInfo:
    xor      %r12, %r12
    mov      $Nil, %rbx
    cmp      %r12d, %eax
-   js       .247
+   js       .261
    mov      %rdx, %r12
    lea      88(%rsp), %rdi
    call     gmtime
@@ -4560,17 +4648,17 @@ doInfo:
    popq     8(%r13)
    call     consX_E
    call     s_isdirS_F
-   jnz      .248
+   jnz      .262
    movq     $TSym, (%rbx)
-   jmp      .249
-.248:
+   jmp      .263
+.262:
    mov      48(%rsp), %rax
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, (%rbx)
-.249:
+.263:
    mov      %r13, 8(%rbx)
-.247:
+.261:
    mov      %r15, %rsp
    pop      %r15
    pop      %r14
@@ -4605,15 +4693,15 @@ doFile:
    repnz scasb
    cmovzq   %rdi, %rbx
    cmovzq   %rcx, %rdx
-   jnz      .250
-.251:
+   jnz      .264
+.265:
    cld
    mov      %rbx, %rdi
    mov      %rdx, %rcx
    repnz scasb
    cmovzq   %rdi, %rbx
    cmovzq   %rcx, %rdx
-   jz       .251
+   jz       .265
    push     %r15
    mov      %rbx, %r15
    sub      $1, %r15
@@ -4640,8 +4728,8 @@ doFile:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
-   jmp      .252
-.250:
+   jmp      .266
+.264:
    call     mkStrE_E
    call     consE_C
    mov      %rbx, (%rdx)
@@ -4657,7 +4745,7 @@ doFile:
    call     consAC_E
    mov      %rax, (%rbx)
    mov      %rdx, 8(%rbx)
-.252:
+.266:
    rep
    ret
 
@@ -4671,14 +4759,14 @@ doDir:
    mov      (%r10), %rbx
    call     evSymE_E
    cmp      $Nil, %rbx
-   jnz      .253
+   jnz      .267
    mov      %rdx, %r12
    mov      $_dot_, %rdi
    call     opendir
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .254
-.253:
+   jmp      .268
+.267:
    call     pathStringE_SZ
    mov      %rdx, %r12
    mov      %rsp, %rdi
@@ -4686,27 +4774,27 @@ doDir:
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r15, %rsp
-.254:
+.268:
    cmp      %r12, %rax
    jz       doDir_10
    mov      %rax, %r15
-.255:
+.269:
    mov      %rdx, %r12
    mov      %r15, %rdi
    call     readdir
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jnz      .256
+   jnz      .270
 doDir_10:
    mov      $Nil, %rbx
    pop      %r15
    ret
-.256:
+.270:
    lea      19(%rax), %rbx
    mov      (%rbx), %al
    cmp      $46, %al
-   jz       .255
+   jz       .269
    call     mkStrE_E
    call     consE_C
    mov      %rbx, (%rdx)
@@ -4716,26 +4804,26 @@ doDir_10:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.257:
+.271:
    mov      %rdx, %r12
    mov      %r15, %rdi
    call     readdir
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .258
+   jz       .272
    lea      19(%rax), %rbx
    mov      (%rbx), %al
    cmp      $46, %al
-   jz       .257
+   jz       .271
    call     mkStrE_E
    call     consE_A
    mov      %rbx, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .257
-.258:
+   jmp      .271
+.272:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -4756,10 +4844,10 @@ doCmd:
    mov      (%r10), %rbx
    call     evSymE_E
    cmp      $Nil, %rbx
-   jnz      .260
+   jnz      .274
    mov      AV0, %rbx
    jmp      mkStrE_E
-.260:
+.274:
    push     %r15
    call     bufStringE_SZ
    cld
@@ -4795,16 +4883,16 @@ doArgv:
    mov      AV, %r15
    mov      (%r15), %rbx
    cmp      %r12, %rbx
-   jz       .261
+   jz       .275
    mov      (%rbx), %al
    cmp      $45, %al
-   jnz      .261
+   jnz      .275
    cmp      %r12b, 1(%rbx)
-   jnz      .261
+   jnz      .275
    add      $8, %r15
-.261:
+.275:
    cmp      $Nil, %r14
-   jnz      .269
+   jnz      .283
    mov      $Nil, %rbx
    cmp      %r12, (%r15)
    jz       doArgv_90
@@ -4818,10 +4906,10 @@ doArgv:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.266:
+.280:
    add      $8, %r15
    cmp      %r12, (%r15)
-   jz       .267
+   jz       .281
    mov      (%r15), %rbx
    call     mkStrE_E
    call     consE_A
@@ -4829,40 +4917,40 @@ doArgv:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .266
-.267:
+   jmp      .280
+.281:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      doArgv_90
-.269:
+.283:
    testb    $0x0E, %r14b
-   jnz      .270
+   jnz      .284
    mov      (%r14), %rbx
    call     needVarEX
    mov      (%r15), %rbx
    cmp      %r12, %rbx
-   jz       .271
+   jz       .285
    add      $8, %r15
-.271:
+.285:
    call     mkStrE_E
    mov      (%r14), %r11
    mov      %rbx, (%r11)
    mov      8(%r14), %r14
    cmp      $Nil, %r14
    jz       doArgv_90
-   jmp      .269
-.270:
+   jmp      .283
+.284:
    testb    $0x06, %r14b
    jnz      symErrYX
    call     checkVarYX
    mov      (%r15), %rbx
    cmp      %r12, %rbx
-   jnz      .272
+   jnz      .286
    mov      $Nil, %rbx
    mov      %rbx, (%r14)
    jmp      doArgv_90
-.272:
+.286:
    call     mkStrE_E
    call     consE_C
    mov      %rbx, (%rdx)
@@ -4872,10 +4960,10 @@ doArgv:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.274:
+.288:
    add      $8, %r15
    cmp      %r12, (%r15)
-   jz       .275
+   jz       .289
    mov      (%r15), %rbx
    call     mkStrE_E
    call     consE_A
@@ -4883,8 +4971,8 @@ doArgv:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .274
-.275:
+   jmp      .288
+.289:
    mov      8(%rbp), %rbx
    mov      %rbx, (%r14)
    mov      (%rbp), %rsp
@@ -4906,10 +4994,10 @@ doOpt:
    jz       retNil
    mov      (%rbx), %al
    cmp      $45, %al
-   jnz      .276
+   jnz      .290
    cmp      %r12b, 1(%rbx)
    jz       retNil
-.276:
+.290:
    addq     $8, AV
    jmp      mkStrE_E
 
@@ -4963,61 +5051,61 @@ wtermsigS_A:
    .global  markE
 markE:
    mov      %r12, %r13
-.278:
+.292:
    testb    $0x02, %bl
-   jnz      .283
+   jnz      .297
    mov      %rbx, %rax
    andb     $~15, %al
    testb    $1, 8(%rax)
-   jz       .283
+   jz       .297
    andb     $~1, 8(%rax)
    testb    $0x04, %bl
-   jz       .280
+   jz       .294
    mov      8(%rax), %rdx
-.281:
+.295:
    testb    $0x02, %dl
-   jnz      .283
+   jnz      .297
    testb    $1, 4(%rdx)
-   jz       .283
+   jz       .297
    andb     $~1, 4(%rdx)
    mov      4(%rdx), %rdx
-   jmp      .281
-.280:
+   jmp      .295
+.294:
    mov      %rbx, %rdx
    mov      (%rax), %rbx
    orb      $1, %r13b
    mov      %r13, (%rax)
    mov      %rdx, %r13
-   jmp      .278
-.283:
+   jmp      .292
+.297:
    mov      %r13, %rax
    and      $-16, %rax
    jz       ret
    testb    $1, (%rax)
-   jnz      .284
+   jnz      .298
    mov      %r13, %rdx
    mov      8(%rax), %r13
    mov      %rbx, 8(%rax)
    mov      %rdx, %rbx
-   jmp      .283
-.284:
+   jmp      .297
+.298:
    mov      (%rax), %rdx
    mov      %rbx, (%rax)
    mov      8(%rax), %rbx
    andb     $~1, %dl
    mov      %rdx, 8(%rax)
-   jmp      .278
+   jmp      .292
 
    .balign  16
    .global  needC
 needC:
    mov      Avail, %rax
-.285:
+.299:
    cmp      %r12, %rax
    jz       gc
    mov      (%rax), %rax
    sub      $1, %rdx
-   jnz      .285
+   jnz      .299
    rep
    ret
 
@@ -5034,22 +5122,22 @@ gc:
    mov      $Nil, %r13
    orb      $1, (%r13)
    add      $32, %r13
-.286:
+.300:
    orb      $1, (%r13)
    add      $16, %r13
    cmp      $GcMarkEnd, %r13
-   jbe      .286
+   jbe      .300
    mov      Heaps, %r13
-.287:
+.301:
    mov      $65536, %rdx
-.288:
+.302:
    orb      $1, 8(%r13)
    add      $16, %r13
    sub      $1, %rdx
-   jnz      .288
+   jnz      .302
    mov      (%r13), %r13
    cmp      %r12, %r13
-   jnz      .287
+   jnz      .301
    mov      Alarm, %rbx
    call     markE
    mov      LineX, %rbx
@@ -5063,166 +5151,166 @@ gc:
    mov      Transient+8, %rbx
    call     markE
    mov      %rbp, %r14
-.289:
+.303:
    cmp      %r12, %r14
-   jz       .290
+   jz       .304
    mov      (%r14), %r15
-.291:
+.305:
    add      $8, %r14
    cmp      %r15, %r14
-   jz       .292
+   jz       .306
    mov      (%r14), %rbx
    call     markE
-   jmp      .291
-.292:
+   jmp      .305
+.306:
    mov      (%r14), %r14
-   jmp      .289
-.290:
+   jmp      .303
+.304:
    mov      Catch, %r14
-.293:
+.307:
    cmp      %r12, %r14
-   jz       .294
+   jz       .308
    mov      8(%r14), %rbx
    cmp      %r12, %rbx
-   jz       .295
+   jz       .309
    call     markE
-.295:
+.309:
    mov      16(%r14), %rbx
    call     markE
    mov      (%r14), %r14
-   jmp      .293
-.294:
+   jmp      .307
+.308:
    mov      EnvMeth, %r14
-.296:
+.310:
    cmp      %r12, %r14
-   jz       .297
+   jz       .311
    mov      8(%r14), %rbx
    call     markE
    mov      16(%r14), %rbx
    call     markE
    mov      (%r14), %r14
-   jmp      .296
-.297:
-   mov      $Extern, %r14
-   mov      %r12, %r15
-.299:
-   andb     $~1, 8(%r14)
-   mov      8(%r14), %rax
-   andb     $~1, 8(%rax)
-   testb    $0x0E, 8(%rax)
-   jnz      .301
-   mov      %r14, %rdx
-   mov      8(%rax), %r14
-   mov      %r15, 8(%rax)
-   mov      %rdx, %r15
-   jmp      .299
-.301:
-   mov      (%r14), %rbx
-   testb    $1, (%rbx)
-   jz       .302
-   mov      -8(%rbx), %rax
-   testb    $0x06, %al
-   jnz      .303
-   andb     $~9, %al
-.304:
-   mov      8(%rax), %rax
-   andb     $~1, %al
-   testb    $0x06, %al
-   jz       .304
-.303:
-   rcl      $1, %rax
-   jnc      .302
-   call     markE
-.302:
-   mov      8(%r14), %rax
-   testb    $0x0E, (%rax)
-   jnz      .308
-   mov      %r14, %rdx
-   mov      (%rax), %r14
-   mov      %r15, (%rax)
-   orb      $8, %dl
-   mov      %rdx, %r15
-   jmp      .299
-.308:
-   mov      %r15, %rax
-   cmp      %r12, %rax
-   jz       gc_10
-   testb    $0x08, %al
-   jnz      .309
-   mov      8(%rax), %rdx
-   mov      8(%rdx), %r15
-   mov      %r14, 8(%rdx)
-   mov      %rax, %r14
-   jmp      .301
-.309:
-   andb     $~8, %al
-   mov      8(%rax), %rdx
-   mov      (%rdx), %r15
-   mov      %r14, (%rdx)
-   mov      %rax, %r14
-   jmp      .308
-gc_10:
-   mov      $Db1, %rax
-   mov      %rax, DB
-   testb    $1, (%rax)
-   jz       .311
-   movq     $Nil, (%rax)
-   movq     $26, -8(%rax)
+   jmp      .310
 .311:
    mov      $Extern, %r14
    mov      %r12, %r15
-gc_20:
+.313:
+   andb     $~1, 8(%r14)
    mov      8(%r14), %rax
+   andb     $~1, 8(%rax)
    testb    $0x0E, 8(%rax)
    jnz      .315
    mov      %r14, %rdx
    mov      8(%rax), %r14
    mov      %r15, 8(%rax)
    mov      %rdx, %r15
-   jmp      gc_20
+   jmp      .313
 .315:
+   mov      (%r14), %rbx
+   testb    $1, (%rbx)
+   jz       .316
+   mov      -8(%rbx), %rax
+   testb    $0x06, %al
+   jnz      .317
+   andb     $~9, %al
+.318:
+   mov      8(%rax), %rax
+   andb     $~1, %al
+   testb    $0x06, %al
+   jz       .318
+.317:
+   rcl      $1, %rax
+   jnc      .316
+   call     markE
+.316:
+   mov      8(%r14), %rax
+   testb    $0x0E, (%rax)
+   jnz      .322
+   mov      %r14, %rdx
+   mov      (%rax), %r14
+   mov      %r15, (%rax)
+   orb      $8, %dl
+   mov      %rdx, %r15
+   jmp      .313
+.322:
+   mov      %r15, %rax
+   cmp      %r12, %rax
+   jz       gc_10
+   testb    $0x08, %al
+   jnz      .323
+   mov      8(%rax), %rdx
+   mov      8(%rdx), %r15
+   mov      %r14, 8(%rdx)
+   mov      %rax, %r14
+   jmp      .315
+.323:
+   andb     $~8, %al
+   mov      8(%rax), %rdx
+   mov      (%rdx), %r15
+   mov      %r14, (%rdx)
+   mov      %rax, %r14
+   jmp      .322
+gc_10:
+   mov      $Db1, %rax
+   mov      %rax, DB
+   testb    $1, (%rax)
+   jz       .325
+   movq     $Nil, (%rax)
+   movq     $26, -8(%rax)
+.325:
+   mov      $Extern, %r14
+   mov      %r12, %r15
+gc_20:
+   mov      8(%r14), %rax
+   testb    $0x0E, 8(%rax)
+   jnz      .329
+   mov      %r14, %rdx
+   mov      8(%rax), %r14
+   mov      %r15, 8(%rax)
+   mov      %rdx, %r15
+   jmp      gc_20
+.329:
    mov      (%r14), %r11
    testb    $1, (%r11)
    jz       gc_30
    mov      8(%r14), %rax
    testb    $0x0E, %al
-   jz       .317
+   jz       .331
    orb      $1, 8(%r14)
    mov      %rax, %r14
    jmp      gc_40
-.317:
+.331:
    testb    $0x0E, (%rax)
-   jz       .318
+   jz       .332
    orb      $1, 8(%r14)
    mov      8(%rax), %r14
    jmp      gc_40
-.318:
+.332:
    testb    $0x0E, 8(%rax)
-   jz       .319
+   jz       .333
    orb      $1, 8(%r14)
    mov      (%rax), %r14
    jmp      gc_20
-.319:
+.333:
    mov      8(%rax), %rax
    mov      8(%rax), %r13
    testb    $0x0E, (%r13)
-   jz       .320
+   jz       .334
    mov      (%rax), %r10
    mov      %r10, (%r14)
    mov      8(%r14), %r11
    mov      8(%r13), %r10
    mov      %r10, 8(%r11)
    jmp      gc_30
-.320:
+.334:
    mov      (%r13), %r13
-.321:
+.335:
    mov      8(%r13), %rdx
    testb    $0x0E, (%rdx)
-   jnz      .322
+   jnz      .336
    mov      %r13, %rax
    mov      (%rdx), %r13
-   jmp      .321
-.322:
+   jmp      .335
+.336:
    mov      (%r13), %r10
    mov      %r10, (%r14)
    mov      8(%rax), %r11
@@ -5243,13 +5331,13 @@ gc_40:
    cmp      %r12, %rax
    jz       gc_50
    testb    $0x08, %al
-   jnz      .326
+   jnz      .340
    mov      8(%rax), %rdx
    mov      8(%rdx), %r15
    mov      %r14, 8(%rdx)
    mov      %rax, %r14
-   jmp      .315
-.326:
+   jmp      .329
+.340:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r15
@@ -5258,68 +5346,68 @@ gc_40:
    jmp      gc_40
 gc_50:
    mov      EnvApply, %r14
-.328:
+.342:
    cmp      %r12, %r14
-   jz       .329
+   jz       .343
    mov      (%r14), %r15
    add      $16, %r14
-.330:
+.344:
    andb     $~1, (%r14)
    add      $16, %r14
    cmp      %r15, %r14
-   jc       .330
-   mov      (%r14), %r14
-   jmp      .328
-.329:
+   jc       .344
+   mov      (%r15), %r14
+   jmp      .342
+.343:
    mov      %r12, %r13
    mov      Heaps, %r14
    mov      GcCount, %rdx
    cmp      %r12, %rdx
-   jz       .331
-.332:
+   jz       .345
+.346:
    lea      1048560(%r14), %r15
-.333:
+.347:
    testb    $1, 8(%r15)
-   jz       .334
+   jz       .348
    mov      %r13, (%r15)
    mov      %r15, %r13
    sub      $1, %rdx
-.334:
+.348:
    sub      $16, %r15
    cmp      %r14, %r15
-   jnc      .333
+   jnc      .347
    mov      1048576(%r14), %r14
    cmp      %r12, %r14
-   jnz      .332
+   jnz      .346
    mov      %r13, Avail
-.335:
+.349:
    cmp      %r12, %rdx
-   js       .337
+   js       .351
    call     heapAlloc
    sub      $65536, %rdx
-   jmp      .335
-.331:
+   jmp      .349
+.345:
    mov      $Heaps, %rbx
-.338:
+.352:
    mov      Avail, %rax
    mov      $65536, %rdx
    lea      1048560(%r14), %r15
-.339:
+.353:
    testb    $1, 8(%r15)
-   jz       .340
+   jz       .354
    mov      %r13, (%r15)
    mov      %r15, %r13
    sub      $1, %rdx
-.340:
+.354:
    sub      $16, %r15
    cmp      %r14, %r15
-   jnc      .339
+   jnc      .353
    cmp      %r12, %rdx
-   jz       .341
+   jz       .355
    lea      1048576(%r14), %rbx
    mov      (%rbx), %r14
-   jmp      .342
-.341:
+   jmp      .356
+.355:
    mov      %rax, Avail
    mov      1048576(%r14), %r14
    mov      %rdx, %r12
@@ -5328,10 +5416,10 @@ gc_50:
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r14, (%rbx)
-.342:
+.356:
    cmp      %r12, %r14
-   jnz      .338
-.337:
+   jnz      .352
+.351:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -5357,10 +5445,10 @@ doGc:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .343
+   jnz      .357
    call     gc
-   jmp      .344
-.343:
+   jmp      .358
+.357:
    mov      %rbx, %r13
    call     xCntEX_FE
    shl      $16, %rbx
@@ -5369,7 +5457,7 @@ doGc:
    call     gc
    mov      %rdx, GcCount
    mov      %r13, %rbx
-.344:
+.358:
    pop      %r13
    ret
 
@@ -5378,11 +5466,11 @@ doGc:
 cons_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jz       .345
+   jz       .359
    mov      (%rax), %r10
    mov      %r10, Avail
    ret
-.345:
+.359:
    call     gc
    mov      Avail, %rax
    mov      (%rax), %r10
@@ -5394,11 +5482,11 @@ cons_A:
 cons_C:
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jz       .346
+   jz       .360
    mov      (%rdx), %r10
    mov      %r10, Avail
    ret
-.346:
+.360:
    call     gc
    mov      Avail, %rdx
    mov      (%rdx), %r10
@@ -5410,11 +5498,11 @@ cons_C:
 cons_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jz       .347
+   jz       .361
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.347:
+.361:
    call     gc
    mov      Avail, %rbx
    mov      (%rbx), %r10
@@ -5426,11 +5514,11 @@ cons_E:
 cons_X:
    mov      Avail, %r13
    cmp      %r12, %r13
-   jz       .348
+   jz       .362
    mov      (%r13), %r10
    mov      %r10, Avail
    ret
-.348:
+.362:
    call     gc
    mov      Avail, %r13
    mov      (%r13), %r10
@@ -5442,11 +5530,11 @@ cons_X:
 cons_Y:
    mov      Avail, %r14
    cmp      %r12, %r14
-   jz       .349
+   jz       .363
    mov      (%r14), %r10
    mov      %r10, Avail
    ret
-.349:
+.363:
    call     gc
    mov      Avail, %r14
    mov      (%r14), %r10
@@ -5458,11 +5546,11 @@ cons_Y:
 cons_Z:
    mov      Avail, %r15
    cmp      %r12, %r15
-   jz       .350
+   jz       .364
    mov      (%r15), %r10
    mov      %r10, Avail
    ret
-.350:
+.364:
    call     gc
    mov      Avail, %r15
    mov      (%r15), %r10
@@ -5473,12 +5561,12 @@ cons_Z:
    .global  consA_A
 consA_A:
    cmp      %r12, Avail
-   jz       .351
+   jz       .365
    mov      Avail, %rax
    mov      (%rax), %r10
    mov      %r10, Avail
    ret
-.351:
+.365:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5497,11 +5585,11 @@ consA_A:
 consC_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jz       .352
+   jz       .366
    mov      (%rax), %r10
    mov      %r10, Avail
    ret
-.352:
+.366:
    push     %rbp
    mov      %rsp, %rbp
    push     %rdx
@@ -5520,11 +5608,11 @@ consC_A:
 consE_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jz       .353
+   jz       .367
    mov      (%rax), %r10
    mov      %r10, Avail
    ret
-.353:
+.367:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -5543,11 +5631,11 @@ consE_A:
 consX_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jz       .354
+   jz       .368
    mov      (%rax), %r10
    mov      %r10, Avail
    ret
-.354:
+.368:
    push     %rbp
    mov      %rsp, %rbp
    push     %r13
@@ -5566,11 +5654,11 @@ consX_A:
 consA_C:
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jz       .355
+   jz       .369
    mov      (%rdx), %r10
    mov      %r10, Avail
    ret
-.355:
+.369:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5588,12 +5676,12 @@ consA_C:
    .global  consC_C
 consC_C:
    cmp      %r12, Avail
-   jz       .356
+   jz       .370
    mov      Avail, %rdx
    mov      (%rdx), %r10
    mov      %r10, Avail
    ret
-.356:
+.370:
    push     %rbp
    mov      %rsp, %rbp
    push     %rdx
@@ -5612,11 +5700,11 @@ consC_C:
 consE_C:
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jz       .357
+   jz       .371
    mov      (%rdx), %r10
    mov      %r10, Avail
    ret
-.357:
+.371:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -5635,11 +5723,11 @@ consE_C:
 consA_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jz       .358
+   jz       .372
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.358:
+.372:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5658,11 +5746,11 @@ consA_E:
 consC_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jz       .359
+   jz       .373
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.359:
+.373:
    push     %rbp
    mov      %rsp, %rbp
    push     %rdx
@@ -5680,12 +5768,12 @@ consC_E:
    .global  consE_E
 consE_E:
    cmp      %r12, Avail
-   jz       .360
+   jz       .374
    mov      Avail, %rbx
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.360:
+.374:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -5704,11 +5792,11 @@ consE_E:
 consX_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jz       .361
+   jz       .375
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.361:
+.375:
    push     %rbp
    mov      %rsp, %rbp
    push     %r13
@@ -5727,11 +5815,11 @@ consX_E:
 consA_X:
    mov      Avail, %r13
    cmp      %r12, %r13
-   jz       .362
+   jz       .376
    mov      (%r13), %r10
    mov      %r10, Avail
    ret
-.362:
+.376:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5750,11 +5838,11 @@ consA_X:
 consE_X:
    mov      Avail, %r13
    cmp      %r12, %r13
-   jz       .363
+   jz       .377
    mov      (%r13), %r10
    mov      %r10, Avail
    ret
-.363:
+.377:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -5773,11 +5861,11 @@ consE_X:
 consY_X:
    mov      Avail, %r13
    cmp      %r12, %r13
-   jz       .364
+   jz       .378
    mov      (%r13), %r10
    mov      %r10, Avail
    ret
-.364:
+.378:
    push     %rbp
    mov      %rsp, %rbp
    push     %r14
@@ -5796,11 +5884,11 @@ consY_X:
 consA_Y:
    mov      Avail, %r14
    cmp      %r12, %r14
-   jz       .365
+   jz       .379
    mov      (%r14), %r10
    mov      %r10, Avail
    ret
-.365:
+.379:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5819,11 +5907,11 @@ consA_Y:
 consA_Z:
    mov      Avail, %r15
    cmp      %r12, %r15
-   jz       .366
+   jz       .380
    mov      (%r15), %r10
    mov      %r10, Avail
    ret
-.366:
+.380:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5842,11 +5930,11 @@ consA_Z:
 consAC_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jz       .367
+   jz       .381
    mov      (%rbx), %r10
    mov      %r10, Avail
    ret
-.367:
+.381:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -5868,7 +5956,7 @@ consSymX_E:
    jz       retNil
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jnz      .368
+   jnz      .382
    push     %rbp
    mov      %rsp, %rbp
    push     %r13
@@ -5878,7 +5966,7 @@ consSymX_E:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rbx
-.368:
+.382:
    mov      (%rbx), %r10
    mov      %r10, Avail
    mov      %r13, (%rbx)
@@ -5891,10 +5979,10 @@ consSymX_E:
 boxNum_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jnz      .369
+   jnz      .383
    call     gc
    mov      Avail, %rax
-.369:
+.383:
    mov      (%rax), %r10
    mov      %r10, Avail
    movq     $2, 8(%rax)
@@ -5906,10 +5994,10 @@ boxNum_A:
 boxNum_C:
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jnz      .370
+   jnz      .384
    call     gc
    mov      Avail, %rdx
-.370:
+.384:
    mov      (%rdx), %r10
    mov      %r10, Avail
    movq     $2, 8(%rdx)
@@ -5921,10 +6009,10 @@ boxNum_C:
 boxNum_E:
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jnz      .371
+   jnz      .385
    call     gc
    mov      Avail, %rbx
-.371:
+.385:
    mov      (%rbx), %r10
    mov      %r10, Avail
    movq     $2, 8(%rbx)
@@ -5936,10 +6024,10 @@ boxNum_E:
 boxNum_X:
    mov      Avail, %r13
    cmp      %r12, %r13
-   jnz      .372
+   jnz      .386
    call     gc
    mov      Avail, %r13
-.372:
+.386:
    mov      (%r13), %r10
    mov      %r10, Avail
    movq     $2, 8(%r13)
@@ -5952,10 +6040,10 @@ boxNumA_A:
    push     %rax
    mov      Avail, %rax
    cmp      %r12, %rax
-   jnz      .373
+   jnz      .387
    call     gc
    mov      Avail, %rax
-.373:
+.387:
    mov      (%rax), %r10
    mov      %r10, Avail
    popq     (%rax)
@@ -5964,12 +6052,29 @@ boxNumA_A:
    ret
 
    .balign  16
+   .global  boxNumE_E
+boxNumE_E:
+   push     %rbx
+   mov      Avail, %rbx
+   cmp      %r12, %rbx
+   jnz      .388
+   call     gc
+   mov      Avail, %rbx
+.388:
+   mov      (%rbx), %r10
+   mov      %r10, Avail
+   popq     (%rbx)
+   movq     $2, 8(%rbx)
+   orb      $4, %bl
+   ret
+
+   .balign  16
    .global  consNumAC_A
 consNumAC_A:
    push     %rax
    mov      Avail, %rax
    cmp      %r12, %rax
-   jnz      .374
+   jnz      .389
    push     %rbp
    mov      %rsp, %rbp
    push     %rdx
@@ -5979,7 +6084,7 @@ consNumAC_A:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rax
-.374:
+.389:
    mov      (%rax), %r10
    mov      %r10, Avail
    popq     (%rax)
@@ -5993,7 +6098,7 @@ consNumAE_A:
    push     %rax
    mov      Avail, %rax
    cmp      %r12, %rax
-   jnz      .375
+   jnz      .390
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -6003,7 +6108,7 @@ consNumAE_A:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rax
-.375:
+.390:
    mov      (%rax), %r10
    mov      %r10, Avail
    popq     (%rax)
@@ -6017,7 +6122,7 @@ consNumCA_C:
    push     %rdx
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jnz      .376
+   jnz      .391
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -6027,7 +6132,7 @@ consNumCA_C:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rdx
-.376:
+.391:
    mov      (%rdx), %r10
    mov      %r10, Avail
    popq     (%rdx)
@@ -6040,7 +6145,7 @@ consNumCA_C:
 consNumCE_A:
    mov      Avail, %rax
    cmp      %r12, %rax
-   jnz      .377
+   jnz      .392
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -6050,7 +6155,7 @@ consNumCE_A:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rax
-.377:
+.392:
    mov      (%rax), %r10
    mov      %r10, Avail
    mov      %rdx, (%rax)
@@ -6064,7 +6169,7 @@ consNumCE_C:
    push     %rdx
    mov      Avail, %rdx
    cmp      %r12, %rdx
-   jnz      .378
+   jnz      .393
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -6074,7 +6179,7 @@ consNumCE_C:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rdx
-.378:
+.393:
    mov      (%rdx), %r10
    mov      %r10, Avail
    popq     (%rdx)
@@ -6085,10 +6190,8 @@ consNumCE_C:
    .balign  16
    .global  consNumCE_E
 consNumCE_E:
-   push     %rbx
-   mov      Avail, %rbx
-   cmp      %r12, %rbx
-   jnz      .379
+   cmp      %r12, Avail
+   jnz      .394
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -6097,8 +6200,9 @@ consNumCE_E:
    call     gc
    mov      (%rbp), %rsp
    pop      %rbp
+.394:
+   push     %rbx
    mov      Avail, %rbx
-.379:
    mov      (%rbx), %r10
    mov      %r10, Avail
    mov      %rdx, (%rbx)
@@ -6109,10 +6213,8 @@ consNumCE_E:
    .balign  16
    .global  consNumEA_A
 consNumEA_A:
-   push     %rax
-   mov      Avail, %rax
-   cmp      %r12, %rax
-   jnz      .380
+   cmp      %r12, Avail
+   jnz      .395
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -6121,8 +6223,9 @@ consNumEA_A:
    call     gc
    mov      (%rbp), %rsp
    pop      %rbp
+.395:
+   push     %rax
    mov      Avail, %rax
-.380:
    mov      (%rax), %r10
    mov      %r10, Avail
    mov      %rbx, (%rax)
@@ -6136,7 +6239,7 @@ consNumEA_E:
    push     %rbx
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jnz      .381
+   jnz      .396
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
@@ -6146,7 +6249,7 @@ consNumEA_E:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rbx
-.381:
+.396:
    mov      (%rbx), %r10
    mov      %r10, Avail
    popq     (%rbx)
@@ -6160,7 +6263,7 @@ consNumEC_E:
    push     %rbx
    mov      Avail, %rbx
    cmp      %r12, %rbx
-   jnz      .382
+   jnz      .397
    push     %rbp
    mov      %rsp, %rbp
    push     %rdx
@@ -6170,7 +6273,7 @@ consNumEC_E:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      Avail, %rbx
-.382:
+.397:
    mov      (%rbx), %r10
    mov      %r10, Avail
    popq     (%rbx)
@@ -6182,22 +6285,22 @@ consNumEC_E:
    .global  applyXYZ_E
 applyXYZ_E:
    mov      (%r14), %rdx
-.383:
+.398:
    testb    $0x02, %dl
-   jz       .384
+   jz       .399
    pushq    EnvApply
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x08, %spl
-   jz       .385
+   jz       .400
    pushq    $2
-.385:
+.400:
    pushq    $Nil
    push     %rdx
    mov      %rsp, %rbx
-.386:
+.401:
    cmp      %r15, %r14
-   jz       .387
+   jz       .402
    sub      $8, %r14
    pushq    (%r14)
    pushq    $2
@@ -6205,8 +6308,8 @@ applyXYZ_E:
    lea      16(%rsp), %rax
    push     %rax
    mov      %rsp, 40(%rsp)
-   jmp      .386
-.387:
+   jmp      .401
+.402:
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvApply
@@ -6215,11 +6318,11 @@ applyXYZ_E:
    pop      %rbp
    popq     EnvApply
    ret
-.384:
+.399:
    testb    $0x04, %dl
    jnz      undefinedCX
    testb    $0x0E, %dl
-   jnz      .388
+   jnz      .403
    push     %r13
    mov      (%rdx), %r13
    pushq    EnvBind
@@ -6227,178 +6330,6 @@ applyXYZ_E:
    mov      %rsp, %rbp
    pushq    At
    pushq    $At
-.389:
-   testb    $0x0E, %r13b
-   jnz      .390
-   mov      (%r13), %rbx
-   mov      8(%r13), %r13
-   pushq    (%rbx)
-   push     %rbx
-   cmp      %r15, %r14
-   jz       .391
-   sub      $8, %r14
-   mov      (%r14), %r10
-   mov      %r10, (%rbx)
-   jmp      .389
-.391:
-   movq     $Nil, (%rbx)
-   jmp      .389
-.390:
-   cmp      $Nil, %r13
-   jnz      .393
-   push     %rbp
-   mov      %rsp, %rbp
-   mov      %rbp, EnvBind
-   push     %r12
-   mov      8(%rdx), %r15
-1:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      2f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      2f
-   call     evListE_E
-2:
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       1b
-   pop      %rax
-   pop      %rbp
-.394:
-   pop      %r13
-   popq     (%r13)
-   cmp      %rbp, %rsp
-   jnz      .394
-   pop      %rbp
-   popq     EnvBind
-   pop      %r13
-   ret
-.393:
-   cmp      $At, %r13
-   jz       .395
-   pushq    (%r13)
-   push     %r13
-   movq     $Nil, (%r13)
-   push     %rbp
-   mov      %rsp, %rbp
-   mov      %rbp, EnvBind
-   push     %r12
-   mov      8(%rdx), %r15
-1:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      2f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      2f
-   call     evListE_E
-2:
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       1b
-   pop      %rax
-   pop      %rbp
-.396:
-   pop      %r13
-   popq     (%r13)
-   cmp      %rbp, %rsp
-   jnz      .396
-   pop      %rbp
-   popq     EnvBind
-   pop      %r13
-   ret
-.395:
-   push     %rbp
-   mov      %rsp, %rbp
-   mov      %rbp, EnvBind
-   push     %r12
-   pushq    EnvNext
-   pushq    EnvArgs
-   cmp      %r15, %r14
-   jnz      .397
-   mov      %r12, EnvArgs
-   mov      %r12, EnvNext
-   jmp      .398
-.397:
-   push     %rbp
-   mov      %rsp, %rbp
-.399:
-   sub      $8, %r14
-   pushq    (%r14)
-   cmp      %r15, %r14
-   jnz      .399
-   mov      %rsp, EnvArgs
-   mov      %rbp, EnvNext
-   push     %rbp
-   mov      %rsp, %rbp
-.398:
-   mov      8(%rdx), %r15
-1:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      2f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      2f
-   call     evListE_E
-2:
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       1b
-   cmp      %r12, EnvNext
-   jz       .400
-   mov      (%rbp), %rsp
-   pop      %rbp
-.400:
-   popq     EnvArgs
-   popq     EnvNext
-   pop      %rax
-   pop      %rbp
-.401:
-   pop      %r13
-   popq     (%r13)
-   cmp      %rbp, %rsp
-   jnz      .401
-   pop      %rbp
-   popq     EnvBind
-   pop      %r13
-   ret
-.388:
-   mov      (%rdx), %rax
-   cmp      $doMeth, %rax
-   jnz      .402
-   sub      $8, %r14
-   mov      (%r14), %rbx
-   testb    $0x06, %bl
-   jnz      symErrEX
-   testb    $0x08, %bl
-   jz       symErrEX
-   testb    $0x08, -8(%rbx)
-   jz       .403
-   call     dbFetchEX
-.403:
-   push     %r13
-   push     %r15
-   push     %r14
-   mov      %rdx, %r14
-   mov      $Nil, %r15
-   call     methodEY_FCYZ
-   jnz      msgErrYX
-   xchg     8(%rsp), %r15
-   xchg     (%rsp), %r14
-   pushq    EnvMeth
-   mov      %rsp, EnvMeth
-   mov      (%rdx), %r13
-   pushq    EnvBind
-   push     %rbp
-   mov      %rsp, %rbp
-   pushq    At
-   pushq    $At
-   pushq    This
-   pushq    $This
-   mov      (%r14), %r10
-   mov      %r10, This
 .404:
    testb    $0x0E, %r13b
    jnz      .405
@@ -6444,9 +6375,6 @@ applyXYZ_E:
    jnz      .409
    pop      %rbp
    popq     EnvBind
-   popq     EnvMeth
-   pop      %rax
-   pop      %rax
    pop      %r13
    ret
 .408:
@@ -6481,9 +6409,6 @@ applyXYZ_E:
    jnz      .411
    pop      %rbp
    popq     EnvBind
-   popq     EnvMeth
-   pop      %rax
-   pop      %rax
    pop      %r13
    ret
 .410:
@@ -6540,90 +6465,62 @@ applyXYZ_E:
    jnz      .416
    pop      %rbp
    popq     EnvBind
-   popq     EnvMeth
-   pop      %rax
-   pop      %rax
    pop      %r13
    ret
-.402:
-   cmp      (%rax), %rax
+.403:
+   mov      (%rdx), %rax
+   cmp      $doMeth, %rax
    jnz      .417
-   call     sharedLibC_FA
-   jz       undefinedCX
-.417:
-   mov      %rax, %rdx
-   jmp      .383
-
-   .balign  16
-   .global  applyVarXYZ_E
-applyVarXYZ_E:
-   mov      (%r14), %rdx
-.418:
-   testb    $0x02, %dl
-   jz       .419
-   pushq    EnvApply
-   push     %rbp
-   mov      %rsp, %rbp
-   testb    $0x08, %spl
-   jz       .420
-   pushq    $2
-.420:
-   pushq    $Nil
-   push     %rdx
-   mov      %rsp, %rbx
-.421:
-   cmp      %r15, %r14
-   jz       .422
    sub      $8, %r14
-   mov      (%r14), %r10
-   pushq    (%r10)
-   pushq    $2
-   pushq    $Nil
-   lea      16(%rsp), %rax
-   push     %rax
-   mov      %rsp, 40(%rsp)
-   jmp      .421
-.422:
-   push     %rbp
-   mov      %rsp, %rbp
-   mov      %rbp, EnvApply
-   call     *%rdx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   popq     EnvApply
-   ret
-.419:
-   testb    $0x04, %dl
-   jnz      undefinedCX
-   testb    $0x0E, %dl
-   jnz      .423
+   mov      (%r14), %rbx
+   testb    $0x06, %bl
+   jnz      symErrEX
+   testb    $0x08, %bl
+   jz       symErrEX
+   testb    $0x08, -8(%rbx)
+   jz       .418
+   call     dbFetchEX
+.418:
    push     %r13
+   push     %r15
+   push     %r14
+   mov      %rdx, %r14
+   mov      $Nil, %r15
+   call     methodEY_FCYZ
+   jnz      msgErrYX
+   xchg     8(%rsp), %r15
+   xchg     (%rsp), %r14
+   pushq    EnvMeth
+   mov      %rsp, EnvMeth
    mov      (%rdx), %r13
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
    pushq    At
    pushq    $At
-.424:
+   pushq    This
+   pushq    $This
+   mov      (%r14), %r10
+   mov      %r10, This
+.419:
    testb    $0x0E, %r13b
-   jnz      .425
+   jnz      .420
    mov      (%r13), %rbx
    mov      8(%r13), %r13
    pushq    (%rbx)
    push     %rbx
    cmp      %r15, %r14
-   jz       .426
+   jz       .421
    sub      $8, %r14
    mov      (%r14), %r10
-   mov      (%r10), %r10
    mov      %r10, (%rbx)
-   jmp      .424
-.426:
+   jmp      .419
+.421:
    movq     $Nil, (%rbx)
-   jmp      .424
-.425:
+   jmp      .419
+.420:
    cmp      $Nil, %r13
-   jnz      .428
+   jnz      .423
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -6643,18 +6540,21 @@ applyVarXYZ_E:
    jz       1b
    pop      %rax
    pop      %rbp
-.429:
+.424:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .429
+   jnz      .424
    pop      %rbp
    popq     EnvBind
+   popq     EnvMeth
+   pop      %rax
+   pop      %rax
    pop      %r13
    ret
-.428:
+.423:
    cmp      $At, %r13
-   jz       .430
+   jz       .425
    pushq    (%r13)
    push     %r13
    movq     $Nil, (%r13)
@@ -6677,16 +6577,19 @@ applyVarXYZ_E:
    jz       1b
    pop      %rax
    pop      %rbp
-.431:
+.426:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .431
+   jnz      .426
    pop      %rbp
    popq     EnvBind
+   popq     EnvMeth
+   pop      %rax
+   pop      %rax
    pop      %r13
    ret
-.430:
+.425:
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -6694,24 +6597,23 @@ applyVarXYZ_E:
    pushq    EnvNext
    pushq    EnvArgs
    cmp      %r15, %r14
-   jnz      .432
+   jnz      .427
    mov      %r12, EnvArgs
    mov      %r12, EnvNext
-   jmp      .433
-.432:
+   jmp      .428
+.427:
    push     %rbp
    mov      %rsp, %rbp
-.434:
+.429:
    sub      $8, %r14
-   mov      (%r14), %r10
-   pushq    (%r10)
+   pushq    (%r14)
    cmp      %r15, %r14
-   jnz      .434
+   jnz      .429
    mov      %rsp, EnvArgs
    mov      %rbp, EnvNext
    push     %rbp
    mov      %rsp, %rbp
-.433:
+.428:
    mov      8(%rdx), %r15
 1:
    mov      (%r15), %rbx
@@ -6726,60 +6628,85 @@ applyVarXYZ_E:
    testb    $0x0E, %r15b
    jz       1b
    cmp      %r12, EnvNext
-   jz       .435
+   jz       .430
    mov      (%rbp), %rsp
    pop      %rbp
-.435:
+.430:
    popq     EnvArgs
    popq     EnvNext
    pop      %rax
    pop      %rbp
-.436:
+.431:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .436
+   jnz      .431
    pop      %rbp
    popq     EnvBind
+   popq     EnvMeth
+   pop      %rax
+   pop      %rax
    pop      %r13
    ret
-.423:
-   mov      (%rdx), %rax
-   cmp      $doMeth, %rax
-   jnz      .437
+.417:
+   cmp      (%rax), %rax
+   jnz      .432
+   call     sharedLibC_FA
+   jz       undefinedCX
+.432:
+   mov      %rax, %rdx
+   jmp      .398
+
+   .balign  16
+   .global  applyVarXYZ_E
+applyVarXYZ_E:
+   mov      (%r14), %rdx
+.433:
+   testb    $0x02, %dl
+   jz       .434
+   pushq    EnvApply
+   push     %rbp
+   mov      %rsp, %rbp
+   testb    $0x08, %spl
+   jz       .435
+   pushq    $2
+.435:
+   pushq    $Nil
+   push     %rdx
+   mov      %rsp, %rbx
+.436:
+   cmp      %r15, %r14
+   jz       .437
    sub      $8, %r14
    mov      (%r14), %r10
-   mov      (%r10), %rbx
-   testb    $0x06, %bl
-   jnz      symErrEX
-   testb    $0x08, %bl
-   jz       symErrEX
-   testb    $0x08, -8(%rbx)
-   jz       .438
-   call     dbFetchEX
-.438:
+   pushq    (%r10)
+   pushq    $2
+   pushq    $Nil
+   lea      16(%rsp), %rax
+   push     %rax
+   mov      %rsp, 40(%rsp)
+   jmp      .436
+.437:
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      %rbp, EnvApply
+   call     *%rdx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   popq     EnvApply
+   ret
+.434:
+   testb    $0x04, %dl
+   jnz      undefinedCX
+   testb    $0x0E, %dl
+   jnz      .438
    push     %r13
-   push     %r15
-   push     %r14
-   mov      %rdx, %r14
-   mov      $Nil, %r15
-   call     methodEY_FCYZ
-   jnz      msgErrYX
-   xchg     8(%rsp), %r15
-   xchg     (%rsp), %r14
-   pushq    EnvMeth
-   mov      %rsp, EnvMeth
    mov      (%rdx), %r13
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
    pushq    At
    pushq    $At
-   pushq    This
-   pushq    $This
-   mov      (%r14), %r10
-   mov      (%r10), %r10
-   mov      %r10, This
 .439:
    testb    $0x0E, %r13b
    jnz      .440
@@ -6826,9 +6753,6 @@ applyVarXYZ_E:
    jnz      .444
    pop      %rbp
    popq     EnvBind
-   popq     EnvMeth
-   pop      %rax
-   pop      %rax
    pop      %r13
    ret
 .443:
@@ -6863,9 +6787,6 @@ applyVarXYZ_E:
    jnz      .446
    pop      %rbp
    popq     EnvBind
-   popq     EnvMeth
-   pop      %rax
-   pop      %rax
    pop      %r13
    ret
 .445:
@@ -6923,19 +6844,201 @@ applyVarXYZ_E:
    jnz      .451
    pop      %rbp
    popq     EnvBind
+   pop      %r13
+   ret
+.438:
+   mov      (%rdx), %rax
+   cmp      $doMeth, %rax
+   jnz      .452
+   sub      $8, %r14
+   mov      (%r14), %r10
+   mov      (%r10), %rbx
+   testb    $0x06, %bl
+   jnz      symErrEX
+   testb    $0x08, %bl
+   jz       symErrEX
+   testb    $0x08, -8(%rbx)
+   jz       .453
+   call     dbFetchEX
+.453:
+   push     %r13
+   push     %r15
+   push     %r14
+   mov      %rdx, %r14
+   mov      $Nil, %r15
+   call     methodEY_FCYZ
+   jnz      msgErrYX
+   xchg     8(%rsp), %r15
+   xchg     (%rsp), %r14
+   pushq    EnvMeth
+   mov      %rsp, EnvMeth
+   mov      (%rdx), %r13
+   pushq    EnvBind
+   push     %rbp
+   mov      %rsp, %rbp
+   pushq    At
+   pushq    $At
+   pushq    This
+   pushq    $This
+   mov      (%r14), %r10
+   mov      (%r10), %r10
+   mov      %r10, This
+.454:
+   testb    $0x0E, %r13b
+   jnz      .455
+   mov      (%r13), %rbx
+   mov      8(%r13), %r13
+   pushq    (%rbx)
+   push     %rbx
+   cmp      %r15, %r14
+   jz       .456
+   sub      $8, %r14
+   mov      (%r14), %r10
+   mov      (%r10), %r10
+   mov      %r10, (%rbx)
+   jmp      .454
+.456:
+   movq     $Nil, (%rbx)
+   jmp      .454
+.455:
+   cmp      $Nil, %r13
+   jnz      .458
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      %rbp, EnvBind
+   push     %r12
+   mov      8(%rdx), %r15
+1:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      2f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      2f
+   call     evListE_E
+2:
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       1b
+   pop      %rax
+   pop      %rbp
+.459:
+   pop      %r13
+   popq     (%r13)
+   cmp      %rbp, %rsp
+   jnz      .459
+   pop      %rbp
+   popq     EnvBind
    popq     EnvMeth
    pop      %rax
    pop      %rax
    pop      %r13
    ret
-.437:
+.458:
+   cmp      $At, %r13
+   jz       .460
+   pushq    (%r13)
+   push     %r13
+   movq     $Nil, (%r13)
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      %rbp, EnvBind
+   push     %r12
+   mov      8(%rdx), %r15
+1:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      2f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      2f
+   call     evListE_E
+2:
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       1b
+   pop      %rax
+   pop      %rbp
+.461:
+   pop      %r13
+   popq     (%r13)
+   cmp      %rbp, %rsp
+   jnz      .461
+   pop      %rbp
+   popq     EnvBind
+   popq     EnvMeth
+   pop      %rax
+   pop      %rax
+   pop      %r13
+   ret
+.460:
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      %rbp, EnvBind
+   push     %r12
+   pushq    EnvNext
+   pushq    EnvArgs
+   cmp      %r15, %r14
+   jnz      .462
+   mov      %r12, EnvArgs
+   mov      %r12, EnvNext
+   jmp      .463
+.462:
+   push     %rbp
+   mov      %rsp, %rbp
+.464:
+   sub      $8, %r14
+   mov      (%r14), %r10
+   pushq    (%r10)
+   cmp      %r15, %r14
+   jnz      .464
+   mov      %rsp, EnvArgs
+   mov      %rbp, EnvNext
+   push     %rbp
+   mov      %rsp, %rbp
+.463:
+   mov      8(%rdx), %r15
+1:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      2f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      2f
+   call     evListE_E
+2:
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       1b
+   cmp      %r12, EnvNext
+   jz       .465
+   mov      (%rbp), %rsp
+   pop      %rbp
+.465:
+   popq     EnvArgs
+   popq     EnvNext
+   pop      %rax
+   pop      %rbp
+.466:
+   pop      %r13
+   popq     (%r13)
+   cmp      %rbp, %rsp
+   jnz      .466
+   pop      %rbp
+   popq     EnvBind
+   popq     EnvMeth
+   pop      %rax
+   pop      %rax
+   pop      %r13
+   ret
+.452:
    cmp      (%rax), %rax
-   jnz      .452
+   jnz      .467
    call     sharedLibC_FA
    jz       undefinedCX
-.452:
+.467:
    mov      %rax, %rdx
-   jmp      .418
+   jmp      .433
 
    .balign  16
    nop
@@ -6971,10 +7074,10 @@ doApply:
    call     evListE_E
    pop      %rbp
 1:
-.453:
+.468:
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jnz      .455
+   jnz      .470
    push     %rbx
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -6988,14 +7091,14 @@ doApply:
    pop      %rbp
 1:
    xchg     (%rsp), %rbx
-   jmp      .453
-.455:
+   jmp      .468
+.470:
    testb    $0x0E, %bl
-   jnz      .456
+   jnz      .471
    pushq    (%rbx)
    mov      8(%rbx), %rbx
-   jmp      .455
-.456:
+   jmp      .470
+.471:
    mov      %rsp, %r15
    push     %rbp
    mov      %rsp, %rbp
@@ -7029,10 +7132,10 @@ doPass:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.457:
+.472:
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jnz      .458
+   jnz      .473
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7045,16 +7148,16 @@ doPass:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .457
-.458:
+   jmp      .472
+.473:
    mov      EnvNext, %rdx
-.459:
+.474:
    cmp      EnvArgs, %rdx
-   jz       .460
+   jz       .475
    sub      $8, %rdx
    pushq    (%rdx)
-   jmp      .459
-.460:
+   jmp      .474
+.475:
    mov      %rsp, %r15
    push     %rbp
    mov      %rsp, %rbp
@@ -7102,9 +7205,9 @@ doMaps:
    pop      %rbp
 1:
    push     %rbx
-.461:
+.476:
    testb    $0x0E, %r15b
-   jnz      .462
+   jnz      .477
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7118,8 +7221,8 @@ doMaps:
 1:
    push     %rbx
    mov      8(%r15), %r15
-   jmp      .461
-.462:
+   jmp      .476
+.477:
    push     %rbp
    mov      %rsp, %rbp
    mov      -8(%r14), %rbx
@@ -7128,30 +7231,30 @@ doMaps:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .463
+   jz       .478
    call     dbFetchEX
-.463:
+.478:
    mov      -8(%rbx), %rbx
    andb     $~8, %bl
    mov      %rbx, -8(%r14)
    mov      $Nil, %rbx
-.464:
+.479:
    testb    $0x0E, -8(%r14)
-   jnz      .465
+   jnz      .480
    push     %r14
    lea      8(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    lea      8(%rbp), %r15
-.466:
+.481:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .466
-   jmp      .464
-.465:
+   jnz      .481
+   jmp      .479
+.480:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -7182,7 +7285,7 @@ doMap:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.467:
+.482:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7197,27 +7300,27 @@ doMap:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .467
+   jz       .482
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rbx
-.468:
+.483:
    testb    $0x0E, -8(%r14)
-   jnz      .469
+   jnz      .484
    push     %r14
    lea      8(%rbp), %r15
    call     applyXYZ_E
    pop      %r14
    lea      8(%rbp), %r15
-.470:
+.485:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .470
-   jmp      .468
-.469:
+   jnz      .485
+   jmp      .483
+.484:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -7248,7 +7351,7 @@ doMapc:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.471:
+.486:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7263,27 +7366,27 @@ doMapc:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .471
+   jz       .486
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rbx
-.472:
+.487:
    testb    $0x0E, -8(%r14)
-   jnz      .473
+   jnz      .488
    push     %r14
    lea      8(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    lea      8(%rbp), %r15
-.474:
+.489:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .474
-   jmp      .472
-.473:
+   jnz      .489
+   jmp      .487
+.488:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -7314,7 +7417,7 @@ doMaplist:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.475:
+.490:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7329,14 +7432,14 @@ doMaplist:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .475
+   jz       .490
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
    push     %r12
-.476:
+.491:
    testb    $0x0E, -8(%r14)
-   jnz      .477
+   jnz      .492
    push     %r14
    lea      16(%rbp), %r15
    call     applyXYZ_E
@@ -7345,24 +7448,24 @@ doMaplist:
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    cmp      %r12, -8(%rbp)
-   jnz      .478
+   jnz      .493
    mov      %rdx, 8(%rbp)
-   jmp      .479
-.478:
+   jmp      .494
+.493:
    mov      -8(%rbp), %r11
    mov      %rdx, 8(%r11)
-.479:
+.494:
    mov      %rdx, -8(%rbp)
    lea      16(%rbp), %r15
-.480:
+.495:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .480
-   jmp      .476
-.477:
+   jnz      .495
+   jmp      .491
+.492:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -7376,172 +7479,6 @@ doMaplist:
    nop
    .global  doMapcar
 doMapcar:
-   push     %r13
-   push     %r14
-   push     %r15
-   mov      %rbx, %r13
-   mov      8(%rbx), %r15
-   mov      (%r15), %rbx
-   mov      8(%r15), %r15
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   call     evListE_E
-1:
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %rbx
-   mov      %rsp, %r14
-.481:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
-   call     evListE_E
-   pop      %rbp
-1:
-   push     %rbx
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       .481
-   pushq    $Nil
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %r12
-.482:
-   testb    $0x0E, -8(%r14)
-   jnz      .483
-   push     %r14
-   lea      16(%rbp), %r15
-   call     applyVarXYZ_E
-   pop      %r14
-   call     consE_C
-   mov      %rbx, (%rdx)
-   movq     $Nil, 8(%rdx)
-   cmp      %r12, -8(%rbp)
-   jnz      .484
-   mov      %rdx, 8(%rbp)
-   jmp      .485
-.484:
-   mov      -8(%rbp), %r11
-   mov      %rdx, 8(%r11)
-.485:
-   mov      %rdx, -8(%rbp)
-   lea      16(%rbp), %r15
-.486:
-   mov      (%r15), %r10
-   mov      8(%r10), %r10
-   mov      %r10, (%r15)
-   add      $8, %r15
-   cmp      %r14, %r15
-   jnz      .486
-   jmp      .482
-.483:
-   mov      8(%rbp), %rbx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   pop      %r15
-   pop      %r14
-   pop      %r13
-   ret
-
-   .balign  16
-   nop
-   nop
-   .global  doMapcon
-doMapcon:
-   push     %r13
-   push     %r14
-   push     %r15
-   mov      %rbx, %r13
-   mov      8(%rbx), %r15
-   mov      (%r15), %rbx
-   mov      8(%r15), %r15
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   call     evListE_E
-1:
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %rbx
-   mov      %rsp, %r14
-.487:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
-   call     evListE_E
-   pop      %rbp
-1:
-   push     %rbx
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       .487
-   pushq    $Nil
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %r12
-.488:
-   testb    $0x0E, -8(%r14)
-   jnz      .489
-   push     %r14
-   lea      16(%rbp), %r15
-   call     applyXYZ_E
-   pop      %r14
-   testb    $0x0E, %bl
-   jnz      .490
-   cmp      %r12, -8(%rbp)
-   jnz      .491
-   mov      %rbx, 8(%rbp)
-   jmp      .492
-.491:
-   mov      -8(%rbp), %rax
-.493:
-   testb    $0x0E, 8(%rax)
-   jnz      .494
-   mov      8(%rax), %rax
-   jmp      .493
-.494:
-   mov      %rbx, 8(%rax)
-.492:
-   mov      %rbx, -8(%rbp)
-.490:
-   lea      16(%rbp), %r15
-.495:
-   mov      (%r15), %r10
-   mov      8(%r10), %r10
-   mov      %r10, (%r15)
-   add      $8, %r15
-   cmp      %r14, %r15
-   jnz      .495
-   jmp      .488
-.489:
-   mov      8(%rbp), %rbx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   pop      %r15
-   pop      %r14
-   pop      %r13
-   ret
-
-   .balign  16
-   nop
-   nop
-   .global  doMapcan
-doMapcan:
    push     %r13
    push     %r14
    push     %r15
@@ -7587,34 +7524,200 @@ doMapcan:
    lea      16(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
-   testb    $0x0E, %bl
-   jnz      .499
+   call     consE_C
+   mov      %rbx, (%rdx)
+   movq     $Nil, 8(%rdx)
    cmp      %r12, -8(%rbp)
-   jnz      .500
-   mov      %rbx, 8(%rbp)
-   jmp      .501
-.500:
-   mov      -8(%rbp), %rax
-.502:
-   testb    $0x0E, 8(%rax)
-   jnz      .503
-   mov      8(%rax), %rax
-   jmp      .502
-.503:
-   mov      %rbx, 8(%rax)
-.501:
-   mov      %rbx, -8(%rbp)
+   jnz      .499
+   mov      %rdx, 8(%rbp)
+   jmp      .500
 .499:
+   mov      -8(%rbp), %r11
+   mov      %rdx, 8(%r11)
+.500:
+   mov      %rdx, -8(%rbp)
    lea      16(%rbp), %r15
-.504:
+.501:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .504
+   jnz      .501
    jmp      .497
 .498:
+   mov      8(%rbp), %rbx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r15
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doMapcon
+doMapcon:
+   push     %r13
+   push     %r14
+   push     %r15
+   mov      %rbx, %r13
+   mov      8(%rbx), %r15
+   mov      (%r15), %rbx
+   mov      8(%r15), %r15
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      %rsp, %r14
+.502:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   push     %rbx
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       .502
+   pushq    $Nil
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %r12
+.503:
+   testb    $0x0E, -8(%r14)
+   jnz      .504
+   push     %r14
+   lea      16(%rbp), %r15
+   call     applyXYZ_E
+   pop      %r14
+   testb    $0x0E, %bl
+   jnz      .505
+   cmp      %r12, -8(%rbp)
+   jnz      .506
+   mov      %rbx, 8(%rbp)
+   jmp      .507
+.506:
+   mov      -8(%rbp), %rax
+.508:
+   testb    $0x0E, 8(%rax)
+   jnz      .509
+   mov      8(%rax), %rax
+   jmp      .508
+.509:
+   mov      %rbx, 8(%rax)
+.507:
+   mov      %rbx, -8(%rbp)
+.505:
+   lea      16(%rbp), %r15
+.510:
+   mov      (%r15), %r10
+   mov      8(%r10), %r10
+   mov      %r10, (%r15)
+   add      $8, %r15
+   cmp      %r14, %r15
+   jnz      .510
+   jmp      .503
+.504:
+   mov      8(%rbp), %rbx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r15
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doMapcan
+doMapcan:
+   push     %r13
+   push     %r14
+   push     %r15
+   mov      %rbx, %r13
+   mov      8(%rbx), %r15
+   mov      (%r15), %rbx
+   mov      8(%r15), %r15
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      %rsp, %r14
+.511:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   push     %rbx
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       .511
+   pushq    $Nil
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %r12
+.512:
+   testb    $0x0E, -8(%r14)
+   jnz      .513
+   push     %r14
+   lea      16(%rbp), %r15
+   call     applyVarXYZ_E
+   pop      %r14
+   testb    $0x0E, %bl
+   jnz      .514
+   cmp      %r12, -8(%rbp)
+   jnz      .515
+   mov      %rbx, 8(%rbp)
+   jmp      .516
+.515:
+   mov      -8(%rbp), %rax
+.517:
+   testb    $0x0E, 8(%rax)
+   jnz      .518
+   mov      8(%rax), %rax
+   jmp      .517
+.518:
+   mov      %rbx, 8(%rax)
+.516:
+   mov      %rbx, -8(%rbp)
+.514:
+   lea      16(%rbp), %r15
+.519:
+   mov      (%r15), %r10
+   mov      8(%r10), %r10
+   mov      %r10, (%r15)
+   add      $8, %r15
+   cmp      %r14, %r15
+   jnz      .519
+   jmp      .512
+.513:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -7646,7 +7749,7 @@ doFilter:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.505:
+.520:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7661,45 +7764,45 @@ doFilter:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .505
+   jz       .520
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
    push     %r12
-.506:
+.521:
    testb    $0x0E, -8(%r14)
-   jnz      .507
+   jnz      .522
    push     %r14
    lea      16(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    cmp      $Nil, %rbx
-   jz       .508
+   jz       .523
    call     consE_C
    mov      -8(%r14), %r10
    mov      (%r10), %r10
    mov      %r10, (%rdx)
    movq     $Nil, 8(%rdx)
    cmp      %r12, -8(%rbp)
-   jnz      .509
+   jnz      .524
    mov      %rdx, 8(%rbp)
-   jmp      .510
-.509:
+   jmp      .525
+.524:
    mov      -8(%rbp), %r11
    mov      %rdx, 8(%r11)
-.510:
+.525:
    mov      %rdx, -8(%rbp)
-.508:
+.523:
    lea      16(%rbp), %r15
-.511:
+.526:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .511
-   jmp      .506
-.507:
+   jnz      .526
+   jmp      .521
+.522:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -7731,7 +7834,7 @@ doExtract:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.512:
+.527:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7746,43 +7849,43 @@ doExtract:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .512
+   jz       .527
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
    push     %r12
-.513:
+.528:
    testb    $0x0E, -8(%r14)
-   jnz      .514
+   jnz      .529
    push     %r14
    lea      16(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    cmp      $Nil, %rbx
-   jz       .515
+   jz       .530
    call     consE_C
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    cmp      %r12, -8(%rbp)
-   jnz      .516
+   jnz      .531
    mov      %rdx, 8(%rbp)
-   jmp      .517
-.516:
+   jmp      .532
+.531:
    mov      -8(%rbp), %r11
    mov      %rdx, 8(%r11)
-.517:
+.532:
    mov      %rdx, -8(%rbp)
-.515:
+.530:
    lea      16(%rbp), %r15
-.518:
+.533:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .518
-   jmp      .513
-.514:
+   jnz      .533
+   jmp      .528
+.529:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -7814,7 +7917,7 @@ doSeek:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.519:
+.534:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7829,32 +7932,32 @@ doSeek:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .519
+   jz       .534
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rbx
-.520:
+.535:
    testb    $0x0E, -8(%r14)
-   jnz      .521
+   jnz      .536
    push     %r14
    lea      8(%rbp), %r15
    call     applyXYZ_E
    pop      %r14
    cmp      $Nil, %rbx
-   jz       .522
+   jz       .537
    mov      -8(%r14), %rbx
-   jmp      .521
-.522:
+   jmp      .536
+.537:
    lea      8(%rbp), %r15
-.523:
+.538:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .523
-   jmp      .520
-.521:
+   jnz      .538
+   jmp      .535
+.536:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -7885,7 +7988,7 @@ doFind:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.524:
+.539:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7900,33 +8003,33 @@ doFind:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .524
+   jz       .539
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rbx
-.525:
+.540:
    testb    $0x0E, -8(%r14)
-   jnz      .526
+   jnz      .541
    push     %r14
    lea      8(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    cmp      $Nil, %rbx
-   jz       .527
+   jz       .542
    mov      -8(%r14), %r10
    mov      (%r10), %rbx
-   jmp      .526
-.527:
+   jmp      .541
+.542:
    lea      8(%rbp), %r15
-.528:
+.543:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .528
-   jmp      .525
-.526:
+   jnz      .543
+   jmp      .540
+.541:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -7957,7 +8060,7 @@ doPick:
    mov      %rsp, %rbp
    push     %rbx
    mov      %rsp, %r14
-.529:
+.544:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -7972,29 +8075,29 @@ doPick:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .529
+   jz       .544
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rbx
-.530:
+.545:
    testb    $0x0E, -8(%r14)
-   jnz      .531
+   jnz      .546
    push     %r14
    lea      8(%rbp), %r15
    call     applyVarXYZ_E
    pop      %r14
    cmp      $Nil, %rbx
-   jnz      .531
+   jnz      .546
    lea      8(%rbp), %r15
-.532:
+.547:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .532
-   jmp      .530
-.531:
+   jnz      .547
+   jmp      .545
+.546:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -8007,230 +8110,6 @@ doPick:
    nop
    .global  doCnt
 doCnt:
-   push     %r13
-   push     %r14
-   push     %r15
-   mov      %rbx, %r13
-   mov      8(%rbx), %r15
-   mov      (%r15), %rbx
-   mov      8(%r15), %r15
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   call     evListE_E
-1:
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %rbx
-   mov      %rsp, %r14
-.533:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
-   call     evListE_E
-   pop      %rbp
-1:
-   push     %rbx
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       .533
-   push     %rbp
-   mov      %rsp, %rbp
-   pushq    $2
-.534:
-   testb    $0x0E, -8(%r14)
-   jnz      .535
-   push     %r14
-   lea      8(%rbp), %r15
-   call     applyVarXYZ_E
-   pop      %r14
-   cmp      $Nil, %rbx
-   jz       .536
-   addq     $16, (%rsp)
-.536:
-   lea      8(%rbp), %r15
-.537:
-   mov      (%r15), %r10
-   mov      8(%r10), %r10
-   mov      %r10, (%r15)
-   add      $8, %r15
-   cmp      %r14, %r15
-   jnz      .537
-   jmp      .534
-.535:
-   pop      %rbx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   pop      %r15
-   pop      %r14
-   pop      %r13
-   ret
-
-   .balign  16
-   nop
-   nop
-   .global  doSum
-doSum:
-   push     %r13
-   push     %r14
-   push     %r15
-   mov      %rbx, %r13
-   mov      8(%rbx), %r15
-   mov      (%r15), %rbx
-   mov      8(%r15), %r15
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   call     evListE_E
-1:
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %rbx
-   mov      %rsp, %r14
-.538:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
-   call     evListE_E
-   pop      %rbp
-1:
-   push     %rbx
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       .538
-   pushq    $2
-   pushq    $2
-   push     %rbp
-   mov      %rsp, %rbp
-.539:
-   testb    $0x0E, -8(%r14)
-   jnz      .540
-   push     %r14
-   lea      24(%rbp), %r15
-   call     applyVarXYZ_E
-   pop      %r14
-   testb    $0x06, %bl
-   jz       .541
-   mov      %rbx, 16(%rbp)
-   mov      8(%rbp), %rax
-   call     addAE_A
-   mov      %rax, 8(%rbp)
-.541:
-   lea      24(%rbp), %r15
-.542:
-   mov      (%r15), %r10
-   mov      8(%r10), %r10
-   mov      %r10, (%r15)
-   add      $8, %r15
-   cmp      %r14, %r15
-   jnz      .542
-   jmp      .539
-.540:
-   mov      8(%rbp), %rbx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   pop      %r15
-   pop      %r14
-   pop      %r13
-   ret
-
-   .balign  16
-   nop
-   nop
-   .global  doMaxi
-doMaxi:
-   push     %r13
-   push     %r14
-   push     %r15
-   mov      %rbx, %r13
-   mov      8(%rbx), %r15
-   mov      (%r15), %rbx
-   mov      8(%r15), %r15
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   call     evListE_E
-1:
-   push     %rbp
-   mov      %rsp, %rbp
-   push     %rbx
-   mov      %rsp, %r14
-.543:
-   mov      (%r15), %rbx
-   test     $0x06, %bl
-   jnz      1f
-   test     $0x08, %bl
-   cmovnzq  (%rbx), %rbx
-   jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
-   call     evListE_E
-   pop      %rbp
-1:
-   push     %rbx
-   mov      8(%r15), %r15
-   testb    $0x0E, %r15b
-   jz       .543
-   pushq    $Nil
-   pushq    $Nil
-   push     %rbp
-   mov      %rsp, %rbp
-.544:
-   testb    $0x0E, -8(%r14)
-   jnz      .545
-   push     %r14
-   lea      24(%rbp), %r15
-   call     applyVarXYZ_E
-   mov      %rbx, %r14
-   mov      16(%rbp), %rax
-   call     compareAE_F
-   jnc      .546
-   mov      (%rsp), %r10
-   mov      -8(%r10), %r10
-   mov      (%r10), %r10
-   mov      %r10, 8(%rbp)
-   mov      %r14, 16(%rbp)
-.546:
-   pop      %r14
-   lea      24(%rbp), %r15
-.547:
-   mov      (%r15), %r10
-   mov      8(%r10), %r10
-   mov      %r10, (%r15)
-   add      $8, %r15
-   cmp      %r14, %r15
-   jnz      .547
-   jmp      .544
-.545:
-   mov      8(%rbp), %rbx
-   mov      (%rbp), %rsp
-   pop      %rbp
-   pop      %r15
-   pop      %r14
-   pop      %r13
-   ret
-
-   .balign  16
-   nop
-   nop
-   .global  doMini
-doMini:
    push     %r13
    push     %r14
    push     %r15
@@ -8265,28 +8144,21 @@ doMini:
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
    jz       .548
-   pushq    $TSym
-   pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
+   pushq    $2
 .549:
    testb    $0x0E, -8(%r14)
    jnz      .550
    push     %r14
-   lea      24(%rbp), %r15
+   lea      8(%rbp), %r15
    call     applyVarXYZ_E
-   mov      %rbx, %r14
-   mov      16(%rbp), %rax
-   call     compareAE_F
-   jbe      .551
-   mov      (%rsp), %r10
-   mov      -8(%r10), %r10
-   mov      (%r10), %r10
-   mov      %r10, 8(%rbp)
-   mov      %r14, 16(%rbp)
-.551:
    pop      %r14
-   lea      24(%rbp), %r15
+   cmp      $Nil, %rbx
+   jz       .551
+   addq     $16, (%rsp)
+.551:
+   lea      8(%rbp), %r15
 .552:
    mov      (%r15), %r10
    mov      8(%r10), %r10
@@ -8296,6 +8168,237 @@ doMini:
    jnz      .552
    jmp      .549
 .550:
+   pop      %rbx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r15
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doSum
+doSum:
+   push     %r13
+   push     %r14
+   push     %r15
+   mov      %rbx, %r13
+   mov      8(%rbx), %r15
+   mov      (%r15), %rbx
+   mov      8(%r15), %r15
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      %rsp, %r14
+.553:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   push     %rbx
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       .553
+   pushq    $2
+   pushq    $2
+   push     %rbp
+   mov      %rsp, %rbp
+.554:
+   testb    $0x0E, -8(%r14)
+   jnz      .555
+   push     %r14
+   lea      24(%rbp), %r15
+   call     applyVarXYZ_E
+   pop      %r14
+   testb    $0x06, %bl
+   jz       .556
+   mov      %rbx, 16(%rbp)
+   mov      8(%rbp), %rax
+   call     addAE_A
+   mov      %rax, 8(%rbp)
+.556:
+   lea      24(%rbp), %r15
+.557:
+   mov      (%r15), %r10
+   mov      8(%r10), %r10
+   mov      %r10, (%r15)
+   add      $8, %r15
+   cmp      %r14, %r15
+   jnz      .557
+   jmp      .554
+.555:
+   mov      8(%rbp), %rbx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r15
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doMaxi
+doMaxi:
+   push     %r13
+   push     %r14
+   push     %r15
+   mov      %rbx, %r13
+   mov      8(%rbx), %r15
+   mov      (%r15), %rbx
+   mov      8(%r15), %r15
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      %rsp, %r14
+.558:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   push     %rbx
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       .558
+   pushq    $Nil
+   pushq    $Nil
+   push     %rbp
+   mov      %rsp, %rbp
+.559:
+   testb    $0x0E, -8(%r14)
+   jnz      .560
+   push     %r14
+   lea      24(%rbp), %r15
+   call     applyVarXYZ_E
+   mov      %rbx, %r14
+   mov      16(%rbp), %rax
+   call     compareAE_F
+   jnc      .561
+   mov      (%rsp), %r10
+   mov      -8(%r10), %r10
+   mov      (%r10), %r10
+   mov      %r10, 8(%rbp)
+   mov      %r14, 16(%rbp)
+.561:
+   pop      %r14
+   lea      24(%rbp), %r15
+.562:
+   mov      (%r15), %r10
+   mov      8(%r10), %r10
+   mov      %r10, (%r15)
+   add      $8, %r15
+   cmp      %r14, %r15
+   jnz      .562
+   jmp      .559
+.560:
+   mov      8(%rbp), %rbx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r15
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doMini
+doMini:
+   push     %r13
+   push     %r14
+   push     %r15
+   mov      %rbx, %r13
+   mov      8(%rbx), %r15
+   mov      (%r15), %rbx
+   mov      8(%r15), %r15
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      %rsp, %r14
+.563:
+   mov      (%r15), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   push     %rbx
+   mov      8(%r15), %r15
+   testb    $0x0E, %r15b
+   jz       .563
+   pushq    $TSym
+   pushq    $Nil
+   push     %rbp
+   mov      %rsp, %rbp
+.564:
+   testb    $0x0E, -8(%r14)
+   jnz      .565
+   push     %r14
+   lea      24(%rbp), %r15
+   call     applyVarXYZ_E
+   mov      %rbx, %r14
+   mov      16(%rbp), %rax
+   call     compareAE_F
+   jbe      .566
+   mov      (%rsp), %r10
+   mov      -8(%r10), %r10
+   mov      (%r10), %r10
+   mov      %r10, 8(%rbp)
+   mov      %r14, 16(%rbp)
+.566:
+   pop      %r14
+   lea      24(%rbp), %r15
+.567:
+   mov      (%r15), %r10
+   mov      8(%r10), %r10
+   mov      %r10, (%r15)
+   add      $8, %r15
+   cmp      %r14, %r15
+   jnz      .567
+   jmp      .564
+.565:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -8364,23 +8467,23 @@ fishAXY:
    pop      %r14
    pop      %rax
    cmp      $Nil, %rbx
-   jz       .553
+   jz       .568
    call     cons_C
    mov      %rax, (%rdx)
    mov      8(%rbp), %r10
    mov      %r10, 8(%rdx)
    mov      %rdx, 8(%rbp)
    ret
-.553:
+.568:
    testb    $0x0E, %al
    jnz      ret
    cmpq     $Nil, 8(%rax)
-   jz       .554
+   jz       .569
    push     %rax
    mov      8(%rax), %rax
    call     fishAXY
    pop      %rax
-.554:
+.569:
    mov      (%rax), %rax
    jmp      fishAXY
 
@@ -8421,7 +8524,7 @@ doBy:
    xchg     (%rsp), %rbx
    push     %rbx
    mov      %rsp, %r14
-.555:
+.570:
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -8436,14 +8539,14 @@ doBy:
    push     %rbx
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
-   jz       .555
+   jz       .570
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
    push     %r12
-.556:
+.571:
    testb    $0x0E, -8(%r14)
-   jnz      .557
+   jnz      .572
    push     %r14
    lea      16(%rbp), %r15
    call     applyVarXYZ_E
@@ -8457,39 +8560,39 @@ doBy:
    mov      %rdx, (%rax)
    movq     $Nil, 8(%rax)
    cmp      %r12, -8(%rbp)
-   jnz      .558
+   jnz      .573
    mov      %rax, 8(%rbp)
-   jmp      .559
-.558:
+   jmp      .574
+.573:
    mov      -8(%rbp), %r11
    mov      %rax, 8(%r11)
-.559:
+.574:
    mov      %rax, -8(%rbp)
    lea      16(%rbp), %r15
-.560:
+.575:
    mov      (%r15), %r10
    mov      8(%r10), %r10
    mov      %r10, (%r15)
    add      $8, %r15
    cmp      %r14, %r15
-   jnz      .560
-   jmp      .556
-.557:
+   jnz      .575
+   jmp      .571
+.572:
    mov      %r14, %r15
    add      $8, %r14
    mov      8(%rbp), %r10
    mov      %r10, (%r15)
    call     applyXYZ_E
    mov      %rbx, %rdx
-.561:
+.576:
    testb    $0x0E, %dl
-   jnz      .562
+   jnz      .577
    mov      (%rdx), %r10
    mov      8(%r10), %r10
    mov      %r10, (%rdx)
    mov      8(%rdx), %rdx
-   jmp      .561
-.562:
+   jmp      .576
+.577:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -8511,10 +8614,10 @@ redefMsgEC:
    call     printE
    pop      %rbx
    cmp      %r12, %rbx
-   jz       .563
+   jz       .578
    call     space
    call     printE_E
-.563:
+.578:
    mov      $Redefined, %rdx
    call     outStringC
    popq     EnvPutB
@@ -8528,14 +8631,14 @@ Redefined:
    .global  putSrcEC_E
 putSrcEC_E:
    cmpq     $Nil, Dbg
-   jz       .564
+   jz       .579
    testb    $0x08, -8(%rbx)
-   jnz      .564
+   jnz      .579
    mov      InFile, %rax
    cmp      %r12, %rax
-   jz       .564
+   jz       .579
    cmp      %r12, 48(%rax)
-   jz       .564
+   jz       .579
    push     %r13
    push     %rbx
    push     %rdx
@@ -8555,9 +8658,9 @@ putSrcEC_E:
    popq     8(%rbx)
    mov      (%rsp), %rax
    cmp      %r12, %rax
-   jnz      .568
+   jnz      .583
    cmp      $Nil, %r13
-   jnz      .569
+   jnz      .584
    push     %rbx
    call     consE_E
    popq     (%rbx)
@@ -8565,13 +8668,13 @@ putSrcEC_E:
    mov      8(%rsp), %rax
    mov      $Dbg, %rdx
    call     putACE
-   jmp      .571
-.569:
+   jmp      .586
+.584:
    mov      %rbx, (%r13)
-   jmp      .571
-.568:
+   jmp      .586
+.583:
    cmp      $Nil, %r13
-   jnz      .572
+   jnz      .587
    call     consE_C
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
@@ -8581,13 +8684,13 @@ putSrcEC_E:
    mov      8(%rsp), %rax
    mov      $Dbg, %rdx
    call     putACE
-   jmp      .571
-.572:
+   jmp      .586
+.587:
    mov      8(%r13), %rdx
-.574:
+.589:
    testb    $0x0E, %dl
-   jz       .575
-   call     cons_C
+   jz       .590
+   call     consE_C
    mov      (%rsp), %r10
    mov      %r10, (%rdx)
    mov      %rbx, 8(%rdx)
@@ -8596,23 +8699,23 @@ putSrcEC_E:
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      %rax, 8(%r13)
-   jmp      .571
-.575:
+   jmp      .586
+.590:
    mov      (%rdx), %r11
    mov      (%rsp), %r10
    cmp      %r10, (%r11)
-   jnz      .577
+   jnz      .592
    mov      (%rdx), %r11
    mov      %rbx, 8(%r11)
-   jmp      .571
-.577:
+   jmp      .586
+.592:
    mov      8(%rdx), %rdx
-   jmp      .574
-.571:
+   jmp      .589
+.586:
    pop      %rdx
    pop      %rbx
    pop      %r13
-.564:
+.579:
    rep
    ret
 
@@ -8626,21 +8729,21 @@ redefineCEX:
    call     checkVarEX
    mov      (%rbx), %rax
    cmp      $Nil, %rax
-   jz       .578
+   jz       .593
    cmp      %rbx, %rax
-   jz       .578
+   jz       .593
    push     %rdx
    push     %rbx
    mov      %rdx, %rbx
    call     equalAE_F
-   jz       .580
+   jz       .595
    mov      (%rsp), %rbx
    mov      %r12, %rdx
    call     redefMsgEC
-.580:
+.595:
    pop      %rbx
    pop      %rdx
-.578:
+.593:
    mov      %rdx, (%rbx)
    mov      %r12, %rdx
    call     putSrcEC_E
@@ -8692,7 +8795,7 @@ doPid:
 1:
    mov      Pid, %rax
    testb    $0x0E, %bl
-   jz       .582
+   jz       .597
    cmp      %rax, %rbx
    pop      %rbx
    jnz      retNil
@@ -8702,9 +8805,9 @@ doPid:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.582:
+.597:
    cmp      %rax, (%rbx)
-   jnz      .583
+   jnz      .598
    pop      %rbx
    test     $0x06, %bl
    jnz      ret
@@ -8712,10 +8815,10 @@ doPid:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.583:
+.598:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .582
+   jz       .597
    pop      %rax
    ret
 
@@ -8734,21 +8837,21 @@ doLit:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .584
+   jnz      .599
    cmp      $Nil, %rbx
-   jz       .584
+   jz       .599
    cmp      $TSym, %rbx
-   jz       .584
+   jz       .599
    testb    $0x0E, %bl
    jnz      doLit_10
    testb    $0x06, (%rbx)
-   jnz      .584
+   jnz      .599
 doLit_10:
    mov      %rbx, %rax
    call     consE_E
    movq     $Quote, (%rbx)
    mov      %rax, 8(%rbx)
-.584:
+.599:
    rep
    ret
 
@@ -8774,7 +8877,7 @@ doEval:
    mov      %rsp, %rbp
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .588
+   jz       .603
 doEval_10:
    test     $0x06, %bl
    jnz      1f
@@ -8787,7 +8890,7 @@ doEval_10:
    pop      %rbp
    pop      %r13
    ret
-.588:
+.603:
    cmp      %r12, EnvBind
    jz       doEval_10
    mov      (%r13), %rbx
@@ -8813,32 +8916,32 @@ doEval_10:
    push     %r14
    mov      -8(%rbp), %rdx
    mov      EnvBind, %r14
-.589:
+.604:
    mov      (%r14), %rax
    addq     $1, -16(%rbp)
    mov      -8(%rbp), %r10
    sub      %r10, -8(%r14)
-   jnc      .590
+   jnc      .605
    add      $8, %r14
-.591:
+.606:
    mov      (%r14), %r13
    mov      (%r13), %r10
    xchg     %r10, 8(%r14)
    mov      %r10, (%r13)
    add      $16, %r14
    cmp      %rax, %r14
-   jnz      .591
+   jnz      .606
    cmp      $At, %r13
-   jnz      .590
+   jnz      .605
    sub      $1, %rdx
-   jz       .593
-.590:
+   jz       .608
+.605:
    mov      8(%rax), %r14
    cmp      %r12, %r14
-   jnz      .589
-.593:
+   jnz      .604
+.608:
    testb    $0x0E, %bl
-   jz       .594
+   jz       .609
    mov      8(%rbp), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -8847,39 +8950,39 @@ doEval_10:
    jnz      1f
    call     evListE_E
 1:
-   jmp      .595
-.594:
+   jmp      .610
+.609:
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
-.596:
+.611:
    mov      (%rbx), %r13
    pushq    (%r13)
    push     %r13
    mov      -16(%rbp), %rdx
    mov      EnvBind, %r14
-.597:
+.612:
    mov      (%r14), %rax
    add      $8, %r14
-.598:
+.613:
    cmp      (%r14), %r13
-   jnz      .599
+   jnz      .614
    mov      8(%r14), %r10
    mov      %r10, (%r13)
    jmp      doEval_20
-.599:
+.614:
    add      $16, %r14
    cmp      %rax, %r14
-   jnz      .598
+   jnz      .613
    sub      $1, %rdx
    jz       doEval_20
    mov      8(%rax), %r14
    cmp      %r12, %r14
-   jnz      .597
+   jnz      .612
 doEval_20:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .596
+   jz       .611
    mov      (%rbp), %r10
    mov      8(%r10), %rbx
    push     %rbp
@@ -8895,41 +8998,41 @@ doEval_20:
 1:
    pop      %rax
    pop      %rbp
-.601:
+.616:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .601
+   jnz      .616
    pop      %rbp
    popq     EnvBind
-.595:
+.610:
    mov      -16(%rbp), %rdx
-.602:
+.617:
    mov      %rdx, %rax
    mov      EnvBind, %r14
-.603:
+.618:
    sub      $1, %rax
-   jz       .604
+   jz       .619
    mov      (%r14), %r10
    mov      8(%r10), %r14
-   jmp      .603
-.604:
+   jmp      .618
+.619:
    mov      (%r14), %rax
    mov      -8(%rbp), %r10
    add      %r10, -8(%r14)
-   jnz      .605
+   jnz      .620
    sub      $16, %rax
-.606:
+.621:
    mov      (%rax), %r11
    mov      (%r11), %r10
    xchg     %r10, 8(%rax)
    mov      %r10, (%r11)
    sub      $16, %rax
    cmp      %r14, %rax
-   jnc      .606
-.605:
+   jnc      .621
+.620:
    sub      $1, %rdx
-   jnz      .602
+   jnz      .617
    pop      %r14
    mov      (%rbp), %rsp
    pop      %rbp
@@ -8952,7 +9055,7 @@ doRun:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .607
+   jnz      .622
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -8960,20 +9063,20 @@ doRun:
    mov      %rsp, %rbp
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .608
+   jz       .623
 doRun_10:
    testb    $0x08, %bl
-   jz       .609
+   jz       .624
    mov      (%rbx), %rbx
-   jmp      .610
-.609:
+   jmp      .625
+.624:
    call     runE_E
-.610:
+.625:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.608:
+.623:
    cmp      %r12, EnvBind
    jz       doRun_10
    mov      (%r13), %rbx
@@ -8999,38 +9102,38 @@ doRun_10:
    push     %r14
    mov      -8(%rbp), %rdx
    mov      EnvBind, %r14
-.611:
+.626:
    mov      (%r14), %rax
    addq     $1, -16(%rbp)
    mov      -8(%rbp), %r10
    sub      %r10, -8(%r14)
-   jnc      .612
+   jnc      .627
    add      $8, %r14
-.613:
+.628:
    mov      (%r14), %r13
    mov      (%r13), %r10
    xchg     %r10, 8(%r14)
    mov      %r10, (%r13)
    add      $16, %r14
    cmp      %rax, %r14
-   jnz      .613
+   jnz      .628
    cmp      $At, %r13
-   jnz      .612
+   jnz      .627
    sub      $1, %rdx
-   jz       .615
-.612:
+   jz       .630
+.627:
    mov      8(%rax), %r14
    cmp      %r12, %r14
-   jnz      .611
-.615:
+   jnz      .626
+.630:
    testb    $0x0E, %bl
-   jz       .616
+   jz       .631
    mov      8(%rbp), %r13
    testb    $0x08, %r13b
-   jz       .617
+   jz       .632
    mov      (%r13), %rbx
-   jmp      .619
-.617:
+   jmp      .634
+.632:
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -9043,39 +9146,39 @@ doRun_10:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   jmp      .619
-.616:
+   jmp      .634
+.631:
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
-.620:
+.635:
    mov      (%rbx), %r13
    pushq    (%r13)
    push     %r13
    mov      -16(%rbp), %rdx
    mov      EnvBind, %r14
-.621:
+.636:
    mov      (%r14), %rax
    add      $8, %r14
-.622:
+.637:
    cmp      (%r14), %r13
-   jnz      .623
+   jnz      .638
    mov      8(%r14), %r10
    mov      %r10, (%r13)
    jmp      doRun_20
-.623:
+.638:
    add      $16, %r14
    cmp      %rax, %r14
-   jnz      .622
+   jnz      .637
    sub      $1, %rdx
    jz       doRun_20
    mov      8(%rax), %r14
    cmp      %r12, %r14
-   jnz      .621
+   jnz      .636
 doRun_20:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .620
+   jz       .635
    mov      (%rbp), %r10
    mov      8(%r10), %r13
    push     %rbp
@@ -9083,10 +9186,10 @@ doRun_20:
    mov      %rbp, EnvBind
    push     %r12
    testb    $0x08, %r13b
-   jz       .625
+   jz       .640
    mov      (%r13), %rbx
-   jmp      .626
-.625:
+   jmp      .641
+.640:
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -9099,48 +9202,48 @@ doRun_20:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-.626:
+.641:
    pop      %rax
    pop      %rbp
-.627:
+.642:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .627
+   jnz      .642
    pop      %rbp
    popq     EnvBind
-.619:
+.634:
    mov      -16(%rbp), %rdx
-.628:
+.643:
    mov      %rdx, %rax
    mov      EnvBind, %r14
-.629:
+.644:
    sub      $1, %rax
-   jz       .630
+   jz       .645
    mov      (%r14), %r10
    mov      8(%r10), %r14
-   jmp      .629
-.630:
+   jmp      .644
+.645:
    mov      (%r14), %rax
    mov      -8(%rbp), %r10
    add      %r10, -8(%r14)
-   jnz      .631
+   jnz      .646
    sub      $16, %rax
-.632:
+.647:
    mov      (%rax), %r11
    mov      (%r11), %r10
    xchg     %r10, 8(%rax)
    mov      %r10, (%r11)
    sub      $16, %rax
    cmp      %r14, %rax
-   jnc      .632
-.631:
+   jnc      .647
+.646:
    sub      $1, %rdx
-   jnz      .628
+   jnz      .643
    pop      %r14
    mov      (%rbp), %rsp
    pop      %rbp
-.607:
+.622:
    pop      %r13
    ret
 
@@ -9163,9 +9266,9 @@ doDef:
 1:
    call     needSymEX
    testb    $0x08, -8(%rbx)
-   jz       .633
+   jz       .648
    call     dbTouchEX
-.633:
+.648:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -9186,26 +9289,26 @@ doDef:
    mov      %rsp, %rbp
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .634
+   jz       .649
    mov      16(%rbp), %rdx
    mov      (%rdx), %rax
    cmp      $Nil, %rax
-   jz       .635
+   jz       .650
    cmp      %rdx, %rax
-   jz       .635
+   jz       .650
    call     equalAE_F
-   jz       .635
+   jz       .650
    mov      %rdx, %rbx
    mov      %r12, %rdx
    call     redefMsgEC
-.635:
+.650:
    mov      16(%rbp), %rbx
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
    mov      %r12, %rdx
    call     putSrcEC_E
-   jmp      .638
-.634:
+   jmp      .653
+.649:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -9220,20 +9323,20 @@ doDef:
    mov      %rsp, %rbp
    mov      24(%rbp), %rbx
    testb    $0x08, -8(%rbx)
-   jz       .639
+   jz       .654
    call     dbTouchEX
-.639:
+.654:
    mov      16(%rbp), %rdx
    call     getEC_E
    cmp      $Nil, %rbx
-   jz       .640
+   jz       .655
    mov      8(%rbp), %rax
    call     equalAE_F
-   jz       .640
+   jz       .655
    mov      24(%rbp), %rbx
    mov      16(%rbp), %rdx
    call     redefMsgEC
-.640:
+.655:
    mov      24(%rbp), %rax
    mov      16(%rbp), %rdx
    mov      8(%rbp), %rbx
@@ -9241,7 +9344,7 @@ doDef:
    mov      24(%rbp), %rbx
    mov      16(%rbp), %rdx
    call     putSrcEC_E
-.638:
+.653:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -9272,72 +9375,72 @@ doDm:
    mov      8(%rbx), %r14
    mov      (%r14), %rbx
    testb    $0x0E, %bl
-   jz       .642
+   jz       .657
    mov      Class, %rdx
-   jmp      .643
-.642:
+   jmp      .658
+.657:
    mov      8(%rbx), %rdx
    testb    $0x0E, %dl
-   jnz      .644
+   jnz      .659
    mov      8(%rdx), %rbx
    cmp      $Nil, %rbx
-   jnz      .645
+   jnz      .660
    mov      Class, %rbx
-.645:
+.660:
    mov      (%rdx), %rdx
    call     getEC_E
    mov      %rbx, %rdx
    mov      (%r14), %rbx
-.644:
+.659:
    mov      (%rbx), %rbx
-.643:
+.658:
    cmp      $TSym, %rbx
-   jz       .646
+   jz       .661
    push     %rdx
    mov      $doMeth, %rdx
    call     redefineCEX
    pop      %rdx
-.646:
+.661:
    mov      8(%r14), %rax
    testb    $0x06, %al
-   jnz      .647
+   jnz      .662
    testb    $0x08, %al
-   jz       .647
+   jz       .662
    mov      (%rax), %rax
-.649:
+.664:
    testb    $0x0E, %al
    jnz      msgErrAX
    testb    $0x0E, (%rax)
    jnz      msgErrAX
    mov      (%rax), %r10
    cmp      (%r10), %rbx
-   jnz      .650
+   jnz      .665
    mov      (%rax), %r14
-   jmp      .647
-.650:
+   jmp      .662
+.665:
    mov      8(%rax), %rax
-   jmp      .649
-.647:
+   jmp      .664
+.662:
    mov      (%rdx), %r13
-.652:
+.667:
    testb    $0x0E, %r13b
-   jnz      .653
+   jnz      .668
    testb    $0x0E, (%r13)
-   jnz      .653
+   jnz      .668
    mov      (%r13), %r10
    cmp      (%r10), %rbx
-   jnz      .654
+   jnz      .669
    push     %rbx
    mov      (%r13), %r10
    mov      8(%r10), %rbx
    mov      8(%r14), %rax
    call     equalAE_F
-   jz       .655
+   jz       .670
    mov      (%rsp), %rbx
    push     %rdx
    call     redefMsgEC
    pop      %rdx
-.655:
+.670:
    pop      %rbx
    mov      (%r13), %r11
    mov      8(%r14), %r10
@@ -9346,18 +9449,18 @@ doDm:
    pop      %r14
    pop      %r13
    ret
-.654:
+.669:
    mov      8(%r13), %r13
-   jmp      .652
-.653:
+   jmp      .667
+.668:
    testb    $0x0E, (%r14)
-   jz       .656
+   jz       .671
    call     cons_A
    mov      %r14, (%rax)
    mov      (%rdx), %r10
    mov      %r10, 8(%rax)
-   jmp      .657
-.656:
+   jmp      .672
+.671:
    call     cons_A
    mov      %rbx, (%rax)
    mov      8(%r14), %r10
@@ -9367,7 +9470,7 @@ doDm:
    popq     (%rax)
    mov      (%rdx), %r10
    mov      %r10, 8(%rax)
-.657:
+.672:
    mov      %rax, (%rdx)
    call     putSrcEC_E
    pop      %r14
@@ -9389,9 +9492,9 @@ evMethodACXYZ_E:
    pushq    $At
    push     %rax
    pushq    $This
-.658:
+.673:
    testb    $0x0E, %r14b
-   jnz      .659
+   jnz      .674
    mov      (%r13), %rbx
    mov      8(%r13), %r13
    test     $0x06, %bl
@@ -9407,12 +9510,12 @@ evMethodACXYZ_E:
    push     %rbx
    pushq    (%r14)
    mov      8(%r14), %r14
-   jmp      .658
-.659:
+   jmp      .673
+.674:
    cmp      $Nil, %r14
-   jnz      .660
+   jnz      .675
    mov      %rsp, %r14
-.661:
+.676:
    mov      (%r14), %r13
    add      $8, %r14
    mov      (%r13), %rax
@@ -9421,7 +9524,7 @@ evMethodACXYZ_E:
    mov      %rax, (%r14)
    add      $8, %r14
    cmp      %rbp, %r14
-   jnz      .661
+   jnz      .676
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -9443,25 +9546,25 @@ evMethodACXYZ_E:
    jz       1b
    pop      %rax
    pop      %rbp
-.662:
+.677:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .662
+   jnz      .677
    pop      %rbp
    popq     EnvBind
    popq     EnvMeth
    pop      %rax
    pop      %rax
    ret
-.660:
+.675:
    cmp      $At, %r14
-   jz       .663
+   jz       .678
    pushq    (%r14)
    push     %r14
    mov      %r13, (%r14)
    lea      16(%rsp), %r14
-.664:
+.679:
    mov      (%r14), %r13
    add      $8, %r14
    mov      (%r13), %rax
@@ -9470,7 +9573,7 @@ evMethodACXYZ_E:
    mov      %rax, (%r14)
    add      $8, %r14
    cmp      %rbp, %r14
-   jnz      .664
+   jnz      .679
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -9492,18 +9595,18 @@ evMethodACXYZ_E:
    jz       1b
    pop      %rax
    pop      %rbp
-.665:
+.680:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .665
+   jnz      .680
    pop      %rbp
    popq     EnvBind
    popq     EnvMeth
    pop      %rax
    pop      %rax
    ret
-.663:
+.678:
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, %r14
@@ -9511,14 +9614,14 @@ evMethodACXYZ_E:
    pushq    EnvNext
    pushq    EnvArgs
    testb    $0x0E, %r13b
-   jz       .666
+   jz       .681
    mov      %r12, EnvArgs
    mov      %r12, EnvNext
-   jmp      .667
-.666:
+   jmp      .682
+.681:
    push     %rbp
    mov      %rsp, %rbp
-.668:
+.683:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -9533,19 +9636,19 @@ evMethodACXYZ_E:
    push     %rbx
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .668
+   jz       .683
    mov      %rsp, EnvArgs
    mov      %rbp, EnvNext
    push     %rbp
    mov      %rsp, %rbp
-.667:
+.682:
    mov      %r14, EnvBind
    mov      (%r14), %r10
    lea      16(%r10), %r11
    mov      %r11, EnvMeth
    mov      (%r14), %rdx
    add      $8, %r14
-.669:
+.684:
    mov      (%r14), %r13
    add      $8, %r14
    mov      (%r13), %rax
@@ -9554,7 +9657,7 @@ evMethodACXYZ_E:
    mov      %rax, (%r14)
    add      $8, %r14
    cmp      %rdx, %r14
-   jnz      .669
+   jnz      .684
 1:
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -9568,19 +9671,19 @@ evMethodACXYZ_E:
    testb    $0x0E, %r15b
    jz       1b
    cmp      %r12, EnvNext
-   jz       .670
+   jz       .685
    mov      (%rbp), %rsp
    pop      %rbp
-.670:
+.685:
    popq     EnvArgs
    popq     EnvNext
    pop      %rax
    pop      %rbp
-.671:
+.686:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .671
+   jnz      .686
    pop      %rbp
    popq     EnvBind
    popq     EnvMeth
@@ -9593,24 +9696,24 @@ evMethodACXYZ_E:
 methodEY_FCYZ:
    mov      (%rbx), %rax
    testb    $0x0E, %al
-   jnz      .672
+   jnz      .687
    mov      (%rax), %rdx
    testb    $0x0E, %dl
-   jnz      .678
+   jnz      .693
    cmp      (%rdx), %r14
-   jnz      .675
+   jnz      .690
    mov      8(%rdx), %rdx
    ret
-.675:
+.690:
    mov      %rax, %rdx
    mov      8(%rax), %rax
    testb    $0x0E, %al
    jnz      ret
    testb    $0x0E, (%rax)
-   jnz      .678
+   jnz      .693
    mov      (%rax), %r10
    cmp      (%r10), %r14
-   jnz      .675
+   jnz      .690
    mov      8(%rax), %r10
    mov      %r10, 8(%rdx)
    mov      (%rbx), %r10
@@ -9619,7 +9722,7 @@ methodEY_FCYZ:
    mov      (%rax), %r10
    mov      8(%r10), %rdx
    ret
-.678:
+.693:
    mov      %rax, %r15
    mov      (%rax), %rbx
    push     %rax
@@ -9628,8 +9731,8 @@ methodEY_FCYZ:
    jz       ret
    mov      8(%rax), %rax
    testb    $0x0E, %al
-   jz       .678
-.672:
+   jz       .693
+.687:
    rep
    ret
 
@@ -9673,7 +9776,7 @@ doNew:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .679
+   jnz      .694
    call     consE_A
    movq     $2, (%rax)
    orb      $8, %al
@@ -9684,16 +9787,16 @@ doNew:
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
-   jmp      .680
-.679:
+   jmp      .695
+.694:
    cmp      $Nil, %rbx
-   jnz      .681
+   jnz      .696
    call     cons_E
    movq     $2, (%rbx)
    orb      $8, %bl
    movq     $Nil, (%rbx)
-   jmp      .682
-.681:
+   jmp      .697
+.696:
    testb    $0x02, %bl
    mov      $18, %r10
    cmovzq   %r10, %rbx
@@ -9705,7 +9808,7 @@ doNew:
    stc
    rcr      $1, %rax
    mov      %rax, -8(%rbx)
-.682:
+.697:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -9723,19 +9826,19 @@ doNew:
 1:
    mov      16(%rbp), %rax
    mov      %rbx, (%rax)
-.680:
+.695:
    mov      8(%r14), %r13
    mov      %rax, %rbx
    mov      $TSym, %r14
    mov      $Nil, %r15
    call     methodEY_FCYZ
-   jnz      .685
+   jnz      .700
    mov      16(%rbp), %rax
    call     evMethodACXYZ_E
-   jmp      .684
-.685:
+   jmp      .699
+.700:
    testb    $0x0E, %r13b
-   jnz      .684
+   jnz      .699
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -9758,8 +9861,8 @@ doNew:
    mov      8(%rbp), %rdx
    call     putACE
    mov      8(%r13), %r13
-   jmp      .685
-.684:
+   jmp      .700
+.699:
    mov      16(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -9785,42 +9888,42 @@ doType:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .687
+   jnz      .702
    testb    $0x08, %bl
-   jz       .687
+   jz       .702
    testb    $0x08, -8(%rbx)
-   jz       .689
+   jz       .704
    call     dbFetchEX
-.689:
+.704:
    pop      %r13
    mov      (%rbx), %rbx
    mov      %rbx, %rdx
-.690:
+.705:
    testb    $0x0E, %bl
    jnz      retNil
    testb    $0x0E, (%rbx)
-   jz       .691
+   jz       .706
    mov      %rbx, %rax
-.692:
+.707:
    testb    $0x06, (%rax)
    jnz      retNil
    mov      8(%rax), %rax
    testb    $0x0E, %al
-   jz       .693
+   jz       .708
    cmp      $Nil, %rax
    jnz      retNil
    rep
    ret
-.693:
+.708:
    cmp      %rax, %rdx
    jz       retNil
-   jmp      .692
-.691:
+   jmp      .707
+.706:
    mov      8(%rbx), %rbx
    cmp      %rbx, %rdx
    jz       retNil
-   jmp      .690
-.687:
+   jmp      .705
+.702:
    pop      %r13
    mov      $Nil, %rbx
    ret
@@ -9857,39 +9960,39 @@ doIsa:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .694
+   jnz      .709
    testb    $0x08, %bl
-   jz       .694
+   jz       .709
    testb    $0x08, -8(%rbx)
-   jz       .696
+   jz       .711
    call     dbFetchEX
-.696:
+.711:
    mov      8(%rbp), %rdx
    testb    $0x0E, %dl
-   jz       .697
+   jz       .712
    call     isaCE_F
    mov      $Nil, %r10
    cmovnzq  %r10, %rbx
-   jmp      .698
-.697:
+   jmp      .713
+.712:
    mov      %rdx, %r14
-.699:
+.714:
    mov      (%r14), %rdx
    call     isaCE_F
-   jz       .700
+   jz       .715
    mov      $Nil, %rbx
-   jmp      .698
-.700:
+   jmp      .713
+.715:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .699
-.698:
+   jz       .714
+.713:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
    pop      %r13
    ret
-.694:
+.709:
    mov      $Nil, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -9899,12 +10002,12 @@ doIsa:
 isaCE_F:
    mov      (%rbx), %r13
    mov      %r13, %rax
-.702:
+.717:
    testb    $0x0E, %r13b
    jnz      ret
    testb    $0x0E, (%r13)
-   jz       .703
-.704:
+   jz       .718
+.719:
    testb    $0x06, (%r13)
    jnz      ret
    mov      (%r13), %r10
@@ -9928,12 +10031,12 @@ isaCE_F:
    jz       retnz
    testb    $0x0E, (%r13)
    jz       retnz
-   jmp      .704
-.703:
+   jmp      .719
+.718:
    mov      8(%r13), %r13
    cmp      %r13, %rax
    jz       retnz
-   jmp      .702
+   jmp      .717
 
    .balign  16
    nop
@@ -9976,9 +10079,9 @@ doMethod:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .705
+   jz       .720
    call     dbFetchEX
-.705:
+.720:
    mov      8(%rbp), %r14
    call     methodEY_FCYZ
    mov      %rdx, %rbx
@@ -10019,18 +10122,18 @@ doMeth:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x08, -8(%rbx)
-   jz       .706
+   jz       .721
    call     dbFetchEX
-.706:
+.721:
    pushq    8(%r14)
    mov      (%r13), %r14
-.707:
+.722:
    testb    $0x06, %r14b
    jnz      msgErrYX
    testb    $0x08, %r14b
    jz       msgErrYX
    testb    $0x02, (%r14)
-   jz       .708
+   jz       .723
    mov      $Nil, %r15
    call     methodEY_FCYZ
    jnz      msgErrYX
@@ -10043,9 +10146,9 @@ doMeth:
    pop      %r14
    pop      %r13
    ret
-.708:
+.723:
    mov      (%r14), %r14
-   jmp      .707
+   jmp      .722
 
    .balign  16
    nop
@@ -10092,9 +10195,9 @@ doSend:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .709
+   jz       .724
    call     dbFetchEX
-.709:
+.724:
    mov      8(%r14), %r13
    mov      16(%rbp), %r14
    mov      $Nil, %r15
@@ -10154,11 +10257,11 @@ doTry:
    testb    $0x08, %bl
    jz       doTry_90
    testb    $0x08, -8(%rbx)
-   jz       .710
+   jz       .725
    call     isLifeE_F
    jnz      doTry_90
    call     dbFetchEX
-.710:
+.725:
    mov      8(%r14), %r13
    mov      16(%rbp), %r14
    mov      $Nil, %r15
@@ -10166,10 +10269,10 @@ doTry:
    jnz      doTry_90
    mov      8(%rbp), %rax
    call     evMethodACXYZ_E
-   jmp      .712
+   jmp      .727
 doTry_90:
    mov      $Nil, %rbx
-.712:
+.727:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -10193,18 +10296,18 @@ doSuper:
    cmovnzq  (%r13), %r13
    cmovzq   This, %r13
    mov      (%r13), %r13
-.713:
+.728:
    testb    $0x0E, (%r13)
-   jnz      .715
+   jnz      .730
    mov      8(%r13), %r13
-   jmp      .713
-.715:
+   jmp      .728
+.730:
    testb    $0x0E, %r13b
-   jnz      .716
+   jnz      .731
    mov      (%r13), %rbx
    mov      %r13, %r15
    call     methodEY_FCYZ
-   jnz      .717
+   jnz      .732
    pop      %rbx
    push     %r15
    push     %r14
@@ -10218,10 +10321,10 @@ doSuper:
    pop      %r14
    pop      %r13
    ret
-.717:
+.732:
    mov      8(%r13), %r13
-   jmp      .715
-.716:
+   jmp      .730
+.731:
    mov      %r14, %rbx
    pop      %r13
    mov      $SuperErr, %r14
@@ -10242,7 +10345,7 @@ doExtra:
    mov      8(%r10), %r14
    mov      This, %r13
    call     extraXY_FCYZ
-   jnz      .718
+   jnz      .733
    pop      %rbx
    push     %r15
    push     %r14
@@ -10256,7 +10359,7 @@ doExtra:
    pop      %r14
    pop      %r13
    ret
-.718:
+.733:
    mov      %r14, %rbx
    pop      %r13
    mov      $ExtraErr, %r14
@@ -10268,29 +10371,29 @@ ExtraErr:
    .global  extraXY_FCYZ
 extraXY_FCYZ:
    mov      (%r13), %r13
-.719:
+.734:
    testb    $0x0E, (%r13)
-   jnz      .721
+   jnz      .736
    mov      8(%r13), %r13
-   jmp      .719
-.721:
+   jmp      .734
+.736:
    testb    $0x0E, %r13b
-   jnz      .722
+   jnz      .737
    mov      EnvMeth, %r10
    cmp      16(%r10), %r13
-   jnz      .723
+   jnz      .738
 extraXY_FCYZ_10:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .725
+   jnz      .740
    mov      (%r13), %rbx
    mov      %r13, %r15
    call     methodEY_FCYZ
    jnz      extraXY_FCYZ_10
-.725:
+.740:
    rep
    ret
-.723:
+.738:
    push     %r13
    mov      (%r13), %r13
    call     extraXY_FCYZ
@@ -10298,8 +10401,8 @@ extraXY_FCYZ_10:
    jz       ret
    ja       extraXY_FCYZ_10
    mov      8(%r13), %r13
-   jmp      .721
-.722:
+   jmp      .736
+.737:
    stc
    ret
 
@@ -10319,7 +10422,7 @@ doWith:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .726
+   jz       .741
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
@@ -10353,7 +10456,7 @@ doWith:
    popq     This
    pop      %rbp
    popq     EnvBind
-.726:
+.741:
    pop      %r13
    ret
 
@@ -10376,7 +10479,7 @@ doBind:
    jnz      argErrEX
    mov      8(%r13), %r13
    cmp      $Nil, %rbx
-   jnz      .727
+   jnz      .742
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -10391,12 +10494,12 @@ doBind:
    jz       1b
    pop      %r13
    ret
-.727:
+.742:
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x08, %bl
-   jz       .729
+   jz       .744
    pushq    (%rbx)
    push     %rbx
    push     %rbp
@@ -10423,25 +10526,25 @@ doBind:
    popq     EnvBind
    pop      %r13
    ret
-.729:
+.744:
    mov      (%rbx), %rax
    testb    $0x06, %al
    jnz      argErrAX
    mov      (%rax), %rdx
    testb    $0x08, %al
-   jz       .730
+   jz       .745
    push     %rdx
    push     %rax
-   jmp      .731
-.730:
+   jmp      .746
+.745:
    pushq    (%rdx)
    push     %rdx
    mov      8(%rax), %r10
    mov      %r10, (%rdx)
-.731:
+.746:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .729
+   jz       .744
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -10460,11 +10563,11 @@ doBind:
    jz       1b
    pop      %rax
    pop      %rbp
-.732:
+.747:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .732
+   jnz      .747
    pop      %rbp
    popq     EnvBind
    pop      %r13
@@ -10486,12 +10589,12 @@ doJob:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .733
+   jz       .748
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbx, %rax
-.734:
+.749:
    mov      (%rax), %rdx
    mov      (%rdx), %r10
    pushq    (%r10)
@@ -10501,12 +10604,12 @@ doJob:
    mov      %r10, (%r11)
    mov      8(%rax), %rax
    testb    $0x0E, %al
-   jz       .734
+   jz       .749
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
    push     %r12
-.733:
+.748:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -10529,11 +10632,11 @@ doJob:
    pop      %rdx
    pop      %rbp
    cmp      $Nil, %rdx
-   jz       .735
+   jz       .750
    pop      %rax
    mov      (%rbp), %r10
    lea      -16(%r10), %r13
-.736:
+.751:
    mov      (%r13), %rax
    mov      (%rdx), %r11
    mov      (%rax), %r10
@@ -10543,11 +10646,11 @@ doJob:
    mov      8(%rdx), %rdx
    sub      $16, %r13
    cmp      %rbp, %r13
-   jnc      .736
+   jnc      .751
    mov      (%rbp), %rsp
    pop      %rbp
    popq     EnvBind
-.735:
+.750:
    pop      %r13
    ret
 
@@ -10565,7 +10668,7 @@ doLet:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x08, %r14b
-   jz       .738
+   jz       .753
    pushq    (%r14)
    push     %r14
    push     %rbp
@@ -10603,10 +10706,14 @@ doLet:
    pop      %r14
    pop      %r13
    ret
-.738:
+.753:
    mov      (%r14), %rax
    pushq    (%rax)
    push     %rax
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      %rbp, EnvBind
+   push     %r12
    mov      8(%r14), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -10614,21 +10721,18 @@ doLet:
    test     $0x08, %bl
    cmovnzq  (%rbx), %rbx
    jnz      1f
-   push     %rbp
-   mov      %rsp, %rbp
    call     evListE_E
-   pop      %rbp
 1:
    mov      (%r14), %r11
    mov      %rbx, (%r11)
    mov      8(%r14), %r10
    mov      8(%r10), %r14
    testb    $0x0E, %r14b
-   jz       .738
-   push     %rbp
-   mov      %rsp, %rbp
-   mov      %rbp, EnvBind
-   push     %r12
+   jnz      .754
+   pop      %rax
+   pop      %rbp
+   jmp      .753
+.754:
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -10643,11 +10747,11 @@ doLet:
    jz       1b
    pop      %rax
    pop      %rbp
-.739:
+.755:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .739
+   jnz      .755
    pop      %rbp
    popq     EnvBind
    pop      %r14
@@ -10673,7 +10777,7 @@ doLetQ:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .740
+   jz       .756
    pushq    EnvBind
    push     %rbp
    mov      %rsp, %rbp
@@ -10703,7 +10807,7 @@ doLetQ:
    popq     (%r13)
    pop      %rbp
    popq     EnvBind
-.740:
+.756:
    pop      %r14
    pop      %r13
    ret
@@ -10722,7 +10826,7 @@ doUse:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x08, %r14b
-   jz       .742
+   jz       .758
    pushq    (%r14)
    push     %r14
    push     %rbp
@@ -10750,13 +10854,13 @@ doUse:
    pop      %r14
    pop      %r13
    ret
-.742:
+.758:
    mov      (%r14), %rax
    pushq    (%rax)
    push     %rax
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .742
+   jz       .758
    push     %rbp
    mov      %rsp, %rbp
    mov      %rbp, EnvBind
@@ -10775,11 +10879,11 @@ doUse:
    jz       1b
    pop      %rax
    pop      %rbp
-.743:
+.759:
    pop      %r13
    popq     (%r13)
    cmp      %rbp, %rsp
-   jnz      .743
+   jnz      .759
    pop      %rbp
    popq     EnvBind
    pop      %r14
@@ -10793,7 +10897,7 @@ doUse:
 doAnd:
    push     %r13
    mov      8(%rbx), %r13
-.744:
+.760:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -10803,12 +10907,12 @@ doAnd:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .745
+   jz       .761
    mov      %rbx, At
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .744
-.745:
+   jz       .760
+.761:
    pop      %r13
    ret
 
@@ -10819,7 +10923,7 @@ doAnd:
 doOr:
    push     %r13
    mov      8(%rbx), %r13
-.746:
+.762:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -10829,14 +10933,14 @@ doOr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .747
+   jz       .763
    mov      %rbx, At
    pop      %r13
    ret
-.747:
+.763:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .746
+   jz       .762
    pop      %r13
    ret
 
@@ -10847,7 +10951,7 @@ doOr:
 doNand:
    push     %r13
    mov      8(%rbx), %r13
-.748:
+.764:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -10857,15 +10961,15 @@ doNand:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .749
+   jnz      .765
    mov      $TSym, %rbx
    pop      %r13
    ret
-.749:
+.765:
    mov      %rbx, At
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .748
+   jz       .764
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -10877,7 +10981,7 @@ doNand:
 doNor:
    push     %r13
    mov      8(%rbx), %r13
-.750:
+.766:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -10887,15 +10991,15 @@ doNor:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .751
+   jz       .767
    mov      %rbx, At
    mov      $Nil, %rbx
    pop      %r13
    ret
-.751:
+.767:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .750
+   jz       .766
    mov      $TSym, %rbx
    pop      %r13
    ret
@@ -10916,7 +11020,7 @@ doXor:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .752
+   jnz      .768
    pop      %rbx
    mov      (%rbx), %rbx
    test     $0x06, %bl
@@ -10930,7 +11034,7 @@ doXor:
    mov      $TSym, %r10
    cmovnzq  %r10, %rbx
    ret
-.752:
+.768:
    pop      %rbx
    mov      (%rbx), %rbx
    test     $0x06, %bl
@@ -11146,7 +11250,7 @@ doIf:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .753
+   jz       .769
    mov      %rbx, At
    pop      %rbx
    mov      (%rbx), %rbx
@@ -11156,7 +11260,7 @@ doIf:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.753:
+.769:
    xchg     (%rsp), %r13
    mov      8(%r13), %r13
 1:
@@ -11190,7 +11294,7 @@ doIf2:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .754
+   jnz      .770
    xchg     (%rsp), %r13
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -11201,7 +11305,7 @@ doIf2:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .755
+   jnz      .771
    mov      8(%r13), %r10
    mov      8(%r10), %r10
    mov      8(%r10), %r10
@@ -11220,7 +11324,7 @@ doIf2:
    jz       1b
    pop      %r13
    ret
-.755:
+.771:
    mov      %rbx, At
    mov      8(%r13), %r10
    mov      8(%r10), %r10
@@ -11233,7 +11337,7 @@ doIf2:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.754:
+.770:
    mov      %rbx, At
    xchg     (%rsp), %r13
    mov      (%r13), %rbx
@@ -11245,7 +11349,7 @@ doIf2:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .756
+   jnz      .772
    mov      8(%r13), %r10
    mov      8(%r10), %r13
    mov      (%r13), %rbx
@@ -11256,7 +11360,7 @@ doIf2:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.756:
+.772:
    mov      %rbx, At
    mov      8(%r13), %r13
    mov      (%r13), %rbx
@@ -11284,7 +11388,7 @@ doIfn:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .757
+   jnz      .773
    pop      %rbx
    mov      (%rbx), %rbx
    test     $0x06, %bl
@@ -11293,7 +11397,7 @@ doIfn:
    jz       evListE_E
    movq     (%rbx), %rbx
    ret
-.757:
+.773:
    mov      %rbx, At
    xchg     (%rsp), %r13
    mov      8(%r13), %r13
@@ -11328,10 +11432,10 @@ doWhen:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .758
+   jnz      .774
    pop      %rax
    ret
-.758:
+.774:
    mov      %rbx, At
    xchg     (%rsp), %r13
 1:
@@ -11365,12 +11469,12 @@ doUnless:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .759
+   jz       .775
    mov      %rbx, At
    pop      %rax
    mov      $Nil, %rbx
    ret
-.759:
+.775:
    xchg     (%rsp), %r13
 1:
    mov      (%r13), %rbx
@@ -11394,10 +11498,10 @@ doUnless:
 doCond:
    push     %r13
    mov      %rbx, %r13
-.760:
+.776:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .761
+   jnz      .777
    mov      (%r13), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -11408,7 +11512,7 @@ doCond:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .760
+   jz       .776
    mov      %rbx, At
    mov      (%r13), %r10
    mov      8(%r10), %r13
@@ -11426,7 +11530,7 @@ doCond:
    jz       1b
    pop      %r13
    ret
-.761:
+.777:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -11438,10 +11542,10 @@ doCond:
 doNond:
    push     %r13
    mov      %rbx, %r13
-.763:
+.779:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .764
+   jnz      .780
    mov      (%r13), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -11452,7 +11556,7 @@ doNond:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .765
+   jnz      .781
    mov      (%r13), %r10
    mov      8(%r10), %r13
 1:
@@ -11469,10 +11573,10 @@ doNond:
    jz       1b
    pop      %r13
    ret
-.765:
+.781:
    mov      %rbx, At
-   jmp      .763
-.764:
+   jmp      .779
+.780:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -11493,10 +11597,10 @@ doCase:
    call     evListE_E
 1:
    mov      %rbx, At
-.766:
+.782:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .767
+   jnz      .783
    mov      (%r13), %r10
    mov      (%r10), %rdx
    cmp      $TSym, %rdx
@@ -11504,7 +11608,7 @@ doCase:
    mov      At, %rax
    mov      %rdx, %rbx
    call     equalAE_F
-   jnz      .768
+   jnz      .784
 doCase_10:
    mov      (%r13), %r10
    mov      8(%r10), %r13
@@ -11522,14 +11626,14 @@ doCase_10:
    jz       1b
    pop      %r13
    ret
-.768:
+.784:
    testb    $0x0E, %dl
-   jnz      .766
-.770:
+   jnz      .782
+.786:
    mov      At, %rax
    mov      (%rdx), %rbx
    call     equalAE_F
-   jnz      .771
+   jnz      .787
    mov      (%r13), %r10
    mov      8(%r10), %r13
 1:
@@ -11546,12 +11650,12 @@ doCase_10:
    jz       1b
    pop      %r13
    ret
-.771:
+.787:
    mov      8(%rdx), %rdx
    testb    $0x0E, %dl
-   jz       .770
-   jmp      .766
-.767:
+   jz       .786
+   jmp      .782
+.783:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -11580,10 +11684,10 @@ doState:
    push     %rbp
    mov      %rsp, %rbp
    call     needVarEX
-.772:
+.788:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .773
+   jnz      .789
    mov      (%r14), %r10
    mov      (%r10), %r13
    mov      (%r13), %rbx
@@ -11593,15 +11697,15 @@ doState:
    mov      (%r10), %rax
    cmp      %rbx, %rax
    jz       doState_10
-.774:
+.790:
    testb    $0x0E, %bl
-   jnz      .775
+   jnz      .791
    cmp      (%rbx), %rax
-   jz       .775
+   jz       .791
    mov      8(%rbx), %rbx
-   jmp      .774
-.775:
-   jnz      .772
+   jmp      .790
+.791:
+   jnz      .788
 doState_10:
    mov      8(%r13), %r13
    mov      8(%r13), %r15
@@ -11620,7 +11724,7 @@ doState_10:
    testb    $0x0E, %r15b
    jz       1b
    cmp      $Nil, %rbx
-   jz       .772
+   jz       .788
    mov      %rbx, At
 doState_20:
    mov      8(%rbp), %r11
@@ -11646,7 +11750,7 @@ doState_20:
    jz       1b
    pop      %r13
    ret
-.773:
+.789:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -11667,7 +11771,7 @@ doWhile:
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
-.778:
+.794:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -11677,7 +11781,7 @@ doWhile:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .779
+   jz       .795
    mov      %rbx, At
    mov      8(%r13), %r14
 1:
@@ -11693,8 +11797,8 @@ doWhile:
    testb    $0x0E, %r14b
    jz       1b
    mov      %rbx, 8(%rbp)
-   jmp      .778
-.779:
+   jmp      .794
+.795:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -11715,7 +11819,7 @@ doUntil:
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
-.780:
+.796:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -11725,7 +11829,7 @@ doUntil:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .781
+   jnz      .797
    mov      8(%r13), %r14
 1:
    mov      (%r14), %rbx
@@ -11740,8 +11844,8 @@ doUntil:
    testb    $0x0E, %r14b
    jz       1b
    mov      %rbx, 8(%rbp)
-   jmp      .780
-.781:
+   jmp      .796
+.797:
    mov      %rbx, At
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
@@ -11777,11 +11881,11 @@ doAt:
    jz       cntErrCX
    add      $16, %rax
    cmp      %rdx, %rax
-   jnc      .782
+   jnc      .798
    mov      %rax, (%rbx)
    mov      $Nil, %rbx
-   jmp      .783
-.782:
+   jmp      .799
+.798:
    movq     $2, (%rbx)
    mov      8(%r14), %r14
 1:
@@ -11796,7 +11900,7 @@ doAt:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
    jz       1b
-.783:
+.799:
    pop      %r14
    pop      %r13
    ret
@@ -11820,24 +11924,24 @@ doDo:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .784
+   jz       .800
    testb    $0x02, %bl
    jz       loopX
    shr      $4, %rbx
-   jbe      .785
+   jbe      .801
    push     %rbx
-.786:
+.802:
    mov      %r13, %r14
    call     loopY_FE
-   jz       .787
+   jz       .803
    subq     $1, (%rsp)
-   jnz      .786
-.787:
+   jnz      .802
+.803:
    pop      %rax
-   jmp      .784
-.785:
+   jmp      .800
+.801:
    mov      $Nil, %rbx
-.784:
+.800:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -11854,13 +11958,13 @@ doLoop:
    mov      8(%rbx), %r13
 loopX:
    mov      %r13, %r14
-.790:
+.806:
    mov      (%r14), %rbx
    testb    $0x0E, %bl
-   jnz      .791
+   jnz      .807
    mov      (%rbx), %rax
    cmp      $Nil, %rax
-   jnz      .792
+   jnz      .808
    mov      8(%rbx), %r15
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -11871,7 +11975,7 @@ loopX:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .793
+   jnz      .809
    mov      8(%r15), %r14
 1:
    mov      (%r14), %rbx
@@ -11889,12 +11993,12 @@ loopX:
    pop      %r14
    pop      %r13
    ret
-.793:
+.809:
    mov      %rbx, At
-   jmp      .791
-.792:
+   jmp      .807
+.808:
    cmp      $TSym, %rax
-   jnz      .795
+   jnz      .811
    mov      8(%rbx), %r15
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -11905,7 +12009,7 @@ loopX:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .791
+   jz       .807
    mov      %rbx, At
    mov      8(%r15), %r14
 1:
@@ -11924,12 +12028,12 @@ loopX:
    pop      %r14
    pop      %r13
    ret
-.795:
+.811:
    call     evListE_E
-.791:
+.807:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .790
+   jz       .806
    jmp      loopX
 
    .balign  16
@@ -11947,7 +12051,7 @@ doFor:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x0E, %r14b
-   jz       .798
+   jz       .814
    pushq    (%r14)
    push     %r14
    push     %rbp
@@ -11968,10 +12072,10 @@ doFor:
    push     %rbp
    mov      %rsp, %rbp
    mov      8(%r13), %r13
-.799:
+.815:
    mov      8(%rbp), %rax
    testb    $0x0E, %al
-   jnz      .800
+   jnz      .816
    mov      8(%rax), %r10
    mov      %r10, 8(%rbp)
    mov      40(%rbp), %r11
@@ -11979,17 +12083,17 @@ doFor:
    mov      %r10, (%r11)
    mov      %r13, %r14
    call     loopY_FE
-   jnz      .799
-.800:
+   jnz      .815
+.816:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %rax
    pop      %rbp
-   jmp      .801
-.798:
+   jmp      .817
+.814:
    mov      8(%r14), %r15
    testb    $0x0E, %r15b
-   jz       .802
+   jz       .818
    pushq    (%r15)
    push     %r15
    mov      (%r14), %r15
@@ -12014,10 +12118,10 @@ doFor:
    mov      %rsp, %rbp
    movq     $2, (%r15)
    mov      8(%r13), %r13
-.803:
+.819:
    mov      8(%rbp), %rax
    testb    $0x0E, %al
-   jnz      .804
+   jnz      .820
    mov      8(%rax), %r10
    mov      %r10, 8(%rbp)
    mov      56(%rbp), %r11
@@ -12027,20 +12131,20 @@ doFor:
    addq     $16, (%r11)
    mov      %r13, %r14
    call     loopY_FE
-   jnz      .803
-.804:
+   jnz      .819
+.820:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %rax
    pop      %rbp
    pop      %r13
    popq     (%r13)
-   jmp      .801
-.802:
+   jmp      .817
+.818:
    mov      (%r14), %r15
    mov      8(%r14), %r14
    testb    $0x0E, %r15b
-   jz       .806
+   jz       .822
    pushq    (%r15)
    push     %r15
    push     %rbp
@@ -12062,7 +12166,7 @@ doFor:
    push     %rbp
    mov      %rsp, %rbp
    pushq    8(%r14)
-.807:
+.823:
    mov      (%rsp), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -12073,19 +12177,19 @@ doFor:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .808
+   jnz      .824
    mov      8(%rbp), %rbx
-   jmp      .809
-.808:
+   jmp      .825
+.824:
    mov      %rbx, At
    mov      %r13, %r14
    call     loopY_FE
-   jz       .809
+   jz       .825
    mov      %rbx, 8(%rbp)
    mov      (%rsp), %r10
    mov      8(%r10), %r14
    testb    $0x0E, %r14b
-   jnz      .807
+   jnz      .823
 1:
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -12100,14 +12204,14 @@ doFor:
    jz       1b
    mov      40(%rbp), %r11
    mov      %rbx, (%r11)
-   jmp      .807
-.809:
+   jmp      .823
+.825:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %rax
    pop      %rbp
-   jmp      .801
-.806:
+   jmp      .817
+.822:
    mov      8(%r15), %rdx
    pushq    (%rdx)
    push     %rdx
@@ -12136,7 +12240,7 @@ doFor:
    push     %rbp
    mov      %rsp, %rbp
    pushq    8(%r14)
-.812:
+.828:
    mov      (%rsp), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -12147,21 +12251,21 @@ doFor:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .813
+   jnz      .829
    mov      8(%rbp), %rbx
-   jmp      .814
-.813:
+   jmp      .830
+.829:
    mov      %rbx, At
    mov      40(%rbp), %r11
    addq     $16, (%r11)
    mov      %r13, %r14
    call     loopY_FE
-   jz       .814
+   jz       .830
    mov      %rbx, 8(%rbp)
    mov      (%rsp), %r10
    mov      8(%r10), %r14
    testb    $0x0E, %r14b
-   jnz      .812
+   jnz      .828
 1:
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -12176,15 +12280,15 @@ doFor:
    jz       1b
    mov      56(%rbp), %r11
    mov      %rbx, (%r11)
-   jmp      .812
-.814:
+   jmp      .828
+.830:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %rax
    pop      %rbp
    pop      %r13
    popq     (%r13)
-.801:
+.817:
    pop      %r13
    popq     (%r13)
    pop      %rbp
@@ -12197,18 +12301,18 @@ doFor:
    .balign  16
    .global  loopY_FE
 loopY_FE:
-.816:
+.832:
    mov      (%r14), %rbx
    testb    $0x06, %bl
-   jnz      .817
+   jnz      .833
    testb    $0x08, %bl
-   jz       .818
+   jz       .834
    mov      (%rbx), %rbx
-   jmp      .817
-.818:
+   jmp      .833
+.834:
    mov      (%rbx), %rax
    cmp      $Nil, %rax
-   jnz      .820
+   jnz      .836
    mov      8(%rbx), %r15
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -12219,7 +12323,7 @@ loopY_FE:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .821
+   jnz      .837
    mov      8(%r15), %r14
 1:
    mov      (%r14), %rbx
@@ -12235,13 +12339,13 @@ loopY_FE:
    jz       1b
    or       %r12, %r12
    ret
-.821:
+.837:
    mov      %rbx, At
    mov      $Nil, %rbx
-   jmp      .817
-.820:
+   jmp      .833
+.836:
    cmp      $TSym, %rax
-   jnz      .823
+   jnz      .839
    mov      8(%rbx), %r15
    mov      (%r15), %rbx
    test     $0x06, %bl
@@ -12252,7 +12356,7 @@ loopY_FE:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .817
+   jz       .833
    mov      %rbx, At
    mov      8(%r15), %r14
 1:
@@ -12269,12 +12373,12 @@ loopY_FE:
    jz       1b
    or       %r12, %r12
    ret
-.823:
+.839:
    call     evListE_E
-.817:
+.833:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .816
+   jz       .832
    rep
    ret
 
@@ -12354,16 +12458,16 @@ doThrow:
    call     evListE_E
 1:
    mov      Catch, %rdx
-.826:
+.842:
    cmp      %r12, %rdx
    jz       throwErrZX
    cmpq     $TSym, 8(%rdx)
-   jz       .827
+   jz       .843
    cmp      8(%rdx), %r15
-   jz       .827
+   jz       .843
    mov      (%rdx), %rdx
-   jmp      .826
-.827:
+   jmp      .842
+.843:
    push     %rbx
    call     unwindC_Z
    pop      %rbx
@@ -12436,9 +12540,9 @@ doFinally:
 doBreak:
    mov      8(%rbx), %rbx
    cmpq     $Nil, Dbg
-   jz       .828
+   jz       .844
    call     brkLoadE_E
-.828:
+.844:
    test     $0x06, %bl
    jnz      ret
    test     $0x08, %bl
@@ -12449,21 +12553,21 @@ doBreak:
    .global  brkLoadE_E
 brkLoadE_E:
    cmp      %r12, EnvBrk
-   jnz      .829
+   jnz      .845
    mov      %rdx, %r12
    xor      %rdi, %rdi
    call     isatty
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jz       .829
+   jz       .845
    mov      %rdx, %r12
    mov      $1, %rdi
    call     isatty
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jz       .829
+   jz       .845
    push     %r13
    push     %r14
    pushq    EnvBind
@@ -12506,7 +12610,7 @@ brkLoadE_E:
    mov      %r12, EnvBrk
    pop      %r14
    pop      %r13
-.829:
+.845:
    rep
    ret
 
@@ -12538,7 +12642,7 @@ doE:
    call     popInFiles
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .832
+   jnz      .848
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -12551,8 +12655,8 @@ doE:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   jmp      .833
-.832:
+   jmp      .849
+.848:
    mov      Up, %rbx
    test     $0x06, %bl
    jnz      1f
@@ -12561,7 +12665,7 @@ doE:
    jnz      1f
    call     evListE_E
 1:
-.833:
+.849:
    call     pushInFilesY
    mov      EnvBrk, %r10
    lea      -40(%r10), %r14
@@ -12583,7 +12687,7 @@ doTrace:
    push     %r13
    mov      8(%rbx), %r13
    cmpq     $Nil, Dbg
-   jnz      .834
+   jnz      .850
    mov      8(%r13), %r10
    mov      8(%r10), %r13
 1:
@@ -12598,8 +12702,8 @@ doTrace:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   jmp      .835
-.834:
+   jmp      .851
+.850:
    push     %r14
    push     %r15
    pushq    OutFile
@@ -12617,35 +12721,35 @@ doTrace:
    mov      $trc1, %rdx
    call     outStringC
    mov      (%r13), %r13
-.836:
+.852:
    testb    $0x0E, %r13b
-   jnz      .837
+   jnz      .853
    call     space
    mov      (%r13), %rbx
    mov      (%rbx), %rbx
    call     printE
    mov      8(%r13), %r13
-   jmp      .836
-.837:
+   jmp      .852
+.853:
    cmp      $Nil, %r13
-   jz       .838
+   jz       .854
    cmp      $At, %r13
-   jz       .839
+   jz       .855
    call     space
    mov      (%r13), %rbx
    call     printE
-   jmp      .838
-.839:
+   jmp      .854
+.855:
    mov      EnvNext, %r13
-.841:
+.857:
    cmp      EnvArgs, %r13
-   jz       .838
+   jz       .854
    call     space
    sub      $8, %r13
    mov      (%r13), %rbx
    call     printE
-   jmp      .841
-.838:
+   jmp      .857
+.854:
    call     newline
    mov      (%rsp), %r10
    mov      %r10, EnvPutB
@@ -12678,7 +12782,7 @@ doTrace:
    popq     OutFile
    pop      %r15
    pop      %r14
-.835:
+.851:
    pop      %r13
    ret
 trc1:
@@ -12689,19 +12793,19 @@ trc2:
    .global  traceCY
 traceCY:
    cmp      $64, %rdx
-   jbe      .844
+   jbe      .860
    mov      $64, %rdx
-.844:
+.860:
    call     space
    sub      $1, %rdx
-   jg       .844
+   jg       .860
    push     %rbx
    testb    $0x0E, %r14b
-   jz       .845
+   jz       .861
    mov      %r14, %rbx
    call     printE
-   jmp      .846
-.845:
+   jmp      .862
+.861:
    mov      (%r14), %rbx
    call     printE
    call     space
@@ -12710,7 +12814,7 @@ traceCY:
    call     space
    mov      This, %rbx
    call     printE
-.846:
+.862:
    pop      %rbx
    ret
 
@@ -12726,7 +12830,7 @@ doSys:
    call     bufStringE_SZ
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .847
+   jz       .863
    mov      %rdx, %r12
    mov      %rsp, %rdi
    call     getenv
@@ -12734,8 +12838,8 @@ doSys:
    xor      %r12, %r12
    mov      %rax, %rbx
    call     mkStrE_E
-   jmp      .848
-.847:
+   jmp      .864
+.863:
    push     %r15
    call     evSymX_E
    lea      8(%rsp), %r13
@@ -12752,7 +12856,7 @@ doSys:
    cmovnzq  %r10, %rbx
    mov      %r15, %rsp
    pop      %r15
-.848:
+.864:
    mov      %r15, %rsp
    pop      %r15
    pop      %r13
@@ -12770,25 +12874,25 @@ doCall:
    push     %r12
    call     evSymX_E
    call     pathStringE_SZ
-.849:
+.865:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .850
+   jnz      .866
    push     %r15
    call     evSymX_E
    call     bufStringE_SZ
-   jmp      .849
-.850:
+   jmp      .865
+.866:
    push     %r15
    mov      %rsp, %r15
    mov      %r15, %r13
    push     %r12
-.851:
+.867:
    lea      8(%r13), %rax
    push     %rax
    mov      (%r13), %r13
    cmp      %r12, (%r13)
-   jnz      .851
+   jnz      .867
    mov      8(%r13), %r13
    call     flushAll
    mov      %rdx, %r12
@@ -12796,7 +12900,7 @@ doCall:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jnz      .852
+   jnz      .868
    mov      %rdx, %r12
    xor      %rdi, %rdi
    xor      %rsi, %rsi
@@ -12807,13 +12911,13 @@ doCall:
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      execErrS
-.852:
+.868:
    js       forkErrX
-.853:
+.869:
    mov      %r15, %rsp
    pop      %r15
    cmp      %r12, %r15
-   jnz      .853
+   jnz      .869
    mov      %rax, %r15
    mov      %rdx, %r12
    mov      %r15, %rdi
@@ -12822,14 +12926,14 @@ doCall:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, Termio
-   jz       .856
+   jz       .872
    mov      %rdx, %r12
    xor      %rdi, %rdi
    mov      %r15, %rsi
    call     tcsetpgrp
    mov      %r12, %rdx
    xor      %r12, %r12
-.856:
+.872:
    mov      %rdx, %r12
    mov      %r15, %rdi
    mov      %rsp, %rsi
@@ -12838,17 +12942,17 @@ doCall:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .857
+   jns      .873
    call     errno_A
    cmp      $4, %rax
    jnz      waitPidErrX
    cmp      %r12b, Signal
-   jz       .856
+   jz       .872
    call     sighandlerX
-   jmp      .856
-.857:
+   jmp      .872
+.873:
    cmp      %r12, Termio
-   jz       .859
+   jz       .875
    mov      %rdx, %r12
    call     getpgrp
    xor      %rdi, %rdi
@@ -12856,9 +12960,9 @@ doCall:
    call     tcsetpgrp
    mov      %r12, %rdx
    xor      %r12, %r12
-.859:
+.875:
    call     wifstoppedS_F
-   jz       .860
+   jz       .876
    movslq   (%rsp), %rax
    or       %rax, %rax
    mov      $TSym, %rbx
@@ -12868,26 +12972,26 @@ doCall:
    pop      %r15
    pop      %r13
    ret
-.860:
+.876:
    mov      $43, %al
    mov      $Nil, %rbx
    call     loadBEX_E
    cmp      %r12, Termio
-   jz       .861
+   jz       .877
    mov      %rdx, %r12
    xor      %rdi, %rdi
    mov      %r15, %rsi
    call     tcsetpgrp
    mov      %r12, %rdx
    xor      %r12, %r12
-.861:
+.877:
    mov      %rdx, %r12
    mov      %r15, %rdi
    mov      $18, %rsi
    call     kill
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .856
+   jmp      .872
 
    .balign  16
    nop
@@ -12950,14 +13054,14 @@ doTick:
 doIpid:
    mov      EnvInFrames, %rdx
    cmp      %r12, %rdx
-   jz       .862
+   jz       .878
    mov      16(%rdx), %rbx
    cmp      $1, %rbx
-   jbe      .862
+   jbe      .878
    shl      $4, %rbx
    orb      $2, %bl
    ret
-.862:
+.878:
    mov      $Nil, %rbx
    ret
 
@@ -12968,14 +13072,14 @@ doIpid:
 doOpid:
    mov      EnvOutFrames, %rdx
    cmp      %r12, %rdx
-   jz       .864
+   jz       .880
    mov      16(%rdx), %rbx
    cmp      $1, %rbx
-   jbe      .864
+   jbe      .880
    shl      $4, %rbx
    orb      $2, %bl
    ret
-.864:
+.880:
    mov      $Nil, %rbx
    ret
 
@@ -12991,15 +13095,15 @@ doKill:
    call     evCntXY_FE
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .866
+   jz       .882
    mov      %rdx, %r12
    mov      %rbx, %rdi
    mov      $15, %rsi
    call     kill
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .867
-.866:
+   jmp      .883
+.882:
    push     %rbx
    call     evCntXY_FE
    mov      %rdx, %r12
@@ -13008,7 +13112,7 @@ doKill:
    call     kill
    mov      %r12, %rdx
    xor      %r12, %r12
-.867:
+.883:
    cmp      %r12d, %eax
    mov      $TSym, %rbx
    mov      $Nil, %r10
@@ -13025,13 +13129,13 @@ doFork:
    push     %r13
    mov      %rbx, %r13
    call     forkLispX_FE
-   jnc      .868
+   jnc      .884
    mov      $Nil, %rbx
-   jmp      .869
-.868:
+   jmp      .885
+.884:
    shl      $4, %rbx
    orb      $2, %bl
-.869:
+.885:
    pop      %r13
    ret
 
@@ -13040,7 +13144,7 @@ doFork:
 forkLispX_FE:
    call     flushAll
    cmp      %r12, Spkr
-   jnz      .870
+   jnz      .886
    mov      %rdx, %r12
    mov      $SpMiPipe, %rdi
    call     pipe
@@ -13053,7 +13157,7 @@ forkLispX_FE:
    call     closeOnExecAX
    movslq   SpMiPipe+4, %rax
    call     closeOnExecAX
-.870:
+.886:
    push     %rax
    push     %rax
    mov      %rdx, %r12
@@ -13080,22 +13184,22 @@ forkLispX_FE:
    call     closeOnExecAX
    mov      %r12, %rdx
    mov      Child, %rax
-.871:
+.887:
    cmp      Children, %rdx
-   jz       .872
+   jz       .888
    cmp      %r12, (%rax)
-   jz       .872
+   jz       .888
    add      $48, %rax
    add      $48, %rdx
-   jmp      .871
-.872:
+   jmp      .887
+.888:
    mov      %rdx, %r12
    call     fork
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
    js       forkErrX
-   jnz      .873
+   jnz      .889
    mov      %rdx, Slot
    mov      %r12, Spkr
    movslq   SpMiPipe+4, %rax
@@ -13108,30 +13212,30 @@ forkLispX_FE:
    call     closeAX
    mov      Hear, %rax
    cmp      %r12, %rax
-   jz       .874
+   jz       .890
    call     closeAX
    mov      Hear, %rax
    call     closeInFileA
    mov      Hear, %rax
    call     closeOutFileA
-.874:
+.890:
    movslq   (%rsp), %rax
    mov      %rax, Hear
    call     initInFileA_A
    mov      Tell, %rax
    cmp      %r12, %rax
-   jz       .875
+   jz       .891
    call     closeAX
-.875:
+.891:
    movslq   12(%rsp), %rax
    mov      %rax, Tell
    mov      Child, %rbx
    mov      Children, %rdx
-.876:
+.892:
    sub      $48, %rdx
-   jc       .877
+   jc       .893
    cmp      %r12, (%rbx)
-   jz       .878
+   jz       .894
    mov      %rdx, %r12
    mov      8(%rbx), %rdi
    call     close
@@ -13141,10 +13245,10 @@ forkLispX_FE:
    call     free
    mov      %r12, %rdx
    xor      %r12, %r12
-.878:
+.894:
    add      $48, %rbx
-   jmp      .876
-.877:
+   jmp      .892
+.893:
    mov      %r12, Children
    mov      %rdx, %r12
    mov      Child, %rdi
@@ -13153,29 +13257,29 @@ forkLispX_FE:
    xor      %r12, %r12
    mov      %r12, Child
    mov      EnvInFrames, %rax
-.879:
+.895:
    cmp      %r12, %rax
-   jz       .880
+   jz       .896
    mov      %r12, 16(%rax)
    mov      (%rax), %rax
-   jmp      .879
-.880:
+   jmp      .895
+.896:
    mov      EnvOutFrames, %rax
-.881:
+.897:
    cmp      %r12, %rax
-   jz       .882
+   jz       .898
    mov      %r12, 16(%rax)
    mov      (%rax), %rax
-   jmp      .881
-.882:
+   jmp      .897
+.898:
    mov      Catch, %rax
-.883:
+.899:
    cmp      %r12, %rax
-   jz       .884
+   jz       .900
    movq     $2, 16(%rax)
    mov      (%rax), %rax
-   jmp      .883
-.884:
+   jmp      .899
+.900:
    mov      %rdx, %r12
    mov      Termio, %rdi
    call     free
@@ -13198,10 +13302,10 @@ forkLispX_FE:
    pop      %rax
    stc
    ret
-.873:
+.889:
    cmp      Children, %rdx
    cmovnzq  %rax, %rbx
-   jnz      .885
+   jnz      .901
    push     %rax
    mov      Child, %rax
    mov      %rdx, %rbx
@@ -13211,13 +13315,13 @@ forkLispX_FE:
    mov      %rax, Child
    add      %rbx, %rax
    mov      $8, %rbx
-.886:
+.902:
    sub      $48, %rax
    mov      %r12, (%rax)
    sub      $1, %rbx
-   jnz      .886
+   jnz      .902
    pop      %rbx
-.885:
+.901:
    add      Child, %rdx
    mov      %rbx, (%rdx)
    movslq   (%rsp), %rax
@@ -13253,10 +13357,10 @@ doBye:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .887
+   jnz      .903
    mov      %r12, %rbx
    jmp      byeE
-.887:
+.903:
    call     xCntEX_FE
    jmp      byeE
 
@@ -13264,29 +13368,29 @@ doBye:
    .global  cmpLongAX_F
 cmpLongAX_F:
    push     %r13
-.889:
+.905:
    mov      -4(%r13), %r10
    cmp      %r10, -4(%rax)
-   jz       .890
+   jz       .906
    pop      %r13
    ret
-.890:
+.906:
    mov      4(%rax), %rax
    mov      4(%r13), %r13
    testb    $0x04, %al
-   jnz      .891
+   jnz      .907
    testb    $0x04, %r13b
-   jz       .892
+   jz       .908
    stc
    pop      %r13
    ret
-.892:
+.908:
    cmp      %r13, %rax
    pop      %r13
    ret
-.891:
+.907:
    testb    $0x02, %r13b
-   jz       .889
+   jz       .905
    clc
    pop      %r13
    ret
@@ -13295,38 +13399,38 @@ cmpLongAX_F:
    .global  isInternEXY_F
 isInternEXY_F:
    testb    $0x02, %r13b
-   jz       .893
+   jz       .909
    mov      (%r14), %r14
-.894:
+.910:
    testb    $0x0E, %r14b
    jnz      ret
    mov      (%r14), %r10
    mov      -8(%r10), %rax
    call     nameA_A
    cmp      %r13, %rax
-   jz       .895
+   jz       .911
    mov      8(%r14), %r14
    cmovcq   8(%r14), %r14
    cmovncq  (%r14), %r14
-   jmp      .894
-.895:
+   jmp      .910
+.911:
    cmp      (%r14), %rbx
    ret
-.893:
+.909:
    mov      8(%r14), %r14
-.896:
+.912:
    testb    $0x0E, %r14b
    jnz      ret
    mov      (%r14), %r10
    mov      -8(%r10), %rax
    call     nameA_A
    call     cmpLongAX_F
-   jz       .897
+   jz       .913
    mov      8(%r14), %r14
    cmovcq   8(%r14), %r14
    cmovncq  (%r14), %r14
-   jmp      .896
-.897:
+   jmp      .912
+.913:
    cmp      (%r14), %rbx
    ret
 
@@ -13334,137 +13438,33 @@ isInternEXY_F:
    .global  internEXY_FE
 internEXY_FE:
    testb    $0x02, %r13b
-   jz       .898
+   jz       .914
    mov      (%r14), %rdx
    testb    $0x0E, %dl
-   jz       .901
+   jz       .917
    cmp      %r12, %rbx
-   jnz      .900
+   jnz      .916
    call     consSymX_E
-.900:
+.916:
    call     consE_X
    mov      %rbx, (%r13)
    movq     $Nil, 8(%r13)
    mov      %r13, (%r14)
    stc
    ret
-.901:
+.917:
    mov      (%rdx), %r10
    mov      -8(%r10), %rax
    call     nameA_A
    cmp      %r13, %rax
-   jnz      .902
+   jnz      .918
    mov      (%rdx), %rbx
    clc
-   ret
-.902:
-   jnc      .903
-   testb    $0x0E, 8(%rdx)
-   jz       .904
-   cmp      %r12, %rbx
-   jnz      .905
-   call     consSymX_E
-.905:
-   call     consE_A
-   mov      %rbx, (%rax)
-   movq     $Nil, 8(%rax)
-   call     consA_X
-   movq     $Nil, (%r13)
-   mov      %rax, 8(%r13)
-   mov      %r13, 8(%rdx)
-   stc
-   ret
-.904:
-   mov      8(%rdx), %rdx
-   testb    $0x0E, 8(%rdx)
-   cmovzq   8(%rdx), %rdx
-   jz       .901
-   cmp      %r12, %rbx
-   jnz      .907
-   call     consSymX_E
-.907:
-   call     consE_A
-   mov      %rbx, (%rax)
-   movq     $Nil, 8(%rax)
-   mov      %rax, 8(%rdx)
-   stc
-   ret
-.903:
-   testb    $0x0E, 8(%rdx)
-   jz       .909
-   cmp      %r12, %rbx
-   jnz      .910
-   call     consSymX_E
-.910:
-   call     consE_A
-   mov      %rbx, (%rax)
-   movq     $Nil, 8(%rax)
-   call     consA_X
-   mov      %rax, (%r13)
-   movq     $Nil, 8(%r13)
-   mov      %r13, 8(%rdx)
-   stc
-   ret
-.909:
-   mov      8(%rdx), %rdx
-   testb    $0x0E, (%rdx)
-   cmovzq   (%rdx), %rdx
-   jz       .901
-   cmp      %r12, %rbx
-   jnz      .912
-   call     consSymX_E
-.912:
-   call     consE_A
-   mov      %rbx, (%rax)
-   movq     $Nil, 8(%rax)
-   mov      %rax, (%rdx)
-   stc
-   ret
-.898:
-   mov      8(%r14), %rdx
-   testb    $0x0E, %dl
-   jz       .915
-   cmp      %r12, %rbx
-   jnz      .914
-   call     consSymX_E
-.914:
-   call     consE_X
-   mov      %rbx, (%r13)
-   movq     $Nil, 8(%r13)
-   mov      %r13, 8(%r14)
-   stc
-   ret
-.915:
-   mov      (%rdx), %r10
-   mov      -8(%r10), %rax
-   call     nameA_A
-   call     cmpLongAX_F
-   jnz      .916
-   mov      (%rdx), %rbx
-   clc
-   ret
-.916:
-   jnc      .917
-   testb    $0x0E, 8(%rdx)
-   jz       .918
-   cmp      %r12, %rbx
-   jnz      .919
-   call     consSymX_E
-.919:
-   call     consE_A
-   mov      %rbx, (%rax)
-   movq     $Nil, 8(%rax)
-   call     consA_X
-   movq     $Nil, (%r13)
-   mov      %rax, 8(%r13)
-   mov      %r13, 8(%rdx)
-   stc
    ret
 .918:
-   mov      8(%rdx), %rdx
+   jnc      .919
    testb    $0x0E, 8(%rdx)
-   cmovzq   8(%rdx), %rdx
-   jz       .915
+   jz       .920
    cmp      %r12, %rbx
    jnz      .921
    call     consSymX_E
@@ -13472,16 +13472,34 @@ internEXY_FE:
    call     consE_A
    mov      %rbx, (%rax)
    movq     $Nil, 8(%rax)
+   call     consA_X
+   movq     $Nil, (%r13)
+   mov      %rax, 8(%r13)
+   mov      %r13, 8(%rdx)
+   stc
+   ret
+.920:
+   mov      8(%rdx), %rdx
+   testb    $0x0E, 8(%rdx)
+   cmovzq   8(%rdx), %rdx
+   jz       .917
+   cmp      %r12, %rbx
+   jnz      .923
+   call     consSymX_E
+.923:
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    stc
    ret
-.917:
+.919:
    testb    $0x0E, 8(%rdx)
-   jz       .923
+   jz       .925
    cmp      %r12, %rbx
-   jnz      .924
+   jnz      .926
    call     consSymX_E
-.924:
+.926:
    call     consE_A
    mov      %rbx, (%rax)
    movq     $Nil, 8(%rax)
@@ -13491,15 +13509,101 @@ internEXY_FE:
    mov      %r13, 8(%rdx)
    stc
    ret
-.923:
+.925:
    mov      8(%rdx), %rdx
    testb    $0x0E, (%rdx)
    cmovzq   (%rdx), %rdx
-   jz       .915
+   jz       .917
    cmp      %r12, %rbx
-   jnz      .926
+   jnz      .928
    call     consSymX_E
-.926:
+.928:
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   mov      %rax, (%rdx)
+   stc
+   ret
+.914:
+   mov      8(%r14), %rdx
+   testb    $0x0E, %dl
+   jz       .931
+   cmp      %r12, %rbx
+   jnz      .930
+   call     consSymX_E
+.930:
+   call     consE_X
+   mov      %rbx, (%r13)
+   movq     $Nil, 8(%r13)
+   mov      %r13, 8(%r14)
+   stc
+   ret
+.931:
+   mov      (%rdx), %r10
+   mov      -8(%r10), %rax
+   call     nameA_A
+   call     cmpLongAX_F
+   jnz      .932
+   mov      (%rdx), %rbx
+   clc
+   ret
+.932:
+   jnc      .933
+   testb    $0x0E, 8(%rdx)
+   jz       .934
+   cmp      %r12, %rbx
+   jnz      .935
+   call     consSymX_E
+.935:
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   call     consA_X
+   movq     $Nil, (%r13)
+   mov      %rax, 8(%r13)
+   mov      %r13, 8(%rdx)
+   stc
+   ret
+.934:
+   mov      8(%rdx), %rdx
+   testb    $0x0E, 8(%rdx)
+   cmovzq   8(%rdx), %rdx
+   jz       .931
+   cmp      %r12, %rbx
+   jnz      .937
+   call     consSymX_E
+.937:
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   mov      %rax, 8(%rdx)
+   stc
+   ret
+.933:
+   testb    $0x0E, 8(%rdx)
+   jz       .939
+   cmp      %r12, %rbx
+   jnz      .940
+   call     consSymX_E
+.940:
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   call     consA_X
+   mov      %rax, (%r13)
+   movq     $Nil, 8(%r13)
+   mov      %r13, 8(%rdx)
+   stc
+   ret
+.939:
+   mov      8(%rdx), %rdx
+   testb    $0x0E, (%rdx)
+   cmovzq   (%rdx), %rdx
+   jz       .931
+   cmp      %r12, %rbx
+   jnz      .942
+   call     consSymX_E
+.942:
    call     consE_A
    mov      %rbx, (%rax)
    movq     $Nil, 8(%rax)
@@ -13517,7 +13621,7 @@ externX_E:
    mulq     %r13
    mov      %rax, %rbx
    mov      $Extern, %r13
-.927:
+.943:
    mov      (%r13), %r10
    mov      -8(%r10), %rax
    call     nameA_A
@@ -13526,14 +13630,14 @@ externX_E:
    mov      $6364136223846793005, %r10
    mul      %r10
    cmp      %rbx, %rax
-   jnz      .928
+   jnz      .944
    pop      %rax
    mov      (%r13), %rbx
    ret
-.928:
-   jnc      .929
+.944:
+   jnc      .945
    testb    $0x0E, 8(%r13)
-   jz       .930
+   jz       .946
    call     cons_E
    popq     (%rbx)
    orb      $8, (%rbx)
@@ -13547,11 +13651,11 @@ externX_E:
    mov      %rax, 8(%rdx)
    mov      %rdx, 8(%r13)
    ret
-.930:
+.946:
    mov      8(%r13), %r13
    testb    $0x0E, 8(%r13)
    cmovzq   8(%r13), %r13
-   jz       .927
+   jz       .943
    call     cons_E
    popq     (%rbx)
    orb      $8, (%rbx)
@@ -13562,9 +13666,9 @@ externX_E:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r13)
    ret
-.929:
+.945:
    testb    $0x0E, 8(%r13)
-   jz       .933
+   jz       .949
    call     cons_E
    popq     (%rbx)
    orb      $8, (%rbx)
@@ -13578,11 +13682,11 @@ externX_E:
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r13)
    ret
-.933:
+.949:
    mov      8(%r13), %r13
    testb    $0x0E, (%r13)
    cmovzq   (%r13), %r13
-   jz       .927
+   jz       .943
    call     cons_E
    popq     (%rbx)
    orb      $8, (%rbx)
@@ -13600,8 +13704,8 @@ uninternXY:
    cmp      $2, %r13
    jz       ret
    testb    $0x02, %r13b
-   jz       .935
-.936:
+   jz       .951
+.952:
    mov      (%r14), %rdx
    testb    $0x0E, %dl
    jnz      ret
@@ -13609,61 +13713,61 @@ uninternXY:
    mov      -8(%r10), %rax
    call     nameA_A
    cmp      %r13, %rax
-   jnz      .937
+   jnz      .953
    mov      8(%rdx), %rax
    testb    $0x0E, (%rax)
-   jz       .938
+   jz       .954
    mov      8(%rax), %r10
    mov      %r10, (%r14)
    ret
-.938:
+.954:
    testb    $0x0E, 8(%rax)
-   jz       .939
+   jz       .955
    mov      (%rax), %r10
    mov      %r10, (%r14)
    ret
-.939:
+.955:
    mov      8(%rax), %rax
    mov      8(%rax), %r14
    testb    $0x0E, (%r14)
-   jz       .940
+   jz       .956
    mov      (%rax), %r10
    mov      %r10, (%rdx)
    mov      8(%rdx), %r11
    mov      8(%r14), %r10
    mov      %r10, 8(%r11)
    ret
-.940:
+.956:
    mov      (%r14), %r14
-.941:
+.957:
    mov      8(%r14), %r13
    testb    $0x0E, (%r13)
-   jnz      .942
+   jnz      .958
    mov      %r14, %rax
    mov      (%r13), %r14
-   jmp      .941
-.942:
+   jmp      .957
+.958:
    mov      (%r14), %r10
    mov      %r10, (%rdx)
    mov      8(%rax), %r11
    mov      8(%r13), %r10
    mov      %r10, (%r11)
    ret
-.937:
+.953:
    mov      8(%rdx), %rdx
-   jnc      .943
+   jnc      .959
    testb    $0x0E, %dl
    jnz      ret
    lea      8(%rdx), %r14
-   jmp      .936
-.943:
+   jmp      .952
+.959:
    testb    $0x0E, %dl
    jnz      ret
    mov      %rdx, %r14
-   jmp      .936
-.935:
+   jmp      .952
+.951:
    lea      8(%r14), %r14
-.945:
+.961:
    mov      (%r14), %rdx
    testb    $0x0E, %dl
    jnz      ret
@@ -13671,98 +13775,98 @@ uninternXY:
    mov      -8(%r10), %rax
    call     nameA_A
    call     cmpLongAX_F
-   jnz      .946
+   jnz      .962
    mov      8(%rdx), %rax
    testb    $0x0E, (%rax)
-   jz       .947
+   jz       .963
    mov      8(%rax), %r10
    mov      %r10, (%r14)
    ret
-.947:
+.963:
    testb    $0x0E, 8(%rax)
-   jz       .948
+   jz       .964
    mov      (%rax), %r10
    mov      %r10, (%r14)
    ret
-.948:
+.964:
    mov      8(%rax), %rax
    mov      8(%rax), %r14
    testb    $0x0E, (%r14)
-   jz       .949
+   jz       .965
    mov      (%rax), %r10
    mov      %r10, (%rdx)
    mov      8(%rdx), %r11
    mov      8(%r14), %r10
    mov      %r10, 8(%r11)
    ret
-.949:
+.965:
    mov      (%r14), %r14
-.950:
+.966:
    mov      8(%r14), %r13
    testb    $0x0E, (%r13)
-   jz       .951
+   jz       .967
    mov      %r14, %rax
    mov      (%r13), %r14
-   jmp      .950
-.951:
+   jmp      .966
+.967:
    mov      (%r14), %r10
    mov      %r10, (%rdx)
    mov      8(%rax), %r11
    mov      8(%r13), %r10
    mov      %r10, (%r11)
    ret
-.946:
+.962:
    mov      8(%rdx), %rdx
-   jnc      .952
+   jnc      .968
    testb    $0x0E, %dl
    jnz      ret
    lea      8(%rdx), %r14
-   jmp      .945
-.952:
+   jmp      .961
+.968:
    testb    $0x0E, %dl
    jnz      ret
    mov      %rdx, %r14
-   jmp      .945
+   jmp      .961
 
    .balign  16
    .global  nameA_A
 nameA_A:
    andb     $~8, %al
-.954:
+.970:
    testb    $0x06, %al
    jnz      ret
    mov      8(%rax), %rax
-   jmp      .954
+   jmp      .970
 
    .balign  16
    .global  nameE_E
 nameE_E:
    andb     $~8, %bl
-.955:
+.971:
    testb    $0x06, %bl
    jnz      ret
    mov      8(%rbx), %rbx
-   jmp      .955
+   jmp      .971
 
    .balign  16
    .global  nameX_X
 nameX_X:
    andb     $~8, %r13b
-.956:
+.972:
    testb    $0x06, %r13b
    jnz      ret
    mov      8(%r13), %r13
-   jmp      .956
+   jmp      .972
 
    .balign  16
    .global  nameY_Y
 nameY_Y:
    andb     $~8, %r14b
-.957:
+.973:
    testb    $0x06, %r14b
    jnz      ret
    mov      8(%r14), %r14
-   jmp      .957
+   jmp      .973
 
    .balign  16
    nop
@@ -13787,20 +13891,20 @@ doName:
    jz       symErrEX
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .958
+   jz       .974
    cmp      $Nil, %rbx
-   jz       .962
+   jz       .978
    mov      -8(%rbx), %r13
    testb    $0x08, %r13b
-   jnz      .960
+   jnz      .976
    call     nameX_X
    call     consSymX_E
-   jmp      .962
-.960:
+   jmp      .978
+.976:
    call     nameX_X
    call     packExtNmX_E
-   jmp      .962
-.958:
+   jmp      .978
+.974:
    cmp      $Nil, %rbx
    jz       renErrEX
    testb    $0x08, -8(%rbx)
@@ -13835,17 +13939,17 @@ doName:
    call     nameX_X
    mov      8(%rbp), %rbx
    lea      -8(%rbx), %r14
-.963:
+.979:
    testb    $0x06, (%r14)
-   jnz      .964
+   jnz      .980
    mov      (%r14), %r10
    lea      8(%r10), %r14
-   jmp      .963
-.964:
+   jmp      .979
+.980:
    mov      %r13, (%r14)
    mov      (%rbp), %rsp
    pop      %rbp
-.962:
+.978:
    pop      %r14
    pop      %r13
    ret
@@ -13854,9 +13958,9 @@ doName:
    .global  mkCharA_A
 mkCharA_A:
    cmp      $128, %rax
-   jc       .965
+   jc       .981
    cmp      $2048, %rax
-   jnc      .966
+   jnc      .982
    mov      %al, Buf
    shr      $6, %rax
    and      $31, %al
@@ -13866,14 +13970,14 @@ mkCharA_A:
    orb      $128, %al
    shl      $8, %rax
    mov      Buf, %al
-   jmp      .965
-.966:
+   jmp      .981
+.982:
    cmp      $65536, %rax
-   jnz      .968
+   jnz      .984
    mov      $255, %al
    movzx    %al, %rax
-   jmp      .965
-.968:
+   jmp      .981
+.984:
    push     %rdx
    mov      %rax, %rdx
    shr      $12, %rax
@@ -13892,7 +13996,7 @@ mkCharA_A:
    or       %rdx, %rax
    mov      Buf, %al
    pop      %rdx
-.965:
+.981:
    shl      $4, %rax
    orb      $2, %al
    push     %rax
@@ -13918,12 +14022,12 @@ mkStrE_E:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.970:
+.986:
    mov      (%rbx), %al
    call     byteSymBCX_CX
    add      $1, %rbx
    cmp      %r12b, (%rbx)
-   jnz      .970
+   jnz      .986
    call     cons_E
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
@@ -13946,15 +14050,15 @@ mkStrEZ_A:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.971:
+.987:
    mov      (%rbx), %al
    call     byteSymBCX_CX
    cmp      %r15, %rbx
-   jz       .972
+   jz       .988
    add      $1, %rbx
    cmp      %r12b, (%rbx)
-   jnz      .971
-.972:
+   jnz      .987
+.988:
    call     cons_A
    mov      8(%rbp), %r10
    mov      %r10, (%rax)
@@ -13970,12 +14074,12 @@ mkStrEZ_A:
 firstByteA_B:
    call     nameA_A
    testb    $0x02, %al
-   jz       .973
+   jz       .989
    shr      $4, %rax
-   jmp      .974
-.973:
+   jmp      .990
+.989:
    mov      -4(%rax), %rax
-.974:
+.990:
    rep
    ret
 
@@ -13984,14 +14088,14 @@ firstByteA_B:
 firstCharE_A:
    mov      %r12, %rax
    cmp      $Nil, %rbx
-   jz       .975
+   jz       .991
    push     %r13
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
    call     symCharCX_FACX
    pop      %r13
-.975:
+.991:
    rep
    ret
 
@@ -14010,12 +14114,12 @@ isBlankE_F:
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
-.976:
+.992:
    call     symByteCX_FACX
-   jz       .977
+   jz       .993
    cmp      $32, %al
-   jbe      .976
-.977:
+   jbe      .992
+.993:
    pop      %r13
    ret
 
@@ -14098,25 +14202,25 @@ doGetd:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .978
+   jnz      .994
    testb    $0x08, %bl
-   jz       .978
+   jz       .994
    push     %rbx
    mov      (%rbx), %rbx
    call     funqE_FE
    pop      %rbx
-   jnz      .980
+   jnz      .996
    mov      (%rbx), %rbx
    ret
-.980:
+.996:
    cmpq     $Nil, (%rbx)
-   jnz      .978
+   jnz      .994
    mov      %rbx, %rdx
    call     sharedLibC_FA
-   jz       .978
+   jz       .994
    mov      %rax, %rbx
    ret
-.978:
+.994:
    mov      $Nil, %rbx
    ret
 
@@ -14136,43 +14240,43 @@ doAll:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .983
+   jnz      .999
    cmpq     $Nil, (%rbx)
-   jnz      .984
+   jnz      .1000
    cmpq     $Nil, 8(%rbx)
    cmovzq   Intern, %rbx
    cmovnzq  Intern+8, %rbx
-   jmp      .987
-.984:
+   jmp      .1003
+.1000:
    cmpq     $TSym, (%rbx)
    mov      $Extern, %r10
    cmovnzq  %r10, %rbx
-   jnz      .987
+   jnz      .1003
    cmpq     $Nil, 8(%rbx)
    cmovzq   Transient, %rbx
    cmovnzq  Transient+8, %rbx
-   jmp      .987
-.983:
+   jmp      .1003
+.999:
    cmp      $Nil, %rbx
-   jnz      .988
+   jnz      .1004
    mov      Intern+8, %r13
    call     consTreeXE_E
    mov      Intern, %r13
-   jmp      .989
-.988:
+   jmp      .1005
+.1004:
    cmp      $TSym, %rbx
-   jnz      .990
+   jnz      .1006
    mov      $Nil, %rbx
    mov      Transient+8, %r13
    call     consTreeXE_E
    mov      Transient, %r13
-   jmp      .989
-.990:
+   jmp      .1005
+.1006:
    mov      $Nil, %rbx
    mov      $Extern, %r13
-.989:
+.1005:
    call     consTreeXE_E
-.987:
+.1003:
    pop      %r13
    ret
 
@@ -14187,19 +14291,19 @@ consTreeXE_E:
    pushq    $Nil
    push     %rbp
    mov      %rsp, %rbp
-.993:
+.1009:
    mov      8(%r13), %rax
    testb    $0x0E, 8(%rax)
-   jnz      .994
+   jnz      .1010
    mov      %r13, %rdx
    mov      8(%rax), %r13
    mov      8(%rbp), %r10
    mov      %r10, 8(%rax)
    mov      %rdx, 8(%rbp)
-   jmp      .993
-.994:
+   jmp      .1009
+.1010:
    mov      %r13, 16(%rbp)
-.995:
+.1011:
    call     consE_A
    mov      (%r13), %r10
    mov      %r10, (%rax)
@@ -14207,7 +14311,7 @@ consTreeXE_E:
    mov      %rax, %rbx
    mov      8(%r13), %rax
    testb    $0x0E, (%rax)
-   jnz      .998
+   jnz      .1014
    mov      %r13, %rdx
    mov      (%rax), %r13
    mov      8(%rbp), %r10
@@ -14215,21 +14319,21 @@ consTreeXE_E:
    orb      $8, %dl
    mov      %rdx, 8(%rbp)
    mov      %r13, 16(%rbp)
-   jmp      .993
-.998:
+   jmp      .1009
+.1014:
    mov      8(%rbp), %rax
    cmp      $Nil, %rax
    jz       consTreeXE_E_90
    testb    $0x08, %al
-   jnz      .999
+   jnz      .1015
    mov      8(%rax), %rdx
    mov      8(%rdx), %r10
    mov      %r10, 8(%rbp)
    mov      %r13, 8(%rdx)
    mov      %rax, %r13
    mov      %r13, 16(%rbp)
-   jmp      .995
-.999:
+   jmp      .1011
+.1015:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r10
@@ -14237,7 +14341,7 @@ consTreeXE_E:
    mov      %r13, (%rdx)
    mov      %rax, %r13
    mov      %r13, 16(%rbp)
-   jmp      .998
+   jmp      .1014
 consTreeXE_E_90:
    mov      (%rbp), %rsp
    pop      %rbp
@@ -14266,14 +14370,14 @@ doIntern:
    mov      -8(%rbx), %r13
    call     nameX_X
    cmpq     $2, %r13
-   jz       .1001
+   jz       .1017
    push     %r14
    mov      $Intern, %r14
    call     internEXY_FE
    pop      %r14
    pop      %r13
    ret
-.1001:
+.1017:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -14306,13 +14410,13 @@ doExtern:
    mov      %r12, %rdx
    call     symCharCX_FACX
    cmp      $123, %al
-   jnz      .1003
+   jnz      .1019
    call     symCharCX_FACX
-.1003:
+.1019:
    mov      %r12, %rbx
-.1004:
+.1020:
    cmp      $64, %al
-   jc       .1005
+   jc       .1021
    cmp      $79, %al
    ja       doExtern_90
    sub      $64, %al
@@ -14320,8 +14424,8 @@ doExtern:
    add      %rax, %rbx
    call     symCharCX_FACX
    jz       doExtern_90
-   jmp      .1004
-.1005:
+   jmp      .1020
+.1021:
    cmp      $48, %al
    jc       doExtern_90
    cmp      $55, %al
@@ -14329,11 +14433,11 @@ doExtern:
    sub      $48, %al
    movzx    %al, %rax
    mov      %rax, %r14
-.1006:
+.1022:
    call     symCharCX_FACX
-   jz       .1007
+   jz       .1023
    cmp      $125, %al
-   jz       .1007
+   jz       .1023
    cmp      $48, %al
    jc       doExtern_90
    cmp      $55, %al
@@ -14341,8 +14445,8 @@ doExtern:
    sub      $48, %al
    shl      $3, %r14
    add      %rax, %r14
-   jmp      .1006
-.1007:
+   jmp      .1022
+.1023:
    mov      %r14, %rdx
    call     extNmCE_X
    call     externX_E
@@ -14371,9 +14475,9 @@ doHide:
    push     %r15
    mov      %rbx, %r13
    mov      8(%rbx), %r15
-.1008:
+.1024:
    testb    $0x0E, %r15b
-   jnz      .1009
+   jnz      .1025
    mov      (%r15), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -14393,8 +14497,8 @@ doHide:
    call     internEXY_FE
    pop      %r13
    mov      8(%r15), %r15
-   jmp      .1008
-.1009:
+   jmp      .1024
+.1025:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -14502,9 +14606,9 @@ doTouch:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .1010
+   jz       .1026
    call     dbTouchEX
-.1010:
+.1026:
    rep
    ret
 
@@ -14530,22 +14634,22 @@ doZap:
    jz       symErrEX
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jz       .1011
+   jz       .1027
    call     dbZapE
-   jmp      .1012
-.1011:
+   jmp      .1028
+.1027:
    cmp      $Nil, %rbx
-   jc       .1013
+   jc       .1029
    cmp      $Bye, %rbx
    jbe      protErrEX
-.1013:
+.1029:
    push     %r14
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      $Intern, %r14
    call     uninternXY
    pop      %r14
-.1012:
+.1028:
    pop      %r13
    ret
 
@@ -14564,18 +14668,18 @@ doChop:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jz       .1014
+   jz       .1030
    cmp      $Nil, %rbx
-   jz       .1014
+   jz       .1030
    push     %r13
    call     xSymE_E
    mov      -8(%rbx), %r13
    call     nameX_X
    testb    $0x08, -8(%rbx)
-   jnz      .1016
+   jnz      .1032
    mov      %r12, %rdx
    call     symCharCX_FACX
-   jz       .1017
+   jz       .1033
    push     %r14
    push     %rbp
    mov      %rsp, %rbp
@@ -14590,30 +14694,30 @@ doChop:
    movq     %r14, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1018:
+.1034:
    call     symCharCX_FACX
-   jz       .1019
+   jz       .1035
    call     mkCharA_A
    call     consA_E
    mov      %rax, (%rbx)
    movq     $Nil, 8(%rbx)
    mov      %rbx, 8(%r14)
    mov      %rbx, %r14
-   jmp      .1018
-.1019:
+   jmp      .1034
+.1035:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
-   jmp      .1021
-.1017:
+   jmp      .1037
+.1033:
    mov      $Nil, %rbx
-   jmp      .1021
-.1016:
+   jmp      .1037
+.1032:
    call     chopExtNmX_E
-.1021:
+.1037:
    pop      %r13
-.1014:
+.1030:
    rep
    ret
 
@@ -14643,11 +14747,11 @@ doPack:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.1022:
+.1038:
    call     packECX_CX
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1023
+   jnz      .1039
    mov      %rdx, %r15
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -14659,8 +14763,8 @@ doPack:
 1:
    mov      %rbx, 24(%rbp)
    mov      %r15, %rdx
-   jmp      .1022
-.1023:
+   jmp      .1038
+.1039:
    mov      8(%rbp), %r13
    call     consSymX_E
    mov      (%rbp), %rsp
@@ -14674,19 +14778,19 @@ doPack:
    .global  packECX_CX
 packECX_CX:
    testb    $0x0E, %bl
-   jnz      .1024
-.1025:
+   jnz      .1040
+.1041:
    pushq    8(%rbx)
    mov      (%rbx), %rbx
    call     packECX_CX
    pop      %rbx
    testb    $0x0E, %bl
-   jz       .1025
-.1024:
+   jz       .1041
+.1040:
    cmp      $Nil, %rbx
    jz       ret
    testb    $0x06, %bl
-   jnz      .1026
+   jnz      .1042
    testb    $0x08, -8(%rbx)
    jz       packECX_CX_10
    mov      $123, %al
@@ -14702,7 +14806,7 @@ packECX_CX:
    call     packECX_CX_10
    mov      $125, %al
    jmp      byteSymBCX_CX
-.1026:
+.1042:
    mov      %r12, %rax
    call     fmtNum0AE_E
    mov      %rbx, 16(%rbp)
@@ -14712,16 +14816,16 @@ packECX_CX_10:
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
-.1029:
+.1045:
    call     symByteCX_FACX
-   jz       .1030
+   jz       .1046
    xchg     8(%rsp), %rdx
    xchg     (%rsp), %r13
    call     byteSymBCX_CX
    xchg     (%rsp), %r13
    xchg     8(%rsp), %rdx
-   jmp      .1029
-.1030:
+   jmp      .1045
+.1046:
    pop      %r13
    pop      %rdx
    ret
@@ -14765,21 +14869,21 @@ doGlue:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x0E, %bl
-   jnz      .1031
+   jnz      .1047
    mov      %rbx, %r14
-.1032:
+.1048:
    mov      (%r14), %rbx
    call     packECX_CX
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1033
+   jnz      .1049
    mov      32(%rbp), %rbx
    call     packECX_CX
-   jmp      .1032
-.1033:
+   jmp      .1048
+.1049:
    mov      8(%rbp), %r13
    call     consSymX_E
-.1031:
+.1047:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -14796,16 +14900,16 @@ doText:
    mov      8(%rbx), %r13
    call     evSymX_E
    cmp      $Nil, %rbx
-   jz       .1034
+   jz       .1050
    mov      -8(%rbx), %rbx
    call     nameE_E
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
-.1035:
+.1051:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1036
+   jnz      .1052
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -14818,8 +14922,8 @@ doText:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .1035
-.1036:
+   jmp      .1051
+.1052:
    pushq    $2
    pushq    $2
    mov      %rsp, %r13
@@ -14830,49 +14934,49 @@ doText:
    mov      (%rbp), %r10
    mov      -8(%r10), %r13
    mov      %r12, %rdx
-.1037:
+.1053:
    call     symByteCX_FACX
-   jz       .1038
+   jz       .1054
    cmp      $64, %al
-   jz       .1039
+   jz       .1055
 doText_10:
    xchg     8(%rsp), %rdx
    xchg     (%rsp), %r13
    call     byteSymBCX_CX
    xchg     (%rsp), %r13
    xchg     8(%rsp), %rdx
-   jmp      .1037
-.1039:
+   jmp      .1053
+.1055:
    call     symByteCX_FACX
-   jz       .1038
+   jz       .1054
    cmp      $64, %al
    jz       doText_10
    sub      $48, %al
-   jbe      .1037
+   jbe      .1053
    cmp      $8, %al
-   jbe      .1041
+   jbe      .1057
    sub      $7, %al
-.1041:
+.1057:
    shl      $3, %rax
    mov      (%rbp), %r10
    lea      -8(%r10), %rbx
    sub      %rax, %rbx
    lea      16(%rbp), %rax
    cmp      %rax, %rbx
-   jbe      .1037
+   jbe      .1053
    mov      (%rbx), %rbx
    xchg     8(%rsp), %rdx
    xchg     (%rsp), %r13
    call     packECX_CX
    xchg     (%rsp), %r13
    xchg     8(%rsp), %rdx
-   jmp      .1037
-.1038:
+   jmp      .1053
+.1054:
    mov      8(%rbp), %r13
    call     consSymX_E
    mov      (%rbp), %rsp
    pop      %rbp
-.1034:
+.1050:
    pop      %r14
    pop      %r13
    ret
@@ -14880,7 +14984,7 @@ doText_10:
    .balign  16
    .global  preCEXY_F
 preCEXY_F:
-.1043:
+.1059:
    call     symByteCX_FACX
    jz       ret
    mov      %al, Buf
@@ -14892,7 +14996,7 @@ preCEXY_F:
    jnz      ret
    xchg     %rbx, %rdx
    xchg     %r14, %r13
-   jmp      .1043
+   jmp      .1059
 
    .balign  16
    .global  subStrAE_F
@@ -14913,34 +15017,34 @@ subStrAE_F:
    push     %rax
    mov      %rbx, %r15
    push     %r12
-.1044:
+.1060:
    mov      8(%rsp), %r13
    mov      %r12, %rdx
    mov      %r15, %r14
    mov      (%rsp), %rbx
    call     preCEXY_F
-   jz       .1045
+   jz       .1061
    mov      (%rsp), %rax
    shr      $8, %rax
-   jnz      .1046
+   jnz      .1062
    cmpq     $2, %r15
-   jnz      .1047
+   jnz      .1063
    cmp      %rsp, %r12
-   jmp      .1045
-.1047:
+   jmp      .1061
+.1063:
    testb    $0x02, %r15b
-   jz       .1048
+   jz       .1064
    mov      %r15, %rax
    shr      $4, %rax
    mov      $2, %r15
-   jmp      .1046
-.1048:
+   jmp      .1062
+.1064:
    mov      -4(%r15), %rax
    mov      4(%r15), %r15
-.1046:
+.1062:
    mov      %rax, (%rsp)
-   jmp      .1044
-.1045:
+   jmp      .1060
+.1061:
    pop      %rax
    pop      %rax
    pop      %r15
@@ -14967,7 +15071,7 @@ doPreQ:
    call     evSymX_E
    mov      8(%rbp), %r13
    cmp      $Nil, %r13
-   jz       .1050
+   jz       .1066
    mov      %rbx, %r15
    mov      -8(%r13), %r13
    call     nameX_X
@@ -14979,7 +15083,7 @@ doPreQ:
    call     preCEXY_F
    mov      $Nil, %rbx
    cmovzq   %r15, %rbx
-.1050:
+.1066:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -15031,11 +15135,11 @@ doVal:
    testb    $0x06, %bl
    jnz      varErrEX
    testb    $0x08, %bl
-   jz       .1051
+   jz       .1067
    testb    $0x08, -8(%rbx)
-   jz       .1051
+   jz       .1067
    call     dbFetchEX
-.1051:
+.1067:
    mov      (%rbx), %rbx
    pop      %r13
    ret
@@ -15054,7 +15158,7 @@ doSet:
    pushq    $2
    push     %rbp
    mov      %rsp, %rbp
-.1053:
+.1069:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15065,11 +15169,11 @@ doSet:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1054
+   jz       .1070
    testb    $0x08, -8(%rbx)
-   jz       .1054
+   jz       .1070
    call     dbTouchEX
-.1054:
+.1070:
    mov      %rbx, 8(%rbp)
    mov      8(%r14), %r14
    mov      (%r14), %rbx
@@ -15084,7 +15188,7 @@ doSet:
    mov      %rbx, (%r11)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1053
+   jz       .1069
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -15101,7 +15205,7 @@ doSetq:
    push     %r15
    mov      %rbx, %r13
    mov      8(%rbx), %r14
-.1056:
+.1072:
    mov      (%r14), %rbx
    call     needVarEX
    mov      %rbx, %r15
@@ -15117,7 +15221,7 @@ doSetq:
    mov      %rbx, (%r15)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1056
+   jz       .1072
    pop      %r15
    pop      %r14
    pop      %r13
@@ -15137,7 +15241,7 @@ doXchg:
    pushq    $2
    push     %rbp
    mov      %rsp, %rbp
-.1057:
+.1073:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15148,11 +15252,11 @@ doXchg:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1058
+   jz       .1074
    testb    $0x08, -8(%rbx)
-   jz       .1058
+   jz       .1074
    call     dbTouchEX
-.1058:
+.1074:
    mov      %rbx, 8(%rbp)
    mov      8(%r14), %r14
    mov      (%r14), %rbx
@@ -15165,11 +15269,11 @@ doXchg:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1060
+   jz       .1076
    testb    $0x08, -8(%rbx)
-   jz       .1060
+   jz       .1076
    call     dbTouchEX
-.1060:
+.1076:
    mov      8(%rbp), %rdx
    mov      (%rdx), %rax
    mov      (%rbx), %r10
@@ -15177,7 +15281,7 @@ doXchg:
    mov      %rax, (%rbx)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1057
+   jz       .1073
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -15192,13 +15296,13 @@ doXchg:
 doOn:
    push     %r13
    mov      8(%rbx), %r13
-.1062:
+.1078:
    mov      (%r13), %rbx
    call     needVarEX
    movq     $TSym, (%rbx)
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1062
+   jz       .1078
    mov      $TSym, %rbx
    pop      %r13
    ret
@@ -15210,13 +15314,13 @@ doOn:
 doOff:
    push     %r13
    mov      8(%rbx), %r13
-.1063:
+.1079:
    mov      (%r13), %rbx
    call     needVarEX
    movq     $Nil, (%rbx)
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1063
+   jz       .1079
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -15228,7 +15332,7 @@ doOff:
 doOnOff:
    push     %r13
    mov      8(%rbx), %r13
-.1064:
+.1080:
    mov      (%r13), %rbx
    call     needVarEX
    cmpq     $Nil, (%rbx)
@@ -15238,7 +15342,7 @@ doOnOff:
    mov      %rax, (%rbx)
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1064
+   jz       .1080
    mov      %rax, %rbx
    pop      %r13
    ret
@@ -15250,13 +15354,13 @@ doOnOff:
 doZero:
    push     %r13
    mov      8(%rbx), %r13
-.1065:
+.1081:
    mov      (%r13), %rbx
    call     needVarEX
    movq     $2, (%rbx)
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1065
+   jz       .1081
    mov      $2, %rbx
    pop      %r13
    ret
@@ -15268,13 +15372,13 @@ doZero:
 doOne:
    push     %r13
    mov      8(%rbx), %r13
-.1066:
+.1082:
    mov      (%r13), %rbx
    call     needVarEX
    movq     $18, (%rbx)
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1066
+   jz       .1082
    mov      $18, %rbx
    pop      %r13
    ret
@@ -15289,13 +15393,13 @@ doDefault:
    push     %r15
    mov      %rbx, %r13
    mov      8(%rbx), %r14
-.1067:
+.1083:
    mov      (%r14), %rbx
    mov      8(%r14), %r14
    call     needVarEX
    mov      %rbx, %r15
    cmpq     $Nil, (%r15)
-   jnz      .1068
+   jnz      .1084
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15305,10 +15409,10 @@ doDefault:
    call     evListE_E
 1:
    mov      %rbx, (%r15)
-.1068:
+.1084:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1067
+   jz       .1083
    mov      (%r15), %rbx
    pop      %r15
    pop      %r14
@@ -15334,18 +15438,18 @@ doPush:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1069
+   jz       .1085
    testb    $0x08, -8(%rbx)
-   jz       .1069
+   jz       .1085
    call     dbTouchEX
-.1069:
+.1085:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
    mov      8(%r14), %r14
-.1071:
+.1087:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15362,7 +15466,7 @@ doPush:
    mov      %rax, (%rdx)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1071
+   jz       .1087
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -15389,18 +15493,18 @@ doPush1:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1072
+   jz       .1088
    testb    $0x08, -8(%rbx)
-   jz       .1072
+   jz       .1088
    call     dbTouchEX
-.1072:
+.1088:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
    mov      8(%r14), %r14
-.1074:
+.1090:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15411,17 +15515,17 @@ doPush1:
 1:
    mov      8(%rbp), %r10
    mov      (%r10), %rdx
-.1075:
+.1091:
    testb    $0x0E, %dl
-   jnz      .1076
+   jnz      .1092
    mov      (%rdx), %rax
    mov      %rbx, %r15
    call     equalAE_F
    mov      %r15, %rbx
    jz       doPush1_10
    mov      8(%rdx), %rdx
-   jmp      .1075
-.1076:
+   jmp      .1091
+.1092:
    call     consE_A
    mov      %rbx, (%rax)
    mov      8(%rbp), %rdx
@@ -15431,7 +15535,7 @@ doPush1:
 doPush1_10:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1074
+   jz       .1090
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -15457,19 +15561,19 @@ doPop:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1077
+   jz       .1093
    testb    $0x08, -8(%rbx)
-   jz       .1077
+   jz       .1093
    call     dbTouchEX
-.1077:
+.1093:
    mov      %rbx, %rax
    mov      (%rax), %rbx
    testb    $0x0E, %bl
-   jnz      .1079
+   jnz      .1095
    mov      8(%rbx), %r10
    mov      %r10, (%rax)
    mov      (%rbx), %rbx
-.1079:
+.1095:
    pop      %r13
    ret
 
@@ -15483,7 +15587,7 @@ doCut:
    mov      %rbx, %r13
    mov      8(%rbx), %r14
    call     evCntXY_FE
-   jle      .1080
+   jle      .1096
    mov      8(%r14), %r10
    mov      (%r10), %r14
    xchg     %r14, %rbx
@@ -15496,13 +15600,14 @@ doCut:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1081
+   jz       .1097
    testb    $0x08, -8(%rbx)
-   jz       .1081
+   jz       .1097
    call     dbTouchEX
-.1081:
+.1097:
    testb    $0x0E, (%rbx)
-   jnz      .1086
+   cmovnzq  (%rbx), %rbx
+   jnz      .1099
    call     consE_X
    mov      (%rbx), %rdx
    mov      (%rdx), %r10
@@ -15514,29 +15619,31 @@ doCut:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
-.1084:
+.1100:
    mov      8(%rdx), %rdx
    testb    $0x0E, %dl
-   jnz      .1085
+   jnz      .1101
    sub      $1, %r14
-   jz       .1085
+   jz       .1101
    call     cons_A
    mov      (%rdx), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r13)
    mov      8(%r13), %r13
-   jmp      .1084
-.1085:
+   jmp      .1100
+.1101:
    mov      16(%rbp), %r11
    mov      %rdx, (%r11)
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .1086
-.1080:
+.1099:
+   pop      %r14
+   pop      %r13
+   ret
+.1096:
    mov      $Nil, %rbx
-.1086:
    pop      %r14
    pop      %r13
    ret
@@ -15579,11 +15686,11 @@ doDel:
    mov      %rsp, %rbp
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1087
+   jz       .1102
    testb    $0x08, -8(%rbx)
-   jz       .1087
+   jz       .1102
    call     dbTouchEX
-.1087:
+.1102:
    mov      8(%rbp), %r10
    mov      (%r10), %rbx
    testb    $0x0E, %bl
@@ -15592,12 +15699,12 @@ doDel:
    mov      (%r14), %rbx
    mov      16(%rbp), %rax
    call     equalAE_F
-   jnz      .1090
+   jnz      .1105
    mov      8(%r14), %rbx
    mov      8(%rbp), %r11
    mov      %rbx, (%r11)
    jmp      doDel_90
-.1090:
+.1105:
    call     cons_Z
    mov      (%r14), %r10
    mov      %r10, (%r15)
@@ -15606,29 +15713,29 @@ doDel:
    movq     %r15, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1092:
+.1107:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1093
+   jnz      .1108
    mov      (%r14), %rbx
    mov      24(%rbp), %rax
    call     equalAE_F
-   jnz      .1094
+   jnz      .1109
    mov      8(%r14), %r10
    mov      %r10, 8(%r15)
    mov      8(%rbp), %rbx
    mov      16(%rbp), %r11
    mov      %rbx, (%r11)
    jmp      doDel_90
-.1094:
+.1109:
    call     cons_A
    mov      (%r14), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r15)
    mov      8(%r15), %r15
-   jmp      .1092
-.1093:
+   jmp      .1107
+.1108:
    mov      16(%rbp), %r10
    mov      (%r10), %rbx
 doDel_90:
@@ -15658,11 +15765,11 @@ doQueue:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1095
+   jz       .1110
    testb    $0x08, -8(%rbx)
-   jz       .1095
+   jz       .1110
    call     dbTouchEX
-.1095:
+.1110:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -15683,17 +15790,17 @@ doQueue:
    mov      8(%rbp), %r13
    mov      (%r13), %r14
    testb    $0x0E, %r14b
-   jz       .1099
+   jz       .1114
    mov      %rdx, (%r13)
-   jmp      .1098
-.1099:
+   jmp      .1113
+.1114:
    testb    $0x0E, 8(%r14)
-   jnz      .1100
+   jnz      .1115
    mov      8(%r14), %r14
-   jmp      .1099
-.1100:
+   jmp      .1114
+.1115:
    mov      %rdx, 8(%r14)
-.1098:
+.1113:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -15719,11 +15826,11 @@ doFifo:
 1:
    call     needVarEX
    testb    $0x08, %bl
-   jz       .1101
+   jz       .1116
    testb    $0x08, -8(%rbx)
-   jz       .1101
+   jz       .1116
    call     dbTouchEX
-.1101:
+.1116:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -15731,7 +15838,7 @@ doFifo:
    mov      %rsp, %rbp
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1103
+   jnz      .1118
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15745,20 +15852,20 @@ doFifo:
    mov      8(%rbp), %rdx
    mov      (%rdx), %r13
    testb    $0x0E, %r13b
-   jnz      .1104
+   jnz      .1119
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      %rax, 8(%r13)
-   jmp      .1105
-.1104:
+   jmp      .1120
+.1119:
    mov      %rax, 8(%rax)
    mov      %r13, (%rdx)
-.1105:
+.1120:
    mov      %rax, %r13
-.1106:
+.1121:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1107
+   jnz      .1122
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15773,31 +15880,31 @@ doFifo:
    mov      %r10, 8(%rax)
    mov      %rax, 8(%r13)
    mov      %rax, %r13
-   jmp      .1106
-.1107:
+   jmp      .1121
+.1122:
    mov      8(%rbp), %r11
    mov      %r13, (%r11)
-   jmp      .1108
-.1103:
+   jmp      .1123
+.1118:
    mov      8(%rbp), %rdx
    mov      (%rdx), %r13
    testb    $0x0E, %r13b
-   jz       .1109
+   jz       .1124
    mov      $Nil, %rbx
-   jmp      .1108
-.1109:
+   jmp      .1123
+.1124:
    cmp      8(%r13), %r13
-   jnz      .1111
+   jnz      .1126
    mov      (%r13), %rbx
    movq     $Nil, (%rdx)
-   jmp      .1108
-.1111:
+   jmp      .1123
+.1126:
    mov      8(%r13), %r10
    mov      (%r10), %rbx
    mov      8(%r13), %r10
    mov      8(%r10), %r10
    mov      %r10, 8(%r13)
-.1108:
+.1123:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -15824,12 +15931,12 @@ doIdx:
    mov      8(%r13), %r10
    mov      8(%r10), %r13
    testb    $0x0E, %r13b
-   jz       .1113
+   jz       .1128
    mov      (%rbx), %r13
    mov      $Nil, %rbx
    call     consTreeXE_E
-   jmp      .1114
-.1113:
+   jmp      .1129
+.1128:
    push     %r14
    push     %rbp
    mov      %rsp, %rbp
@@ -15851,11 +15958,11 @@ doIdx:
    mov      %rbx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1115
+   jz       .1130
    mov      16(%rbp), %r13
    call     idxGetXY_E
-   jmp      .1116
-.1115:
+   jmp      .1131
+.1130:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -15866,16 +15973,16 @@ doIdx:
 1:
    mov      16(%rbp), %r13
    cmp      $Nil, %rbx
-   jz       .1117
+   jz       .1132
    call     idxPutXY_E
-   jmp      .1116
-.1117:
+   jmp      .1131
+.1132:
    call     idxDelXY_E
-.1116:
+.1131:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
-.1114:
+.1129:
    pop      %r13
    ret
 
@@ -15883,20 +15990,20 @@ doIdx:
    .global  idxGetXY_E
 idxGetXY_E:
    mov      (%r13), %r13
-.1119:
+.1134:
    testb    $0x0E, %r13b
    mov      $Nil, %rbx
-   jnz      .1120
+   jnz      .1135
    mov      %r14, %rax
    mov      (%r13), %rbx
    call     compareAE_F
    mov      %r13, %rbx
-   jz       .1120
+   jz       .1135
    mov      8(%r13), %r13
    cmovcq   (%r13), %r13
    cmovncq  8(%r13), %r13
-   jmp      .1119
-.1120:
+   jmp      .1134
+.1135:
    rep
    ret
 
@@ -15904,25 +16011,25 @@ idxGetXY_E:
    .global  idxPutXY_E
 idxPutXY_E:
    testb    $0x0E, (%r13)
-   jz       .1121
+   jz       .1136
    call     cons_A
    mov      %r14, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, (%r13)
    mov      $Nil, %rbx
-   jmp      .1122
-.1121:
+   jmp      .1137
+.1136:
    mov      (%r13), %r13
-.1123:
+.1138:
    mov      %r14, %rax
    mov      (%r13), %rbx
    call     compareAE_F
    mov      %r13, %rbx
-   jz       .1122
+   jz       .1137
    mov      8(%r13), %rax
-   jc       .1125
+   jc       .1140
    testb    $0x0E, %al
-   jz       .1126
+   jz       .1141
    call     cons_A
    mov      %r14, (%rax)
    movq     $Nil, 8(%rax)
@@ -15931,21 +16038,21 @@ idxPutXY_E:
    mov      %rax, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      $Nil, %rbx
-   jmp      .1122
-.1126:
+   jmp      .1137
+.1141:
    mov      %rax, %r13
    testb    $0x0E, 8(%r13)
    cmovzq   8(%r13), %r13
-   jz       .1123
+   jz       .1138
    call     cons_A
    mov      %r14, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r13)
    mov      $Nil, %rbx
-   jmp      .1122
-.1125:
+   jmp      .1137
+.1140:
    testb    $0x0E, %al
-   jz       .1129
+   jz       .1144
    call     cons_A
    mov      %r14, (%rax)
    movq     $Nil, 8(%rax)
@@ -15954,69 +16061,69 @@ idxPutXY_E:
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      $Nil, %rbx
-   jmp      .1122
-.1129:
+   jmp      .1137
+.1144:
    mov      %rax, %r13
    testb    $0x0E, (%r13)
    cmovzq   (%r13), %r13
-   jz       .1123
+   jz       .1138
    call     cons_A
    mov      %r14, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, (%r13)
    mov      $Nil, %rbx
-.1122:
+.1137:
    rep
    ret
 
    .balign  16
    .global  idxDelXY_E
 idxDelXY_E:
-.1131:
+.1146:
    testb    $0x0E, (%r13)
    mov      $Nil, %rbx
-   jnz      .1132
+   jnz      .1147
    mov      %r14, %rax
    mov      (%r13), %r10
    mov      (%r10), %rbx
    call     compareAE_F
-   jnz      .1133
+   jnz      .1148
    mov      (%r13), %rdx
    mov      %rdx, %rbx
    mov      8(%rdx), %rax
    testb    $0x0E, (%rax)
-   jz       .1134
+   jz       .1149
    mov      8(%rax), %r10
    mov      %r10, (%r13)
    ret
-.1134:
+.1149:
    testb    $0x0E, 8(%rax)
-   jz       .1135
+   jz       .1150
    mov      (%rax), %r10
    mov      %r10, (%r13)
    ret
-.1135:
+.1150:
    mov      8(%rax), %rax
    mov      8(%rax), %r13
    testb    $0x0E, (%r13)
-   jz       .1136
+   jz       .1151
    mov      (%rax), %r10
    mov      %r10, (%rdx)
    mov      8(%rdx), %r11
    mov      8(%r13), %r10
    mov      %r10, 8(%r11)
    ret
-.1136:
+.1151:
    push     %rbx
    mov      (%r13), %r13
-.1137:
+.1152:
    mov      8(%r13), %rbx
    testb    $0x0E, (%rbx)
-   jnz      .1138
+   jnz      .1153
    mov      %r13, %rax
    mov      (%rbx), %r13
-   jmp      .1137
-.1138:
+   jmp      .1152
+.1153:
    mov      (%r13), %r10
    mov      %r10, (%rdx)
    mov      8(%rax), %r11
@@ -16024,19 +16131,19 @@ idxDelXY_E:
    mov      %r10, (%r11)
    pop      %rbx
    ret
-.1133:
+.1148:
    mov      $Nil, %rbx
    mov      (%r13), %r10
    mov      8(%r10), %r13
-   jc       .1139
+   jc       .1154
    testb    $0x0E, %r13b
-   jnz      .1132
+   jnz      .1147
    lea      8(%r13), %r13
-   jmp      .1131
-.1139:
+   jmp      .1146
+.1154:
    testb    $0x0E, %r13b
-   jz       .1131
-.1132:
+   jz       .1146
+.1147:
    rep
    ret
 
@@ -16056,7 +16163,7 @@ doLup:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1141
+   jnz      .1156
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -16074,44 +16181,44 @@ doLup:
 1:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1142
+   jz       .1157
    pop      %r13
    pop      %rbp
    push     %r14
    mov      %rbx, %r14
-.1143:
+.1158:
    mov      (%r13), %rbx
    cmp      $TSym, %rbx
-   jnz      .1144
+   jnz      .1159
    mov      8(%r13), %r10
    mov      (%r10), %r13
-   jmp      .1145
-.1144:
+   jmp      .1160
+.1159:
    testb    $0x0E, %bl
-   jz       .1146
+   jz       .1161
    mov      8(%r13), %r10
    mov      8(%r10), %r13
-   jmp      .1145
-.1146:
+   jmp      .1160
+.1161:
    mov      %r14, %rax
    mov      (%rbx), %rbx
    call     compareAE_F
-   jnz      .1148
+   jnz      .1163
    mov      (%r13), %rbx
    pop      %r14
    pop      %r13
    ret
-.1148:
+.1163:
    mov      8(%r13), %r13
    cmovcq   (%r13), %r13
    cmovncq  8(%r13), %r13
-.1145:
+.1160:
    testb    $0x0E, %r13b
-   jz       .1143
+   jz       .1158
    mov      $Nil, %rbx
    pop      %r14
-   jmp      .1141
-.1142:
+   jmp      .1156
+.1157:
    push     %rbx
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -16130,19 +16237,19 @@ doLup:
    push     %rbp
    mov      %rsp, %rbp
    mov      40(%rbp), %r13
-.1151:
+.1166:
    mov      8(%r13), %rax
    testb    $0x0E, 8(%rax)
-   jnz      .1152
+   jnz      .1167
    mov      (%r13), %rbx
    cmp      $TSym, %rbx
-   jz       .1152
+   jz       .1167
    testb    $0x0E, %bl
    jnz      doLup_10
    mov      24(%rbp), %rax
    mov      (%rbx), %rbx
    call     compareAE_F
-   jc       .1152
+   jc       .1167
 doLup_10:
    mov      %r13, %rdx
    mov      8(%r13), %rax
@@ -16150,32 +16257,32 @@ doLup_10:
    mov      16(%rbp), %r10
    mov      %r10, 8(%rax)
    mov      %rdx, 16(%rbp)
-   jmp      .1151
-.1152:
+   jmp      .1166
+.1167:
    mov      %r13, 40(%rbp)
-.1153:
+.1168:
    mov      (%r13), %rbx
    testb    $0x0E, %bl
-   jnz      .1159
+   jnz      .1174
    mov      32(%rbp), %rax
    mov      (%rbx), %rbx
    call     compareAE_F
-   ja       .1159
+   ja       .1174
    mov      24(%rbp), %rax
    mov      (%r13), %r10
    mov      (%r10), %rbx
    call     compareAE_F
-   jc       .1156
+   jc       .1171
    call     cons_A
    mov      (%r13), %r10
    mov      %r10, (%rax)
    mov      8(%rbp), %r10
    mov      %r10, 8(%rax)
    mov      %rax, 8(%rbp)
-.1156:
+.1171:
    mov      8(%r13), %rax
    testb    $0x0E, (%rax)
-   jnz      .1159
+   jnz      .1174
    mov      %r13, %rdx
    mov      (%rax), %r13
    mov      16(%rbp), %r10
@@ -16183,27 +16290,27 @@ doLup_10:
    orb      $8, %dl
    mov      %rdx, 16(%rbp)
    mov      %r13, 40(%rbp)
-   jmp      .1151
-.1159:
+   jmp      .1166
+.1174:
    mov      16(%rbp), %rax
    cmp      $Nil, %rax
-   jnz      .1160
+   jnz      .1175
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.1160:
+.1175:
    testb    $0x08, %al
-   jnz      .1161
+   jnz      .1176
    mov      8(%rax), %rdx
    mov      8(%rdx), %r10
    mov      %r10, 16(%rbp)
    mov      %r13, 8(%rdx)
    mov      %rax, %r13
    mov      %r13, 40(%rbp)
-   jmp      .1153
-.1161:
+   jmp      .1168
+.1176:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r10
@@ -16211,8 +16318,8 @@ doLup_10:
    mov      %r13, (%rdx)
    mov      %rax, %r13
    mov      %r13, 40(%rbp)
-   jmp      .1159
-.1141:
+   jmp      .1174
+.1156:
    pop      %r13
    ret
 
@@ -16230,25 +16337,25 @@ putACE:
    push     %r13
    mov      -8(%rax), %r13
    testb    $0x06, %r13b
-   jnz      .1163
+   jnz      .1178
    andb     $~8, %r13b
    testb    $0x0E, (%r13)
-   jz       .1164
+   jz       .1179
    cmp      (%r13), %rdx
-   jnz      .1168
+   jnz      .1183
    cmp      $Nil, %rbx
-   jnz      .1166
+   jnz      .1181
 putACE_10:
    mov      8(%r13), %r13
    testb    $0x08, -8(%rax)
-   jz       .1167
+   jz       .1182
    orb      $8, %r13b
-.1167:
+.1182:
    mov      %r13, -8(%rax)
 putACE_20:
    pop      %r13
    ret
-.1166:
+.1181:
    cmp      $TSym, %rbx
    jz       putACE_20
    push     %rdx
@@ -16258,126 +16365,126 @@ putACE_20:
    mov      %rdx, (%r13)
    pop      %r13
    ret
-.1164:
+.1179:
    mov      (%r13), %r10
    cmp      8(%r10), %rdx
-   jnz      .1168
+   jnz      .1183
    cmp      $Nil, %rbx
    jz       putACE_10
    cmp      $TSym, %rbx
-   jz       .1170
-   mov      (%r13), %r11
-   mov      %rbx, (%r11)
-   jmp      .1171
-.1170:
-   mov      %rdx, (%r13)
-.1171:
-   pop      %r13
-   ret
-.1168:
-   push     %r14
-.1172:
-   mov      8(%r13), %r14
-   testb    $0x0E, %r14b
-   jnz      .1173
-   testb    $0x0E, (%r14)
-   jz       .1174
-   cmp      (%r14), %rdx
-   jnz      .1181
-   cmp      $Nil, %rbx
-   jnz      .1176
-   mov      8(%r14), %r10
-   mov      %r10, 8(%r13)
-   jmp      .1181
-.1176:
-   cmp      $TSym, %rbx
-   jz       .1178
-   push     %rdx
-   call     consE_C
-   mov      %rbx, (%rdx)
-   popq     8(%rdx)
-   mov      %rdx, (%r14)
-.1178:
-   mov      8(%r14), %r10
-   mov      %r10, 8(%r13)
-   mov      -8(%rax), %r13
-   testb    $0x08, %r13b
-   jnz      .1179
-   mov      %r13, 8(%r14)
-   jmp      .1180
-.1179:
-   andb     $~8, %r13b
-   mov      %r13, 8(%r14)
-   orb      $8, %r14b
-.1180:
-   mov      %r14, -8(%rax)
-   pop      %r14
-   pop      %r13
-   ret
-.1174:
-   mov      (%r14), %r10
-   cmp      8(%r10), %rdx
-   jnz      .1181
-   cmp      $Nil, %rbx
-   jnz      .1183
-   mov      8(%r14), %r10
-   mov      %r10, 8(%r13)
-   jmp      .1181
-.1183:
-   cmp      $TSym, %rbx
    jz       .1185
-   mov      (%r14), %r11
+   mov      (%r13), %r11
    mov      %rbx, (%r11)
    jmp      .1186
 .1185:
-   mov      %rdx, (%r14)
+   mov      %rdx, (%r13)
 .1186:
-   mov      8(%r14), %r10
-   mov      %r10, 8(%r13)
-   mov      -8(%rax), %r13
-   testb    $0x08, %r13b
-   jnz      .1187
-   mov      %r13, 8(%r14)
-   jmp      .1188
-.1187:
-   andb     $~8, %r13b
-   mov      %r13, 8(%r14)
-   orb      $8, %r14b
-.1188:
-   mov      %r14, -8(%rax)
-   pop      %r14
    pop      %r13
    ret
-.1181:
-   mov      %r14, %r13
-   jmp      .1172
-.1173:
-   pop      %r14
-   mov      -8(%rax), %r13
-.1163:
-   cmp      $Nil, %rbx
+.1183:
+   push     %r14
+.1187:
+   mov      8(%r13), %r14
+   testb    $0x0E, %r14b
+   jnz      .1188
+   testb    $0x0E, (%r14)
    jz       .1189
+   cmp      (%r14), %rdx
+   jnz      .1196
+   cmp      $Nil, %rbx
+   jnz      .1191
+   mov      8(%r14), %r10
+   mov      %r10, 8(%r13)
+   jmp      .1196
+.1191:
    cmp      $TSym, %rbx
-   jz       .1190
+   jz       .1193
    push     %rdx
    call     consE_C
    mov      %rbx, (%rdx)
    popq     8(%rdx)
-.1190:
+   mov      %rdx, (%r14)
+.1193:
+   mov      8(%r14), %r10
+   mov      %r10, 8(%r13)
+   mov      -8(%rax), %r13
+   testb    $0x08, %r13b
+   jnz      .1194
+   mov      %r13, 8(%r14)
+   jmp      .1195
+.1194:
+   andb     $~8, %r13b
+   mov      %r13, 8(%r14)
+   orb      $8, %r14b
+.1195:
+   mov      %r14, -8(%rax)
+   pop      %r14
+   pop      %r13
+   ret
+.1189:
+   mov      (%r14), %r10
+   cmp      8(%r10), %rdx
+   jnz      .1196
+   cmp      $Nil, %rbx
+   jnz      .1198
+   mov      8(%r14), %r10
+   mov      %r10, 8(%r13)
+   jmp      .1196
+.1198:
+   cmp      $TSym, %rbx
+   jz       .1200
+   mov      (%r14), %r11
+   mov      %rbx, (%r11)
+   jmp      .1201
+.1200:
+   mov      %rdx, (%r14)
+.1201:
+   mov      8(%r14), %r10
+   mov      %r10, 8(%r13)
+   mov      -8(%rax), %r13
+   testb    $0x08, %r13b
+   jnz      .1202
+   mov      %r13, 8(%r14)
+   jmp      .1203
+.1202:
+   andb     $~8, %r13b
+   mov      %r13, 8(%r14)
+   orb      $8, %r14b
+.1203:
+   mov      %r14, -8(%rax)
+   pop      %r14
+   pop      %r13
+   ret
+.1196:
+   mov      %r14, %r13
+   jmp      .1187
+.1188:
+   pop      %r14
+   mov      -8(%rax), %r13
+.1178:
+   cmp      $Nil, %rbx
+   jz       .1204
+   cmp      $TSym, %rbx
+   jz       .1205
+   push     %rdx
+   call     consE_C
+   mov      %rbx, (%rdx)
+   popq     8(%rdx)
+.1205:
    push     %rdx
    call     consC_C
    popq     (%rdx)
    testb    $0x08, %r13b
-   jnz      .1191
+   jnz      .1206
    mov      %r13, 8(%rdx)
-   jmp      .1192
-.1191:
+   jmp      .1207
+.1206:
    andb     $~8, %r13b
    mov      %r13, 8(%rdx)
    orb      $8, %dl
-.1192:
+.1207:
    mov      %rdx, -8(%rax)
-.1189:
+.1204:
    pop      %r13
    ret
 
@@ -16387,43 +16494,43 @@ getnECX_E:
    testb    $0x06, %bl
    jnz      argErrEX
    testb    $0x0E, %bl
-   jnz      .1193
+   jnz      .1208
    testb    $0x06, %dl
-   jz       .1198
+   jz       .1213
    shr      $4, %rdx
-   jc       .1197
+   jc       .1212
    jz       retNil
-.1196:
+.1211:
    sub      $1, %rdx
    jz       retE_E
    mov      8(%rbx), %rbx
-   jmp      .1196
-.1197:
+   jmp      .1211
+.1212:
    mov      8(%rbx), %rbx
    sub      $1, %rdx
-   jnz      .1197
+   jnz      .1212
    rep
    ret
-.1198:
+.1213:
    testb    $0x0E, (%rbx)
-   jnz      .1199
+   jnz      .1214
    mov      (%rbx), %r10
    cmp      (%r10), %rdx
-   jz       .1200
-.1199:
+   jz       .1215
+.1214:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
    jnz      retNil
-   jmp      .1198
-.1200:
+   jmp      .1213
+.1215:
    mov      (%rbx), %r10
    mov      8(%r10), %rbx
    ret
-.1193:
+.1208:
    testb    $0x08, -8(%rbx)
-   jz       .1201
+   jz       .1216
    call     dbFetchEX
-.1201:
+.1216:
 
    .balign  16
    .global  getEC_E
@@ -16435,58 +16542,58 @@ getEC_E:
    jnz      retNil
    andb     $~8, %al
    testb    $0x0E, (%rax)
-   jz       .1202
+   jz       .1217
    cmp      (%rax), %rdx
    jz       retT
-   jmp      .1203
-.1202:
+   jmp      .1218
+.1217:
    mov      (%rax), %r10
    cmp      8(%r10), %rdx
-   jnz      .1203
+   jnz      .1218
    mov      (%rax), %r10
    mov      (%r10), %rbx
    ret
-.1203:
+.1218:
    push     %r13
-.1205:
+.1220:
    mov      8(%rax), %r13
    testb    $0x0E, %r13b
-   jnz      .1206
+   jnz      .1221
    testb    $0x0E, (%r13)
-   jz       .1207
+   jz       .1222
    cmp      (%r13), %rdx
-   jnz      .1211
+   jnz      .1226
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jnz      .1209
+   jnz      .1224
    mov      %rax, 8(%r13)
-   jmp      .1210
-.1209:
+   jmp      .1225
+.1224:
    andb     $~8, %al
    mov      %rax, 8(%r13)
    orb      $8, %r13b
-.1210:
+.1225:
    mov      %r13, -8(%rbx)
    mov      $TSym, %rbx
    pop      %r13
    ret
-.1207:
+.1222:
    mov      (%r13), %r10
    cmp      8(%r10), %rdx
-   jnz      .1211
+   jnz      .1226
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jnz      .1213
+   jnz      .1228
    mov      %rax, 8(%r13)
    mov      %r13, -8(%rbx)
    mov      (%r13), %r10
    mov      (%r10), %rbx
-   jmp      .1214
-.1213:
+   jmp      .1229
+.1228:
    andb     $~8, %al
    mov      %rax, 8(%r13)
    mov      (%r13), %r10
@@ -16494,13 +16601,13 @@ getEC_E:
    orb      $8, %r13b
    mov      %r13, -8(%rbx)
    mov      %rax, %rbx
-.1214:
+.1229:
    pop      %r13
    ret
-.1211:
+.1226:
    mov      %r13, %rax
-   jmp      .1205
-.1206:
+   jmp      .1220
+.1221:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -16513,70 +16620,70 @@ propEC_E:
    jnz      retNil
    andb     $~8, %al
    testb    $0x0E, (%rax)
-   jz       .1215
+   jz       .1230
    cmp      (%rax), %rdx
-   jnz      .1217
+   jnz      .1232
    mov      %rdx, %rbx
    ret
-.1215:
+.1230:
    mov      (%rax), %r10
    cmp      8(%r10), %rdx
-   jnz      .1217
+   jnz      .1232
    mov      (%rax), %rbx
    ret
-.1217:
+.1232:
    push     %r13
-.1219:
+.1234:
    mov      8(%rax), %r13
    testb    $0x0E, %r13b
-   jnz      .1220
+   jnz      .1235
    testb    $0x0E, (%r13)
-   jz       .1221
+   jz       .1236
    cmp      (%r13), %rdx
-   jnz      .1225
+   jnz      .1240
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jnz      .1223
+   jnz      .1238
    mov      %rax, 8(%r13)
-   jmp      .1224
-.1223:
+   jmp      .1239
+.1238:
    andb     $~8, %al
    mov      %rax, 8(%r13)
    orb      $8, %r13b
-.1224:
+.1239:
    mov      %r13, -8(%rbx)
    mov      %rdx, %rbx
    pop      %r13
    ret
-.1221:
+.1236:
    mov      (%r13), %r10
    cmp      8(%r10), %rdx
-   jnz      .1225
+   jnz      .1240
    mov      8(%r13), %r10
    mov      %r10, 8(%rax)
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jnz      .1227
+   jnz      .1242
    mov      %rax, 8(%r13)
    mov      %r13, -8(%rbx)
    mov      (%r13), %rbx
-   jmp      .1228
-.1227:
+   jmp      .1243
+.1242:
    andb     $~8, %al
    mov      %rax, 8(%r13)
    mov      (%r13), %rax
    orb      $8, %r13b
    mov      %r13, -8(%rbx)
    mov      %rax, %rbx
-.1228:
+.1243:
    pop      %r13
    ret
-.1225:
+.1240:
    mov      %r13, %rax
-   jmp      .1219
-.1220:
+   jmp      .1234
+.1235:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -16616,10 +16723,10 @@ doPut:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1229:
+.1244:
    mov      8(%r14), %r14
    testb    $0x0E, 8(%r14)
-   jnz      .1230
+   jnz      .1245
    mov      %rbx, %rdx
    mov      16(%rbp), %rbx
    call     getnECX_E
@@ -16633,8 +16740,8 @@ doPut:
    call     evListE_E
 1:
    mov      %rbx, 8(%rbp)
-   jmp      .1229
-.1230:
+   jmp      .1244
+.1245:
    mov      16(%rbp), %rbx
    testb    $0x06, %bl
    jnz      symErrEX
@@ -16652,13 +16759,13 @@ doPut:
 1:
    mov      16(%rbp), %rax
    testb    $0x08, -8(%rax)
-   jz       .1231
+   jz       .1246
    push     %rbx
    mov      %rax, %rbx
    call     dbTouchEX
    mov      %rbx, %rax
    pop      %rbx
-.1231:
+.1246:
    mov      8(%rbp), %rdx
    call     putACE
    mov      (%rbp), %rsp
@@ -16686,13 +16793,13 @@ doGet:
 1:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1232
+   jnz      .1247
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1233:
+.1248:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -16706,13 +16813,13 @@ doGet:
    call     getnECX_E
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1234
+   jnz      .1249
    mov      %rbx, 8(%rbp)
-   jmp      .1233
-.1234:
+   jmp      .1248
+.1249:
    mov      (%rbp), %rsp
    pop      %rbp
-.1232:
+.1247:
    pop      %r14
    pop      %r13
    ret
@@ -16752,10 +16859,10 @@ doProp:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1235:
+.1250:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1236
+   jnz      .1251
    mov      %rbx, %rdx
    mov      16(%rbp), %rbx
    call     getnECX_E
@@ -16769,17 +16876,17 @@ doProp:
    call     evListE_E
 1:
    mov      %rbx, 8(%rbp)
-   jmp      .1235
-.1236:
+   jmp      .1250
+.1251:
    mov      16(%rbp), %rbx
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .1237
+   jz       .1252
    call     dbFetchEX
-.1237:
+.1252:
    mov      8(%rbp), %rdx
    call     propEC_E
    mov      (%rbp), %rsp
@@ -16807,25 +16914,25 @@ doSemicol:
 1:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1238
+   jnz      .1253
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1239:
+.1254:
    mov      (%r14), %rdx
    mov      8(%rbp), %rbx
    call     getnECX_E
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1240
+   jnz      .1255
    mov      %rbx, 8(%rbp)
-   jmp      .1239
-.1240:
+   jmp      .1254
+.1255:
    mov      (%rbp), %rsp
    pop      %rbp
-.1238:
+.1253:
    pop      %r14
    pop      %r13
    ret
@@ -16841,22 +16948,22 @@ doSetCol:
    mov      8(%rbx), %r14
    mov      This, %rbx
    testb    $0x08, -8(%rbx)
-   jz       .1241
+   jz       .1256
    call     dbFetchEX
-.1241:
+.1256:
    mov      (%r14), %rdx
    mov      8(%r14), %r14
    testb    $0x0E, 8(%r14)
-   jnz      .1242
+   jnz      .1257
    call     getEC_E
-.1243:
+.1258:
    mov      (%r14), %rdx
    mov      8(%r14), %r14
    testb    $0x0E, 8(%r14)
-   jnz      .1242
+   jnz      .1257
    call     getnECX_E
-   jmp      .1243
-.1242:
+   jmp      .1258
+.1257:
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
@@ -16864,9 +16971,9 @@ doSetCol:
    cmp      $Nil, %rbx
    jz       protErrEX
    testb    $0x08, -8(%rbx)
-   jz       .1245
+   jz       .1260
    call     dbTouchEX
-.1245:
+.1260:
    push     %rdx
    push     %rbx
    mov      (%r14), %rbx
@@ -16895,19 +17002,19 @@ doCol:
    mov      8(%rbx), %r14
    mov      This, %rbx
    testb    $0x08, -8(%rbx)
-   jz       .1246
+   jz       .1261
    call     dbFetchEX
-.1246:
+.1261:
    mov      (%r14), %rdx
    call     getEC_E
-.1247:
+.1262:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1248
+   jnz      .1263
    mov      (%r14), %rdx
    call     getnECX_E
-   jmp      .1247
-.1248:
+   jmp      .1262
+.1263:
    pop      %r14
    pop      %r13
    ret
@@ -16923,21 +17030,21 @@ doPropCol:
    mov      8(%rbx), %r14
    mov      This, %rbx
    testb    $0x08, -8(%rbx)
-   jz       .1249
+   jz       .1264
    call     dbFetchEX
-.1249:
+.1264:
    mov      (%r14), %rdx
    testb    $0x0E, 8(%r14)
-   jnz      .1250
+   jnz      .1265
    call     getEC_E
-.1251:
+.1266:
    mov      8(%r14), %r14
    mov      (%r14), %rdx
    testb    $0x0E, 8(%r14)
-   jnz      .1250
+   jnz      .1265
    call     getnECX_E
-   jmp      .1251
-.1250:
+   jmp      .1266
+.1265:
    call     propEC_E
    pop      %r14
    pop      %r13
@@ -16978,10 +17085,10 @@ doPutl:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1253:
+.1268:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1254
+   jnz      .1269
    mov      %rbx, %rdx
    mov      16(%rbp), %rbx
    call     getnECX_E
@@ -16995,8 +17102,8 @@ doPutl:
    call     evListE_E
 1:
    mov      %rbx, 8(%rbp)
-   jmp      .1253
-.1254:
+   jmp      .1268
+.1269:
    mov      16(%rbp), %rbx
    testb    $0x06, %bl
    jnz      symErrEX
@@ -17005,48 +17112,48 @@ doPutl:
    cmp      $Nil, %rbx
    jz       protErrEX
    testb    $0x08, -8(%rbx)
-   jz       .1255
+   jz       .1270
    call     dbTouchEX
-.1255:
+.1270:
    mov      -8(%rbx), %r13
    andb     $~8, %r13b
-.1256:
+.1271:
    testb    $0x06, %r13b
-   jnz      .1257
+   jnz      .1272
    mov      8(%r13), %r13
-   jmp      .1256
-.1257:
+   jmp      .1271
+.1272:
    mov      8(%rbp), %r14
-.1258:
+.1273:
    testb    $0x0E, %r14b
-   jnz      .1259
+   jnz      .1274
    mov      (%r14), %rdx
    testb    $0x0E, %dl
-   jz       .1260
+   jz       .1275
    mov      %r13, %rax
    call     consA_X
    mov      %rdx, (%r13)
    mov      %rax, 8(%r13)
-   jmp      .1261
-.1260:
+   jmp      .1276
+.1275:
    cmpq     $Nil, (%rdx)
-   jz       .1261
+   jz       .1276
    cmpq     $TSym, (%rdx)
-   jnz      .1263
+   jnz      .1278
    mov      8(%rdx), %rdx
-.1263:
+.1278:
    mov      %r13, %rax
    call     consA_X
    mov      %rdx, (%r13)
    mov      %rax, 8(%r13)
-.1261:
+.1276:
    mov      8(%r14), %r14
-   jmp      .1258
-.1259:
+   jmp      .1273
+.1274:
    testb    $0x08, -8(%rbx)
-   jz       .1264
+   jz       .1279
    orb      $8, %r13b
-.1264:
+.1279:
    mov      %r13, -8(%rbx)
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
@@ -17077,10 +17184,10 @@ doGetl:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1265:
+.1280:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1266
+   jnz      .1281
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -17093,22 +17200,22 @@ doGetl:
    mov      8(%rbp), %rbx
    call     getnECX_E
    mov      %rbx, 8(%rbp)
-   jmp      .1265
-.1266:
+   jmp      .1280
+.1281:
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
-   jz       .1267
+   jz       .1282
    call     dbFetchEX
-.1267:
+.1282:
    mov      -8(%rbx), %r13
    testb    $0x06, %r13b
-   jz       .1268
+   jz       .1283
    mov      $Nil, %rbx
-   jmp      .1269
-.1268:
+   jmp      .1284
+.1283:
    andb     $~8, %r13b
    call     cons_C
    mov      (%r13), %r10
@@ -17118,20 +17225,20 @@ doGetl:
    movq     %rdx, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1270:
+.1285:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1271
+   jnz      .1286
    call     cons_A
    mov      (%r13), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .1270
-.1271:
+   jmp      .1285
+.1286:
    mov      8(%rbp), %rbx
-.1269:
+.1284:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -17153,22 +17260,22 @@ doWipe:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1272
+   jz       .1287
    testb    $0x0E, %bl
-   jz       .1273
+   jz       .1288
    call     wipeE
-   jmp      .1272
-.1273:
+   jmp      .1287
+.1288:
    push     %rbx
    mov      %rbx, %rdx
-.1275:
+.1290:
    mov      (%rdx), %rbx
    call     wipeE
    mov      8(%rdx), %rdx
    testb    $0x0E, %dl
-   jz       .1275
+   jz       .1290
    pop      %rbx
-.1272:
+.1287:
    rep
    ret
 
@@ -17177,24 +17284,24 @@ doWipe:
 wipeE:
    mov      -8(%rbx), %rax
    testb    $0x08, %al
-   jnz      .1276
+   jnz      .1291
    call     nameA_A
    movq     $Nil, (%rbx)
    mov      %rax, -8(%rbx)
    ret
-.1276:
+.1291:
    call     nameA_A
    shl      $1, %rax
-   jc       .1277
+   jc       .1292
    shl      $1, %rax
-   jnc      .1277
+   jnc      .1292
    clc
    rcr      $1, %rax
    rcr      $1, %rax
    movq     $Nil, (%rbx)
    orb      $8, %al
    mov      %rax, -8(%rbx)
-.1277:
+.1292:
    rep
    ret
 
@@ -17223,14 +17330,14 @@ doMeta:
    testb    $0x06, %bl
    jnz      argErrEX
    testb    $0x08, %bl
-   jz       .1279
+   jz       .1294
    testb    $0x08, -8(%rbx)
-   jz       .1280
+   jz       .1295
    call     dbFetchEX
-.1280:
+.1295:
    mov      (%rbx), %r10
    mov      %r10, 8(%rbp)
-.1279:
+.1294:
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -17243,10 +17350,10 @@ doMeta:
    mov      %rbx, %rdx
    mov      8(%rbp), %r13
    call     metaCX_E
-.1281:
+.1296:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1282
+   jnz      .1297
    mov      %rbx, 8(%rbp)
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -17259,8 +17366,8 @@ doMeta:
    mov      %rbx, %rdx
    mov      8(%rbp), %rbx
    call     getnECX_E
-   jmp      .1281
-.1282:
+   jmp      .1296
+.1297:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -17270,14 +17377,14 @@ doMeta:
    .balign  16
    .global  metaCX_E
 metaCX_E:
-.1283:
+.1298:
    testb    $0x0E, %r13b
    jnz      retNil
    mov      (%r13), %rbx
    testb    $0x06, %bl
-   jnz      .1284
+   jnz      .1299
    testb    $0x08, %bl
-   jz       .1284
+   jz       .1299
    call     getEC_E
    cmp      $Nil, %rbx
    jnz      Ret
@@ -17288,9 +17395,9 @@ metaCX_E:
    pop      %r13
    cmp      $Nil, %rbx
    jnz      Ret
-.1284:
+.1299:
    mov      8(%r13), %r13
-   jmp      .1283
+   jmp      .1298
 
    .balign  16
    .global  caseDataA_AC
@@ -17373,11 +17480,11 @@ doLowc:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .1286
+   jnz      .1301
    testb    $0x08, %bl
-   jz       .1286
+   jz       .1301
    cmp      $Nil, %rbx
-   jz       .1286
+   jz       .1301
    mov      -8(%rbx), %rbx
    call     nameE_E
    push     %rbp
@@ -17391,9 +17498,9 @@ doLowc:
    push     %r13
    mov      16(%rbp), %r13
    mov      %r12, %rdx
-.1289:
+.1304:
    call     symCharCX_FACX
-   jz       .1290
+   jz       .1305
    mov      %rdx, %rbx
    call     caseDataA_AC
    and      $65535, %rax
@@ -17408,13 +17515,13 @@ doLowc:
    xchg     (%rsp), %r13
    mov      %rdx, 8(%rsp)
    mov      %rbx, %rdx
-   jmp      .1289
-.1290:
+   jmp      .1304
+.1305:
    mov      8(%rbp), %r13
    call     consSymX_E
    mov      (%rbp), %rsp
    pop      %rbp
-.1286:
+.1301:
    pop      %r13
    ret
 
@@ -17434,11 +17541,11 @@ doUppc:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .1291
+   jnz      .1306
    testb    $0x08, %bl
-   jz       .1291
+   jz       .1306
    cmp      $Nil, %rbx
-   jz       .1291
+   jz       .1306
    mov      -8(%rbx), %rbx
    call     nameE_E
    push     %rbp
@@ -17452,9 +17559,9 @@ doUppc:
    push     %r13
    mov      16(%rbp), %r13
    mov      %r12, %rdx
-.1294:
+.1309:
    call     symCharCX_FACX
-   jz       .1295
+   jz       .1310
    mov      %rdx, %rbx
    call     caseDataA_AC
    and      $65535, %rax
@@ -17469,13 +17576,13 @@ doUppc:
    xchg     (%rsp), %r13
    mov      %rdx, 8(%rsp)
    mov      %rbx, %rdx
-   jmp      .1294
-.1295:
+   jmp      .1309
+.1310:
    mov      8(%rbp), %r13
    call     consSymX_E
    mov      (%rbp), %rsp
    pop      %rbp
-.1291:
+.1306:
    pop      %r13
    ret
 
@@ -17497,11 +17604,11 @@ doFold:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jnz      .1296
+   jnz      .1311
    testb    $0x08, %bl
-   jz       .1296
+   jz       .1311
    cmp      $Nil, %rbx
-   jz       .1296
+   jz       .1311
    mov      -8(%rbx), %rbx
    call     nameE_E
    push     %rbp
@@ -17512,26 +17619,26 @@ doFold:
    mov      %rsp, %rbp
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1299
+   jz       .1314
    pushq    $24
-   jmp      .1300
-.1299:
+   jmp      .1315
+.1314:
    call     evCntXY_FE
    push     %rbx
-.1300:
+.1315:
    pushq    $4
    lea      8(%rbp), %r13
    push     %r13
    mov      16(%rbp), %r13
    mov      %r12, %rdx
-.1301:
+.1316:
    call     symCharCX_FACX
-   jz       .1302
+   jz       .1317
    mov      %rdx, %rbx
    call     isLetterOrDigitA_F
-   jz       .1303
+   jz       .1318
    subq     $1, 16(%rsp)
-   js       .1302
+   js       .1317
    call     caseDataA_AC
    and      $65535, %rax
    shr      $6, %rax
@@ -17544,15 +17651,15 @@ doFold:
    call     charSymACX_CX
    xchg     (%rsp), %r13
    mov      %rdx, 8(%rsp)
-.1303:
+.1318:
    mov      %rbx, %rdx
-   jmp      .1301
-.1302:
+   jmp      .1316
+.1317:
    mov      8(%rbp), %r13
    call     consSymX_E
    mov      (%rbp), %rsp
    pop      %rbp
-.1296:
+.1311:
    pop      %r14
    pop      %r13
    ret
@@ -17610,10 +17717,10 @@ doCdr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1304
+   jz       .1319
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1304:
+.1319:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17660,10 +17767,10 @@ doCadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1305
+   jz       .1320
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1305:
+.1320:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -17691,10 +17798,10 @@ doCdar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1306
+   jz       .1321
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1306:
+.1321:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17716,16 +17823,16 @@ doCddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1307
+   jz       .1322
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1307:
+.1322:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1308
+   jz       .1323
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1308:
+.1323:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17775,10 +17882,10 @@ doCaadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1309
+   jz       .1324
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1309:
+.1324:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -17809,10 +17916,10 @@ doCadar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1310
+   jz       .1325
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1310:
+.1325:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -17837,16 +17944,16 @@ doCaddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1311
+   jz       .1326
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1311:
+.1326:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1312
+   jz       .1327
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1312:
+.1327:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -17877,10 +17984,10 @@ doCdaar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1313
+   jz       .1328
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1313:
+.1328:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17902,19 +18009,19 @@ doCdadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1314
+   jz       .1329
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1314:
+.1329:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1315
+   jz       .1330
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1315:
+.1330:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17939,16 +18046,16 @@ doCddar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1316
+   jz       .1331
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1316:
+.1331:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1317
+   jz       .1332
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1317:
+.1332:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -17970,22 +18077,22 @@ doCdddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1318
+   jz       .1333
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1318:
+.1333:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1319
+   jz       .1334
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1319:
+.1334:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1320
+   jz       .1335
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1320:
+.1335:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18035,10 +18142,10 @@ doCaaadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1321
+   jz       .1336
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1321:
+.1336:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18072,10 +18179,10 @@ doCaadar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1322
+   jz       .1337
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1322:
+.1337:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18103,16 +18210,16 @@ doCaaddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1323
+   jz       .1338
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1323:
+.1338:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1324
+   jz       .1339
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1324:
+.1339:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18146,10 +18253,10 @@ doCadaar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1325
+   jz       .1340
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1325:
+.1340:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18174,19 +18281,19 @@ doCadadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1326
+   jz       .1341
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1326:
+.1341:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1327
+   jz       .1342
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1327:
+.1342:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18214,16 +18321,16 @@ doCaddar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1328
+   jz       .1343
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1328:
+.1343:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1329
+   jz       .1344
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1329:
+.1344:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18248,22 +18355,22 @@ doCadddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1330
+   jz       .1345
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1330:
+.1345:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1331
+   jz       .1346
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1331:
+.1346:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1332
+   jz       .1347
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1332:
+.1347:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18297,10 +18404,10 @@ doCdaaar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1333
+   jz       .1348
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1333:
+.1348:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18322,10 +18429,10 @@ doCdaadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1334
+   jz       .1349
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1334:
+.1349:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
@@ -18334,10 +18441,10 @@ doCdaadr:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1335
+   jz       .1350
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1335:
+.1350:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18362,19 +18469,19 @@ doCdadar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1336
+   jz       .1351
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1336:
+.1351:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1337
+   jz       .1352
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1337:
+.1352:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18396,25 +18503,25 @@ doCdaddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1338
+   jz       .1353
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1338:
+.1353:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1339
+   jz       .1354
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1339:
+.1354:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1340
+   jz       .1355
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1340:
+.1355:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18442,16 +18549,16 @@ doCddaar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1341
+   jz       .1356
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1341:
+.1356:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1342
+   jz       .1357
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1342:
+.1357:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18473,25 +18580,25 @@ doCddadr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1343
+   jz       .1358
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1343:
+.1358:
    mov      8(%rbx), %rbx
    testb    $0x06, %bl
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1344
+   jz       .1359
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1344:
+.1359:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1345
+   jz       .1360
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1345:
+.1360:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18516,22 +18623,22 @@ doCdddar:
    jnz      varErrEX
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1346
+   jz       .1361
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1346:
+.1361:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1347
+   jz       .1362
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1347:
+.1362:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1348
+   jz       .1363
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1348:
+.1363:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18553,28 +18660,28 @@ doCddddr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1349
+   jz       .1364
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1349:
+.1364:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1350
+   jz       .1365
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1350:
+.1365:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1351
+   jz       .1366
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1351:
+.1366:
    mov      8(%rbx), %rbx
    cmp      $Nil, %rbx
-   jz       .1352
+   jz       .1367
    testb    $0x0E, %bl
    jnz      lstErrEX
-.1352:
+.1367:
    mov      8(%rbx), %rbx
    pop      %r13
    ret
@@ -18602,30 +18709,30 @@ doNth:
    push     %rbp
    mov      %rsp, %rbp
    mov      8(%r14), %r14
-.1353:
+.1368:
    testb    $0x0E, %bl
-   jnz      .1354
+   jnz      .1369
    call     evCntXY_FE
    mov      %rbx, %rdx
    sub      $1, %rdx
-   js       .1355
+   js       .1370
    mov      8(%rbp), %rbx
-.1356:
+.1371:
    sub      $1, %rdx
-   js       .1358
+   js       .1373
    mov      8(%rbx), %rbx
-   jmp      .1356
-.1355:
+   jmp      .1371
+.1370:
    mov      $Nil, %rbx
-   jmp      .1354
-.1358:
+   jmp      .1369
+.1373:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1354
+   jnz      .1369
    mov      (%rbx), %rbx
    mov      %rbx, 8(%rbp)
-   jmp      .1353
-.1354:
+   jmp      .1368
+.1369:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -18697,11 +18804,11 @@ doCons:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.1359:
+.1374:
    mov      %rdx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, 8(%r13)
-   jnz      .1360
+   jnz      .1375
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -18714,8 +18821,8 @@ doCons:
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r14)
-   jmp      .1359
-.1360:
+   jmp      .1374
+.1375:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -18753,11 +18860,11 @@ doConc:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1361:
+.1376:
    mov      %rbx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1362
+   jnz      .1377
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -18767,18 +18874,18 @@ doConc:
    call     evListE_E
 1:
    testb    $0x0E, %r14b
-   jz       .1365
+   jz       .1380
    mov      %rbx, 8(%rbp)
-   jmp      .1361
-.1365:
+   jmp      .1376
+.1380:
    testb    $0x0E, 8(%r14)
-   jnz      .1366
+   jnz      .1381
    mov      8(%r14), %r14
-   jmp      .1365
-.1366:
+   jmp      .1380
+.1381:
    mov      %rbx, 8(%r14)
-   jmp      .1361
-.1362:
+   jmp      .1376
+.1377:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -18810,11 +18917,11 @@ doCirc:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.1367:
+.1382:
    mov      %rdx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1368
+   jnz      .1383
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -18827,8 +18934,8 @@ doCirc:
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r14)
-   jmp      .1367
-.1368:
+   jmp      .1382
+.1383:
    mov      8(%rbp), %rbx
    mov      %rbx, 8(%r14)
    mov      (%rbp), %rsp
@@ -18854,6 +18961,8 @@ doRot:
    jnz      1f
    call     evListE_E
 1:
+   testb    $0x0E, %bl
+   jnz      .1384
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -18861,33 +18970,29 @@ doRot:
    mov      %rsp, %rbp
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1369
-   mov      %r12, %rbx
-   jmp      .1370
-.1369:
+   cmovnzq  %r12, %rbx
+   jnz      .1385
    call     evCntXY_FE
-.1370:
+.1385:
    mov      8(%rbp), %r14
-   testb    $0x0E, %r14b
-   jnz      .1371
    mov      (%r14), %r13
-.1372:
+.1386:
    sub      $1, %rbx
-   jz       .1373
+   jz       .1387
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1373
+   jnz      .1387
    cmp      8(%rbp), %r14
-   jz       .1373
+   jz       .1387
    xchg     (%r14), %r13
-   jmp      .1372
-.1373:
+   jmp      .1386
+.1387:
    mov      8(%rbp), %r11
    mov      %r13, (%r11)
-.1371:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
+.1384:
    pop      %r14
    pop      %r13
    ret
@@ -18916,11 +19021,11 @@ doList:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.1374:
+.1388:
    mov      %rdx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1375
+   jnz      .1389
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -18933,8 +19038,8 @@ doList:
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r14)
-   jmp      .1374
-.1375:
+   jmp      .1388
+.1389:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -18982,53 +19087,164 @@ doNeed:
    mov      %rsp, %rbp
    mov      16(%rbp), %rbx
    or       %r13, %r13
-   jz       .1376
-   js       .1377
+   jz       .1390
+   js       .1391
    mov      %rbx, %r14
-.1378:
+.1392:
    testb    $0x0E, %r14b
-   jnz      .1380
+   jnz      .1394
    mov      8(%r14), %r14
    sub      $1, %r13
-   jmp      .1378
-.1380:
+   jmp      .1392
+.1394:
    sub      $1, %r13
-   js       .1376
+   js       .1390
    mov      %rbx, %rdx
    call     consC_E
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
    mov      %rdx, 8(%rbx)
-   jmp      .1380
-.1377:
+   jmp      .1394
+.1391:
    testb    $0x0E, %bl
-   jz       .1385
+   jz       .1399
    call     cons_E
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
    movq     $Nil, 8(%rbx)
    mov      %rbx, 16(%rbp)
-   jmp      .1387
-.1385:
+   jmp      .1401
+.1399:
    mov      8(%rbx), %r14
    testb    $0x0E, %r14b
-   jnz      .1387
+   jnz      .1401
    add      $1, %r13
    mov      %r14, %rbx
-   jmp      .1385
-.1387:
+   jmp      .1399
+.1401:
    add      $1, %r13
-   jns      .1388
+   jns      .1402
    call     cons_A
    mov      8(%rbp), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rbx)
    mov      8(%rbx), %rbx
-   jmp      .1387
-.1388:
+   jmp      .1401
+.1402:
    mov      16(%rbp), %rbx
-.1376:
+.1390:
+   mov      (%rbp), %rsp
+   pop      %rbp
+   pop      %r14
+   pop      %r13
+   ret
+
+   .balign  16
+   nop
+   nop
+   .global  doRange
+doRange:
+   push     %r13
+   push     %r14
+   mov      %rbx, %r13
+   mov      8(%rbx), %r14
+   mov      (%r14), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   call     evListE_E
+1:
+   testb    $0x06, %bl
+   jz       numErrEX
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   mov      8(%r14), %r14
+   mov      (%r14), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   testb    $0x06, %bl
+   jz       numErrEX
+   push     %rbx
+   pushq    $18
+   mov      8(%r14), %r10
+   mov      (%r10), %rbx
+   test     $0x06, %bl
+   jnz      1f
+   test     $0x08, %bl
+   cmovnzq  (%rbx), %rbx
+   jnz      1f
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   pop      %rbp
+1:
+   cmp      $Nil, %rbx
+   jz       .1403
+   testb    $0x06, %bl
+   jz       numErrEX
+   cmpq     $2, %rbx
+   jz       argErrEX
+   testb    $8, %bl
+   jnz      argErrEX
+   mov      %rbx, (%rsp)
+.1403:
+   push     %rbp
+   mov      %rsp, %rbp
+   call     cons_X
+   mov      (%rsp), %rbp
+   movq     %r13, (%rsp)
+   push     %rbp
+   mov      %rsp, %rbp
+   mov      32(%rbp), %r10
+   mov      %r10, (%r13)
+   movq     $Nil, 8(%r13)
+   mov      32(%rbp), %rax
+   mov      24(%rbp), %rbx
+   call     cmpNumAE_F
+   mov      32(%rbp), %rax
+   ja       .1408
+.1405:
+   mov      16(%rbp), %rbx
+   call     addAE_A
+   push     %rax
+   mov      24(%rbp), %rbx
+   call     cmpNumAE_F
+   ja       .1407
+   pop      %rax
+   call     consA_Y
+   mov      %rax, (%r14)
+   movq     $Nil, 8(%r14)
+   mov      %r14, 8(%r13)
+   mov      %r14, %r13
+   jmp      .1405
+.1408:
+   mov      16(%rbp), %rbx
+   call     subAE_A
+   push     %rax
+   mov      24(%rbp), %rbx
+   call     cmpNumAE_F
+   jc       .1407
+   pop      %rax
+   call     consA_Y
+   mov      %rax, (%r14)
+   movq     $Nil, 8(%r14)
+   mov      %r14, 8(%r13)
+   mov      %r14, %r13
+   jmp      .1408
+.1407:
+   mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -19049,13 +19265,13 @@ doFull:
    jnz      1f
    call     evListE_E
 1:
-.1389:
+.1410:
    testb    $0x0E, %bl
    jnz      retT
    cmpq     $Nil, (%rbx)
    jz       retNil
    mov      8(%rbx), %rbx
-   jmp      .1389
+   jmp      .1410
 
    .balign  16
    nop
@@ -19102,7 +19318,7 @@ doMade:
    push     %r14
    mov      8(%rbx), %r14
    testb    $0x0E, %r14b
-   jnz      .1390
+   jnz      .1411
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19123,19 +19339,19 @@ doMade:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jz       .1391
+   jz       .1412
    mov      EnvYoke, %r10
    mov      (%r10), %rbx
-.1392:
+.1413:
    mov      8(%rbx), %rax
    testb    $0x0E, %al
-   jnz      .1391
+   jnz      .1412
    mov      %rax, %rbx
-   jmp      .1392
-.1391:
+   jmp      .1413
+.1412:
    lea      8(%rbx), %rbx
    mov      %rbx, EnvMake
-.1390:
+.1411:
    mov      EnvYoke, %r10
    mov      (%r10), %rbx
    pop      %r14
@@ -19153,7 +19369,7 @@ doChain:
    jz       makeErrEX
    push     %r14
    mov      8(%rbx), %r14
-.1394:
+.1415:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19165,21 +19381,21 @@ doChain:
    mov      EnvMake, %r11
    mov      %rbx, (%r11)
    testb    $0x0E, %bl
-   jnz      .1395
+   jnz      .1416
    mov      %rbx, %rdx
-.1396:
+.1417:
    mov      8(%rdx), %rax
    testb    $0x0E, %al
-   jnz      .1397
+   jnz      .1418
    mov      %rax, %rdx
-   jmp      .1396
-.1397:
+   jmp      .1417
+.1418:
    lea      8(%rdx), %rdx
    mov      %rdx, EnvMake
-.1395:
+.1416:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1394
+   jz       .1415
    pop      %r14
    pop      %r13
    ret
@@ -19195,7 +19411,7 @@ doLink:
    jz       makeErrEX
    push     %r14
    mov      8(%rbx), %r14
-.1398:
+.1419:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19213,7 +19429,7 @@ doLink:
    mov      %rdx, EnvMake
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1398
+   jz       .1419
    pop      %r14
    pop      %r13
    ret
@@ -19229,7 +19445,7 @@ doYoke:
    jz       makeErrEX
    push     %r14
    mov      8(%rbx), %r14
-.1399:
+.1420:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19247,16 +19463,16 @@ doYoke:
    mov      %rax, (%r11)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1399
-.1400:
+   jz       .1420
+.1421:
    mov      EnvMake, %r10
    mov      (%r10), %rdx
    testb    $0x0E, %dl
-   jnz      .1401
+   jnz      .1422
    lea      8(%rdx), %rdx
    mov      %rdx, EnvMake
-   jmp      .1400
-.1401:
+   jmp      .1421
+.1422:
    pop      %r14
    pop      %r13
    ret
@@ -19276,7 +19492,7 @@ doCopy:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1402
+   jnz      .1423
    push     %r15
    mov      %rbx, %r15
    call     consE_C
@@ -19289,16 +19505,16 @@ doCopy:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.1403:
+.1424:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jnz      .1404
+   jnz      .1425
    cmp      %r15, %rbx
-   jnz      .1405
+   jnz      .1426
    mov      8(%rbp), %r10
    mov      %r10, 8(%rdx)
-   jmp      .1404
-.1405:
+   jmp      .1425
+.1426:
    call     consE_A
    mov      (%rbx), %r10
    mov      %r10, (%rax)
@@ -19306,13 +19522,13 @@ doCopy:
    mov      %r10, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .1403
-.1404:
+   jmp      .1424
+.1425:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
-.1402:
+.1423:
    rep
    ret
 
@@ -19334,12 +19550,12 @@ doMix:
    cmp      $Nil, %rbx
    jz       doMix_10
    testb    $0x0E, %bl
-   jnz      .1406
+   jnz      .1427
 doMix_10:
    push     %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1407
+   jnz      .1428
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -19347,7 +19563,7 @@ doMix_10:
    mov      %rsp, %rbp
    mov      (%r13), %rdx
    testb    $0x02, %dl
-   jnz      .1408
+   jnz      .1429
    mov      %rdx, %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19356,20 +19572,20 @@ doMix_10:
    jnz      1f
    call     evListE_E
 1:
-   jmp      .1409
-.1408:
+   jmp      .1430
+.1429:
    shr      $4, %rdx
-   ja       .1412
+   ja       .1433
    mov      $Nil, %rbx
-   jmp      .1409
-.1412:
+   jmp      .1430
+.1433:
    sub      $1, %rdx
-   jz       .1413
+   jz       .1434
    mov      8(%rbx), %rbx
-   jmp      .1412
-.1413:
+   jmp      .1433
+.1434:
    mov      (%rbx), %rbx
-.1409:
+.1430:
    call     consE_C
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
@@ -19377,14 +19593,14 @@ doMix_10:
    movq     %rdx, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1414:
+.1435:
    mov      %rdx, %r14
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1415
+   jnz      .1436
    mov      (%r13), %rbx
    testb    $0x02, %bl
-   jnz      .1416
+   jnz      .1437
    test     $0x06, %bl
    jnz      1f
    test     $0x08, %bl
@@ -19392,37 +19608,37 @@ doMix_10:
    jnz      1f
    call     evListE_E
 1:
-   jmp      .1417
-.1416:
+   jmp      .1438
+.1437:
    shr      $4, %rbx
-   ja       .1418
+   ja       .1439
    mov      $Nil, %rbx
-   jmp      .1417
-.1418:
+   jmp      .1438
+.1439:
    mov      16(%rbp), %rdx
-.1420:
+.1441:
    sub      $1, %rbx
-   jz       .1421
+   jz       .1442
    mov      8(%rdx), %rdx
-   jmp      .1420
-.1421:
+   jmp      .1441
+.1442:
    mov      (%rdx), %rbx
-.1417:
+.1438:
    call     consE_C
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r14)
-   jmp      .1414
-.1415:
+   jmp      .1435
+.1436:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .1422
-.1407:
+   jmp      .1443
+.1428:
    mov      $Nil, %rbx
-.1422:
+.1443:
    pop      %r14
-.1406:
+.1427:
    pop      %r13
    ret
 
@@ -19433,9 +19649,9 @@ doMix_10:
 doAppend:
    push     %r13
    mov      8(%rbx), %r13
-.1423:
+.1444:
    testb    $0x0E, 8(%r13)
-   jnz      .1424
+   jnz      .1445
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19445,7 +19661,7 @@ doAppend:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1425
+   jnz      .1446
    mov      %rbx, %rax
    call     consE_E
    mov      (%rax), %r10
@@ -19457,9 +19673,9 @@ doAppend:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1426:
+.1447:
    testb    $0x0E, %dl
-   jnz      .1427
+   jnz      .1448
    call     consC_A
    mov      (%rdx), %r10
    mov      %r10, (%rax)
@@ -19467,13 +19683,13 @@ doAppend:
    mov      %rdx, 8(%rax)
    mov      %rax, 8(%rbx)
    mov      %rax, %rbx
-   jmp      .1426
-.1427:
+   jmp      .1447
+.1448:
    push     %rbx
-.1428:
+.1449:
    mov      8(%r13), %r13
    testb    $0x0E, 8(%r13)
-   jnz      .1429
+   jnz      .1450
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19482,9 +19698,9 @@ doAppend:
    jnz      1f
    call     evListE_E
 1:
-.1430:
+.1451:
    testb    $0x0E, %bl
-   jnz      .1428
+   jnz      .1449
    call     consE_A
    mov      (%rbx), %r10
    mov      %r10, (%rax)
@@ -19493,8 +19709,8 @@ doAppend:
    mov      (%rsp), %r11
    mov      %rax, 8(%r11)
    mov      %rax, (%rsp)
-   jmp      .1430
-.1429:
+   jmp      .1451
+.1450:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19510,10 +19726,10 @@ doAppend:
    pop      %rbp
    pop      %r13
    ret
-.1425:
+.1446:
    mov      8(%r13), %r13
-   jmp      .1423
-.1424:
+   jmp      .1444
+.1445:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19559,15 +19775,15 @@ doDelete:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x0E, %bl
-   jnz      .1432
+   jnz      .1453
    mov      %rbx, %r13
    mov      16(%rbp), %rax
    mov      (%r13), %rbx
    call     equalAE_F
-   jnz      .1433
+   jnz      .1454
    mov      8(%r13), %rbx
-   jmp      .1432
-.1433:
+   jmp      .1453
+.1454:
    call     cons_C
    mov      (%r13), %r10
    mov      %r10, (%rdx)
@@ -19576,28 +19792,28 @@ doDelete:
    movq     %rdx, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1435:
+.1456:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1436
+   jnz      .1457
    mov      24(%rbp), %rax
    mov      (%r13), %rbx
    call     equalAE_F
-   jnz      .1437
+   jnz      .1458
    mov      8(%r13), %r13
-   jmp      .1436
-.1437:
+   jmp      .1457
+.1458:
    call     cons_A
    mov      (%r13), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .1435
-.1436:
+   jmp      .1456
+.1457:
    mov      %r13, 8(%rdx)
    mov      8(%rbp), %rbx
-.1432:
+.1453:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
@@ -19637,13 +19853,13 @@ doDelq:
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x0E, %bl
-   jnz      .1438
+   jnz      .1459
    mov      16(%rbp), %r13
    cmp      (%rbx), %r13
-   jnz      .1439
+   jnz      .1460
    mov      8(%rbx), %rbx
-   jmp      .1438
-.1439:
+   jmp      .1459
+.1460:
    call     cons_C
    mov      (%rbx), %r10
    mov      %r10, (%rdx)
@@ -19652,26 +19868,26 @@ doDelq:
    movq     %rdx, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1441:
+.1462:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jnz      .1442
+   jnz      .1463
    cmp      (%rbx), %r13
-   jnz      .1443
+   jnz      .1464
    mov      8(%rbx), %rbx
-   jmp      .1442
-.1443:
+   jmp      .1463
+.1464:
    call     cons_A
    mov      (%rbx), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%rdx)
    mov      %rax, %rdx
-   jmp      .1441
-.1442:
+   jmp      .1462
+.1463:
    mov      %rbx, 8(%rdx)
    mov      8(%rbp), %rbx
-.1438:
+.1459:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
@@ -19693,17 +19909,17 @@ doReplace:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1444
+   jnz      .1465
    push     %r14
    push     %r15
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    mov      %rbx, %r14
-.1445:
+.1466:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1446
+   jnz      .1467
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19716,25 +19932,25 @@ doReplace:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .1445
-.1446:
+   jmp      .1466
+.1467:
    mov      %rbp, %r13
    lea      -8(%rsp), %rdx
    push     %rbp
    mov      %rsp, %rbp
    call     cons_Z
-.1447:
+.1468:
    sub      $16, %r13
    cmp      %rdx, %r13
-   jz       .1448
+   jz       .1469
    mov      (%r13), %rax
    mov      (%r14), %rbx
    call     equalAE_F
-   jnz      .1447
+   jnz      .1468
    mov      -8(%r13), %r10
    mov      %r10, (%r15)
    jmp      doReplace_10
-.1448:
+.1469:
    mov      (%r14), %r10
    mov      %r10, (%r15)
 doReplace_10:
@@ -19743,24 +19959,24 @@ doReplace_10:
    movq     %r15, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1450:
+.1471:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1451
+   jnz      .1472
    mov      (%rbp), %r13
-.1452:
+.1473:
    sub      $16, %r13
    cmp      %rdx, %r13
-   jz       .1453
+   jz       .1474
    mov      (%r13), %rax
    mov      (%r14), %rbx
    call     equalAE_F
-   jnz      .1452
+   jnz      .1473
    call     cons_E
    mov      -8(%r13), %r10
    mov      %r10, (%rbx)
    jmp      doReplace_20
-.1453:
+.1474:
    call     cons_E
    mov      (%r14), %r10
    mov      %r10, (%rbx)
@@ -19768,14 +19984,14 @@ doReplace_20:
    movq     $Nil, 8(%rbx)
    mov      %rbx, 8(%r15)
    mov      %rbx, %r15
-   jmp      .1450
-.1451:
+   jmp      .1471
+.1472:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
    pop      %r14
-.1444:
+.1465:
    pop      %r13
    ret
 
@@ -19793,17 +20009,17 @@ doStrip:
    jnz      1f
    call     evListE_E
 1:
-.1455:
+.1476:
    testb    $0x0E, %bl
-   jnz      .1456
+   jnz      .1477
    cmpq     $Quote, (%rbx)
-   jnz      .1456
+   jnz      .1477
    mov      8(%rbx), %rax
    cmp      %rbx, %rax
-   jz       .1456
+   jz       .1477
    mov      %rax, %rbx
-   jmp      .1455
-.1456:
+   jmp      .1476
+.1477:
    rep
    ret
 
@@ -19823,16 +20039,16 @@ doSplit:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1457
+   jnz      .1478
    push     %r14
    push     %r15
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
-.1458:
+.1479:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1459
+   jnz      .1480
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -19845,8 +20061,8 @@ doSplit:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .1458
-.1459:
+   jmp      .1479
+.1480:
    lea      -8(%rbp), %rdx
    mov      $Nil, %r14
    push     %r14
@@ -19854,41 +20070,41 @@ doSplit:
    push     %r15
    push     %rbp
    mov      %rsp, %rbp
-.1460:
+.1481:
    lea      24(%rbp), %r13
-.1461:
+.1482:
    cmp      %rdx, %r13
-   jz       .1462
+   jz       .1483
    mov      (%r13), %rax
    mov      (%rdx), %r10
    mov      (%r10), %rbx
    call     equalAE_F
-   jnz      .1463
+   jnz      .1484
    testb    $0x0E, %r14b
-   jz       .1464
+   jz       .1485
    call     cons_Y
    mov      8(%rbp), %r10
    mov      %r10, (%r14)
    movq     $Nil, 8(%r14)
    mov      %r14, 16(%rbp)
-   jmp      .1465
-.1464:
+   jmp      .1486
+.1485:
    call     cons_A
    mov      8(%rbp), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r14)
    mov      %rax, %r14
-.1465:
+.1486:
    mov      $Nil, %r15
    mov      %r15, 8(%rbp)
    jmp      doSplit_10
-.1463:
+.1484:
    add      $8, %r13
-   jmp      .1461
-.1462:
+   jmp      .1482
+.1483:
    testb    $0x0E, %r15b
-   jz       .1466
+   jz       .1487
    call     cons_Z
    mov      (%rdx), %r10
    mov      (%r10), %r10
@@ -19896,7 +20112,7 @@ doSplit:
    movq     $Nil, 8(%r15)
    mov      %r15, 8(%rbp)
    jmp      doSplit_10
-.1466:
+.1487:
    call     cons_A
    mov      (%rdx), %r10
    mov      (%r10), %r10
@@ -19909,21 +20125,21 @@ doSplit_10:
    mov      8(%r10), %rax
    mov      %rax, (%rdx)
    testb    $0x0E, %al
-   jz       .1460
+   jz       .1481
    call     cons_E
    mov      8(%rbp), %r10
    mov      %r10, (%rbx)
    movq     $Nil, 8(%rbx)
    testb    $0x0E, %r14b
-   jnz      .1468
+   jnz      .1489
    mov      %rbx, 8(%r14)
    mov      16(%rbp), %rbx
-.1468:
+.1489:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
    pop      %r14
-.1457:
+.1478:
    pop      %r13
    ret
 
@@ -19947,17 +20163,17 @@ doReverse:
    push     %rbp
    mov      %rsp, %rbp
    mov      $Nil, %rax
-.1469:
+.1490:
    testb    $0x0E, %bl
-   jnz      .1470
+   jnz      .1491
    call     consA_C
    mov      (%rbx), %r10
    mov      %r10, (%rdx)
    mov      %rax, 8(%rdx)
    mov      %rdx, %rax
    mov      8(%rbx), %rbx
-   jmp      .1469
-.1470:
+   jmp      .1490
+.1491:
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -19968,8 +20184,11 @@ doReverse:
    nop
    .global  doFlip
 doFlip:
-   mov      8(%rbx), %r10
-   mov      (%r10), %rbx
+   push     %r13
+   push     %r14
+   mov      %rbx, %r13
+   mov      8(%rbx), %r14
+   mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
    test     $0x08, %bl
@@ -19978,19 +20197,59 @@ doFlip:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      ret
+   jnz      doFlip_90
+   mov      8(%r14), %r14
+   testb    $0x0E, %r14b
+   jz       .1493
    mov      8(%rbx), %rdx
    testb    $0x0E, %dl
-   jnz      ret
+   jnz      .1493
    movq     $Nil, 8(%rbx)
-.1471:
+.1495:
    mov      8(%rdx), %rax
    mov      %rbx, 8(%rdx)
    mov      %rdx, %rbx
    testb    $0x0E, %al
-   jnz      ret
+   jnz      doFlip_90
    mov      %rax, %rdx
-   jmp      .1471
+   jmp      .1495
+.1493:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evCntXY_FE
+   mov      8(%rbp), %rdx
+   mov      (%rbp), %rsp
+   pop      %rbp
+   mov      8(%rdx), %r13
+   testb    $0x0E, %r13b
+   jnz      .1496
+   sub      $1, %rbx
+   jle      .1496
+   mov      8(%r13), %r10
+   mov      %r10, 8(%rdx)
+   mov      %rdx, 8(%r13)
+.1498:
+   sub      $1, %rbx
+   jz       .1499
+   mov      8(%rdx), %rax
+   testb    $0x0E, %al
+   jnz      .1499
+   mov      8(%rax), %r10
+   mov      %r10, 8(%rdx)
+   mov      %r13, 8(%rax)
+   mov      %rax, %r13
+   jmp      .1498
+.1499:
+   mov      %r13, %rdx
+.1496:
+   mov      %rdx, %rbx
+doFlip_90:
+   pop      %r14
+   pop      %r13
+   ret
 
    .balign  16
    nop
@@ -20020,29 +20279,29 @@ doTrim:
    .global  trimE_E
 trimE_E:
    testb    $0x0E, %bl
-   jnz      .1472
+   jnz      .1500
    pushq    (%rbx)
    mov      8(%rbx), %rbx
    call     trimE_E
    cmp      $Nil, %rbx
-   jnz      .1473
+   jnz      .1501
    mov      (%rsp), %rbx
    call     isBlankE_F
-   jnz      .1474
+   jnz      .1502
    pop      %rax
    mov      $Nil, %rbx
    ret
-.1474:
+.1502:
    call     cons_E
    popq     (%rbx)
    movq     $Nil, 8(%rbx)
    ret
-.1473:
+.1501:
    mov      %rbx, %rax
    call     consE_E
    popq     (%rbx)
    mov      %rax, 8(%rbx)
-.1472:
+.1500:
    rep
    ret
 
@@ -20060,17 +20319,17 @@ doClip:
    jnz      1f
    call     evListE_E
 1:
-.1475:
+.1503:
    testb    $0x0E, %bl
    jnz      ret
    push     %rbx
    mov      (%rbx), %rbx
    call     isBlankE_F
    pop      %rbx
-   jnz      .1476
+   jnz      .1504
    mov      8(%rbx), %rbx
-   jmp      .1475
-.1476:
+   jmp      .1503
+.1504:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -20100,9 +20359,9 @@ doHead:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1477
+   jz       .1505
    testb    $0x0E, %bl
-   jnz      .1478
+   jnz      .1506
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -20117,31 +20376,31 @@ doHead:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1479
+   jnz      .1507
    mov      %rbx, %r13
    mov      8(%rbp), %r14
-.1480:
+.1508:
    mov      (%r13), %rax
    mov      (%r14), %rbx
    call     equalAE_F
-   jnz      .1479
+   jnz      .1507
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1482
+   jz       .1510
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
    pop      %r13
    ret
-.1482:
+.1510:
    mov      8(%r13), %r13
-   jmp      .1480
-.1479:
+   jmp      .1508
+.1507:
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      doHead_10
-.1478:
+.1506:
    call     xCntEX_FE
    jz       doHead_10
    mov      %rbx, %r13
@@ -20154,18 +20413,18 @@ doHead:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1477
+   jnz      .1505
    cmp      %r12, %r13
-   jns      .1485
+   jns      .1513
    mov      %rbx, %r14
-.1486:
+.1514:
    add      $1, %r13
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1486
+   jz       .1514
    cmp      %r12, %r13
    jle      doHead_10
-.1485:
+.1513:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -20179,27 +20438,27 @@ doHead:
    movq     %r14, (%rsp)
    push     %rbp
    mov      %rsp, %rbp
-.1487:
+.1515:
    sub      $1, %r13
-   jz       .1488
+   jz       .1516
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jnz      .1488
+   jnz      .1516
    call     cons_A
    mov      (%rbx), %r10
    mov      %r10, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r14)
    mov      %rax, %r14
-   jmp      .1487
-.1488:
+   jmp      .1515
+.1516:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .1477
+   jmp      .1505
 doHead_10:
    mov      $Nil, %rbx
-.1477:
+.1505:
    pop      %r14
    pop      %r13
    ret
@@ -20223,9 +20482,9 @@ doTail:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1490
+   jz       .1518
    testb    $0x0E, %bl
-   jnz      .1491
+   jnz      .1519
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -20240,29 +20499,29 @@ doTail:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1492
+   jnz      .1520
    mov      %rbx, %r13
    mov      8(%rbp), %r14
-.1493:
+.1521:
    mov      %r13, %rax
    mov      %r14, %rbx
    call     equalAE_F
-   jnz      .1494
+   jnz      .1522
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
    pop      %r13
    ret
-.1494:
+.1522:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .1493
-.1492:
+   jz       .1521
+.1520:
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      doTail_10
-.1491:
+.1519:
    call     xCntEX_FE
    jz       doTail_10
    mov      %rbx, %r13
@@ -20275,32 +20534,32 @@ doTail:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1490
+   jnz      .1518
    cmp      %r12, %r13
-   jns      .1497
-.1498:
+   jns      .1525
+.1526:
    mov      8(%rbx), %rbx
    add      $1, %r13
-   jnz      .1498
-   jmp      .1490
-.1497:
+   jnz      .1526
+   jmp      .1518
+.1525:
    mov      8(%rbx), %r14
-.1500:
+.1528:
    sub      $1, %r13
-   jz       .1502
+   jz       .1530
    testb    $0x0E, %r14b
-   jnz      .1502
+   jnz      .1530
    mov      8(%r14), %r14
-   jmp      .1500
-.1502:
+   jmp      .1528
+.1530:
    testb    $0x0E, %r14b
-   jnz      .1490
+   jnz      .1518
    mov      8(%rbx), %rbx
    mov      8(%r14), %r14
-   jmp      .1502
+   jmp      .1530
 doTail_10:
    mov      $Nil, %rbx
-.1490:
+.1518:
    pop      %r14
    pop      %r13
    ret
@@ -20324,10 +20583,10 @@ doStem:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
-.1505:
+.1533:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1506
+   jnz      .1534
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20340,33 +20599,33 @@ doStem:
    pop      %rbp
 1:
    push     %rbx
-   jmp      .1505
-.1506:
+   jmp      .1533
+.1534:
    lea      -8(%rbp), %rdx
    push     %rbp
    mov      %rsp, %rbp
    mov      (%rdx), %r14
-.1507:
+.1535:
    testb    $0x0E, %r14b
-   jnz      .1508
+   jnz      .1536
    lea      8(%rbp), %r13
-.1509:
+.1537:
    cmp      %rdx, %r13
-   jz       .1510
+   jz       .1538
    mov      (%r13), %rax
    mov      (%r14), %rbx
    call     equalAE_F
-   jnz      .1511
+   jnz      .1539
    mov      8(%r14), %r10
    mov      %r10, (%rdx)
-   jmp      .1510
-.1511:
+   jmp      .1538
+.1539:
    add      $8, %r13
-   jmp      .1509
-.1510:
+   jmp      .1537
+.1538:
    mov      8(%r14), %r14
-   jmp      .1507
-.1508:
+   jmp      .1535
+.1536:
    mov      (%rdx), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -20388,12 +20647,12 @@ doFin:
    jnz      1f
    call     evListE_E
 1:
-.1512:
+.1540:
    testb    $0x0E, %bl
-   jnz      .1513
+   jnz      .1541
    mov      8(%rbx), %rbx
-   jmp      .1512
-.1513:
+   jmp      .1540
+.1541:
    rep
    ret
 
@@ -20412,15 +20671,15 @@ doLast:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1514
-.1515:
+   jnz      .1542
+.1543:
    testb    $0x0E, 8(%rbx)
-   jnz      .1516
+   jnz      .1544
    mov      8(%rbx), %rbx
-   jmp      .1515
-.1516:
+   jmp      .1543
+.1544:
    mov      (%rbx), %rbx
-.1514:
+.1542:
    rep
    ret
 
@@ -20444,10 +20703,10 @@ doEq:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1517:
+.1545:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1518
+   jnz      .1546
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20457,13 +20716,13 @@ doEq:
    call     evListE_E
 1:
    cmp      8(%rbp), %rbx
-   jz       .1517
+   jz       .1545
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1518:
+.1546:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20490,10 +20749,10 @@ doNEq:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1520:
+.1548:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1521
+   jnz      .1549
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20503,13 +20762,13 @@ doNEq:
    call     evListE_E
 1:
    cmp      8(%rbp), %rbx
-   jz       .1520
+   jz       .1548
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
    pop      %r13
    ret
-.1521:
+.1549:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
@@ -20536,10 +20795,10 @@ doEqual:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1523:
+.1551:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1524
+   jnz      .1552
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20550,13 +20809,13 @@ doEqual:
 1:
    mov      8(%rbp), %rax
    call     equalAE_F
-   jz       .1523
+   jz       .1551
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1524:
+.1552:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20583,10 +20842,10 @@ doNEqual:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1526:
+.1554:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1527
+   jnz      .1555
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20597,13 +20856,13 @@ doNEqual:
 1:
    mov      8(%rbp), %rax
    call     equalAE_F
-   jz       .1526
+   jz       .1554
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
    pop      %r13
    ret
-.1527:
+.1555:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
@@ -20706,10 +20965,10 @@ doLt:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1529:
+.1557:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1530
+   jnz      .1558
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20721,13 +20980,13 @@ doLt:
    mov      8(%rbp), %rax
    mov      %rbx, 8(%rbp)
    call     compareAE_F
-   jc       .1529
+   jc       .1557
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1530:
+.1558:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20754,10 +21013,10 @@ doLe:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1532:
+.1560:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1533
+   jnz      .1561
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20769,13 +21028,13 @@ doLe:
    mov      8(%rbp), %rax
    mov      %rbx, 8(%rbp)
    call     compareAE_F
-   jbe      .1532
+   jbe      .1560
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1533:
+.1561:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20802,10 +21061,10 @@ doGt:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1535:
+.1563:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1536
+   jnz      .1564
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20817,13 +21076,13 @@ doGt:
    mov      8(%rbp), %rax
    mov      %rbx, 8(%rbp)
    call     compareAE_F
-   ja       .1535
+   ja       .1563
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1536:
+.1564:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20850,10 +21109,10 @@ doGe:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1538:
+.1566:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1539
+   jnz      .1567
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20865,13 +21124,13 @@ doGe:
    mov      8(%rbp), %rax
    mov      %rbx, 8(%rbp)
    call     compareAE_F
-   jnc      .1538
+   jnc      .1566
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $Nil, %rbx
    pop      %r13
    ret
-.1539:
+.1567:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      $TSym, %rbx
@@ -20899,10 +21158,10 @@ doMax:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1541:
+.1569:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1542
+   jnz      .1570
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20914,10 +21173,10 @@ doMax:
    mov      8(%rbp), %rax
    mov      %rbx, %r14
    call     compareAE_F
-   jnc      .1541
+   jnc      .1569
    mov      %r14, 8(%rbp)
-   jmp      .1541
-.1542:
+   jmp      .1569
+.1570:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -20946,10 +21205,10 @@ doMin:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1544:
+.1572:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .1545
+   jnz      .1573
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -20961,10 +21220,10 @@ doMin:
    mov      8(%rbp), %rax
    mov      %rbx, %r14
    call     compareAE_F
-   jbe      .1544
+   jbe      .1572
    mov      %r14, 8(%rbp)
-   jmp      .1544
-.1545:
+   jmp      .1572
+.1573:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -21168,16 +21427,16 @@ doMemq:
    pop      %rbp
    pop      %r13
    mov      %rbx, %rdx
-.1547:
+.1575:
    testb    $0x0E, %bl
-   jnz      .1548
+   jnz      .1576
    cmp      (%rbx), %rax
    jz       ret
    mov      8(%rbx), %rbx
    cmp      %rbx, %rdx
    jz       retNil
-   jmp      .1547
-.1548:
+   jmp      .1575
+.1576:
    cmp      %rbx, %rax
    jnz      retNil
    rep
@@ -21214,25 +21473,25 @@ doMmeq:
 1:
    mov      8(%rbp), %r13
    mov      %rbx, %rdx
-.1549:
+.1577:
    testb    $0x0E, %r13b
    jnz      doMmeq_10
    mov      (%r13), %rax
-.1551:
+.1579:
    testb    $0x0E, %bl
-   jnz      .1552
+   jnz      .1580
    cmp      (%rbx), %rax
    jz       doMmeq_20
    mov      8(%rbx), %rbx
    cmp      %rbx, %rdx
    jz       doMmeq_10
-   jmp      .1551
-.1552:
+   jmp      .1579
+.1580:
    cmp      %rbx, %rax
    jz       doMmeq_20
    mov      8(%r13), %r13
    mov      %rdx, %rbx
-   jmp      .1549
+   jmp      .1577
 doMmeq_10:
    mov      $Nil, %rbx
 doMmeq_20:
@@ -21279,32 +21538,32 @@ doSect:
    mov      %rsp, %rbp
    mov      %r12, %r15
    mov      24(%rbp), %r13
-.1553:
+.1581:
    testb    $0x0E, %r13b
-   jnz      .1554
+   jnz      .1582
    mov      (%r13), %r13
    mov      16(%rbp), %r14
    call     memberXY_FY
-   jnz      .1555
+   jnz      .1583
    cmp      %r12, %r15
-   jnz      .1556
+   jnz      .1584
    call     cons_Z
    mov      %r13, (%r15)
    movq     $Nil, 8(%r15)
    mov      %r15, 8(%rbp)
-   jmp      .1555
-.1556:
+   jmp      .1583
+.1584:
    call     cons_A
    mov      %r13, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r15)
    mov      %rax, %r15
-.1555:
+.1583:
    mov      24(%rbp), %r10
    mov      8(%r10), %r13
    mov      %r13, 24(%rbp)
-   jmp      .1553
-.1554:
+   jmp      .1581
+.1582:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -21351,32 +21610,32 @@ doDiff:
    mov      %rsp, %rbp
    mov      %r12, %r15
    mov      24(%rbp), %r13
-.1558:
+.1586:
    testb    $0x0E, %r13b
-   jnz      .1559
+   jnz      .1587
    mov      (%r13), %r13
    mov      16(%rbp), %r14
    call     memberXY_FY
-   jz       .1560
+   jz       .1588
    cmp      %r12, %r15
-   jnz      .1561
+   jnz      .1589
    call     cons_Z
    mov      %r13, (%r15)
    movq     $Nil, 8(%r15)
    mov      %r15, 8(%rbp)
-   jmp      .1560
-.1561:
+   jmp      .1588
+.1589:
    call     cons_A
    mov      %r13, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r15)
    mov      %rax, %r15
-.1560:
+.1588:
    mov      24(%rbp), %r10
    mov      8(%r10), %r13
    mov      %r13, 24(%rbp)
-   jmp      .1558
-.1559:
+   jmp      .1586
+.1587:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -21420,23 +21679,23 @@ doIndex:
    mov      %rbx, %r14
    mov      %r14, %r15
    mov      $1, %rdx
-.1563:
+.1591:
    testb    $0x0E, %r14b
-   jnz      .1564
+   jnz      .1592
    mov      %r13, %rax
    mov      (%r14), %rbx
    call     equalAE_F
-   jnz      .1565
+   jnz      .1593
    mov      %rdx, %rbx
    shl      $4, %rbx
    orb      $2, %bl
    jmp      doIndex_90
-.1565:
+.1593:
    add      $1, %rdx
    mov      8(%r14), %r14
    cmp      %r14, %r15
-   jnz      .1563
-.1564:
+   jnz      .1591
+.1592:
    mov      $Nil, %rbx
 doIndex_90:
    mov      (%rbp), %rsp
@@ -21477,14 +21736,14 @@ doOffset:
 1:
    mov      %r12, %rdx
    mov      8(%rbp), %r13
-.1566:
+.1594:
    testb    $0x0E, %bl
-   jnz      .1567
+   jnz      .1595
    add      $1, %rdx
    mov      %r13, %rax
    push     %rbx
    call     equalAE_F
-   jnz      .1568
+   jnz      .1596
    mov      %rdx, %rbx
    shl      $4, %rbx
    orb      $2, %bl
@@ -21492,11 +21751,11 @@ doOffset:
    pop      %rbp
    pop      %r13
    ret
-.1568:
+.1596:
    pop      %rbx
    mov      8(%rbx), %rbx
-   jmp      .1566
-.1567:
+   jmp      .1594
+.1595:
    mov      $Nil, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -21518,19 +21777,19 @@ doLength:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jz       .1569
+   jz       .1597
    mov      $-2, %rax
    jmp      fmtNum0AE_E
-.1569:
+.1597:
    testb    $0x08, %bl
-   jnz      .1570
+   jnz      .1598
    push     %r13
    push     %r14
    mov      %rbx, %r13
    mov      $18, %rbx
-.1571:
+.1599:
    cmp      $Quote, %r13
-   jnz      .1572
+   jnz      .1600
    mov      8(%r13), %r14
    cmp      %r13, %r14
    jz       lengthT
@@ -21538,38 +21797,38 @@ doLength:
    testb    $0x0E, %r13b
    jnz      doLength_10
    add      $16, %rbx
-   jmp      .1571
-.1572:
+   jmp      .1599
+.1600:
    mov      %r13, %r14
-.1573:
+.1601:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jnz      doLength_10
    cmp      %r14, %r13
    jz       lengthT
    add      $16, %rbx
-   jmp      .1573
+   jmp      .1601
 doLength_10:
    pop      %r14
    pop      %r13
    ret
-.1570:
+.1598:
    cmp      $Nil, %rbx
-   jnz      .1575
+   jnz      .1603
    mov      $2, %rbx
    ret
-.1575:
+.1603:
    push     %r13
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
    mov      $2, %rbx
-.1576:
+.1604:
    call     symCharCX_FACX
-   jz       .1577
+   jz       .1605
    add      $16, %rbx
-   jmp      .1576
-.1577:
+   jmp      .1604
+.1605:
    pop      %r13
    ret
 lengthT:
@@ -21595,49 +21854,49 @@ doSize:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jz       .1578
+   jz       .1606
    testb    $0x02, %bl
-   jz       .1579
+   jz       .1607
    mov      $18, %rdx
    shr      $3, %rbx
-.1580:
+.1608:
    shr      $8, %rbx
-   jz       .1587
+   jz       .1615
    add      $16, %rdx
-   jmp      .1580
-.1579:
+   jmp      .1608
+.1607:
    mov      $130, %rdx
-.1583:
+.1611:
    mov      -4(%rbx), %rax
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jnz      .1584
+   jnz      .1612
    add      $128, %rdx
-   jmp      .1583
-.1584:
+   jmp      .1611
+.1612:
    shr      $4, %rbx
    shl      $1, %rax
    adc      %rbx, %rbx
-   jz       .1587
-.1586:
+   jz       .1615
+.1614:
    add      $16, %rdx
    shr      $8, %rbx
-   jnz      .1586
-   jmp      .1587
-.1578:
+   jnz      .1614
+   jmp      .1615
+.1606:
    testb    $0x08, %bl
-   jnz      .1588
+   jnz      .1616
    mov      $2, %rdx
    call     sizeCE_C
-   jmp      .1587
-.1588:
+   jmp      .1615
+.1616:
    cmp      $Nil, %rbx
-   jnz      .1590
+   jnz      .1618
    mov      $2, %rdx
-   jmp      .1587
-.1590:
+   jmp      .1615
+.1618:
    testb    $0x08, -8(%rbx)
-   jz       .1592
+   jz       .1620
    push     %r15
    call     dbFetchEX
    mov      (%rbx), %r13
@@ -21646,18 +21905,18 @@ doSize:
    mov      %rax, %r15
    mov      -8(%rbx), %rbx
    andb     $~8, %bl
-.1593:
+.1621:
    testb    $0x0E, %bl
-   jnz      .1594
+   jnz      .1622
    mov      (%rbx), %r13
    mov      8(%rbx), %rbx
    testb    $0x0E, %r13b
-   jz       .1595
+   jz       .1623
    call     dbSizeX_A
    add      %rax, %r15
    add      $2, %r15
-   jmp      .1593
-.1595:
+   jmp      .1621
+.1623:
    pushq    (%r13)
    mov      8(%r13), %r13
    call     dbSizeX_A
@@ -21665,46 +21924,46 @@ doSize:
    pop      %r13
    call     dbSizeX_A
    add      %rax, %r15
-   jmp      .1593
-.1594:
+   jmp      .1621
+.1622:
    mov      %r15, %rdx
    shl      $4, %rdx
    orb      $2, %dl
    pop      %r15
-   jmp      .1587
-.1592:
+   jmp      .1615
+.1620:
    mov      -8(%rbx), %rbx
    call     nameE_E
    cmpq     $2, %rbx
-   jnz      .1598
+   jnz      .1626
    mov      $2, %rdx
-   jmp      .1587
-.1598:
+   jmp      .1615
+.1626:
    testb    $0x02, %bl
-   jz       .1600
+   jz       .1628
    mov      $18, %rdx
    shr      $4, %rbx
-.1601:
+.1629:
    shr      $8, %rbx
-   jz       .1587
+   jz       .1615
    add      $16, %rdx
-   jmp      .1601
-.1600:
+   jmp      .1629
+.1628:
    mov      $130, %rdx
-.1604:
+.1632:
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jnz      .1605
+   jnz      .1633
    add      $128, %rdx
-   jmp      .1604
-.1605:
+   jmp      .1632
+.1633:
    shr      $4, %rbx
-   jz       .1587
-.1607:
+   jz       .1615
+.1635:
    add      $16, %rdx
    shr      $8, %rbx
-   jnz      .1607
-.1587:
+   jnz      .1635
+.1615:
    mov      %rdx, %rbx
    pop      %r13
    ret
@@ -21713,35 +21972,35 @@ doSize:
    .global  sizeCE_C
 sizeCE_C:
    add      $16, %rdx
-.1608:
+.1636:
    cmpq     $Quote, (%rbx)
-   jnz      .1609
+   jnz      .1637
    cmp      8(%rbx), %rbx
    jz       ret
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
    jnz      ret
    add      $16, %rdx
-   jmp      .1608
-.1609:
+   jmp      .1636
+.1637:
    push     %r13
    mov      %rbx, %r13
-.1610:
+.1638:
    testb    $0x0E, (%rbx)
-   jnz      .1611
+   jnz      .1639
    push     %rbx
    mov      (%rbx), %rbx
    call     sizeCE_C
    pop      %rbx
-.1611:
+.1639:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jnz      .1612
+   jnz      .1640
    cmp      %r13, %rbx
-   jz       .1612
+   jz       .1640
    add      $16, %rdx
-   jmp      .1610
-.1612:
+   jmp      .1638
+.1640:
    pop      %r13
    ret
 
@@ -21775,26 +22034,26 @@ doAssoc:
    call     evListE_E
 1:
    mov      %rbx, %r13
-.1613:
+.1641:
    testb    $0x0E, %r13b
-   jnz      .1614
+   jnz      .1642
    testb    $0x0E, (%r13)
-   jnz      .1615
+   jnz      .1643
    mov      8(%rbp), %rax
    mov      (%r13), %r10
    mov      (%r10), %rbx
    call     equalAE_F
-   jz       .1616
-.1615:
+   jz       .1644
+.1643:
    mov      8(%r13), %r13
-   jmp      .1613
-.1614:
+   jmp      .1641
+.1642:
    mov      $Nil, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.1616:
+.1644:
    mov      (%r13), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -21834,18 +22093,18 @@ doAsoq:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
-.1618:
+.1646:
    testb    $0x0E, %bl
    jnz      retNil
    mov      (%rbx), %rdx
    testb    $0x0E, %dl
-   jnz      .1619
+   jnz      .1647
    cmp      (%rdx), %rax
-   jz       .1620
-.1619:
+   jz       .1648
+.1647:
    mov      8(%rbx), %rbx
-   jmp      .1618
-.1620:
+   jmp      .1646
+.1648:
    mov      %rdx, %rbx
    ret
 
@@ -21898,74 +22157,74 @@ doRank:
    jnz      doRank_10
    mov      %r12, %r15
    mov      %r13, %r14
-.1622:
+.1650:
    add      $1, %r15
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .1622
+   jz       .1650
    mov      (%r13), %r10
    mov      (%r10), %rax
    cmp      $Nil, %rbx
-   jnz      .1623
+   jnz      .1651
    mov      16(%rbp), %rbx
    call     compareAE_F
    ja       doRank_10
-.1624:
+.1652:
    mov      %r15, %rdx
    shr      $1, %rdx
-   jz       .1629
+   jz       .1657
    mov      %r13, %r14
-.1626:
+.1654:
    mov      8(%r14), %r14
    sub      $1, %rdx
-   jnz      .1626
+   jnz      .1654
    mov      (%r14), %r10
    mov      (%r10), %rax
    mov      16(%rbp), %rbx
    call     compareAE_F
-   jbe      .1627
+   jbe      .1655
    mov      %r13, %r14
    shr      $1, %r15
-   jmp      .1624
-.1627:
+   jmp      .1652
+.1655:
    mov      %r14, %r13
    mov      %r15, %rdx
    shr      $1, %rdx
    sub      %rdx, %r15
-   jmp      .1624
-.1623:
+   jmp      .1652
+.1651:
    mov      16(%rbp), %rbx
    call     compareAE_F
    jc       doRank_10
-.1630:
+.1658:
    mov      %r15, %rdx
    shr      $1, %rdx
-   jz       .1629
+   jz       .1657
    mov      %r13, %r14
-.1632:
+.1660:
    mov      8(%r14), %r14
    sub      $1, %rdx
-   jnz      .1632
+   jnz      .1660
    mov      (%r14), %r10
    mov      (%r10), %rax
    mov      16(%rbp), %rbx
    call     compareAE_F
-   jnc      .1633
+   jnc      .1661
    mov      %r13, %r14
    shr      $1, %r15
-   jmp      .1630
-.1633:
+   jmp      .1658
+.1661:
    mov      %r14, %r13
    mov      %r15, %rdx
    shr      $1, %rdx
    sub      %rdx, %r15
-   jmp      .1630
-.1629:
+   jmp      .1658
+.1657:
    mov      (%r13), %rbx
-   jmp      .1635
+   jmp      .1663
 doRank_10:
    mov      $Nil, %rbx
-.1635:
+.1663:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -22017,36 +22276,36 @@ doMatch:
    ret
 matchCE_F:
    testb    $0x0E, %dl
-   jz       .1637
+   jz       .1665
    testb    $0x06, %dl
-   jnz      .1638
+   jnz      .1666
    mov      -8(%rdx), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1638
+   jnz      .1666
    mov      %rbx, (%rdx)
    ret
-.1638:
+.1666:
    mov      %rdx, %rax
    jmp      equalAE_F
-.1637:
+.1665:
    mov      (%rdx), %r13
    testb    $0x06, %r13b
-   jnz      .1640
+   jnz      .1668
    testb    $0x08, %r13b
-   jz       .1640
+   jz       .1668
    mov      -8(%r13), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1640
+   jnz      .1668
    testb    $0x0E, %bl
-   jz       .1643
+   jz       .1671
    mov      8(%rdx), %rax
    call     equalAE_F
    jnz      ret
    movq     $Nil, (%r13)
    ret
-.1643:
+.1671:
    push     %rdx
    push     %rbx
    mov      8(%rdx), %rdx
@@ -22054,7 +22313,7 @@ matchCE_F:
    call     matchCE_F
    pop      %rbx
    pop      %rdx
-   jnz      .1644
+   jnz      .1672
    call     cons_A
    mov      (%rbx), %r10
    mov      %r10, (%rax)
@@ -22062,25 +22321,25 @@ matchCE_F:
    mov      (%rdx), %r11
    mov      %rax, (%r11)
    jmp      retz
-.1644:
+.1672:
    push     %rdx
    push     %rbx
    mov      8(%rdx), %rdx
    call     matchCE_F
    pop      %rbx
    pop      %rdx
-   jnz      .1645
+   jnz      .1673
    mov      (%rdx), %r11
    movq     $Nil, (%r11)
    ret
-.1645:
+.1673:
    push     %rdx
    push     %rbx
    mov      8(%rbx), %rbx
    call     matchCE_F
    pop      %rbx
    pop      %rdx
-   jnz      .1640
+   jnz      .1668
    mov      (%rdx), %r13
    call     cons_A
    mov      (%rbx), %r10
@@ -22089,7 +22348,7 @@ matchCE_F:
    mov      %r10, 8(%rax)
    mov      %rax, (%r13)
    jmp      retz
-.1640:
+.1668:
    testb    $0x0E, %bl
    jnz      ret
    pushq    8(%rdx)
@@ -22146,43 +22405,43 @@ fillE_FE:
    testb    $0x06, %bl
    jnz      ret
    testb    $0x08, %bl
-   jz       .1647
+   jz       .1675
    cmp      $Nil, %r13
-   jnz      .1648
+   jnz      .1676
    cmp      $At, %rbx
    jz       retnz
    mov      -8(%rbx), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1649
+   jnz      .1677
    mov      (%rbx), %rbx
-.1649:
+.1677:
    rep
    ret
-.1648:
+.1676:
    mov      %r13, %rdx
-.1650:
+.1678:
    testb    $0x0E, %dl
-   jnz      .1651
+   jnz      .1679
    cmp      (%rdx), %rbx
-   jnz      .1652
+   jnz      .1680
    mov      (%rbx), %rbx
    ret
-.1652:
+.1680:
    mov      8(%rdx), %rdx
-   jmp      .1650
-.1651:
+   jmp      .1678
+.1679:
    cmp      %rdx, %rbx
-   jnz      .1653
+   jnz      .1681
    mov      (%rbx), %rbx
-.1653:
+.1681:
    rep
    ret
-.1647:
+.1675:
    push     %rbx
    mov      (%rbx), %rbx
    call     fillE_FE
-   jnz      .1654
+   jnz      .1682
    pop      %rdx
    push     %rbp
    mov      %rsp, %rbp
@@ -22200,11 +22459,11 @@ fillE_FE:
    pop      %rbp
    or       %r12, %r12
    ret
-.1654:
+.1682:
    mov      (%rsp), %r10
    mov      8(%r10), %rbx
    call     fillE_FE
-   jnz      .1655
+   jnz      .1683
    call     consE_A
    pop      %rdx
    mov      (%rdx), %r10
@@ -22213,7 +22472,7 @@ fillE_FE:
    mov      %rax, %rbx
    or       %r12, %r12
    ret
-.1655:
+.1683:
    pop      %rbx
    ret
 
@@ -22231,71 +22490,71 @@ unifyCEYZ_F_10:
    jnz      unifyCEYZ_F_20
    mov      Penv, %r10
    mov      (%r10), %r13
-.1659:
+.1687:
    mov      (%r13), %rax
    testb    $0x0E, %al
    jnz      unifyCEYZ_F_20
    mov      (%rax), %rax
    cmp      (%rax), %rdx
-   jnz      .1661
+   jnz      .1689
    cmp      8(%rax), %r14
-   jnz      .1661
+   jnz      .1689
    mov      (%r13), %r10
    mov      8(%r10), %rax
    mov      (%rax), %rdx
    mov      8(%rax), %r14
    jmp      unifyCEYZ_F_10
-.1661:
+.1689:
    mov      8(%r13), %r13
-   jmp      .1659
+   jmp      .1687
 unifyCEYZ_F_20:
    testb    $0x06, %r15b
-   jnz      .1663
+   jnz      .1691
    testb    $0x08, %r15b
-   jz       .1663
+   jz       .1691
    mov      -8(%r15), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1663
+   jnz      .1691
    mov      Penv, %r10
    mov      (%r10), %r13
-.1666:
+.1694:
    mov      (%r13), %rax
    testb    $0x0E, %al
-   jnz      .1663
+   jnz      .1691
    mov      (%rax), %rax
    cmp      (%rax), %rbx
-   jnz      .1668
+   jnz      .1696
    cmp      8(%rax), %r15
-   jnz      .1668
+   jnz      .1696
    mov      (%r13), %r10
    mov      8(%r10), %rax
    mov      (%rax), %rbx
    mov      8(%rax), %r15
    jmp      unifyCEYZ_F_20
-.1668:
+.1696:
    mov      8(%r13), %r13
-   jmp      .1666
-.1663:
+   jmp      .1694
+.1691:
    cmp      %rbx, %rdx
-   jnz      .1670
+   jnz      .1698
    mov      %r14, %rax
    push     %rbx
    mov      %r15, %rbx
    call     equalAE_F
    pop      %rbx
    jz       ret
-.1670:
+.1698:
    testb    $0x06, %r14b
-   jnz      .1671
+   jnz      .1699
    testb    $0x08, %r14b
-   jz       .1671
+   jz       .1699
    mov      -8(%r14), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1671
+   jnz      .1699
    cmp      $At, %r14
-   jz       .1674
+   jz       .1702
    call     cons_A
    mov      %rdx, (%rax)
    mov      %r14, 8(%rax)
@@ -22311,20 +22570,20 @@ unifyCEYZ_F_20:
    mov      (%r13), %r10
    mov      %r10, 8(%rax)
    mov      %rax, (%r13)
-.1674:
+.1702:
    or       %r12, %r12
    ret
-.1671:
+.1699:
    testb    $0x06, %r15b
-   jnz      .1675
+   jnz      .1703
    testb    $0x08, %r15b
-   jz       .1675
+   jz       .1703
    mov      -8(%r15), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1675
+   jnz      .1703
    cmp      $At, %r15
-   jz       .1678
+   jz       .1706
    call     cons_A
    mov      %rdx, (%rax)
    mov      %r14, 8(%rax)
@@ -22340,14 +22599,14 @@ unifyCEYZ_F_20:
    mov      (%r13), %r10
    mov      %r10, 8(%rax)
    mov      %rax, (%r13)
-.1678:
+.1706:
    or       %r12, %r12
    ret
-.1675:
+.1703:
    testb    $0x0E, %r14b
-   jnz      .1679
+   jnz      .1707
    testb    $0x0E, %r15b
-   jnz      .1679
+   jnz      .1707
    mov      Penv, %r10
    pushq    (%r10)
    push     %rdx
@@ -22361,18 +22620,18 @@ unifyCEYZ_F_20:
    pop      %r14
    pop      %rbx
    pop      %rdx
-   jnz      .1681
+   jnz      .1709
    mov      8(%r14), %r14
    mov      8(%r15), %r15
    call     unifyCEYZ_F
-   jnz      .1681
+   jnz      .1709
    pop      %rax
    ret
-.1681:
+.1709:
    mov      Penv, %r11
    popq     (%r11)
    ret
-.1679:
+.1707:
    mov      %r14, %rax
    mov      %r15, %rbx
    jmp      equalAE_F
@@ -22393,11 +22652,11 @@ doProve:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jz       .1683
+   jz       .1711
    pop      %r13
    mov      $Nil, %rbx
    ret
-.1683:
+.1711:
    push     %r14
    push     %r15
    pushq    Penv
@@ -22442,14 +22701,14 @@ doProve:
    push     %rbp
    mov      %rsp, %rbp
    mov      %r14, 56(%rbp)
-.1684:
+.1712:
    testb    $0x0E, 24(%rbp)
    jz       doProve_10
    testb    $0x0E, 16(%rbp)
-   jnz      .1685
+   jnz      .1713
 doProve_10:
    testb    $0x0E, 32(%rbp)
-   jnz      .1686
+   jnz      .1714
    mov      56(%rbp), %r10
    mov      %r10, 8(%rbp)
    mov      40(%rbp), %r10
@@ -22462,12 +22721,12 @@ doProve_10:
    mov      (%r10), %r10
    mov      (%r10), %r15
    call     unifyCEYZ_F
-   jz       .1687
+   jz       .1715
    mov      32(%rbp), %r10
    mov      8(%r10), %r13
    mov      %r13, 32(%rbp)
    testb    $0x0E, %r13b
-   jz       .1684
+   jz       .1712
    mov      72(%rbp), %r10
    mov      (%r10), %r10
    mov      (%r10), %r13
@@ -22492,17 +22751,17 @@ doProve_10:
    mov      %r10, 16(%rbp)
    mov      8(%r13), %r13
    mov      %r13, 56(%rbp)
-   jmp      .1684
-.1687:
+   jmp      .1712
+.1715:
    testb    $0x0E, 64(%rbp)
-   jnz      .1690
+   jnz      .1718
    mov      24(%rbp), %r10
    mov      (%r10), %r10
    mov      (%r10), %rax
    mov      64(%rbp), %rbx
-.1691:
+.1719:
    cmp      (%rbx), %rax
-   jnz      .1692
+   jnz      .1720
    mov      $TSym, %rdx
    mov      24(%rbp), %r10
    mov      (%r10), %r10
@@ -22510,14 +22769,14 @@ doProve_10:
    call     getEC_E
    mov      %rbx, %r13
    mov      %r12, %rdx
-.1693:
+.1721:
    add      $1, %rdx
    mov      32(%rbp), %r10
    mov      (%r10), %rax
    mov      (%r13), %rbx
    mov      8(%r13), %r13
    call     equalAE_F
-   jnz      .1693
+   jnz      .1721
    mov      %rdx, %rax
    call     outWordA
    call     space
@@ -22526,15 +22785,15 @@ doProve_10:
    call     uniFillE_E
    call     printE
    call     newline
-   jmp      .1690
-.1692:
+   jmp      .1718
+.1720:
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .1691
-.1690:
+   jz       .1719
+.1718:
    mov      32(%rbp), %r10
    testb    $0x0E, 8(%r10)
-   jnz      .1695
+   jnz      .1723
    call     cons_A
    mov      16(%rbp), %r10
    mov      %r10, (%rax)
@@ -22564,7 +22823,7 @@ doProve_10:
    mov      %r10, 8(%rdx)
    mov      72(%rbp), %r11
    mov      %rdx, (%r11)
-.1695:
+.1723:
    mov      48(%rbp), %rdx
    call     cons_A
    mov      %rdx, (%rax)
@@ -22585,11 +22844,11 @@ doProve_10:
    mov      8(%r10), %r10
    mov      %r10, 24(%rbp)
    movq     $Nil, 32(%rbp)
-   jmp      .1684
-.1686:
+   jmp      .1712
+.1714:
    mov      24(%rbp), %r13
    testb    $0x0E, %r13b
-   jz       .1696
+   jz       .1724
    mov      16(%rbp), %rdx
    mov      (%rdx), %r10
    mov      %r10, 24(%rbp)
@@ -22598,32 +22857,32 @@ doProve_10:
    mov      40(%rbp), %r10
    mov      8(%r10), %r10
    mov      %r10, 40(%rbp)
-   jmp      .1684
-.1696:
+   jmp      .1712
+.1724:
    cmpq     $TSym, (%r13)
-   jnz      .1697
-.1698:
+   jnz      .1725
+.1726:
    mov      72(%rbp), %r10
    mov      (%r10), %rdx
    testb    $0x0E, %dl
-   jnz      .1699
+   jnz      .1727
    mov      (%rdx), %r11
    mov      40(%rbp), %r10
    mov      (%r10), %r10
    cmp      %r10, (%r11)
-   jc       .1699
+   jc       .1727
    mov      72(%rbp), %r11
    mov      8(%rdx), %r10
    mov      %r10, (%r11)
-   jmp      .1698
-.1699:
+   jmp      .1726
+.1727:
    mov      8(%r13), %r10
    mov      %r10, 24(%rbp)
-   jmp      .1684
-.1697:
+   jmp      .1712
+.1725:
    mov      (%r13), %r10
    testb    $0x06, (%r10)
-   jz       .1700
+   jz       .1728
    mov      (%r13), %r10
    mov      8(%r10), %rbx
    test     $0x06, %bl
@@ -22638,12 +22897,12 @@ doProve_10:
    mov      (%r10), %rdx
    shr      $4, %rdx
    mov      40(%rbp), %rax
-.1701:
+.1729:
    sub      $1, %rdx
-   jle      .1702
+   jle      .1730
    mov      8(%rax), %rax
-   jmp      .1701
-.1702:
+   jmp      .1729
+.1730:
    call     cons_C
    mov      (%rax), %r10
    mov      %r10, (%rdx)
@@ -22658,16 +22917,16 @@ doProve_10:
    mov      %rdx, 16(%rbp)
    mov      8(%rbp), %r10
    mov      %r10, 24(%rbp)
-   jmp      .1684
-.1700:
+   jmp      .1712
+.1728:
    mov      (%r13), %r10
    mov      (%r10), %rbx
    testb    $0x08, %bl
-   jz       .1703
+   jz       .1731
    mov      -8(%rbx), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1703
+   jnz      .1731
    mov      (%r13), %r10
    mov      8(%r10), %rbx
    test     $0x06, %bl
@@ -22679,7 +22938,7 @@ doProve_10:
 1:
    mov      %rbx, 8(%rbp)
    cmp      $Nil, %rbx
-   jz       .1705
+   jz       .1733
    mov      40(%rbp), %r10
    mov      (%r10), %rdx
    mov      (%r13), %r10
@@ -22687,12 +22946,12 @@ doProve_10:
    mov      %rdx, %rbx
    mov      8(%rbp), %r15
    call     unifyCEYZ_F
-   jnz      .1705
+   jnz      .1733
    mov      24(%rbp), %r10
    mov      8(%r10), %r10
    mov      %r10, 24(%rbp)
-   jmp      .1684
-.1705:
+   jmp      .1712
+.1733:
    mov      72(%rbp), %r10
    mov      (%r10), %r10
    mov      (%r10), %r13
@@ -22717,13 +22976,13 @@ doProve_10:
    mov      %r10, 16(%rbp)
    mov      8(%r13), %r13
    mov      %r13, 56(%rbp)
-   jmp      .1684
-.1703:
+   jmp      .1712
+.1731:
    mov      $TSym, %rdx
    call     getEC_E
    mov      %rbx, 32(%rbp)
    testb    $0x0E, %bl
-   jz       .1684
+   jz       .1712
    mov      72(%rbp), %r10
    mov      (%r10), %r10
    mov      (%r10), %r13
@@ -22748,17 +23007,17 @@ doProve_10:
    mov      %r10, 16(%rbp)
    mov      8(%r13), %r13
    mov      %r13, 56(%rbp)
-   jmp      .1684
-.1685:
+   jmp      .1712
+.1713:
    movq     $Nil, 8(%rbp)
    mov      56(%rbp), %r13
-.1708:
+.1736:
    testb    $0x0E, 8(%r13)
-   jnz      .1709
+   jnz      .1737
    mov      (%r13), %r10
    mov      (%r10), %r14
    cmpq     $2, (%r14)
-   jnz      .1710
+   jnz      .1738
    mov      $2, %rdx
    mov      8(%r14), %rbx
    call     lookupCE_E
@@ -22771,20 +23030,20 @@ doProve_10:
    mov      8(%rbp), %r10
    mov      %r10, 8(%rbx)
    mov      %rbx, 8(%rbp)
-.1710:
+.1738:
    mov      8(%r13), %r13
-   jmp      .1708
-.1709:
+   jmp      .1736
+.1737:
    mov      80(%rbp), %r10
    mov      %r10, At
    mov      8(%rbp), %rbx
    testb    $0x0E, %bl
-   jz       .1711
+   jz       .1739
    testb    $0x0E, 56(%rbp)
    mov      $Nil, %rbx
    mov      $TSym, %r10
    cmovzq   %r10, %rbx
-.1711:
+.1739:
    mov      (%rbp), %rsp
    pop      %rbp
    popq     Pnl
@@ -22798,35 +23057,35 @@ doProve_10:
    .global  lupCE_E
 lupCE_E:
    testb    $0x06, %bl
-   jnz      .1712
+   jnz      .1740
    testb    $0x08, %bl
-   jz       .1712
+   jz       .1740
    mov      -8(%rbx), %rax
    call     firstByteA_B
    cmp      $64, %al
-   jnz      .1712
+   jnz      .1740
    mov      Penv, %r10
    mov      (%r10), %r15
-.1715:
+.1743:
    mov      (%r15), %rax
    testb    $0x0E, %al
-   jnz      .1712
+   jnz      .1740
    mov      (%rax), %rax
    cmp      (%rax), %rdx
-   jnz      .1717
+   jnz      .1745
    cmp      8(%rax), %rbx
-   jnz      .1717
+   jnz      .1745
    mov      (%r15), %r10
    mov      8(%r10), %rax
    mov      (%rax), %rdx
    mov      8(%rax), %rbx
    jmp      lupCE_E
-.1717:
+.1745:
    mov      8(%r15), %r15
-   jmp      .1715
-.1712:
+   jmp      .1743
+.1740:
    testb    $0x0E, %bl
-   jnz      .1719
+   jnz      .1747
    push     %rdx
    push     %rbx
    mov      (%rbx), %rbx
@@ -22847,7 +23106,7 @@ lupCE_E:
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.1719:
+.1747:
    rep
    ret
 
@@ -22856,14 +23115,14 @@ lupCE_E:
 lookupCE_E:
    call     lupCE_E
    testb    $0x06, %bl
-   jnz      .1720
+   jnz      .1748
    testb    $0x08, %bl
-   jz       .1720
+   jz       .1748
    mov      -8(%rbx), %rax
    call     firstByteA_B
    cmp      $64, %al
    jz       retNil
-.1720:
+.1748:
    rep
    ret
 
@@ -22871,14 +23130,14 @@ lookupCE_E:
    .global  uniFillE_E
 uniFillE_E:
    testb    $0x06, %bl
-   jnz      .1722
+   jnz      .1750
    testb    $0x08, %bl
-   jz       .1723
+   jz       .1751
    mov      Pnl, %r10
    mov      (%r10), %r10
    mov      (%r10), %rdx
    jmp      lupCE_E
-.1723:
+.1751:
    push     %rbx
    mov      (%rbx), %rbx
    call     uniFillE_E
@@ -22897,7 +23156,7 @@ uniFillE_E:
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.1722:
+.1750:
    rep
    ret
 
@@ -22912,15 +23171,15 @@ doArrow:
    mov      (%r10), %rdx
    mov      8(%rbx), %rax
    testb    $0x06, (%rax)
-   jz       .1724
+   jz       .1752
    mov      (%rax), %rax
    shr      $4, %rax
-.1725:
+.1753:
    sub      $1, %rax
-   jle      .1724
+   jle      .1752
    mov      8(%rdx), %rdx
-   jmp      .1725
-.1724:
+   jmp      .1753
+.1752:
    mov      (%rdx), %rdx
    mov      (%rbx), %rbx
    call     lookupCE_E
@@ -22958,10 +23217,10 @@ doUnify:
    mov      %r14, %r15
    call     unifyCEYZ_F
    mov      $Nil, %rbx
-   jnz      .1727
+   jnz      .1755
    mov      Penv, %r10
    mov      (%r10), %rbx
-.1727:
+.1755:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -22987,7 +23246,7 @@ doSort:
    call     evListE_E
 1:
    testb    $0x0E, %bl
-   jnz      .1728
+   jnz      .1756
    push     %r15
    pushq    EnvSort
    push     %rbp
@@ -23007,17 +23266,17 @@ doSort:
 1:
    mov      $Nil, %rax
    cmp      $Nil, %rbx
-   jnz      .1729
+   jnz      .1757
    movq     $cmpDfltA_F, EnvSort
    xchg     (%rsp), %rbx
-   jmp      .1730
-.1729:
+   jmp      .1758
+.1757:
    movq     $cmpUserAX_F, EnvSort
    xchg     (%rsp), %rbx
    push     %rax
    push     %rax
    push     %rax
-.1730:
+.1758:
    push     %rbx
    push     %rax
    push     %rax
@@ -23028,27 +23287,27 @@ doSort:
    mov      %rsp, %rbp
    push     %rax
    push     %rax
-.1731:
+.1759:
    mov      48(%rbp), %r10
    mov      %r10, 32(%rbp)
    mov      56(%rbp), %r10
    mov      %r10, 40(%rbp)
    lea      32(%rbp), %r14
    testb    $0x0E, 40(%rbp)
-   jnz      .1732
+   jnz      .1760
    mov      %r14, %rax
    mov      EnvSort, %r10
    call     *%r10
-   jc       .1732
+   jc       .1760
    lea      40(%rbp), %r14
-.1732:
+.1760:
    mov      (%r14), %rax
    mov      %rax, 8(%rbp)
    testb    $0x0E, %al
-   jnz      .1734
+   jnz      .1762
    mov      8(%rax), %r10
    mov      %r10, (%r14)
-.1734:
+.1762:
    mov      %rax, 48(%rbp)
    lea      8(%rax), %r11
    mov      %r11, -16(%rbp)
@@ -23058,32 +23317,32 @@ doSort:
    movq     $Nil, 56(%rbp)
    lea      56(%rbp), %r11
    mov      %r11, -8(%rbp)
-.1735:
+.1763:
    testb    $0x0E, 40(%rbp)
-   jz       .1736
+   jz       .1764
    testb    $0x0E, 32(%rbp)
-   jnz      .1737
+   jnz      .1765
    mov      32(%rbp), %r14
    mov      %r14, 8(%rbp)
    testb    $0x0E, %r14b
-   jnz      .1738
+   jnz      .1766
    mov      8(%r14), %r10
    mov      %r10, 32(%rbp)
-.1738:
+.1766:
    mov      %r14, 16(%rbp)
    lea      16(%rbp), %rax
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1740
+   jnc      .1768
    mov      -8(%rbp), %r10
    xchg     %r10, -16(%rbp)
    mov      %r10, -8(%rbp)
-   jmp      .1740
-.1736:
+   jmp      .1768
+.1764:
    testb    $0x0E, 32(%rbp)
-   jz       .1741
+   jz       .1769
    testb    $0x0E, 40(%rbp)
-   jnz      .1737
+   jnz      .1765
    mov      40(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      %r14, 16(%rbp)
@@ -23092,93 +23351,93 @@ doSort:
    lea      16(%rbp), %rax
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1740
+   jnc      .1768
    mov      -8(%rbp), %r10
    xchg     %r10, -16(%rbp)
    mov      %r10, -8(%rbp)
-   jmp      .1740
-.1741:
+   jmp      .1768
+.1769:
    lea      16(%rbp), %rax
    mov      32(%rbp), %r10
    mov      %r10, (%rax)
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1744
+   jnc      .1772
    lea      16(%rbp), %rax
    mov      40(%rbp), %r10
    mov      %r10, (%rax)
    mov      EnvSort, %r10
    call     *%r10
-   jc       .1745
+   jc       .1773
    mov      40(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 40(%rbp)
-   jmp      .1740
-.1745:
+   jmp      .1768
+.1773:
    lea      32(%rbp), %rax
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1747
+   jnc      .1775
    mov      32(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 32(%rbp)
-   jmp      .1748
-.1747:
+   jmp      .1776
+.1775:
    mov      40(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 40(%rbp)
-.1748:
+.1776:
    mov      -8(%rbp), %r10
    xchg     %r10, -16(%rbp)
    mov      %r10, -8(%rbp)
-   jmp      .1740
-.1744:
+   jmp      .1768
+.1772:
    lea      16(%rbp), %rax
    mov      40(%rbp), %r10
    mov      %r10, (%rax)
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1750
+   jnc      .1778
    mov      32(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 32(%rbp)
-   jmp      .1740
-.1750:
+   jmp      .1768
+.1778:
    lea      32(%rbp), %rax
    mov      EnvSort, %r10
    call     *%r10
-   jnc      .1752
+   jnc      .1780
    mov      32(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 32(%rbp)
-   jmp      .1740
-.1752:
+   jmp      .1768
+.1780:
    mov      40(%rbp), %r14
    mov      %r14, 8(%rbp)
    mov      8(%r14), %r10
    mov      %r10, 40(%rbp)
-.1740:
+.1768:
    mov      -16(%rbp), %r11
    mov      %r14, (%r11)
    lea      8(%r14), %r11
    mov      %r11, -16(%rbp)
    movq     $Nil, 8(%r14)
    mov      %r14, 24(%rbp)
-   jmp      .1735
-.1737:
+   jmp      .1763
+.1765:
    testb    $0x0E, 56(%rbp)
-   jz       .1731
+   jz       .1759
    mov      48(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    popq     EnvSort
    pop      %r15
-.1728:
+.1756:
    pop      %r14
    pop      %r13
    ret
@@ -23206,9 +23465,9 @@ cmpUserAX_F:
    lea      16(%r15), %r14
    call     applyXYZ_E
    cmp      $Nil, %rbx
-   jz       .1754
+   jz       .1782
    stc
-.1754:
+.1782:
    pop      %r14
    ret
 
@@ -23218,42 +23477,42 @@ zapZeroA_A:
    push     %rax
    mov      %rsp, %rdx
    mov      %rdx, %rbx
-.1755:
+.1783:
    testb    $0x02, 4(%rax)
-   jnz      .1756
+   jnz      .1784
    cmp      %r12, -4(%rax)
-   jz       .1757
+   jz       .1785
    mov      %rdx, %rbx
-.1757:
+.1785:
    lea      4(%rax), %rdx
    mov      (%rdx), %rax
-   jmp      .1755
-.1756:
+   jmp      .1783
+.1784:
    cmpq     $2, 4(%rax)
-   jnz      .1758
+   jnz      .1786
    mov      -4(%rax), %rax
    cmp      %r12, %rax
-   jz       .1759
+   jz       .1787
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jnz      .1758
+   jnz      .1786
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, (%rdx)
-   jmp      .1758
-.1759:
+   jmp      .1786
+.1787:
    mov      (%rbx), %r10
    mov      -4(%r10), %rax
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jz       .1762
+   jz       .1790
    movq     $2, (%rdx)
-   jmp      .1758
-.1762:
+   jmp      .1786
+.1790:
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, (%rbx)
-.1758:
+.1786:
    pop      %rax
    ret
 
@@ -23261,43 +23520,41 @@ zapZeroA_A:
    .global  twiceA_A
 twiceA_A:
    testb    $0x02, %al
-   jz       .1764
+   jz       .1792
    xorb     $3, %al
    shl      $1, %rax
    jnc      Ret
    rcr      $1, %rax
    shr      $3, %rax
    jmp      boxNumA_A
-.1764:
+.1792:
    push     %rax
    mov      -4(%rax), %rdx
    shl      $1, %rdx
-.1765:
+.1793:
    pushf
    mov      %rdx, -4(%rax)
    mov      4(%rax), %rbx
    testb    $0x02, %bl
-   jnz      .1766
+   jnz      .1794
    mov      %rbx, %rax
    mov      -4(%rax), %rdx
    popf
    rcl      $1, %rdx
-   jmp      .1765
-.1766:
+   jmp      .1793
+.1794:
    shr      $4, %rbx
    popf
    rcl      $1, %rbx
    mov      $17293822569102704640, %r10
    test     %r10, %rbx
-   jnz      .1767
+   jnz      .1795
    shl      $4, %rbx
    orb      $2, %bl
-   jmp      .1768
-.1767:
-   call     boxNum_C
-   mov      %rbx, -4(%rdx)
-   mov      %rdx, %rbx
-.1768:
+   jmp      .1796
+.1795:
+   call     boxNumE_E
+.1796:
    mov      %rbx, 4(%rax)
    pop      %rax
    ret
@@ -23306,73 +23563,73 @@ twiceA_A:
    .global  halfA_A
 halfA_A:
    testb    $0x02, %al
-   jz       .1769
+   jz       .1797
    shr      $1, %rax
    andb     $~9, %al
    orb      $2, %al
    ret
-.1769:
+.1797:
    mov      -4(%rax), %rdx
    mov      4(%rax), %rbx
    testb    $0x02, %bl
-   jz       .1770
+   jz       .1798
    shr      $5, %rbx
-   jz       .1771
+   jz       .1799
    rcr      $1, %rdx
-   jmp      .1772
-.1771:
+   jmp      .1800
+.1799:
    rcr      $1, %rdx
    mov      $17293822569102704640, %r10
    test     %r10, %rdx
-   jnz      .1772
+   jnz      .1800
    shl      $4, %rdx
    orb      $2, %dl
    mov      %rdx, %rax
    ret
-.1772:
+.1800:
    mov      %rdx, -4(%rax)
    shl      $4, %rbx
    orb      $2, %bl
    mov      %rbx, 4(%rax)
    ret
-.1770:
+.1798:
    push     %rax
-.1774:
+.1802:
    testb    $1, -4(%rbx)
-   jz       .1775
+   jz       .1803
    stc
-.1775:
+.1803:
    rcr      $1, %rdx
    mov      %rdx, -4(%rax)
    mov      4(%rbx), %rdx
    testb    $0x02, %dl
-   jnz      .1776
+   jnz      .1804
    mov      %rbx, %rax
    mov      %rdx, %rbx
    mov      -4(%rax), %rdx
-   jmp      .1774
-.1776:
+   jmp      .1802
+.1804:
    shr      $5, %rdx
-   jz       .1777
+   jz       .1805
    rcrq     $1, -4(%rbx)
    shl      $4, %rdx
    orb      $2, %dl
-   jmp      .1778
-.1777:
+   jmp      .1806
+.1805:
    mov      -4(%rbx), %rdx
    rcr      $1, %rdx
    mov      $17293822569102704640, %r10
    test     %r10, %rdx
-   jnz      .1779
+   jnz      .1807
    shl      $4, %rdx
    orb      $2, %dl
    mov      %rdx, 4(%rax)
    pop      %rax
    ret
-.1779:
+.1807:
    mov      %rdx, -4(%rbx)
    mov      $2, %rdx
-.1778:
+.1806:
    mov      %rdx, 4(%rbx)
    pop      %rax
    ret
@@ -23381,7 +23638,7 @@ halfA_A:
    .global  tenfoldA_A
 tenfoldA_A:
    testb    $0x02, %al
-   jz       .1780
+   jz       .1808
    shr      $4, %rax
    mov      $10, %r10
    mul      %r10
@@ -23391,40 +23648,40 @@ tenfoldA_A:
    shl      $4, %rax
    orb      $2, %al
    ret
-.1780:
+.1808:
    push     %r13
    push     %rax
    mov      %rax, %r13
    mov      -4(%r13), %rax
    mov      $10, %r10
    mul      %r10
-.1782:
+.1809:
    mov      %rax, -4(%r13)
    mov      %rdx, %rbx
    mov      4(%r13), %rax
    testb    $0x02, %al
-   jnz      .1783
+   jnz      .1810
    mov      %rax, %r13
    mov      -4(%r13), %rax
    mov      $10, %r10
    mul      %r10
    add      %rbx, %rax
    adc      %r12, %rdx
-   jmp      .1782
-.1783:
+   jmp      .1809
+.1810:
    shr      $4, %rax
    mov      $10, %r10
    mul      %r10
    add      %rbx, %rax
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jnz      .1784
+   jnz      .1811
    shl      $4, %rax
    orb      $2, %al
-   jmp      .1785
-.1784:
+   jmp      .1812
+.1811:
    call     boxNumA_A
-.1785:
+.1812:
    mov      %rax, 4(%r13)
    pop      %rax
    pop      %r13
@@ -23434,14 +23691,14 @@ tenfoldA_A:
    .global  shluA_A
 shluA_A:
    testb    $0x02, %al
-   jz       .1786
+   jz       .1813
    xorb     $3, %al
    shl      $1, %rax
    jnc      Ret
    rcr      $1, %rax
    shr      $3, %rax
    jmp      boxNumA_A
-.1786:
+.1813:
    call     boxNum_E
    mov      -4(%rax), %r10
    mov      %r10, -4(%rbx)
@@ -23452,10 +23709,10 @@ shluA_A:
    mov      %rsp, %rbp
    shlq     $1, -4(%rbx)
    pushf
-.1787:
+.1814:
    mov      4(%rax), %rax
    testb    $0x02, %al
-   jnz      .1788
+   jnz      .1815
    call     boxNum_C
    mov      %rdx, 4(%rbx)
    mov      -4(%rax), %rbx
@@ -23464,20 +23721,20 @@ shluA_A:
    pushf
    mov      %rbx, -4(%rdx)
    mov      %rdx, %rbx
-   jmp      .1787
-.1788:
+   jmp      .1814
+.1815:
    shr      $4, %rax
    popf
    rcl      $1, %rax
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jnz      .1789
+   jnz      .1816
    shl      $4, %rax
    orb      $2, %al
-   jmp      .1790
-.1789:
+   jmp      .1817
+.1816:
    call     boxNumA_A
-.1790:
+.1817:
    mov      %rax, 4(%rbx)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
@@ -23488,34 +23745,34 @@ shluA_A:
    .global  shruA_A
 shruA_A:
    testb    $0x02, %al
-   jz       .1791
+   jz       .1818
    shr      $1, %rax
    andb     $~9, %al
    orb      $2, %al
    ret
-.1791:
+.1818:
    mov      4(%rax), %rbx
    testb    $0x02, %bl
-   jz       .1792
+   jz       .1819
    mov      -4(%rax), %rdx
    shr      $5, %rbx
-   jz       .1793
+   jz       .1820
    rcr      $1, %rdx
-   jmp      .1794
-.1793:
+   jmp      .1821
+.1820:
    rcr      $1, %rdx
    mov      $17293822569102704640, %r10
    test     %r10, %rdx
-   jnz      .1794
+   jnz      .1821
    shl      $4, %rdx
    orb      $2, %dl
    mov      %rdx, %rax
    ret
-.1794:
+.1821:
    shl      $4, %rbx
    orb      $2, %bl
    jmp      consNumCE_A
-.1792:
+.1819:
    call     boxNum_C
    mov      -4(%rax), %r10
    mov      %r10, -4(%rdx)
@@ -23524,38 +23781,38 @@ shruA_A:
    push     %rdx
    push     %rbp
    mov      %rsp, %rbp
-.1796:
+.1823:
    testb    $1, -4(%rbx)
-   jz       .1797
+   jz       .1824
    stc
-.1797:
+.1824:
    rcrq     $1, -4(%rdx)
    testb    $0x02, 4(%rbx)
-   jnz      .1798
+   jnz      .1825
    call     boxNum_A
    mov      -4(%rbx), %r10
    mov      %r10, -4(%rax)
    mov      %rax, 4(%rdx)
    mov      4(%rbx), %rbx
    mov      %rax, %rdx
-   jmp      .1796
-.1798:
+   jmp      .1823
+.1825:
    mov      4(%rbx), %rax
    shr      $5, %rax
-   jz       .1799
+   jz       .1826
    mov      -4(%rbx), %rbx
    rcr      $1, %rbx
    shl      $4, %rax
    orb      $2, %al
    call     consNumEA_E
    mov      %rbx, 4(%rdx)
-   jmp      .1800
-.1799:
+   jmp      .1827
+.1826:
    mov      -4(%rbx), %rbx
    rcr      $1, %rbx
    mov      $17293822569102704640, %r10
    test     %r10, %rbx
-   jnz      .1801
+   jnz      .1828
    shl      $4, %rbx
    orb      $2, %bl
    mov      %rbx, 4(%rdx)
@@ -23563,11 +23820,11 @@ shruA_A:
    mov      (%rbp), %rsp
    pop      %rbp
    ret
-.1801:
+.1828:
    call     boxNum_A
    mov      %rbx, -4(%rax)
    mov      %rax, 4(%rdx)
-.1800:
+.1827:
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
@@ -23577,24 +23834,24 @@ shruA_A:
    .global  anduAE_A
 anduAE_A:
    testb    $0x02, %al
-   jz       .1802
+   jz       .1829
    testb    $0x02, %bl
-   jnz      .1803
+   jnz      .1830
    mov      -4(%rbx), %rbx
    shl      $4, %rbx
    orb      $2, %bl
-.1803:
+.1830:
    and      %rbx, %rax
    ret
-.1802:
+.1829:
    testb    $0x02, %bl
-   jz       .1804
+   jz       .1831
    mov      -4(%rax), %rax
    shl      $4, %rax
    orb      $2, %al
    and      %rbx, %rax
    ret
-.1804:
+.1831:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -23606,17 +23863,17 @@ anduAE_A:
    call     boxNum_X
    mov      %rdx, -4(%r13)
    mov      %r13, 8(%rbp)
-.1805:
+.1832:
    mov      4(%rax), %rax
    mov      4(%rbx), %rbx
    testb    $0x02, %al
-   jz       .1806
+   jz       .1833
    testb    $0x02, %bl
-   jnz      .1807
+   jnz      .1834
    mov      -4(%rbx), %rbx
    shl      $4, %rbx
    orb      $2, %bl
-.1807:
+.1834:
    and      %rbx, %rax
    mov      %rax, 4(%r13)
    mov      8(%rbp), %rax
@@ -23624,9 +23881,9 @@ anduAE_A:
    pop      %rbp
    pop      %r13
    jmp      zapZeroA_A
-.1806:
+.1833:
    testb    $0x02, %bl
-   jz       .1808
+   jz       .1835
    mov      -4(%rax), %rax
    shl      $4, %rax
    orb      $2, %al
@@ -23637,36 +23894,36 @@ anduAE_A:
    pop      %rbp
    pop      %r13
    jmp      zapZeroA_A
-.1808:
+.1835:
    mov      -4(%rax), %rdx
    and      -4(%rbx), %rdx
    call     consNumCE_C
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
-   jmp      .1805
+   jmp      .1832
 
    .balign  16
    .global  oruAE_A
 oruAE_A:
    testb    $0x02, %al
-   jz       .1809
+   jz       .1836
    testb    $0x02, %bl
-   jz       .1810
+   jz       .1837
    or       %rbx, %rax
    ret
-.1810:
+.1837:
    shr      $4, %rax
    or       -4(%rbx), %rax
    mov      4(%rbx), %rbx
    jmp      consNumAE_A
-.1809:
+.1836:
    testb    $0x02, %bl
-   jz       .1811
+   jz       .1838
    shr      $4, %rbx
    or       -4(%rax), %rbx
    mov      4(%rax), %rax
    jmp      consNumEA_A
-.1811:
+.1838:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -23678,30 +23935,30 @@ oruAE_A:
    call     boxNum_X
    mov      %rdx, -4(%r13)
    mov      %r13, 8(%rbp)
-.1812:
+.1839:
    mov      4(%rax), %rax
    mov      4(%rbx), %rbx
    testb    $0x02, %al
-   jz       .1813
+   jz       .1840
    testb    $0x02, %bl
-   jz       .1814
+   jz       .1841
    or       %rbx, %rax
-   jmp      .1815
-.1814:
+   jmp      .1842
+.1841:
    shr      $4, %rax
    or       -4(%rbx), %rax
    mov      4(%rbx), %rbx
    call     consNumAE_A
-.1815:
+.1842:
    mov      %rax, 4(%r13)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.1813:
+.1840:
    testb    $0x02, %bl
-   jz       .1816
+   jz       .1843
    shr      $4, %rbx
    or       -4(%rax), %rbx
    mov      4(%rax), %rax
@@ -23712,39 +23969,39 @@ oruAE_A:
    pop      %rbp
    pop      %r13
    ret
-.1816:
+.1843:
    mov      -4(%rax), %rdx
    or       -4(%rbx), %rdx
    call     consNumCE_C
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
-   jmp      .1812
+   jmp      .1839
 
    .balign  16
    .global  xoruAE_A
 xoruAE_A:
    testb    $0x02, %al
-   jz       .1817
+   jz       .1844
    testb    $0x02, %bl
-   jz       .1818
+   jz       .1845
    xor      %rbx, %rax
    orb      $2, %al
    ret
-.1818:
+.1845:
    shr      $4, %rax
    xor      -4(%rbx), %rax
    mov      4(%rbx), %rbx
    call     consNumAE_A
    jmp      zapZeroA_A
-.1817:
+.1844:
    testb    $0x02, %bl
-   jz       .1819
+   jz       .1846
    shr      $4, %rbx
    xor      -4(%rax), %rbx
    mov      4(%rax), %rax
    call     consNumEA_A
    jmp      zapZeroA_A
-.1819:
+.1846:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -23756,31 +24013,31 @@ xoruAE_A:
    call     boxNum_X
    mov      %rdx, -4(%r13)
    mov      %r13, 8(%rbp)
-.1820:
+.1847:
    mov      4(%rax), %rax
    mov      4(%rbx), %rbx
    testb    $0x02, %al
-   jz       .1821
+   jz       .1848
    testb    $0x02, %bl
-   jz       .1822
+   jz       .1849
    xor      %rbx, %rax
    orb      $2, %al
-   jmp      .1823
-.1822:
+   jmp      .1850
+.1849:
    shr      $4, %rax
    xor      -4(%rbx), %rax
    mov      4(%rbx), %rbx
    call     consNumAE_A
-.1823:
+.1850:
    mov      %rax, 4(%r13)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    jmp      zapZeroA_A
-.1821:
+.1848:
    testb    $0x02, %bl
-   jz       .1824
+   jz       .1851
    shr      $4, %rbx
    xor      -4(%rax), %rbx
    mov      4(%rax), %rax
@@ -23791,19 +24048,19 @@ xoruAE_A:
    pop      %rbp
    pop      %r13
    jmp      zapZeroA_A
-.1824:
+.1851:
    mov      -4(%rax), %rdx
    xor      -4(%rbx), %rdx
    call     consNumCE_C
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
-   jmp      .1820
+   jmp      .1847
 
    .balign  16
    .global  adduAE_A
 adduAE_A:
    testb    $0x02, %al
-   jz       .1825
+   jz       .1852
    testb    $0x02, %bl
    jz       adduAE_A_10
    andb     $~2, %bl
@@ -23812,9 +24069,9 @@ adduAE_A:
    rcr      $1, %rax
    shr      $3, %rax
    jmp      boxNumA_A
-.1825:
+.1852:
    testb    $0x02, %bl
-   jz       .1826
+   jz       .1853
    xchg     %rbx, %rax
 adduAE_A_10:
    shr      $4, %rax
@@ -23827,41 +24084,41 @@ adduAE_A_10:
    push     %rax
    push     %rbp
    mov      %rsp, %rbp
-.1827:
+.1854:
    testb    $0x02, %bl
-   jz       .1828
+   jz       .1855
    add      $16, %rbx
-   jc       .1829
+   jc       .1856
    mov      %rbx, 4(%rax)
-   jmp      .1830
-.1829:
+   jmp      .1857
+.1856:
    rcr      $1, %rbx
    shr      $3, %rbx
    call     boxNum_C
    mov      %rbx, -4(%rdx)
    mov      %rdx, 4(%rax)
-.1830:
+.1857:
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    ret
-.1828:
+.1855:
    mov      -4(%rbx), %rdx
    mov      4(%rbx), %rbx
    add      $1, %rdx
-   jc       .1831
+   jc       .1858
    call     consNumCE_E
    mov      %rbx, 4(%rax)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    ret
-.1831:
+.1858:
    call     consNumCE_C
    mov      %rdx, 4(%rax)
    mov      %rdx, %rax
-   jmp      .1827
-.1826:
+   jmp      .1854
+.1853:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -23874,11 +24131,11 @@ adduAE_A_10:
    call     boxNum_X
    mov      %rdx, -4(%r13)
    mov      %r13, 8(%rbp)
-.1832:
+.1859:
    mov      4(%rax), %rax
    mov      4(%rbx), %rbx
    testb    $0x02, %al
-   jz       .1833
+   jz       .1860
    testb    $0x02, %bl
    jz       adduAE_A_20
    shr      $4, %rax
@@ -23886,31 +24143,31 @@ adduAE_A_10:
    popf
    adc      %rbx, %rax
    shl      $4, %rax
-   jc       .1834
+   jc       .1861
    orb      $2, %al
-   jmp      .1835
-.1834:
+   jmp      .1862
+.1861:
    rcr      $1, %rax
    shr      $3, %rax
    call     boxNumA_A
-.1835:
+.1862:
    mov      %rax, 4(%r13)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.1833:
+.1860:
    testb    $0x02, %bl
-   jz       .1836
+   jz       .1863
    xchg     %rbx, %rax
 adduAE_A_20:
    shr      $4, %rax
    popf
    adc      -4(%rbx), %rax
-.1837:
+.1864:
    mov      4(%rbx), %rbx
-   jc       .1838
+   jc       .1865
    call     consNumAE_A
    mov      %rax, 4(%r13)
    mov      8(%rbp), %rax
@@ -23918,33 +24175,33 @@ adduAE_A_20:
    pop      %rbp
    pop      %r13
    ret
-.1838:
+.1865:
    call     consNumAE_A
    mov      %rax, 4(%r13)
    mov      %rax, %r13
    testb    $0x02, %bl
-   jz       .1839
+   jz       .1866
    add      $16, %rbx
-   jc       .1840
+   jc       .1867
    mov      %rbx, 4(%r13)
-   jmp      .1841
-.1840:
+   jmp      .1868
+.1867:
    rcr      $1, %rbx
    shr      $3, %rbx
    call     boxNum_C
    mov      %rbx, -4(%rdx)
    mov      %rdx, 4(%r13)
-.1841:
+.1868:
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.1839:
+.1866:
    mov      -4(%rbx), %rax
    add      $1, %rax
-   jmp      .1837
-.1836:
+   jmp      .1864
+.1863:
    mov      -4(%rax), %rdx
    popf
    adc      -4(%rbx), %rdx
@@ -23952,39 +24209,39 @@ adduAE_A_20:
    call     consNumCE_C
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
-   jmp      .1832
+   jmp      .1859
 
    .balign  16
    .global  subuAE_A
 subuAE_A:
    testb    $0x02, %al
-   jz       .1842
+   jz       .1869
    testb    $0x02, %bl
-   jz       .1843
+   jz       .1870
    andb     $~2, %bl
    sub      %rbx, %rax
    jnc      Ret
    xor      $-16, %rax
    add      $24, %rax
    ret
-.1843:
+.1870:
    xchg     %rbx, %rax
    call     subuAE_A_10
    cmpq     $2, %rax
-   jz       .1844
+   jz       .1871
    orb      $8, %al
-.1844:
+.1871:
    rep
    ret
-.1842:
+.1869:
    testb    $0x02, %bl
-   jz       .1845
+   jz       .1872
 subuAE_A_10:
    shr      $4, %rbx
    mov      -4(%rax), %rdx
    sub      %rbx, %rdx
    mov      4(%rax), %rbx
-   jc       .1846
+   jc       .1873
    cmpq     $2, %rbx
    jnz      consNumCE_A
    mov      $17293822569102704640, %r10
@@ -23994,18 +24251,18 @@ subuAE_A_10:
    shl      $4, %rax
    orb      $2, %al
    ret
-.1846:
+.1873:
    call     consNumCE_A
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
    push     %rbp
    mov      %rsp, %rbp
-.1847:
+.1874:
    testb    $0x02, %bl
-   jz       .1848
+   jz       .1875
    sub      $16, %rbx
-   jnc      .1849
+   jnc      .1876
    mov      %rdx, %rax
    neg      %rax
    shl      $4, %rax
@@ -24013,29 +24270,29 @@ subuAE_A_10:
    mov      (%rbp), %rsp
    pop      %rbp
    ret
-.1849:
+.1876:
    mov      %rbx, 4(%rax)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      zapZeroA_A
-.1848:
+.1875:
    mov      -4(%rbx), %rdx
    mov      4(%rbx), %rbx
    sub      $1, %rdx
-   jc       .1850
+   jc       .1877
    call     consNumCE_E
    mov      %rbx, 4(%rax)
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      zapZeroA_A
-.1850:
+.1877:
    call     consNumCE_C
    mov      %rdx, 4(%rax)
    mov      %rdx, %rax
-   jmp      .1847
-.1845:
+   jmp      .1874
+.1872:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -24048,20 +24305,20 @@ subuAE_A_10:
    mov      4(%rax), %rax
    call     consNumCA_C
    mov      %rdx, 8(%rbp)
-.1851:
+.1878:
    mov      %rdx, %r13
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jz       .1852
+   jz       .1879
    shr      $4, %rbx
-.1853:
+.1880:
    testb    $0x02, %al
-   jnz      .1854
+   jnz      .1881
    mov      -4(%rax), %rdx
    mov      4(%rax), %rax
    popf
    sbb      %rbx, %rdx
-   jc       .1855
+   jc       .1882
    call     consNumCA_C
    mov      %rdx, 4(%r13)
 subuAE_A_20:
@@ -24070,21 +24327,21 @@ subuAE_A_20:
    pop      %rbp
    pop      %r13
    jmp      zapZeroA_A
-.1855:
+.1882:
    pushf
    call     consNumCA_C
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
    mov      %r12, %rbx
-   jmp      .1853
-.1854:
+   jmp      .1880
+.1881:
    shr      $4, %rax
-   jmp      .1856
-.1852:
+   jmp      .1883
+.1879:
    testb    $0x02, %al
-   jz       .1857
+   jz       .1884
    shr      $4, %rax
-.1858:
+.1885:
    popf
    sbb      -4(%rbx), %rax
    pushf
@@ -24095,10 +24352,10 @@ subuAE_A_20:
    mov      4(%rbx), %rbx
    mov      %r12, %rax
    testb    $0x02, %bl
-   jz       .1858
+   jz       .1885
    shr      $4, %rbx
-   jmp      .1856
-.1857:
+   jmp      .1883
+.1884:
    mov      -4(%rax), %rdx
    popf
    sbb      -4(%rbx), %rdx
@@ -24106,8 +24363,8 @@ subuAE_A_20:
    mov      4(%rax), %rax
    call     consNumCA_C
    mov      %rdx, 4(%r13)
-   jmp      .1851
-.1856:
+   jmp      .1878
+.1883:
    popf
    sbb      %rbx, %rax
    pushf
@@ -24118,26 +24375,26 @@ subuAE_A_20:
    jnc      subuAE_A_20
    mov      8(%rbp), %rax
    mov      %rax, %rbx
-.1859:
+.1886:
    notq     -4(%rbx)
    mov      4(%rbx), %rdx
    testb    $0x02, %dl
-   jnz      .1860
+   jnz      .1887
    mov      %rdx, %rbx
-   jmp      .1859
-.1860:
+   jmp      .1886
+.1887:
    xor      $-16, %rdx
    mov      %rdx, 4(%rbx)
    mov      %rax, %rbx
-.1861:
+.1888:
    addq     $1, -4(%rbx)
    jnc      subuAE_A_90
    mov      4(%rbx), %rdx
    testb    $0x02, %dl
-   jnz      .1862
+   jnz      .1889
    mov      %rdx, %rbx
-   jmp      .1861
-.1862:
+   jmp      .1888
+.1889:
    add      $16, %rdx
    mov      %rdx, 4(%rbx)
 subuAE_A_90:
@@ -24152,7 +24409,7 @@ subuAE_A_90:
    .global  muluAE_A
 muluAE_A:
    testb    $0x02, %al
-   jz       .1863
+   jz       .1890
    cmpq     $2, %rax
    jz       ret
    shr      $4, %rax
@@ -24161,14 +24418,14 @@ muluAE_A:
    xchg     %rbx, %rax
    shr      $4, %rax
    mulq     %rbx
-   jc       .1865
+   jc       .1892
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jnz      .1865
+   jnz      .1892
    shl      $4, %rax
    orb      $2, %al
    ret
-.1865:
+.1892:
    shl      $4, %rdx
    orb      $2, %dl
    jmp      consNumAC_A
@@ -24186,10 +24443,10 @@ muluAE_A_10:
    push     %rbp
    mov      %rsp, %rbp
    mov      %rdx, %r15
-.1867:
+.1894:
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jnz      .1868
+   jnz      .1895
    mov      -4(%rbx), %rax
    mulq     %r14
    add      %r15, %rax
@@ -24199,17 +24456,17 @@ muluAE_A_10:
    mov      %rax, -4(%rdx)
    mov      %rdx, 4(%r13)
    mov      %rdx, %r13
-   jmp      .1867
-.1868:
+   jmp      .1894
+.1895:
    mov      %r14, %rax
    shr      $4, %rbx
    mulq     %rbx
    add      %r15, %rax
    adc      %r12, %rdx
-   jnz      .1869
+   jnz      .1896
    mov      $17293822569102704640, %r10
    test     %r10, %rax
-   jnz      .1869
+   jnz      .1896
    shl      $4, %rax
    orb      $2, %al
 muluAE_A_20:
@@ -24221,20 +24478,20 @@ muluAE_A_20:
    pop      %r14
    pop      %r13
    ret
-.1869:
+.1896:
    shl      $4, %rdx
    orb      $2, %dl
    call     consNumAC_A
    jmp      muluAE_A_20
-.1863:
+.1890:
    testb    $0x02, %bl
-   jz       .1871
+   jz       .1898
    cmpq     $2, %rbx
    jz       ret
    xchg     %rbx, %rax
    shr      $4, %rax
    jmp      muluAE_A_10
-.1871:
+.1898:
    push     %r13
    push     %r14
    push     %r15
@@ -24249,33 +24506,33 @@ muluAE_A_20:
    mov      %rsp, %rbp
    push     %r13
    push     %r14
-.1872:
+.1899:
    mov      -4(%r14), %rax
    mulq     -4(%r15)
    add      -4(%r13), %rax
    adc      %r12, %rdx
-.1873:
+.1900:
    mov      %rax, -4(%r13)
    mov      %rdx, %rbx
    mov      4(%r13), %rax
    testb    $0x02, %al
-   jz       .1874
+   jz       .1901
    call     boxNum_A
    mov      %r12, -4(%rax)
    mov      %rax, 4(%r13)
-.1874:
+.1901:
    mov      %rax, %r13
    mov      4(%r14), %r14
    testb    $0x02, %r14b
-   jnz      .1875
+   jnz      .1902
    mov      -4(%r14), %rax
    mulq     -4(%r15)
    add      -4(%r13), %rax
    adc      %r12, %rdx
    adc      %rbx, %rax
    adc      %r12, %rdx
-   jmp      .1873
-.1875:
+   jmp      .1900
+.1902:
    mov      %r14, %rax
    shr      $4, %rax
    mulq     -4(%r15)
@@ -24284,51 +24541,51 @@ muluAE_A_20:
    adc      %rbx, %rax
    adc      %r12, %rdx
    mov      %rax, -4(%r13)
-   jz       .1876
+   jz       .1903
    mov      4(%r13), %rax
    testb    $0x02, %al
-   jz       .1877
+   jz       .1904
    call     boxNum_A
    mov      %r12, -4(%rax)
    mov      %rax, 4(%r13)
-.1877:
+.1904:
    mov      %rdx, -4(%rax)
-.1876:
+.1903:
    mov      -16(%rbp), %r14
    mov      -8(%rbp), %r10
    mov      4(%r10), %r13
    mov      %r13, -8(%rbp)
    mov      4(%r15), %r15
    testb    $0x02, %r15b
-   jz       .1872
+   jz       .1899
    mov      %r15, %rax
    shr      $4, %rax
    mov      %rax, %r15
    mulq     -4(%r14)
    add      -4(%r13), %rax
    adc      %r12, %rdx
-.1878:
+.1905:
    mov      %rax, -4(%r13)
    mov      %rdx, %rbx
    mov      4(%r13), %rax
    testb    $0x02, %al
-   jz       .1879
+   jz       .1906
    call     boxNum_A
    mov      %r12, -4(%rax)
    mov      %rax, 4(%r13)
-.1879:
+.1906:
    mov      %rax, %r13
    mov      4(%r14), %r14
    testb    $0x02, %r14b
-   jnz      .1880
+   jnz      .1907
    mov      -4(%r14), %rax
    mulq     %r15
    add      -4(%r13), %rax
    adc      %r12, %rdx
    adc      %rbx, %rax
    adc      %r12, %rdx
-   jmp      .1878
-.1880:
+   jmp      .1905
+.1907:
    mov      %r14, %rax
    shr      $4, %rax
    mulq     %r15
@@ -24337,16 +24594,16 @@ muluAE_A_20:
    adc      %rbx, %rax
    adc      %r12, %rdx
    mov      %rax, -4(%r13)
-   jz       .1881
+   jz       .1908
    mov      4(%r13), %rax
    testb    $0x02, %al
-   jz       .1882
+   jz       .1909
    call     boxNum_A
    mov      %r12, -4(%rax)
    mov      %rax, 4(%r13)
-.1882:
+.1909:
    mov      %rdx, -4(%rax)
-.1881:
+.1908:
    mov      8(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
@@ -24359,9 +24616,9 @@ muluAE_A_20:
    .global  divuAE_AC
 divuAE_AC:
    testb    $0x02, %al
-   jz       .1883
+   jz       .1910
    testb    $0x02, %bl
-   jz       .1884
+   jz       .1911
    shr      $4, %rax
    mov      %r12, %rdx
    shr      $4, %rbx
@@ -24371,11 +24628,11 @@ divuAE_AC:
    shl      $4, %rdx
    orb      $2, %dl
    ret
-.1884:
+.1911:
    mov      %rax, %rdx
    mov      $2, %rax
    ret
-.1883:
+.1910:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -24384,106 +24641,106 @@ divuAE_AC:
    push     %rbp
    mov      %rsp, %rbp
    mov      %r12, %rdx
-.1885:
+.1912:
    testb    $0x02, 4(%rax)
-   jnz      .1886
+   jnz      .1913
    add      $64, %rdx
    mov      4(%rax), %rax
-   jmp      .1885
-.1886:
+   jmp      .1912
+.1913:
    cmpq     $2, 4(%rax)
-   jnz      .1887
+   jnz      .1914
    mov      -4(%rax), %rax
-   jmp      .1889
-.1887:
+   jmp      .1916
+.1914:
    add      $64, %rdx
    mov      4(%rax), %rax
    shr      $4, %rax
-.1889:
+.1916:
    add      $1, %rdx
    shr      $1, %rax
-   jnz      .1889
+   jnz      .1916
    testb    $0x02, %bl
-   jz       .1893
+   jz       .1920
    shr      $4, %rbx
-.1891:
+.1918:
    sub      $1, %rdx
    shr      $1, %rbx
-   jnz      .1891
-   jmp      .1892
-.1893:
+   jnz      .1918
+   jmp      .1919
+.1920:
    testb    $0x02, 4(%rbx)
-   jnz      .1894
+   jnz      .1921
    sub      $64, %rdx
    mov      4(%rbx), %rbx
-   jmp      .1893
-.1894:
+   jmp      .1920
+.1921:
    cmpq     $2, 4(%rbx)
-   jnz      .1895
+   jnz      .1922
    mov      -4(%rbx), %rbx
-   jmp      .1897
-.1895:
+   jmp      .1924
+.1922:
    sub      $64, %rdx
    mov      4(%rbx), %rbx
    shr      $4, %rbx
-.1897:
+.1924:
    sub      $1, %rdx
    shr      $1, %rbx
-   jnz      .1897
-.1892:
+   jnz      .1924
+.1919:
    push     %rdx
    add      $1, %rdx
    push     %rdx
    subq     $1, -8(%rbp)
-   js       .1903
+   js       .1930
    mov      8(%rbp), %rax
    call     shluA_A
    mov      %rax, 8(%rbp)
    mov      -8(%rbp), %rdx
-.1899:
+.1926:
    cmp      $64, %rdx
-   jc       .1900
+   jc       .1927
    sub      $64, %rdx
    mov      %r12, %rbx
    call     consNumEA_A
-   jmp      .1899
-.1900:
+   jmp      .1926
+.1927:
    mov      %rax, 8(%rbp)
    mov      %rdx, -8(%rbp)
-.1901:
+.1928:
    subq     $1, -8(%rbp)
-   js       .1903
+   js       .1930
    call     twiceA_A
    mov      %rax, 8(%rbp)
-   jmp      .1901
-.1903:
+   jmp      .1928
+.1930:
    subq     $1, -16(%rbp)
-   js       .1904
+   js       .1931
    mov      24(%rbp), %rax
    call     twiceA_A
    mov      %rax, 24(%rbp)
    mov      16(%rbp), %rbx
    mov      8(%rbp), %rax
    call     cmpuAE_F
-   ja       .1905
+   ja       .1932
    mov      16(%rbp), %rax
    mov      8(%rbp), %rbx
    call     subuAE_A
    mov      %rax, 16(%rbp)
    mov      24(%rbp), %rax
    testb    $0x02, %al
-   jz       .1906
+   jz       .1933
    add      $16, %al
    mov      %rax, 24(%rbp)
-   jmp      .1905
-.1906:
+   jmp      .1932
+.1933:
    addq     $1, -4(%rax)
-.1905:
+.1932:
    mov      8(%rbp), %rax
    call     shruA_A
    mov      %rax, 8(%rbp)
-   jmp      .1903
-.1904:
+   jmp      .1930
+.1931:
    mov      24(%rbp), %rax
    mov      16(%rbp), %rdx
    mov      (%rbp), %rsp
@@ -24499,9 +24756,9 @@ incE_A:
    andb     $~8, %bl
    call     subuAE_A
    cmpq     $2, %rax
-   jz       .1908
+   jz       .1935
    orb      $8, %al
-.1908:
+.1935:
    rep
    ret
 
@@ -24510,10 +24767,10 @@ incE_A:
 decE_A:
    mov      $18, %rax
    testb    $8, %bl
-   jnz      .1909
+   jnz      .1936
    xchg     %rbx, %rax
    jmp      subuAE_A
-.1909:
+.1936:
    andb     $~8, %bl
    call     adduAE_A
    orb      $8, %al
@@ -24523,26 +24780,26 @@ decE_A:
    .global  addAE_A
 addAE_A:
    testb    $8, %al
-   jnz      .1910
+   jnz      .1937
    testb    $8, %bl
    jz       adduAE_A
    andb     $~8, %bl
    jmp      subuAE_A
-.1910:
+.1937:
    testb    $8, %bl
-   jnz      .1911
+   jnz      .1938
    andb     $~8, %al
    call     subuAE_A
-   jmp      .1912
-.1911:
+   jmp      .1939
+.1938:
    andb     $~8, %al
    andb     $~8, %bl
    call     adduAE_A
-.1912:
+.1939:
    cmpq     $2, %rax
-   jz       .1913
+   jz       .1940
    xorb     $8, %al
-.1913:
+.1940:
    rep
    ret
 
@@ -24550,26 +24807,26 @@ addAE_A:
    .global  subAE_A
 subAE_A:
    testb    $8, %al
-   jnz      .1914
+   jnz      .1941
    testb    $8, %bl
    jz       subuAE_A
    andb     $~8, %bl
    jmp      adduAE_A
-.1914:
+.1941:
    testb    $8, %bl
-   jnz      .1915
+   jnz      .1942
    andb     $~8, %al
    call     adduAE_A
-   jmp      .1916
-.1915:
+   jmp      .1943
+.1942:
    andb     $~8, %al
    andb     $~8, %bl
    call     subuAE_A
-.1916:
+.1943:
    cmpq     $2, %rax
-   jz       .1917
+   jz       .1944
    xorb     $8, %al
-.1917:
+.1944:
    rep
    ret
 
@@ -24577,18 +24834,18 @@ subAE_A:
    .global  cmpNumAE_F
 cmpNumAE_F:
    testb    $8, %al
-   jnz      .1918
+   jnz      .1945
    testb    $8, %bl
    jz       cmpuAE_F
    clc
    ret
-.1918:
+.1945:
    testb    $8, %bl
-   jnz      .1919
+   jnz      .1946
    or       %al, %al
    stc
    ret
-.1919:
+.1946:
    xchg     %rbx, %rax
    andb     $~8, %al
    andb     $~8, %bl
@@ -24597,39 +24854,39 @@ cmpNumAE_F:
    .global  cmpuAE_F
 cmpuAE_F:
    testb    $0x02, %al
-   jz       .1920
+   jz       .1947
    testb    $0x02, %bl
-   jz       .1921
+   jz       .1948
    cmp      %rbx, %rax
    ret
-.1921:
+.1948:
    or       %al, %al
    stc
    ret
-.1920:
+.1947:
    testb    $0x02, %bl
-   jz       .1922
+   jz       .1949
    clc
    ret
-.1922:
+.1949:
    push     %r13
    push     %r14
    mov      %r12, %r13
    mov      %r12, %r14
-.1923:
+.1950:
    mov      4(%rax), %rdx
    cmp      4(%rbx), %rdx
-   jnz      .1924
-.1925:
+   jnz      .1951
+.1952:
    mov      -4(%rax), %rdx
    cmp      -4(%rbx), %rdx
-   jnz      .1926
+   jnz      .1953
    cmp      %r12, %r13
-   jnz      .1927
+   jnz      .1954
    pop      %r14
    pop      %r13
    ret
-.1927:
+.1954:
    mov      4(%r13), %rdx
    mov      %rax, 4(%r13)
    mov      %r13, %rax
@@ -24638,30 +24895,30 @@ cmpuAE_F:
    mov      %rbx, 4(%r14)
    mov      %r14, %rbx
    mov      %rdx, %r14
-   jmp      .1925
-.1926:
+   jmp      .1952
+.1953:
    pushf
-   jmp      .1933
-.1924:
+   jmp      .1960
+.1951:
    testb    $0x02, %dl
-   jz       .1929
+   jz       .1956
    testb    $0x02, 4(%rbx)
-   jz       .1930
+   jz       .1957
    cmp      4(%rbx), %rdx
-   jmp      .1931
-.1930:
+   jmp      .1958
+.1957:
    or       %al, %al
    stc
-.1931:
+.1958:
    pushf
-   jmp      .1933
-.1929:
+   jmp      .1960
+.1956:
    testb    $0x02, 4(%rbx)
-   jz       .1932
+   jz       .1959
    clc
    pushf
-   jmp      .1933
-.1932:
+   jmp      .1960
+.1959:
    mov      %r13, 4(%rax)
    mov      %rax, %r13
    mov      %rdx, %rax
@@ -24669,10 +24926,10 @@ cmpuAE_F:
    mov      %r14, 4(%rbx)
    mov      %rbx, %r14
    mov      %rdx, %rbx
-   jmp      .1923
-.1933:
+   jmp      .1950
+.1960:
    cmp      %r12, %r13
-   jz       .1934
+   jz       .1961
    mov      4(%r13), %rdx
    mov      %rax, 4(%r13)
    mov      %r13, %rax
@@ -24681,8 +24938,8 @@ cmpuAE_F:
    mov      %rbx, 4(%r14)
    mov      %r14, %rbx
    mov      %rdx, %r14
-   jmp      .1933
-.1934:
+   jmp      .1960
+.1961:
    popf
    pop      %r14
    pop      %r13
@@ -24702,63 +24959,63 @@ symToNumXA_FE:
    mov      %r12, %rdx
    call     symByteCX_FACX
    jz       symToNumXA_FE_99
-.1935:
+.1962:
    cmp      $32, %al
-   ja       .1936
+   ja       .1963
    call     symByteCX_FACX
    jz       symToNumXA_FE_99
-   jmp      .1935
-.1936:
+   jmp      .1962
+.1963:
    cmp      $43, %al
    jz       symToNumXA_FE_10
    cmp      $45, %al
-   jnz      .1937
+   jnz      .1964
    orb      $1, -16(%rbp)
 symToNumXA_FE_10:
    call     symByteCX_FACX
    jz       symToNumXA_FE_99
-.1937:
+.1964:
    sub      $48, %rax
    cmp      $10, %rax
    jnc      symToNumXA_FE_99
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, 8(%rbp)
-.1938:
+.1965:
    call     symCharCX_FACX
-   jz       .1939
+   jz       .1966
    testb    $1, -24(%rbp)
-   jz       .1940
+   jz       .1967
    cmp      %r12, -8(%rbp)
-   jnz      .1940
+   jnz      .1967
    sub      $48, %rax
    cmp      $10, %rax
    jnc      symToNumXA_FE_99
    cmp      $5, %rax
-   jc       .1943
+   jc       .1970
    mov      $18, %rax
    mov      8(%rbp), %rbx
    push     %rdx
    call     adduAE_A
    pop      %rdx
    mov      %rax, 8(%rbp)
-.1943:
+.1970:
    call     symByteCX_FACX
-   jz       .1939
+   jz       .1966
    sub      $48, %rax
    cmp      $10, %rax
    jnc      symToNumXA_FE_99
-   jmp      .1943
-.1940:
+   jmp      .1970
+.1967:
    cmp      Sep0, %rax
-   jnz      .1945
+   jnz      .1972
    testb    $1, -24(%rbp)
    jnz      symToNumXA_FE_99
    orb      $1, -24(%rbp)
-   jmp      .1938
-.1945:
+   jmp      .1965
+.1972:
    cmp      Sep3, %rax
-   jz       .1938
+   jz       .1965
    sub      $48, %rax
    cmp      $10, %rax
    jnc      symToNumXA_FE_99
@@ -24776,27 +25033,27 @@ symToNumXA_FE_10:
    pop      %r13
    pop      %rdx
    testb    $1, -24(%rbp)
-   jz       .1938
+   jz       .1965
    subq     $1, -8(%rbp)
-   jmp      .1938
-.1939:
+   jmp      .1965
+.1966:
    testb    $1, -24(%rbp)
-   jz       .1949
-.1950:
+   jz       .1976
+.1977:
    subq     $1, -8(%rbp)
-   jc       .1949
+   jc       .1976
    mov      8(%rbp), %rax
    call     tenfoldA_A
    mov      %rax, 8(%rbp)
-   jmp      .1950
-.1949:
+   jmp      .1977
+.1976:
    mov      8(%rbp), %rbx
    testb    $1, -16(%rbp)
-   jz       .1952
+   jz       .1979
    cmpq     $2, %rbx
-   jz       .1952
+   jz       .1979
    xorb     $8, %bl
-.1952:
+.1979:
    stc
 symToNumXA_FE_99:
    mov      (%rbp), %rsp
@@ -24822,24 +25079,24 @@ fmtNumAE_E:
    push     %rax
    mov      %rbx, %rax
    testb    $0x02, %al
-   jz       .1954
+   jz       .1981
    pushq    $16
-   jmp      .1955
-.1954:
+   jmp      .1982
+.1981:
    pushq    $1
-.1955:
+.1982:
    shr      $3, %al
    push     %rax
    andb     $~8, %bl
    mov      $19, %rdx
    mov      %rbx, %r13
-.1956:
+.1983:
    testb    $0x02, %r13b
-   jnz      .1957
+   jnz      .1984
    add      $20, %rdx
    mov      4(%r13), %r13
-   jmp      .1956
-.1957:
+   jmp      .1983
+.1984:
    add      $7, %rdx
    andb     $~7, %dl
    sub      %rdx, %rsp
@@ -24850,178 +25107,178 @@ fmtNumAE_E:
    push     %rsp
    push     %r13
    push     %r13
-.1959:
+.1986:
    testb    $0x02, %bl
-   jz       .1960
+   jz       .1987
    mov      %rbx, %rax
-   jmp      .1961
-.1960:
+   jmp      .1988
+.1987:
    mov      -4(%rbx), %rax
-.1961:
+.1988:
    test     -16(%rbp), %rax
-   jz       .1962
+   jz       .1989
    mov      %r12, %rdx
    lea      24(%rsp), %r13
    mov      8(%rsp), %r14
-.1963:
+.1990:
    cmp      16(%rsp), %r13
-   jbe      .1964
+   jbe      .1991
    addq     $1, 16(%rsp)
    mov      %r12b, (%r13)
-.1964:
+.1991:
    mov      (%r13), %al
    add      (%r14), %al
    add      %rdx, %rax
    mov      %r12, %rdx
    cmp      $10, %al
-   jc       .1965
+   jc       .1992
    sub      $10, %al
    mov      $1, %rdx
-.1965:
+.1992:
    mov      %al, (%r13)
    add      $1, %r13
    add      $1, %r14
    cmp      (%rsp), %r14
-   jbe      .1963
+   jbe      .1990
    cmp      %r12, %rdx
-   jz       .1962
+   jz       .1989
    addq     $1, 16(%rsp)
    movb     $1, (%r13)
-.1962:
+.1989:
    mov      %r12, %rdx
    mov      8(%rsp), %r14
-.1967:
+.1994:
    mov      (%r14), %al
    add      %al, %al
    add      %rdx, %rax
    mov      %r12, %rdx
    cmp      $10, %al
-   jc       .1968
+   jc       .1995
    sub      $10, %al
    mov      $1, %rdx
-.1968:
+.1995:
    mov      %al, (%r14)
    add      $1, %r14
    cmp      (%rsp), %r14
-   jbe      .1967
+   jbe      .1994
    cmp      %r12, %rdx
-   jz       .1969
+   jz       .1996
    addq     $1, (%rsp)
    movb     $1, (%r14)
-.1969:
+.1996:
    shlq     $1, -16(%rbp)
-   jnz      .1959
+   jnz      .1986
    testb    $0x02, %bl
-   jnz      .1970
+   jnz      .1997
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jz       .1971
+   jz       .1998
    mov      $16, %rax
-   jmp      .1972
-.1971:
+   jmp      .1999
+.1998:
    mov      $1, %rax
-.1972:
+.1999:
    mov      %rax, -16(%rbp)
-   jmp      .1959
-.1970:
+   jmp      .1986
+.1997:
    cmp      %r12, -8(%rbp)
-   jns      .1973
+   jns      .2000
    cmpq     $-1, -8(%rbp)
-   jnz      .1974
+   jnz      .2001
    testb    $1, -24(%rbp)
-   jz       .1975
+   jz       .2002
    mov      $45, %al
    mov      EnvPutB, %r10
    call     *%r10
-.1975:
+.2002:
    mov      16(%rsp), %r14
    lea      24(%rsp), %rbx
-.1976:
+.2003:
    mov      (%r14), %al
    add      $48, %al
    mov      EnvPutB, %r10
    call     *%r10
    sub      $1, %r14
    cmp      %rbx, %r14
-   jnc      .1976
-   jmp      .1977
-.1974:
+   jnc      .2003
+   jmp      .2004
+.2001:
    mov      16(%rsp), %r10
    lea      1(%r10), %rbx
    lea      24(%rsp), %rax
    sub      %rax, %rbx
    testb    $1, -24(%rbp)
-   jz       .1978
+   jz       .2005
    add      $1, %rbx
-.1978:
+.2005:
    shl      $4, %rbx
    orb      $2, %bl
-.1977:
+.2004:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
    pop      %r13
    pop      %rdx
    ret
-.1973:
+.2000:
    mov      $4, %rdx
    lea      8(%rbp), %r13
    testb    $1, -24(%rbp)
-   jz       .1979
+   jz       .2006
    mov      $45, %al
    call     byteSymBCX_CX
-.1979:
+.2006:
    mov      16(%rsp), %rax
    lea      24(%rsp), %r14
    sub      %r14, %rax
    sub      -8(%rbp), %rax
    mov      %rax, -8(%rbp)
-   jnc      .1980
+   jnc      .2007
    mov      $48, %al
    call     byteSymBCX_CX
    mov      Sep0, %rax
    call     charSymACX_CX
-.1981:
+.2008:
    cmpq     $-1, -8(%rbp)
-   jnc      .1980
+   jnc      .2007
    addq     $1, -8(%rbp)
    mov      $48, %al
    call     byteSymBCX_CX
-   jmp      .1981
-.1980:
+   jmp      .2008
+.2007:
    mov      16(%rsp), %r14
    lea      24(%rsp), %rbx
-.1983:
+.2010:
    mov      (%r14), %al
    add      $48, %al
    call     byteSymBCX_CX
    sub      $1, %r14
    cmp      %rbx, %r14
-   jc       .1984
+   jc       .2011
    cmp      %r12, -8(%rbp)
-   jnz      .1985
+   jnz      .2012
    mov      Sep0, %rax
    call     charSymACX_CX
-   jmp      .1986
-.1985:
+   jmp      .2013
+.2012:
    cmp      %r12, Sep3
-   jz       .1986
+   jz       .2013
    mov      -8(%rbp), %rax
    cmp      %r12, %rax
-   jle      .1986
+   jle      .2013
    push     %rdx
    mov      %r12, %rdx
    mov      $3, %r10
    div      %r10
    cmp      %r12, %rdx
    pop      %rdx
-   jnz      .1986
+   jnz      .2013
    mov      Sep3, %rax
    call     charSymACX_CX
-.1986:
+.2013:
    subq     $1, -8(%rbp)
-   jmp      .1983
-.1984:
+   jmp      .2010
+.2011:
    mov      8(%rbp), %r13
    mov      (%rbp), %rsp
    pop      %rbp
@@ -25065,18 +25322,18 @@ doFormat:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .1990
+   jnz      .2017
    mov      %r12, %rbx
-   jmp      .1991
-.1990:
+   jmp      .2018
+.2017:
    call     xCntEX_FE
-.1991:
+.2018:
    push     %rbx
    pushq    $46
    push     %r12
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1992
+   jnz      .2019
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25093,7 +25350,7 @@ doFormat:
    mov      %rax, -16(%rbp)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1992
+   jnz      .2019
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25108,22 +25365,22 @@ doFormat:
    jz       symErrEX
    call     firstCharE_A
    mov      %rax, (%rsp)
-.1992:
+.2019:
    popq     Sep3
    popq     Sep0
    pop      %rax
    mov      8(%rbp), %rbx
    testb    $0x06, %bl
-   jz       .1994
+   jz       .2021
    call     fmtNumAE_E
-   jmp      .1995
-.1994:
+   jmp      .2022
+.2021:
    mov      -8(%rbx), %r13
    call     nameX_X
    call     symToNumXA_FE
-   jc       .1995
+   jc       .2022
    mov      $Nil, %rbx
-.1995:
+.2022:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -25148,7 +25405,7 @@ doAdd:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .1997
+   jz       .2024
    testb    $0x06, %bl
    jz       numErrEX
    push     %rbp
@@ -25157,10 +25414,10 @@ doAdd:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.1998:
+.2025:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .1999
+   jnz      .2026
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25177,13 +25434,13 @@ doAdd:
    mov      8(%rbp), %rax
    call     addAE_A
    mov      %rax, 8(%rbp)
-   jmp      .1998
-.1999:
+   jmp      .2025
+.2026:
    mov      8(%rbp), %rbx
 doAdd_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.1997:
+.2024:
    pop      %r14
    pop      %r13
    ret
@@ -25206,24 +25463,24 @@ doSub:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2000
+   jz       .2027
    testb    $0x06, %bl
    jz       numErrEX
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2001
+   jz       .2028
    cmpq     $2, %rbx
-   jz       .2000
+   jz       .2027
    xorb     $8, %bl
-   jmp      .2000
-.2001:
+   jmp      .2027
+.2028:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2004:
+.2031:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25242,12 +25499,12 @@ doSub:
    mov      %rax, 8(%rbp)
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2004
+   jz       .2031
    mov      8(%rbp), %rbx
 doSub_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2000:
+.2027:
    pop      %r14
    pop      %r13
    ret
@@ -25270,38 +25527,38 @@ doInc:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2005
+   jz       .2032
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x06, %bl
-   jz       .2006
+   jz       .2033
    call     incE_A
-   jmp      .2007
-.2006:
+   jmp      .2034
+.2033:
    call     checkVarEX
    testb    $0x08, %bl
-   jz       .2008
+   jz       .2035
    testb    $0x08, -8(%rbx)
-   jz       .2008
+   jz       .2035
    call     dbTouchEX
-.2008:
+.2035:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2010
+   jz       .2037
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
    cmovzq   %rbx, %rax
-   jz       .2007
+   jz       .2034
    testb    $0x06, %bl
    jz       numErrEX
    call     incE_A
    mov      8(%rbp), %r11
    mov      %rax, (%r11)
-   jmp      .2007
-.2010:
+   jmp      .2034
+.2037:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25317,23 +25574,23 @@ doInc:
    mov      16(%rbp), %r10
    mov      (%r10), %rax
    cmp      $Nil, %rax
-   jz       .2007
+   jz       .2034
    testb    $0x06, %al
    jz       numErrAX
    mov      8(%rbp), %rbx
    cmp      $Nil, %rbx
    cmovzq   %rbx, %rax
-   jz       .2007
+   jz       .2034
    testb    $0x06, %bl
    jz       numErrEX
    call     addAE_A
    mov      16(%rbp), %r11
    mov      %rax, (%r11)
-.2007:
+.2034:
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.2005:
+.2032:
    pop      %r14
    pop      %r13
    ret
@@ -25356,38 +25613,38 @@ doDec:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2015
+   jz       .2042
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
    testb    $0x06, %bl
-   jz       .2016
+   jz       .2043
    call     decE_A
-   jmp      .2017
-.2016:
+   jmp      .2044
+.2043:
    call     checkVarEX
    testb    $0x08, %bl
-   jz       .2018
+   jz       .2045
    testb    $0x08, -8(%rbx)
-   jz       .2018
+   jz       .2045
    call     dbTouchEX
-.2018:
+.2045:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2020
+   jz       .2047
    mov      (%rbx), %rbx
    cmp      $Nil, %rbx
    cmovzq   %rbx, %rax
-   jz       .2017
+   jz       .2044
    testb    $0x06, %bl
    jz       numErrEX
    call     decE_A
    mov      8(%rbp), %r11
    mov      %rax, (%r11)
-   jmp      .2017
-.2020:
+   jmp      .2044
+.2047:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25403,23 +25660,23 @@ doDec:
    mov      16(%rbp), %r10
    mov      (%r10), %rax
    cmp      $Nil, %rax
-   jz       .2017
+   jz       .2044
    testb    $0x06, %al
    jz       numErrAX
    mov      8(%rbp), %rbx
    cmp      $Nil, %rbx
    cmovzq   %rbx, %rax
-   jz       .2017
+   jz       .2044
    testb    $0x06, %bl
    jz       numErrEX
    call     subAE_A
    mov      16(%rbp), %r11
    mov      %rax, (%r11)
-.2017:
+.2044:
    mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.2015:
+.2042:
    pop      %r14
    pop      %r13
    ret
@@ -25442,15 +25699,15 @@ doMul:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2025
+   jz       .2052
    testb    $0x06, %bl
    jz       numErrEX
    mov      $0, %al
    testb    $8, %bl
-   jz       .2026
+   jz       .2053
    andb     $~8, %bl
    add      $1, %al
-.2026:
+.2053:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -25458,10 +25715,10 @@ doMul:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
-.2027:
+.2054:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2028
+   jnz      .2055
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25475,16 +25732,16 @@ doMul:
    testb    $0x06, %bl
    jz       numErrEX
    testb    $8, %bl
-   jz       .2029
+   jz       .2056
    andb     $~8, %bl
    xorb     $1, -8(%rbp)
-.2029:
+.2056:
    mov      %rbx, 16(%rbp)
    mov      8(%rbp), %rax
    call     muluAE_A
    mov      %rax, 8(%rbp)
-   jmp      .2027
-.2028:
+   jmp      .2054
+.2055:
    mov      8(%rbp), %rbx
    testb    $1, -8(%rbp)
    jz       doMul_10
@@ -25494,7 +25751,7 @@ doMul:
 doMul_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2025:
+.2052:
    pop      %r14
    pop      %r13
    ret
@@ -25517,15 +25774,15 @@ doMulDiv:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2032
+   jz       .2059
    testb    $0x06, %bl
    jz       numErrEX
    mov      $0, %al
    testb    $8, %bl
-   jz       .2033
+   jz       .2060
    andb     $~8, %bl
    add      $1, %al
-.2033:
+.2060:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -25533,7 +25790,7 @@ doMulDiv:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
-.2034:
+.2061:
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -25548,18 +25805,18 @@ doMulDiv:
    testb    $0x06, %bl
    jz       numErrEX
    testb    $8, %bl
-   jz       .2035
+   jz       .2062
    andb     $~8, %bl
    xorb     $1, -8(%rbp)
-.2035:
+.2062:
    mov      %rbx, 16(%rbp)
    testb    $0x0E, 8(%r14)
-   jnz      .2036
+   jnz      .2063
    mov      8(%rbp), %rax
    call     muluAE_A
    mov      %rax, 8(%rbp)
-   jmp      .2034
-.2036:
+   jmp      .2061
+.2063:
    cmpq     $2, %rbx
    jz       divErrX
    mov      %rbx, %rax
@@ -25577,7 +25834,7 @@ doMulDiv:
 doMulDiv_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2032:
+.2059:
    pop      %r14
    pop      %r13
    ret
@@ -25600,15 +25857,15 @@ doDiv:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2039
+   jz       .2066
    testb    $0x06, %bl
    jz       numErrEX
    mov      $0, %al
    testb    $8, %bl
-   jz       .2040
+   jz       .2067
    andb     $~8, %bl
    add      $1, %al
-.2040:
+.2067:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -25616,10 +25873,10 @@ doDiv:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
-.2041:
+.2068:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2042
+   jnz      .2069
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25635,16 +25892,16 @@ doDiv:
    cmpq     $2, %rbx
    jz       divErrX
    testb    $8, %bl
-   jz       .2043
+   jz       .2070
    andb     $~8, %bl
    xorb     $1, -8(%rbp)
-.2043:
+.2070:
    mov      %rbx, 16(%rbp)
    mov      8(%rbp), %rax
    call     divuAE_AC
    mov      %rax, 8(%rbp)
-   jmp      .2041
-.2042:
+   jmp      .2068
+.2069:
    mov      8(%rbp), %rbx
    testb    $1, -8(%rbp)
    jz       doDiv_10
@@ -25654,7 +25911,7 @@ doDiv:
 doDiv_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2039:
+.2066:
    pop      %r14
    pop      %r13
    ret
@@ -25677,15 +25934,15 @@ doRem:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2046
+   jz       .2073
    testb    $0x06, %bl
    jz       numErrEX
    mov      $0, %al
    testb    $8, %bl
-   jz       .2047
+   jz       .2074
    andb     $~8, %bl
    mov      $1, %al
-.2047:
+.2074:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -25693,10 +25950,10 @@ doRem:
    push     %rbp
    mov      %rsp, %rbp
    push     %rax
-.2048:
+.2075:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2049
+   jnz      .2076
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25716,8 +25973,8 @@ doRem:
    mov      8(%rbp), %rax
    call     divuAE_AC
    mov      %rdx, 8(%rbp)
-   jmp      .2048
-.2049:
+   jmp      .2075
+.2076:
    mov      8(%rbp), %rbx
    testb    $1, -8(%rbp)
    jz       doRem_10
@@ -25727,7 +25984,7 @@ doRem:
 doRem_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2046:
+.2073:
    pop      %r14
    pop      %r13
    ret
@@ -25758,7 +26015,7 @@ doShift:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2052
+   jz       .2079
    testb    $0x06, %bl
    jz       numErrEX
    mov      %rbx, %rax
@@ -25766,32 +26023,32 @@ doShift:
    and      $8, %rbx
    push     %rbx
    cmp      %r12, -8(%rbp)
-   jz       .2053
-   js       .2054
+   jz       .2080
+   js       .2081
    call     shruA_A
    mov      %rax, 8(%rbp)
-.2055:
+.2082:
    subq     $1, -8(%rbp)
-   jz       .2053
+   jz       .2080
    call     halfA_A
    mov      %rax, 8(%rbp)
-   jmp      .2055
-.2054:
+   jmp      .2082
+.2081:
    call     shluA_A
    mov      %rax, 8(%rbp)
-.2058:
+.2085:
    addq     $1, -8(%rbp)
-   jz       .2053
+   jz       .2080
    call     twiceA_A
    mov      %rax, 8(%rbp)
-   jmp      .2058
-.2053:
+   jmp      .2085
+.2080:
    cmpq     $2, %rax
-   jz       .2060
+   jz       .2087
    or       -16(%rbp), %rax
-.2060:
+.2087:
    mov      %rax, %rbx
-.2052:
+.2079:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
@@ -25880,11 +26137,11 @@ doAbs:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2061
+   jz       .2088
    testb    $0x06, %bl
    jz       numErrEX
    andb     $~8, %bl
-.2061:
+.2088:
    pop      %r13
    ret
 
@@ -25913,10 +26170,10 @@ doBitQ:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2062:
+.2089:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2063
+   jnz      .2090
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -25926,14 +26183,14 @@ doBitQ:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2063
+   jz       .2090
    testb    $0x06, %bl
    jz       numErrEX
    andb     $~8, %bl
    mov      8(%rbp), %rdx
-.2064:
+.2091:
    testb    $0x02, %dl
-   jnz      .2065
+   jnz      .2092
    testb    $0x02, %bl
    jnz      doBitQ_10
    mov      -4(%rbx), %rax
@@ -25942,16 +26199,16 @@ doBitQ:
    jnz      doBitQ_10
    mov      4(%rdx), %rdx
    mov      4(%rbx), %rbx
-   jmp      .2064
-.2065:
+   jmp      .2091
+.2092:
    testb    $0x02, %bl
-   jnz      .2066
+   jnz      .2093
    shr      $4, %rdx
    mov      -4(%rbx), %rbx
-.2066:
+.2093:
    and      %rdx, %rbx
    cmp      %rdx, %rbx
-   jz       .2062
+   jz       .2089
 doBitQ_10:
    mov      $Nil, %rbx
    mov      (%rbp), %rsp
@@ -25959,7 +26216,7 @@ doBitQ_10:
    pop      %r14
    pop      %r13
    ret
-.2063:
+.2090:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -25985,7 +26242,7 @@ doBitAnd:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2068
+   jz       .2095
    testb    $0x06, %bl
    jz       numErrEX
    andb     $~8, %bl
@@ -25995,10 +26252,10 @@ doBitAnd:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2069:
+.2096:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2070
+   jnz      .2097
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -26016,13 +26273,13 @@ doBitAnd:
    mov      8(%rbp), %rax
    call     anduAE_A
    mov      %rax, 8(%rbp)
-   jmp      .2069
-.2070:
+   jmp      .2096
+.2097:
    mov      8(%rbp), %rbx
 doBitAnd_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2068:
+.2095:
    pop      %r14
    pop      %r13
    ret
@@ -26045,7 +26302,7 @@ doBitOr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2071
+   jz       .2098
    testb    $0x06, %bl
    jz       numErrEX
    andb     $~8, %bl
@@ -26055,10 +26312,10 @@ doBitOr:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2072:
+.2099:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2073
+   jnz      .2100
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -26076,13 +26333,13 @@ doBitOr:
    mov      8(%rbp), %rax
    call     oruAE_A
    mov      %rax, 8(%rbp)
-   jmp      .2072
-.2073:
+   jmp      .2099
+.2100:
    mov      8(%rbp), %rbx
 doBitOr_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2071:
+.2098:
    pop      %r14
    pop      %r13
    ret
@@ -26105,7 +26362,7 @@ doBitXor:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2074
+   jz       .2101
    testb    $0x06, %bl
    jz       numErrEX
    andb     $~8, %bl
@@ -26115,10 +26372,10 @@ doBitXor:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2075:
+.2102:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jnz      .2076
+   jnz      .2103
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -26136,13 +26393,13 @@ doBitXor:
    mov      8(%rbp), %rax
    call     xoruAE_A
    mov      %rax, 8(%rbp)
-   jmp      .2075
-.2076:
+   jmp      .2102
+.2103:
    mov      8(%rbp), %rbx
 doBitXor_10:
    mov      (%rbp), %rsp
    pop      %rbp
-.2074:
+.2101:
    pop      %r14
    pop      %r13
    ret
@@ -26152,32 +26409,32 @@ doBitXor_10:
 initSeedE_E:
    push     %rdx
    mov      %r12, %rdx
-.2077:
+.2104:
    testb    $0x0E, %bl
-   jnz      .2078
+   jnz      .2105
    push     %rbx
    mov      (%rbx), %rbx
    call     initSeedE_E
    add      %rbx, %rdx
    pop      %rbx
    mov      8(%rbx), %rbx
-   jmp      .2077
-.2078:
+   jmp      .2104
+.2105:
    cmp      $Nil, %rbx
-   jz       .2079
+   jz       .2106
    testb    $0x06, %bl
-   jnz      .2081
+   jnz      .2108
    mov      -8(%rbx), %rbx
    call     nameE_E
-.2081:
+.2108:
    testb    $0x02, %bl
-   jnz      .2082
+   jnz      .2109
    add      -4(%rbx), %rdx
    mov      4(%rbx), %rbx
-   jmp      .2081
-.2082:
+   jmp      .2108
+.2109:
    add      %rbx, %rdx
-.2079:
+.2106:
    mov      %rdx, %rbx
    pop      %rdx
    ret
@@ -26232,25 +26489,25 @@ doRand:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2083
+   jnz      .2110
    mov      Seed+4, %rbx
    andb     $~7, %bl
    orb      $2, %bl
    pop      %r14
    pop      %r13
    ret
-.2083:
+.2110:
    cmp      $TSym, %rbx
-   jnz      .2084
+   jnz      .2111
    mov      Seed, %rax
    rcl      $1, %rax
-   jc       .2085
+   jc       .2112
    mov      $Nil, %rbx
-.2085:
+.2112:
    pop      %r14
    pop      %r13
    ret
-.2084:
+.2111:
    call     xCntEX_FE
    push     %rbx
    mov      8(%r14), %r14
@@ -26310,7 +26567,7 @@ lockFileAC:
    mov      %r12, Flock+8
    shr      $16, %rax
    mov      %rax, Flock+16
-.2086:
+.2113:
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      $7, %rsi
@@ -26323,7 +26580,7 @@ lockFileAC:
    call     errno_A
    cmp      $4, %rax
    jnz      lockErr
-   jmp      .2086
+   jmp      .2113
 
    .global  closeOnExecAX
 closeOnExecAX:
@@ -26375,7 +26632,7 @@ initInFileCA_A:
    push     %rdx
    shl      $3, %rdx
    cmp      InFDs, %rdx
-   jc       .2087
+   jc       .2114
    push     %r13
    mov      InFDs, %r13
    mov      %rdx, %rbx
@@ -26386,13 +26643,13 @@ initInFileCA_A:
    mov      %rax, InFiles
    add      %rax, %r13
    add      %rbx, %rax
-.2088:
+.2115:
    mov      %r12, (%r13)
    add      $8, %r13
    cmp      %rax, %r13
-   jnz      .2088
+   jnz      .2115
    pop      %r13
-.2087:
+.2114:
    add      InFiles, %rdx
    mov      (%rdx), %rax
    mov      $8248, %rbx
@@ -26420,7 +26677,7 @@ initOutFileA_A:
    push     %rax
    shl      $3, %rdx
    cmp      OutFDs, %rdx
-   jc       .2089
+   jc       .2116
    push     %r13
    mov      OutFDs, %r13
    mov      %rdx, %rbx
@@ -26431,13 +26688,13 @@ initOutFileA_A:
    mov      %rax, OutFiles
    add      %rax, %r13
    add      %rbx, %rax
-.2090:
+.2117:
    mov      %r12, (%r13)
    add      $8, %r13
    cmp      %rax, %r13
-   jnz      .2090
+   jnz      .2117
    pop      %r13
-.2089:
+.2116:
    add      OutFiles, %rdx
    mov      (%rdx), %rax
    mov      $8216, %rbx
@@ -26452,16 +26709,16 @@ initOutFileA_A:
 closeInFileA:
    shl      $3, %rax
    cmp      InFDs, %rax
-   jnc      .2091
+   jnc      .2118
    push     %r13
    add      InFiles, %rax
    mov      (%rax), %r13
    cmp      %r12, %r13
-   jz       .2092
+   jz       .2119
    cmp      InFile, %r13
-   jnz      .2093
+   jnz      .2120
    mov      %r12, InFile
-.2093:
+.2120:
    mov      %r12, (%rax)
    mov      %rdx, %r12
    mov      48(%r13), %rdi
@@ -26470,9 +26727,9 @@ closeInFileA:
    call     free
    mov      %r12, %rdx
    xor      %r12, %r12
-.2092:
+.2119:
    pop      %r13
-.2091:
+.2118:
    rep
    ret
 
@@ -26480,25 +26737,25 @@ closeInFileA:
 closeOutFileA:
    shl      $3, %rax
    cmp      OutFDs, %rax
-   jnc      .2094
+   jnc      .2121
    push     %r13
    add      OutFiles, %rax
    mov      (%rax), %r13
    cmp      %r12, %r13
-   jz       .2095
+   jz       .2122
    cmp      OutFile, %rax
-   jnz      .2096
+   jnz      .2123
    mov      %r12, OutFile
-.2096:
+.2123:
    mov      %r12, (%rax)
    mov      %rdx, %r12
    mov      %r13, %rdi
    call     free
    mov      %r12, %rdx
    xor      %r12, %r12
-.2095:
+.2122:
    pop      %r13
-.2094:
+.2121:
    rep
    ret
 
@@ -26506,7 +26763,7 @@ closeOutFileA:
 slowZ_F:
    mov      %r12, 8(%r15)
    mov      %r12, 16(%r15)
-.2097:
+.2124:
    mov      %rdx, %r12
    mov      (%r15), %rdi
    lea      56(%r15), %rsi
@@ -26515,26 +26772,26 @@ slowZ_F:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   js       .2098
+   js       .2125
    mov      %rax, 16(%r15)
    ret
-.2098:
+.2125:
    call     errno_A
    cmp      $4, %rax
-   jz       .2099
+   jz       .2126
    or       %r12, %r12
    ret
-.2099:
+.2126:
    cmp      %r12b, Signal
-   jz       .2097
-   call     sighandlerT
-   jmp      .2097
+   jz       .2124
+   call     sighandler0
+   jmp      .2124
 
    .global  slowNbC_FA
 slowNbC_FA:
    mov      %r12, 8(%rdx)
    mov      %r12, 16(%rdx)
-.2101:
+.2128:
    mov      (%rdx), %rax
    call     nonblockingA_A
    push     %rax
@@ -26555,29 +26812,29 @@ slowNbC_FA:
    xor      %r12, %r12
    pop      %rax
    cmp      %r12, %rax
-   js       .2102
+   js       .2129
    mov      %rax, 16(%rdx)
    ret
-.2102:
+.2129:
    call     errno_A
    cmp      $11, %rax
-   jnz      .2103
+   jnz      .2130
    stc
    ret
-.2103:
+.2130:
    cmp      $4, %rax
-   jz       .2104
+   jz       .2131
    or       %r12, %r12
    ret
-.2104:
+.2131:
    cmp      %r12b, Signal
-   jz       .2101
-   call     sighandlerT
-   jmp      .2101
+   jz       .2128
+   call     sighandler0
+   jmp      .2128
 
    .global  rdBytesCEX_F
 rdBytesCEX_F:
-.2107:
+.2134:
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      %r13, %rsi
@@ -26586,25 +26843,25 @@ rdBytesCEX_F:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jg       .2108
+   jg       .2135
    jz       Ret
    call     errno_A
    cmp      $4, %rax
    jnz      Retz
    cmp      %r12b, Signal
-   jz       .2107
-   call     sighandlerT
-   jmp      .2107
-.2108:
+   jz       .2134
+   call     sighandler0
+   jmp      .2134
+.2135:
    add      %rax, %r13
    sub      %rax, %rbx
-   jnz      .2107
+   jnz      .2134
    cmp      %r12, %rax
    ret
 
    .global  rdBytesNbCEX_F
 rdBytesNbCEX_F:
-.2110:
+.2137:
    mov      %rdx, %rax
    call     nonblockingA_A
    push     %rax
@@ -26625,14 +26882,14 @@ rdBytesNbCEX_F:
    xor      %r12, %r12
    pop      %rax
    cmp      %r12, %rax
-   jle      .2111
-.2112:
+   jle      .2138
+.2139:
    add      %rax, %r13
    sub      %rax, %rbx
-   jnz      .2114
+   jnz      .2141
    cmp      %r12, %rax
    ret
-.2114:
+.2141:
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      %r13, %rsi
@@ -26641,33 +26898,33 @@ rdBytesNbCEX_F:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jg       .2112
+   jg       .2139
    jz       Ret
    call     errno_A
    cmp      $4, %rax
    jnz      Retz
    cmp      %r12b, Signal
-   jz       .2114
-   call     sighandlerT
-   jmp      .2114
-.2111:
+   jz       .2141
+   call     sighandler0
+   jmp      .2141
+.2138:
    jz       Ret
    call     errno_A
    cmp      $11, %rax
-   jnz      .2117
+   jnz      .2144
    stc
    ret
-.2117:
+.2144:
    cmp      $4, %rax
    jnz      Retz
    cmp      %r12b, Signal
-   jz       .2110
-   call     sighandlerT
-   jmp      .2110
+   jz       .2137
+   call     sighandler0
+   jmp      .2137
 
    .global  wrBytesCEX_F
 wrBytesCEX_F:
-.2119:
+.2146:
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      %r13, %rsi
@@ -26676,12 +26933,12 @@ wrBytesCEX_F:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   js       .2120
+   js       .2147
    sub      %rax, %rbx
    jz       Ret
    add      %rax, %r13
-   jmp      .2121
-.2120:
+   jmp      .2148
+.2147:
    call     errno_A
    cmp      $9, %rax
    jz       retnz
@@ -26691,11 +26948,11 @@ wrBytesCEX_F:
    jz       retnz
    cmp      $4, %rax
    jnz      wrBytesErr
-.2121:
+.2148:
    cmp      %r12b, Signal
-   jz       .2119
-   call     sighandlerT
-   jmp      .2119
+   jz       .2146
+   call     sighandler0
+   jmp      .2146
 
    .balign  16
    .global  clsChildY
@@ -26716,8 +26973,8 @@ clsChildY:
 wrChildCXY:
    mov      32(%r14), %rbx
    cmp      %r12, %rbx
-   jnz      .2123
-.2124:
+   jnz      .2150
+.2151:
    mov      %rdx, %r12
    mov      16(%r14), %rdi
    mov      %r13, %rsi
@@ -26726,23 +26983,23 @@ wrChildCXY:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   js       .2125
+   js       .2152
    sub      %rax, %rdx
    jz       Ret
    add      %rax, %r13
-   jmp      .2124
-.2125:
+   jmp      .2151
+.2152:
    call     errno_A
    cmp      $11, %rax
-   jz       .2123
+   jz       .2150
    cmp      $32, %rax
    jz       clsChildY
    cmp      $104, %rax
    jz       clsChildY
    cmp      $4, %rax
    jnz      wrChildErr
-   jmp      .2124
-.2123:
+   jmp      .2151
+.2150:
    mov      40(%r14), %rax
    add      %rdx, %rbx
    add      $2, %rbx
@@ -26765,11 +27022,11 @@ wrChildCXY:
    .global  flushA_F
 flushA_F:
    cmp      %r12, %rax
-   jz       .2128
+   jz       .2155
    push     %rbx
    mov      8(%rax), %rbx
    cmp      %r12, %rbx
-   jz       .2129
+   jz       .2156
    push     %rdx
    push     %r13
    mov      %r12, 8(%rax)
@@ -26778,25 +27035,25 @@ flushA_F:
    call     wrBytesCEX_F
    pop      %r13
    pop      %rdx
-.2129:
+.2156:
    pop      %rbx
-.2128:
+.2155:
    rep
    ret
 
    .global  flushAll
 flushAll:
    mov      %r12, %rdx
-.2130:
+.2157:
    cmp      OutFDs, %rdx
-   jnc      .2131
+   jnc      .2158
    mov      %rdx, %rax
    add      OutFiles, %rax
    mov      (%rax), %rax
    call     flushA_F
    add      $8, %rdx
-   jmp      .2130
-.2131:
+   jmp      .2157
+.2158:
    rep
    ret
 
@@ -26806,12 +27063,12 @@ stdinByte_FA:
    mov      InFiles, %r10
    mov      (%r10), %r15
    cmp      %r12, %r15
-   jz       .2132
+   jz       .2159
    call     getBinaryZ_FB
    movzx    %al, %rax
    pop      %r15
    ret
-.2132:
+.2159:
    stc
    pop      %r15
    ret
@@ -26821,11 +27078,11 @@ stdinByte_FA:
 getBinaryZ_FB:
    mov      8(%r15), %rax
    cmp      16(%r15), %rax
-   jnz      .2133
+   jnz      .2160
    call     slowZ_F
    jz       retc
    mov      %r12, %rax
-.2133:
+.2160:
    addq     $1, 8(%r15)
    add      %r15, %rax
    mov      56(%rax), %al
@@ -26836,15 +27093,15 @@ getBinaryZ_FB:
 byteNumBCX_CX:
    movzx    %al, %rax
    testb    $0x04, %r13b
-   jnz      .2134
+   jnz      .2161
    cmp      $59, %rdx
-   jz       .2135
+   jz       .2162
    mov      %dl, %cl
    shl      %cl, %rax
    or       %rax, (%r13)
    add      $8, %rdx
    ret
-.2135:
+.2162:
    mov      (%r13), %rdx
    shr      $3, %rdx
    shl      $56, %rax
@@ -26855,9 +27112,9 @@ byteNumBCX_CX:
    mov      %rax, %r13
    mov      %r12, %rdx
    ret
-.2134:
+.2161:
    cmp      %r12, %rdx
-   jnz      .2136
+   jnz      .2163
    mov      -4(%r13), %rdx
    shr      $1, %rax
    rcr      $1, %rdx
@@ -26868,15 +27125,15 @@ byteNumBCX_CX:
    mov      %rax, 4(%r13)
    mov      $11, %rdx
    ret
-.2136:
+.2163:
    cmp      $59, %rdx
-   jz       .2137
+   jz       .2164
    mov      %dl, %cl
    shl      %cl, %rax
    or       %rax, 4(%r13)
    add      $8, %rdx
    ret
-.2137:
+.2164:
    mov      4(%r13), %rdx
    shr      $3, %rdx
    shl      $56, %rax
@@ -26897,7 +27154,7 @@ binReadZ_FE:
    jz       retNil
    movzx    %al, %rax
    testb    $252, %al
-   jnz      .2138
+   jnz      .2165
    mov      %rax, %rbx
    cmp      $1, %al
    jnz      retnc
@@ -26912,39 +27169,39 @@ binReadZ_FE:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
-.2139:
+.2166:
    call     binReadZ_FE
    jc       binReadZ_FE_10
    cmp      $3, %rbx
-   jz       .2140
+   jz       .2167
    cmp      $2, %rbx
-   jnz      .2141
+   jnz      .2168
    call     binReadZ_FE
-   jnc      .2142
+   jnc      .2169
 binReadZ_FE_10:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.2142:
+.2169:
    cmp      $3, %rbx
    cmovzq   8(%rbp), %rbx
    mov      %rbx, 8(%r13)
-   jmp      .2140
-.2141:
+   jmp      .2167
+.2168:
    call     consE_C
    mov      %rbx, (%rdx)
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      %rdx, %r13
-   jmp      .2139
-.2140:
+   jmp      .2166
+.2167:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.2138:
+.2165:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
@@ -26955,92 +27212,92 @@ binReadZ_FE_10:
    mov      %rax, %rbx
    shr      $2, %rbx
    and      $3, %rax
-   jnz      .2143
+   jnz      .2170
    mov      $3, %rdx
    cmp      $63, %rbx
-   jnz      .2147
-.2146:
+   jnz      .2174
+.2173:
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    call     byteNumBCX_CX
    sub      $1, %rbx
-   jnz      .2146
+   jnz      .2173
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    movzx    %al, %rax
    mov      %rax, %rbx
    cmp      $255, %al
-   jz       .2146
+   jz       .2173
    or       %al, %al
    jz       binReadZ_FE_20
-.2147:
+.2174:
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    call     byteNumBCX_CX
    sub      $1, %rbx
-   jnz      .2147
+   jnz      .2174
 binReadZ_FE_20:
    mov      8(%rbp), %rbx
    testb    $0x04, %r13b
-   jz       .2149
+   jz       .2176
    mov      4(%r13), %rax
    and      $8, %rax
    andb     $~8, 4(%r13)
    or       %rax, %rbx
-   jmp      .2149
-.2143:
+   jmp      .2176
+.2170:
    push     %rax
    mov      $4, %rdx
    cmp      $63, %rbx
-   jnz      .2153
-.2152:
+   jnz      .2180
+.2179:
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    call     byteSymBCX_CX
    sub      $1, %rbx
-   jnz      .2152
+   jnz      .2179
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    movzx    %al, %rax
    mov      %rax, %rbx
    cmp      $255, %al
-   jz       .2152
+   jz       .2179
    or       %al, %al
    jz       binReadZ_FE_30
-.2153:
+.2180:
    mov      GetBinZ_FB, %r10
    call     *%r10
    jc       binReadZ_FE_90
    call     byteSymBCX_CX
    sub      $1, %rbx
-   jnz      .2153
+   jnz      .2180
 binReadZ_FE_30:
    mov      8(%rbp), %r13
    pop      %rax
    cmp      $2, %rax
-   jnz      .2154
+   jnz      .2181
    call     consSymX_E
-   jmp      .2149
-.2154:
+   jmp      .2176
+.2181:
    cmp      $1, %rax
-   jnz      .2156
+   jnz      .2183
    push     %r14
    mov      $Intern, %r14
    mov      %r12, %rbx
    call     internEXY_FE
-   jnc      .2157
+   jnc      .2184
    movq     $Nil, (%rbx)
-.2157:
+.2184:
    pop      %r14
-   jmp      .2149
-.2156:
+   jmp      .2176
+.2183:
    cmp      %r12, Extn
-   jz       .2159
+   jz       .2186
    mov      %r13, %rax
    shr      $24, %rax
    mov      %rax, %rdx
@@ -27058,9 +27315,9 @@ binReadZ_FE_30:
    mov      $18442258061990035455, %r10
    and      %r10, %r13
    or       %rax, %r13
-.2159:
+.2186:
    call     externX_E
-.2149:
+.2176:
    clc
 binReadZ_FE_90:
    mov      (%rbp), %rsp
@@ -27072,21 +27329,21 @@ binReadZ_FE_90:
    .global  prByteCEXY
 prByteCEXY:
    cmp      %r12, %rdx
-   jnz      .2160
+   jnz      .2187
    testb    $0x02, %r13b
-   jnz      .2161
+   jnz      .2188
    mov      -4(%r13), %rbx
    mov      4(%r13), %r13
-   jmp      .2162
-.2161:
+   jmp      .2189
+.2188:
    mov      %r13, %rbx
    shr      $4, %rbx
-.2162:
+.2189:
    shr      $1, %r14
    rcl      $1, %rbx
    rcl      $1, %r14
    mov      $8, %rdx
-.2160:
+.2187:
    mov      %rbx, %rax
    mov      PutBinBZ, %r10
    call     *%r10
@@ -27098,23 +27355,23 @@ prByteCEXY:
    .global  prCntCE
 prCntCE:
    mov      %rbx, %rax
-.2163:
+.2190:
    shr      $8, %rax
-   jz       .2164
+   jz       .2191
    add      $4, %rdx
-   jmp      .2163
-.2164:
+   jmp      .2190
+.2191:
    mov      %rdx, %rax
    mov      PutBinBZ, %r10
    call     *%r10
    shr      $2, %rdx
-.2165:
+.2192:
    mov      %rbx, %rax
    shr      $8, %rbx
    mov      PutBinBZ, %r10
    call     *%r10
    sub      $1, %rdx
-   jnz      .2165
+   jnz      .2192
    rep
    ret
 
@@ -27133,104 +27390,104 @@ prE:
    .global  binPrintEZ
 binPrintEZ:
    testb    $0x02, %bl
-   jz       .2166
+   jz       .2193
    mov      $4, %rdx
    shr      $3, %rbx
    jmp      prCntCE
-.2166:
+.2193:
    testb    $0x04, %bl
-   jz       .2167
+   jz       .2194
    push     %r13
    push     %r14
    push     %rbx
    andb     $~8, %bl
    mov      %rbx, %r13
    mov      $8, %rax
-.2168:
+.2195:
    mov      -4(%rbx), %rdx
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jnz      .2169
+   jnz      .2196
    add      $8, %rax
-   jmp      .2168
-.2169:
+   jmp      .2195
+.2196:
    shr      $4, %rbx
    shl      $1, %rdx
    adc      %rbx, %rbx
-   jz       .2170
-.2171:
+   jz       .2197
+.2198:
    add      $1, %rax
    shr      $8, %rbx
-   jnz      .2171
-.2170:
+   jnz      .2198
+.2197:
    pop      %r14
    shr      $3, %r14
    mov      %r12, %rdx
    cmp      $63, %rax
-   jnc      .2172
+   jnc      .2199
    push     %rax
    shl      $2, %rax
    mov      PutBinBZ, %r10
    call     *%r10
-.2173:
+.2200:
    call     prByteCEXY
    subq     $1, (%rsp)
-   jnz      .2173
-   jmp      .2174
-.2172:
+   jnz      .2200
+   jmp      .2201
+.2199:
    sub      $63, %rax
    push     %rax
    mov      $252, %rax
    mov      PutBinBZ, %r10
    call     *%r10
    pushq    $63
-.2175:
+.2202:
    call     prByteCEXY
    subq     $1, (%rsp)
-   jnz      .2175
-.2176:
+   jnz      .2202
+.2203:
    cmpq     $255, 8(%rsp)
-   jc       .2177
+   jc       .2204
    mov      $255, %rax
    mov      %rax, (%rsp)
    mov      PutBinBZ, %r10
    call     *%r10
-.2178:
+.2205:
    call     prByteCEXY
    subq     $1, (%rsp)
-   jnz      .2178
+   jnz      .2205
    subq     $255, 8(%rsp)
-   jmp      .2176
-.2177:
+   jmp      .2203
+.2204:
    pop      %rax
    mov      (%rsp), %rax
    mov      PutBinBZ, %r10
    call     *%r10
-.2179:
+.2206:
    subq     $1, (%rsp)
-   jc       .2174
+   jc       .2201
    call     prByteCEXY
-   jmp      .2179
-.2174:
+   jmp      .2206
+.2201:
    pop      %rax
    pop      %r14
    pop      %r13
    ret
-.2167:
+.2194:
    testb    $0x08, %bl
-   jz       .2181
+   jz       .2208
    cmp      $Nil, %rbx
-   jnz      .2182
+   jnz      .2209
    mov      %r12, %rax
    mov      PutBinBZ, %r10
    jmp      *%r10
-.2182:
+.2209:
    testb    $0x08, -8(%rbx)
-   jz       .2183
+   jz       .2210
    mov      -8(%rbx), %rbx
    call     nameE_E
    cmp      %r12, Extn
-   jz       .2184
+   jz       .2211
    mov      %rbx, %rax
    shr      $24, %rax
    mov      %rax, %rdx
@@ -27248,68 +27505,68 @@ binPrintEZ:
    mov      $18442258061990035455, %r10
    and      %r10, %rbx
    or       %rax, %rbx
-.2184:
+.2211:
    shl      $2, %rbx
    shr      $6, %rbx
    mov      $7, %rdx
    jmp      prCntCE
-.2183:
+.2210:
    push     %r13
    push     %r14
    mov      -8(%rbx), %r13
    call     nameX_X
    cmpq     $2, %r13
-   jnz      .2185
+   jnz      .2212
    mov      %r12, %rax
    mov      PutBinBZ, %r10
    call     *%r10
-   jmp      .2186
-.2185:
+   jmp      .2213
+.2212:
    mov      $Intern, %r14
    call     isInternEXY_F
    mov      $1, %rdx
    mov      $2, %r10
    cmovnzq  %r10, %rdx
    testb    $0x02, %r13b
-   jz       .2187
+   jz       .2214
    add      $4, %rdx
    mov      %r13, %rbx
    shr      $4, %rbx
    call     prCntCE
-   jmp      .2186
-.2187:
+   jmp      .2213
+.2214:
    mov      %r13, %rbx
    mov      $8, %rax
-.2189:
+.2216:
    mov      4(%rbx), %rbx
    testb    $0x02, %bl
-   jnz      .2190
+   jnz      .2217
    add      $8, %rax
-   jmp      .2189
-.2190:
+   jmp      .2216
+.2217:
    shr      $4, %rbx
-   jz       .2191
-.2192:
+   jz       .2218
+.2219:
    add      $1, %rax
    shr      $8, %rbx
-   jnz      .2192
-.2191:
+   jnz      .2219
+.2218:
    mov      %rax, %rbx
    cmp      $63, %rax
-   jnc      .2193
+   jnc      .2220
    shl      $2, %rax
    or       %rdx, %rax
    mov      PutBinBZ, %r10
    call     *%r10
    mov      %r12, %rdx
-.2194:
+.2221:
    call     symByteCX_FACX
    mov      PutBinBZ, %r10
    call     *%r10
    sub      $1, %rbx
-   jnz      .2194
-   jmp      .2186
-.2193:
+   jnz      .2221
+   jmp      .2213
+.2220:
    mov      $252, %rax
    or       %rdx, %rax
    mov      PutBinBZ, %r10
@@ -27318,44 +27575,44 @@ binPrintEZ:
    push     %rbx
    mov      $63, %rbx
    mov      %r12, %rdx
-.2196:
+.2223:
    call     symByteCX_FACX
    mov      PutBinBZ, %r10
    call     *%r10
    sub      $1, %rbx
-   jnz      .2196
-.2197:
+   jnz      .2223
+.2224:
    cmpq     $255, (%rsp)
-   jc       .2198
+   jc       .2225
    mov      $255, %rax
    mov      %rax, %rbx
    mov      PutBinBZ, %r10
    call     *%r10
-.2199:
+.2226:
    call     symByteCX_FACX
    mov      PutBinBZ, %r10
    call     *%r10
    sub      $1, %rbx
-   jnz      .2199
+   jnz      .2226
    subq     $255, (%rsp)
-   jmp      .2197
-.2198:
+   jmp      .2224
+.2225:
    pop      %rbx
    mov      %rbx, %rax
    mov      PutBinBZ, %r10
    call     *%r10
-.2200:
+.2227:
    sub      $1, %rbx
-   jc       .2186
+   jc       .2213
    call     symByteCX_FACX
    mov      PutBinBZ, %r10
    call     *%r10
-   jmp      .2200
-.2186:
+   jmp      .2227
+.2213:
    pop      %r14
    pop      %r13
    ret
-.2181:
+.2208:
    push     %r13
    push     %r14
    mov      %rbx, %r13
@@ -27363,21 +27620,21 @@ binPrintEZ:
    mov      $1, %rax
    mov      PutBinBZ, %r10
    call     *%r10
-.2202:
+.2229:
    mov      (%r13), %rbx
    call     binPrintEZ
    mov      8(%r13), %r13
    cmp      $Nil, %r13
-   jz       .2203
+   jz       .2230
    cmp      %r14, %r13
-   jnz      .2204
+   jnz      .2231
    mov      $2, %rax
    mov      PutBinBZ, %r10
    call     *%r10
-   jmp      .2203
-.2204:
+   jmp      .2230
+.2231:
    testb    $0x0E, %r13b
-   jz       .2202
+   jz       .2229
    mov      $2, %rax
    mov      PutBinBZ, %r10
    call     *%r10
@@ -27386,7 +27643,7 @@ binPrintEZ:
    pop      %r14
    pop      %r13
    ret
-.2203:
+.2230:
    pop      %r14
    pop      %r13
    mov      $3, %rax
@@ -27429,31 +27686,31 @@ tellEndZ:
    push     %rax
    mov      Tell, %rdx
    cmp      %r12, %rdx
-   jz       .2206
+   jz       .2233
    call     wrBytesCEX_F
-   jz       .2206
+   jz       .2233
    mov      %rdx, %r12
    mov      %r12, %rdi
    call     close
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r12, Tell
-.2206:
+.2233:
    mov      Child, %r14
    mov      Children, %r15
-.2208:
+.2235:
    sub      $48, %r15
-   jc       .2209
+   jc       .2236
    cmp      %r12, (%r14)
-   jz       .2210
+   jz       .2237
    mov      (%rsp), %rdx
    mov      TellBuf, %r10
    lea      2(%r10), %r13
    call     wrChildCXY
-.2210:
+.2237:
    add      $48, %r14
-   jmp      .2208
-.2209:
+   jmp      .2235
+.2236:
    pop      %rax
    pop      %r14
    pop      %r13
@@ -27476,19 +27733,19 @@ rdHear_FE:
    .global  symByteCX_FACX
 symByteCX_FACX:
    cmp      %r12, %rdx
-   jnz      .2211
+   jnz      .2238
    cmpq     $2, %r13
    jz       ret
    testb    $0x02, %r13b
-   jz       .2212
+   jz       .2239
    mov      %r13, %rdx
    shr      $4, %rdx
    mov      $2, %r13
-   jmp      .2211
-.2212:
+   jmp      .2238
+.2239:
    mov      -4(%r13), %rdx
    mov      4(%r13), %r13
-.2211:
+.2238:
    mov      %rdx, %rax
    shr      $8, %rdx
    or       %al, %al
@@ -27501,16 +27758,16 @@ symCharCX_FACX:
    call     symByteCX_FACX
    jz       ret
    cmp      $255, %al
-   jz       .2214
+   jz       .2241
    cmp      $128, %al
-   jc       .2215
+   jc       .2242
    testb    $32, %al
-   jnz      .2216
+   jnz      .2243
    and      $31, %al
    shl      $6, %rax
    push     %rax
-   jmp      .2217
-.2216:
+   jmp      .2244
+.2243:
    and      $15, %al
    shl      $6, %rax
    push     %rax
@@ -27519,15 +27776,15 @@ symCharCX_FACX:
    or       (%rsp), %rax
    shl      $6, %rax
    mov      %rax, (%rsp)
-.2217:
+.2244:
    call     symByteCX_FACX
    and      $63, %al
    or       %rax, (%rsp)
    pop      %rax
-.2215:
+.2242:
    rep
    ret
-.2214:
+.2241:
    mov      $65536, %rax
    or       %rax, %rax
    ret
@@ -27539,17 +27796,17 @@ bufStringE_SZ:
    pushq    (%r15)
    push     %r13
    cmp      $Nil, %rbx
-   jz       .2218
+   jz       .2245
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
-.2219:
+.2246:
    call     symByteCX_FACX
-   jz       .2218
+   jz       .2245
    mov      %al, (%r15)
    add      $1, %r15
    testb    $7, %r15b
-   jnz      .2219
+   jnz      .2246
    sub      $8, %rsp
    lea      (%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -27558,8 +27815,8 @@ bufStringE_SZ:
    cld
    rep movsb
    sub      $8, %r15
-   jmp      .2219
-.2218:
+   jmp      .2246
+.2245:
    mov      %r12b, (%r15)
    add      $8, %r15
    andb     $~7, %r15b
@@ -27573,25 +27830,25 @@ pathStringE_SZ:
    pushq    (%r15)
    push     %r13
    cmp      $Nil, %rbx
-   jz       .2222
+   jz       .2249
    mov      -8(%rbx), %r13
    call     nameX_X
    mov      %r12, %rdx
    call     symByteCX_FACX
-   jz       .2222
+   jz       .2249
    cmp      $43, %al
-   jnz      .2224
+   jnz      .2251
    mov      %al, (%r15)
    add      $1, %r15
    call     symByteCX_FACX
-.2224:
+.2251:
    cmp      $64, %al
-   jz       .2225
-.2226:
+   jz       .2252
+.2253:
    mov      %al, (%r15)
    add      $1, %r15
    testb    $7, %r15b
-   jnz      .2227
+   jnz      .2254
    sub      $8, %rsp
    lea      (%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -27600,21 +27857,21 @@ pathStringE_SZ:
    cld
    rep movsb
    sub      $8, %r15
-.2227:
+.2254:
    call     symByteCX_FACX
-   jnz      .2226
-   jmp      .2222
-.2225:
+   jnz      .2253
+   jmp      .2249
+.2252:
    push     %rbx
    mov      Home, %rbx
    cmp      %r12, %rbx
-   jz       .2229
-.2230:
+   jz       .2256
+.2257:
    mov      (%rbx), %al
    mov      %al, (%r15)
    add      $1, %r15
    testb    $7, %r15b
-   jnz      .2231
+   jnz      .2258
    sub      $8, %rsp
    lea      (%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -27623,19 +27880,19 @@ pathStringE_SZ:
    cld
    rep movsb
    sub      $8, %r15
-.2231:
+.2258:
    add      $1, %rbx
    cmp      %r12b, (%rbx)
-   jnz      .2230
-.2229:
+   jnz      .2257
+.2256:
    pop      %rbx
-.2232:
+.2259:
    call     symByteCX_FACX
-   jz       .2222
+   jz       .2249
    mov      %al, (%r15)
    add      $1, %r15
    testb    $7, %r15b
-   jnz      .2232
+   jnz      .2259
    sub      $8, %rsp
    lea      (%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -27644,8 +27901,8 @@ pathStringE_SZ:
    cld
    rep movsb
    sub      $8, %r15
-   jmp      .2232
-.2222:
+   jmp      .2259
+.2249:
    mov      %r12b, (%r15)
    add      $8, %r15
    andb     $~7, %r15b
@@ -27674,7 +27931,7 @@ charSymACX_CX:
    cmp      $128, %rax
    jc       byteSymBCX_CX
    cmp      $2048, %rax
-   jnc      .2235
+   jnc      .2262
    push     %rax
    shr      $6, %rax
    and      $31, %al
@@ -27684,12 +27941,12 @@ charSymACX_CX:
    and      $63, %al
    orb      $128, %al
    jmp      byteSymBCX_CX
-.2235:
+.2262:
    cmp      $65536, %rax
-   jnz      .2236
+   jnz      .2263
    mov      $255, %al
    jmp      byteSymBCX_CX
-.2236:
+.2263:
    push     %rax
    shr      $12, %rax
    and      $15, %al
@@ -27709,15 +27966,15 @@ charSymACX_CX:
 byteSymBCX_CX:
    movzx    %al, %rax
    testb    $0x04, %r13b
-   jnz      .2237
+   jnz      .2264
    cmp      $60, %rdx
-   jz       .2238
+   jz       .2265
    mov      %dl, %cl
    shl      %cl, %rax
    or       %rax, (%r13)
    add      $8, %rdx
    ret
-.2238:
+.2265:
    mov      (%r13), %rdx
    shr      $4, %rdx
    shl      $56, %rax
@@ -27728,15 +27985,15 @@ byteSymBCX_CX:
    mov      %rax, %r13
    mov      $4, %rdx
    ret
-.2237:
+.2264:
    cmp      $60, %rdx
-   jz       .2239
+   jz       .2266
    mov      %dl, %cl
    shl      %cl, %rax
    or       %rax, 4(%r13)
    add      $8, %rdx
    ret
-.2239:
+.2266:
    mov      4(%r13), %rdx
    shr      $4, %rdx
    shl      $56, %rax
@@ -27759,44 +28016,44 @@ currFdX_C:
 currFd_C:
    mov      EnvOutFrames, %rdx
    cmp      %r12, %rdx
-   jnz      .2240
+   jnz      .2267
    mov      EnvInFrames, %rdx
-   jmp      .2241
-.2240:
+   jmp      .2268
+.2267:
    cmp      %r12, EnvInFrames
-   jz       .2241
+   jz       .2268
    cmp      EnvInFrames, %rdx
-   jbe      .2241
+   jbe      .2268
    mov      EnvInFrames, %rdx
-.2241:
+.2268:
    mov      8(%rdx), %rdx
    ret
 
    .global  rdOpenEXY
 rdOpenEXY:
    cmp      $Nil, %rbx
-   jnz      .2244
+   jnz      .2271
    mov      %r12, 8(%r14)
    mov      %r12, 16(%r14)
-   jmp      .2245
-.2244:
+   jmp      .2272
+.2271:
    testb    $0x06, %bl
-   jz       .2246
+   jz       .2273
    testb    $0x02, %bl
    jz       cntErrEX
    mov      %r12, 16(%r14)
    mov      %rbx, %rax
    shr      $4, %rax
-   jnc      .2247
+   jnc      .2274
    mov      EnvInFrames, %rdx
-.2248:
+.2275:
    mov      (%rdx), %rdx
    cmp      %r12, %rdx
    jz       badFdErrEX
    sub      $1, %rax
-   jnz      .2248
+   jnz      .2275
    mov      8(%rdx), %rax
-.2247:
+.2274:
    mov      %rax, 8(%r14)
    shl      $3, %rax
    cmp      InFDs, %rax
@@ -27805,17 +28062,17 @@ rdOpenEXY:
    mov      (%rax), %rax
    cmp      %r12, %rax
    jz       badFdErrEX
-   jmp      .2245
-.2246:
+   jmp      .2272
+.2273:
    push     %r15
    testb    $0x08, %bl
-   jz       .2250
+   jz       .2277
    movq     $1, 16(%r14)
    call     pathStringE_SZ
-.2251:
+.2278:
    mov      (%rsp), %al
    cmp      $43, %al
-   jnz      .2252
+   jnz      .2279
    mov      %rdx, %r12
    lea      1(%rsp), %rdi
    mov      $1090, %rsi
@@ -27823,75 +28080,75 @@ rdOpenEXY:
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .2253
-.2252:
+   jmp      .2280
+.2279:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    xor      %rsi, %rsi
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-.2253:
+.2280:
    cmp      %r12d, %eax
-   jns      .2254
+   jns      .2281
    call     errno_A
    cmp      $4, %rax
    jnz      openErrEX
    cmp      %r12b, Signal
-   jz       .2251
+   jz       .2278
    call     sighandlerX
-   jmp      .2251
-.2254:
+   jmp      .2278
+.2281:
    mov      %rax, 8(%r14)
    mov      (%rsp), %al
    cmp      $43, %al
-   jnz      .2256
+   jnz      .2283
    mov      %rdx, %r12
    lea      1(%rsp), %rdi
    call     strdup
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .2257
-.2256:
+   jmp      .2284
+.2283:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    call     strdup
    mov      %r12, %rdx
    xor      %r12, %r12
-.2257:
+.2284:
    mov      8(%r14), %rdx
    call     initInFileCA_A
    mov      8(%r14), %rax
    call     closeOnExecAX
    mov      %r15, %rsp
-   jmp      .2258
-.2250:
+   jmp      .2285
+.2277:
    push     %r13
    push     %r12
    mov      %rbx, %r13
    mov      (%r13), %rbx
    call     xSymE_E
    call     pathStringE_SZ
-.2259:
+.2286:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .2260
+   jnz      .2287
    push     %r15
    mov      (%r13), %rbx
    call     xSymE_E
    call     bufStringE_SZ
-   jmp      .2259
-.2260:
+   jmp      .2286
+.2287:
    push     %r15
    mov      %rsp, %r15
    mov      %r15, %r13
    push     %r12
-.2261:
+.2288:
    lea      8(%r13), %rax
    push     %rax
    mov      (%r13), %r13
    cmp      %r12, (%r13)
-   jnz      .2261
+   jnz      .2288
    mov      8(%r13), %r13
    push     %rax
    mov      %rdx, %r12
@@ -27912,7 +28169,7 @@ rdOpenEXY:
    mov      %rax, 16(%r14)
    cmp      %r12d, %eax
    js       forkErrX
-   jnz      .2262
+   jnz      .2289
    mov      %rdx, %r12
    xor      %rdi, %rdi
    xor      %rsi, %rsi
@@ -27923,7 +28180,7 @@ rdOpenEXY:
    call     closeAX
    movslq   4(%rsp), %rax
    cmp      $1, %rax
-   jz       .2263
+   jz       .2290
    mov      %rdx, %r12
    mov      %rax, %rdi
    mov      $1, %rsi
@@ -27932,7 +28189,7 @@ rdOpenEXY:
    xor      %r12, %r12
    movslq   4(%rsp), %rax
    call     closeAX
-.2263:
+.2290:
    mov      %rdx, %r12
    mov      8(%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -27940,7 +28197,7 @@ rdOpenEXY:
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      execErrS
-.2262:
+.2289:
    mov      %rdx, %r12
    mov      %rax, %rdi
    xor      %rsi, %rsi
@@ -27953,43 +28210,43 @@ rdOpenEXY:
    mov      %rax, 8(%r14)
    call     initInFileA_A
    pop      %rax
-.2264:
+.2291:
    mov      %r15, %rsp
    pop      %r15
    cmp      %r12, %r15
-   jnz      .2264
+   jnz      .2291
    pop      %r13
-.2258:
+.2285:
    pop      %r15
-.2245:
+.2272:
    rep
    ret
 
    .global  wrOpenEXY
 wrOpenEXY:
    cmp      $Nil, %rbx
-   jnz      .2265
+   jnz      .2292
    movq     $1, 8(%r14)
    mov      %r12, 16(%r14)
-   jmp      .2266
-.2265:
+   jmp      .2293
+.2292:
    testb    $0x06, %bl
-   jz       .2267
+   jz       .2294
    testb    $0x02, %bl
    jz       cntErrEX
    mov      %r12, 16(%r14)
    mov      %rbx, %rax
    shr      $4, %rax
-   jnc      .2268
+   jnc      .2295
    mov      EnvOutFrames, %rdx
-.2269:
+.2296:
    mov      (%rdx), %rdx
    cmp      %r12, %rdx
    jz       badFdErrEX
    sub      $1, %rax
-   jnz      .2269
+   jnz      .2296
    mov      8(%rdx), %rax
-.2268:
+.2295:
    mov      %rax, 8(%r14)
    shl      $3, %rax
    cmp      OutFDs, %rax
@@ -27998,17 +28255,17 @@ wrOpenEXY:
    mov      (%rax), %rax
    cmp      %r12, %rax
    jz       badFdErrEX
-   jmp      .2266
-.2267:
+   jmp      .2293
+.2294:
    push     %r15
    testb    $0x08, %bl
-   jz       .2271
+   jz       .2298
    movq     $1, 16(%r14)
    call     pathStringE_SZ
-.2272:
+.2299:
    mov      (%rsp), %al
    cmp      $43, %al
-   jnz      .2273
+   jnz      .2300
    mov      %rdx, %r12
    lea      1(%rsp), %rdi
    mov      $1089, %rsi
@@ -28016,8 +28273,8 @@ wrOpenEXY:
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .2274
-.2273:
+   jmp      .2301
+.2300:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $577, %rsi
@@ -28025,50 +28282,50 @@ wrOpenEXY:
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-.2274:
+.2301:
    cmp      %r12d, %eax
-   jns      .2275
+   jns      .2302
    call     errno_A
    cmp      $4, %rax
    jnz      openErrEX
    cmp      %r12b, Signal
-   jz       .2272
+   jz       .2299
    call     sighandlerX
-   jmp      .2272
-.2275:
+   jmp      .2299
+.2302:
    mov      %rax, 8(%r14)
    call     initOutFileA_A
    mov      8(%r14), %rax
    call     closeOnExecAX
    mov      %r15, %rsp
-   jmp      .2277
-.2271:
+   jmp      .2304
+.2298:
    push     %r13
    push     %r12
    mov      %rbx, %r13
    mov      (%r13), %rbx
    call     xSymE_E
    call     pathStringE_SZ
-.2278:
+.2305:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .2279
+   jnz      .2306
    push     %r15
    mov      (%r13), %rbx
    call     xSymE_E
    call     bufStringE_SZ
-   jmp      .2278
-.2279:
+   jmp      .2305
+.2306:
    push     %r15
    mov      %rsp, %r15
    mov      %r15, %r13
    push     %r12
-.2280:
+.2307:
    lea      8(%r13), %rax
    push     %rax
    mov      (%r13), %r13
    cmp      %r12, (%r13)
-   jnz      .2280
+   jnz      .2307
    mov      8(%r13), %r13
    push     %rax
    mov      %rdx, %r12
@@ -28089,7 +28346,7 @@ wrOpenEXY:
    mov      %rax, 16(%r14)
    cmp      %r12d, %eax
    js       forkErrX
-   jnz      .2281
+   jnz      .2308
    mov      %rdx, %r12
    xor      %rdi, %rdi
    xor      %rsi, %rsi
@@ -28100,7 +28357,7 @@ wrOpenEXY:
    call     closeAX
    movslq   (%rsp), %rax
    cmp      %r12, %rax
-   jz       .2282
+   jz       .2309
    mov      %rdx, %r12
    mov      %rax, %rdi
    xor      %rsi, %rsi
@@ -28109,7 +28366,7 @@ wrOpenEXY:
    xor      %r12, %r12
    movslq   (%rsp), %rax
    call     closeAX
-.2282:
+.2309:
    mov      %rdx, %r12
    mov      8(%rsp), %rdi
    lea      8(%rsp), %rsi
@@ -28117,7 +28374,7 @@ wrOpenEXY:
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      execErrS
-.2281:
+.2308:
    mov      %rdx, %r12
    mov      %rax, %rdi
    xor      %rsi, %rsi
@@ -28130,15 +28387,15 @@ wrOpenEXY:
    mov      %rax, 8(%r14)
    call     initOutFileA_A
    pop      %rdx
-.2283:
+.2310:
    mov      %r15, %rsp
    pop      %r15
    cmp      %r12, %r15
-   jnz      .2283
+   jnz      .2310
    pop      %r13
-.2277:
+.2304:
    pop      %r15
-.2266:
+.2293:
    rep
    ret
 
@@ -28149,25 +28406,25 @@ ctOpenEXY:
    testb    $0x08, %bl
    jz       symErrEX
    cmp      $Nil, %rbx
-   jnz      .2284
+   jnz      .2311
    movq     $-1, 8(%r14)
    call     currFdX_C
    call     rdLockFileC
-   jmp      .2285
-.2284:
+   jmp      .2312
+.2311:
    cmp      $TSym, %rbx
-   jnz      .2286
+   jnz      .2313
    movq     $-1, 8(%r14)
    call     currFdX_C
    call     wrLockFileC
-   jmp      .2285
-.2286:
+   jmp      .2312
+.2313:
    push     %r15
    call     pathStringE_SZ
-.2288:
+.2315:
    mov      (%rsp), %al
    cmp      $43, %al
-   jnz      .2289
+   jnz      .2316
    mov      %rdx, %r12
    lea      1(%rsp), %rdi
    mov      $66, %rsi
@@ -28175,8 +28432,8 @@ ctOpenEXY:
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .2290
-.2289:
+   jmp      .2317
+.2316:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $66, %rsi
@@ -28184,32 +28441,32 @@ ctOpenEXY:
    call     open
    mov      %r12, %rdx
    xor      %r12, %r12
-.2290:
+.2317:
    cmp      %r12d, %eax
-   jns      .2291
+   jns      .2318
    call     errno_A
    cmp      $4, %rax
    jnz      openErrEX
    cmp      %r12b, Signal
-   jz       .2288
+   jz       .2315
    call     sighandlerX
-   jmp      .2288
-.2291:
+   jmp      .2315
+.2318:
    mov      %r15, %rsp
    pop      %r15
    mov      %rax, 8(%r14)
    mov      %rax, %rdx
    mov      (%rsp), %al
    cmp      $43, %al
-   jnz      .2293
+   jnz      .2320
    call     rdLockFileC
-   jmp      .2294
-.2293:
+   jmp      .2321
+.2320:
    call     wrLockFileC
-.2294:
+.2321:
    mov      8(%r14), %rax
    call     closeOnExecAX
-.2285:
+.2312:
    rep
    ret
 
@@ -28222,71 +28479,71 @@ getStdin_A:
    jz       getStdin_A_90
    mov      InFiles, %r10
    cmp      (%r10), %r15
-   jz       .2296
+   jz       .2323
    mov      8(%r15), %rax
    cmp      16(%r15), %rax
-   jnz      .2297
+   jnz      .2324
    call     slowZ_F
    jz       getStdin_A_90
    mov      %r12, %rax
-.2297:
+.2324:
    addq     $1, 8(%r15)
    add      %r15, %rax
    mov      56(%rax), %al
    cmp      $10, %al
-   jnz      .2298
+   jnz      .2325
    addq     $1, 32(%r15)
-.2298:
+.2325:
    movzx    %al, %rax
-   jmp      .2308
-.2296:
+   jmp      .2335
+.2323:
    push     %rdx
    push     %rbx
    push     %r13
    testb    $0x0E, Led
-   jz       .2300
+   jz       .2327
    mov      %r12, %rdx
    mov      $-1, %rbx
    mov      %r12, %r13
    call     waitFdCEX_A
    call     stdinByte_FA
-   jnc      .2302
+   jnc      .2329
    mov      $-1, %rax
-   jmp      .2302
-.2300:
+   jmp      .2329
+.2327:
    mov      LineC, %rdx
    cmp      %r12, %rdx
-   js       .2303
+   js       .2330
    mov      LineX, %r13
-   jmp      .2304
-.2303:
+   jmp      .2331
+.2330:
    mov      Led, %rbx
    call     runE_E
    cmp      $Nil, %rbx
-   jnz      .2305
+   jnz      .2332
    mov      $2, %r13
-   jmp      .2306
-.2305:
+   jmp      .2333
+.2332:
    mov      -8(%rbx), %r13
    call     nameX_X
-.2306:
+.2333:
    mov      %r12, %rdx
-.2304:
+.2331:
    call     symByteCX_FACX
-   jnz      .2307
+   jnz      .2334
    mov      $10, %rax
    mov      $-1, %rdx
-.2307:
+.2334:
    mov      %r13, LineX
    mov      %rdx, LineC
-.2302:
+.2329:
    pop      %r13
    pop      %rbx
    pop      %rdx
-   jmp      .2308
+   jmp      .2335
 getStdin_A_90:
    mov      $-1, %rax
-.2308:
+.2335:
    mov      %rax, Chr
    pop      %r15
    ret
@@ -28299,13 +28556,13 @@ getParse_A:
    mov      EnvParseX, %r13
    mov      EnvParseC, %rdx
    call     symByteCX_FACX
-   jnz      .2309
+   jnz      .2336
    mov      EnvParseEOF, %rax
    mov      $255, %al
    ror      $8, %rax
    mov      %rax, EnvParseEOF
    movsx    %al, %rax
-.2309:
+.2336:
    mov      %rax, Chr
    mov      %r13, EnvParseX
    mov      %rdx, EnvParseC
@@ -28317,22 +28574,22 @@ getParse_A:
 pushInFilesY:
    mov      InFile, %rax
    cmp      %r12, %rax
-   jz       .2310
+   jz       .2337
    mov      Chr, %r10
    mov      %r10, 24(%rax)
-.2310:
+.2337:
    mov      8(%r14), %rax
    shl      $3, %rax
    add      InFiles, %rax
    mov      (%rax), %rax
    mov      %rax, InFile
    cmp      %r12, %rax
-   jz       .2311
+   jz       .2338
    mov      24(%rax), %rax
-   jmp      .2312
-.2311:
+   jmp      .2339
+.2338:
    mov      $-1, %rax
-.2312:
+.2339:
    mov      %rax, Chr
    mov      EnvGet_A, %r10
    mov      %r10, 24(%r14)
@@ -28368,7 +28625,7 @@ pushCtlFilesY:
 popInFiles:
    mov      EnvInFrames, %rdx
    cmp      %r12, 16(%rdx)
-   jz       .2313
+   jz       .2340
    mov      %rdx, %r12
    mov      8(%r12), %rdi
    call     close
@@ -28377,8 +28634,8 @@ popInFiles:
    mov      8(%rdx), %rax
    call     closeInFileA
    cmpq     $1, 16(%rdx)
-   jbe      .2313
-.2315:
+   jbe      .2340
+.2342:
    mov      %rdx, %r12
    mov      16(%r12), %rdi
    xor      %rsi, %rsi
@@ -28387,38 +28644,38 @@ popInFiles:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2313
+   jns      .2340
    call     errno_A
    cmp      $4, %rax
    jnz      closeErrX
    cmp      %r12b, Signal
-   jz       .2315
-   call     sighandlerT
-   jmp      .2315
-.2313:
+   jz       .2342
+   call     sighandler0
+   jmp      .2342
+.2340:
    mov      24(%rdx), %r10
    mov      %r10, EnvGet_A
    mov      (%rdx), %rdx
    mov      %rdx, EnvInFrames
    cmp      %r12, %rdx
-   jnz      .2318
+   jnz      .2345
    mov      InFiles, %r10
    mov      (%r10), %rax
-   jmp      .2319
-.2318:
+   jmp      .2346
+.2345:
    mov      8(%rdx), %rax
    shl      $3, %rax
    add      InFiles, %rax
    mov      (%rax), %rax
-.2319:
+.2346:
    mov      %rax, InFile
    cmp      %r12, %rax
-   jz       .2320
+   jz       .2347
    mov      24(%rax), %rax
-   jmp      .2321
-.2320:
+   jmp      .2348
+.2347:
    mov      $-1, %rax
-.2321:
+.2348:
    mov      %rax, Chr
    ret
 
@@ -28428,7 +28685,7 @@ popOutFiles:
    call     flushA_F
    mov      EnvOutFrames, %rdx
    cmp      %r12, 16(%rdx)
-   jz       .2322
+   jz       .2349
    mov      %rdx, %r12
    mov      8(%r12), %rdi
    call     close
@@ -28437,8 +28694,8 @@ popOutFiles:
    mov      8(%rdx), %rax
    call     closeOutFileA
    cmpq     $1, 16(%rdx)
-   jbe      .2322
-.2324:
+   jbe      .2349
+.2351:
    mov      %rdx, %r12
    mov      16(%r12), %rdi
    xor      %rsi, %rsi
@@ -28447,30 +28704,30 @@ popOutFiles:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2322
+   jns      .2349
    call     errno_A
    cmp      $4, %rax
    jnz      closeErrX
    cmp      %r12b, Signal
-   jz       .2324
-   call     sighandlerT
-   jmp      .2324
-.2322:
+   jz       .2351
+   call     sighandler0
+   jmp      .2351
+.2349:
    mov      24(%rdx), %r10
    mov      %r10, EnvPutB
    mov      (%rdx), %rdx
    mov      %rdx, EnvOutFrames
    cmp      %r12, %rdx
-   jnz      .2327
+   jnz      .2354
    mov      OutFiles, %r10
    mov      8(%r10), %rax
-   jmp      .2328
-.2327:
+   jmp      .2355
+.2354:
    mov      8(%rdx), %rax
    shl      $3, %rax
    add      OutFiles, %rax
    mov      (%rax), %rax
-.2328:
+.2355:
    mov      %rax, OutFile
    ret
 
@@ -28478,18 +28735,18 @@ popOutFiles:
 popCtlFiles:
    mov      EnvCtlFrames, %rdx
    cmp      %r12, 8(%rdx)
-   js       .2329
+   js       .2356
    mov      %rdx, %r12
    mov      8(%r12), %rdi
    call     close
    mov      %r12, %rdx
    xor      %r12, %r12
-   jmp      .2330
-.2329:
+   jmp      .2357
+.2356:
    call     currFd_C
    mov      $2, %rax
    call     unLockFileAC
-.2330:
+.2357:
    mov      EnvCtlFrames, %r10
    mov      (%r10), %r10
    mov      %r10, EnvCtlFrames
@@ -28500,16 +28757,16 @@ popCtlFiles:
 getChar_A:
    mov      Chr, %rax
    cmp      $255, %al
-   jz       .2331
+   jz       .2358
    cmp      $128, %al
-   jc       .2332
+   jc       .2359
    testb    $32, %al
-   jnz      .2333
+   jnz      .2360
    and      $31, %al
    shl      $6, %rax
    push     %rax
-   jmp      .2334
-.2333:
+   jmp      .2361
+.2360:
    and      $15, %al
    shl      $6, %rax
    push     %rax
@@ -28519,16 +28776,16 @@ getChar_A:
    or       (%rsp), %rax
    shl      $6, %rax
    mov      %rax, (%rsp)
-.2334:
+.2361:
    mov      EnvGet_A, %r10
    call     *%r10
    and      $63, %al
    or       %rax, (%rsp)
    pop      %rax
-.2332:
+.2359:
    rep
    ret
-.2331:
+.2358:
    mov      $65536, %rax
    ret
 
@@ -28536,90 +28793,90 @@ getChar_A:
    .global  skipC_A
 skipC_A:
    mov      Chr, %rax
-.2335:
+.2362:
    cmp      %r12, %rax
-   js       .2336
-.2337:
+   js       .2363
+.2364:
    cmp      $32, %al
-   ja       .2338
+   ja       .2365
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      %r12, %rax
    js       ret
-   jmp      .2337
-.2338:
+   jmp      .2364
+.2365:
    cmp      %rdx, %rax
-   jnz      .2336
+   jnz      .2363
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $35, %rdx
    jnz      skipC_A_10
    cmp      $123, %al
-   jz       .2343
+   jz       .2370
 skipC_A_10:
    cmp      $10, %al
-   jz       .2342
+   jz       .2369
    cmp      %r12, %rax
    js       ret
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      skipC_A_10
-.2343:
+.2370:
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      %r12, %rax
    js       ret
    cmp      $125, %al
-   jnz      .2343
+   jnz      .2370
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $35, %al
-   jnz      .2343
-.2342:
+   jnz      .2370
+.2369:
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2335
-.2336:
+   jmp      .2362
+.2363:
    rep
    ret
 
    .balign  16
    .global  testEscA_F
 testEscA_F:
-.2346:
+.2373:
    cmp      %r12, %rax
-   jns      .2347
+   jns      .2374
    clc
    ret
-.2347:
+.2374:
    cmp      $94, %al
-   jnz      .2348
+   jnz      .2375
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $63, %al
-   jnz      .2349
+   jnz      .2376
    mov      $127, %al
    jmp      testEscA_F_10
-.2349:
+.2376:
    and      $31, %al
 testEscA_F_10:
    stc
    ret
-.2348:
+.2375:
    cmp      $92, %al
    jnz      testEscA_F_10
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $10, %al
    jnz      testEscA_F_10
-.2351:
+.2378:
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $32, %al
-   jz       .2351
+   jz       .2378
    cmp      $9, %al
-   jz       .2351
-   jmp      .2346
+   jz       .2378
+   jmp      .2373
 
    .balign  16
    .global  anonymousX_FE
@@ -28630,27 +28887,27 @@ anonymousX_FE:
    jnz      Ret
    call     symByteCX_FACX
    cmp      $49, %al
-   jc       .2352
+   jc       .2379
    cmp      $55, %al
-   ja       .2352
+   ja       .2379
    sub      $48, %al
    mov      %rax, %rbx
    call     symByteCX_FACX
-.2354:
+.2381:
    cmp      $48, %al
-   jc       .2352
+   jc       .2379
    cmp      $55, %al
-   ja       .2352
+   ja       .2379
    shl      $3, %rbx
    sub      $48, %al
    add      %rax, %rbx
    call     symByteCX_FACX
-   jnz      .2354
+   jnz      .2381
    shl      $4, %rbx
    orb      $8, %bl
    or       %r12, %r12
    ret
-.2352:
+.2379:
    rep
    ret
 
@@ -28660,7 +28917,7 @@ rdAtomBYL_E:
    lea      8(%rbp), %r13
    call     byteSymBCX_CX
    mov      %r14, %rax
-.2357:
+.2384:
    cmp      %r12, %rax
    js       rdAtomBYL_E_10
    cld
@@ -28669,36 +28926,36 @@ rdAtomBYL_E:
    repnz scasb
    jz       rdAtomBYL_E_10
    cmp      $92, %al
-   jnz      .2359
+   jnz      .2386
    mov      EnvGet_A, %r10
    call     *%r10
-.2359:
+.2386:
    call     byteSymBCX_CX
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2357
+   jmp      .2384
 rdAtomBYL_E_10:
    mov      8(%rbp), %r13
    mov      %r12, %rax
    testb    $0x02, Scl
-   jz       .2360
+   jz       .2387
    mov      Scl, %rax
    shr      $4, %rax
-.2360:
+.2387:
    mov      %r12, Sep3
    movq     $46, Sep0
    call     symToNumXA_FE
-   jc       .2361
+   jc       .2388
    mov      8(%rbp), %r13
    call     anonymousX_FE
-   jz       .2361
+   jz       .2388
    mov      8(%rbp), %r13
    mov      $Intern, %r14
    mov      %r12, %rbx
    call     internEXY_FE
-   jnc      .2361
+   jnc      .2388
    movq     $Nil, (%rbx)
-.2361:
+.2388:
    rep
    ret
 Delim:
@@ -28709,33 +28966,33 @@ DelimEnd:
 rdList_E:
    mov      EnvGet_A, %r10
    call     *%r10
-.2364:
+.2391:
    mov      $35, %rdx
    call     skipC_A
    cmp      $41, %al
-   jnz      .2365
+   jnz      .2392
    mov      EnvGet_A, %r10
    call     *%r10
    mov      $Nil, %rbx
    ret
-.2365:
+.2392:
    cmp      $93, %al
    jz       retNil
    cmp      $126, %al
-   jz       .2366
+   jz       .2393
    mov      %r12, %rax
    call     readA_E
-   mov      %rbx, %rax
-   call     consE_E
-   mov      %rax, (%rbx)
-   movq     $Nil, 8(%rbx)
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
    push     %rbp
    mov      %rsp, %rbp
-   push     %rbx
+   push     %rax
    push     %rbp
    mov      %rsp, %rbp
+   mov      %rax, %rbx
    jmp      rdList_E_10
-.2366:
+.2393:
    mov      EnvGet_A, %r10
    call     *%r10
    mov      %r12, %rax
@@ -28754,67 +29011,67 @@ rdList_E:
 1:
    mov      %rbx, 8(%rbp)
    testb    $0x0E, %bl
-   jnz      .2367
-.2368:
+   jnz      .2394
+.2395:
    testb    $0x0E, 8(%rbx)
    jnz      rdList_E_10
    mov      8(%rbx), %rbx
-   jmp      .2368
-.2367:
+   jmp      .2395
+.2394:
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .2364
+   jmp      .2391
 rdList_E_10:
    mov      $35, %rdx
    call     skipC_A
    cmp      $41, %al
-   jnz      .2371
+   jnz      .2398
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      rdList_E_90
-.2371:
+.2398:
    cmp      $93, %al
    jz       rdList_E_90
    cmp      $46, %al
-   jnz      .2372
+   jnz      .2399
    mov      EnvGet_A, %r10
    call     *%r10
    cld
    mov      $Delim, %rdi
    mov      $(DelimEnd-Delim), %rcx
    repnz scasb
-   jnz      .2373
+   jnz      .2400
    mov      $35, %rdx
    call     skipC_A
    cmp      $41, %al
    jz       rdList_E_20
    cmp      $93, %al
-   jnz      .2374
+   jnz      .2401
 rdList_E_20:
    mov      8(%rbp), %r10
    mov      %r10, 8(%rbx)
-   jmp      .2375
-.2374:
-   mov      %r12, %rax
+   jmp      .2402
+.2401:
    push     %rbx
+   mov      %r12, %rax
    call     readA_E
    mov      %rbx, %rax
    pop      %rbx
    mov      %rax, 8(%rbx)
-.2375:
+.2402:
    mov      $35, %rdx
    call     skipC_A
    cmp      $41, %al
-   jnz      .2376
+   jnz      .2403
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      rdList_E_90
-.2376:
+.2403:
    cmp      $93, %al
    jz       rdList_E_90
    mov      8(%rbp), %rbx
    jmp      badDotErrE
-.2373:
+.2400:
    push     %r13
    push     %r14
    push     %rbp
@@ -28826,35 +29083,35 @@ rdList_E_20:
    mov      %rax, %r14
    mov      $46, %al
    call     rdAtomBYL_E
-   mov      %rbx, %rax
-   call     consE_E
-   mov      %rax, (%rbx)
-   movq     $Nil, 8(%rbx)
-   pop      %rax
-   mov      %rbx, 8(%rax)
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   pop      %rbx
+   mov      %rax, 8(%rbx)
+   mov      %rax, %rbx
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r14
    pop      %r13
    jmp      rdList_E_10
-.2372:
+.2399:
    cmp      $126, %al
-   jz       .2378
-   mov      %r12, %rax
+   jz       .2405
    push     %rbx
+   mov      %r12, %rax
    call     readA_E
-   mov      %rbx, %rax
-   call     consE_E
-   mov      %rax, (%rbx)
-   movq     $Nil, 8(%rbx)
-   pop      %rax
-   mov      %rbx, 8(%rax)
+   call     consE_A
+   mov      %rbx, (%rax)
+   movq     $Nil, 8(%rax)
+   pop      %rbx
+   mov      %rax, 8(%rbx)
+   mov      %rax, %rbx
    jmp      rdList_E_10
-.2378:
+.2405:
    mov      EnvGet_A, %r10
    call     *%r10
-   mov      %r12, %rax
    push     %rbx
+   mov      %r12, %rax
    call     readA_E
    mov      (%rsp), %rax
    mov      %rbx, 8(%rax)
@@ -28867,11 +29124,11 @@ rdList_E_20:
 1:
    pop      %rax
    mov      %rbx, 8(%rax)
-.2380:
+.2407:
    testb    $0x0E, 8(%rbx)
    jnz      rdList_E_10
    mov      8(%rbx), %rbx
-   jmp      .2380
+   jmp      .2407
 rdList_E_90:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
@@ -28891,22 +29148,22 @@ readA_E:
    mov      $35, %rdx
    call     skipC_A
    cmp      %r12, %rax
-   jns      .2382
+   jns      .2409
    cmp      %r12, -8(%rbp)
    jz       eofErr
    mov      $Nil, %rbx
    jmp      readA_E_99
-.2382:
+.2409:
    cmp      %r12, -8(%rbp)
-   jz       .2383
+   jz       .2410
    mov      InFile, %rdx
    cmp      %r12, %rdx
-   jz       .2383
+   jz       .2410
    mov      32(%rdx), %r10
    mov      %r10, 40(%rdx)
-.2383:
+.2410:
    cmp      $40, %al
-   jnz      .2385
+   jnz      .2412
    call     rdList_E
    cmp      %r12, -8(%rbp)
    jz       readA_E_99
@@ -28915,18 +29172,18 @@ readA_E:
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      readA_E_99
-.2385:
+.2412:
    cmp      $91, %al
-   jnz      .2388
+   jnz      .2415
    call     rdList_E
    cmpq     $93, Chr
    jnz      suparErrE
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      readA_E_99
-.2388:
+.2415:
    cmp      $39, %al
-   jnz      .2389
+   jnz      .2416
    mov      EnvGet_A, %r10
    call     *%r10
    mov      %r12, %rax
@@ -28936,9 +29193,9 @@ readA_E:
    movq     $Quote, (%rbx)
    mov      %rdx, 8(%rbx)
    jmp      readA_E_99
-.2389:
+.2416:
    cmp      $44, %al
-   jnz      .2390
+   jnz      .2417
    mov      EnvGet_A, %r10
    call     *%r10
    mov      $Uni, %r13
@@ -28949,9 +29206,9 @@ readA_E:
    call     idxPutXY_E
    mov      %r14, %rbx
    jmp      readA_E_99
-.2390:
+.2417:
    cmp      $96, %al
-   jnz      .2391
+   jnz      .2418
    mov      EnvGet_A, %r10
    call     *%r10
    mov      %r12, %rax
@@ -28965,32 +29222,32 @@ readA_E:
    call     evListE_E
 1:
    jmp      readA_E_99
-.2391:
+.2418:
    cmp      $34, %al
-   jnz      .2392
+   jnz      .2419
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $34, %al
-   jnz      .2393
+   jnz      .2420
    mov      EnvGet_A, %r10
    call     *%r10
    mov      $Nil, %rbx
    jmp      readA_E_99
-.2393:
+.2420:
    call     testEscA_F
    jnc      eofErr
    mov      $4, %rdx
    lea      8(%rbp), %r13
-.2394:
+.2421:
    call     byteSymBCX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $34, %al
-   jz       .2395
+   jz       .2422
    call     testEscA_F
    jnc      eofErr
-   jmp      .2394
-.2395:
+   jmp      .2421
+.2422:
    mov      EnvGet_A, %r10
    call     *%r10
    mov      8(%rbp), %r13
@@ -28998,13 +29255,13 @@ readA_E:
    mov      %r12, %rbx
    call     internEXY_FE
    jmp      readA_E_99
-.2392:
+.2419:
    cmp      $123, %al
-   jnz      .2396
+   jnz      .2423
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $125, %al
-   jnz      .2397
+   jnz      .2424
    mov      EnvGet_A, %r10
    call     *%r10
    call     cons_E
@@ -29012,11 +29269,11 @@ readA_E:
    orb      $8, %bl
    movq     $Nil, (%rbx)
    jmp      readA_E_99
-.2397:
+.2424:
    mov      %r12, %rbx
-.2398:
+.2425:
    cmp      $64, %al
-   jc       .2399
+   jc       .2426
    cmp      $79, %al
    ja       badInputErrB
    sub      $64, %al
@@ -29024,8 +29281,8 @@ readA_E:
    add      %rax, %rbx
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2398
-.2399:
+   jmp      .2425
+.2426:
    cmp      $48, %al
    jc       badInputErrB
    cmp      $55, %al
@@ -29033,11 +29290,11 @@ readA_E:
    sub      $48, %al
    movzx    %al, %rax
    mov      %rax, %rdx
-.2400:
+.2427:
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $125, %al
-   jz       .2401
+   jz       .2428
    cmp      $48, %al
    jc       badInputErrB
    cmp      $55, %al
@@ -29045,14 +29302,14 @@ readA_E:
    sub      $48, %al
    shl      $3, %rdx
    add      %rax, %rdx
-   jmp      .2400
-.2401:
+   jmp      .2427
+.2428:
    mov      EnvGet_A, %r10
    call     *%r10
    call     extNmCE_X
    call     externX_E
    jmp      readA_E_99
-.2396:
+.2423:
    cmp      $41, %al
    jz       badInputErrB
    cmp      $93, %al
@@ -29060,10 +29317,10 @@ readA_E:
    cmp      $126, %al
    jz       badInputErrB
    cmp      $92, %al
-   jnz      .2402
+   jnz      .2429
    mov      EnvGet_A, %r10
    call     *%r10
-.2402:
+.2429:
    mov      %rax, %r14
    mov      EnvGet_A, %r10
    call     *%r10
@@ -29079,22 +29336,22 @@ readA_E_99:
    .global  readC_E
 readC_E:
    cmp      %r12, Chr
-   jnz      .2403
+   jnz      .2430
    mov      EnvGet_A, %r10
    call     *%r10
-.2403:
+.2430:
    cmp      Chr, %rdx
-   jnz      .2404
+   jnz      .2431
    mov      $Nil, %rbx
-   jmp      .2405
-.2404:
+   jmp      .2432
+.2431:
    mov      $1, %rax
    call     readA_E
    push     %rbx
    mov      Chr, %rax
-.2406:
+.2433:
    cmp      %r12, %rax
-   jle      .2407
+   jle      .2434
    cmp      $32, %al
    jz       readC_E_10
    cmp      $9, %al
@@ -29102,38 +29359,38 @@ readC_E:
    cmp      $41, %al
    jz       readC_E_10
    cmp      $93, %al
-   jnz      .2407
+   jnz      .2434
 readC_E_10:
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2406
-.2407:
+   jmp      .2433
+.2434:
    pop      %rbx
-.2405:
+.2432:
    rep
    ret
 
    .global  tokenCE_E
 tokenCE_E:
    cmp      %r12, Chr
-   jnz      .2408
+   jnz      .2435
    mov      EnvGet_A, %r10
    call     *%r10
-.2408:
+.2435:
    call     skipC_A
    cmp      %r12, %rax
    js       retNull
    cmp      $34, %al
-   jnz      .2409
+   jnz      .2436
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $34, %al
-   jnz      .2410
+   jnz      .2437
    mov      EnvGet_A, %r10
    call     *%r10
    mov      $Nil, %rbx
    ret
-.2410:
+.2437:
    call     testEscA_F
    jnc      retNil
    push     %rbp
@@ -29143,28 +29400,28 @@ tokenCE_E:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.2411:
+.2438:
    call     byteSymBCX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $34, %al
-   jnz      .2412
+   jnz      .2439
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2413
-.2412:
+   jmp      .2440
+.2439:
    call     testEscA_F
-   jc       .2411
-.2413:
+   jc       .2438
+.2440:
    mov      8(%rbp), %r13
    mov      (%rbp), %rsp
    pop      %rbp
    jmp      consSymX_E
-.2409:
+.2436:
    cmp      $48, %al
-   jc       .2414
+   jc       .2441
    cmp      $57, %al
-   ja       .2414
+   ja       .2441
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -29172,30 +29429,30 @@ tokenCE_E:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.2416:
+.2443:
    call     byteSymBCX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $46, %al
-   jz       .2416
+   jz       .2443
    cmp      $48, %al
-   jc       .2417
+   jc       .2444
    cmp      $57, %al
-   jbe      .2416
-.2417:
+   jbe      .2443
+.2444:
    mov      8(%rbp), %r13
    mov      %r12, %rax
    testb    $0x02, Scl
-   jz       .2418
+   jz       .2445
    mov      Scl, %rax
    shr      $4, %rax
-.2418:
+.2445:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      %r12, Sep3
    movq     $46, Sep0
    jmp      symToNumXA_FE
-.2414:
+.2441:
    push     %r14
    push     %r15
    mov      %rax, %r14
@@ -29213,26 +29470,26 @@ tokenCE_E:
    mov      %rcx, (%rsp)
    mov      %r14, %rax
    cmp      $97, %al
-   jc       .2419
+   jc       .2446
    cmp      $122, %al
    jbe      tokenCE_E_10
-.2419:
+.2446:
    cmp      $65, %al
-   jc       .2420
+   jc       .2447
    cmp      $90, %al
    jbe      tokenCE_E_10
-.2420:
+.2447:
    cmp      $92, %al
-   jnz      .2421
+   jnz      .2448
    mov      EnvGet_A, %r10
    call     *%r10
    jmp      tokenCE_E_10
-.2421:
+.2448:
    cld
    lea      8(%rsp), %rdi
    mov      (%rsp), %rcx
    repnz scasb
-   jnz      .2422
+   jnz      .2449
 tokenCE_E_10:
    push     %rbp
    mov      %rsp, %rbp
@@ -29241,53 +29498,53 @@ tokenCE_E_10:
    mov      %rsp, %r13
    push     %rbp
    mov      %rsp, %rbp
-.2423:
+.2450:
    call     byteSymBCX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $97, %al
-   jc       .2424
+   jc       .2451
    cmp      $122, %al
-   jbe      .2423
-.2424:
+   jbe      .2450
+.2451:
    cmp      $65, %al
-   jc       .2425
+   jc       .2452
    cmp      $90, %al
-   jbe      .2423
-.2425:
+   jbe      .2450
+.2452:
    cmp      $48, %al
-   jc       .2426
+   jc       .2453
    cmp      $57, %al
-   jbe      .2423
-.2426:
+   jbe      .2450
+.2453:
    cmp      $92, %al
-   jnz      .2427
+   jnz      .2454
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2423
-.2427:
+   jmp      .2450
+.2454:
    cld
    lea      32(%rsp), %rdi
    mov      24(%rsp), %rcx
    repnz scasb
-   jz       .2423
+   jz       .2450
    mov      8(%rbp), %r13
    mov      $Intern, %r14
    mov      %r12, %rbx
    call     internEXY_FE
-   jnc      .2428
+   jnc      .2455
    movq     $Nil, (%rbx)
-.2428:
+.2455:
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .2429
-.2422:
+   jmp      .2456
+.2449:
    call     getChar_A
    call     mkCharA_A
    mov      %rax, %rbx
    mov      EnvGet_A, %r10
    call     *%r10
-.2429:
+.2456:
    mov      %r15, %rsp
    pop      %r15
    pop      %r14
@@ -29299,11 +29556,11 @@ tokenCE_E_10:
    .global  doRead
 doRead:
    testb    $0x0E, 8(%rbx)
-   jz       .2430
+   jz       .2457
    mov      %r12, %rdx
    call     readC_E
-   jmp      .2431
-.2430:
+   jmp      .2458
+.2457:
    push     %r13
    mov      8(%rbx), %r13
    mov      (%r13), %rbx
@@ -29342,15 +29599,15 @@ doRead:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
-.2431:
+.2458:
    cmpq     $10, Chr
-   jnz      .2432
+   jnz      .2459
    mov      InFiles, %r10
    mov      (%r10), %r10
    cmp      %r10, InFile
-   jnz      .2432
+   jnz      .2459
    mov      %r12, Chr
-.2432:
+.2459:
    rep
    ret
 
@@ -29398,21 +29655,21 @@ rdSetRdyASL_F:
    cmp      %r12, %rdx
    jz       rdSetASL_F
    call     inReadyC_F
-   jnz      .2434
+   jnz      .2461
    lea      -24(%rbp), %r15
-.2435:
+.2462:
    sub      $8, %r15
    cmp      %rsp, %r15
    jbe      retz
    cmp      (%r15), %eax
-   jnz      .2435
+   jnz      .2462
    movswq   6(%r15), %rax
    testb    $17, %al
-   jz       .2434
+   jz       .2461
    call     slowNbC_FA
    jnc      retnz
    or       %r12, %r12
-.2434:
+.2461:
    rep
    ret
 
@@ -29420,12 +29677,12 @@ rdSetRdyASL_F:
    .global  rdSetASL_F
 rdSetASL_F:
    lea      -24(%rbp), %r15
-.2437:
+.2464:
    sub      $8, %r15
    cmp      %rsp, %r15
    jbe      retz
    cmp      (%r15), %eax
-   jnz      .2437
+   jnz      .2464
    movswq   6(%r15), %rax
    testb    $17, %al
    ret
@@ -29434,12 +29691,12 @@ rdSetASL_F:
    .global  wrSetASL_F
 wrSetASL_F:
    lea      -24(%rbp), %r15
-.2438:
+.2465:
    sub      $8, %r15
    cmp      %rsp, %r15
    jbe      retz
    cmp      (%r15), %eax
-   jnz      .2438
+   jnz      .2465
    movswq   6(%r15), %rax
    testb    $4, %al
    ret
@@ -29448,6 +29705,7 @@ wrSetASL_F:
 waitFdCEX_A:
    push     %r14
    push     %r15
+   pushq    EnvTask
    push     %rbp
    mov      %rsp, %rbp
    pushq    At
@@ -29457,89 +29715,99 @@ waitFdCEX_A:
    push     %rdx
    push     %rbx
    push     %rbx
-.2439:
+.2466:
    mov      %r12, %r15
    mov      -8(%rbp), %rax
    cmp      %r12, %rax
-   js       .2440
+   js       .2467
    call     inReadyA_FC
-   jnc      .2441
+   jnc      .2468
    mov      %r12, -24(%rbp)
-   jmp      .2440
-.2441:
+   jmp      .2467
+.2468:
    sub      $8, %rsp
    movl     %eax, (%rsp)
    mov      $1, %rax
    movw     %ax, 4(%rsp)
    add      $1, %r15
-.2440:
-   mov      Hear, %rax
-   cmp      %r12, %rax
-   jz       .2443
-   cmp      -8(%rbp), %rax
-   jz       .2443
-   call     inFilesA_FC
-   jz       .2443
-   call     inReadyC_F
-   jz       .2446
-   mov      %r12, -24(%rbp)
-   jmp      .2443
-.2446:
-   sub      $8, %rsp
-   movl     %eax, (%rsp)
-   mov      $1, %rax
-   movw     %ax, 4(%rsp)
-   add      $1, %r15
-.2443:
+.2467:
    mov      Run, %r14
    mov      %r14, 8(%rbp)
-.2448:
+   mov      %r14, EnvTask
+.2470:
    testb    $0x0E, %r14b
-   jnz      .2449
+   jnz      .2471
    mov      (%r14), %rbx
+   mov      32(%rbp), %rax
+.2472:
+   testb    $0x0E, %al
+   jnz      .2473
+   cmp      (%rax), %rbx
+   jz       waitFdCEX_A_10
+   mov      8(%rax), %rax
+   jmp      .2472
+.2473:
    mov      (%rbx), %rax
    shr      $4, %rax
-   jnc      .2450
+   jnc      .2474
    mov      8(%rbx), %r10
    mov      (%r10), %rax
    shr      $4, %rax
    cmp      -24(%rbp), %rax
-   jnc      .2452
+   jnc      waitFdCEX_A_10
    mov      %rax, -24(%rbp)
-   jmp      .2452
-.2450:
+   jmp      waitFdCEX_A_10
+.2474:
    cmp      -8(%rbp), %rax
-   jz       .2452
+   jz       waitFdCEX_A_10
    call     inReadyA_FC
-   jnc      .2454
+   jnc      .2478
    mov      %r12, -24(%rbp)
-   jmp      .2452
-.2454:
+   jmp      waitFdCEX_A_10
+.2478:
    sub      $8, %rsp
    movl     %eax, (%rsp)
    mov      $1, %rax
    movw     %ax, 4(%rsp)
    add      $1, %r15
-.2452:
+waitFdCEX_A_10:
    mov      8(%r14), %r14
-   jmp      .2448
-.2449:
+   jmp      .2470
+.2471:
+   mov      Hear, %rax
+   cmp      %r12, %rax
+   jz       .2480
+   cmp      -8(%rbp), %rax
+   jz       .2480
+   call     inFilesA_FC
+   jz       .2480
+   call     inReadyC_F
+   jz       .2483
+   mov      %r12, -24(%rbp)
+   jmp      .2480
+.2483:
+   sub      $8, %rsp
+   movl     %eax, (%rsp)
+   mov      $1, %rax
+   movw     %ax, 4(%rsp)
+   add      $1, %r15
+.2480:
    mov      Spkr, %rax
    cmp      %r12, %rax
-   jz       .2456
+   jz       .2485
    sub      $8, %rsp
    movl     %eax, (%rsp)
    mov      $1, %rax
    movw     %ax, 4(%rsp)
    add      $1, %r15
-.2456:
+.2485:
    mov      Child, %r14
    mov      Children, %rbx
-.2457:
+.2486:
    sub      $48, %rbx
-   jc       .2458
+   jc       .2487
    cmp      %r12, (%r14)
-   jz       .2459
+   jz       .2488
    sub      $8, %rsp
    mov      8(%r14), %rax
    movl     %eax, (%rsp)
@@ -29547,20 +29815,20 @@ waitFdCEX_A:
    movw     %ax, 4(%rsp)
    add      $1, %r15
    cmp      %r12, 32(%r14)
-   jz       .2459
+   jz       .2488
    sub      $8, %rsp
    mov      16(%r14), %rax
    movl     %eax, (%rsp)
    mov      $4, %rax
    movw     %ax, 4(%rsp)
    add      $1, %r15
-.2459:
+.2488:
    add      $48, %r14
-   jmp      .2457
-.2458:
+   jmp      .2486
+.2487:
    call     msec_A
    mov      %rax, %rbx
-.2461:
+.2490:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      %r15, %rsi
@@ -29569,43 +29837,43 @@ waitFdCEX_A:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2462
+   jns      .2491
    call     errno_A
    cmp      $4, %rax
-   jz       .2463
+   jz       .2492
    movq     $Nil, Run
    jmp      selectErrX
-.2463:
+.2492:
    cmp      %r12b, Signal
-   jz       .2461
+   jz       .2490
    call     sighandlerX
-   jmp      .2461
-.2462:
+   jmp      .2490
+.2491:
    call     msec_A
    sub      %rbx, %rax
    mov      %rax, -24(%rbp)
    mov      %r12b, Flg
    mov      Child, %r14
    mov      Children, %r15
-.2465:
+.2494:
    sub      $48, %r15
-   jc       .2466
+   jc       .2495
    cmp      %r12, (%r14)
-   jz       .2467
+   jz       .2496
    push     %r15
    mov      8(%r14), %rax
    call     rdSetASL_F
-   jz       .2468
+   jz       .2497
    mov      8(%r14), %rdx
    mov      $2, %rbx
    mov      $Buf, %r13
    call     rdBytesNbCEX_F
-   js       .2468
-   jnz      .2470
+   js       .2497
+   jnz      .2499
    call     clsChildY
    pop      %r15
-   jmp      .2465
-.2470:
+   jmp      .2494
+.2499:
    sub      $4096, %rsp
    push     %r14
    mov      8(%r14), %rdx
@@ -29613,37 +29881,37 @@ waitFdCEX_A:
    mov      %rax, %rbx
    lea      16(%rsp), %r13
    call     rdBytesCEX_F
-   jz       .2471
+   jz       .2500
    movb     $1, Flg
    mov      Child, %r14
    mov      Children, %r15
-.2472:
+.2501:
    cmp      (%rsp), %r14
-   jz       .2473
+   jz       .2502
    cmp      %r12, (%r14)
-   jz       .2473
+   jz       .2502
    movswq   Buf, %rax
    mov      %rax, %rdx
    lea      16(%rsp), %r13
    call     wrChildCXY
-.2473:
+.2502:
    add      $48, %r14
    sub      $48, %r15
-   jnz      .2472
-   jmp      .2475
-.2471:
+   jnz      .2501
+   jmp      .2504
+.2500:
    call     clsChildY
    pop      %r14
    add      $4096, %rsp
    pop      %r15
-   jmp      .2465
-.2475:
+   jmp      .2494
+.2504:
    pop      %r14
    add      $4096, %rsp
-.2468:
+.2497:
    mov      16(%r14), %rax
    call     wrSetASL_F
-   jz       .2476
+   jz       .2505
    mov      16(%r14), %rdx
    mov      40(%r14), %r13
    add      24(%r14), %r13
@@ -29653,16 +29921,16 @@ waitFdCEX_A:
    push     %rbx
    call     wrBytesCEX_F
    pop      %rbx
-   jnz      .2477
+   jnz      .2506
    add      24(%r14), %rbx
    add      $2, %rbx
    mov      %rbx, 24(%r14)
    add      %rbx, %rbx
    cmp      32(%r14), %rbx
-   jc       .2478
+   jc       .2507
    mov      24(%r14), %r10
    sub      %r10, 32(%r14)
-   jz       .2478
+   jz       .2507
    mov      40(%r14), %r13
    add      24(%r14), %r13
    mov      40(%r14), %rdi
@@ -29674,55 +29942,95 @@ waitFdCEX_A:
    mov      32(%r14), %rbx
    call     allocAE_A
    mov      %rax, 40(%r14)
-.2478:
+.2507:
    mov      %r12, 24(%r14)
-   jmp      .2476
-.2477:
+   jmp      .2505
+.2506:
    call     clsChildY
-.2476:
+.2505:
    pop      %r15
-.2467:
+.2496:
    add      $48, %r14
-   jmp      .2465
-.2466:
+   jmp      .2494
+.2495:
    cmp      %r12b, Flg
-   jnz      .2481
+   jnz      .2510
    mov      Spkr, %rax
    cmp      %r12, %rax
-   jz       .2481
+   jz       .2510
    call     rdSetASL_F
-   jz       .2481
+   jz       .2510
    mov      Spkr, %rdx
    mov      $8, %rbx
    mov      $Buf, %r13
    call     rdBytesNbCEX_F
-   jle      .2481
+   jle      .2510
    mov      Child, %r14
    add      Buf, %r14
    cmp      %r12, (%r14)
-   jz       .2481
+   jz       .2510
    mov      $2, %rdx
    mov      $TBuf, %r13
    call     wrChildCXY
-.2481:
+.2510:
+   mov      Hear, %rax
+   cmp      %r12, %rax
+   jz       .2515
+   cmp      -8(%rbp), %rax
+   jz       .2515
+   call     rdSetRdyASL_F
+   jz       .2515
+   call     rdHear_FE
+   jc       .2518
+   cmp      $TSym, %rbx
+   jnz      .2519
+   movb     $1, Sync
+   jmp      .2515
+.2519:
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   push     %rbp
+   mov      %rsp, %rbp
+   call     evListE_E
+   mov      (%rbp), %rsp
+   pop      %rbp
+   jmp      .2515
+.2518:
+   call     closeAX
+   mov      Hear, %rax
+   call     closeInFileA
+   mov      Hear, %rax
+   call     closeOutFileA
+   mov      %r12, Hear
+.2515:
    mov      8(%rbp), %r14
-.2486:
+.2522:
    testb    $0x0E, %r14b
-   jnz      .2487
+   jnz      .2523
    mov      (%r14), %rbx
+   mov      32(%rbp), %rax
+.2524:
+   testb    $0x0E, %al
+   jnz      .2525
+   cmp      (%rax), %rbx
+   jz       waitFdCEX_A_20
+   mov      8(%rax), %rax
+   jmp      .2524
+.2525:
    mov      (%rbx), %rax
    shr      $4, %rax
-   jnc      .2488
+   jnc      .2526
    mov      8(%rbx), %rdx
    mov      (%rdx), %rax
    shr      $4, %rax
    sub      -24(%rbp), %rax
-   jc       .2489
+   jc       .2527
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, (%rdx)
-   jmp      .2491
-.2489:
+   jmp      waitFdCEX_A_20
+.2527:
    mov      (%rbx), %rax
    mov      %rax, (%rdx)
    mov      (%rbx), %r10
@@ -29740,12 +30048,12 @@ waitFdCEX_A:
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
    jz       1b
-   jmp      .2491
-.2488:
+   jmp      waitFdCEX_A_20
+.2526:
    cmp      -8(%rbp), %rax
-   jz       .2491
+   jz       waitFdCEX_A_20
    call     rdSetRdyASL_F
-   jz       .2491
+   jz       waitFdCEX_A_20
    mov      (%rbx), %r10
    mov      %r10, At
    mov      8(%rbx), %r15
@@ -29761,63 +30069,39 @@ waitFdCEX_A:
    mov      8(%r15), %r15
    testb    $0x0E, %r15b
    jz       1b
-.2491:
+waitFdCEX_A_20:
    mov      8(%r14), %r14
-   jmp      .2486
-.2487:
-   mov      Hear, %rax
-   cmp      %r12, %rax
-   jz       .2494
-   cmp      -8(%rbp), %rax
-   jz       .2494
-   call     rdSetRdyASL_F
-   jz       .2494
-   call     rdHear_FE
-   jc       .2497
-   cmp      $TSym, %rbx
-   jnz      .2498
-   movb     $1, Sync
-   jmp      .2494
-.2498:
-   mov      %r14, 8(%rbp)
-   call     evListE_E
-   jmp      .2494
-.2497:
-   call     closeAX
-   mov      Hear, %rax
-   call     closeInFileA
-   mov      Hear, %rax
-   call     closeOutFileA
-   mov      %r12, Hear
-.2494:
+   jmp      .2522
+.2523:
    cmp      %r12b, Signal
-   jz       .2501
+   jz       .2532
    call     sighandlerX
-.2501:
+.2532:
    mov      -16(%rbp), %rax
    or       %rax, %rax
-   jle      .2502
+   jle      .2533
    sub      -24(%rbp), %rax
-   jns      .2503
+   jns      .2534
    xor      %rax, %rax
-.2503:
+.2534:
    mov      %rax, -16(%rbp)
-.2502:
-   jz       .2504
+.2533:
+   jz       .2535
    mov      %rax, -24(%rbp)
    mov      -8(%rbp), %rax
    cmp      %r12, %rax
-   js       .2504
+   js       .2535
    call     rdSetRdyASL_F
-   jnz      .2504
+   jnz      .2535
    lea      -24(%rbp), %rsp
-   jmp      .2439
-.2504:
+   jmp      .2466
+.2535:
    mov      16(%rbp), %r10
    mov      %r10, At
    mov      -16(%rbp), %rax
    mov      (%rbp), %rsp
    pop      %rbp
+   popq     EnvTask
    pop      %r15
    pop      %r14
    ret
@@ -29841,15 +30125,15 @@ doWait:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2505
+   jnz      .2536
    pushq    $-1
-   jmp      .2506
-.2505:
+   jmp      .2537
+.2536:
    call     xCntEX_FE
    push     %rbx
-.2506:
+.2537:
    mov      8(%r14), %r14
-.2507:
+.2538:
    mov      %r14, %r15
 1:
    mov      (%r15), %rbx
@@ -29864,12 +30148,12 @@ doWait:
    testb    $0x0E, %r15b
    jz       1b
    cmp      $Nil, %rbx
-   jnz      .2508
+   jnz      .2539
    mov      $-1, %rdx
    mov      (%rsp), %rbx
    call     waitFdCEX_A
    cmp      %r12, %rax
-   jnz      .2509
+   jnz      .2540
 1:
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -29882,11 +30166,11 @@ doWait:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
    jz       1b
-   jmp      .2508
-.2509:
+   jmp      .2539
+.2540:
    mov      %rax, (%rsp)
-   jmp      .2507
-.2508:
+   jmp      .2538
+.2539:
    pop      %rax
    pop      %r15
    pop      %r14
@@ -29906,7 +30190,7 @@ doSync:
    mov      %rbx, %r13
    mov      $Slot, %rbx
    mov      $8, %rdx
-.2510:
+.2541:
    mov      %rdx, %r12
    mov      Mic, %rdi
    mov      %rbx, %rsi
@@ -29915,28 +30199,28 @@ doSync:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2511
+   js       .2542
    sub      %rax, %rdx
-   jz       .2512
+   jz       .2543
    add      %rax, %rbx
-   jmp      .2513
-.2511:
+   jmp      .2544
+.2542:
    call     errno_A
    cmp      $4, %rax
    jnz      wrSyncErrX
-.2513:
+.2544:
    cmp      %r12b, Signal
-   jz       .2510
+   jz       .2541
    call     sighandlerX
-   jmp      .2510
-.2512:
+   jmp      .2541
+.2543:
    mov      %r12b, Sync
-.2515:
+.2546:
    mov      $-1, %rdx
    mov      %rdx, %rbx
    call     waitFdCEX_A
    cmp      %r12b, Sync
-   jz       .2515
+   jz       .2546
    mov      $TSym, %rbx
    pop      %r13
    ret
@@ -29972,13 +30256,13 @@ doHear:
    jz       badFdErrEX
    mov      Hear, %rax
    cmp      %r12, %rax
-   jz       .2516
+   jz       .2547
    call     closeAX
    mov      Hear, %rax
    call     closeInFileA
    mov      Hear, %rax
    call     closeOutFileA
-.2516:
+.2547:
    mov      %rdx, Hear
    pop      %r13
    ret
@@ -29999,7 +30283,7 @@ doTell:
    mov      %rsp, %r15
    call     tellBegZ_Z
    mov      8(%rbx), %r13
-.2517:
+.2548:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -30012,7 +30296,7 @@ doTell:
    call     prTellEZ
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2517
+   jz       .2548
    call     tellEndZ
    mov      %r14, %rbx
    add      $4096, %rsp
@@ -30050,15 +30334,15 @@ doPoll:
    call     inFilesA_FC
    mov      $Nil, %r10
    cmovzq   %r10, %rbx
-   jz       .2518
-.2519:
+   jz       .2549
+.2550:
    call     inReadyC_F
-   jnz      .2518
+   jnz      .2549
    sub      $8, %rsp
    movl     %eax, (%rsp)
    mov      $1, %rax
    movw     %ax, 4(%rsp)
-.2521:
+.2552:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $1, %rsi
@@ -30067,22 +30351,22 @@ doPoll:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2522
+   jns      .2553
    call     errno_A
    cmp      $4, %rax
-   jz       .2521
+   jz       .2552
    movq     $Nil, Run
    jmp      selectErrX
-.2522:
+.2553:
    movswq   6(%rsp), %rax
    add      $8, %rsp
    testb    $17, %al
    mov      $Nil, %r10
    cmovzq   %r10, %rbx
-   jz       .2518
+   jz       .2549
    call     slowNbC_FA
-   jc       .2519
-.2518:
+   jc       .2550
+.2549:
    pop      %r13
    ret
 
@@ -30103,31 +30387,31 @@ doKey:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2524
+   jnz      .2555
    mov      $-1, %rbx
-   jmp      .2525
-.2524:
+   jmp      .2556
+.2555:
    call     xCntEX_FE
-.2525:
+.2556:
    call     flushAll
    call     setRaw
    mov      %r12, %rdx
    call     waitFdCEX_A
    cmp      %r12, %rax
-   jz       .2526
+   jz       .2557
    call     stdinByte_FA
-   jc       .2526
+   jc       .2557
    cmp      $255, %al
-   jz       .2528
+   jz       .2559
    cmp      $128, %al
-   jc       .2532
+   jc       .2563
    testb    $32, %al
-   jnz      .2530
+   jnz      .2561
    and      $31, %al
    shl      $6, %rax
    push     %rax
-   jmp      .2531
-.2530:
+   jmp      .2562
+.2561:
    and      $15, %al
    shl      $6, %rax
    push     %rax
@@ -30136,20 +30420,20 @@ doKey:
    or       (%rsp), %rax
    shl      $6, %rax
    mov      %rax, (%rsp)
-.2531:
+.2562:
    call     stdinByte_FA
    and      $63, %al
    or       %rax, (%rsp)
    pop      %rax
-   jmp      .2532
-.2528:
+   jmp      .2563
+.2559:
    mov      $65536, %rax
-.2532:
+.2563:
    call     mkCharA_A
    mov      %rax, %rbx
    pop      %r13
    ret
-.2526:
+.2557:
    mov      $Nil, %rbx
    pop      %r13
    ret
@@ -30161,10 +30445,10 @@ doKey:
 doPeek:
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2533
+   jnz      .2564
    mov      EnvGet_A, %r10
    call     *%r10
-.2533:
+.2564:
    cmp      %r12, %rax
    js       retNil
    call     mkCharA_A
@@ -30180,27 +30464,27 @@ doChar:
    mov      %rbx, %r13
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jz       .2534
+   jz       .2565
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2535
+   jnz      .2566
    mov      EnvGet_A, %r10
    call     *%r10
-.2535:
+.2566:
    cmp      %r12, %rax
-   js       .2536
+   js       .2567
    call     getChar_A
    call     mkCharA_A
    mov      %rax, %rbx
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2537
-.2536:
+   jmp      .2568
+.2567:
    mov      $Nil, %rbx
-.2537:
+.2568:
    pop      %r13
    ret
-.2534:
+.2565:
    mov      (%rbx), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -30210,31 +30494,31 @@ doChar:
    call     evListE_E
 1:
    testb    $0x02, %bl
-   jz       .2538
+   jz       .2569
    mov      %rbx, %rax
    shr      $4, %rax
-   jz       .2539
+   jz       .2570
    call     mkCharA_A
    mov      %rax, %rbx
-   jmp      .2540
-.2539:
+   jmp      .2571
+.2570:
    mov      $Nil, %rbx
-.2540:
+.2571:
    pop      %r13
    ret
-.2538:
+.2569:
    testb    $0x08, %bl
    jz       atomErrEX
    cmp      $TSym, %rbx
-   jz       .2541
+   jz       .2572
    call     firstCharE_A
    shl      $4, %rax
    orb      $2, %al
-   jmp      .2542
-.2541:
+   jmp      .2573
+.2572:
    mov      $65536, %rax
    call     mkCharA_A
-.2542:
+.2573:
    mov      %rax, %rbx
    pop      %r13
    ret
@@ -30284,19 +30568,19 @@ doEof:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2543
+   jnz      .2574
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2544
+   jnz      .2575
    mov      EnvGet_A, %r10
    call     *%r10
-.2544:
+.2575:
    cmp      %r12, %rax
    jns      RetNil
-   jmp      .2545
-.2543:
+   jmp      .2576
+.2574:
    movq     $-1, Chr
-.2545:
+.2576:
    mov      $TSym, %rbx
    ret
 
@@ -30309,7 +30593,7 @@ doFrom:
    push     %r15
    mov      8(%rbx), %r13
    push     %r12
-.2546:
+.2577:
    call     evSymX_E
    call     bufStringE_SZ
    push     %r12
@@ -30321,61 +30605,61 @@ doFrom:
    push     %r15
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2546
+   jz       .2577
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2548
+   jnz      .2579
    mov      EnvGet_A, %r10
    call     *%r10
-.2548:
+.2579:
    cmp      %r12, %rax
-   js       .2549
+   js       .2580
    mov      %rsp, %r15
-.2551:
+.2582:
    lea      40(%r15), %rdx
    add      32(%r15), %rdx
    cmp      (%rdx), %al
-   jnz      .2552
+   jnz      .2583
    addq     $1, 32(%r15)
    cmp      %r12b, 1(%rdx)
-   jnz      .2553
+   jnz      .2584
    mov      EnvGet_A, %r10
    call     *%r10
    mov      16(%r15), %rbx
    jmp      doFrom_90
-.2552:
+.2583:
    cmp      %r12, 32(%r15)
-   jz       .2553
+   jz       .2584
    lea      41(%r15), %rdx
-.2554:
+.2585:
    subq     $1, 32(%r15)
-   jz       .2551
+   jz       .2582
    lea      40(%r15), %rsi
    lea      (%rdx), %rdi
    mov      32(%r15), %rcx
    cld
    repnz cmpsb
-   jz       .2551
+   jz       .2582
    add      $1, %rdx
-   jmp      .2554
-.2553:
+   jmp      .2585
+.2584:
    mov      (%r15), %r15
    cmp      %r12, (%r15)
-   jnz      .2551
+   jnz      .2582
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2548
-.2549:
+   jmp      .2579
+.2580:
    mov      $Nil, %rbx
 doFrom_90:
    pop      %r15
-.2556:
+.2587:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      %r15, %rsp
    pop      %r15
    cmp      %r12, %r15
-   jnz      .2556
+   jnz      .2587
    pop      %r15
    pop      %r13
    ret
@@ -30386,6 +30670,7 @@ doFrom_90:
    .global  doTill
 doTill:
    push     %r13
+   push     %r15
    mov      8(%rbx), %r13
    call     evSymX_E
    call     bufStringE_SZ
@@ -30402,17 +30687,17 @@ doTill:
    mov      %rcx, (%rsp)
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2557
+   jnz      .2588
    mov      EnvGet_A, %r10
    call     *%r10
-.2557:
+.2588:
    cmp      %r12, %rax
-   js       .2558
+   js       .2589
    cld
    lea      8(%rsp), %rdi
    mov      (%rsp), %rcx
    repnz scasb
-   jz       .2558
+   jz       .2589
    mov      8(%r13), %r10
    mov      (%r10), %rbx
    test     $0x06, %bl
@@ -30423,7 +30708,7 @@ doTill:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2560
+   jnz      .2591
    call     getChar_A
    call     mkCharA_A
    call     consA_X
@@ -30434,16 +30719,16 @@ doTill:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
-.2561:
+.2592:
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      %r12, %rax
-   jle      .2562
+   jle      .2593
    cld
    lea      32(%rsp), %rdi
    mov      24(%rsp), %rcx
    repnz scasb
-   jz       .2562
+   jz       .2593
    call     getChar_A
    call     mkCharA_A
    call     consA_C
@@ -30451,11 +30736,11 @@ doTill:
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      %rdx, %r13
-   jmp      .2561
-.2562:
+   jmp      .2592
+.2593:
    mov      8(%rbp), %rbx
-   jmp      .2563
-.2560:
+   jmp      .2594
+.2591:
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -30463,30 +30748,32 @@ doTill:
    push     %rbp
    mov      %rsp, %rbp
    mov      $4, %rdx
-.2564:
+.2595:
    call     getChar_A
    call     charSymACX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      %r12, %rax
-   jle      .2565
+   jle      .2596
    cld
    lea      32(%rsp), %rdi
    mov      24(%rsp), %rcx
    repnz scasb
-   jnz      .2564
-.2565:
+   jnz      .2595
+.2596:
    mov      8(%rbp), %r13
    call     consSymX_E
-.2563:
+.2594:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      %r15, %rsp
+   pop      %r15
    pop      %r13
    ret
-.2558:
+.2589:
    mov      $Nil, %rbx
    mov      %r15, %rsp
+   pop      %r15
    pop      %r13
    ret
 
@@ -30496,14 +30783,14 @@ eolA_F:
    cmp      %r12, %rax
    js       retz
    cmp      $10, %rax
-   jz       .2566
+   jz       .2597
    cmp      $13, %rax
    jnz      Ret
    mov      EnvGet_A, %r10
    call     *%r10
    cmp      $10, %rax
    jnz      retz
-.2566:
+.2597:
    mov      %r12, Chr
    ret
 
@@ -30514,10 +30801,10 @@ eolA_F:
 doLine:
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2567
+   jnz      .2598
    mov      EnvGet_A, %r10
    call     *%r10
-.2567:
+.2598:
    call     eolA_F
    jz       retNil
    push     %r13
@@ -30533,10 +30820,10 @@ doLine:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2568
+   jz       .2599
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2569
+   jz       .2600
    push     %rbp
    mov      %rsp, %rbp
    pushq    $2
@@ -30544,17 +30831,17 @@ doLine:
    push     %rbp
    mov      %rsp, %rbp
    mov      $4, %rdx
-.2570:
+.2601:
    call     getChar_A
    call     charSymACX_CX
    mov      EnvGet_A, %r10
    call     *%r10
    call     eolA_F
-   jnz      .2570
+   jnz      .2601
    mov      8(%rbp), %r13
    call     consSymX_E
-   jmp      .2576
-.2569:
+   jmp      .2607
+.2600:
    call     cons_Z
    movq     $2, (%r15)
    movq     $Nil, 8(%r15)
@@ -30563,7 +30850,7 @@ doLine:
    push     %r15
    push     %rbp
    mov      %rsp, %rbp
-.2572:
+.2603:
    mov      $4, %rdx
    mov      %r15, %r13
    call     getChar_A
@@ -30579,22 +30866,22 @@ doLine:
 1:
    pop      %rdx
    shr      $4, %rbx
-.2573:
+.2604:
    sub      $1, %rbx
-   jz       .2574
+   jz       .2605
    mov      EnvGet_A, %r10
    call     *%r10
    call     eolA_F
-   jnz      .2575
+   jnz      .2606
    mov      (%r15), %r13
    call     consSymX_E
    mov      %rbx, (%r15)
    jmp      doLine_20
-.2575:
+.2606:
    call     getChar_A
    call     charSymACX_CX
-   jmp      .2573
-.2574:
+   jmp      .2604
+.2605:
    mov      (%r15), %r13
    call     consSymX_E
    mov      %rbx, (%r15)
@@ -30610,8 +30897,8 @@ doLine:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r15)
    mov      %rax, %r15
-   jmp      .2572
-.2568:
+   jmp      .2603
+.2599:
    call     getChar_A
    call     mkCharA_A
    call     consA_Z
@@ -30630,7 +30917,7 @@ doLine:
    mov      %r13, (%r15)
    movq     $Nil, 8(%r15)
    mov      %r15, 8(%rbp)
-.2578:
+.2609:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -30640,9 +30927,9 @@ doLine:
    call     evListE_E
 1:
    shr      $4, %rbx
-.2579:
+.2610:
    sub      $1, %rbx
-   jz       .2580
+   jz       .2611
    mov      EnvGet_A, %r10
    call     *%r10
    call     eolA_F
@@ -30654,8 +30941,8 @@ doLine:
    movq     $Nil, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      %rdx, %r13
-   jmp      .2579
-.2580:
+   jmp      .2610
+.2611:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
    jnz      doLine_10
@@ -30673,7 +30960,7 @@ doLine:
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r15)
    mov      %rax, %r15
-   jmp      .2578
+   jmp      .2609
 doLine_10:
    mov      EnvGet_A, %r10
    call     *%r10
@@ -30689,7 +30976,7 @@ doLine_10:
    jmp      doLine_10
 doLine_20:
    mov      8(%rbp), %rbx
-.2576:
+.2607:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -30707,9 +30994,9 @@ doLines:
    push     %r15
    mov      8(%rbx), %r13
    mov      %r12, %r14
-.2584:
+.2615:
    testb    $0x0E, %r13b
-   jnz      .2585
+   jnz      .2616
    call     evSymX_E
    call     pathStringE_SZ
    mov      %rdx, %r12
@@ -30720,33 +31007,33 @@ doLines:
    xor      %r12, %r12
    mov      %r15, %rsp
    cmp      %r12, %rax
-   jz       .2586
+   jz       .2617
    mov      %rax, %rbx
    cmp      %r12, %r14
-   jnz      .2588
+   jnz      .2619
    mov      $2, %r14
-.2588:
+.2619:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    call     getc_unlocked
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2589
+   js       .2620
    cmp      $10, %rax
-   jnz      .2588
+   jnz      .2619
    add      $16, %r14
-   jmp      .2588
-.2589:
+   jmp      .2619
+.2620:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    call     fclose
    mov      %r12, %rdx
    xor      %r12, %r12
-.2586:
+.2617:
    mov      8(%r13), %r13
-   jmp      .2584
-.2585:
+   jmp      .2615
+.2616:
    cmp      %r12, %r14
    mov      %r14, %rbx
    mov      $Nil, %r10
@@ -30758,38 +31045,39 @@ doLines:
 
    .global  parseBCE_E
 parseBCE_E:
-   push     %rbp
-   mov      %rsp, %rbp
    pushq    EnvParseX
-   push     %rbp
-   mov      %rsp, %rbp
    pushq    EnvParseC
    pushq    EnvParseEOF
    pushq    EnvGet_A
    pushq    Chr
    mov      -8(%rbx), %rbx
    call     nameE_E
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   push     %rbp
+   mov      %rsp, %rbp
    mov      %rbx, EnvParseX
    mov      %r12, EnvParseC
    cmp      %r12, %rdx
-   jnz      .2591
+   jnz      .2622
    mov      $18446744073698871808, %rbx
-   jmp      .2592
-.2591:
+   jmp      .2623
+.2622:
    mov      $-1, %rbx
-.2592:
+.2623:
    mov      %rbx, EnvParseEOF
    movq     $getParse_A, EnvGet_A
    mov      %r12, Chr
    or       %al, %al
-   jz       .2593
+   jz       .2624
    call     getParse_A
-.2593:
+.2624:
    cmp      %r12, %rdx
-   jnz      .2594
+   jnz      .2625
    call     rdList_E
-   jmp      .2595
-.2594:
+   jmp      .2626
+.2625:
    push     %r13
    push     %rdx
    mov      %rdx, %rbx
@@ -30798,7 +31086,7 @@ parseBCE_E:
    cmp      %r12, %rbx
    mov      $Nil, %r10
    cmovzq   %r10, %rbx
-   jz       .2596
+   jz       .2627
    call     consE_X
    mov      %rbx, (%r13)
    movq     $Nil, 8(%r13)
@@ -30807,35 +31095,35 @@ parseBCE_E:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
-.2597:
+.2628:
    mov      %r12, %rdx
    mov      24(%rsp), %rbx
    push     %r13
    call     tokenCE_E
    pop      %r13
    cmp      %r12, %rbx
-   jz       .2598
+   jz       .2629
    call     consE_A
    mov      %rbx, (%rax)
    movq     $Nil, 8(%rax)
    mov      %rax, 8(%r13)
    mov      %rax, %r13
-   jmp      .2597
-.2598:
+   jmp      .2628
+.2629:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.2596:
+.2627:
    pop      %rax
    pop      %r13
-.2595:
+.2626:
+   mov      (%rbp), %rsp
+   pop      %rbp
    popq     Chr
    popq     EnvGet_A
    popq     EnvParseEOF
    popq     EnvParseC
-   pop      %rbp
    popq     EnvParseX
-   pop      %rbp
    ret
 
    .balign  16
@@ -30859,18 +31147,19 @@ doAny:
    testb    $0x08, %bl
    jz       symErrEX
    cmp      $Nil, %rbx
-   jz       .2599
-   push     %rbp
-   mov      %rsp, %rbp
+   jz       .2630
    pushq    EnvParseX
-   push     %rbp
-   mov      %rsp, %rbp
    pushq    EnvParseC
    pushq    EnvParseEOF
    pushq    EnvGet_A
    pushq    Chr
    mov      -8(%rbx), %rbx
    call     nameE_E
+   push     %rbp
+   mov      %rsp, %rbp
+   push     %rbx
+   push     %rbp
+   mov      %rsp, %rbp
    mov      %rbx, EnvParseX
    mov      %r12, EnvParseC
    movq     $18446744073709494272, EnvParseEOF
@@ -30879,14 +31168,14 @@ doAny:
    call     getParse_A
    mov      $1, %rax
    call     readA_E
+   mov      (%rbp), %rsp
+   pop      %rbp
    popq     Chr
    popq     EnvGet_A
    popq     EnvParseEOF
    popq     EnvParseC
-   pop      %rbp
    popq     EnvParseX
-   pop      %rbp
-.2599:
+.2630:
    pop      %r13
    ret
 
@@ -30934,11 +31223,11 @@ doStr:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2600
+   jz       .2631
    testb    $0x06, %bl
    jnz      argErrEX
    testb    $0x08, %bl
-   jz       .2601
+   jz       .2632
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -30946,10 +31235,10 @@ doStr:
    mov      %rsp, %rbp
    mov      8(%r14), %r13
    testb    $0x0E, %r13b
-   jz       .2602
+   jz       .2633
    mov      %r12, %rdx
-   jmp      .2603
-.2602:
+   jmp      .2634
+.2633:
    call     evSymX_E
    mov      (%rsp), %rbp
    movq     %rbx, (%rsp)
@@ -30957,13 +31246,13 @@ doStr:
    mov      %rsp, %rbp
    mov      %rbx, %rdx
    mov      16(%rbp), %rbx
-.2603:
+.2634:
    mov      $0, %al
    call     parseBCE_E
    mov      (%rbp), %rsp
    pop      %rbp
-   jmp      .2600
-.2601:
+   jmp      .2631
+.2632:
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -30971,19 +31260,19 @@ doStr:
    mov      %rsp, %rbp
    call     begString
    mov      %rbx, %r13
-.2605:
+.2636:
    mov      (%r13), %rbx
    call     printE
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .2606
+   jnz      .2637
    call     space
-   jmp      .2605
-.2606:
+   jmp      .2636
+.2637:
    call     endString_E
    mov      (%rbp), %rsp
    pop      %rbp
-.2600:
+.2631:
    pop      %r14
    pop      %r13
    ret
@@ -30992,11 +31281,11 @@ doStr:
 loadBEX_E:
    mov      %rax, %rdx
    testb    $0x08, %bl
-   jz       .2607
+   jz       .2638
    mov      -8(%rbx), %rax
    call     firstByteA_B
    cmp      $45, %al
-   jnz      .2607
+   jnz      .2638
    mov      %r12, %rdx
    call     parseBCE_E
    push     %rbp
@@ -31008,7 +31297,7 @@ loadBEX_E:
    mov      (%rbp), %rsp
    pop      %rbp
    ret
-.2607:
+.2638:
    push     %r14
    push     %rbp
    mov      %rsp, %rbp
@@ -31023,38 +31312,45 @@ loadBEX_E:
    mov      $Nil, %rbx
    call     doHide
    call     pushInFilesY
-.2609:
+.2640:
    mov      InFiles, %r10
    mov      (%r10), %rax
    cmp      InFile, %rax
-   jz       .2610
+   jz       .2641
    mov      %r12, %rdx
    call     readC_E
-   jmp      .2611
-.2610:
+   jmp      .2642
+.2641:
    mov      -8(%rbp), %rax
    or       %al, %al
-   jz       .2612
+   jz       .2643
    cmp      %r12, Chr
-   jnz      .2612
+   jnz      .2643
    mov      EnvPutB, %r10
    call     *%r10
    call     space
    call     flushAll
-.2612:
+.2643:
    mov      $10, %rdx
+   mov      %rdx, %r12
+   xor      %rdi, %rdi
+   call     isatty
+   mov      %r12, %rdx
+   xor      %r12, %r12
+   cmp      %r12d, %eax
+   cmovzq   %r12, %rdx
    call     readC_E
    cmpq     $10, Chr
-   jnz      .2611
+   jnz      .2642
    mov      %r12, Chr
-.2611:
+.2642:
    cmp      $Nil, %rbx
-   jz       .2615
+   jz       .2646
    mov      %rbx, 8(%rbp)
    mov      InFiles, %r10
    mov      (%r10), %rax
    cmp      InFile, %rax
-   jz       .2616
+   jz       .2647
 loadBEX_E_10:
    test     $0x06, %bl
    jnz      1f
@@ -31063,8 +31359,8 @@ loadBEX_E_10:
    jnz      1f
    call     evListE_E
 1:
-   jmp      .2617
-.2616:
+   jmp      .2648
+.2647:
    cmp      %r12, Chr
    jnz      loadBEX_E_10
    mov      -8(%rbp), %rax
@@ -31090,10 +31386,10 @@ loadBEX_E_10:
    call     flushAll
    call     printE_E
    call     newline
-.2617:
+.2648:
    mov      %rbx, 8(%rbp)
-   jmp      .2609
-.2615:
+   jmp      .2640
+.2646:
    call     popInFiles
    mov      $Nil, %rbx
    call     doHide
@@ -31114,7 +31410,7 @@ doLoad:
    push     %r14
    mov      %rbx, %r13
    mov      8(%rbx), %r14
-.2618:
+.2649:
    mov      (%r14), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -31124,16 +31420,16 @@ doLoad:
    call     evListE_E
 1:
    cmp      $TSym, %rbx
-   jz       .2619
+   jz       .2650
    mov      $62, %al
    call     loadBEX_E
-   jmp      .2620
-.2619:
+   jmp      .2651
+.2650:
    call     loadAllX_E
-.2620:
+.2651:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2618
+   jz       .2649
    pop      %r14
    pop      %r13
    ret
@@ -31243,22 +31539,22 @@ doPipe:
    movslq   4(%rsp), %rax
    call     closeOnExecAX
    call     forkLispX_FE
-   jnc      .2621
+   jnc      .2652
    mov      8(%r13), %r10
    testb    $0x0E, 8(%r10)
-   jnz      .2622
+   jnz      .2653
    mov      %rdx, %r12
    xor      %rdi, %rdi
    xor      %rsi, %rsi
    call     setpgid
    mov      %r12, %rdx
    xor      %r12, %r12
-.2622:
+.2653:
    movslq   (%rsp), %rax
    call     closeAX
    movslq   4(%rsp), %rax
    cmp      $1, %rax
-   jz       .2623
+   jz       .2654
    mov      %rdx, %r12
    mov      %rax, %rdi
    mov      $1, %rsi
@@ -31267,7 +31563,7 @@ doPipe:
    xor      %r12, %r12
    movslq   4(%rsp), %rax
    call     closeAX
-.2623:
+.2654:
    mov      $Nil, %rbx
    call     wrOpenEXY
    call     pushOutFilesY
@@ -31283,7 +31579,7 @@ doPipe:
 1:
    mov      %r12, %rbx
    jmp      byeE
-.2621:
+.2652:
    mov      %rbx, 16(%r14)
    movslq   4(%rsp), %rax
    call     closeAX
@@ -31293,11 +31589,11 @@ doPipe:
    mov      8(%r13), %r10
    mov      8(%r10), %r13
    testb    $0x0E, %r13b
-   jz       .2624
+   jz       .2655
    shl      $4, %rbx
    orb      $2, %bl
-   jmp      .2625
-.2624:
+   jmp      .2656
+.2655:
    mov      %rbx, 8(%r14)
    mov      %rdx, %r12
    mov      16(%r14), %rdi
@@ -31319,7 +31615,7 @@ doPipe:
    testb    $0x0E, %r13b
    jz       1b
    call     popInFiles
-.2625:
+.2656:
    add      $40, %rsp
    pop      %r14
    pop      %r13
@@ -31380,7 +31676,7 @@ doOpen:
    mov      (%r10), %rbx
    call     evSymE_E
    call     pathStringE_SZ
-.2626:
+.2657:
    mov      %rdx, %r12
    mov      %rsp, %rdi
    mov      $66, %rsi
@@ -31389,18 +31685,18 @@ doOpen:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2627
+   jns      .2658
    call     errno_A
    cmp      $4, %rax
-   jz       .2628
+   jz       .2659
    mov      $Nil, %rbx
    jmp      doOpen_90
-.2628:
+.2659:
    cmp      %r12b, Signal
-   jz       .2626
+   jz       .2657
    call     sighandlerX
-   jmp      .2626
-.2627:
+   jmp      .2657
+.2658:
    mov      %rax, %r13
    call     closeOnExecAX
    mov      %r13, %rdx
@@ -31447,12 +31743,12 @@ doClose:
    cmp      %r12d, %eax
    mov      $Nil, %r10
    cmovnzq  %r10, %rbx
-   jnz      .2630
+   jnz      .2661
    mov      %rdx, %rax
    call     closeInFileA
    mov      %rdx, %rax
    call     closeOutFileA
-.2630:
+.2661:
    pop      %r13
    ret
 
@@ -31476,76 +31772,76 @@ doEcho:
    mov      8(%r14), %r14
    mov      Chr, %rax
    cmp      %r12, %rax
-   jnz      .2631
+   jnz      .2662
    mov      EnvGet_A, %r10
    call     *%r10
-.2631:
+.2662:
    cmp      $Nil, %rbx
-   jnz      .2632
+   jnz      .2663
    testb    $0x0E, %r14b
-   jz       .2632
-.2634:
+   jz       .2663
+.2665:
    cmp      %r12, %rax
-   js       .2635
+   js       .2666
    mov      EnvPutB, %r10
    call     *%r10
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2634
-.2635:
+   jmp      .2665
+.2666:
    mov      $TSym, %rbx
    pop      %r14
    pop      %r13
    ret
-.2632:
+.2663:
    testb    $0x06, %bl
-   jz       .2636
+   jz       .2667
    call     xCntEX_FE
    testb    $0x0E, %r14b
-   jnz      .2641
+   jnz      .2672
    mov      (%r14), %r14
    xchg     %rbx, %r14
    call     evCntEX_FE
    mov      Chr, %rax
-.2638:
+.2669:
    sub      $1, %r14
-   js       .2641
+   js       .2672
    cmp      %r12, %rax
-   jns      .2640
+   jns      .2671
    mov      $Nil, %rbx
    pop      %r14
    pop      %r13
    ret
-.2640:
+.2671:
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2638
-.2641:
+   jmp      .2669
+.2672:
    sub      $1, %rbx
-   js       .2642
+   js       .2673
    cmp      %r12, %rax
-   jns      .2643
+   jns      .2674
    mov      $Nil, %rbx
    pop      %r14
    pop      %r13
    ret
-.2643:
+.2674:
    mov      EnvPutB, %r10
    call     *%r10
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2641
-.2642:
+   jmp      .2672
+.2673:
    mov      $TSym, %rbx
    pop      %r14
    pop      %r13
    ret
-.2636:
+.2667:
    testb    $0x08, %bl
    jz       argErrEX
    push     %r15
    push     %r12
-.2644:
+.2675:
    call     bufStringE_SZ
    push     %r12
    push     %rbp
@@ -31555,145 +31851,145 @@ doEcho:
    mov      %rsp, %rbp
    push     %r15
    testb    $0x0E, %r14b
-   jnz      .2645
+   jnz      .2676
    call     evSymY_E
    mov      8(%r14), %r14
-   jmp      .2644
-.2645:
+   jmp      .2675
+.2676:
    mov      %r12, %r13
    mov      Chr, %rax
-.2646:
+.2677:
    cmp      %r12, %rax
-   js       .2647
+   js       .2678
    mov      %r13, %r14
    cmp      %r12, %r14
-   jz       .2648
+   jz       .2679
    mov      32(%r14), %rbx
-.2648:
+.2679:
    mov      %rsp, %r15
-.2650:
+.2681:
    lea      40(%r15), %rdx
    add      32(%r15), %rdx
    cmp      (%rdx), %al
-   jnz      .2651
+   jnz      .2682
    addq     $1, 32(%r15)
    cmp      %r12b, 1(%rdx)
-   jz       .2652
+   jz       .2683
    cmp      %r12, %r13
-   jnz      .2653
+   jnz      .2684
    mov      %r15, %r13
-   jmp      .2655
-.2653:
+   jmp      .2686
+.2684:
    mov      32(%r15), %r10
    cmp      %r10, 32(%r13)
    cmovcq   %r15, %r13
-   jmp      .2655
-.2652:
+   jmp      .2686
+.2683:
    cmp      %r12, %r14
-   jz       .2656
+   jz       .2687
    lea      40(%r14), %rdx
    sub      32(%r15), %rbx
-.2657:
-   jc       .2656
+.2688:
+   jc       .2687
    mov      (%rdx), %al
    mov      EnvPutB, %r10
    call     *%r10
    add      $1, %rdx
    sub      $1, %rbx
-   jmp      .2657
-.2656:
+   jmp      .2688
+.2687:
    mov      EnvGet_A, %r10
    call     *%r10
    mov      16(%r15), %rbx
    jmp      doEcho_90
-.2651:
+.2682:
    cmp      %r12, 32(%r15)
-   jz       .2655
+   jz       .2686
    lea      41(%r15), %rdx
-.2659:
+.2690:
    subq     $1, 32(%r15)
-   jz       .2660
+   jz       .2691
    lea      40(%r15), %rsi
    lea      (%rdx), %rdi
    mov      32(%r15), %rcx
    cld
    repnz cmpsb
-   jz       .2660
+   jz       .2691
    add      $1, %rdx
-   jmp      .2659
-.2660:
+   jmp      .2690
+.2691:
    cmp      %r15, %r13
-   jnz      .2650
+   jnz      .2681
    mov      %r12, %r13
    mov      %rsp, %rdx
-.2662:
+.2693:
    cmp      %r12, 32(%rdx)
-   jz       .2663
+   jz       .2694
    cmp      %r12, %r13
-   jnz      .2664
+   jnz      .2695
    mov      %rdx, %r13
-   jmp      .2663
-.2664:
+   jmp      .2694
+.2695:
    mov      32(%rdx), %r10
    cmp      %r10, 32(%r13)
    cmovcq   %rdx, %r13
-.2663:
+.2694:
    mov      (%rdx), %rdx
    cmp      %r12, (%rdx)
-   jnz      .2662
-   jmp      .2650
-.2655:
+   jnz      .2693
+   jmp      .2681
+.2686:
    mov      (%r15), %r15
    cmp      %r12, (%r15)
-   jnz      .2650
+   jnz      .2681
    cmp      %r12, %r13
-   jnz      .2666
+   jnz      .2697
    cmp      %r12, %r14
-   jz       .2667
+   jz       .2698
    push     %rax
    push     %rbx
    lea      40(%r14), %rdx
-.2668:
+.2699:
    mov      (%rdx), %al
    mov      EnvPutB, %r10
    call     *%r10
    add      $1, %rdx
    sub      $1, %rbx
-   jnz      .2668
+   jnz      .2699
    pop      %rbx
    pop      %rax
-.2667:
+.2698:
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2669
-.2666:
+   jmp      .2700
+.2697:
    cmp      %r12, %r14
-   jz       .2669
+   jz       .2700
    lea      40(%r14), %rdx
    sub      32(%r13), %rbx
-.2671:
-   jc       .2669
+.2702:
+   jc       .2700
    mov      (%rdx), %al
    mov      EnvPutB, %r10
    call     *%r10
    add      $1, %rdx
    sub      $1, %rbx
-   jmp      .2671
-.2669:
+   jmp      .2702
+.2700:
    mov      EnvGet_A, %r10
    call     *%r10
-   jmp      .2646
-.2647:
+   jmp      .2677
+.2678:
    mov      $Nil, %rbx
 doEcho_90:
    pop      %r15
-.2673:
+.2704:
    mov      (%rbp), %rsp
    pop      %rbp
    mov      %r15, %rsp
    pop      %r15
    cmp      %r12, %r15
-   jnz      .2673
+   jnz      .2704
    pop      %r15
    pop      %r14
    pop      %r13
@@ -31705,13 +32001,13 @@ putStdoutB:
    push     %r14
    mov      OutFile, %r14
    cmp      %r12, %r14
-   jz       .2674
+   jz       .2705
    push     %rbx
    push     %r13
    mov      8(%r14), %rbx
    lea      24(%r14), %r13
    cmp      $8192, %rbx
-   jnz      .2675
+   jnz      .2706
    push     %rax
    push     %rdx
    mov      %r12, 8(%r14)
@@ -31721,25 +32017,25 @@ putStdoutB:
    lea      24(%r14), %r13
    pop      %rdx
    pop      %rax
-.2675:
+.2706:
    add      %rbx, %r13
    mov      %al, (%r13)
    add      $1, %rbx
    mov      %rbx, 8(%r14)
    cmp      $10, %al
-   jnz      .2676
+   jnz      .2707
    cmp      %r12, 16(%r14)
-   jz       .2676
+   jz       .2707
    push     %rdx
    mov      %r12, 8(%r14)
    mov      (%r14), %rdx
    lea      24(%r14), %r13
    call     wrBytesCEX_F
    pop      %rdx
-.2676:
+.2707:
    pop      %r13
    pop      %rbx
-.2674:
+.2705:
    pop      %r14
    ret
 
@@ -31766,24 +32062,24 @@ envGet_A:
    .global  outNumE
 outNumE:
    shr      $4, %rbx
-   jnc      .2678
+   jnc      .2709
    mov      $45, %al
    mov      EnvPutB, %r10
    call     *%r10
-.2678:
+.2709:
    mov      %rbx, %rax
 
    .global  outWordA
 outWordA:
    cmp      $9, %rax
-   jbe      .2679
+   jbe      .2710
    mov      %r12, %rdx
    mov      $10, %r10
    div      %r10
    push     %rdx
    call     outWordA
    pop      %rax
-.2679:
+.2710:
    add      $48, %al
    mov      EnvPutB, %r10
    jmp      *%r10
@@ -31792,22 +32088,22 @@ outWordA:
 prExtNmX:
    call     fileObjX_AC
    cmp      %r12, %rax
-   jz       .2680
+   jz       .2711
    call     outAoA
-.2680:
+.2711:
    mov      %rdx, %rax
 
    .balign  16
    .global  outOctA
 outOctA:
    cmp      $7, %rax
-   jbe      .2681
+   jbe      .2712
    push     %rax
    shr      $3, %rax
    call     outOctA
    pop      %rax
    and      $7, %al
-.2681:
+.2712:
    add      $48, %al
    mov      EnvPutB, %r10
    jmp      *%r10
@@ -31816,13 +32112,13 @@ outOctA:
    .global  outAoA
 outAoA:
    cmp      $15, %rax
-   jbe      .2682
+   jbe      .2713
    push     %rax
    shr      $4, %rax
    call     outAoA
    pop      %rax
    and      $15, %al
-.2682:
+.2713:
    add      $64, %al
    mov      EnvPutB, %r10
    jmp      *%r10
@@ -31833,15 +32129,15 @@ outStringS:
 
    .global  outStringC
 outStringC:
-.2683:
+.2714:
    mov      (%rdx), %al
    add      $1, %rdx
    or       %al, %al
-   jz       .2684
+   jz       .2715
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2683
-.2684:
+   jmp      .2714
+.2715:
    rep
    ret
 
@@ -31857,13 +32153,13 @@ outNameE:
    .global  prNameX
 prNameX:
    mov      %r12, %rdx
-.2685:
+.2716:
    call     symByteCX_FACX
-   jz       .2686
+   jz       .2717
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2685
-.2686:
+   jmp      .2716
+.2717:
    rep
    ret
 
@@ -31878,23 +32174,23 @@ printE_E:
    .global  printE
 printE:
    cmp      %r12b, Signal
-   jz       .2687
-   call     sighandlerT
-.2687:
+   jz       .2718
+   call     sighandler0
+.2718:
    testb    $0x02, %bl
    jnz      outNumE
    testb    $0x04, %bl
-   jz       .2688
+   jz       .2719
    mov      $-1, %rax
    jmp      fmtNum0AE_E
-.2688:
+.2719:
    push     %r13
    testb    $0x08, %bl
-   jz       .2689
+   jz       .2720
    mov      -8(%rbx), %r13
    call     nameX_X
    cmpq     $2, %r13
-   jnz      .2690
+   jnz      .2721
    mov      $36, %al
    mov      EnvPutB, %r10
    call     *%r10
@@ -31903,9 +32199,9 @@ printE:
    call     outOctA
    pop      %r13
    ret
-.2690:
+.2721:
    testb    $0x08, -8(%rbx)
-   jz       .2691
+   jz       .2722
    mov      $123, %al
    mov      EnvPutB, %r10
    call     *%r10
@@ -31915,103 +32211,118 @@ printE:
    call     *%r10
    pop      %r13
    ret
-.2691:
+.2722:
    push     %r14
    mov      $Intern, %r14
    call     isInternEXY_F
-   jnz      .2692
+   jnz      .2723
    mov      %r12, %rdx
    call     symByteCX_FACX
-.2693:
+.2724:
    cld
    mov      $Delim, %rdi
    mov      $(DelimEnd-Delim), %rcx
    repnz scasb
-   jnz      .2694
+   jnz      .2725
    push     %rax
    mov      $92, %al
    mov      EnvPutB, %r10
    call     *%r10
    pop      %rax
-   jmp      .2695
-.2694:
+   jmp      .2726
+.2725:
    cmp      $46, %al
-   jnz      .2695
+   jnz      .2726
    call     symByteCX_FACX
-   jnz      .2697
+   jnz      .2728
    mov      $92, %al
    mov      EnvPutB, %r10
    call     *%r10
    mov      $46, %al
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2699
-.2697:
+   jmp      .2730
+.2728:
    push     %rax
    mov      $46, %al
    mov      EnvPutB, %r10
    call     *%r10
    pop      %rax
-.2695:
+.2726:
    mov      EnvPutB, %r10
    call     *%r10
    call     symByteCX_FACX
-   jnz      .2693
-   jmp      .2699
-.2692:
+   jnz      .2724
+   jmp      .2730
+.2723:
+   call     tsm_F
+   jnz      .2731
    mov      $34, %al
    mov      EnvPutB, %r10
    call     *%r10
+   jmp      .2732
+.2731:
+   mov      Tsm, %r10
+   mov      (%r10), %rbx
+   call     outNameE
+.2732:
    mov      %r12, %rdx
    call     symByteCX_FACX
-.2700:
+.2733:
    cmp      $34, %al
    jz       printE_20
    cmp      $94, %al
    jz       printE_20
    cmp      $92, %al
-   jnz      .2701
+   jnz      .2734
 printE_20:
    push     %rax
    mov      $92, %al
    mov      EnvPutB, %r10
    call     *%r10
    pop      %rax
-   jmp      .2702
-.2701:
+   jmp      .2735
+.2734:
    cmp      $127, %al
-   jnz      .2703
+   jnz      .2736
    mov      $94, %al
    mov      EnvPutB, %r10
    call     *%r10
    mov      $63, %al
-   jmp      .2702
-.2703:
+   jmp      .2735
+.2736:
    cmp      $32, %al
-   jnc      .2702
+   jnc      .2735
    push     %rax
    mov      $94, %al
    mov      EnvPutB, %r10
    call     *%r10
    pop      %rax
    orb      $64, %al
-.2702:
+.2735:
    mov      EnvPutB, %r10
    call     *%r10
    call     symByteCX_FACX
-   jnz      .2700
+   jnz      .2733
+   call     tsm_F
+   jnz      .2739
    mov      $34, %al
    mov      EnvPutB, %r10
    call     *%r10
-.2699:
+   jmp      .2730
+.2739:
+   mov      Tsm, %r10
+   mov      8(%r10), %rbx
+   call     outNameE
+.2730:
    pop      %r14
    pop      %r13
    ret
-.2689:
+.2720:
    cmpq     $Quote, (%rbx)
-   jnz      .2706
+   jnz      .2741
    cmp      8(%rbx), %rbx
-   jz       .2706
+   jz       .2741
    mov      $39, %al
    mov      EnvPutB, %r10
    call     *%r10
@@ -32019,43 +32330,54 @@ printE_20:
    call     printE
    pop      %r13
    ret
-.2706:
+.2741:
    mov      %rbx, %r13
    mov      $40, %al
    mov      EnvPutB, %r10
    call     *%r10
-.2708:
+.2743:
    pushq    8(%rbx)
    mov      (%rbx), %rbx
    call     printE
    pop      %rbx
    cmp      $Nil, %rbx
-   jz       .2709
+   jz       .2744
    cmp      %r13, %rbx
-   jnz      .2710
+   jnz      .2745
    call     space
    mov      $46, %al
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2709
-.2710:
+   jmp      .2744
+.2745:
    testb    $0x0E, %bl
-   jz       .2711
+   jz       .2746
    call     space
    mov      $46, %al
    mov      EnvPutB, %r10
    call     *%r10
    call     space
    call     printE
-   jmp      .2709
-.2711:
+   jmp      .2744
+.2746:
    call     space
-   jmp      .2708
-.2709:
+   jmp      .2743
+.2744:
    mov      $41, %al
    mov      EnvPutB, %r10
    call     *%r10
    pop      %r13
+   ret
+
+   .balign  16
+   .global  tsm_F
+tsm_F:
+   cmpq     $Nil, Tsm
+   jz       ret
+   cmpq     $putStdoutB, EnvPutB
+   jnz      Retz
+   mov      OutFile, %r10
+   cmp      %r12, 16(%r10)
    ret
 
    .balign  16
@@ -32070,30 +32392,30 @@ prinE_E:
    .global  prinE
 prinE:
    cmp      %r12b, Signal
-   jz       .2712
-   call     sighandlerT
-.2712:
+   jz       .2747
+   call     sighandler0
+.2747:
    cmp      $Nil, %rbx
-   jz       .2713
+   jz       .2748
    testb    $0x02, %bl
    jnz      outNumE
    testb    $0x04, %bl
-   jz       .2714
+   jz       .2749
    mov      $-1, %rax
    jmp      fmtNum0AE_E
-.2714:
+.2749:
    push     %r13
    testb    $0x08, %bl
-   jz       .2715
+   jz       .2750
    mov      -8(%rbx), %r13
    call     nameX_X
    cmpq     $2, %r13
-   jz       .2719
+   jz       .2754
    testb    $0x08, -8(%rbx)
-   jnz      .2717
+   jnz      .2752
    call     prNameX
-   jmp      .2719
-.2717:
+   jmp      .2754
+.2752:
    mov      $123, %al
    mov      EnvPutB, %r10
    call     *%r10
@@ -32101,22 +32423,22 @@ prinE:
    mov      $125, %al
    mov      EnvPutB, %r10
    call     *%r10
-   jmp      .2719
-.2715:
+   jmp      .2754
+.2750:
    mov      %rbx, %r13
-.2720:
+.2755:
    mov      (%r13), %rbx
    call     prinE
    mov      8(%r13), %r13
    cmp      $Nil, %r13
-   jz       .2719
+   jz       .2754
    testb    $0x0E, %r13b
-   jz       .2720
+   jz       .2755
    mov      %r13, %rbx
    call     prinE
-.2719:
+.2754:
    pop      %r13
-.2713:
+.2748:
    rep
    ret
 
@@ -32127,7 +32449,7 @@ prinE:
 doPrin:
    push     %r13
    mov      8(%rbx), %r13
-.2723:
+.2758:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32139,7 +32461,7 @@ doPrin:
    call     prinE_E
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2723
+   jz       .2758
    pop      %r13
    ret
 
@@ -32168,19 +32490,19 @@ doSpace:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2724
+   jnz      .2759
    call     space
    mov      $18, %rbx
-   jmp      .2725
-.2724:
+   jmp      .2760
+.2759:
    mov      %rbx, %rdx
    call     xCntCX_FC
-.2726:
+.2761:
    sub      $1, %rdx
-   js       .2725
+   js       .2760
    call     space
-   jmp      .2726
-.2725:
+   jmp      .2761
+.2760:
    pop      %r13
    ret
 
@@ -32191,7 +32513,7 @@ doSpace:
 doPrint:
    push     %r13
    mov      8(%rbx), %r13
-.2728:
+.2763:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32203,10 +32525,10 @@ doPrint:
    call     printE_E
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jnz      .2729
+   jnz      .2764
    call     space
-   jmp      .2728
-.2729:
+   jmp      .2763
+.2764:
    pop      %r13
    ret
 
@@ -32217,7 +32539,7 @@ doPrint:
 doPrintsp:
    push     %r13
    mov      8(%rbx), %r13
-.2730:
+.2765:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32230,7 +32552,7 @@ doPrintsp:
    call     space
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2730
+   jz       .2765
    pop      %r13
    ret
 
@@ -32262,7 +32584,7 @@ doRewind:
    mov      $Nil, %rbx
    mov      OutFile, %rdx
    cmp      %r12, %rdx
-   jz       .2731
+   jz       .2766
    mov      %r12, 8(%rdx)
    mov      %rdx, %r12
    mov      (%r12), %rdi
@@ -32272,7 +32594,7 @@ doRewind:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jnz      .2731
+   jnz      .2766
    mov      %rdx, %r12
    mov      (%r12), %rdi
    xor      %rsi, %rsi
@@ -32282,7 +32604,7 @@ doRewind:
    cmp      %r12d, %eax
    mov      $TSym, %r10
    cmovzq   %r10, %rbx
-.2731:
+.2766:
    rep
    ret
 
@@ -32331,11 +32653,11 @@ doRd:
    call     evListE_E
 1:
    testb    $0x02, %bl
-   jnz      .2733
+   jnz      .2768
    push     %r15
    mov      InFile, %r15
    cmp      %r12, %r15
-   jz       .2734
+   jz       .2769
    push     %rbp
    mov      %rsp, %rbp
    push     %rbx
@@ -32348,10 +32670,10 @@ doRd:
    cmovcq   8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
-.2734:
+.2769:
    pop      %r15
    ret
-.2733:
+.2768:
    mov      InFile, %rdx
    cmp      %r12, %rdx
    jz       retNil
@@ -32365,34 +32687,34 @@ doRd:
    mov      %rsp, %rbp
    shr      $4, %rbx
    jz       doRd_80
-   jnc      .2735
+   jnc      .2770
    sub      %rbx, %rsp
    mov      %rsp, %r14
    mov      $1, %r15
-   jmp      .2736
-.2735:
+   jmp      .2771
+.2770:
    mov      %rsp, %r14
    mov      $-1, %r15
    add      %r15, %r14
    sub      %rbx, %rsp
-.2736:
+.2771:
    mov      (%rdx), %rdx
    mov      %rsp, %r13
    push     %rbx
    call     rdBytesCEX_F
-   jnz      .2737
+   jnz      .2772
 doRd_80:
    mov      $Nil, %rbx
    jmp      doRd_90
-.2737:
+.2772:
    lea      8(%rbp), %r13
    mov      $4, %rdx
-.2738:
+.2773:
    mov      (%r14), %al
    call     byteNumBCX_CX
    add      %r15, %r14
    subq     $1, (%rsp)
-   jnz      .2738
+   jnz      .2773
    mov      8(%rbp), %rbx
    testb    $0x04, %bl
    jz       doRd_90
@@ -32414,7 +32736,7 @@ doRd_90:
 doPr:
    push     %r13
    mov      8(%rbx), %r13
-.2740:
+.2775:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32430,7 +32752,7 @@ doPr:
    pop      %rbx
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2740
+   jz       .2775
    pop      %r13
    ret
 
@@ -32441,7 +32763,7 @@ doPr:
 doWr:
    push     %r13
    mov      8(%rbx), %r13
-.2741:
+.2776:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32455,7 +32777,7 @@ doWr:
    call     putStdoutB
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2741
+   jz       .2776
    pop      %r13
    ret
 
@@ -32468,7 +32790,7 @@ doRpc:
    mov      8(%rbx), %r13
    mov      $1, %rax
    call     putCharA
-.2742:
+.2777:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -32483,7 +32805,7 @@ doRpc:
    call     binPrintEZ
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .2742
+   jz       .2777
    mov      $3, %rax
    call     putCharA
    mov      %rdx, %r12
@@ -32607,9 +32929,9 @@ packExtNmX_E:
    mov      $4, %rdx
    lea      8(%rbp), %r13
    cmp      %r12, %rax
-   jz       .2743
+   jz       .2778
    call     packAoACX_CX
-.2743:
+.2778:
    pop      %rax
    call     packOctACX_CX
    call     cons_E
@@ -32625,13 +32947,13 @@ packExtNmX_E:
    .global  packAoACX_CX
 packAoACX_CX:
    cmp      $15, %rax
-   jbe      .2744
+   jbe      .2779
    push     %rax
    shr      $4, %rax
    call     packAoACX_CX
    pop      %rax
    and      $15, %al
-.2744:
+.2779:
    add      $64, %al
    jmp      byteSymBCX_CX
 
@@ -32639,13 +32961,13 @@ packAoACX_CX:
    .global  packOctACX_CX
 packOctACX_CX:
    cmp      $7, %rax
-   jbe      .2745
+   jbe      .2780
    push     %rax
    shr      $3, %rax
    call     packOctACX_CX
    pop      %rax
    and      $7, %al
-.2745:
+.2780:
    add      $48, %al
    jmp      byteSymBCX_CX
 
@@ -32662,31 +32984,31 @@ chopExtNmX_E:
    push     %rbx
    push     %rbp
    mov      %rsp, %rbp
-.2746:
+.2781:
    shr      $3, %rdx
-   jz       .2747
+   jz       .2782
    call     oct3C_CA
    call     consA_E
    mov      %rax, (%rbx)
    mov      8(%rbp), %r10
    mov      %r10, 8(%rbx)
    mov      %rbx, 8(%rbp)
-   jmp      .2746
-.2747:
+   jmp      .2781
+.2782:
    cmp      %r12, %r13
-   jz       .2748
+   jz       .2783
    mov      %r12, %rbx
    mov      %r12, %rax
-.2749:
+.2784:
    mov      %r13b, %al
    and      $15, %al
    add      $64, %al
    or       %al, %bl
    shr      $4, %r13
-   jz       .2750
+   jz       .2785
    shl      $8, %rbx
-   jmp      .2749
-.2750:
+   jmp      .2784
+.2785:
    shl      $4, %rbx
    orb      $2, %bl
    call     cons_A
@@ -32698,7 +33020,7 @@ chopExtNmX_E:
    mov      8(%rbp), %r10
    mov      %r10, 8(%rbx)
    mov      %rbx, 8(%rbp)
-.2748:
+.2783:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -32713,20 +33035,20 @@ oct3C_CA:
    add      $48, %al
    mov      %rax, %rbx
    shr      $3, %rdx
-   jz       .2751
+   jz       .2786
    mov      %dl, %al
    and      $7, %al
    add      $48, %al
    shl      $8, %rbx
    or       %al, %bl
    shr      $3, %rdx
-   jz       .2751
+   jz       .2786
    mov      %dl, %al
    and      $7, %al
    add      $48, %al
    shl      $8, %rbx
    or       %al, %bl
-.2751:
+.2786:
    shl      $4, %rbx
    orb      $2, %bl
    call     cons_A
@@ -32746,7 +33068,7 @@ fileObjX_AC:
    mov      %r13, %rax
    and      $255, %rax
    shr      $8, %r13
-   jz       .2753
+   jz       .2788
    mov      %r13, %rbx
    and      $4095, %rbx
    shl      $20, %rbx
@@ -32759,7 +33081,7 @@ fileObjX_AC:
    shr      $8, %r13
    shl      $32, %r13
    or       %r13, %rax
-.2753:
+.2788:
    rep
    ret
 
@@ -32787,65 +33109,65 @@ dbFileBlkY_AC:
    .global  rdLockDb
 rdLockDb:
    cmpq     $TSym, Solo
-   jz       .2754
+   jz       .2789
    mov      $65536, %rax
    mov      DbFiles, %r10
    mov      (%r10), %rdx
    jmp      lockFileAC
-.2754:
+.2789:
    rep
    ret
 
    .global  wrLockDb
 wrLockDb:
    cmpq     $TSym, Solo
-   jz       .2755
+   jz       .2790
    mov      $65537, %rax
    mov      DbFiles, %r10
    mov      (%r10), %rdx
    jmp      lockFileAC
-.2755:
+.2790:
    rep
    ret
 
    .global  rwUnlockDbA
 rwUnlockDbA:
    cmpq     $TSym, Solo
-   jz       .2756
+   jz       .2791
    cmp      %r12, %rax
-   jnz      .2757
+   jnz      .2792
    push     %r13
    push     %r14
    mov      DbFiles, %r13
    mov      DBs, %r14
-.2758:
+.2793:
    sub      $64, %r14
-   jz       .2759
+   jz       .2794
    add      $64, %r13
    cmp      %r12b, 32(%r13)
-   jz       .2758
+   jz       .2793
    mov      $2, %rax
    mov      (%r13), %rdx
    call     unLockFileAC
    mov      %r12b, 32(%r13)
-   jmp      .2758
-.2759:
+   jmp      .2793
+.2794:
    pop      %r14
    pop      %r13
    movq     $2, Solo
    mov      %r12, %rax
-.2757:
+.2792:
    orb      $2, %al
    mov      DbFiles, %r10
    mov      (%r10), %rdx
    call     unLockFileAC
-.2756:
+.2791:
    rep
    ret
 
    .global  tryLockCE_FA
 tryLockCE_FA:
-.2761:
+.2796:
    mov      %rdx, Flock+8
    mov      %rbx, Flock+16
    mov      $1, %rax
@@ -32859,32 +33181,32 @@ tryLockCE_FA:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2762
+   js       .2797
    mov      DbFile, %r11
    movb     $1, 32(%r11)
    cmp      %r12, %rdx
-   jnz      .2763
+   jnz      .2798
    movq     $TSym, Solo
-   jmp      .2764
-.2763:
+   jmp      .2799
+.2798:
    cmpq     $TSym, Solo
-   jz       .2764
+   jz       .2799
    movq     $Nil, Solo
-.2764:
+.2799:
    or       %r12, %r12
    ret
-.2762:
+.2797:
    call     errno_A
    cmp      $4, %rax
-   jz       .2766
+   jz       .2801
    cmp      $13, %rax
-   jz       .2766
+   jz       .2801
    cmp      $11, %rax
    jnz      lockErr
-.2766:
+.2801:
    mov      %rdx, Flock+8
    mov      %rbx, Flock+16
-.2768:
+.2803:
    mov      %rdx, %r12
    mov      DbFile, %r10
    mov      (%r10), %rdi
@@ -32894,15 +33216,15 @@ tryLockCE_FA:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2769
+   jns      .2804
    call     errno_A
    cmp      $4, %rax
    jnz      lockErr
-   jmp      .2768
-.2769:
+   jmp      .2803
+.2804:
    movswq   Flock, %rax
    cmp      $2, %al
-   jz       .2761
+   jz       .2796
    movslq   Flock+24, %rax
    ret
 
@@ -33019,9 +33341,9 @@ blkPokeCEZ:
    jz       Ret
    mov      DbFile, %r10
    cmp      24(%r10), %rax
-   jnz      .2770
+   jnz      .2805
    mov      $64, %rax
-.2770:
+.2805:
    mov      %rdx, %r12
    mov      %rax, %rdi
    mov      DbJnl, %rsi
@@ -33096,20 +33418,6 @@ logBlock:
    add      $8, %rsp
    ret
 
-   .global  logBlocksZ
-logBlocksZ:
-   call     rdBlockZ_Z
-   call     logBlock
-.2771:
-   cmp      %r12, BlkLink
-   jz       .2772
-   call     rdBlockLinkZ_Z
-   call     logBlock
-   jmp      .2771
-.2772:
-   rep
-   ret
-
    .global  newBlock_X
 newBlock_X:
    push     %r15
@@ -33119,18 +33427,22 @@ newBlock_X:
    call     blkPeekCEZ
    call     getAdrZ_A
    cmp      %r12, %rax
-   jz       .2773
-   mov      %rax, %r13
+   jz       newBlock_X_10
    mov      DbFile, %r10
-   mov      16(%r10), %cl
+   cmp      %r12, 56(%r10)
+   jz       newBlock_X_10
+   mov      %rax, %r13
+   mov      DbFile, %rdx
+   mov      16(%rdx), %cl
    shl      %cl, %rax
+   subq     $1, 56(%rdx)
    mov      %rax, %rbx
    mov      $6, %rdx
    call     blkPeekCEZ
    mov      %r12, %rbx
    mov      $12, %rdx
-   jmp      .2774
-.2773:
+   jmp      .2807
+newBlock_X_10:
    add      $6, %r15
    call     getAdrZ_A
    mov      $281474976710592, %r10
@@ -33140,7 +33452,7 @@ newBlock_X:
    add      $64, %rax
    call     setAdrAZ
    sub      $6, %r15
-.2774:
+.2807:
    call     blkPokeCEZ
    mov      DbFile, %r10
    mov      24(%r10), %rdx
@@ -33170,14 +33482,14 @@ newIdEX_X:
    add      DbFiles, %rbx
    mov      %rbx, DbFile
    cmp      %r12, DbLog
-   jnz      .2775
+   jnz      .2808
    addq     $1, EnvProtect
-.2775:
+.2808:
    call     wrLockDb
    cmp      %r12, DbJnl
-   jz       .2776
+   jz       .2809
    call     lockJnl
-.2776:
+.2809:
    call     newBlock_X
    mov      %r13, %rdx
    shr      $6, %rdx
@@ -33185,15 +33497,15 @@ newIdEX_X:
    mov      8(%r10), %rbx
    call     extNmCE_X
    cmp      %r12, DbJnl
-   jz       .2777
+   jz       .2810
    call     unLockJnl
-.2777:
+.2810:
    mov      $65536, %rax
    call     rwUnlockDbA
    cmp      %r12, DbLog
-   jnz      .2778
+   jnz      .2811
    subq     $1, EnvProtect
-.2778:
+.2811:
    rep
    ret
 
@@ -33206,7 +33518,7 @@ isLifeE_F:
    jz       retnz
    shl      $6, %rax
    cmp      DBs, %rax
-   jnc      .2779
+   jnc      .2812
    add      DbFiles, %rax
    mov      %rax, DbFile
    mov      -8(%rbx), %rax
@@ -33237,10 +33549,10 @@ isLifeE_F:
    cmp      $1, %al
    pop      %r15
    pop      %rbx
-   jmp      .2780
-.2779:
+   jmp      .2813
+.2812:
    testb    $0x0E, Ext
-.2780:
+.2813:
    rep
    ret
 
@@ -33256,7 +33568,7 @@ cleanUpY:
    call     setAdrAZ
    call     blkPokeCEZ
    mov      %r14, %rbx
-.2781:
+.2814:
    mov      DbFile, %r10
    mov      16(%r10), %cl
    shl      %cl, %rbx
@@ -33264,12 +33576,12 @@ cleanUpY:
    andb     $~63, (%r15)
    call     getAdrZ_A
    cmp      %r12, %rax
-   jz       .2782
+   jz       .2815
    mov      %rax, %r14
    call     blkPokeCEZ
    mov      %r14, %rbx
-   jmp      .2781
-.2782:
+   jmp      .2814
+.2815:
    pop      %rax
    call     setAdrAZ
    jmp      blkPokeCEZ
@@ -33278,12 +33590,16 @@ cleanUpY:
    .global  getBlockZ_FB
 getBlockZ_FB:
    cmp      BufEnd, %r15
-   jnz      .2783
+   jnz      .2816
    mov      BlkLink, %rax
    cmp      %r12, %rax
    jz       ret
+   push     %rdx
+   push     %rbx
    call     rdBlockIndexAZ_Z
-.2783:
+   pop      %rbx
+   pop      %rdx
+.2816:
    mov      (%r15), %al
    add      $1, %r15
    ret
@@ -33292,17 +33608,17 @@ getBlockZ_FB:
    .global  putBlockBZ
 putBlockBZ:
    cmp      BufEnd, %r15
-   jnz      .2784
+   jnz      .2817
    push     %rax
    push     %rdx
    push     %rbx
    mov      DbBlock, %r15
    cmp      %r12, BlkLink
-   jz       .2785
+   jz       .2818
    call     wrBlockZ
    call     rdBlockLinkZ_Z
-   jmp      .2786
-.2785:
+   jmp      .2819
+.2818:
    push     %r13
    call     newBlock_X
    mov      (%r15), %al
@@ -33314,17 +33630,17 @@ putBlockBZ:
    mov      %r13, BlkIndex
    pop      %rax
    cmp      $63, %rax
-   jz       .2787
+   jz       .2820
    add      $1, %rax
-.2787:
+.2820:
    call     setAdrAZ
    add      $6, %r15
    pop      %r13
-.2786:
+.2819:
    pop      %rbx
    pop      %rdx
    pop      %rax
-.2784:
+.2817:
    mov      %al, (%r15)
    add      $1, %r15
    ret
@@ -33359,10 +33675,10 @@ doPool:
    push     %rbp
    mov      %rsp, %rbp
    cmp      $Nil, %rbx
-   jz       .2788
+   jz       .2821
    testb    $0x0E, %bl
    jnz      lstErrEX
-.2788:
+.2821:
    mov      8(%r14), %r14
    call     evSymY_E
    mov      (%rsp), %rbp
@@ -33377,11 +33693,11 @@ doPool:
    mov      %rsp, %rbp
    movq     $2, Solo
    cmp      %r12, DBs
-   jz       .2789
+   jz       .2822
    call     doRollback
    mov      DbFiles, %rbx
    mov      DBs, %rdx
-.2790:
+.2823:
    mov      (%rbx), %rax
    call     closeAX
    mov      %rdx, %r12
@@ -33391,29 +33707,29 @@ doPool:
    xor      %r12, %r12
    add      $64, %rbx
    sub      $64, %rdx
-   jnz      .2790
+   jnz      .2823
    mov      %r12, DBs
    cmp      %r12, DbJnl
-   jz       .2791
+   jz       .2824
    mov      %rdx, %r12
    mov      DbJnl, %rdi
    call     fclose
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r12, DbJnl
-.2791:
+.2824:
    cmp      %r12, DbLog
-   jz       .2789
+   jz       .2822
    mov      %rdx, %r12
    mov      DbLog, %rdi
    call     fclose
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r12, DbLog
-.2789:
+.2822:
    mov      32(%rbp), %rbx
    cmp      $Nil, %rbx
-   jz       .2793
+   jz       .2826
    push     %rax
    call     pathStringE_SZ
    cld
@@ -33431,36 +33747,31 @@ doPool:
    mov      $64, %rbx
    mov      24(%rbp), %rax
    testb    $0x0E, %al
-   jnz      .2794
+   jnz      .2827
    mov      %r12, %rbx
-.2795:
+.2828:
    add      $64, %rbx
    mov      8(%rax), %rax
    testb    $0x0E, %al
-   jz       .2795
-.2794:
+   jz       .2828
+.2827:
    mov      DbFiles, %rax
    call     allocAE_A
    mov      %rax, DbFiles
    mov      %rax, %r14
    add      %rbx, %rax
    push     %rax
-   mov      $0, %al
-   lea      (%r14), %rdi
-   mov      %rbx, %rcx
-   cld
-   rep stosb
    mov      %r12, MaxBlkSize
-.2796:
+.2829:
    mov      8(%rsp), %rdx
    mov      %r14, %rax
    sub      DbFiles, %rax
    shr      $6, %rax
    mov      %rax, 8(%r14)
    testb    $0x0E, 24(%rbp)
-   jnz      .2797
+   jnz      .2830
    call     bufAoAC_C
-.2797:
+.2830:
    mov      %r12b, (%rdx)
    mov      24(%rbp), %rax
    mov      8(%rax), %r10
@@ -33469,9 +33780,9 @@ doPool:
    testb    $0x02, %al
    mov      $2, %r10
    cmovzq   %r10, %rax
-   jz       .2798
+   jz       .2831
    shr      $4, %rax
-.2798:
+.2831:
    mov      %al, 16(%r14)
    mov      %r14, DbFile
    mov      %rdx, %r12
@@ -33481,7 +33792,7 @@ doPool:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2799
+   js       .2832
    mov      %rax, (%r14)
    mov      $13, %rdx
    mov      %r12, %rbx
@@ -33493,8 +33804,8 @@ doPool:
    mov      %al, %cl
    shl      %cl, %rdx
    mov      %rdx, 24(%r14)
-   jmp      .2800
-.2799:
+   jmp      .2833
+.2832:
    mov      32(%rbp), %rbx
    call     errno_A
    cmp      $2, %rax
@@ -33522,19 +33833,19 @@ doPool:
    mov      %r12, %rbx
    lea      6(%rsp), %r15
    cmp      DbFiles, %r14
-   jz       .2801
+   jz       .2834
    mov      $64, %rax
-   jmp      .2802
-.2801:
+   jmp      .2835
+.2834:
    mov      $128, %rax
-.2802:
+.2835:
    call     setAdrAZ
    mov      %rsp, %r15
    mov      16(%r14), %r10b
    mov      %r10b, 12(%r15)
    call     blkPokeCEZ
    cmp      DbFiles, %r14
-   jnz      .2803
+   jnz      .2836
    mov      %r12, (%rsp)
    mov      %r12, 8(%rsp)
    mov      %rsp, %r15
@@ -33542,29 +33853,33 @@ doPool:
    call     setAdrAZ
    mov      24(%r14), %rbx
    call     blkPokeCEZ
-.2803:
+.2836:
    add      24(%r14), %rsp
-.2800:
+.2833:
    mov      (%r14), %rax
    call     closeOnExecAX
    mov      24(%r14), %rax
    cmp      MaxBlkSize, %rax
-   jbe      .2804
+   jbe      .2837
    mov      %rax, MaxBlkSize
-.2804:
+.2837:
+   mov      %r12, 32(%r14)
+   mov      %r12, 40(%r14)
+   mov      %r12, 48(%r14)
+   movq     $-1, 56(%r14)
    add      $64, %r14
    mov      %r14, %rax
    sub      DbFiles, %rax
    mov      %rax, DBs
    cmp      (%rsp), %r14
-   jnz      .2796
+   jnz      .2829
    mov      DbBlock, %rax
    mov      MaxBlkSize, %rbx
    call     allocAE_A
    mov      %rax, DbBlock
    mov      16(%rbp), %rbx
    cmp      $Nil, %rbx
-   jz       .2805
+   jz       .2838
    call     pathStringE_SZ
    mov      %rdx, %r12
    mov      %rsp, %rdi
@@ -33578,10 +33893,10 @@ doPool:
    mov      %rax, DbJnl
    call     jnlFileno_A
    call     closeOnExecAX
-.2805:
+.2838:
    mov      8(%rbp), %rbx
    cmp      $Nil, %rbx
-   jz       .2793
+   jz       .2826
    call     pathStringE_SZ
    mov      %rdx, %r12
    mov      %rsp, %rdi
@@ -33605,20 +33920,20 @@ doPool:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12, %rax
-   jz       .2807
+   jz       .2840
    mov      %rdx, %r12
    mov      DbLog, %rdi
    call     feof
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jnz      .2810
+   jnz      .2843
    call     ignLog
-   jmp      .2807
-.2810:
+   jmp      .2840
+.2843:
    movswq   Buf, %rax
    cmp      $-1, %rax
-   jnz      .2811
+   jnz      .2844
    mov      %rdx, %r12
    mov      stderr, %rdi
    mov      $RolbLog, %rsi
@@ -33629,12 +33944,12 @@ doPool:
    call     rewindLog
    mov      DbFiles, %rbx
    mov      DBs, %rdx
-.2812:
+.2845:
    mov      %r12b, 33(%rbx)
    sub      $64, %rdx
-   jnz      .2812
+   jnz      .2845
    sub      MaxBlkSize, %rsp
-.2813:
+.2846:
    mov      %rdx, %r12
    mov      $Buf, %rdi
    mov      $2, %rsi
@@ -33647,7 +33962,7 @@ doPool:
    jz       jnlErrX
    movswq   Buf, %rax
    cmp      $-1, %rax
-   jz       .2814
+   jz       .2847
    call     dbfBuf_AF
    jc       jnlErrX
    mov      %rdx, %r12
@@ -33691,12 +34006,12 @@ doPool:
    jnz      dbWrErr
    mov      DbFile, %r11
    movb     $1, 33(%r11)
-   jmp      .2813
-.2814:
+   jmp      .2846
+.2847:
    add      MaxBlkSize, %rsp
    call     fsyncDB
-   jmp      .2807
-.2811:
+   jmp      .2840
+.2844:
    call     dbfBuf_AF
    jc       doPool_40
    mov      %rdx, %r12
@@ -33728,12 +34043,12 @@ doPool:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      $1, %rax
-   jz       .2810
+   jz       .2843
 doPool_40:
    call     ignLog
-.2807:
+.2840:
    call     truncLog
-.2793:
+.2826:
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -33772,9 +34087,9 @@ rewindLog:
 fsyncDB:
    mov      DbFiles, %rbx
    mov      DBs, %rdx
-.2817:
+.2850:
    cmp      %r12b, 33(%rbx)
-   jz       .2818
+   jz       .2851
    mov      %rdx, %r12
    mov      (%rbx), %rdi
    call     fsync
@@ -33782,9 +34097,9 @@ fsyncDB:
    xor      %r12, %r12
    cmp      %r12d, %eax
    js       dbSyncErrX
-.2818:
+.2851:
    sub      $64, %rdx
-   jnz      .2817
+   jnz      .2850
    rep
    ret
 
@@ -33807,13 +34122,13 @@ truncLog:
    .global  bufAoAC_C
 bufAoAC_C:
    cmp      $15, %rax
-   jbe      .2819
+   jbe      .2852
    push     %rax
    shr      $4, %rax
    call     bufAoAC_C
    pop      %rax
    and      $15, %al
-.2819:
+.2852:
    add      $64, %al
    mov      %al, (%rdx)
    add      $1, %rdx
@@ -33830,9 +34145,9 @@ doJournal:
    mov      %rbx, %r13
    mov      8(%rbx), %r14
    sub      MaxBlkSize, %rsp
-.2820:
+.2853:
    testb    $0x0E, %r14b
-   jnz      .2821
+   jnz      .2854
    call     evSymY_E
    call     pathStringE_SZ
    mov      %rdx, %r12
@@ -33845,14 +34160,14 @@ doJournal:
    cmp      %r12, %rax
    jz       openErrEX
    mov      %rax, %rbx
-.2822:
+.2855:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    call     getc_unlocked
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2823
+   js       .2856
    mov      %rax, %rdx
    mov      %rdx, %r12
    mov      $Buf, %rdi
@@ -33898,16 +34213,16 @@ doJournal:
    lea      8(%rsp), %r15
    call     blkPokeCEZ
    pop      %rbx
-   jmp      .2822
-.2823:
+   jmp      .2855
+.2856:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    call     fclose
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      8(%r14), %r14
-   jmp      .2820
-.2821:
+   jmp      .2853
+.2854:
    add      MaxBlkSize, %rsp
    mov      $TSym, %rbx
    pop      %r15
@@ -33933,7 +34248,7 @@ doId:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jz       .2824
+   jz       .2857
    shr      $4, %rbx
    push     %rbx
    mov      8(%r14), %r14
@@ -33946,22 +34261,22 @@ doId:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2825
+   jnz      .2858
    pop      %rdx
    mov      %r12, %rbx
-   jmp      .2826
-.2825:
+   jmp      .2859
+.2858:
    call     xCntEX_FE
    mov      %rbx, %rdx
    pop      %rbx
    sub      $1, %rbx
-.2826:
+.2859:
    call     extNmCE_X
    call     externX_E
    pop      %r14
    pop      %r13
    ret
-.2824:
+.2857:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
@@ -33982,14 +34297,14 @@ doId:
    orb      $2, %dl
    cmp      $Nil, %r14
    cmovzq   %rdx, %rbx
-   jz       .2827
+   jz       .2860
    add      $1, %rax
    shl      $4, %rax
    orb      $2, %al
    call     cons_E
    mov      %rax, (%rbx)
    mov      %rdx, 8(%rbx)
-.2827:
+.2860:
    pop      %r14
    pop      %r13
    ret
@@ -34013,7 +34328,7 @@ doSeq:
    call     evListE_E
 1:
    testb    $0x06, %bl
-   jz       .2828
+   jz       .2861
    andb     $~15, %bl
    sub      $16, %rbx
    shl      $2, %rbx
@@ -34023,8 +34338,8 @@ doSeq:
    add      DbFiles, %rbx
    mov      %rbx, DbFile
    mov      %r12, %r13
-   jmp      .2829
-.2828:
+   jmp      .2862
+.2861:
    testb    $0x08, %bl
    jz       symErrEX
    testb    $0x08, -8(%rbx)
@@ -34038,7 +34353,7 @@ doSeq:
    mov      %rax, DbFile
    shl      $6, %rdx
    mov      %rdx, %r13
-.2829:
+.2862:
    call     rdLockDb
    mov      $6, %rdx
    mov      $6, %rbx
@@ -34046,14 +34361,14 @@ doSeq:
    call     blkPeekCEZ
    call     getAdrZ_A
    mov      %rax, %r14
-.2830:
+.2863:
    add      $64, %r13
    cmp      %r14, %r13
-   jc       .2831
+   jc       .2864
    pop      %rax
    mov      $Nil, %rbx
-   jmp      .2832
-.2831:
+   jmp      .2865
+.2864:
    mov      %r13, %rbx
    mov      DbFile, %r10
    mov      16(%r10), %cl
@@ -34063,14 +34378,14 @@ doSeq:
    mov      (%r15), %al
    and      $63, %al
    cmp      $1, %al
-   jnz      .2830
+   jnz      .2863
    pop      %rbx
    shr      $6, %rbx
    mov      %r13, %rdx
    shr      $6, %rdx
    call     extNmCE_X
    call     externX_E
-.2832:
+.2865:
    mov      $65536, %rax
    call     rwUnlockDbA
    pop      %r15
@@ -34100,23 +34415,23 @@ doLieu:
    testb    $0x08, %al
    jz       retNil
    andb     $~8, %al
-.2834:
+.2867:
    testb    $0x06, %al
-   jz       .2835
+   jz       .2868
    shl      $1, %rax
-   jc       .2836
+   jc       .2869
    shl      $1, %rax
    mov      $Nil, %r10
    cmovncq  %r10, %rbx
    ret
-.2836:
+.2869:
    shl      $1, %rax
    mov      $Nil, %r10
    cmovcq   %r10, %rbx
    ret
-.2835:
+.2868:
    mov      8(%rax), %rax
-   jmp      .2834
+   jmp      .2867
 
    .balign  16
    nop
@@ -34135,14 +34450,14 @@ doLock:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jnz      .2837
+   jnz      .2870
    mov      DbFiles, %r10
    mov      %r10, DbFile
    mov      %r12, %rdx
    mov      %r12, %rbx
    call     tryLockCE_FA
-   jmp      .2838
-.2837:
+   jmp      .2871
+.2870:
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
@@ -34160,13 +34475,13 @@ doLock:
    mov      %rax, %rdx
    mov      $1, %rbx
    call     tryLockCE_FA
-.2838:
+.2871:
    mov      $Nil, %rbx
-   jz       .2839
+   jz       .2872
    mov      %rax, %rbx
    shl      $4, %rbx
    orb      $2, %bl
-.2839:
+.2872:
    pop      %r13
    ret
 
@@ -34174,68 +34489,68 @@ doLock:
    .global  dbSizeX_A
 dbSizeX_A:
    testb    $0x02, %r13b
-   jz       .2840
+   jz       .2873
    shr      $3, %r13
    jmp      dbSizeX_A_20
-.2840:
+.2873:
    testb    $0x04, %r13b
-   jz       .2841
+   jz       .2874
    mov      $9, %rax
-.2842:
+.2875:
    mov      -4(%r13), %rdx
    mov      4(%r13), %r13
    testb    $0x02, %r13b
-   jnz      .2843
+   jnz      .2876
    add      $8, %rax
-   jmp      .2842
-.2843:
+   jmp      .2875
+.2876:
    shr      $4, %r13
    shl      $1, %rdx
    adc      %r13, %r13
    jmp      dbSizeX_A_40
-.2841:
+.2874:
    mov      $1, %rax
    cmp      $Nil, %r13
-   jz       .2844
+   jz       .2877
    testb    $0x08, %r13b
-   jz       .2845
+   jz       .2878
    mov      -8(%r13), %r13
    call     nameX_X
    cmpq     $2, %r13
-   jz       .2846
+   jz       .2879
    testb    $0x02, %r13b
-   jz       .2847
+   jz       .2880
    shl      $2, %r13
    shr      $6, %r13
 dbSizeX_A_20:
    mov      $2, %rax
-.2848:
+.2881:
    shr      $8, %r13
-   jz       .2849
+   jz       .2882
    add      $1, %rax
-   jmp      .2848
-.2849:
+   jmp      .2881
+.2882:
    rep
    ret
-.2847:
+.2880:
    mov      $9, %rax
-.2850:
+.2883:
    mov      4(%r13), %r13
    testb    $0x02, %r13b
-   jnz      .2851
+   jnz      .2884
    add      $8, %rax
-   jmp      .2850
-.2851:
+   jmp      .2883
+.2884:
    shr      $4, %r13
 dbSizeX_A_40:
-   jz       .2852
-.2853:
+   jz       .2885
+.2886:
    add      $1, %rax
    shr      $8, %r13
-   jnz      .2853
-.2852:
+   jnz      .2886
+.2885:
    cmp      $64, %rax
-   jc       .2846
+   jc       .2879
    mov      %rax, %r13
    sub      $64, %rax
    mov      %r12, %rdx
@@ -34243,33 +34558,33 @@ dbSizeX_A_40:
    div      %r10
    stc
    adc      %r13, %rax
-.2846:
+.2879:
    rep
    ret
-.2845:
+.2878:
    push     %r13
    pushq    $2
-.2855:
+.2888:
    pushq    8(%r13)
    mov      (%r13), %r13
    call     dbSizeX_A
    pop      %r13
    add      %rax, (%rsp)
    cmp      $Nil, %r13
-   jz       .2856
+   jz       .2889
    cmp      8(%rsp), %r13
-   jnz      .2857
+   jnz      .2890
    addq     $1, (%rsp)
-   jmp      .2856
-.2857:
+   jmp      .2889
+.2890:
    testb    $0x0E, %r13b
-   jz       .2855
+   jz       .2888
    call     dbSizeX_A
    add      %rax, (%rsp)
-.2856:
+.2889:
    pop      %rax
    pop      %rdx
-.2844:
+.2877:
    rep
    ret
 
@@ -34298,7 +34613,7 @@ dbAEX:
    mov      %rax, %r14
    call     dbFileBlkY_AC
    cmp      DBs, %rax
-   jnc      .2859
+   jnc      .2892
    call     setBlockAC_Z
    call     rdLockDb
    call     rdBlockZ_Z
@@ -34314,7 +34629,7 @@ dbAEX:
    mov      %r14, -8(%rax)
    call     binReadZ_FE
    cmp      $Nil, %rbx
-   jz       .2860
+   jz       .2893
    call     consE_A
    mov      %rbx, (%rax)
    mov      %r14, 8(%rax)
@@ -34324,16 +34639,16 @@ dbAEX:
    mov      %rax, -8(%r11)
    call     binReadZ_FE
    cmp      $TSym, %rbx
-   jz       .2862
+   jz       .2895
    call     consE_A
    mov      %rbx, (%rax)
    mov      (%r14), %r10
    mov      %r10, 8(%rax)
    mov      %rax, (%r14)
-.2862:
+.2895:
    call     binReadZ_FE
    cmp      $Nil, %rbx
-   jz       .2860
+   jz       .2893
    call     consE_A
    mov      %rbx, (%rax)
    mov      8(%r14), %r10
@@ -34342,18 +34657,18 @@ dbAEX:
    mov      %rax, %r14
    call     binReadZ_FE
    cmp      $TSym, %rbx
-   jz       .2862
+   jz       .2895
    call     consE_A
    mov      %rbx, (%rax)
    mov      (%r14), %r10
    mov      %r10, 8(%rax)
    mov      %rax, (%r14)
-   jmp      .2862
-.2860:
+   jmp      .2895
+.2893:
    mov      $65536, %rax
    call     rwUnlockDbA
-   jmp      .2865
-.2859:
+   jmp      .2898
+.2892:
    shr      $6, %rax
    mov      Ext, %r15
    testb    $0x0E, %r15b
@@ -34363,18 +34678,18 @@ dbAEX:
    shr      $4, %rdx
    cmp      %rdx, %rax
    jc       dbfErrX
-.2866:
+.2899:
    mov      8(%r15), %rbx
    testb    $0x0E, %bl
-   jnz      .2867
+   jnz      .2900
    mov      (%rbx), %r10
    mov      (%r10), %rdx
    shr      $4, %rdx
    cmp      %rdx, %rax
-   jc       .2867
+   jc       .2900
    mov      %rbx, %r15
-   jmp      .2866
-.2867:
+   jmp      .2899
+.2900:
    push     %r14
    mov      (%r15), %r10
    pushq    8(%r10)
@@ -34389,21 +34704,21 @@ dbAEX:
    mov      %r10, (%r15)
    mov      8(%rbx), %rbx
    testb    $0x0E, %bl
-   jnz      .2868
+   jnz      .2901
    orb      $8, %bl
    mov      %rbx, -8(%r15)
-.2869:
+.2902:
    testb    $0x0E, 8(%rbx)
-   jnz      .2870
+   jnz      .2903
    mov      8(%rbx), %rbx
-   jmp      .2869
-.2870:
+   jmp      .2902
+.2903:
    mov      %r14, 8(%rbx)
-   jmp      .2865
-.2868:
+   jmp      .2898
+.2901:
    orb      $8, %r14b
    mov      %r14, -8(%r15)
-.2865:
+.2898:
    mov      8(%rbp), %rbx
    mov      (%rbp), %rsp
    pop      %rbp
@@ -34419,30 +34734,30 @@ dbTouchEX:
    lea      -8(%rbx), %rdx
    mov      (%rdx), %rax
    testb    $0x06, %al
-   jnz      .2872
+   jnz      .2905
    andb     $~8, %al
-.2873:
+.2906:
    lea      8(%rax), %rdx
    mov      (%rdx), %rax
    testb    $0x06, %al
-   jz       .2873
-.2872:
+   jz       .2906
+.2905:
    rcl      $1, %rax
-   jc       .2874
+   jc       .2907
    rcl      $1, %rax
-   jnc      .2875
+   jnc      .2908
    shr      $1, %rax
    stc
    rcr      $1, %rax
    mov      %rax, (%rdx)
    pop      %rdx
    ret
-.2875:
+.2908:
    shr      $1, %rax
    stc
    rcr      $1, %rax
    jmp      dbAEX
-.2874:
+.2907:
    pop      %rdx
    ret
 
@@ -34451,14 +34766,14 @@ dbTouchEX:
 dbZapE:
    mov      -8(%rbx), %rax
    testb    $0x06, %al
-   jnz      .2876
+   jnz      .2909
    andb     $~8, %al
-.2877:
+.2910:
    mov      8(%rax), %rax
    testb    $0x06, %al
-   jz       .2877
+   jz       .2910
    orb      $8, %al
-.2876:
+.2909:
    shl      $2, %rax
    stc
    rcr      $1, %rax
@@ -34492,94 +34807,117 @@ doCommit:
    push     %rbp
    mov      %rsp, %rbp
    cmp      %r12, DbLog
-   jnz      .2878
+   jnz      .2911
    addq     $1, EnvProtect
-.2878:
+.2911:
    call     wrLockDb
    cmp      %r12, DbJnl
-   jz       .2879
+   jz       .2912
    call     lockJnl
-.2879:
+.2912:
    cmp      %r12, DbLog
-   jz       .2880
+   jz       .2913
    mov      DbFiles, %rbx
    mov      DBs, %rdx
-.2881:
+.2914:
    mov      %r12b, 33(%rbx)
+   mov      %r12, 56(%rbx)
    sub      $64, %rdx
-   jnz      .2881
+   jnz      .2914
    push     %r13
    push     %r14
    mov      $Extern, %r13
    mov      %r12, %r14
-.2883:
+.2916:
    mov      8(%r13), %rax
    testb    $0x0E, 8(%rax)
-   jnz      .2885
+   jnz      .2918
    mov      %r13, %rdx
    mov      8(%rax), %r13
    mov      %r14, 8(%rax)
    mov      %rdx, %r14
-   jmp      .2883
-.2885:
+   jmp      .2916
+.2918:
    mov      (%r13), %r10
    mov      -8(%r10), %rax
    call     nameA_A
    rcl      $1, %rax
-   jnc      .2886
+   jnc      .2919
    push     %r14
    rcr      $1, %rax
    mov      %rax, %r14
    call     dbFileBlkY_AC
    cmp      DBs, %rax
-   jnc      .2887
+   jnc      .2920
    call     setBlockAC_Z
-   call     logBlocksZ
-   mov      DbFile, %r11
-   movb     $1, 33(%r11)
-.2887:
+   call     rdBlockZ_Z
+.2921:
+   call     logBlock
+   cmp      %r12, BlkLink
+   jz       .2922
+   call     rdBlockLinkZ_Z
+   jmp      .2921
+.2922:
+   mov      DbFile, %rdx
+   movb     $1, 33(%rdx)
+   rcl      $2, %r14
+   jc       .2920
+   addq     $1, 56(%rdx)
+.2920:
    pop      %r14
-.2886:
+.2919:
    mov      8(%r13), %rax
    testb    $0x0E, (%rax)
-   jnz      .2890
+   jnz      .2926
    mov      %r13, %rdx
    mov      (%rax), %r13
    mov      %r14, (%rax)
    orb      $8, %dl
    mov      %rdx, %r14
-   jmp      .2883
-.2890:
+   jmp      .2916
+.2926:
    mov      %r14, %rax
    cmp      %r12, %rax
    jz       doCommit_20
    testb    $0x08, %al
-   jnz      .2891
+   jnz      .2927
    mov      8(%rax), %rdx
    mov      8(%rdx), %r14
    mov      %r13, 8(%rdx)
    mov      %rax, %r13
-   jmp      .2885
-.2891:
+   jmp      .2918
+.2927:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r14
    mov      %r13, (%rdx)
    mov      %rax, %r13
-   jmp      .2890
+   jmp      .2926
 doCommit_20:
    mov      DbFiles, %r13
    mov      DBs, %r14
-.2893:
-   cmp      %r12b, 33(%r13)
-   jz       .2894
+.2929:
+   mov      56(%r13), %rax
+   cmp      %r12, %rax
+   jz       .2930
+   push     %rax
    mov      %r13, %rax
    mov      %r12, %rdx
    call     setBlkAC_Z
-   call     logBlocksZ
-.2894:
+   call     rdBlockZ_Z
+.2931:
+   call     logBlock
+   cmp      %r12, BlkLink
+   jz       .2932
+   subq     $1, (%rsp)
+   jc       .2932
+   call     rdBlockLinkZ_Z
+   jmp      .2931
+.2932:
+   pop      %rax
+.2930:
    sub      $64, %r14
-   jnz      .2893
+   jnz      .2929
    mov      %rdx, %r12
    mov      $255, %rdi
    mov      DbLog, %rsi
@@ -34601,7 +34939,7 @@ doCommit_20:
    js       trSyncErrX
    pop      %r14
    pop      %r13
-.2880:
+.2913:
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -34612,14 +34950,14 @@ doCommit_20:
    call     evListE_E
 1:
    cmpq     $Nil, 8(%rbp)
-   jnz      .2895
+   jnz      .2933
    push     %r12
-   jmp      .2896
-.2895:
+   jmp      .2934
+.2933:
    mov      Tell, %rax
    or       Children, %rax
    push     %rax
-   jz       .2896
+   jz       .2934
    push     %rax
    pushq    TellBuf
    sub      $4096, %rsp
@@ -34628,38 +34966,38 @@ doCommit_20:
    mov      8(%rbp), %rbx
    call     prTellEZ
    mov      %r15, -16(%rbp)
-.2896:
+.2934:
    push     %r13
    push     %r14
    mov      $Extern, %r13
    mov      %r12, %r14
-.2899:
+.2937:
    mov      8(%r13), %rax
    testb    $0x0E, 8(%rax)
-   jnz      .2901
+   jnz      .2939
    mov      %r13, %rdx
    mov      8(%rax), %r13
    mov      %r14, 8(%rax)
    mov      %rdx, %r14
-   jmp      .2899
-.2901:
+   jmp      .2937
+.2939:
    mov      (%r13), %r10
    lea      -8(%r10), %rdx
    mov      (%rdx), %rax
    testb    $0x06, %al
-   jnz      .2902
+   jnz      .2940
    andb     $~8, %al
-.2903:
+.2941:
    lea      8(%rax), %rdx
    mov      (%rdx), %rax
    testb    $0x06, %al
-   jz       .2903
-.2902:
+   jz       .2941
+.2940:
    rcl      $1, %rax
-   jnc      .2904
+   jnc      .2942
    push     %r14
    rcl      $1, %rax
-   jc       .2905
+   jc       .2943
    stc
    rcr      $1, %rax
    shr      $1, %rax
@@ -34667,7 +35005,7 @@ doCommit_20:
    mov      %rax, %r14
    call     dbFileBlkY_AC
    cmp      DBs, %rax
-   jnc      .2914
+   jnc      .2952
    call     setBlockAC_Z
    call     rdBlockZ_Z
    mov      $1, %al
@@ -34679,27 +35017,27 @@ doCommit_20:
    call     binPrintEZ
    mov      -8(%r14), %r14
    andb     $~8, %r14b
-.2907:
+.2945:
    testb    $0x06, %r14b
-   jnz      .2908
+   jnz      .2946
    testb    $0x0E, (%r14)
-   jnz      .2909
+   jnz      .2947
    mov      (%r14), %r10
    mov      8(%r10), %rbx
    call     binPrintEZ
    mov      (%r14), %r10
    mov      (%r10), %rbx
    call     binPrintEZ
-   jmp      .2910
-.2909:
+   jmp      .2948
+.2947:
    mov      (%r14), %rbx
    call     binPrintEZ
    mov      $TSym, %rbx
    call     binPrintEZ
-.2910:
+.2948:
    mov      8(%r14), %r14
-   jmp      .2907
-.2908:
+   jmp      .2945
+.2946:
    mov      %r12, %rax
    call     putBlockBZ
    mov      DbBlock, %r15
@@ -34710,87 +35048,87 @@ doCommit_20:
    call     wrBlockZ
    mov      BlkLink, %r14
    cmp      %r12, %r14
-   jz       .2911
+   jz       .2949
    call     cleanUpY
-.2911:
+.2949:
    cmp      %r12, -8(%rbp)
-   jz       .2914
+   jz       .2952
    mov      -16(%rbp), %r15
    mov      TellBuf, %r10
    lea      4086(%r10), %rax
    cmp      %rax, %r15
-   jc       .2913
+   jc       .2951
    call     tellEndZ
    lea      -4120(%rbp), %r15
    call     tellBegZ_Z
-.2913:
+.2951:
    mov      (%r13), %rbx
    call     prTellEZ
    mov      %r15, -16(%rbp)
-   jmp      .2914
-.2905:
+   jmp      .2952
+.2943:
    shr      $2, %rax
    mov      %rax, (%rdx)
    mov      %rax, %r14
    call     dbFileBlkY_AC
    cmp      DBs, %rax
-   jnc      .2914
+   jnc      .2952
    mov      %rdx, %r14
    call     cleanUpY
    cmp      %r12, -8(%rbp)
-   jz       .2914
+   jz       .2952
    mov      -16(%rbp), %r15
    mov      TellBuf, %r10
    lea      4086(%r10), %rax
    cmp      %rax, %r15
-   jc       .2917
+   jc       .2955
    call     tellEndZ
    lea      -4120(%rbp), %r15
    call     tellBegZ_Z
-.2917:
+.2955:
    mov      (%r13), %rbx
    call     prTellEZ
    mov      %r15, -16(%rbp)
-.2914:
+.2952:
    pop      %r14
-.2904:
+.2942:
    mov      8(%r13), %rax
    testb    $0x0E, (%rax)
-   jnz      .2920
+   jnz      .2958
    mov      %r13, %rdx
    mov      (%rax), %r13
    mov      %r14, (%rax)
    orb      $8, %dl
    mov      %rdx, %r14
-   jmp      .2899
-.2920:
+   jmp      .2937
+.2958:
    mov      %r14, %rax
    cmp      %r12, %rax
    jz       doCommit_40
    testb    $0x08, %al
-   jnz      .2921
+   jnz      .2959
    mov      8(%rax), %rdx
    mov      8(%rdx), %r14
    mov      %r13, 8(%rdx)
    mov      %rax, %r13
-   jmp      .2901
-.2921:
+   jmp      .2939
+.2959:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r14
    mov      %r13, (%rdx)
    mov      %rax, %r13
-   jmp      .2920
+   jmp      .2958
 doCommit_40:
    pop      %r14
    pop      %r13
    cmp      %r12, -8(%rbp)
-   jz       .2923
+   jz       .2961
    mov      -16(%rbp), %r15
    call     tellEndZ
    add      $4096, %rsp
    popq     TellBuf
-.2923:
+.2961:
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -34801,12 +35139,12 @@ doCommit_40:
    call     evListE_E
 1:
    cmp      %r12, DbJnl
-   jz       .2924
+   jz       .2962
    call     unLockJnl
-.2924:
+.2962:
    mov      Zap, %r14
    testb    $0x0E, %r14b
-   jnz      .2925
+   jnz      .2963
    pushq    OutFile
    sub      $8216, %rsp
    mov      8(%r14), %rbx
@@ -34827,15 +35165,15 @@ doCommit_40:
    mov      %rsp, OutFile
    movq     $putStdoutB, PutBinBZ
    mov      (%r14), %r14
-.2926:
+.2964:
    testb    $0x0E, %r14b
-   jnz      .2927
+   jnz      .2965
    mov      (%r14), %rbx
    mov      %r12, Extn
    call     binPrintEZ
    mov      8(%r14), %r14
-   jmp      .2926
-.2927:
+   jmp      .2964
+.2965:
    mov      %rsp, %rax
    call     flushA_F
    mov      %rsp, %rax
@@ -34844,18 +35182,23 @@ doCommit_40:
    movq     $Nil, (%r11)
    add      $8216, %rsp
    popq     OutFile
-.2925:
+.2963:
    cmp      %r12, DbLog
-   jz       .2928
+   jz       .2966
    call     fsyncDB
    call     truncLog
-.2928:
+.2966:
    mov      %r12, %rax
    call     rwUnlockDbA
    cmp      %r12, DbLog
-   jnz      .2929
+   jnz      .2967
    subq     $1, EnvProtect
-.2929:
+.2967:
+   mov      DbFiles, %rbx
+   mov      DBs, %rdx
+.2968:
+   movq     $-1, 56(%rbx)
+   jnz      .2968
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r15
@@ -34873,58 +35216,58 @@ doRollback:
    push     %r14
    mov      $Extern, %r13
    mov      %r12, %r14
-.2931:
+.2970:
    mov      8(%r13), %rax
    testb    $0x0E, 8(%rax)
-   jnz      .2933
+   jnz      .2972
    mov      %r13, %rdx
    mov      8(%rax), %r13
    mov      %r14, 8(%rax)
    mov      %rdx, %r14
-   jmp      .2931
-.2933:
+   jmp      .2970
+.2972:
    mov      (%r13), %rbx
    mov      -8(%rbx), %rax
    testb    $0x06, %al
-   jnz      .2934
+   jnz      .2973
    andb     $~8, %al
-.2935:
+.2974:
    mov      8(%rax), %rax
    testb    $0x06, %al
-   jz       .2935
+   jz       .2974
    orb      $8, %al
-.2934:
+.2973:
    shl      $2, %rax
    shr      $2, %rax
    mov      %rax, -8(%rbx)
    movq     $Nil, (%rbx)
    mov      8(%r13), %rax
    testb    $0x0E, (%rax)
-   jnz      .2938
+   jnz      .2977
    mov      %r13, %rdx
    mov      (%rax), %r13
    mov      %r14, (%rax)
    orb      $8, %dl
    mov      %rdx, %r14
-   jmp      .2931
-.2938:
+   jmp      .2970
+.2977:
    mov      %r14, %rax
    cmp      %r12, %rax
    jz       doRollback_90
    testb    $0x08, %al
-   jnz      .2939
+   jnz      .2978
    mov      8(%rax), %rdx
    mov      8(%rdx), %r14
    mov      %r13, 8(%rdx)
    mov      %rax, %r13
-   jmp      .2933
-.2939:
+   jmp      .2972
+.2978:
    andb     $~8, %al
    mov      8(%rax), %rdx
    mov      (%rdx), %r14
    mov      %r13, (%rdx)
    mov      %rax, %r13
-   jmp      .2938
+   jmp      .2977
 doRollback_90:
    pop      %r14
    pop      %r13
@@ -34949,12 +35292,12 @@ doMark:
    call     evListE_E
 1:
    cmpq     $2, %rbx
-   jnz      .2941
+   jnz      .2980
    mov      DbFiles, %r13
    mov      DBs, %r14
-.2942:
+.2981:
    sub      $64, %r14
-   jc       .2943
+   jc       .2982
    mov      %r12, 40(%r13)
    mov      %rdx, %r12
    mov      48(%r13), %rdi
@@ -34963,13 +35306,13 @@ doMark:
    xor      %r12, %r12
    mov      %r12, 48(%r13)
    add      $64, %r13
-   jmp      .2942
-.2943:
+   jmp      .2981
+.2982:
    mov      $Nil, %rbx
    pop      %r14
    pop      %r13
    ret
-.2941:
+.2980:
    testb    $0x06, %bl
    jnz      symErrEX
    testb    $0x08, %bl
@@ -34996,7 +35339,7 @@ doMark:
    mov      %rdx, %rbx
    shr      $3, %rbx
    cmp      40(%r13), %rbx
-   jc       .2944
+   jc       .2983
    push     %rbx
    add      $1, %rbx
    mov      %rbx, %r14
@@ -35012,28 +35355,28 @@ doMark:
    cld
    rep stosb
    pop      %rbx
-.2944:
+.2983:
    add      48(%r13), %rbx
    and      $7, %rdx
    mov      $1, %al
    mov      %dl, %cl
    shl      %cl, %al
    test     %al, (%rbx)
-   jnz      .2945
+   jnz      .2984
    cmpq     $TSym, (%rsp)
-   jnz      .2946
+   jnz      .2985
    or       %al, (%rbx)
-.2946:
+.2985:
    mov      $Nil, %rbx
-   jmp      .2947
-.2945:
+   jmp      .2986
+.2984:
    cmpq     $2, (%rsp)
-   jnz      .2948
+   jnz      .2987
    not      %al
    and      %al, (%rbx)
-.2948:
+.2987:
    mov      $TSym, %rbx
-.2947:
+.2986:
    pop      %rax
    pop      %r14
    pop      %r13
@@ -35080,10 +35423,10 @@ doFree:
    push     %r14
    push     %rbp
    mov      %rsp, %rbp
-.2949:
+.2988:
    mov      BlkLink, %rdx
    cmp      %r12, %rdx
-   jz       .2950
+   jz       .2989
    shr      $6, %rdx
    mov      DbFile, %r10
    mov      8(%r10), %rbx
@@ -35095,8 +35438,8 @@ doFree:
    mov      %rax, 8(%r14)
    mov      %rax, %r14
    call     rdBlockLinkZ_Z
-   jmp      .2949
-.2950:
+   jmp      .2988
+.2989:
    mov      $65536, %rax
    call     rwUnlockDbA
    mov      8(%rbp), %rbx
@@ -35128,7 +35471,7 @@ doDbck:
    mov      DbFiles, %r10
    mov      %r10, DbFile
    testb    $0x02, %bl
-   jz       .2951
+   jz       .2990
    andb     $~15, %bl
    sub      $16, %rbx
    shl      $2, %rbx
@@ -35145,16 +35488,16 @@ doDbck:
    jnz      1f
    call     evListE_E
 1:
-.2951:
+.2990:
    push     %rbx
    pushq    $2
    pushq    $2
    addq     $1, EnvProtect
    call     wrLockDb
    cmp      %r12, DbJnl
-   jz       .2952
+   jz       .2991
    call     lockJnl
-.2952:
+.2991:
    mov      $12, %rdx
    mov      %r12, %rbx
    mov      $Buf, %r15
@@ -35165,33 +35508,33 @@ doDbck:
    call     getAdrZ_A
    push     %rax
    mov      $64, %r14
-.2953:
+.2992:
    mov      BlkLink, %rax
    cmp      %r12, %rax
-   jz       .2954
+   jz       .2993
    call     rdBlockIndexAZ_Z
    add      $64, %r14
    cmp      (%rsp), %r14
-   jbe      .2955
+   jbe      .2994
    mov      $CircFree, %rbx
    call     mkStrE_E
    jmp      doDbck_90
-.2955:
+.2994:
    mov      DbBlock, %r15
    orb      $63, (%r15)
    call     wrBlockZ
-   jmp      .2953
-.2954:
+   jmp      .2992
+.2993:
    mov      $64, %r13
-.2956:
+.2995:
    cmp      (%rsp), %r13
-   jz       .2957
+   jz       .2996
    mov      %r13, %rax
    call     rdBlockIndexAZ_Z
    sub      $6, %r15
    mov      (%r15), %al
    and      $63, %al
-   jnz      .2958
+   jnz      .2997
    add      $64, %r14
    lea      (%r15), %rdi
    lea      Buf, %rsi
@@ -35205,63 +35548,63 @@ doDbck:
    mov      $6, %rdx
    mov      %r12, %rbx
    call     blkPokeCEZ
-   jmp      .2959
-.2958:
+   jmp      .2998
+.2997:
    cmp      $1, %al
-   jnz      .2959
+   jnz      .2998
    push     %r13
    addq     $16, 16(%rsp)
    addq     $16, 24(%rsp)
    add      $64, %r14
    mov      $2, %r13
-.2961:
+.3000:
    mov      BlkLink, %rax
    cmp      %r12, %rax
-   jz       .2962
+   jz       .3001
    add      $64, %r14
    addq     $16, 16(%rsp)
    call     rdBlockIndexAZ_Z
    mov      -6(%r15), %al
    and      $63, %al
    cmp      %r13b, %al
-   jz       .2963
+   jz       .3002
    mov      $BadChain, %rbx
    call     mkStrE_E
    jmp      doDbck_90
-.2963:
+.3002:
    cmp      $63, %r13
-   jnc      .2961
+   jnc      .3000
    add      $1, %r13
-   jmp      .2961
-.2962:
+   jmp      .3000
+.3001:
    pop      %r13
-.2959:
+.2998:
    add      $64, %r13
-   jmp      .2956
-.2957:
+   jmp      .2995
+.2996:
    mov      $Buf, %r15
    call     getAdrZ_A
    mov      %rax, BlkLink
-.2965:
+.3004:
    cmp      %r12, %rax
-   jz       .2966
+   jz       .3005
    call     rdBlockIndexAZ_Z
    sub      $6, %r15
    mov      (%r15), %al
    and      $63, %al
-   jz       .2967
+   jz       .3006
    andb     $~63, (%r15)
    call     wrBlockZ
-.2967:
+.3006:
    mov      BlkLink, %rax
-   jmp      .2965
-.2966:
+   jmp      .3004
+.3005:
    cmp      (%rsp), %r14
-   jz       .2968
+   jz       .3007
    mov      $BadCount, %rbx
    call     mkStrE_E
    jmp      doDbck_90
-.2968:
+.3007:
    cmpq     $Nil, 24(%rsp)
    mov      $Nil, %r10
    cmovzq   %r10, %rbx
@@ -35277,9 +35620,9 @@ doDbck_90:
    pop      %rax
    pop      %rax
    cmp      %r12, DbJnl
-   jz       .2971
+   jz       .3010
    call     unLockJnl
-.2971:
+.3010:
    mov      $65536, %rax
    call     rwUnlockDbA
    subq     $1, EnvProtect
@@ -35314,7 +35657,7 @@ doPort:
    call     evListE_E
 1:
    cmp      $TSym, %rbx
-   jnz      .2972
+   jnz      .3011
    mov      $2, %r15
    mov      8(%r14), %r14
    mov      (%r14), %rbx
@@ -35325,7 +35668,7 @@ doPort:
    jnz      1f
    call     evListE_E
 1:
-.2972:
+.3011:
    mov      %rdx, %r12
    mov      $2, %rdi
    mov      %r15, %rsi
@@ -35351,9 +35694,9 @@ doPort:
    xor      %r12, %r12
    movl     %eax, Addr+4
    testb    $0x02, %bl
-   jz       .2973
+   jz       .3012
    shr      $4, %rbx
-   jz       .2974
+   jz       .3013
    mov      $1, %rax
    movl     %eax, Buf
    mov      %rdx, %r12
@@ -35367,10 +35710,10 @@ doPort:
    xor      %r12, %r12
    cmp      %r12d, %eax
    js       ipSetsockoptErrX
-.2974:
+.3013:
    push     %r12
-   jmp      .2976
-.2973:
+   jmp      .3015
+.3012:
    testb    $0x0E, %bl
    jnz      argErrEX
    mov      8(%rbx), %rax
@@ -35378,7 +35721,7 @@ doPort:
    shr      $4, %rbx
    shr      $4, %rax
    push     %rax
-.2976:
+.3015:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    call     htons
@@ -35393,20 +35736,20 @@ doPort:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2977
+   jns      .3016
    add      $1, %rbx
    cmp      (%rsp), %rbx
-   jbe      .2976
+   jbe      .3015
    mov      %rdx, %r12
    mov      %r12, %rdi
    call     close
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      ipBindErrX
-.2977:
+.3016:
    pop      %rax
    cmp      $1, %r15
-   jnz      .2979
+   jnz      .3018
    mov      %rdx, %r12
    mov      %r12, %rdi
    mov      $5, %rsi
@@ -35414,14 +35757,14 @@ doPort:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2979
+   jns      .3018
    mov      %rdx, %r12
    mov      %r12, %rdi
    call     close
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      ipListenErrX
-.2979:
+.3018:
    mov      %rdx, %r15
    mov      8(%r14), %r14
    mov      (%r14), %rbx
@@ -35433,7 +35776,7 @@ doPort:
    call     evListE_E
 1:
    cmp      $Nil, %rbx
-   jz       .2981
+   jz       .3020
    mov      $16, %rax
    movl     %eax, Buf
    mov      %rdx, %r12
@@ -35444,14 +35787,14 @@ doPort:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jns      .2982
+   jns      .3021
    mov      %rdx, %r12
    mov      %r15, %rdi
    call     close
    mov      %r12, %rdx
    xor      %r12, %r12
    jmp      ipGetsocknameErrX
-.2982:
+.3021:
    call     needVarEX
    movswq   Addr+2, %rax
    and      $65535, %rax
@@ -35463,7 +35806,7 @@ doPort:
    shl      $4, %rax
    orb      $2, %al
    mov      %rax, (%rbx)
-.2981:
+.3020:
    mov      %r15, %rbx
    shl      $4, %rbx
    orb      $2, %bl
@@ -35480,7 +35823,7 @@ tcpAcceptA_FE:
    mov      $16, %rax
    movl     %eax, Buf
    mov      $200, %rdx
-.2983:
+.3022:
    mov      %rdx, %r12
    mov      %rbx, %rdi
    mov      $Addr, %rsi
@@ -35489,7 +35832,7 @@ tcpAcceptA_FE:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jz       .2984
+   jz       .3023
    xchg     (%rsp), %rax
    mov      %rdx, %r12
    mov      %rbx, %rdi
@@ -35515,14 +35858,14 @@ tcpAcceptA_FE:
    shl      $4, %rbx
    orb      $2, %bl
    ret
-.2984:
+.3023:
    mov      %rdx, %r12
    mov      $100000, %rdi
    call     usleep
    mov      %r12, %rdx
    xor      %r12, %r12
    sub      $1, %rdx
-   jnz      .2983
+   jnz      .3022
    mov      %rdx, %r12
    mov      %rbx, %rdi
    mov      $4, %rsi
@@ -35574,20 +35917,20 @@ doListen:
    cmp      $Nil, %rbx
    mov      $-1, %r10
    cmovzq   %r10, %r14
-   jz       .2986
+   jz       .3025
    call     xCntEX_FE
    mov      %rbx, %r14
-.2986:
+.3025:
    mov      %r15, %rdx
    mov      %r14, %rbx
    call     waitFdCEX_A
    mov      $Nil, %rbx
    cmp      %r12, %rax
-   jz       .2987
+   jz       .3026
    mov      %r15, %rax
    call     tcpAcceptA_FE
-   jz       .2986
-.2987:
+   jz       .3025
+.3026:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -35658,7 +36001,7 @@ doConnect:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   js       .2988
+   js       .3027
    mov      %r14, %rax
    call     initInFileA_A
    mov      %r14, %rax
@@ -35666,8 +36009,8 @@ doConnect:
    mov      %r14, %rbx
    shl      $4, %rbx
    orb      $2, %bl
-   jmp      .2989
-.2988:
+   jmp      .3028
+.3027:
    mov      %rdx, %r12
    mov      %r14, %rdi
    call     close
@@ -35675,7 +36018,7 @@ doConnect:
    xor      %r12, %r12
 doConnect_80:
    mov      $Nil, %rbx
-.2989:
+.3028:
    pop      %r15
    pop      %r14
    pop      %r13
@@ -35711,7 +36054,7 @@ serverEY_F:
    mov      %r12, %rdx
    xor      %r12, %r12
    cmp      %r12d, %eax
-   jnz      .2990
+   jnz      .3029
    mov      %rdx, %r12
    mov      %rsp, %rdi
    call     gethostbyname
@@ -35727,7 +36070,7 @@ serverEY_F:
    mov      (%r10), %r10
    movslq   (%r10), %rax
    movl     %eax, Addr+4
-.2990:
+.3029:
    cmp      %rsp, %r12
 serverEY_F_90:
    mov      %r15, %rsp
@@ -35756,7 +36099,7 @@ doUdp:
 1:
    mov      8(%r14), %r14
    testb    $0x0E, %r14b
-   jz       .2991
+   jz       .3030
    call     xCntEX_FE
    mov      %rdx, %r12
    mov      %rbx, %rdi
@@ -35775,15 +36118,15 @@ doUdp:
    mov      ExtN, %r10
    mov      %r10, Extn
    call     binReadZ_FE
-   jnc      .2993
+   jnc      .3032
 doUdp_10:
    mov      $Nil, %rbx
-   jmp      .2993
-.2991:
+   jmp      .3032
+.3030:
    call     serverEY_F
    mov      $Nil, %r10
    cmovzq   %r10, %rbx
-   jz       .2993
+   jz       .3032
    mov      8(%r14), %r14
    mov      (%r14), %rbx
    test     $0x06, %bl
@@ -35825,7 +36168,7 @@ doUdp_10:
    mov      %r12, %rdx
    xor      %r12, %r12
    mov      %r14, %rbx
-.2993:
+.3032:
    add      $4096, %rsp
    pop      %r15
    pop      %r14
@@ -35899,41 +36242,41 @@ errEXYZ:
    cmovnzq  %r13, %rax
    mov      %rax, Up
    cmp      %r12b, (%rsp)
-   jz       .2995
+   jz       .3034
    push     %rbx
    lea      8(%rsp), %rbx
    call     mkStrE_E
    mov      %rbx, Msg
    mov      Catch, %rdx
-.2996:
+.3035:
    cmp      %r12, %rdx
-   jz       .2997
+   jz       .3036
    mov      8(%rdx), %r14
    cmp      %r12, %r14
-   jz       .2998
-.2999:
+   jz       .3037
+.3038:
    testb    $0x0E, %r14b
-   jnz      .2998
+   jnz      .3037
    mov      (%r14), %rax
    mov      Msg, %rbx
    push     %rdx
    call     subStrAE_F
    pop      %rdx
-   jnz      .3001
+   jnz      .3040
    pushq    (%r14)
    call     unwindC_Z
    pop      %rbx
    mov      %r15, %rsp
    jmp      caught
-.3001:
+.3040:
    mov      8(%r14), %r14
-   jmp      .2999
-.2998:
+   jmp      .3038
+.3037:
    mov      (%rdx), %rdx
-   jmp      .2996
-.2997:
+   jmp      .3035
+.3036:
    pop      %rbx
-.2995:
+.3034:
    mov      %r12, Chr
    mov      %r12, ExtN
    mov      %r12, EnvBrk
@@ -35946,10 +36289,10 @@ errEXYZ:
    call     pushOutFilesY
    mov      InFile, %r14
    cmp      %r12, %r14
-   jz       .3002
+   jz       .3041
    mov      48(%r14), %rdx
    cmp      %r12, %rdx
-   jz       .3002
+   jz       .3041
    mov      $91, %al
    mov      EnvPutB, %r10
    call     *%r10
@@ -35963,9 +36306,9 @@ errEXYZ:
    mov      EnvPutB, %r10
    call     *%r10
    call     space
-.3002:
+.3041:
    cmp      %r12, %r13
-   jz       .3004
+   jz       .3043
    mov      $ErrTok, %rdx
    call     outStringC
    push     %rbx
@@ -35973,21 +36316,21 @@ errEXYZ:
    call     printE
    call     newline
    pop      %rbx
-.3004:
+.3043:
    cmp      %r12, %rbx
-   jz       .3005
+   jz       .3044
    call     printE
    mov      $Dashes, %rdx
    call     outStringC
-.3005:
+.3044:
    cmp      %r12b, (%rsp)
-   jz       .3006
+   jz       .3045
    call     outStringS
    call     newline
    cmpq     $Nil, Err
-   jz       .3007
+   jz       .3046
    cmp      %r12b, Jam
-   jnz      .3007
+   jnz      .3046
    movb     $1, Jam
    mov      Err, %r13
 1:
@@ -36003,7 +36346,7 @@ errEXYZ:
    testb    $0x0E, %r13b
    jz       1b
    mov      %r12b, Jam
-.3007:
+.3046:
    mov      $1, %rbx
    mov      %rdx, %r12
    xor      %rdi, %rdi
@@ -36023,10 +36366,11 @@ errEXYZ:
    mov      $Nil, %rbx
    mov      %r12, %r13
    call     loadBEX_E
-.3006:
-   mov      %r12, EnvProtect
+.3045:
    mov      %r12, %rdx
    call     unwindC_Z
+   mov      %r12, EnvProtect
+   movq     $Nil, EnvTask
    mov      %r12, EnvArgs
    mov      %r12, EnvNext
    mov      %r12, EnvMeth
@@ -36047,95 +36391,95 @@ unwindC_Z:
    push     %rdx
    mov      Catch, %r13
    mov      EnvBind, %r14
-.3009:
+.3048:
    cmp      %r12, %r13
-   jz       .3010
-.3011:
+   jz       .3049
+.3050:
    cmp      %r12, %r14
-   jz       .3025
+   jz       .3064
    mov      -8(%r14), %rdx
    cmp      %r12, %rdx
-   jz       .3013
+   jz       .3052
    mov      %rdx, %rax
    mov      %r12, %rbx
    mov      %r14, %r15
-.3014:
+.3053:
    add      $1, %rbx
    add      $1, %rax
-   jz       .3017
+   jz       .3056
    mov      (%r15), %r10
    mov      8(%r10), %r15
    cmp      %r12, %r15
-   jz       .3017
+   jz       .3056
    cmp      %rax, -8(%r15)
-   jnc      .3014
+   jnc      .3053
    sub      $1, %rax
-   jmp      .3014
-.3017:
+   jmp      .3053
+.3056:
    mov      %rbx, %rax
    mov      %r14, %r15
-.3018:
+.3057:
    sub      $1, %rax
-   jz       .3019
+   jz       .3058
    mov      (%r15), %r10
    mov      8(%r10), %r15
-   jmp      .3018
-.3019:
+   jmp      .3057
+.3058:
    mov      (%r15), %rax
    sub      %rdx, -8(%r15)
-   jbe      .3020
+   jbe      .3059
    mov      %r12, -8(%r15)
-.3020:
-   jc       .3021
+.3059:
+   jc       .3060
    sub      $16, %rax
-.3022:
+.3061:
    mov      (%rax), %r11
    mov      (%r11), %r10
    xchg     %r10, 8(%rax)
    mov      %r10, (%r11)
    sub      $16, %rax
    cmp      %r15, %rax
-   jnc      .3022
-.3021:
+   jnc      .3061
+.3060:
    sub      $1, %rbx
-   jnz      .3017
-.3013:
+   jnz      .3056
+.3052:
    cmp      24(%r13), %r14
-   jz       .3025
+   jz       .3064
    mov      (%r14), %rdx
    cmp      %r12, -8(%r14)
-   jnz      .3023
+   jnz      .3062
    add      $8, %r14
-.3024:
+.3063:
    mov      (%r14), %r15
    add      $8, %r14
    mov      (%r14), %r10
    mov      %r10, (%r15)
    add      $8, %r14
    cmp      %rdx, %r14
-   jnz      .3024
-.3023:
+   jnz      .3063
+.3062:
    mov      8(%rdx), %r14
-   jmp      .3011
-.3025:
+   jmp      .3050
+.3064:
    mov      32(%r13), %r10
    cmp      %r10, EnvInFrames
-   jz       .3027
+   jz       .3066
    call     popInFiles
-   jmp      .3025
-.3027:
+   jmp      .3064
+.3066:
    mov      40(%r13), %r10
    cmp      %r10, EnvOutFrames
-   jz       .3029
+   jz       .3068
    call     popOutFiles
-   jmp      .3027
-.3029:
+   jmp      .3066
+.3068:
    mov      48(%r13), %r10
    cmp      %r10, EnvCtlFrames
-   jz       .3030
+   jz       .3069
    call     popCtlFiles
-   jmp      .3029
-.3030:
+   jmp      .3068
+.3069:
    lea      Env, %rdi
    lea      24(%r13), %rsi
    mov      $(EnvEnd-Env), %rcx
@@ -36152,47 +36496,47 @@ unwindC_Z:
    cmp      (%rsp), %r13
    mov      (%r13), %r13
    mov      %r13, Catch
-   jnz      .3009
+   jnz      .3048
    pop      %r15
    ret
-.3010:
+.3049:
    pop      %rax
-.3032:
+.3071:
    cmp      %r12, %r14
-   jz       .3033
+   jz       .3072
    mov      (%r14), %rdx
    cmp      %r12, -8(%r14)
-   jnz      .3034
+   jnz      .3073
    add      $8, %r14
-.3035:
+.3074:
    mov      (%r14), %r15
    add      $8, %r14
    mov      (%r14), %r10
    mov      %r10, (%r15)
    add      $8, %r14
    cmp      %rdx, %r14
-   jnz      .3035
-.3034:
+   jnz      .3074
+.3073:
    mov      8(%rdx), %r14
-   jmp      .3032
-.3033:
+   jmp      .3071
+.3072:
    mov      %r12, EnvBind
-.3036:
+.3075:
    cmp      %r12, EnvInFrames
-   jz       .3038
+   jz       .3077
    call     popInFiles
-   jmp      .3036
-.3038:
+   jmp      .3075
+.3077:
    cmp      %r12, EnvOutFrames
-   jz       .3040
+   jz       .3079
    call     popOutFiles
-   jmp      .3038
-.3040:
+   jmp      .3077
+.3079:
    cmp      %r12, EnvCtlFrames
-   jz       .3041
+   jz       .3080
    call     popCtlFiles
-   jmp      .3040
-.3041:
+   jmp      .3079
+.3080:
    rep
    ret
 

@@ -1,4 +1,4 @@
-# 01sep09abu
+# 05nov09abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -28,8 +28,7 @@
                   ,"Street" (gui '(+E/R +TextField) '(str : home obj) 40)
                   NIL NIL
                   ,"Zip" (gui '(+E/R +TextField) '(plz : home obj) 10)
-                  ,"City" (gui '(+E/R +TextField) '(ort : home obj) 40)
-                  ,"Country" (gui '(+E/R +TextField) '(cty : home obj) 40) ) )
+                  ,"City" (gui '(+E/R +TextField) '(ort : home obj) 40) ) )
             (,"Contact"
                (<grid> 2
                   ,"Phone" (gui '(+E/R +TelField) '(tel : home obj) 40)

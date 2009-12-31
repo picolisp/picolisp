@@ -1,9 +1,9 @@
-09jun09abu
+12nov09abu
 (c) Software Lab. Alexander Burger
 
 
-         Pico Lisp Demo Games
-         ====================
+         PicoLisp Demo Games
+         ===================
 
 This directory contains a few simple games. They are neither especially
 interesting, nor powerful, but may be useful as programming examples.
@@ -19,7 +19,7 @@ around using the standard 'vi'-keys 'j' (down), 'k' (up), 'l' (right) and 'h'
 (left).
 
 Hit ENTER or SPACE to uncover a field, and ESC to terminate the game. In the
-latter case (of if a mine exploded), you'll get the Pico Lisp prompt. Then you
+latter case (of if a mine exploded), you'll get the PicoLisp prompt. Then you
 can continue the game with
 
 : (go)
@@ -28,7 +28,7 @@ possibly after re-initializing it with
 
 : (main)
 
-or exit the Pico Lisp interpreter with ENTER.
+or exit the PicoLisp interpreter with ENTER.
 
 
 

@@ -1,4 +1,4 @@
-# The Pico Lisp system is originally written and maintained by
+# The PicoLisp system is originally written and maintained by
 Alexander Burger <abu@software-lab.de>
 
 # For many years, ideas and application concepts were contributed by
@@ -19,5 +19,5 @@ Mansur Mamkin <mmamkin@mail.ru>
 # XML parser (and other) improvements
 Tomas Hlavaty <kvietaag@seznam.cz>
 
-# Spanish localization
+# Spanish localization and emacs picolisp-mode
 Armadillo <tc.rucho@gmail.com>

@@ -1,4 +1,4 @@
-# 02oct09abu
+# 20oct09abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1803,6 +1803,7 @@
          end
       end
       atom (E)  # List value?
+      ldnz E (E)
       if z  # Yes
          call consE_X  # Cons first cell
          ld C (E)  # Get value
@@ -1828,9 +1829,11 @@
          ld E (L I)  # Get result
          drop
       end
-   else
-      ld E Nil
+      pop Y
+      pop X
+      ret
    end
+   ld E Nil
    pop Y
    pop X
    ret

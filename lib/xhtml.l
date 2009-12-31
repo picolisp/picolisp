@@ -1,4 +1,4 @@
-# 30sep09abu
+# 04dec09abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -194,9 +194,8 @@
    (tag 'li Attr 2 Prg)
    (prinl) )
 
-(de <href> (Str Url JS)
+(de <href> (Str Url)
    (prin "<a href=\"" (sesId Url) "\"")
-   (and *JS JS (prin " onclick=\"" JS ";\""))
    (and *Style (htStyle @))
    (prin '>)
    (ht:Prin Str)
@@ -214,7 +213,6 @@
 
 (de <this> (Var Val . Prg)
    (prin "<a href=\"" (sesId *Url) '? Var '= (ht:Fmt Val) "\"")
-   (and *JS (prin " onclick=\"return commit();\""))
    (and *Style (htStyle @))
    (prin '>)
    (htPrin Prg 2)
@@ -314,8 +312,7 @@
                               (<href> (eval (car L) E)
                                  (urlMT U *Menu (if (= U *Url) *Tab 1)
                                     (eval (caddr L))
-                                    (eval (cadddr L)) )
-                                 "return commit()" ) ) )
+                                    (eval (cadddr L)) ) ) ) )
                         (<li> (pack 'cmd N)
                            (ht:Prin (eval (car L) E)) ) ) )
                   ((bit? M *Menu)
@@ -323,8 +320,7 @@
                         (<tip> ,"Open submenu"
                            (<href>
                               (eval (cadr L) E)
-                              (urlMT *Url (| M *Menu) *Tab *ID)
-                              "return commit()" ) ) )
+                              (urlMT *Url (| M *Menu) *Tab *ID) ) ) )
                      (setq M (>> -1 M))
                      (recur (L)
                         (for X (cddr L)
@@ -336,8 +332,7 @@
                         (<tip> ,"Close submenu"
                            (<href>
                               (eval (cadr L) E)
-                              (urlMT *Url (x| M *Menu) *Tab *ID)
-                              "return commit()" ) )
+                              (urlMT *Url (x| M *Menu) *Tab *ID) ) )
                         (setq M (>> -1 M))
                         (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
 
@@ -353,9 +348,7 @@
          (if (= N *Tab)
             (<td> 'top (ht:Prin (eval (car L) 1)))
             (<td> 'sub
-               (<href> (eval (car L) 1)
-                  (urlMT *Url *Menu N *ID)
-                  "return commit()" ) ) ) ) )
+               (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
    (htPrin (get Lst *Tab -1) 2) )
 
 
@@ -407,12 +400,12 @@
                   S2 (list 'step (lit Q2) T) ) ) )
          (if (and (eval S1) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
-               (<href> "<<<" (mkUrl @) "return commit()") )
+               (<href> "<<<" (mkUrl @)) )
             (prin "&lt;&lt;&lt;") )
          (prin "&nbsp;--&nbsp;")
          (if (and (eval S2) (send Msg @ *Tab))
             (<tip> ,"Next object of the same type"
-               (<href> ">>>" (mkUrl @) "return commit()") )
+               (<href> ">>>" (mkUrl @)) )
             (prin "&gt;&gt;&gt;") ) ) ) )
 
 # Character Separated Values
@@ -511,7 +504,7 @@
    (prin
       "<form enctype=\"multipart/form-data\" action=\""
       (sesId Url)
-      (and *JS "\" onsubmit=\"return doPost(this)\"; onkeydown=\"return formKey(this,event);")
+      (and *JS "\" onsubmit=\"return doPost(this)")
       "\" method=\"post\">" )
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )
@@ -519,7 +512,7 @@
 (de htmlVar ("Var")
    (prin "name=\"")
    (if (pair "Var")
-      (prin (car "Var") "(" (ht:Fmt (cdr "Var")) ")")
+      (prin (car "Var") ":" (cdr "Var") ":")
       (prin "Var") )
    (prin "\"") )
 
@@ -541,7 +534,7 @@
       (prin (- N) "\" style=\"text-align: right;\"")
       (prin N "\"") )
    (and Max (prin " maxlength=\"" Max "\""))
-   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "field")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -560,7 +553,7 @@
    (ht:Prin (htmlVal "Var"))
    (prin "\" size=\"" N "\"")
    (and Max (prin " maxlength=\"" Max "\""))
-   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "passwd")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -571,7 +564,7 @@
    (prin " value=\"")
    (ht:Prin (htmlVal "Var"))
    (prin "\" size=\"" N "\"")
-   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "upload")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -580,7 +573,7 @@
    (prin "<textarea ")
    (htmlVar "Var")
    (prin " cols=\"" Cols "\" rows=\"" Rows "\" wrap=\"off\"")
-   (and *JS (prin " onkeydown=\"return fldKey(this,event);\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "area")
    (and Flg (prin " disabled=\"disabled\""))
    (prin '>)
@@ -590,7 +583,7 @@
 (de <select> (Lst "Var" Flg)
    (prin "<select ")
    (htmlVar "Var")
-   (and *JS (prin " onchange=\"return fldChg(this);\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "select")
    (prin '>)
    (for "X" Lst
@@ -614,7 +607,7 @@
       (prin "<input type=\"checkbox\" ")
       (htmlVar "Var")
       (prin " value=\"T\"" (and Val " checked=\"checked\""))
-      (and *JS (prin " onchange=\"return fldChg(this);\""))
+      (and *JS (prin " onchange=\"return fldChg(this)\""))
       (dfltCss "check")
       (and Flg (prin " disabled=\"disabled\""))
       (prinl "/>") ) )
@@ -622,10 +615,10 @@
 (de <radio> ("Var" Val Flg)
    (prin "<input type=\"radio\" ")
    (htmlVar "Var")
-   (prin
-      " value=\"" Val "\""
-      (and (= Val (htmlVal "Var")) " checked=\"checked\"") )
-   (and *JS (prin " onchange=\"return fldChg(this);\""))
+   (prin " value=\"")
+   (ht:Prin Val)
+   (prin "\"" (and (= Val (htmlVal "Var")) " checked=\"checked\""))
+   (and *JS (prin " onchange=\"return fldChg(this)\""))
    (dfltCss "radio")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -636,7 +629,9 @@
    (prin " value=\"")
    (ht:Prin S)
    (prin "\"")
-   (and *JS JS (prin " onclick=\"return doBtn(this);\""))
+   (when *JS
+      (prin " onmousedown=\"inBtn(1)\" onblur=\"inBtn(0)\"")
+      (and JS (prin " onclick=\"return doBtn(this)\"")) )
    (dfltCss "submit")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
@@ -645,7 +640,9 @@
    (prin "<input type=\"image\"")
    (and "Var" (space) (htmlVar "Var"))
    (prin " src=\"" (sesId Src) "\"")
-   (and *JS JS (prin " onclick=\"return doBtn(this);\""))
+   (when *JS
+      (prin " onmousedown=\"inBtn(1)\" onblur=\"inBtn(0)\"")
+      (and JS (prin " onclick=\"return doBtn(this)\"")) )
    (dfltCss "image")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )

@@ -1,4 +1,4 @@
-# 26aug09abu
+# 19feb10abu
 # (c) Software Lab. Alexander Burger
 
 ### ext:Sin ###
@@ -27,16 +27,5 @@
    (ext:Atan 0 10000000 10000000) )
 (test 15707963
    (ext:Atan 10000000 0 10000000) )
-
-
-### ext:Dist ###
-(test 5000
-   (ext:Dist 3000 4000) )
-(test 5000
-   (ext:Dist 2000 3000 5000 7000) )
-(test 10000
-   (ext:Dist 0 0 10000 -10000 10000 10000) )
-(test 7071
-   (ext:Dist 0 10000 0 0 10000 10000) )
 
 # vi:et:ts=3:sw=3

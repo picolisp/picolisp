@@ -1,4 +1,4 @@
-# 10dec09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -37,11 +37,15 @@
          (cons Cls Hook)
          Cls ) ) )
 
+(de treeRel (Var Cls)
+   (with (or (get Cls Var) (meta Cls Var))
+      (or
+         (find '((B) (isa '+index B)) (: bag))
+         This ) ) )
+
 # (db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym
 (de db (Var Cls . @)
-   (with (or (get Cls Var) (meta Cls Var))
-      (when (find '((B) (isa '+index B)) (: bag))
-         (setq This @) )
+   (with (treeRel Var Cls)
       (let (Tree (tree (: var) (: cls) (and (: hook) (next)))  Val (next))
          (if (isa '+Key This)
             (if (args)
@@ -65,9 +69,7 @@
 
 # (aux 'var 'cls ['hook] 'any ..) -> sym
 (de aux (Var Cls . @)
-   (with (or (get Cls Var) (meta Cls Var))
-      (when (find '((B) (isa '+index B)) (: bag))
-         (setq This @) )
+   (with (treeRel Var Cls)
       (step
          (init (tree (: var) (: cls) (and (: hook) (next)))
             (rest)
@@ -76,9 +78,7 @@
 
 # (collect 'var 'cls ['hook] ['any|beg ['end [var ..]]]) -> lst
 (de collect (Var Cls . @)
-   (with (or (get Cls Var) (meta Cls Var))
-      (when (find '((B) (isa '+index B)) (: bag))
-         (setq This @) )
+   (with (treeRel Var Cls)
       (let
          (Tree (tree (: var) (: cls) (and (: hook) (next)))
             X1 (next)
@@ -95,13 +95,18 @@
                   (if (pair X1)
                      (setq X1 (append X1 T))
                      (setq X1 (cons X1 T)  X2 (cons X2)) ) )
-               (iter Tree
-                  '((X)
-                     (and
-                        (isa Cls X)
-                        (not (memq (setq X (pass get X)) (made)))
-                        (link X) ) )
-                  X1 X2 T ) ) ) ) ) )
+               (if (isa '+Idx This)
+                  (iter Tree
+                     '((X)
+                        (and
+                           (isa Cls X)
+                           (not (memq (setq X (pass get X)) (made)))
+                           (link X) ) )
+                     X1 X2 T )
+                  (iter Tree
+                     '((X)
+                        (and (isa Cls X) (link (pass get X))) )
+                     X1 X2 ) ) ) ) ) ) )
 
 
 (de genKey (Var Cls Hook Min Max)
@@ -397,7 +402,10 @@
    (pack *Blob (glue "/" (chop Obj)) "." Var) )
 
 (dm put> (Obj Old New)
-   (and New (call 'mkdir "-p" (dirname (blob Obj))))
+   (and
+      New
+      (dirname (blob Obj))
+      (call 'mkdir "-p" @) )
    (if (flg? New)
       New
       (in New (out (blob Obj (: var)) (echo)))
@@ -1097,20 +1105,15 @@
 
 # Find or create object
 (de request (Typ Var . @)
-   (with (meta Typ Var)
-      (or
-         (pass db Var (: cls))
-         (if (: hook)
-            (pass new
-               (or (meta Typ 'Dbf 1) 1)
-               Typ
-               (: hook)
-               (next)
-               Var )
-            (pass new
-               (or (meta Typ 'Dbf 1) 1)
-               Typ
-               Var ) ) ) ) )
+   (let Dbf (or (meta Typ 'Dbf 1) 1)
+      (ifn Var
+         (new Dbf Typ)
+         (with (meta Typ Var)
+            (or
+               (pass db Var (: cls))
+               (if (: hook)
+                  (pass new Dbf Typ (: hook) (next) Var)
+                  (pass new Dbf Typ Var) ) ) ) ) ) )
 
 # Create or update object
 (de obj Lst

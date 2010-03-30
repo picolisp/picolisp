@@ -1,8 +1,8 @@
-/* 29aug09 */
+/* 17mar10 */
 
    .data
 
-   .global  SnxTab
+   .globl  SnxTab
 SnxTab:
    .byte    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 0, 0, 0, 0, 0, 0, 0, 0, 70, 83, 84, 0, 70, 83, 0, 0, 83, 83, 76, 78, 78, 0, 70, 83, 82, 83, 84, 0, 70, 70, 83, 0, 83, 0, 0, 0, 0, 0, 0, 0, 70, 83, 84, 0, 70, 83, 0, 0, 83, 83, 76, 78, 78, 0, 70, 83, 82, 83, 84, 0, 70, 70, 83, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 84, 78, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78
 
@@ -11,7 +11,7 @@ SnxTab:
    .balign  16
    nop
    nop
-   .global  Snx
+   .globl  Snx
 Snx:
    push     %r13
    push     %r14
@@ -77,9 +77,8 @@ Snx_40:
    jc       Snx_60
    cmp      $194, %rax
    jnc      Snx_60
-   mov      SnxTab@GOTPCREL(%rip), %r14
-   add      %rax, %r14
-   mov      (%r14), %al
+   add      SnxTab@GOTPCREL(%rip), %rax
+   mov      (%rax), %al
    movzx    %al, %rax
    or       %rax, %rax
    jnz      .10
@@ -111,7 +110,7 @@ Snx_90:
    .balign  16
    nop
    nop
-   .global  Ulaw
+   .globl  Ulaw
 Ulaw:
    push     %r13
    mov      %rbx, %r13
@@ -162,7 +161,7 @@ Ulaw:
 
    .data
 
-   .global  Chr64
+   .globl  Chr64
 Chr64:
    .ascii   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -171,7 +170,7 @@ Chr64:
    .balign  16
    nop
    nop
-   .global  Base64
+   .globl  Base64
 Base64:
    push     %r13
    push     %r14
@@ -258,11 +257,11 @@ Base64:
    pop      %r13
    ret
 
-   .global  chr64E
+   .globl  chr64E
 chr64E:
    mov      %rbx, %rax
 
-   .global  chr64A
+   .globl  chr64A
 chr64A:
    add      Chr64@GOTPCREL(%rip), %rax
    mov      (%rax), %al

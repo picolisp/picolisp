@@ -1,4 +1,4 @@
-# 13oct09abu
+# 02mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -1480,6 +1480,7 @@
    push C
    push X
    push Y
+   push Z
    link
    push ZERO  # <L I> Name
    link
@@ -1495,32 +1496,34 @@
    push A  # <L -III> Sign flag
    off E SIGN
    # Calculate buffer size
-   ld C 19  # Decimal length of 'cnt' (60 bit)
-   ld X E
+   ld A 19  # Decimal length of 'cnt' (60 bit)
+   ld C E  # Get number
    do
-      cnt X  # Last digit?
+      cnt C  # Last digit?
    while z  # No
-      add C 20  # Add decimal length of 'digit' (64 bit)
-      ld X (X BIG)
+      add A 20  # Add decimal length of 'digit' (64 bit)
+      ld C (C BIG)
    loop
-   add C 7  # Align
-   off C 7
-   sub S C  # Space for incrementor
-   set (S) 1  # Init to '1'
+   add A 17  # Round up
+   ld C 0  # Divide by 18
+   div 18
+   shl A 3  # Word count
+   sub S A  # Space for incrementor
+   ld (S) 1  # Init to '1'
    ld X S  # Keep pointer to incrementor in X
-   sub S C  # <S III> Accumulator
-   set (S) 0  # Init to '0'
+   sub S A  # <S III> Accumulator
+   ld (S) 0  # Init to '0'
    push S # <S II> Top of accumulator
    push X  # <S I> Pointer to incrementor
    push X  # <S> Top of incrementor
    do
+      cnt E  # Short number?
+      ldnz Z E  # Yes
+      if z
+         ld Z (E DIG)  # Digit in Z
+      end
       do
-         cnt E  # Short number?
-         if nz  # Yes
-            ld A E
-         else
-            ld A (E DIG)
-         end
+         ld A Z  # Current digit
          test A (L -II)  # Test next bit with mask
          if nz
             # Add incrementor to accumulator
@@ -1530,50 +1533,50 @@
             do
                cmp X (S II)  # X > Top of accumulator?
                if gt  # Yes
-                  add (S II) 1  # Extend accumulator
-                  set (X) 0  # with '0'
+                  add (S II) 8  # Extend accumulator
+                  ld (X) 0  # with '0'
                end
-               ld B (X)
-               add B (Y)  # Add BCD
+               ld A (X)
+               add A (Y)  # Add BCD
                add A C  # Add BCD-Carry
                ld C 0  # Clear BCD-Carry
-               cmp B 10  # BCD overflow?
+               cmp A 1000000000000000000  # BCD overflow?
                if nc  # Yes
-                  sub B 10
+                  sub A 1000000000000000000
                   ld C 1  # Set BCD-Carry
                end
-               ld (X) B  # Store BCD digit in accumulator
-               add X 1
-               add Y 1
+               ld (X) A  # Store BCD digit in accumulator
+               add X 8
+               add Y 8
                cmp Y (S)  # Reached top of incrementor?
             until gt  # Yes
             null C  # BCD-Carry?
             if ne  # Yes
-               add (S II) 1  # Extend accumulator
-               set (X) 1  # With '1'
+               add (S II) 8  # Extend accumulator
+               ld (X) 1  # With '1'
             end
          end
          # Shift incrementor left
          ld C 0  # Clear BCD-Carry
          ld Y (S I)  # Incrementor
          do
-            ld B (Y)
-            add B B  # Double
+            ld A (Y)
+            add A A  # Double
             add A C  # Add BCD-Carry
             ld C 0  # Clear BCD-Carry
-            cmp B 10  # BCD overflow?
+            cmp A 1000000000000000000  # BCD overflow?
             if nc  # Yes
-               sub B 10
+               sub A 1000000000000000000
                ld C 1  # Set BCD-Carry
             end
-            ld (Y) B  # Store BCD digit in incrementor
-            add Y 1
+            ld (Y) A  # Store BCD digit in incrementor
+            add Y 8
             cmp Y (S)  # Reached top of incrementor?
          until gt  # Yes
          null C  # BCD-Carry?
          if ne  # Yes
-            add (S) 1  # Extend incrementor
-            set (Y) 1  # With '1'
+            add (S) 8  # Extend incrementor
+            ld (Y) 1  # With '1'
          end
          shl (L -II) 1  # Shift bit mask
       until z
@@ -1588,6 +1591,8 @@
       end
       ld (L -II) A  # Set bit mask
    loop
+   ld Y (S II)  # Top of accumulator
+   lea Z (S III)  # Accumulator
    null (L -I)  # Scale negative?
    if s  # Yes
       cmp (L -I) -1  # Direct print?
@@ -1597,19 +1602,42 @@
             ld B (char "-")  # Output sign
             call (EnvPutB)
          end
-         ld Y (S II)  # Top of accumulator
-         lea E (S III)  # Accumulator
+         ld A (Y)  # Output highest word
+         call outWordA
          do
-            ld B (Y)  # Output bytes in reverse order
-            add B (char "0")
-            call (EnvPutB)
-            sub Y 1
-            cmp Y E
-         until lt
+            sub Y 8  # More?
+            cmp Y Z
+         while ge  # Yes
+            ld A (Y)  # Output words in reverse order
+            ld E 100000000000000000  # Digit scale
+            do
+               ld C 0  # Divide by digit scale
+               div E
+               push C  # Save remainder
+               add B (char "0")  # Output next digit
+               call (EnvPutB)
+               cmp E 1  # Done?
+            while ne  # No
+               ld C 0  # Divide digit scale by 10
+               ld A E
+               div 10
+               ld E A
+               pop A  # Get remainder
+            loop
+         loop
       else  # Calculate length
-         lea E ((S II) 1)  # Top of accumulator + 1
-         lea A (S III)  # Accumulator
-         sub E A  # Length
+         ld A Y  # Top of accumulator
+         sub A Z  # Accumulator
+         shr A 3  # Number of accumulator words
+         mul 18  # Number of digits
+         ld E A
+         ld A (Y)  # Length of highest word
+         do
+            add E 1  # Increment length
+            ld C 0  # Divide by 10
+            div 10
+            null A  # Done?
+         until z  # Yes
          test (L -III) 1  # Sign?
          if nz  # Yes
             add E 1  # Space for '-'
@@ -1618,75 +1646,122 @@
          or E CNT
       end
       drop
-      pop Y
-      pop X
-      pop C
-      ret
-   end
-   ld C 4  # Build name
-   lea X (L I)
-   test (L -III) 1  # Sign?
-   if nz  # Yes
-      ld B (char "-")  # Insert sign
-      call byteSymBCX_CX
-   end
-   ld A  (S II)  # Top of accumulator
-   lea Y (S III)  # Accumulator
-   sub A Y  # Length-1
-   sub A (L -I)  # Scale
-   ld (L -I) A  # Decrement by Length-1
-   if lt  # lt0
-      ld B (char "0")  # Prepend '0'
-      call byteSymBCX_CX
-      ld A (Sep0)  # Prepend decimal separator
-      call charSymACX_CX
-      do
-         cmp (L -I) -1   # Scale
-      while lt
-         add (L -I) 1  # Increment scale
-         ld B (char "0")  # Ouput zeroes
+   else
+      ld C 4  # Build name
+      lea X (L I)
+      test (L -III) 1  # Sign?
+      if nz  # Yes
+         ld B (char "-")  # Insert sign
          call byteSymBCX_CX
-      loop
-   end
-   ld Y (S II)  # Top of accumulator
-   lea E (S III)  # Accumulator
-   do
-      ld B (Y)  # Pack bytes in reverse order
-      add B (char "0")
-      call byteSymBCX_CX
-      sub Y 1
-      cmp Y E
-   while ge
-      null (L -I)  # Scale null?
-      if z  # Yes
-         ld A (Sep0)  # Output decimal separator
-         call charSymACX_CX
-      else
-         null (Sep3)  # Thousand separator?
-         if nz  # Yes
-            ld A (L -I)  # Scale > 0?
-            null A
-            if nsz  # Yes
-               push C
-               ld C 0  # Modulus 3
-               div 3
-               null C
-               pop C
-               if z
-                  ld A (Sep3)  # Output thousand separator
-                  call charSymACX_CX
-               end
-            end
-         end
       end
-      sub (L -I) 1  # Decrement scale
-   loop
-   ld X (L I)  # Get name
-   drop
-   call consSymX_E
+      push C  # Save name index
+      ld A Y  # Top of accumulator
+      sub A Z  # Accumulator
+      shr A 3  # Number of accumulator words
+      mul 18  # Number of digits
+      ld E A  # Calculate length-1
+      ld A (Y)  # Highest word
+      do
+         ld C 0  # Divide by 10
+         div 10
+         null A  # Done?
+      while nz  # No
+         add E 1  # Increment length
+      loop
+      pop C  # Restore name index
+      sub E (L -I)  # Scale
+      ld (L -I) E  # Decrement by Length-1
+      if lt  # Scale < 0
+         ld B (char "0")  # Prepend '0'
+         call byteSymBCX_CX
+         ld A (Sep0)  # Prepend decimal separator
+         call charSymACX_CX
+         do
+            cmp (L -I) -1   # Scale
+         while lt
+            add (L -I) 1  # Increment scale
+            ld B (char "0")  # Ouput zeroes
+            call byteSymBCX_CX
+         loop
+      end
+      ld A (Y)  # Pack highest word
+      call fmtWordACX_CX
+      do
+         sub Y 8  # More?
+         cmp Y Z
+      while ge  # Yes
+         ld A (Y)  # Pack words in reverse order
+         ld E 100000000000000000  # Digit scale
+         do
+            push A
+            call fmtScaleCX_CX  # Handle scale character(s)
+            pop A
+            push C  # Save name index
+            ld C 0  # Divide by digit scale
+            div E
+            xchg C (S)  # Save remainder, restore name index
+            add B (char "0")  # Pack next digit
+            call byteSymBCX_CX
+            cmp E 1  # Done?
+         while ne  # No
+            push C  # Save name index
+            ld C 0  # Divide digit scale by 10
+            ld A E
+            div 10
+            pop C  # Restore name index
+            ld E A
+            pop A  # Get remainder
+         loop
+      loop
+      ld X (L I)  # Get name
+      drop
+      call consSymX_E
+   end
+   pop Z
    pop Y
    pop X
    pop C
+   ret
+
+(code 'fmtWordACX_CX 0)
+   cmp A 9  # Single digit?
+   if gt  # No
+      ld E C  # Save C
+      ld C 0  # Divide by 10
+      div 10
+      push C  # Save remainder
+      ld C E  # Restore C
+      call fmtWordACX_CX  # Recurse
+      call fmtScaleCX_CX  # Handle scale character(s)
+      pop A
+   end
+   add B (char "0")  # Make ASCII digit
+   jmp byteSymBCX_CX
+
+(code 'fmtScaleCX_CX 0)
+   null (L -I)  # Scale null?
+   if z  # Yes
+      ld A (Sep0)  # Output decimal separator
+      call charSymACX_CX
+   else
+      null (Sep3)  # Thousand separator?
+      if nz  # Yes
+         ld A (L -I)  # Scale > 0?
+         null A
+         if nsz  # Yes
+            push C
+            ld C 0  # Modulus 3
+            div 3
+            null C
+            pop C
+            if z
+               ld A (Sep3)  # Output thousand separator
+               call charSymACX_CX
+            end
+         end
+      end
+   end
+   sub (L -I) 1  # Decrement scale
    ret
 
 # (format 'num ['cnt ['sym1 ['sym2]]]) -> sym

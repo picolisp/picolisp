@@ -1,11 +1,11 @@
-/* 16dec09abu
+/* 17mar10abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 /* Globals */
-int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
+int Signal, Repl, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
 char **AV, *AV0, *Home;
 child *Child;
 heap *Heaps;
@@ -84,7 +84,9 @@ void sighandler(any ex) {
          Signal = 0,  run(val(Hup));
          break;
       case SIGINT:
-         Signal = 0,  brkLoad(ex ?: Nil);
+         Signal = 0;
+         if (Repl < 2)
+            brkLoad(ex ?: Nil);
          break;
       case SIGUSR1:
          Signal = 0,  run(val(Sig1));
@@ -132,15 +134,20 @@ static void sigChld(int n __attribute__((unused))) {
    errno = e;
 }
 
+static void tcSet(struct termios *p) {
+   if (Termio)
+      while (tcsetattr(STDIN_FILENO, TCSADRAIN, p)  &&  errno == EINTR);
+}
+
 static void sigTermStop(int n __attribute__((unused))) {
    sigset_t mask;
 
-   tcsetattr(STDIN_FILENO, TCSADRAIN, &OrgTermio);
+   tcSet(&OrgTermio);
    sigemptyset(&mask);
    sigaddset(&mask, SIGTSTP);
    sigprocmask(SIG_UNBLOCK, &mask, NULL);
    signal(SIGTSTP, SIG_DFL),  raise(SIGTSTP),  signal(SIGTSTP, sigTermStop);
-   tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+   tcSet(Termio);
 }
 
 void setRaw(void) {
@@ -150,17 +157,15 @@ void setRaw(void) {
       Termio->c_lflag = ISIG;
       Termio->c_cc[VMIN] = 1;
       Termio->c_cc[VTIME] = 0;
-      tcsetattr(STDIN_FILENO, TCSADRAIN, Termio);
+      tcSet(Termio);
       if (signal(SIGTSTP,SIG_IGN) == SIG_DFL)
          signal(SIGTSTP, sigTermStop);
    }
 }
 
 void setCooked(void) {
-   if (Termio) {
-      tcsetattr(STDIN_FILENO, TCSADRAIN, &OrgTermio);
-      free(Termio),  Termio = NULL;
-   }
+   tcSet(&OrgTermio);
+   free(Termio),  Termio = NULL;
 }
 
 // (raw ['flg]) -> flg
@@ -424,7 +429,7 @@ void err(any ex, any x, char *fmt, ...) {
          if (y = p->tag)
             while (isCell(y)) {
                if (subStr(car(y), val(Msg))) {
-                  Thrown = car(y);
+                  Thrown = isNil(car(y))? val(Msg) : car(y);
                   unwind(p);
                   longjmp(p->rst, 1);
                }
@@ -1120,6 +1125,7 @@ int MAIN(int ac, char *av[]) {
    init(ac,av);
    if (!setjmp(ErrRst)) {
       loadAll(NULL);
+      ++Repl;
       iSignal(SIGINT, sig);
    }
    load(NULL, ':', Nil);

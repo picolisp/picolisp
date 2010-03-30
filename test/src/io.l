@@ -1,4 +1,4 @@
-# 09sep09abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -181,14 +181,14 @@
          (in (tmp "ext") (ext 5 (rd))) ) ) )
 
 (pipe
-   (for (N 1 (>= 4096 N) (inc N))
+   (for N 4096
       (pr N) )
-   (for (N 1 (>= 4096 N) (inc N))
+   (for N 4096
       (test N (rd)) ) )
 (pipe
-   (for (C 1 (>= 4096 C) (inc C))
+   (for C 4096
       (pr (char C)) )
-   (for (C 1 (>= 4096 C) (inc C))
+   (for C 4096
       (test C (char (rd))) ) )
 (pipe
    (pr (7 "abc" (1 2 3) 'a))

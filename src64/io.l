@@ -1,4 +1,4 @@
-# 25nov09abu
+# 17mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -46,7 +46,7 @@
    jns Ret  # Yes
    ld Y SetFD
    jmp errnoEXY
-: SetFD string "SETFD %s"
+: SetFD asciz "SETFD %s"
 
 # Set file descriptor to non-blocking / blocking
 (code 'nonblockingA_A)
@@ -506,7 +506,7 @@
    if z  # No
       ld E A
       cmp B BEG  # Begin a list?
-      jnz retnc  # No: Return DOT or END
+      jnz retnc  # No: Return DOT or END (also in B)
       call binReadZ_FE  # Else read list
       jc ret
       push X
@@ -522,17 +522,20 @@
          cmp E END  # Any?
       while ne  # Yes
          cmp E DOT  # Dotted pair?
-         if eq  # Yes
-            call binReadZ_FE  # Get CDR
-            if c  # EOF
-10             drop
-               pop X
-               ret  # Return 'c'
+         if eq
+            cmp B DOT  # Only if B is also DOT (to distinguish from Zero)
+            if eq  # Yes
+               call binReadZ_FE  # Get CDR
+               if c  # EOF
+10                drop
+                  pop X
+                  ret  # Return 'c'
+               end
+               cmp E END  # Circular list?
+               ldz E (L I)  # Yes: Get first cell
+               ld (X CDR) E  # Store in last cell
+               break T
             end
-            cmp E END  # Circular list?
-            ldz E (L I)  # Yes: Get first cell
-            ld (X CDR) E  # Store in last cell
-            break T
          end
          call consE_C  # Append next cell
          ld (C) E
@@ -576,7 +579,7 @@
       do
          call (GetBinZ_FB)  # Next byte?
          jc 90  # No
-         call byteNumBCX_CX
+         call byteNumBCX_CX  # (B is zero (not DOT) if Zero)
          sub E 1  # Decrement count
       until z
 20    ld E (L I)  # Get result
@@ -623,12 +626,7 @@
          cmp A INTERN  # Internal?
          if eq  # Yes
             push Y
-            ld Y Intern
-            ld E 0  # No symbol yet
-            call internEXY_FE  # New internal symbol?
-            if c  # Yes
-               ld (E) Nil  # Init to 'NIL'
-            end
+            call findSymX_E  # Find or create it
             pop Y
          else  # External
             null (Extn)  # External symbol offset?
@@ -1992,12 +1990,8 @@
       call (EnvGet_A)  # Get next
    loop
 10 ld X (L I)  # Get name
-   ld A 0  # Scale
-   cnt (Scl)  # Numeric?
-   if nz  # Yes
-      ld A (Scl)
-      shr A 4  # Normalize
-   end
+   ld A (Scl)  # Scale
+   shr A 4  # Normalize
    ld (Sep3) 0  # Thousand separator
    ld (Sep0) (char ".")  # Decimal separator
    call symToNumXA_FE  # Legal number?
@@ -2006,12 +2000,7 @@
       call anonymousX_FE  # Anonymous symbol?
       if ne  # No
          ld X (L I)  # Get name
-         ld Y Intern
-         ld E 0  # No symbol yet
-         call internEXY_FE  # New internal symbol?
-         if c  # Yes
-            ld (E) Nil  # Init to 'NIL'
-         end
+         call findSymX_E  # Find or create symbol
       end
    end
    ret
@@ -2145,6 +2134,7 @@
             eval  # Evaluate
             pop A
             ld (A CDR) E  # Store in last cell
+            ld E A
             do
                atom (E CDR)  # Pair?
             while z  # Yes
@@ -2215,13 +2205,18 @@
    cmp B (char ",")  # Comma?
    if eq  # Yes
       call (EnvGet_A)  # Skip ','
-      ld X Uni  # Maintain '*Uni' index
       ld A 0
       call readA_E  # Read expression
-      ld Y E
       ld (L I) E  # Save it
+      ld X Uni  # Maintain '*Uni' index
+      ld Y E
       call idxPutXY_E
-      ld E Y  # Return value
+      atom E  # Pair?
+      if z  # Yes
+         ld E (E)  # Return index entry
+      else
+         ld E Y  # 'read' value
+      end
       jmp 99
    end
    cmp B (char "`")  # Backquote?
@@ -2414,12 +2409,8 @@
             cmp B (char "9")
          until gt  # No
          ld X (L I)  # Get name
-         ld A 0  # Scale
-         cnt (Scl)  # Numeric?
-         if nz  # Yes
-            ld A (Scl)
-            shr A 4  # Normalize
-         end
+         ld A (Scl)  # Scale
+         shr A 4  # Normalize
          drop
          ld (Sep3) 0  # Thousand separator
          ld (Sep0) (char ".")  # Decimal separator
@@ -2481,12 +2472,7 @@
          memb (S IV) (S III)  # Member of character set?
       until ne  # No
       ld X (L I)  # Get name
-      ld Y Intern
-      ld E 0  # No symbol yet
-      call internEXY_FE  # New internal symbol?
-      if c  # Yes
-         ld (E) Nil  # Init to 'NIL'
-      end
+      call findSymX_E  # Find or create symbol
       drop
    else
       call getChar_A
@@ -2759,6 +2745,7 @@
       set (Flg) 0  # Guarantee flushed pipes
       ld Y (Child)  # Iterate children
       ld Z (Children)  # Count
+      push X  # Save context
       do
          sub Z VI  # More?
       while ge  # Yes
@@ -2951,6 +2938,7 @@
          end
 20       ld Y (Y CDR)
       loop
+      pop X  # Restore context
       nul (Signal)  # Signal?
       if nz  # Yes
          call sighandlerX
@@ -3957,7 +3945,7 @@
    drop
    pop Y
    ret
-: Arrow string "-> "
+: Arrow asciz "-> "
 
 # (load 'any ..) -> any
 (code 'doLoad 2)
@@ -4590,7 +4578,15 @@
             call symByteCX_FACX  # Next byte
          until z  # Done
       else  # Else transient symbol
-         call tsm_F  # Transient symbol markup?
+         ld Y 0  # 'tsm' flag in Y
+         cmp (Tsm) Nil  # Transient symbol markup?
+         if ne  # Yes
+            cmp (EnvPutB) putStdoutB  # to stdout?
+            if eq  # No
+               ld Y ((OutFile) II)  # and 'tty'? -> Y
+            end
+         end
+         null Y  # Transient symbol markup?
          if z  # No
             ld B (char "\"")
             call (EnvPutB)
@@ -4601,18 +4597,20 @@
          ld C 0
          call symByteCX_FACX  # Get first byte
          do
-            cmp B (char "\"")  # Double quote?
+            cmp B (char "\\")  # Backslash?
             jz 20
             cmp B (char "\^")  # Caret?
             jz 20
-            cmp B (char "\\")  # Backslash?
+            null Y  # Transient symbol markup?
+            jnz 30  # Yes
+            cmp B (char "\"")  # Double quote?
             if eq  # Yes
 20             push A  # Save char
                ld B (char "\\")  # Escape with backslash
                call (EnvPutB)
                pop A
             else
-               cmp B 127  # DEL?
+30             cmp B 127  # DEL?
                if eq  # Yes
                   ld B (char "\^")  # Print ^?
                   call (EnvPutB)
@@ -4631,7 +4629,7 @@
             call (EnvPutB)  # Put byte
             call symByteCX_FACX  # Next byte
          until z  # Done
-         call tsm_F  # Transient symbol markup?
+         null Y  # Transient symbol markup?
          if z  # No
             ld B (char "\"")  # Final double quote
             call (EnvPutB)
@@ -4689,14 +4687,6 @@
    call (EnvPutB)
    pop X
    ret
-
-(code 'tsm_F 0)
-   cmp (Tsm) Nil  # Transient symbol markup?
-   jeq ret  # No
-   cmp (EnvPutB) putStdoutB  # to stdout?
-   jne Retz  # No
-   null ((OutFile) II)  # and 'tty'?
-   ret  # Return 'nz'
 
 # Print string representation
 (code 'prinE_E 0)

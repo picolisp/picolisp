@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -464,8 +464,8 @@ href="refT.html#try">try</a></code>.
 additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns a list of all non-<code>NIL</code> values returned
 by <code>fun</code>. <code>(extract 'fun 'lst)</code> is equivalent to
-<code>(mapcar 'fun (filter 'fun 'lst))</code> or <code>(mapcan '((X) (and (fun X)
-(cons @))) 'lst)</code>. See also <code><a
+<code>(mapcar 'fun (filter 'fun 'lst))</code> or, for non-NIL results, to
+<code>(mapcan '((X) (and (fun X) (cons @))) 'lst)</code>. See also <code><a
 href="refF.html#filter">filter</a></code>, <code><a
 href="refF.html#find">find</a></code>, <code><a
 href="refP.html#pick">pick</a></code> and <code><a

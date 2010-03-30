@@ -1,4 +1,4 @@
-/* 02dec06abu
+/* 21feb10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -71,6 +71,24 @@ any Snx(any ex) {
 
 
 /*** Math ***/
+// (ext:Exp 'x 'scale) -> num
+any Exp(any ex) {
+   double x, n;
+
+   x = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
+   return doubleToNum(n * exp(x / n));
+}
+
+// (ext:Log 'x 'scale) -> num
+any Log(any ex) {
+   double x, n;
+
+   x = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
+   return doubleToNum(n * log(x / n));
+}
+
 // (ext:Sin 'angle 'scale) -> num
 any Sin(any ex) {
    any x;
@@ -109,35 +127,6 @@ any Atan(any ex) {
    y = evDouble(ex, cddr(ex));
    n = evDouble(ex, cdddr(ex));
    return doubleToNum(n * atan2(x / n, y / n));
-}
-
-// (ext:Dist 'h 'v ['h1 'h2 ['h2 'v2]]) -> num
-any Dist(any ex) {
-   any x;
-   double h, v, h1, v1, h2, v2, a, ca, sa;
-
-   h = evDouble(ex, x = cdr(ex));
-   v = evDouble(ex, x = cdr(x));
-   if (!isCell(x = cdr(x)))
-      return doubleToNum(sqrt(h*h + v*v));
-   h1 = evDouble(ex, x);
-   v1 = evDouble(ex, x = cdr(x));
-   if (!isCell(x = cdr(x))) {
-      h -= h1,  v -= v1;
-      return doubleToNum(sqrt(h*h + v*v));
-   }
-   h2 = evDouble(ex, x);
-   v2 = evDouble(ex, cdr(x));
-   h -= h2,  h1 -= h2;
-   v -= v2,  v1 -= v2;
-   a = atan2(h1,v1),  ca = cos(a),  sa = sin(a);
-   a = h * ca - v * sa,  v = v * ca + h * sa,  h = a;
-   v1 = v1 * ca + h1 * sa;
-   if (v >= 0.0  &&  v <= v1)
-      return doubleToNum(fabs(h));
-   if (v > 0.0)
-      v -= v1;
-   return doubleToNum(sqrt(h*h + v*v));
 }
 
 

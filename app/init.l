@@ -1,4 +1,4 @@
-# 05nov09abu
+# 14jan10abu
 # (c) Software Lab. Alexander Burger
 
 ### Role ###
@@ -70,11 +70,12 @@
 (commit)
 
 ### Order ###
-(let Ord (new! '(+Ord) 'nr 1  'dat (date 2007 2 14)  'cus (db 'nr '+CuSu 3))
-   (put!> Ord 'pos
+(let Ord (new (db: +Ord) '(+Ord) 'nr 1  'dat (date 2007 2 14)  'cus (db 'nr '+CuSu 3))
+   (put> Ord 'pos
       (list
-         (new! '(+Pos) 'itm (db 'nr '+Item 1)  'pr 29900  'cnt 1)
-         (new! '(+Pos) 'itm (db 'nr '+Item 2)  'pr 1250  'cnt 8)
-         (new! '(+Pos) 'itm (db 'nr '+Item 4)  'pr 999  'cnt 20) ) ) )
+         (new (db: +Pos) '(+Pos) 'itm (db 'nr '+Item 1)  'pr 29900  'cnt 1)
+         (new (db: +Pos) '(+Pos) 'itm (db 'nr '+Item 2)  'pr 1250  'cnt 8)
+         (new (db: +Pos) '(+Pos) 'itm (db 'nr '+Item 4)  'pr 999  'cnt 20) ) ) )
+(commit)
 
 # vi:et:ts=3:sw=3

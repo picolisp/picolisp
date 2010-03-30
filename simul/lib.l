@@ -1,7 +1,7 @@
-# 15dec04abu
+# 18mar10abu
 # (c) Software Lab. Alexander Burger
 
-(setq *Scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
+(scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
 
 (load "lib/simul.l")
 (load "simul/rgb.l")

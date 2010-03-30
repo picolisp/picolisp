@@ -1,11 +1,11 @@
-# 21aug09abu
+# 03mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
 (equ HEAP (* 1024 1024))   # Heap size in bytes
 (equ CELLS (/ HEAP 16))    # Number of cells in a single heap (65536)
-(equ ZERO (hex "02"))      # Short number '0'
-(equ ONE (hex "12"))       # Short number '1'
+(equ ZERO (short 0))       # Short number '0'
+(equ ONE (short 1))        # Short number '1'
 (equ TOP (hex "10000"))    # Character top
 (equ DB1 (hex "1A"))       # Name of '{1}'
 

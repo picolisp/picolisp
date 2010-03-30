@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -724,9 +724,9 @@ can be written with a preceding hat '<code>^</code>' character.
 
 <pre><code>
 : <u>We^Ird\\Str\"ing</u>
--> <u>We^Ird\\Str\"ing</u>
+-> <u>We^Ird\\Str"ing</u>
 : (chop @)
--> (<u>W</u> <u>e</u> <u>^I</u> <u>r</u> <u>d</u> <u>\\</u> <u>S</u> <u>t</u> <u>r</u> <u>\"</u> <u>i</u> <u>n</u> <u>g</u>)
+-> (<u>W</u> <u>e</u> <u>^I</u> <u>r</u> <u>d</u> <u>\\</u> <u>S</u> <u>t</u> <u>r</u> <u>"</u> <u>i</u> <u>n</u> <u>g</u>)
 </code></pre>
 
 <p>The index for transient symbols is cleared automatically before and after
@@ -748,13 +748,24 @@ address).
 
 <p>External symbol names are surrounded by braces (<code>'{'</code> and
 <code>'}'</code>). The characters of the symbol's name itself identify the
-physical location of the external object. This is currently the number of the
-database file, and - separated by a hyphen - the starting block in the database
-file. Both numbers are encoded in base-64 notation (characters '<code>0</code>'
-through '<code>9</code>', '<code>:</code>' through '<code>;</code>',
-'<code>A</code>' through '<code>Z</code>' and '<code>a</code>' through
-'<code>z</code>').
+physical location of the external object. This is
 
+<ul>
+<li>in the 32-bit version: The number of the database file, and - separated by a
+hyphen - the starting block in the database file. Both numbers are encoded in
+base-64 notation (characters '<code>0</code>' through '<code>9</code>',
+'<code>:</code>', '<code>;</code>', '<code>A</code>' through '<code>Z</code>'
+and '<code>a</code>' through '<code>z</code>').
+
+<li>in the 64-bit version: The number of the database file minus 1 in "hax"
+notation (i.e. hexadecimal/alpha notation, where '@' is zero, 'A' is 1 and 'O'
+is 15 (from "alpha" to "omega")), immediately followed (without a hyphen) the
+starting block in octal ('0' through '7').
+
+</ul>
+
+<p>In both cases, the database file (and possibly the hypen) are omitted for the
+first (default) file.
 
 <p><hr>
 <h4><a name="lst-io">Lists</a></h4>
@@ -1131,7 +1142,8 @@ badFoo -- Undefined
 
 <p>Errors can be caught with <code><a href="refC.html#catch">catch</a></code>,
 if a list of substrings of possible error messages is supplied for the first
-argument. In such a case, the matching substring is returned.
+argument. In such a case, the matching substring (or the whole error message if
+the substring is <code>NIL</code>) is returned.
 
 
 <p><hr>
@@ -1220,7 +1232,8 @@ items are either
 
 <dt>Identical
 <dd>They are the same memory object (pointer equality). For example, two
-internal symbols with the same name are identical.
+internal symbols with the same name are identical. In the 64-bit version, also
+short numbers (up to 60 bits) are pointer-equal.
 
 <dt>Equal
 <dd>They are equal in every respect (structure equality), but need not to be
@@ -2121,6 +2134,8 @@ abbreviations:
    <a href="refS.html#script">script</a>
    <a href="refO.html#once">once</a>
    <a href="refR.html#rc">rc</a>
+   <a href="refA.html#acquire">acquire</a>
+   <a href="refR.html#release">release</a>
    <a href="refP.html#pretty">pretty</a>
    <a href="refP.html#pp">pp</a>
    <a href="refS.html#show">show</a>
@@ -2339,6 +2354,7 @@ abbreviations:
    <a href="refC.html#cmd">cmd</a>
    <a href="refA.html#argv">argv</a>
    <a href="refO.html#opt">opt</a>
+   <a href="refV.html#version">version</a>
    <a href="refG.html#gc">gc</a>
    <a href="refR.html#raw">raw</a>
    <a href="refA.html#alarm">alarm</a>

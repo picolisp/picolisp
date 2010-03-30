@@ -1,4 +1,4 @@
-# 06apr09abu
+# 18mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -87,9 +87,12 @@
 
 
 ### scl ###
-(test 123 (scl 0 (any "123.45")))
-(test 1235 (scl 1 (any "123.45")))
-(test 123450 (scl 3 (any "123.45")))
+(scl 0)
+(test 123 (any "123.45")))
+(scl 1)
+(test 1235 (any "123.45")))
+(scl 3)
+(test 123450 (any "123.45")))
 
 
 ### script ###
@@ -116,6 +119,15 @@
    (test 123 (rc F 'a))
    (test "test" (rc F 'b))
    (test (1 2 3) (rc F 'c)) )
+
+
+### acquire release ###
+(let F (tmp "sema")
+   (test *Pid (acquire F))
+   (test T (acquire F))
+   (test *Pid (in F (rd)))
+   (test NIL (release F))
+   (test NIL (in F (rd))) )
 
 
 ### insert ###

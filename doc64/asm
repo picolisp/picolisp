@@ -1,4 +1,4 @@
-# 05sep09abu
+# 06mar10abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -37,28 +37,35 @@
 
    Source Addressing Modes:
       ld A 1234            # Immediate
+      ld A "(a+b-c)"
       ld A R               # Register
-      ld A Label           # Direct
+      ld A Global          # Direct
       ld A (R)             # Indexed
       ld A (R 8)           # Indexed with offset
       ld A (R OFFS)
+      ld A (R Global)
       ld A (Global)        # Indirect
       ld A (Global OFFS)   # Indirect with offset
       ld A ((R))           # Indexed indirect
       ld A ((R 8))         # Indexed with offset indirect
       ld A ((R 8) OFFS)
+      ld A ((R Global) OFFS)
+      ld A ((R OFFS) Global)
       ...
 
    Destination Addressing Modes:
+      ld R A               # Register
+      ld (R) A             # Indexed
+      ld (R 8) A           # Indexed with offset
+      ld (R OFFS) A
+      ld (R Global) A
       ld (Global) A        # Indirect
       ld (Global OFFS) A   # Indirect with offset
-      ld X A               # Register
-      ld (X) A             # Indexed
-      ld (X 8) A           # Indexed with offset
-      ld (X OFFS) A
-      ld ((X)) A           # Indexed indirect
-      ld ((X 8)) A         # Indexed with offset indirect
+      ld ((R)) A           # Indexed indirect
+      ld ((R 8)) A         # Indexed with offset indirect
       ld ((R 8) OFFS) A
+      ld ((R Global) OFFS) A
+      ld ((R OFFS) Global) A
       ...
 
    Target Addressing Modes:

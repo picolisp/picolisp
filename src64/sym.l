@@ -1,4 +1,4 @@
-# 20oct09abu
+# 23feb10abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -255,6 +255,14 @@
          end
       end
    loop
+
+(code 'findSymX_E 0)  # Y
+   ld E 0  # No symbol yet
+   ld Y Intern
+   call internEXY_FE  # New internal symbol?
+   jnc Ret  # No
+   ld (E) Nil  # Init to 'NIL'
+   ret
 
 # X name
 (code 'externX_E 0)  # C

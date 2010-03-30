@@ -1,4 +1,4 @@
-# 06aug09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 (must "Sales" Report)
@@ -27,28 +27,30 @@
                      (NIL ,"Zip")
                      (NIL ,"City")
                      (align ,"Total") ) )
-               (let Sum 0
-                  (pilog
-                     (quote
-                        @Rng (cons *SalFrom (or *SalTill T))
-                        @Cus *SalCus
-                        (select (@Ord)
-                           ((dat +Ord @Rng) (cus +Ord @Cus))
-                           (range @Rng @Ord dat)
-                           (same @Cus @Ord cus) ) )
-                     (with @Ord
-                        (let N (sum> This)
-                           (<row> (alternating)
-                              (<+> (: nr) This)
-                              (<+> (datStr (: dat)) This)
-                              (<+> (: cus nm) (: cus))
-                              (<+> (: cus nm2))
-                              (<+> (: cus plz))
-                              (<+> (: cus ort))
-                              (<-> (money N)) )
-                           (inc 'Sum N) ) ) )
-                  (<row> 'nil
-                     (<strong> ,"Total") - - - - -
-                     (<strong> (prin (money Sum))) ) ) ) ) ) ) )
+               (catch NIL
+                  (let Sum 0
+                     (pilog
+                        (quote
+                           @Rng (cons *SalFrom (or *SalTill T))
+                           @Cus *SalCus
+                           (select (@Ord)
+                              ((dat +Ord @Rng) (cus +Ord @Cus))
+                              (range @Rng @Ord dat)
+                              (same @Cus @Ord cus) ) )
+                        (with @Ord
+                           (let N (sum> This)
+                              (<row> (alternating)
+                                 (<+> (: nr) This)
+                                 (<+> (datStr (: dat)) This)
+                                 (<+> (: cus nm) (: cus))
+                                 (<+> (: cus nm2))
+                                 (<+> (: cus plz))
+                                 (<+> (: cus ort))
+                                 (<-> (money N)) )
+                              (inc 'Sum N) ) )
+                        (at (0 . 10000) (or (flush) (throw))) )
+                     (<row> 'nil
+                        (<strong> ,"Total") - - - - -
+                        (<strong> (prin (money Sum))) ) ) ) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

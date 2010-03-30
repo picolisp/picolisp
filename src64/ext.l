@@ -1,4 +1,4 @@
-# 27aug09abu
+# 05mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### Soundex Algorithm ###
@@ -94,9 +94,7 @@ bytes (
             jlt 60  # Yes
             cmp A SNXSIZE  # Too big?
             jge 60  # Yes
-            ld Y SnxTab  # (PIC)
-            add Y A
-            ld B (Y)  # Character entry?
+            ld B (A SnxTab)  # Character entry?
             zxt
             or A A
             if z  # No
@@ -244,8 +242,7 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 (code 'chr64E)
    ld A E
 (code 'chr64A)
-   add A Chr64  # (PIC)
-   ld B (A)
+   ld B (A Chr64)  # Fetch from table
    jmp envPutB  # Output byte
 
 # vi:et:ts=3:sw=3

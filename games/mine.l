@@ -1,4 +1,4 @@
-# 23sep06abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/term.l")
@@ -46,7 +46,7 @@
                   (T C) ) ) )
          (prinl) )
       (prin "   ")
-      (for (C 1 (<= C *FeldX) (inc C))
+      (for C *FeldX
          (prin " " (char (+ 64 C))) )
       (prinl)
       (prinl "<" N ">  ") ) )

@@ -1,33 +1,29 @@
-# 14sep09abu
+# 25mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### Hypertext I/O functions ###
 (data 'HtOK)
-align 8  string "<b>"
-align 8  string "</b>"
-align 8  string "<i>"
-align 8  string "</i>"
-align 8  string "<u>"
-align 8  string "</u>"
-align 8  string "<p>"
-align 8  string "</p>"
-align 8  string "<pre>"
-align 8  string "</pre>"
-align 8  string "<div "
-align 8  string "</div>"
-align 8  string "<font "
-align 8  string "</font>"
-align 8  string "<img "
-align 8  string "</img>"
-align 8  string "<br>"
-align 8  string "<hr>"
+align 8  asciz "<b>"
+align 8  asciz "</b>"
+align 8  asciz "<i>"
+align 8  asciz "</i>"
+align 8  asciz "<u>"
+align 8  asciz "</u>"
+align 8  asciz "<p>"
+align 8  asciz "</p>"
+align 8  asciz "<pre>"
+align 8  asciz "</pre>"
+align 8  asciz "<div "
+align 8  asciz "</div>"
+align 8  asciz "<br>"
+align 8  asciz "<hr>"
 : HtOkEnd
 
-: HtLt string "&lt;"
-: HtGt string "&gt;"
-: HtAmp string "&amp;"
-: HtQuot string "&quot;"
-: HtNbsp string "&nbsp;"
+: HtLt asciz "&lt;"
+: HtGt asciz "&gt;"
+: HtAmp asciz "&amp;"
+: HtQuot asciz "&quot;"
+: HtNbsp asciz "&nbsp;"
 
 : HtEsc ascii " \\\"#%&:;<=>?_"
 (equ HTESC 12)
@@ -450,8 +446,7 @@ align 8  string "<hr>"
    ld E ((E CDR))  # E on arg
    call evCntEX_FE  # Eval 'cnt'
    if nsz  # > 0
-      ld A Chr  # (PIC)
-      ld A (A)  # Look ahead char?
+      ld A (Chr)  # Look ahead char?
       null A
       if z  # No
          call envGet_A  # Get next char
@@ -509,8 +504,7 @@ align 8  string "<hr>"
                ld (X CDR) C  # Append to result
                ld X C
             loop
-            ld A Chr  # (PIC)
-            ld (A) 0  # Clear look ahead char
+            ld (Chr) 0  # Clear look ahead char
             drop
             pop X
             ret
@@ -531,10 +525,10 @@ word 0      # <Y I> Saved EnvGet_A function
 word 0      # <Y II> Saved EnvPutB function
 skip CHUNK  # <Y III> Chunk buffer
 
-: Newlines  string "0\\r\\n\\r\\n"
+: Newlines asciz "0\\r\\n\\r\\n"
 
-(code 'chrHexX_AF 0)
-   ld B (X)
+(code 'chrHex_AF 0)
+   ld B (Chr)
    cmp B (char "0")  # Decimal digit?
    if ge
       cmp B (char "9")
@@ -558,56 +552,52 @@ skip CHUNK  # <Y III> Chunk buffer
 
 (code 'chunkSize 0)
    push X
-   push Y
-   ld X Chr  # (PIC)
-   ld Y Chunk  # (PIC)
-   null (X)  # 'Chr'?
+   ld X Chunk  # Get Chunk
+   null (Chr)  # 'Chr'?
    if z  # No
-      ld A (Y I)  # Call saved 'get'
+      ld A (X I)  # Call saved 'get'
       call (A)
    end
-   call chrHexX_AF  # Read encoded count
-   ld (Y) A  # Save in count
+   call chrHex_AF  # Read encoded count
+   ld (X) A  # Save in count
    if ge  # >= 0
       do
-         ld A (Y I)  # Call saved 'get'
+         ld A (X I)  # Call saved 'get'
          call (A)
-         call chrHexX_AF  # Read encoded count
+         call chrHex_AF  # Read encoded count
       while ge  # >= 0
-         ld C (Y)  # Get count
+         ld C (X)  # Get count
          shl C 4  # Combine
          or C A
-         ld (Y) C
+         ld (X) C
       loop
       do
-         cmp (X) 10  # Fine linefeed
+         cmp (Chr) 10  # Fine linefeed
       while ne
-         null (X)  # EOF?
+         null (Chr)  # EOF?
          js 90  # Return
-         ld A (Y I)  # Call saved 'get'
+         ld A (X I)  # Call saved 'get'
          call (A)
       loop
-      ld A (Y I)  # Call saved 'get'
+      ld A (X I)  # Call saved 'get'
       call (A)
-      null (Y)  # Count is zero?
+      null (X)  # Count is zero?
       if z  # Yes
-         ld A (Y I)  # Call saved 'get'
+         ld A (X I)  # Call saved 'get'
          call (A)  # Skip '\r' of empty line
-         ld (X) 0  # Discard '\n'
+         ld (Chr) 0  # Discard '\n'
       end
    end
-90 pop Y
-   pop X
+90 pop X
    ret
 
 (code 'getChunked_A 0)
    push Y
-   ld Y Chunk  # (PIC)
+   ld Y Chunk  # Get Chunk
    null (Y)  # Count <= 0
    if sz  # Yes
       ld A -1  # Return EOF
-      ld Y Chr  # (PIC)
-      ld (Y) A
+      ld (Chr) A
    else
       ld A (Y I)  # Call saved 'get'
       call (A)
@@ -635,16 +625,13 @@ skip CHUNK  # <Y III> Chunk buffer
       prog X  # Run 'prg'
    else
       push Y
-      ld Y Chunk  # (PIC)
-      ld A EnvGet_A
-      ld (Y I) (A)  # Save current 'get'
-      ld (A) getChunked_A  # Set new
+      ld Y Chunk  # Get Chunk
+      ld (Y I) (EnvGet_A)  # Save current 'get'
+      ld (EnvGet_A) getChunked_A  # Set new
       call chunkSize
       prog X  # Run 'prg'
-      ld A EnvGet_A  # (PIC)
-      ld (A) (Y I)  # Restore 'get'
-      ld A Chr  # (PIC)
-      ld (A) 0  # Clear look ahead char
+      ld (EnvGet_A) (Y I)  # Restore 'get'
+      ld (Chr) 0  # Clear look ahead char
       pop Y
    end
    pop X
@@ -668,8 +655,7 @@ skip CHUNK  # <Y III> Chunk buffer
    jmp envPutB
 
 (code 'wrChunkY 0)  # X
-   ld X EnvPutB  # (PIC)
-   ld (X) (Y II)  # Restore 'put'
+   ld (EnvPutB) (Y II)  # Restore 'put'
    ld A (Y)  # Get count
    call outHexA  # Print as hex
    ld B 13  # Output 'return'
@@ -687,15 +673,14 @@ skip CHUNK  # <Y III> Chunk buffer
    call envPutB
    ld B 10  # Output 'newline'
    call envPutB
-   ld X EnvPutB  # (PIC)
-   ld (Y II) (X)  # Save 'put'
-   ld (X) putChunkedB  # Set new
+   ld (Y II) (EnvPutB)  # Save 'put'
+   ld (EnvPutB) putChunkedB  # Set new
    ret
 
 (code 'putChunkedB 0)
    push X
    push Y
-   ld Y Chunk  # (PIC)
+   ld Y Chunk  # Get Chunk
    lea X (Y III)  # X on chunk buffer
    add X (Y)  # Count index
    ld (X) B  # Store byte
@@ -720,24 +705,21 @@ skip CHUNK  # <Y III> Chunk buffer
       prog X  # Run 'prg'
    else
       push Y
-      ld Y Chunk  # (PIC)
+      ld Y Chunk  # Get Chunk
       ld (Y) 0  # Clear count
-      ld A EnvPutB
-      ld (Y II) (A)  # Save current 'put'
-      ld (A) putChunkedB  # Set new
+      ld (Y II) (EnvPutB)  # Save current 'put'
+      ld (EnvPutB) putChunkedB  # Set new
       prog X  # Run 'prg'
       null (Y)  # Count?
       if nz  # Yes
          call wrChunkY  # Write rest
       end
-      ld A EnvPutB  # (PIC)
-      ld (A) (Y II)  # Restore 'put'
+      ld (EnvPutB) (Y II)  # Restore 'put'
       ld C Newlines  # Output termination string
       call outStringC
       pop Y
    end
-   ld A OutFile  # (PIC)
-   ld A (A)  # Flush OutFile
+   ld A (OutFile)  # Flush OutFile
    call flushA_F  # OK?
    pop X
    ret

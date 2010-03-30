@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -165,18 +165,23 @@ href="refS.html#step">step</a></code>.
 -> {7-6}
 </code></pre>
 
-<dt><a name="scl"><code>(scl 'num . prg) -> any</code></a>
-<dd>Binds <code><a href="refS.html#*Scl">*Scl</a></code> dynamically to
-<code>num</code> during the execution of <code>prg</code>. See also <a
-href="ref.html#num-io">Numbers</a>.
+<dt><a name="scl"><code>(scl 'num) -> num</code></a>
+<dd>Sets <code><a href="refS.html#*Scl">*Scl</a></code> globally to
+<code>num</code>. See also <a href="ref.html#num-io">Numbers</a>.
 
 <pre><code>
-: (scl 0 (str <u>123.45</u>))
+: (scl 0)
+-> 0
+: (str <u>123.45</u>)
 -> (123)
-: (scl 1 (read))
+: (scl 1)
+-> 1
+: (read)
 123.45
 -> 1235
-: (scl 3 (str <u>123.45</u>))
+: (scl 3)
+-> 3
+: (str <u>123.45</u>)
 -> (123450)
 </code></pre>
 
@@ -242,7 +247,7 @@ href="refP.html#pick">pick</a></code>.
 
 <dt><a name="select"><code>(select [var ..] cls [hook|T] [var val ..]) -> obj | NIL</code></a>
 <dd>Interactive database function, loosely modelled after the SQL
-'<code>SELECT</code>' command. A (limited) frontend to the Pilog <code><a
+'<code>SELECT</code>' command. A (limited) front-end to the Pilog <code><a
 href="refS.html#select/3">select/3</a></code> predicate. When called with only a
 <code>cls</code> argument, <code>select</code> steps through all objects of that
 class, and <code><a href="refS.html#show">show</a></code>s their complete
@@ -298,7 +303,7 @@ href="ref.html#pilog">Pilog</a>.
 searches over <code><a href="refI.html#+index">+index</a></code> and other
 relations. It takes a list of Pilog variables, a list of generator clauses, and
 an arbitrary number of filter clauses. The functionality is described in detail
-in <a < href="select.html">The 'select' Predicate</a>. See also <code><a
+in <a href="select.html">The 'select' Predicate</a>. See also <code><a
 href="refD.html#db/3">db/3</a></code>, <code><a
 href="refI.html#isa/2">isa/2</a></code>, <code><a
 href="refS.html#same/3">same/3</a></code>, <code><a
@@ -391,7 +396,7 @@ href="refD.html#def">def</a></code>.
 -> (123 123)
 </code></pre>
 
-<dt><a name="show"><code>(show 'any ['sym|cnt]) -> any</code></a>
+<dt><a name="show"><code>(show 'any ['sym|cnt ..]) -> any</code></a>
 <dd>Shows the name, value and property list of a symbol found by applying the
 <code><a href="refG.html#get">get</a></code> algorithm to <code>any</code> and
 the following arguments. See also <code><a href="refE.html#edit">edit</a></code>
@@ -496,7 +501,9 @@ href="refP.html#prove">prove</a></code>.
 comparisons. Typically, <code>sort</code> is used in combination with <a
 href="refB.html#by">by</a>, giving shorter and often more efficient solutions
 than with the predicate function. See also <a href="ref.html#cmp">Comparing</a>,
-<code><a href="refG.html#group">group</a></code> and <code><a
+<code><a href="refG.html#group">group</a></code>, <code><a
+href="refM.html#maxi">maxi</a></code>, <code><a
+href="refM.html#mini">mini</a></code> and <code><a
 href="refU.html#uniq">uniq</a></code>.
 
 <pre><code>
@@ -574,27 +581,31 @@ href="refT.html#time">time</a></code>.
 -> <u>2000-01-01 12:00:00</u>
 </code></pre>
 
-<dt><a name="state"><code>(state 'var ((sym|lst sym [. prg]) . prg) ..) -> any</code></a>
+<dt><a name="state"><code>(state 'var (sym|lst exe [. prg]) ..) -> any</code></a>
 <dd>Implements a finite state machine. The variable <code>var</code> holds the
 current state as a symbolic value. When a clause is found that contains the
-current state in its CAAR <code>sym|lst</code> value, and either has no
-<code>prg</code> condition in its CDDAR, or that condition returns
-non-<code>NIL</code>, the current state will be set to the CADAR
-<code>sym</code> of the clause, the body <code>prg</code> in its CDR will be
+current state in its CAR <code>sym|lst</code> value, and where the
+<code>exe</code> in its CADR evaluates to non-<code>NIL</code>, the current
+state will be set to that value, the body <code>prg</code> in the CDDR will be
 executed, and the result returned. <code>T</code> is a catch-all for any state.
 If no state-condition matches, <code>NIL</code> is returned. See also <code><a
-href="refC.html#case">case</a></code> and <code><a
+href="refC.html#case">case</a></code>, <code><a
+href="refC.html#cond">cond</a></code> and <code><a
 href="refJ.html#job">job</a></code>.
 
 <pre><code>
 : (de tst ()
    (job '((Cnt . 4))
       (state '(start)
-         ((start run) (printsp 'start))
-         ((run run (gt0 (dec 'Cnt)))
+         (start 'run
+            (printsp 'start) )
+         (run (and (gt0 (dec 'Cnt)) 'run)
             (printsp 'run) )
-         ((run stop) (printsp 'run))
-         ((stop start) (setq Cnt 4) (println 'stop)) ) ) )
+         (run 'stop
+            (printsp 'run) )
+         (stop 'start
+            (setq Cnt 4)
+            (println 'stop) ) ) ) )
 -> tst
 : (do 12 (tst))
 start run run run run stop
@@ -680,7 +691,7 @@ href="refS.html#sym">sym</a></code>.
 : (str '(a <u>Hello</u> DEF))
 -> <u>a \"Hello\" DEF</u>
 : (str <u>a*3+b*4</u> <u>_</u>)
--> (a * 3 + b * 4)
+-> (a <u>*</u> 3 <u>+</u> b <u>*</u> 4)
 </code></pre>
 
 <dt><a name="strDat"><code>(strDat 'sym) -> dat</code></a>

@@ -1,9 +1,10 @@
-# 29aug09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
-# *LittleEndian *Registers picfun picvar optimize
+# *LittleEndian *Registers optimize
 
-# *FPic *Section *Label *Program *Statement *Instructions *IfStack *DoStack
+# *FPic *Section *Label *Tags *Program *Statement
+# *Instructions *IfStack *DoStack
 # "*Mode" "*Modes"
 
 (de *Transfers
@@ -39,11 +40,18 @@
    (gt jncz . jcz)
    (ge jnc . jc) )
 
-(de build ("File" . "Prg")
-   (off *Section *IfStack *DoStack)
+(de build ("File" "Tags" . "Prg")
+   (off *Section *Tags *IfStack *DoStack)
    (out "File"
       (prinl "/* " (datSym (date)) " */")
-      (run "Prg") ) )
+      (run "Prg") )
+   (when "Tags"
+      (out "Tags"
+         (for Sym (idx '*Tags)
+            (and
+               (sym? (val Sym))
+               (; Sym 0 src)
+               (prinl Sym " (" (cdr @) " . \"@src64/" (car @) "\")") ) ) ) ) )
 
 (de asm Args
    (put (car Args) 'asm (cdr Args)) )
@@ -55,6 +63,7 @@
 (de section (Fun @Sym)
    (def Fun
       (curry (@Sym) (Lbl Align)
+         (put Lbl 'src (cdr (file)))
          (unless (== *Section '@Sym)
             (prinl)
             (prinl "   ." '@Sym)
@@ -200,52 +209,44 @@
             (T X) ) )
       ((asoq (car X) *Registers)
          (cons (car X) (operand (cadr X))) )
-      ((memq (car X) '(+ - * */ / % >> & | char hex oct))
+      ((memq (car X) '(+ - * */ / % >> & | short char hex oct))
          (apply (car X) (mapcar operand (cdr X))) )
       (T (cons (car X) (operand (cadr X)))) ) )
 
 # Constants
+(de short (N)
+   (| 2 (>> -4 N)) )
+
 (de equ Args
    (def (car Args)
       (put (car Args) 'equ (run (cdr Args) 1)) ) )
 
 
-# Addressing modes
-(de immediate (S F)
-   (pack '$ (and F "~") S) )
-
-(de indirect (S N)
-   (if N (pack S "+" N) S) )
-
-(de indexed (R N)
-   (pack N "(" R ")") )
-
-
 # Source/Destination addressing mode:
-#  1234 -> Immediate
+#  0    -> Immediate
 #  NIL  -> Register
-#  T    -> Memory
+#  T    -> Direct
 (de "source" (X F)
-   (on "*Mode")
+   (setq X (operand X))
    (cond
-      ((num? X) (immediate (setq "*Mode" X) F)) # Immediate
+      ((num? X)                                 # Immediate
+         (zero "*Mode")
+         (pack '$ (and F "~") X) )
       ((reg X) (off "*Mode") @)                 # Register
-      ((atom X) (zero "*Mode") (picvar X))      # Direct
-      ((atom (car X))
-         (cond
-            ((cdr X)
-               (if (reg (car X))
-                  (indexed @ (cdr X))              # Indexed with offset
-                  (indirect (car X) (cdr X)) ) )   # Indirect with offset
-            ((reg (car X)) (indexed @))                  # Indexed
-            (T (indirect (car X))) ) )                   # Indirect
+      ((atom X) (on "*Mode") X)                 # Direct
+      ((or (num? (cdr X)) (get (cdr X) 'equ))
+         (prog1 (cons ("source" (car X) F) @)
+            (setq "*Mode" (cons "*Mode" 0)) ) )
+      ((cdr X)
+         (and (reg (cdr X)) (quit "Bad source" X))
+         (prog1 (cons ("source" (car X) F) @)
+            (setq "*Mode" (cons "*Mode" T)) ) )
       (T
-         (prog1 ("source" (operand (car X)) F)
-            (setq "*Mode"
-               (conc "*Mode" (cons (cdr X) (fin "*Mode"))) ) ) ) ) )
+         (prog1 (cons ("source" (car X) F))
+            (setq "*Mode" (cons "*Mode")) ) ) ) )
 
 (de source (F)
-   ("source" (operand (read)) F) )
+   ("source" (read) F) )
 
 (de sources ()
    (off "*Modes")
@@ -253,37 +254,39 @@
       (if (lst? Arg)
          (mapcar
             '((X)
-               (prog1 ("source" (operand X))
+               (prog1 ("source" X)
                   (queue '"*Modes" "*Mode") ) )
             Arg )
-         ("source" (operand Arg)) ) ) )
+         ("source" Arg) ) ) )
 
-(de "destination" (X)
-   (on "*Mode")
+(de "destination" (X F)
+   (setq X (operand X))
    (cond
+      ((num? X) (quit "Bad destination" X))     # Immediate
       ((reg X) (off "*Mode") @)                 # Register
-      ((atom X) (quit "Bad destination" X))     # Immediate, Direct
-      ((atom (car X))
-         (cond
-            ((cdr X)
-               (if (reg (car X))
-                  (indexed @ (cdr X))              # Register indirect with offset
-                  (indirect (car X) (cdr X)) ) )   # Indirect with offset
-            ((reg (car X)) (indexed @))            # Register indirect
-            (T (indirect (car X))) ) )             # Indirect
+      ((atom X)                                 # Direct
+         (or F (quit "Bad destination" X))
+         (on "*Mode")
+         X )
+      ((or (num? (cdr X)) (get (cdr X) 'equ))
+         (prog1 (cons ("destination" (car X) T) @)
+            (setq "*Mode" (cons "*Mode" 0)) ) )
+      ((cdr X)
+         (and (reg (cdr X)) (quit "Bad destination" X))
+         (prog1 (cons ("destination" (car X) T) (cdr X))
+            (setq "*Mode" (cons "*Mode" T)) ) )
       (T
-         (prog1 ("destination" (operand (car X)))
-            (setq "*Mode"
-               (conc "*Mode" (cons (cdr X) (fin "*Mode"))) ) ) ) ) )
+         (prog1 (cons ("destination" (car X) T))
+            (setq "*Mode" (cons "*Mode")) ) ) ) )
 
 (de destination ()
-   ("destination" (operand (read))) )
+   ("destination" (read)) )
 
 (de destinations ()
    (off "*Modes")
    (mapcar
       '((X)
-         (prog1 ("destination" (operand X))
+         (prog1 ("destination" X)
             (queue '"*Modes" "*Mode") ) )
       (read) ) )
 
@@ -298,10 +301,10 @@
       (cond
          ((num? X) (pack *Label "_" X))            # Label
          ((reg X) (quit "Bad address" X))          # Register
-         ((atom X) (picfun X))                     # Absolute
+         ((atom X) X)                              # Absolute
          ((cdr X) (quit "Bad address" X))
          ((reg (car X)) (zero "*Mode") @)          # Register indirect
-         (T (on "*Mode") X) ) ) )                  # Indirect
+         (T (on "*Mode") (car X)) ) ) )            # Indirect
 
 
 # Flow control
@@ -375,6 +378,7 @@
       (align (operand (read)))
       (and (destination) "*Mode" (source) "*Mode")
       (ascii (operand (read)))
+      (asciz (operand (read)))
       (atom (source) "*Mode")
       (begin (operand (read)))
       (big (source) "*Mode")
@@ -459,7 +463,6 @@
       (slen (destination) "*Mode" (source) "*Mode")
       (st2 (destination) "*Mode")
       (st4 (destination) "*Mode")
-      (string (operand (read)))
       (sub (destination) "*Mode" (source) "*Mode")
       (subc (destination) "*Mode" (source) "*Mode")
       (sxt)
@@ -475,7 +478,7 @@
 
 # Directives
 (de label (Lbl)
-   (prinl "   .global  " Lbl)
+   (prinl "   .globl  " Lbl)
    (prinl Lbl ':) )
 
 (asm :: (Lbl)
@@ -499,13 +502,14 @@
 (asm ascii (Str)
    (prinst ".ascii " (pack "\"" Str "\"")) )
 
-(asm string (Str)
-   (prinst ".string " (pack "\"" Str "\"")) )
+(asm asciz (Str)
+   (prinst ".asciz " (pack "\"" Str "\"")) )
 
 (asm skip (N)
-   (prinst ".skip" N) )
+   (prinst ".space" N) )
 
 (asm initSym (Lbl Name Val)
+   (idx '*Tags (def Name Val) T)
    (setq Name
       (let (N 2  Lst (chop Name)  C)
          (make

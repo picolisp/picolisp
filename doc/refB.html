@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -298,10 +298,11 @@ list which is passed to <code>fun2</code>. For the list returned from
 
 <dt><a name="bye"><code>(bye 'cnt|NIL)</code></a>
 <dd>Executes all pending <code><a href="refF.html#finally">finally</a></code>
-expressions, then the <code>VAL</code> of the global variable <code><a
-href="refB.html#*Bye">*Bye</a></code> (should be a <code>prg</code>), closes all
-open files, and exits the PicoLisp interpreter. The process return value is
-<code>cnt</code>, or 0 if the argument is missing or <code>NIL</code>.
+expressions, closes all open files, executes the <code>VAL</code> of the global
+variable <code><a href="refB.html#*Bye">*Bye</a></code> (should be a
+<code>prg</code>), flushes standard output, and then exits the PicoLisp
+interpreter. The process return value is <code>cnt</code>, or 0 if the argument
+is missing or <code>NIL</code>.
 
 <pre><code>
 : (setq *Bye '((println 'OK) (println 'bye)))

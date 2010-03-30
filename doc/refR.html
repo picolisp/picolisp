@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -168,7 +168,8 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 element from <code>lst</code> with a maximal CAR less or equal to
 <code>any</code> (if <code>flg</code> is <code>NIL</code>), or with a minimal
 CAR greater or equal to <code>any</code> (if <code>flg</code> is
-non-<code>NIL</code>), or <code>NIL</code> if no match is found. See also <a
+non-<code>NIL</code>), or <code>NIL</code> if no match is found. See also
+<code><a href="refA.html#assoc">assoc</a></code> and <a
 href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
@@ -235,7 +236,10 @@ format. When called with a <code>cnt</code> argument (second form), that number
 of raw bytes (in big endian format if <code>cnt</code> is positive, otherwise
 little endian) is read as a single number. Upon end of file, if the
 <code>sym</code> argument is given, it is returned, otherwise <code>NIL</code>.
-See also <code><a href="refP.html#pr">pr</a></code> and <code><a
+See also <code><a href="refP.html#pr">pr</a></code>, <code><a
+href="refT.html#tell">tell</a></code>, <code><a
+href="refH.html#hear">hear</a></code>, <code><a
+href="refR.html#rpc">rpc</a></code> and <code><a
 href="refW.html#wr">wr</a></code>.
 
 <pre><code>
@@ -378,13 +382,22 @@ href="refD.html#dm">dm</a> and <a href="refV.html#var">var</a>.
 (rel nm  (+List +Ref +String))            # Zip / Names
 </code></pre>
 
+<dt><a name="release"><code>(release 'sym) -> NIL</code></a>
+<dd>Releases the mutex represented by the file 'sym'. This is the reverse
+operation of <code><a href="refA.html#acquire">acquire</a></code>.
+
+<pre><code>
+: (release <u>sema1</u>)
+-> NIL
+</code></pre>
+
 <dt><a name="remote/2"><code>remote/2</code></a>
 <dd><a href="ref.html#pilog">Pilog</a> predicate for remote database queries. It
 takes a list and an arbitrary number of clauses. The list should contain a Pilog
 variable for the result in the CAR, and a list of resources in the CDR. The
 clauses will be evaluated on remote machines according to these resources. Each
 resource must be a cons pair of two functions, an "out" function in the CAR, and
-an "in" functio in the CDR. See also <code><a
+an "in" function in the CDR. See also <code><a
 href="refE.html#*Ext">*Ext</a></code>, <code><a
 href="refS.html#select/3">select/3</a></code> and <code><a
 href="refD.html#db/3">db/3</a></code>.

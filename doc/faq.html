@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -33,9 +33,11 @@
 <li><a href="#problems">Are there no problems caused by dynamic binding?</a>
 <li><a href="#closures">But with dynamic binding I cannot implement closures!</a>
 <li><a href="#macros">Do you have macros?</a>
+<li><a href="#strings">Why are there no strings?</a>
+<li><a href="#arrays">What about arrays?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
 <li><a href="#hardware">Would it make sense to build PicoLisp in hardware?</a>
-<li><a href="#few">Why are there only a few questions in this FAQ?</a>
+<li><a href="#ask">Where can I ask questions?</a>
 </ul>
 
 <p><hr>
@@ -111,7 +113,7 @@ example, most other Lisps do not allow calls like
 Astonishment".
 
 <h3>Object System</h3>
-<p>The OOP system is most powerful, because it is fully dynamic, yet extremely
+<p>The OOP system is very powerful, because it is fully dynamic, yet extremely
 simple:
 
 <p><ul>
@@ -125,7 +127,7 @@ object, at any time, regardless of its class.
 superclasses, but each individual object can be of more than one class.
 
 <li>Prefix classes can surgically change the inheritance tree for any class or
-object.
+object. They behave like Mixins in this regard.
 
 <li>Fine-control of inheritance in methods with <code><a
 href="refS.html#super">super</a></code> and <code><a
@@ -182,9 +184,9 @@ of <code>(let ((A 1) (B 2) C 3) ..)</code> you write <code>(let (A 1 B 2 C 3)
 ..)</code>, or just <code>(let A 1 ..)</code> if there is only a single
 variable.
 
-<li>The use of the hash character (<code>#</code>) as a comment delimiter is
-more adequate today, and allows a clean hash-bang (<code>#!</code>) syntax for
-stand-alone scripts.
+<li>The use of the hash (<code>#</code>) as a comment character is more adequate
+today, and allows a clean hash-bang (<code>#!</code>) syntax for stand-alone
+scripts.
 
 <li>The interpreter is <a href="ref.html#invoc">invoked</a> with a simple and
 flexible syntax, where command line arguments are either files to be interpreted
@@ -203,8 +205,8 @@ queries.
 
 <h3>Persistent Symbols</h3>
 <p>Database objects ("external" symbols) are a primary data type in PicoLisp.
-They look like normal symbols to the programmer, but are managed (fetched from
-and stored to the data base) automatically by the system. Symbol manipulation
+They look like normal symbols to the programmer, but are managed (fetched from,
+and stored to, the data base) automatically by the system. Symbol manipulation
 functions like <code>set</code>, <code>put</code> or <code>get</code>, the
 garbage collector, and other parts of the interpreter know about them.
 
@@ -212,13 +214,13 @@ garbage collector, and other parts of the interpreter know about them.
 <p>Stand-alone system: Does not depend on external programs like Apache or
 MySQL. Provides a "live" user interface on the client side, with an application
 server session for each connected client. The GUI layout and behavior is
-described with s-expressions, generated dynamically at runtime, and maps
-directly to the database structures.
+described with s-expressions, generated dynamically at runtime, and interacts
+directly with the database structures.
 
 <h3>Localization</h3>
-<p>Internal exclusive and full use of UTF-8 encoding, and self-translating
-transient symbols (strings), make it easy to write country- and
-language-independent applications.
+<p>Internal exclusive and full use of UTF-8 encoding, and self-translating <a
+href="ref.html#transient-io">transient symbols</a> (strings), make it easy to
+write country- and language-independent applications.
 
 
 <p><hr>
@@ -228,8 +230,8 @@ language-independent applications.
 is quite good. Typical Lisp programs, operating on list data structures, execute
 in (interpreted) PicoLisp at about the same speed as in (compiled) CMUCL, and
 about two or three times faster than in CLisp or Scheme48. Programs with lots of
-numeric calculations, however, are several times slower, probably due to
-PicoLisp's somewhat inefficient implementation of bignums.
+numeric calculations, however, are several times slower, mainly due to
+PicoLisp's somewhat inefficient implementation of bignums in the 32-bit version.
 
 <p>But in practice, speed was never a problem, even with the first versions of
 PicoLisp in 1988 on a Mac II with a 12 MHz CPU. And certain things are cleaner
@@ -239,8 +241,8 @@ the Lisp code.
 
 <p>PicoLisp is very space-effective. Other Lisp systems reserve heap space twice
 as much as needed, or use rather large internal structures to store cells and
-symbols. The cells (and also the minimal symbols) in PicoLisp use only 8 bytes
-each. No additional tags are stored, because they are implied in the pointer
+symbols. Each cell or minimal symbol in PicoLisp consists of only two pointers.
+No additional tags are stored, because they are implied in the pointer
 encodings. No gaps remain in the heap during allocation, as there are only
 objects of a single size. As a result, consing and garbage collection are very
 fast, and overall performance benefits from a better cache efficiency. Heap and
@@ -252,7 +254,7 @@ constraints.
 <h2><a name="interpreted">What means "interpreted"?</a></h2>
 
 <p>It means to directly execute Lisp data as program code. No transformation to
-some other representation of code (e.g. compilation), and no structural
+another representation of the code (e.g. compilation), and no structural
 modifications of these data, takes place.
 
 <p>Lisp data are the "real" things, like numbers, symbols and lists, which can
@@ -328,7 +330,7 @@ Internet an application <u>server</u> does not really need to be portable.
 <p>Historically it was the other way round: We had a plain X11 GUI for our
 applications, and needed something platform independent. The solution was
 obvious: Browsers are installed virtually everywhere. So we developed a protocol
-which persuades a browser to function as a GUI frontend to our applications.
+which persuades a browser to function as a GUI front-end to our applications.
 This is much simpler than to develop a full-blown web server.
 
 <p>In a sense, PicoLisp is a "pure" application server, not a web server
@@ -339,14 +341,14 @@ handling "web applications".
 <h2><a name="lambda">I cannot find the LAMBDA keyword in PicoLisp</a></h2>
 
 <p>Because it isn't there. The reason is that it is redundant; it is equivalent
-to the <code>quote</code> function in all practical aspects, because there's no
-distinction between code and data in PicoLisp, and <code>quote</code> returns
-the whole (unevaluated) argument list. If you insist on it, you can define your
-own <code>lambda</code>:
+to the <code>quote</code> function in any aspect, because there's no distinction
+between code and data in PicoLisp, and <code>quote</code> returns the whole
+(unevaluated) argument list. If you insist on it, you can define your own
+<code>lambda</code>:
 
 <pre><code>
-: (setq lambda quote)
--> 67293272
+: (def 'lambda quote)
+-> lambda
 : ((lambda (X Y) (+ X Y)) 3 4)
 -> 7
 : (mapcar (lambda (X) (+ 1 X)) '(1 2 3 4 5))
@@ -359,7 +361,7 @@ own <code>lambda</code>:
 
 <p>Dynamic binding is very powerful, because there is only one single,
 dynamically changing environment active all the time. This makes it possible
-(e.g. for program sniplets, interspersed with application data and/or passed
+(e.g. for program snippets, interspersed with application data and/or passed
 over the network) to access the whole application context, freely, yet in a
 dynamically controlled manner. And (shallow) dynamic binding is the fastest
 method for a Lisp interpreter.
@@ -397,8 +399,8 @@ write:
 </code></pre>
 
 <p>Needless to say, the call to <code>recurse</code> does not have to reside in
-the same function as <code>recur</code>. Can you implement anonymous recursion
-so elegantly with lexical binding?
+the same function as the corresponding <code>recur</code>. Can you implement
+anonymous recursion so elegantly with lexical binding?
 
 
 <p><hr>
@@ -406,8 +408,8 @@ so elegantly with lexical binding?
 
 <p>You mean the <i>funarg</i> problem, or problems that arise when a variable
 might be bound to <i>itself</i>? For that reason we have a convention in
-PicoLisp to use <a href="ref.html#transient-io">transient</a> (instead of
-internal) symbols
+PicoLisp to use <a href="ref.html#transient-io">transient symbols</a> (instead
+of internal symbols)
 
 <ol>
 
@@ -420,8 +422,8 @@ dynamic context
 
 </ol>
 
-<p>This is a form of lexical scoping - though we still have dynamic binding - of
-symbols, similar to the <code>static</code> keyword in C.
+<p>This is a form of lexical <i>scoping</i> - though we still have dynamic
+<i>binding</i> - of symbols, similar to the <code>static</code> keyword in C.
 
 <p>In fact, these problems are a real threat, and may lead to mysterious bugs
 (other Lisps have similar problems, e.g. with symbol capture in macros). They
@@ -438,13 +440,13 @@ break if we call it as <code>(double 'Var)</code>. Therefore, the correct
 implementation of <code>double</code> should be:
 
 <pre><code>
-(de double ("Var")
-   (set "Var" (* 2 (val "Var"))) )
+(de double (<u>Var</u>)
+   (set <u>Var</u> (* 2 (val <u>Var</u>))) )
 </code></pre>
 
 <p>If <code>double</code> is defined that way in a separate source file, and/or
 isolated via the <code><a href="ref_.html#====">====</a></code> function, then
-the symbol <code>"Var"</code> is locked into a private lexical context
+the symbol <code><u>Var</u></code> is locked into a private lexical context
 and cannot conflict with other symbols.
 
 <p>Admittedly, there are two disadvantages with this solution:
@@ -456,7 +458,8 @@ is safe to use them even when not necessary, it will take more space then and be
 more difficult to debug.
 
 <li>The string-like syntax of transient symbols as variables may look strange to
-alumni of other languages.
+alumni of other languages. Therefore, the use of <a
+href="refT.html#*Tsm">transient symbol markup</a> is recommended.
 
 </ol>
 
@@ -478,8 +481,8 @@ compiler, and can then be accessed as stack frames at runtime.
 done automatically at each and every function invocation, but only if needed.
 
 <p>You have several options in PicoLisp. For simple cases, you can take
-advantage of the static scope of transient symbols. For the general case,
-PicoLisp has built-in functions like <code><a
+advantage of the static scope of <a href="ref.html#transient-io">transient
+symbols</a>. For the general case, PicoLisp has built-in functions like <code><a
 href="refB.html#bind">bind</a></code> or <code><a
 href="refJ.html#job">job</a></code>, which dynamically manage statically scoped
 environments.
@@ -551,6 +554,66 @@ debugged.
 
 
 <p><hr>
+<h2><a name="strings">Why are there no strings?</a></h2>
+
+<p>Because PicoLisp has something better: <a
+href="ref.html#transient-io">Transient symbols</a>. They look and behave like
+strings in any respect, but are nevertheless true symbols, with a value cell and
+a property list.
+
+<p>This leads to interesting opportunities. The value cell, for example, can
+point to other data that represent the string's the translation. This is used
+extensively for localization. When a program calls
+
+<pre><code>
+   (prinl "Good morning!")
+</code></pre>
+
+<p>then changing the value of the symbol <code>"Good morning!"</code> to its
+translation will change the program's output at runtime.
+
+<p>Transient symbols are also quite memory-conservative. As they are stored in
+normal heap cells, no additional overhead for memory management is induced. The
+cell holds the symbol's value in its CDR, and the tail in its CAR. If the string
+is not longer than 7 bytes, it fits (on the 64-bit version) completely into the
+tail, and a single cell suffices. Up to 15 bytes take up two cells, 23 bytes
+three etc., so that long strings are not very efficient (needing twice the
+memory on the avarage), but this disadvantage is made up by simplicity and
+uniformity. And lots of extremely long strings are not the common case, as they
+are split up anyway during processing, and stored as plain byte sequences in
+external files and databases.
+
+<p>Because transient symbols are temporarily interned (while <code><a
+href="refL.html#load">load</a></code>ing the current source file), they are
+shared within the same source and occupy that space only once, even if they
+occur multiple times within the same file.
+
+
+<p><hr>
+<h2><a name="arrays">What about arrays?</a></h2>
+
+<p>PicoLisp has no array or vector data type. Instead, lists must be used for
+any type of sequentially arranged data.
+
+<p>We believe that arrays are usually overrated. Textbook wisdom tells that they
+have a constant access time O(1) when the index is known. Many other operations
+like splits or insertions are rather expensive. Access with a known (numeric)
+index is not really typical for Lisp, and even then the advantage of an array is
+significant only if it is relatively long. Holding lots of data in long arrays,
+however, smells quite like a program design error, and we suspect that often
+more structured representations like trees or interconnected objects would be
+better.
+
+<p>In practice, most arrays are rather short, or the program can be designed in
+such a way that long arrays (or at least an indexed access) are avoided.
+
+<p>Using lists, on the other hand, has advantages. We have so many concerted
+functions that uniformly operate on lists. There is no separate data type that
+has to be handled by the interpreter, garbage collector, I/O, database and so
+on. Lists can be made circular. And lists don't cause memory fragmentation.
+
+
+<p><hr>
 <h2><a name="bind">What happens when I locally bind a symbol which has a function definition?</a></h2>
 
 <p>That's not a good idea. The next time that function gets executed within the
@@ -575,25 +638,27 @@ prefetch" would look down the CAR- and CDR-chains, and perhaps need only a
 single cache for both data and instructions.
 
 <p>Primitive functions like <code>set</code>, <code>val</code>, <code>if</code>
-and <code>while</code>, which are written in <Code>C</code> now, would be
-implemented in microcode. Plus a few I/O functions for hardware access.
-<code>EVAL</code> itself would be a microcode subroutine.
+and <code>while</code>, which are written in <Code>C</code> or assembly language
+now, would be implemented in microcode. Plus a few I/O functions for hardware
+access. <code>EVAL</code> itself would be a microcode subroutine.
 
 <p>Only a single heap and a single stack is needed. They grow towards each
 other, and cause garbage collection if they get too close. Heap compaction is
 trivial due to the single cell size.
 
-<p>There is no assembly-language. The lowest level (above the hardware and
+<p>There would be no assembly-language. The lowest level (above the hardware and
 microcode levels) are s-expressions: The machine language is <i>Lisp</i>.
 
 
 <p><hr>
-<h2><a name="few">Why are there only a few questions in this FAQ?</a></h2>
+<h2><a name="ask">Where can I ask questions?</a></h2>
 
-<p>Because I did not receive many questions so far. Please don't hesitate to
-discuss with me, <a href="mailto:abu@software-lab.de">abu@software-lab.de</a>.
-As long as I don't get any feedback, I'll assume that everything is fine and
-clear, and that there's no need for further documentation :-)
+<p>The best place is the <a
+href="mailto:picolisp@software-lab.de?subject=Subscribe">PicoLisp Mailing
+List</a> (see also <a
+href="http://www.mail-archive.com/picolisp@software-lab.de/">The Mail
+Archive</a>), or the IRC <a href="irc://irc.freenode.net/picolisp">#picolisp</a>
+channel on FreeNode.net.
 
 </body>
 </html>

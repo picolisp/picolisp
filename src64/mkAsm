@@ -1,12 +1,12 @@
 #!../bin/picolisp ../lib.l
-# 27oct09abu
+# 16feb10abu
 
 (load "@lib/misc.l")
 (setq *Architecture (opt)  *System (opt)  *TargetOS (opt)  *Module (opt))
 
 (load "lib/asm.l" (pack "arch/" *Architecture ".l"))
 
-(build (pack *Architecture "." *System "." *Module ".s")
+(build (pack *Architecture "." *System "." *Module ".s") (opt)
    (load "defs.l" (pack "sys/" *System ".defs.l") T) )
 
 (bye)

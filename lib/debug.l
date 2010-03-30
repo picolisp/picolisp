@@ -1,4 +1,4 @@
-# 24dec09abu
+# 12mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -144,6 +144,13 @@
 # Source code
 (off "*Vi")
 
+(in "@lib/tags"
+   (while (read)
+      (let Sym @
+         (if (get Sym '*Dbg)
+            (set @ (read))
+            (put Sym '*Dbg (cons (read))) ) ) ) )
+
 (de vi ("X" C)
    (when (pair "X")
       (setq C (cdr "X")  "X" (car "X")) )
@@ -155,9 +162,9 @@
                (get "X" '*Dbg 1) ) )
          "*Vi" )
       (call 'vim
-         "+set isk=@,33-34,36-38,42-90,92,94-95,97-125"
          (pack "+" (car "*Vi"))
-         (cdr "*Vi") ) ) )
+         (path (cdr "*Vi")) )
+      "X" ) )
 
 (de ld ()
    (and "*Vi" (load (cdr "*Vi"))) )
@@ -182,14 +189,9 @@
 (de dbg (Lst)
    (when (pair Lst)
       (case (pop 'Lst)
-         (case
+         ((case state)
             (_dbg Lst)
             (for L (cdr Lst)
-               (map _dbg (cdr L)) ) )
-         (state
-            (_dbg Lst)
-            (for L (cdr Lst)
-               (map _dbg (cddar L))
                (map _dbg (cdr L)) ) )
          ((cond nond)
             (for L Lst

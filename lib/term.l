@@ -1,4 +1,4 @@
-# 22sep06abu
+# 16mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### Key codes ###
@@ -16,19 +16,19 @@
    *XtF11   (in '("tput" "kf11") (line T))
    *XtF12   (in '("tput" "kf12") (line T))
 
-   *XtMenu  "^[[29~"
+   *XtMenu  "^[[29~"                            #?
 
    *XtIns   (in '("tput" "kich1") (line T))
    *XtDel   (in '("tput" "kdch1") (line T))
 
    *XtPgUp  (in '("tput" "kpp") (line T))
    *XtPgDn  (in '("tput" "knp") (line T))
-   *XtUp    "^[[A"                              #? "kcuu1"
-   *XtDown  "^[[B"                              #? "kcud1"
-   *XtRight "^[[C"                              #? "kcuf1"
-   *XtLeft  "^[[D"                              #? "kcub1"
-   *XtEnd   "^[[F"                              #? "kend"
-   *XtHome  "^[[H" )                            #? "khome"
+   *XtUp    (in '("tput" "cuu1") (line T))
+   *XtDown  "^[[B"                              #?
+   *XtRight (in '("tput" "cuf1") (line T))
+   *XtLeft  "^[[D"                              #?
+   *XtEnd   "^[[F"                              #?
+   *XtHome  (in '("tput" "home") (line T)) )
 
 
 ### Cursor movements ###
@@ -43,3 +43,5 @@
 
 (de xtLeft (N)
    (do N (prin *XtLeft)) )
+
+# vi:et:ts=3:sw=3

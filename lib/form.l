@@ -1,4 +1,4 @@
-# 25dec09abu
+# 29mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Get *Got *Form *Evt *Lock
@@ -173,10 +173,13 @@
                            (if (: id)
                               (prin '& "i" *Form '- @ '& (js> This))
                               (setq "*Chart" This) ) ) )
-                     (setq "*Post2" (cons *Get *PRG))
+                     (setq "*Post2" (cons *Get *Form *PRG))
                      (ht:Out *Chunked (prin T)) ) ) )
             (off *PRG) )
          (cond
+            ((disallowed)
+               (msg *Url " not allowed")
+               (http404) )
             ((= '@ (car Url))
                ((intern (pack (cdr Url)))) )
             ((tail '("." "l") Url)
@@ -189,7 +192,8 @@
          *Evt (format *Evt)
          *PRG
          (cond
-            ((= *Get (car "*Post2")) (cdr "*Post2"))
+            ((and (= *Get (car "*Post2")) (= *Form (cadr "*Post2")))
+               (cddr "*Post2") )
             ((off "*Post2"))
             ((gt0 *Form) (get Lst *Form))
             (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) ) ) )
@@ -206,11 +210,13 @@
             (cond
                ((not (: id)) (setq "*Chart" This))
                ((chk> This) (err @))
-               ((set> This (val> This) T)) ) )
+               ((or (: rid) (: home able))
+                  (set> This (val> This) T) ) ) )
          (for This (: gui)
-            (unless (: id)
-               (if (chk> (setq "*Chart" This))
-                  (err @)
+            (cond
+               ((: id))
+               ((chk> (setq "*Chart" This)) (err @))
+               ((or (: rid) (: home able))
                   (set> This (val> This)) ) ) )
          (if (pair "*Err")
             (and *Lock (with (caar "*Err") (tryLock *Lock)))
@@ -512,7 +518,8 @@
 (class +Hint2 +Hint0)
 
 (dm hint> ()
-   (eval (field -1 'hint)) )
+   (with (field -1)
+      (eval (: hint)) ) )
 
 
 (class +Txt)
@@ -626,7 +633,7 @@
    (<style>
       (let V (eval (: cue))
          (list
-            (cons "onfocus" (pack "if (this.value=='" V "') this.value=''"))
+            (cons "onclick" (pack "if (this.value=='" V "') this.value=''"))
             (cons "onblur" (pack "if (this.value=='') this.value='" V "'")) ) )
       (extra "Var") ) )
 
@@ -680,9 +687,6 @@
 
 # Case conversions
 (class +Uppc)
-
-(dm set> (Val Dn)
-   (extra (uppc Val) Dn) )
 
 (dm val> ()
    (uppc (extra)) )
@@ -1178,9 +1182,19 @@
                (eval (: lim))
                (not (able)) ) )
          ((: lst)
-            (let (L (mapcar val @)  S (str> This))
+            (let
+               (L
+                  (mapcar
+                     '(("X")
+                        (if (atom "X")
+                           (val "X")
+                           (cons (val (car "X")) (val (cdr "X"))) ) )
+                     @ )
+                  S (str> This) )
                (<select>
-                  (if (member S L) L (cons S L))
+                  (if (or (member S L) (assoc S L))
+                     L
+                     (cons S L) )
                   "Var"
                   (not (able)) ) ) )
          (T
@@ -1363,7 +1377,6 @@
 
 (dm set> (Val Dn)
    (and
-      (or (: rid) (: home able))
       (<> Val (: org))
       (eval (: file))
       (out @ (prin (=: org Val))) )
@@ -1478,17 +1491,6 @@
    (=: put (or Put prog1))
    (=: get (or Get prog1)) )
 
-(dm scroll> (N)
-   (get> This)
-   (unless (gt0 (inc (:: ofs) N))
-      (=: ofs 1) )
-   (put> This) )
-
-(dm goto> (N)
-   (get> This)
-   (=: ofs (max 1 N))
-   (put> This) )
-
 (dm put> ()
    (let I (: ofs)
       (mapc
@@ -1500,7 +1502,9 @@
          (nth (: data) I) ) ) )
 
 (dm get> ()
-   (unless (: lock)
+   (and
+      (or (: rid) (: home able))
+      (not (: lock))
       (let I (: ofs)
          (map
             '((G D)
@@ -1519,8 +1523,28 @@
             (nth
                (=: data
                   (need (- 1 I (: rows)) (: data)) )
-               I ) ) )
-      (=: data (trim (: data))) ) )
+               I ) )
+         (=: data (trim (: data))) ) ) )
+
+(dm scroll> (N)
+   (get> This)
+   (unless (gt0 (inc (:: ofs) N))
+      (=: ofs 1) )
+   (put> This) )
+
+(dm goto> (N)
+   (get> This)
+   (=: ofs (max 1 N))
+   (put> This) )
+
+(dm find> ("Fun")
+   (get> This)
+   (let "D" (cdr (nth (: data) (: ofs)))
+      (=: ofs
+         (if (find "Fun" "D")
+            (index @ (: data))
+            1 ) ) )
+   (put> This) )
 
 (dm txt> (Flg)
    (for (I . L) (: data)
@@ -1578,8 +1602,7 @@
 
 ### DB GUI ###
 (de newUrl @
-   (prog1
-      (pass new!)
+   (prog1 (pass new!)
       (lock (setq *Lock @))
       (apply url (url> @ 1)) ) )
 
@@ -1635,7 +1658,9 @@
 
 (de choTtl (Ttl Var Cls Hook)
    (with (or (get Cls Var) (meta Cls Var))
-      (pack (count (tree (: var) (: cls) Hook)) " " Ttl) ) )
+      (if (isa '+Idx This)
+         Ttl
+         (pack (count (tree (: var) (: cls) Hook)) " " Ttl) ) ) )
 
 (de cho ()
    (if (: diaform) 16 8) )
@@ -1686,7 +1711,7 @@
       (gui '(+AO +Focus +Edit +Button) Able Exe) ) )
 
 (de searchButton (Exe)
-   (gui '(+JS +Tip +Button) ,"Start search" ,"Search" Exe) )
+   (gui '(+Rid +JS +Tip +Button) ,"Start search" ,"Search" Exe) )
 
 (de resetButton (Lst)
    (gui '(+Force +ClrButton) T ,"Reset" Lst) )
@@ -1753,7 +1778,6 @@
 
 (dm set> (Val Dn)
    (and
-      (or (: rid) (: home able))
       (eval (: erObj))
       (put! @ (: erVar) Val) )
    (extra Val Dn) )
@@ -1764,7 +1788,6 @@
 
 (dm set> (Val Dn)
    (and
-      (or (: rid) (: home able))
       (eval (: erObj))
       (put!> @ (: erVar) Val) )
    (extra Val Dn) )
@@ -1782,7 +1805,6 @@
 
 (dm set> (Val Dn)
    (and
-      (or (: rid) (: home able))
       (<> Val (: org))
       (let? Obj (eval (: erObj))
          (protect
@@ -1813,7 +1835,6 @@
 
 (dm set> (Val Dn)
    (and
-      (or (: rid) (: home able))
       (eval (: erObj))
       (set!> @ Val) )
    (super Val Dn) )

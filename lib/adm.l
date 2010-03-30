@@ -1,4 +1,4 @@
-# 30nov09abu
+# 26mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *Login *Users *Perms
@@ -10,6 +10,7 @@
       (msg *Pid " * " (stamp) " " Nm)
       (tell 'hi *Pid Nm *Adr)
       (push1 '*Bye '(logout))
+      (push1 '*Fork '(del '(logout) '*Bye))
       (timeout (setq *Timeout `(* 3600 1000))) )
    *Login )
 

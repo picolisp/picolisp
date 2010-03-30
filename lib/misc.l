@@ -1,4 +1,4 @@
-# 29dec09abu
+# 27feb10abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -115,6 +115,12 @@
 (de pad (N Val)
    (pack (need N (chop Val) "0")) )
 
+(de money (N Cur)
+   (if Cur
+      (pack (format N 2 *Sep0 *Sep3) " " Cur)
+      (format N 2 *Sep0 *Sep3) ) )
+
+# Octal notation
 (de oct (X)
    (cond
       ((num? X)
@@ -124,16 +130,14 @@
             (pack S L) ) )
       ((setq X (chop X))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
-            (while X
-               (setq N
-                  (+
-                     (- (char (pop 'X)) `(char "0"))
-                     (>> -3 N) ) ) )
+            (for C X
+               (setq N (+ (format C) (>> -3 N))) )
             (if S (- N) N) ) ) ) )
 
 (de oct1 (N)
    (char (+ (& N 7) `(char "0"))) )
 
+# Hexadecimal notation
 (de hex (X)
    (cond
       ((num? X)
@@ -155,10 +159,44 @@
       (and (> C 9) (inc 'C 7))
       (char (+ C `(char "0"))) ) )
 
-(de money (N Cur)
-   (if Cur
-      (pack (format N 2 *Sep0 *Sep3) " " Cur)
-      (format N 2 *Sep0 *Sep3) ) )
+# Hexadecimal/Alpha notation
+(de hax (X)
+   (if (num? X)
+      (pack
+         (mapcar
+            '((C)
+               (when (> (setq C (- (char C) `(char "0"))) 9)
+                  (dec 'C 7) )
+               (char (+ `(char "@") C)) )
+            (chop (hex X)) ) )
+      (hex
+         (mapcar
+            '((C)
+               (when (> (setq C (- (char C) `(char "@"))) 9)
+                  (inc 'C 7) )
+               (char (+ `(char "0") C)) )
+            (chop X) ) ) ) )
+
+# Base 64 notation
+(de fmt64 (X)
+   (if (num? X)
+      (let L (_fmt64 X)
+         (until (=0 (setq X (>> 6 X)))
+            (push 'L (_fmt64 X)) )
+         (pack L) )
+      (let N 0
+         (for C (chop X)
+            (setq C (- (char C) `(char "0")))
+            (and (> C 42) (dec 'C 6))
+            (and (> C 11) (dec 'C 5))
+            (setq N (+ C (>> -6 N))) )
+         N ) ) )
+
+(de _fmt64 (N)
+   (let C (& 63 N)
+      (and (> C 11) (inc 'C 5))
+      (and (> C 42) (inc 'C 6))
+      (char (+ C `(char "0"))) ) )
 
 ### Tree ###
 (de balance ("Var" "Lst" "Flg")
@@ -431,27 +469,6 @@
 (de _rcpt (To)
    (out S (prinl "RCPT TO:" To "^M"))
    (pre? "250 " (in S (line T))) )
-
-### Base 64 ###
-(de fmt64 (X)
-   (if (num? X)
-      (let L (_fmt64 X)
-         (until (=0 (setq X (>> 6 X)))
-            (push 'L (_fmt64 X)) )
-         (pack L) )
-      (let N 0
-         (for C (chop X)
-            (setq C (- (char C) `(char "0")))
-            (and (> C 42) (dec 'C 6))
-            (and (> C 11) (dec 'C 5))
-            (setq N (+ C (>> -6 N))) )
-         N ) ) )
-
-(de _fmt64 (N)
-   (let C (& 63 N)
-      (and (> C 11) (inc 'C 5))
-      (and (> C 42) (inc 'C 6))
-      (char (+ C `(char "0"))) ) )
 
 ### Testing ###
 (de test (Pat . Prg)

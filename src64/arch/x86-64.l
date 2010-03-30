@@ -1,4 +1,4 @@
-# 15sep09abu
+# 07mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -16,14 +16,7 @@
 # Block operations: %rcx %rsi %rdi
 # C arguments: %rdi %rsi %rdx %rcx %r8 %r9
 
-(de picfun (Adr)
-   (if *FPic (pack Adr "@plt") Adr) )
-
-(de picvar (Adr)
-   (if *FPic 
-      (pack Adr "@GOTPCREL(%rip)")
-      (pack '$ Adr) ) )
-
+# Addressing modes
 (de byteReg (Reg)
    (cdr
       (assoc Reg
@@ -32,21 +25,24 @@
             ("%al" . "%al")
             ("%rdx" . "%dl")
             ("%rbx" . "%bl")
+            ("%r12" . "%r12b")
             ("%r13" . "%r13b")
             ("%r14" . "%r14b")
             ("%r15" . "%r15b")
             ("%rbp" . "%bpl")
             ("%rsp" . "%spl") ) ) ) )
 
-(de byteVal (Adr Mode)
-   (if Mode
-      Adr  # Byte address
-      (byteReg Adr) ) )  # Register
+(de byteVal (Adr)
+   (if (= "%r12" Adr)
+      "$0"  # %r12b needs 3 bytes
+      (or
+         (byteReg Adr)  # Register
+         Adr ) ) )  # Byte address
 
-(de lowByte (Adr Mode)
-   (if Mode
-      Adr  # Word address
-      (byteReg Adr) ) )  # Register
+(de lowByte (Adr)
+   (or
+      (byteReg Adr)  # Register
+      Adr ) )  # Word address
 
 (de highWord (S)
    (cond
@@ -56,74 +52,143 @@
          (pack "8+" S) )
       (T (pack S "+8")) ) )
 
-(de dstSrc (Cmd Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
+(de immediate (Src)
+   (setq Src (chop Src))
+   (when (= "$" (pop 'Src))
+      (and (= "~" (car Src)) (pop 'Src))
+      (format (pack Src)) ) )
+
+(de target (Adr F)
+   (if
+      (or
+         (not *FPic)
+         (= `(char ".") (char Adr))  # Local label ".1"
+         (use (@L @N)
+            (and
+               (match '(@L "_" @N) (chop Adr))  # Local jump "foo_22"
+               (= @L (chop *Label))
+               (format (pack @N)) ) ) )
+      Adr
+      (ifn F
+         (pack Adr "@plt")
+         (prinst "mov" (pack Adr "@GOTPCREL(%rip)") "%r10")
+         "(%r10)") ) )
+
+(de src (Src S)
+   (cond
+      ((=0 S) (if (= "$0" Src) "%r12" Src))     # Immediate
+      ((not S) Src)                             # Register
+      ((=T S)                                   # Direct
+         (if (and *FPic (not (pre? "(" Src)))
+            (pack Src "@GOTPCREL(%rip)")
+            (pack "$" Src) ) )
+      ((not (car S))
+         (ifn (and *FPic (=T (cdr S)))
+            (pack (cdr Src) "(" (car Src) ")")
+            (prinst "add" (pack (cdr Src) "@GOTPCREL(%rip)") (car Src))
+            (pack "(" (car Src) ")") ) )
+      ((=T (car S))
+         (ifn *FPic
+            (if (cdr S)
+               (pack (car Src) "+" (cdr Src))
+               (car Src) )
+            (prinst "mov" (pack (car Src) "@GOTPCREL(%rip)") "%r10")
+            (pack (cdr Src) "(%r10)") ) )
+      (T
+         (prinst "mov" (src (car Src) (car S)) "%r10")
+         (ifn (and *FPic (=T (cdr S)))
+            (pack (cdr Src) "(%r10)")
+            (prinst "add" (pack (cdr Src) "@GOTPCREL(%rip)") "%r10")
+            "(%r10)" ) ) ) )
+
+(de lea (Src S Reg)
+   (cond
+      ((not S) (prinst "mov" Src Reg))          # Register
+      ((=T S) (prinst "mov" (src Src T) Reg))   # Direct
+      ((not (car S))
+         (cond
+            ((and *FPic (=T (cdr S)))
+               (prinst "add" (pack (cdr Src) "@GOTPCREL(%rip)") (car Src))
+               (prinst "mov" (pack "(" (car Src) ")") Reg) )
+            ((cdr Src)
+               (prinst "lea" (pack (cdr Src) "(" (car Src) ")") Reg) )
+            (T (prinst "mov" (car Src) Reg)) ) )
+      ((=T (car S))
+         (ifn *FPic
+            (prinst "lea"
+               (if (cdr S)
+                  (pack (car Src) "+" (cdr Src))
+                  (car Src) )
+               Reg )
+            (prinst "mov" (pack (car Src) "@GOTPCREL(%rip)") Reg)
+            (prinst "lea" (pack (cdr Src) "(%r10)") Reg) ) )
+      (T (prinst "mov" (src (car Src) (car S)) Reg)) ) )
+
+(de dst (Dst D)
+   (cond
+      ((not D) Dst)                             # Register
+      ((not (car D))
+         (ifn (and *FPic (=T (cdr D)))
+            (pack (cdr Dst) "(" (car Dst) ")")
+            (prinst "add" (pack (cdr Dst) "@GOTPCREL(%rip)") (car Dst))
+            (pack "(" (car Dst) ")") ) )
+      ((=T (car D))
+         (ifn *FPic
+            (if (cdr D)
+               (pack (car Dst) "+" (cdr Dst))
+               (car Dst) )
+            (prinst "mov" (pack (car Dst) "@GOTPCREL(%rip)") "%r11")
+            (pack (cdr Dst) "(%r11)") ) )
+      (T
+         (prinst "mov" (dst (car Dst) (car D)) "%r11")
+         (ifn (and *FPic (=T (cdr D)))
+            (pack (cdr Dst) "(%r11)")
+            (prinst "add" (pack (cdr Dst) "@GOTPCREL(%rip)") "%r11")
+            "(%r11)" ) ) ) )
+
+(de dstSrc (Cmd Dst Src)
    (cond
       ((= "%al" Dst)
-         (prinst Cmd
-            (if (= "$0" Src) "%r12b" (byteVal Src S))
-            "%al" ) )
+         (prinst Cmd (byteVal Src) "%al") )
       ((= "%al" Src)
-         (prinst Cmd "%al" (byteVal Dst D)) )
-      ((= "$0" Src)
-         (prinst Cmd "%r12" Dst) )
-      ((and (num? S) (not (>= 2147483647 S -2147483648)))
+         (prinst Cmd "%al" (byteVal Dst)) )
+      ((and (immediate Src) (not (>= 2147483647 @ -2147483648)))
          (prinst "mov" Src "%r10")
          (prinst Cmd "%r10" Dst) )
-      ((nand D S)
+      ((or (pre? "%" Src) (pre? "%" Dst))
          (prinst Cmd Src Dst) )
-      ((num? S)
+      ((pre? "$" Src)
          (prinst (pack Cmd "q") Src Dst) )
       (T
          (prinst "mov" Src "%r10")
          (prinst Cmd "%r10" Dst) ) ) )
 
-(de dstSrcByte (Cmd Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
+(de dstSrcByte (Cmd Dst Src)
    (cond
-      ((= "$0" Src)
-         (prinst Cmd "%r12b" (lowByte Dst D)) )
-      ((>= 255 S 0)
-         (prinst (pack Cmd "b") Src (lowByte Dst D)) )
-      (T (dstSrc Cmd Dst D Src S)) ) )
+      ((= "%r12" Src)
+         (prinst Cmd "%r12b" (lowByte Dst)) )
+      ((and (immediate Src) (>= 255 @ 0))
+         (prinst (pack Cmd "b") Src (lowByte Dst)) )
+      (T (dstSrc Cmd Dst Src)) ) )
 
-(de dstDst (Cmd Dst D Dst2 D2)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
+(de dstDst (Cmd Dst Dst2)
    (cond
       ((= "%al" Dst)
-         (prinst Cmd (byteVal Dst2 D2) "%al") )
+         (prinst Cmd (byteVal Dst2) "%al") )
       ((= "%al" Dst2)
-         (prinst Cmd "%al" (byteVal Dst D)) )
-      ((nand D D2)
+         (prinst Cmd "%al" (byteVal Dst)) )
+      ((or (pre? "%" Dst) (pre? "%" Dst2))
          (prinst Cmd Dst2 Dst) )
       (T
          (prinst "mov" Dst "%r10")
          (prinst Cmd "%r10" Dst2)
          (prinst "mov" "%r10" Dst) ) ) )
 
-(de dstShift (Cmd Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
-   (if (num? S)
-      (prinst (pack Cmd (and D "q")) Src Dst)
-      (prinst "mov" (byteVal Src S) "%cl")
-      (prinst (pack Cmd (and D "q")) "%cl" Dst) ) )
+(de dstShift (Cmd Dst Src)
+   (if (pre? "$" Src)
+      (prinst (pack Cmd (unless (pre? "%" Dst) "q")) Src Dst)
+      (prinst "mov" (byteVal Src) "%cl")
+      (prinst (pack Cmd (unless (pre? "%" Dst) "q")) "%cl" Dst) ) )
 
 
 ### Instruction set ###
@@ -132,260 +197,179 @@
 
 # Move data
 (asm ld (Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
+   (setq Dst (dst Dst D)  Src (src Src S))
    (cond
       ((= "%al" Dst)
-         (prinst "mov" (byteVal Src S) "%al") )  # %r12b needs 3 bytes
+         (prinst "mov" (byteVal Src) "%al") )
       ((= "%al" Src)
-         (prinst "mov" "%al" (byteVal Dst D)) )
+         (prinst "mov" "%al" (byteVal Dst)) )
       ((pair Dst)
          (prinst "mov" (if (= "$0" Src) "%r12" Src) (car Dst))
          (prinst "mov" (if (= "$0" Src) "%r12" (highWord Src)) (cdr Dst)) )
       ((pair Src)
          (prinst "mov" (car Src) Dst)
          (prinst "mov" (cdr Src) (highWord Dst)) )
-      ((= "$0" Src)
-         (prinst "mov" "%r12" Dst) )
-      ((nand D S)
+      ((or (pre? "%" Src) (pre? "%" Dst))
          (prinst "mov" Src Dst) )
-      ((sub? "GOTPCREL" Src)  # (PIC)
-         (prinst "mov" Src "%r10")
-         (prinst "mov" "%r10" Dst) )
-      ((num? S)
+      ((pre? "$" Src)
          (prinst "movq" Src Dst) )
       (T
          (prinst "mov" Src "%r10")
          (prinst "mov" "%r10" Dst) ) ) )
 
-(asm ld2 (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "movswq" Src "%rax") )
+(asm ld2 (Src S)
+   (prinst "movswq" (src Src S) "%rax") )
 
-(asm ld4 (Src Mode)
-   (while (pair Mode)
+(asm ld4 (Src S)
+   (prinst "movslq" (src Src S) "%rax") )
+
+(de _cmov (Cmd Jmp)
+   (setq Dst (dst Dst D)  Src (src Src S))
+   (when (pre? "$" Src)
       (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "movslq" Src "%rax") )
+      (setq Src "%r10") )
+   (if (pre? "%" Dst)
+      (prinst Cmd Src Dst)
+      (warn "Using suboptimal emulation code")
+      (prinst Jmp "1f")
+      (if (pre? "%"  Src)
+         (prinst "movq" Src Dst)
+         (prinst "mov" Src "%r10")
+         (prinst "mov" "%r10" Dst) )
+      (prinl "1:") ) )
 
 (asm ldc (Dst D Src S)
-   (when (num? S)
-      (if (= "$0" Src)
-         (setq Src "%r12")
-         (prinst "mov" Src "%r10")
-         (setq Src "%r10") )
-      (off S) )
-   (if (and (flg? S) (not D))
-      (prinst "cmovcq" Src Dst)
-      (warn "Using suboptimal emulation code")
-      (prinst "jnc" "1f")
-      (if (or (num? S) (not Src))
-         (prinst "movq" Src Dst)
-         (prinst "mov" Src "%r10")
-         (prinst "mov" "%r10" Dst) )
-      (prinl "1:") ) )
+   (_cmov "cmovcq" "jnc") )
 
 (asm ldnc (Dst D Src S)
-   (when (num? S)
-      (if (= "$0" Src)
-         (setq Src "%r12")
-         (prinst "mov" Src "%r10")
-         (setq Src "%r10") )
-      (off S) )
-   (if (and (flg? S) (not D))
-      (prinst "cmovncq" Src Dst)
-      (warn "Using suboptimal emulation code")
-      (prinst "jc" "1f")
-      (if (or (num? S) (not Src))
-         (prinst "movq" Src Dst)
-         (prinst "mov" Src "%r10")
-         (prinst "mov" "%r10" Dst) )
-      (prinl "1:") ) )
+   (_cmov "cmovncq" "jc") )
 
 (asm ldz (Dst D Src S)
-   (when (num? S)
-      (if (= "$0" Src)
-         (setq Src "%r12")
-         (prinst "mov" Src "%r10")
-         (setq Src "%r10") )
-      (off S) )
-   (if (and (flg? S) (not D))
-      (prinst "cmovzq" Src Dst)
-      (warn "Using suboptimal emulation code")
-      (prinst "jnz" "1f")
-      (if (or (num? S) (not Src))
-         (prinst "movq" Src Dst)
-         (prinst "mov" Src "%r10")
-         (prinst "mov" "%r10" Dst) )
-      (prinl "1:") ) )
+   (_cmov "cmovzq" "jnz") )
 
 (asm ldnz (Dst D Src S)
-   (when (num? S)
-      (if (= "$0" Src)
-         (setq Src "%r12")
-         (prinst "mov" Src "%r10")
-         (setq Src "%r10") )
-      (off S) )
-   (if (and (flg? S) (not D))
-      (prinst "cmovnzq" Src Dst)
-      (warn "Using suboptimal emulation code")
-      (prinst "jz" "1f")
-      (if (or (num? S) (not Src))
-         (prinst "movq" Src Dst)
-         (prinst "mov" Src "%r10")
-         (prinst "mov" "%r10" Dst) )
-      (prinl "1:") ) )
+   (_cmov "cmovnzq" "jz") )
 
 (asm lea (Dst D Src S)
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
-   (ifn D
+   (setq Dst (dst Dst D)  Src (src Src S))
+   (if (pre? "%" Dst)
       (prinst "lea" Src Dst)
       (prinst "lea" Src "%r11")
-      (while (pair D)
-         (prinst "mov" Dst "%r10")
-         (setq Dst (indexed "%r10" (pop 'D))) )
       (prinst "mov" "%r11" Dst) ) )
 
-(asm st2 (Dst Mode)
-   (while (pair Mode)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'Mode))) )
-   (prinst "movw" "%ax" Dst) )
+(asm st2 (Dst D)
+   (prinst "movw" "%ax" (dst Dst D)) )
 
-(asm st4 (Dst Mode)
-   (while (pair Mode)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'Mode))) )
-   (prinst "movl" "%eax" Dst) )
+(asm st4 (Dst D)
+   (prinst "movl" "%eax" (dst Dst D)) )
 
 (asm xchg (Dst D Dst2 D2)
-   (dstDst "xchg" Dst D Dst2 D2) )
+   (dstDst "xchg" (dst Dst D) (src Dst2 D2)) )
 
 (asm movm (Dst D Src S End E)
-   (prinst (if (atom D) "lea" "mov") Dst "%rdi")
-   (prinst (if (atom S) "lea" "mov") Src "%rsi")
-   (prinst "lea" End "%rcx")
+   (setq Dst (dst Dst D))
+   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rdi")
+   (lea Src S "%rsi")
+   (prinst "lea" (src End E) "%rcx")
    (prinst "sub" "%rsi" "%rcx")
    (prinst "cld")
    (prinst "rep movsb") )
 
 (asm movn (Dst D Src S Cnt C)
-   (prinst (if (atom D) "lea" "mov") Dst "%rdi")
-   (prinst (if (atom S) "lea" "mov") Src "%rsi")
-   (prinst "mov" Cnt "%rcx")
+   (lea Dst D "%rdi")
+   (lea Src S "%rsi")
+   (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
    (prinst "rep movsb") )
 
 (asm mset (Dst D Cnt C)
-   (prinst (if (atom D) "lea" "mov") Dst "%rdi")
-   (prinst "mov" Cnt "%rcx")
+   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rdi")
+   (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
    (prinst "rep stosb") )
 
 
 # Arithmetics
 (asm add (Dst D Src S)
+   (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
-      (dstSrc "add" Dst D Src S)
-      (while (pair S)
-         (prinst "mov" Src "%r10")
-         (setq Src (indexed "%r10" (pop 'S))) )
+      (dstSrc "add" Dst Src)
       (prinst "add" Src (car Dst))
       (prinst "adc" "%r12" (cdr Dst)) ) )
 
 (asm addc (Dst D Src S)
+   (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
-      (dstSrc "adc" Dst D Src S)
-      (while (pair S)
-         (prinst "mov" Src "%r10")
-         (setq Src (indexed "%r10" (pop 'S))) )
+      (dstSrc "adc" Dst Src)
       (prinst "adc" Src (car Dst))
       (prinst "adc" "%r12" (cdr Dst)) ) )
 
 
 (asm sub (Dst D Src S)
+   (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
-      (dstSrc "sub" Dst D Src S)
-      (while (pair S)
-         (prinst "mov" Src "%r10")
-         (setq Src (indexed "%r10" (pop 'S))) )
+      (dstSrc "sub" Dst Src)
       (prinst "sub" Src (car Dst))
       (prinst "sbb" "%r12" (cdr Dst)) ) )
 
 (asm subc (Dst D Src S)
+   (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
-      (dstSrc "sbb" Dst D Src S)
-      (while (pair S)
-         (prinst "mov" Src "%r10")
-         (setq Src (indexed "%r10" (pop 'S))) )
+      (dstSrc "sbb" Dst Src)
       (prinst "sbb" Src (car Dst))
       (prinst "sbb" "%r12" (cdr Dst)) ) )
 
-(asm not (Dst Mode)
-   (if Mode
-      (prinst "notq" Dst)
-      (prinst "not" Dst) ) )
+(asm not (Dst D)
+   (if (pre? "%" (setq Dst (dst Dst D)))
+      (prinst "not" Dst)
+      (prinst "notq" Dst) ) )
 
-(asm neg (Dst Mode)
-   (if Mode
-      (prinst "negq" Dst)
-      (prinst "neg" Dst) ) )
+(asm neg (Dst D)
+   (if (pre? "%" (setq Dst (dst Dst D)))
+      (prinst "neg" Dst)
+      (prinst "negq" Dst) ) )
 
 (asm and (Dst D Src S)
-   (dstSrc "and" Dst D Src S) )
+   (dstSrc "and" (dst Dst D) (src Src S)) )
 
 (asm or (Dst D Src S)
-   (dstSrcByte "or" Dst D Src S) )
+   (dstSrcByte "or" (dst Dst D) (src Src S)) )
 
 (asm xor (Dst D Src S)
-   (dstSrcByte "xor" Dst D Src S) )
+   (dstSrcByte "xor" (dst Dst D) (src Src S)) )
 
 (asm off (Dst D Src S)
-   (dstSrcByte "and" Dst D Src S) )
+   (dstSrcByte "and" (dst Dst D) (src Src S)) )
 
 (asm test (Dst D Src S)
-   (dstSrcByte "test" Dst D Src S) )
+   (dstSrcByte "test" (dst Dst D) (src Src S)) )
 
 (asm shl (Dst D Src S)
-   (dstShift "shl" Dst D Src S) )
+   (dstShift "shl" (dst Dst D) (src Src S)) )
 
 (asm shr (Dst D Src S)
-   (dstShift "shr" Dst D Src S) )
+   (dstShift "shr" (dst Dst D) (src Src S)) )
 
 (asm rol (Dst D Src S)
-   (dstShift "rol" Dst D Src S) )
+   (dstShift "rol" (dst Dst D) (src Src S)) )
 
 (asm ror (Dst D Src S)
-   (dstShift "ror" Dst D Src S) )
+   (dstShift "ror" (dst Dst D) (src Src S)) )
 
 (asm rcl (Dst D Src S)
-   (dstShift "rcl" Dst D Src S) )
+   (dstShift "rcl" (dst Dst D) (src Src S)) )
 
 (asm rcr (Dst D Src S)
-   (dstShift "rcr" Dst D Src S) )
+   (dstShift "rcr" (dst Dst D) (src Src S)) )
 
-(asm mul (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (ifn (num? Mode)
+(asm mul (Src S)
+   (ifn (pre? "$" (setq Src (src Src S)))
       (prinst "mulq" Src)
       (prinst "mov" Src "%r10")
       (prinst "mul" "%r10") ) )
 
-(asm div (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (ifn (num? Mode)
+(asm div (Src S)
+   (ifn (pre? "$" (setq Src (src Src S)))
       (prinst "divq" Src)
       (prinst "mov" Src "%r10")
       (prinst "div" "%r10") ) )
@@ -415,37 +399,34 @@
 
 # Comparisons
 (asm cmp (Dst D Src S)
-   (dstSrc "cmp" Dst D Src S) )
+   (dstSrc "cmp" (dst Dst D) (src Src S)) )
 
-(asm cmp4 (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "cmp" Src "%eax") )
+(asm cmp4 (Src S)
+   (prinst "cmp" (src Src S) "%eax") )
 
 (asm cmpm (Dst D Src S End E)
-   (prinst (if (=T D) "lea" "mov") Dst "%rsi")
-   (prinst (if (=T S) "lea" "mov") Src "%rdi")
+   (setq Dst (dst Dst D))
+   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rsi")
+   (lea Src S "%rdi")
    (prinst "lea" End "%rcx")
    (prinst "sub" "%rsi" "%rcx")
    (prinst "cld")
    (prinst "repnz cmpsb") )
 
 (asm cmpn (Dst D Src S Cnt C)
-   (prinst (if (=T D) "lea" "mov") Dst "%rsi")
-   (prinst (if (=T S) "lea" "mov") Src "%rdi")
-   (prinst "mov" Cnt "%rcx")
+   (setq Dst (dst Dst D))
+   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rsi")
+   (lea Src S "%rdi")
+   (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
    (prinst "repnz cmpsb") )
 
 (asm slen (Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
+   (setq Dst (dst Dst D))
    (prinst "cld")
    (prinst "xor" "%rcx" "%rcx")
    (prinst "not" "%rcx")
-   (prinst (if (=T S) "lea" "mov") Src "%rdi")
+   (lea Src S "%rdi")
    (prinst "xchg" "%al" "%r12b")
    (prinst "repnz scasb")
    (prinst "xchg" "%al" "%r12b")
@@ -455,23 +436,18 @@
 
 (asm memb (Src S Cnt C)
    (prinst "cld")
-   (prinst (if (=T S) "lea" "mov") Src "%rdi")
+   (lea Src S "%rdi")
+   (setq Cnt (src Cnt C))
    (prinst "mov" Cnt "%rcx")
    (prinst "repnz scasb")
    (unless S (prinst "cmovzq" "%rdi" Src))
    (unless C (prinst "cmovzq" "%rcx" Cnt)) )
 
-(asm null (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "cmp" "%r12" Src) )
+(asm null (Src S)
+   (prinst "cmp" "%r12" (src Src S)) )
 
-(asm zero (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "cmpq" "$2" Src) )
+(asm zero (Src S)
+   (prinst "cmpq" "$2" (src Src S)) )
 
 (asm nul4 ()
    (prinst "cmp" "%r12d" "%eax") )
@@ -479,135 +455,110 @@
 
 # Byte addressing
 (asm set (Dst D Src S)
-   (while (pair D)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'D))) )
-   (while (pair S)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'S))) )
+   (setq Dst (dst Dst D)  Src (src Src S))
    (cond
-      ((= "$0" Src)
-         (prinst "mov" "%r12b" Dst) )
-      ((nand D S)
-         (prinst "movb" Src Dst) )
-      ((num? S)
+      ((= "%r12" Src)
+         (prinst "mov" "%r12b" (lowByte Dst)) )
+      ((or (pre? "$" Src) (pre? "%" Src) (pre? "%" Dst))
          (prinst "movb" Src Dst) )
       (T
          (prinst "mov" Src "%r10b")
          (prinst "mov" "%r10b" Dst) ) ) )
 
-(asm nul (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "cmp" "%r12b" Src) )
+(asm nul (Src S)
+   (prinst "cmp" "%r12b" (src Src S)) )
 
 
 # Types
-(asm cnt (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "testb" "$0x02" (lowByte Src Mode)) )
+(asm cnt (Src S)
+   (prinst "testb" "$0x02" (lowByte (src Src S))) )
 
-(asm big (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "testb" "$0x04" (lowByte Src Mode)) )
+(asm big (Src S)
+   (prinst "testb" "$0x04" (lowByte (src Src S))) )
 
-(asm num (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "testb" "$0x06" (lowByte Src Mode)) )
+(asm num (Src S)
+   (prinst "testb" "$0x06" (lowByte (src Src S))) )
 
-(asm sym (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "testb" "$0x08" (lowByte Src Mode)) )
+(asm sym (Src S)
+   (prinst "testb" "$0x08" (lowByte (src Src S))) )
 
-(asm atom (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
-   (prinst "testb" "$0x0E" (lowByte Src Mode)) )
+(asm atom (Src S)
+   (prinst "testb" "$0x0E" (lowByte (src Src S))) )
 
 
 # Flow Control
-(asm call (Adr Mode)
+(asm call (Adr A)
    (nond
-      (Mode (prinst "call" Adr))
-      ((=T Mode) (prinst "call" (pack "*" Adr)))
+      (A (prinst "call" (target Adr)))
+      ((=T A) (prinst "call" (pack "*" Adr)))
       (NIL
-         (prinst "mov" Adr "%r10")
+         (prinst "mov" (target Adr T) "%r10")
          (prinst "call" "*%r10") ) ) )
 
-(asm jmp (Adr Mode)
+(asm jmp (Adr A)
    (nond
-      (Mode (prinst "jmp" Adr))
-      ((=T Mode) (prinst "jmp" (pack "*" Adr)))
+      (A (prinst "jmp" (target Adr)))
+      ((=T A) (prinst "jmp" (pack "*" Adr)))
       (NIL
-         (prinst "mov" Adr "%r10")
+         (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") ) ) )
 
 (de _jmp (Opc Opc2)
-   (ifn Mode
-      (prinst Opc Adr)
+   (ifn A
+      (prinst Opc (target Adr))
       (prinst Opc2 "1f")
-      (ifn (=T Mode)
+      (ifn (=T A)
          (prinst "jmp" (pack "*" Adr))
-         (prinst "mov" Adr "%r10")
+         (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") )
       (prinl "1:") ) )
 
-(asm jz (Adr Mode)
+(asm jz (Adr A)
    (_jmp "jz" "jnz") )
 
-(asm jeq (Adr Mode)
+(asm jeq (Adr A)
    (_jmp "jz" "jnz") )
 
-(asm jnz (Adr Mode)
+(asm jnz (Adr A)
    (_jmp "jnz" "jz") )
 
-(asm jne (Adr Mode)
+(asm jne (Adr A)
    (_jmp "jnz" "jz") )
 
-(asm js (Adr Mode)
+(asm js (Adr A)
    (_jmp "js" "jns") )
 
-(asm jns (Adr Mode)
+(asm jns (Adr A)
    (_jmp "jns" "js") )
 
-(asm jsz (Adr Mode)
+(asm jsz (Adr A)
    (_jmp "jle" "jg") )
 
-(asm jnsz (Adr Mode)
+(asm jnsz (Adr A)
    (_jmp "jg" "jle") )
 
-(asm jc (Adr Mode)
+(asm jc (Adr A)
    (_jmp "jc" "jnc") )
 
-(asm jlt (Adr Mode)
+(asm jlt (Adr A)
    (_jmp "jc" "jnc") )
 
-(asm jnc (Adr Mode)
+(asm jnc (Adr A)
    (_jmp "jnc" "jc") )
 
-(asm jge (Adr Mode)
+(asm jge (Adr A)
    (_jmp "jnc" "jc") )
 
-(asm jcz (Adr Mode)
+(asm jcz (Adr A)
    (_jmp "jbe" "ja") )
 
-(asm jle (Adr Mode)
+(asm jle (Adr A)
    (_jmp "jbe" "ja") )
 
-(asm jncz (Adr Mode)
+(asm jncz (Adr A)
    (_jmp "ja" "jbe") )
 
-(asm jgt (Adr Mode)
+(asm jgt (Adr A)
    (_jmp "ja" "jbe") )
 
 (asm cc (Adr A Arg M)
@@ -621,15 +572,18 @@
                   Arg (append (head 6 Arg) (reverse (tail -6 Arg)))
                   M (append (head 6 M) (reverse (tail -6 M))) ) )
             (mapc
-               '((Src Mode)
-                  (use (@A @Z)
-                     (when (match '(@A ~(chop "%rdx") @Z) (chop Src))
-                        (setq Src (pack @A "%r12" @Z)) ) )
-                  (while (pair Mode)
-                     (prinst "mov" Src "%r10")
-                     (setq Src (indexed "%r10" (pop 'Mode))) )
-                  (if (= "$&" Src)
+               '((Src S)
+                  (if (== '& Src)
                      (on Lea)
+                     (unless (= "$0" Src)  # Keep for 'xor' later
+                        (setq Src
+                           (src
+                              (recur (Src)
+                                 (cond
+                                    ((= "%rdx" Src) "%r12")
+                                    ((atom Src) Src)
+                                    (T (cons (recurse (car Src)) (recurse (cdr Src)))) ) )
+                              S ) ) )
                      (cond
                         ((not Reg)  # 'Src' not stack-relative here!
                            (ifn Lea
@@ -698,35 +652,28 @@
 
 
 # Stack Manipulations
-(asm push (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
+(asm push (Src S)
+   (setq Src (src Src S))
    (cond
       ((=T Src) (prinst "pushf"))
-      ((not Mode) (prinst "push" Src))
-      ((= "$0" Src) (prinst "push" "%r12"))
+      ((pre? "%" Src) (prinst "push" Src))
       (T (prinst "pushq" Src)) ) )
 
-(asm pop (Dst Mode)
-   (while (pair Mode)
-      (prinst "mov" Dst "%r11")
-      (setq Dst (indexed "%r11" (pop 'Mode))) )
+(asm pop (Dst D)
+   (setq Dst (dst Dst D))
    (cond
       ((=T Dst) (prinst "popf"))
-      ((not Mode) (prinst "pop" Dst))
+      ((pre? "%" Dst) (prinst "pop" Dst))
       (T (prinst "popq" Dst)) ) )
 
 (asm link ()
    (prinst "push" "%rbp")
    (prinst "mov" "%rsp" "%rbp") )
 
-(asm tuck (Src Mode)
-   (while (pair Mode)
-      (prinst "mov" Src "%r10")
-      (setq Src (indexed "%r10" (pop 'Mode))) )
+(asm tuck (Src S)
+   (setq Src (src Src S))
    (prinst "mov" "(%rsp)" "%rbp")
-   (if (nT Mode)  # Register or immediate
+   (if (or (pre? "$" Src) (pre? "%" Src))
       (prinst "movq" Src "(%rsp)")
       (prinst "mov" Src "%r10")
       (prinst "mov" "%r10" "(%rsp)") ) )
@@ -742,7 +689,7 @@
    (prinst "test" "$0x08" "%bl")       # Symbol?
    (prinst "cmovnzq" "(%rbx)" "%rbx")  # Yes: Get value
    (prinst "jnz" "1f")                 # and skip
-   (prinst "call" (picfun 'evListE_E)) # Else evaluate list
+   (prinst "call" (target 'evListE_E)) # Else evaluate list
    (prinl "1:") )
 
 (asm eval+ ()
@@ -753,7 +700,7 @@
    (prinst "jnz" "1f")                 # and skip
    (prinst "push" "%rbp")              # Else 'link'
    (prinst "mov" "%rsp" "%rbp")
-   (prinst "call" (picfun 'evListE_E)) # Evaluate list
+   (prinst "call" (target 'evListE_E)) # Evaluate list
    (prinst "pop" "%rbp")
    (prinl "1:") )
 
@@ -772,7 +719,7 @@
       "%rbx" )
    (prinst "test" "$0x0E" "%bl")       # atom E
    (prinst "jnz" "2f")
-   (prinst "call" (picfun 'evListE_E)) # evList
+   (prinst "call" (target 'evListE_E)) # evList
    (prinl "2:")
    (prinst "mov"                       # ld R (R CDR)
       (pack "8(" Reg ")")
@@ -792,7 +739,7 @@
    (prinst "test" "$0x08" "%bl")
    (prinst "cmovnzq" "(%rbx)" "%rbx")
    (prinst "jnz" "2f")
-   (prinst "call" (picfun 'evListE_E))
+   (prinst "call" (target 'evListE_E))
    (prinl "2:")
    (prinst "mov"                       # ld R (R CDR)
       (pack "8(" Reg ")")
@@ -807,9 +754,15 @@
 (asm init ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
    (prinst "mov" "(%rsi)" "%r10")  # Get command
-   (prinst "movq" "%r10" "AV0")
+   (ifn *FPic
+      (prinst "mov" "%r10" "AV0")
+      (prinst "mov" "AV0@GOTPCREL(%rip)" "%r11")
+      (prinst "mov" "%r10" "(%r11)") )
    (prinst "lea" "8(%rsi)" "%r10")  # Get argument vector
-   (prinst "mov" "%r10" "AV") )
+   (ifn *FPic
+      (prinst "mov" "%r10" "AV")
+      (prinst "mov" "AV@GOTPCREL(%rip)" "%r11")
+      (prinst "mov" "%r10" "(%r11)") ) )
 
 
 ### Optimizer ###

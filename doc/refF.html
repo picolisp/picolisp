@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -248,15 +248,17 @@ successful. See also <code><a href="refR.html#rewind">rewind</a></code>.
 -> T
 </code></pre>
 
-<dt><a name="fmt64"><code>(fmt64 'num) ->sym</code></a>
+<dt><a name="fmt64"><code>(fmt64 'num) -> sym</code></a>
 <dt><code>(fmt64 'sym) -> num</code>
-<dd>Converts a number <code>num</code> to a string in base-64, or a base-64
-formatted string to a number. The digits are represented with the characters
-<code>0</code>-<code>9</code>, <code>:</code>, <code>;</code>,
-<code>A</code>-<code>Z</code> and <code>a</code>-<code>z</code>. This format is
-used internally for the names of <code><a href="ref.html#external-io">external
-symbols</a></code>. See also <code><a href="refH.html#hex">hex</a></code> and
-<code><a href="refO.html#oct">oct</a></code>.
+<dd>Converts a number <code>num</code> to a string in base-64 notation, or a
+base-64 formatted string to a number. The digits are represented with the
+characters <code>0</code> - <code>9</code>, <code>:</code>, <code>;</code>,
+<code>A</code> - <code>Z</code> and <code>a</code> - <code>z</code>. This format
+is used internally for the names of <code><a
+href="ref.html#external-io">external symbols</a></code> in the 32-bit version.
+See also <code><a href="refH.html#hax">hax</a></code>, <code><a
+href="refH.html#hex">hex</a></code> and <code><a
+href="refO.html#oct">oct</a></code>.
 
 <pre><code>
 : (fmt64 9)
@@ -314,22 +316,26 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="for"><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dt><a name="for"><code>(for sym 'num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dt><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
 <dt><code>(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
 <dd>Conditional loop with local variable(s) and multiple conditional exits: In
 the first form, the value of <code>sym</code> is saved, <code>sym</code> is
-subsequently bound to the elements of <code>lst</code>, and the body is executed
-each time. In the second form, the value of <code>sym</code> is saved, and
-<code>sym</code> is bound to <code>any1</code>. If <code>sym2</code> is given,
-it is treated as a counter variable, first bound to 1 and then incremented for
-each execution of the body. While the condition <code>any2</code> evaluates to
-non-<code>NIL</code>, the body is repeatedly executed and, if <code>prg</code>
-is given, <code>sym</code> is re-bound to the result of its evaluation. If a
-clause has <code>NIL</code> or <code>T</code> as its CAR, the clause's second
-element is evaluated as a condition and - if the result is <code>NIL</code> or
-non-<code>NIL</code>, respectively - the <code>prg</code> is executed and the
-result returned. If the body is never executed, <code>NIL</code> is returned.
-See also <code><a href="refD.html#do">do</a></code> and <code><a
+bound to <code>1</code>, and the body is executed with increasing values up to
+(and including) <code>num</code>. In the second form, the value of
+<code>sym</code> is saved, <code>sym</code> is subsequently bound to the
+elements of <code>lst</code>, and the body is executed each time. In the third
+form, the value of <code>sym</code> is saved, and <code>sym</code> is bound to
+<code>any1</code>. If <code>sym2</code> is given, it is treated as a counter
+variable, first bound to 1 and then incremented for each execution of the body.
+While the condition <code>any2</code> evaluates to non-<code>NIL</code>, the
+body is repeatedly executed and, if <code>prg</code> is given, <code>sym</code>
+is re-bound to the result of its evaluation. If a clause has <code>NIL</code> or
+<code>T</code> as its CAR, the clause's second element is evaluated as a
+condition and - if the result is <code>NIL</code> or non-<code>NIL</code>,
+respectively - the <code>prg</code> is executed and the result returned. If the
+body is never executed, <code>NIL</code> is returned. See also <code><a
+href="refD.html#do">do</a></code> and <code><a
 href="refL.html#loop">loop</a></code>.
 
 <pre><code>

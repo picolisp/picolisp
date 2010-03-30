@@ -1,4 +1,4 @@
-# 16dec09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -61,7 +61,10 @@
                call subStrAE_F
                pop C
                if eq  # Yes
-                  push (Y)  # Save tag list element
+                  ld Y (Y)  # Get tag list element
+                  cmp Y Nil  # NIL?
+                  ldz Y (Msg)  # Yes: Use *Msg instead
+                  push Y  # Save tag list element
                   call unwindC_Z  # Unwind environments
                   pop E  # Return tag list element from 'catch'
                   ld S Z  # Restore stack
@@ -157,8 +160,8 @@
    ld L 0  # Init link register
    ld S (Stack0)  # and stack pointer
    jmp restart  # Restart interpreter
-: ErrTok string "!? "
-: Dashes string " -- "
+: ErrTok asciz "!? "
+: Dashes asciz " -- "
 
 (code 'unwindC_Z 0)
    push C  # <S> Target frame
@@ -357,7 +360,7 @@
 (code 'protErrEX)
    ld Y ProtErr
    jmp errEXYZ
-: ProtErr string "Protected symbol"
+: ProtErr asciz "Protected symbol"
 
 ### Error messages ###
 (code 'argErrAX)
@@ -365,14 +368,14 @@
 (code 'argErrEX)
    ld Y ArgErr
    jmp errEXYZ
-: ArgErr string "Bad argument"
+: ArgErr asciz "Bad argument"
 
 (code 'numErrAX)
    ld E A
 (code 'numErrEX)
    ld Y NumErr
    jmp errEXYZ
-: NumErr string "Number expected"
+: NumErr asciz "Number expected"
 
 (code 'cntErrAX)
    ld C A
@@ -381,7 +384,7 @@
 (code 'cntErrEX)
    ld Y CntErr
    jmp errEXYZ
-: CntErr string "Small number expected"
+: CntErr asciz "Small number expected"
 
 (code 'symErrAX)
    ld Y A
@@ -390,56 +393,56 @@
 (code 'symErrEX)
    ld Y SymErr
    jmp errEXYZ
-: SymErr string "Symbol expected"
+: SymErr asciz "Symbol expected"
 
 (code 'extErrEX)
    ld Y ExtErr
    jmp errEXYZ
-: ExtErr string "External symbol expected"
+: ExtErr asciz "External symbol expected"
 
 (code 'cellErrAX)
    ld E A
 (code 'cellErrEX)
    ld Y CellErr
    jmp errEXYZ
-: CellErr string "Cell expected"
+: CellErr asciz "Cell expected"
 
 (code 'atomErrAX)
    ld E A
 (code 'atomErrEX)
    ld Y AtomErr
    jmp errEXYZ
-: AtomErr string "Atom expected"
+: AtomErr asciz "Atom expected"
 
 (code 'lstErrAX)
    ld E A
 (code 'lstErrEX)
    ld Y LstErr
    jmp errEXYZ
-: LstErr string "List expected"
+: LstErr asciz "List expected"
 
 (code 'varErrAX)
    ld E A
 (code 'varErrEX)
    ld Y VarErr
    jmp errEXYZ
-: VarErr string "Variable expected"
+: VarErr asciz "Variable expected"
 
 (code 'divErrX)
    ld E 0
    ld Y DivErr
    jmp errEXYZ
-: DivErr string "Div/0"
+: DivErr asciz "Div/0"
 
 (code 'renErrEX)
    ld Y RenErr
    jmp errEXYZ
-: RenErr string "Can't rename"
+: RenErr asciz "Can't rename"
 
 (code 'makeErrEX)
    ld Y MakeErr
    jmp errEXYZ
-: MakeErr string "Not making"
+: MakeErr asciz "Not making"
 
 (code 'msgErrYX)
    ld A Y
@@ -448,68 +451,68 @@
 (code 'msgErrEX)
    ld Y MsgErr
    jmp errEXYZ
-: MsgErr string "Bad message"
+: MsgErr asciz "Bad message"
 
 (code 'brkErrX)
    ld E 0
    ld Y BrkErr
    jmp errEXYZ
-: BrkErr string "No Break"
+: BrkErr asciz "No Break"
 
 # I/O errors
 (code 'openErrEX)
    ld Y OpenErr
    jmp errnoEXY
-: OpenErr string "Open error: %s"
+: OpenErr asciz "Open error: %s"
 
 (code 'closeErrX)
    ld E 0
 (code 'closeErrEX)
    ld Y CloseErr
    jmp errnoEXY
-: CloseErr string "Close error: %s"
+: CloseErr asciz "Close error: %s"
 
 (code 'pipeErrX)
    ld E 0
    ld Y PipeErr
    jmp errnoEXY
-: PipeErr string "Pipe error: %s"
+: PipeErr asciz "Pipe error: %s"
 
 (code 'forkErrX)
    ld E 0
    ld Y ForkErr
    jmp errEXYZ
-: ForkErr string "Can't fork"
+: ForkErr asciz "Can't fork"
 
 (code 'waitPidErrX)
    ld E 0
    ld Y WaitPidErr
    jmp errnoEXY
-: WaitPidErr string "wait pid"
+: WaitPidErr asciz "wait pid"
 
 (code 'badFdErrEX)
    ld Y BadFdErr
    jmp errEXYZ
-: BadFdErr string "Bad FD"
+: BadFdErr asciz "Bad FD"
 
 (code 'noFdErrX)
    ld E 0
    ld Y NoFdErr
    jmp errEXYZ
-: NoFdErr string "No current fd"
+: NoFdErr asciz "No current fd"
 
 (code 'eofErr)
    ld E 0
    ld X 0
    ld Y EofErr
    jmp errEXYZ
-: EofErr string "EOF Overrun"
+: EofErr asciz "EOF Overrun"
 
 (code 'suparErrE)
    ld X 0
    ld Y SuparErr
    jmp errEXYZ
-: SuparErr string "Super parentheses mismatch"
+: SuparErr asciz "Super parentheses mismatch"
 
 (code 'badInputErrB)
    zxt
@@ -518,161 +521,161 @@
    ld X 0
    ld Y BadInput
    jmp errEXYZ
-: BadInput string "Bad input '%c'"
+: BadInput asciz "Bad input '%c'"
 
 (code 'badDotErrE)
    ld X 0
    ld Y BadDot
    jmp errEXYZ
-: BadDot string "Bad dotted pair"
+: BadDot asciz "Bad dotted pair"
 
 (code 'selectErrX)
    ld E 0
    ld Y SelectErr
    jmp errnoEXY
-: SelectErr string "Select error: %s"
+: SelectErr asciz "Select error: %s"
 
 (code 'wrBytesErr)
    ld E 0
    ld X 0
    ld Y WrBytesErr
    jmp errnoEXY
-: WrBytesErr string "bytes write: %s"
+: WrBytesErr asciz "bytes write: %s"
 
 (code 'wrChildErr)
    ld E 0
    ld X 0
    ld Y WrChildErr
    jmp errnoEXY
-: WrChildErr string "child write: %s"
+: WrChildErr asciz "child write: %s"
 
 (code 'wrSyncErrX)
    ld E 0
    ld Y WrSyncErr
    jmp errnoEXY
-: WrSyncErr string "sync write: %s"
+: WrSyncErr asciz "sync write: %s"
 
 (code 'wrJnlErr)
    ld E 0
    ld X 0
    ld Y WrJnlErr
    jmp errnoEXY
-: WrJnlErr string "Journal write: %s"
+: WrJnlErr asciz "Journal write: %s"
 
 (code 'wrLogErr)
    ld E 0
    ld X 0
    ld Y WrLogErr
    jmp errnoEXY
-: WrLogErr string "Log write: %s"
+: WrLogErr asciz "Log write: %s"
 
 (code 'truncErrX)
    ld E 0
    ld Y TruncErr
    jmp errnoEXY
-: TruncErr string "Log truncate error: %s"
+: TruncErr asciz "Log truncate error: %s"
 
 (code 'dbSyncErrX)
    ld E 0
    ld Y DbSyncErr
    jmp errnoEXY
-: DbSyncErr string "DB fsync error: %s"
+: DbSyncErr asciz "DB fsync error: %s"
 
 (code 'trSyncErrX)
    ld E 0
    ld Y TrSyncErr
    jmp errnoEXY
-: TrSyncErr string "Transaction fsync error: %s"
+: TrSyncErr asciz "Transaction fsync error: %s"
 
 (code 'lockErr)
    ld E 0
    ld X 0
    ld Y LockErr
    jmp errnoEXY
-: LockErr string "File lock: %s"
+: LockErr asciz "File lock: %s"
 
 (code 'dbfErrX)
    ld E 0
    ld Y DbfErr
    jmp errEXYZ
-: DbfErr string "Bad DB file"
+: DbfErr asciz "Bad DB file"
 
 (code 'jnlErrX)
    ld E 0
    ld Y JnlErr
    jmp errEXYZ
-: JnlErr string "Bad Journal"
+: JnlErr asciz "Bad Journal"
 
 (code 'idErrXL)
    ld E (L I)  # Get symbol
    ld Y IdErr
    jmp errEXYZ
-: IdErr string "Bad ID"
+: IdErr asciz "Bad ID"
 
 (code 'dbRdErr)
    ld E 0
    ld X 0
    ld Y DbRdErr
    jmp errnoEXY
-: DbRdErr string "DB read: %s"
+: DbRdErr asciz "DB read: %s"
 
 (code 'dbWrErr)
    ld E 0
    ld X 0
    ld Y DbWrErr
    jmp errnoEXY
-: DbWrErr string "DB write: %s"
+: DbWrErr asciz "DB write: %s"
 
 (code 'dbSizErr)
    ld E 0
    ld X 0
    ld Y DbSizErr
    jmp errEXYZ
-: DbSizErr string "DB Oversize"
+: DbSizErr asciz "DB Oversize"
 
 (code 'tellErr)
    ld E 0
    ld X 0
    ld Y TellErr
    jmp errEXYZ
-: TellErr string "Tell PIPE_BUF"
+: TellErr asciz "Tell PIPE_BUF"
 
 (code 'ipSocketErrX)
    ld E 0
    ld Y IpSocketErr
    jmp errnoEXY
-: IpSocketErr string "IP socket error: %s"
+: IpSocketErr asciz "IP socket error: %s"
 
 (code 'ipGetsocknameErrX)
    ld E 0
    ld Y IpGetsocknameErr
    jmp errnoEXY
-: IpGetsocknameErr string "IP getsockname error: %s"
+: IpGetsocknameErr asciz "IP getsockname error: %s"
 
 (code 'ipSetsockoptErrX)
    ld E 0
    ld Y IpSetsockoptErr
    jmp errnoEXY
-: IpSetsockoptErr string "IP setsockopt error: %s"
+: IpSetsockoptErr asciz "IP setsockopt error: %s"
 
 (code 'ipBindErrX)
    ld E 0
    ld Y IpBindErr
    jmp errnoEXY
-: IpBindErr string "IP bind error: %s"
+: IpBindErr asciz "IP bind error: %s"
 
 (code 'ipListenErrX)
    ld E 0
    ld Y IpListenErr
    jmp errnoEXY
-: IpListenErr string "IP listen error: %s"
+: IpListenErr asciz "IP listen error: %s"
 
 (code 'udpOvflErr)
    ld E 0
    ld X 0
    ld Y UdpOvflErr
    jmp errEXYZ
-: UdpOvflErr string "UDP overflow"
+: UdpOvflErr asciz "UDP overflow"
 
 ### Undefined symbol ###
 (code 'undefinedCE)
@@ -682,7 +685,7 @@
 (code 'undefinedEX)
    ld Y UndefErr
    jmp errEXYZ
-: UndefErr string "Undefined"
+: UndefErr asciz "Undefined"
 
 (code 'dlErrX)
    ld E 0
@@ -690,7 +693,7 @@
    ld Y DlErr
    ld Z A
    jmp errEXYZ
-: DlErr string "[DLL] %s"
+: DlErr asciz "[DLL] %s"
 
 ### Global return labels ###
 (code 'ret 0)

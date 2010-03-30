@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -20,18 +20,11 @@ href="ref.html">PicoLisp Reference</a>.
 Lisp (and programming in general). It concentrates on the specialties of
 PicoLisp, and its differences to other Lisp dialects.
 
-<p>If not stated otherwise, all examples assume that PicoLisp was started from
-the shell prompt as
+<p>If not stated otherwise, all examples assume that PicoLisp was started in the
+installation directory from the shell prompt as
 
 <pre><code>
 $ ./dbg
-:
-</code></pre>
-
-<p>This is equivalent to
-
-<pre><code>
-$ ./p dbg.l
 :
 </code></pre>
 
@@ -45,11 +38,11 @@ the ENTER key (i.e. by entering an empty line), or by executing the function
 use the <code>vi</code> editor.
 
 <p>We notice that some people try to use Emacs - or some other IDE - as a
-frontend to the PicoLisp console. This is not recommended, because the PicoLisp
+front-end to the PicoLisp console. This is not recommended, because the PicoLisp
 debugging environment will set the console (tty) to raw mode by itself and do
 some special handling during character input.
 
-<p>If you feel that you absolutely have to use an input frontend, please remove
+<p>If you feel that you absolutely have to use an input front-end, please remove
 the entry "@lib/led.l" from "dbg.l". Note that in this case, however, you will
 not have the TAB symbol completion feature available during command line
 editing.
@@ -60,11 +53,25 @@ edit a separate source file (e.g. <code>"test.l"</code>) in a second terminal
 window and load it into PicoLisp with
 
 <pre><code>
-: (load "test.l")
+: (load <u>test.l</u>)
 </code></pre>
 
 <p>each time you have modified and saved it.
 
+<p>Once a function is loaded from a source file, you can call 'vim' directly on
+that function with
+
+<pre><code>
+: (vi 'foo)
+</code></pre>
+
+<p>The function 'vi' opens the appropriate source file, and jumps to the right
+line where 'foo' is defined. When you modify it, you can simply call 'ld' to
+(re)load that source file
+
+<pre><code>
+: (ld)
+</code></pre>
 
 <p>If you are new to PicoLisp, you might want to read the following sections in
 the given order, as some of them assume knowledge about previous ones. Otherwise
@@ -92,7 +99,7 @@ just jump anywhere you are interested in.
 
 <p>PicoLisp permanently reads input from the current input channel (i.e. the
 console in interactive mode), evaluates it, and prints the result to the current
-output channel.
+output channel. This is called a "read-eval-print-loop" (REPL).
 
 <p>To alleviate the task of manual line input, a command line editor is provided
 which is similar to (though much simpler than) the <code>readline</code> feature
@@ -100,7 +107,7 @@ of the <code>bash</code> shell. Only a subset of the <code>vi</code> mode is
 supported, which is restricted to single-key commands (the "real"
 <code>vi</code> supports multi-key commands and the modification of most
 commands with count prefixes). It is loaded at startup via "dbg.l", you find its
-source in "lib/led.l" if wish to take a look.
+source in "lib/led.l".
 
 <p>You can enter lines in the normal way, correcting mistypes with the BACKSPACE
 key, and terminating them with the ENTER key. This is the <i>Insert Mode</i>.
@@ -166,7 +173,7 @@ whole expression when the cursor is at a left parenthesis.
 <li><code>/</code> - Accept an input pattern and search the history for it
 <li><code>n</code> - Search for next occurrence of pattern (as entered with <code>/</code>)
 <li><code>N</code> - Search for previous occurrence of pattern
-<li><code>%</code> - Show matching parenthesis
+<li><code>%</code> - Go to matching parenthesis
 <li><code>~</code> - Convert character to opposite (lower or upper) case and move right
 <li><code>u</code> - Undo the last change (one level only)
 <li><code>U</code> - Undo all changes of the current line
@@ -189,17 +196,24 @@ directory. The length of the history is limited to 1000 lines.
 
 </ul>
 
-<p>The key combination <code>Ctrl-D</code> will immediately terminate the
-current process, and also all of its sister processes (i.e. children of the same
-parent process, typically an application server during debugging).
+<p>The following two key-combinations work both in Insert and Command Mode:
 
-<p>The key combination <code>Ctrl-X</code> is useful when the program stopped at
-a breakpoint, or after program execution was interrupted with
-<code>Ctrl-C</code>, to abandon all further processing and return to the
-interpreter's top level. This is equivalent to invoking <code><a
-href="refQ.html#quit">quit</a></code>.
+<p><ul>
 
-<p>In <i>Input Mode</i>, only the following keys have a special meaning:
+<li><code>Ctrl-D</code> will immediately terminate the current process, and also
+all of its sister processes (i.e. children of the same parent process, typically
+an application server during debugging).
+
+<li><code>Ctrl-X</code> discards all input, abandons further processing, and
+returns to the interpreter's top level (equivalent to invoking <code><a
+href="refQ.html#quit">quit</a></code>). This is also useful when the program
+stopped at a breakpoint, or after program execution was interrupted with
+<code>Ctrl-C</code>.
+
+</ul>
+
+<p>Besides these two keys, in <i>Insert Mode</i> only the following keys have a
+special meaning:
 
 <p><ul>
 
@@ -225,9 +239,10 @@ It will make life much easier in the future :-)
 <p>PicoLisp provides some functionality for inspecting pieces of data and code
 within the running system.
 
-<p>Most commonly used is probably the <code>show</code> function. It takes a
-symbolic argument, and shows the symbol's name (if any), followed by its value
-cell, and then the contents of the property list on the following lines.
+<p>Most commonly used is probably the <code><a
+href="refS.html#show">show</a></code> function. It takes a symbolic argument,
+and shows the symbol's name (if any), followed by its value cell, and then the
+contents of the property list on the following lines.
 
 <pre><code>
 : (setq A '(This is the value))  # Set the value cell of 'A'
@@ -259,10 +274,10 @@ A (This is the value)   # (which is 'A' again)
 -> A
 </code></pre>
 
-<p>Similar to <code>show</code> is <code>edit</code>. It takes an arbitrary
-number of symbolic arguments, writes them to a temporary file in a format
-similar to <code>show</code>, and starts the <code>vim</code> editor with that
-file.
+<p>Similar to <code>show</code> is <code><a
+href="refE.html#edit">edit</a></code>. It takes an arbitrary number of symbolic
+arguments, writes them to a temporary file in a format similar to
+<code>show</code>, and starts the <code>vim</code> editor with that file.
 
 <pre><code>
 : (edit 'A 'B)
@@ -285,9 +300,9 @@ a A  # (This is the value)
 
 <p>Now you can modify values or properties. You should not touch the
 parenthesized asterisks, as they serve as delimiters. If you position the cursor
-on the first char of a symbol name and type '<code>K</code>' ("Keyword lookup"),
-the editor will be restarted with that symbol added to the editor window.
-'<code>Q</code>' (for "quit") will bring you back to the previous view.
+on the first character of a symbol name and type '<code>K</code>' ("Keyword
+lookup"), the editor will be restarted with that symbol added to the editor
+window. '<code>Q</code>' (for "Quit") will bring you back to the previous view.
 
 <p><code>edit</code> is also very useful to browse in a database. You can follow
 the links between objects with '<code>K</code>', and even - e.g. for low-level
@@ -295,10 +310,11 @@ repairs - modify the data (but only if you are really sure about what you are
 doing, and don't forget to <code><a href="refC.html#commit">commit</a></code>
 when you are done).
 
-<p><code>more</code> is a simple tool that displays the elements of a list one
-by one. It stops after each element and waits for input. If you just hit ENTER,
-<code>more</code> continues with the next element, otherwise (usually I type a
-dot (<code>.</code>) followed by ENTER) it terminates.
+<p><code><a href="refM.html#more">more</a></code> is a simple tool that displays
+the elements of a list one by one. It stops after each element and waits for
+input. If you just hit ENTER, <code>more</code> continues with the next element,
+otherwise (usually I type a dot (<code>.</code>) followed by ENTER) it
+terminates.
 
 <pre><code>
 : (more (1 2 3 4 5 6))
@@ -327,9 +343,10 @@ B NIL                      # showing 'B'
 -> NIL
 </code></pre>
 
-<p>The <i>pretty-print</i> function <code>pp</code> takes a symbol that has a
-function defined (or two symbols that specify message and class for a method
-definition), and displays that definition in a formatted and indented way.
+<p>The <i>pretty-print</i> function <code><a href="refP.html#pp">pp</a></code>
+takes a symbol that has a function defined (or two symbols that specify message
+and class for a method definition), and displays that definition in a formatted
+and indented way.
 
 <pre><code>
 : (pp 'pretty)
@@ -340,13 +357,13 @@ definition), and displays that definition in a formatted and indented way.
    (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
-         (prin "'")
+         (prin <u>'</u>)
          (pop 'X) )
       (let Z X
-         (prin "(")
-         (when (memq (print (pop 'X)) "*PP")
+         (prin <u>(</u>)
+         (when (memq (print (pop 'X)) <u>*PP</u>)
             (cond
-               ((memq (car Z) "*PP1")
+               ((memq (car Z) <u>*PP1</u>)
                   (if (and (pair (car X)) (pair (cdar X)))
                      (when (>= 12 (size (car X)))
                         (space)
@@ -356,57 +373,59 @@ definition), and displays that definition in a formatted and indented way.
                      (when (or (atom (car X)) (>= 12 (size (car X))))
                         (space)
                         (print (pop 'X)) ) ) )
-               ((memq (car Z) "*PP2")
+               ((memq (car Z) <u>*PP2</u>)
                   (inc 'N 3)
                   (loop
                      (prinl)
                      (pretty (cadr X) N (car X))
-                     (NIL (setq X (cddr X))) ) )
+                     (NIL (setq X (cddr X)) (space)) ) )
                ((or (atom (car X)) (>= 12 (size (car X))))
                   (space)
                   (print (pop 'X)) ) ) )
          (when X
             (loop
-               (T (== Z X) (prin " ."))
-               (T (atom X) (prin " . ") (print X))
+               (T (== Z X) (prin <u> .</u>))
+               (T (atom X) (prin <u> . </u>) (print X))
                (prinl)
                (pretty (pop 'X) (+ 3 N))
                (NIL X) )
             (space) )
-         (prin ")") ) ) )
+         (prin <u>)</u>) ) ) )
 -> pretty
 </code></pre>
 
-<p>The style is the same as we use in all our source files:
+<p>The style is the same as we use in source files:
+
 <ul>
 
 <li>The indentation level is three spaces
 
-<li>If a list is too long, pretty-print the CAR on the current line, and each
-element of the CDR recursively on its own line.
+<li>If a list is too long (to be precise: if its <code><a
+href="refS.html#size">size</a></code> is greater than 12), pretty-print the CAR
+on the current line, and each element of the CDR recursively on its own line.
 
 <li>A closing parenthesis a preceded by a space if the corresponding open
 parenthesis is not on the same line
 
 </ul>
 
-<p>The <code>what</code> function returns a list of all internal symbols in the
-system. If an optional pattern argument (with '<code>@</code>' wildcard
-characters ) is given, only symbols matching that pattern are returned.
+<p>The <code><a href="refW.html#what">what</a></code> function returns a list of
+all internal symbols in the system which match a given pattern (with
+'<code>@</code>' wildcard characters).
 
 <pre><code>
-: (what "prin@")
+: (what <u>prin@</u>)
 -> (prin print prinl print> printsp println)
 </code></pre>
 
-<p>The function <code>who</code> returns <i>"who contains that"</i>, i.e. a list
-of symbols that contain a given argument somewhere in their value or property
-list.
+<p>The function <code><a href="refW.html#who">who</a></code> returns <i>"who
+contains that"</i>, i.e. a list of symbols that contain a given argument
+somewhere in their value or property list.
 
 <pre><code>
 : (who 'print)
--> ((print> . +relation) query show select pretty "edit" msg rules pp more (print> . +Date))
-</code></pre>
+-> ((print> . +relation) query show select pretty <u>edit</u> msg rules pp more
+(print> . +Date)) </code></pre>
 
 <p>A dotted pair indicates either a method definition or a property entry. So
 <code>(print> . +relation)</code> denotes the <code>print&gt;</code> method of
@@ -420,7 +439,7 @@ the <code><a href="refR.html#+relation">+relation</a></code> class.
 (dm (print> . +relation) (Val)   # Pretty-print these functions one by one
    (print Val) )
 
-(de query ("Q" "Dbg")
+(de query (<u>Q</u> <u>Dbg</u>)
    ...
 </code></pre>
 
@@ -441,9 +460,9 @@ href="refM.html#match">match</a></code>):
    (/ (- Dat (% (inc Dat) 7)) 7) )
 </code></pre>
 
-<p>The function <code>can</code> returns a list which indicates which classes
-<i>can</i> accept a given message. Again, this list is suitable for iteration
-with <code>pp</code>:
+<p>The function <code><a href="refC.html#can">can</a></code> returns a list
+which indicates which classes <i>can</i> accept a given message. Again, this
+list is suitable for iteration with <code>pp</code>:
 
 <pre><code>
 : (can 'del>)                                   # Which classes accept 'del>' ?
@@ -469,9 +488,9 @@ with <code>pp</code>:
    (and (&lt;> Old Val) (delete Val Old)) )
 </code></pre>
 
-<p><code>dep</code> shows the dependencies in a class hierarchy. That is, for a
-given class it displays the tree of its (super)class(es) above it, and the tree
-of its subclasses below it.
+<p><code><a href="refD.html#dep">dep</a></code> shows the dependencies in a
+class hierarchy. That is, for a given class it displays the tree of its
+(super)class(es) above it, and the tree of its subclasses below it.
 
 <p>To view the complete hierarchy of input fields, we start with the root class
 <code><a href="refR.html#+relation">+relation</a></code>:
@@ -519,7 +538,7 @@ methods as well except for using <code>dm</code> instead of <code>de</code>.
 
 <pre><code>
 : (de hello ()
-   (prinl "Hello world") )
+   (prinl <u>Hello world</u>) )
 -> hello
 </code></pre>
 
@@ -539,8 +558,8 @@ Hello world
 
 <pre><code>
 : (de hello (X)
-   (prinl "Hello " X) )
-hello redefined
+   (prinl <u>Hello </u> X) )
+# hello redefined
 </code></pre>
 
 <p>PicoLisp informs you that you have just redefined the function. This might be
@@ -548,12 +567,12 @@ a useful warning in case you forgot that a bound symbol with that name already
 existed.
 
 <pre><code>
-: (hello "world")
+: (hello <u>world</u>)
 Hello world
 </code></pre>
 
 <pre><code>
-: (hello "Alex")
+: (hello <u>Alex</u>)
 Hello Alex
 </code></pre>
 
@@ -581,7 +600,7 @@ gets all arguments unevaluated, and can decide for itself what to do with them.
 
 <p>For such cases you do not define the function with a <i>list</i> of
 parameters, but give it a <i>single atomic</i> parameter instead. PicoLisp will
-then bind all (unevaluated) arguments to that list.
+then bind all (unevaluated) arguments as a list to that parameter.
 
 <pre><code>
 : (de foo X
@@ -759,7 +778,8 @@ all its arguments.
 -> 6
 </code></pre>
 
-<p>To reset a function to its untraced state, call <code>untrace</code>
+<p>To reset a function to its untraced state, call <code><a
+href="refU.html#untrace">untrace</a></code>
 
 <pre><code>
 : (untrace 'fact)
@@ -788,9 +808,11 @@ then
 
 <ul>
 
-<li>inspect the current environment by typing variable names or calling functions
+<li>inspect the current environment by typing variable names or calling
+functions
 
-<li>execute <code>(d)</code> to recursively debug the next expression
+<li>execute <code>(<a href="refD.html#d">d</a>)</code> to recursively debug the
+next expression
 
 <li>execute <code>(<a href="refE.html#e">e</a>)</code> to evaluate the next
 expression, to see what will happen without actually advancing on
@@ -810,7 +832,7 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (pp 'stamp)
 (de stamp (Dat Tim)
    (default  Dat (date)  Tim (time T))
-   (pack (dat$ Dat "-") " " (tim$ Tim T)) )
+   (pack (dat$ Dat <u>-</u>) <u> </u> (tim$ Tim T)) )
 -> stamp
 </code></pre>
 
@@ -820,13 +842,13 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time T))      # stopped at first expression
 !                                      # ENTER
-(pack (dat$ Dat "-") " " (tim$ ...     # second expression
+(pack (dat$ Dat <u>-</u>) <u> </u> (tim$ ...         # second expression
 ! Tim                                  # inspect 'Tim' variable
 -> 41908
 ! (time Tim)                           # convert it
 -> (11 38 28)
 !                                      # ENTER
--> "2004-10-29 11:38:28"               # done, as there are only 2 expressions
+-> <u>2004-10-29 11:38:28</u>                 # done, as there are only 2 expressions
 </code></pre>
 
 <p>Now we execute it again, but this time we want to look at what's happening
@@ -836,19 +858,19 @@ inside the second expression.
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time T))
 !                                      # ENTER
-(pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
+(pack (dat$ Dat <u>-</u>) <u> </u> (tim$ ...         # here we want to look closer
 ! (d)                                  # debug this expression
 -> T
 !                                      # ENTER
-(dat$ Dat "-")                         # stopped at first subexpression
+(dat$ Dat <u>-</u>)                           # stopped at first subexpression
 ! (e)                                  # evaluate it
--> "2004-10-29"
+-> <u>2004-10-29</u>
 !                                      # ENTER
 (tim$ Tim T)                           # stopped at second subexpression
 ! (e)                                  # evaluate it
--> "11:40:44"
+-> <u>11:40:44</u>
 !                                      # ENTER
--> "2004-10-29 11:40:44"               # done
+-> <u>2004-10-29 11:40:44</u>                 # done
 </code></pre>
 
 <p>The breakpoints still remain in the function body. We can see them when we
@@ -859,8 +881,8 @@ pretty-print it:
 (de stamp (Dat Tim)
    (! default Dat (date) Tim (time T))
    (! pack
-      (! dat$ Dat "-")
-      " "
+      (! dat$ Dat <u>-</u>)
+      <u> </u>
       (! tim$ Tim T) ) )
 -> stamp
 </code></pre>
@@ -901,7 +923,7 @@ href="refI.html#in">in</a></code>. Note that comments and white space are
 automatically skipped by <code>read</code>:
 
 <pre><code>
-: (in "doc/fun.l" (read))
+: (in <u>doc/fun.l</u> (read))
 -> (de fact (N) (if (=0 N) 1 (* N (fact (- N 1)))))
 </code></pre>
 
@@ -910,8 +932,8 @@ directly. To get the first non-white character in the file with <code><a
 href="refC.html#char">char</a></code>:
 
 <pre><code>
-: (in "doc/fun.l" (skip "#") (char))
--> "("
+: (in <u>doc/fun.l</u> (skip <u>#</u>) (char))
+-> <u>(</u>
 </code></pre>
 
 <p><code><a href="refF.html#from">from</a></code> searches through the input
@@ -920,7 +942,7 @@ stream for given patterns. Typically, this is not done with Lisp source files
 immediately following <code>fact</code> in the file,
 
 <pre><code>
-: (in "doc/fun.l" (make (while (from "fact ") (link (read)))))
+: (in <u>doc/fun.l</u> (make (while (from <u>fact </u>) (link (read)))))
 -> ((N) (- N 1))
 </code></pre>
 
@@ -928,8 +950,8 @@ immediately following <code>fact</code> in the file,
 href="refT.html#till">till</a></code>:
 
 <pre><code>
-: (in "doc/fun.l" (from "(de ") (till " " T)))
--> "fact"
+: (in <u>doc/fun.l</u> (from <u>(de </u>) (till <u> </u> T)))
+-> <u>fact</u>
 </code></pre>
 
 
@@ -937,15 +959,15 @@ href="refT.html#till">till</a></code>:
 read, either into a single transient symbol,
 
 <pre><code>
-: (in "doc/tut.html" (line T))
--> "&lt;!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" ..."
+: (in <u>doc/tut.html</u> (line T))
+-> <u>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://...</u>
 </code></pre>
 
-<p>or into a list of characters:
+<p>or into a list of symbols (characters):
 
 <pre><code>
-: (in "doc/tut.html" (line))
--> ("&lt;" "!" "D" "O" "C" "T" "Y" "P" "E" " " "H" "T" "M" "L" ...
+: (in <u>doc/tut.html</u> (line))
+-> (<u>&lt;</u> <u>!</u> <u>D</u> <u>O</u> <u>C</u> <u>T</u> <u>Y</u> <u>P</u> <u>E</u> <u> </u> <u>H</u> <u>T</u> <u>M</u> <u>L</u> ...
 </code></pre>
 
 <p><code>line</code> is typically used to read tabular data from a file.
@@ -956,37 +978,37 @@ href="refS.html#split">split</a></code> function can be used to extract the
 fields. A typical way to import the contents of such a file is:
 
 <pre><code>
-(load "lib/import.l")
+(load <u>lib/import.l</u>)
 
-(in '("bin/utf2" "importFile.txt")              # Pipe: Convert to UTF-8
+(in '(<u>bin/utf2</u> <u>importFile.txt</u>)                  # Pipe: Convert to UTF-8
    (until (eof)                                 # Process whole file
-      (let L (split (line) "^I")                # TAB-delimited data
+      (let L (split (line) <u>^I</u>)                  # TAB-delimited data
          ... use 'getStr', 'getNum' etc ...     # process them
 </code></pre>
 
 <p>Some more examples:
 
 <pre><code>
-(in "a"                                         # Copy the first 40 Bytes
-   (out "b"                                     # from file "a" to file "b"
+(in <u>a</u>                                           # Copy the first 40 Bytes
+   (out <u>b</u>                                       # from file "a" to file "b"
       (echo 40) ) )
 
-(in "doc/tut.html"                              # Show the HTTP-header
+(in <u>doc/tut.html</u>                                # Show the HTTP-header
    (line)
-   (echo "&lt;body>") )
+   (echo <u>&lt;body></u>) )
 
-(out "file.mac"                                 # Convert to Macintosh
-   (in "file.txt"                               # from Unix or DOS format:
+(out <u>file.mac</u>                                   # Convert to Macintosh
+   (in <u>file.txt</u>                                 # from Unix or DOS format:
       (while (char)
          (prin
             (case @
-               ("^M" NIL)                       # ignore CR
-               ("^J" "^M")                      # convert CR to LF
+               (<u>^M</u> NIL)                         # ignore CR
+               (<u>^J</u> <u>^M</u>)                          # convert CR to LF
                (T @) ) ) ) ) )                  # otherwise no change
 
-(out "c"                                        # Merge the contents of "a"
-   (in "b"                                      # and "b" into "c"
-      (in "a"
+(out <u>c</u>                                          # Merge the contents of "a"
+   (in <u>b</u>                                        # and "b" into "c"
+      (in <u>a</u>
          (while (read)                          # Read an item from "a",
             (println @ (in -1 (read))) ) ) ) )  # print it with an item from "b"
 </code></pre>
@@ -1050,7 +1072,7 @@ Then a simple hello-world script might look like:
 
 <pre><code>
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-(prinl "Hello world!")
+(prinl <u>Hello world!</u>)
 (bye)
 </code></pre>
 
@@ -1137,7 +1159,7 @@ PicoLisp environment, beyond the "lib.l" we provided in the first line of the
 hello-world script. Typically, at least a call to
 
 <pre><code>
-(load "@lib/misc.l")
+(load <u>@lib/misc.l</u>)
 </code></pre>
 
 <p>(note the home directory substitution) will be included near the beginning of
@@ -1150,18 +1172,18 @@ site, and prints it to standard output:
 <pre><code>
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
 
-(load "@lib/misc.l" "@lib/http.l")
+(load <u>@lib/misc.l</u> <u>@lib/http.l</u>)
 
 (use (@Date @Name @Size)
    (when
       (match
-         '(@Date " " "-" " " @Name " " "(" @Size ")")
-         (client "software-lab.de" 80 "down.html"
-            (from "Archive")
-            (from ".tgz\">")
-            (till "<") ) )
+         '(@Date <u> </u> <u>-</u> <u> </u> @Name <u> </u> <u>(</u> @Size <u>)</u>)
+         (client <u>software-lab.de</u> 80 <u>down.html</u>
+            (from <u>Release Archive</u>)
+            (from <u>.tgz"></u>)
+            (till <u><</u>) ) )
       (prinl @Name)
-      (prinl @Date " -- " @Size) ) )
+      (prinl @Date <u> -- </u> @Size) ) )
 
 (bye)
 </code></pre>
@@ -1468,22 +1490,22 @@ define a new class <code>+FixRect</code>:
 from functions (that's a matter of course), but that they are a primary data
 type with their own interpreter tag bits. They are, in fact, a special type of
 symbolic atoms (called "<a href="ref.html#external">External Symbols</a>"), that
-happen to be read from a pool file when accessed, and written back automatically
-when modified.
+happen to be read from pool file(s) when accessed, and written back
+automatically when modified.
 
 <p>In all other aspects they are normal symbols. They have a value cell, a
 property list and a name.
 
 <p>The name cannot be directly controlled by the programmer, as it is assigned
 when the symbol is created. It is an encoded index of the symbol's location in
-the pool file ("database"). In its visual representation (output by the <code><a
+its database file. In its visual representation (output by the <code><a
 href="refP.html#print">print</a></code> functions and input by the <code><a
 href="refR.html#read">read</a></code> functions) it is surrounded by braces.
 
-<p>To make use of external symbols, you need to open a database file first:
+<p>To make use of external symbols, you need to open a database first:
 
 <pre><code>
-: (pool "test.db")
+: (pool <u>test.db</u>)
 </code></pre>
 
 <p>If a file with that name did not exist, it got created now. Also created at
@@ -1505,20 +1527,20 @@ programmer.
 <code>{1}</code>.
 
 <pre><code>
-: (set *DB "Hello world")  # Set value of '{1}' to a transient symbol (string)
--> "Hello world"
+: (set *DB <u>Hello world</u>)    # Set value of '{1}' to a transient symbol (string)
+-> <u>Hello world</u>
 : (put *DB 'a 1)           # Property 'a' to 1
 -> 1
 : (put *DB 'b 2)           # Property 'b' to 2
 -> 2
 : (show *DB)               # Now show the symbol '{1}'
-{1} "Hello world"
+{1} <u>Hello world</u>
    b 2
    a 1
 </code></pre>
 
-<p>Note that instead of '<code>(set *DB "Hello world")</code>', we might
-also have written '<code>(setq {1} "Hello world")</code>', and instead of
+<p>Note that instead of '<code>(set *DB <u>Hello world</u>)</code>', we might
+also have written '<code>(setq {1} <u>Hello world</u>)</code>', and instead of
 '<code>(put *DB 'a 1)</code>' we might have written '<code>(put '{1} 'a
 1)</code>'. This would have the same effect, but as a rule external symbols
 should never be be accessed literally in application programs, because the
@@ -1541,7 +1563,7 @@ supplied:
 : (put *DB 'newSym '{2})   # Literal '{2}' (ok during debugging)
 -> {2}
 : (show *DB)
-{1} "Hello world"
+{1} <u>Hello world</u>
    newSym {2}              # '{2}' is now stored in '{1}'
    b 2
    a 1
@@ -1577,10 +1599,10 @@ $                    # back to the shell
 
 <pre><code>
 $ ./dbg                 # .. we start PicoLisp
-: (pool "test.db")      # and open the database file,
+: (pool <u>test.db</u>)        # and open the database file,
 -> T
 : (show *DB)            # our two symbols are there again
-{1} "Hello world"
+{1} <u>Hello world</u>
    newSym {2}
    b 2
    a 1
@@ -1625,7 +1647,7 @@ href="refE.html#+Entity">+Entity</a></code>. We can then define the relations to
 other data with the <code><a href="refR.html#rel">rel</a></code> function.
 
 <pre><code>
-(rel nm     (+Need +Sn +Idx +String))           # Name
+(rel nm (+Need +Sn +Idx +String))      # Name
 </code></pre>
 
 <p>This defines the name property (<code>nm</code>) of a person. The first
@@ -1678,9 +1700,9 @@ with the soundex algorithm (<code>+Sn</code>) and a full index
 (<code>+Idx</code>) of type <code>+String</code>.
 
 <pre><code>
-(rel pa     (+Joint) kids (+Man))               # Father
-(rel ma     (+Joint) kids (+Woman))             # Mother
-(rel mate   (+Joint) mate (+Person))            # Partner
+(rel pa (+Joint) kids (+Man))          # Father
+(rel ma (+Joint) kids (+Woman))        # Mother
+(rel mate (+Joint) mate (+Person))     # Partner
 </code></pre>
 
 <p>The attributes for <i>father</i> (<code>pa</code>), <i>Mother</i>
@@ -1712,10 +1734,10 @@ relations as <code>+Joint</code>s.
 <p>The last four attributes of person objects are just static data:
 
 <pre><code>
-(rel job    (+Ref +String))                     # Occupation
-(rel dat    (+Ref +Date))                       # Date of birth
-(rel fin    (+Ref +Date))                       # Date of death
-(rel txt    (+String))                          # Info
+(rel job (+Ref +String))               # Occupation
+(rel dat (+Ref +Date))                 # Date of birth
+(rel fin (+Ref +Date))                 # Date of death
+(rel txt (+String))                    # Info
 </code></pre>
 
 <p>They are all searchable via a non-unique index (<code>+Ref</code>). Date
@@ -1726,7 +1748,7 @@ first of March in the year zero.
 
 <pre><code>
 (dm url> ()
-   (list "@person" '*ID This) )
+   (list <u>@person</u> '*ID This) )
 </code></pre>
 
 <p>It is needed later in the GUI, to cause a click on a link to switch to that
@@ -1737,10 +1759,10 @@ object.
 
 <pre><code>
 (class +Man +Person)
-(rel kids   (+List +Joint) pa (+Person))        # Children
+(rel kids (+List +Joint) pa (+Person)) # Children
 
 (class +Woman +Person)
-(rel kids   (+List +Joint) ma (+Person))        # Children
+(rel kids (+List +Joint) ma (+Person)) # Children
 </code></pre>
 
 <p>They inherit everything from <code>+Person</code>, except for the
@@ -1749,15 +1771,15 @@ object.
 
 <p>That's the whole data model for our demo database application.
 
-<p>It is followed by a call to <code>dbs</code> ("database sizes"). This call is
-optional. If it is not present, the whole database will reside in a single file,
-with a block size of 256 bytes. If it is given, it should specify a list of
-items, each having a number in its CAR, and a list in its CDR. The CARs taken
-together will be passed later to <a href="refP.html#pool">pool</a>, causing an
-individual database file with that size to be created. The CDRs tell what entity
-classes (if an item is a symbol) or index trees (if an item is a list with a
-class in its CAR and a list of relations in its CDR) should be placed into that
-file.
+<p>It is followed by a call to <code><a href="refD.html#dbs">dbs</a></code>
+("database sizes"). This call is optional. If it is not present, the whole
+database will reside in a single file, with a block size of 256 bytes. If it is
+given, it should specify a list of items, each having a number in its CAR, and a
+list in its CDR. The CARs taken together will be passed later to <a
+href="refP.html#pool">pool</a>, causing an individual database file with that
+size to be created. The CDRs tell what entity classes (if an item is a symbol)
+or index trees (if an item is a list with a class in its CAR and a list of
+relations in its CDR) should be placed into that file.
 
 
 <p>A handful of access functions is provided, that know about database
@@ -1768,15 +1790,16 @@ in a database.
 used directly. Though this is rarely done in a typical application, they form
 the base mechanisms of other access modes and should be understood first.
 
-<p>The function <code>tree</code> returns the tree structure for a given
-relation. To iterate over the whole tree, the functions <code>iter</code> and
-<code>scan</code> can be used:
+<p>The function <code><a href="refT.html#tree">tree</a></code> returns the tree
+structure for a given relation. To iterate over the whole tree, the functions
+<code><a href="refI.html#iter">iter</a></code> and <code><a
+href="refS.html#scan">scan</a></code> can be used:
 
 <pre><code>
 (iter (tree 'dat '+Person) '((P) (println (datStr (get P 'dat)) (get P 'nm))))
-"1770-08-03" "Friedrich Wilhelm III"
-"1776-03-10" "Luise Augusta of Mecklenburg-Strelitz"
-"1797-03-22" "Wilhelm I"
+<u>1770-08-03</u> <u>Friedrich Wilhelm III</u>
+<u>1776-03-10</u> <u>Luise Augusta of Mecklenburg-Strelitz</u>
+<u>1797-03-22</u> <u>Wilhelm I</u>
 ...
 </code></pre>
 
@@ -1784,8 +1807,8 @@ relation. To iterate over the whole tree, the functions <code>iter</code> and
 found in the tree (to show only a part of the tree, an optional begin- and
 end-value can be supplied), producing a simple kind of report.
 
-<p>More useful is <code>collect</code>; it returns a list of all objects that
-fall into a range of index values:
+<p>More useful is <code><a href="refC.html#collect">collect</a></code>; it
+returns a list of all objects that fall into a range of index values:
 
 <pre><code>
 : (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31))
@@ -1793,29 +1816,29 @@ fall into a range of index values:
 </code></pre>
 
 <p>This returns all persons born between 1982 and 1988. Let's look at them with
-<code>show</code>:
+<code><a href="refS.html#show">show</a></code>:
 
 <pre><code>
 : (more (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31)) show)
 {2-M} (+Man)
-   nm William
+   nm <u>William</u>
    dat 724023
    ma {2-K}
    pa {2-J}
-   job Heir to the throne
+   job <u>Heir to the throne</u>
 
 {2-L} (+Man)
-   nm Henry
+   nm <u>Henry</u>
    dat 724840
    ma {2-K}
    pa {2-J}
-   job Prince
+   job <u>Prince</u>
 
 {2-E} (+Woman)
-   nm Beatrice
+   nm <u>Beatrice</u>
    dat 726263
    ma {2-D}
-   job Princess
+   job <u>Princess</u>
    pa {2-B}
 </code></pre>
 
@@ -1824,21 +1847,21 @@ return it directly:
 
 <pre><code>
 : (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31) 'nm)
--> ("William" "Henry" "Beatrice")
+-> (<u>William</u> <u>Henry</u> <u>Beatrice</u>)
 </code></pre>
 
-<p>To find a single object in the database, the function <code>db</code> is
-used:
+<p>To find a single object in the database, the function <code><a
+href="refD.html#db">db</a></code> is used:
 
 <pre><code>
-: (db 'nm '+Person "Edward")
+: (db 'nm '+Person <u>Edward</u>)
 -> {2-;}
 </code></pre>
 
 <p>If the key is not unique, additional arguments may be supplied:
 
 <pre><code>
-: (db 'nm '+Person "Edward"  'job "Prince"  'dat (date 1964 3 10))
+: (db 'nm '+Person <u>Edward</u>  'job <u>Prince</u>  'dat (date 1964 3 10))
 -> {2-;}
 </code></pre>
 
@@ -1866,13 +1889,12 @@ $ ./p lib/http.l -'server 8080 "doc/hello.l"' -wait
 
 <p>Now point your browser to the address '<code><a
 href="http://localhost:8080">http://localhost:8080</a></code>'. You should see a
-very simple HTML page. You can come back here with normal browser navigation, or
-with the '<code>&lt;&lt;&lt;</code>' link in the upper right corner.
+very simple HTML page. You can come back here with the browser's BACK button.
 
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
 '<code>killall picolisp</code>'), or type the <code>Ctrl-C</code> key in the
-console window (usually following Ctrl-D to terminate all child processes).
+console window.
 
 <p>In our demo database application, a single function <code>person</code> is
 responsible for the whole GUI. Again, please look at <code><a
@@ -1889,7 +1911,7 @@ $ ./dbg doc/family.l -main -go
 
 <pre><code>
 (de go ()
-   (server 8080 "@person") )
+   (server 8080 <u>@person</u>) )
 </code></pre>
 
 <p>It starts the HTTP server listening on TCP port 8080 (we did a similar thing
@@ -1901,7 +1923,7 @@ href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'.
 
 <p>You should see a new browser window with an input form created by the
 function <code>person</code>. We provided an initial database in
-"doc/family[1-4]". You can navigate through it by clicking on the pencil icons
+"doc/family/[1-4]". You can navigate through it by clicking on the pencil icons
 besides the input fields.
 
 <p>The chart with the children data can be scrolled using the down
@@ -1956,8 +1978,9 @@ $ ./p doc/family.l -main -go -wait
 <code>picolisp</code> processes will be running now. One is the initial server
 process which will continue to run until it is killed. The other is a child
 process holding the state of the GUI in the browser. It will terminate some time
-after the browser is closed, or when <code>(bye)</code> or a plain ENTER is
-entered at the PicoLisp prompt.
+after the browser is closed, or when <code>(<a
+href="refB.html#bye">bye</a>)</code> or a plain ENTER is entered at the PicoLisp
+prompt.
 
 <p>Now back to the explanation of the GUI function <code>person</code>:
 
@@ -1965,7 +1988,7 @@ entered at the PicoLisp prompt.
 (de person ()
    (app)
    (action
-      (html 0 (get (default *ID (seq (db: +Person))) 'nm) "lib.css" NIL
+      (html 0 (get (default *ID (seq (db: +Person))) 'nm) <u>lib.css</u> NIL
          (form NIL
             (&lt;h3&gt; (&lt;id&gt; (: nm)))
 </code></pre>
@@ -1979,7 +2002,7 @@ The function <code>gui</code> creates a single GUI component and takes the type
 these classes.
 
 <pre><code>
-   (gui '(+E/R +TextField) '(nm : home obj) 40 "Name")
+   (gui '(+E/R +TextField) '(nm : home obj) 40 <u>Name</u>)
 </code></pre>
 
 <p>This creates a <code>+TextField</code> with the label "Name" and a length of
@@ -1989,7 +2012,7 @@ this case, so that the person's name is displayed in that text field, and any
 changes entered into that field are propagated to the database automatically.
 
 <pre><code>
-   (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman)))
+   (gui '(+ClassField) '(: home obj) '((<u>Male</u> +Man) (<u>Female</u> +Woman)))
 </code></pre>
 
 <p>A <code>+ClassField</code> displays and changes the class of an object, in
@@ -2035,46 +2058,52 @@ href="#db">Database Programming</a> section.
 
 <p>Normally, Pilog is used either interactively to query the database during
 debugging, or in applications to generate export data and reports. In the
-following examples we use the interactive query frontend functions <code><a
-href="ref_.html#?">?</a></code> and <code>select</code>. An application will use
-<code><a href="refG.html#goal">goal</a></code> and <code><a
+following examples we use the interactive query front-end functions <code><a
+href="ref_.html#?">?</a></code> and <code><a
+href="refS.html#select">select</a></code>. An application will use <code><a
+href="refG.html#goal">goal</a></code> and <code><a
 href="refP.html#prove">prove</a></code> directly, or use convenience functions
-like <code>pilog</code> or <code>solve</code>.
+like <code><a href="refP.html#pilog">pilog</a></code> or <code><a
+href="refS.html#solve">solve</a></code>.
 
-<p>All Pilog access to external symbols is done via the two predicates
-<code>db</code> and <code>select</code>.
+<p>All Pilog access to external symbols is done via the two predicates <code><a
+href="refD.html#db/3">db/3</a></code> and <code><a
+href="refS.html#select/3">select/3</a></code>.
 
 <ul>
 
-<li><code>db</code> corresponds to the Lisp-level functions <code>db</code> and
-<code>collect</code>, as it derives its data from a single relation. It can be
-used for simple database queries.
+<li><code><a href="refD.html#db/3">db/3</a></code> corresponds to the Lisp-level
+functions <code><a href="refD.html#db">db</a></code> and <code><a
+href="refC.html#collect">collect</a></code>, as it derives its data from a
+single relation. It can be used for simple database queries.
 
-<li><code>select</code> provides for self-optimizing parallel access to an
-arbitrary number of relations. There is also a Lisp frontend function
-<code>select</code>, for convenient calls to the Pilog <code>select</code>
-predicate.
+<li><code><a href="refS.html#select/3">select/3</a></code> provides for
+self-optimizing parallel access to an arbitrary number of relations. There is
+also a Lisp front-end function <code><a
+href="refS.html#select">select</a></code>, for convenient calls to the Pilog
+<code>select</code> predicate.
 
 </ul>
 
-<p>A predicate <code>show</code> is pre-defined for debugging purposes (a simple
-glue to the Lisp-level function <code>show</code>, see <a
-href="#brw">Browsing</a>). Searching with <code>db</code> for all persons having
-the string "Edward" in their name:
+<p>A predicate <code><a href="refS.html#show/1">show/1</a></code> is pre-defined
+for debugging purposes (a simple glue to the Lisp-level function
+<code>show</code>, see <a href="#brw">Browsing</a>). Searching with <code><a
+href="refD.html#db/3">db/3</a></code> for all persons having the string "Edward"
+in their name:
 
 <pre><code>
-: (? (db nm +Person "Edward" @P) (show @P))
+: (? (db nm +Person <u>Edward</u> @P) (show @P))
 {2-;} (+Man)
-   nm "Edward"
+   nm <u>Edward</u>
    ma {2-:}
    pa {2-A}
    dat 717346
-   job "Prince"
+   job <u>Prince</u>
  @P={2-;}
 {2-1B} (+Man)
-   nm "Albert Edward"
+   nm <u>Albert Edward</u>
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
-   job "Prince"
+   job <u>Prince</u>
    mate {2-f}
    fin 680370
    dat 664554
@@ -2086,12 +2115,12 @@ the string "Edward" in their name:
 somebody with occupation "Queen":
 
 <pre><code>
-: (? (db nm +Person "Edward" @P) (val "Queen" @P mate job) (show @P))
+: (? (db nm +Person <u>Edward</u> @P) (val <u>Queen</u> @P mate job) (show @P))
 {2-1B} (+Man)
    mate {2-f}
-   nm "Albert Edward"
+   nm <u>Albert Edward</u>
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
-   job "Prince"
+   job <u>Prince</u>
    fin 680370
    dat 664554
  @P={2-1B}
@@ -2101,52 +2130,54 @@ somebody with occupation "Queen":
 <p>If you are interested in the names of "Albert Edward"'s children:
 
 <pre><code>
-: (? (db nm +Person "Albert Edward" @P) (lst @K @P kids) (val @Kid @K nm))
- @P={2-1B} @K={2-1C} @Kid="Beatrice Mary Victoria"
- @P={2-1B} @K={2-1D} @Kid="Leopold George Duncan"
- @P={2-1B} @K={2-1E} @Kid="Arthur William Patrick"
- @P={2-1B} @K={2-1F} @Kid="Louise Caroline Alberta"
- @P={2-1B} @K={2-1G} @Kid="Helena Augusta Victoria"
- @P={2-1B} @K={2-1H} @Kid="Alfred Ernest Albert"
- @P={2-1B} @K={2-1I} @Kid="Alice Maud Mary"
- @P={2-1B} @K={2-g} @Kid="Victoria Adelaide Mary"
- @P={2-1B} @K={2-a} @Kid="Edward VII"
+: (? (db nm +Person <u>Albert Edward</u> @P) (lst @K @P kids) (val @Kid @K nm))
+ @P={2-1B} @K={2-1C} @Kid=<u>Beatrice Mary Victoria</u>
+ @P={2-1B} @K={2-1D} @Kid=<u>Leopold George Duncan</u>
+ @P={2-1B} @K={2-1E} @Kid=<u>Arthur William Patrick</u>
+ @P={2-1B} @K={2-1F} @Kid=<u>Louise Caroline Alberta</u>
+ @P={2-1B} @K={2-1G} @Kid=<u>Helena Augusta Victoria</u>
+ @P={2-1B} @K={2-1H} @Kid=<u>Alfred Ernest Albert</u>
+ @P={2-1B} @K={2-1I} @Kid=<u>Alice Maud Mary</u>
+ @P={2-1B} @K={2-g} @Kid=<u>Victoria Adelaide Mary</u>
+ @P={2-1B} @K={2-a} @Kid=<u>Edward VII</u>
 -> NIL
 </code></pre>
 
-<p><code>db</code> can do a direct index access only for a single attribute
-(<code>nm</code> of <code>+Person</code> above). To search for several criteria
-at the same time, <code>select</code> has to be used:
+<p><code><a href="refD.html#db/3">db/3</a></code> can do a direct index access
+only for a single attribute (<code>nm</code> of <code>+Person</code> above). To
+search for several criteria at the same time, <code><a
+href="refS.html#select/3">select/3</a></code> has to be used:
 
 <pre><code>
 : (?
    (select (@P)
-      ((nm +Person "Edward") (nm +Person "Augusta" pa))  # Generator clauses
-      (tolr "Edward" @P nm)                              # Filter clauses
-      (tolr "Augusta" @P kids nm) )
+      ((nm +Person <u>Edward</u>) (nm +Person <u>Augusta</u> pa))      # Generator clauses
+      (tolr <u>Edward</u> @P nm)                                # Filter clauses
+      (tolr <u>Augusta</u> @P kids nm) )
    (show @P) )
 {2-1B} (+Man)
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    mate {2-f}
-   nm "Albert Edward"
-   job "Prince"
+   nm <u>Albert Edward</u>
+   job <u>Prince</u>
    fin 680370
    dat 664554
  @P={2-1B}
 -> NIL
 </code></pre>
 
-<p><code>select</code> takes a list of generator clauses which are used to
-retrieve objects from the database, and a number of normal Pilog filter clauses.
-In the example above the generators are
+<p><code><a href="refS.html#select/3">select/3</a></code> takes a list of
+generator clauses which are used to retrieve objects from the database, and a
+number of normal Pilog filter clauses. In the example above the generators are
 
 <ul>
 
-<li><code>(nm +Person "Edward")</code> to generate persons with "Edward" in
+<li><code>(nm +Person <u>Edward</u>)</code> to generate persons with "Edward" in
 their names, and
 
-<li><code>(nm +Person "Augusta" pa)</code> to find persons with "Augusta" in
-their names and generate persons using the <code>pa</code> ("father") attribute.
+<li><code>(nm +Person <u>Augusta</u> pa)</code> to find persons with "Augusta"
+in their names and generate persons using the <code>pa</code> ("father")
+attribute.
 
 </ul>
 
@@ -2158,15 +2189,17 @@ as soon as any one of the generators is exhausted. Note that this is different
 from the standard Prolog search algorithm.
 
 <p>The filter clauses in this example both use the pre-defined predicate
-<code>tolr</code> for <i>tolerant</i> string matches (according either to the
-soundex algorithm (see the section <a href="#db">Database Programming</a>) or to
-substring matches), and filter objects that
+<code><a href="refT.html#tolr/3">tolr/3</a></code> for <i>tolerant</i> string
+matches (according either to the soundex algorithm (see the section <a
+href="#db">Database Programming</a>) or to substring matches), and filter
+objects that
 
 <ul>
 
-<li>match "Edward" in their name: <code>(tolr "Edward" @P nm)</code>, and
+<li>match "Edward" in their name: <code>(tolr <u>Edward</u> @P nm)</code>, and
 
-<li>match "Augusta" in one of their kids' names: <code>(tolr "Augusta" @P kids nm)</code>
+<li>match "Augusta" in one of their kids' names: <code>(tolr <u>Augusta</u> @P
+kids nm)</code>
 
 </ul>
 
@@ -2184,11 +2217,12 @@ search field and "Phil" in the "Partner" search field, meaning to look for all
 persons whose mother's name is like "Elizabeth" and whose partner's name is like
 "Phil". As a result, two persons ("Elizabeth II" and "Anne") will show up.
 
-<p>In principle, <code>db</code> can be seen as a special case of
-<code>select</code>. The following two queries are equivalent:
+<p>In principle, <code><a href="refD.html#db/3">db/3</a></code> can be seen as a
+special case of <code><a href="refS.html#select/3">select/3</a></code>. The
+following two queries are equivalent:
 
 <pre><code>
-: (? (db nm +Person "Edward" @P))
+: (? (db nm +Person <u>Edward</u> @P))
  @P={2-;}
  @P={2-1B}
  @P={2-R}
@@ -2196,7 +2230,7 @@ persons whose mother's name is like "Elizabeth" and whose partner's name is like
  @P={2-a}
  @P={2-T}
 -> NIL
-: (? (select (@P) ((nm +Person "Edward"))))
+: (? (select (@P) ((nm +Person <u>Edward</u>))))
  @P={2-;}
  @P={2-1B}
  @P={2-R}
@@ -2212,26 +2246,26 @@ persons whose mother's name is like "Elizabeth" and whose partner's name is like
 
 <h3>select</h3>
 
-<p>For convenience, a <code>select</code> Lisp glue function is provided as a
-frontend to the <code>select</code> predicate. Note that this function does not
-evaluate its arguments (it is intended for interactive use), and that it
-supports only a subset of the predicate's functionality. The syntax resembles
-SELECT in the SQL language, for example:
+<p>For convenience, a <code><a href="refS.html#select">select</a></code> Lisp
+glue function is provided as a front-end to the <code>select</code> predicate.
+Note that this function does not evaluate its arguments (it is intended for
+interactive use), and that it supports only a subset of the predicate's
+functionality. The syntax resembles SELECT in the SQL language, for example:
 
 <pre><code>
 # SELECT * FROM Person
 : (select +Person)  # Step through the whole database
 {2-o} (+Man)
-   nm "Adalbert Ferdinand Berengar Viktor of Prussia"
+   nm <u>Adalbert Ferdinand Berengar Viktor of Prussia</u>
    dat 688253
    ma {2-j}
    pa {2-h}
    fin 711698
 
 {2-1B} (+Man)
-   nm "Albert Edward"
+   nm <u>Albert Edward</u>
    dat 664554
-   job "Prince"
+   job <u>Prince</u>
    mate {2-f}
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    fin 680370
@@ -2240,18 +2274,18 @@ SELECT in the SQL language, for example:
 
 <pre><code>
 # SELECT * FROM Person WHERE nm LIKE "%Edward%"
-: (select +Person nm "Edward")  # Show all Edwards
+: (select +Person nm <u>Edward</u>)  # Show all Edwards
 {2-;} (+Man)
-   nm "Edward"
+   nm <u>Edward</u>
    dat 717346
-   job "Prince"
+   job <u>Prince</u>
    ma {2-:}
    pa {2-A}
 
 {2-1B} (+Man)
-   nm "Albert Edward"
+   nm <u>Albert Edward</u>
    dat 664554
-   job "Prince"
+   job <u>Prince</u>
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    mate {2-f}
    fin 680370
@@ -2260,11 +2294,11 @@ SELECT in the SQL language, for example:
 
 <pre><code>
 # SELECT nm, dat FROM Person WHERE nm LIKE "%Edward%"
-: (select nm dat +Person nm "Edward")
-"Edward" "1964-03-10" {2-;}
-"Albert Edward" "1819-08-26" {2-1B}
-"George Edward" NIL {2-R}
-"Edward Augustus Hanover" NIL {2-1K}
+: (select nm dat +Person nm <u>Edward</u>)
+<u>Edward</u> <u>1964-03-10</u> {2-;}
+<u>Albert Edward</u> <u>1819-08-26</u> {2-1B}
+<u>George Edward</u> NIL {2-R}
+<u>Edward Augustus Hanover</u> NIL {2-1K}
 ...
 </code></pre>
 
@@ -2275,9 +2309,9 @@ SELECT in the SQL language, for example:
 #    AND p1.job LIKE "King%"
 #    AND p1.mate = p2.mate  -- Actually, in a SQL model we'd need
 #                           -- another table here for the join
-: (select dat fin nm (mate nm) +Person nm "Edward" job "King")
-"1894-06-23" "1972-05-28" "Edward VIII" "Wallace Simpson" {2-T}
-"1841-11-09" NIL "Edward VII" "Alexandra of Denmark" {2-a}
+: (select dat fin nm (mate nm) +Person nm <u>Edward</u> job <u>King</u>)
+<u>1894-06-23</u> <u>1972-05-28</u> <u>Edward VIII</u> <u>Wallace Simpson</u> {2-T}
+<u>1841-11-09</u> NIL <u>Edward VII</u> <u>Alexandra of Denmark</u> {2-a}
 -> NIL
 </code></pre>
 
@@ -2285,24 +2319,26 @@ SELECT in the SQL language, for example:
 <h3>update</h3>
 
 <p>In addition (just to stay with the SQL terminology ;-), there is also an
-<code>update</code> function. It is a frontend to the 'set!>' and 'put!>'
-transaction functions, and should be used when single objects in the database
-have to be modified by hand.
+<code><a href="refU.html#update">update</a></code> function. It is a front-end
+to the <code><a href="refE.html#entityMesssages">set!></a></code> and <code><a
+href="refE.html#entityMesssages">put!></a></code> transaction methods, and
+should be used when single objects in the database have to be modified by hand.
 
-<p>In principle, it would also be possible to use the <code>edit</code> function
-to modify a database object. This is not recommended, however, because
-<code>edit</code> does not know about relations to other objects (like Links,
-Joints and index trees) and may easily cause database corruption.
+<p>In principle, it would also be possible to use the <code><a
+href="refE.html#edit">edit</a></code> function to modify a database object. This
+is not recommended, however, because <code>edit</code> does not know about
+relations to other objects (like Links, Joints and index trees) and may easily
+cause database corruption.
 
 <p>In the most general case, the value of a property in a database object is
-changed with the <code>put!></code> function. Let's look at "Edward" from the
+changed with the <code>put!></code> method. Let's look at "Edward" from the
 previous examples:
 
 <pre><code>
 : (show '{2-;})
 {2R} (+Man)
-   job "Prince"
-   nm "Edward"
+   job <u>Prince</u>
+   nm <u>Edward</u>
    dat 717346
    ma {2-:}
    pa {20A}
@@ -2312,15 +2348,15 @@ previous examples:
 <p>We might change the name to "Johnny" with <code>put!></code>:
 
 <pre><code>
-: (put!> '{2-;} 'nm "Johnny")
--> "Johnny"
+: (put!> '{2-;} 'nm <u>Johnny</u>)
+-> <u>Johnny</u>
 </code></pre>
 
 <p>However, an easier and less error-prone prone way - especially when more than
-one property has to be changed - is using <code>update</code>. It presents the
-value cell (the list of classes) and then each property on its own line,
-allowing the user to change it with the <a href="#ledit">command line
-editor</a>.
+one property has to be changed - is using <code><a
+href="refU.html#update">update</a></code>. It presents the value cell (the list
+of classes) and then each property on its own line, allowing the user to change
+it with the <a href="#ledit">command line editor</a>.
 
 <p>Just hitting ENTER will leave that property unchanged. To modify it, you'll
 typically hit ESC to get into command mode, and move the cursor to the point of
@@ -2332,11 +2368,11 @@ change.
 <pre><code>
 : (update '{2-;})
 {2-;} (+Man)      # ENTER
-nm "Johnny"       # Modified the name to "Johnny"
+nm <u>Johnny</u>         # Modified the name to "Johnny"
 ma {2-:}          # ENTER
 pa {2-A}          # ENTER
 dat 1960-03-10    # Modified the year from "1964" to "1960"
-job "Prince"      # ENTER
+job <u>Prince</u>        # ENTER
 -> {2-;}
 </code></pre>
 
@@ -2351,7 +2387,7 @@ called directly for that property:
 
 <pre><code>
 : (update '{2-;} 'nm)
-{2-;} nm "Edward"
+{2-;} nm <u>Edward</u>
 ...
 </code></pre>
 

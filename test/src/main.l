@@ -1,4 +1,4 @@
-# 02oct09abu
+# 31jan10abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -46,6 +46,9 @@
 (test '(T 1 1 3 (2 3 4))
    (let foo '(@ (list (args) (next) (arg) (arg 2) (rest)))
       (foo 1 2 3 4) ) )
+
+(test (7 7 NIL NIL)
+   ((quote @ (list (next) (arg) (next) (arg))) 7) )
 
 
 ### usec ###

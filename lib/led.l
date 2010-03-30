@@ -1,4 +1,4 @@
-# 16nov09abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -79,7 +79,7 @@
 # Escaped double quote
 (de "escQ" ()
    (let Esc NIL
-      (for (I 1 (> P I) (inc I))
+      (for I (dec P)
          ((if (= "\\" (get L I)) onOff off) Esc) ) ) )
 
 # Check for delimiter
@@ -418,3 +418,5 @@
             (push '"History" L) )
          (and (nth "History" "HistMax") (con @))
          L ) ) )
+
+# vi:et:ts=3:sw=3

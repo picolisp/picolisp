@@ -1,4 +1,4 @@
-# 28oct09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -229,7 +229,7 @@
       or A E  # into A
       shr X 8  # Rest of object ID
       shl X 32
-      or A X  # into A
+      or C X  # into C
    end
    ret
 
@@ -925,12 +925,12 @@
    pop X
    ld E TSym  # Return T
    ret
-: RolbLog string "Last transaction not completed: Rollback\n"
+: RolbLog asciz "Last transaction not completed: Rollback\n"
 
 (code 'ignLog)
    cc fprintf((stderr) IgnLog)
    ret
-: IgnLog string "Discarding incomplete transaction.\n"
+: IgnLog asciz "Discarding incomplete transaction.\n"
 
 (code 'rewindLog)
    cc fseek((DbLog) 0 SEEK_SET)  # Rewind transaction log
@@ -1757,6 +1757,8 @@
                call dbFileBlkY_AC  # Get file and block index
                cmp A (DBs)  # Local file?
                if lt  # Yes
+                  add A (DbFiles)  # Get DB file
+                  ld (DbFile) A  # Set current
                   ld Y C
                   call cleanUpY  # Clean up
                   null (L -I)  # Notify?
@@ -2240,8 +2242,8 @@
    pop Y
    pop X
    ret
-: CircFree string "Circular free list"
-: BadChain string "Bad chain"
-: BadCount string "Bad count"
+: CircFree asciz "Circular free list"
+: BadChain asciz "Bad chain"
+: BadCount asciz "Bad count"
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 19sep09abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -286,11 +286,15 @@
 (de "tst" ()
    (job '((Cnt . 4))
       (state '(start)
-         ((start run) (link 'start))
-         ((run run (gt0 (dec 'Cnt)))
+         (start 'run
+            (link 'start) )
+         (run (and (gt0 (dec 'Cnt)) 'run)
             (link 'run) )
-         ((run stop) (link 'run))
-         ((stop start) (setq Cnt 4) (link 'stop)) ) ) )
+         (run 'stop
+            (link 'run) )
+         (stop 'start
+            (setq Cnt 4)
+            (link 'stop) ) ) ) )
 
 (test '(start run run run run stop  start run run run run stop)
    (make (do 12 ("tst"))) )
@@ -364,6 +368,10 @@
 (test (1 2 3 4 5 6 7)
    (make
       (for (N . X) '(a b c d e f g)
+         (link N) ) ) )
+(test (1 2 3 4 5 6 7)
+   (make
+      (for N 7
          (link N) ) ) )
 (test (1 2 3 4 5 6 7)
    (make

@@ -1,4 +1,4 @@
-# 19nov09abu
+# 17mar10abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Globals 0)
@@ -102,7 +102,7 @@
    initSym Dbg       "*Dbg"      Nil
    initSym Zap       "*Zap"      Nil
    initSym Ext       "*Ext"      Nil
-   initSym Scl       "*Scl"      Nil
+   initSym Scl       "*Scl"      ZERO
    initSym Class     "*Class"    Nil
    initSym Run       "*Run"      Nil
    initSym Hup       "*Hup"      Nil
@@ -144,6 +144,7 @@
    initSym NIL       "cmd"       doCmd
    initSym NIL       "argv"      doArgv
    initSym NIL       "opt"       doOpt
+   initSym NIL       "version"   doVersion
 
    # Garbage collection
    initSym NIL       "gc"        doGc
@@ -494,6 +495,17 @@
    word  Db1
    word  Nil
 
+# Version number
+:: Version
+   word (short `(car *Version))
+   word .+8
+   word (short `(cadr *Version))
+   word .+8
+   word (short `(caddr *Version))
+   word .+8
+   word (short `(cadddr *Version))
+   word Nil
+
 : GcMarkEnd
 
 # Structures
@@ -528,17 +540,19 @@
             byte (char "T")
 
 # Strings
-:: _r_ string "r"
-:: _w_ string "w"
-:: _a_ string "a"
-:: _ap_ string "a+"
-:: _dot_ string "."
+:: _r_ asciz "r"
+:: _w_ asciz "w"
+:: _a_ asciz "a"
+:: _ap_ asciz "a+"
+:: _dot_ asciz "."
 
 # Bytes
 :: Signal   byte 0            # Signal flag
 :: Tio      byte 0            # Terminal I/O
 :: Flg      byte 0            # General flag value
 
+: Repl      byte 0            # REPL flag
+: PRepl     byte 0            # Parent REPL
 : Jam       byte 0            # Error jam
 : InBye     byte 0            # Exit status
 : Sync      byte 0            # Family IPC synchronization

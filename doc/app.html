@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -17,7 +17,7 @@ in PicoLisp.
 
 <p>It concentrates on the XHTML/CSS GUI-Framework (as opposed to the previous
 Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
-flexible in layout design, and does not depend on plugins, JavaScript or
+flexible in layout design, and does not depend on plug-ins, JavaScript or
 cookies.
 
 <p>A plain HTTP/HTML GUI has various advantages: It runs on any browser, and can
@@ -31,6 +31,11 @@ All examples were also tested using the w3m text browser.
 <p>For basic informations about the PicoLisp system please look at the <a
 href="ref.html">PicoLisp Reference</a> and the <a href="tut.html">PicoLisp
 Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
+
+<p>Throughout this document, transient symbols will be displayed with <code><a
+href="refT.html#*Tsm">*Tsm</a></code> turned off, i.e. as "Name" (double-quoted)
+instead of <u>Name</u> (underlined), to make it easier to copy/paste the
+examples.
 
 <p><ul>
 <li><a href="#static">Static Pages</a>
@@ -143,8 +148,8 @@ directory.
 </code></pre>
 
 <p>(We will modify and use this file in all following examples and experiments.
-Whenever you find such a program snipplet between hash ('#') lines, just copy
-and paste it into your "project.l" file, and press the "reload" button of your
+Whenever you find such a program snippet between hash ('#') lines, just copy and
+paste it into your "project.l" file, and press the "reload" button of your
 browser to view the effects)
 
 
@@ -898,7 +903,7 @@ Here, '<code>a</code>' is an alias name for a component of type
 text field, specifying its width. See the chapter on <a href="#guiClasses">GUI
 Classes</a> for more examples.
 
-<p>During a GET request, <code>gui</code> is basically a frontend to
+<p>During a GET request, <code>gui</code> is basically a front-end to
 <code>new</code>. It builds a component, stores it in the internal structures of
 the current form, and initializes it by sending the <code>init&gt;</code>
 message to the component. Finally, it sends it the <code>show&gt;</code>
@@ -1453,7 +1458,6 @@ href="refD.html#dep">dep</a></code> ("dependencies") function:
 
 <pre><code>
 : (dep '+gui)
-+gui
    +JsField
    +Button
       +UpButton
@@ -1462,6 +1466,7 @@ href="refD.html#dep">dep</a></code> ("dependencies") function:
       +ClrButton
       +ChoButton
          +Hint
+      +GoButton
       +BubbleButton
       +DelRowButton
       +ShowButton
@@ -1483,9 +1488,11 @@ href="refD.html#dep">dep</a></code> ("dependencies") function:
          +AtomField
          +PwField
          +ListTextField
+         +LinesField
          +TelField
          +TimeField
          +HttpField
+      +Radio
 -> +gui
 </code></pre>
 
@@ -2133,7 +2140,7 @@ in its action.
 <p>The reason is that the activation of a <code>+JS</code> button will - instead
 of doing a normal POST - first try to send only the contents of all GUI
 components via an XMLHttpRequest to the server, and receive the updated values
-in response. This avoids the flicker caused by reloading and redering of the
+in response. This avoids the flicker caused by reloading and rendering of the
 whole page, is much faster, and also does not jump to the beginning of the page
 if it is larger than the browser window. The effect is especially noticeable
 while scrolling in charts.
@@ -2338,7 +2345,7 @@ usually rendered by the browser in a non-ambiguous three-dimensional look and
 feel.
 
 <p>Note that if JavaScript is enabled in the browser, changes will be
-automatically commited to the server.
+automatically committed to the server.
 
 <p>The enabled or disabled state of a button is an integral part of the
 application logic. It must be indicated to the user with appropriate styles.
@@ -2429,7 +2436,7 @@ HTML links (see <a href="#btnLinks">Buttons vs. Links</a>).
 
 <p>New customers or suppliers will automatically be assigned the next free
 number. You can enter another number, but an error will result if you try to use
-an existing number. The "Name" field is mandatory, you need to overtype the
+an existing number. The "Name" field is mandatory, you need to overwrite the
 "&lt;Name&gt;" clue.
 
 <p>Phone and fax numbers in the "Contact" tab must be entered in the correct

@@ -1,4 +1,4 @@
-# 17apr08abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -29,24 +29,17 @@
 
 
 # Genetic Algorithm
-(de gen ("Cnt" "Re" "Mu" "Se" . "Init")
-   (use ("P" "X" "Y")
-      (setq "P"
-         (sort
-            (make
-               (do "Cnt"
-                  (setq "X" ("Mu" (run "Init")))
-                  (link (cons ("Se" "X") "X")) ) ) ) )
-      (do (* "Cnt" "Cnt")
-         (setq "X" (get "P" (rand 1 "Cnt")))                   # Recombination
-         (while (== "X" (setq "Y" (get "P" (rand 1 "Cnt")))))
-         (setq "X" ("Mu" ("Re" (cdr "X") (cdr "Y"))))          # Mutation
-         (when (> (setq "Y" ("Se" "X")) (caar "P"))            # Selection
-            (if (seek '((L) (>= (caadr L) "Y")) "P")
-               (con @ (cons (cons "Y" "X") (cdr @)))
-               (conc "P" (cons (cons "Y" "X"))) )
-            (pop '"P") ) )
-      (and (car (last "P")) (cdr (last "P"))) ) )
+(de gen ("Pop" "Cond" "Re" "Mu" "Se")
+   (until ("Cond" "Pop")
+      (for ("P" "Pop" "P" (cdr "P"))
+         (set "P"
+            (maxi "Se"  # Selection
+               (make
+                  (for ("P" "Pop" "P")
+                     (rot "P" (rand 1 (length "P")))
+                     (link  # Recombination + Mutation
+                        ("Mu" ("Re" (pop '"P") (pop '"P"))) ) ) ) ) ) ) )
+   (maxi "Se" "Pop") )
 
 
 # Alpha-Beta tree search
@@ -91,10 +84,10 @@
 (de grid (DX DY)
    (prog1
       (make
-         (for (X 1 (>= DX X) (inc X))
+         (for X DX
             (link
                (make
-                  (for (Y 1 (>= DY Y) (inc Y))
+                  (for Y DY
                      (link
                         (def
                            (if (> DX 26)
@@ -125,37 +118,37 @@
 (de north (This)
    (: 0 -1 -1) )
 
-(de disp (Grid How Fun X Y DX DY)
-   (setq Grid
-      (if X
+(de disp ("Grid" "How" "Fun" "X" "Y" "DX" "DY")
+   (setq "Grid"
+      (if "X"
          (mapcar
-            '((L) (flip (head DY (nth L Y))))
-            (head DX (nth Grid X)) )
-         (mapcar reverse Grid) ) )
-   (let (N (+ (length (cdar Grid)) (or Y 1))  Sp (length N))
+            '((L) (flip (head "DY" (nth L "Y"))))
+            (head "DX" (nth "Grid" "X")) )
+         (mapcar reverse "Grid") ) )
+   (let (N (+ (length (cdar "Grid")) (or "Y" 1))  Sp (length N))
       ("border" north)
-      (while (caar Grid)
+      (while (caar "Grid")
          (prin " " (align Sp N) " "
-            (and How (if (and (nT How) (west (caar Grid))) " " '|)) )
-         (for L Grid
+            (and "How" (if (and (nT "How") (west (caar "Grid"))) " " '|)) )
+         (for L "Grid"
             (prin
-               (Fun (car L))
-               (and How (if (and (nT How) (east (car L))) " " '|)) ) )
+               ("Fun" (car L))
+               (and "How" (if (and (nT "How") (east (car L))) " " '|)) ) )
          (prinl)
          ("border" south)
-         (map pop Grid)
+         (map pop "Grid")
          (dec 'N) )
-      (unless (> (default X 1) 26)
+      (unless (> (default "X" 1) 26)
          (space (inc Sp))
-         (for @ Grid
-            (prin " " (and How "  ") (char (+ 96 X)))
-            (T (> (inc 'X) 26)) )
+         (for @ "Grid"
+            (prin " " (and "How" "  ") (char (+ 96 "X")))
+            (T (> (inc '"X") 26)) )
          (prinl) ) ) )
 
 (de "border" (Dir)
-   (when How
+   (when "How"
       (space Sp)
       (prin "  +")
-      (for L Grid
-         (prin (if (and (nT How) (Dir (car L))) "   +" "---+")) )
+      (for L "Grid"
+         (prin (if (and (nT "How") (Dir (car L))) "   +" "---+")) )
       (prinl) ) )

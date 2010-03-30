@@ -1,4 +1,4 @@
-# 10dec09abu
+# 31jan10abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -42,7 +42,7 @@
 
 ### DB Mapping ###
 (de dbMap ("ObjFun" "TreeFun")
-   (default "TreeFun" quote)
+   (default "ObjFun" quote "TreeFun" quote)
    (finally (mark 0)
       (_dbMap *DB)
       (dbMapT *DB) ) )
@@ -94,15 +94,12 @@
 
 ### DB Check ###
 (de dbCheck ()
-   # Lock whole database
-   (and (lock) (quit 'lock @))
-   # Low-level integrity check
-   (for (F . N) (or *Dbs (2))
+   (and (lock) (quit 'lock @))  # Lock whole database
+   (for (F . N) (or *Dbs (2))  # Low-level integrity check
       (unless (pair (println F N (dbck F T)))
          (quit 'dbck @) ) )
-   # Check tree structures
-   (dbMap
-      quote
+   (dbMap  # Check tree structures
+      NIL
       '((Base Root Var Cls Hook)
          (println Base Root Var Cls Hook)
          (unless (= (car Root) (chkTree (cdr Root)))
@@ -117,12 +114,8 @@
                   (unless (has> V Var (if (pair K) (car K) K))
                      (quit "Bad Value" K) ) )
                NIL T T ) ) ) )
-   # Check DB file assignments
-   (and *Dbs (dbfCheck))
-   # Show dangling index references
-   (when (dangling)
-      (prin "### ")
-      (println 'dangling @) )
+   (and *Dbs (dbfCheck))  # Check DB file assignments
+   (and (dangling) (println 'dangling @))  # Show dangling index references
    T )
 
 (de dangling ()
@@ -224,15 +217,32 @@
 
 ### Rebuild tree ###
 (de rebuild (X Var Cls Hook)
-   (when (get (or Hook *DB) Cls)
-      (zapTree (get @ Var -1))
-      (put @ Var NIL)
-      (commit) )
-   (if (pair X)
-      (for Obj X (re-index Obj Var))
-      (for (Obj X Obj (seq Obj))
-         (and (isa Cls Obj) (re-index Obj Var)) ) )
-   (commit) )
+   (let Lst NIL
+      (let? Base (get (or Hook *DB) Cls)
+         (unless X
+            (setq Lst
+               (if (; (treeRel Var Cls) hook)
+                  (collect Var Cls Hook)
+                  (collect Var Cls) ) ) )
+         (zapTree (get Base Var -1))
+         (put Base Var NIL)
+         (commit) )
+      (nond
+         (X
+            (let Len (length Lst)
+               (recur (Lst Len)
+                  (unless (=0 Len)
+                     (let (N (>> 1 (inc Len))  L (nth Lst N))
+                        (re-index (car L) Var)
+                        (recurse Lst (dec N))
+                        (recurse (cdr L) (- Len N)) ) ) ) ) )
+         ((atom X)
+            (for Obj X
+               (re-index Obj Var) ) )
+         (NIL
+            (for (Obj X Obj (seq Obj))
+               (and (isa Cls Obj) (re-index Obj Var)) ) ) )
+      (commit) ) )
 
 (de re-index (Obj Var)
    (unless (get Obj T)
@@ -253,8 +263,10 @@
          (for Rel (getl "Cls")
             (and
                (pair Rel)
-               (isa '+index (car Rel))
-               (unless (get @ 'dbf)
+               (or
+                  (isa '+index (car Rel))
+                  (find '((B) (isa '+index B)) (; Rel 1 bag)) )
+               (unless (; Rel 1 dbf)
                   (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) ) )
 
 (de dbfMigrate (Pool Dbs)
@@ -338,7 +350,7 @@
                            (=T (car (pair (val S))))
                            (link
                               (cons (pack F) (blob (cdr (val S)) @R)) ) ) ) ) ) ) )
-         (call 'mkdir "-p" (dirname (cdr X)))
+         (and (dirname (cdr X)) (call 'mkdir "-p" @))
          (call 'mv (car X) (cdr X)) ) )
    (dbMap  # Relocate
       '((Obj)

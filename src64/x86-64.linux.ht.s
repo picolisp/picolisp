@@ -1,63 +1,55 @@
-/* 14sep09 */
+/* 25mar10 */
 
    .data
 
-   .global  HtOK
+   .globl  HtOK
 HtOK:
    .balign  8
-   .string  "<b>"
+   .asciz   "<b>"
    .balign  8
-   .string  "</b>"
+   .asciz   "</b>"
    .balign  8
-   .string  "<i>"
+   .asciz   "<i>"
    .balign  8
-   .string  "</i>"
+   .asciz   "</i>"
    .balign  8
-   .string  "<u>"
+   .asciz   "<u>"
    .balign  8
-   .string  "</u>"
+   .asciz   "</u>"
    .balign  8
-   .string  "<p>"
+   .asciz   "<p>"
    .balign  8
-   .string  "</p>"
+   .asciz   "</p>"
    .balign  8
-   .string  "<pre>"
+   .asciz   "<pre>"
    .balign  8
-   .string  "</pre>"
+   .asciz   "</pre>"
    .balign  8
-   .string  "<div "
+   .asciz   "<div "
    .balign  8
-   .string  "</div>"
+   .asciz   "</div>"
    .balign  8
-   .string  "<font "
+   .asciz   "<br>"
    .balign  8
-   .string  "</font>"
-   .balign  8
-   .string  "<img "
-   .balign  8
-   .string  "</img>"
-   .balign  8
-   .string  "<br>"
-   .balign  8
-   .string  "<hr>"
+   .asciz   "<hr>"
 HtOkEnd:
 HtLt:
-   .string  "&lt;"
+   .asciz   "&lt;"
 HtGt:
-   .string  "&gt;"
+   .asciz   "&gt;"
 HtAmp:
-   .string  "&amp;"
+   .asciz   "&amp;"
 HtQuot:
-   .string  "&quot;"
+   .asciz   "&quot;"
 HtNbsp:
-   .string  "&nbsp;"
+   .asciz   "&nbsp;"
 HtEsc:
    .ascii   " \"#%&:;<=>?_"
 
    .text
 
    .balign  16
-   .global  findHtOkY_FE
+   .globl  findHtOkY_FE
 findHtOkY_FE:
    push     %r13
    mov      HtOK@GOTPCREL(%rip), %r13
@@ -109,7 +101,7 @@ findHtOkY_FE:
    .balign  16
    nop
    nop
-   .global  Prin
+   .globl  Prin
 Prin:
    push     %r13
    push     %r14
@@ -214,7 +206,7 @@ Prin_20:
    ret
 
    .balign  16
-   .global  putHexB
+   .globl  putHexB
 putHexB:
    mov      %rax, %rbx
    mov      $37, %al
@@ -238,7 +230,7 @@ putHexB:
    jmp      envPutB@plt
 
    .balign  16
-   .global  htFmtE
+   .globl  htFmtE
 htFmtE:
    cmp      Nil@GOTPCREL(%rip), %rbx
    jz       .28
@@ -327,7 +319,7 @@ htFmtE_40:
    .balign  16
    nop
    nop
-   .global  Fmt
+   .globl  Fmt
 Fmt:
    push     %r13
    push     %r14
@@ -377,7 +369,7 @@ Fmt:
    ret
 
    .balign  16
-   .global  getHexX_A
+   .globl  getHexX_A
 getHexX_A:
    mov      (%r13), %r10
    mov      -8(%r10), %rax
@@ -392,7 +384,7 @@ getHexX_A:
    ret
 
    .balign  16
-   .global  getUnicodeX_FAX
+   .globl  getUnicodeX_FAX
 getUnicodeX_FAX:
    mov      %r13, %rbx
    mov      %r12, %rdx
@@ -426,7 +418,7 @@ getUnicodeX_FAX:
    ret
 
    .balign  16
-   .global  headCX_FX
+   .globl  headCX_FX
 headCX_FX:
    mov      %r13, %rbx
 .53:
@@ -447,7 +439,7 @@ headCX_FX:
    .balign  16
    nop
    nop
-   .global  Pack
+   .globl  Pack
 Pack:
    push     %r13
    mov      8(%rbx), %r10
@@ -549,7 +541,7 @@ Pack_40:
    .balign  16
    nop
    nop
-   .global  Read
+   .globl  Read
 Read:
    push     %r13
    mov      %rbx, %r13
@@ -557,8 +549,8 @@ Read:
    mov      (%r10), %rbx
    call     evCntEX_FE@plt
    jle      .73
-   mov      Chr@GOTPCREL(%rip), %rax
-   mov      (%rax), %rax
+   mov      Chr@GOTPCREL(%rip), %r10
+   mov      (%r10), %rax
    cmp      %r12, %rax
    jnz      .74
    call     envGet_A@plt
@@ -619,8 +611,8 @@ Read:
    mov      %rdx, %r13
    jmp      .79
 .81:
-   mov      Chr@GOTPCREL(%rip), %rax
-   mov      %r12, (%rax)
+   mov      Chr@GOTPCREL(%rip), %r11
+   mov      %r12, (%r11)
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
@@ -633,21 +625,22 @@ Read:
    .data
 
    .balign  16
-   .global  Chunk
+   .globl  Chunk
 Chunk:
    .quad    0
    .quad    0
    .quad    0
-   .skip    4000
+   .space   4000
 Newlines:
-   .string  "0\r\n\r\n"
+   .asciz   "0\r\n\r\n"
 
    .text
 
    .balign  16
-   .global  chrHexX_AF
-chrHexX_AF:
-   mov      (%r13), %al
+   .globl  chrHex_AF
+chrHex_AF:
+   mov      Chr@GOTPCREL(%rip), %r10
+   mov      (%r10), %al
    cmp      $48, %al
    jc       .86
    cmp      $57, %al
@@ -668,61 +661,62 @@ chrHexX_AF:
    ret
 
    .balign  16
-   .global  chunkSize
+   .globl  chunkSize
 chunkSize:
    push     %r13
-   push     %r14
-   mov      Chr@GOTPCREL(%rip), %r13
-   mov      Chunk@GOTPCREL(%rip), %r14
-   cmp      %r12, (%r13)
+   mov      Chunk@GOTPCREL(%rip), %r13
+   mov      Chr@GOTPCREL(%rip), %r10
+   cmp      %r12, (%r10)
    jnz      .90
-   mov      8(%r14), %rax
+   mov      8(%r13), %rax
    call     *%rax
 .90:
-   call     chrHexX_AF@plt
-   mov      %rax, (%r14)
+   call     chrHex_AF@plt
+   mov      %rax, (%r13)
    jc       chunkSize_90
 .92:
-   mov      8(%r14), %rax
+   mov      8(%r13), %rax
    call     *%rax
-   call     chrHexX_AF@plt
+   call     chrHex_AF@plt
    jc       .94
-   mov      (%r14), %rdx
+   mov      (%r13), %rdx
    shl      $4, %rdx
    or       %rax, %rdx
-   mov      %rdx, (%r14)
+   mov      %rdx, (%r13)
    jmp      .92
 .94:
-   cmpq     $10, (%r13)
+   mov      Chr@GOTPCREL(%rip), %r11
+   cmpq     $10, (%r11)
    jz       .95
-   cmp      %r12, (%r13)
+   mov      Chr@GOTPCREL(%rip), %r10
+   cmp      %r12, (%r10)
    js       chunkSize_90
-   mov      8(%r14), %rax
+   mov      8(%r13), %rax
    call     *%rax
    jmp      .94
 .95:
-   mov      8(%r14), %rax
+   mov      8(%r13), %rax
    call     *%rax
-   cmp      %r12, (%r14)
+   cmp      %r12, (%r13)
    jnz      chunkSize_90
-   mov      8(%r14), %rax
+   mov      8(%r13), %rax
    call     *%rax
-   mov      %r12, (%r13)
+   mov      Chr@GOTPCREL(%rip), %r11
+   mov      %r12, (%r11)
 chunkSize_90:
-   pop      %r14
    pop      %r13
    ret
 
    .balign  16
-   .global  getChunked_A
+   .globl  getChunked_A
 getChunked_A:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
    cmp      %r12, (%r14)
    jg       .97
    mov      $-1, %rax
-   mov      Chr@GOTPCREL(%rip), %r14
-   mov      %rax, (%r14)
+   mov      Chr@GOTPCREL(%rip), %r11
+   mov      %rax, (%r11)
    jmp      .98
 .97:
    mov      8(%r14), %rax
@@ -741,7 +735,7 @@ getChunked_A:
    .balign  16
    nop
    nop
-   .global  In
+   .globl  In
 In:
    push     %r13
    mov      8(%rbx), %r13
@@ -772,11 +766,12 @@ In:
 .100:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
-   mov      EnvGet_A@GOTPCREL(%rip), %rax
-   mov      (%rax), %r10
+   mov      EnvGet_A@GOTPCREL(%rip), %r10
+   mov      (%r10), %r10
    mov      %r10, 8(%r14)
+   mov      EnvGet_A@GOTPCREL(%rip), %r11
    mov      getChunked_A@GOTPCREL(%rip), %r10
-   mov      %r10, (%rax)
+   mov      %r10, (%r11)
    call     chunkSize@plt
 1:
    mov      (%r13), %rbx
@@ -790,18 +785,18 @@ In:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   mov      EnvGet_A@GOTPCREL(%rip), %rax
+   mov      EnvGet_A@GOTPCREL(%rip), %r11
    mov      8(%r14), %r10
-   mov      %r10, (%rax)
-   mov      Chr@GOTPCREL(%rip), %rax
-   mov      %r12, (%rax)
+   mov      %r10, (%r11)
+   mov      Chr@GOTPCREL(%rip), %r11
+   mov      %r12, (%r11)
    pop      %r14
 .101:
    pop      %r13
    ret
 
    .balign  16
-   .global  outHexA
+   .globl  outHexA
 outHexA:
    cmp      $15, %rax
    jbe      .102
@@ -819,11 +814,11 @@ outHexA:
    jmp      envPutB@plt
 
    .balign  16
-   .global  wrChunkY
+   .globl  wrChunkY
 wrChunkY:
-   mov      EnvPutB@GOTPCREL(%rip), %r13
+   mov      EnvPutB@GOTPCREL(%rip), %r11
    mov      16(%r14), %r10
-   mov      %r10, (%r13)
+   mov      %r10, (%r11)
    mov      (%r14), %rax
    call     outHexA@plt
    mov      $13, %al
@@ -841,15 +836,16 @@ wrChunkY:
    call     envPutB@plt
    mov      $10, %al
    call     envPutB@plt
-   mov      EnvPutB@GOTPCREL(%rip), %r13
-   mov      (%r13), %r10
+   mov      EnvPutB@GOTPCREL(%rip), %r10
+   mov      (%r10), %r10
    mov      %r10, 16(%r14)
+   mov      EnvPutB@GOTPCREL(%rip), %r11
    mov      putChunkedB@GOTPCREL(%rip), %r10
-   mov      %r10, (%r13)
+   mov      %r10, (%r11)
    ret
 
    .balign  16
-   .global  putChunkedB
+   .globl  putChunkedB
 putChunkedB:
    push     %r13
    push     %r14
@@ -869,7 +865,7 @@ putChunkedB:
    .balign  16
    nop
    nop
-   .global  Out
+   .globl  Out
 Out:
    push     %r13
    mov      8(%rbx), %r13
@@ -901,11 +897,12 @@ Out:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
    mov      %r12, (%r14)
-   mov      EnvPutB@GOTPCREL(%rip), %rax
-   mov      (%rax), %r10
+   mov      EnvPutB@GOTPCREL(%rip), %r10
+   mov      (%r10), %r10
    mov      %r10, 16(%r14)
+   mov      EnvPutB@GOTPCREL(%rip), %r11
    mov      putChunkedB@GOTPCREL(%rip), %r10
-   mov      %r10, (%rax)
+   mov      %r10, (%r11)
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -922,15 +919,15 @@ Out:
    jz       .108
    call     wrChunkY@plt
 .108:
-   mov      EnvPutB@GOTPCREL(%rip), %rax
+   mov      EnvPutB@GOTPCREL(%rip), %r11
    mov      16(%r14), %r10
-   mov      %r10, (%rax)
+   mov      %r10, (%r11)
    mov      Newlines@GOTPCREL(%rip), %rdx
    call     outStringC@plt
    pop      %r14
 .107:
-   mov      OutFile@GOTPCREL(%rip), %rax
-   mov      (%rax), %rax
+   mov      OutFile@GOTPCREL(%rip), %r10
+   mov      (%r10), %rax
    call     flushA_F@plt
    pop      %r13
    ret

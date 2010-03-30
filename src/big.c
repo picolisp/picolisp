@@ -1,4 +1,4 @@
-/* 16jun09abu
+/* 01mar10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -460,7 +460,7 @@ static inline int numlen(any x) {
    int n = 10;
    while (isNum(x = cdr(numCell(x))))
       n += 10;
-   return n;
+   return (n + 8) / 9;
 }
 
 /* Make symbol from number */
@@ -469,7 +469,8 @@ any numToSym(any x, int scl, int sep, int ign) {
    bool sign;
    cell c1;
    word n = numlen(x);
-   byte c, *p, *q, *ta, *ti, acc[n], inc[n];
+   word c, *p, *q, *ta, *ti, acc[n], inc[n];
+   char *b, buf[10];
 
    sign = isNeg(x);
    *(ta = acc) = 0;
@@ -482,16 +483,16 @@ any numToSym(any x, int scl, int sep, int ign) {
             do {
                if (ta < p)
                   *++ta = 0;
-               if (c = (*p += *q + c) > 9)
-                  *p -= 10;
+               if (c = (*p += *q + c) > 999999999)
+                  *p -= 1000000000;
             } while (++p, ++q <= ti);
             if (c)
                *p = 1,  ++ta;
          }
          c = 0,  q = inc;
          do
-            if (c = (*q += *q + c) > 9)
-               *q -= 10;
+            if (c = (*q += *q + c) > 999999999)
+               *q -= 1000000000;
          while (++q <= ti);
          if (c)
             *q = 1,  ++ti;
@@ -500,21 +501,25 @@ any numToSym(any x, int scl, int sep, int ign) {
          break;
       n = 1;
    }
+   n = (ta - acc) * 9 + sprintf(b = buf, "%ld", *ta--);
    if (sep < 0)
-      return boxCnt(ta - acc + (sign? 2 : 1));
+      return boxCnt(n + sign);
    i = -8,  Push(c1, x = box(0));
    if (sign)
       byteSym('-', &i, &x);
-   if ((scl = ta - acc - scl) < 0) {
+   if ((scl = n - scl - 1) < 0) {
       byteSym('0', &i, &x);
       charSym(sep, &i, &x);
       while (scl < -1)
          byteSym('0', &i, &x),  ++scl;
    }
    for (;;) {
-      byteSym(*ta + '0', &i, &x);
-      if (--ta < acc)
-         return consStr(Pop(c1));
+      byteSym(*b++, &i, &x);
+      if (!*b) {
+         if (ta < acc)
+            return consStr(Pop(c1));
+         sprintf(b = buf, "%09ld", *ta--);
+      }
       if (scl == 0)
          charSym(sep, &i, &x);
       else if (ign  &&  scl > 0  &&  scl % 3 == 0)
@@ -1031,8 +1036,8 @@ any doBitAnd(any ex) {
 
 // (| 'num ..) -> num
 any doBitOr(any ex) {
-   any x, y, z;
-   cell c1;
+   any x, y;
+   cell c1, c2;
 
    x = cdr(ex);
    if (isNil(data(c1) = EVAL(car(x))))
@@ -1040,28 +1045,30 @@ any doBitOr(any ex) {
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
    while (isCell(x = cdr(x))) {
-      if (isNil(z = EVAL(car(x)))) {
+      if (isNil(data(c2) = EVAL(car(x)))) {
          drop(c1);
          return Nil;
       }
-      NeedNum(ex,z);
+      NeedNum(ex,data(c2));
       y = data(c1);
+      Save(c2);
       for (;;) {
-         setDig(y, unDig(y) | unDig(z));
-         if (!isNum(z = cdr(numCell(z))))
+         setDig(y, unDig(y) | unDig(data(c2)));
+         if (!isNum(data(c2) = cdr(numCell(data(c2)))))
             break;
          if (!isNum(cdr(numCell(y))))
             cdr(numCell(y)) = box(0);
          y = cdr(numCell(y));
       }
+      drop(c2);
    }
    return Pop(c1);
 }
 
 // (x| 'num ..) -> num
 any doBitXor(any ex) {
-   any x, y, z;
-   cell c1;
+   any x, y;
+   cell c1, c2;
 
    x = cdr(ex);
    if (isNil(data(c1) = EVAL(car(x))))
@@ -1069,20 +1076,22 @@ any doBitXor(any ex) {
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
    while (isCell(x = cdr(x))) {
-      if (isNil(z = EVAL(car(x)))) {
+      if (isNil(data(c2) = EVAL(car(x)))) {
          drop(c1);
          return Nil;
       }
-      NeedNum(ex,z);
+      NeedNum(ex,data(c2));
       y = data(c1);
+      Save(c2);
       for (;;) {
-         setDig(y, unDig(y) ^ unDig(z));
-         if (!isNum(z = cdr(numCell(z))))
+         setDig(y, unDig(y) ^ unDig(data(c2)));
+         if (!isNum(data(c2) = cdr(numCell(data(c2)))))
             break;
          if (!isNum(cdr(numCell(y))))
             cdr(numCell(y)) = box(0);
          y = cdr(numCell(y));
       }
+      drop(c2);
    }
    zapZero(data(c1));
    return Pop(c1);

@@ -1,3 +1,20 @@
+* 30mar10 picoLisp-3.0.2
+   Simple incrementing form of 'for'
+   Changed 'scl' to set '*Scl' globally
+   'acquire' and 'release' mutex functions
+   Changed 'state' syntax
+   'version' function (64-bit)
+   C 'lisp()' callback function (64-bit)
+   Bug in 'member' for circular lists (64-bit)
+   "lib/tags" for 'vi' source access
+   Bug in 'next' and 'arg' (64-bit)
+   Bug in comma read macro (64-bit)
+   Bug in binary read functions (64-bit)
+   'hax' function
+   Bug when deleting external symbols (64-bit)
+   Bug in external symbol names (64-bit)
+   Bug in '|' and 'x|' (32-bit)
+
 * 31dec09 picoLisp-3.0.1
    '*Tsm' transient symbol markup
    'range' function

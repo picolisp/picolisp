@@ -1,4 +1,4 @@
-# 23dec09abu
+# 18mar10abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -120,19 +120,17 @@
 (====)
 
 (de cache ("Var" "Str" . Prg)
-   (cond
-      ((not (setq "Var" (car (idx "Var" "Str" T))))
+   (nond
+      ((setq "Var" (car (idx "Var" "Str" T)))
          (set "Str" "Str"  "Str" (run Prg 1)) )
-      ((== "Var" (val "Var"))
+      ((n== "Var" (val "Var"))
          (set "Var" (run Prg 1)) )
-      (T (val "Var")) ) )
+      (NIL (val "Var")) ) )
 
 (====)
 
-(de scl (*Scl . "Prg")
-   (run "Prg") )
-
-(====)
+(de scl (N)
+   (setq *Scl N) )
 
 ### I/O ###
 (de tab (Lst . @)
@@ -172,6 +170,17 @@
                (protect
                   (out File (println Lst)) )
                Val ) ) ) ) )
+
+(de acquire (File)
+   (ctl File
+      (let P (in File (rd))
+         (or
+            (= P *Pid)
+            (unless (and P (kill P 0))
+               (out File (pr *Pid)) ) ) ) ) )
+
+(de release (File)
+   (ctl File (out File)) )
 
 ### List ###
 (de insert (N Lst X)
@@ -227,8 +236,8 @@
                (cdr Lst)
                (cons (car L) (recurse (cdr L))) ) ) ) ) )
 
-(de object ("Sym" "Typ" . @)
-   (def "Sym" "Typ")
+(de object ("Sym" "Val" . @)
+   (def "Sym" "Val")
    (putl "Sym")
    (while (args)
       (put "Sym" (next) (next)) )
@@ -280,7 +289,7 @@
                   (loop
                      (prinl)
                      (pretty (cadr X) N (car X))
-                     (NIL (setq X (cddr X))) ) )
+                     (NIL (setq X (cddr X)) (space)) ) )
                ((or (atom (car X)) (>= 12 (size (car X))))
                   (space)
                   (print (pop 'X)) ) ) )

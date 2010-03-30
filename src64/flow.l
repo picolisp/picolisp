@@ -1,4 +1,4 @@
-# 06nov09abu
+# 23mar10abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -21,8 +21,8 @@
    pop (EnvPutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    ret
-: HashBlank string "# "
-: Redefined string " redefined\\n"
+: HashBlank asciz "# "
+: Redefined asciz " redefined\\n"
 
 (code 'putSrcEC_E)
    cmp (Dbg) Nil  # Debug?
@@ -150,8 +150,7 @@
    eval
    pop A  # Retrieve args
    cmp E Nil  # Result NIL?
-   jeq retNil  # Yes
-   ld E (A CDR)  # Return 'any2'
+   ldnz E (A CDR)  # No: Return 'any2'
    ret
 
 # (pid 'pid|lst . exe) -> any
@@ -810,31 +809,19 @@
    ld A (E)  # Get class definition (methods and superclasses)
    atom A  # Any?
    if z  # Yes
-      ld C (A)  # First item
-      atom C  # Method definition?
-      if z  # Yes
+      do
+         ld C (A)  # First item
+         atom C  # Method definition?
+      while z  # Yes
          cmp Y (C)  # Found method definition?
          if eq  # Yes
             ld C (C CDR)  # Return method
             ret  # 'z'
          end
-         do
-            ld C A  # Keep previous cell
-            ld A (A CDR)  # Next item
-            atom A  # Any?
-            jnz ret  # Return 'nz'
-            atom (A)  # Method definition?
-            break nz  # No
-            cmp Y ((A))  # Found method definition?
-            if eq  # Yes
-               ld (C CDR) (A CDR)  # Move cell to front
-               ld (A CDR) (E)  # of class definition
-               ld (E) A
-               ld C ((A) CDR)  # Return method
-               ret  # 'z'
-            end
-         loop
-      end
+         ld A (A CDR)  # Next item
+         atom A  # Any?
+         jnz ret  # Return 'nz'
+      loop
       do
          ld Z A  # Set class list
          ld E (A)  # Class symbol
@@ -1287,7 +1274,7 @@
    pop X  # Expression
    ld Y SuperErr
    jmp errEXYZ
-: SuperErr string "Bad super"
+: SuperErr asciz "Bad super"
 
 # (extra ['any ..]) -> any
 (code 'doExtra 2)
@@ -1317,7 +1304,7 @@
    pop X  # Expression
    ld Y ExtraErr
    jmp errEXYZ
-: ExtraErr string "Bad extra"
+: ExtraErr asciz "Bad extra"
 
 (code 'extraXY_FCYZ 0)
    ld X (X)  # Get class definition
@@ -2030,11 +2017,10 @@
    pop X
    ret
 
-# (state 'var ((sym|lst sym [. prg]) . prg) ..) -> any
+# (state 'var (sym|lst exe [. prg]) ..) -> any
 (code 'doState 2)
    push X
    push Y
-   push Z
    ld X E
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'var'
@@ -2047,8 +2033,8 @@
       ld Y (Y CDR)  # Next clause
       atom Y  # Any?
    while z  # Yes
-      ld X ((Y))  # Get rule in X
-      ld E (X)  # Get source state in E
+      ld X (Y)  # Get clause in X
+      ld E (X)  # Get sym|lst in E
       cmp E TSym  # T?
       jz 10  # Yes
       ld A ((L I))  # 'var's value
@@ -2062,18 +2048,15 @@
          ld E (E CDR)
       loop
       if eq  # Yes
-10       ld X (X CDR)  # Rule's target state
-         ld Z (X CDR)
-         atom Z  # Condition?
-         jnz 20  # No
-         prog Z  # Run condition
+10       ld X (X CDR)  # Eval 'exe'
+         ld E (X)
+         eval
          cmp E Nil
          if ne  # Non-NIL
+            ld ((L I)) E  # Set target state
             ld (At) E
-20          ld ((L I)) (X)  # Set target state
             drop
-            ld X ((Y) CDR)  # Get body in X
-            pop Z
+            ld X (X CDR)  # Get body in X
             pop Y
             prog X  # Run body
             pop X
@@ -2082,7 +2065,6 @@
       end
    loop
    drop
-   pop Z
    pop Y
    pop X
    ret
@@ -2252,6 +2234,7 @@
       until nz  # Yes
    loop
 
+# (for sym 'cnt ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 # (for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 # (for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 (code 'doFor 2)
@@ -2265,27 +2248,46 @@
    link
    atom Y  # 'sym'?
    if nz  # Yes
-      # (for sym 'lst ..)
+      # (for sym 'cnt|lst ..)
       push (Y)  # Save old value
       push Y  # <L V> and 'sym'
       link
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
-      ld E (X)  # Eval 'lst'
+      ld E (X)  # Eval 'cnt|lst'
       eval
       link
-      push E  # <L I> 'lst'
+      push E  # <L I> 'cnt|lst'
       link
       ld X (X CDR)  # X on body
-      do
-         ld A (L I)  # Get 'lst'
-         atom A  # Any?
-      while z  # Yes
-         ld (L I) (A CDR)
-         ld ((L V)) (A)  # Set value
-         ld Y X  # Loop body
-         call loopY_FE
-      until z
+      ld A E
+      ld E Nil  # Preload NIL
+      num A  # Number?
+      if nz  # Yes
+         test A SIGN  # Negative?
+         if z  # No
+            ld (Y) ZERO  # Init 'sym' to zero
+            do
+               ld A ((L V))  # Get value of 'sym'
+               add A (hex "10")  # Increment
+               cmp A (L I)  # Greater than 'num'?
+            while le  # No
+               ld ((L V)) A  # Set incremented value of 'sym'
+               ld Y X  # Loop body
+               call loopY_FE
+            until z
+         end
+      else
+         do
+            ld A (L I)  # Get 'lst'
+            atom A  # Any?
+         while z  # Yes
+            ld (L I) (A CDR)
+            ld ((L V)) (A)  # Set value
+            ld Y X  # Loop body
+            call loopY_FE
+         until z
+      end
       drop
       pop A  # Drop env swap
       pop L  # Get link
@@ -2490,7 +2492,7 @@
    prog X  # Run body
 : caught
    pop (Catch)  # Restore catch link
-   add S "8+8+(EnvEnd-Env)"  # Clean up
+   add S "(EnvEnd-Env)+8+8"  # Clean up
    pop L
    pop Z
    pop Y
@@ -2527,7 +2529,7 @@
    ld E Z
    ld Y ThrowErr
    jmp errEXYZ
-: ThrowErr string "Tag not found"
+: ThrowErr asciz "Tag not found"
 
 # (finally exe . prg) -> any
 (code 'doFinally 2)
@@ -2549,7 +2551,7 @@
    ld E (L I)  # Get result
    drop
    pop (Catch)  # Restore catch link
-   add S "8+8+(EnvEnd-Env)"  # Clean up
+   add S "(EnvEnd-Env)+8+8"  # Clean up
    pop X
    ret
 
@@ -2727,8 +2729,8 @@
    end
    pop X
    ret
-: trc1 string " :"
-: trc2 string " = "
+: trc1 asciz " :"
+: trc2 asciz " = "
 
 (code 'traceCY)
    cmp C 64  # Limit to 64
@@ -2819,6 +2821,8 @@
    nul4  # In child?
    if z  # Yes
       cc setpgid(0 0)  # Set process group
+      cc getpgrp()  # Set terminal process group
+      cc tcsetpgrp(0 A)
       cc execvp((S) S)  # Execute program
       jmp execErrS  # Error if failed
    end
@@ -2830,10 +2834,7 @@
    until z  # Yes
    ld Z A  # Keep pid in Z
    cc setpgid(Z 0)  # Set process group
-   null (Termio)  # Raw mode?
-   if nz  # Yes
-      cc tcsetpgrp(0 Z)  # Set terminal process group
-   end
+   cc tcsetpgrp(0 Z)  # Set terminal process group
    do  # Re-use expression stack entry
       do
          cc waitpid(Z S WUNTRACED)  # Wait for child
@@ -2847,11 +2848,8 @@
             call sighandlerX
          end
       loop
-      null (Termio)  # Raw mode?
-      if nz  # Yes
-         cc getpgrp()  # Set terminal process group
-         cc tcsetpgrp(0 A)
-      end
+      cc getpgrp()  # Set terminal process group
+      cc tcsetpgrp(0 A)
       call wifstoppedS_F  # WIFSTOPPED(S)?
       if ne  # No
          ld4 (S)  # Result?
@@ -2866,10 +2864,7 @@
       ld B (char "+")  # Prompt
       ld E Nil  # REPL
       call loadBEX_E
-      null (Termio)  # Raw mode?
-      if nz  # Yes
-         cc tcsetpgrp(0 Z)  # Set terminal process group
-      end
+      cc tcsetpgrp(0 Z)  # Set terminal process group
       cc kill(Z SIGCONT)
    loop
 
@@ -3085,6 +3080,7 @@
       loop
       cc free((Termio))  # Give up terminal control
       ld (Termio) 0
+      set (PRepl) (Repl)  # Set parent REPL flag
       ld (PPid) (Pid)  # Set parent process ID
       cc getpid()  # Get new process ID
       shl A 4  # Make short number

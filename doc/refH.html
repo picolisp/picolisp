@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -38,6 +38,28 @@ href="ref.html#dbase">Database</a></code>.
 (rel Sup (+Hook +Link) (+Sup))   # Supplier
 (rel nr (+Key +Number) Sup)      # Item number, unique per supplier
 (rel dsc (+Ref +String) Sup)     # Item description, indexed per supplier
+</code></pre>
+
+<dt><a name="hax"><code>(hax 'num) -> sym</code></a>
+<dt><code>(hax 'sym) -> num</code>
+<dd>Converts a number <code>num</code> to a string in hexadecimal/alpha
+notation, or a hexadecimal/alpha formatted string to a number. The digits are
+represented with the characters <code>@</code> - <code>O</code> (from "alpha" to
+"omega"). This format is used internally for the names of <code><a
+href="ref.html#external-io">external symbols</a></code> in the 64-bit version.
+See also <code><a href="refF.html#fmt64">fmt64</a></code>, <code><a
+href="refH.html#hex">hex</a></code> and <code><a
+href="refO.html#oct">oct</a></code>.
+
+<pre><code>
+: (hax 7)
+-> <u>G</u>
+: (hax 16)
+-> <u>A@</u>
+: (hax 255)
+-> <u>OO</u>
+: (hax <u>A</u>)
+-> 1
 </code></pre>
 
 <dt><a name="hd"><code>(hd 'sym ['cnt]) -> NIL</code></a>

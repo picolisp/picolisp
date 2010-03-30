@@ -1,4 +1,4 @@
-/* 23nov09abu
+/* 17mar10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -236,7 +236,7 @@ typedef struct catchFrame {
 #define Touch(ex,x)     if (isExt(x)) db(ex,x,2)
 
 /* Globals */
-extern int Signal, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
+extern int Signal, Repl, Chr, Slot, Spkr, Mic, Hear, Tell, Children, ExtN;
 extern char **AV, *AV0, *Home;
 extern child *Child;
 extern heap *Heaps;

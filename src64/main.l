@@ -1,4 +1,4 @@
-# 25nov09abu
+# 17mar10abu
 # (c) Software Lab. Alexander Burger
 
 ### Global return labels ###
@@ -137,6 +137,7 @@
    call loadAllX_E  # Load arguments
    ld E sig  # Install standard signal handler for SIGINT
    ld C SIGINT
+   set (Repl) 1  # Set REPL flag
    call iSignalCE
 (code 'restart)
    ld B (char ":")  # Prompt
@@ -186,13 +187,13 @@
    cc fprintf((stderr) Giveup A X)
    ld E 1
    jmp finishE
-: Giveup string "%d %s\\n"
+: Giveup asciz "%d %s\\n"
 
 (code 'execErrS)
    cc fprintf((stderr) ExecErr (S))
    ld E 127
    jmp finishE
-: ExecErr string "%s: can't exec\\n"
+: ExecErr asciz "%s: can't exec\\n"
 
 # Install interrupting signal
 (code 'iSignalCE)
@@ -211,7 +212,7 @@
    jnz Ret  # Return
    ld X Alloc  # Else no memory
    jmp giveupX
-: Alloc string "No memory"
+: Alloc asciz "No memory"
 
 
 # Allocate cell heap
@@ -264,9 +265,12 @@
          cmp B SIGINT
          if eq
             set (Signal) 0  # Clear signal
-            null E  # Runtime expression?
-            ldz E Nil  # No: Default to NIL
-            call brkLoadE_E  # Enter debug breakpoint
+            nul (PRepl)  # Child of REPL process?
+            if z  # No
+               null E  # Runtime expression?
+               ldz E Nil  # No: Default to NIL
+               call brkLoadE_E  # Enter debug breakpoint
+            end
          else
             cmp B SIGUSR1
             if eq
@@ -362,11 +366,25 @@
    pop C  # Restore 'errno'
    call errnoC
    return 0
-: PidSigMsg string "%d SIG-%d\\n"
+: PidSigMsg asciz "%d SIG-%d\\n"
+
+(code 'tcSetC)
+   null (Termio)  # In raw mode?
+   if nz  # Yes
+      do
+         cc tcsetattr(0 TCSADRAIN C)  # Set terminal I/O
+         nul4  # OK?
+      while nz  # No
+         call errno_A
+         cmp A EINTR  # Interrupted?
+      until ne  # No
+   end
+   ret
 
 (code 'sigTermStop)
    begin 0  # Ignore signal number
-   cc tcsetattr(0 TCSADRAIN OrgTermio)  # Set original terminal I/O
+   ld C OrgTermio  # Set original terminal I/O
+   call tcSetC
    sub S SIGSET_T  # Create mask structure
    cc sigemptyset(S)  # Init to empty signal set
    cc sigaddset(S SIGTSTP)  # Add stop signal
@@ -375,7 +393,8 @@
    cc signal(SIGTSTP SIG_DFL)
    cc raise(SIGTSTP)
    cc signal(SIGTSTP sigTermStop)
-   cc tcsetattr(0 TCSADRAIN (Termio))
+   ld C (Termio)
+   call tcSetC
    return 0
 
 (code 'setRaw 0)
@@ -393,7 +412,7 @@
          st4 (C C_LFLAG)
          set (C (+ C_CC VMIN)) 1
          set (C (+ C_CC VTIME)) 0
-         cc tcsetattr(0 TCSADRAIN C)  # Set terminal I/O
+         call tcSetC  # Set terminal I/O
          cc signal(SIGTSTP SIG_IGN)  # Ignore stop signals
          cmp A SIG_DFL  # Not set yet?
          if eq  # Yes
@@ -404,12 +423,10 @@
    ret
 
 (code 'setCooked 0)
-   null (Termio)  # In raw mode?
-   if nz  # Yes
-      cc tcsetattr(0 TCSADRAIN OrgTermio)  # Set original terminal I/O
-      cc free((Termio))  # Clear Termio
-      ld (Termio) 0
-   end
+   ld C OrgTermio  # Set original terminal I/O
+   call tcSetC
+   cc free((Termio))  # Clear Termio
+   ld (Termio) 0
    ret
 
 #  (raw ['flg]) -> flg
@@ -483,7 +500,7 @@
       add A 1  # Increment count
       ld C (C)  # Follow link
    loop
-   div CELLS
+   div CELLS  # (C is zero)
    ld E A
    shl E 4  # Make short number
    or E CNT
@@ -887,12 +904,11 @@
       jeq ret  # Return list
       ld Y (Y CDR)  # Next item
       cmp C Y  # Hit head?
-      jz retNil  # Yes
+      jeq retnz  # Yes
    loop
    ld A X
    ld E Y
-   call equalAE_F  # Same atoms?
-   ret
+   jmp equalAE_F  # Same atoms?
 
 # (quit ['any ['any]])
 (code 'doQuit 2)
@@ -910,7 +926,7 @@
    ld Y QuitMsg  # Format string
    ld Z S  # Buffer pointer
    jmp errEXYZ  # Jump to error handler
-: QuitMsg string "%s"
+: QuitMsg asciz "%s"
 
 ### Evaluation ###
 # Apply EXPR in C to CDR of E
@@ -1565,6 +1581,49 @@
    end
    ret
 
+(code 'lisp 0)
+   begin 6  # Function name in A, arguments in C, E, X, Y and Z
+   link  # Apply args
+   push ZERO  # Space for 'fun'
+   xchg C E  # First arg
+   call boxCntE_E  # Make number
+   push E
+   ld E C  # Second arg
+   call boxCntE_E  # Make number
+   push E
+   ld E X  # Third arg
+   call boxCntE_E  # Make number
+   push E
+   ld E Y  # Fourth arg
+   call boxCntE_E  # Make number
+   push E
+   ld E Z  # Fifth arg
+   call boxCntE_E  # Make number
+   push E
+   ld Z S  # Z on last argument
+   link  # Close frame
+   ld C 4  # Build name
+   ld E A  # Function name argument
+   lea X (S VI)  # Pointer to 'fun' entry
+   do
+      ld B (E)
+      call byteSymBCX_CX  # Pack byte
+      add E 1  # Next byte
+      nul (E)  # Any?
+   until z
+   ld X (S VI)  # Get name
+   call findSymX_E  # Find or create symbol
+   lea Y (S VI)  # Pointer to 'fun' in Y
+   ld (Y) E  #  Store 'fun'
+   call applyXYZ_E  # Apply
+   ld A E  # Return value
+   shr A 4  # Normalize
+   if c  # Sign?
+      neg A  # Yes
+   end
+   drop
+   return 6
+
 (code 'execE 0)
    push X
    ld X E
@@ -1782,10 +1841,17 @@
 (code 'doNext 2)
    ld C (EnvNext)  # VarArgs
    cmp C (EnvArgs)  # Any?
-   jeq retNil  # No
-   sub C I  # Get next
-   ld E (C)
-   ld (EnvNext) C
+   if ne  # Yes
+      sub C I  # Get next
+      ld E (C)
+      ld (EnvNext) C
+      ret
+   end
+   ld E Nil  # No (more) arguments
+   null C  # Any previous arg?
+   if nz  # Yes
+      ld (C) E  # Set to NIL
+   end
    ret
 
 # (arg ['cnt]) -> any
@@ -2513,5 +2579,27 @@
    end
    add (AV) I  # Increment vector pointer
    jmp mkStrE_E  # Return transient symbol
+
+# (version ['flg]) -> lst
+(code 'doVersion 2)
+   ld E ((E CDR))  # Eval flg
+   eval
+   cmp E Nil  # Suppress output?
+   if eq  # No
+      ld E Version  # Print version
+      do
+         ld A (E)  # Next number
+         shr A 4  # Normalize
+         call outWordA  # Print it
+         ld E (E CDR)  # More numbers?
+         atom E
+      while z  # Yes
+         ld B `(char ".")  # Output dot
+         call (EnvPutB)
+      loop
+      call newline
+   end
+   ld E Version  # Return version
+   ret
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 07nov09abu
+# 15feb10abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1704,40 +1704,41 @@
                ld (C CDR) E  # Concat previous
                ld E C  # Set to first
                atom A  # Done?
-               jnz 90  # Yes
+            while z  # No
                ld C A
             loop
          end
-      end
-      link
-      push E  # <L I> 'lst'
-      link
-      call evCntXY_FE  # Eval 'cnt'
-      ld C (L I)  # Retrieve 'lst'
-      drop
-      ld X (C CDR)  # More than one element?
-      atom X
-      if z  # Yes
-         sub E 1  # 'cnt' > 1?
-         if nsz  # Yes
-            ld (C CDR) (X CDR)  # Swap first two cells
-            ld (X CDR) C
-            do
-               sub E 1  # Done?
-            while nz  # No
-               ld A (C CDR)  # More cells?
-               atom A
-            while z  # Yes
-               ld (C CDR) (A CDR)  # Swap next two cells
-               ld (A CDR) X
-               ld X A
-            loop
-            ld C X  # Return 'lst'
+      else
+         link
+         push E  # <L I> 'lst'
+         link
+         call evCntXY_FE  # Eval 'cnt'
+         ld C (L I)  # Retrieve 'lst'
+         drop
+         ld X (C CDR)  # More than one element?
+         atom X
+         if z  # Yes
+            sub E 1  # 'cnt' > 1?
+            if nsz  # Yes
+               ld (C CDR) (X CDR)  # Swap first two cells
+               ld (X CDR) C
+               do
+                  sub E 1  # Done?
+               while nz  # No
+                  ld A (C CDR)  # More cells?
+                  atom A
+               while z  # Yes
+                  ld (C CDR) (A CDR)  # Swap next two cells
+                  ld (A CDR) X
+                  ld X A
+               loop
+               ld C X  # Return 'lst'
+            end
          end
+         ld E C  # Return 'lst'
       end
-      ld E C  # Return 'lst'
    end
-90 pop Y
+   pop Y
    pop X
    ret
 

@@ -1,11 +1,11 @@
-# 21jan07abu
+# 10mar10abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
 
 (de edit @
    (let *Dbg NIL
-      (setq "*F" (tmp '"edit"))
+      (setq "*F" (tmp '"edit.l"))
       (catch NIL
          ("edit" (rest)) ) ) )
 

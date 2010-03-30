@@ -1,9 +1,9 @@
-# 04nov09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
 (de fibo (N)
-   (if (>= 2 N)
+   (if (> 2 N)
       1
       (+ (fibo (dec N)) (fibo (- N 2))) ) )
 
@@ -11,7 +11,7 @@
 # Parallelized version
 (de fibo+ (D N)  # Uses 2**D processes
    (cond
-      ((>= 1 (dec 'N)) 1)
+      ((> 1 (dec 'N)) 1)
       ((ge0 (dec 'D))
          (let (A NIL B NIL)
             (later 'A (fibo+ D N))
@@ -26,8 +26,8 @@
 
 # Using a cache (fastest)
 (de cachedFibo (N)
-   (cache '*Fibo (format N)
-      (if (>= 2 N)
+   (cache '*Fibo (format (seed N))
+      (if (> 2 N)
          1
          (+ (cachedFibo (dec N)) (cachedFibo (- N 2))) ) ) )
 
@@ -38,12 +38,12 @@
 (load "lib/native.l")
 
 (gcc "fibo" NIL
-   (cFibo (N) 'I N) )
+   (cFibo (N) "Fibo" 'I N) )
 
-int cFibo(int n) {
-   if (n <= 2)
+int Fibo(int n) {
+   if (n < 2)
       return 1;
-   return cFibo(n-1) + cFibo(n-2);
+   return Fibo(n-1) + Fibo(n-2);
 }
 /**/
 

@@ -1,4 +1,4 @@
-# 20nov09abu
+# 29mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Http1 *Chunked
@@ -103,6 +103,16 @@
 (de ext.html (Sym)
    (pack (ht:Fmt Sym) ".html") )
 
+(de disallowed ()
+   (and
+      *Allow
+      (not (idx *Allow *Url))
+      (or
+         (sub? ".." *Url)
+         (nor
+            (and *Tmp (pre? *Tmp *Url))
+            (find pre? (cdr *Allow) (circ *Url)) ) ) ) )
+
 # Application startup
 (de app ()
    (unless *SesId
@@ -184,17 +194,11 @@
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
                         (try 'html> (extern (ht:Pack @X))) )
                      ((= '@ (car @U))
-                        (if (and *Allow (not (idx *Allow *Url)))
+                        (if (disallowed)
                            (prog (msg *Url " not allowed") (http404))
                            (and *SesId (timeout *Timeout))
                            (apply (val (intern (ht:Pack (cdr @U)))) L) ) )
-                     ((and *Allow
-                           (not (idx *Allow *Url))
-                           (or
-                              (sub? ".." *Url)
-                              (nor
-                                 (and *Tmp (pre? *Tmp *Url))
-                                 (find pre? (cdr *Allow) (circ *Url)) ) ) )
+                     ((disallowed)
                         (msg *Url " not allowed")
                         (http404) )
                      ((tail '("." "l") @U)

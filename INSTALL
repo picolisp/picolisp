@@ -1,4 +1,4 @@
-24nov09abu
+16mar10abu
 (c) Software Lab. Alexander Burger
 
 
@@ -28,7 +28,7 @@ Please follow these steps:
 
       $ (cd src; make picolisp)
 
-   or, if you have an x86-64 Linux system, you can try the 64-bit version
+   or, if you have an x86-64 Linux system, build the 64-bit version
 
       $ (cd src64; make picolisp)
 
@@ -40,8 +40,11 @@ Please follow these steps:
 4. Optional (but recommended) are two symbolic links from /usr/lib and /usr/bin
    to the installation directory
 
-      $ ln -s /<installdir> /usr/lib/picolisp
-      $ ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+      # ln -s /<installdir> /usr/lib/picolisp
+      # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+
+   In that case, you might also copy the script bin/pil to /usr/bin, for a
+   convenient global invocation.
 
 
       Invocation

@@ -1,4 +1,4 @@
-/* 14sep09abu
+/* 25mar10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -11,8 +11,6 @@ static char *HtOK[] = {
    "<p>",      "</p>",
    "<pre>",    "</pre>",
    "<div ",    "</div>",
-   "<font ",   "</font>",
-   "<img ",    "</img>",
    "<br>", "<hr>", NULL
 };
 

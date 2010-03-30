@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -138,6 +138,21 @@ href="refA.html#assoc">assoc</a></code>.
 -> (22 . 100)
 : Sum
 -> ((22 . 100) (a . 6))
+</code></pre>
+
+<dt><a name="acquire"><code>(acquire 'sym) -> flg</code></a>
+<dd>Tries to acquire the mutex represented by the file <code>sym</code>, by
+obtaining an exclusive lock on that file with <code><a
+href="refC.html#ctl">ctl</a></code>, and then trying to write the PID of the
+current process into that file. It fails if the file already holds the PID of
+some other existing process. See also <code><a
+href="refR.html#release">release</a></code>, <code><a
+href="refP.html#*Pid">*Pid</a></code> and <code><a
+href="refR.html#rc">rc</a></code>.
+
+<pre><code>
+: (acquire <u>sema1</u>)
+-> 28255
 </code></pre>
 
 <dt><a name="alarm"><code>(alarm 'cnt . prg) -> cnt</code></a>
@@ -392,8 +407,8 @@ match is found. <code><a href="ref_.html#==">==</a></code> is used for
 comparison (pointer equality). See also <code><a
 href="refA.html#assoc">assoc</a></code>, <code><a
 href="refD.html#delq">delq</a></code>, <code><a
-href="refM.html#memq">memq</a></code> and <code><a
-href="refM.html#mmeq">mmeq</a></code>.
+href="refM.html#memq">memq</a></code>, <code><a
+href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
 : (asoq 999 '((999 1 2 3) (b . 7) (<u>ok</u> <u>Hello</u>)))

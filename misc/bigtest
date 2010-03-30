@@ -1,27 +1,38 @@
 #!bin/picolisp lib.l
-# 23oct09abu
+# 23jan10abu
 # misc/bigtest <seed>
 
 (load "lib/misc.l")
 
 (seed (car (argv)))
 
+#  Random patterns:
+#  cnt
+#     xxx0000000000000000000000000xxxx0000000000000000000000000xxx
+#        (| 7 (>> -28 15) (>> -57 7))
+#
+#     xxx1111111111111111111111111xxxx1111111111111111111111111xxx
+#        1FFFFFF0FFFFFF8
+#
+#
+#  dig
+#     xxx000000000000000000000000000xxxx000000000000000000000000000xxx
+#        (| 7 (>> -30 15) (>> -61 7))
+#
+#     xxx111111111111111111111111111xxxx111111111111111111111111111xxx
+#        1FFFFFFC3FFFFFF8
+
 (de rnd ()
-   (let N
-      (if (rand T)
-         (hex
-            (pack
-               (make
-                  (do (rand 1 5)
-                     (link (if (rand T) "FFFFFFFF" "00000000")) ) ) ) )
-         (let L
-            (make
-               (do (rand 1 60)
-                  (link (char (+ 48 (rand 0 9)))) ) )
-            (while (and (= "0" (car L)) (cdr L))
-               (pop 'L) )
-            (format (pack L)) ) )
-      (if (rand T) N (- N)) ) )
+   (let (Big (| (rand 0 7) (>> -28 (rand 0 15)) (>> -57 (rand 0 7)))  N -60)
+      (when (rand T)
+         (setq Big (| Big `(hex "1FFFFFF0FFFFFF8"))) )
+      (do (rand 0 2)
+         (let Dig (| (rand 0 7) (>> -30 (rand 0 15)) (>> -61 (rand 0 7)))
+            (when (rand T)
+               (setq Dig (| Dig `(hex "1FFFFFFC3FFFFFF8"))) )
+            (setq Big (| Big (>> N Dig)))
+            (dec 'N 64) ) )
+      (if (rand T) Big (- Big)) ) )
 
 
 (de test1 (S N1)

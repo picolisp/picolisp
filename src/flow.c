@@ -1,4 +1,4 @@
-/* 06nov09abu
+/* 23mar10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -375,20 +375,11 @@ any method(any x) {
    any y, z;
 
    if (isCell(y = val(x))) {
-      if (isCell(car(y))) {
-         if (caar(y) == TheKey)
-            return cdar(y);
-         for (;;) {
-            z = y;
-            if (!isCell(y = cdr(y)))
-               return NULL;
-            if (!isCell(car(y)))
-               break;
-            if (caar(y) == TheKey) {
-               cdr(z) = cdr(y),  cdr(y) = val(x),  val(x) = y;
-               return cdar(y);
-            }
-         }
+      while (isCell(z = car(y))) {
+         if (car(z) == TheKey)
+            return cdr(z);
+         if (!isCell(y = cdr(y)))
+            return NULL;
       }
       do
          if (x = method(car(TheCls = y)))
@@ -1052,9 +1043,9 @@ any doCase(any x) {
    return Nil;
 }
 
-// (state 'var ((sym|lst sym [. prg]) . prg) ..) -> any
+// (state 'var (sym|lst exe [. prg]) ..) -> any
 any doState(any ex) {
-   any x, y, z, a;
+   any x, y, a;
    cell c1;
 
    x = cdr(ex);
@@ -1062,17 +1053,13 @@ any doState(any ex) {
    NeedVar(ex,data(c1));
    CheckVar(ex,data(c1));
    while (isCell(x = cdr(x))) {
-      y = caar(x),  z = car(y);
-      if (z==T || memq(val(data(c1)),z)) {
+      y = car(x);
+      if (car(y) == T || memq(val(data(c1)), car(y))) {
          y = cdr(y);
-         if (!isCell(cdr(y)))
-            goto st1;
-         if (!isNil(a = prog(cdr(y)))) {
-            val(At) = a;
-         st1:
-            val(data(c1)) = car(y);
+         if (!isNil(a = EVAL(car(y)))) {
+            val(At) = val(data(c1)) = a;
             drop(c1);
-            return prog(cdar(x));
+            return prog(cdr(y));
          }
       }
    }
@@ -1204,6 +1191,7 @@ any doAt(any ex) {
    return prog(cddr(ex));
 }
 
+// (for sym 'num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 // (for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 // (for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any
 any doFor(any x) {
@@ -1233,9 +1221,23 @@ any doFor(any x) {
       }
       y = Nil;
       x = cdr(x),  Push(c1, EVAL(car(x)));
+      if (isNum(data(c1)))
+         val(f.bnd[0].sym) = Zero;
       body = x = cdr(x);
-      while (isCell(data(c1))) {
-         val(f.bnd[0].sym) = car(data(c1)),  data(c1) = cdr(data(c1));
+      for (;;) {
+         if (isNum(data(c1))) {
+            val(f.bnd[0].sym) = bigCopy(val(f.bnd[0].sym));
+            digAdd(val(f.bnd[0].sym), 2);
+            if (bigCompare(val(f.bnd[0].sym), data(c1)) > 0)
+               break;
+         }
+         else {
+            if (!isCell(data(c1)))
+               break;
+            val(f.bnd[0].sym) = car(data(c1));
+            if (!isCell(data(c1) = cdr(data(c1))))
+               data(c1) = Nil;
+         }
          if (f.cnt == 2) {
             val(f.bnd[1].sym) = bigCopy(val(f.bnd[1].sym));
             digAdd(val(f.bnd[1].sym), 2);
@@ -1524,6 +1526,7 @@ any doCall(any ex) {
    flushAll();
    if ((pid = fork()) == 0) {
       setpgid(0,0);
+      tcsetpgrp(0,getpgrp());
       execvp(av[0], av);
       execError(av[0]);
    }
@@ -1533,8 +1536,7 @@ any doCall(any ex) {
    if (pid < 0)
       err(ex, NULL, "fork");
    setpgid(pid,0);
-   if (Termio)
-      tcsetpgrp(0,pid);
+   tcsetpgrp(0,pid);
    for (;;) {
       while (waitpid(pid, &res, WUNTRACED) < 0) {
          if (errno != EINTR)
@@ -1542,13 +1544,11 @@ any doCall(any ex) {
          if (Signal)
             sighandler(ex);
       }
-      if (Termio)
-         tcsetpgrp(0,getpgrp());
+      tcsetpgrp(0,getpgrp());
       if (!WIFSTOPPED(res))
          return res == 0? T : Nil;
       load(NULL, '+', Nil);
-      if (Termio)
-         tcsetpgrp(0,pid);
+      tcsetpgrp(0,pid);
       kill(pid, SIGCONT);
    }
 }
@@ -1647,6 +1647,8 @@ pid_t forkLisp(any ex) {
       for (p = CatchPtr; p; p = ((catchFrame*)p)->link)
          ((catchFrame*)p)->fin = Zero;
       free(Termio),  Termio = NULL;
+      if (Repl)
+         ++Repl;
       val(PPid) = val(Pid);
       val(Pid) = boxCnt(getpid());
       run(val(Fork));

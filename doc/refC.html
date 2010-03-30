@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -36,7 +36,7 @@ calculation.
 <pre><code>
 : (de fibonacci (N)
    (cache '*Fibonacci (format N)
-      (if (< N 2)
+      (if (> 2 N)
          1
          (+
             (fibonacci (dec N))
@@ -141,7 +141,8 @@ elements <code>anyN</code> of each clause. If one of them is a list,
 <code>any</code> is in turn compared to all elements of that list.
 <code>T</code> is a catch-all for any value. If a comparison succeeds,
 <code>prgN</code> is executed, and the result returned. Otherwise
-<code>NIL</code> is returned.
+<code>NIL</code> is returned. See also <code><a
+href="refS.html#state">state</a></code>.
 
 <pre><code>
 : (case (char 66) (<u>A</u> (+ 1 2 3)) ((<u>B</u> <u>C</u>) <u>Bambi</u>) (<u>D</u> (* 1 2 3)))
@@ -561,9 +562,7 @@ files does not exist, it will be created. When <code>sym</code> is
 and when it is <code>T</code>, an exclusive lock is tried instead. See also
 <code><a href="refI.html#in">in</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
-href="refO.html#out">out</a></code>. Note: It is not recommended to lock a file
-by name and then do I/O on the same file, as this may give unexpected results on
-some operating systems.
+href="refO.html#out">out</a></code>.
 
 <pre><code>
 $ echo 9 >count                           # Write '9' to file "count"

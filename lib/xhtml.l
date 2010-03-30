@@ -1,4 +1,4 @@
-# 04dec09abu
+# 02mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -290,6 +290,9 @@
          (eval (car Lst) 1)
          (run (cdr Lst) 1) ) ) )
 
+(de tip ("Str" "Txt")
+   (<span> (cons 'title "Str") "Txt") )
+
 (de <tip> ("Str" . "Prg")
    (style (cons 'title "Str") "Prg") )
 
@@ -307,7 +310,7 @@
                   ((car L) (<li> NIL (htPrin (cdr L) 2)))
                   ((=T (car L))
                      (if (setq U (eval (cadr L) E))
-                        (<li> (pack (if (or (<> U *Url) (caddr L)) 'cmd 'act) N)
+                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
                            (<tip> "-->"
                               (<href> (eval (car L) E)
                                  (urlMT U *Menu (if (= U *Url) *Tab 1)
@@ -389,7 +392,12 @@
                         (get *ID Var) )
                      ((isa '+Fold Rel)
                         (cons (fold (get *ID Var)) *ID) )
-                     (T (cons (get *ID Var) *ID)) )
+                     (T
+                        (cons
+                           (get *ID Var)
+                           (conc
+                              (mapcar '((S) (get *ID S)) (; Rel aux))
+                              *ID ) ) ) )
                   Q1 (init (tree Var Cls Hook) K NIL)
                   Q2 (init (tree Var Cls Hook) K T) )
                (unless (get *ID T)
@@ -587,15 +595,15 @@
    (dfltCss "select")
    (prin '>)
    (for "X" Lst
-      (let "V" (if (atom "X") "X" (cdr "X"))
+      (let "V" (if (atom "X") "X" (car "X"))
          (prin
             "<option"
-            (and (pair "X") (pack " value=\"" "V" "\""))
+            (and (pair "X") (pack " title=\"" (cdr "X") "\""))
             (cond
                ((= "V" (htmlVal "Var")) " selected=\"selected\"")
                (Flg " disabled=\"disabled\"") )
-            '> ) )
-      (ht:Prin (if (atom "X") "X" (car "X")))
+            '> )
+         (ht:Prin "V") )
       (prin "</option>") )
    (prinl "</select>") )
 

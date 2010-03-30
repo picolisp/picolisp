@@ -1,4 +1,4 @@
-# 06aug09abu
+# 08mar10abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
@@ -29,25 +29,27 @@
                      (NIL ,"Zip")
                      (NIL ,"City")
                      (align ,"Price") ) )
-               (pilog
-                  (quote
-                     @Rng (cons *InvFrom (or *InvTill T))
-                     @Nm *InvNm
-                     @Sup *InvSup
-                     (select (@Item)
-                        ((nr +Item @Rng) (nm +Item @Nm) (sup +Item @Sup))
-                        (range @Rng @Item nr)
-                        (tolr @Nm @Item nm)
-                        (same @Sup @Item sup) ) )
-                  (with @Item
-                     (<row> (alternating)
-                        (<+> (: nr) This)
-                        (<+> (: nm) This)
-                        (<+> (cnt> This))
-                        (<+> (: sup nm) (: sup))
-                        (<+> (: sup nm2))
-                        (<+> (: sup plz))
-                        (<+> (: sup ort))
-                        (<-> (money (: pr))) ) ) ) ) ) ) ) )
+               (catch NIL
+                  (pilog
+                     (quote
+                        @Rng (cons *InvFrom (or *InvTill T))
+                        @Nm *InvNm
+                        @Sup *InvSup
+                        (select (@Item)
+                           ((nr +Item @Rng) (nm +Item @Nm) (sup +Item @Sup))
+                           (range @Rng @Item nr)
+                           (tolr @Nm @Item nm)
+                           (same @Sup @Item sup) ) )
+                     (with @Item
+                        (<row> (alternating)
+                           (<+> (: nr) This)
+                           (<+> (: nm) This)
+                           (<+> (cnt> This))
+                           (<+> (: sup nm) (: sup))
+                           (<+> (: sup nm2))
+                           (<+> (: sup plz))
+                           (<+> (: sup ort))
+                           (<-> (money (: pr))) ) )
+                     (at (0 . 10000) (or (flush) (throw))) ) ) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 25jan08abu
+# 11mar10abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/simul.l")
@@ -47,8 +47,10 @@
          (cons A @) ) ) )
 
 # Minimize trip from 'A' to 'B'
-(de trip (Cnt A B)
-   (gen Cnt
+(de trip (Pop Gen A B)
+   (gen
+      (make (do Pop (link (route A B))))  # Population
+      '((Pop) (lt0 (dec 'Gen)))  # Condition
       '((X Y)  # Recombination
          (make
             (while (prog (link (pop 'X)) X)
@@ -68,16 +70,15 @@
             (-
                (sum
                   '((X) (get A (setq A X)))
-                  L ) ) ) )
-      (route A B) ) )
+                  L ) ) ) ) ) )
 
-# Optimum hit percentage
-(de tst (Cnt)
+# Optimum hit percentage, e.g. (tst 12 8)
+(de tst (Pop Gen)
    (let OK 0
       (do 100
          (when
             (=
-               (trip Cnt 'Rheine 'Paderborn)
+               (trip Pop Gen 'Rheine 'Paderborn)
                '(Rheine Muenster Warendorf Rheda Paderborn) )
             (inc 'OK) ) )
       OK ) )

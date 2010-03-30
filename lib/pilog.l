@@ -1,4 +1,4 @@
-# 11dec09abu
+# 28jan10abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -436,9 +436,7 @@
             X ) ) ) )
 
 (de "initSel" ()
-   (with (or (get Cls Var) (meta Cls Var))
-      (when (find '((B) (isa '+index B)) (: bag))
-         (setq This @) )
+   (with (treeRel Var Cls)
       (cond
          ((isa '+Fold This)
             (initQuery Var (: cls) Hook (fold Val)) )

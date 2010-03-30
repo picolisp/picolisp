@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -85,10 +85,22 @@ href="ref_.html#::">::</a></code>.
 -> (9 8 1 2)
 </code></pre>
 
-<dt><a name="vi"><code>(vi 'sym)</code></a>
-<dt><code>(vi 'sym 'cls)</code>
-<dt><code>(vi '(sym . cls))</code>
-<dt><code>(vi)</code>
+<dt><a name="version"><code>(version ['flg]) -> lst</code></a>
+<dd>(64-bit version only) Prints the current version as a string of
+dot-separated numbers, and returns the current version as a list of numbers.
+When <code>flg</code> is non-NIL, printing is suppressed.
+
+<pre><code>
+$ ./p -version
+3.0.1.22
+: (version T)
+-> (3 0 1 22)
+</code></pre>
+
+<dt><a name="vi"><code>(vi 'sym) -> sym</code></a>
+<dt><code>(vi 'sym 'cls) -> sym</code>
+<dt><code>(vi '(sym . cls)) -> sym</code>
+<dt><code>(vi) -> NIL</code>
 <dd>Opens the "vi" editor on the function or method definition of
 <code>sym</code>. A call to <code><a href="refL.html#ld">ld</a></code>
 thereafter will <code><a href="refL.html#load">load</a></code> the modified

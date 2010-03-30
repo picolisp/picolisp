@@ -1,4 +1,4 @@
-# 16sep09abu
+# 12mar10abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -109,14 +109,9 @@
                            (lintVar (cdar "Y"))
                            (mapc lint1 (cddr "Y"))
                            (lintLoop (cddr "X")) ) ) ) ) )
-            (case
+            ((case state)
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
-                  (mapc lint1 (cdr "X")) ) )
-            (state
-               (lint1 (cadr "X"))
-               (for "X" (cddr "X")
-                  (mapc lint1 (cddar "X"))
                   (mapc lint1 (cdr "X")) ) )
             ((cond nond)
                (for "X" (cdr "X")

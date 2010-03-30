@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -350,7 +350,8 @@ href="refG.html#genKey">genKey</a></code>.
 additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns that element from <code>lst</code> for that
 <code>fun</code> returned a maximal value. See also <code><a
-href="refM.html#mini">mini</a></code>.
+href="refM.html#mini">mini</a></code> and <code><a
+href="refS.html#sort">sort</a></code>.
 
 <pre><code>
 : (setq A 1  B 2  C 3)
@@ -400,8 +401,8 @@ href="refM.html#member">member</a></code>.
 <code><a href="ref_.html#==">==</a></code> is used for comparison (pointer
 equality). See also <code><a href="refM.html#member">member</a></code>, <code><a
 href="refM.html#mmeq">mmeq</a></code>, <code><a
-href="refA.html#asoq">asoq</a></code> and <code><a
-href="refD.html#delq">delq</a></code>.
+href="refA.html#asoq">asoq</a></code>, <code><a
+href="refD.html#delq">delq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
 : (memq 'c '(a b c d e f))
@@ -494,7 +495,8 @@ href="refG.html#genKey">genKey</a></code>.
 additional <code>lst</code> arguments are given, their elements are also passed
 to <code>fun</code>. Returns that element from <code>lst</code> for that
 <code>fun</code> returned a minimal value. See also <code><a
-href="refM.html#maxi">maxi</a></code>.
+href="refM.html#maxi">maxi</a></code> and <code><a
+href="refS.html#sort">sort</a></code>.
 
 <pre><code>
 : (setq A 1  B 2  C 3)
@@ -507,7 +509,7 @@ href="refM.html#maxi">maxi</a></code>.
 <dd>Builds a list from the elements of the argument <code>lst</code>, as
 specified by the following <code>cnt|'any</code> arguments. If such an argument
 is a number, the <code>cnt</code>'th element from <code>lst</code> is taken,
-otherwise that arguments is evaluated and the result is used.
+otherwise that argument is evaluated and the result is used.
 
 <pre><code>
 : (mix '(a b c d) 3 4 1 2)

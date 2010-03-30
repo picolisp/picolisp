@@ -1,34 +1,34 @@
-# 04jan09abu
+# 04feb10abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l")
 
 ### DB ###
 (class +Person +Entity)
-(rel nm     (+Need +Sn +Idx +String))           # Name
-(rel pa     (+Joint) kids (+Man))               # Father
-(rel ma     (+Joint) kids (+Woman))             # Mother
-(rel mate   (+Joint) mate (+Person))            # Partner
-(rel job    (+Ref +String))                     # Occupation
-(rel dat    (+Ref +Date))                       # born
-(rel fin    (+Ref +Date))                       # died
-(rel txt    (+String))                          # Info
+(rel nm (+Need +Sn +Idx +String))      # Name
+(rel pa (+Joint) kids (+Man))          # Father
+(rel ma (+Joint) kids (+Woman))        # Mother
+(rel mate (+Joint) mate (+Person))     # Partner
+(rel job (+Ref +String))               # Occupation
+(rel dat (+Ref +Date))                 # born
+(rel fin (+Ref +Date))                 # died
+(rel txt (+String))                    # Info
 
 (dm url> (Tab)
    (list "@person" '*ID This) )
 
 
 (class +Man +Person)
-(rel kids   (+List +Joint) pa (+Person))        # Children
+(rel kids (+List +Joint) pa (+Person)) # Children
 
 (class +Woman +Person)
-(rel kids   (+List +Joint) ma (+Person))        # Children
+(rel kids (+List +Joint) ma (+Person)) # Children
 
 (dbs
-   (0)                                          # (1 . 64)
-   (2 +Person)                                  # (2 . 256)
-   (3 (+Person nm))                             # (3 . 512)
-   (3 (+Person job dat fin)) )                  # (4 . 512)
+   (0)                                 # (1 . 64)
+   (2 +Person)                         # (2 . 256)
+   (3 (+Person nm))                    # (3 . 512)
+   (3 (+Person job dat fin)) )         # (4 . 512)
 
 
 ### GUI ###
@@ -227,7 +227,7 @@
 
 ### RUN ###
 (de main ()
-   (pool "doc/family" *Dbs)
+   (pool "doc/family/" *Dbs)
    (unless (val *DB)
       (put>
          (set *DB (request '(+Man) 'nm "Adam"))

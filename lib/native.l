@@ -1,4 +1,4 @@
-# 03nov09abu
+# 19feb10abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (Nm L . Lst)
@@ -16,7 +16,7 @@
       (def (car L)
          (list
             (cadr L)
-            (cons 'native (tmp Nm) (name (car L)) (cddr L)) ) )
+            (cons 'native (tmp Nm) (name (caddr L)) (cdddr L)) ) )
       (when (== '@ (fin (cadr L)))
          (push (cdaar L) 'pass) ) ) )
 

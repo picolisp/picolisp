@@ -1,4 +1,4 @@
-# 27aug09abu
+# 03mar10abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -25,7 +25,7 @@ ifeq ($(shell uname), Darwin)
 endif
 endif
 
-baseFiles = glob.l main.l sys/$(SYS).code.l \
+baseFiles = version.l glob.l main.l sys/$(SYS).code.l \
 	gc.l apply.l flow.l sym.l subr.l big.l io.l db.l net.l err.l
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
@@ -49,13 +49,13 @@ $(lib)/ht: $(ARCH).$(SYS).ht.o
 	as -o $*.o $*.s
 
 $(ARCH).$(SYS).base.s: $(baseFiles)
-	./mkAsm $(ARCH) $(SYS) $(OS) base $(baseFiles)
+	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/tags $(baseFiles)
 
 $(ARCH).$(SYS).ext.s: ext.l
-	./mkAsm $(ARCH) $(SYS) $(OS) ext -fpic ext.l
+	./mkAsm $(ARCH) $(SYS) $(OS) ext "" -fpic ext.l
 
 $(ARCH).$(SYS).ht.s: ht.l
-	./mkAsm $(ARCH) $(SYS) $(OS) ht -fpic ht.l
+	./mkAsm $(ARCH) $(SYS) $(OS) ht "" -fpic ht.l
 
 
 # Clean up

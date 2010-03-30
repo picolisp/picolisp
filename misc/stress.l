@@ -1,12 +1,12 @@
-# 20aug09abu
+# 22mar10abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
 (load "lib/too.l")
 
 (class +A +Entity)
-(rel key    (+Key +Number))                     # Key  1 .. 999
-(rel dat    (+Ref +Number))                     # Data 1 .. 999
+(rel key (+Key +Number))               # Key  1 .. 999
+(rel dat (+Ref +Number))               # Data 1 .. 999
 
 (de rnd ()
    (rand 1 999) )
@@ -43,7 +43,7 @@
    (call 'rm "-f" "db/test" "jnl" "db/test2")
    (pool "db/test" NIL "jnl")
    (set *DB 0)
-   (for (K 1 (<= K 999) (inc K))
+   (for K 999
       (let D (rnd)
          (new T '(+A)  'key K  'dat D)
          (inc *DB D) ) )

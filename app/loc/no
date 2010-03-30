@@ -1,0 +1,86 @@
+# 14jan10jk
+# Jon Kleiser, jon.kleiser@usit.uio.no
+
+"(@1 Positions)" "(@1 Posisjoner)"
+
+"Address" "Adresse"
+
+"Can't print order" "Kan ikke skrive ut bestilling"
+"Change" "Endre"
+"City" "By"
+"Contact" "Kontakt"
+"Continued on page @1" "Fortsettes på side @1"
+"Country" "Land"
+"Customer" "Kunde"
+"Customer/Supplier" "Kunde/Leverandør"
+"Customers/Suppliers" "Kunder/Leverandører"
+
+"Data" "Data"
+"Date" "Dato"
+"Dear Sir or Madam," "Kjære frue/herre,"
+"Description" "Beskrivelse"
+
+"eMail" "e-post"
+
+"Fax" "Fax"
+"Full Name" "Fullt navn"
+
+"Greeting" "Hilsen"
+
+"Home" "Startside"
+
+"Incomplete customer address" "Ufullstendig kundeadresse"
+"Install" "Installer"
+"Inventory" "Lagerbeholdning"
+"Item" "Artikkel"
+"Items" "Artikler"
+
+"Login Name" "Innloggingsnavn"
+
+"Memo" "Merknad"
+"Mobile" "Mobil"
+
+"Name" "Navn"
+"Name 2" "Navn 2"
+"No customer" "Kunde mangler"
+"No customer name" "Kundenavn mangler"
+"No customer number" "Kundenummer mangler"
+"No item description" "Artikkelbeskrivelse mangler"
+"No item number" "Artikkelnummer mangler"
+"No order date" "Bestillingsdato mangler"
+"No order number" "Bestillingsnummer mangler"
+"No positions" "Ingen posisjoner"
+"Number" "Nummer"
+
+"Order" "Bestilling"
+"Orders" "Bestillinger"
+
+"Page @1" "Side @1"
+"PDF-Print" "PDF-utskrift"
+"Phone" "Telefon"
+"Picture" "Bilde"
+"Position without item" "Posisjon uten artikkel"
+"Position without price" "Posisjon uten pris"
+"Position without quantity" "Posisjon uten antall"
+"Price" "Pris"
+
+"Quantity" "Antall"
+
+"Report" "Rapport"
+"Role Administration" "Rolle-administrasjon"
+
+"Sales" "Salg"
+"Salutation" "Titulering"
+"Salutations" "Tituleringer"
+"Sex" "Kjønn"
+"Street" "Gate"
+"Supplier" "Leverandør"
+"System" "System"
+
+"Total" "Total"
+
+"Uninstall" "Av-installer"
+"Uninstall Picture?" "Av-installere bilde?"
+"User Administration" "Bruker-administrasjon"
+
+"Zip" "Postnr."

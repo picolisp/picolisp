@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/1998/REC-html40-19980424/loose.dtd">
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -377,7 +377,8 @@ and <code><a href="ref_.html#::">::</a></code>.
 
 <dt><a name="=="><code>(== 'any ..) -> flg</code></a>
 <dd>Returns <code>T</code> when all <code>any</code> arguments are the same
-(pointer equality). See also <code><a href="refN.html#n==">n==</a></code>.
+(pointer equality). See also <code><a href="refN.html#n==">n==</a></code> and <a
+href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
 : (== 'a 'a)
@@ -460,7 +461,7 @@ performed.
 
 <dt><a name="?"><code>(? [sym ..] [pat 'any ..] . lst) -> flg</code></a>
 <dd>Top-level function for interactive <a href="ref.html#pilog">Pilog</a>
-queries. <code>?</code> is a non-evaluating frontend to the <code><a
+queries. <code>?</code> is a non-evaluating front-end to the <code><a
 href="refQ.html#query">query</a></code> function. It displays each result, waits
 for console input, and terminates when a non-empty line is entered. If a
 preceding list of (non-pattern-) symbols is given, they will be taken as rules

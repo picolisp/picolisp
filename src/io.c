@@ -1,4 +1,4 @@
-/* 25nov09abu
+/* 05feb10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -388,11 +388,8 @@ void binPrint(int extn, any x) {
          binPrint(extn, y);
       else if (!isExt(x))
          prNum(hashed(x, ihash(y), Intern)? INTERN : TRANSIENT, y);
-      else {
-         if (extn)
-            y = extOffs(-extn, y);
-         prNum(EXTERN, y);
-      }
+      else
+         prNum(EXTERN, extn? extOffs(-extn, y) : y);
    }
    else {
       y = x;
@@ -2256,7 +2253,7 @@ void print1(any x) {
             c = symByte(name(x));
          }
          do {
-            if (c == '"'  ||  c == '^'  ||  c == '\\')
+            if (c == '\\'  ||  c == '^'  ||  !tsm && c == '"')
                Env.put('\\');
             else if (c == 127)
                Env.put('^'),  c = '?';
@@ -2526,6 +2523,7 @@ any doRpc(any x) {
 #define BLK 6
 #define TAGMASK (BLKSIZE-1)
 #define BLKMASK (~TAGMASK)
+#define EXTERN64 65536
 
 static int F, Files, *BlkShift, *BlkFile, *BlkSize, *Fluse, MaxBlkSize;
 static FILE *Jnl, *Log;
@@ -2573,7 +2571,7 @@ any new64(adr n, any x) {
          w = w << 8 | c + '0';
       } while (i >>= 6);
    }
-   return hi(w)? consNum(num(w), consNum(hi(w), x)) :  consNum(num(w), x);
+   return hi(w)? consNum(num(w), consNum(hi(w), x)) : consNum(num(w), x);
 }
 
 adr blk64(any x) {
@@ -2602,11 +2600,23 @@ adr blk64(any x) {
 }
 
 any extOffs(int offs, any x) {
+   int f = F;
    adr n = blk64(x);
 
-   if ((F += offs) < 0)
-      err(NULL, NULL, "%d: Bad DB offset", F);
-   return new64(n, Nil);
+   if (offs != -EXTERN64) {
+      if ((F += offs) < 0)
+         err(NULL, NULL, "%d: Bad DB offset", F);
+      x = new64(n, Nil);
+   }
+   else {  // Undocumented 64-bit DB export
+      adr w = n & 0xFFFFF | (F & 0xFF) << 20;
+
+      w |= ((n >>= 20) & 0xFFF) << 28;
+      w |= (adr)(F >> 8) << 40 | (n >> 12) << 48;
+      x = hi(w)? consNum(num(w), consNum(hi(w), Nil)) : consNum(num(w), Nil);
+   }
+   F = f;
+   return x;
 }
 
 /* DB Record Locking */
@@ -3222,7 +3232,7 @@ void db(any ex, any s, int a) {
 // (commit ['any] [exe1] [exe2]) -> flg
 any doCommit(any ex) {
    bool note;
-   int i;
+   int i, extn;
    adr n;
    cell c1;
    any x, y, z;
@@ -3270,8 +3280,13 @@ any doCommit(any ex) {
          fsyncErr(ex, "Transaction");
    }
    x = cddr(ex),  EVAL(car(x));
-   if (note = !isNil(data(c1)) && (Tell || Children))
-      tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
+   if (data(c1) == T)
+      note = NO,  extn = EXTERN64;  // Undocumented 64-bit DB export
+   else {
+      extn = 0;
+      if (note = !isNil(data(c1)) && (Tell || Children))
+         tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
+   }
    for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          for (y = tail1(car(x)); isCell(y); y = cdr(y));
@@ -3284,12 +3299,12 @@ any doCommit(any ex) {
                rdBlock(n*BLKSIZE);
                Block[0] |= 1;  // Might be new
                putBin = putBlock;
-               binPrint(0, val(y = car(x)));
+               binPrint(extn, val(y = car(x)));
                for (y = tail1(y);  isCell(y);  y = cdr(y)) {
                   if (isCell(car(y)))
-                     binPrint(0, cdar(y)), binPrint(0, caar(y));
+                     binPrint(extn, cdar(y)), binPrint(extn, caar(y));
                   else
-                     binPrint(0, car(y)), binPrint(0, T);
+                     binPrint(extn, car(y)), binPrint(extn, T);
                }
                putBlock(NIX);
                setAdr(Block[0] & TAGMASK, Block);  // Clear Link

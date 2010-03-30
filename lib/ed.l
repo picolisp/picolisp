@@ -1,4 +1,4 @@
-# 21jan07abu
+# 27feb10abu
 # (c) Software Lab. Alexander Burger
 
 # Structure Editor
@@ -25,9 +25,9 @@
          (T (member (setq C (key)) '("^H" "^?")) X)
          (T (= C "^I") (on "Done") X)
          (setq X
-            (if (<= "1" C "9")
+            (if (>= "9" C "1")
                (cons
-                  (head (setq C (- (char C) `(char "0"))) X)
+                  (head (setq C (format  C)) X)
                   (nth X (inc C)) )
                (case (uppc C)
                   (("^M" "^J") (cons (_ed (car X)) (cdr X)))

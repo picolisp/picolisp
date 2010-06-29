@@ -1,0 +1,28 @@
+26apr10abu
+(c) Software Lab. Alexander Burger
+
+
+         Transient Symbol Markup for 'vim'
+         =================================
+
+1. Compile 'vim' with Vince Negri's "Conceal" patch:
+   http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines
+
+   patch -p0 < conceal-ownsyntax.diff
+   make distclean
+   ./configure --with-features=huge
+   make VIMRUNTIMEDIR=~/local/vim72/runtime MAKE="make -e"
+   cd ~/bin
+   ln -s ~/local/vim72/src/vim
+   ln vim vi
+   ln vim view
+
+
+2. Then put into your ".vimrc" or vim syntax file:
+
+   if has("conceal")
+      set conceallevel=2
+      syn region picoLispTransient concealends matchgroup=picoLispString start=/"/ skip=/\\\\\|\\"/ end=/"/
+      hi picoLispTransient gui=underline term=underline cterm=underline
+      hi picoLispString ctermfg=red guifg=red
+   endif

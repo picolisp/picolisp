@@ -1,4 +1,4 @@
-# 23feb10abu
+# 10jun10abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -627,7 +627,7 @@
    do
       ld B (E)
       call byteSymBCX_CX  # Pack byte
-      add E 1  # Next byte
+      inc E  # Next byte
       nul (E)  # Any?
    until z
    call cons_E  # Cons symbol
@@ -651,7 +651,7 @@
       call byteSymBCX_CX  # Pack byte
       cmp E Z  # Reached Z?
    while ne  # No
-      add E 1  # Next byte
+      inc E  # Next byte
       nul (E)  # Any?
    until z
    call cons_A  # Cons symbol
@@ -1180,6 +1180,8 @@
       do  # List
          push (E CDR)  # Save rest
          ld E (E)  # Recurse on CAR
+         cmp S (StkLimit)  # Stack check
+         jlt stkErr
          call packECX_CX
          pop E  # Done?
          atom E
@@ -1825,7 +1827,7 @@
             ld C (C CDR)  # More elements?
             atom C
          while z  # Yes
-            sub Y 1  # Count?
+            dec Y  # Count?
          while nz  # Yes
             call cons_A  # Copy next cell
             ld (A) (C)
@@ -2521,7 +2523,7 @@
          if nc  # Yes
             jz retNil  # Return NIL if zero
             do
-               sub C 1  # nth
+               dec C  # nth
                jz retE_E
                ld E (E CDR)
             loop
@@ -2529,7 +2531,7 @@
          # Key is negative
          do
             ld E (E CDR)
-            sub C 1  # nth
+            dec C  # nth
          until z
          ret
       end
@@ -3188,6 +3190,8 @@
             jne Ret  # No
             push X
             ld X ((X))  # Try in superclass(es)
+            cmp S (StkLimit)  # Stack check
+            jlt stkErr
             call metaCX_E
             pop X
             cmp E Nil  # found?

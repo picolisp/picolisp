@@ -1,4 +1,4 @@
-# 22mar10abu
+# 26apr10abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -248,23 +248,21 @@
             (off "Complete")
             (do 3 (insChar " ")) )
          (ifn
-            (or
-               "Complete"
-               (setq "Complete"
-                  (let "N" (inc (length "S"))
-                     (mapcar
-                        '((X)
-                           (setq X
-                              (nth
-                                 (mapcar
-                                    '((C)
-                                       (if (delim? C) (pack "\\" C) C) )
-                                    (chop X) )
-                                 "N" ) )
-                           (cons
-                              (+ "LPos" (length X))
-                              (append "L" X (nth "Line" "LPos")) ) )
-                        ("tabFun" (pack "S")) ) ) ) )
+            (default "Complete"
+               (let "N" (inc (length "S"))
+                  (mapcar
+                     '((X)
+                        (setq X
+                           (nth
+                              (mapcar
+                                 '((C)
+                                    (if (delim? C) (pack "\\" C) C) )
+                                 (chop X) )
+                              "N" ) )
+                        (cons
+                           (+ "LPos" (length X))
+                           (append "L" X (nth "Line" "LPos")) ) )
+                     ("tabFun" (pack "S")) ) ) )
             (beep)
             (chgLine (cdar "Complete") (caar "Complete"))
             (rot "Complete") ) ) ) )
@@ -381,7 +379,18 @@
 
 # Main editing functions
 (de _led ("Line1" "tabFun" "skipFun")
-   (default "tabFun" '((S) (filter '((X) (pre? S X)) (all))))
+   (default "tabFun"
+      '((S)
+         (conc
+            (filter '((X) (pre? S X)) (all))
+            (let P (rot (split (chop S) "/"))
+               (setq
+                  S (pack (car P))
+                  P (and (cdr P) (pack (glue "/" @) "/")) )
+               (extract
+                  '((X)
+                     (and (pre? S X) (pack P X)) )
+                  (dir P T) ) ) ) ) )
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFun" delim?))
    (prinl (cdr *Tsm)) )

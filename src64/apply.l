@@ -1,4 +1,4 @@
-# 22sep09abu
+# 10jun10abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -25,6 +25,8 @@
             lea A (S II)  # Value address
             push A  # CAR
             ld (S V) S  # Store CDR of previous cell
+            cmp S (StkLimit)  # Stack check
+            jlt stkErrX
          loop
          link
          ld (EnvApply) L  # Close apply frame
@@ -35,6 +37,8 @@
       end
       big C  # Undefined if bignum
       jnz undefinedCX
+      cmp S (StkLimit)  # Stack check
+      jlt stkErrX
       atom C  # Cell?
       if z  # Yes
          # Apply EXPR
@@ -116,6 +120,8 @@
             do
                sub Y I
                push (Y)  # Push next argument
+               cmp S (StkLimit)  # Stack check
+               jlt stkErrX
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -252,6 +258,8 @@
             do
                sub Y I
                push (Y)  # Push next argument
+               cmp S (StkLimit)  # Stack check
+               jlt stkErrX
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -313,6 +321,8 @@
             lea A (S II)  # Value address
             push A  # CAR
             ld (S V) S  # Store CDR of previous cell
+            cmp S (StkLimit)  # Stack check
+            jlt stkErrX
          loop
          link
          ld (EnvApply) L  # Close apply frame
@@ -323,6 +333,8 @@
       end
       big C  # Undefined if bignum
       jnz undefinedCX
+      cmp S (StkLimit)  # Stack check
+      jlt stkErrX
       atom C  # Cell?
       if z  # Yes
          # Apply EXPR
@@ -404,6 +416,8 @@
             do
                sub Y I
                push ((Y))  # Push CAR of next argument
+               cmp S (StkLimit)  # Stack check
+               jlt stkErrX
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -540,6 +554,8 @@
             do
                sub Y I
                push ((Y))  # Push CAR of next argument
+               cmp S (StkLimit)  # Stack check
+               jlt stkErrX
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -605,6 +621,8 @@
       atom E  # Expand 'lst'
    while z
       push (E)
+      cmp S (StkLimit)  # Stack check
+      jlt stkErrX
       ld E (E CDR)
    loop
    ld Z S  # Z on last argument

@@ -1,4 +1,4 @@
-# 31jan10abu
+# 31may10abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -10,6 +10,18 @@
    (alarm 0) )
 
 
+### sigio ###
+(off "SigVal")
+(sigio (setq "SigSock" (port T 4444))
+   (setq "SigVal" (udp "SigSock")) )
+(test '((setq "SigVal" (udp "SigSock"))) (sigio))
+(udp "localhost" 4444 '(a b c))
+(wait 200)
+(test '(a b c) "SigVal")
+(sigio "SigSock")
+(test NIL (sigio))
+
+
 ### protect ###
 (test NIL (pipe (prog (kill *Pid) (pr 7)) (rd)))
 (test 7 (pipe (protect (kill *Pid) (pr 7)) (rd)))
@@ -18,6 +30,11 @@
 ### quit ###
 (test "Quit" (catch '("Quit") (quit "Quit")))
 
+
+### adr ###
+(let (X (box 7)  L (123))
+   (test 7 (val (adr (adr X))))
+   (test 123 (car (adr (adr L)))) )
 
 ### env ###
 (test NIL (env))
@@ -82,11 +99,13 @@
 
 ### dir ###
 (call 'mkdir "-p" (tmp "dir"))
+(out (tmp "dir/.abc"))
 (out (tmp "dir/a"))
 (out (tmp "dir/b"))
 (out (tmp "dir/c"))
 
 (test '("a" "b" "c") (sort (dir (tmp "dir"))))
+(test '("." ".." ".abc" "a" "b" "c") (sort (dir (tmp "dir") T)))
 
 
 ### cmd ###

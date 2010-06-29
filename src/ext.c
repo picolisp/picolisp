@@ -1,4 +1,4 @@
-/* 21feb10abu
+/* 18may10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -71,6 +71,16 @@ any Snx(any ex) {
 
 
 /*** Math ***/
+// (ext:Pow 'x 'y 'scale) -> num
+any Pow(any ex) {
+   double x, y, n;
+
+   x = evDouble(ex, cdr(ex));
+   y = evDouble(ex, cddr(ex));
+   n = evDouble(ex, cdddr(ex));
+   return doubleToNum(n * pow(x / n, y / n));
+}
+
 // (ext:Exp 'x 'scale) -> num
 any Exp(any ex) {
    double x, n;
@@ -91,36 +101,60 @@ any Log(any ex) {
 
 // (ext:Sin 'angle 'scale) -> num
 any Sin(any ex) {
-   any x;
    double a, n;
 
-   a = evDouble(ex, x = cdr(ex));
-   n = evDouble(ex, cdr(x));
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
    return doubleToNum(n * sin(a / n));
 }
 
 // (ext:Cos 'angle 'scale) -> num
 any Cos(any ex) {
-   any x;
    double a, n;
 
-   a = evDouble(ex, x = cdr(ex));
-   n = evDouble(ex, cdr(x));
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
    return doubleToNum(n * cos(a / n));
 }
 
 // (ext:Tan 'angle 'scale) -> num
 any Tan(any ex) {
-   any x;
    double a, n;
 
-   a = evDouble(ex, x = cdr(ex));
-   n = evDouble(ex, cdr(x));
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
    return doubleToNum(n * tan(a / n));
 }
 
-// (ext:Atan 'x 'y 'scale) -> num
+// (ext:Asin 'angle 'scale) -> num
+any Asin(any ex) {
+   double a, n;
+
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
+   return doubleToNum(n * asin(a / n));
+}
+
+// (ext:Acos 'angle 'scale) -> num
+any Acos(any ex) {
+   double a, n;
+
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
+   return doubleToNum(n * acos(a / n));
+}
+
+// (ext:Atan 'angle 'scale) -> num
 any Atan(any ex) {
+   double a, n;
+
+   a = evDouble(ex, cdr(ex));
+   n = evDouble(ex, cddr(ex));
+   return doubleToNum(n * atan(a / n));
+}
+
+// (ext:Atan2 'x 'y 'scale) -> num
+any Atan2(any ex) {
    double x, y, n;
 
    x = evDouble(ex, cdr(ex));

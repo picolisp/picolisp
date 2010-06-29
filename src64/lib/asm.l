@@ -1,4 +1,4 @@
-# 08mar10abu
+# 02jun10abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *Registers optimize
@@ -209,7 +209,7 @@
             (T X) ) )
       ((asoq (car X) *Registers)
          (cons (car X) (operand (cadr X))) )
-      ((memq (car X) '(+ - * */ / % >> & | short char hex oct))
+      ((memq (car X) '(+ - * */ / % >> & | pack short char hex oct))
          (apply (car X) (mapcar operand (cdr X))) )
       (T (cons (car X) (operand (cadr X)))) ) )
 
@@ -390,10 +390,10 @@
       (clrz)
       (cmp (destination) "*Mode" (source) "*Mode")
       (cmp4 (source) "*Mode")
-      (cmpm (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (cmpn (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (cnt (source) "*Mode")
       (dbg)
+      (dec (destination) "*Mode")
       (div (source) "*Mode")
       (drop)
       (eval)
@@ -401,9 +401,10 @@
       (eval/ret)
       (exec (reg (read)))
       (hx2 (read))
-      (init)
+      (inc (destination) "*Mode")
+      (initCode)
+      (initData)
       (initSym (read) (read) (operand (read)))
-      (int)
       (jc (address) "*Mode")
       (jcz (address) "*Mode")
       (jeq (address) "*Mode")
@@ -431,6 +432,7 @@
       (ldz (destination) "*Mode" (source) "*Mode")
       (lea (destination) "*Mode" (source) "*Mode")
       (link)
+      (load (destination) "*Mode" (destination) "*Mode" (source) "*Mode")
       (memb (source) "*Mode" (source) "*Mode")
       (movm (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (movn (destination) "*Mode" (source) "*Mode" (source) "*Mode")
@@ -454,6 +456,7 @@
       (return (operand (read)))
       (rol (destination) "*Mode" (source) "*Mode")
       (ror (destination) "*Mode" (source) "*Mode")
+      (save (source) "*Mode" (source) "*Mode" (destination) "*Mode")
       (set (destination) "*Mode" (source) "*Mode")
       (setc)
       (setz)
@@ -465,7 +468,6 @@
       (st4 (destination) "*Mode")
       (sub (destination) "*Mode" (source) "*Mode")
       (subc (destination) "*Mode" (source) "*Mode")
-      (sxt)
       (sym (source) "*Mode")
       (test (destination) "*Mode" (source) "*Mode")
       (tuck (source) "*Mode")

@@ -1,4 +1,4 @@
-/* 17mar10 */
+/* 19may10 */
 
    .data
 
@@ -88,7 +88,7 @@ Snx_60:
 .10:
    cmp      (%rsp), %rax
    jz       .7
-   sub      $1, %rbx
+   dec      %rbx
    jz       Snx_90
    mov      %rax, (%rsp)
    xchg     16(%rsp), %rdx
@@ -141,7 +141,7 @@ Ulaw:
    test     $32768, %rax
    jnz      .15
    add      %rax, %rax
-   sub      $1, %rdx
+   dec      %rdx
    jnz      .14
 .15:
    mov      %rdx, %rax

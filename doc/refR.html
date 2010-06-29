@@ -210,22 +210,22 @@ href="refA.html#assoc">assoc</a></code>. During the whole operation, the file is
 exclusively locked with <code><a href="refC.html#ctl">ctl</a></code>.
 
 <pre><code>
-: (info <u>a.rc</u>)                 # File exists?
+: (info "a.rc")               # File exists?
 -> NIL                        # No
-: (rc <u>a.rc</u> 'a 1)              # Store 1 for 'a'
+: (rc "a.rc" 'a 1)            # Store 1 for 'a'
 -> 1
-: (rc <u>a.rc</u> 'b (2 3 4))        # Store (2 3 4) for 'b'
+: (rc "a.rc" 'b (2 3 4))      # Store (2 3 4) for 'b'
 -> (2 3 4)
-: (rc <u>a.rc</u> 'c 'b)             # Store 'b' for 'c'
+: (rc "a.rc" 'c 'b)           # Store 'b' for 'c'
 -> b
-: (info <u>a.rc</u>)                 # Check file
+: (info "a.rc")               # Check file
 -> (28 733124 . 61673)
-: (in <u>a.rc</u> (echo))            # Display it
+: (in "a.rc" (echo))          # Display it
 ((c . b) (b 2 3 4) (a . 1))
 -> T
-: (rc <u>a.rc</u> 'c)                # Fetch value for 'c'
+: (rc "a.rc" 'c)              # Fetch value for 'c'
 -> b
-: (rc <u>a.rc</u> @)                 # Fetch value for 'b'
+: (rc "a.rc" @)               # Fetch value for 'b'
 -> (2 3 4)
 </code></pre>
 
@@ -243,18 +243,18 @@ href="refR.html#rpc">rpc</a></code> and <code><a
 href="refW.html#wr">wr</a></code>.
 
 <pre><code>
-: (out <u>x</u> (pr 'abc <u>EOF</u> 123 <u>def</u>))
--> <u>def</u>
-: (in <u>x</u> (rd))
+: (out "x" (pr 'abc "EOF" 123 "def"))
+-> "def"
+: (in "x" (rd))
 -> abc
-: (in <u>x</u>
+: (in "x"
    (make
       (use X
-         (until (== <u>EOF</u> (setq X (rd <u>EOF</u>)))  # '==' detects end of file
+         (until (== "EOF" (setq X (rd "EOF")))  # '==' detects end of file
             (link X) ) ) ) )
--> (abc <u>EOF</u> 123 <u>def</u>)  # as opposed to reading a symbol "EOF"
+-> (abc "EOF" 123 "def")  # as opposed to reading a symbol "EOF"
 
-: (in <u>/dev/urandom</u> (rd 20))
+: (in "/dev/urandom" (rd 20))
 -> 396737673456823753584720194864200246115286686486
 </code></pre>
 
@@ -279,10 +279,10 @@ ghi
 jkl
 )
 -> (123 abcd (def ghi jkl))
-: (make (while (read <u>_</u> <u>#</u>) (link @)))
-abc = def_ghi(<u>xyz</u>+-123) # Comment
+: (make (while (read "_" "#") (link @)))
+abc = def_ghi("xyz"+-123) # Comment
 NIL
--> (abc <u>=</u> def_ghi <u>(</u> <u>xyz</u> <u>+</u> <u>-</u> 123 <u>)</u>)
+-> (abc "=" def_ghi "(" "xyz" "+" "-" 123 ")")
 </code></pre>
 
 <dt><a name="recur"><code>(recur fun) -> any</code></a>
@@ -296,7 +296,7 @@ symbol <code>recurse</code> is bound to the function definition
 <pre><code>
 : (de fibonacci (N)
    (when (lt0 N)
-      (quit <u>Bad fibonacci</u> N) )
+      (quit "Bad fibonacci" N) )
    (recur (N)
       (if (< N 2)
          1
@@ -319,43 +319,43 @@ href="refD.html#daemon">daemon</a></code> and <code><a
 href="refP.html#patch">patch</a></code>.
 
 <pre><code>
-: (de hello () (prinl <u>Hello world!</u>))
+: (de hello () (prinl "Hello world!"))
 -> hello
 : (pp 'hello)
 (de hello NIL
-   (prinl <u>Hello world!</u>) )
+   (prinl "Hello world!") )
 -> hello
 
 : (redef hello (A B)
    (println 'Before A)
    (prog1 (hello) (println 'After B)) )
--> <u>hello</u>
+-> "hello"
 : (pp 'hello)
 (de hello (A B)
    (println 'Before A)
-   (prog1 (<u>hello</u>) (println 'After B)) )
+   (prog1 ("hello") (println 'After B)) )
 -> hello
 : (hello 1 2)
 Before 1
 Hello world!
 After 2
--> <u>Hello world!</u>
+-> "Hello world!"
 
 : (redef * @
    (msg (rest))
    (pass *) )
--> <u>*</u>
+-> "*"
 : (* 1 2 3)
 (1 2 3)
 -> 6
 
 : (redef + @
    (pass (ifn (num? (next)) pack +) (arg)) )
--> <u>+</u>
+-> "+"
 : (+ 1 2 3)
 -> 6
-: (+ <u>a</u> 'b '(c d e))
--> <u>abcde</u>
+: (+ "a" 'b '(c d e))
+-> "abcde"
 
 </code></pre>
 
@@ -387,7 +387,7 @@ href="refD.html#dm">dm</a> and <a href="refV.html#var">var</a>.
 operation of <code><a href="refA.html#acquire">acquire</a></code>.
 
 <pre><code>
-: (release <u>sema1</u>)
+: (release "sema1")
 -> NIL
 </code></pre>
 
@@ -416,7 +416,7 @@ href="refD.html#db/3">db/3</a></code>.
                            (unless @
                               (close Sock)
                               (off Sock) ) ) ) ) ) ) ) )
-      '(<u>localhost</u>)
+      '("localhost")
       '(20) ) )
 
 (de rsrc ()  # Simple resource handler, ignoring errors or EOFs
@@ -429,7 +429,7 @@ href="refD.html#db/3">db/3</a></code>.
                (curry (@Ext @Sock) ()  # in
                   (ext @Ext (in @Sock (rd))) ) ) ) )
       '(20)
-      '(<u>localhost</u>) ) )
+      '("localhost") ) )
 
 : (?
    @Nr (1 . 3)
@@ -613,16 +613,16 @@ beginning of the file, and truncates the file length to zero. Returns
 href="refF.html#flush">flush</a></code>.
 
 <pre><code>
-: (out <u>a</u> (prinl <u>Hello world</u>))
--> <u>Hello world</u>
-: (in <u>a</u> (echo))
+: (out "a" (prinl "Hello world"))
+-> "Hello world"
+: (in "a" (echo))
 Hello world
 -> T
-: (info <u>a</u>)
+: (info "a")
 -> (12 733216 . 53888)
-: (out <u>a</u> (rewind))
+: (out "a" (rewind))
 -> T
-: (info <u>a</u>)
+: (info "a")
 -> (0 733216 . 53922)
 </code></pre>
 
@@ -631,7 +631,7 @@ Hello world
 See also <code><a href="refC.html#commit">commit</a></code>.
 
 <pre><code>
-: (pool <u>db</u>)
+: (pool "db")
 -> T
 # .. Modify external objects ..
 : (rollback)            # Rollback
@@ -660,6 +660,21 @@ href="refF.html#flip">flip</a></code> .
 -> (4 1 2 3)
 : (rot (1 2 3 4 5 6) 3)       # Rotate only the first three elements
 -> (3 1 2 4 5 6)
+</code></pre>
+
+<dt><a name="round"><code>(round 'num1 'num2) -> sym</code></a>
+<dd>Formats a number <code>num1</code> with <code>num2</code> decimal places,
+according to the current scale <code><a href="refS.html#*Scl">*Scl</a></code>.
+See also <code><a href="refF.html#format">format</a></code> and <code><a
+href="ref.html#num-io">Numbers</a></code>.
+
+<pre><code>
+: (scl 4)               # Set scale to 4
+-> 4
+: (round 123456 2)      # Format with two decimal places
+-> "12.35"
+: (format 123456 *Scl)  # Format with full precision
+-> "12.3456"
 </code></pre>
 
 <dt><a name="rpc"><code>(rpc 'sym ['any ..]) -> flg</code></a>

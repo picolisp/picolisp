@@ -21,12 +21,12 @@ href="refL.html#locale">locale</a></code>.
 <pre><code>
 : (off *Uni)            # Clear
 -> NIL
-: ,<u>abc</u>                  # Collect a transient symbol
--> <u>abc</u>
+: ,"abc"                # Collect a transient symbol
+-> "abc"
 : ,(1 2 3)              # Collect a list
 -> (1 2 3)
 : *Uni
--> (<u>abc</u> NIL (1 2 3))
+-> ("abc" NIL (1 2 3))
 </code></pre>
 
 <dt><a name="u"><code>(u) -> T</code></a>
@@ -57,7 +57,7 @@ href="refC.html#connect">connect</a></code>.
 : (udp 3)  # Receive a datagram
 
 # Second session (on the same machine)
-: (udp <u>localhost</u> 6666 '(a b c))
+: (udp "localhost" 6666 '(a b c))
 -> (a b c)
 
 # First session
@@ -114,12 +114,12 @@ href="refD.html#dm">dm</a></code>, <code><a href="refD.html#def">def</a></code>
 and <code><a href="refR.html#redef">redef</a></code>.
 
 <pre><code>
-: (de hello () <u>Hello world!</u>)
+: (de hello () "Hello world!")
 -> hello
 : hello
--> (NIL <u>Hello world!</u>)
+-> (NIL "Hello world!")
 : (undef 'hello)
--> (NIL <u>Hello world!</u>)
+-> (NIL "Hello world!")
 : hello
 -> NIL
 </code></pre>
@@ -266,7 +266,7 @@ href="ref.html#dbase">Database</a></code>.
    pr 29900
    inv 100
    sup {2-1}
-   nm <u>Main Part</u>
+   nm "Main Part"
 -> {3-1}
 
 : (update '{3-1} 'pr)      # Update the prices of that item
@@ -280,13 +280,13 @@ with an uppercase character. See also <code><a
 href="refU.html#uppc">uppc</a></code>.
 
 <pre><code>
-: (upp? <u>A</u>)
+: (upp? "A")
 -> T
-: (upp? <u>a</u>)
+: (upp? "a")
 -> NIL
 : (upp? 123)
 -> NIL
-: (upp? <u>.</u>)
+: (upp? ".")
 -> NIL
 </code></pre>
 
@@ -301,10 +301,10 @@ href="refU.html#upp?">upp?</a></code>.
 <pre><code>
 : (uppc 123)
 -> 123
-: (uppc <u>abc</u>)
--> <u>ABC</u>
+: (uppc "abc")
+-> "ABC"
 : (uppc 'car)
--> <u>CAR</u>
+-> "CAR"
 </code></pre>
 
 <dt><a name="use"><code>(use sym . prg) -> any</code></a>

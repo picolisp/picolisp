@@ -172,7 +172,7 @@ href="refP.html#pipe">pipe</a></code> and <code><a
 href="refC.html#ctl">ctl</a></code>.
 
 <pre><code>
-: (in <u>a</u> (list (read) (read) (read)))  # Read three items from file "a"
+: (in "a" (list (read) (read) (read)))  # Read three items from file "a"
 -> (123 (a b c) def)
 </code></pre>
 
@@ -246,10 +246,10 @@ href="refL.html#lines">lines</a></code>.
 $ ls -l x.l
 -rw-r--r--   1 abu      users         208 Jun 17 08:58 x.l
 $ ./dbg
-: (info <u>x.l</u>)
+: (info "x.l")
 -> (208 730594 . 32315)
 : (stamp 730594 32315)
--> <u>2000-06-17 08:58:35</u>
+-> "2000-06-17 08:58:35"
 </code></pre>
 
 <dt><a name="init"><code>(init 'tree ['any1] ['any2]) -> lst</code></a>
@@ -291,11 +291,11 @@ is interned and returned. See also <code><a href="refZ.html#zap">zap</a></code>,
 href="ref_.html#====">====</a></code>.
 
 <pre><code>
-: (intern <u>abc</u>)
+: (intern "abc")
 -> abc
 : (intern 'car)
 -> car
-: ((intern (pack <u>c</u> <u>a</u> <u>r</u>)) (1 2 3))
+: ((intern (pack "c" "a" "r")) (1 2 3))
 -> 1
 </code></pre>
 
@@ -308,8 +308,8 @@ href="refP.html#pipe">pipe</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
 <pre><code>
-: (in '(ls <u>-l</u>) (println (line T)) (kill (ipid)))
-<u>total 7364</u>
+: (in '(ls "-l") (println (line T)) (kill (ipid)))
+"total 7364"
 -> T
 </code></pre>
 
@@ -344,10 +344,10 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 
 <pre><code>
 : (? (db nm +Person @Prs) (isa +Woman @Prs) (val @Nm @Prs nm))
- @Prs={2-Y} @Nm=<u>Alexandra of Denmark</u>
- @Prs={2-1I} @Nm=<u>Alice Maud Mary</u>
- @Prs={2-F} @Nm=<u>Anne</u>
- @Prs={2-j} @Nm=<u>Augusta Victoria</u>.       # Stop
+ @Prs={2-Y} @Nm="Alexandra of Denmark"
+ @Prs={2-1I} @Nm="Alice Maud Mary"
+ @Prs={2-F} @Nm="Anne"
+ @Prs={2-j} @Nm="Augusta Victoria".   # Stop
 </code></pre>
 
 <dt><a name="iter"><code>(iter 'tree ['fun] ['any1] ['any2] ['flg])</code></a>
@@ -373,13 +373,13 @@ href="refS.html#step">step</a></code>.
 {3-8}
 -> {7-1}
 : (iter (tree 'nr '+Item) '((This) (println (: nm))))
-<u>Main Part</u>
-<u>Spare Part</u>
-<u>Auxiliary Construction</u>
-<u>Enhancement Additive</u>
-<u>Metal Fittings</u>
-<u>Gadget Appliance</u>
-<u>Testartikel</u>
+"Main Part"
+"Spare Part"
+"Auxiliary Construction"
+"Enhancement Additive"
+"Metal Fittings"
+"Gadget Appliance"
+"Testartikel"
 -> {7-1}
 </code></pre>
 

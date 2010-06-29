@@ -18,7 +18,25 @@ href="refA.html#accept">accept</a></code>.
 
 <pre><code>
 : *Adr
--> <u>127.0.0.1</u>
+-> "127.0.0.1"
+</code></pre>
+
+<dt><a name="adr"><code>(adr 'var) -> num</code></a>
+<dt><code>(adr 'num) -> var</code>
+<dd>Converts, in the first form, a variable <code>var</code> (a symbol or a
+cell) into <code>num</code> (a pointer). A symbol will result in a negative
+number, and a cell in a positive number. The second form converts a pointer back
+into the original <code>var</code>.
+
+<pre><code>
+: (setq X (box 7))
+-> $53063416137450
+: (adr X)
+-> -2961853431592
+: (adr @)
+-> $53063416137450
+: (val @)
+-> 7
 </code></pre>
 
 <dt><a name="*Allow"><code>*Allow</code></a>
@@ -30,21 +48,21 @@ prefix strings. See also <code><a href="refA.html#allow">allow</a></code>,
 href="refP.html#pre?">pre?</a></code>.
 
 <pre><code>
-: (allowed (<u>app/</u> <u>img/</u>)  # Initialize
-   <u>@start</u> <u>@stop</u> <u>favicon.ico</u> <u>lib.css</u> <u>@psh</u> )
+: (allowed ("app/" "img/")  # Initialize
+   "@start" "@stop" "favicon.ico" "lib.css" "@psh" )
 -> NIL
-: (allow <u>@myFoo</u>)  # additional item
--> <u>@myFoo</u>
-: (allow <u>myDir/</u> T)  # additional prefix
--> <u>myDir/</u>
+: (allow "@myFoo")  # additional item
+-> "@myFoo"
+: (allow "myDir/" T)  # additional prefix
+-> "myDir/"
 
 : *Allow
--> ((<u>@stop</u> (<u>@psh</u> (<u>@myFoo</u>) <u>@start</u>) <u>favicon.ico</u> NIL <u>lib.css</u>) <u>app/</u> <u>img/</u> <u>myDir/</u>)
+-> (("@stop" ("@psh" ("@myFoo") "@start") "favicon.ico" NIL "lib.css") "app/" "img/" "myDir/")
 
 : (idx *Allow)  # items
--> (<u>@myFoo</u> <u>@psh</u> <u>@start</u> <u>@stop</u> <u>favicon.ico</u> <u>lib.css</u>)
+-> ("@myFoo" "@psh" "@start" "@stop" "favicon.ico" "lib.css")
 : (cdr *Allow)  # prefixes
--> (<u>app/</u> <u>img/</u> <u>myDir/</u>)
+-> ("app/" "img/" "myDir/")
 </code></pre>
 
 <dt><a name="+Alt"><code>+Alt</code></a>
@@ -151,7 +169,7 @@ href="refP.html#*Pid">*Pid</a></code> and <code><a
 href="refR.html#rc">rc</a></code>.
 
 <pre><code>
-: (acquire <u>sema1</u>)
+: (acquire "sema1")
 -> 28255
 </code></pre>
 
@@ -159,7 +177,11 @@ href="refR.html#rc">rc</a></code>.
 <dd>Sets an alarm timer scheduling <code>prg</code> to be executed after
 <code>cnt</code> seconds, and returns the number of seconds remaining until any
 previously scheduled alarm was due to be delivered. Calling <code>(alarm
-0)</code> will cancel an alarm.
+0)</code> will cancel an alarm. See also <code><a
+href="refA.html#abort">abort</a></code>, <code><a
+href="refS.html#sigio">sigio</a></code>, <code><a
+href="refH.html#*Hup">*Hup</a></code> and <code><a
+href="refS.html#*Sig1">*Sig[12]</a></code>.
 
 <pre><code>
 : (prinl (tim$ (time) T)) (alarm 10 (prinl (tim$ (time) T)))
@@ -184,17 +206,17 @@ href="refC.html#center">center</a></code> and <code><a
 href="refW.html#wrap">wrap</a></code>.
 
 <pre><code>
-: (align 4 <u>a</u>)
--> <u>   a</u>
+: (align 4 "a")
+-> "   a"
 : (align -4 12)
--> <u>12  </u>
-: (align (4 4 4) <u>a</u> 12 <u>b</u>)
--> <u>   a  12   b</u>
+-> "12  "
+: (align (4 4 4) "a" 12 "b")
+-> "   a  12   b"
 </code></pre>
 
 <dt><a name="all"><code>(all ['T | '0]) -> lst</code></a>
-<dd>Returns a list of all <a href="ref.html#internal">internal</a> symbols in
-the system (if called without arguments, or with <code>NIL</code>). Otherwise
+<dd>Returns a new list of all <a href="ref.html#internal">internal</a> symbols
+in the system (if called without arguments, or with <code>NIL</code>). Otherwise
 (if the argument is <code>T</code>), all current <a
 href="ref.html#transient">transient</a> symbols are returned. Else all current
 <a href="ref.html#external">external</a> symbols are returned.
@@ -204,7 +226,7 @@ href="ref.html#transient">transient</a> symbols are returned. Else all current
 -> (inc> leaf nil inc! accept ...
 
 # Find all symbols starting with an underscore character
-: (filter '((X) (= <u>_</u> (car (chop X)))) (all))
+: (filter '((X) (= "_" (car (chop X)))) (all))
 -> (_put _nacs _oct _lintq _lst _map _iter _dbg2 _getLine _led ...
 </code></pre>
 
@@ -219,11 +241,11 @@ href="refA.html#allowed">allowed</a></code>.
 
 <pre><code>
 : *Allow
--> ((<u>@stop</u> (<u>@psh</u> NIL <u>@start</u>) <u>favicon.ico</u> NIL <u>lib.css</u>) <u>app/</u> <u>img/</u>)
-: (allow <u>@myFoo</u>)  # additionally allowed item
--> <u>@myFoo</u>
-: (allow <u>myDir/</u> T)  # additionally allowed prefix
--> <u>myDir/</u>
+-> (("@stop" ("@psh" NIL "@start") "favicon.ico" NIL "lib.css") "app/" "img/")
+: (allow "@myFoo")  # additionally allowed item
+-> "@myFoo"
+: (allow "myDir/" T)  # additionally allowed prefix
+-> "myDir/"
 </code></pre>
 
 <dt><a name="allowed"><code>(allowed lst [sym ..])</code></a>
@@ -235,8 +257,8 @@ should specify the initially allowed items. See also <code><a
 href="refA.html#allow">allow</a></code>.
 
 <pre><code>
-: (allowed (<u>app/</u> <u>img/</u>)  # allowed prefixes
-   <u>@start</u> <u>@stop</u> <u>favicon.ico</u> <u>lib.css</u> <u>@psh</u> )  # allowed items
+: (allowed ("app/" "img/")  # allowed prefixes
+   "@start" "@stop" "favicon.ico" "lib.css" "@psh" )  # allowed items
 -> NIL
 </code></pre>
 
@@ -259,10 +281,10 @@ reverse operation of <code><a href="refS.html#sym">sym</a></code>. See also
 <code><a href="refS.html#str">str</a></code>.
 
 <pre><code>
-: (any <u>(a b # Comment^Jc d)</u>)
+: (any "(a b # Comment^Jc d)")
 -> (a b c d)
-: (any <u>\"A String\"</u>)
--> <u>A String</u>
+: (any "\"A String\"")
+-> "A String"
 </code></pre>
 
 <dt><a name="append"><code>(append 'lst ..) -> lst</code></a>
@@ -376,17 +398,17 @@ href="refO.html#opt">opt</a></code>.
 $ ./p -"println 'OK" - abc 123
 OK
 : (argv)
--> (<u>abc</u> <u>123</u>)
+-> ("abc" "123")
 : (argv A B)
--> <u>123</u>
+-> "123"
 : A
--> <u>abc</u>
+-> "abc"
 : B
--> <u>123</u>
+-> "123"
 : (argv . Lst)
--> (<u>abc</u> <u>123</u>)
+-> ("abc" "123")
 : Lst
--> (<u>abc</u> <u>123</u>)
+-> ("abc" "123")
 </code></pre>
 
 <dt><a name="as"><code>(as 'any1 . any2) -> any2 | NIL</code></a>
@@ -411,10 +433,49 @@ href="refM.html#memq">memq</a></code>, <code><a
 href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
-: (asoq 999 '((999 1 2 3) (b . 7) (<u>ok</u> <u>Hello</u>)))
+: (asoq 999 '((999 1 2 3) (b . 7) ("ok" "Hello")))
 -> NIL
-: (asoq 'b '((999 1 2 3) (b . 7) (<u>ok</u> <u>Hello</u>)))
+: (asoq 'b '((999 1 2 3) (b . 7) ("ok" "Hello")))
 -> (b . 7)
+</code></pre>
+
+<dt><a name="assert"><code>(assert exe ..) -> prg | NIL</code></a>
+<dd>When in debug mode (<code><a href="refD.html#*Dbg">*Dbg</a></code> is
+non-<code>NIL</code>), <code>assert</code> returns a <code>prg</code> list which
+tests all <code>exe</code> conditions, and issues an error via <code><a
+href="refQ.html#quit">quit</a></code> if one of the results evaluates to
+<code>NIL</code>. Otherwise, <code>NIL</code> is returned. Used typically in
+combination with the <code>~</code> tilde <code><a
+href="ref.html#macro-io">read-macro</a></code> to insert the test code only when
+in debug mode. See also <code><a href="refT.html#test">test</a></code>.
+
+<pre><code>
+# Start in debug mode
+$ ./dbg
+: (de foo (N)
+   ~(assert (>= 90 N 10))
+   (bar N) )
+-> foo
+: (pp 'foo)                      # Pretty-print 'foo'
+(de foo (N)
+   (unless (>= 90 N 10)          # Assertion code exists
+      (quit "'assert' failed" '(>= 90 N 10)) )
+   (bar N) )
+-> foo
+: (foo 7)                        # Try it
+(>= 90 N 10) -- Assertion failed
+?
+
+# Start in non-debug mode
+$ ./p
+: (de foo (N)
+   ~(assert (>= 90 N 10))
+   (bar N) )
+-> foo
+: (pp 'foo)                      # Pretty-print 'foo'
+(de foo (N)
+   (bar N) )                     # Assertion code does not exist
+-> foo
 </code></pre>
 
 <dt><a name="asserta"><code>(asserta 'lst) -> lst</code></a>
@@ -503,11 +564,11 @@ equal to <code>any</code>, or <code>NIL</code> if no match is found. See also
 <code><a href="refA.html#asoq">asoq</a></code>.
 
 <pre><code>
-: (assoc <u>b</u> '((999 1 2 3) (<u>b</u> . 7) (<u>ok</u> <u>Hello</u>)))
--> (<u>b</u> . 7)
-: (assoc 999 '((999 1 2 3) (<u>b</u> . 7) (<u>ok</u> <u>Hello</u>)))
+: (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> ("b" . 7)
+: (assoc 999 '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
 -> (999 1 2 3)
-: (assoc 'u '((999 1 2 3) (<u>b</u> . 7) (<u>ok</u> <u>Hello</u>)))
+: (assoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
 -> NIL
 </code></pre>
 
@@ -517,7 +578,7 @@ when it is less than <code>cnt2</code>. Otherwise, <code>cnt1</code> is reset to
 zero and <code>prg</code> is executed. Returns the result of <code>prg</code>.
 
 <pre><code>
-: (do 11 (prin <u>.</u>) (at (0 . 3) (prin <u>!</u>)))
+: (do 11 (prin ".") (at (0 . 3) (prin "!")))
 ...!...!...!..-> NIL
 </code></pre>
 

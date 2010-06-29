@@ -53,7 +53,7 @@ edit a separate source file (e.g. <code>"test.l"</code>) in a second terminal
 window and load it into PicoLisp with
 
 <pre><code>
-: (load <u>test.l</u>)
+: (load "test.l")
 </code></pre>
 
 <p>each time you have modified and saved it.
@@ -221,9 +221,9 @@ special meaning:
 
 <li><code>Ctrl-V</code> inserts the next key literally
 
-<li>TAB performs symbol completion: When a symbol name is entered partially and
-TAB is pressed subsequently, all internal symbols matching the partial input are
-shown in sequence.
+<li>TAB performs symbol and/or path completion: When a symbol (or path) name is
+entered partially and TAB is pressed subsequently, all internal symbols (and/or
+path names in the file system) matching the partial input are shown in sequence.
 
 <li>ESC terminates <i>Input Mode</i> and enters <i>Command Mode</i>
 
@@ -357,13 +357,13 @@ and indented way.
    (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
-         (prin <u>'</u>)
+         (prin "'")
          (pop 'X) )
       (let Z X
-         (prin <u>(</u>)
-         (when (memq (print (pop 'X)) <u>*PP</u>)
+         (prin "(")
+         (when (memq (print (pop 'X)) "*PP")
             (cond
-               ((memq (car Z) <u>*PP1</u>)
+               ((memq (car Z) "*PP1")
                   (if (and (pair (car X)) (pair (cdar X)))
                      (when (>= 12 (size (car X)))
                         (space)
@@ -373,7 +373,7 @@ and indented way.
                      (when (or (atom (car X)) (>= 12 (size (car X))))
                         (space)
                         (print (pop 'X)) ) ) )
-               ((memq (car Z) <u>*PP2</u>)
+               ((memq (car Z) "*PP2")
                   (inc 'N 3)
                   (loop
                      (prinl)
@@ -384,13 +384,13 @@ and indented way.
                   (print (pop 'X)) ) ) )
          (when X
             (loop
-               (T (== Z X) (prin <u> .</u>))
-               (T (atom X) (prin <u> . </u>) (print X))
+               (T (== Z X) (prin " ."))
+               (T (atom X) (prin " . ") (print X))
                (prinl)
                (pretty (pop 'X) (+ 3 N))
                (NIL X) )
             (space) )
-         (prin <u>)</u>) ) ) )
+         (prin ")") ) ) )
 -> pretty
 </code></pre>
 
@@ -414,7 +414,7 @@ all internal symbols in the system which match a given pattern (with
 '<code>@</code>' wildcard characters).
 
 <pre><code>
-: (what <u>prin@</u>)
+: (what "prin@")
 -> (prin print prinl print> printsp println)
 </code></pre>
 
@@ -424,7 +424,7 @@ somewhere in their value or property list.
 
 <pre><code>
 : (who 'print)
--> ((print> . +relation) query show select pretty <u>edit</u> msg rules pp more
+-> ((print> . +relation) query show select pretty "edit" msg rules pp more
 (print> . +Date)) </code></pre>
 
 <p>A dotted pair indicates either a method definition or a property entry. So
@@ -439,7 +439,7 @@ the <code><a href="refR.html#+relation">+relation</a></code> class.
 (dm (print> . +relation) (Val)   # Pretty-print these functions one by one
    (print Val) )
 
-(de query (<u>Q</u> <u>Dbg</u>)
+(de query ("Q" "Dbg")
    ...
 </code></pre>
 
@@ -538,7 +538,7 @@ methods as well except for using <code>dm</code> instead of <code>de</code>.
 
 <pre><code>
 : (de hello ()
-   (prinl <u>Hello world</u>) )
+   (prinl "Hello world") )
 -> hello
 </code></pre>
 
@@ -558,7 +558,7 @@ Hello world
 
 <pre><code>
 : (de hello (X)
-   (prinl <u>Hello </u> X) )
+   (prinl "Hello " X) )
 # hello redefined
 </code></pre>
 
@@ -567,12 +567,12 @@ a useful warning in case you forgot that a bound symbol with that name already
 existed.
 
 <pre><code>
-: (hello <u>world</u>)
+: (hello "world")
 Hello world
 </code></pre>
 
 <pre><code>
-: (hello <u>Alex</u>)
+: (hello "Alex")
 Hello Alex
 </code></pre>
 
@@ -832,7 +832,7 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (pp 'stamp)
 (de stamp (Dat Tim)
    (default  Dat (date)  Tim (time T))
-   (pack (dat$ Dat <u>-</u>) <u> </u> (tim$ Tim T)) )
+   (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 -> stamp
 </code></pre>
 
@@ -842,13 +842,13 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time T))      # stopped at first expression
 !                                      # ENTER
-(pack (dat$ Dat <u>-</u>) <u> </u> (tim$ ...         # second expression
+(pack (dat$ Dat "-") " " (tim$ ...     # second expression
 ! Tim                                  # inspect 'Tim' variable
 -> 41908
 ! (time Tim)                           # convert it
 -> (11 38 28)
 !                                      # ENTER
--> <u>2004-10-29 11:38:28</u>                 # done, as there are only 2 expressions
+-> "2004-10-29 11:38:28"               # done, as there are only 2 expressions
 </code></pre>
 
 <p>Now we execute it again, but this time we want to look at what's happening
@@ -858,19 +858,19 @@ inside the second expression.
 : (stamp)                              # Call it again
 (default Dat (date) Tim (time T))
 !                                      # ENTER
-(pack (dat$ Dat <u>-</u>) <u> </u> (tim$ ...         # here we want to look closer
+(pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
 ! (d)                                  # debug this expression
 -> T
 !                                      # ENTER
-(dat$ Dat <u>-</u>)                           # stopped at first subexpression
+(dat$ Dat "-")                         # stopped at first subexpression
 ! (e)                                  # evaluate it
--> <u>2004-10-29</u>
+-> "2004-10-29"
 !                                      # ENTER
 (tim$ Tim T)                           # stopped at second subexpression
 ! (e)                                  # evaluate it
--> <u>11:40:44</u>
+-> "11:40:44"
 !                                      # ENTER
--> <u>2004-10-29 11:40:44</u>                 # done
+-> "2004-10-29 11:40:44"               # done
 </code></pre>
 
 <p>The breakpoints still remain in the function body. We can see them when we
@@ -881,8 +881,8 @@ pretty-print it:
 (de stamp (Dat Tim)
    (! default Dat (date) Tim (time T))
    (! pack
-      (! dat$ Dat <u>-</u>)
-      <u> </u>
+      (! dat$ Dat "-")
+      " "
       (! tim$ Tim T) ) )
 -> stamp
 </code></pre>
@@ -923,7 +923,7 @@ href="refI.html#in">in</a></code>. Note that comments and white space are
 automatically skipped by <code>read</code>:
 
 <pre><code>
-: (in <u>doc/fun.l</u> (read))
+: (in "doc/fun.l" (read))
 -> (de fact (N) (if (=0 N) 1 (* N (fact (- N 1)))))
 </code></pre>
 
@@ -932,8 +932,8 @@ directly. To get the first non-white character in the file with <code><a
 href="refC.html#char">char</a></code>:
 
 <pre><code>
-: (in <u>doc/fun.l</u> (skip <u>#</u>) (char))
--> <u>(</u>
+: (in "doc/fun.l" (skip "#") (char))
+-> "("
 </code></pre>
 
 <p><code><a href="refF.html#from">from</a></code> searches through the input
@@ -942,7 +942,7 @@ stream for given patterns. Typically, this is not done with Lisp source files
 immediately following <code>fact</code> in the file,
 
 <pre><code>
-: (in <u>doc/fun.l</u> (make (while (from <u>fact </u>) (link (read)))))
+: (in "doc/fun.l" (make (while (from "fact ") (link (read)))))
 -> ((N) (- N 1))
 </code></pre>
 
@@ -950,8 +950,8 @@ immediately following <code>fact</code> in the file,
 href="refT.html#till">till</a></code>:
 
 <pre><code>
-: (in <u>doc/fun.l</u> (from <u>(de </u>) (till <u> </u> T)))
--> <u>fact</u>
+: (in "doc/fun.l" (from "(de ") (till " " T)))
+-> "fact"
 </code></pre>
 
 
@@ -959,15 +959,15 @@ href="refT.html#till">till</a></code>:
 read, either into a single transient symbol,
 
 <pre><code>
-: (in <u>doc/tut.html</u> (line T))
--> <u>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://...</u>
+: (in "doc/tut.html" (line T))
+-> "&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://..."
 </code></pre>
 
 <p>or into a list of symbols (characters):
 
 <pre><code>
-: (in <u>doc/tut.html</u> (line))
--> (<u>&lt;</u> <u>!</u> <u>D</u> <u>O</u> <u>C</u> <u>T</u> <u>Y</u> <u>P</u> <u>E</u> <u> </u> <u>H</u> <u>T</u> <u>M</u> <u>L</u> ...
+: (in "doc/tut.html" (line))
+-> ("&lt;" "!" "D" "O" "C" "T" "Y" "P" "E" " " "H" "T" "M" "L" ...
 </code></pre>
 
 <p><code>line</code> is typically used to read tabular data from a file.
@@ -978,37 +978,37 @@ href="refS.html#split">split</a></code> function can be used to extract the
 fields. A typical way to import the contents of such a file is:
 
 <pre><code>
-(load <u>lib/import.l</u>)
+(load "lib/import.l")
 
-(in '(<u>bin/utf2</u> <u>importFile.txt</u>)                  # Pipe: Convert to UTF-8
+(in '("bin/utf2" "importFile.txt")              # Pipe: Convert to UTF-8
    (until (eof)                                 # Process whole file
-      (let L (split (line) <u>^I</u>)                  # TAB-delimited data
+      (let L (split (line) "^I")                # TAB-delimited data
          ... use 'getStr', 'getNum' etc ...     # process them
 </code></pre>
 
 <p>Some more examples:
 
 <pre><code>
-(in <u>a</u>                                           # Copy the first 40 Bytes
-   (out <u>b</u>                                       # from file "a" to file "b"
+(in "a"                                         # Copy the first 40 Bytes
+   (out "b"                                     # from file "a" to file "b"
       (echo 40) ) )
 
-(in <u>doc/tut.html</u>                                # Show the HTTP-header
+(in "doc/tut.html"                              # Show the HTTP-header
    (line)
-   (echo <u>&lt;body></u>) )
+   (echo "&lt;body>") )
 
-(out <u>file.mac</u>                                   # Convert to Macintosh
-   (in <u>file.txt</u>                                 # from Unix or DOS format:
+(out "file.mac"                                 # Convert to Macintosh
+   (in "file.txt"                               # from Unix or DOS format:
       (while (char)
          (prin
             (case @
-               (<u>^M</u> NIL)                         # ignore CR
-               (<u>^J</u> <u>^M</u>)                          # convert CR to LF
+               ("^M" NIL)                       # ignore CR
+               ("^J" "^M")                      # convert CR to LF
                (T @) ) ) ) ) )                  # otherwise no change
 
-(out <u>c</u>                                          # Merge the contents of "a"
-   (in <u>b</u>                                        # and "b" into "c"
-      (in <u>a</u>
+(out "c"                                        # Merge the contents of "a"
+   (in "b"                                      # and "b" into "c"
+      (in "a"
          (while (read)                          # Read an item from "a",
             (println @ (in -1 (read))) ) ) ) )  # print it with an item from "b"
 </code></pre>
@@ -1072,7 +1072,7 @@ Then a simple hello-world script might look like:
 
 <pre><code>
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-(prinl <u>Hello world!</u>)
+(prinl "Hello world!")
 (bye)
 </code></pre>
 
@@ -1159,7 +1159,7 @@ PicoLisp environment, beyond the "lib.l" we provided in the first line of the
 hello-world script. Typically, at least a call to
 
 <pre><code>
-(load <u>@lib/misc.l</u>)
+(load "@lib/misc.l")
 </code></pre>
 
 <p>(note the home directory substitution) will be included near the beginning of
@@ -1172,18 +1172,18 @@ site, and prints it to standard output:
 <pre><code>
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
 
-(load <u>@lib/misc.l</u> <u>@lib/http.l</u>)
+(load "@lib/misc.l" "@lib/http.l")
 
 (use (@Date @Name @Size)
    (when
       (match
-         '(@Date <u> </u> <u>-</u> <u> </u> @Name <u> </u> <u>(</u> @Size <u>)</u>)
-         (client <u>software-lab.de</u> 80 <u>down.html</u>
-            (from <u>Release Archive</u>)
-            (from <u>.tgz"></u>)
-            (till <u><</u>) ) )
+         '(@Date " " "-" " " @Name " " "(" @Size ")")
+         (client "software-lab.de" 80 "down.html"
+            (from "Release Archive")
+            (from ".tgz">")
+            (till "") ) )
       (prinl @Name)
-      (prinl @Date <u> -- </u> @Size) ) )
+      (prinl @Date " -- " @Size) ) )
 
 (bye)
 </code></pre>
@@ -1505,7 +1505,7 @@ href="refR.html#read">read</a></code> functions) it is surrounded by braces.
 <p>To make use of external symbols, you need to open a database first:
 
 <pre><code>
-: (pool <u>test.db</u>)
+: (pool "test.db")
 </code></pre>
 
 <p>If a file with that name did not exist, it got created now. Also created at
@@ -1527,20 +1527,20 @@ programmer.
 <code>{1}</code>.
 
 <pre><code>
-: (set *DB <u>Hello world</u>)    # Set value of '{1}' to a transient symbol (string)
--> <u>Hello world</u>
+: (set *DB "Hello world")  # Set value of '{1}' to a transient symbol (string)
+-> "Hello world"
 : (put *DB 'a 1)           # Property 'a' to 1
 -> 1
 : (put *DB 'b 2)           # Property 'b' to 2
 -> 2
 : (show *DB)               # Now show the symbol '{1}'
-{1} <u>Hello world</u>
+{1} "Hello world"
    b 2
    a 1
 </code></pre>
 
-<p>Note that instead of '<code>(set *DB <u>Hello world</u>)</code>', we might
-also have written '<code>(setq {1} <u>Hello world</u>)</code>', and instead of
+<p>Note that instead of '<code>(set *DB "Hello world")</code>', we might
+also have written '<code>(setq {1} "Hello world")</code>', and instead of
 '<code>(put *DB 'a 1)</code>' we might have written '<code>(put '{1} 'a
 1)</code>'. This would have the same effect, but as a rule external symbols
 should never be be accessed literally in application programs, because the
@@ -1563,7 +1563,7 @@ supplied:
 : (put *DB 'newSym '{2})   # Literal '{2}' (ok during debugging)
 -> {2}
 : (show *DB)
-{1} <u>Hello world</u>
+{1} "Hello world"
    newSym {2}              # '{2}' is now stored in '{1}'
    b 2
    a 1
@@ -1599,10 +1599,10 @@ $                    # back to the shell
 
 <pre><code>
 $ ./dbg                 # .. we start PicoLisp
-: (pool <u>test.db</u>)        # and open the database file,
+: (pool "test.db")      # and open the database file,
 -> T
 : (show *DB)            # our two symbols are there again
-{1} <u>Hello world</u>
+{1} "Hello world"
    newSym {2}
    b 2
    a 1
@@ -1683,8 +1683,8 @@ index), <code>+Ref</code> (non-unique index) or <code>+Idx</code> (full text
 index)
 
 <li>prefix classes which in turn modify index class behavior, like
-<code>+Sn</code> (soundex algorithm [<a href="#knuth73">knuth73</a>] for
-tolerant searches)
+<code>+Sn</code> (modified soundex algorithm [<a href="#knuth73">knuth73</a>]
+for tolerant searches)
 
 <li>a <code>+Need</code> prefix class, for existence checks
 
@@ -1748,7 +1748,7 @@ first of March in the year zero.
 
 <pre><code>
 (dm url> ()
-   (list <u>@person</u> '*ID This) )
+   (list "@person" '*ID This) )
 </code></pre>
 
 <p>It is needed later in the GUI, to cause a click on a link to switch to that
@@ -1797,9 +1797,9 @@ href="refS.html#scan">scan</a></code> can be used:
 
 <pre><code>
 (iter (tree 'dat '+Person) '((P) (println (datStr (get P 'dat)) (get P 'nm))))
-<u>1770-08-03</u> <u>Friedrich Wilhelm III</u>
-<u>1776-03-10</u> <u>Luise Augusta of Mecklenburg-Strelitz</u>
-<u>1797-03-22</u> <u>Wilhelm I</u>
+"1770-08-03" "Friedrich Wilhelm III"
+"1776-03-10" "Luise Augusta of Mecklenburg-Strelitz"
+"1797-03-22" "Wilhelm I"
 ...
 </code></pre>
 
@@ -1821,24 +1821,24 @@ returns a list of all objects that fall into a range of index values:
 <pre><code>
 : (more (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31)) show)
 {2-M} (+Man)
-   nm <u>William</u>
+   nm "William"
    dat 724023
    ma {2-K}
    pa {2-J}
-   job <u>Heir to the throne</u>
+   job "Heir to the throne"
 
 {2-L} (+Man)
-   nm <u>Henry</u>
+   nm "Henry"
    dat 724840
    ma {2-K}
    pa {2-J}
-   job <u>Prince</u>
+   job "Prince"
 
 {2-E} (+Woman)
-   nm <u>Beatrice</u>
+   nm "Beatrice"
    dat 726263
    ma {2-D}
-   job <u>Princess</u>
+   job "Princess"
    pa {2-B}
 </code></pre>
 
@@ -1847,21 +1847,21 @@ return it directly:
 
 <pre><code>
 : (collect 'dat '+Person (date 1982 1 1) (date 1988 12 31) 'nm)
--> (<u>William</u> <u>Henry</u> <u>Beatrice</u>)
+-> ("William" "Henry" "Beatrice")
 </code></pre>
 
 <p>To find a single object in the database, the function <code><a
 href="refD.html#db">db</a></code> is used:
 
 <pre><code>
-: (db 'nm '+Person <u>Edward</u>)
+: (db 'nm '+Person "Edward")
 -> {2-;}
 </code></pre>
 
 <p>If the key is not unique, additional arguments may be supplied:
 
 <pre><code>
-: (db 'nm '+Person <u>Edward</u>  'job <u>Prince</u>  'dat (date 1964 3 10))
+: (db 'nm '+Person "Edward"  'job "Prince"  'dat (date 1964 3 10))
 -> {2-;}
 </code></pre>
 
@@ -1911,7 +1911,7 @@ $ ./dbg doc/family.l -main -go
 
 <pre><code>
 (de go ()
-   (server 8080 <u>@person</u>) )
+   (server 8080 "@person") )
 </code></pre>
 
 <p>It starts the HTTP server listening on TCP port 8080 (we did a similar thing
@@ -1988,7 +1988,7 @@ prompt.
 (de person ()
    (app)
    (action
-      (html 0 (get (default *ID (seq (db: +Person))) 'nm) <u>lib.css</u> NIL
+      (html 0 (get (default *ID (seq (db: +Person))) 'nm) "lib.css" NIL
          (form NIL
             (&lt;h3&gt; (&lt;id&gt; (: nm)))
 </code></pre>
@@ -2002,7 +2002,7 @@ The function <code>gui</code> creates a single GUI component and takes the type
 these classes.
 
 <pre><code>
-   (gui '(+E/R +TextField) '(nm : home obj) 40 <u>Name</u>)
+   (gui '(+E/R +TextField) '(nm : home obj) 40 "Name")
 </code></pre>
 
 <p>This creates a <code>+TextField</code> with the label "Name" and a length of
@@ -2012,7 +2012,7 @@ this case, so that the person's name is displayed in that text field, and any
 changes entered into that field are propagated to the database automatically.
 
 <pre><code>
-   (gui '(+ClassField) '(: home obj) '((<u>Male</u> +Man) (<u>Female</u> +Woman)))
+   (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman)))
 </code></pre>
 
 <p>A <code>+ClassField</code> displays and changes the class of an object, in
@@ -2092,18 +2092,18 @@ href="refD.html#db/3">db/3</a></code> for all persons having the string "Edward"
 in their name:
 
 <pre><code>
-: (? (db nm +Person <u>Edward</u> @P) (show @P))
+: (? (db nm +Person "Edward" @P) (show @P))
 {2-;} (+Man)
-   nm <u>Edward</u>
+   nm "Edward"
    ma {2-:}
    pa {2-A}
    dat 717346
-   job <u>Prince</u>
+   job "Prince"
  @P={2-;}
 {2-1B} (+Man)
-   nm <u>Albert Edward</u>
+   nm "Albert Edward"
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
-   job <u>Prince</u>
+   job "Prince"
    mate {2-f}
    fin 680370
    dat 664554
@@ -2115,12 +2115,12 @@ in their name:
 somebody with occupation "Queen":
 
 <pre><code>
-: (? (db nm +Person <u>Edward</u> @P) (val <u>Queen</u> @P mate job) (show @P))
+: (? (db nm +Person "Edward" @P) (val "Queen" @P mate job) (show @P))
 {2-1B} (+Man)
    mate {2-f}
-   nm <u>Albert Edward</u>
+   nm "Albert Edward"
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
-   job <u>Prince</u>
+   job "Prince"
    fin 680370
    dat 664554
  @P={2-1B}
@@ -2130,16 +2130,16 @@ somebody with occupation "Queen":
 <p>If you are interested in the names of "Albert Edward"'s children:
 
 <pre><code>
-: (? (db nm +Person <u>Albert Edward</u> @P) (lst @K @P kids) (val @Kid @K nm))
- @P={2-1B} @K={2-1C} @Kid=<u>Beatrice Mary Victoria</u>
- @P={2-1B} @K={2-1D} @Kid=<u>Leopold George Duncan</u>
- @P={2-1B} @K={2-1E} @Kid=<u>Arthur William Patrick</u>
- @P={2-1B} @K={2-1F} @Kid=<u>Louise Caroline Alberta</u>
- @P={2-1B} @K={2-1G} @Kid=<u>Helena Augusta Victoria</u>
- @P={2-1B} @K={2-1H} @Kid=<u>Alfred Ernest Albert</u>
- @P={2-1B} @K={2-1I} @Kid=<u>Alice Maud Mary</u>
- @P={2-1B} @K={2-g} @Kid=<u>Victoria Adelaide Mary</u>
- @P={2-1B} @K={2-a} @Kid=<u>Edward VII</u>
+: (? (db nm +Person "Albert Edward" @P) (lst @K @P kids) (val @Kid @K nm))
+ @P={2-1B} @K={2-1C} @Kid="Beatrice Mary Victoria"
+ @P={2-1B} @K={2-1D} @Kid="Leopold George Duncan"
+ @P={2-1B} @K={2-1E} @Kid="Arthur William Patrick"
+ @P={2-1B} @K={2-1F} @Kid="Louise Caroline Alberta"
+ @P={2-1B} @K={2-1G} @Kid="Helena Augusta Victoria"
+ @P={2-1B} @K={2-1H} @Kid="Alfred Ernest Albert"
+ @P={2-1B} @K={2-1I} @Kid="Alice Maud Mary"
+ @P={2-1B} @K={2-g} @Kid="Victoria Adelaide Mary"
+ @P={2-1B} @K={2-a} @Kid="Edward VII"
 -> NIL
 </code></pre>
 
@@ -2151,15 +2151,15 @@ href="refS.html#select/3">select/3</a></code> has to be used:
 <pre><code>
 : (?
    (select (@P)
-      ((nm +Person <u>Edward</u>) (nm +Person <u>Augusta</u> pa))      # Generator clauses
-      (tolr <u>Edward</u> @P nm)                                # Filter clauses
-      (tolr <u>Augusta</u> @P kids nm) )
+      ((nm +Person "Edward") (nm +Person "Augusta" pa))  # Generator clauses
+      (tolr "Edward" @P nm)                              # Filter clauses
+      (tolr "Augusta" @P kids nm) )
    (show @P) )
 {2-1B} (+Man)
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    mate {2-f}
-   nm <u>Albert Edward</u>
-   job <u>Prince</u>
+   nm "Albert Edward"
+   job "Prince"
    fin 680370
    dat 664554
  @P={2-1B}
@@ -2172,10 +2172,10 @@ number of normal Pilog filter clauses. In the example above the generators are
 
 <ul>
 
-<li><code>(nm +Person <u>Edward</u>)</code> to generate persons with "Edward" in
+<li><code>(nm +Person "Edward")</code> to generate persons with "Edward" in
 their names, and
 
-<li><code>(nm +Person <u>Augusta</u> pa)</code> to find persons with "Augusta"
+<li><code>(nm +Person "Augusta" pa)</code> to find persons with "Augusta"
 in their names and generate persons using the <code>pa</code> ("father")
 attribute.
 
@@ -2196,9 +2196,9 @@ objects that
 
 <ul>
 
-<li>match "Edward" in their name: <code>(tolr <u>Edward</u> @P nm)</code>, and
+<li>match "Edward" in their name: <code>(tolr "Edward" @P nm)</code>, and
 
-<li>match "Augusta" in one of their kids' names: <code>(tolr <u>Augusta</u> @P
+<li>match "Augusta" in one of their kids' names: <code>(tolr "Augusta" @P
 kids nm)</code>
 
 </ul>
@@ -2222,7 +2222,7 @@ special case of <code><a href="refS.html#select/3">select/3</a></code>. The
 following two queries are equivalent:
 
 <pre><code>
-: (? (db nm +Person <u>Edward</u> @P))
+: (? (db nm +Person "Edward" @P))
  @P={2-;}
  @P={2-1B}
  @P={2-R}
@@ -2230,7 +2230,7 @@ following two queries are equivalent:
  @P={2-a}
  @P={2-T}
 -> NIL
-: (? (select (@P) ((nm +Person <u>Edward</u>))))
+: (? (select (@P) ((nm +Person "Edward"))))
  @P={2-;}
  @P={2-1B}
  @P={2-R}
@@ -2256,16 +2256,16 @@ functionality. The syntax resembles SELECT in the SQL language, for example:
 # SELECT * FROM Person
 : (select +Person)  # Step through the whole database
 {2-o} (+Man)
-   nm <u>Adalbert Ferdinand Berengar Viktor of Prussia</u>
+   nm "Adalbert Ferdinand Berengar Viktor of Prussia"
    dat 688253
    ma {2-j}
    pa {2-h}
    fin 711698
 
 {2-1B} (+Man)
-   nm <u>Albert Edward</u>
+   nm "Albert Edward"
    dat 664554
-   job <u>Prince</u>
+   job "Prince"
    mate {2-f}
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    fin 680370
@@ -2274,18 +2274,18 @@ functionality. The syntax resembles SELECT in the SQL language, for example:
 
 <pre><code>
 # SELECT * FROM Person WHERE nm LIKE "%Edward%"
-: (select +Person nm <u>Edward</u>)  # Show all Edwards
+: (select +Person nm "Edward")  # Show all Edwards
 {2-;} (+Man)
-   nm <u>Edward</u>
+   nm "Edward"
    dat 717346
-   job <u>Prince</u>
+   job "Prince"
    ma {2-:}
    pa {2-A}
 
 {2-1B} (+Man)
-   nm <u>Albert Edward</u>
+   nm "Albert Edward"
    dat 664554
-   job <u>Prince</u>
+   job "Prince"
    kids ({2-1C} {2-1D} {2-1E} {2-1F} {2-1G} {2-1H} {2-1I} {2-g} {2-a})
    mate {2-f}
    fin 680370
@@ -2294,11 +2294,11 @@ functionality. The syntax resembles SELECT in the SQL language, for example:
 
 <pre><code>
 # SELECT nm, dat FROM Person WHERE nm LIKE "%Edward%"
-: (select nm dat +Person nm <u>Edward</u>)
-<u>Edward</u> <u>1964-03-10</u> {2-;}
-<u>Albert Edward</u> <u>1819-08-26</u> {2-1B}
-<u>George Edward</u> NIL {2-R}
-<u>Edward Augustus Hanover</u> NIL {2-1K}
+: (select nm dat +Person nm "Edward")
+"Edward" "1964-03-10" {2-;}
+"Albert Edward" "1819-08-26" {2-1B}
+"George Edward" NIL {2-R}
+"Edward Augustus Hanover" NIL {2-1K}
 ...
 </code></pre>
 
@@ -2309,9 +2309,9 @@ functionality. The syntax resembles SELECT in the SQL language, for example:
 #    AND p1.job LIKE "King%"
 #    AND p1.mate = p2.mate  -- Actually, in a SQL model we'd need
 #                           -- another table here for the join
-: (select dat fin nm (mate nm) +Person nm <u>Edward</u> job <u>King</u>)
-<u>1894-06-23</u> <u>1972-05-28</u> <u>Edward VIII</u> <u>Wallace Simpson</u> {2-T}
-<u>1841-11-09</u> NIL <u>Edward VII</u> <u>Alexandra of Denmark</u> {2-a}
+: (select dat fin nm (mate nm) +Person nm "Edward" job "King")
+"1894-06-23" "1972-05-28" "Edward VIII" "Wallace Simpson" {2-T}
+"1841-11-09" NIL "Edward VII" "Alexandra of Denmark" {2-a}
 -> NIL
 </code></pre>
 
@@ -2337,8 +2337,8 @@ previous examples:
 <pre><code>
 : (show '{2-;})
 {2R} (+Man)
-   job <u>Prince</u>
-   nm <u>Edward</u>
+   job "Prince"
+   nm "Edward"
    dat 717346
    ma {2-:}
    pa {20A}
@@ -2348,8 +2348,8 @@ previous examples:
 <p>We might change the name to "Johnny" with <code>put!></code>:
 
 <pre><code>
-: (put!> '{2-;} 'nm <u>Johnny</u>)
--> <u>Johnny</u>
+: (put!> '{2-;} 'nm "Johnny")
+-> "Johnny"
 </code></pre>
 
 <p>However, an easier and less error-prone prone way - especially when more than
@@ -2368,11 +2368,11 @@ change.
 <pre><code>
 : (update '{2-;})
 {2-;} (+Man)      # ENTER
-nm <u>Johnny</u>         # Modified the name to "Johnny"
+nm "Johnny"       # Modified the name to "Johnny"
 ma {2-:}          # ENTER
 pa {2-A}          # ENTER
 dat 1960-03-10    # Modified the year from "1964" to "1960"
-job <u>Prince</u>        # ENTER
+job "Prince"      # ENTER
 -> {2-;}
 </code></pre>
 
@@ -2387,7 +2387,7 @@ called directly for that property:
 
 <pre><code>
 : (update '{2-;} 'nm)
-{2-;} nm <u>Edward</u>
+{2-;} nm "Edward"
 ...
 </code></pre>
 

@@ -1,4 +1,4 @@
-# 06mar10abu
+# 07jun10abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -193,8 +193,8 @@
 
       Method frame:
                         ^
-               cls      |
-               key      |
+         <II>  cls      |
+         <I>   key      |
                LINK ----+  <-- Meth
 
 
@@ -217,6 +217,28 @@
          <I>   fd       |
                LINK ----+  <-- inFrames, outFrames, ctlFrames
 
+
+      Coroutine frame:
+                        ^
+               X        |
+               Y        |
+               Z        |
+               L        |
+         <III> [env]    |
+         <II>  seg      |
+         <I>   lim      |
+               LINK ----+  <-- co7
+
+
+      Stack segment:
+         <-I>  tag      # Tag
+         <-II> stk      # Stack pointer --+
+               [env]    # Environment     |
+               Stack ...                  |
+               X                          |
+               Y                          |
+               Z                          |
+               L  <-----------------------+
 
 
    ### Memory ###
@@ -263,7 +285,6 @@
                   +--------------------------+ Mic
 
 
-
    ### Database file ###
 
                   +-------------+-+-------------+-+----+
@@ -288,6 +309,7 @@
       EXT-Block:  |   Link       n| Data
                   +-------------+-+----
                   0              BLK
+
 
       dbFile:  # Size VIII (64 bytes)
          -->   fd       # File descriptor

@@ -1,4 +1,4 @@
-# 17mar10abu
+# 11jun10abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Globals 0)
@@ -7,15 +7,14 @@
 :: Home        word  0           # Home directory
 :: Heaps       word  0           # Heap list
 :: Avail       word  0           # Avail list
-:: Chr         word  0           # Single-char buffer
-:: EnvPutB     word  0           # Character output function
-:: EnvGet_A    word  0           # Character input function
-:: InFile      word  0           # Input file
-:: OutFile     word  0           # Output file
 :: Buf         word  0           # General 16-byte buffer
                word  0
 
 : Stack0       word  0           # Initial stack pointer
+: Stacks       word  0           # Stack segment bitmask
+: StkSize      word  STACK       # Stack segment size
+: StkLimit     word  0           # Stack limit: StackN-StkSize+4096
+: Link         word  0           # Saved link register
 : Catch        word  0           # Catch frames
 : Termio       word  0           # Raw mode terminal I/O
 : Time         word  0           # Pointer to time structure
@@ -45,8 +44,10 @@
 : StrX         word  0           # String status
 : StrC         word  0
 : Alarm        word  Nil         # Alarm handler
+: Sigio        word  Nil         # Sigio handler
 : LineX        word  ZERO        # Console line
 : LineC        word  -1
+: Break        word  0           # Breakpoint
 : GcCount      word  CELLS       # Collector count
 : Sep0         word  (char ".")  # Decimal separator
 : Sep3         word  (char ",")  # Thousand separator
@@ -54,6 +55,9 @@
 
 : Penv         word  Nil         # Pilog environment
 : Pnl          word  Nil
+
+# Signals
+: Signal       skip  (* I SIGNALS)
 
 # Database
 : DBs          word  0           # Scaled number of DB files
@@ -121,8 +125,11 @@
    # System functions
    initSym NIL       "raw"       doRaw
    initSym NIL       "alarm"     doAlarm
+   initSym NIL       "sigio"     doSigio
    initSym NIL       "protect"   doProtect
    initSym NIL       "heap"      doHeap
+   initSym NIL       "stack"      doStack
+   initSym NIL       "adr"       doAdr
    initSym NIL       "env"       doEnv
    initSym NIL       "up"        doUp
    initSym NIL       "quit"      doQuit
@@ -225,6 +232,8 @@
    initSym NIL       "catch"     doCatch
    initSym NIL       "throw"     doThrow
    initSym NIL       "finally"   doFinally
+   initSym NIL       "co"        doCo
+   initSym NIL       "yield"     doYield
    initSym NIL       "!"         doBreak
    initSym NIL       "e"         doE
    initSym NIL       "$"         doTrace
@@ -509,7 +518,13 @@
 : GcMarkEnd
 
 # Structures
-: Env                      # <Catch III> Environment
+: EnvCo  # Coroutine environment
+:: Chr         word  0        # Single-char buffer
+:: PutB        word  0        # Character output function
+:: Get_A       word  0        # Character input function
+:: InFile      word  0        # Input file
+:: OutFile     word  0        # Output file
+: Env  # <Catch III> environment
 : EnvBind      word  0        # <III> Bind frames (first item in Env)
 : EnvInFrames  word  0        # <IV> Input frames
 : EnvOutFrames word  0        # <V> Output frames
@@ -518,18 +533,19 @@
 : EnvNext      word  0        # Next vararg
 : EnvApply     word  0        # Apply frames
 : EnvMeth      word  0        # Method frames
-: EnvTask      word  Nil      # Task list
 : EnvMake      word  0        # 'make' env
 : EnvYoke      word  0
 : EnvParseX    word  0        # Parser status
 : EnvParseC    word  0
 : EnvParseEOF  word  -1
-: EnvSort      word  0        # Sort function
+: EnvMid  # Must be aligned
+: EnvCo7       word  0        # Coroutines
+: EnvTask      word  Nil      # Task list
 : EnvProtect   word  0        # Signal protection
 : EnvTrace     word  0        # Trace level
-: EnvBrk       word  0        # Breakpoint
-               align 8        # Padding
-: EnvEnd
+: EnvEnd  # Must be aligned
+
+initData
 
 : OrgTermio skip TERMIOS         # Original termio structure
 : Flock     skip FLOCK           # File lock structure
@@ -547,7 +563,6 @@
 :: _dot_ asciz "."
 
 # Bytes
-:: Signal   byte 0            # Signal flag
 :: Tio      byte 0            # Terminal I/O
 :: Flg      byte 0            # General flag value
 

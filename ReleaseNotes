@@ -1,56 +1,50 @@
-22mar10abu
+26jun10abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0.2
+         Release Notes for picoLisp-3.0.3
          ================================
 
-A. Norwegian localization by Jon Kleiser is now included.
+A. The underlined display of transient symbols in the documentation is changed
+   back to double quotes, to allow an easier copy/paste of example code
+   fragments.
 
-B. There is now a method for converting 32-bit databases to 64-bits, with
-   'export64' and 'import32' in "lib/db32-64.l". A short description is at the
-   beginning of that file.
+B. The function 'not' is included in the group of flow- and logic-functions
+   which store non-NIL results of their conditional expressions in '@' (see the
+   chapter "@ Result" in "doc/ref.html"). This makes it consistent with 'nand'
+   and 'nor'.
 
-C. The 'vi' function now also works for kernel functions, accessing the 64-bit
-   assembly sources.
+C. The line editor "lib/led.l" cycles with TAB also through path names (in
+   addition to internal symbols).
 
-D. For a portable (32 <-> 64) access to basic math functions there is now
-   "lib/math.l", dispatching to "lib/math32.l" and "lib/math64.l".
+D. The 'format' number <-> string conversion function now also accepts a list
+   argument. This is like as if 'pack' were built-in. Where
 
-E. C functions which were called by 'native' can in turn call a function
+      (format (pack Lst))
 
-      long lisp(char*, long, long, long, long, long);
+   had to be written, now
 
-   which accepts a symbol name as the first argument, and up to 5 numbers.
-   lisp() calls that symbol with the five numbers, and expects a numeric return
-   value. All numbers in this context should not be larger than 60 bits
-   (signed).
+      (format Lst)
 
-F. The speed of printing bignums is much higher now, e.g. 17-fold for a
-   200000-digit bignum on the 64-bit version. The improvement is less on the
-   32-bit version (about 8-fold) due to the smaller word size.
+   will also do.
 
-G. The implementation of 'scl', which dynamically bound '*Scl' during the
-   execution of a 'Prg' body, was rather useless (or even confusing). '*Scl' is
-   used by the reader, but when 'Prg' executes, reading of that expression is
-   already done.
+E. PicoLisp now supports coroutines (multiple independent execution contexts),
+   though only in the 64-bit version. More about that in
+   "doc/ref.html#coroutines".
 
-   Therefore, we changed 'scl' to simply set '*Scl' globally. (scl 6) now is a
-   shortcut for (setq *Scl 6).
+F. The stack is now checked at runtime (also only in the 64-bit version). This
+   became necessary because coroutines require separate stack segments. Until
+   now (and still in the 32-bit version) the stack could grow until the
+   operating system sent a segmentation violation signal. With the stack checks,
+   a controlled error handler is entered upon stack overflow. The stack segment
+   size can be manipulated with the new 'stack' function.
 
-H. The 'for' conditional loop function at last supports a simple syntax for an
-   incrementing index. It is recognized when the third argument evaluates to a
-   number:
+G. There is now a basic rational arithmetics package (fractional numbers) in
+   "lib/frac.l". Fractions are represented as dotted pairs.
 
-      (for I 9
-         (printsp I) )
-
-   This is equivalent to
-
-      (for (I 1 (>= 9 I) (inc I))
-         (printsp I) )
-
-   or
-
-      (for I (1 2 3 4 5 6 7 8 9)
-         (printsp I) )
+      : (f+ (1 . 2) (1 . 3))
+      -> (5 . 6)
+      : (f* (1 . 2) (1 . 3))
+      -> (1 . 6)
+      : (let S (frac 0 1) (for N 10 (setq S (f+ S (frac 1 N)))))
+      -> (7381 . 2520)

@@ -560,7 +560,7 @@ two-dimensional tables with the <code>&lt;table&gt;</code> and
 ########################################################################
 (html 0 "Table" "lib.css" NIL
    (&lt;table&gt; NIL NIL NIL
-      (for (N 1 (&gt;= 10 N) (inc N))              # A table with 10 rows
+      (for N 10                                    # A table with 10 rows
          (&lt;row&gt; NIL N (prin (* N N))) ) ) )     # and 2 columns
 ########################################################################
 </code></pre>
@@ -590,7 +590,7 @@ columns, and print each row in an alternating red and blue color
       '((width . "200px") (style . "border: dotted 1px;"))    # table style
       "Square Numbers"                                        # caption
       '((align "Number") (align "Square"))                    # 2 headers
-      (for (N 1 (&gt;= 10 N) (inc N))                            # 10 rows
+      (for N 10                                                  # 10 rows
          (&lt;row&gt; (xchg '(red) '(blue))                         # red or blue
             N                                                 # 2 columns
             (prin (* N N) ) ) ) ) )

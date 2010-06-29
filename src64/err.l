@@ -1,4 +1,4 @@
-# 08mar10abu
+# 11jun10abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -10,11 +10,11 @@
    push F  # And flags
    push (OutFile)  # Save output channel
    ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
-   push (EnvPutB)  # Save 'put'
-   ld (EnvPutB) putStdoutB  # Set new
+   push (PutB)  # Save 'put'
+   ld (PutB) putStdoutB  # Set new
    call printE  # Print argument
    call newline  # and a newline
-   pop (EnvPutB)  # Restore 'put'
+   pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    pop F
    pop A
@@ -79,8 +79,9 @@
    end
    ld (Chr) 0  # Init globals
    ld (ExtN) 0
-   ld (EnvBrk) 0
+   ld (Break) 0
    ld (Alarm) Nil
+   ld (Sigio) Nil
    ld (LineX) ZERO
    ld (LineC) -1
    lea Y (S 240)  # Pointer to outFrame
@@ -94,14 +95,14 @@
       null C
       if nz  # Yes
          ld B (char "[")  # Output location
-         call (EnvPutB)
+         call (PutB)
          call outStringC  # Print filename
          ld B (char ":")  # Separator ':'
-         call (EnvPutB)
+         call (PutB)
          ld A (Y V)  # Get 'src'
          call outWordA  # Print line number
          ld B (char "]")
-         call (EnvPutB)
+         call (PutB)
          call space
       end
    end
@@ -158,7 +159,11 @@
    ld (EnvYoke) 0
    ld (EnvTrace) 0
    ld L 0  # Init link register
-   ld S (Stack0)  # and stack pointer
+   ld S (Stack0)  # stack pointer
+   lea A (S 4096)  # and stack limit
+   sub A (StkSize)
+   ld (StkLimit) A
+   ld (Stacks) 0  # Free all stack segments
    jmp restart  # Restart interpreter
 : ErrTok asciz "!? "
 : Dashes asciz " -- "
@@ -180,22 +185,22 @@
             ld E 0  # 'n'
             ld Z Y  # Bindings in Z
             do
-               add E 1  # Increment 'n'
-               add A 1  # Done?
+               inc E  # Increment 'n'
+               inc A  # Done?
             while nz  # No
                ld Z ((Z) I)  # Follow link
                null Z  # Any?
             while nz  # Yes
                cmp (Z -I) A  # Env swap nesting?
                if lt  # Yes
-                  sub A 1  # Adjust
+                  dec A  # Adjust
                end
             loop
             do
                ld A E  # Get 'n'
                ld Z Y  # Bindings
                do
-                  sub A 1  # 'n-1' times
+                  dec A  # 'n-1' times
                while nz
                   ld Z ((Z) I)  # Follow link
                loop
@@ -212,7 +217,7 @@
                      cmp A Z  # More?
                   until lt  # No
                end
-               sub E 1  # Decrement 'n'
+               dec E  # Decrement 'n'
             until z  # Done
          end
          cmp Y (X III)  #  Reached last bind frame?
@@ -233,20 +238,36 @@
       loop
       do
          cmp (EnvInFrames) (X IV)  # Open input frames?
-      while nz  # Yes
+      while ne  # Yes
          call popInFiles  # Clean up
       loop
       do
          cmp (EnvOutFrames) (X V)  # Open output frames?
-      while nz  # Yes
+      while ne  # Yes
          call popOutFiles  # Clean up
       loop
       do
          cmp (EnvCtlFrames) (X VI)  # Open control frames?
-      while nz  # Yes
+      while ne  # Yes
          call popCtlFiles  # Clean up
       loop
-      movn (Env) (X III) "(EnvEnd-Env)"  # Restore environment
+      ld Z (EnvCo7)  # Get coroutines
+      do
+         cmp Z (X "EnvCo7-EnvCo")  # Skipped?
+      while ne  # Yes
+         ld C (Stack0)  # Find stack segment
+         ld A 1
+         do
+            sub C (StkSize)  # Next segment
+            cmp C (Z II)  # Found 'seg'?
+         while ne  # No
+            add A A
+         loop
+         not A  # Clear in segment bitmask
+         and (Stacks) A
+         ld Z (Z)  # Next coroutine
+      loop
+      load (Env) (EnvEnd) (X III)  # Restore environment
       ld E (X II)  # 'fin'
       eval  # Evaluate 'finally' expression
       cmp X (S)  # Reached target catch frame?
@@ -363,6 +384,18 @@
 : ProtErr asciz "Protected symbol"
 
 ### Error messages ###
+(code 'stkErr)
+   ld E 0
+(code 'stkErrE)
+   ld X E
+(code 'stkErrX)
+   ld E 0
+(code 'stkErrEX)
+   ld Y StkErr
+   ld (StkLimit) 0  # Temporarily without stack limit
+   jmp errEXYZ
+: StkErr asciz "Stack overflow"
+
 (code 'argErrAX)
    ld E A
 (code 'argErrEX)
@@ -439,10 +472,23 @@
    jmp errEXYZ
 : RenErr asciz "Can't rename"
 
-(code 'makeErrEX)
+(code 'makeErrX)
+   ld E 0
    ld Y MakeErr
    jmp errEXYZ
 : MakeErr asciz "Not making"
+
+(code 'reentErrEX)
+   ld Y ReentErr
+   jmp errEXYZ
+: ReentErr asciz "Reentrant coroutine"
+
+(code 'yieldErrX)
+   ld E 0
+(code 'yieldErrEX)
+   ld Y YieldErr
+   jmp errEXYZ
+: YieldErr asciz "No coroutine"
 
 (code 'msgErrYX)
    ld A Y

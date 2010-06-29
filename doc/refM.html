@@ -24,7 +24,7 @@ A -- Number expected
 ?
 :
 : *Msg
--> <u>Number expected</u>
+-> "Number expected"
 </code></pre>
 
 <dt><a name="+Mis"><code>+Mis</code></a>
@@ -98,16 +98,16 @@ for path, name and mime type. <code>prg</code> generates the mail body with
 href="refC.html#connect">connect</a></code>.
 
 <pre><code>
-(mail <u>localhost</u> 25                                 # Local mail server
-   <u>a@bc.de</u>                                         # "From" address
-   <u>abu@software-lab.de</u>                             # "To" address
-   <u>Testmail</u>                                        # Subject
+(mail "localhost" 25                               # Local mail server
+   "a@bc.de"                                       # "From" address
+   "abu@software-lab.de"                           # "To" address
+   "Testmail"                                      # Subject
    (quote
-      <u>img/go.png</u> <u>go.png</u> <u>image/png</u>                  # First attachment
-      <u>img/7fach.gif</u> <u>7fach.gif</u> <u>image/gif</u> )          # Second attachment
-   <u>Hello,</u>                                          # First line
+      "img/go.png" "go.png" "image/png"            # First attachment
+      "img/7fach.gif" "7fach.gif" "image/gif" )    # Second attachment
+   "Hello,"                                        # First line
    NIL                                             # (empty line)
-   (prinl (pack <u>This is mail #</u> (+ 3 4))) )         # Third line
+   (prinl (pack "This is mail #" (+ 3 4))) )       # Third line
 </code></pre>
 
 <dt><a name="make"><code>(make .. [(made 'lst ..)] .. [(link 'any ..)] ..) -> any</code></a>
@@ -278,7 +278,7 @@ process (not stored in the database), and vanish when the process terminates. If
 the first argument is zero, all marks are cleared.
 
 <pre><code>
-: (pool <u>db</u>)
+: (pool "db")
 -> T
 : (mark '{1} T)      # Mark
 -> NIL
@@ -427,7 +427,7 @@ arguments.
 -> 123
 </code></pre>
 
-<dt><a name="meth"><code>(meth 'obj ..) -> any</code></a>
+<dt><a name="meth"><code>(meth 'obj ['any ..]) -> any</code></a>
 <dd>This function is usually not called directly, but is used by <code> <a
 href="refD.html#dm">dm</a></code> as a template to initialize the
 <code>VAL</code> of message symbols. It searches for itself in the methods of
@@ -460,7 +460,7 @@ href="refC.html#class">class</a></code>.
 
 <pre><code>
 : (method 'mis> '+Number)
--> ((Val Obj) (and Val (not (num? Val)) <u>Numeric input expected</u>))
+-> ((Val Obj) (and Val (not (num? Val)) "Numeric input expected"))
 </code></pre>
 
 <dt><a name="min"><code>(min 'any ..) -> any</code></a>
@@ -545,13 +545,13 @@ href="refF.html#format">format</a></code>.
 
 <pre><code>
 : (money 123456789)
--> <u>1,234,567.89</u>
-: (money 12345 <u>EUR</u>)
--> <u>123.45 EUR</u>
-: (locale <u>DE</u> <u>de</u>)
+-> "1,234,567.89"
+: (money 12345 "EUR")
+-> "123.45 EUR"
+: (locale "DE" "de")
 -> NIL
-: (money 123456789 <u>EUR</u>)
--> <u>1.234.567,89 EUR</u>
+: (money 123456789 "EUR")
+-> "1.234.567,89 EUR"
 </code></pre>
 
 <dt><a name="more"><code>(more 'lst ['fun]) -> flg</code></a>
@@ -577,10 +577,10 @@ accept.                                # Stop
 
 : (more (all) show)                    # 'show' all internal symbols
 inc> 67292896
-   *Dbg ((859 . <u>lib/db.l</u>))
+   *Dbg ((859 . "lib/db.l"))
 
 leaf ((Tree) (let (Node (cdr (root Tree)) X) (while (val Node) (setq X (cadr @) Node (car @))) (cddr X)))
-   *Dbg ((173 . <u>lib/btree.l</u>))
+   *Dbg ((173 . "lib/btree.l"))
 
 nil 67284680
    T (((@X) (@ not (-> @X))))
@@ -594,10 +594,10 @@ nil 67284680
    (and
       Val
       (nor (isa (: type) Val) (canQuery Val))
-      <u>Type error</u> ) )
+      "Type error" ) )
 
 (dm T (Var Lst)
-   (unless (=: type (car Lst)) (quit <u>No Link</u> Var))
+   (unless (=: type (car Lst)) (quit "No Link" Var))
    (super Var (cdr Lst)) )
 
 -> NIL
@@ -610,7 +610,7 @@ arguments (printed with <code><a href="refP.html#prin">prin</a></code>) and a
 newline, to standard error. The first <code>any</code> argument is returned.
 
 <pre><code>
-: (msg (1 a 2 b 3 c) <u> is a mixed </u> <u>list</u>)
+: (msg (1 a 2 b 3 c) " is a mixed " "list")
 (1 a 2 b 3 c) is a mixed list
 -> (1 a 2 b 3 c)
 </code></pre>

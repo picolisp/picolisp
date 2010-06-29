@@ -68,6 +68,7 @@ href="faq.html">Frequently Asked Questions (FAQ)</a>.
       </ul>
    <li><a href="#ev">Evaluation</a>
    <li><a href="#int">Interrupt</a>
+   <li><a href="#coroutines">Coroutines</a>
    <li><a href="#errors">Error Handling</a>
    <li><a href="#atres">@ Result</a>
    <li><a href="#cmp">Comparing</a>
@@ -286,7 +287,8 @@ from the cell's start address. Therefore, the bit pattern of a symbol will be:
 <p>A property is a key-value-pair, represented as a cell in the symbol's tail.
 This is called a "property list". The property list may be terminated by a
 number representing the symbol's name. In the following example, a symbol with
-the name <code>"abc"</code> has three properties:
+the name <code>"abc"</code> has three properties: A KEY/VAL cell, a cell with
+only a KEY, and another KEY/VAL cell.
 
 <pre><code>
             Symbol
@@ -308,10 +310,11 @@ the name <code>"abc"</code> has three properties:
             +-----+-----+                       +-----+-----+
 </code></pre>
 
-<p>Each property in a symbol's tail is either a symbol (then it represents a
-boolean value), or a cell with the property key in its CDR and the property
-value in its CAR. In both cases, the key should be a symbol, because searches in
-the property list are performed using pointer comparisons.
+<p>Each property in a symbol's tail is either a symbol (like the single KEY
+above, then it represents a boolean value), or a cell with the property key in
+its CDR and the property value in its CAR. In both cases, the key should be a
+symbol, because searches in the property list are performed using pointer
+comparisons.
 
 <p>The name of a symbol is stored as a number at the end of the tail. It
 contains the characters of the name in UTF-8 encoding, using between one and
@@ -334,6 +337,7 @@ system. It is used
 <li>as an end-of-list marker
 <li>to represent the empty list
 <li>to represent the boolean value "false"
+<li>to represent the absolute minimum
 <li>to represent a string of length zero
 <li>to represent the value "Not a Number"
 <li>as the root of all class hierarchies
@@ -703,7 +707,7 @@ and may be assigned a value or a function definition, and properties.
 not need to be quoted for evaluation:
 
 <pre><code>
-: <u>This is a string</u>
+: <u>This is a string</u>   # "This is a string" if *Tsm is off
 -> <u>This is a string</u>
 </code></pre>
 
@@ -711,7 +715,7 @@ not need to be quoted for evaluation:
 This may cause unexpected behavior:
 
 <pre><code>
-: (setq <u>This is a string</u> 12345)
+: (setq <u>This is a string</u> 12345)  # (setq "This is a string" 12345)
 -> 12345
 : <u>This is a string</u>
 -> 12345
@@ -741,6 +745,9 @@ href="refB.html#box?">box?</a></code> or <code><a
 href="refN.html#new">new</a></code>). They print as a dollar sign
 (<code>$</code>) followed by a decimal digit string (actually their machine
 address).
+
+<p>To allow an easier copy/paste of the examples, most of the documentation uses
+the double quote notation for transient symbols.
 
 
 <p><hr>
@@ -984,7 +991,7 @@ be used instead to search for an executable function.
 a list, that list is evaluated to obtain an executable function.
 
 <pre><code>
-: ((intern (pack <u>c</u> <u>a</u> <u>r</u>)) (1 2 3))
+: ((intern (pack "c" "a" "r")) (1 2 3))
 -> 1
 </code></pre>
 
@@ -1092,6 +1099,53 @@ function, these extra arguments will be ignored. Missing arguments default to
 
 
 <p><hr>
+<h3><a name="coroutines">Coroutines</a></h3>
+
+<p>Coroutines are independent execution contexts. They may have multiple entry
+and exit points, and preserve their environment between invocations.
+
+<p>They are available only in the 64-bit version.
+
+<p>A coroutine is identified by a tag. This tag can be passed to other
+functions, and (re)invoked as needed. In this regard coroutines are similar to
+"continuations" in other languages.
+
+<p>When the goes out of scope, the coroutine will be garabage collected. In
+cases where this is desired, using a <a href="#transient">transient</a> symbol
+for the tag is recommended.
+
+<p>A coroutine is created by calling <code><a href="refC.html#co">co</a></code>.
+Its <code>prg</code> body will be executed, and unless <code><a
+href="refY.html#yield">yield</a></code> is called at some point, the coroutine
+will "fall off" at the end and disappear.
+
+<p>When <code><a href="refY.html#yield">yield</a></code> is called, control is
+either transferred back to the caller, or to some other - explicitly specified,
+and already running - coroutine.
+
+<p>A coroutine is stopped and disposed when
+
+<p><ul>
+<li>it simply falls off the end,
+
+<li>some other (co)routine calls <code><a href="refC.html#co">co</a></code> with
+that tag but without a <code>prg</code> body,
+
+<li>the tag goes out of scope, so that the garbage collector stops it,
+
+<li>a <code><a href="refT.html#throw">throw</a></code> into another (co)routine
+environment is executed, or
+
+<li>an error occurred, and <a href="#errors">error handling</a> was entered.
+
+</ul>
+
+<p>In the current implementation, not more than 64 coroutines can exist at the
+same time. Reentrant coroutines are not supported, a coroutine cannot resume
+itself directly or indirectly.
+
+
+<p><hr>
 <h3><a name="int">Interrupt</a></h3>
 
 <p>During the evaluation of an expression, the PicoLisp interpreter can be
@@ -1104,6 +1158,12 @@ interpreter to the top level. See also <code><a
 href="refD.html#debug">debug</a></code>, <code><a
 href="refE.html#e">e</a></code>, <code><a href="ref_.html#^">^</a></code> and
 <code><a href="refD.html#*Dbg">*Dbg</a></code>
+
+<p>Other interrups may be handled by <code><a
+href="refA.html#alarm">alarm</a></code>, <code><a
+href="refS.html#sigio">sigio</a></code>, <code><a
+href="refH.html#*Hup">*Hup</a></code> and <code><a
+href="refS.html#*Sig1">*Sig[12]</a></code>.
 
 
 <p><hr>
@@ -1209,6 +1269,7 @@ and the bodies of <code><a href="refR.html#*Run">*Run</a></code> tasks.
    <a href="refN.html#nand">nand</a>,
    <a href="refN.html#nond">nond</a>,
    <a href="refN.html#nor">nor</a>,
+   <a href="refN.html#not">not</a>,
    <a href="refO.html#or">or</a>,
    <a href="refS.html#state">state</a>,
    <a href="refU.html#unless">unless</a>,
@@ -1254,8 +1315,8 @@ greater than anything else.
 mixed data types:
 
 <pre><code>
-: (sort '(<u>abc</u> T (d e f) NIL 123 DEF))
--> (NIL 123 DEF <u>abc</u> (d e f) T)
+: (sort '("abc" T (d e f) NIL 123 DEF))
+-> (NIL 123 DEF "abc" (d e f) T)
 </code></pre>
 
 <p>See also <code><a href="refM.html#max">max</a></code>, <code><a
@@ -1444,7 +1505,7 @@ include
    <dt><code><a href="refI.html#+Idx">+Idx</a></code>
    <dd>A full-text index, typically for strings
    <dt><code><a href="refS.html#+Sn">+Sn</a></code>
-   <dd>Tolerant index, using the Soundex-Algorithm
+   <dd>Tolerant index, using a modified Soundex-Algorithm
    </dl>
 <li>Booleans
    <dl>
@@ -1872,10 +1933,12 @@ abbreviations:
    <a href="refA.html#accu">accu</a>
    <a href="refF.html#format">format</a>
    <a href="refP.html#pad">pad</a>
+   <a href="refM.html#money">money</a>
+   <a href="refR.html#round">round</a>
    <a href="refO.html#oct">oct</a>
    <a href="refH.html#hex">hex</a>
+   <a href="refH.html#hax">hax</a>
    <a href="refF.html#fmt64">fmt64</a>
-   <a href="refM.html#money">money</a>
 </code>
 
 <dt>List Processing
@@ -2030,6 +2093,8 @@ abbreviations:
    <a href="refC.html#catch">catch</a>
    <a href="refT.html#throw">throw</a>
    <a href="refF.html#finally">finally</a>
+   <a href="refC.html#co">co</a>
+   <a href="refY.html#yield">yield</a>
    <a href="ref_.html#!">!</a>
    <a href="refE.html#e">e</a>
    <a href="ref_.html#$">$</a>
@@ -2360,6 +2425,8 @@ abbreviations:
    <a href="refA.html#alarm">alarm</a>
    <a href="refP.html#protect">protect</a>
    <a href="refH.html#heap">heap</a>
+   <a href="refS.html#stack">stack</a>
+   <a href="refA.html#adr">adr</a>
    <a href="refE.html#env">env</a>
    <a href="refU.html#up">up</a>
    <a href="refD.html#date">date</a>
@@ -2401,6 +2468,7 @@ abbreviations:
    <a href="refP.html#pipe">pipe</a>
    <a href="refT.html#timeout">timeout</a>
    <a href="refM.html#mail">mail</a>
+   <a href="refA.html#assert">assert</a>
    <a href="refT.html#test">test</a>
    <a href="refB.html#bye">bye</a>
 </code>

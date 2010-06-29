@@ -17,11 +17,11 @@ href="ref.html#num-io">Numbers</a> and <code><a
 href="refS.html#scl">scl</a></code>.
 
 <pre><code>
-: (str <u>123.45</u>)  # Default value of '*Scl' is 0
+: (str "123.45")  # Default value of '*Scl' is 0
 -> (123)
 : (setq *Scl 3)
 -> 3
-: (str <u>123.45</u>)
+: (str "123.45")
 -> (123450)
 </code></pre>
 
@@ -29,14 +29,10 @@ href="refS.html#scl">scl</a></code>.
 <dt><a name="*Sig2"><code>*Sig2</code></a>
 <dd>Global variables holding (possibly empty) <code>prg</code> bodies, which
 will be executed when a SIGUSR1 signal (or a SIGUSR2 signal, respectively) is
-sent to the current process. Note that this mechanism is "unreliable", in the
-way that when a second signal (it may be SIGHUP, SIGINT, another SIGUSR1/2,
-SIGALRM or SIGTERM) arrives before the first signal's <code>prg</code> is
-running, the first signal will be lost. See also <code><a
+sent to the current process. See also <code><a
 href="refA.html#alarm">alarm</a></code>, <code><a
-href="refR.html#*Run">*Run</a></code>, <code><a
-href="refH.html#*Hup">*Hup</a></code> and <code><a
-href="refE.html#*Err">*Err</a></code>.
+href="refS.html#sigio">sigio</a></code> and <code><a
+href="refH.html#*Hup">*Hup</a></code>.
 
 <pre><code>
 : (de *Sig1 (msg 'SIGUSR1))
@@ -72,11 +68,11 @@ argument. See also <code><a href="refZ.html#*Zap">*Zap</a></code>.
 </code></pre>
 
 <dt><a name="+Sn"><code>+Sn</code></a>
-<dd>Prefix class for maintaining indexes according to the soundex algorithm, for
-tolerant name searches, to <code><a href="refS.html#+String">+String</a></code>
-relations. Typically used in combination with the <code><a
-href="refI.html#+Idx">+Idx</a></code> prefix class. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+<dd>Prefix class for maintaining indexes according to a modified soundex
+algorithm, for tolerant name searches, to <code><a
+href="refS.html#+String">+String</a></code> relations. Typically used in
+combination with the <code><a href="refI.html#+Idx">+Idx</a></code> prefix
+class. See also <code><a href="ref.html#dbase">Database</a></code>.
 
 <pre><code>
 (rel nm (+Sn +Idx +String))  # Name
@@ -120,7 +116,7 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 <pre><code>
 : (?
    @Nr 2
-   @Nm <u>Spare</u>
+   @Nm "Spare"
    (select (@Item)
       ((nr +Item @Nr) (nm +Item @Nm))
       (same @Nr @Item nr)
@@ -142,26 +138,26 @@ href="refS.html#step">step</a></code>.
 
 <pre><code>
 : (scan (tree 'nm '+Item))
-(<u>ASLRSNSTRSTN</u> {3-3} . T) {3-3}
-(<u>Additive</u> {3-4}) {3-4}
-(<u>Appliance</u> {3-6}) {3-6}
-(<u>Auxiliary Construction</u> . {3-3}) {3-3}
-(<u>Construction</u> {3-3}) {3-3}
-(<u>ENNSNNTTTF</u> {3-4} . T) {3-4}
-(<u>Enhancement Additive</u> . {3-4}) {3-4}
-(<u>Fittings</u> {3-5}) {3-5}
-(<u>GTSTFLNS</u> {3-6} . T) {3-6}
-(<u>Gadget Appliance</u> . {3-6}) {3-6}
+("ASLRSNSTRSTN" {3-3} . T) {3-3}
+("Additive" {3-4}) {3-4}
+("Appliance" {3-6}) {3-6}
+("Auxiliary Construction" . {3-3}) {3-3}
+("Construction" {3-3}) {3-3}
+("ENNSNNTTTF" {3-4} . T) {3-4}
+("Enhancement Additive" . {3-4}) {3-4}
+("Fittings" {3-5}) {3-5}
+("GTSTFLNS" {3-6} . T) {3-6}
+("Gadget Appliance" . {3-6}) {3-6}
 ...
 
 : (scan (tree 'nm '+Item) println NIL T T)  # 'flg' is non-NIL
-(<u>Auxiliary Construction</u> . {3-3}) {3-3}
-(<u>Enhancement Additive</u> . {3-4}) {3-4}
-(<u>Gadget Appliance</u> . {3-6}) {3-6}
-(<u>Main Part</u> . {3-1}) {3-1}
-(<u>Metal Fittings</u> . {3-5}) {3-5}
-(<u>Spare Part</u> . {3-2}) {3-2}
-(<u>Testartikel</u> . {3-8}) {3-8}
+("Auxiliary Construction" . {3-3}) {3-3}
+("Enhancement Additive" . {3-4}) {3-4}
+("Gadget Appliance" . {3-6}) {3-6}
+("Main Part" . {3-1}) {3-1}
+("Metal Fittings" . {3-5}) {3-5}
+("Spare Part" . {3-2}) {3-2}
+("Testartikel" . {3-8}) {3-8}
 -> {7-6}
 </code></pre>
 
@@ -172,7 +168,7 @@ href="refS.html#step">step</a></code>.
 <pre><code>
 : (scl 0)
 -> 0
-: (str <u>123.45</u>)
+: (str "123.45")
 -> (123)
 : (scl 1)
 -> 1
@@ -181,7 +177,7 @@ href="refS.html#step">step</a></code>.
 -> 1235
 : (scl 3)
 -> 3
-: (str <u>123.45</u>)
+: (str "123.45")
 -> (123450)
 </code></pre>
 
@@ -199,7 +195,7 @@ $ cat x
 (* (next) (next))
 
 $ ./dbg
-:  (script <u>x</u> 3 4)
+:  (script "x" 3 4)
 -> 12
 </code></pre>
 
@@ -220,7 +216,7 @@ in the range -2147483648 .. +2147483647. See also <code><a
 href="refR.html#rand">rand</a></code>.
 
 <pre><code>
-: (seed <u>init string</u>)
+: (seed "init string")
 -> 2015582081
 : (rand)
 -> -706917003
@@ -269,14 +265,14 @@ href="ref.html#pilog">Pilog</a>.
    pr 29900
    inv 100
    sup {2-1}
-   nm <u>Main Part</u>
+   nm "Main Part"
 
 {3-2} (+Item)
    nr 2
    pr 1250
    inv 100
    sup {2-2}
-   nm <u>Spare Part</u>
+   nm "Spare Part"
 .                                      # Stop
 -> {3-2}
 
@@ -285,16 +281,16 @@ href="ref.html#pilog">Pilog</a>.
    nr 3
    sup {2-1}
    pr 15700
-   nm <u>Auxiliary Construction</u>
+   nm "Auxiliary Construction"
    inv 100
 .                                      # Stop
 -> {3-3}
 
 # Show selected attributes for items 3 through 3
 : (select nr nm pr (sup nm) +Item nr (3 . 5))
-3 <u>Auxiliary Construction</u> 157.00 <u>Active Parts Inc.</u> {3-3}
-4 <u>Enhancement Additive</u> 9.99 <u>Seven Oaks Ltd.</u> {3-4}
-5 <u>Metal Fittings</u> 79.80 <u>Active Parts Inc.</u> {3-5}
+3 "Auxiliary Construction" 157.00 "Active Parts Inc." {3-3}
+4 "Enhancement Additive" 9.99 "Seven Oaks Ltd." {3-4}
+5 "Metal Fittings" 79.80 "Active Parts Inc." {3-5}
 -> NIL
 </code></pre>
 
@@ -318,13 +314,13 @@ href="refR.html#remote/2">remote/2</a></code>.
 <pre><code>
 : (?
    @Nr (2 . 5)          # Select all items with numbers between 2 and 5
-   @Sup <u>Active</u>          # and suppliers matching "Active"
+   @Sup "Active"        # and suppliers matching "Active"
    (select (@Item)                                  # Bind results to '@Item"
       ((nr +Item @Nr) (nm +CuSu @Sup (sup +Item)))  # Generator clauses
       (range @Nr @Item nr)                          # Filter clauses
       (part @Sup @Item sup nm) ) )
- @Nr=(2 . 5) @Sup=<u>Active</u> @Item={3-3}
- @Nr=(2 . 5) @Sup=<u>Active</u> @Item={3-5}
+ @Nr=(2 . 5) @Sup="Active" @Item={3-3}
+ @Nr=(2 . 5) @Sup="Active" @Item={3-5}
 -> NIL
 </code></pre>
 
@@ -351,7 +347,7 @@ href="refE.html#extra">extra</a></code>.
 database is reached. See also <code><a href="refF.html#free">free</a></code>.
 
 <pre><code>
-: (pool <u>db</u>)
+: (pool "db")
 -> T
 : (seq *DB)
 -> {2}
@@ -431,7 +427,7 @@ href="refS.html#show">show</a></code>.
 <pre><code>
 : (? (db nr +Item 2 @Item) (show @Item))
 {3-2} (+Item)
-   nm <u>Spare Part</u>
+   nm "Spare Part"
    nr 2
    pr 1250
    inv 100
@@ -440,18 +436,42 @@ href="refS.html#show">show</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="sigio"><code>(sigio ['cnt [. prg]]) -> cnt | prg</code></a>
+<dd>Sets a signal handler <code>prg</code> for SIGIO on the file descriptor
+<code>cnt</code>. If called without arguments, the currently installed handler
+is returned. See also <code><a href="refA.html#alarm">alarm</a></code>, <code><a
+href="refH.html#*Hup">*Hup</a></code> and <code><a
+href="refS.html#*Sig1">*Sig[12]</a></code>.
+
+<pre><code>
+# First session
+: (sigio (setq *SigSock (port T 4444))  # Register signal handler at UDP port
+   (while (udp *SigSock)                # Queue all received data
+      (fifo '*SigQueue @) ) )
+-> 3
+
+# Second session
+: (for I 7 (udp "localhost" 4444 I))  # Send numbers to first session
+
+# First session
+: (fifo '*SigQueue)
+-> 1
+: (fifo '*SigQueue)
+-> 2
+</code></pre>
+
 <dt><a name="size"><code>(size 'any) -> cnt</code></a>
 <dd>Returns the "size" of <code>any</code>. For numbers this is the number of
 bytes needed for the value, for external symbols it is the number of bytes it
 would occupy in the database, for other symbols it is the number of bytes
-occupied in the UTF-8 representation of the name, and for lists it is the total
+occupied by the UTF-8 representation of the name, and for lists it is the total
 number of cells in this list and all its sublists. See also <code><a
 href="refL.html#length">length</a></code>.
 
 <pre><code>
-: (size <u>abc</u>)
+: (size "abc")
 -> 3
-: (size <u>äbc</u>)
+: (size "äbc")
 -> 4
 : (size 127)  # One byte
 -> 1
@@ -474,8 +494,8 @@ $ cat a
 # Comment
 abcd
 $ ./dbg
-: (in <u>a</u> (skip <u>#</u>))
--> <u>a</u>
+: (in "a" (skip "#"))
+-> "a"
 </code></pre>
 
 <dt><a name="solve"><code>(solve 'lst [. prg]) -> lst</code></a>
@@ -534,9 +554,9 @@ not given.
 characters.
 
 <pre><code>
-: (sp? <u>  </u>)
+: (sp? "  ")
 -> T
-: (sp? <u>ABC</u>)
+: (sp? "ABC")
 -> NIL
 : (sp? 123)
 -> NIL
@@ -550,20 +570,52 @@ href="refS.html#stem">stem</a></code>.
 <pre><code>
 : (split (1 a 2 b 3 c 4 d 5 e 6) 'e 3 'a)
 -> ((1) (2 b) (c 4 d 5) (6))
-: (mapcar pack (split (chop <u>The quick brown fox</u>) <u> </u>))
--> (<u>The</u> <u>quick</u> <u>brown</u> <u>fox</u>)
+: (mapcar pack (split (chop "The quick brown fox") " "))
+-> ("The" "quick" "brown" "fox")
 </code></pre>
 
-<dt><a name="sqrt"><code>(sqrt 'num) -> num</code></a>
-<dd>Returns the square root of the <code>num</code> argument.
+<dt><a name="sqrt"><code>(sqrt 'num ['flg]) -> num</code></a>
+<dd>Returns the square root of the <code>num</code> argument. If
+<code>flg</code> is given and non-<code>NIL</code>, the result will be rounded.
 
 <pre><code>
 : (sqrt 64)
 -> 8
 : (sqrt 1000)
 -> 31
+: (sqrt 1000 T)
+-> 32
 : (sqrt 10000000000000000000000000000000000000000)
 -> 100000000000000000000
+</code></pre>
+
+<dt><a name="stack"><code>(stack ['cnt]) -> cnt | (.. sym . cnt)</code></a>
+<dd>(64-bit version only) Maintains the stack segment size. If called without a
+<code>cnt</code> argument, or if already one or more <a
+href="ref.html#coroutines">coroutines</a> are running, the current size in
+megabytes is returned. Otherwise, the stack segment size is set to the new
+value. Default is 4 MB. If there are running coroutines, their tags will be
+<code><a href="refC.html#cons">cons</a></code>ed in front of the size. See also
+<code><a href="refH.html#heap">heap</a></code>.
+
+<pre><code>
+: (stack)         # Get current stack segment size
+-> 4
+: (stack 10)      # Set to 10 MB
+-> 10
+: (let N 0 (recur (N) (recurse (inc N))))
+!? (recurse (inc N))
+Stack overflow
+? N
+-> 109181
+?
+
+: (co "routine" (yield 7))  # Create two coroutines
+-> 7
+: (co "routine2" (yield 8))
+-> 8
+: (stack)
+-> ("routine2" "routine" . 4)
 </code></pre>
 
 <dt><a name="stamp"><code>(stamp ['dat 'tim]) -> sym</code></a>
@@ -574,11 +626,11 @@ href="refT.html#time">time</a></code>.
 
 <pre><code>
 : (stamp)
--> <u>2000-09-12 07:48:04</u>
+-> "2000-09-12 07:48:04"
 : (stamp (date) 0)
--> <u>2000-09-12 00:00:00</u>
+-> "2000-09-12 00:00:00"
 : (stamp (date 2000 1 1) (time 12 0 0))
--> <u>2000-01-01 12:00:00</u>
+-> "2000-01-01 12:00:00"
 </code></pre>
 
 <dt><a name="state"><code>(state 'var (sym|lst exe [. prg]) ..) -> any</code></a>
@@ -635,8 +687,8 @@ href="refT.html#tail">tail</a></code> and <code><a
 href="refS.html#split">split</a></code>.
 
 <pre><code>
-: (stem (chop <u>abc/def\\ghi</u>) <u>/</u> <u>\\</u>)
--> (<u>g</u> <u>h</u> <u>i</u>)
+: (stem (chop "abc/def\\ghi") "/" "\\")
+-> ("g" "h" "i")
 </code></pre>
 
 <dt><a name="step"><code>(step 'lst ['flg]) -> any</code></a>
@@ -686,12 +738,12 @@ href="refN.html#name">name</a></code> and <code><a
 href="refS.html#sym">sym</a></code>.
 
 <pre><code>
-: (str <u>a (1 2) b</u>)
+: (str "a (1 2) b")
 -> (a (1 2) b)
-: (str '(a <u>Hello</u> DEF))
--> <u>a \"Hello\" DEF</u>
-: (str <u>a*3+b*4</u> <u>_</u>)
--> (a <u>*</u> 3 <u>+</u> b <u>*</u> 4)
+: (str '(a "Hello" DEF))
+-> "a \"Hello\" DEF"
+: (str "a*3+b*4" "_")
+-> (a "*" 3 "+" b "*" 4)
 </code></pre>
 
 <dt><a name="strDat"><code>(strDat 'sym) -> dat</code></a>
@@ -703,15 +755,15 @@ href="ref_.html#$dat">$dat</a></code> and <code><a
 href="refD.html#datStr">datStr</a></code>.
 
 <pre><code>
-: (strDat <u>2007-06-01</u>)
+: (strDat "2007-06-01")
 -> 733134
-: (strDat <u>01.06.2007</u>)
+: (strDat "01.06.2007")
 -> NIL
-: (locale <u>DE</u> <u>de</u>)
+: (locale "DE" "de")
 -> NIL
-: (strDat <u>01.06.2007</u>)
+: (strDat "01.06.2007")
 -> 733134
-: (strDat <u>1.6.2007</u>)
+: (strDat "1.6.2007")
 -> 733134
 </code></pre>
 
@@ -741,8 +793,8 @@ href="refE.html#ext?">ext?</a></code>.
 -> NIL
 : (str? 'abc)
 -> NIL
-: (str? <u>abc</u>)
--> <u>abc</u>
+: (str? "abc")
+-> "abc"
 </code></pre>
 
 <dt><a name="sub?"><code>(sub? 'any1 'any2) -> any2 | NIL</code></a>
@@ -751,11 +803,11 @@ href="refE.html#ext?">ext?</a></code>.
 <code>sym2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>.
 
 <pre><code>
-: (sub? <u>def</u> <u>abcdef</u>)
+: (sub? "def" "abcdef")
 -> T
-: (sub? <u>abb</u> <u>abcdef</u>)
+: (sub? "abb" "abcdef")
 -> NIL
-: (sub? NIL <u>abcdef</u>)
+: (sub? NIL "abcdef")
 -> T
 </code></pre>
 
@@ -817,8 +869,8 @@ href="refN.html#name">name</a></code> and <code><a
 href="refS.html#str">str</a></code>.
 
 <pre><code>
-: (sym '(abc <u>Hello</u> 123))
--> <u>(abc \"Hello\" 123)</u>
+: (sym '(abc "Hello" 123))
+-> "(abc \"Hello\" 123)"
 </code></pre>
 
 <dt><a name="sym?"><code>(sym? 'any) -> flg</code></a>
@@ -856,12 +908,12 @@ href="refW.html#wait">wait</a></code>.
 <dd>Returns or sets a system environment variable.
 
 <pre><code>
-: (sys <u>TERM</u>)  # Get current value
--> <u>xterm</u>
-: (sys <u>TERM</u> <u>vt100</u>)  # Set new value
--> <u>vt100</u>
-: (sys <u>TERM</u>)
--> <u>vt100</u>
+: (sys "TERM")  # Get current value
+-> "xterm"
+: (sys "TERM" "vt100")  # Set new value
+-> "vt100"
+: (sys "TERM")
+-> "vt100"
 </code></pre>
 
 </dl>

@@ -72,9 +72,9 @@ href="refS.html#strDat">strDat</a></code> and <code><a
 href="refE.html#expDat">expDat</a></code>.
 
 <pre><code>
-: ($dat <u>20070601</u>)
+: ($dat "20070601")
 -> 733134
-: ($dat <u>2007-06-01</u> <u>-</u>)
+: ($dat "2007-06-01" "-")
 -> 733134
 </code></pre>
 
@@ -85,11 +85,11 @@ href="refT.html#tim$">tim$</a></code> and <code><a
 href="ref_.html#$dat">$dat</a></code>.
 
 <pre><code>
-: (time ($tim <u>10:57:56</u>))
+: (time ($tim "10:57:56"))
 -> (10 57 56)
-: (time ($tim <u>10:57</u>))
+: (time ($tim "10:57"))
 -> (10 57 0)
-: (time ($tim <u>10</u>))
+: (time ($tim "10"))
 -> (10 0 0)
 </code></pre>
 
@@ -174,7 +174,7 @@ href="ref_.html#+">+</a></code> and <code><a href="ref_.html#-">-</a></code>.
 : (setq *Scl 2)
 -> 2
 : (format (*/ 3.0 1.5 1.0) *Scl)
--> <u>4.50</u>
+-> "4.50"
 </code></pre>
 
 <dt><a name="+"><code>(+ 'num ..) -> num</code></a>
@@ -309,7 +309,7 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 -> T
 : (<= 1 2 3)
 -> T
-: (<= <u>abc</u> <u>abc</u> <u>def</u>)
+: (<= "abc" "abc" "def")
 -> T
 </code></pre>
 
@@ -334,9 +334,9 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 <pre><code>
 : (= 6 (* 1 2 3))
 -> T
-: (= <u>a</u> <u>a</u>)
+: (= "a" "a")
 -> T
-: (== <u>a</u> <u>a</u>)
+: (== "a" "a")
 -> T
 : (= (1 (2) 3) (1 (2) 3))
 -> T
@@ -397,13 +397,13 @@ See also <code><a href="refE.html#extern">extern</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
 <pre><code>
-: (setq S <u>abc</u>)             # Read "abc"
--> <u>abc</u>
-: (== S <u>abc</u>)               # Read again, get the same symbol
+: (setq S "abc")           # Read "abc"
+-> "abc"
+: (== S "abc")             # Read again, get the same symbol
 -> T
 : (====)                   # Close scope
 -> NIL
-: (== S <u>abc</u>)               # Read again, get another symbol
+: (== S "abc")             # Read again, get another symbol
 -> NIL
 </code></pre>
 
@@ -415,7 +415,7 @@ href="refN.html#nT">nT</a>.
 <pre><code>
 : (=T 0)
 -> NIL
-: (=T <u>T</u>)
+: (=T "T")
 -> NIL
 : (=T T)
 -> T

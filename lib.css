@@ -1,4 +1,4 @@
-/* 17oct09abu
+/* 20apr10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -87,6 +87,13 @@ a:hover {
 #menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
    list-style-position: inside;
    padding: 0 0 0 1em;
+}
+
+#expires {
+   position: absolute;
+   top: 0;
+   right: 3px;
+   color: red;
 }
 
 /* Tabulators */

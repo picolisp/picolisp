@@ -131,8 +131,8 @@ the individual elements of <code>lst</code>. See also <code><a
 href="refT.html#text">text</a></code>.
 
 <pre><code>
-: (glue <u>,</u> '(a b c d))
--> <u>a,b,c,d</u>
+: (glue "," '(a b c d))
+-> "a,b,c,d"
 </code></pre>
 
 <dt><a name="goal"><code>(goal '([pat 'any ..] . lst) ['sym 'any ..]) -> lst</code></a>
@@ -162,10 +162,10 @@ href="refU.html#uniq">uniq</a></code>.
 <pre><code>
 : (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f)))
 -> ((1 a b c) (2 d e f))
-: (by name group '(<u>x</u> <u>x</u> <u>y</u> <u>z</u> <u>x</u> <u>z</u>)))
--> ((<u>x</u> <u>x</u> <u>x</u>) (<u>y</u>) (<u>z</u> <u>z</u>))
-: (by length group '(123 (1 2) <u>abcd</u> <u>xyz</u> (1 2 3 4) <u>XY</u>))
--> ((123 <u>xyz</u>) ((1 2) <u>XY</u>) (<u>abcd</u> (1 2 3 4))
+: (by name group '("x" "x" "y" "z" "x" "z")))
+-> (("x" "x" "x") ("y") ("z" "z"))
+: (by length group '(123 (1 2) "abcd" "xyz" (1 2 3 4) "XY"))
+-> ((123 "xyz") ((1 2) "XY") ("abcd" (1 2 3 4))
 </code></pre>
 
 <dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>

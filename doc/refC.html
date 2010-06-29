@@ -54,9 +54,9 @@ command and its arguments. Returns <code>T</code> if the command was executed
 successfully.
 
 <pre><code>
-: (when (call 'test <u>-r</u> <u>file.l</u>)  # Test if file exists and is readable
-   (load <u>file.l</u>)  # Load it
-   (call 'rm <u>file.l</u>) )  # Remove it
+: (when (call 'test "-r" "file.l")  # Test if file exists and is readable
+   (load "file.l")  # Load it
+   (call 'rm "file.l") )  # Remove it
 </code></pre>
 
 <dt><a name="call/1"><code>call/1</code></a>
@@ -102,7 +102,7 @@ href="refW.html#who">who</a></code>.
 (dm (zap> . +Blob) (Obj Val)
    (and
       Val
-      (call 'rm <u>-f</u> (blob Obj (: var))) ) )
+      (call 'rm "-f" (blob Obj (: var))) ) )
 
 (dm (zap> . +Entity) NIL
    (for X (getl This)
@@ -145,8 +145,8 @@ elements <code>anyN</code> of each clause. If one of them is a list,
 href="refS.html#state">state</a></code>.
 
 <pre><code>
-: (case (char 66) (<u>A</u> (+ 1 2 3)) ((<u>B</u> <u>C</u>) <u>Bambi</u>) (<u>D</u> (* 1 2 3)))
--> <u>Bambi</u>
+: (case (char 66) ("A" (+ 1 2 3)) (("B" "C") "Bambi") ("D" (* 1 2 3)))
+-> "Bambi"
 </code></pre>
 
 <dt><a name="catch"><code>(catch 'any . prg) -> any</code></a>
@@ -167,8 +167,8 @@ href="refQ.html#quit">quit</a></code> and
 : (catch 'OK (println 1) (throw 'OK 999) (println 2))
 1
 -> 999
-: (catch '(<u>No such file</u>) (in <u>doesntExist</u> (foo)))
--> <u>No such file</u>
+: (catch '("No such file") (in "doesntExist" (foo)))
+-> "No such file"
 </code></pre>
 
 <dt><a name="cd"><code>(cd 'any) -> sym</code></a>
@@ -178,7 +178,7 @@ href="refD.html#dir">dir</a></code> and <code><a
 href="refP.html#pwd">pwd</a></code>.
 
 <pre><code>
-: (when (cd <u>lib</u>)
+: (when (cd "lib")
    (println (sum lines (dir)))
    (cd @) )
 10955
@@ -203,13 +203,13 @@ href="refW.html#wrap">wrap</a></code>.
 
 <pre><code>
 : (center 4 12)
--> <u> 12</u>
-: (center 4 <u>a</u>)
--> <u> a</u>
-: (center 7 <u>a</u>)
--> <u>   a</u>
-: (center (3 3 3) <u>a</u> <u>b</u> <u>c</u>)
--> <u> a  b  c</u>
+-> " 12"
+: (center 4 "a")
+-> " a"
+: (center 7 "a")
+-> "   a"
+: (center (3 3 3) "a" "b" "c")
+-> " a  b  c"
 </code></pre>
 
 <dt><a name="chain"><code>(chain 'lst ..) -> lst</code></a>
@@ -249,12 +249,12 @@ href="refE.html#eof">eof</a></code>.
 <pre><code>
 : (char)                   # Read character from console
 A                          # (typed 'A' and a space/return)
--> <u>A</u>
+-> "A"
 : (char 100)               # Convert unicode to symbol
--> <u>d</u>
+-> "d"
 : (char T)                 # Special case, catch all
 -> # (not printable)
-: (char <u>d</u>)                 # Convert symbol to unicode
+: (char "d")               # Convert symbol to unicode
 -> 100
 </code></pre>
 
@@ -267,11 +267,11 @@ href="refP.html#pwd">pwd</a></code>.
 
 <pre><code>
 : (pwd)
--> <u>/usr/abu/pico</u>
-: (chdir <u>src</u> (pwd))
--> <u>/usr/abu/pico/src</u>
+-> "/usr/abu/pico"
+: (chdir "src" (pwd))
+-> "/usr/abu/pico/src"
 : (pwd)
--> <u>/usr/abu/pico</u>
+-> "/usr/abu/pico"
 </code></pre>
 
 <dt><a name="chkTree"><code>(chkTree 'sym ['fun]) -> num</code></a>
@@ -300,9 +300,9 @@ is returned. A list argument is returned unchanged.
 
 <pre><code>
 : (chop 'car)
--> (<u>c</u> <u>a</u> <u>r</u>)
-: (chop <u>Hello</u>)
--> (<u>H</u> <u>e</u> <u>l</u> <u>l</u> <u>o</u>)
+-> ("c" "a" "r")
+: (chop "Hello")
+-> ("H" "e" "l" "l" "o")
 </code></pre>
 
 <dt><a name="circ"><code>(circ 'any ..) -> lst</code></a>
@@ -360,8 +360,8 @@ href="refT.html#trim">trim</a></code>.
 <pre><code>
 : (clip '(NIL 1 NIL 2 NIL))
 -> (1 NIL 2)
-: (clip '(<u> </u> a <u> </u> b <u> </u>))
--> (a <u> </u> b)
+: (clip '(" " a " " b " "))
+-> (a " " b)
 </code></pre>
 
 <dt><a name="close"><code>(close 'cnt) -> cnt | NIL</code></a>
@@ -387,11 +387,11 @@ href="ref.html#invoc">Invocation</a></code>.
 <pre><code>
 $ ./dbg
 : (cmd)
--> <u>./bin/picolisp</u>
-: (cmd <u>!/bin/picolust</u>)
--> <u>!/bin/picolust</u>
+-> "./bin/picolisp"
+: (cmd "!/bin/picolust")
+-> "!/bin/picolust"
 : (cmd)
--> <u>!/bin/picolust</u>
+-> "!/bin/picolust"
 </code></pre>
 
 <dt><a name="cnt"><code>(cnt 'fun 'lst ..) -> cnt</code></a>
@@ -426,8 +426,8 @@ href="refS.html#step">step</a></code>.
 : (collect 'nr '+Item 3 6 'nr)
 -> (3 4 5 6)
 : (collect 'nr '+Item 3 6 'nm)
--> (<u>Auxiliary Construction</u> <u>Enhancement Additive</u> <u>Metal Fittings</u> <u>Gadget Appliance</u>)
-: (collect 'nm '+Item <u>Main Part</u>)
+-> ("Auxiliary Construction" "Enhancement Additive" "Metal Fittings" "Gadget Appliance")
+: (collect 'nm '+Item "Main Part")
 -> ({3-1})
 </code></pre>
 
@@ -443,10 +443,10 @@ href="refP.html#protect">protect</a></code>ed. See also <code><a
 href="refR.html#rollback">rollback</a></code>.
 
 <pre><code>
-: (pool <u>db</u>)
+: (pool "db")
 -> T
-: (put '{1} 'str <u>Hello</u>)
--> <u>Hello</u>
+: (put '{1} 'str "Hello")
+-> "Hello"
 : (commit)
 -> T
 </code></pre>
@@ -504,7 +504,7 @@ socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
 be established. See also <code><a href="refL.html#listen">listen</a></code>.
 
 <pre><code>
-: (connect <u>localhost</u> 4444)
+: (connect "localhost" 4444)
 -> 3
 </code></pre>
 
@@ -543,6 +543,42 @@ copied, while atoms are returned unchanged.
 -> T
 </code></pre>
 
+<dt><a name="co"><code>(co 'sym [. prg]) -> any</code></a>
+<dd>(64-bit version only) Starts, resumes or stops a <a
+href="ref.html#coroutines">coroutine</a> with the tag given by <code>sym</code>.
+If <code>prg</code> is not given, a coroutine with that tag will be stopped.
+Otherwise, if a coroutine running with that tag is found (pointer equality is
+used for comparison), its execution is resumed. Else a new coroutine with that
+tag is initialized and started. <code>prg</code> will be executed until it
+either terminates normally, or until <code><a
+href="refY.html#yield">yield</a></code> is called. In the latter case
+<code>co</code> returns, or transfers control to some other, already running,
+coroutine. Trying to start more than 64 coroutines will result in a stack
+overflow error. Also, a coroutine cannot resume itself directly or indirectly.
+See also <code><a href="refS.html#stack">stack</a></code>, <code><a
+href="refC.html#catch">catch</a></code> and <code><a
+href="refT.html#throw">throw</a></code>.
+
+<pre><code>
+: (de pythag (N)   # A generator function
+   (if (=T N)
+      (co 'rt)  # Stop
+      (co 'rt
+         (for X N
+            (for Y (range X N)
+               (for Z (range Y N)
+                  (when (= (+ (* X X) (* Y Y)) (* Z Z))
+                     (yield (list X Y Z)) ) ) ) ) ) ) )
+
+: (pythag 20)
+-> (3 4 5)
+: (pythag 20)
+-> (5 12 13)
+: (pythag 20)
+-> (6 8 10)
+
+</code></pre>
+
 <dt><a name="count"><code>(count 'tree) -> num</code></a>
 <dd>Returns the number of nodes in a database tree. See also <code><a
 href="refT.html#tree">tree</a></code> and <code><a
@@ -567,10 +603,10 @@ href="refO.html#out">out</a></code>.
 <pre><code>
 $ echo 9 >count                           # Write '9' to file "count"
 $ ./dbg
-: (ctl <u>.ctl</u>                               # Exclusive control, using ".ctl"
-   (in <u>count</u>
+: (ctl ".ctl"                             # Exclusive control, using ".ctl"
+   (in "count"
       (let Cnt (read)                     # Read '9'
-         (out <u>count</u>
+         (out "count"
             (println (dec Cnt)) ) ) ) )   # Write '8'
 -> 8
 :
@@ -585,7 +621,7 @@ serving the PicoLisp process with the process ID <code>pid</code>. See also
 <code><a href="refR.html#raw">raw</a></code>.
 
 <pre><code>
-: (ctty <u>/dev/tty</u>)
+: (ctty "/dev/tty")
 -> T
 </code></pre>
 

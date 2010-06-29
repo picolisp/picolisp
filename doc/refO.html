@@ -19,7 +19,7 @@ href="refO.html#once">once</a></code>.
 
 <pre><code>
 : *Once
--> ((<u>lib/</u> <u>misc.l</u> . 11) ((<u>lib/</u> <u>http.l</u> . 9) ((<u>lib/</u> <u>form.l</u> . 11))))
+-> (("lib/" "misc.l" . 11) (("lib/" "http.l" . 9) (("lib/" "form.l" . 11))))
 </code></pre>
 
 <dt><a name="*OS"><code>*OS</code></a>
@@ -29,7 +29,7 @@ include <code>"Linux"</code>, <code>"FreeBSD"</code>, <code>"Darwin"</code> or
 
 <pre><code>
 : *OS
--> <u>Linux</u>
+-> "Linux"
 </code></pre>
 
 <dt><a name="obj"><code>(obj (typ var [hook] val ..) var2 val2 ..) -> obj</code></a>
@@ -39,7 +39,7 @@ href="refR.html#request">request</a></code>) corresponding to <code>(typ var
 <code>varN</code> and <code>valN</code> arguments.
 
 <pre><code>
-: (obj ((+Item) nr 2) nm <u>Spare Part</u> sup `(db 'nr '+CuSu 2) inv 100 pr 1250)
+: (obj ((+Item) nr 2) nm "Spare Part" sup `(db 'nr '+CuSu 2) inv 100 pr 1250)
 -> {3-2}
 </code></pre>
 
@@ -66,13 +66,15 @@ Obj (+A +B +C)
 <dt><code>(oct 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to an octal string, or an octal string
 <code>sym</code> to a number. See also <code><a
-href="refH.html#hex">hex</a></code> and <code><a
+href="refH.html#hex">hex</a></code>, <code><a
+href="refF.html#fmt64">fmt64</a></code>, <code><a
+href="refH.html#hax">hax</a></code> and <code><a
 href="refF.html#format">format</a></code>.
 
 <pre><code>
 : (oct 73)
--> <u>111</u>
-: (oct <u>111</u>)
+-> "111"
+: (oct "111")
 -> 73
 </code></pre>
 
@@ -129,7 +131,7 @@ later time will not execute <code>prg</code>, and <code>once</code> returns
 <pre><code>
 (once
    (zero *Cnt1 *Cnt2)  # Init counters
-   (load <u>file1.l</u> <u>file2.l</u>) )  # Load other files
+   (load "file1.l" "file2.l") )  # Load other files
 </code></pre>
 
 <dt><a name="one"><code>(one var ..) -> 1</code></a>
@@ -180,7 +182,7 @@ href="refO.html#out">out</a></code>. See also <code><a
 href="refC.html#close">close</a></code>.
 
 <pre><code>
-: (open <u>x</u>)
+: (open "x")
 -> 3
 </code></pre>
 
@@ -191,7 +193,7 @@ href="refI.html#ipid">ipid</a></code> and <code><a
 href="refO.html#out">out</a></code>.
 
 <pre><code>
-: (out '(cat) (call 'ps <u>-p</u> (opid)))
+: (out '(cat) (call 'ps "-p" (opid)))
   PID TTY          TIME CMD
  7127 pts/3    00:00:00 cat
 -> T
@@ -204,8 +206,8 @@ href="ref.html#invoc">Invocation</a></code> and <code><a
 href="refA.html#argv">argv</a></code>.
 
 <pre><code>
-$ ./p  -<u>de f () (println 'opt (opt))</u>  -f abc  -bye
-opt <u>abc</u>
+$ ./p  -"de f () (println 'opt (opt))"  -f abc  -bye
+opt "abc"
 </code></pre>
 
 <dt><a name="or"><code>(or 'any ..) -> any</code></a>
@@ -252,7 +254,7 @@ href="refC.html#close">close</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
 <pre><code>
-: (out <u>a</u> (println 123 '(a b c) 'def))  # Write one line to file "a"
+: (out "a" (println 123 '(a b c) 'def))  # Write one line to file "a"
 -> def
 </code></pre>
 

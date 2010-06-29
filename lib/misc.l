@@ -1,4 +1,4 @@
-# 27feb10abu
+# 19jun10abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -40,7 +40,7 @@
                (set (link @) (name (read))) ) ) ) ) )
 
 ### Math ###
-(de sqrt (N)
+(de sqrt (N F)
    (cond
       ((lt0 N) (quit "Bad argument" N))
       (N
@@ -54,6 +54,7 @@
                   (inc 'B A) )
                (setq B (>> 1 B)  A (>> 2 A))
                (T (=0 A)) )
+            (and F (> N B) (inc 'B))
             B ) ) ) )
 
 # (Knuth Vol.2, p.442)
@@ -119,6 +120,11 @@
    (if Cur
       (pack (format N 2 *Sep0 *Sep3) " " Cur)
       (format N 2 *Sep0 *Sep3) ) )
+
+(de round (N D)
+   (if (>= *Scl D)
+      (format (*/ N (** 10 (- *Scl D))) D *Sep0 *Sep3)
+      (format N *Scl *Sep0 *Sep3) ) )
 
 # Octal notation
 (de oct (X)
@@ -261,9 +267,9 @@
          (= 3
             (length (setq S (split (chop S) C))) )
          (date
-            (format (pack (car S)))                # Year
-            (or (format (pack (cadr S))) 0)        # Month
-            (or (format (pack (caddr S))) 0) ) )   # Day
+            (format (car S))               # Year
+            (or (format (cadr S)) 0)       # Month
+            (or (format (caddr S)) 0) ) )  # Day
       (and
          (format S)
          (date
@@ -292,9 +298,9 @@
       (and
          (match *DateFmt (chop S))
          (date
-            (format (pack @Y))
-            (or (format (pack @M)) 0)
-            (or (format (pack @D)) 0) ) ) ) )
+            (format @Y)
+            (or (format @M) 0)
+            (or (format @D) 0) ) ) ) )
 
 (de expDat (S)
    (use (@Y @M @D X)
@@ -312,18 +318,18 @@
                @M (head 2 (nth (car S) 3))
                @Y (nth (car S) 5) ) ) )
       (and
-         (setq @D (format (pack @D)))
+         (setq @D (format @D))
          (date
             (nond
                (@Y (car (date (date))))
-               ((setq X (format (pack @Y))))
+               ((setq X (format @Y)))
                ((>= X 100)
                   (+ X
                      (* 100 (/ (car (date (date))) 100)) ) )
                (NIL X) )
             (nond
                (@M (cadr (date (date))))
-               ((setq X (format (pack @M))) 0)
+               ((setq X (format @M)) 0)
                ((n0 X) (cadr (date (date))))
                (NIL X) )
             @D ) ) ) )
@@ -369,10 +375,10 @@
             (head 2 (car S))
             (head 2 (nth (car S) 3))
             (nth (car S) 5) ) ) )
-   (when (format (pack (car S)))
+   (when (format (car S))
       (time @
-         (or (format (pack (cadr S))) 0)
-         (or (format (pack (caddr S))) 0) ) ) )
+         (or (format (cadr S)) 0)
+         (or (format (caddr S)) 0) ) ) )
 
 (de stamp (Dat Tim)
    (default  Dat (date)  Tim (time T))
@@ -470,11 +476,18 @@
    (out S (prinl "RCPT TO:" To "^M"))
    (pre? "250 " (in S (line T))) )
 
-### Testing ###
+### Assertions ###
+(de assert Prg
+   (when *Dbg
+      (cons
+         (list 'unless
+            (if (cdr Prg) (cons 'and Prg) (car Prg))
+            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+
 (de test (Pat . Prg)
    (bind (fish pat? Pat)
       (unless (match Pat (run Prg 1))
          (msg Prg)
-         (quit 'fail Pat) ) ) )
+         (quit "'test' failed" Pat) ) ) )
 
 # vi:et:ts=3:sw=3

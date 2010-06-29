@@ -1,3 +1,13 @@
+* 29jun10 picoLisp-3.0.3
+   'assert' function
+   'round' function
+   'co', 'yield' and 'stack' coroutine functions
+   'sigio' function
+   'sqrt' optionally rounds
+   'format' also accepts 'lst' argument
+   'adr' function
+   'dir' can also return '.'-files
+
 * 30mar10 picoLisp-3.0.2
    Simple incrementing form of 'for'
    Changed 'scl' to set '*Scl' globally

@@ -97,7 +97,7 @@ href="refI.html#in">in</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
 <pre><code>
-: (load (pack (car (file)) <u>localFile.l</u>))  # Load a file in same directory
+: (load (pack (car (file)) "localFile.l"))  # Load a file in same directory
 </code></pre>
 
 <dt><a name="fill"><code>(fill 'any ['sym|lst]) -> any</code></a>
@@ -160,14 +160,14 @@ href="refQ.html#quit">quit</a></code> and <code><a href="ref.html#errors">Error
 Handling</a></code>.
 
 <pre><code>
-: (finally (prinl <u>Done!</u>)
+: (finally (prinl "Done!")
    (println 123)
    (quit)
    (println 456) )
 123
 Done!
 : (catch 'A
-   (finally (prinl <u>Done!</u>)
+   (finally (prinl "Done!")
       (println 1)
       (throw 'A 123)
       (println 2) ) )
@@ -262,14 +262,14 @@ href="refO.html#oct">oct</a></code>.
 
 <pre><code>
 : (fmt64 9)
--> <u>9</u>
+-> "9"
 : (fmt64 10)
--> <u>:</u>
+-> ":"
 : (fmt64 11)
--> <u>;</u>
+-> ";"
 : (fmt64 12)
--> <u>A</u>
-: (fmt64 <u>100</u>)
+-> "A"
+: (fmt64 "100")
 -> 4096
 </code></pre>
 
@@ -282,10 +282,10 @@ the <code>cnt</code> argument is given, the result is truncated to that length
 defaults to 24. See also <code><a href="refL.html#lowc">lowc</a></code>.
 
 <pre><code>
-: (fold <u> 1A 2-b/3</u>)
--> <u>1a2b3</u>
-: (fold <u> 1A 2-B/3</u> 3)
--> <u>1a2</u>
+: (fold " 1A 2-b/3")
+-> "1a2b3"
+: (fold " 1A 2-B/3" 3)
+-> "1a2"
 </code></pre>
 
 <dt><a name="fold/3"><code>fold/3</code></a>
@@ -317,7 +317,7 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 </code></pre>
 
 <dt><a name="for"><code>(for sym 'num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
-<dt><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
+<dt><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
 <dt><code>(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
 <dd>Conditional loop with local variable(s) and multiple conditional exits: In
 the first form, the value of <code>sym</code> is saved, <code>sym</code> is
@@ -396,34 +396,37 @@ only be called immediately after <code><a href="refT.html#task">task</a></code>.
 </code></pre>
 
 <dt><a name="format"><code>(format 'num ['cnt ['sym1 ['sym2]]]) -> sym</code></a>
-<dt><code>(format 'sym ['cnt ['sym1 ['sym2]]]) -> num</code>
-<dd>Converts a number <code>num</code> to a string, or a string <code>sym</code>
-to a number. In both cases, optionally a precision <code>cnt</code>, a
-decimal-separator <code>sym1</code> and a thousands-separator <code>sym2</code>
-can be supplied. Returns <code>NIL</code> if the conversion is unsuccessful. See
-also <code><a href="ref.html#num-io">Numbers</a></code>.
+<dt><code>(format 'sym|lst ['cnt ['sym1 ['sym2]]]) -> num</code>
+<dd>Converts a number <code>num</code> to a string, or a string
+<code>sym|lst</code> to a number. In both cases, optionally a precision
+<code>cnt</code>, a decimal-separator <code>sym1</code> and a
+thousands-separator <code>sym2</code> can be supplied. Returns <code>NIL</code>
+if the conversion is unsuccessful. See also <code><a
+href="ref.html#num-io">Numbers</a></code>.
 
 <pre><code>
 : (format 123456789)                   # Integer conversion
--> <u>123456789</u>
+-> "123456789"
 : (format 123456789 2)                 # Fixed point
--> <u>1234567.89</u>
-: (format 123456789 2 <u>,</u>)               # Comma as decimal-separator
--> <u>1234567,89</u>
-: (format 123456789 2 <u>,</u> <u>.</u>)             # and period as thousands-separator
--> <u>1.234.567,89</u>
-:
-: (format <u>123456789</u>)                   # String to number
+-> "1234567.89"
+: (format 123456789 2 ",")             # Comma as decimal-separator
+-> "1234567,89"
+: (format 123456789 2 "," ".")         # and period as thousands-separator
+-> "1.234.567,89"
+
+: (format "123456789")                 # String to number
 -> 123456789
-: (format <u>1234567.89</u> 4)                # scaled to four digits
+: (format (1 "23" (4 5 6)))
+-> 123456
+: (format "1234567.89" 4)              # scaled to four digits
 -> 12345678900
-: (format <u>1.234.567,89</u>)                # separators not recognized
+: (format "1.234.567,89")              # separators not recognized
 -> NIL
-: (format <u>1234567,89</u> 4 <u>,</u>)
+: (format "1234567,89" 4 ",")
 -> 12345678900
-: (format <u>1.234.567,89</u> 4 <u>,</u>)            # thousands-separator not recognized
+: (format "1.234.567,89" 4 ",")        # thousands-separator not recognized
 -> NIL
-: (format <u>1.234.567,89</u> 4 <u>,</u> <u>.</u>)
+: (format "1.234.567,89" 4 "," ".")
 -> 12345678900
 </code></pre>
 
@@ -436,7 +439,7 @@ href="refZ.html#zap">zap</a></code> and <code><a
 href="refD.html#dbck">dbck</a></code>.
 
 <pre><code>
-: (pool <u>x</u>)        # A new database
+: (pool "x")      # A new database
 -> T
 : (new T)         # Create a new symbol
 -> {2}
@@ -462,9 +465,9 @@ href="refT.html#till">till</a></code> and <code><a
 href="refE.html#echo">echo</a></code>.
 
 <pre><code>
-: (and (from <u>val='</u>) (till <u>'</u> T))
+: (and (from "val='") (till "'" T))
 test val='abc'
--> <u>abc</u>
+-> "abc"
 </code></pre>
 
 <dt><a name="full"><code>(full 'any) -> bool</code></a>

@@ -1,4 +1,4 @@
-# 06mar10abu
+# 13jun10abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -80,9 +80,9 @@
       nop                  # No operation
 
    Move Instructions:
-      ld dst src           # Load 'dst' from 'src'
-      ld2 src              # Load 'A' from two bytes 'src' (signed)
-      ld4 src              # Load 'A' from four bytes 'src' (signed)
+      ld dst src           # Load 'dst' from 'src' [---]
+      ld2 src              # Load 'A' from two bytes 'src' (unsigned)
+      ld4 src              # Load 'A' from four bytes 'src' (unsigned)
       ldc dst src          # Load if Carry 'dst' from 'src'
       ldnc dst src         # Load if not Carry 'dst' from 'src'
       ldz dst src          # Load if Zero 'dst' from 'src'
@@ -91,9 +91,11 @@
       st2 dst              # Store two bytes from 'A' into 'dst'
       st4 dst              # Store four bytes from 'A' into 'dst'
       xchg dst dst         # Exchange 'dst's
-      movm dst src end     # Move memory between 'src' and 'end' to 'dst'
       movn dst src cnt     # Move 'cnt' bytes from 'src' to 'dst'
       mset dst cnt         # Set 'cnt' bytes of memory to B
+      movm dst src end     # Move memory 'src'..'end' to 'dst' (aligned)
+      save src end dst     # Save 'src'..'end' to 'dst' (non-overlapping)
+      load dst end src     # Load 'dst'..'end' from 'src' (non-overlapping)
 
    Arithmetics:
       add dst src          # Add 'src' to 'dst'
@@ -101,6 +103,8 @@
       sub dst src          # Subtract 'src' from 'dst'
       subc dst src         # Subtract 'src' from 'dst' with Carry
 
+      inc dst              # Increment 'dst' [z..]
+      dec dst              # Increment 'dst' [z..]
       not dst              # One's complement negation of 'dst'
       neg dst              # Two's complement negation of 'dst'
 
@@ -117,12 +121,10 @@
       rcl dst src          # Rotate 'dst' with Carry left by 'src' bits
       rcr dst src          # Rotate 'dst' with Carry right by 'src' bits
 
-      mul src              # Multiplication of 'A' and 'src' into 'D'
-      div src              # Division of 'D' by 'src' into 'A', 'C'
+      mul src              # Multiplication of 'A' and 'src' into 'D' [...]
+      div src              # Division of 'D' by 'src' into 'A', 'C' [...]
 
       zxt                  # Zero-extend 'B' to 'A'
-      sxt                  # Sign-extend 'B' to 'A'
-      int                  # Sign-extend 32 bits to 64 bits in 'A'
 
       setc                 # Set Carry flag
       clrc                 # Clear Carry flag
@@ -130,15 +132,14 @@
       clrz                 # Clear Zero flag
 
    Comparisons:
-      cmp dst src          # Compare 'dst' with 'src'
+      cmp dst src          # Compare 'dst' with 'src' [z.c]
       cmp4 src             # Compare four bytes in 'A' with 'src'
-      cmpm dst src end     # Compare 'dst' with with memory between 'src' and 'end'
       cmpn dst src cnt     # Compare 'cnt' bytes 'dst' with 'src'
       slen dst src         # Set 'dst' to the string length of 'src'
       memb src cnt         # Find B in 'cnt' bytes of memory
-      null src             # Compare 'src' with 0
-      zero src             # 'z' if ZERO
-      nul4                 # Compare four bytes in 'A' with 0
+      null src             # Compare 'src' with 0 [zs.]
+      zero src             # Test if ZERO [z..]
+      nul4                 # Compare four bytes in 'A' with 0 [zs.]
 
    Byte addressing:
       set dst src          # Set 'dst' byte to 'src'
@@ -169,8 +170,8 @@
       return src           # Return to C-function
 
    Stack Manipulations:
-      push src             # Push 'src'
-      pop dst              # Pop 'dst'
+      push src             # Push 'src' [---]
+      pop dst              # Pop 'dst' [---]
       link                 # Setup frame
       tuck src             # Extend frame
       drop                 # Drop frame

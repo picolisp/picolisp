@@ -1,4 +1,4 @@
-# 12nov09abu
+# 20apr10abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -6,6 +6,7 @@
    (action
       (html 0 Ttl *Css NIL
          (<div> '(id . menu)
+            (expires)
             (<menu>
                (,"Home" "@start")
                (,"logout" (and *Login "@stop"))

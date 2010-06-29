@@ -1,4 +1,4 @@
-/* 25mar10abu
+/* 01apr10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -29,9 +29,9 @@ static bool findHtOK(char *s) {
    return NO;
 }
 
-// (ht:Prin 'sym ..) -> T
+// (ht:Prin 'sym ..) -> sym
 any Prin(any x) {
-   any y;
+   any y = Nil;
 
    while (isCell(x = cdr(x))) {
       if (isNum(y = EVAL(car(x))) || isCell(y) || isExt(y))
@@ -78,7 +78,7 @@ any Prin(any x) {
          }
       }
    }
-   return T;
+   return y;
 }
 
 static void putHex(int c) {

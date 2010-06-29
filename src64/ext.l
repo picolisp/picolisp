@@ -1,4 +1,4 @@
-# 05mar10abu
+# 19may10abu
 # (c) Software Lab. Alexander Burger
 
 ### Soundex Algorithm ###
@@ -102,7 +102,7 @@ bytes (
             else
                cmp A (S)  # Same as last?
                if ne  # No
-                  sub E 1  # Decrement count
+                  dec E  # Decrement count
                   break z
                   ld (S) A  # Save last character
                   xchg C (S II)  # Swap status
@@ -149,7 +149,7 @@ bytes (
       test A (hex "8000")
    while z
       add A A  # Double 'tmp'
-      sub C 1  # Decrement exponent
+      dec C  # Decrement exponent
    until z
    ld A C  # Get exponent
    add A 3  # plus 3

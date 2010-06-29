@@ -1,4 +1,4 @@
-# 04sep08abu
+# 18jun10abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -67,6 +67,12 @@
 (locale "DE" "de")
 (test "1.234.567,89 EUR" (money 123456789 "EUR"))
 (locale)
+
+
+### round ###
+(scl 4)
+(test "12.35" (round 123456 2))
+(test "12.3456" (round 123456 6))
 
 
 ### balance ###

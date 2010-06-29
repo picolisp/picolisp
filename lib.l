@@ -1,4 +1,4 @@
-# 18mar10abu
+# 30may10abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -48,8 +48,7 @@
    (macro
       (task (pipe (pr (prog . "@Prg")))
          (setq "@Var" (in @ (rd)))
-         (close @)
-         (task @) ) )
+         (task (close @)) ) )
    "@Var" )
 
 (de recur recurse
@@ -337,7 +336,7 @@
 
 (de show ("X" . @)
    (let *Dbg NIL
-      (setq "X" (apply get (rest) "X"))
+      (setq "X" (pass get "X"))
       (when (sym? "X")
          (print "X" (val "X"))
          (prinl)
@@ -350,20 +349,29 @@
             "X" ) )
       "X" ) )
 
-(de view (X L)
-   (let (Z X  *Dbg)
-      (loop
-         (T (atom X) (println X))
-         (if (atom (car X))
-            (println '+-- (pop 'X))
-            (print '+---)
-            (view
-               (pop 'X)
-               (append L (cons (if X "|   " "    "))) ) )
-         (NIL X)
-         (mapc prin L)
-         (T (== Z X) (println '*))
-         (println '|)
-         (mapc prin L) ) ) )
+(de view (X Y)
+   (let *Dbg NIL
+      (if (=T Y)
+         (let N 0
+            (recur (N X)
+               (when X
+                  (recurse (+ 3 N) (cddr X))
+                  (space N)
+                  (println (car X))
+                  (recurse (+ 3 N) (cadr X)) ) ) )
+         (let Z X
+            (loop
+               (T (atom X) (println X))
+               (if (atom (car X))
+                  (println '+-- (pop 'X))
+                  (print '+---)
+                  (view
+                     (pop 'X)
+                     (append Y (cons (if X "|   " "    "))) ) )
+               (NIL X)
+               (mapc prin Y)
+               (T (== Z X) (println '*))
+               (println '|)
+               (mapc prin Y) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

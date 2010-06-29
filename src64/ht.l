@@ -1,4 +1,4 @@
-# 25mar10abu
+# 11jun10abu
 # (c) Software Lab. Alexander Burger
 
 ### Hypertext I/O functions ###
@@ -38,7 +38,7 @@ align 8  asciz "<hr>"
          ld B (X)  # Compare bytes
          cmp B (Y)  # Equal?
       while eq  # Yes
-         add X 1  # End of HtOk string?
+         inc X  # End of HtOk string?
          nul (X)
          if z  # Yes: Found
             slen C Y  # Length of the remaining string
@@ -50,7 +50,7 @@ align 8  asciz "<hr>"
             pop X
             ret  # 'z' or 'nz'
          end
-         add Y 1  # End of data?
+         inc Y  # End of data?
          nul (Y)
       until z  # Yes
       pop Y
@@ -61,15 +61,13 @@ align 8  asciz "<hr>"
    pop X
    ret  # 'nz'
 
-# (ht:Prin 'sym ..) -> T
+# (ht:Prin 'sym ..) -> sym
 (code 'Prin 2)
    push X
    push Y
    push Z
    ld X (E CDR)  # Args
    do
-      atom X  # More?
-   while z  # Yes
       ld E (X)  # Eval next
       eval
       num E  # Number?
@@ -78,8 +76,9 @@ align 8  asciz "<hr>"
       jz 20  # Yes
       sym (E TAIL)  # External symbol?
       if nz  # Yes
-20       call prinE  # Plain print
+20       call prinE_E  # Plain print
       else
+         push E  # Save return value
          call bufStringE_SZ  # Write to stack buffer
          ld Y S  # Point to string
          do
@@ -90,7 +89,7 @@ align 8  asciz "<hr>"
                do
                   ld B (Y)  # Output partial string
                   call envPutB
-                  add Y 1  # till end pointer in E
+                  inc Y  # till end pointer in E
                   cmp Y E
                until eq
             else
@@ -128,12 +127,12 @@ align 8  asciz "<hr>"
                               call envPutB  # Output it
                               test C (hex "80")  # Double byte?
                               if nz  # Yes
-                                 add Y 1  # Next
+                                 inc Y  # Next
                                  ld B (Y)  # Output second byte
                                  call envPutB
                                  test C (hex "20")  # Triple byte?
                                  if nz  # Yes
-                                    add Y 1  # Next
+                                    inc Y  # Next
                                     ld B (Y)  # Output third byte
                                     call envPutB
                                  end
@@ -143,14 +142,15 @@ align 8  asciz "<hr>"
                      end
                   end
                end
-               add Y 1  # Increment string pointer
+               inc Y  # Increment string pointer
             end
          loop
          ld S Z  # Drop buffer
+         pop E
       end
       ld X (X CDR)  # X on rest
-   loop
-   ld E TSym  # Return T
+      atom X  # More?
+   until nz  # No
    pop Z
    pop Y
    pop X
@@ -339,7 +339,7 @@ align 8  asciz "<hr>"
 (code 'headCX_FX 0)  # E
    ld E X  # Save X
    do
-      add C 1  # Point to next char
+      inc C  # Point to next char
       nul (C)  # Any?
    while nz  # Yes
       ld A ((X) TAIL)  # Get next character symbol
@@ -456,10 +456,10 @@ align 8  asciz "<hr>"
          call getChar_A  # Read first char
          cmp A 128  # Double byte?
          if ge  # Yes
-            sub E 1  # Decrement count
+            dec E  # Decrement count
             cmp A 2048  # Triple byte?
             if ge  # Yes
-               sub E 1  # Decrement count
+               dec E  # Decrement count
             end
          end
          sub E 1  # Less than zero?
@@ -486,10 +486,10 @@ align 8  asciz "<hr>"
                call getChar_A
                cmp A 128  # Double byte?
                if ge  # Yes
-                  sub E 1  # Decrement count
+                  dec E  # Decrement count
                   cmp A 2048  # Triple byte?
                   if ge  # Yes
-                     sub E 1  # Decrement count
+                     dec E  # Decrement count
                   end
                end
                sub E 1  # Less than zero?
@@ -521,8 +521,8 @@ align 8  asciz "<hr>"
 
 (data 'Chunk 0)
 word 0      # <Y> Chunk size count
-word 0      # <Y I> Saved EnvGet_A function
-word 0      # <Y II> Saved EnvPutB function
+word 0      # <Y I> Saved Get_A function
+word 0      # <Y II> Saved PutB function
 skip CHUNK  # <Y III> Chunk buffer
 
 : Newlines asciz "0\\r\\n\\r\\n"
@@ -601,7 +601,7 @@ skip CHUNK  # <Y III> Chunk buffer
    else
       ld A (Y I)  # Call saved 'get'
       call (A)
-      sub (Y) 1  # Decrement count
+      dec (Y)  # Decrement count
       if z
          ld A (Y I)  # Call saved 'get'
          call (A)
@@ -626,11 +626,11 @@ skip CHUNK  # <Y III> Chunk buffer
    else
       push Y
       ld Y Chunk  # Get Chunk
-      ld (Y I) (EnvGet_A)  # Save current 'get'
-      ld (EnvGet_A) getChunked_A  # Set new
+      ld (Y I) (Get_A)  # Save current 'get'
+      ld (Get_A) getChunked_A  # Set new
       call chunkSize
       prog X  # Run 'prg'
-      ld (EnvGet_A) (Y I)  # Restore 'get'
+      ld (Get_A) (Y I)  # Restore 'get'
       ld (Chr) 0  # Clear look ahead char
       pop Y
    end
@@ -655,7 +655,7 @@ skip CHUNK  # <Y III> Chunk buffer
    jmp envPutB
 
 (code 'wrChunkY 0)  # X
-   ld (EnvPutB) (Y II)  # Restore 'put'
+   ld (PutB) (Y II)  # Restore 'put'
    ld A (Y)  # Get count
    call outHexA  # Print as hex
    ld B 13  # Output 'return'
@@ -666,15 +666,15 @@ skip CHUNK  # <Y III> Chunk buffer
    do
       ld B (X)  # Next byte from chunk buffer
       call envPutB  # Output
-      add X 1  # Increment pointer
-      sub (Y) 1  # Decrement 'Cnt'
+      inc X  # Increment pointer
+      dec (Y)  # Decrement 'Cnt'
    until z
    ld B 13  # Output 'return'
    call envPutB
    ld B 10  # Output 'newline'
    call envPutB
-   ld (Y II) (EnvPutB)  # Save 'put'
-   ld (EnvPutB) putChunkedB  # Set new
+   ld (Y II) (PutB)  # Save 'put'
+   ld (PutB) putChunkedB  # Set new
    ret
 
 (code 'putChunkedB 0)
@@ -684,7 +684,7 @@ skip CHUNK  # <Y III> Chunk buffer
    lea X (Y III)  # X on chunk buffer
    add X (Y)  # Count index
    ld (X) B  # Store byte
-   add (Y) 1  # Increment count
+   inc (Y)  # Increment count
    cmp (Y) CHUNK   # Max reached?
    if eq  # Yes
       call wrChunkY  # Write buffer
@@ -707,14 +707,14 @@ skip CHUNK  # <Y III> Chunk buffer
       push Y
       ld Y Chunk  # Get Chunk
       ld (Y) 0  # Clear count
-      ld (Y II) (EnvPutB)  # Save current 'put'
-      ld (EnvPutB) putChunkedB  # Set new
+      ld (Y II) (PutB)  # Save current 'put'
+      ld (PutB) putChunkedB  # Set new
       prog X  # Run 'prg'
       null (Y)  # Count?
       if nz  # Yes
          call wrChunkY  # Write rest
       end
-      ld (EnvPutB) (Y II)  # Restore 'put'
+      ld (PutB) (Y II)  # Restore 'put'
       ld C Newlines  # Output termination string
       call outStringC
       pop Y

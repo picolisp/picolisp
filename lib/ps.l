@@ -1,4 +1,4 @@
-# 12nov09abu
+# 08jun10abu
 # (c) Software Lab. Alexander Burger
 
 # "*Glyph" "*PgX" "*PgY"
@@ -47,8 +47,9 @@
          (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
          Ps Pdf ) ) )
 
-(de psHead (DX DY)
-   (prinl "%!PS-Adobe-1.0")
+(de psHead (DX DY Ttl)
+   (prinl "%!PS-Adobe-2.0")
+   (and Ttl (prinl "%%Title: " @))
    (prinl "%%Creator: PicoLisp")
    (prinl "%%BoundingBox: 0 0 "
       (setq "*DX" DX "*PgX" DX) " "
@@ -58,17 +59,17 @@
    (off "*Fonts" "*Lim" "*UL")
    (setq "*Size" 12) )
 
-(de a4 ()
-   (psHead 595 842) )
+(de a4 (Ttl)
+   (psHead 595 842 Ttl) )
 
-(de a4L ()
-   (psHead 842 595) )
+(de a4L (Ttl)
+   (psHead 842 595 Ttl) )
 
-(de a5 ()
-   (psHead 420 595) )
+(de a5 (Ttl)
+   (psHead 420 595 Ttl) )
 
-(de a5L ()
-   (psHead 595 420) )
+(de a5L (Ttl)
+   (psHead 595 420 Ttl) )
 
 (de _font ()
    (prinl "/" "*Font" " findfont  " "*Size" " scalefont  setfont") )
@@ -293,11 +294,11 @@
       (psEval "Prg") ) )
 
 (de eps (Eps X Y DX DY)
-   (prinl "gsave " (or X 0) " " (- "*PgY" (or Y 0)) " translate")
+   (prinl "save " (or X 0) " " (- "*PgY" (or Y 0)) " translate")
    (when DX
       (prinl DX " 100. div " (or DY DX) " 100. div scale") )
    (in Eps (echo))
-   (prinl "grestore") )
+   (prinl "restore") )
 
 (====)
 

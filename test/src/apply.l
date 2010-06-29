@@ -1,10 +1,11 @@
-# 12jul08abu
+# 21may10abu
 # (c) Software Lab. Alexander Burger
 
 ### apply ###
 (test 6 (apply + (1 2 3)))
 (test 360 (apply * (5 6) 3 4))
 (test 27 (apply '((X Y Z) (* X (+ Y Z))) (3 4 5)))
+(test (5 7 9) (apply mapcar '((1 2 3) (4 5 6)) +))
 
 
 ### pass ###

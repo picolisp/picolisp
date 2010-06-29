@@ -66,7 +66,7 @@ href="refG.html#gt0">gt0</a></code>.
 <pre><code>
 : (nT 0)
 -> T
-: (nT <u>T</u>)
+: (nT "T")
 -> T
 : (nT T)
 -> NIL
@@ -83,16 +83,16 @@ href="refI.html#intern">intern</a></code>.
 
 <pre><code>
 : (name 'abc)
--> <u>abc</u>
-: (name <u>abc</u>)
--> <u>abc</u>
+-> "abc"
+: (name "abc")
+-> "abc"
 : (name '{abc})
--> <u>abc</u>
+-> "abc"
 : (name (new))
 -> NIL
 : (de foo (Lst) (car Lst))  # 'foo' calls 'car'
 -> foo
-: (intern (name (zap 'car) <u>xxx</u>))  # Globally change the name of 'car'
+: (intern (name (zap 'car) "xxx"))  # Globally change the name of 'car'
 -> xxx
 : (xxx (1 2 3))
 -> 1
@@ -164,16 +164,16 @@ size- and value-specification in the CADR, and an optional sequence of
 initialization bytes in the CDDR.
 
 <pre><code>
-: (native <u>@</u> <u>getenv</u> 'S <u>TERM</u>)  # Same as (sys <u>TERM</u>)
--> <u>xterm</u>
+: (native "@" "getenv" 'S "TERM")  # Same as (sys "TERM")
+-> "xterm"
 
-: (native <u>@</u> <u>printf</u> 'I <u>abc%d%s^J</u> (+ 3 4) (pack <u>X</u> <u>Y</u> <u>Z</u>))
+: (native "@" "printf" 'I "abc%d%s^J" (+ 3 4) (pack "X" "Y" "Z"))
 abc7XYZ
 -> 8
 
 : (use Tim
-   (native <u>@</u> <u>time</u> NIL '(Tim (8 B . 8)))  # time_t 8   # Get time_t structure
-   (native <u>@</u> <u>localtime</u> '(I . 9) (cons NIL (8) Tim)) ) # Read local time
+   (native "@" "time" NIL '(Tim (8 B . 8)))  # time_t 8   # Get time_t structure
+   (native "@" "localtime" '(I . 9) (cons NIL (8) Tim)) ) # Read local time
 -> (32 18 13 31 11 109 4 364 0)  # 13:18:32, Dec. 31st, 2009
 </code></pre>
 
@@ -203,8 +203,8 @@ href="refR.html#range">range</a></code>.
 -> (NIL NIL a b c)
 : (need -5 '(a b c))
 -> (a b c NIL NIL)
-: (need 5 '(a b c) <u> </u>)  # String alignment
--> (<u> </u> <u> </u> a b c)
+: (need 5 '(a b c) " ")  # String alignment
+-> (" " " " a b c)
 </code></pre>
 
 <dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> obj</code></a>

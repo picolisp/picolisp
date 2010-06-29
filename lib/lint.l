@@ -1,4 +1,4 @@
-# 12mar10abu
+# 21may10abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -44,9 +44,10 @@
             ((: ::))
             (; (lint1 (cadr "X")))
             (quote
-               (if (and (pair (fun? (cdr "X"))) (not (cdr (tail 1 @))))
-                  (use "*L" (lintFun (cdr "X")))
-                  (lint2 (cdr "X")) ) )
+               (let F (fun? (cdr "X"))
+                  (if (or (and (pair F) (not (fin @))) (== '@ F))
+                     (use "*L" (lintFun (cdr "X")))
+                     (lint2 (cdr "X")) ) ) )
             ((de dm)
                (let "*X" (cadr "X")
                   (lintFun (cddr "X")) ) )
@@ -155,6 +156,7 @@
                      (or
                         (str? (car "X"))
                         (dlsym? (car "X"))
+                        (== '@ (car "X"))
                         (memq (car "X") *NoLint)
                         (memq (car "X") "*Def")
                         (push '"*Def" (car "X")) )

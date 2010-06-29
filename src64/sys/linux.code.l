@@ -1,4 +1,4 @@
-# 02oct09abu
+# 19may10abu
 # (c) Software Lab. Alexander Burger
 
 # System macros
@@ -26,7 +26,7 @@
 (code 'wifsignaledS_F 0)  # WIFSIGNALED
    ld A (S I)  # Get status
    and B `(hex "7F")  # (((status) & 0x7f) + 1) >> 1) > 0)
-   add B 1
+   inc B
    shr B 1
    ret
 

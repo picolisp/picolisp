@@ -1,4 +1,4 @@
-/* 04may09abu
+/* 19may10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -32,7 +32,7 @@ static void gc(long c) {
    } while (h = h->next);
    /* Mark */
    mark(Nil+1);
-   mark(Alarm),  mark(Line),  mark(Zero),  mark(One);
+   mark(Alarm),  mark(Sigio),  mark(Line),  mark(Zero),  mark(One);
    for (i = 0; i < IHASH; ++i)
       mark(Intern[i]),  mark(Transient[i]);
    mark(ApplyArgs),  mark(ApplyBody);

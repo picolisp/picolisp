@@ -1,4 +1,4 @@
-/* 25mar10 */
+/* 11jun10 */
 
    .data
 
@@ -60,7 +60,7 @@ findHtOkY_FE:
    mov      (%r13), %al
    cmp      (%r14), %al
    jnz      .3
-   add      $1, %r13
+   inc      %r13
    cmp      %r12b, (%r13)
    jnz      .4
    cld
@@ -86,7 +86,7 @@ findHtOkY_FE:
    pop      %r13
    ret
 .4:
-   add      $1, %r14
+   inc      %r14
    cmp      %r12b, (%r14)
    jnz      .2
 .3:
@@ -108,8 +108,6 @@ Prin:
    push     %r15
    mov      8(%rbx), %r13
 .5:
-   testb    $0x0E, %r13b
-   jnz      .6
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -123,83 +121,84 @@ Prin:
    testb    $0x0E, %bl
    jz       Prin_20
    testb    $0x08, -8(%rbx)
-   jz       .7
+   jz       .6
 Prin_20:
-   call     prinE@plt
-   jmp      .8
-.7:
+   call     prinE_E@plt
+   jmp      .7
+.6:
+   push     %rbx
    call     bufStringE_SZ@plt
    mov      %rsp, %r14
-.9:
+.8:
    cmp      %r12b, (%r14)
-   jz       .10
+   jz       .9
    call     findHtOkY_FE@plt
-   jnz      .11
-.12:
-   mov      (%r14), %al
-   call     envPutB@plt
-   add      $1, %r14
-   cmp      %rbx, %r14
-   jnz      .12
-   jmp      .9
+   jnz      .10
 .11:
    mov      (%r14), %al
+   call     envPutB@plt
+   inc      %r14
+   cmp      %rbx, %r14
+   jnz      .11
+   jmp      .8
+.10:
+   mov      (%r14), %al
    cmp      $60, %al
-   jnz      .14
+   jnz      .13
    mov      HtLt@GOTPCREL(%rip), %rdx
    call     outStringC@plt
-   jmp      .15
-.14:
+   jmp      .14
+.13:
    cmp      $62, %al
-   jnz      .16
+   jnz      .15
    mov      HtGt@GOTPCREL(%rip), %rdx
    call     outStringC@plt
-   jmp      .15
-.16:
+   jmp      .14
+.15:
    cmp      $38, %al
-   jnz      .18
+   jnz      .17
    mov      HtAmp@GOTPCREL(%rip), %rdx
    call     outStringC@plt
-   jmp      .15
-.18:
+   jmp      .14
+.17:
    cmp      $34, %al
-   jnz      .20
+   jnz      .19
    mov      HtQuot@GOTPCREL(%rip), %rdx
    call     outStringC@plt
-   jmp      .15
-.20:
+   jmp      .14
+.19:
    cmp      $255, %al
-   jnz      .22
+   jnz      .21
    mov      $239, %al
    call     envPutB@plt
    mov      $191, %al
    call     envPutB@plt
    mov      $191, %al
    call     envPutB@plt
-   jmp      .15
-.22:
+   jmp      .14
+.21:
    mov      %rax, %rdx
    call     envPutB@plt
    testb    $128, %dl
-   jz       .15
-   add      $1, %r14
+   jz       .14
+   inc      %r14
    mov      (%r14), %al
    call     envPutB@plt
    testb    $32, %dl
-   jz       .15
-   add      $1, %r14
+   jz       .14
+   inc      %r14
    mov      (%r14), %al
    call     envPutB@plt
-.15:
-   add      $1, %r14
-   jmp      .9
-.10:
+.14:
+   inc      %r14
+   jmp      .8
+.9:
    mov      %r15, %rsp
-.8:
+   pop      %rbx
+.7:
    mov      8(%r13), %r13
-   jmp      .5
-.6:
-   mov      TSym@GOTPCREL(%rip), %rbx
+   testb    $0x0E, %r13b
+   jz       .5
    pop      %r15
    pop      %r14
    pop      %r13
@@ -215,17 +214,17 @@ putHexB:
    shr      $4, %al
    and      $15, %al
    cmp      $9, %al
-   jbe      .26
+   jbe      .25
    add      $7, %al
-.26:
+.25:
    add      $48, %al
    call     envPutB@plt
    mov      %rbx, %rax
    and      $15, %al
    cmp      $9, %al
-   jbe      .27
+   jbe      .26
    add      $7, %al
-.27:
+.26:
    add      $48, %al
    jmp      envPutB@plt
 
@@ -233,86 +232,86 @@ putHexB:
    .globl  htFmtE
 htFmtE:
    cmp      Nil@GOTPCREL(%rip), %rbx
-   jz       .28
+   jz       .27
    testb    $0x06, %bl
-   jz       .29
+   jz       .28
    mov      $43, %al
    call     envPutB@plt
    jmp      prinE@plt
-.29:
+.28:
    push     %r13
    testb    $0x0E, %bl
-   jnz      .30
+   jnz      .29
    mov      %rbx, %r13
-.31:
+.30:
    mov      $95, %al
    call     envPutB@plt
    mov      (%r13), %rbx
    call     htFmtE@plt
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .31
-   jmp      .32
-.30:
+   jz       .30
+   jmp      .31
+.29:
    mov      -8(%rbx), %r13
    call     nameX_X@plt
    cmp      $2, %r13
-   jz       .32
+   jz       .31
    testb    $0x08, -8(%rbx)
-   jz       .34
+   jz       .33
    mov      $45, %al
    call     envPutB@plt
    call     prExtNmX@plt
-   jmp      .32
-.34:
+   jmp      .31
+.33:
    push     %r14
    mov      Intern@GOTPCREL(%rip), %r14
    call     isInternEXY_F@plt
    mov      %r12, %rdx
-   jnz      .36
+   jnz      .35
    mov      $36, %al
    call     envPutB@plt
-   jmp      .40
-.36:
+   jmp      .39
+.35:
    call     symByteCX_FACX@plt
    cmp      $36, %al
    jz       htFmtE_40
    cmp      $43, %al
    jz       htFmtE_40
    cmp      $45, %al
-   jnz      .38
+   jnz      .37
 htFmtE_40:
    call     putHexB@plt
-   jmp      .40
-.38:
+   jmp      .39
+.37:
    call     envPutB@plt
-.40:
+.39:
    call     symByteCX_FACX@plt
-   jz       .41
+   jz       .40
    cld
    mov      HtEsc@GOTPCREL(%rip), %rdi
    mov      $12, %rcx
    repnz scasb
-   jnz      .42
+   jnz      .41
    call     putHexB@plt
-   jmp      .40
-.42:
+   jmp      .39
+.41:
    mov      %rax, %rbx
    call     envPutB@plt
    testb    $128, %bl
-   jz       .40
+   jz       .39
    call     symByteCX_FACX@plt
    call     envPutB@plt
    testb    $32, %bl
-   jz       .40
+   jz       .39
    call     symByteCX_FACX@plt
    call     envPutB@plt
-   jmp      .40
-.41:
+   jmp      .39
+.40:
    pop      %r14
-.32:
+.31:
    pop      %r13
-.28:
+.27:
    rep
    ret
 
@@ -327,7 +326,7 @@ Fmt:
    mov      8(%rbx), %r13
    push     %rbp
    mov      %rsp, %rbp
-.46:
+.45:
    mov      (%r13), %rbx
    test     $0x06, %bl
    jnz      1f
@@ -342,7 +341,7 @@ Fmt:
    push     %rbx
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
-   jz       .46
+   jz       .45
    lea      -8(%rbp), %r14
    mov      %rsp, %r15
    push     %rbp
@@ -350,16 +349,16 @@ Fmt:
    call     begString@plt
    mov      (%r14), %rbx
    call     htFmtE@plt
-.47:
+.46:
    cmp      %r15, %r14
-   jz       .48
+   jz       .47
    mov      $38, %al
    call     envPutB@plt
    sub      $8, %r14
    mov      (%r14), %rbx
    call     htFmtE@plt
-   jmp      .47
-.48:
+   jmp      .46
+.47:
    call     endString_E@plt
    mov      (%rbp), %rsp
    pop      %rbp
@@ -376,10 +375,10 @@ getHexX_A:
    call     firstByteA_B@plt
    sub      $48, %al
    cmp      $9, %al
-   jbe      .49
+   jbe      .48
    and      $223, %al
    sub      $7, %al
-.49:
+.48:
    mov      8(%r13), %r13
    ret
 
@@ -388,15 +387,15 @@ getHexX_A:
 getUnicodeX_FAX:
    mov      %r13, %rbx
    mov      %r12, %rdx
-.50:
+.49:
    mov      8(%r13), %r13
    mov      (%r13), %r10
    mov      -8(%r10), %rax
    call     firstByteA_B@plt
    cmp      $48, %al
-   jc       .51
+   jc       .50
    cmp      $57, %al
-   ja       .51
+   ja       .50
    sub      $48, %al
    push     %rax
    mov      %rdx, %rax
@@ -404,15 +403,15 @@ getUnicodeX_FAX:
    mul      %r10
    pop      %rdx
    add      %rax, %rdx
-   jmp      .50
-.51:
+   jmp      .49
+.50:
    cmp      $59, %al
-   jnz      .52
+   jnz      .51
    mov      8(%r13), %r13
    mov      %rdx, %rax
    cmp      %r12, %rax
    jnz      Ret@plt
-.52:
+.51:
    mov      %rbx, %r13
    or       %r12, %r12
    ret
@@ -421,18 +420,18 @@ getUnicodeX_FAX:
    .globl  headCX_FX
 headCX_FX:
    mov      %r13, %rbx
-.53:
-   add      $1, %rdx
+.52:
+   inc      %rdx
    cmp      %r12b, (%rdx)
-   jz       .54
+   jz       .53
    mov      (%r13), %r10
    mov      -8(%r10), %rax
    call     firstByteA_B@plt
    cmp      (%rdx), %al
-   jnz      .54
+   jnz      .53
    mov      8(%r13), %r13
-   jmp      .53
-.54:
+   jmp      .52
+.53:
    cmovnzq  %rbx, %r13
    ret
 
@@ -458,14 +457,14 @@ Pack:
    mov      %rsp, %rbp
    mov      %rbx, %r13
    call     begString@plt
-.55:
+.54:
    testb    $0x0E, %r13b
-   jnz      .56
+   jnz      .55
    mov      (%r13), %rbx
    mov      -8(%rbx), %rax
    call     firstByteA_B@plt
    cmp      $37, %al
-   jnz      .57
+   jnz      .56
    mov      8(%r13), %r13
    call     getHexX_A@plt
    shl      $4, %rax
@@ -473,49 +472,49 @@ Pack:
    call     getHexX_A@plt
    or       %rdx, %rax
    call     envPutB@plt
-   jmp      .55
-.57:
+   jmp      .54
+.56:
    mov      8(%r13), %r13
    cmp      $38, %al
-   jz       .59
+   jz       .58
    call     outNameE@plt
-   jmp      .55
-.59:
+   jmp      .54
+.58:
    mov      HtLt@GOTPCREL(%rip), %rdx
    call     headCX_FX@plt
-   jnz      .61
+   jnz      .60
    mov      $60, %al
    call     envPutB@plt
-   jmp      .55
-.61:
+   jmp      .54
+.60:
    mov      HtGt@GOTPCREL(%rip), %rdx
    call     headCX_FX@plt
-   jnz      .63
+   jnz      .62
    mov      $62, %al
    call     envPutB@plt
-   jmp      .55
-.63:
+   jmp      .54
+.62:
    mov      HtAmp@GOTPCREL(%rip), %rdx
    call     headCX_FX@plt
-   jnz      .65
+   jnz      .64
    mov      $38, %al
    call     envPutB@plt
-   jmp      .55
-.65:
+   jmp      .54
+.64:
    mov      HtQuot@GOTPCREL(%rip), %rdx
    call     headCX_FX@plt
-   jnz      .67
+   jnz      .66
    mov      $34, %al
    call     envPutB@plt
-   jmp      .55
-.67:
+   jmp      .54
+.66:
    mov      HtNbsp@GOTPCREL(%rip), %rdx
    call     headCX_FX@plt
-   jnz      .69
+   jnz      .68
    mov      $32, %al
    call     envPutB@plt
-   jmp      .55
-.69:
+   jmp      .54
+.68:
    mov      (%r13), %r10
    mov      -8(%r10), %rax
    call     firstByteA_B@plt
@@ -526,12 +525,12 @@ Pack:
    call     mkCharA_A@plt
    mov      %rax, %rbx
    call     outNameE@plt
-   jmp      .55
+   jmp      .54
 Pack_40:
    mov      $38, %al
    call     envPutB@plt
-   jmp      .55
-.56:
+   jmp      .54
+.55:
    call     endString_E@plt
    mov      (%rbp), %rsp
    pop      %rbp
@@ -548,25 +547,25 @@ Read:
    mov      8(%rbx), %r10
    mov      (%r10), %rbx
    call     evCntEX_FE@plt
-   jle      .73
+   jle      .72
    mov      Chr@GOTPCREL(%rip), %r10
    mov      (%r10), %rax
    cmp      %r12, %rax
-   jnz      .74
+   jnz      .73
    call     envGet_A@plt
-.74:
+.73:
    cmp      %r12, %rax
-   js       .73
+   js       .72
    call     getChar_A@plt
    cmp      $128, %rax
-   jc       .76
-   sub      $1, %rbx
+   jc       .75
+   dec      %rbx
    cmp      $2048, %rax
-   jc       .76
+   jc       .75
+   dec      %rbx
+.75:
    sub      $1, %rbx
-.76:
-   sub      $1, %rbx
-   js       .73
+   js       .72
    call     mkCharA_A@plt
    call     consA_X@plt
    mov      %rax, (%r13)
@@ -577,31 +576,31 @@ Read:
    push     %r13
    push     %rbp
    mov      %rsp, %rbp
-.79:
+.78:
    cmp      %r12, %rbx
-   jnz      .80
+   jnz      .79
    mov      8(%rbp), %rbx
-   jmp      .81
-.80:
+   jmp      .80
+.79:
    call     envGet_A@plt
    cmp      %r12, %rax
-   jns      .82
+   jns      .81
    mov      Nil@GOTPCREL(%rip), %rbx
-   jmp      .81
-.82:
+   jmp      .80
+.81:
    call     getChar_A@plt
    cmp      $128, %rax
-   jc       .83
-   sub      $1, %rbx
+   jc       .82
+   dec      %rbx
    cmp      $2048, %rax
-   jc       .83
+   jc       .82
+   dec      %rbx
+.82:
    sub      $1, %rbx
-.83:
-   sub      $1, %rbx
-   jns      .85
+   jns      .84
    mov      Nil@GOTPCREL(%rip), %rbx
-   jmp      .81
-.85:
+   jmp      .80
+.84:
    call     mkCharA_A@plt
    call     consA_C@plt
    mov      %rax, (%rdx)
@@ -609,15 +608,15 @@ Read:
    mov      %r10, 8(%rdx)
    mov      %rdx, 8(%r13)
    mov      %rdx, %r13
-   jmp      .79
-.81:
+   jmp      .78
+.80:
    mov      Chr@GOTPCREL(%rip), %r11
    mov      %r12, (%r11)
    mov      (%rbp), %rsp
    pop      %rbp
    pop      %r13
    ret
-.73:
+.72:
    mov      Nil@GOTPCREL(%rip), %rbx
    pop      %r13
    ret
@@ -642,20 +641,20 @@ chrHex_AF:
    mov      Chr@GOTPCREL(%rip), %r10
    mov      (%r10), %al
    cmp      $48, %al
-   jc       .86
+   jc       .85
    cmp      $57, %al
-   ja       .86
+   ja       .85
    sub      $48, %al
    ret
-.86:
+.85:
    and      $223, %al
    cmp      $65, %al
-   jc       .88
+   jc       .87
    cmp      $70, %al
-   ja       .88
+   ja       .87
    sub      $55, %al
    ret
-.88:
+.87:
    mov      %r12, %rax
    sub      $1, %rax
    ret
@@ -667,34 +666,34 @@ chunkSize:
    mov      Chunk@GOTPCREL(%rip), %r13
    mov      Chr@GOTPCREL(%rip), %r10
    cmp      %r12, (%r10)
-   jnz      .90
+   jnz      .89
    mov      8(%r13), %rax
    call     *%rax
-.90:
+.89:
    call     chrHex_AF@plt
    mov      %rax, (%r13)
    jc       chunkSize_90
-.92:
+.91:
    mov      8(%r13), %rax
    call     *%rax
    call     chrHex_AF@plt
-   jc       .94
+   jc       .93
    mov      (%r13), %rdx
    shl      $4, %rdx
    or       %rax, %rdx
    mov      %rdx, (%r13)
-   jmp      .92
-.94:
+   jmp      .91
+.93:
    mov      Chr@GOTPCREL(%rip), %r11
    cmpq     $10, (%r11)
-   jz       .95
+   jz       .94
    mov      Chr@GOTPCREL(%rip), %r10
    cmp      %r12, (%r10)
    js       chunkSize_90
    mov      8(%r13), %rax
    call     *%rax
-   jmp      .94
-.95:
+   jmp      .93
+.94:
    mov      8(%r13), %rax
    call     *%rax
    cmp      %r12, (%r13)
@@ -713,22 +712,22 @@ getChunked_A:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
    cmp      %r12, (%r14)
-   jg       .97
+   jg       .96
    mov      $-1, %rax
    mov      Chr@GOTPCREL(%rip), %r11
    mov      %rax, (%r11)
-   jmp      .98
-.97:
+   jmp      .97
+.96:
    mov      8(%r14), %rax
    call     *%rax
-   subq     $1, (%r14)
-   jnz      .98
+   decq     (%r14)
+   jnz      .97
    mov      8(%r14), %rax
    call     *%rax
    mov      8(%r14), %rax
    call     *%rax
    call     chunkSize@plt
-.98:
+.97:
    pop      %r14
    ret
 
@@ -749,7 +748,7 @@ In:
 1:
    mov      8(%r13), %r13
    cmp      Nil@GOTPCREL(%rip), %rbx
-   jnz      .100
+   jnz      .99
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -762,14 +761,14 @@ In:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   jmp      .101
-.100:
+   jmp      .100
+.99:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
-   mov      EnvGet_A@GOTPCREL(%rip), %r10
+   mov      Get_A@GOTPCREL(%rip), %r10
    mov      (%r10), %r10
    mov      %r10, 8(%r14)
-   mov      EnvGet_A@GOTPCREL(%rip), %r11
+   mov      Get_A@GOTPCREL(%rip), %r11
    mov      getChunked_A@GOTPCREL(%rip), %r10
    mov      %r10, (%r11)
    call     chunkSize@plt
@@ -785,13 +784,13 @@ In:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   mov      EnvGet_A@GOTPCREL(%rip), %r11
+   mov      Get_A@GOTPCREL(%rip), %r11
    mov      8(%r14), %r10
    mov      %r10, (%r11)
    mov      Chr@GOTPCREL(%rip), %r11
    mov      %r12, (%r11)
    pop      %r14
-.101:
+.100:
    pop      %r13
    ret
 
@@ -799,24 +798,24 @@ In:
    .globl  outHexA
 outHexA:
    cmp      $15, %rax
-   jbe      .102
+   jbe      .101
    push     %rax
    shr      $4, %rax
    call     outHexA@plt
    pop      %rax
    and      $15, %al
-.102:
+.101:
    cmp      $9, %al
-   jbe      .103
+   jbe      .102
    add      $39, %al
-.103:
+.102:
    add      $48, %al
    jmp      envPutB@plt
 
    .balign  16
    .globl  wrChunkY
 wrChunkY:
-   mov      EnvPutB@GOTPCREL(%rip), %r11
+   mov      PutB@GOTPCREL(%rip), %r11
    mov      16(%r14), %r10
    mov      %r10, (%r11)
    mov      (%r14), %rax
@@ -826,20 +825,20 @@ wrChunkY:
    mov      $10, %al
    call     envPutB@plt
    lea      24(%r14), %r13
-.104:
+.103:
    mov      (%r13), %al
    call     envPutB@plt
-   add      $1, %r13
-   subq     $1, (%r14)
-   jnz      .104
+   inc      %r13
+   decq     (%r14)
+   jnz      .103
    mov      $13, %al
    call     envPutB@plt
    mov      $10, %al
    call     envPutB@plt
-   mov      EnvPutB@GOTPCREL(%rip), %r10
+   mov      PutB@GOTPCREL(%rip), %r10
    mov      (%r10), %r10
    mov      %r10, 16(%r14)
-   mov      EnvPutB@GOTPCREL(%rip), %r11
+   mov      PutB@GOTPCREL(%rip), %r11
    mov      putChunkedB@GOTPCREL(%rip), %r10
    mov      %r10, (%r11)
    ret
@@ -853,11 +852,11 @@ putChunkedB:
    lea      24(%r14), %r13
    add      (%r14), %r13
    mov      %al, (%r13)
-   addq     $1, (%r14)
+   incq     (%r14)
    cmpq     $4000, (%r14)
-   jnz      .105
+   jnz      .104
    call     wrChunkY@plt
-.105:
+.104:
    pop      %r14
    pop      %r13
    ret
@@ -879,7 +878,7 @@ Out:
 1:
    mov      8(%r13), %r13
    cmp      Nil@GOTPCREL(%rip), %rbx
-   jnz      .106
+   jnz      .105
 1:
    mov      (%r13), %rbx
    test     $0x06, %bl
@@ -892,15 +891,15 @@ Out:
    mov      8(%r13), %r13
    testb    $0x0E, %r13b
    jz       1b
-   jmp      .107
-.106:
+   jmp      .106
+.105:
    push     %r14
    mov      Chunk@GOTPCREL(%rip), %r14
    mov      %r12, (%r14)
-   mov      EnvPutB@GOTPCREL(%rip), %r10
+   mov      PutB@GOTPCREL(%rip), %r10
    mov      (%r10), %r10
    mov      %r10, 16(%r14)
-   mov      EnvPutB@GOTPCREL(%rip), %r11
+   mov      PutB@GOTPCREL(%rip), %r11
    mov      putChunkedB@GOTPCREL(%rip), %r10
    mov      %r10, (%r11)
 1:
@@ -916,16 +915,16 @@ Out:
    testb    $0x0E, %r13b
    jz       1b
    cmp      %r12, (%r14)
-   jz       .108
+   jz       .107
    call     wrChunkY@plt
-.108:
-   mov      EnvPutB@GOTPCREL(%rip), %r11
+.107:
+   mov      PutB@GOTPCREL(%rip), %r11
    mov      16(%r14), %r10
    mov      %r10, (%r11)
    mov      Newlines@GOTPCREL(%rip), %rdx
    call     outStringC@plt
    pop      %r14
-.107:
+.106:
    mov      OutFile@GOTPCREL(%rip), %r10
    mov      (%r10), %rax
    call     flushA_F@plt

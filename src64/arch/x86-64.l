@@ -1,4 +1,4 @@
-# 07mar10abu
+# 02jun10abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -56,7 +56,7 @@
    (setq Src (chop Src))
    (when (= "$" (pop 'Src))
       (and (= "~" (car Src)) (pop 'Src))
-      (format (pack Src)) ) )
+      (format Src) ) )
 
 (de target (Adr F)
    (if
@@ -67,7 +67,7 @@
             (and
                (match '(@L "_" @N) (chop Adr))  # Local jump "foo_22"
                (= @L (chop *Label))
-               (format (pack @N)) ) ) )
+               (format @N) ) ) )
       Adr
       (ifn F
          (pack Adr "@plt")
@@ -122,7 +122,10 @@
                Reg )
             (prinst "mov" (pack (car Src) "@GOTPCREL(%rip)") Reg)
             (prinst "lea" (pack (cdr Src) "(%r10)") Reg) ) )
-      (T (prinst "mov" (src (car Src) (car S)) Reg)) ) )
+      (T
+         (if (cdr S)
+            (prinst "lea" (src Src S) Reg)
+            (prinst "mov" (src (car Src) (car S)) Reg) ) ) ) )
 
 (de dst (Dst D)
    (cond
@@ -164,12 +167,9 @@
          (prinst Cmd "%r10" Dst) ) ) )
 
 (de dstSrcByte (Cmd Dst Src)
-   (cond
-      ((= "%r12" Src)
-         (prinst Cmd "%r12b" (lowByte Dst)) )
-      ((and (immediate Src) (>= 255 @ 0))
-         (prinst (pack Cmd "b") Src (lowByte Dst)) )
-      (T (dstSrc Cmd Dst Src)) ) )
+   (if (>= 255 (immediate Src) 0)
+      (prinst (pack Cmd "b") Src (lowByte Dst))
+      (dstSrc Cmd Dst Src) ) )
 
 (de dstDst (Cmd Dst Dst2)
    (cond
@@ -218,10 +218,10 @@
          (prinst "mov" "%r10" Dst) ) ) )
 
 (asm ld2 (Src S)
-   (prinst "movswq" (src Src S) "%rax") )
+   (prinst "movzwq" (src Src S) "%rax") )
 
 (asm ld4 (Src S)
-   (prinst "movslq" (src Src S) "%rax") )
+   (prinst "movl" (src Src S) "%eax") )  # Clears upper word of %rax
 
 (de _cmov (Cmd Jmp)
    (setq Dst (dst Dst D)  Src (src Src S))
@@ -233,7 +233,7 @@
       (warn "Using suboptimal emulation code")
       (prinst Jmp "1f")
       (if (pre? "%"  Src)
-         (prinst "movq" Src Dst)
+         (prinst "mov" Src Dst)
          (prinst "mov" Src "%r10")
          (prinst "mov" "%r10" Dst) )
       (prinl "1:") ) )
@@ -254,26 +254,17 @@
    (setq Dst (dst Dst D)  Src (src Src S))
    (if (pre? "%" Dst)
       (prinst "lea" Src Dst)
-      (prinst "lea" Src "%r11")
-      (prinst "mov" "%r11" Dst) ) )
+      (prinst "lea" Src "%r10")
+      (prinst "mov" "%r10" Dst) ) )
 
 (asm st2 (Dst D)
-   (prinst "movw" "%ax" (dst Dst D)) )
+   (prinst "mov" "%ax" (dst Dst D)) )
 
 (asm st4 (Dst D)
-   (prinst "movl" "%eax" (dst Dst D)) )
+   (prinst "mov" "%eax" (dst Dst D)) )
 
 (asm xchg (Dst D Dst2 D2)
    (dstDst "xchg" (dst Dst D) (src Dst2 D2)) )
-
-(asm movm (Dst D Src S End E)
-   (setq Dst (dst Dst D))
-   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rdi")
-   (lea Src S "%rsi")
-   (prinst "lea" (src End E) "%rcx")
-   (prinst "sub" "%rsi" "%rcx")
-   (prinst "cld")
-   (prinst "rep movsb") )
 
 (asm movn (Dst D Src S Cnt C)
    (lea Dst D "%rdi")
@@ -283,10 +274,38 @@
    (prinst "rep movsb") )
 
 (asm mset (Dst D Cnt C)
+   (setq Dst (dst Dst D))
    (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rdi")
    (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
    (prinst "rep stosb") )
+
+(asm movm (Dst D Src S End E)
+   (lea Dst D "%rdi")
+   (lea Src S "%rsi")
+   (lea End E "%rcx")
+   (prinst "sub" "%rsi" "%rcx")
+   (prinst "shr" "$3" "%rcx")
+   (prinst "cld")
+   (prinst "rep movsq") )
+
+(asm save (Src S End E Dst D)
+   (lea Src S "%rsi")
+   (lea End E "%rcx")
+   (lea Dst D "%rdi")
+   (prinst "sub" "%rsi" "%rcx")
+   (prinst "shr" "$3" "%rcx")
+   (prinst "cld")
+   (prinst "rep movsq") )
+
+(asm load (Dst D End E Src S)
+   (lea Dst D "%rdi")
+   (lea End E "%rcx")
+   (lea Src S "%rsi")
+   (prinst "sub" "%rdi" "%rcx")
+   (prinst "shr" "$3" "%rcx")
+   (prinst "cld")
+   (prinst "rep movsq") )
 
 
 # Arithmetics
@@ -304,7 +323,6 @@
       (prinst "adc" Src (car Dst))
       (prinst "adc" "%r12" (cdr Dst)) ) )
 
-
 (asm sub (Dst D Src S)
    (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
@@ -318,6 +336,16 @@
       (dstSrc "sbb" Dst Src)
       (prinst "sbb" Src (car Dst))
       (prinst "sbb" "%r12" (cdr Dst)) ) )
+
+(asm inc (Dst D)
+   (if (pre? "%" (setq Dst (dst Dst D)))
+      (prinst "inc" Dst)
+      (prinst "incq" Dst) ) )
+
+(asm dec (Dst D)
+   (if (pre? "%" (setq Dst (dst Dst D)))
+      (prinst "dec" Dst)
+      (prinst "decq" Dst) ) )
 
 (asm not (Dst D)
    (if (pre? "%" (setq Dst (dst Dst D)))
@@ -377,13 +405,6 @@
 (asm zxt ()  # 8 bit -> 64 bit
    (prinst "movzx" "%al" "%rax") )
 
-(asm sxt ()  # 8 bit -> 64 bit
-   (prinst "movsx" "%al" "%rax") )
-
-(asm int ()  # 32 bit -> 64 bit
-   (prinst "movsx" "%eax" "%rax") )
-
-
 (asm setc ()
    (prinst "stc") )
 
@@ -403,15 +424,6 @@
 
 (asm cmp4 (Src S)
    (prinst "cmp" (src Src S) "%eax") )
-
-(asm cmpm (Dst D Src S End E)
-   (setq Dst (dst Dst D))
-   (prinst (if (pre? "%" Dst) "mov" "lea") Dst "%rsi")
-   (lea Src S "%rdi")
-   (prinst "lea" End "%rcx")
-   (prinst "sub" "%rsi" "%rcx")
-   (prinst "cld")
-   (prinst "repnz cmpsb") )
 
 (asm cmpn (Dst D Src S Cnt C)
    (setq Dst (dst Dst D))
@@ -566,7 +578,7 @@
       (prinst "mov" "%rdx" "%r12") )
    (let Reg '("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9")
       (if (lst? Arg)
-         (let  Lea NIL
+         (let Lea NIL
             (when (nth Arg 7)
                (setq  # Maximally 6 args in registers
                   Arg (append (head 6 Arg) (reverse (tail -6 Arg)))
@@ -709,7 +721,7 @@
    (prinst "jnz" "ret")                # Yes: Return
    (prinst "test" "$0x08" "%bl")       # Symbol?
    (prinst "jz" 'evListE_E)            # No: Evaluate list
-   (prinst "movq" "(%rbx)" "%rbx")     # Get value
+   (prinst "mov" "(%rbx)" "%rbx")      # Get value
    (prinst "ret") )
 
 (asm exec (Reg)
@@ -751,7 +763,9 @@
 
 
 # System
-(asm init ()
+(asm initData ())
+
+(asm initCode ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
    (prinst "mov" "(%rsi)" "%r10")  # Get command
    (ifn *FPic

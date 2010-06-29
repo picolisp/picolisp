@@ -1,4 +1,4 @@
-# 22mar10abu
+# 11jun10abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -416,6 +416,19 @@
             (throw)
             (setq X 'D) ) )
       X ) )
+
+
+### co yield ###
+(when (== 64 64)
+   (test (1 2 3 (1 2 3))
+      (make
+         (do 4
+            (link
+               (co "co123"
+                  (make
+                     (yield (link 1))
+                     (yield (link 2))
+                     (yield (link 3)) ) ) ) ) ) ) )
 
 
 ### sys ###

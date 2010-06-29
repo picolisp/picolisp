@@ -130,15 +130,15 @@ href="refP.html#patch">patch</a></code> and <code><a
 href="refR.html#redef">redef</a></code>.
 
 <pre><code>
-: (de hello () (prinl <u>Hello world!</u>))
+: (de hello () (prinl "Hello world!"))
 -> hello
 
-: (daemon 'hello (prinl <u># This is the hello world program</u>))
--> (NIL (prinl <u># This is the hello world program</u>) (prinl <u>Hello world!</u>))
+: (daemon 'hello (prinl "# This is the hello world program"))
+-> (NIL (prinl "# This is the hello world program") (prinl "Hello world!"))
 : (hello)
 # This is the hello world program
 Hello world!
--> <u>Hello world!</u>
+-> "Hello world!"
 
 : (daemon '* (msg 'Multiplying))
 -> (@ (msg 'Multiplying) (pass $134532148))
@@ -159,9 +159,9 @@ href="refD.html#datSym">datSym</a></code>.
 
 <pre><code>
 : (dat$ (date))
--> <u>20070601</u>
-: (dat$ (date) <u>-</u>)
--> <u>2007-06-01</u>
+-> "20070601"
+: (dat$ (date) "-")
+-> "2007-06-01"
 </code></pre>
 
 <dt><a name="datStr"><code>(datStr 'dat ['flg]) -> sym</code></a>
@@ -177,13 +177,13 @@ href="refD.html#day">day</a></code>.
 
 <pre><code>
 : (datStr (date))
--> <u>2007-06-01</u>
-: (locale <u>DE</u> <u>de</u>)
+-> "2007-06-01"
+: (locale "DE" "de")
 -> NIL
 : (datStr (date))
--> <u>01.06.2007</u>
+-> "01.06.2007"
 : (datStr (date) T)
--> <u>01.06.07</u>
+-> "01.06.07"
 </code></pre>
 
 <dt><a name="datSym"><code>(datSym 'dat) -> sym</code></a>
@@ -194,7 +194,7 @@ href="refD.html#datStr">datStr</a></code>.
 
 <pre><code>
 : (datSym (date))
--> <u>01jun07</u>
+-> "01jun07"
 </code></pre>
 
 <dt><a name="date"><code>(date ['T]) -> dat</code></a>
@@ -244,13 +244,13 @@ href="refS.html#strDat">strDat</a></code>.
 
 <pre><code>
 : (day (date))
--> <u>Friday</u>
-: (locale <u>DE</u> <u>de</u>)
+-> "Friday"
+: (locale "DE" "de")
 -> NIL
 : (day (date))
--> <u>Freitag</u>
-: (day (date) '(<u>Mo</u> <u>Tu</u> <u>We</u> <u>Th</u> <u>Fr</u> <u>Sa</u> <u>Su</u>))
--> <u>Fr</u>
+-> "Freitag"
+: (day (date) '("Mo" "Tu" "We" "Th" "Fr" "Sa" "Su"))
+-> "Fr"
 </code></pre>
 
 <dt><a name="db"><code>(db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym | NIL</code></a>
@@ -269,7 +269,7 @@ href="refF.html#step">step</a></code>.
 <pre><code>
 : (db 'nr '+Item 1)
 -> {3-1}
-: (db 'nm '+Item <u>Main Part</u>)
+: (db 'nm '+Item "Main Part")
 -> {3-1}
 </code></pre>
 
@@ -316,7 +316,7 @@ href="refR.html#remote/2">remote/2</a></code>.
    pr 1250
    inv 100
    sup {2-2}
-   nm <u>Spare Part</u>
+   nm "Spare Part"
    nr 2
  @Item={3-2}
 -> NIL
@@ -363,7 +363,7 @@ href="refN.html#new">new</a></code>) external symbols) are appended to the free
 list.
 
 <pre><code>
-: (pool <u>db</u>)
+: (pool "db")
 -> T
 : (dbck)
 -> NIL
@@ -656,15 +656,15 @@ href="refE.html#equal/2">equal/2</a></code>.
 -> T
 </code></pre>
 
-<dt><a name="dir"><code>(dir ['any]) -> lst</code></a>
+<dt><a name="dir"><code>(dir ['any] ['flg]) -> lst</code></a>
 <dd>Returns a list of all filenames in the directory <code>any</code>. Names
-starting with a dot '<code>.</code>' are ignored. See also <code><a
-href="refC.html#cd">cd</a></code> and <code><a
-href="refI.html#info">info</a></code>.
+starting with a dot '<code>.</code>' are ignored, unless <code>flg</code> is
+non-<code>NIL</code>. See also <code><a href="refC.html#cd">cd</a></code> and
+<code><a href="refI.html#info">info</a></code>.
 
 <pre><code>
-: (filter '((F) (tail '(. c) (chop F))) (dir <u>src/</u>))
--> (<u>main.c</u> <u>subr.c</u> <u>gc.c</u> <u>io.c</u> <u>big.c</u> <u>sym.c</u> <u>tab.c</u> <u>flow.c</u> ..
+: (filter '((F) (tail '(. c) (chop F))) (dir "src/"))
+-> ("main.c" "subr.c" "gc.c" "io.c" "big.c" "sym.c" "tab.c" "flow.c" ..
 </code></pre>
 
 <dt><a name="dirname"><code>(dirname 'any) -> sym</code></a>
@@ -672,8 +672,8 @@ href="refI.html#info">info</a></code>.
 See also <code><a href="refP.html#path">path</a></code>.
 
 <pre><code>
-: (dirname <u>a/b/c/d</u>)
--> <u>a/b/c/</u>
+: (dirname "a/b/c/d")
+-> "a/b/c/"
 </code></pre>
 
 <dt><a name="dm"><code>(dm sym . fun|cls2) -> sym</code></a>
@@ -738,7 +738,7 @@ href="refV.html#vi">vi</a></code>.
 -> T
 : (doc '+relation)  # Class reference
 -> T
-:  (doc 'vi <u>firefox</u>)  # Use alternative browser
+:  (doc 'vi "firefox")  # Use alternative browser
 -> T
 </code></pre>
 

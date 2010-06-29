@@ -1,4 +1,4 @@
-# 03jan09abu
+# 30apr10abu
 # 21jan09 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
@@ -147,7 +147,7 @@
                         (char
                            (if (= "x" (cadr @X))
                               (hex (cddr @X))
-                              (format (pack (cdr @X))) ) ) )
+                              (format (cdr @X)) ) ) )
                      (T @X) ) )
                (setq L @Z) ) ) ) ) )
 

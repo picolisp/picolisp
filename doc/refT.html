@@ -18,11 +18,11 @@ href="refB.html#*Bye">*Bye</a></code>.
 
 <pre><code>
 : *Bye
--> ((saveHistory) (and *Tmp (call 'rm <u>-r</u> *Tmp)))
-: (tmp <u>foo</u> 123)
--> <u>tmp/27140/foo123</u>
+-> ((saveHistory) (and *Tmp (call 'rm "-r" *Tmp)))
+: (tmp "foo" 123)
+-> "tmp/27140/foo123"
 : *Tmp
--> <u>tmp/27140/</u>
+-> "tmp/27140/"
 </code></pre>
 
 <p><dt><a name="*Tsm"><code>*Tsm</code></a>
@@ -32,7 +32,7 @@ sequences, to switch on and off an alternative transient symbol markup. If set,
 the console instead of the standard double quote markup characters.
 
 <pre><code>
-: (de *Tsm <u>^[[4m</u> . <u>^[[24m</u>)   # vt100 escape sequences for underline
+: (de *Tsm "^[[4m" . "^[[24m")   # vt100 escape sequences for underline
 -> *Tsm
 : <u>Hello world</u>
 -> <u>Hello world</u>
@@ -55,9 +55,11 @@ href="ref.html#dbase">Database</a></code>.
 <dt><a name="T"><code>T</code></a>
 <dd>A global constant, evaluating to itself. <code>T</code> is commonly returned
 as the boolean value "true" (though any non-<code>NIL</code> values could be
-used). As a property key, it is used to store <a href="ref.html#pilog">Pilog</a>
-clauses, and inside Pilog clauses it is the <i>cut</i> operator. See also
-<code><a href="ref.html#nilSym">NIL</a></code>.
+used). It represents the absolute maximum, as it is larger than any other
+object. As a property key, it is used to store <a
+href="ref.html#pilog">Pilog</a> clauses, and inside Pilog clauses it is the
+<i>cut</i> operator. See also <code><a href="ref.html#nilSym">NIL</a></code> and
+and <a href="ref.html#cmp">Comparing</a>.
 
 <pre><code>
 : T
@@ -117,8 +119,8 @@ href="refW.html#wrap">wrap</a></code>.
 
 <pre><code>
 : (let Fmt (-3 14 14)
-   (tab Fmt <u>Key</u> <u>Rand 1</u> <u>Rand 2</u>)
-   (tab Fmt <u>---</u> <u>------</u> <u>------</u>)
+   (tab Fmt "Key" "Rand 1" "Rand 2")
+   (tab Fmt "---" "------" "------")
    (for C '(A B C D E F)
       (tab Fmt C (rand) (rand)) ) )
 Key        Rand 1        Rand 2
@@ -180,7 +182,7 @@ href="refT.html#timeout">timeout</a></code>.
 -> (3 (eval (udp @)))
 
 # Another session (on the same machine)
-: (udp <u>localhost</u> 4444 '(println *Pid))  # Send RPC message
+: (udp "localhost" 4444 '(println *Pid))  # Send RPC message
 -> (println *Pid)
 </code></pre>
 
@@ -194,12 +196,12 @@ href="refM.html#money">money</a></code> and <code><a
 href="refF.html#format">format</a></code>.
 
 <pre><code>
-: (telStr <u>49 1234 5678-0</u>)
--> <u>+49 1234 5678-0</u>
-: (locale <u>DE</u> <u>de</u>)
+: (telStr "49 1234 5678-0")
+-> "+49 1234 5678-0"
+: (locale "DE" "de")
 -> NIL
-: (telStr <u>49 1234 5678-0</u>)
--> <u>01234 5678-0</u>
+: (telStr "49 1234 5678-0")
+-> "01234 5678-0"
 </code></pre>
 
 <dt><a name="tell"><code>(tell 'sym ['any ..]) -> any</code></a>
@@ -213,7 +215,7 @@ href="refP.html#pid">pid</a></code> and <code><a
 href="refR.html#rpc">rpc</a></code>.
 
 <pre><code>
-: (call 'ps <u>x</u>)                              # Show processes
+: (call 'ps "x")                            # Show processes
   PID TTY      STAT   TIME COMMAND
   ..
  1321 pts/0    S      0:00 bin/picolisp ..  # Parent process
@@ -231,14 +233,15 @@ href="refR.html#rpc">rpc</a></code>.
 <dt><a name="test"><code>(test 'any . prg)</code></a>
 <dd>Executes <code>prg</code>, and issues an <code><a
 href="ref.html#errors">error</a></code> if the result does not <code><a
-href="refM.html#match">match</a></code> the <code>any</code> argument.
+href="refM.html#match">match</a></code> the <code>any</code> argument. See also
+<code><a href="refA.html#assert">assert</a></code>.
 
 <pre><code>
 : (test 12 (* 3 4))
 -> NIL
 : (test 12 (+ 3 4))
 ((+ 3 4))
-12 -- fail
+12 -- 'test' failed
 ?
 </code></pre>
 
@@ -253,10 +256,10 @@ at-marks. See also <code><a href="refP.html#pack">pack</a></code> and <code><a
 href="refG.html#glue">glue</a></code>.
 
 <pre><code>
-: (text <u>abc @1 def @2</u> 'XYZ 123)
--> <u>abc XYZ def 123</u>
-: (text <u>a@@bc.@1</u> <u>de</u>)
--> <u>a@bc.de</u>
+: (text "abc @1 def @2" 'XYZ 123)
+-> "abc XYZ def 123"
+: (text "a@@bc.@1" "de")
+-> "a@bc.de"
 </code></pre>
 
 <dt><a name="tim$"><code>(tim$ 'tim ['flg]) -> sym</code></a>
@@ -267,9 +270,9 @@ href="refD.html#dat$">dat$</a></code>.
 
 <pre><code>
 : (tim$ (time))
--> <u>10:57</u>
+-> "10:57"
 : (tim$ (time) T)
--> <u>10:57:56</u>
+-> "10:57:56"
 </code></pre>
 
 <dt><a name="timeout"><code>(timeout ['num])</code></a>
@@ -338,12 +341,12 @@ returned. See also <code><a href="refF.html#from">from</a></code> and <code><a
 href="refL.html#line">line</a></code>.
 
 <pre><code>
-: (till <u>:</u>)
+: (till ":")
 abc:def
--> (<u>a</u> <u>b</u> <u>c</u>)
-: (till <u>:</u> T)
+-> ("a" "b" "c")
+: (till ":" T)
 abc:def
--> <u>abc</u>
+-> "abc"
 </code></pre>
 
 <dt><a name="time"><code>(time ['T]) -> tim</code></a>
@@ -385,18 +388,18 @@ href="refB.html#*Bye">*Bye</a></code> .
 
 <pre><code>
 : *Bye
--> ((saveHistory) (and *Tmp (call 'rm <u>-r</u> *Tmp)))
+-> ((saveHistory) (and *Tmp (call 'rm "-r" *Tmp)))
 : *Pid
 -> 27140
-: (tmp <u>foo</u> 123)
--> <u>tmp/27140/foo123</u>
-: (dir <u>tmp/</u>)
--> (<u>27140</u>)
-: (out (tmp <u>foo</u> 123) (println 'OK))
+: (tmp "foo" 123)
+-> "tmp/27140/foo123"
+: (dir "tmp/")
+-> ("27140")
+: (out (tmp "foo" 123) (println 'OK))
 -> OK
 : (dir (tmp))
--> (<u>foo123</u>)
-: (in (tmp <u>foo</u> 123) (read))
+-> ("foo123")
+: (in (tmp "foo" 123) (read))
 -> OK
 </code></pre>
 
@@ -418,13 +421,13 @@ href="refP.html#part/3">part/3</a></code>.
 <pre><code>
 : (?
    @Nr (1 . 5)
-   @Nm <u>Sven</u>
+   @Nm "Sven"
    (select (@CuSu)
       ((nr +CuSu @Nr) (nm +CuSu @Nm))
       (range @Nr @CuSu nr)
       (tolr @Nm @CuSu nm) )
    (val @Name @CuSu nm) )
- @Nr=(1 . 5) @Nm=<u>Sven</u> @CuSu={2-2} @Name=<u>Seven Oaks Ltd.</u>
+ @Nr=(1 . 5) @Nm="Sven" @CuSu={2-2} @Name="Seven Oaks Ltd."
 </code></pre>
 
 <dt><a name="touch"><code>(touch 'sym) -> sym</code></a>
@@ -511,7 +514,7 @@ href="refC.html#clip">clip</a></code>.
 <pre><code>
 : (trim (1 NIL 2 NIL NIL))
 -> (1 NIL 2)
-: (trim '(a b <u> </u> <u> </u>))
+: (trim '(a b " " " "))
 -> (a b)
 </code></pre>
 

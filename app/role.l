@@ -1,4 +1,4 @@
-# 03jan09abu
+# 22apr10abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -28,6 +28,6 @@
             (do 8
                (<row> (alternating)
                   (gui 1 '(+Obj +TextField) '(nm +User)) ) ) )
-         (<spread> (scroll 8) (editButton T)) ) ) )
+         (<spread> (scroll 8 T) (editButton T)) ) ) )
 
 # vi:et:ts=3:sw=3

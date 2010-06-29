@@ -1,4 +1,4 @@
-# 02jan09abu
+# 30apr10abu
 # (c) Software Lab. Alexander Burger
 
 # Check or write header
@@ -88,7 +88,7 @@
                         (char
                            (if (= "x" (cadr @X))
                               (hex (cddr @X))
-                              (format (pack (cdr @X))) ) ) )
+                              (format (cdr @X)) ) ) )
                      (T @X) ) )
                (setq L @Z) ) ) ) ) )
 

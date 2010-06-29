@@ -1,4 +1,4 @@
-# 09sep09abu
+# 18may10abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
@@ -25,6 +25,8 @@
 (load "test/lib/misc.l")
 
 (load "test/lib/lint.l")
+
+(load "test/lib/math.l")
 
 (msg 'OK)
 

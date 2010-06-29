@@ -19,8 +19,8 @@ href="refM.html#*Msg">*Msg</a></code> and <code><a
 href="ref_.html#^">^</a></code>.
 
 <pre><code>
-: (de *Err (prinl <u>Fatal error!</u>))
--> ((prinl <u>Fatal error!</u>))
+: (de *Err (prinl "Fatal error!"))
+-> ((prinl "Fatal error!"))
 : (/ 3 0)
 !? (/ 3 0)
 Div/0
@@ -56,7 +56,7 @@ href="ref.html#external">external symbols</a></code>.
                            (unless @
                               (close Sock)
                               (off Sock) ) ) ) ) ) ) ) )
-      '(<u>10.10.12.1</u> <u>10.10.12.2</u> <u>10.10.12.3</u> <u>10.10.12.4</u>)
+      '("10.10.12.1" "10.10.12.2" "10.10.12.3" "10.10.12.4")
       (20 40 60 80) ) )
 
 ### On the remote machines ###
@@ -136,10 +136,10 @@ that symbol returned), but not written). Returns non-<code>NIL</code> if the
 operation was successfully completed.
 
 <pre><code>
-: (in <u>x.l</u> (echo))  # Display file on console
+: (in "x.l" (echo))  # Display file on console
  ..
 
-: (out <u>x2.l</u> (in <u>x.l</u> (echo)))  # Copy file "x.l" to "x2.l"
+: (out "x2.l" (in "x.l" (echo)))  # Copy file "x.l" to "x2.l"
 </code></pre>
 
 <dt><a name="edit"><code>(edit 'sym ..) -> NIL</code></a>
@@ -239,7 +239,7 @@ href="refR.html#rd">rd</a></code> function. See also <code><a
 href="refE.html#eol">eol</a></code>.
 
 <pre><code>
-: (in <u>file</u> (until (eof) (println (line T))))
+: (in "file" (until (eof) (println (line T))))
 ...
 </code></pre>
 
@@ -272,9 +272,9 @@ href="refM.html#member/2">member/2</a></code>.
 variable.
 
 <pre><code>
-: (in <u>foo</u>)                             # Produce an error
-!? (in <u>foo</u>)
-<u>foo</u> -- Open error: No such file or directory
+: (in "foo")                           # Produce an error
+!? (in "foo")
+"foo" -- Open error: No such file or directory
 ? (errno)
 -> 2                                   # Returned 'ENOENT'
 </code></pre>
@@ -314,26 +314,26 @@ href="refE.html#expTel">expTel</a></code>.
 -> 733133
 : (date (date))
 -> (2007 5 31)
-: (expDat <u>31</u>)
+: (expDat "31")
 -> 733133
-: (expDat <u>315</u>)
+: (expDat "315")
 -> 733133
-: (expDat <u>3105</u>)
+: (expDat "3105")
 -> 733133
-: (expDat <u>31057</u>)
+: (expDat "31057")
 -> 733133
-: (expDat <u>310507</u>)
+: (expDat "310507")
 -> 733133
-: (expDat <u>2007-05-31</u>)
+: (expDat "2007-05-31")
 -> 733133
-: (expDat <u>7-5-31</u>)
+: (expDat "7-5-31")
 -> 733133
 
-: (locale <u>DE</u> <u>de</u>)
+: (locale "DE" "de")
 -> NIL
-: (expDat <u>31.5</u>)
+: (expDat "31.5")
 -> 733133
-: (expDat <u>31.5.7</u>)
+: (expDat "31.5.7")
 -> 733133
 </code></pre>
 
@@ -346,16 +346,16 @@ href="refE.html#expDat">expDat</a></code> and <code><a
 href="refL.html#locale">locale</a></code>.
 
 <pre><code>
-: (expTel <u>+49 1234 5678-0</u>)
--> <u>49 1234 5678-0</u>
-: (expTel <u>0049 1234 5678-0</u>)
--> <u>49 1234 5678-0</u>
-: (expTel <u>01234 5678-0</u>)
+: (expTel "+49 1234 5678-0")
+-> "49 1234 5678-0"
+: (expTel "0049 1234 5678-0")
+-> "49 1234 5678-0"
+: (expTel "01234 5678-0")
 -> NIL
-: (locale <u>DE</u> <u>de</u>)
+: (locale "DE" "de")
 -> NIL
-: (expTel <u>01234 5678-0</u>)
--> <u>49 1234 5678-0</u>
+: (expTel "01234 5678-0")
+-> "49 1234 5678-0"
 </code></pre>
 
 <dt><a name="expr"><code>(expr 'sym) -> fun</code></a>
@@ -408,7 +408,7 @@ href="refL.html#lieu">lieu</a></code>.
 -> {1}
 : (ext? 'abc)
 -> NIL
-: (ext? <u>abc</u>)
+: (ext? "abc")
 -> NIL
 : (ext? 123)
 -> NIL
@@ -437,9 +437,9 @@ href="refI.html#intern">intern</a></code> and <code><a
 href="refE.html#ext?">ext?</a></code>.
 
 <pre><code>
-: (extern <u>A1b</u>)
+: (extern "A1b")
 -> {A1b}
-: (extern <u>{A1b}</u>)
+: (extern "{A1b}")
 -> {A1b}
 </code></pre>
 

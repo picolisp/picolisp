@@ -29,7 +29,7 @@ NIL 5286
 <pre><code>
 : *Pid
 -> 6386
-: (call <u>ps</u>)  # Show processes
+: (call "ps")  # Show processes
   PID TTY          TIME CMD
  .... ...      ........ .....
  6386 pts/1    00:00:00 bin/picolisp   # <- current process
@@ -46,8 +46,8 @@ href="refT.html#text">text</a></code> and <code><a
 href="refG.html#glue">glue</a></code>.
 
 <pre><code>
-: (pack 'car <u> is </u> 1 '(<u> symbol </u> name))
--> <u>car is 1 symbol name</u>
+: (pack 'car " is " 1 '(" symbol " name))
+-> "car is 1 symbol name"
 </code></pre>
 
 <dt><a name="pad"><code>(pad 'cnt 'num) -> sym</code></a>
@@ -59,9 +59,9 @@ href="refA.html#align">align</a></code>.
 
 <pre><code>
 : (pad 5 1)
--> <u>00001</u>
+-> "00001"
 : (pad 5 123456789)
--> <u>123456789</u>
+-> "123456789"
 </code></pre>
 
 <dt><a name="pair"><code>(pair 'any) -> any</code></a>
@@ -135,9 +135,9 @@ whose name starts with an at-mark "<code>@</code>", otherwise <code>NIL</code>.
 <pre><code>
 : (pat? '@)
 -> @
-: (pat? <u>@Abc</u>)
--> <u>@Abc</u>
-: (pat? <u>ABC</u>)
+: (pat? "@Abc")
+-> "@Abc"
+: (pat? "ABC")
 -> NIL
 : (pat? 123)
 -> NIL
@@ -153,21 +153,21 @@ href="refR.html#redef">redef</a></code>.
 <pre><code>
 : (pp 'hello)
 (de hello NIL
-   (prinl <u>Hello world!</u>) )
+   (prinl "Hello world!") )
 -> hello
 
 : (patch hello 'prinl 'println)
 -> NIL
 : (pp 'hello)
 (de hello NIL
-   (println <u>Hello world!</u>) )
+   (println "Hello world!") )
 -> hello
 
-: (patch hello '(prinl @S) (fill '(println <u>We said: </u> . @S)))
+: (patch hello '(prinl @S) (fill '(println "We said: " . @S)))
 -> NIL
 : (hello)
 We said: Hello world!
--> <u>Hello world!</u>
+-> "Hello world!"
 </code></pre>
 
 <dt><a name="path"><code>(path 'any) -> sym</code></a>
@@ -181,12 +181,12 @@ href="refD.html#dirname">dirname</a></code>.
 
 <pre><code>
 $ /usr/bin/picolisp /usr/lib/picolisp/lib.l
-: (path <u>a/b/c</u>)
--> <u>a/b/c</u>
-: (path <u>@a/b/c</u>)
--> <u>/usr/lib/picolisp/a/b/c</u>
-: (path <u>+@a/b/c</u>)
--> <u>+/usr/lib/picolisp/a/b/c</u>
+: (path "a/b/c")
+-> "a/b/c"
+: (path "@a/b/c")
+-> "/usr/lib/picolisp/a/b/c"
+: (path "+@a/b/c")
+-> "+/usr/lib/picolisp/a/b/c"
 </code></pre>
 
 <dt><a name="peek"><code>(peek) -> sym</code></a>
@@ -199,8 +199,8 @@ $ cat a
 # Comment
 abcd
 $ ./dbg
-: (in <u>a</u> (list (peek) (char)))
--> (<u>#</u> <u>#</u>)
+: (in "a" (list (peek) (char)))
+-> ("#" "#")
 </code></pre>
 
 <dt><a name="permute/2"><code>permute/2</code></a>
@@ -282,14 +282,14 @@ and <code><a href="refR.html#rpc">rpc</a></code>.
 
 <pre><code>
 : (pipe                                # equivalent to 'any'
-   (prinl <u>(a b # Comment^Jc d)</u>)           # (child process)
+   (prinl "(a b # Comment^Jc d)")         # (child process)
    (read) )                               # (parent process)
 -> (a b c d)
 : (pipe                                # pipe through an external program
-   (out '(tr <u>[a-z]</u> <u>[A-Z]</u>)                 # (child process)
-      (prinl <u>abc def ghi</u>) )
+   (out '(tr "[a-z]" "[A-Z]")             # (child process)
+      (prinl "abc def ghi") )
    (line T) )                             # (parent process)
--> <u>ABC DEF GHI</u>
+-> "ABC DEF GHI"
 </code></pre>
 
 <dt><a name="place"><code>(place 'cnt 'lst 'any) -> lst</code></a>
@@ -334,12 +334,12 @@ href="refD.html#*Dbs">*Dbs</a></code> and <code><a
 href="refJ.html#journal">journal</a></code>.
 
 <pre><code>
-: (pool <u>/dev/hda2</u>)
+: (pool "/dev/hda2")
 -> T
 
 : *Dbs
 -> (1 2 2 4)
-: (pool <u>dbFile</u> *Dbs)
+: (pool "dbFile" *Dbs)
 -> T
 :
 abu:~/pico  ls -l dbFile*
@@ -457,9 +457,9 @@ href="refR.html#rpc">rpc</a></code> and <code><a
 href="refW.html#wr">wr</a></code>.
 
 <pre><code>
-: (out <u>x</u> (pr 7 <u>abc</u> (1 2 3) 'a))  # Print to "x"
+: (out "x" (pr 7 "abc" (1 2 3) 'a))  # Print to "x"
 -> a
-: (hd <u>x</u>)
+: (hd "x")
 00000000  04 0E 0E 61 62 63 01 04 02 04 04 04 06 03 05 61  ...abc.........a
 -> NIL
 </code></pre>
@@ -468,14 +468,14 @@ href="refW.html#wr">wr</a></code>.
 <dd>Executes <code>prg</code>, similar to <code><a
 href="refR.html#run">run</a></code>, by evaluating all expressions in
 <code>prg</code> (within the binding environment given by <code>cnt-1</code>).
-As a side effect, all atomics expression will be printed with <code><a
+As a side effect, all atomic expressions will be printed with <code><a
 href="refP.html#prinl">prinl</a></code>. See also <code><a
 href="refE.html#eval">eval</a></code>.
 
 <pre><code>
 : (let Prg 567
    (prEval
-      '(<u>abc</u> (prinl (+ 1 2 3)) Prg 987) ) )
+      '("abc" (prinl (+ 1 2 3)) Prg 987) ) )
 abc
 6
 567
@@ -489,14 +489,14 @@ abc
 See also <code><a href="refS.html#sub?">sub?</a></code>.
 
 <pre><code>
-: (pre? <u>abc</u> <u>abcdef</u>)
--> <u>abcdef</u>
-: (pre? <u>def</u> <u>abcdef</u>)
+: (pre? "abc" "abcdef")
+-> "abcdef"
+: (pre? "def" "abcdef")
 -> NIL
-: (pre? (+ 3 4) <u>7fach</u>)
--> <u>7fach</u>
-: (pre? NIL <u>abcdef</u>)
--> <u>abcdef</u>
+: (pre? (+ 3 4) "7fach")
+-> "7fach"
+: (pre? NIL "abcdef")
+-> "abcdef"
 </code></pre>
 
 <dt><a name="pretty"><code>(pretty 'any 'cnt)</code></a>
@@ -517,7 +517,7 @@ href="refP.html#pp">pp</a></code>.
       (f (g) (h) (i))
       (j (k) (l) (m)) )
    (n o p)
-   q )-> <u>)</u>
+   q )-> ")"
 </code></pre>
 
 <dt><a name="prin"><code>(prin 'any ..) -> any</code></a>
@@ -662,7 +662,7 @@ href="refS.html#*Sig1">*Sig[12]</a> and <code><a
 href="refK.html#kill">kill</a></code>.
 
 <pre><code>
-: (protect (journal <u>db1.log</u> <u>db2.log</u>))
+: (protect (journal "db1.log" "db2.log"))
 -> T
 </code></pre>
 
@@ -790,12 +790,12 @@ href="refG.html#getl">getl</a></code> and <code><a
 href="refM.html#maps">maps</a></code>.
 
 <pre><code>
-: (putl 'X '((123 . a) flg (<u>Hello</u> . b)))
--> ((123 . a) flg (<u>Hello</u> . b))
+: (putl 'X '((123 . a) flg ("Hello" . b)))
+-> ((123 . a) flg ("Hello" . b))
 : (get 'X 'a)
 -> 123
 : (get 'X 'b)
--> <u>Hello</u>
+-> "Hello"
 : (get 'X 'flg)
 -> T
 </code></pre>
@@ -807,7 +807,7 @@ href="refC.html#cd">cd</a></code>.
 
 <pre><code>
 : (pwd)
--> <u>/home/app/</u>
+-> "/home/app/"
 </code></pre>
 
 </dl>

@@ -13,14 +13,10 @@
 
 <dt><a name="*Hup"><code>*Hup</code></a>
 <dd>Global variable holding a (possibly empty) <code>prg</code> body, which will
-be executed when a SIGHUP signal is sent to the current process. Note that this
-mechanism is "unreliable", in the way that when a second signal (it may be
-SIGINT, SIGUSR1/2, SIGALRM or SIGTERM) arrives before the first signal's
-<code>prg</code> is running, the first signal will be lost. See also <code><a
-href="refA.html#alarm">alarm</a></code>, <code><a
-href="refR.html#*Run">*Run</a></code>, <code><a
-href="refS.html#*Sig1">*Sig[12]</a></code> and <code><a
-href="refE.html#*Err">*Err</a></code>.
+be executed when a SIGHUP signal is sent to the current process. See also
+<code><a href="refA.html#alarm">alarm</a></code>, <code><a
+href="refS.html#sigio">sigio</a></code> and <code><a
+href="refS.html#*Sig1">*Sig[12]</a></code>.
 
 <pre><code>
 : (de *Hup (msg 'SIGHUP))
@@ -129,7 +125,8 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 <dt><a name="heap"><code>(heap 'flg) -> cnt</code></a>
 <dd>Returns the total size of the cell heap space in megabytes. If
 <code>flg</code> is non-<code>NIL</code>, the size of the currently free space
-is returned. See also <code><a href="refG.html#gc">gc</a></code>.
+is returned. See also <code><a href="refS.html#stack">stack</a></code> and
+<code><a href="refG.html#gc">gc</a></code>.
 
 <pre><code>
 : (gc 4)
@@ -191,7 +188,11 @@ Content-Type: text/html; charset=utf-8
 <dt><code>(hex 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a hexadecimal string, or a hexadecimal
 string <code>sym</code> to a number. See also <code><a
-href="refO.html#oct">oct</a></code> and <code><a
+href="refO.html#oct">oct</a></code>, <code><a
+href="refF.html#fmt64">fmt64</a></code>, <code><a
+href="refH.html#hax">hax</a></code>
+
+ and <code><a
 href="refF.html#format">format</a></code>.
 
 <pre><code>

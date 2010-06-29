@@ -17,7 +17,7 @@ also <code><a href="refB.html#blob">blob</a></code>.
 
 <pre><code>
 : *Blob
--> <u>blob/app/</u>
+-> "blob/app/"
 </code></pre>
 
 <dt><a name="*Bye"><code>*Bye</code></a>
@@ -27,8 +27,8 @@ executed just before the termination of the PicoLisp interpreter. See also
 href="refT.html#tmp">tmp</a></code>.
 
 <pre><code>
-: (push1 '*Bye '(call 'rm <u>myfile.tmp</u>))  # Remove a temporary file
--> (call 'rm <u>myfile.tmp</u>)
+: (push1 '*Bye '(call 'rm "myfile.tmp"))  # Remove a temporary file
+-> (call 'rm "myfile.tmp")
 </code></pre>
 
 <dt><a name="+Bag"><code>+Bag</code></a>
@@ -132,7 +132,7 @@ href="refC.html#char">char</a></code>.
 
 <pre><code>
 : (beep)
--> <u>^G</u>
+-> "^G"
 </code></pre>
 
 <dt><a name="bench"><code>(bench . prg) -> any</code></a>
@@ -159,9 +159,9 @@ href="refU.html#use">use</a></code>.
 <pre><code>
 : (setq X 123)                               # X is 123
 -> 123
-: (bind 'X (setq X <u>Hello</u>) (println X))  # Set X to "Hello", print it
-<u>Hello</u>
--> <u>Hello</u>
+: (bind 'X (setq X "Hello") (println X))  # Set X to "Hello", print it
+"Hello"
+-> "Hello"
 : (bind '((X . 3) (Y . 4)) (println X Y) (* X Y))
 3 4
 -> 12
@@ -198,11 +198,11 @@ href="refP.html#pack">pack</a></code>.
    pr 29900
    inv 100
    sup {2-1}
-   nm <u>Main Part</u>
+   nm "Main Part"
    nr 1
 -> {3-1}
 : (blob '{3-1} 'jpg)
--> <u>blob/app/3/-/1.jpg</u>
+-> "blob/app/3/-/1.jpg"
 </code></pre>
 
 <dt><a name="blob!"><code>(blob! 'obj 'sym 'file)</code></a>

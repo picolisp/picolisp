@@ -1,4 +1,4 @@
-# 08mar10abu
+# 14jun10abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -196,7 +196,7 @@
    (and Val
       (or
          (super Val X)
-         (car (member Val X)) ) ) )
+         (pick 'has> (: bag) (circ Val) X) ) ) )
 
 (dm put> (Obj Old New)
    (trim

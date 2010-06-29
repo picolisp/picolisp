@@ -1,5 +1,7 @@
-# 25dec09abu
+# 20jun10abu
 # (c) Software Lab. Alexander Burger
+
+(load "@opt/pilog.l")
 
 (be sister (@X @Y) (parents @X @M @F) (parents @Y @M @F) (different @X @Y))
 

@@ -20,8 +20,8 @@ href="refC.html#commit">commit</a></code>. A (typically periodic) call to
 <code><a href="refZ.html#zap_">zap_</a></code> will clean them up later.
 
 <pre><code>
-: (setq *Zap '(NIL . <u>db/app/_zap</u>))
--> <u>db/app/_zap</u>
+: (setq *Zap '(NIL . "db/app/_zap"))
+-> "db/app/_zap"
 </code></pre>
 
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
@@ -35,10 +35,10 @@ the database file. See also <code><a href="refI.html#intern">intern</a></code>.
 : (de foo (Lst) (car Lst))          # 'foo' calls 'car'
 -> foo
 : (zap 'car)                        # Delete the symbol 'car'
--> <u>car</u>
+-> "car"
 : (pp 'foo)
 (de foo (Lst)
-   (<u>car</u> Lst) )                      # 'car' is now a transient symbol
+   ("car" Lst) )                    # 'car' is now a transient symbol
 -> foo
 : (foo (1 2 3))                     # 'foo' still works
 -> 1
@@ -67,15 +67,15 @@ character) is used as an intermediary file.
 
 <pre><code>
 : *Zap
--> (NIL . <u>db/app/Z</u>)
-: (call 'ls <u>-l</u> <u>db/app</u>)
+-> (NIL . "db/app/Z")
+: (call 'ls "-l" "db/app")
 ...
 -rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z
 -rw-r--r-- 1 abu abu     1280 2007-05-23 12:15 Z_
 ...
 : (zap_)
 ...
-: (call 'ls <u>-l</u> <u>db/app</u>)
+: (call 'ls "-l" "db/app")
 ...
 -rw-r--r-- 1 abu abu     1536 2007-06-23 12:34 Z_
 ...

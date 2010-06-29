@@ -1,4 +1,4 @@
-/* 05feb10abu
+/* 03jun10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -127,7 +127,7 @@ int slow(inFile *p, bool nb) {
          return -1;
       if (errno != EINTR)
          return 0;
-      if (Signal)
+      if (*Signal)
          sighandler(NULL);
    }
 }
@@ -149,7 +149,7 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
             while ((n = read(fd, p, cnt)) <= 0) {
                if (!n || errno != EINTR)
                   return 0;
-               if (Signal)
+               if (*Signal)
                   sighandler(NULL);
             }
          }
@@ -160,7 +160,7 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
          return -1;
       if (errno != EINTR)
          return 0;
-      if (Signal)
+      if (*Signal)
          sighandler(NULL);
    }
 }
@@ -175,7 +175,7 @@ bool wrBytes(int fd, byte *p, int cnt) {
          return NO;
       else if (errno != EINTR)
          writeErr("bytes");
-      if (Signal)
+      if (*Signal)
          sighandler(NULL);
    } while (cnt);
    return YES;
@@ -634,7 +634,7 @@ void rdOpen(any ex, any x, inFrame *f) {
          while ((f->fd = open(nm+1, O_APPEND|O_CREAT|O_RDWR, 0666)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
          initInFile(f->fd, strdup(nm+1));
@@ -643,7 +643,7 @@ void rdOpen(any ex, any x, inFrame *f) {
          while ((f->fd = open(nm, O_RDONLY)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
          initInFile(f->fd, strdup(nm));
@@ -712,7 +712,7 @@ void wrOpen(any ex, any x, outFrame *f) {
          while ((f->fd = open(nm+1, O_APPEND|O_CREAT|O_WRONLY, 0666)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
       }
@@ -720,7 +720,7 @@ void wrOpen(any ex, any x, outFrame *f) {
          while ((f->fd = open(nm, O_CREAT|O_TRUNC|O_WRONLY, 0666)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
       }
@@ -776,7 +776,7 @@ void ctOpen(any ex, any x, ctlFrame *f) {
          while ((f->fd = open(nm+1, O_CREAT|O_RDWR, 0666)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
          lockFile(f->fd, F_SETLKW, F_RDLCK);
@@ -785,7 +785,7 @@ void ctOpen(any ex, any x, ctlFrame *f) {
          while ((f->fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0) {
             if (errno != EINTR)
                openErr(ex, nm);
-            if (Signal)
+            if (*Signal)
                sighandler(ex);
          }
          lockFile(f->fd, F_SETLKW, F_WRLCK);
@@ -856,10 +856,12 @@ void popInFiles(void) {
          while (waitpid(Env.inFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr();
-            if (Signal)
+            if (*Signal)
                sighandler(NULL);
          }
    }
+   else if (InFile)
+      InFile->next = Chr;
    Env.get = Env.inFrames->get;
    Chr =
       (InFile = InFiles[(Env.inFrames = Env.inFrames->link)? Env.inFrames->fd : STDIN_FILENO])?
@@ -874,7 +876,7 @@ void popOutFiles(void) {
          while (waitpid(Env.outFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr();
-            if (Signal)
+            if (*Signal)
                sighandler(NULL);
          }
    }
@@ -1227,6 +1229,8 @@ any token(any x, int c) {
             byteSym(Chr, &i, &y);
          }
          y = Pop(c1);
+         if (unDig(y) == ('L'<<16 | 'I'<<8 | 'N'))
+            return Nil;
          if (x = findHash(y, h = Intern + ihash(y)))
             return x;
          x = consSym(Nil,y);
@@ -1359,7 +1363,7 @@ long waitFd(any ex, int fd, long ms) {
             val(Run) = Nil;
             selectErr(ex);
          }
-         if (Signal)
+         if (*Signal)
             sighandler(ex);
       }
       if (tp) {
@@ -1444,7 +1448,7 @@ long waitFd(any ex, int fd, long ms) {
             }
          }
       }
-      if (Signal)
+      if (*Signal)
          sighandler(ex);
    } while (ms  &&  fd >= 0 && !isSet(fd, &rdSet));
    Env.task = taskSave;
@@ -1480,7 +1484,7 @@ any doSync(any ex) {
          p += n, cnt -= n;
       else if (errno != EINTR)
          writeErr("sync");
-      if (Signal)
+      if (*Signal)
          sighandler(ex);
    } while (cnt);
    Sync = NO;
@@ -2015,6 +2019,7 @@ any doPipe(any ex) {
          dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
       wrOpen(ex, Nil, &f.out);
       pushOutFiles(&f.out);
+      OutFile->tty = NO;
       val(Run) = Nil;
       EVAL(cadr(ex));
       bye(0);
@@ -2053,7 +2058,7 @@ any doOpen(any ex) {
    while ((fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0) {
       if (errno != EINTR)
          return Nil;
-      if (Signal)
+      if (*Signal)
          sighandler(ex);
    }
    closeOnExec(ex, fd);
@@ -2066,9 +2071,13 @@ any doClose(any ex) {
    any x;
    int fd;
 
-   x = cdr(ex),  x = EVAL(car(x));
-   if (close(fd = (int)xCnt(ex,x)))
-      return Nil;
+   x = cdr(ex),  x = EVAL(car(x)),  fd = (int)xCnt(ex,x);
+   while (close(fd)) {
+      if (errno != EINTR)
+         return Nil;
+      if (*Signal)
+         sighandler(ex);
+   }
    closeInFile(fd),  closeOutFile(fd);
    return x;
 }
@@ -2222,35 +2231,39 @@ void print(any x) {
 }
 
 void print1(any x) {
-   if (Signal)
+   if (*Signal)
       sighandler(NULL);
    if (isNum(x))
       outNum(x);
    else if (isNil(x))
       outString("NIL");
    else if (isSym(x)) {
-      int c, d;
+      int c;
+      any y;
 
-      if (!(c = symByte(name(x))))
+      if (!(c = symByte(y = name(x))))
          Env.put('$'),  outWord(num(x)/sizeof(cell));
       else if (isExt(x))
          Env.put('{'),  outSym(c),  Env.put('}');
-      else if (hashed(x, ihash(name(x)), Intern)) {
-         do {
-            d = symByte(NULL);
-            if (strchr(Delim, c)  ||  c == '.' && !d)
-               Env.put('\\');
-            Env.put(c);
-         } while (c = d);
+      else if (hashed(x, ihash(y), Intern)) {
+         if (unDig(y) == '.')
+            Env.put('\\'),  Env.put('.');
+         else {
+            do {
+               if (strchr(Delim, c))
+                  Env.put('\\');
+               Env.put(c);
+            } while (c = symByte(NULL));
+         }
       }
       else {
-         bool tsm = !isNil(val(Tsm)) && Env.put == putStdout && OutFile->tty;
+         bool tsm = isCell(val(Tsm)) && Env.put == putStdout && OutFile->tty;
 
          if (!tsm)
             Env.put('"');
          else {
             outName(car(val(Tsm)));
-            c = symByte(name(x));
+            c = symByte(y);
          }
          do {
             if (c == '\\'  ||  c == '^'  ||  !tsm && c == '"')
@@ -2297,7 +2310,7 @@ void prin(any x) {
 }
 
 void prin1(any x) {
-   if (Signal)
+   if (*Signal)
       sighandler(NULL);
    if (!isNil(x)) {
       if (isNum(x))

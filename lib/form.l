@@ -1,7 +1,7 @@
-# 29mar10abu
+# 27jun10abu
 # (c) Software Lab. Alexander Burger
 
-# *PRG *Top *Gui *Get *Got *Form *Evt *Lock
+# *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
 # "*Cnt" "*Lst" "*App" "*Err" "*Foc" "*Post2" "*Stat" "*Ix" "*Chart" "*Cho"
 
 (allow (path "@img/") T)
@@ -110,7 +110,7 @@
    (and Flg (=: able)) )
 
 # Handle form actions
-(de action Prg
+(de action "Prg"
    (off "*Foc")
    (or *PRG "*Post2" (off "*Err"))
    (catch "stop"
@@ -118,7 +118,9 @@
          (*Post
             (unless (and *PRG (= *Form (car *Got)) (= *Get (cadr *Got)))
                (pushForm (cons)) )
-            (getForm)
+            (if *Port%
+               (let *JS NIL (_doForm))
+               (_doForm) )
             (off *PRG *Got) )
          (*PRG
             (with (postForm)
@@ -134,7 +136,7 @@
          (NIL
             (off *PRG)
             (pushForm (cons))
-            (getForm) ) ) ) )
+            (_doForm) ) ) ) )
 
 (de pushForm (L)
    (push '"*Lst" L)
@@ -142,9 +144,9 @@
    (setq *Get "*Cnt")
    (inc '"*Cnt") )
 
-(de getForm ()
+(de _doForm ()
    (one *Form)
-   (run Prg 2)
+   (run "Prg")
    (setq "*Stat"
       (cons
          (pair "*Err")
@@ -169,6 +171,8 @@
                         (when (: auto)
                            (prin "i" *Form '- (: auto 1 id) ': (: auto -1))
                            (=: auto) )
+                        (for S *Spans
+                           (prin '& (car S) '& (run (cdr S))) )
                         (for This (: gui)
                            (if (: id)
                               (prin '& "i" *Form '- @ '& (js> This))
@@ -176,14 +180,17 @@
                      (setq "*Post2" (cons *Get *Form *PRG))
                      (ht:Out *Chunked (prin T)) ) ) )
             (off *PRG) )
-         (cond
-            ((disallowed)
-               (msg *Url " not allowed")
-               (http404) )
-            ((= '@ (car Url))
-               ((intern (pack (cdr Url)))) )
-            ((tail '("." "l") Url)
-               (load *Url) ) ) ) ) )
+         (use @X
+            (cond
+               ((match '("-" @X "." "h" "t" "m" "l") Url)
+                  (try 'html> (extern (ht:Pack @X))) )
+               ((disallowed)
+                  (msg *Url " not allowed")
+                  (http404) )
+               ((= '@ (car Url))
+                  ((intern (pack (cdr Url)))) )
+               ((tail '("." "l") Url)
+                  (load *Url) ) ) ) ) ) )
 
 (de postForm ()
    (let? Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
@@ -201,41 +208,42 @@
 (de postGui ()
    (if "*Post2"
       (off *Gui "*Post2")
-      (while *Gui
-         (con
-            (assoc (caar *Gui) (val *PRG))
-            (cdr (pop '*Gui)) ) )
-      (job (: env)
-         (for This (: gui)
-            (cond
-               ((not (: id)) (setq "*Chart" This))
-               ((chk> This) (err @))
-               ((or (: rid) (: home able))
-                  (set> This (val> This) T) ) ) )
-         (for This (: gui)
-            (cond
-               ((: id))
-               ((chk> (setq "*Chart" This)) (err @))
-               ((or (: rid) (: home able))
-                  (set> This (val> This)) ) ) )
-         (if (pair "*Err")
-            (and *Lock (with (caar "*Err") (tryLock *Lock)))
-            (finally
-               (when *Lock
-                  (if (lock @)
-                     (=: able (off *Lock))
-                     (sync) ) )
-               (for This (: gui)
-                  (nond
-                     ((: id) (setq "*Chart" This))
-                     ((ge0 (: id))
-                        (let? A (assoc (: id) (val *PRG))
-                           (when (cdr A)
-                              (con A)
-                              (act> This) ) ) ) ) ) )
+      (let *Btn NIL
+         (for G *Gui
+            (and (lt0 (car G)) (setq *Btn (cdr G)))
+            (con (assoc (car G) (val *PRG)) (cdr G)) )
+         (off *Gui)
+         (job (: env)
             (for This (: gui)
-               (or (: id) (setq "*Chart" This))
-               (upd> This) ) ) ) ) )
+               (cond
+                  ((not (: id)) (setq "*Chart" This))
+                  ((chk> This) (err @))
+                  ((or (: rid) (: home able))
+                     (set> This (val> This) T) ) ) )
+            (for This (: gui)
+               (cond
+                  ((: id))
+                  ((chk> (setq "*Chart" This)) (err @))
+                  ((or (: rid) (: home able))
+                     (set> This (val> This)) ) ) )
+            (if (pair "*Err")
+               (and *Lock (with (caar "*Err") (tryLock *Lock)))
+               (finally
+                  (when *Lock
+                     (if (lock @)
+                        (=: able (off *Lock))
+                        (sync) ) )
+                  (for This (: gui)
+                     (nond
+                        ((: id) (setq "*Chart" This))
+                        ((ge0 (: id))
+                           (let? A (assoc (: id) (val *PRG))
+                              (when (cdr A)
+                                 (con A)
+                                 (act> This) ) ) ) ) ) )
+               (for This (: gui)
+                  (or (: id) (setq "*Chart" This))
+                  (upd> This) ) ) ) ) ) )
 
 (de err (Exe)
    (cond
@@ -258,6 +266,21 @@
                   (NIL (args))
                   (link '&) ) ) ) )
       (throw "stop") ) )
+
+# Actve <span> elements
+(de span Args
+   (def (car Args)
+      (list NIL
+         (list '<span>
+            (lit (cons 'id (car Args)))
+            (cons 'ht:Prin (cdr Args)) ) ) )
+   (push '*Spans Args) )
+
+(span expires
+   (pack
+      "TimeOut"
+      " "
+      (tim$ (% (+ (time) (/ (cadr (assoc -1 *Run)) 1000)) 86400)) ) )
 
 # Return chart property
 (de chart @
@@ -329,8 +352,8 @@
       (=: diaform T)
       (run Prg 1) ) )
 
-(de saveButton ()
-   (gui '(+Button) ,"Save") )
+(de saveButton (Exe)
+   (gui '(+Button) ,"Save" Exe) )
 
 (de closeButton (Lbl Exe)
    (when (get "*App" 'top)
@@ -1468,7 +1491,7 @@
 (dm show> ("Var"))
 
 (dm js> ()
-   (pack (ht:Fmt (: str) (: js))) )
+   (pack (ht:Fmt NIL (: str) (: js))) )
 
 (dm set> (Val Dn)
    (=: str Val) )

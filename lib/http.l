@@ -1,10 +1,10 @@
-# 29mar10abu
+# 27jun10abu
 # (c) Software Lab. Alexander Burger
 
-# *Home *Gate *Host *Port *Port1 *Http1 *Chunked
+# *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
 # *Sock *Agent *ContLen *MPartLim *MPartEnd "*HtSet"
 # *Post *Url *Timeout *SesId *ConId
-# *Cookies "*Cookies"
+# *Referer *Cookies "*Cookies"
 
 (default
    *HPorts 0
@@ -13,7 +13,7 @@
 (zero *Http1)
 
 (de *Mimes
-   (`(chop "html"))
+   (`(chop "html") "text/html; charset=utf-8")
    (`(chop "au") "audio/basic" 3600)
    (`(chop "wav") "audio/x-wav" 3600)
    (`(chop "mp3") "audio/x-mpeg" 3600)
@@ -37,6 +37,10 @@
       (if (assoc L *Mimes)
          (con @ (rest))
          (push '*Mimes (cons L (rest))) ) ) )
+
+(de mimetype (File)
+   (in (list 'file "--brief" "--mime" File)
+      (line T) ) )
 
 
 ### HTTP-Client ###
@@ -117,6 +121,7 @@
 (de app ()
    (unless *SesId
       (setq
+         *Port% (not *Gate)
          *SesId (pack (in "/dev/urandom" (rd 7)) "~")
          *Sock (port *HPorts '*Port) )
       (timeout *Timeout) ) )
@@ -130,13 +135,12 @@
 # Handle HTTP-Transaction
 (de http (S)
    (use (*Post L @U @H @X)
-      (off *Post *ContLen *Cookies "*Cookies" "*HtSet")
+      (off *Post *Port% *ContLen *Cookies "*Cookies" "*HtSet")
       (catch "http"
          (in S
             (cond
                ((not (setq L (line)))
-                  (close S)
-                  (task S)
+                  (task (close S))
                   (off S)
                   (throw "http") )
                ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
@@ -167,31 +171,33 @@
                                  ("C" "O" "N" "N" "E" "C" "T") ) ) )
                         (httpStat 501 "Method Not Implemented" "Allow: GET, POST")
                         (httpStat 400 "Bad Request") ) )
-                  (close S)
-                  (task S)
+                  (task (close S))
                   (off S)
                   (throw "http") ) )
             (if (<> *ConId *SesId)
                (if *ConId
                   (out S (http404))
-                  (close S)
-                  (task S)
+                  (task (close S))
                   (off S) )
                (setq
                   L (split @U "?")
                   @U (car L)
-                  L (mapcan
+                  L (extract
                      '((L)
-                        (ifn (cdr (setq L (split L "=")))
-                           (cons (htArg (car L)))
-                           (_htSet (car L) (htArg (cadr L)))
-                           NIL ) )
+                        (cond
+                           ((cdr (setq L (split L "=")))
+                              (_htSet (car L) (htArg (cadr L)))
+                              NIL )
+                           ((tail '`(chop ".html") (car L))
+                              (pack (car L)) )
+                           (T (htArg (car L))) ) )
                      (split (cadr L) "&") ) )
                (unless (setq *Url (ht:Pack @U))
                   (setq  *Url (car *Home)  @U (cdr *Home)) )
                (out S
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
+                        (and *SesId (timeout *Timeout))
                         (try 'html> (extern (ht:Pack @X))) )
                      ((= '@ (car @U))
                         (if (disallowed)
@@ -211,7 +217,7 @@
                            (apply script L *Url)
                            (http404) ) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
-      (and S (=0 *Http1) (close S) (task S)) ) )
+      (and S (=0 *Http1) (task (close S))) ) )
 
 (de _htHead ()
    (use (L @X @Y)
@@ -229,6 +235,8 @@
                      (*Gate @X)
                      ((index ":" @X) (head (dec @) @X))
                      (T @X) ) ) )
+            ((match '(~(chop "Referer: ") . @X) L)
+               (setq *Referer @X) )
             ((match '(~(chop "Cookie: ") . @X) L)
                (setq *Cookies
                   (mapcar
@@ -239,7 +247,7 @@
             ((match '(~(chop "User-Agent: ") . @X) L)
                (setq *Agent @X) )
             ((match '(~(chop "Content-@ength: ") . @X) L)
-               (setq *ContLen (format (pack @X))) )
+               (setq *ContLen (format @X)) )
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)
@@ -285,7 +293,7 @@
             (ht:Pack
                (ifn (match '(@V ":" @N ":" @Z) "Var")
                   "Var"
-                  (setq @N (format (pack @N)))
+                  (setq @N (format @N))
                   @V ) ) ) )
       (when @Z
          (setq Val
@@ -320,7 +328,7 @@
 (de htArg (Lst)
    (case (car Lst)
       ("$" (intern (ht:Pack (cdr Lst))))
-      ("+" (format (pack (cdr Lst))))
+      ("+" (format (cdr Lst)))
       ("-" (extern (ht:Pack (cdr Lst))))
       ("_" (mapcar htArg (split (cdr Lst) "_")))
       (T (ht:Pack Lst)) ) )
@@ -375,12 +383,13 @@
    (and *Tmp (pre? *Tmp File) (one Upd))
    (ifn (info File)
       (http404)
-      (http1 Typ Upd (stem (chop File) "/") Att)
-      (prinl "Content-Length: " (car @) "^M")
-      (prin "Last-Modified: ")
-      (httpDate (cadr @) (cddr @))
-      (prinl "^M")
-      (in File (echo)) ) )
+      (let I @
+         (http1 (or Typ (mimetype File)) Upd (stem (chop File) "/") Att)
+         (prinl "Content-Length: " (car I) "^M")
+         (prin "Last-Modified: ")
+         (httpDate (cadr I) (cddr I))
+         (prinl "^M")
+         (in File (echo)) ) ) )
 
 (de srcUrl (Url)
    (if (or (pre? "http:" Url) (pre? "https:" Url))
@@ -398,7 +407,7 @@
       (pack *SesId Url) ) )
 
 (de httpStat (N Str . @)
-   (prinl "HTTP/1.0 " N " " Str "^M")
+   (prinl "HTTP/1." *Http1 " " N " " Str "^M")
    (prinl "Server: PicoLisp^M")
    (while (args)
       (prinl (next) "^M") )

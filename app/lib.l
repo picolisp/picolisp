@@ -1,9 +1,9 @@
-# 22jan08abu
+# 08jun10abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
 (dm (ps> . +Ord) ()
-   (a4)
+   (a4 (pack "Order" (: nr)))
    (font (12 . "Helvetica"))
    (eps "img/7fach.eps" 340 150 75)
    (window 380 120 120 30

@@ -1,13 +1,14 @@
-# 03mar10abu
+# 05jun10abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
-(equ HEAP (* 1024 1024))   # Heap size in bytes
-(equ CELLS (/ HEAP 16))    # Number of cells in a single heap (65536)
-(equ ZERO (short 0))       # Short number '0'
-(equ ONE (short 1))        # Short number '1'
-(equ TOP (hex "10000"))    # Character top
-(equ DB1 (hex "1A"))       # Name of '{1}'
+(equ HEAP (* 1024 1024))      # Heap size in bytes
+(equ CELLS (/ HEAP 16))       # Number of cells in a single heap (65536)
+(equ STACK (* 4 1024 1024))   # Default stack segment size
+(equ ZERO (short 0))          # Short number '0'
+(equ ONE (short 1))           # Short number '1'
+(equ TOP (hex "10000"))       # Character top
+(equ DB1 (hex "1A"))          # Name of '{1}'
 
 # Pointer offsets
 (equ I 8)

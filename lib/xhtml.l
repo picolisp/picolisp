@@ -1,4 +1,4 @@
-# 02mar10abu
+# 20apr10abu
 # (c) Software Lab. Alexander Burger
 
 # *JS *Style *Menu *Tab *ID
@@ -204,7 +204,10 @@
 (de <img> (Src Alt Url DX DY)
    (and Url (prin "<a href=\"" (sesId Url) "\">"))
    (prin "<img src=\"" (sesId Src) "\"")
-   (and Alt (prin " alt=\"" Alt "\""))
+   (when Alt
+      (prin " alt=\"")
+      (ht:Prin Alt)
+      (prin "\"") )
    (and DX (prin " width=\"" DX "\""))
    (and DY (prin " height=\"" DY "\""))
    (and *Style (htStyle @))
@@ -512,7 +515,7 @@
    (prin
       "<form enctype=\"multipart/form-data\" action=\""
       (sesId Url)
-      (and *JS "\" onsubmit=\"return doPost(this)")
+      (and *JS "\" onkeypress=\"formKey(event)\" onsubmit=\"return doPost(this)")
       "\" method=\"post\">" )
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )

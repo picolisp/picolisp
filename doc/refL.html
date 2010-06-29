@@ -17,7 +17,7 @@ implements a "Line editor". When non-<code>NIL</code>, it should return a single
 symbol (string) upon execution.
 
 <pre><code>
-: (de *Led <u>(bye)</u>)
+: (de *Led "(bye)")
 # *Led redefined
 -> *Led
 : $                                    # Exit
@@ -103,9 +103,9 @@ number of characters in the name, and for lists it is the number of elements (or
 href="refS.html#size">size</a></code>.
 
 <pre><code>
-: (length <u>abc</u>)
+: (length "abc")
 -> 3
-: (length <u>äbc</u>)
+: (length "äbc")
 -> 3
 : (length 123)
 -> 3
@@ -126,18 +126,20 @@ pass <code>NIL</code> as a <code>sym</code> argument. See also <code><a
 href="refL.html#let?">let?</a></code>, <code><a
 href="refB.html#bind">bind</a></code>, <code><a
 href="refR.html#recur">recur</a></code>, <code><a
+href="refW.html#with">with</a></code>, <code><a
+href="refF.html#for">for</a></code>, <code><a
 href="refJ.html#job">job</a></code> and <code><a
 href="refU.html#use">use</a></code>.
 
 <pre><code>
 : (setq  X 123  Y 456)
 -> 456
-: (let X <u>Hello</u> (println X))
-<u>Hello</u>
--> <u>Hello</u>
-: (let (X <u>Hello</u> Y <u>world</u>) (prinl X <u> </u> Y))
+: (let X "Hello" (println X))
+"Hello"
+-> "Hello"
+: (let (X "Hello" Y "world") (prinl X " " Y))
 Hello world
--> <u>world</u>
+-> "world"
 : X
 -> 123
 : Y
@@ -196,16 +198,16 @@ href="refE.html#eof">eof</a></code>.
 <pre><code>
 : (line)
 abcdefghijkl
--> (<u>a</u> <u>b</u> <u>c</u> <u>d</u> <u>e</u> <u>f</u> <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
+-> ("a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l")
 : (line T)
 abcdefghijkl
--> <u>abcdefghijkl</u>
+-> "abcdefghijkl"
 : (line NIL 1 2 3)
 abcdefghijkl
--> ((<u>a</u>) (<u>b</u> <u>c</u>) (<u>d</u> <u>e</u> <u>f</u>) <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
+-> (("a") ("b" "c") ("d" "e" "f") "g" "h" "i" "j" "k" "l")
 : (line T 1 2 3)
 abcdefghijkl
--> (<u>a</u> <u>bc</u> <u>def</u> <u>g</u> <u>h</u> <u>i</u> <u>j</u> <u>k</u> <u>l</u>)
+-> ("a" "bc" "def" "g" "h" "i" "j" "k" "l")
 </code></pre>
 
 <dt><a name="lines"><code>(lines 'any ..) -> cnt</code></a>
@@ -214,7 +216,7 @@ abcdefghijkl
 href="refI.html#info">info</a></code>.
 
 <pre><code>
-: (lines <u>x.l</u>)
+: (lines "x.l")
 -> 11
 </code></pre>
 
@@ -266,7 +268,7 @@ files <code>sym</code> - and returns a list of diagnoses. See also <code><a
 href="refN.html#noLint">noLint</a></code>.
 
 <pre><code>
-: (more (lintAll <u>file1.l</u> <u>file2.l</u>))
+: (more (lintAll "file1.l" "file2.l"))
 ...
 </code></pre>
 
@@ -277,8 +279,8 @@ href="refC.html#cons">cons</a></code>.
 <pre><code>
 : (list 1 2 3 4)
 -> (1 2 3 4)
-: (list 'a (2 3) <u>OK</u>)
--> (a (2 3) <u>OK</u>)
+: (list 'a (2 3) "OK")
+-> (a (2 3) "OK")
 </code></pre>
 
 <dt><a name="lst/3"><code>lst/3</code></a>
@@ -328,7 +330,7 @@ href="refA.html#*Adr">*Adr</a></code>.
    (listen (port 6789) 60000) )  # Listen at port 6789 for max 60 seconds
 -> 4
 : *Adr
--> <u>127.0.0.1</u>
+-> "127.0.0.1"
 </code></pre>
 
 <dt><a name="lit"><code>(lit 'any) -> any</code></a>
@@ -370,7 +372,7 @@ href="refI.html#in">in</a></code>, <code><a href="refO.html#out">out</a></code>
 and <code><a href="refS.html#str">str</a></code>.
 
 <pre><code>
-: (load <u>lib.l</u> <u>-* 1 2 3</u>)
+: (load "lib.l" "-* 1 2 3")
 -> 6
 </code></pre>
 
@@ -381,9 +383,9 @@ href="ref.html#transient">transient</a></code> symbol with the same name as
 <code><a href="ref_.html#====">====</a></code>.
 
 <pre><code>
-: (loc <u>X</u> curry)
--> <u>X</u>
-: (== @ <u>X</u>)
+: (loc "X" curry)
+-> "X"
+: (== @ "X")
 -> NIL
 </code></pre>
 
@@ -402,10 +404,10 @@ href="refE.html#expTel">expTel</a></code> and and <code><a
 href="refM.html#money">money</a></code>.
 
 <pre><code>
-: (locale <u>DE</u> <u>de</u> <u>app/loc/</u>)
--> <u>Zip</u>
-: ,<u>Yes</u>
--> <u>Ja</u>
+: (locale "DE" "de" "app/loc/")
+-> "Zip"
+: ,"Yes"
+-> "Ja"
 </code></pre>
 
 <dt><a name="lock"><code>(lock ['sym]) -> cnt | NIL</code></a>
@@ -452,13 +454,13 @@ with a lowercase character. See also <code><a
 href="refL.html#lowc">lowc</a></code>.
 
 <pre><code>
-: (low? <u>a</u>)
--> <u>a</u>
-: (low? <u>A</u>)
+: (low? "a")
+-> "a"
+: (low? "A")
 -> NIL
 : (low? 123)
 -> NIL
-: (low? <u>.</u>)
+: (low? ".")
 -> NIL
 </code></pre>
 
@@ -473,8 +475,8 @@ href="refL.html#low?">low?</a></code>.
 <pre><code>
 : (lowc 123)
 -> 123
-: (lowc <u>ABC</u>)
--> <u>abc</u>
+: (lowc "ABC")
+-> "abc"
 </code></pre>
 
 <dt><a name="lt0"><code>(lt0 'any) -> num | NIL</code></a>

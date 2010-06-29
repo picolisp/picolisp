@@ -1,4 +1,4 @@
-# 08mar10abu
+# 19may10abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -469,7 +469,7 @@
       ld X A  # Keep 'free' in X
       ld C (DbFile)
       shl A (C II)  # Shift 'free'
-      sub (C VII) 1  # Decrement 'fluse'
+      dec (C VII)  # Decrement 'fluse'
       ld E A  # Read 'free' link
       ld C BLK
       call blkPeekCEZ  # into 'Buf'
@@ -499,7 +499,7 @@
    ret
 
 (code 'newIdEX_X)
-   sub E 1  # Zero-based
+   dec E  # Zero-based
    shl E 6  # 'dbFile' index
    cmp E (DBs)  # In Range?
    jge dbfErrX  # No
@@ -507,7 +507,7 @@
    ld (DbFile) E  # Set current
    null (DbLog)  # Transaction log?
    if z  # No
-      add (EnvProtect) 1  # Protect the operation
+      inc (EnvProtect)  # Protect the operation
    end
    call wrLockDb  # Write lock DB
    null (DbJnl)  # Journal?
@@ -527,7 +527,7 @@
    call rwUnlockDbA  # Unlock
    null (DbLog)  # Transaction log?
    if z  # No
-      sub (EnvProtect) 1  # Unprotect
+      dec (EnvProtect)  # Unprotect
    end
    ret
 
@@ -639,7 +639,7 @@
          pop A  # Retrieve count
          cmp A BLKTAG  # Max reached?
          if ne  # No
-            add A 1  # Increment count
+            inc A  # Increment count
          end
          call setAdrAZ  # Store in new current block
          add Z BLK  # Point to block data
@@ -650,7 +650,7 @@
       pop A  # Retrieve byte
    end
    ld (Z) B  # Store byte
-   add Z 1  # Increment pointer
+   inc Z  # Increment pointer
    ret
 
 # (pool ['sym1 ['lst] ['sym2] ['sym3]]) -> T
@@ -860,7 +860,7 @@
             else
                do
                   ld2 (Buf)  # Get file number (byte order doesn't matter)
-                  cmp A -1  # End marker?
+                  cmp A (hex "FFFF")  # End marker?
                   if eq  # Yes
                      cc fprintf((stderr) RolbLog)  # Rollback incomplete transaction
                      call rewindLog  # Rewind transaction log
@@ -876,7 +876,7 @@
                         null A  # Any?
                         jz jnlErrX  # No
                         ld2 (Buf)  # Get file number (byte order doesn't matter)
-                        cmp A -1  # End marker?
+                        cmp A (hex "FFFF")  # End marker?
                      while ne  # No
                         call dbfBuf_AF  # Read file number from 'Buf' to 'DbFile'
                         jc jnlErrX  # No local file
@@ -970,7 +970,7 @@
    end
    add B (char "@")  # Make ASCII letter
    ld (C) B  # Store in buffer
-   add C 1
+   inc C
    ret
 
 # (journal 'any ..) -> T
@@ -1053,7 +1053,7 @@
          call xCntEX_FE  # Eval object ID
          ld C E  # into C
          pop E  # Get file number
-         sub E 1  # Zero-based
+         dec E  # Zero-based
       end
       call extNmCE_X  # Build external symbol name
       call externX_E  # New external symbol
@@ -1075,7 +1075,7 @@
    cmp Y Nil  # Return only object ID?
    ldz E C  # Yes
    if ne  # No
-      add A 1  # File is zero-based
+      inc A  # File is zero-based
       shl A 4  # Make short file number
       or A CNT
       call cons_E  # Return (file . id)
@@ -1265,7 +1265,7 @@
                do
                   shr X 8  # More bytes?
                while nz  # Yes
-                  add A 1  # Increment count
+                  inc A  # Increment count
                loop
                ret
             end
@@ -1279,7 +1279,7 @@
             shr X 4  # Any significant bits in short name/number?
 40          if nz  # Yes
                do
-                  add A 1  # Increment count
+                  inc A  # Increment count
                   shr X 8  # More bytes?
                until z  # No
             end
@@ -1307,7 +1307,7 @@
       while ne  # No
          cmp X (S I)  # Circular?
          if eq  # Yes
-            add (S) 1  # Increment count once more
+            inc (S)  # Increment count once more
             break T
          end
          atom X  # Atomic CDR?
@@ -1513,7 +1513,7 @@
    link
    null (DbLog)  # Transaction log?
    if z  # No
-      add (EnvProtect) 1  # Protect the operation
+      inc (EnvProtect)  # Protect the operation
    end
    call wrLockDb  # Write lock DB
    null (DbJnl)  # Journal?
@@ -1566,7 +1566,7 @@
                   set (C (+ IV 1)) 1  # Set dirty flag
                   rcl Y 2  # Deleted?
                   if nc  # No
-                     add (C VII) 1  # Increment 'fluse'
+                     inc (C VII)  # Increment 'fluse'
                   end
                end
                pop Y
@@ -1867,7 +1867,7 @@
    call rwUnlockDbA  # Unlock all
    null (DbLog)  # Transaction log?
    if z  # No
-      sub (EnvProtect) 1  # Unprotect
+      dec (EnvProtect)  # Unprotect
    end
    ld E (DbFiles)  # Iterate DB files
    ld C (DBs)  # Count
@@ -1994,7 +1994,7 @@
    cmp E (X V)  # Greater or equal to mark vector size?
    if ge  # Yes
       push E  # Save byte position
-      add E 1  # New size
+      inc E  # New size
       ld Y E  # Keep in Y
       ld A (X VI)  # Get mark bit vector
       call allocAE_A  # Increase to new size
@@ -2038,7 +2038,7 @@
    ld X E
    ld E ((E CDR))  # Eval 'cnt'
    call evCntEX_FE
-   sub E 1  # File is zero-based
+   dec E  # File is zero-based
    shl E 6  # 'dbFile' index
    cmp E (DBs)  # Local file?
    jge dbfErrX  # No
@@ -2114,7 +2114,7 @@
    push E  # <S III> 'flg'
    push ZERO  # <S II> 'syms'
    push ZERO  # <S I> 'blks'
-   add (EnvProtect) 1  # Protect the operation
+   inc (EnvProtect)  # Protect the operation
    call wrLockDb  # Write lock DB
    null (DbJnl)  # Journal?
    if nz  # Yes
@@ -2190,7 +2190,7 @@
                end
                cmp X BLKTAG  # Less than maximum?
                if lt  # Yes
-                  add X 1  # Increment
+                  inc X  # Increment
                end
             loop
             pop X
@@ -2237,7 +2237,7 @@
    end
    ld A (hex "10000")  # Length 1
    call rwUnlockDbA  # Unlock
-   sub (EnvProtect) 1  # Unprotect
+   dec (EnvProtect)  # Unprotect
    pop Z
    pop Y
    pop X

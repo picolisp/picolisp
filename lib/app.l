@@ -1,11 +1,11 @@
-# 18sep09abu
+# 06apr10abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
 (de *Err
    (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
    (show This)
-   (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Get *ID)
+   (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)
       (println "X" (val "X")) )
    (and (get *Top 'focus) (println 'focus (get @ 'ix)))
    (for "X" (env)

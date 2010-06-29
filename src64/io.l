@@ -1,4 +1,4 @@
-# 17mar10abu
+# 11jun10abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -199,7 +199,7 @@
          setz  # Return 'z'
          ret
       end
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
       end
@@ -232,7 +232,7 @@
          setz  # Return 'z'
          ret
       end
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
       end
@@ -248,7 +248,7 @@
          call errno_A
          cmp A EINTR  # Interrupted?
          jne Retz  # No: Return 'z'
-         nul (Signal)  # Signal?
+         null (Signal)  # Signal?
          if nz  # Yes
             call sighandler0
          end
@@ -285,7 +285,7 @@
                call errno_A
                cmp A EINTR  # Interrupted?
                jne Retz  # No: Return 'z'
-               nul (Signal)  # Signal?
+               null (Signal)  # Signal?
                if nz  # Yes
                   call sighandler0
                end
@@ -301,7 +301,7 @@
       end
       cmp A EINTR  # Interrupted?
       jne Retz  # No: Return 'z'
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
       end
@@ -326,7 +326,7 @@
          cmp A EINTR  # Interrupted?
          jne wrBytesErr  # No
       end
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
       end
@@ -434,7 +434,7 @@
       jz retc  # EOF (c)
       ld A 0  # 'ix'
    end
-   add (Z I) 1  # Increment 'ix'
+   inc (Z I)  # Increment 'ix'
    add A Z  # Fetch byte (nc)
    ld B (A VII)  # from buffer
    ret  # nc
@@ -565,7 +565,7 @@
                call (GetBinZ_FB)  # Next byte?
                jc 90  # No
                call byteNumBCX_CX
-               sub E 1  # Decrement count
+               dec E  # Decrement count
             until z
             call (GetBinZ_FB)  # Next count?
             jc 90  # No
@@ -580,7 +580,7 @@
          call (GetBinZ_FB)  # Next byte?
          jc 90  # No
          call byteNumBCX_CX  # (B is zero (not DOT) if Zero)
-         sub E 1  # Decrement count
+         dec E  # Decrement count
       until z
 20    ld E (L I)  # Get result
       big X  # Big number?
@@ -600,7 +600,7 @@
                call (GetBinZ_FB)  # Next byte?
                jc 90  # No
                call byteSymBCX_CX
-               sub E 1  # Decrement count
+               dec E  # Decrement count
             until z
             call (GetBinZ_FB)  # Next count?
             jc 90  # No
@@ -615,7 +615,7 @@
          call (GetBinZ_FB)  # Next byte?
          jc 90  # No
          call byteSymBCX_CX
-         sub E 1  # Decrement count
+         dec E  # Decrement count
       until z
 30    ld X (L I)  # Get name
       pop A  # Get tag
@@ -676,7 +676,7 @@
    ld A E  # Output next byte
    call (PutBinBZ)
    shr E 8  # Shift to next
-   sub C 1  # Decrement count
+   dec C  # Decrement count
    ret
 
 # Binary print short number
@@ -694,7 +694,7 @@
       ld A E  # Next data byte
       shr E 8
       call (PutBinBZ)  # Output data byte
-      sub C 1  # More?
+      dec C  # More?
    until z  # No
    ret
 
@@ -734,7 +734,7 @@
       addc E E  # Any significant bits in short number?
       if nz  # Yes
          do
-            add A 1  # Increment count
+            inc A  # Increment count
             shr E 8  # More bytes?
          until z  # No
       end
@@ -748,7 +748,7 @@
          call (PutBinBZ)  # Output tag byte
          do
             call prByteCEXY  # Output next data bye
-            sub (S) 1  # More?
+            dec (S)  # More?
          until z  # No
       else
          sub A 63  # Adjust count
@@ -758,7 +758,7 @@
          push 63  # <S> and first 63 data bytes
          do
             call prByteCEXY  # Output next data bye
-            sub (S) 1  # More?
+            dec (S)  # More?
          until z  # No
          do
             cmp (S I) 255  # Count greater or equal 255?
@@ -768,7 +768,7 @@
             call (PutBinBZ)  # Output count byte
             do
                call prByteCEXY  # Output next data bye
-               sub (S) 1  # More?
+               dec (S)  # More?
             until z  # No
             sub (S I) 255  # Decrement counter
          loop
@@ -851,7 +851,7 @@
             shr E 4  # Any significant bits in short name?
             if nz  # Yes
                do
-                  add A 1  # Increment count
+                  inc A  # Increment count
                   shr E 8  # More bytes?
                until z  # No
             end
@@ -865,7 +865,7 @@
                do
                   call symByteCX_FACX  # Next data byte
                   call (PutBinBZ)  # Output it
-                  sub E 1  # More?
+                  dec E  # More?
                until z  # No
             else
                ld A (* 4 63)  # Output first tag byte
@@ -878,7 +878,7 @@
                do
                   call symByteCX_FACX  # Next data byte
                   call (PutBinBZ)  # Output it
-                  sub E 1  # More?
+                  dec E  # More?
                until z  # No
                do
                   cmp (S) 255  # Count greater or equal 255?
@@ -889,7 +889,7 @@
                   do
                      call symByteCX_FACX  # Next data byte
                      call (PutBinBZ)  # Output it
-                     sub E 1  # More?
+                     dec E  # More?
                   until z  # No
                   sub (S) 255  # Decrement counter
                loop
@@ -946,7 +946,7 @@
 # Family IPC
 (code 'putTellBZ 0)
    ld (Z) B  # Store byte
-   add Z 1  # Increment pointer
+   inc Z  # Increment pointer
    lea A ((TellBuf) (- PIPE_BUF 1))  # Reached (TellBuf + PIPE_BUF - 1)?
    cmp Z A
    jeq tellErr  # Yes
@@ -956,14 +956,14 @@
    ld (TellBuf) Z  # Set global buffer
    add Z 2  # 2 bytes space for count
    set (Z) BEG  # Begin a list
-   add Z 1
+   inc Z
    ret
 
 (code 'tellEndZ)
    push X
    push Y
    set (Z) END  # Close list
-   add Z 1
+   inc Z
    ld X (TellBuf)  # Get buffer
    ld E Z  # Calculate total size
    sub E X
@@ -1078,10 +1078,12 @@
          call symByteCX_FACX
       while nz
          ld (Z) B  # Store next byte
-         add Z 1
+         inc Z
          test Z 7  # Buffer full?
          if z  # Yes
             sub S 8  # Extend buffer
+            cmp S (StkLimit)  # Stack check
+            jlt stkErr
             movm (S) (S 8) (Z)
             sub Z 8  # Reset buffer pointer
          end
@@ -1107,14 +1109,14 @@
          cmp B (char "+")  # Plus?
          if eq
             ld (Z) B  # Store "+"
-            add Z 1
+            inc Z
             call symByteCX_FACX  # Second byte
          end
          cmp B (char "@")  # Home path?
-         if ne
+         if ne  # No
             do
                ld (Z) B  # Store byte
-               add Z 1
+               inc Z
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
@@ -1131,14 +1133,14 @@
                do
                   ld B (E)
                   ld (Z) B  # Store next byte
-                  add Z 1
+                  inc Z
                   test Z 7  # Buffer full?
                   if z  # Yes
                      sub S 8  # Extend buffer
                      movm (S) (S 8) (Z)
                      sub Z 8  # Reset buffer pointer
                   end
-                  add E 1
+                  inc E
                   nul (E)  # More?
                until z  # No
             end
@@ -1147,7 +1149,7 @@
                call symByteCX_FACX
             while nz
                ld (Z) B  # Store next byte
-               add Z 1
+               inc Z
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
@@ -1294,7 +1296,7 @@
                ld C (C)  # Next frame
                null C  # Any?
                jz badFdErrEX  # No
-               sub A 1  # Found frame?
+               dec A  # Found frame?
             until z  # Yes
             ld A (C I)  # Get fd from frame
          end
@@ -1325,7 +1327,7 @@
                call errno_A
                cmp A EINTR  # Interrupted?
                jne openErrEX  # No
-               nul (Signal)  # Signal?
+               null (Signal)  # Signal?
                if nz  # Yes
                   call sighandlerX
                end
@@ -1434,7 +1436,7 @@
                ld C (C)  # Next frame
                null C  # Any?
                jz badFdErrEX  # No
-               sub A 1  # Found frame?
+               dec A  # Found frame?
             until z  # Yes
             ld A (C I)  # Get fd from frame
          end
@@ -1465,7 +1467,7 @@
                call errno_A
                cmp A EINTR  # Interrupted?
                jne openErrEX  # No
-               nul (Signal)  # Signal?
+               null (Signal)  # Signal?
                if nz  # Yes
                   call sighandlerX
                end
@@ -1579,7 +1581,7 @@
             call errno_A
             cmp A EINTR  # Interrupted?
             jne openErrEX  # No
-            nul (Signal)  # Signal?
+            null (Signal)  # Signal?
             if nz  # Yes
                call sighandlerX
             end
@@ -1615,12 +1617,12 @@
             jz 90  # Return -1
             ld A 0  # 'ix'
          end
-         add (Z I) 1  # Increment 'ix'
+         inc (Z I)  # Increment 'ix'
          add A Z  # Fetch byte
          ld B (A VII)  # from buffer
          cmp B 10  # Newline?
-         if z  # Yes
-            add (Z IV) 1  # Increment line
+         if eq  # Yes
+            inc (Z IV)  # Increment line
          end
          zxt  # Extend into A
       else
@@ -1680,11 +1682,14 @@
    ld C (EnvParseC)
    call symByteCX_FACX  # Extract next byte
    if z  # Done
-      ld A (EnvParseEOF)  # Yes
-      ld B (hex "FF")  # Fill upper bits
-      ror A 8  # Get next eof byte in B
+      ld A (EnvParseEOF)  # Get parser trail bytes
+      shr A 8  # More bytes?
       ld (EnvParseEOF) A
-      sxt  # Extend B
+      if nz  # Yes
+         zxt  # Return next byte
+      else
+         dec A  # Return -1
+      end
    end
    ld (Chr) A
    ld (EnvParseX) X  # Save status
@@ -1711,8 +1716,8 @@
       ld A -1
    end
    ld (Chr) A  # Save in 'Chr'
-   ld (Y III) (EnvGet_A)  # Save 'get'
-   ld (EnvGet_A) getStdin_A  # Set new
+   ld (Y III) (Get_A)  # Save 'get'
+   ld (Get_A) getStdin_A  # Set new
    ld (Y) (EnvInFrames)  # Set link
    ld (EnvInFrames) Y  # Link frame
    ret
@@ -1722,8 +1727,8 @@
    shl A 3  # Vector index
    add A (OutFiles)  # Get OutFile
    ld (OutFile) (A)  # Store new
-   ld (Y III) (EnvPutB)  # Save 'put'
-   ld (EnvPutB) putStdoutB  # Set new
+   ld (Y III) (PutB)  # Save 'put'
+   ld (PutB) putStdoutB  # Set new
    ld (Y) (EnvOutFrames)  # Set link
    ld (EnvOutFrames) Y  # Link frame
    ret
@@ -1749,14 +1754,20 @@
             call errno_A
             cmp A EINTR  # Interrupted?
             jne closeErrX
-            nul (Signal)  # Signal?
+            null (Signal)  # Signal?
             if nz  # Yes
                call sighandler0
             end
          loop
       end
+   else
+      ld A (InFile)  # Current InFile?
+      null A
+      if nz  # Yes
+         ld (A III) (Chr)  # Save Chr in next
+      end
    end
-   ld (EnvGet_A) (C III)  # Retrieve 'get'
+   ld (Get_A) (C III)  # Retrieve 'get'
    ld C (C)  # Get link
    ld (EnvInFrames) C  # Restore InFrames
    null C  # Any?
@@ -1796,14 +1807,14 @@
             call errno_A
             cmp A EINTR  # Interrupted?
             jne closeErrX
-            nul (Signal)  # Signal?
+            null (Signal)  # Signal?
             if nz  # Yes
                call sighandler0
             end
          loop
       end
    end
-   ld (EnvPutB) (C III)  # Retrieve 'put'
+   ld (PutB) (C III)  # Retrieve 'put'
    ld C (C)  # Get link
    ld (EnvOutFrames) C  # Restore OutFrames
    null C  # Any?
@@ -1847,13 +1858,13 @@
             and B (hex "F")  # First byte 1110xxxx
             shl A 6  # xxxx000000
             push A
-            call (EnvGet_A)  # Get second byte
+            call (Get_A)  # Get second byte
             and B (hex "3F")  # 10xxxxxx
             or A (S)  # Combine
             shl A 6  # xxxxxxxxxx000000
             ld (S) A
          end
-         call (EnvGet_A)  # Get last byte
+         call (Get_A)  # Get last byte
          and B (hex "3F")  # 10xxxxxx
          or (S) A  # Combine
          pop A  # Get result
@@ -1872,13 +1883,13 @@
       do
          cmp B 32  # White space?
       while le  # Yes
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
          null A  # EOF?
          js ret  # Yes
       loop
       cmp A C  # Comment char?
    while eq  # Yes
-      call (EnvGet_A)
+      call (Get_A)
       cmp C (char "#")  # Block comment?
       jne 10  # No
       cmp B (char "{")
@@ -1888,22 +1899,22 @@
          while ne  #No
             null A  # EOF?
             js ret  # Yes
-            call (EnvGet_A)
+            call (Get_A)
          loop
       else  # Block comment
          do
-            call (EnvGet_A)
+            call (Get_A)
             null A  # EOF?
             js ret  # Yes
             cmp B (char "}")  # End of block comment?
             if eq
-               call (EnvGet_A)
+               call (Get_A)
                cmp B (char "#")
                break eq  # Yes
             end
          loop
       end
-      call (EnvGet_A)
+      call (Get_A)
    loop
    ret
 
@@ -1916,7 +1927,7 @@
       end
       cmp B (char "\^")  # Caret?
       if eq  # Yes
-         call (EnvGet_A)  # Skip '^'
+         call (Get_A)  # Skip '^'
          cmp B (char "?")  # Question-mark?
          if eq  # Yes
             ld B 127  # DEL
@@ -1928,11 +1939,11 @@
       end
       cmp B (char "\\")  # Backslash?
       jnz 10  # No
-      call (EnvGet_A)  # Skip '\'
+      call (Get_A)  # Skip '\'
       cmp B 10  # Newline?
       jnz 10  # No
       do
-         call (EnvGet_A)  # Skip white space
+         call (Get_A)  # Skip white space
          cmp B 32
          continue eq
          cmp B 9
@@ -1984,10 +1995,10 @@
       jeq 10  # Yes
       cmp B (char "\\")  # Backslash?
       if eq  # Yes
-         call (EnvGet_A)  # Get next char
+         call (Get_A)  # Get next char
       end
       call byteSymBCX_CX  # Pack char
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    loop
 10 ld X (L I)  # Get name
    ld A (Scl)  # Scale
@@ -2008,13 +2019,15 @@
 : DelimEnd
 
 (code 'rdList_E)
-   call (EnvGet_A)  # Skip paren
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
+   call (Get_A)  # Skip paren
    do
       ld C (char "#")
       call skipC_A  # and white space
       cmp B (char ")")  # Empty list?
       if eq  # Yes
-         call (EnvGet_A)  # Skip paren
+         call (Get_A)  # Skip paren
          ld E Nil  # Return NIL
          ret
       end
@@ -2033,7 +2046,7 @@
          ld E A  # Keep last cell in E
          jmp 10  # Exit
       end
-      call (EnvGet_A)  # Skip tilde
+      call (Get_A)  # Skip tilde
       ld A 0
       call readA_E  # Read expression
       link
@@ -2057,14 +2070,14 @@
       call skipC_A  # Skip white space
       cmp B (char ")")  # Done?
       if eq  # Yes
-         call (EnvGet_A)  # Skip paren
+         call (Get_A)  # Skip paren
          jmp 90  # Done
       end
       cmp B (char "]")  # Done?
       jz 90  # Yes
       cmp B (char ".")  # Dotted pair?
       if eq  # Yes
-         call (EnvGet_A)  # Skip dot
+         call (Get_A)  # Skip dot
          memb Delim "(DelimEnd-Delim)"  # Delimiter?
          if eq  # Yes
             ld C (char "#")
@@ -2086,7 +2099,7 @@
             call skipC_A  # Skip white space
             cmp B (char ")")  # Done?
             if eq  # Yes
-               call (EnvGet_A)  # Skip paren
+               call (Get_A)  # Skip paren
                jmp 90  # Done
             end
             cmp B (char "]")
@@ -2125,7 +2138,7 @@
             ld (E CDR) A  # Store in last cell
             ld E A
          else
-            call (EnvGet_A)  # Skip tilde
+            call (Get_A)  # Skip tilde
             push E
             ld A 0
             call readA_E  # Read expression
@@ -2178,7 +2191,7 @@
       if nz  # Yes
          cmp (Chr) (char "]")  # And super-parentheses?
          if eq  # Yes
-            call (EnvGet_A)  # Skip ']'
+            call (Get_A)  # Skip ']'
          end
       end
       jmp 99  # Return list
@@ -2188,12 +2201,12 @@
       call rdList_E  # Read it
       cmp (Chr) (char "]")  # Matching super-parentheses?
       jnz suparErrE  # Yes: Error
-      call (EnvGet_A)  # Else skip ']'
+      call (Get_A)  # Else skip ']'
       jmp 99
    end
    cmp B (char "'")  # Quote?
    if eq  # Yes
-      call (EnvGet_A)  # Skip "'"
+      call (Get_A)  # Skip "'"
       ld A 0
       call readA_E  # Read expression
       ld C E
@@ -2204,7 +2217,7 @@
    end
    cmp B (char ",")  # Comma?
    if eq  # Yes
-      call (EnvGet_A)  # Skip ','
+      call (Get_A)  # Skip ','
       ld A 0
       call readA_E  # Read expression
       ld (L I) E  # Save it
@@ -2221,7 +2234,7 @@
    end
    cmp B (char "`")  # Backquote?
    if eq  # Yes
-      call (EnvGet_A)  # Skip '`'
+      call (Get_A)  # Skip '`'
       ld A 0
       call readA_E  # Read expression
       ld (L I) E  # Save it
@@ -2230,10 +2243,10 @@
    end
    cmp B (char "\"")  # String?
    if eq  # Yes
-      call (EnvGet_A)  # Skip '"'
+      call (Get_A)  # Skip '"'
       cmp B (char "\"")  # Empty string?
       if eq  # Yes
-         call (EnvGet_A)  # Skip '"'
+         call (Get_A)  # Skip '"'
          ld E Nil  # Return NIL
          jmp 99
       end
@@ -2243,13 +2256,13 @@
       lea X (L I)  # Safe
       do
          call byteSymBCX_CX  # Pack char
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
          cmp B (char "\"")  # Done?
       while ne
          call testEscA_F
          jnc eofErr
       loop
-      call (EnvGet_A)  # Skip '"'
+      call (Get_A)  # Skip '"'
       ld X (L I)  # Get name
       ld Y Transient
       ld E 0  # No symbol yet
@@ -2258,10 +2271,10 @@
    end
    cmp B (char "{")  # External symbol?
    if eq  # Yes
-      call (EnvGet_A)  # Skip '{'
+      call (Get_A)  # Skip '{'
       cmp B (char "}")  # Empty?
       if eq  # Yes
-         call (EnvGet_A)  # Skip '}'
+         call (Get_A)  # Skip '}'
          call cons_E  # New symbol
          ld (E) ZERO  # anonymous
          or E SYM
@@ -2277,7 +2290,7 @@
          sub B (char "@")
          shl E 4  # Add to file number
          add E A
-         call (EnvGet_A)  # Get next char
+         call (Get_A)  # Get next char
       loop
       cmp B (char "0")  # Octal digit?
       jlt badInputErrB
@@ -2287,7 +2300,7 @@
       zxt
       ld C A  # Init object ID
       do
-         call (EnvGet_A)  # Get next char
+         call (Get_A)  # Get next char
          cmp B (char "}")  # Done?
       while ne  # No
          cmp B (char "0")  # Octal digit?
@@ -2298,7 +2311,7 @@
          shl C 3  # Add to object ID
          add C A
       loop
-      call (EnvGet_A)  # Skip '}'
+      call (Get_A)  # Skip '}'
       call extNmCE_X  # Build external symbol name
       call externX_E  # New external symbol
       jmp 99
@@ -2311,10 +2324,10 @@
    jeq badInputErrB  # Yes
    cmp B (char "\\")  # Backslash?
    if eq  # Yes
-      call (EnvGet_A)  # Get next char
+      call (Get_A)  # Get next char
    end
    ld Y A  # Save in Y
-   call (EnvGet_A)  # Next char
+   call (Get_A)  # Next char
    xchg A Y  # Get first char
    call rdAtomBYL_E  # Read atom
 99 drop
@@ -2325,7 +2338,7 @@
 (code 'readC_E)
    null (Chr)  # Empty channel?
    if z  # Yes
-      call (EnvGet_A)  # Fill 'Chr'
+      call (Get_A)  # Fill 'Chr'
    end
    cmp C (Chr)  # Terminator?
    if eq  # Yes
@@ -2346,7 +2359,7 @@
          jz 10
          cmp B (char "]")
       while eq  # Yes
-10       call (EnvGet_A)
+10       call (Get_A)
       loop
       pop E
    end
@@ -2355,17 +2368,17 @@
 (code 'tokenCE_E)  # X
    null (Chr)  # Look ahead char?
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    call skipC_A  # Skip white space and comments
    null A  # EOF?
    js retNull  # Yes
    cmp B (char "\"")  # String?
    if eq  # Yes
-      call (EnvGet_A)  # Skip '"'
+      call (Get_A)  # Skip '"'
       cmp B (char "\"")  # Empty string?
       if eq  # Yes
-         call (EnvGet_A)  # Skip '"'
+         call (Get_A)  # Skip '"'
          ld E Nil  # Return NIL
          ret
       end
@@ -2378,10 +2391,10 @@
       link
       do
          call byteSymBCX_CX  # Pack char
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
          cmp B (char "\"")  # Done?
          if eq  # Yes
-            call (EnvGet_A)  # Skip '"'
+            call (Get_A)  # Skip '"'
             break T
          end
          call testEscA_F
@@ -2401,7 +2414,7 @@
          link
          do
             call byteSymBCX_CX  # Pack char
-            call (EnvGet_A)  # Get next
+            call (Get_A)  # Get next
             cmp B (char ".")  # Dot?
             continue eq  # Yes
             cmp B (char "0")  # Or digit?
@@ -2436,7 +2449,7 @@
    end
    cmp B (char "\\")  # Backslash?
    if eq  # Yes
-      call (EnvGet_A)  # Use next char
+      call (Get_A)  # Use next char
       jmp 10
    end
    memb (S I) (S)  # Member of character set?
@@ -2448,7 +2461,7 @@
       link
       do
          call byteSymBCX_CX  # Pack char
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
          cmp B (char "a")  # Lower case letter?
          if ge
             cmp B (char "z")
@@ -2466,7 +2479,7 @@
          end
          cmp B (char "\\")  # Backslash?
          if eq  # Yes
-            call (EnvGet_A)  # Use next char
+            call (Get_A)  # Use next char
             continue T
          end
          memb (S IV) (S III)  # Member of character set?
@@ -2478,7 +2491,7 @@
       call getChar_A
       call mkCharA_A  # Return char
       ld E A
-      call (EnvGet_A)  # Skip it
+      call (Get_A)  # Skip it
    end
    ld S Z  # Drop buffer
    pop Z
@@ -2624,7 +2637,7 @@
             st4 (S)  # Store 'fd'
             ld A POLLIN  # Poll input
             st2 (S POLL_EVENTS)  # Store 'events'
-            add Z 1  # Increment count
+            inc Z  # Increment count
          end
       end
       ld Y (Run)  # Get '*Run'
@@ -2662,7 +2675,7 @@
                   st4 (S)  # Store 'fd'
                   ld A POLLIN  # Poll input
                   st2 (S POLL_EVENTS)  # Store 'events'
-                  add Z 1  # Increment count
+                  inc Z  # Increment count
                end
             end
          end
@@ -2683,7 +2696,7 @@
                   st4 (S)  # Store 'Hear'
                   ld A POLLIN  # Poll input
                   st2 (S POLL_EVENTS)  # Store 'events'
-                  add Z 1  # Increment count
+                  inc Z  # Increment count
                end
             end
          end
@@ -2695,7 +2708,7 @@
          st4 (S)  # Store 'Spkr'
          ld A POLLIN  # Poll input
          st2 (S POLL_EVENTS)  # Store 'events'
-         add Z 1  # Increment count
+         inc Z  # Increment count
       end
       ld Y (Child)  # Iterate children
       ld E (Children)  # Count
@@ -2709,7 +2722,7 @@
             st4 (S)
             ld A POLLIN  # Poll input
             st2 (S POLL_EVENTS)  # Store 'events'
-            add Z 1  # Increment count
+            inc Z  # Increment count
             null (Y IV)  # Child's buffer count?
             if nz  # Yes
                sub S POLLFD  # Create 'poll' structure
@@ -2717,11 +2730,13 @@
                st4 (S)
                ld A POLLOUT  # Poll output
                st2 (S POLL_EVENTS)  # Store 'events'
-               add Z 1  # Increment count
+               inc Z  # Increment count
             end
          end
          add Y VI  # Increment by sizeof(child)
       loop
+      cmp S (StkLimit)  # Stack check
+      jlt stkErrX
       call msec_A  # Get milliseconds
       ld E A  # into E
       do
@@ -2734,7 +2749,7 @@
             ld (Run) Nil  # Clear '*Run'
             jmp selectErrX
          end
-         nul (Signal)  # Signal?
+         null (Signal)  # Signal?
          if nz  # Yes
             call sighandlerX
          end
@@ -2939,7 +2954,7 @@
 20       ld Y (Y CDR)
       loop
       pop X  # Restore context
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandlerX
       end
@@ -3029,7 +3044,7 @@
          cmp A EINTR  # Interrupted?
          jne wrSyncErrX  # No
       end
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandlerX
       end
@@ -3216,7 +3231,7 @@
    ld A (Chr)  # Look ahead char?
    null A
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    null A  # EOF?
    js retNil  # Yes
@@ -3237,14 +3252,14 @@
       ld A (Chr)  # Look ahead char?
       null A
       if z  # No
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
       end
       null A  # EOF?
       if ns  # No
          call getChar_A
          call mkCharA_A  # Make char
          ld E A
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
       else
          ld E Nil
       end
@@ -3313,7 +3328,7 @@
       ld A (Chr)  # Look ahead char?
       null A
       if z  # No
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
       end
       null A  # EOF?
       jns RetNil  # No
@@ -3343,7 +3358,7 @@
    ld A (Chr)  # Look ahead char?
    null A
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    do
       null A  # EOF?
@@ -3355,10 +3370,10 @@
             add C (Z IV)  # Index
             cmp B (C)  # Bytes match?
             if eq  # Yes
-               add (Z IV) 1  # Increment index
+               inc (Z IV)  # Increment index
                nul (C 1)  # End of string?
                break nz  # No
-               call (EnvGet_A)  # Skip next input byte
+               call (Get_A)  # Skip next input byte
                ld E (Z II)  # Return matched symbol
                jmp 90
             end
@@ -3366,17 +3381,17 @@
             break z  # Yes
             lea C (Z (+ V 1))  # Offset pointer to second byte
             do
-               sub (Z IV) 1  # Decrement index
+               dec (Z IV)  # Decrement index
             while nz
                cmpn (Z V) (C) (Z IV)  # Compare stack buffer
             while nz
-               add C 1  # Increment offset
+               inc C  # Increment offset
             loop
          loop
          ld Z (Z)  # Next in chain
          null (Z)  # Any?
       until z  # No
-      call (EnvGet_A)  # Get next input byte
+      call (Get_A)  # Get next input byte
    loop
    ld E Nil  # Return NIL
 90 pop Z  # Clean up buffers
@@ -3402,7 +3417,7 @@
    ld A (Chr)  # Look ahead char?
    null A
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    null A  # EOF?
    if ns  # No
@@ -3421,7 +3436,7 @@
             push X  # <L I> Result list
             link
             do
-               call (EnvGet_A)  # Get next
+               call (Get_A)  # Get next
                null A  # EOF?
             while nsz  # No
                memb (S IV) (S III)  # Matched char?
@@ -3444,7 +3459,7 @@
             do
                call getChar_A  # Get next character
                call charSymACX_CX  # Insert
-               call (EnvGet_A)  # Get next
+               call (Get_A)  # Get next
                null A  # EOF?
             while nsz  # No
                memb (S IV) (S III)  # Matched char?
@@ -3472,7 +3487,7 @@
    if ne  # No
       cmp A 13  # Return?
       jne Ret  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
       cmp A 10  # Linefeed?
       jnz retz
    end
@@ -3484,7 +3499,7 @@
    ld A (Chr)  # Look ahead char?
    null A
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    call eolA_F  # End of line?
    jeq retNil  # Yes
@@ -3507,7 +3522,7 @@
          do
             call getChar_A  # Get next character
             call charSymACX_CX  # Insert
-            call (EnvGet_A)  # Get next
+            call (Get_A)  # Get next
             call eolA_F  # End of line?
          until eq  # Yes
          ld X (L I)  # Get result name
@@ -3530,9 +3545,9 @@
             pop C
             shr E 4  # Normalize
             do
-               sub E 1  # Decrement count
+               dec E  # Decrement count
             while nz
-               call (EnvGet_A)  # Get next
+               call (Get_A)  # Get next
                call eolA_F  # End of line?
                if eq  # Yes
                   ld X (Z)  # Get last sub-result
@@ -3549,7 +3564,7 @@
             ld Y (Y CDR)  # More args?
             atom Y
             jnz 10  # No
-            call (EnvGet_A)  # Get next
+            call (Get_A)  # Get next
             call eolA_F  # End of line?
             jeq 20  # Yes
             call cons_A  # New cell to top list
@@ -3581,9 +3596,9 @@
             eval  # Eval next arg
             shr E 4  # Normalize
             do
-               sub E 1  # Decrement count
+               dec E  # Decrement count
             while nz
-               call (EnvGet_A)  # Get next
+               call (Get_A)  # Get next
                call eolA_F  # End of line?
                jeq 20  # Yes
                call getChar_A  # Get next character
@@ -3597,7 +3612,7 @@
             ld Y (Y CDR)  # More args?
             atom Y
          while z  # Yes
-            call (EnvGet_A)  # Get next
+            call (Get_A)  # Get next
             call eolA_F  # End of line?
             jeq 20  # Yes
             call getChar_A  # Get next character
@@ -3613,7 +3628,7 @@
          loop
       end
 10    do
-         call (EnvGet_A)  # Get next
+         call (Get_A)  # Get next
          call eolA_F  # End of line?
       while ne  # No
          call getChar_A  # Get next character
@@ -3678,7 +3693,7 @@
    push (EnvParseX)  # Save old parser status
    push (EnvParseC)
    push (EnvParseEOF)
-   push (EnvGet_A)  # Save 'get' status
+   push (Get_A)  # Save 'get' status
    push (Chr)
    ld E (E TAIL)
    call nameE_E  # Get name
@@ -3687,14 +3702,13 @@
    link
    ld (EnvParseX) E  # Set new parser status
    ld (EnvParseC) 0
+   ld E 0
    null C  # Token?
    if z  # No
-      ld E (hex "FFFFFFFFFF5D0A00")  # linefeed, ']', EOF
-   else
-      ld E -1
+      ld E (hex "5D0A00")  # linefeed, ']', EOF
    end
    ld (EnvParseEOF) E
-   ld (EnvGet_A) getParse_A  # Set 'get' status
+   ld (Get_A) getParse_A  # Set 'get' status
    ld (Chr) 0
    or B B  # Skip?
    if nz  # Yes
@@ -3740,7 +3754,7 @@
    end
    drop
    pop (Chr)  # Retrieve 'get' status
-   pop (EnvGet_A)
+   pop (Get_A)
    pop (EnvParseEOF)  # Restore old parser status
    pop (EnvParseC)
    pop (EnvParseX)
@@ -3761,7 +3775,7 @@
       push (EnvParseX)  # Save old parser status
       push (EnvParseC)
       push (EnvParseEOF)
-      push (EnvGet_A)  # Save 'get' status
+      push (Get_A)  # Save 'get' status
       push (Chr)
       ld E (E TAIL)
       call nameE_E  # Get name
@@ -3770,15 +3784,15 @@
       link
       ld (EnvParseX) E  # Set new parser status
       ld (EnvParseC) 0
-      ld (EnvParseEOF) (hex "FFFFFFFFFFFF2000")  # Blank, EOF
-      ld (EnvGet_A) getParse_A  # Set 'get' status
+      ld (EnvParseEOF) (hex "2000")  # Blank, EOF
+      ld (Get_A) getParse_A  # Set 'get' status
       ld (Chr) 0
       call getParse_A  # Skip first char
       ld A 1  # Top level
       call readA_E  # Read expression
       drop
       pop (Chr)  # Retrieve 'get' status
-      pop (EnvGet_A)
+      pop (Get_A)
       pop (EnvParseEOF)  # Restore old parser status
       pop (EnvParseC)
       pop (EnvParseX)
@@ -3896,7 +3910,7 @@
          if nz  # Yes
             null (Chr)
             if z
-               call (EnvPutB)  # Output prompt
+               call (PutB)  # Output prompt
                call space
                call flushAll
             end
@@ -4044,6 +4058,7 @@
       ld E Nil  # Standard output
       call wrOpenEXY
       call pushOutFilesY
+      ld ((OutFile) II) 0  # Clear 'tty'
       ld (Run) Nil  # Switch off all tasks
       ld E ((X CDR))  # Get 'exe'
       eval  # Evaluate it
@@ -4109,11 +4124,11 @@
    while s  # No
       call errno_A
       cmp A EINTR  # Interrupted?
-      if nz  # No
+      if ne  # No
          ld E Nil  # Return NIL
          jmp 90
       end
-      nul (Signal)  # Signal?
+      null (Signal)  # Signal?
       if nz  # Yes
          call sighandlerX
       end
@@ -4141,15 +4156,26 @@
    eval
    ld C E  # Keep in E
    call xCntCX_FC  # Get fd
-   cc close(C)  # Close it
-   nul4  # OK?
-   ldnz E Nil
-   if z  # Yes
-      ld A C  # Close InFile
-      call closeInFileA
-      ld A C  # Close OutFile
-      call closeOutFileA
-   end
+   do
+      cc close(C)  # Close it
+      nul4  # OK?
+   while nz  # No
+      call errno_A
+      cmp A EINTR  # Interrupted?
+      if ne  # No
+         ld E Nil  # Return NIL
+         pop X
+         ret
+      end
+      null (Signal)  # Signal?
+      if nz  # Yes
+         call sighandlerX
+      end
+   loop
+   ld A C  # Close InFile
+   call closeInFileA
+   ld A C  # Close OutFile
+   call closeOutFileA
    pop X
    ret
 
@@ -4165,7 +4191,7 @@
    ld A (Chr)  # Look ahead char?
    null A
    if z  # No
-      call (EnvGet_A)  # Get next
+      call (Get_A)  # Get next
    end
    cmp E Nil  # Empty arg?
    if eq  # Yes
@@ -4174,8 +4200,8 @@
          do
             null A  # EOF?
          while ns  # No
-            call (EnvPutB)  # Output byte
-            call (EnvGet_A)  # Get next
+            call (PutB)  # Output byte
+            call (Get_A)  # Get next
          loop
          ld E TSym  # Return T
          pop Y
@@ -4202,7 +4228,7 @@
                pop X
                ret
             end
-            call (EnvGet_A)  # Get next
+            call (Get_A)  # Get next
          loop
       end
       do
@@ -4215,8 +4241,8 @@
             pop X
             ret
          end
-         call (EnvPutB)  # Output byte
-         call (EnvGet_A)  # Get next
+         call (PutB)  # Output byte
+         call (Get_A)  # Get next
       loop
       ld E TSym  # Return T
       pop Y
@@ -4256,7 +4282,7 @@
             add C (Z IV)  # Index
             cmp B (C)  # Bytes match?
             if eq  # Yes
-               add (Z IV) 1  # Increment index
+               inc (Z IV)  # Increment index
                nul (C 1)  # End of string?
                if nz  # No
                   null X  # Current max?
@@ -4275,12 +4301,12 @@
                   do  # Done?
                   while ge  # No
                      ld B (C)
-                     call (EnvPutB)  # Output bytes
-                     add C 1
+                     call (PutB)  # Output bytes
+                     inc C
                      sub E 1
                   loop
                end
-               call (EnvGet_A)  # Skip next input byte
+               call (Get_A)  # Skip next input byte
                ld E (Z II)  # Return matched symbol
                jmp 90
             end
@@ -4288,11 +4314,11 @@
             break z  # Yes
             lea C (Z (+ V 1))  # Offset pointer to second byte
             do
-               sub (Z IV) 1  # Decrement index
+               dec (Z IV)  # Decrement index
             while nz
                cmpn (Z V) (C) (Z IV)  # Compare stack buffer
             while nz
-               add C 1  # Increment offset
+               inc C  # Increment offset
             loop
             cmp X Z  # On current max?
             if eq  # Yes
@@ -4326,29 +4352,29 @@
             lea C (Y V)  # Buffer of output max
             do
                ld B (C)
-               call (EnvPutB)  # Output bytes
-               add C 1
-               sub E 1  # Done?
+               call (PutB)  # Output bytes
+               inc C
+               dec E  # Done?
             until z  # Yes
             pop E
             pop A
          end
-         call (EnvPutB)  # Output current byte
+         call (PutB)  # Output current byte
       else
          null Y  # Output max?
          if nz
             lea C (Y V)  # Buffer of output max
             sub E (X IV)  # Diff to current max index
             do  # Done?
-               while ge  # No
+            while ge  # No
                ld B (C)
-               call (EnvPutB)  # Output bytes
-               add C 1
+               call (PutB)  # Output bytes
+               inc C
                sub E 1
             loop
          end
       end
-      call (EnvGet_A)  # Get next input byte
+      call (Get_A)  # Get next input byte
    loop
    ld E Nil  # Return NIL
 90 pop Z  # Clean up buffers
@@ -4386,7 +4412,7 @@
       end
       add X E  # Buffer index
       ld (X) B  # Store byte
-      add E 1  # Increment ix
+      inc E  # Increment ix
       ld (Y I) E  # Store 'ix'
       cmp B 10  # Linefeed?
       if eq  # Yes
@@ -4408,22 +4434,22 @@
 
 (code 'newline)
    ld B 10
-   jmp (EnvPutB)
+   jmp (PutB)
 
 (code 'space)
    ld B 32
 (code 'envPutB)  # DLL hook
-   jmp (EnvPutB)
+   jmp (PutB)
 
 (code 'envGet_A)  # DLL hook
-   jmp (EnvGet_A)
+   jmp (Get_A)
 
 # Output decimal number
 (code 'outNumE)
    shr E 4  # Normalize
    if c  # Sign
       ld B (char "-")  # Output sign
-      call (EnvPutB)
+      call (PutB)
    end
    ld A E
 (code 'outWordA)
@@ -4436,7 +4462,7 @@
       pop A
    end
    add B (char "0")  # Make ASCII digit
-   jmp (EnvPutB)
+   jmp (PutB)
 
 (code 'prExtNmX)
    call fileObjX_AC  # Get file and object ID
@@ -4456,7 +4482,7 @@
       and B 7  # Get remainder
    end
    add B (char "0")  # Make ASCII digit
-   jmp (EnvPutB)
+   jmp (PutB)
 
 # Output A-O encoding
 (code 'outAoA 0)
@@ -4469,17 +4495,17 @@
       and B 15  # Get remainder
    end
    add B (char "@")  # Make ASCII letter
-   jmp (EnvPutB)
+   jmp (PutB)
 
 (code 'outStringS)  # C
    lea C (S I)  # Buffer above return address
 (code 'outStringC)
    do
       ld B (C)  # Next char
-      add C 1
+      inc C
       or B B  # Null?
    while ne  # No
-      call (EnvPutB)
+      call (PutB)
    loop
    ret
 
@@ -4496,7 +4522,7 @@
    do
       call symByteCX_FACX  # Next byte
    while nz
-      call (EnvPutB)  # Output byte
+      call (PutB)  # Output byte
    loop
    ret
 
@@ -4508,7 +4534,9 @@
    ret
 
 (code 'printE 0)
-   nul (Signal)  # Signal?
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
+   null (Signal)  # Signal?
    if nz  # Yes
       call sighandler0
    end
@@ -4527,7 +4555,7 @@
       zero X  # Any?
       if eq  # No
          ld B (char "$")  # $xxxxxx
-         call (EnvPutB)
+         call (PutB)
          shr E 4  # Normalize symbol pointer
          ld A E
          call outOctA
@@ -4537,10 +4565,10 @@
       sym (E TAIL)  # External symbol?
       if nz  # Yes
          ld B (char "{")  # {AB123}
-         call (EnvPutB)
+         call (PutB)
          call prExtNmX  # Print it
          ld B (char "}")
-         call (EnvPutB)
+         call (PutB)
          pop X
          ret
       end
@@ -4548,40 +4576,32 @@
       ld Y Intern
       call isInternEXY_F  # Internal symbol?
       if eq  # Yes
-         ld C 0
-         call symByteCX_FACX  # Get first byte
-         do
-            memb Delim "(DelimEnd-Delim)"  # Delimiter?
-            if eq  # Yes
-               push A  # Save char
-               ld B (char "\\")  # Print backslash
-               call (EnvPutB)
-               pop A
-            else
-               cmp B (char ".")  # Dot?
+         cmp X (hex "2E2")  # Dot?
+         if eq  # Yes
+            ld B (char "\\")  # Print backslash
+            call (PutB)
+            ld B (char ".")  # Print dot
+            call (PutB)
+         else
+            ld C 0
+            call symByteCX_FACX  # Get first byte
+            do
+               memb Delim "(DelimEnd-Delim)"  # Delimiter?
                if eq  # Yes
-                  call symByteCX_FACX  # Next byte?
-                  if z  # No
-                     ld B (char "\\")  # Print backslash
-                     call (EnvPutB)
-                     ld B (char ".")  # Print dot
-                     call (EnvPutB)
-                     break T  # Done
-                  end
                   push A  # Save char
-                  ld B (char ".")  # Print dot
-                  call (EnvPutB)
+                  ld B (char "\\")  # Print backslash
+                  call (PutB)
                   pop A
                end
-            end
-            call (EnvPutB)  # Put byte
-            call symByteCX_FACX  # Next byte
-         until z  # Done
+               call (PutB)  # Put byte
+               call symByteCX_FACX  # Next byte
+            until z  # Done
+         end
       else  # Else transient symbol
          ld Y 0  # 'tsm' flag in Y
-         cmp (Tsm) Nil  # Transient symbol markup?
-         if ne  # Yes
-            cmp (EnvPutB) putStdoutB  # to stdout?
+         atom (Tsm)  # Transient symbol markup?
+         if z  # Yes
+            cmp (PutB) putStdoutB  # to stdout?
             if eq  # No
                ld Y ((OutFile) II)  # and 'tty'? -> Y
             end
@@ -4589,7 +4609,7 @@
          null Y  # Transient symbol markup?
          if z  # No
             ld B (char "\"")
-            call (EnvPutB)
+            call (PutB)
          else
             ld E ((Tsm))  # Get CAR
             call outNameE  # Write transient symbol markup
@@ -4607,32 +4627,32 @@
             if eq  # Yes
 20             push A  # Save char
                ld B (char "\\")  # Escape with backslash
-               call (EnvPutB)
+               call (PutB)
                pop A
             else
 30             cmp B 127  # DEL?
                if eq  # Yes
                   ld B (char "\^")  # Print ^?
-                  call (EnvPutB)
+                  call (PutB)
                   ld B (char "?")
                else
                   cmp B 32  # White space?
                   if lt  # Yes
                      push A  # Save char
                      ld B (char "\^")  # Escape with caret
-                     call (EnvPutB)
+                     call (PutB)
                      pop A
                      or A 64  # Make printable
                   end
                end
             end
-            call (EnvPutB)  # Put byte
+            call (PutB)  # Put byte
             call symByteCX_FACX  # Next byte
          until z  # Done
          null Y  # Transient symbol markup?
          if z  # No
             ld B (char "\"")  # Final double quote
-            call (EnvPutB)
+            call (PutB)
          else
             ld E ((Tsm) CDR)  # Get CDR
             call outNameE  # Write transient symbol markup
@@ -4648,7 +4668,7 @@
       cmp E (E CDR)  # Circular?
       if ne  # No
          ld B (char "'")  # Print single quote
-         call (EnvPutB)
+         call (PutB)
          ld E (E CDR)  # And CDR
          call printE
          pop X
@@ -4657,7 +4677,7 @@
    end
    ld X E  # Keep list head
    ld B (char "(")  # Open paren
-   call (EnvPutB)
+   call (PutB)
    do
       push (E CDR)  # Save rest
       ld E (E)  # Print CAR
@@ -4669,14 +4689,14 @@
       if eq  # Yes
          call space  # Print " ."
          ld B (char ".")
-         call (EnvPutB)
+         call (PutB)
          break T
       end
       atom E  # Atomic tail?
       if nz  # Yes
          call space  # Print " . "
          ld B (char ".")
-         call (EnvPutB)
+         call (PutB)
          call space
          call printE  # and the atom
          break T
@@ -4684,7 +4704,7 @@
       call space  # Print space
    loop
    ld B (char ")")  # Closing paren
-   call (EnvPutB)
+   call (PutB)
    pop X
    ret
 
@@ -4696,7 +4716,9 @@
    ret
 
 (code 'prinE 0)
-   nul (Signal)  # Signal?
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
+   null (Signal)  # Signal?
    if nz  # Yes
       call sighandler0
    end
@@ -4721,10 +4743,10 @@
                call prNameX
             else
                ld B (char "{")  # {AB123}
-               call (EnvPutB)
+               call (PutB)
                call prExtNmX  # Print it
                ld B (char "}")
-               call (EnvPutB)
+               call (PutB)
             end
          end
       else
@@ -4908,6 +4930,8 @@
       add Y Z  # Point to last byte
       sub S E  # Buffer
    end
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    ld C (C)  # Get 'fd' of InFile
    ld X S  # Buffer pointer
    push E  # <S> Count
@@ -4922,7 +4946,7 @@
       ld B (Y)  # Next byte from buffer
       call byteNumBCX_CX
       add Y Z  # Add direction offset
-      sub (S) 1  # Decrement count
+      dec (S)  # Decrement count
    until z
    ld E (L I)  # Get result
    big E  # Bignum?

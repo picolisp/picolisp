@@ -1,4 +1,4 @@
-# 09sep09abu
+# 14may10abu
 # (c) Software Lab. Alexander Burger
 
 ### format ###
@@ -13,6 +13,7 @@
 (test 12345678900 (format "1234567,89" 4 ","))
 (test NIL (format "1.234.567,89" 4 ","))
 (test 12345678900 (format "1.234.567,89" 4 "," "."))
+(test 123456 (format (1 "23" (4 5 6))))
 
 
 ### + ###
@@ -144,6 +145,7 @@
 ### sqrt ###
 (test 8 (sqrt 64))
 (test 31 (sqrt 1000))
+(test 32 (sqrt 1000 T))
 (test 100000000000000000000
    (sqrt 10000000000000000000000000000000000000000) )
 (test NIL (sqrt NIL))

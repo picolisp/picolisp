@@ -1,11 +1,11 @@
-# 23mar10abu
+# 22jun10abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
    push (OutFile)  # Save output channel
    ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
-   push (EnvPutB)  # Save 'put'
-   ld (EnvPutB) putStdoutB  # Set new
+   push (PutB)  # Save 'put'
+   ld (PutB) putStdoutB  # Set new
    push C  # Save optional class
    ld C HashBlank  # Print comment
    call outStringC
@@ -18,7 +18,7 @@
    end
    ld C Redefined  # Print message
    call outStringC
-   pop (EnvPutB)  # Restore 'put'
+   pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    ret
 : HashBlank asciz "# "
@@ -235,7 +235,7 @@
    ld Y (EnvBind)  # and bindings
    do
       ld A (Y)  # End of bindings in A
-      add (L -II) 1  # Increment 'n'
+      inc (L -II)  # Increment 'n'
       sub (Y -I) (L -I)  # Decrement 'eswp' by 'cnt'
       if c  # First pass
          add Y I
@@ -247,7 +247,7 @@
          until eq  # No
          cmp X At  # Lambda frame?
          if eq  # Yes
-            sub C 1  # Decrement local 'cnt'
+            dec C  # Decrement local 'cnt'
             break z  # Done
          end
       end
@@ -279,7 +279,7 @@
                add Y II
                cmp Y A  # More?
             until eq  # No
-            sub C 1  # Traversed 'n' frames?
+            dec C  # Traversed 'n' frames?
          while nz  # No
             ld Y (A I)  # Bind link
             null Y  # More bindings?
@@ -307,21 +307,20 @@
       ld A C  # in A
       ld Y (EnvBind)  # Bindings
       do
-         sub A 1  # 'n-1' times
+         dec A  # 'n-1' times
       while nz
          ld Y ((Y) I)  # Follow link
       loop
-      ld A (Y)  # End of bindings in A
       add (Y -I) (L -I)  # Increment 'eswp' by 'cnt'
       if z  # Last pass
-         sub A II
+         lea A ((Y) -II)  # Last binding in A
          do
             xchg ((A)) (A I)  # Exchange next symbol value with saved value
             sub A II
             cmp A Y  # More?
          until lt  # No
       end
-      sub C 1  # Decrement 'n'
+      dec C  # Decrement 'n'
    until z  # Done
    pop Y
    drop
@@ -366,7 +365,7 @@
       ld Y (EnvBind)  # and bindings
       do
          ld A (Y)  # End of bindings in A
-         add (L -II) 1  # Increment 'n'
+         inc (L -II)  # Increment 'n'
          sub (Y -I) (L -I)  # Decrement 'eswp' by 'cnt'
          if c  # First pass
             add Y I
@@ -378,7 +377,7 @@
             until eq  # No
             cmp X At  # Lambda frame?
             if eq  # Yes
-               sub C 1  # Decrement local 'cnt'
+               dec C  # Decrement local 'cnt'
                break z  # Done
             end
          end
@@ -415,7 +414,7 @@
                   add Y II
                   cmp Y A  # More?
                until eq  # No
-               sub C 1  # Traversed 'n' frames?
+               dec C  # Traversed 'n' frames?
             while nz  # No
                ld Y (A I)  # Bind link
                null Y  # More bindings?
@@ -448,21 +447,20 @@
          ld A C  # in A
          ld Y (EnvBind)  # Bindings
          do
-            sub A 1  # 'n-1' times
+            dec A  # 'n-1' times
          while nz
             ld Y ((Y) I)  # Follow link
          loop
-         ld A (Y)  # End of bindings in A
          add (Y -I) (L -I)  # Increment 'eswp' by 'cnt'
          if z  # Last pass
-            sub A II
+            lea A ((Y) -II)  # Last binding in A
             do
                xchg ((A)) (A I)  # Exchange next symbol value with saved value
                sub A II
                cmp A Y  # More?
             until lt  # No
          end
-         sub C 1  # Decrement 'n'
+         dec C  # Decrement 'n'
       until z  # Done
       pop Y
       drop
@@ -667,6 +665,8 @@
    ld Y (C)  # Parameter list in Y
    ld Z (C CDR)  # Body in Z
    push (EnvBind)  # Build bind frame
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    link
    push (At)  # Bind At
    push At
@@ -826,6 +826,8 @@
          ld Z A  # Set class list
          ld E (A)  # Class symbol
          push A
+         cmp S (StkLimit)  # Stack check
+         jlt stkErr
          call methodEY_FCYZ  # Found method definition?
          pop A
          jeq ret  # 'z'
@@ -1043,6 +1045,8 @@
             push E  # object
             push X  # and list
             ld E (X)  # Recurse
+            cmp S (StkLimit)  # Stack check
+            jlt stkErr
             call isaCE_F  # Match?
             pop X
             pop E
@@ -1098,7 +1102,7 @@
    pop X
    ret
 
-# (meth 'obj ..) -> any
+# (meth 'obj ['any ..]) -> any
 (code 'doMeth 2)
    push X
    push Y
@@ -1330,6 +1334,8 @@
       end
       push X
       ld X (X)  # Recurse on superclass
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       call extraXY_FCYZ  # Found?
       pop X
       jeq ret  # Yes
@@ -1746,8 +1752,9 @@
    ld E ((E CDR))  # Get arg
    eval  # Eval it
    cmp E Nil  # NIL?
+   jeq retT  # Yes
+   ld (At) E
    ld E Nil
-   ldz E TSym  # Yes
    ret
 
 # (nil . prg) -> NIL
@@ -2167,7 +2174,7 @@
             ld Y X  # Loop body
             call loopY_FE
          while nz
-            sub (S) 1  # Decrement count
+            dec (S)  # Decrement count
          until z
          pop A  # Drop count
       else
@@ -2480,19 +2487,19 @@
    push Z
    push L
    ld X (E CDR)
-   ld E (X)  # Get tag
-   ld X (X CDR)  # X on body
-   eval  # Evaluate tag
-   sub S "(EnvEnd-Env)"  # Build catch frame
-   movn (S) (Env) "(EnvEnd-Env)"  # Save environment
+   ld E (X)  # Eval tag
+   eval
+   sub S "EnvEnd-Env"  # Build catch frame
+   save (Env) (EnvEnd) (S)  # Save environment
    push ZERO  # 'fin'
    push E  # 'tag'
    push (Catch)  # Link
    ld (Catch) S  # Close catch frame
-   prog X  # Run body
+   ld X (X CDR)  # Run body
+   prog X
 : caught
    pop (Catch)  # Restore catch link
-   add S "(EnvEnd-Env)+8+8"  # Clean up
+   add S (pack II "+(EnvEnd-Env)")  # Clean up
    pop L
    pop Z
    pop Y
@@ -2534,8 +2541,8 @@
 # (finally exe . prg) -> any
 (code 'doFinally 2)
    push X
-   sub S "(EnvEnd-Env)"  # Build catch frame
-   movn (S) (Env) "(EnvEnd-Env)"  # Save environment
+   sub S "EnvEnd-Env"  # Build catch frame
+   save (Env) (EnvEnd) (S)  # Save environment
    ld X (E CDR)
    push (X)  # 'exe' -> 'fin'
    ld X (X CDR)
@@ -2551,9 +2558,312 @@
    ld E (L I)  # Get result
    drop
    pop (Catch)  # Restore catch link
-   add S "(EnvEnd-Env)+8+8"  # Clean up
+   add S (pack II "+(EnvEnd-Env)")  # Clean up
    pop X
    ret
+
+# (co 'sym [. prg]) -> any
+(code 'doCo 2)
+   push X
+   ld X (E CDR)  # Get tag
+   call evSymX_E  # Evaluate to a symbol
+   atom (X CDR)  # 'prg'?
+   if z  # Yes
+      push Y
+      push Z
+      push L
+      sub S "EnvMid-EnvCo"  # Space for env
+      ld Y (Stack0)  # Search through stack segments
+      ld C (Stacks)  # Segment bitmask
+      do
+         sub Y (StkSize)  # Next segment
+         shr C 1  # In use?
+         if c  # Yes
+            cmp E (Y -I)  # Found tag?
+            continue ne  # No
+            null (Y -II)  # Already active?
+            jz reentErrEX  # Yes
+            push Y  # Resume coroutine: Save 'seg'
+            push (StkLimit)  # and 'lim'
+            push (EnvCo7)  # Link
+            ld (EnvCo7) S  # Close coroutine frame
+            ld Z S  # Point Z to main frame
+            save (EnvCo) (EnvMid) (Z III)  # Save environment
+: resumeCoroutine
+            ld S (Y -II)  # Restore stack pointer
+            ld (Y -II) 0  # Mark as active
+            lea A (Y 4096)  # Set stack limit
+            sub A (StkSize)
+            ld (StkLimit) A
+            load (EnvCo) (EnvMid) (Y (pack -II "-(EnvMid-EnvCo)"))  # Restore environment
+            ld X (EnvBind)  # Reversed bindings
+            ld C (Z (pack III "+(EnvBind-EnvCo)"))  # Main bindings
+            do
+               null X  # More reversed bindings?
+            while nz  # Yes
+               ld Y (X)  # Link address in Y
+               null (X -I)  # Env swap zero?
+               if z  # Yes
+                  lea A (Y -II)  # End of bindings in A
+                  do
+                     xchg ((A)) (A I)  # Exchange symbol value with saved value
+                     sub A II
+                     cmp A X  # More?
+                  until lt  # No
+               end
+               ld A (Y I)  # Get down link
+               ld (Y I) C  # Undo reversal
+               ld C X
+               ld X A
+            loop
+            ld (EnvBind) C  # Set local bindings
+            ld X EnvInFrames  # Pointer to input frames
+            ld C (Z (pack III "+(EnvInFrames-EnvCo)"))  # Local input frames
+            call joinLocalCX  # Join locals
+            ld X EnvOutFrames  # Pointer to output frames
+            ld C (Z (pack III "+(EnvOutFrames-EnvCo)"))  # Local output frames
+            call joinLocalCX  # Join locals
+            ld X EnvCtlFrames  # Pointer to control frames
+            ld C (Z (pack III "+(EnvCtlFrames-EnvCo)"))  # Local control frames
+            call joinLocalCX  # Join locals
+            ld X EnvMeth  # Pointer to method frames
+            ld C (Z (pack III "+(EnvMeth-EnvCo)"))  # Local method frames
+            call joinLocalCX  # Join locals
+            ld X EnvApply  # Local apply stack
+            do
+               null (X)  # Any?
+            while nz  # Yes
+               ld X ((X))  # Follow link
+            loop
+            ld (X) (Z (pack III "+(EnvApply-EnvCo)"))  # Join
+            pop X  # Get saved L
+            null X  # Any?
+            if nz  # Yes
+               ld Y (X)  # Pointer to link
+               do
+                  ld A (Y)  # Get link
+                  null A  # Found end?
+               while nz  # No
+                  ld Y (A)  # Next frame
+               loop
+               ld (Y) (Z (pack III "+(EnvMid-EnvCo)"))  # Link to main stack
+               ld L X
+            end
+            pop Z
+            pop Y
+            pop X
+            ret
+         end
+      until z
+      ld Y (Stack0)  # Find unused stack segment
+      ld Z 1  # New mask
+      ld C (Stacks)  # Segment bitmask
+      do
+         sub Y (StkSize)  # Next segment
+         test C Z  # Free?
+      while nz  # No
+         add Z Z  # Next bit
+         jc stkErrEX  # Overflow
+      loop
+      or (Stacks) Z  # Mark segment as used
+      push Y  # Save 'seg'
+      push (StkLimit)  # and 'lim'
+      push (EnvCo7)  # Link
+      ld (EnvCo7) S  # Close coroutine frame
+      save (EnvCo) (EnvMid) (S III)  # Save environment
+      ld (EnvMake) 0  # Init local 'make' env
+      ld (EnvYoke) 0
+      lea A (Y 4096)  # Calculate stack limit
+      sub A (StkSize)
+      ld (StkLimit) A
+      ld S Y  # Set stack pointer
+      push E  # Save 'tag'
+      push 0  # Mark 'stk' as active
+      sub S "EnvMid-EnvCo"  # Space for 'env'
+      ld X (X CDR)  # Run 'prg'
+      prog X
+      xor (Stacks) Z  # Not yielded: Mark segment as unused
+      ld S (EnvCo7)  # Restore stack pointer
+      load (EnvCo) (EnvMid) (S III)  # Restore environment
+      pop (EnvCo7)  # Restore coroutine link
+      pop (StkLimit)  # 'lim'
+      add S (pack I "+(EnvMid-EnvCo)")  # Clean up
+      pop L
+      pop Z
+      pop Y
+      pop X
+      ret
+   end
+   ld X (Stack0)  # Search through stack segments
+   ld C (Stacks)  # Segment bitmask
+   ld A 1
+   do
+      sub X (StkSize)  # Next segment
+      shr C 1  # In use?
+      if c  # Yes
+         cmp E (X -I)  # Found tag?
+         if eq  # Yes
+            null (X -II)  # Active?
+            ldz E Nil
+            if nz  # No
+               xor (Stacks) A  # Clear in segment bitmask
+               ld E TSym  # Return T
+            end
+            pop X
+            ret
+         end
+      end
+   while nz
+      add A A
+   loop
+   ld E Nil  # Return NIL
+   pop X
+   ret
+
+# (yield 'any ['sym]) -> any
+(code 'doYield 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Z (EnvCo7)  # Get main
+   null Z  # Any?
+   jz yieldErrX  # No
+   ld Y (E CDR)
+   ld E (Y)  # Eval 'any'
+   eval
+   link
+   push E  # <L I> Result
+   link
+   ld Y (Y CDR)  # Next arg
+   ld E (Y)
+   eval  # Eval optional 'sym'
+   ld Y 0  # Preload "no target"
+   cmp E Nil  # Any?
+   if ne  # Yes
+      ld Y (Stack0)  # Search for target coroutine
+      ld C (Stacks)  # Segment bitmask
+      do
+         sub Y (StkSize)  # Next segment
+         shr C 1  # In use?
+         if c  # Yes
+            cmp E (Y -I)  # Found tag?
+            continue ne  # No
+            null (Y -II)  # Already active?
+            jz reentErrEX  # Yes
+            break T
+         end
+         jz yieldErrEX
+      loop
+   end
+   ld E (L I)  # Get result
+   drop
+   null L  # Stack?
+   if nz  # Yes
+      ld C (Z (pack III "+(EnvMid-EnvCo)"))  # Main routine's link
+      cmp L C  # Local stack?
+      ldz L 0
+      if ne  # Yes
+         ld X (L)  # Pointer to link
+         do
+            ld A (X)  # Get link
+            null A  # Any?
+            jz 10  # No
+            cmp A C  # Reached main routine's link?
+         while ne  # No
+            ld X A  # Follow link
+         loop
+         ld (X) 0  # Clear link
+      end
+   end
+10 push L  # End of segment
+   push Y  # Save taget coroutine
+   ld X EnvApply  # Pointer to apply stack
+   do
+      ld A (X)
+      cmp A (Z (pack III "+(EnvApply-EnvCo)"))  # Local apply stack?
+   while ne  # Yes
+      lea X ((A) I)  # Get link
+   loop
+   ld (X) 0  # Cut off
+   ld X EnvMeth  # Pointer to method frames
+   ld C (Z (pack III "+(EnvMeth-EnvCo)"))  # Local method frames
+   call cutLocalCX  # Cut off locals
+   ld X EnvCtlFrames  # Pointer to control frames
+   ld C (Z (pack III "+(EnvCtlFrames-EnvCo)"))  # Local control frames
+   call cutLocalCX  # Cut off locals
+   ld X EnvOutFrames  # Pointer to output frames
+   ld C (Z (pack III "+(EnvOutFrames-EnvCo)"))  # Local output frames
+   call cutLocalCX  # Cut off locals
+   ld X EnvInFrames  # Pointer to input frames
+   ld C (Z (pack III "+(EnvInFrames-EnvCo)"))  # Local input frames
+   call cutLocalCX  # Cut off locals
+   ld C 0  # Back link
+   ld X (EnvBind)  # Reverse bindings
+   null X  # Any?
+   if nz  # Yes
+      do
+         cmp X (Z (pack III "+(EnvBind-EnvCo)"))  # Reached main routine's bindings?
+      while ne  # No
+         ld Y X  # Keep bind frame in Y
+         null (X -I)  # Env swap zero?
+         if z  # Yes
+            add X I  # X on bindings
+            do
+               xchg ((X)) (X I)  # Exchange symbol value with saved value
+               add X II
+               cmp X (Y)  # More?
+            until eq  # No
+         end
+         ld A (Y)  # A on bind link
+         ld X (A I)  # X on next frame
+         ld (A I) C  # Set back link
+         ld C Y
+      loop
+   end
+   ld (EnvBind) C  # Store back link in coroutine's env
+   pop Y  # Restore taget coroutine
+   ld X (Z II)  # Get 'seg'
+   ld (X -II) S  # Save stack pointer
+   save (EnvCo) (EnvMid) (X (pack -II "-(EnvMid-EnvCo)"))  # Save environment
+   null Y  # Target coroutine?
+   if z  # No
+      ld S Z  # Set stack pointer
+      load (EnvCo) (EnvMid) (Z III)  # Restore environment
+      pop (EnvCo7)  # Restore coroutine link
+      pop (StkLimit)  # 'lim'
+      add S (pack I "+(EnvMid-EnvCo)")  # Clean up
+      pop L
+      pop Z
+      pop Y
+      pop X
+      ret
+   end
+   ld (Z II) Y  # Set new 'seg'
+   jmp resumeCoroutine  # Resume
+
+(code 'cutLocalCX 0)
+   do
+      ld A (X)  # Get link
+      null A  # Any?
+      jz ret  # No
+      cmp A C  # More locals?
+      if eq  # No
+         ld (X) 0  # Cut off
+         ret
+      end
+      ld X A  # Next frame
+   loop
+
+(code 'joinLocalCX 0)
+   do
+      null (X)  # More locals?
+      if z  # No
+         ld (X) C  # Join
+         ret
+      end
+      ld X (X)  # Next frame
+   loop
 
 # (! . exe) -> any
 (code 'doBreak 2)
@@ -2565,7 +2875,7 @@
    eval/ret
 
 (code 'brkLoadE_E)
-   null (EnvBrk)  # Already in breakpoint?
+   null (Break)  # Already in breakpoint?
    if z  # No
       cc isatty(0)  # STDIN
       nul4  # on a tty?
@@ -2587,7 +2897,7 @@
             push At
             link
             ld (EnvBind) L  # Close bind frame
-            ld (EnvBrk) L  # Set break env
+            ld (Break) L  # Set break env
             push 0  # Init env swap
             sub S IV  # <L -V> OutFrame
             ld Y S
@@ -2610,7 +2920,7 @@
             pop (Up)  # and '^'
             pop L  # Restore link
             pop (EnvBind)  # Restore bind link
-            ld (EnvBrk) 0  # Leave breakpoint
+            ld (Break) 0  # Leave breakpoint
             pop Y
             pop X
          end
@@ -2623,7 +2933,7 @@
    push X
    push Y
    ld X E
-   null (EnvBrk)  # Breakpoint?
+   null (Break)  # Breakpoint?
    jz brkErrX  # No
    link
    push (Dbg)  # Save '*Dbg'
@@ -2631,7 +2941,7 @@
    push (Run)  # and '*Run'
    link
    ld (Dbg) Nil  # Switch off debug mode
-   ld C (EnvBrk)  # Get break env
+   ld C (Break)  # Get break env
    ld (At) (C II)  # Set '@'
    ld (Run) (C IV)  # and '*Run'
    call popOutFiles  # Leave debug I/O env
@@ -2646,7 +2956,7 @@
       eval
    end
    call pushInFilesY  # Restore debug I/O env
-   lea Y ((EnvBrk) -V)
+   lea Y ((Break) -V)
    call pushOutFilesY
    pop L  # Restore debug env
    pop (Run)
@@ -2670,12 +2980,12 @@
       push Z
       push (OutFile)  # Save output channel
       ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
-      push (EnvPutB)  # Save 'put'
-      ld (EnvPutB) putStdoutB  # Set new
+      push (PutB)  # Save 'put'
+      ld (PutB) putStdoutB  # Set new
       ld Y (X)  # Get 'sym|lst'
       ld X (X CDR)
       ld Z (X CDR)  # Get 'prg'
-      add (EnvTrace) 1  # Increment trace level
+      inc (EnvTrace)  # Increment trace level
       ld C (EnvTrace)  # Get it
       call traceCY  # Print trace information
       ld C trc1  # Print " :"
@@ -2710,19 +3020,19 @@
          end
       end
       call newline
-      ld (EnvPutB) (S)  # Restore 'put'
+      ld (PutB) (S)  # Restore 'put'
       ld (OutFile) (S I)  # and output channel
       prog Z  # Run 'prg'
       ld (OutFile) ((OutFiles) II)  # Set output channel again
-      ld (EnvPutB) putStdoutB
+      ld (PutB) putStdoutB
       ld C (EnvTrace)  # Get trace level
-      sub (EnvTrace) 1  # Decrement it
+      dec (EnvTrace)  # Decrement it
       call traceCY  # Print trace information
       ld C trc2  # Print " = "
       call outStringC
       call printE_E  # Print result
       call newline
-      pop (EnvPutB)  # Restore 'put'
+      pop (PutB)  # Restore 'put'
       pop (OutFile)  # and output channel
       pop Z
       pop Y
@@ -2843,7 +3153,7 @@
          call errno_A
          cmp A EINTR  # Interrupted?
          jne waitPidErrX  # No
-         nul (Signal)  # Signal?
+         null (Signal)  # Signal?
          if nz  # Yes
             call sighandlerX
          end
@@ -3109,7 +3419,7 @@
       do
          sub A VI  # Decrement pointer
          ld (A) 0  # Clear 'pid'
-         sub E 1  # Done?
+         dec E  # Done?
       until z  # Yes
       pop E  # Get 'pid'
    end

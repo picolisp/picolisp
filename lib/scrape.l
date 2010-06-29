@@ -1,15 +1,16 @@
-# 08apr09abu
+# 16may10abu
 # (c) Software Lab. Alexander Burger
 
-# *ScrHost *ScrPort *Title *Expect *Found
+# *ScrHost *ScrPort *ScrGate *Title *Expect *Found
 # *Links *Forms *Buttons *Fields *Errors
 
 # Scrape HTML form(s)
 (de scrape (Host Port How)
    (client (setq *ScrHost Host) (setq *ScrPort Port) How
-      (off *Links *Forms *Buttons *Fields *Errors)
+      (off *ScrGate *Links *Forms *Buttons *Fields *Errors)
       (while
          (from
+            "303 See Other"
             "<title>"
             "<base href=\"http://"
             "<a href=\""
@@ -25,15 +26,30 @@
             "<div class=\"err\">"
             *Expect )
          (case @
+            ("303 See Other"
+               (when (from "Location: http://")
+                  (let L (split (line) ':)
+                     (if (cdr L)
+                        (scrape
+                           (pack (pop 'L))
+                           (ifn (format (car (setq L (split (car L) '/))))
+                              80
+                              (pop 'L)
+                              @ )
+                           (glue '/ L) )
+                        (setq L (split (car L) '/))
+                        (scrape (pack (pop 'L)) 80 (glue '/ L)) ) ) ) )
             ("<title>"
                (setq *Title (ht:Pack (till "<"))) )
             ("<base href=\"http://"
-               (setq
-                  *ScrHost (rot (cdr (rot (split (till "\"") '/ ':))))
-                  *ScrPort (format (pack (pop '*ScrHost)))
-                  *ScrHost (pack *ScrHost) ) )
+               (let L (split (till "\"") ':)
+                  (if (cdr L)
+                     (setq
+                        *ScrHost (pack (pop 'L))
+                        *ScrPort (format (cdr (rot (car L)))) )
+                     (setq *ScrGate (pack (cdr (member '/ (car L))))) ) ) )
             ("<a href=\""
-               (let Url (till "\"" T)
+               (let Url (pack *ScrGate (till "\"" T))
                   (from ">")
                   (cond
                      ((till "<")
@@ -42,7 +58,8 @@
                         (from "alt=\"")
                         (queue '*Links (cons (ht:Pack (till "\"")) Url)) ) ) ) )
             (" action=\""
-               (queue '*Forms (list (till "\"" T))) )  # (action . fields)
+               (queue '*Forms  # (action . fields)
+                  (list (pack *ScrGate (till "\"" T))) ) )
             ("<input type=\"submit\" name=\""
                (let Nm (till "\"" T)
                   (from "value=\"")
@@ -96,7 +113,7 @@
          (setq
             L (split (nth (chop L) 8) '/ ':)
             *ScrHost (pack (pop 'L))
-            *ScrPort (ifn (format (pack (car L))) 80 (pop 'L) @)
+            *ScrPort (ifn (format (car L)) 80 (pop 'L) @)
             L (glue '/ L) ) )
       (scrape *ScrHost *ScrPort L) ) )
 
@@ -120,7 +137,7 @@
 (de enter (Fld Str Cnt)
    (con (field Fld Cnt) Str) )
 
-### Utilities ###
+# Inspect current page
 (de display ()
    (prinl "###############")
    (apply println (mapcar car *Links) 'click)
@@ -131,6 +148,7 @@
    (prinl)
    *Title )
 
+### Utility functions ###
 (de target (Lst Lbl Cnt)
    (cond
       ((num? Lbl)

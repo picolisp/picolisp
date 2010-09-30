@@ -137,19 +137,21 @@ assigned as values to be cached and used in subsequent calls. The third
 <code>sym|lst</code> argument is a return value specification, while all
 following arguments are the arguments to the native function.
 
-<p>The return value specification may either be one of the symbols
+<p>The return value specification may either be one of the atoms
 
 <pre><code>
    NIL   void
-   B     byte     # Byte (unsigned)
+   B     byte     # Byte (unsigned 8 bit)
    C     char     # Character (UTF-8, 1-3 bytes)
-   I     int      # Integer (32 bit)
-   N     long     # Long or pointer (64 bit)
+   I     int      # Integer (signed 32 bit)
+   N     long     # Long or pointer (signed 64 bit)
    S     string   # String (UTF-8)
+  -1.0   float    # Scaled fixpoint number
+  +1.0   double   # Scaled fixpoint number
 </code></pre>
 
-<p>or nested lists of these symbols with size specifications to denote arrays
-and structures, e.g.
+<p>or nested lists of these atoms with size specifications to denote arrays and
+structures, e.g.
 
 <pre><code>
    (N . 4)        # long[4];           -> (1 2 3 4)
@@ -157,11 +159,15 @@ and structures, e.g.
    (N (B . 7))    # {long; byte[7];}   -> (1234 (1 2 3 4 5 6 7))
 </code></pre>
 
-<p>Arguments can be numbers (passed as 64-bit integers), symbols (passed as
-strings), or a list with a variable in the CAR (to recieve the returned
+<p>Arguments can be numbers (passed as 64-bit integers), fixpoint numbers
+(passed as cons pairs consisting of a the value and the scale), symbols (passed
+as strings), or a list with a variable in the CAR (to recieve the returned
 structure data, ignored when the CAR is <code>NIL</code>), a cons pair for the
 size- and value-specification in the CADR, and an optional sequence of
 initialization bytes in the CDDR.
+
+<p>The number of fixpoint arguments is limited to six. For NaN or negative
+infinity <code>NIL</code>, and for positive infinity <code>T</code> is returned.
 
 <pre><code>
 : (native "@" "getenv" 'S "TERM")  # Same as (sys "TERM")
@@ -170,6 +176,10 @@ initialization bytes in the CDDR.
 : (native "@" "printf" 'I "abc%d%s^J" (+ 3 4) (pack "X" "Y" "Z"))
 abc7XYZ
 -> 8
+
+: (native "@" "printf" 'I "This is %.3f^J" (123456 . 1000))
+This is 123.456
+-> 16
 
 : (use Tim
    (native "@" "time" NIL '(Tim (8 B . 8)))  # time_t 8   # Get time_t structure
@@ -186,7 +196,7 @@ abc7XYZ
 <p>which accepts a symbol name as the first argument, and up to 5 numbers.
 <code>lisp()</code> calls that symbol with the five numbers, and expects a
 numeric return value. All numbers in this context should not be larger than 60
-bits (signed).
+bits (signed). See also <code><a href="refL.html#lisp">lisp</a></code>.
 
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
 <dd>Produces a list of at least <code>cnt</code> elements. When called without

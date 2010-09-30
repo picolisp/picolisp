@@ -1,4 +1,4 @@
-# 11jun10abu
+# 28sep10abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -224,7 +224,8 @@
       call errno_A
       cmp A EAGAIN  # No data available?
       if eq  # Yes
-         setc  # Return 'lt'
+         clrz  # Return 'lt'
+         setc
          ret
       end
       cmp A EINTR  # Interrupted?
@@ -271,12 +272,12 @@
       null A  # OK?
       if nsz  # Yes
          do
-            add X A  # Increment buffer pointer
             sub E A  # Decrement count
             if z  #  Got all
-               null A  # 'nsz'
+               null A  # Return 'gt' (A is non-zero)
                ret
             end
+            add X A  # Increment buffer pointer
             do
                cc read(C X E)  # Read into buffer
                null A  # OK?
@@ -296,7 +297,8 @@
       call errno_A
       cmp A EAGAIN  # No data available?
       if eq  # Yes
-         setc  # Return 'lt'
+         clrz  # Return 'lt'
+         setc
          ret
       end
       cmp A EINTR  # Interrupted?
@@ -318,21 +320,25 @@
       else
          call errno_A
          cmp A EBADF  # Bad file number?
-         jz retnz  # Return 'nz'
+         jeq retnz  # Return 'nz'
          cmp A EPIPE  # Broken pipe?
-         jz retnz  # Return 'nz'
+         jeq retnz  # Return 'nz'
          cmp A ECONNRESET  # Connection reset by peer?
-         jz retnz  # Return 'nz'
+         jeq retnz  # Return 'nz'
          cmp A EINTR  # Interrupted?
          jne wrBytesErr  # No
-      end
-      null (Signal)  # Signal?
-      if nz  # Yes
-         call sighandler0
+         null (Signal)  # Signal?
+         if nz  # Yes
+            call sighandler0
+         end
       end
    loop
 
 (code 'clsChildY 0)
+   cmp (Y) (Talking)  # Currently active?
+   if eq  # Yes
+      ld (Talking) 0  # Clear
+   end
    ld (Y) 0  # Clear 'pid'
    cc close((Y I))  # Close 'hear'
    cc close((Y II))  # and 'tell'
@@ -365,17 +371,17 @@
    end
    ld A (Y V)  # Get buffer
    add E C  # Increment count
-   add E 2  # plus count size
+   add E 4  # plus count size
    call allocAE_A  # Extend buffer
    ld (Y V) A  # Store
    ld E (Y IV)  # Get buffer count again
-   add E (Y IV)  # Point to new count
+   add E A  # Point to new count
    ld A C  # Store new
-   st2 (E)
-   add E 2  # Point to new data
+   st4 (E)
+   add E 4  # Point to new data
    movn (E) (X) C  # Copy data
-   add C 2  # Total new size
-   add (Y IV)  # Add to buffer count
+   add C 4  # Total new size
+   add (Y IV) C  # Add to buffer count
    ret
 
 (code 'flushA_F 0)
@@ -506,7 +512,7 @@
    if z  # No
       ld E A
       cmp B BEG  # Begin a list?
-      jnz retnc  # No: Return DOT or END (also in B)
+      jne retnc  # No: Return DOT or END (also in B)
       call binReadZ_FE  # Else read list
       jc ret
       push X
@@ -534,7 +540,7 @@
                cmp E END  # Circular list?
                ldz E (L I)  # Yes: Get first cell
                ld (X CDR) E  # Store in last cell
-               break T
+               break T  # 'nc' (E > END)
             end
          end
          call consE_C  # Append next cell
@@ -747,17 +753,17 @@
          shl A 2  # Adjust to tag byte
          call (PutBinBZ)  # Output tag byte
          do
-            call prByteCEXY  # Output next data bye
+            call prByteCEXY  # Output next data byte
             dec (S)  # More?
          until z  # No
       else
          sub A 63  # Adjust count
          push A  # <S I> Count
-         ld A (* 4 63)  # Output first tag byte
+         ld B (* 4 63)  # Output first tag byte
          call (PutBinBZ)
          push 63  # <S> and first 63 data bytes
          do
-            call prByteCEXY  # Output next data bye
+            call prByteCEXY  # Output next data byte
             dec (S)  # More?
          until z  # No
          do
@@ -767,7 +773,7 @@
             ld (S) A  # and the next 255 data bytes
             call (PutBinBZ)  # Output count byte
             do
-               call prByteCEXY  # Output next data bye
+               call prByteCEXY  # Output next data byte
                dec (S)  # More?
             until z  # No
             sub (S I) 255  # Decrement counter
@@ -778,7 +784,7 @@
          do
             sub (S) 1  # More?
          while ge  # Yes
-            call prByteCEXY  # Output next data bye
+            call prByteCEXY  # Output next data byte
          loop
       end
       pop A  # Drop count
@@ -790,8 +796,8 @@
    if nz  # Yes
       cmp E Nil  # NIL?
       if eq  # Yes
-         ld A NIX
-         jmp (PutBinBZ)  # Output NIX
+         ld B NIX  # Output NIX
+         jmp (PutBinBZ)
       end
       sym (E TAIL)  # External symbol?
       if nz  # Yes
@@ -826,8 +832,8 @@
       call nameX_X  # Get name
       zero X  # Any?
       if eq  # No
-         ld A NIX
-         call (PutBinBZ)  # Output NIX
+         ld B NIX  # Output NIX
+         call (PutBinBZ)
       else
          ld Y Intern
          call isInternEXY_F  # Internal symbol?
@@ -868,7 +874,7 @@
                   dec E  # More?
                until z  # No
             else
-               ld A (* 4 63)  # Output first tag byte
+               ld B (* 4 63)  # Output first tag byte
                or A C  # Combine with tag
                call (PutBinBZ)
                sub E 63  # Adjust count
@@ -911,36 +917,64 @@
    end
    push X
    push Y
-   ld X E  # Get expression
-   ld Y E  # in X and Y
-   ld A BEG  # Begin list
+   ld B BEG  # Begin list
    call (PutBinBZ)
-   do
-      ld E (X)  # Next item
-      call binPrintEZ
-      ld X (X CDR)  # More?
-      cmp X Nil
-   while ne  # Yes
-      cmp X Y  # Circular?
-      if eq  # Yes
-         ld A DOT  # Output dotted pair
-         call (PutBinBZ)
-         break T
-      end
-      atom X  # End of list?
-      if nz  # Yes
-         ld A DOT  # Output dotted pair
-         call (PutBinBZ)
-         ld E X  # Output atom
+   call circE_XYF  # Circular list?
+   if nz  # No
+      do
+         ld E (X)  # Next item
          call binPrintEZ
-         pop Y  # Return
-         pop X
-         ret
+         ld X (X CDR)  # NIL-terminated?
+         cmp X Nil
+      while ne  # No
+         atom X  # Atomic tail?
+         if nz  # Yes
+            ld B DOT  # Output dotted pair
+            call (PutBinBZ)
+            ld E X  # Output atom
+            call binPrintEZ
+            pop Y  # Return
+            pop X
+            ret
+         end
+      loop
+   else
+      cmp X Y  # Fully circular?
+      if eq  # Yes
+         do
+            ld E (X)  # Output CAR
+            call binPrintEZ
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B DOT  # Output dotted pair
+         call (PutBinBZ)
+      else
+         do  # Non-circular part
+            ld E (X)  # Output CAR
+            call binPrintEZ
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B DOT  # Output DOT+BEG
+         call (PutBinBZ)
+         ld B BEG
+         call (PutBinBZ)
+         do  # Circular part
+            ld E (X)  # Output CAR
+            call binPrintEZ
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B DOT  # Output DOT+END
+         call (PutBinBZ)
+         ld B END
+         call (PutBinBZ)
       end
-   loop
+   end
    pop Y
    pop X
-   ld A END  # End list
+   ld B END  # End list
    jmp (PutBinBZ)
 
 # Family IPC
@@ -954,22 +988,24 @@
 
 (code 'tellBegZ_Z 0)
    ld (TellBuf) Z  # Set global buffer
-   add Z 2  # 2 bytes space for count
+   add Z 4  # 4 bytes space (PID and count)
    set (Z) BEG  # Begin a list
    inc Z
    ret
 
-(code 'tellEndZ)
+(code 'tellEndAZ)
    push X
    push Y
    set (Z) END  # Close list
    inc Z
    ld X (TellBuf)  # Get buffer
+   st2 (X)  # Store PID
+   push A  # <S I> PID
    ld E Z  # Calculate total size
    sub E X
    ld A E  # Size in A
-   sub A 2  # without count
-   st2 (X)  # Store in buffer count
+   sub A 4  # without PID and count
+   st2 (X 2)  # Store in buffer count
    push A  # <S> Size
    ld C (Tell)  # File descriptor
    null C  # Any?
@@ -987,15 +1023,38 @@
    while ge  # Yes
       null (Y)  # 'pid'?
       if nz  # Yes
-         ld C (S)  # Get size
-         lea X ((TellBuf) 2)  # and data
-         call wrChildCXY  # Write to child
+         ld A (S I)  # Get PID
+         null A  # Any?
+         jz 10  # Yes
+         cmp A (Y)  # Same as 'pid'?
+         if eq  # Yes
+10          ld C (S)  # Get size
+            lea X ((TellBuf) 4)  # and data
+            call wrChildCXY  # Write to child
+         end
       end
       add Y VI  # Increment by sizeof(child)
    loop
-   pop A  # Drop size
+   add S II  # Drop size and PID
    pop Y
    pop X
+   ret
+
+(code 'unsync 0)  # X
+   ld C (Tell)  # File descriptor
+   null C  # Any?
+   if nz  # Yes
+      push 0  # Send zero
+      ld X S  # Get buffer
+      ld E 4  # Size (PID and count)
+      call wrBytesCEX_F  # Write buffer to pipe
+      if nz  # Not successful
+         cc close(C)  # Close 'Tell'
+         ld (Tell) 0  # Clear 'Tell'
+      end
+      add S I  # Drop buffer
+   end
+   set (Sync) 0  # Clear sync flag
    ret
 
 (code 'rdHear_FE)
@@ -2537,50 +2596,65 @@
    ret
 
 # Check if input channel has data
-(code 'inFilesA_FC 0)
-   ld C A
-   shl C 3  # Vector index
-   add C (InFiles)  # Get vector
-   ld C (C)  # Slot?
-   null C  # Any?
-   ret
-
 (code 'inReadyC_F 0)
-   cmp (C I) (C II)  # 'ix' < 'cnt'?
-   ret  # Yes: 'nz'
-
-(code 'inReadyA_FC 0)
-   ld C A
-   shl C 3  # Vector index
-   cmp C (InFDs)  # 'fd' >= 'InFDs'?
+   ld A C
+   shl A 3  # Vector index
+   cmp A (InFDs)  # 'fd' >= 'InFDs'?
    jge ret  # No
-   add C (InFiles)  # Get vector
-   ld C (C)  # Slot?
-   null C  # Any?
-   jz retnc  # No
-   cmp (C I) (C II)  # 'ix' < 'cnt'?
+   add A (InFiles)  # Get vector
+   ld A (A)  # Slot?
+   null A  # Any?
+   jz ret  # No
+   cmp (A I) (A II)  # Data in buffer ('ix' < 'cnt')?
    ret  # Yes: Return 'c'
 
-(code 'rdSetRdyASL_F 0)  # Z
-   ld C A
-   shl C 3  # Vector index
-   cmp C (InFDs)  # 'fd' >= 'InFDs'?
-   jge rdSetASL_F  # Yes
-   add C (InFiles)  # Get vector
-   ld C (C)  # Slot?
-   null C  # Any?
-   jz rdSetASL_F  # No
-   call inReadyC_F  # Data in buffer?
+(code 'fdSetCL_X 0)
+   ld X C  # Get fd
+   and C 7  # Shift count
+   ld B 1  # Bit mask
+   shl B C  # Shift it
+   shr X 3  # Offset
+   add X L  # Point to byte
+   ret
+
+(code 'fdRdSetCZL 0)  # X
+   cmp Z C  # Maintain maximum
+   ldc Z C
+   call fdSetCL_X
+   or (X (- (+ V FD_SET))) B  # FD_SET in RdSet
+   ret
+
+(code 'fdWrSetCZL 0)  # X
+   cmp Z C  # Maintain maximum
+   ldc Z C
+   call fdSetCL_X
+   or (X (- (+ V FD_SET FD_SET))) B  # FD_SET in WrSet
+   ret
+
+(code 'rdSetCL_F 0)  # X
+   call fdSetCL_X
+   test (X (- (+ V FD_SET))) B  # FD_SET in RdSet
+   ret  # Return 'nz'
+
+(code 'wrSetCL_F 0)  # X
+   call fdSetCL_X
+   test (X (- (+ V FD_SET FD_SET))) B  # FD_SET in WrSet
+   ret  # Return 'nz'
+
+(code 'rdSetRdyCL_F 0)  # X
+   ld A C
+   shl A 3  # Vector index
+   cmp A (InFDs)  # 'fd' >= 'InFDs'?
+   jge rdSetCL_F  # Yes
+   add A (InFiles)  # Get vector
+   ld A (A)  # Slot?
+   null A  # Any?
+   jz rdSetCL_F  # No
+   cmp (A I) (A II)  # Data in buffer ('ix' < 'cnt')?
    if z  # No
-      lea Z (L -III)  # Beyond last 'poll' structure
-      do
-         sub Z POLLFD  # Next structure
-         cmp Z S  # More structures?
-         jle retz  # No: 'z'
-         cmp4 (Z)  # Found 'fd'?
-      until eq  # Yes
-      ld2 (Z POLL_REVENTS)  # 'revents'
-      test A (| POLLIN POLLHUP)  # Ready?
+      push A
+      call rdSetCL_F
+      pop C
       if nz  # Yes
          call slowNbC_FA  # Try non-blocking read
          jge retnz
@@ -2588,30 +2662,6 @@
       end
    end
    ret
-
-(code 'rdSetASL_F 0)  # Z
-   lea Z (L -III)  # Beyond last 'poll' structure
-   do
-      sub Z POLLFD  # Next structure
-      cmp Z S  # More structures?
-      jle retz  # No: 'z'
-      cmp4 (Z)  # Found 'fd'?
-   until eq  # Yes
-   ld2 (Z POLL_REVENTS)  # 'revents'
-   test A (| POLLIN POLLHUP)  # Ready?
-   ret  # Return 'nz'
-
-(code 'wrSetASL_F 0)  # Z
-   lea Z (L -III)  # Beyond last 'poll' structure
-   do
-      sub Z POLLFD  # Next structure
-      cmp Z S  # More structures?
-      jle retz  # No: 'z'
-      cmp4 (Z)  # Found 'fd'?
-   until eq  # Yes
-   ld2 (Z POLL_REVENTS)  # 'revents'
-   test A POLLOUT  # Ready?
-   ret  # Return 'nz'
 
 (code 'waitFdCEX_A)
    push Y
@@ -2624,20 +2674,25 @@
    push C  # <L -I> File descriptor
    push E  # <L -II> Milliseconds
    push E  # <L -III> Timeout
+   sub S (+ II FD_SET FD_SET)  # <L -IV> Microseconds
+                               # <L -V> Seconds
+                               # <L - (V + FD_SET)> RdSet
+                               # <L - (V + FD_SET - FD_SET)> WrSet
+   cmp S (StkLimit)  # Stack check
+   jlt stkErrX
    do
-      ld Z 0  # Structure count
-      ld A (L -I)  # File descriptor
-      null A  # Positive?
+      ld B 0  # Zero fd sets
+      mset (S) (+ FD_SET FD_SET)
+      push X  # Save context
+      ld Z 0  # Maximum fd
+      ld C (L -I)  # File descriptor
+      null C  # Positive?
       if ns  # Yes
-         call inReadyA_FC  # Ready?
+         call inReadyC_F  # Ready?
          if c  # Yes
             ld (L -III) 0  # Timeout = 0
          else
-            sub S POLLFD  # Create 'poll' structure
-            st4 (S)  # Store 'fd'
-            ld A POLLIN  # Poll input
-            st2 (S POLL_EVENTS)  # Store 'events'
-            inc Z  # Increment count
+            call fdRdSetCZL
          end
       end
       ld Y (Run)  # Get '*Run'
@@ -2655,8 +2710,8 @@
             jeq 10  # Yes: Skip
             ld A (A CDR)
          loop
-         ld A (E)  # Get fd or timeout value
-         shr A 4  # Negative?
+         ld C (E)  # Get fd or timeout value
+         shr C 4  # Negative?
          if c  # Yes
             ld A ((E CDR))  # Get CADR
             shr A 4  # Normalize
@@ -2665,82 +2720,77 @@
                ld (L -III) A  # Set new timeout
             end
          else
-            cmp A (L -I)  # Different from argument-fd?
+            cmp C (L -I)  # Different from argument-fd?
             if ne  # Yes
-               call inReadyA_FC  # Ready?
+               call inReadyC_F  # Ready?
                if c  # Yes
                   ld (L -III) 0  # Timeout = 0
                else
-                  sub S POLLFD  # Create 'poll' structure
-                  st4 (S)  # Store 'fd'
-                  ld A POLLIN  # Poll input
-                  st2 (S POLL_EVENTS)  # Store 'events'
-                  inc Z  # Increment count
+                  call fdRdSetCZL
                end
             end
          end
 10       ld Y (Y CDR)
       loop
-      ld A (Hear)  # RPC listener?
-      null A
+      ld C (Hear)  # RPC listener?
+      null C
       if nz  # Yes
-         cmp A (L -I)  # Different from argument-fd?
+         cmp C (L -I)  # Different from argument-fd?
          if ne  # Yes
-            call inFilesA_FC  # Still open?
+            ld A C  # Still open?
+            shl A 3  # Vector index
+            add A (InFiles)  # Get vector
+            ld A (A)  # Slot?
+            null A  # Any?
             if nz  # Yes
-               call inReadyC_F  # Data in buffer?
+               cmp (A I) (A II)  # Data in buffer ('ix' < 'cnt')?
                if nz  # Yes
                   ld (L -III) 0  # Timeout = 0
                else
-                  sub S POLLFD  # Create 'poll' structure
-                  st4 (S)  # Store 'Hear'
-                  ld A POLLIN  # Poll input
-                  st2 (S POLL_EVENTS)  # Store 'events'
-                  inc Z  # Increment count
+                  call fdRdSetCZL
                end
             end
          end
       end
-      ld A (Spkr)  # Speaker open?
-      null A
+      ld C (Spkr)  # Speaker open?
+      null C
       if nz  # Yes
-         sub S POLLFD  # Create 'poll' structure
-         st4 (S)  # Store 'Spkr'
-         ld A POLLIN  # Poll input
-         st2 (S POLL_EVENTS)  # Store 'events'
-         inc Z  # Increment count
-      end
-      ld Y (Child)  # Iterate children
-      ld E (Children)  # Count
-      do
-         sub E VI  # More?
-      while ge  # Yes
-         null (Y)  # 'pid'?
-         if nz  # Yes
-            sub S POLLFD  # Create 'poll' structure
-            ld A (Y I)  # Store child's 'hear' fd
-            st4 (S)
-            ld A POLLIN  # Poll input
-            st2 (S POLL_EVENTS)  # Store 'events'
-            inc Z  # Increment count
-            null (Y IV)  # Child's buffer count?
+         call fdRdSetCZL
+         ld Y (Child)  # Iterate children
+         ld E (Children)  # Count
+         do
+            sub E VI  # More?
+         while ge  # Yes
+            null (Y)  # 'pid'?
             if nz  # Yes
-               sub S POLLFD  # Create 'poll' structure
-               ld A (Y II)  # Store child's 'tell' fd
-               st4 (S)
-               ld A POLLOUT  # Poll output
-               st2 (S POLL_EVENTS)  # Store 'events'
-               inc Z  # Increment count
+               ld C (Y I)  # Child's 'hear' fd
+               call fdRdSetCZL
+               null (Y IV)  # Child's buffer count?
+               if nz  # Yes
+                  ld C (Y II)  # Child's 'tell' fd
+                  call fdWrSetCZL
+               end
             end
-         end
-         add Y VI  # Increment by sizeof(child)
-      loop
-      cmp S (StkLimit)  # Stack check
-      jlt stkErrX
+            add Y VI  # Increment by sizeof(child)
+         loop
+      end
+      pop X  # Restore context
+      inc Z  # Maximum fd + 1
+      ld C 0  # Timeval structure pointer
+      ld A (L -III)  # Timeout value?
+      null A
+      if ns  # Yes
+         div 1000  # Calculate seconds (C is zero)
+         ld (L -V) A
+         ld A C  # and microseconds
+         mul 1000
+         ld (L -IV) A
+         lea C (L -V)
+      end
       call msec_A  # Get milliseconds
       ld E A  # into E
       do
-         cc poll(S Z (L -III))  # Wait for event or timeout
+         cc select(Z &(S FD_SET) S 0 C)  # Wait for event or timeout
          nul4  # OK?
       while s  # No
          call errno_A
@@ -2757,120 +2807,134 @@
       call msec_A  # Get milliseconds
       sub A E  # Time difference
       ld (L -III) A  # Save it
-      set (Flg) 0  # Guarantee flushed pipes
-      ld Y (Child)  # Iterate children
-      ld Z (Children)  # Count
-      push X  # Save context
-      do
-         sub Z VI  # More?
-      while ge  # Yes
-         null (Y)  # 'pid'?
-         if nz  # Yes
-            push Z  # Outer loop count
-            ld A (Y I)  # Get child's 'hear' fd
-            call rdSetASL_F  # Ready?
+      push X  # Save context again
+      null (Spkr)  # Speaker open?
+      if nz  # Yes
+         inc (EnvProtect)  # Protect child communication
+         ld Y (Child)  # Iterate children
+         ld Z (Children)  # Count
+         do
+            sub Z VI  # More?
+         while ge  # Yes
+            null (Y)  # 'pid'?
             if nz  # Yes
-               ld C (Y I)  # Get 'hear' fd again
-               ld E 2  # Size of count
-               ld X Buf  # Buffer pointer
-               call rdBytesNbCEX_F  # Read count
-               if ns  # Greater or equal zero
-                  if z
-                     call clsChildY  # Close child
-                     pop Z
-                     continue T
-                  end
-                  sub S PIPE_BUF  # <S II> Pipe buffer
-                  push Y  # <S> Outer child index
+               push Z  # Outer loop count
+               ld C (Y I)  # Get child's 'hear' fd
+               call rdSetCL_F  # Ready?
+               if nz  # Yes
                   ld C (Y I)  # Get 'hear' fd again
-                  ld2 (Buf)  # Get size
-                  ld E A
-                  lea X (S II)  # Buffer pointer
-                  call rdBytesCEX_F  # Read data?
-                  if nz  # Yes
-                     set (Flg) 1  # Still got data from pipe
-                     ld Y (Child)  # Iterate children
-                     ld Z (Children)  # Count
-                     do
-                        cmp Y (S)  # Same as outer loop child?
-                        if ne  # No
-                           null (Y)  # 'pid'?
-                           if nz  # Yes
-                              ld2 (Buf)  # Get size
-                              ld C A
-                              lea X (S II)  # and data
-                              call wrChildCXY  # Write to child
-                           end
-                        end
-                        add Y VI  # Increment by sizeof(child)
-                        sub Z VI  # More?
-                     until z  # No
-                  else
-                     call clsChildY  # Close child
-                     pop Y
-                     add S PIPE_BUF  # Drop 'tell' buffer
-                     pop Z
-                     continue T
-                  end
-                  pop Y
-                  add S PIPE_BUF  # Drop 'tell' buffer
-               end
-            end
-            ld A (Y II)  # Get child's 'tell' fd
-            call wrSetASL_F  # Ready?
-            if nz  # Yes
-               ld C (Y II)  # Get 'tell' fd again
-               ld X (Y V)  # Get buffer pointer
-               add X (Y III)  # plus buffer offset
-               ld2 (X)  # Get size
-               ld E A
-               add X 2  # Point to data (beyond size)
-               push E  # Keep size
-               call wrBytesCEX_F  # Write data?
-               pop E
-               if z  # Yes
-                  add E (Y III)  # Add size to buffer offset
-                  add E 2  # plus size of size
-                  ld (Y III) E  # New buffer offset
-                  add E E  # Twice the offset
-                  cmp E (Y IV)  # greater or equal to buffer count?
+                  ld E 4  # Size of PID and count
+                  ld X Buf  # Buffer pointer
+                  call rdBytesNbCEX_F  # Read count?
                   if ge  # Yes
-                     sub (Y IV) (Y III)  # Decrement count by offset
-                     if nz
-                        ld X (Y V)  # Get buffer pointer
-                        add X (Y III)  # Add buffer offset
-                        movn ((Y V)) (X) (Y IV)  # Copy data
-                        ld A (Y V)  # Get buffer pointer
-                        ld E (Y IV)  # and new count
-                        call allocAE_A  # Shrink buffer
-                        ld (Y V) A  # Store
+                     if z
+                        call clsChildY  # Close child
+                        jmp 20  # Continue
+                     end
+                     ld4 (Buf)  # PID and size?
+                     null A
+                     if z  # No
+                        cmp (Y) (Talking)  # Currently active?
+                        if eq  # Yes
+                           ld (Talking) 0  # Clear
+                        end
+                     else
+                        sub S PIPE_BUF  # <S I> Pipe buffer
+                        push Y  # <S> Outer child index
+                        ld C (Y I)  # Get 'hear' fd again
+                        ld2 (Buf 2)  # Get size
+                        ld E A
+                        lea X (S I)  # Buffer pointer
+                        call rdBytesCEX_F  # Read data?
+                        if nz  # Yes
+                           ld Y (Child)  # Iterate children
+                           ld Z (Children)  # Count
+                           do
+                              cmp Y (S)  # Same as outer loop child?
+                              if ne  # No
+                                 null (Y)  # 'pid'?
+                                 if nz  # Yes
+                                    ld2 (Buf)  # Get PID
+                                    null A  # Any?
+                                    jz 15  # Yes
+                                    cmp A (Y)  # Same as 'pid'?
+                                    if eq  # Yes
+15                                     ld2 (Buf 2)  # Get size
+                                       ld C A
+                                       lea X (S I)  # and data
+                                       call wrChildCXY  # Write to child
+                                    end
+                                 end
+                              end
+                              add Y VI  # Increment by sizeof(child)
+                              sub Z VI  # More?
+                           until z  # No
+                        else
+                           call clsChildY  # Close child
+                           pop Y
+                           add S PIPE_BUF  # Drop 'tell' buffer
+                           jmp 20  # Continue
+                        end
+                        pop Y
+                        add S PIPE_BUF  # Drop 'tell' buffer
                      end
                   end
-                  ld (Y III) 0  # Clear buffer offset
-               else
-                  call clsChildY  # Close child
                end
+               ld C (Y II)  # Get child's 'tell' fd
+               call wrSetCL_F  # Ready?
+               if nz  # Yes
+                  ld C (Y II)  # Get 'tell' fd again
+                  ld X (Y V)  # Get buffer pointer
+                  add X (Y III)  # plus buffer offset
+                  ld4 (X)  # Get size
+                  ld E A
+                  add X 4  # Point to data (beyond size)
+                  push E  # Keep size
+                  call wrBytesCEX_F  # Write data?
+                  pop E
+                  if z  # Yes
+                     add E (Y III)  # Add size to buffer offset
+                     add E 4  # plus size of size
+                     ld (Y III) E  # New buffer offset
+                     add E E  # Twice the offset
+                     cmp E (Y IV)  # greater or equal to buffer count?
+                     if ge  # Yes
+                        sub (Y IV) (Y III)  # Decrement count by offset
+                        if nz
+                           ld X (Y V)  # Get buffer pointer
+                           add X (Y III)  # Add buffer offset
+                           movn ((Y V)) (X) (Y IV)  # Copy data
+                           ld A (Y V)  # Get buffer pointer
+                           ld E (Y IV)  # and new count
+                           call allocAE_A  # Shrink buffer
+                           ld (Y V) A  # Store
+                        end
+                        ld (Y III) 0  # Clear buffer offset
+                     end
+                  else
+                     call clsChildY  # Close child
+                  end
+               end
+20             pop Z
             end
-            pop Z
-         end
-         add Y VI  # Increment by sizeof(child)
-      loop
-      nul (Flg)  # All pipes flushed?
-      if z  # Yes
-         ld A (Spkr)  # Speaker open?
-         null A
-         if nz  # Yes
-            call rdSetASL_F  # Ready?
+            add Y VI  # Increment by sizeof(child)
+         loop
+         null (Talking)  # Ready to sync?
+         if z  # Yes
+            ld C (Spkr)  # Get speaker
+            call rdSetCL_F  # Anybody?
             if nz  # Yes
                ld C (Spkr)  # Get fd
                ld E I  # Size of slot
                ld X Buf  # Buffer pointer
                call rdBytesNbCEX_F  # Read slot?
-               if nsz  # Yes
+               if gt  # Yes
                   ld Y (Child)  # Get child
                   add Y (Buf)  # in slot
-                  null (Y)  # 'pid'?
+                  ld A (Y)  # 'pid'?
+                  null A
                   if nz  # Yes
+                     ld (Talking) A  # Set to talking
                      ld C 2  # Size of 'TBuf'
                      ld X TBuf  # Buffer pointer
                      call wrChildCXY  # Write to child
@@ -2878,13 +2942,14 @@
                end
             end
          end
+         dec (EnvProtect)
       end
-      ld A (Hear)  # RPC listener?
-      null A
+      ld C (Hear)  # RPC listener?
+      null C
       if nz  # Yes
-         cmp A (L -I)  # Different from argument-fd?
+         cmp C (L -I)  # Different from argument-fd?
          if ne  # Yes
-            call rdSetRdyASL_F  # Ready?
+            call rdSetRdyCL_F  # Ready?
             if nz  # Yes
                call rdHear_FE  # Read expression?
                if nc  # Yes
@@ -2899,6 +2964,7 @@
                      drop
                   end
                else
+                  ld A (Hear)
                   call closeAX  # Close 'Hear'
                   ld A (Hear)
                   call closeInFileA
@@ -2919,11 +2985,11 @@
             atom A  # End of tasklist?
          while z  # No
             cmp E (A)  # Member?
-            jeq 20  # Yes: Skip
+            jeq 30  # Yes: Skip
             ld A (A CDR)
          loop
-         ld A (E)  # Get fd or timeout value
-         shr A 4  # Negative?
+         ld C (E)  # Get fd or timeout value
+         shr C 4  # Negative?
          if c  # Yes
             ld C (E CDR)  # Get CDR
             ld A (C)  # and CADR
@@ -2941,9 +3007,9 @@
                prog Z
             end
          else
-            cmp A (L -I)  # Different from argument-fd?
+            cmp C (L -I)  # Different from argument-fd?
             if ne  # Yes
-               call rdSetRdyASL_F  # Ready?
+               call rdSetRdyCL_F  # Ready?
                if nz  # Yes
                   ld (At) (E)  # Set to fd
                   ld Z (E CDR)  # Run body
@@ -2951,7 +3017,7 @@
                end
             end
          end
-20       ld Y (Y CDR)
+30       ld Y (Y CDR)
       loop
       pop X  # Restore context
       null (Signal)  # Signal?
@@ -2969,13 +3035,11 @@
       end
    while nz  # Milliseconds non-zero
       ld (L -III) A  # Set timeout
-      ld A (L -I)  # File descriptor
-      null A  # Positive?
+      ld C (L -I)  # File descriptor
+      null C  # Positive?
    while ns  # Yes
-      call rdSetRdyASL_F  # Ready?
-   while z  # No
-      lea S (L -III)  # Drop 'poll' structures
-   loop
+      call rdSetRdyCL_F  # Ready?
+   until nz  # Yes
    ld (At) (L II)  # Restore '@'
    ld A (L -II)  # Return milliseconds
    drop
@@ -3028,13 +3092,15 @@
    jz retNil  # Yes
    null (Hear)  # No 'hear' channel?
    jz retNil  # Yes
+   nul (Sync)  # Already synchronized?
+   jnz retT  # Yes
    push X
    ld X E
    ld E Slot  # Buffer pointer
    ld C I  # Count
    do
       cc write((Mic) E C)  # Write 'Slot' to 'Mic'
-      nul4  # OK?
+      null A  # OK?
       if ns  # Yes
          sub C A  # Decrement count
          break z  # Done
@@ -3043,15 +3109,15 @@
          call errno_A
          cmp A EINTR  # Interrupted?
          jne wrSyncErrX  # No
-      end
-      null (Signal)  # Signal?
-      if nz  # Yes
-         call sighandlerX
+         null (Signal)  # Signal?
+         if nz  # Yes
+            call sighandlerX
+         end
       end
    loop
    set (Sync) 0  # Clear sync flag
    do
-      ld C -1  # No fd
+      ld C -1  # No file descriptor
       ld E C  # Wait infinite
       call waitFdCEX_A  # Wait for events
       nul (Sync)  # Synchronized?
@@ -3092,7 +3158,7 @@
    pop X
    ret
 
-# (tell 'sym ['any ..]) -> any
+# (tell ['cnt] 'sym ['any ..]) -> any
 (code 'doTell 2)
    ld A (Tell)  # RPC?
    or A (Children)
@@ -3100,26 +3166,56 @@
    push X
    push Y
    push Z
-   push (TellBuf)  # Save current 'tell' env
-   sub S PIPE_BUF  # New 'tell' buffer
-   ld Z S  # Buffer pointer
-   call tellBegZ_Z  # Start 'tell' message
    ld X (E CDR)  # Args
-   do
-      ld E (X)  # Eval next
+   atom X  # Any?
+   if nz  # No
+      call unsync  # Release sync
+      ld E Nil  # Return NIL
+   else
+      push (TellBuf)  # Save current 'tell' env
+      sub S PIPE_BUF  # New 'tell' buffer
+      ld Z S  # Buffer pointer
+      ld E (X)  # Eval first argument
       eval
-      ld Y E  # Keep result
-      call prTellEZ  # Print to 'tell'
-      ld X (X CDR)  # More args?
-      atom X
-   until nz  # No
-   call tellEndZ  # Close 'tell'
-   ld E Y  # Get result
-   add S PIPE_BUF  # Drop 'tell' buffer
-   pop (TellBuf)
+      num E  # PID argument?
+      if z  # No
+         push 0  # Send to all
+      else
+         shr E 4  # Normalize PID
+         push E  # Save it
+         ld X (X CDR)  # Next arg
+         ld E (X)  # Eval
+         eval
+      end
+      call tellBegZ_Z  # Start 'tell' message
+      do
+         ld Y E  # Keep result
+         call prTellEZ  # Print to 'tell'
+         ld X (X CDR)  # More args?
+         atom X
+      while z  # Yes
+         ld E (X)  # Eval next
+         eval
+      loop
+      pop A  # Get PID
+      call tellEndAZ  # Close 'tell'
+      add S PIPE_BUF  # Drop 'tell' buffer
+      pop (TellBuf)
+      ld E Y  # Get result
+   end
    pop Z
    pop Y
    pop X
+   ret
+
+(code 'fdSetC_Y 0)
+   ld Y (C)  # Get fd
+   and Y 7  # Shift count
+   ld B 1  # Bit mask
+   shl B Y  # Shift it
+   ld Y (C)  # Get fd again
+   shr Y 3  # Offset
+   add Y S  # Pointer to byte minus I
    ret
 
 # (poll 'cnt) -> cnt | NIL
@@ -3137,18 +3233,26 @@
    shl C 3  # Vector index
    cmp C (InFDs)  # 'fd' >= 'InFDs'?
    jge badFdErrEX  # Yes
-   call inFilesA_FC  # Readable input file?
+   ld C A  # Readable input file?
+   shl C 3  # Vector index
+   add C (InFiles)  # Get vector
+   ld C (C)  # Slot?
+   null C  # Any?
    ldz E Nil  # No: Return NIL
    if nz
+      push Y
+      sub S (+ II FD_SET)  # <S FD_SET> Timeval, <S> RdSet
       do
-         call inReadyC_F  # Data in buffer?
+         cmp (C I) (C II)  # Data in buffer ('ix' < 'cnt')?
       while z  # No
-         sub S POLLFD  # Create 'poll' structure
-         st4 (S)  # Store 'fd'
-         ld A POLLIN  # Poll input
-         st2 (S POLL_EVENTS)  # Store 'events'
+         ld B 0  # Zero fd set and timeval
+         mset (S) (+ II FD_SET)
+         call fdSetC_Y
+         or (Y I) B  # FD_SET in RdSet
+         ld Y (C)  # fd + 1
+         inc Y
          do
-            cc poll(S 1 0)  # Check
+            cc select(Y S 0 &(S FD_SET))  # Check
             nul4  # OK?
          while s  # No
             call errno_A
@@ -3158,13 +3262,14 @@
                jmp selectErrX
             end
          loop
-         ld2 (S POLL_REVENTS)  # 'revents'
-         add S POLLFD  # Drop 'poll' structure
-         test A (| POLLIN POLLHUP)  # Ready?
+         call fdSetC_Y
+         test (Y I) B  # FD_SET in RdSet
          ldz E Nil  # No: Return NIL
       while nz
          call slowNbC_FA  # Try non-blocking read
       until ge
+      add S (+ II FD_SET)
+      pop Y
    end
    pop X
    ret
@@ -4231,19 +4336,23 @@
             call (Get_A)  # Get next
          loop
       end
-      do
-         sub E 1  # Decrement second 'cnt'
-      while ns
-         null A  # EOF?
-         if s  # Yes
-            ld E Nil  # Return NIL
-            pop Y
-            pop X
-            ret
-         end
-         call (PutB)  # Output byte
-         call (Get_A)  # Get next
-      loop
+      null E  # 'cnt'?
+      if nsz  # Yes
+         do
+            null A  # EOF?
+            if s  # Yes
+               ld E Nil  # Return NIL
+               pop Y
+               pop X
+               ret
+            end
+            call (PutB)  # Output byte
+            sub E 1  # Decrement 'cnt'
+         while nz
+            call (Get_A)  # Get next
+         loop
+      end
+      ld (Chr) 0  # Clear look ahead
       ld E TSym  # Return T
       pop Y
       pop X
@@ -4306,7 +4415,7 @@
                      sub E 1
                   loop
                end
-               call (Get_A)  # Skip next input byte
+               ld (Chr) 0  # Clear look ahead
                ld E (Z II)  # Return matched symbol
                jmp 90
             end
@@ -4675,36 +4784,70 @@
          ret
       end
    end
-   ld X E  # Keep list head
+   push Y
    ld B (char "(")  # Open paren
    call (PutB)
-   do
-      push (E CDR)  # Save rest
-      ld E (E)  # Print CAR
-      call printE
-      pop E
-      cmp E Nil  # NIL-terminated?
-   while ne  # No
-      cmp E X  # Circular?
+   call circE_XYF  # Circular list?
+   if nz  # No
+      do
+         ld E (X)  # Print CAR
+         call printE
+         ld X (X CDR)  # NIL-terminated?
+         cmp X Nil
+      while ne  # No
+         atom X  # Atomic tail?
+         if nz  # Yes
+            call space  # Print " . "
+            ld B (char ".")
+            call (PutB)
+            call space
+            ld E X  # and the atom
+            call printE
+            break T
+         end
+         call space  # Print space
+      loop
+   else
+      cmp X Y  # Fully circular?
       if eq  # Yes
-         call space  # Print " ."
-         ld B (char ".")
+         do
+            ld E (X)  # Print CAR
+            call printE
+            call space  # and space
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B (char ".")  # Print "."
          call (PutB)
-         break T
-      end
-      atom E  # Atomic tail?
-      if nz  # Yes
-         call space  # Print " . "
-         ld B (char ".")
+      else
+         do  # Non-circular part
+            ld E (X)  # Print CAR
+            call printE
+            call space  # and space
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B (char ".")  # Print ". ("
          call (PutB)
          call space
-         call printE  # and the atom
-         break T
+         ld B (char "(")
+         call (PutB)
+         do  # Circular part
+            ld E (X)  # Print CAR
+            call printE
+            call space  # and space
+            ld X (X CDR)  # Done?
+            cmp X Y
+         until eq  # Yes
+         ld B (char ".")  # Print ".)"
+         call (PutB)
+         ld B (char ")")
+         call (PutB)
       end
-      call space  # Print space
-   loop
+   end
    ld B (char ")")  # Closing paren
    call (PutB)
+   pop Y
    pop X
    ret
 
@@ -4999,18 +5142,18 @@
    push X
    ld X (E CDR)  # Args
    ld A BEG  # Begin list
-   call putCharA
+   call putCharB
    do
       ld E (X)  # Eval next arg
       eval
-      ld (PutBinBZ) putCharA  # Set binary print function
+      ld (PutBinBZ) putCharB  # Set binary print function
       ld (Extn) (ExtN)  # Set external symbol offset
       call binPrintEZ
       ld X (X CDR)  # X on rest
       atom X  # Any
    until nz  # No
    ld A END  # End list
-   call putCharA
+   call putCharB
    cc fflush((stdout))  # Flush
    nul4  # OK?
    ld E Nil
@@ -5018,7 +5161,8 @@
    pop X
    ret
 
-(code 'putCharA 0)
+(code 'putCharB 0)
+   zxt  # Extend into A
    cc putchar_unlocked(A)
    ret
 

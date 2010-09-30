@@ -1,4 +1,4 @@
-# 11jun10abu
+# 23sep10abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Globals 0)
@@ -37,15 +37,13 @@
 : Hear         word  0           # RPC listener
 : Tell         word  0           # RPC broadcaster
 : TellBuf      word  0           # RPC buffer
+: Talking      word  0           # Active child
 : Children     word  0           # Scaled number of children
 : Child        word  0           # Child array
 : ExtN         word  0           # External symbol offset
 : Extn         word  0
 : StrX         word  0           # String status
 : StrC         word  0
-: Alarm        word  Nil         # Alarm handler
-: Sigio        word  Nil         # Sigio handler
-: LineX        word  ZERO        # Console line
 : LineC        word  -1
 : Break        word  0           # Breakpoint
 : GcCount      word  CELLS       # Collector count
@@ -70,11 +68,64 @@
 : DbJnl        word  0           # Journal file
 : DbLog        word  0           # Transaction log file
 
-# Symbol trees
+# GC relevant data
 :: Intern      word  Nil         # Short internal names
                word  Nil         # Long internal names
 :: Transient   word  Nil         # Short transient names
                word  Nil         # Long transient names
+: Alarm        word  Nil         # Alarm handler
+: Sigio        word  Nil         # Sigio handler
+: LineX        word  ZERO        # Console line
+: Lisp         word  Nil         # Lisp callbacks: tag+fun
+               word  Nil
+               word  Nil         # 2
+               word  Nil
+               word  Nil         # 3
+               word  Nil
+               word  Nil         # 4
+               word  Nil
+               word  Nil         # 5
+               word  Nil
+               word  Nil         # 6
+               word  Nil
+               word  Nil         # 7
+               word  Nil
+               word  Nil         # 8
+               word  Nil
+               word  Nil         # 9
+               word  Nil
+               word  Nil         # 10
+               word  Nil
+               word  Nil         # 11
+               word  Nil
+               word  Nil         # 12
+               word  Nil
+               word  Nil         # 13
+               word  Nil
+               word  Nil         # 14
+               word  Nil
+               word  Nil         # 15
+               word  Nil
+               word  Nil         # 16
+               word  Nil
+               word  Nil         # 17
+               word  Nil
+               word  Nil         # 18
+               word  Nil
+               word  Nil         # 19
+               word  Nil
+               word  Nil         # 20
+               word  Nil
+               word  Nil         # 21
+               word  Nil
+               word  Nil         # 22
+               word  Nil
+               word  Nil         # 23
+               word  Nil
+               word  Nil         # 24
+               word  Nil
+: LispEnd
+: GcMarkEnd
 
 
 # Symbol Table
@@ -135,6 +186,7 @@
    initSym NIL       "quit"      doQuit
    initSym NIL       "errno"     doErrno
    initSym NIL       "native"    doNative
+   initSym NIL       "lisp"      doLisp
    initSym NIL       "args"      doArgs
    initSym NIL       "next"      doNext
    initSym NIL       "arg"       doArg
@@ -504,6 +556,8 @@
    word  Db1
    word  Nil
 
+: GcSymEnd
+
 # Version number
 :: Version
    word (short `(car *Version))
@@ -514,8 +568,6 @@
    word .+8
    word (short `(cadddr *Version))
    word Nil
-
-: GcMarkEnd
 
 # Structures
 : EnvCo  # Coroutine environment
@@ -564,7 +616,6 @@ initData
 
 # Bytes
 :: Tio      byte 0            # Terminal I/O
-:: Flg      byte 0            # General flag value
 
 : Repl      byte 0            # REPL flag
 : PRepl     byte 0            # Parent REPL

@@ -1,4 +1,4 @@
-# 22mar10abu
+# 30aug10abu
 # (c) Software Lab. Alexander Burger
 # Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -17,8 +17,7 @@
          (let K (rnd)
             (with (db 'key '+A K)
                (unless (= K (: key))
-                  (print '!)
-                  (flush) ) ) ) )
+                  (quit "key mismatch" K) ) ) ) )
       (dbSync)
       (let (D (rnd)  X (db 'key '+A (rnd)))
          (inc *DB (- D (get X 'dat)))
@@ -33,8 +32,7 @@
             (unless (= (car K) (get V 'dat))
                (quit "dat mismatch" K) )
             (inc 'N (car K)) ) )
-      (or
-         (= N (val *DB))
+      (unless (= N (val *DB))
          (quit "val mismatch" (- N (val *DB))) ) ) )
 
 (de main ()

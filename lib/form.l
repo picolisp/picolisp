@@ -1,4 +1,4 @@
-# 27jun10abu
+# 09aug10abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -6,7 +6,7 @@
 
 (allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
-(mapc allow '(*Gui *Get *Got *Form *Evt "@jsForm" "@jsHint"))
+(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "@jsForm" "@jsHint"))
 
 (one "*Cnt")
 (off "*Lst" "*Post2" "*Cho")
@@ -102,8 +102,7 @@
                         This ) )
                   (htPrin "Prg") ) ) )
          (--)
-         (eval (: show))
-         (=: show) ) ) )
+         (eval (: show)) ) ) )
 
 # Disable form
 (de disable (Flg)
@@ -996,6 +995,30 @@
    (and (able) (eval (: act))) )
 
 
+(class +Drop)
+# "drop" drop
+
+(dm T (Fld . @)
+   (=: "drop" Fld)
+   (pass extra) )
+
+(dm show> ("Var")
+   (<style>
+      (quote
+         ("ondragenter" . "doDrag(event)")
+         ("ondragover" . "doDrag(event)")
+         ("ondrop" . "doDrop(this,event)") )
+      (extra "Var") ) )
+
+(dm act> ()
+   (=: drop
+      (and
+         (or *Drop (val> (eval (: "drop"))))
+         (tmp @) ) )
+   (extra)
+   (off *Drop) )
+
+
 (class +JS)
 
 (dm T @
@@ -1368,6 +1391,22 @@
       (str> This)
       (not (val> This))
       ,"Bad time format" ) )
+
+
+(class +Img +gui)
+# img alt url
+
+(dm T (Exe Alt)
+   (=: img Exe)
+   (=: alt Alt)
+   (super) )
+
+(dm js> ()
+   (ht:Fmt (sesId (or (eval (: img)) `(path "@img/no.png")))) )
+
+(dm show> ("Var")
+   (showFld
+      (<img> (or (eval (: img)) `(path "@img/no.png")) (eval (: alt))) ) )
 
 
 (class +Icon)

@@ -311,10 +311,10 @@ only a KEY, and another KEY/VAL cell.
 </code></pre>
 
 <p>Each property in a symbol's tail is either a symbol (like the single KEY
-above, then it represents a boolean value), or a cell with the property key in
-its CDR and the property value in its CAR. In both cases, the key should be a
-symbol, because searches in the property list are performed using pointer
-comparisons.
+above, then it represents the boolean value <code>T</code>), or a cell with the
+property key in its CDR and the property value in its CAR. In both cases, the
+key should be a symbol, because searches in the property list are performed
+using pointer comparisons.
 
 <p>The name of a symbol is stored as a number at the end of the tail. It
 contains the characters of the name in UTF-8 encoding, using between one and
@@ -492,11 +492,11 @@ arguments may follow the command name.
 <p>By default, each argument is the name of a file to be executed by the
 interpreter. If, however, the argument's first character is a hyphen '-', then
 the rest of that argument is taken as a Lisp function call (without the
-surrounding parentheses). A hyphen by itself as an argument stops evaluation of
-the rest of the command line (it may be processed later using the <code><a
+surrounding parentheses), and a hyphen by itself as an argument stops evaluation
+of the rest of the command line (it may be processed later using the <code><a
 href="refA.html#argv">argv</a></code> and <code><a
-href="refO.html#opt">opt</a></code> functions). This mechanism corresponds to
-calling <code>(<a href="refL.html#load">load</a> T)</code>.
+href="refO.html#opt">opt</a></code> functions). This whole mechanism corresponds
+to calling <code>(<a href="refL.html#load">load</a> T)</code>.
 
 <p>As a convention, PicoLisp source files have the extension "<code>.l</code>".
 
@@ -2492,7 +2492,7 @@ abbreviations:
    <a href="refC.html#*Class">*Class</a>
    <a href="refD.html#*Dbs">*Dbs</a>
    <a href="refR.html#*Run">*Run</a>
-   <a href="refR.html#*Hup">*Hup</a>
+   <a href="refH.html#*Hup">*Hup</a>
    <a href="refS.html#*Sig1">*Sig1</a>
    <a href="refS.html#*Sig2">*Sig2</a>
    <a href="ref_.html#^">^</a>

@@ -1,4 +1,4 @@
-12nov09abu
+11aug10abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -53,7 +53,7 @@ You can download the latest release version at
 
 
 (2) As an application server framework, PicoLisp provides for
-   Database Management
+   NoSQL Database Management
       Index trees
       Object local indexes
       Entity/Relation classes
@@ -90,8 +90,8 @@ multiple users can view and modify the same database object without conflicts,
 everyone seeing changes done by other users on her screen immediately due to the
 internal process and database synchronization.
 
-PicoLisp is free software, and you are welcome to redistribute it under the
-conditions of the GNU General Public License (GPL).
+PicoLisp is free software, and you are welcome to use and redistribute it under
+the conditions of the MIT/X11 License (see "COPYING").
 
 It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),
 Cygwin/Win32 (and possibly other) systems. A native 64-bit version is available

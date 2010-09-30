@@ -1,4 +1,4 @@
-# 19jun10abu
+# 30aug10abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -381,7 +381,8 @@
          (or (format (caddr S)) 0) ) ) )
 
 (de stamp (Dat Tim)
-   (default  Dat (date)  Tim (time T))
+   (and (=T Dat) (setq Dat (date T)))
+   (default Dat (date)  Tim (time T))
    (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 
 ### I/O ###
@@ -392,6 +393,9 @@
 
 (de dirname (F)
    (pack (flip (member '/ (flip (chop F))))) )
+
+(de basename (F)
+   (pack (stem (chop F) '/)) )
 
 # Temporary Files
 (de tmp @

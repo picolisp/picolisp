@@ -103,6 +103,16 @@ overwritten. See also <code><a href="ref.html#cmp">Comparing</a></code> and
 -> (1 2 3 4 5 6 7 8 9 10 20 30 40 50 60 70 80 90)
 </code></pre>
 
+<dt><a name="basename"><code>(basename 'any) -> sym</code></a>
+<dd>Returns the filename part of a path name <code>any</code>. See also <code><a
+href="refD.html#dirname">dirname</a></code> and <code><a
+href="refP.html#path">path</a></code>.
+
+<pre><code>
+: (basename "a/b/c/d")
+-> "d"
+</code></pre>
+
 <dt><a name="be"><code>(be sym . any) -> sym</code></a>
 <dd>Declares a <a href="ref.html#pilog">Pilog</a> fact or rule for the
 <code>sym</code> argument, by concatenating the <code>any</code> argument to the

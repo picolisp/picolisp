@@ -1,4 +1,4 @@
-# 26feb09abu
+# 01jul10abu
 # (c) Software Lab. Alexander Burger
 
 # "tmp+" "tmp-"
@@ -12,5 +12,5 @@
 (de boss @
    (out "tmp+" (pr (rest))) )
 
-(de reply Exe  #-> any
+(de reply Exe  #> any
    (out "tmp-" (pr (eval Exe))) )

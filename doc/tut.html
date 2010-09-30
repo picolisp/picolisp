@@ -352,8 +352,7 @@ and indented way.
 : (pp 'pretty)
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
-   (while (args)
-      (printsp (next)) )
+   (while (args) (printsp (next)))
    (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
@@ -361,19 +360,22 @@ and indented way.
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) "*PP")
+         (when (memq (print (pop 'X)) *PP)
             (cond
-               ((memq (car Z) "*PP1")
+               ((memq (car Z) *PP1)
                   (if (and (pair (car X)) (pair (cdar X)))
                      (when (>= 12 (size (car X)))
                         (space)
                         (print (pop 'X)) )
                      (space)
                      (print (pop 'X))
-                     (when (or (atom (car X)) (>= 12 (size (car X))))
+                     (when
+                        (or
+                           (atom (car X))
+                           (>= 12 (size (car X))) )
                         (space)
                         (print (pop 'X)) ) ) )
-               ((memq (car Z) "*PP2")
+               ((memq (car Z) *PP2)
                   (inc 'N 3)
                   (loop
                      (prinl)
@@ -831,7 +833,8 @@ href="refS.html#stamp">stamp</a></code> system function.
 <pre><code>
 : (pp 'stamp)
 (de stamp (Dat Tim)
-   (default  Dat (date)  Tim (time T))
+   (and (=T Dat) (setq Dat (date T)))
+   (default Dat (date) Tim (time T))
    (pack (dat$ Dat "-") " " (tim$ Tim T)) )
 -> stamp
 </code></pre>
@@ -840,15 +843,17 @@ href="refS.html#stamp">stamp</a></code> system function.
 : (debug 'stamp)                       # Debug it
 -> T
 : (stamp)                              # Call it again
-(default Dat (date) Tim (time T))      # stopped at first expression
+(and (=T Dat) (setq Dat (date T)))     # stopped at first expression
 !                                      # ENTER
-(pack (dat$ Dat "-") " " (tim$ ...     # second expression
+(default Dat (date) Tim (time T))      # second expression
+!                                      # ENTER
+(pack (dat$ Dat "-") " " (tim$ ...     # third expression
 ! Tim                                  # inspect 'Tim' variable
 -> 41908
 ! (time Tim)                           # convert it
 -> (11 38 28)
 !                                      # ENTER
--> "2004-10-29 11:38:28"               # done, as there are only 2 expressions
+-> "2004-10-29 11:38:28"               # done, as there are only 3 expressions
 </code></pre>
 
 <p>Now we execute it again, but this time we want to look at what's happening
@@ -856,6 +861,8 @@ inside the second expression.
 
 <pre><code>
 : (stamp)                              # Call it again
+(and (=T Dat) (setq Dat (date T)))
+!                                      # ENTER
 (default Dat (date) Tim (time T))
 !                                      # ENTER
 (pack (dat$ Dat "-") " " (tim$ ...     # here we want to look closer
@@ -879,6 +886,7 @@ pretty-print it:
 <pre><code>
 : (pp 'stamp)
 (de stamp (Dat Tim)
+   (! and (=T Dat) (setq Dat (date T)))
    (! default Dat (date) Tim (time T))
    (! pack
       (! dat$ Dat "-")

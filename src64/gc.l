@@ -1,4 +1,4 @@
-# 13jun10abu
+# 28jul10abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -77,7 +77,7 @@
    do
       or (X) 1  # Set mark bit
       add X II  # Next symbol
-      cmp X GcMarkEnd
+      cmp X GcSymEnd
    until gt
    ld X (Heaps)  # Heap pointer
    do
@@ -91,20 +91,13 @@
       null X  # Done?
    until eq  # Yes
    ### Mark ###
-   ld E (Alarm)  # Mark globals
-   call markE
-   ld E (Sigio)
-   call markE
-   ld E (LineX)
-   call markE
-   ld E (Intern)  # Mark internal symbols
-   call markE
-   ld E (Intern I)
-   call markE
-   ld E (Transient)  # Mark transient symbols
-   call markE
-   ld E (Transient I)
-   call markE
+   ld Y Intern  # Mark globals
+   do
+      ld E (Y)  # Next global
+      call markE  # Mark it
+      add Y I
+      cmp Y GcMarkEnd  # Done?
+   until eq  # Yes
    ### Mark stack(s) ###
    ld Y L
    do

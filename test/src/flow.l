@@ -1,4 +1,4 @@
-# 11jun10abu
+# 26aug10abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -242,6 +242,10 @@
    (if2 NIL T 'both 'first 'second 'none) )
 (test 'none
    (if2 NIL NIL 'both 'first 'second 'none) )
+(test 4 (if2 3 4 @))
+(test 7 (and 7 (if2 @ @ @)))
+(test 7 (and 7 (if2 @ NIL 1 @)))
+(test 7 (and 7 (if2 NIL @ 1 2 @)))
 
 
 ### ifn ###

@@ -1,3 +1,14 @@
+* 30sep10 picoLisp-3.0.4
+   'tell' accepts PID argument
+   Deprecated 'pid'
+   Extended protocol for 'sync'
+   MIT/X11 License
+   Drag & Drop file upload
+   Generic 'lisp' C-callbacks
+   'native' fixpoint handling
+   OpenGL (64-bit) in "lib/openGl.l"
+   Faster bignum division (64-bit)
+
 * 29jun10 picoLisp-3.0.3
    'assert' function
    'round' function

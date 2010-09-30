@@ -204,13 +204,17 @@ href="refF.html#format">format</a></code>.
 -> "01234 5678-0"
 </code></pre>
 
-<dt><a name="tell"><code>(tell 'sym ['any ..]) -> any</code></a>
+<dt><a name="tell"><code>(tell ['cnt] 'sym ['any ..]) -> any</code></a>
 <dd>Family IPC: Send an executable list <code>(sym any ..)</code> to all family
 members (i.e. all children of the current process, and all other children of the
 parent process, see <code><a href="refF.html#fork">fork</a></code>) for
-automatic execution. <code>tell</code> can also be used by <code><a
-href="refC.html#commit">commit</a></code> to notify about database changes. See
-also <code><a href="refH.html#hear">hear</a></code>, <code><a
+automatic execution. When the <code>cnt</code> argument is given and non-zero,
+it should be the PID of such a process, and the list will be sent only to that
+process. <code>tell</code> is also used internally by <code><a
+href="refC.html#commit">commit</a></code> to notify about database changes. When
+called without arguments, no message is actually sent, and the parent process
+may grant <code><a href="refS.html#sync">sync</a></code> to the next waiting
+process. See also <code><a href="refH.html#hear">hear</a></code>, <code><a
 href="refP.html#pid">pid</a></code> and <code><a
 href="refR.html#rpc">rpc</a></code>.
 
@@ -362,6 +366,8 @@ corresponding hour, minute and second is returned. When called with two or three
 numbers (or a list of two or three numbers) for the hour, minute (and optionally
 the second), the corresponding time value is returned (or <code>NIL</code> if
 they do not represent a legal time). See also <code><a
+href="refD.html#date">date</a></code>, <code><a
+href="refS.html#stamp">stamp</a></code>, <code><a
 href="refU.html#usec">usec</a></code>, <code><a
 href="refT.html#tim$">tim$</a></code> and <code><a
 href="ref_.html#$tim">$tim</a></code>.

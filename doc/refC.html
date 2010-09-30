@@ -29,8 +29,9 @@ href="refR.html#rel">rel</a></code>.
 
 <dt><a name="cache"><code>(cache 'var 'sym . prg) -> any</code></a>
 <dd>Speeds up some calculations, by holding previously calculated results in an
-<code><a href="refI.html#idx">idx</a></code> tree structure. <code>sym</code>
-must be a transient symbol representing a unique key for the argument(s) to the
+<code><a href="refI.html#idx">idx</a></code> tree structure. Such an
+optimization is sometimes called "memoization". <code>sym</code> must be a
+transient symbol representing a unique key for the argument(s) to the
 calculation.
 
 <pre><code>

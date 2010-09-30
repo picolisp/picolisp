@@ -1,4 +1,4 @@
-/* 04jun10abu
+/* 22jul10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -344,6 +344,28 @@ any doUp(any x) {
 }
 
 /*** Primitives ***/
+any circ(any x) {
+   any y = x;
+
+   for (;;) {
+      *(word*)&car(y) |= 1;
+      if (!isCell(y = cdr(y))) {
+         do
+            *(word*)&car(x) &= ~1;
+         while (isCell(x = cdr(x)));
+         return NULL;
+      }
+      if (num(car(y)) & 1) {
+         while (x != y)
+            *(word*)&car(x) &= ~1,  x = cdr(x);
+         do
+            *(word*)&car(x) &= ~1;
+         while (y != (x = cdr(x)));
+         return y;
+      }
+   }
+}
+
 /* Comparisons */
 bool equal(any x, any y) {
    for (;;) {
@@ -383,8 +405,10 @@ bool equal(any x, any y) {
                return equal(x, cdr(y));
             if (!isCell(y = cdr(y)))
                return NO;
-            if (x == a && y == b)
-               return YES;
+            if (x == a)
+               return y == b;
+            if (y == b)
+               return NO;
          }
       }
    }

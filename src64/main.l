@@ -1,4 +1,4 @@
-# 19jun10abu
+# 15aug10abu
 # (c) Software Lab. Alexander Burger
 
 ### Global return labels ###
@@ -361,6 +361,7 @@
       inc (Signal)
    end
    return 1
+   ret
 
 (code 'sigTerm)
    begin 0  # Ignore signal number
@@ -372,6 +373,7 @@
       inc (Signal)
    end
    return 0
+   ret
 
 (code 'sigChld)
    begin 0  # Ignore signal number
@@ -393,6 +395,7 @@
    pop C  # Restore 'errno'
    call errnoC
    return 0
+   ret
 : PidSigMsg asciz "%d SIG-%d\\n"
 
 (code 'tcSetC)
@@ -423,6 +426,7 @@
    ld C (Termio)
    call tcSetC
    return 0
+   ret
 
 (code 'setRaw 0)
    nul (Tio)  # Terminal I/O?
@@ -752,6 +756,38 @@
    pop X
    ret
 
+(code 'circE_XYF)
+   ld X E  # Return list in X
+   ld Y E  # Keep list in Y
+   do
+      or (E) 1  # Mark
+      ld E (E CDR)  # Normal list?
+      atom E
+      if nz  # Yes
+         do
+            off (Y) 1  # Unmark
+            ld Y (Y CDR)
+            atom Y  # Done?
+         until nz  # Yes
+         ret  # 'nz' - No circularity found
+      end
+      test (E) 1  # Detected circularity?
+      if nz  # Yes
+         do
+            cmp Y E  # Skip non-circular part
+         while ne
+            off (Y) 1  # Unmark
+            ld Y (Y CDR)
+         loop
+         do
+            off (Y) 1  # Unmark circular part
+            ld Y (Y CDR)
+            cmp Y E  # Done?
+         until eq  # Yes
+         ret  # 'z' - Circularity in Y
+      end
+   loop
+
 ### Comparisons ###
 (code 'equalAE_F 0)
    cmp A E  # Pointer-equal?
@@ -842,9 +878,15 @@
       atom E  # E's CDR atomic?
       break nz  # Yes: 'ne'
       cmp A (S I)  # A circular?
-      break eq  # Yes: 'eq'
+      if eq  # Yes
+         cmp E (S)  # Return whether E is also circular
+         break T
+      end
       cmp E (S)  # E circular?
-      break eq  # Yes: 'eq'
+      if eq  # Yes
+         clrz
+         break T  # Yes: 'ne'
+      end
    loop
    pop A  # Drop list heads
    pop A
@@ -1339,18 +1381,18 @@
          push (E DIG)  # <S> Library handle
       else
          call needSymEX  # Check symbol
-         call bufStringE_SZ  # Write to stack buffer
-         ld C S  # Preload name pointer
-         ld B (S)  # Check for main program library
-         cmp B (char "@")  # "@"?
-         if eq
-            nul (S 1)
-            ldz C 0  # Yes: Use NULL pointer
+         ld A (E TAIL)  # Check for main program library
+         call nameA_A  # Get name
+         cmp A (| CNT (>> -4 (char "@")))  # "@"?
+         if eq  # Yes
+            cc dlopen(0 (| RTLD_LAZY RTLD_GLOBAL))  # Open main library
+         else
+            call pathStringE_SZ  # Write to stack buffer
+            cc dlopen(S (| RTLD_LAZY RTLD_GLOBAL))  # Open dynamic library
+            ld S Z  # Drop buffer
          end
-         cc dlopen(C (| RTLD_LAZY RTLD_GLOBAL))  # Open dynamic library
          null A  # OK?
          jz dlErrX  # No
-         ld S Z  # Drop buffer
          push A  # <S> Library handle
          test A (hex "F000000000000000")  # Fit in short number?
          if z  # Yes
@@ -1439,57 +1481,71 @@
                neg E  # Negate
             end
          end
+         push E  # Pass long argument
+         push 0  # as Integer/pointer value
       else
-         push Z
          sym E  # String?
          if nz  # Yes
+            push Z
             call bufStringE_SZ  # Write to stack buffer
             cc strdup(S)  # Make new string
-            ld E A  # Get string pointer
             ld S Z  # Drop buffer
+            pop Z
+            push A  # Pass pointer argument
+            push 0  # as Integer/pointer value
          else
-            ld E (E CDR)  # Ignore variable
-            ld C ((E))  # Get buffer size
-            shr C 4  # Normalize
-            call allocC_A  # Allocate buffer
-            push A  # Save it
-            ld Z A  # Buffer pointer in Z
-            do
-               ld E (E CDR)
-               cnt E  # Fill rest?
-               if nz  # Yes
-                  ld A E  # Byte value
+            ld C (E CDR)  # Fixpoint?
+            cnt C
+            if nz  # Yes
+               push (E)  # Pass number or flag
+               push C  # as fixpoint value
+            else
+               ld E C  # Ignore variable
+               ld C ((E))  # Get buffer size
+               shr C 4  # Normalize
+               call allocC_A  # Allocate buffer
+               push A  # Pass pointer argument
+               push 0  # as Integer/pointer value
+               push Z
+               ld Z A  # Buffer pointer in Z
+               do
+                  ld E (E CDR)
+                  cnt E  # Fill rest?
+                  if nz  # Yes
+                     ld A E  # Byte value
+                     shr A 4  # in B
+                     do
+                        sub C 1  # Done?
+                     while ns  # No
+                        ld (Z) B  # Store byte in buffer
+                        inc Z  # Increment buffer pointer
+                     loop
+                     break T
+                  end
+                  atom E  # Fill bytes?
+               while z  # Yes
+                  ld A (E)  # Next byte value
                   shr A 4  # in B
-                  do
-                     sub C 1  # Done?
-                  while ns  # No
-                     ld (Z) B  # Store byte in buffer
-                     inc Z  # Increment buffer pointer
-                  loop
-                  break T
-               end
-               atom E  # Fill bytes?
-            while z  # Yes
-               ld A (E)  # Next byte value
-               shr A 4  # in B
-               ld (Z) B  # Store in buffer
-               inc Z  # Increment buffer pointer
-               dec C  # Buffer full?
-            until z  # Yes
-            pop E  # Get allocated memory
+                  ld (Z) B  # Store in buffer
+                  inc Z  # Increment buffer pointer
+                  dec C  # Buffer full?
+               until z  # Yes
+               pop Z
+            end
          end
-         pop Z
       end
-      push E  # Push argument
       add X I  # Next arg
    loop
-   ld X S  # Start of args
+   ld X S  # Start of args in X
+   off S 15  # Align stack to cell boundary
+   ld A S  # Keep end of duplicated args in A
    ld C L  # Top of args
    sub C X  # Bytes
-   sub S C  # Duplicate args
-   movm (S) (X) (L)
+   sub S C  # Space for args
+   movm (S) (X) (L)  # Duplicate args
    ld Y (Z)  # Get function pointer
-   cc (Y) X  # Call C-function
+   cc (Y) A  # Call C-function
+   ld S X  # Drop duplicated args
    ld E (Z -II)  # Get result specification
    ld C 0  # No pointer yet
    push (Link)  # Save L
@@ -1501,11 +1557,14 @@
    do
       cmp Y L  # Args?
    while ne  # Yes
+      add S I  # Drop type
       pop X  # Next C arg
       ld E (Y)  # Next Lisp arg
       num E  # Number?
       if z  # No
          sym E  # String?
+         jnz 10  # Yes
+         cnt (E CDR)  # Fixpoint?
          if z  # No
             cmp (E) Nil  # Variable?
             if ne  # Yes
@@ -1514,8 +1573,8 @@
                call natRetACE_CE  # Extract value
                ld (((Y))) E  # Store in variable
             end
+10          cc free(X)  # Free string or buffer
          end
-         cc free(X)  # Free string or buffer
       end
       sub Y I
    loop
@@ -1530,151 +1589,157 @@
 (code 'natRetACE_CE 0)
    cmp E Nil  # NIL?
    if ne
-      cmp E ISym  # 'I'?
-      if eq  # Yes
+      cnt E  # Scale?
+      if nz  # Yes
          null C  # Pointer?
          if nz  # Yes
-            ld4 (C)
-            add C 4  # Size of int
+            test E SIGN  # Negative?
+            if z  # No
+               dval  # Get double value
+               add C 8  # Size of double
+            else
+               fval  # Get float value
+               add C 4  # Size of float
+            end
          end
-         ld E (hex "FFFFFFFF")  # Sign-extend integer
-         and E A  # into E
-         ld A (hex "80000000")
-         xor E A
-         sub E A  # Negative?
-         if ns  # No
-            shl E 4  # Make short number
-            or E CNT
-         else
-            neg E  # Negate
-            shl E 4  # Make negative short number
-            or E (| SIGN CNT)
-         end
+         fix  # Get fixpoint number or flg
       else
-         cmp E NSym  # 'N'?
+         cmp E ISym  # 'I'?
          if eq  # Yes
             null C  # Pointer?
             if nz  # Yes
-               ld A (C)
-               add C 8  # Size of long/pointer
+               ld4 (C)
+               add C 4  # Size of int
             end
-            ld E A  # Number
-            null E  # Negative?
+            ld E (hex "FFFFFFFF")  # Sign-extend integer
+            and E A  # into E
+            ld A (hex "80000000")
+            xor E A
+            sub E A  # Negative?
             if ns  # No
-               test E (hex "F000000000000000")  # Fit in short?
-               if z  # Yes
-                  shl E 4  # Make short number
-                  or E CNT
-               else
-                  cmp E (hex "7FFFFFFFFFFFFFFF")  # Infinity?
-                  if eq  # Yes
-                     ld E TSym  # Return T
+               shl E 4  # Make short number
+               or E CNT
+            else
+               neg E  # Negate
+               shl E 4  # Make negative short number
+               or E (| SIGN CNT)
+            end
+         else
+            cmp E NSym  # 'N'?
+            if eq  # Yes
+               null C  # Pointer?
+               if nz  # Yes
+                  ld A (C)
+                  add C 8  # Size of long/pointer
+               end
+               ld E A  # Number
+               null E  # Negative?
+               if ns  # No
+                  test E (hex "F000000000000000")  # Fit in short?
+                  if z  # Yes
+                     shl E 4  # Make short number
+                     or E CNT
                   else
                      call boxNumE_E  # Make bignum
                   end
-               end
-            else
-               neg E  # Negate
-               test E (hex "F000000000000000")  # Fit in short?
-               if z  # Yes
-                  shl E 4  # Make negative short number
-                  or E (| SIGN CNT)
                else
-                  cmp E (hex "8000000000000000")  # NaN or negative infinity?
-                  if eq  # Yes
-                     ld E Nil  # Return NIL
+                  neg E  # Negate
+                  test E (hex "F000000000000000")  # Fit in short?
+                  if z  # Yes
+                     shl E 4  # Make negative short number
+                     or E (| SIGN CNT)
                   else
                      call boxNumE_E  # Make bignum
                      or E SIGN  # Set negative
                   end
                end
-            end
-         else
-            cmp E SSym  # 'S'?
-            if eq  # Yes
-               null C  # Pointer?
-               if nz  # Yes
-                  ld A (C)
-                  add C 8  # Size of pointer
-               end
-               ld E A  # Make transient symbol
-               call mkStrE_E
             else
-               cmp E CSym  # 'C'?
+               cmp E SSym  # 'S'?
                if eq  # Yes
                   null C  # Pointer?
                   if nz  # Yes
-                     call fetchCharC_AC  # Fetch char
+                     ld A (C)
+                     add C 8  # Size of pointer
                   end
-                  ld E Nil  # Preload
-                  null A  # Char?
-                  if nz  # Yes
-                     call mkCharA_A  # Make char
-                     ld E A
-                  end
+                  ld E A  # Make transient symbol
+                  call mkStrE_E
                else
-                  cmp E BSym  # 'B'?
+                  cmp E CSym  # 'C'?
                   if eq  # Yes
                      null C  # Pointer?
                      if nz  # Yes
-                        ld B (C)
-                        inc C  # Size of byte
+                        call fetchCharC_AC  # Fetch char
                      end
-                     zxt  # Byte
-                     ld E A
-                     shl E 4  # Make short number
-                     or E CNT
+                     ld E Nil  # Preload
+                     null A  # Char?
+                     if nz  # Yes
+                        call mkCharA_A  # Make char
+                        ld E A
+                     end
                   else
-                     atom E  # Atomic?
-                     if z  # No: Arrary or structure
+                     cmp E BSym  # 'B'?
+                     if eq  # Yes
                         null C  # Pointer?
-                        ldz C A  # Yes: Load into C
-                        push X
-                        push Y
-                        push Z
-                        ld X E  # Get specification in X
-                        ld E (X)
-                        call natRetACE_CE  # First item
-                        call cons_Y  # Make cell
-                        ld (Y) E
-                        ld (Y CDR) Nil
-                        link
-                        push Y  # <L I> Result
-                        link
-                        do
-                           ld Z (X CDR)
-                           cnt Z  # (sym . cnt)
-                           if nz
-                              shr Z 4  # Normalize
-                              do
-                                 dec Z  # Decrement count
-                              while nz
-                                 ld E (X)  # Repeat last type
-                                 call natRetACE_CE  # Next item
-                                 call cons_A  # Cons into cell
-                                 ld (A) E
-                                 ld (A CDR) Nil
-                                 ld (Y CDR) A  # Append to result
-                                 ld Y A
-                              loop
-                              break T
-                           end
-                           atom Z  # End of specification?
-                        while z  # No
-                           ld X Z
-                           ld E (X)  # Next type
-                           call natRetACE_CE  # Next item
-                           call cons_A  # Cons into cell
-                           ld (A) E
-                           ld (A CDR) Nil
-                           ld (Y CDR) A  # Append to result
-                           ld Y A
-                        loop
-                        ld E (L I)  # Get result
-                        drop
-                        pop Z
-                        pop Y
-                        pop X
+                        if nz  # Yes
+                           ld B (C)
+                           inc C  # Size of byte
+                        end
+                        zxt  # Byte
+                        ld E A
+                        shl E 4  # Make short number
+                        or E CNT
+                     else
+                        atom E  # Atomic?
+                        if z  # No: Arrary or structure
+                           null C  # Pointer?
+                           ldz C A  # Yes: Load into C
+                           push X
+                           push Y
+                           push Z
+                           ld X E  # Get specification in X
+                           ld E (X)
+                           call natRetACE_CE  # First item
+                           call cons_Y  # Make cell
+                           ld (Y) E
+                           ld (Y CDR) Nil
+                           link
+                           push Y  # <L I> Result
+                           link
+                           do
+                              ld Z (X CDR)
+                              cnt Z  # (sym . cnt)
+                              if nz
+                                 shr Z 4  # Normalize
+                                 do
+                                    dec Z  # Decrement count
+                                 while nz
+                                    ld E (X)  # Repeat last type
+                                    call natRetACE_CE  # Next item
+                                    call cons_A  # Cons into cell
+                                    ld (A) E
+                                    ld (A CDR) Nil
+                                    ld (Y CDR) A  # Append to result
+                                    ld Y A
+                                 loop
+                                 break T
+                              end
+                              atom Z  # End of specification?
+                           while z  # No
+                              ld X Z
+                              ld E (X)  # Next type
+                              call natRetACE_CE  # Next item
+                              call cons_A  # Cons into cell
+                              ld (A) E
+                              ld (A CDR) Nil
+                              ld (Y CDR) A  # Append to result
+                              ld Y A
+                           loop
+                           ld E (L I)  # Get result
+                           drop
+                           pop Z
+                           pop Y
+                           pop X
+                        end
                      end
                   end
                end
@@ -1718,6 +1783,184 @@
       end
    end
    ret
+
+: cbl
+   begin 5  # Arguments in A, C, E, X and Y
+   push L  # Save C frame pointer
+   ld L (Link)  # Restore link register
+   link  # Apply args
+   push (Z I)  # 'fun'
+   xchg A E  # First arg
+   call boxCntE_E  # Make number
+   push E
+   ld E C  # Second arg
+   call boxCntE_E  # Make number
+   push E
+   ld E A  # Third arg
+   call boxCntE_E  # Make number
+   push E
+   ld E X  # Fourth arg
+   call boxCntE_E  # Make number
+   push E
+   ld E Y  # Fifth arg
+   call boxCntE_E  # Make number
+   push E
+   ld Z S  # Z on last argument
+   link  # Close frame
+   lea Y (S VI)  # Pointer to 'fun' in Y
+   call applyXYZ_E  # Apply
+   ld A E  # Return value
+   shr A 4  # Normalize
+   if c  # Sign?
+      neg A  # Yes
+   end
+   drop
+   pop L  # Restore C frame pointer
+   return 5
+   pop Z
+   ret
+
+(code 'cbl1 0)
+   push Z
+   lea Z (Lisp)  # Address of callback function
+   jmp cbl
+: cbl2
+   push Z
+   lea Z (Lisp II)
+   jmp cbl
+: cbl3
+   push Z
+   lea Z (Lisp (* 2 II))
+   jmp cbl
+: cbl4
+   push Z
+   lea Z (Lisp (* 3 II))
+   jmp cbl
+: cbl5
+   push Z
+   lea Z (Lisp (* 4 II))
+   jmp cbl
+: cbl6
+   push Z
+   lea Z (Lisp (* 5 II))
+   jmp cbl
+: cbl7
+   push Z
+   lea Z (Lisp (* 6 II))
+   jmp cbl
+: cbl8
+   push Z
+   lea Z (Lisp (* 7 II))
+   jmp cbl
+: cbl9
+   push Z
+   lea Z (Lisp (* 8 II))
+   jmp cbl
+: cbl10
+   push Z
+   lea Z (Lisp (* 9 II))
+   jmp cbl
+: cbl11
+   push Z
+   lea Z (Lisp (* 10 II))
+   jmp cbl
+: cbl12
+   push Z
+   lea Z (Lisp (* 11 II))
+   jmp cbl
+: cbl13
+   push Z
+   lea Z (Lisp (* 12 II))
+   jmp cbl
+: cbl14
+   push Z
+   lea Z (Lisp (* 13 II))
+   jmp cbl
+: cbl15
+   push Z
+   lea Z (Lisp (* 14 II))
+   jmp cbl
+: cbl16
+   push Z
+   lea Z (Lisp (* 15 II))
+   jmp cbl
+: cbl17
+   push Z
+   lea Z (Lisp (* 16 II))
+   jmp cbl
+: cbl18
+   push Z
+   lea Z (Lisp (* 17 II))
+   jmp cbl
+: cbl19
+   push Z
+   lea Z (Lisp (* 18 II))
+   jmp cbl
+: cbl20
+   push Z
+   lea Z (Lisp (* 19 II))
+   jmp cbl
+: cbl21
+   push Z
+   lea Z (Lisp (* 20 II))
+   jmp cbl
+: cbl22
+   push Z
+   lea Z (Lisp (* 21 II))
+   jmp cbl
+: cbl23
+   push Z
+   lea Z (Lisp (* 22 II))
+   jmp cbl
+: cbl24
+   push Z
+   lea Z (Lisp (* 23 II))
+   jmp cbl
+
+# (lisp 'sym ['fun]) -> num
+(code 'doLisp 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Get tag
+   call evSymY_E  # Evaluate to a symbol
+   ld A Lisp  # Search lisp callback definitions
+   ld C cbl1
+   do
+      cmp E (A)  # Found tag?
+      jeq  10  # Yes
+      add A II  # Next entry
+      add C "cbl2-cbl1"
+      cmp A LispEnd
+   until eq
+   ld A Lisp  # Not found, search for empty slot
+   ld C cbl1
+   do
+      cmp (A I) Nil  # Empty?
+      if eq  # Yes
+10       push C  # Save function pointer
+         push A  # And callback entry
+         ld (A) E  # Store tag
+         ld E ((Y CDR))  # Eval 'fun'
+         eval
+         pop A
+         ld (A I) E  # Store in slot
+         pop E  # Get function pointer
+         pop Y
+         pop X
+         test E (hex "F000000000000000")  # Fit in short number?
+         jnz boxNumE_E  # No
+         shl E 4  # Else make short number
+         or E CNT
+         ret
+      end
+      add A II  # Next entry
+      add C "cbl2-cbl1"
+      cmp A LispEnd
+   until eq
+   ld Y CbErr
+   jmp errEXYZ
+: CbErr asciz "Too many callbacks"
 
 (code 'lisp 0)
    begin 6  # Function name in A, arguments in C, E, X, Y and Z
@@ -1764,6 +2007,7 @@
    drop
    pop L  # Restore C frame pointer
    return 6
+   ret
 
 (code 'execE 0)
    push X

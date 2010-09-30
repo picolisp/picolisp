@@ -1,4 +1,4 @@
-/* 19jun10abu
+/* 02jul10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -106,11 +106,10 @@ void bigAdd(any dst, any src) {
          } while (isNum(src = cdr(numCell(src))));
          break;
       }
-      if ((n = carry + unDig(src)) >= carry)
+      if ((n = carry + unDig(src)) >= carry) {
          carry = unDig(dst) > (n += unDig(dst));
-      else
-         n = unDig(dst);
-      setDig(dst,n);
+         setDig(dst,n);
+      }
       src = cdr(numCell(src));
       dst = cdr(numCell(x = dst));
    }
@@ -356,11 +355,10 @@ static any bigDiv(any u, any v, bool rem) {
                y = v;
                carry = unDig(y) > num(setDig(x, unDig(y) + unDig(x)));
                while (x = cdr(numCell(x)),  isNum(y = cdr(numCell(y)))) {
-                  if ((n = carry + unDig(y)) >= carry)
+                  if ((n = carry + unDig(y)) >= carry) {
                      carry = unDig(x) > (n += unDig(x));
-                  else
-                     n = unDig(x);
-                  setDig(x,n);
+                     setDig(x,n);
+                  }
                }
                setDig(x, carry + unDig(x));
             }

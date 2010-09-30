@@ -1,4 +1,4 @@
-# 18jun10abu
+# 09aug10abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -204,8 +204,9 @@
    (test P (pwd)) )
 
 
-### dirname ###
+### dirname basename ###
 (test "a/b/c/" (dirname "a/b/c/d"))
+(test "d" (basename "a/b/c/d"))
 
 
 ### fmt64 ###

@@ -1,4 +1,4 @@
-/* 20apr10abu
+/* 07jul10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -15,6 +15,13 @@
 .blue {color: blue;}
 .bold {font-weight: bold;}
 .mono {font-family: monospace;}
+
+.em3 {width: 3em;}
+.em5 {width: 5em;}
+.em7 {width: 7em;} 
+.em10 {width: 10em;}
+.em20 {width: 20em;}
+.em30 {width: 30em;}
 
 /* Defaults */
 body {

@@ -37,6 +37,7 @@
 <li><a href="#arrays">What about arrays?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
 <li><a href="#hardware">Would it make sense to build PicoLisp in hardware?</a>
+<li><a href="#segfault">I get a segfault if I ...</a>
 <li><a href="#ask">Where can I ask questions?</a>
 </ul>
 
@@ -56,7 +57,8 @@ are the case-insensitivity and complexity of current Lisp systems.
 <p>PicoLisp is for programmers who want to control their programming
 environment, at all levels, from the application domain down to the bare metal.
 Who want use a transparent and simple - yet universal - programming model, and
-want to know exactly what is going on. This is an aspect influenced by Forth.
+want to know exactly what is going on. This is an aspect influenced by
+<code>Forth</code>.
 
 <p>It does <i>not</i> pretend to be easy to learn. There are already plenty of
 languages that do so. It is not for people who don't care what's under the hood,
@@ -235,9 +237,9 @@ PicoLisp's somewhat inefficient implementation of bignums in the 32-bit version.
 
 <p>But in practice, speed was never a problem, even with the first versions of
 PicoLisp in 1988 on a Mac II with a 12 MHz CPU. And certain things are cleaner
-and easier to do in plain C anyway. It is very easy to write C functions in
-PicoLisp, either in the kernel, as shared object libraries, or even inline in
-the Lisp code.
+and easier to do in plain <code>C</code> anyway. It is very easy to write
+<code>C</code> functions in PicoLisp, either in the kernel, as shared object
+libraries, or even inline in the Lisp code.
 
 <p>PicoLisp is very space-effective. Other Lisp systems reserve heap space twice
 as much as needed, or use rather large internal structures to store cells and
@@ -423,7 +425,8 @@ dynamic context
 </ol>
 
 <p>This is a form of lexical <i>scoping</i> - though we still have dynamic
-<i>binding</i> - of symbols, similar to the <code>static</code> keyword in C.
+<i>binding</i> - of symbols, similar to the <code>static</code> keyword in
+<code>C</code>.
 
 <p>In fact, these problems are a real threat, and may lead to mysterious bugs
 (other Lisps have similar problems, e.g. with symbol capture in macros). They
@@ -638,7 +641,7 @@ prefetch" would look down the CAR- and CDR-chains, and perhaps need only a
 single cache for both data and instructions.
 
 <p>Primitive functions like <code>set</code>, <code>val</code>, <code>if</code>
-and <code>while</code>, which are written in <Code>C</code> or assembly language
+and <code>while</code>, which are written in <code>C</code> or assembly language
 now, would be implemented in microcode. Plus a few I/O functions for hardware
 access. <code>EVAL</code> itself would be a microcode subroutine.
 
@@ -648,6 +651,16 @@ trivial due to the single cell size.
 
 <p>There would be no assembly-language. The lowest level (above the hardware and
 microcode levels) are s-expressions: The machine language is <i>Lisp</i>.
+
+
+<p><hr>
+<h2><a name="segfault">I get a segfault if I ...</a></h2>
+
+<p>PicoLisp is a pragmatic language. It doesn't check at runtime for all
+possible error conditions which won't occur during normal usage. Such errors are
+usually detected quickly at the first test run, and checking for them after that
+would just produce runtime overhead. It is recommended, though, to inspect the
+code periodically with <code><a <code><a href="refL.html#lint">lint</a></code>.
 
 
 <p><hr>

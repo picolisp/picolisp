@@ -176,7 +176,8 @@ argument with the <u>PicoLisp Home Directory</u>, as it was remembered during
 interpreter startup. Optionally, the name may be preceded by a "<code>+</code>"
 character (as used by <code><a href="refO.html#out">out</a></code>). This
 mechanism is used internally by all I/O functions. See also <code><a
-href="ref.html#invoc">Invocation</a></code> and <code><a
+href="ref.html#invoc">Invocation</a></code>, <code><a
+href="refB.html#basename">basename</a></code>. and <code><a
 href="refD.html#dirname">dirname</a></code>.
 
 <pre><code>
@@ -248,6 +249,15 @@ another process.
 
 <pre><code>
 : (tell 'pid 20290 'gc 0)  # Tell process 20290 to purge unused heap blocks
+-> 0
+</code></pre>
+
+<p><strong>Note:</strong> This function is deprecated, and will be removed in
+the next version. Please use the PID argument feature of <code>tell</code>
+instead. With that, the above example reduces to
+
+<pre><code>
+: (tell 20290 'gc 0)
 -> 0
 </code></pre>
 
@@ -765,6 +775,15 @@ following arguments. See also <code><a href="ref_.html#=:">=:</a></code>.
 -> 1
 : (prop 'X 'a)
 -> (1 . a)
+
+: (setq L '(A B C))
+-> (A B C)
+: (setq B 'D)
+-> D
+: (put L 2 0 'p 5)  # Store '5' under the 'p' propery of the value of 'B'
+-> 5
+: (getl 'D)
+-> ((5 . p))
 </code></pre>
 
 <dt><a name="put!"><code>(put! 'obj 'sym 'any) -> any</code></a>

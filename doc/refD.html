@@ -210,6 +210,7 @@ month and day is returned. When called with three numbers (or a list of three
 numbers) for the year, month and day, the corresponding date is returned (or
 <code>NIL</code> if they do not represent a legal date). See also <code><a
 href="refT.html#time">time</a></code>, <code><a
+href="refS.html#stamp">stamp</a></code>, <code><a
 href="ref_.html#$dat">$dat</a></code>, <code><a
 href="refD.html#dat$">dat$</a></code>, <code><a
 href="refD.html#datSym">datSym</a></code>, <code><a
@@ -668,8 +669,9 @@ non-<code>NIL</code>. See also <code><a href="refC.html#cd">cd</a></code> and
 </code></pre>
 
 <dt><a name="dirname"><code>(dirname 'any) -> sym</code></a>
-<dd>Returns the directory part of a path name <code>any</code>.
-See also <code><a href="refP.html#path">path</a></code>.
+<dd>Returns the directory part of a path name <code>any</code>. See also
+<code><a href="refB.html#basename">basename</a></code> and <code><a
+href="refP.html#path">path</a></code>.
 
 <pre><code>
 : (dirname "a/b/c/d")

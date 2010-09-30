@@ -618,11 +618,12 @@ Stack overflow
 -> ("routine2" "routine" . 4)
 </code></pre>
 
-<dt><a name="stamp"><code>(stamp ['dat 'tim]) -> sym</code></a>
+<dt><a name="stamp"><code>(stamp ['dat 'tim]|['T]) -> sym</code></a>
 <dd>Returns a date-time string in the form "YYYY-MM-DD HH:MM:SS". If
-<code>dat</code> and/or <code>tim</code> is missing, the current date or time is
-used. See also <code><a href="refD.html#date">date</a></code> and <code><a
-href="refT.html#time">time</a></code>.
+<code>dat</code> and <code>tim</code> is missing, the current date and time is
+used. If <code>T</code> is passed, the current Coordinated Universal Time (UTC)
+is used instead. See also <code><a href="refD.html#date">date</a></code> and
+<code><a href="refT.html#time">time</a></code>.
 
 <pre><code>
 : (stamp)
@@ -895,7 +896,16 @@ href="refE.html#ext?">ext?</a></code>.
 still sending data (via the <code><a href="refT.html#tell">tell</a></code>
 mechanism), a <code>select</code> system call is executed for all file
 descriptors and timers in the <code>VAL</code> of the global variable <code><a
-href="refR.html#*Run">*Run</a></code>. See also <code><a
+href="refR.html#*Run">*Run</a></code>. When used in a non-database context,
+<code>(tell)</code> should be called in the end to inform the parent process
+that it may grant synchronization to other processes waiting for
+<code>sync</code>. In a database context, where <code>sync</code> is usually
+called by <code><a href="refD.html#dbSync">dbSync</a></code>, this is not
+necessary because it is done internally by <code><a
+href="refC.html#commit">commit</a></code> or <code><a
+href="refR.html#rollback">rollback</a></code>.
+
+See also <code><a
 href="refK.html#key">key</a></code> and <code><a
 href="refW.html#wait">wait</a></code>.
 

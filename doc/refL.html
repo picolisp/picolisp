@@ -272,6 +272,35 @@ href="refN.html#noLint">noLint</a></code>.
 ...
 </code></pre>
 
+<dt><a name="lisp"><code>(lisp 'sym ['fun]) -> num</code></a>
+<dd>(64-bit version only) Installs under the tag <code>sym</code> a callback
+function <code>fun</code>, and returns a pointer <code>num</code> suitable to be
+passed to a C function via 'native'. If <code>fun</code> is <code>NIL</code>,
+the corresponding entry is freed. Maximally 24 callback functions can be
+installed that way. 'fun' should be a function of maximally five numbers, and
+should return a number. See also <code><a
+href="refN.html#native">native</a></code>.
+
+<pre><code>
+(load "lib/native.l")
+
+(gcc "ltest" NIL
+   (cbTest (Fun) cbTest 'N Fun) )
+
+long cbTest(int(*fun)(int,int,int,int,int)) {
+   return fun(1,2,3,4,5);
+}
+/**/
+
+: (cbTest
+   (lisp 'cbTest
+      '((A B C D E)
+         (msg (list A B C D E))
+         (* A B C D E) ) ) )
+(1 2 3 4 5)
+-> 120
+</code></pre>
+
 <dt><a name="list"><code>(list 'any ['any ..]) -> lst</code></a>
 <dd>Returns a list of all <code>any</code> arguments. See also <code><a
 href="refC.html#cons">cons</a></code>.
@@ -356,7 +385,7 @@ identical to that of <code><a href="refI.html#in">in</a></code>, with the
 exception that if an argument is a symbol and its first character is a hyphen
 '-', then that argument is parsed as an executable list (without the surrounding
 parentheses). When <code>any</code> is <code>T</code>, all remaining command
-line arguments are loaded recursively. When <code>any</code> is
+line arguments are <code>load</code>ed recursively. When <code>any</code> is
 <code>NIL</code>, standard input is read, a prompt is issued before each read
 operation, the results are printed to standard output (read-eval-print loop),
 and <code>load</code> terminates when an empty line is entered. In any case,

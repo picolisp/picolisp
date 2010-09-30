@@ -320,7 +320,7 @@ See `run-hooks'."
                       "space" "beep" "tab" "flush" "rewind" "rd" "pr" "wr" 
                       "rpc" "wait" "sync" "echo" "info" "file" "dir" "lines" 
                       "open" "close" "port" "listen" "accept" "host" "connect" 
-                      "nagle" "udp" "script" "once" "rc" "pretty" "pp" "show" 
+                      "udp" "script" "once" "rc" "pretty" "pp" "show" 
                       "view" "here" "prEval" "mail"
                       ;; Object Orientation
                       "*Class" "class" "dm" "rel" "var" "var:" "new" "type" 

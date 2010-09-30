@@ -1,4 +1,4 @@
-# 19may10abu
+# 27sep10abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -254,60 +254,54 @@
 
 (code 'rdLockDb)
    cmp (Solo) TSym  # Already locked whole DB?
-   if ne  # No
-      ld A (| F_RDLCK (hex "10000"))  # Read lock, length 1
-      ld C ((DbFiles))  # Descriptor of first file
-      jmp lockFileAC
-   end
-   ret
+   jeq ret  # Yes
+   ld A (| F_RDLCK (hex "10000"))  # Read lock, length 1
+   ld C ((DbFiles))  # Descriptor of first file
+   jmp lockFileAC
 
 (code 'wrLockDb)
    cmp (Solo) TSym  # Already locked whole DB?
-   if ne  # No
-      ld A (| F_WRLCK (hex "10000"))  # Write lock, length 1
-      ld C ((DbFiles))  # Descriptor of first file
-      jmp lockFileAC
-   end
-   ret
+   jeq ret  # Yes
+   ld A (| F_WRLCK (hex "10000"))  # Write lock, length 1
+   ld C ((DbFiles))  # Descriptor of first file
+   jmp lockFileAC
 
 (code 'rwUnlockDbA)
    cmp (Solo) TSym  # Already locked whole DB?
-   if ne  # No
-      null A  # Length zero?
-      if z  # Yes
-         push X
-         push Y
-         ld X (DbFiles)  # Iterate DB files
-         ld Y (DBs)  # Count
-         do
-            sub Y VIII  # Done?
-         while ne  # No
-            add X VIII  # Skip first, increment by sizeof(dbFile)
-            nul (X (+ IV 0))  # This one locked?
-            if nz  # Yes
-               ld A (| F_UNLCK (hex "00000"))  # Unlock, length 0
-               ld C (X)  # File descriptor
-               call unLockFileAC
-               set (X (+ IV 0)) 0  # Clear lock entry
-            end
-         loop
-         pop Y
-         pop X
-         ld (Solo) ZERO  # Reset solo mode
-         ld A 0  # Length zero again
-      end
-      or A F_UNLCK
-      ld C ((DbFiles))  # Unlock first file
-      call unLockFileAC
+   jeq ret  # Yes
+   null A  # Length zero?
+   if z  # Yes
+      push X
+      push Y
+      ld X (DbFiles)  # Iterate DB files
+      ld Y (DBs)  # Count
+      do
+         sub Y VIII  # Done?
+      while ne  # No
+         add X VIII  # Skip first, increment by sizeof(dbFile)
+         nul (X (+ IV 0))  # This one locked?
+         if nz  # Yes
+            ld A (| F_UNLCK (hex "00000"))  # Unlock, length 0
+            ld C (X)  # File descriptor
+            call unLockFileAC
+            set (X (+ IV 0)) 0  # Clear lock entry
+         end
+      loop
+      pop Y
+      pop X
+      ld (Solo) ZERO  # Reset solo mode
+      ld A 0  # Length zero again
    end
-   ret
+   or A F_UNLCK
+   ld C ((DbFiles))  # Unlock first file
+   jmp unLockFileAC
 
 (code 'tryLockCE_FA)
    do
-      ld (Flock L_START) C  # Start position ('l_whence' is SEEK_SET)
-      ld (Flock L_LEN) E  # Length
       ld A F_WRLCK  # Write lock
       st2 (Flock)  # 'l_type'
+      ld (Flock L_START) C  # Start position ('l_whence' is SEEK_SET)
+      ld (Flock L_LEN) E  # Length
       cc fcntl(((DbFile)) F_SETLK Flock)  # Try to lock
       nul4  # OK?
       if ns  # Yes
@@ -319,9 +313,9 @@
             cmp (Solo) TSym  # Already locked whole DB?
             if ne  # No
                ld (Solo) Nil  # Clear solo mode
+               setz
             end
          end
-         setz
          ret  # 'z'
       end
       call errno_A
@@ -333,10 +327,6 @@
             jne lockErr  # No
          end
       end
-      #? ld A F_WRLCK  # Write lock
-      #? st2 (Flock)  # 'l_type'
-      ld (Flock L_START) C  # Start position ('l_whence' is SEEK_SET)
-      ld (Flock L_LEN) E  # Length
       do
          cc fcntl(((DbFile)) F_GETLK Flock)  # Try to get lock
          nul4  # OK?
@@ -415,27 +405,28 @@
    cmp A C  # OK?
    jne dbWrErr  # No
    null (DbJnl)  # Journal?
-   jz Ret  # No
-   cmp A ((DbFile) III)  # Size (in A and C) equal to current file's block size?
-   if eq  # Yes
-      ld A BLKSIZE  # Use block unit size instead
+   if nz  # Yes
+      cmp A ((DbFile) III)  # Size (in A and C) equal to current file's block size?
+      if eq  # Yes
+         ld A BLKSIZE  # Use block unit size instead
+      end
+      cc putc_unlocked(A (DbJnl))  # Write size
+      sub S (+ BLK 2)  # <S> Buffer
+      ld A ((DbFile) I)  # Get file number
+      ld (S) B  # Store low byte
+      shr A 8
+      ld (S 1) B  # and high byte
+      ld A E  # Get position
+      shr A ((DbFile) II)  # Un-shift for current file
+      call setAdrAS  # Set block address in buffer
+      cc fwrite(S (+ BLK 2) 1 (DbJnl))  # Write file number and address
+      cmp A 1  # OK?
+      jne wrJnlErr  # No
+      cc fwrite(Z C 1 (DbJnl))  # Write C bytes from buffer Z
+      cmp A 1  # OK?
+      jne wrJnlErr  # No
+      add S (+ BLK 2)  # Drop buffer
    end
-   cc putc_unlocked(A (DbJnl))  # Write size
-   sub S (+ BLK 2)  # <S> Buffer
-   ld A ((DbFile) I)  # Get file number
-   ld (S) B  # Store low byte
-   shr A 8
-   ld (S 1) B  # and high byte
-   ld A E  # Get position
-   shr A ((DbFile) II)  # Un-shift for current file
-   call setAdrAS  # Set block address in buffer
-   cc fwrite(S (+ BLK 2) 1 (DbJnl))  # Write file number and address
-   cmp A 1  # OK?
-   jne wrJnlErr  # No
-   cc fwrite(Z C 1 (DbJnl))  # Write C bytes from buffer Z
-   cmp A 1  # OK?
-   jne wrJnlErr  # No
-   add S (+ BLK 2)  # Drop buffer
    ret
 
 (code 'logBlock)
@@ -868,6 +859,7 @@
                      ld C (DBs)  # Count
                      do
                         set (E (+ IV 1)) 0  # Clear dirty flag
+                        add E VIII  # Increment by sizeof(dbFile)
                         sub C VIII  # Done?
                      until z  # Yes
                      sub S (MaxBlkSize)  # <S> Buffer
@@ -946,6 +938,7 @@
          nul4  # OK?
          js dbSyncErrX  # No
       end
+      add E VIII  # Increment by sizeof(dbFile)
       sub C VIII  # Done?
    until z  # Yes
    ret
@@ -1527,6 +1520,7 @@
       do
          set (E (+ IV 1)) 0  # Clear dirty flag
          ld (E VII) 0  # and 'fluse'
+         add E VIII  # Increment by sizeof(dbFile)
          sub C VIII  # Done?
       until z  # Yes
       push X
@@ -1622,6 +1616,7 @@
             loop
             pop A  # Drop count
          end
+         add X VIII  # Increment by sizeof(dbFile)
          sub Y VIII  # Done?
       until z  # Yes
       cc putc_unlocked((hex "FF") (DbLog))  # Write end marker
@@ -1741,9 +1736,12 @@
                      lea A ((TellBuf) (- PIPE_BUF 10))  # Space for EXTERN+<8>+END?
                      cmp Z A
                      if ge  # No
-                        call tellEndZ  # Close 'tell'
+                        ld A 0  # Send to all PIDs
+                        call tellEndAZ  # Close 'tell'
                         lea Z (L (- (+ III PIPE_BUF)))  # Reset buffer pointer
                         call tellBegZ_Z  # Start new 'tell' message
+                        ld E (L I)  # Get 'any'
+                        call prTellEZ  # Print to 'tell'
                      end
                      ld E (X)  # Get external symbol
                      call prTellEZ  # Print to 'tell'
@@ -1767,9 +1765,12 @@
                      lea A ((TellBuf) (- PIPE_BUF 10))  # Space for EXTERN+<8>+END?
                      cmp Z A
                      if ge  # No
-                        call tellEndZ  # Close 'tell'
+                        ld A 0  # Send to all PIDs
+                        call tellEndAZ  # Close 'tell'
                         lea Z (L (- (+ III PIPE_BUF)))  # Reset buffer pointer
                         call tellBegZ_Z  # Start new 'tell' message
+                        ld E (L I)  # Get 'any'
+                        call prTellEZ  # Print to 'tell'
                      end
                      ld E (X)  # Get external symbol
                      call prTellEZ  # Print to 'tell'
@@ -1813,8 +1814,9 @@
    pop X
    null (L -I)  # Notify?
    if nz  # Yes
+      ld A 0  # Send to all PIDs
       ld Z (L -II)  # Get buffer pointer
-      call tellEndZ  # Close 'tell'
+      call tellEndAZ  # Close 'tell'
       add S PIPE_BUF  # Drop 'tell' buffer
       pop (TellBuf)
    end
@@ -1865,6 +1867,7 @@
    end
    ld A 0  # Length
    call rwUnlockDbA  # Unlock all
+   call unsync  # Release sync
    null (DbLog)  # Transaction log?
    if z  # No
       dec (EnvProtect)  # Unprotect
@@ -1873,6 +1876,8 @@
    ld C (DBs)  # Count
    do
       ld (E VII) -1  # Init 'fluse'
+      add E VIII  # Increment by sizeof(dbFile)
+      sub C VIII  # Done?
    until z  # Yes
    drop
    pop Z
@@ -1943,7 +1948,15 @@
          loop
       loop
    loop
-90 pop Y
+90 ld Y (Zap)  # Objects to delete?
+   atom Y
+   if z  # Yes
+      ld (Y) Nil  # Clear zap list
+   end
+   ld A 0  # Length
+   call rwUnlockDbA  # Unlock all
+   call unsync  # Release sync
+   pop Y
    pop X
    ld E TSym  # Return T
    ret

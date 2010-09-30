@@ -1,4 +1,4 @@
-/* 04jun10abu
+/* 23sep10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -63,7 +63,7 @@ typedef struct heap {
 } heap;
 
 typedef struct child {
-   int pid;
+   pid_t pid;
    int hear, tell;
    int ofs, cnt;
    byte *buf;
@@ -280,6 +280,7 @@ void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
 void cellError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
+any circ(any);
 void closeInFile(int);
 void closeOnExec(any,int);
 void closeOutFile(int);

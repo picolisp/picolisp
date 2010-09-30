@@ -1,4 +1,4 @@
-/* 03jun10abu
+/* 27sep10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,6 +19,7 @@ static char Delim[] = " \t\n\r\"'(),[]`~{}";
 static int StrI;
 static cell StrCell, *StrP;
 static bool Sync;
+static pid_t Talking;
 static byte *PipeBuf, *PipePtr;
 static void (*PutSave)(int);
 static byte TBuf[] = {INTERN+4, 'T'};
@@ -143,9 +144,9 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
          fcntl(fd, F_SETFL, f);
       if (n > 0) {
          for (;;) {
-            p += n;
             if ((cnt -= n) == 0)
                return 1;
+            p += n;
             while ((n = read(fd, p, cnt)) <= 0) {
                if (!n || errno != EINTR)
                   return 0;
@@ -168,17 +169,29 @@ int rdBytes(int fd, byte *p, int cnt, bool nb) {
 bool wrBytes(int fd, byte *p, int cnt) {
    int n;
 
-   do {
-      if ((n = write(fd, p, cnt)) >= 0)
-         p += n, cnt -= n;
-      else if (errno == EBADF || errno == EPIPE || errno == ECONNRESET)
-         return NO;
-      else if (errno != EINTR)
-         writeErr("bytes");
-      if (*Signal)
-         sighandler(NULL);
-   } while (cnt);
-   return YES;
+   for (;;) {
+      if ((n = write(fd, p, cnt)) >= 0) {
+         if ((cnt -= n) == 0)
+            return YES;
+         p += n;
+      }
+      else {
+         if (errno == EBADF || errno == EPIPE || errno == ECONNRESET)
+            return NO;
+         if (errno != EINTR)
+            writeErr("bytes");
+         if (*Signal)
+            sighandler(NULL);
+      }
+   }
+}
+
+static void clsChild(int i) {
+   if (Child[i].pid == Talking)
+      Talking = 0;
+   Child[i].pid = 0;
+   close(Child[i].hear),  close(Child[i].tell);
+   free(Child[i].buf);
 }
 
 static void wrChild(int i, byte *p, int cnt) {
@@ -194,9 +207,7 @@ static void wrChild(int i, byte *p, int cnt) {
          else if (errno == EAGAIN)
             break;
          else if (errno == EPIPE || errno == ECONNRESET) {
-            Child[i].pid = 0;
-            close(Child[i].hear),  close(Child[i].tell);
-            free(Child[i].buf);
+            clsChild(i);
             return;
          }
          else if (errno != EINTR)
@@ -392,18 +403,31 @@ void binPrint(int extn, any x) {
          prNum(EXTERN, extn? extOffs(-extn, y) : y);
    }
    else {
-      y = x;
       putBin(BEG);
-      while (binPrint(extn, car(x)), !isNil(x = cdr(x))) {
-         if (x == y) {
-            putBin(DOT);
-            break;
+      if ((y = circ(x)) == NULL) {
+         while (binPrint(extn, car(x)), !isNil(x = cdr(x))) {
+            if (!isCell(x)) {
+               putBin(DOT);
+               binPrint(extn, x);
+               return;
+            }
          }
-         if (!isCell(x)) {
-            putBin(DOT);
-            binPrint(extn, x);
-            return;
-         }
+      }
+      else if (y == x) {
+         do
+            binPrint(extn, car(x));
+         while (y != (x = cdr(x)));
+         putBin(DOT);
+      }
+      else {
+         do
+            binPrint(extn, car(x));
+         while (y != (x = cdr(x)));
+         putBin(DOT),  putBin(BEG);
+         do
+            binPrint(extn, car(x));
+         while (y != (x = cdr(x)));
+         putBin(DOT),  putBin(END);
       }
       putBin(END);
    }
@@ -431,17 +455,25 @@ static void tellBeg(ptr *pb, ptr *pp, ptr buf) {
 
 static void prTell(any x) {putBin = putTell,  binPrint(0, x);}
 
-static void tellEnd(ptr *pb, ptr *pp) {
+static void tellEnd(ptr *pb, ptr *pp, int pid) {
    int i, n;
 
    *PipePtr++ = END;
-   *(int*)PipeBuf = n = PipePtr - PipeBuf - sizeof(int);
+   *(int*)PipeBuf = (n = PipePtr - PipeBuf - sizeof(int)) | pid << 16;
    if (Tell && !wrBytes(Tell, PipeBuf, n+sizeof(int)))
       close(Tell),  Tell = 0;
    for (i = 0; i < Children; ++i)
-      if (Child[i].pid)
+      if (Child[i].pid && (!pid || pid == Child[i].pid))
          wrChild(i, PipeBuf+sizeof(int), n);
    PipePtr = *pp,  PipeBuf = *pb;
+}
+
+static void unsync(void) {
+   int n = 0;
+
+   if (Tell && !wrBytes(Tell, (byte*)&n, sizeof(int)))
+      close(Tell),  Tell = 0;
+   Sync = NO;
 }
 
 static any rdHear(void) {
@@ -1283,7 +1315,6 @@ long waitFd(any ex, int fd, long ms) {
    cell c1, c2, c3;
    int i, j, m, n;
    long t;
-   bool flg;
    fd_set rdSet, wrSet;
    struct timeval *tp, tv;
 #ifndef __linux__
@@ -1337,16 +1368,16 @@ long waitFd(any ex, int fd, long ms) {
          FD_SET(Spkr, &rdSet);
          if (Spkr > m)
             m = Spkr;
-      }
-      for (i = 0; i < Children; ++i) {
-         if (Child[i].pid) {
-            FD_SET(Child[i].hear, &rdSet);
-            if (Child[i].hear > m)
-               m = Child[i].hear;
-            if (Child[i].cnt) {
-               FD_SET(Child[i].tell, &wrSet);
-               if (Child[i].tell > m)
-                  m = Child[i].tell;
+         for (i = 0; i < Children; ++i) {
+            if (Child[i].pid) {
+               FD_SET(Child[i].hear, &rdSet);
+               if (Child[i].hear > m)
+                  m = Child[i].hear;
+               if (Child[i].cnt) {
+                  FD_SET(Child[i].tell, &wrSet);
+                  if (Child[i].tell > m)
+                     m = Child[i].tell;
+               }
             }
          }
       }
@@ -1376,48 +1407,63 @@ long waitFd(any ex, int fd, long ms) {
          if (ms > 0  &&  (ms -= t) < 0)
             ms = 0;
       }
-      for (flg = NO, i = 0; i < Children; ++i) {
-         if (Child[i].pid) {
-            if (FD_ISSET(Child[i].hear, &rdSet)) {
-               if ((m = rdBytes(Child[i].hear, (byte*)&n, sizeof(int), YES)) >= 0) {
-                  byte buf[PIPE_BUF - sizeof(int)];
+      if (Spkr) {
+         ++Env.protect;
+         for (i = 0; i < Children; ++i) {
+            if (Child[i].pid) {
+               if (FD_ISSET(Child[i].hear, &rdSet)) {
+                  if ((m = rdBytes(Child[i].hear, (byte*)&n, sizeof(int), YES)) >= 0) {
+                     byte buf[PIPE_BUF - sizeof(int)];
 
-                  if (m  &&  rdBytes(Child[i].hear, buf, n, NO)) {
-                     for (flg = YES, j = 0; j < Children; ++j)
-                        if (j != i  &&  Child[j].pid)
-                           wrChild(j, buf, n);
-                  }
-                  else {
-                     Child[i].pid = 0;
-                     close(Child[i].hear),  close(Child[i].tell);
-                     free(Child[i].buf);
-                     continue;
-                  }
-               }
-            }
-            if (FD_ISSET(Child[i].tell, &wrSet)) {
-               n = *(int*)(Child[i].buf + Child[i].ofs);
-               if (wrBytes(Child[i].tell, Child[i].buf + Child[i].ofs + sizeof(int), n)) {
-                  Child[i].ofs += sizeof(int) + n;
-                  if (2 * Child[i].ofs >= Child[i].cnt) {
-                     if (Child[i].cnt -= Child[i].ofs) {
-                        memcpy(Child[i].buf, Child[i].buf + Child[i].ofs, Child[i].cnt);
-                        Child[i].buf = alloc(Child[i].buf, Child[i].cnt);
+                     if (m == 0) {
+                        clsChild(i);
+                        continue;
                      }
-                     Child[i].ofs = 0;
+                     if (n == 0) {
+                        if (Child[i].pid == Talking)
+                           Talking = 0;
+                     }
+                     else {
+                        pid_t pid = n >> 16;
+
+                        n &= 0xFFFF;
+                        if (rdBytes(Child[i].hear, buf, n, NO)) {
+                           for (j = 0; j < Children; ++j)
+                              if (j != i && Child[j].pid && (!pid || pid == Child[j].pid))
+                                 wrChild(j, buf, n);
+                        }
+                        else {
+                           clsChild(i);
+                           continue;
+                        }
+                     }
                   }
                }
-               else {
-                  Child[i].pid = 0;
-                  close(Child[i].hear),  close(Child[i].tell);
-                  free(Child[i].buf);
+               if (FD_ISSET(Child[i].tell, &wrSet)) {
+                  n = *(int*)(Child[i].buf + Child[i].ofs);
+                  if (wrBytes(Child[i].tell, Child[i].buf + Child[i].ofs + sizeof(int), n)) {
+                     Child[i].ofs += sizeof(int) + n;
+                     if (2 * Child[i].ofs >= Child[i].cnt) {
+                        if (Child[i].cnt -= Child[i].ofs) {
+                           memcpy(Child[i].buf, Child[i].buf + Child[i].ofs, Child[i].cnt);
+                           Child[i].buf = alloc(Child[i].buf, Child[i].cnt);
+                        }
+                        Child[i].ofs = 0;
+                     }
+                  }
+                  else
+                     clsChild(i);
                }
             }
          }
+         if (!Talking  &&  FD_ISSET(Spkr,&rdSet)  &&
+                  rdBytes(Spkr, (byte*)&m, sizeof(int), YES) > 0  &&
+                  Child[m].pid ) {
+            Talking = Child[m].pid;
+            wrChild(m, TBuf, sizeof(TBuf));
+         }
+         --Env.protect;
       }
-      if (!flg  &&  Spkr  &&  FD_ISSET(Spkr,&rdSet)  &&
-            rdBytes(Spkr, (byte*)&m, sizeof(int), YES) > 0  &&  Child[m].pid )
-         wrChild(m, TBuf, sizeof(TBuf));
       if (Hear && Hear != fd && isSet(Hear, &rdSet)) {
          if ((data(c3) = rdHear()) == NULL)
             close(Hear),  closeInFile(Hear),  closeOutFile(Hear),  Hear = 0;
@@ -1477,16 +1523,23 @@ any doSync(any ex) {
 
    if (!Mic || !Hear)
       return Nil;
+   if (Sync)
+      return T;
    p = (byte*)&Slot;
    cnt = sizeof(int);
-   do {
-      if ((n = write(Mic, p, cnt)) >= 0)
-         p += n, cnt -= n;
-      else if (errno != EINTR)
-         writeErr("sync");
-      if (*Signal)
-         sighandler(ex);
-   } while (cnt);
+   for (;;) {
+      if ((n = write(Mic, p, cnt)) >= 0) {
+         if ((cnt -= n) == 0)
+            break;
+         p += n;
+      }
+      else {
+         if (errno != EINTR)
+            writeErr("sync");
+         if (*Signal)
+            sighandler(ex);
+      }
+   }
    Sync = NO;
    do
       waitFd(ex, -1, -1);
@@ -1508,19 +1561,28 @@ any doHear(any ex) {
    return x;
 }
 
-// (tell 'sym ['any ..]) -> any
+// (tell ['cnt] 'sym ['any ..]) -> any
 any doTell(any x) {
    any y;
+   int pid;
    ptr pbSave, ppSave;
    byte buf[PIPE_BUF];
 
    if (!Tell && !Children)
       return Nil;
+   if (!isCell(x = cdr(x))) {
+      unsync();
+      return Nil;
+   }
+   pid = 0;
+   if (isNum(y = EVAL(car(x)))) {
+      pid = (int)unDig(y)/2;
+      x = cdr(x),  y = EVAL(car(x));
+   }
    tellBeg(&pbSave, &ppSave, buf);
-   do
-      x = cdr(x),  prTell(y = EVAL(car(x)));
-   while (isCell(cdr(x)));
-   tellEnd(&pbSave, &ppSave);
+   while (prTell(y), isCell(x = cdr(x)))
+      y = EVAL(car(x));
+   tellEnd(&pbSave, &ppSave, pid);
    return y;
 }
 
@@ -2123,7 +2185,7 @@ any doEcho(any ex) {
                   if (om >= 0)
                      for (j = 0, n = op-p[i]; j <= n; ++j)
                         Env.put(av[om][j]);
-                  Env.get();
+                  Chr = 0;
                   x = data(c[i]);
                   goto done;
                }
@@ -2162,11 +2224,17 @@ any doEcho(any ex) {
          if (Chr < 0)
             return Nil;
    }
-   for (cnt = xCnt(ex,y); --cnt >= 0; Env.get()) {
-      if (Chr < 0)
-         return Nil;
-      Env.put(Chr);
+   if ((cnt = xCnt(ex,y)) > 0) {
+      for (;;) {
+         if (Chr < 0)
+            return Nil;
+         Env.put(Chr);
+         if (!--cnt)
+            break;
+         Env.get();
+      }
    }
+   Chr = 0;
    return T;
 }
 
@@ -2209,8 +2277,13 @@ static void outSym(int c) {
 void outName(any s) {outSym(symByte(name(s)));}
 
 void outNum(any x) {
-   if (isNum(cdr(numCell(x))))
-      outName(numToSym(x, 0, 0, 0));
+   if (isNum(cdr(numCell(x)))) {
+      cell c1;
+
+      Push(c1, numToSym(x, 0, 0, 0));
+      outName(data(c1));
+      drop(c1);
+   }
    else {
       char *p, buf[BITS/2];
 
@@ -2283,19 +2356,34 @@ void print1(any x) {
    else if (car(x) == Quote  &&  x != cdr(x))
       Env.put('\''),  print1(cdr(x));
    else {
-      any y = x;
+      any y;
+
       Env.put('(');
-      while (print1(car(x)), !isNil(x = cdr(x))) {
-         if (x == y) {
-            outString(" .");
-            break;
+      if ((y = circ(x)) == NULL) {
+         while (print1(car(x)), !isNil(x = cdr(x))) {
+            if (!isCell(x)) {
+               outString(" . ");
+               print1(x);
+               break;
+            }
+            space();
          }
-         if (!isCell(x)) {
-            outString(" . ");
-            print1(x);
-            break;
-         }
-         space();
+      }
+      else if (y == x) {
+         do
+            print1(car(x)),  space();
+         while (y != (x = cdr(x)));
+         Env.put('.');
+      }
+      else {
+         do
+            print1(car(x)),  space();
+         while (y != (x = cdr(x)));
+         outString(". (");
+         do
+            print1(car(x)),  space();
+         while (y != (x = cdr(x)));
+         outString(".)");
       }
       Env.put(')');
    }
@@ -2687,10 +2775,6 @@ static pid_t tryLock(off_t n, off_t len) {
       }
       if (errno != EINTR  &&  errno != EACCES  &&  errno != EAGAIN)
          lockErr();
-      fl.l_type = F_WRLCK;  //??
-      fl.l_whence = SEEK_SET;
-      fl.l_start = n;
-      fl.l_len = len;
       while (fcntl(BlkFile[F], F_GETLK, &fl) < 0)
          if (errno != EINTR)
             lockErr();
@@ -2774,7 +2858,7 @@ bool isLife(any x) {
    adr n;
    byte buf[2*BLK];
 
-   if (n = blk64(name(x))*BLKSIZE) {
+   if ((n = blk64(name(x))*BLKSIZE) > 0) {
       if (F < Files) {
          for (x = tail1(x); !isSym(x); x = cdr(cellPtr(x)));
          if (x == At || x == At2)
@@ -3191,7 +3275,7 @@ void db(any ex, any s, int a) {
             tail(s) = ext(x);
          }
          else if (*p == At)
-            *p =  At2;  // loaded -> dirty
+            *p = At2;  // loaded -> dirty
          else {  // NIL & 1 | 2
             adr n;
             cell c[1];
@@ -3327,7 +3411,7 @@ any doCommit(any ex) {
                cdr(z) = At;  // loaded
                if (note) {
                   if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
-                     tellEnd(&pbSave, &ppSave);
+                     tellEnd(&pbSave, &ppSave, 0);
                      tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
                   }
                   prTell(car(x));
@@ -3340,7 +3424,7 @@ any doCommit(any ex) {
                cleanUp(n*BLKSIZE);
                if (note) {
                   if (PipePtr >= PipeBuf + PIPE_BUF - 12) {  // EXTERN <2+1+7> END
-                     tellEnd(&pbSave, &ppSave);
+                     tellEnd(&pbSave, &ppSave, 0);
                      tellBeg(&pbSave, &ppSave, buf),  prTell(data(c1));
                   }
                   prTell(car(x));
@@ -3351,7 +3435,7 @@ any doCommit(any ex) {
       }
    }
    if (note)
-      tellEnd(&pbSave, &ppSave);
+      tellEnd(&pbSave, &ppSave, 0);
    x = cdddr(ex),  EVAL(car(x));
    if (Jnl)
       fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
@@ -3382,6 +3466,7 @@ any doCommit(any ex) {
          truncErr(ex);
    }
    rwUnlock(0);  // Unlock all
+   unsync();
    if (!Log)
       --Env.protect;
    for (F = 0; F < Files; ++F)
@@ -3409,6 +3494,7 @@ any doRollback(any x) {
    if (isCell(x = val(Zap)))
       car(x) = Nil;
    rwUnlock(0);  // Unlock all
+   unsync();
    return T;
 }
 

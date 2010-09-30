@@ -1,4 +1,4 @@
-# 10jun10abu
+# 03sep10abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -3123,9 +3123,7 @@
    if nc  # No
       shl A 1  # Loaded?
       if c  # Yes
-         clrc  # Set "not loaded"
-         rcr A 1
-         rcr A 1
+         ror A 2  # Set "not loaded"
          ld (E) Nil  # Clear value
          or A SYM  # Set 'extern' tag
          ld (E TAIL) A

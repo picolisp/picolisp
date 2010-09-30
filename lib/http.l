@@ -1,4 +1,4 @@
-# 27jun10abu
+# 24aug10abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -96,8 +96,8 @@
       (when (accept *Sock)
          (task @ (http @)) ) ) )
 
-(de baseHRef (Port)
-   (pack
+(de baseHRef (Port . @)
+   (pass pack
       (or *Gate "http") "://" *Host
       (if *Gate "/" ":") (or Port *Port) "/" ) )
 
@@ -154,7 +154,12 @@
                      ((if *ContLen (ht:Read @) (line))
                         (for L (split @ '&)
                            (when (cdr (setq L (split L "=")))
-                              (_htSet (car L) (ht:Pack (cadr L))) ) ) )
+                              (let? S (_htSet (car L) (ht:Pack (cadr L)))
+                                 (and
+                                    (cddr L)
+                                    (format (car @))
+                                    (unless (out (tmp S) (echo @))
+                                       (call 'rm "-f" (tmp S)) ) ) ) ) ) )
                      (T (throw "http")) ) )
                (T
                   (out S
@@ -219,22 +224,23 @@
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (task (close S))) ) )
 
+(de _htHost H
+   (setq *Host
+      (cond
+         (*Gate H)
+         ((index ":" H) (head (dec @) H))
+         (T H) ) ) )
+
 (de _htHead ()
-   (use (L @X @Y)
-      (setq *Http1 (format (car @H))  *Chunked (gt0 *Http1))
+   (use (L @X @Y Pil)
+      (setq *Http1 (format (car @H))  *Chunked (gt0 *Http1)  Pil)
       (if (index "~" @U)
          (setq *ConId (pack (head @ @U))  @U (cdr (nth @U @)))
          (off *ConId) )
       (while (setq L (line))
          (cond
-            ((match '(~(chop "Gate: ") @X " " . @Y) L)
-               (setq *Gate (pack @X)  *Adr (pack @Y)) )
             ((match '(~(chop "Host: ") . @X) L)
-               (setq *Host
-                  (cond
-                     (*Gate @X)
-                     ((index ":" @X) (head (dec @) @X))
-                     (T @X) ) ) )
+               (fifo 'Pil (cons '_htHost @X)) )
             ((match '(~(chop "Referer: ") . @X) L)
                (setq *Referer @X) )
             ((match '(~(chop "Cookie: ") . @X) L)
@@ -251,7 +257,11 @@
             ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
                (setq
                   *MPartLim (append '(- -) @X)
-                  *MPartEnd (append *MPartLim '(- -)) ) ) ) ) ) )
+                  *MPartEnd (append *MPartLim '(- -)) ) )
+            ((match '(~(chop "X-Pil: ") @X "=" . @Y) L)
+               (fifo 'Pil (list 'setq (intern (pack @X)) (htArg @Y))) ) ) )
+      (while Pil
+         (eval (fifo 'Pil)) ) ) )
 
 # rfc1867 multipart/form-data
 (de _htMultipart ()
@@ -394,7 +404,7 @@
 (de srcUrl (Url)
    (if (or (pre? "http:" Url) (pre? "https:" Url))
       Url
-      (pack (baseHRef *Port1) Url) ) )
+      (baseHRef *Port1 Url) ) )
 
 (de sesId (Url)
    (if

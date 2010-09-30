@@ -1,4 +1,4 @@
-# 22mar10abu
+# 07aug10abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -145,6 +145,13 @@
    (test 123 (read))
    (test 'abc (read))
    (test '(d e f) (read)) )
+(let F (tmp "file")
+   (test "12"
+      (pipe (in F (echo 2))
+         (line T) ) )
+   (test "23"
+      (pipe (in F (echo 1 2))
+         (line T) ) ) )
 
 
 ### prin prinl space print printsp println ###

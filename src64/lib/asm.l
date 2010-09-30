@@ -1,4 +1,4 @@
-# 02jun10abu
+# 05aug10abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *Registers optimize
@@ -152,12 +152,12 @@
                            (list (car L) (cadr L2))
                            L ) ) ) )
                *Program ) ) ) )
-      (setq *Program  # Remove unreachable statements
-         (make
-            (while *Program
-               (when (memq (car (link (pop '*Program))) '(jmp ret eval/ret))
-                  (while (and *Program (n== ': (caar *Program)))
-                     (pop '*Program) ) ) ) ) )
+   (setq *Program  # Remove unreachable statements
+      (make
+         (while *Program
+            (when (memq (car (link (pop '*Program))) '(jmp ret eval/ret))
+               (while (and *Program (n== ': (caar *Program)))
+                  (pop '*Program) ) ) ) ) )
    (setq *Program  # Remove zero jumps
       (make
          (while *Program
@@ -396,10 +396,13 @@
       (dec (destination) "*Mode")
       (div (source) "*Mode")
       (drop)
+      (dval)
       (eval)
       (eval+)
       (eval/ret)
       (exec (reg (read)))
+      (fix)
+      (fval)
       (hx2 (read))
       (inc (destination) "*Mode")
       (initCode)

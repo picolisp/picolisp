@@ -1,4 +1,4 @@
-# 22mar10abu
+# 12jul10abu
 # (c) Software Lab. Alexander Burger
 
 (load "lib/term.l")
@@ -55,19 +55,17 @@
 (de wertFeld (X Y)
    (when
       (=0
-         (set
-            (nth *Feld Y X)
-            (sum
+         (set (nth *Feld Y X)
+            (cnt
                '((DX DY)
-                  (if (=T (get *Feld (+ Y DY) (+ X DX)))
-                     1 0 ) )
+                  (=T (get *Feld (+ Y DY) (+ X DX))) )
                *NachbarX
                *NachbarY ) ) )
       (mapc
          '((DX DY)
             (and
-               (<= 1 (inc 'DX X) *FeldX)
-               (<= 1 (inc 'DY Y) *FeldY)
+               (>= *FeldX (inc 'DX X) 1)
+               (>= *FeldY (inc 'DY Y) 1)
                (not (member (cons DX DY) *Visit))
                (push '*Visit (cons DX DY))
                (wertFeld DX DY) ) )

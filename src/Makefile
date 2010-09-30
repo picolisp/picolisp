@@ -1,4 +1,4 @@
-# 09dec09abu
+# 12aug10abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -23,9 +23,9 @@ ifeq ($(shell uname), Linux)
 else
 ifeq ($(shell uname), OpenBSD)
 	OS = OpenBSD
-	PICOLISP-FLAGS = -m32 -rdynamic
+	PICOLISP-FLAGS = -m32 -rdynamic -Wl,-E
 	LIB-FLAGS = -lc -lm
-	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	DYNAMIC-LIB-FLAGS = -Wl,-E -Wl,-shared
 	STRIP = strip
 else
 ifeq ($(shell uname), FreeBSD)

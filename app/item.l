@@ -1,4 +1,4 @@
-# 03jan09abu
+# 09aug10abu
 # (c) Software Lab. Alexander Burger
 
 (must "Item" Item)
@@ -27,14 +27,16 @@
             ,"Picture"
             (prog
                (gui '(+Able +UpField) '(not (: home obj jpg)) 30)
-               (gui '(+Button) '(if (: home obj jpg) ,"Uninstall" ,"Install")
-                  '(if (: home obj jpg)
-                     (ask ,"Uninstall Picture?"
-                        (put!> (: home top 1 obj) 'jpg NIL) )
-                     (let? F (val> (field -1))
-                        (blob! (: home obj) 'jpg (tmp F)) ) ) ) ) )
+               (gui '(+Drop +Button) '(field -1)
+                  '(if (: home obj jpg) ,"Uninstall" ,"Install")
+                  '(cond
+                     ((: home obj jpg)
+                        (ask ,"Uninstall Picture?"
+                           (put!> (: home top 1 obj) 'jpg NIL) ) )
+                     ((: drop) (blob! (: home obj) 'jpg @)) ) ) ) )
          (<spread> NIL (editButton T))
-         (when (: obj jpg)
-            (<img> (allow (blob (: obj) 'jpg)) ,"Picture") ) ) ) )
+         (gui '(+Img)
+            '(and (: home obj jpg) (allow (blob (: home obj) 'jpg)))
+            ,"Picture") ) ) )
 
 # vi:et:ts=3:sw=3

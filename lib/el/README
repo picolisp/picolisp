@@ -1,0 +1,23 @@
+In order to get the picolisp-mode working correctly you have to add the following expressions to your .emacs and adapt them according to your set-up:
+
+(add-to-list 'load-path "<path-to>/picoLisp/lib/el")
+(load "tsm.el") ;; Picolisp TransientSymbolsMarkup (*Tsm)
+(autoload 'run-picolisp "inferior-picolisp")
+(autoload 'picolisp-mode "picolisp" "Major mode for editing Picolisp." t)
+(setq picolisp-program-name "<path-to>/picoLisp/plmod")
+
+If you have also SLIME installed, it will suck all possible lisp extensions up (greedy bastard). So in order to get the correct file-association for picolisp files you'll have to also add this:
+
+(add-to-list 'auto-mode-alist '("\\.l$" . picolisp-mode))
+
+If you want, you can add a few hooks for convenience:
+
+(add-hook 'picolisp-mode-hook
+   (lambda ()
+      (paredit-mode +1) ;; Loads paredit mode automatically
+      (tsm-mode) ;; Enables TSM
+      (define-key picolisp-mode-map (kbd "RET") 'newline-and-indent)
+      (define-key picolisp-mode-map (kbd "C-h") 'paredit-backward-delete) ) )
+
+
+By the way, don't forget to patch your paredit.el (v21) with the patch provided to get a smoother editing.

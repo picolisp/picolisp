@@ -1,4 +1,4 @@
-/* 22jun10abu
+/* 04sep10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1533,7 +1533,6 @@ any doCall(any ex) {
    flushAll();
    if ((pid = fork()) == 0) {
       setpgid(0,0);
-      tcsetpgrp(0,getpgrp());
       execvp(av[0], av);
       execError(av[0]);
    }
@@ -1543,7 +1542,8 @@ any doCall(any ex) {
    if (pid < 0)
       err(ex, NULL, "fork");
    setpgid(pid,0);
-   tcsetpgrp(0,pid);
+   if (Termio)
+      tcsetpgrp(0,pid);
    for (;;) {
       while (waitpid(pid, &res, WUNTRACED) < 0) {
          if (errno != EINTR)
@@ -1551,11 +1551,13 @@ any doCall(any ex) {
          if (*Signal)
             sighandler(ex);
       }
-      tcsetpgrp(0,getpgrp());
+      if (Termio)
+         tcsetpgrp(0,getpgrp());
       if (!WIFSTOPPED(res))
          return res == 0? T : Nil;
       load(NULL, '+', Nil);
-      tcsetpgrp(0,pid);
+      if (Termio)
+         tcsetpgrp(0,pid);
       kill(pid, SIGCONT);
    }
 }

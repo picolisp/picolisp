@@ -1,7 +1,7 @@
-# 21jan07abu
+# 10jul10abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 ### Fields/Board ###
 # val lst
@@ -71,3 +71,5 @@
                   (T (= 9 (: val)) (=: val 0)) )
                (recurse (cdr *Fields)) ) ) )
       (display) ) )
+
+# vi:et:ts=3:sw=3

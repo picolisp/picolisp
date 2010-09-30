@@ -1,50 +1,58 @@
-26jun10abu
+28sep10abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0.3
+         Release Notes for picoLisp-3.0.4
          ================================
 
-A. The underlined display of transient symbols in the documentation is changed
-   back to double quotes, to allow an easier copy/paste of example code
-   fragments.
+A. In the 64-bit version bignum division is now faster by a factor between 20
+   and 60. That version had used an inefficient algorithm (bitwise shifts),
+   which was now replaced by Knuth's wordwise division algorithm (as is used
+   32-bit version).
 
-B. The function 'not' is included in the group of flow- and logic-functions
-   which store non-NIL results of their conditional expressions in '@' (see the
-   chapter "@ Result" in "doc/ref.html"). This makes it consistent with 'nand'
-   and 'nor'.
+B. An OpenGL library (64-bit) is now part of the standard release.
 
-C. The line editor "lib/led.l" cycles with TAB also through path names (in
-   addition to internal symbols).
+C. The 'native' function now also accepts up to six fixpoint arguments of the
+   form (value . 1.0), and can return scaled fixpoint numbers if the return spec
+   is a number (typically 1.0).
 
-D. The 'format' number <-> string conversion function now also accepts a list
-   argument. This is like as if 'pack' were built-in. Where
+D. HTTP file uploads can now be achieved with Drag & Drop, using the new '+Drop'
+   button prefix class. For example, a simple file-upload GUI which accepts a
+   file and copies it to some destination:
 
-      (format (pack Lst))
+      (gui '(+UpField) 30)
+      (gui '(+Button) "Upload File"
+         '(let? F (val> (field -1))
+            (call 'cp (tmp F) (some-destination)) ) )
 
-   had to be written, now
+   may now be written as
 
-      (format Lst)
+      (gui '(+UpField) 30)
+      (gui '(+Drop +Button) '(field -1) "Upload File"
+         '(when (: drop)
+            (call 'cp @ (some-destination)) ) )
 
-   will also do.
+   This allows manual file selection as before, but you can also drag the file
+   and drop it onto the "Upload File" button. The '+Drag' prefix takes a
+   references of the related '+UpField', and sets the 'drop' property of its GUI
+   component to a proper value that can be used in the action expression.
 
-E. PicoLisp now supports coroutines (multiple independent execution contexts),
-   though only in the 64-bit version. More about that in
-   "doc/ref.html#coroutines".
+   Note that this works only in HTML5 capable browsers (e.g Firefox 3.6),
+   supporting the JavaScript File API.
 
-F. The stack is now checked at runtime (also only in the 64-bit version). This
-   became necessary because coroutines require separate stack segments. Until
-   now (and still in the 32-bit version) the stack could grow until the
-   operating system sent a segmentation violation signal. With the stack checks,
-   a controlled error handler is entered upon stack overflow. The stack segment
-   size can be manipulated with the new 'stack' function.
+E. The license was changed from GPL to the MIT/X11 License with this release
+   (see the file "COPYING").
 
-G. There is now a basic rational arithmetics package (fractional numbers) in
-   "lib/frac.l". Fractions are represented as dotted pairs.
+F. The usage of the poll(2) system call in the 64-bit version was found to cause
+   errors. The database stress test in "misc/stress.l" occasionally indicated
+   inconsistencies (for reasons which are not completely clear). Therefore, the
+   64-bit version is now - like the 32-bit version - based on select(2). And,
+   both versions employ now a different strategy for syncing the communication
+   between child processes. This required a slight change in the semantics of
+   'sync' and 'tell', which should however not have any influence on normal
+   applications.
 
-      : (f+ (1 . 2) (1 . 3))
-      -> (5 . 6)
-      : (f* (1 . 2) (1 . 3))
-      -> (1 . 6)
-      : (let S (frac 0 1) (for N 10 (setq S (f+ S (frac 1 N)))))
-      -> (7381 . 2520)
+G. The 'pid' function is deprecated. It will be removed in the next release.
+   This was announced in the mailing list in
+
+      http://www.mail-archive.com/picolisp@software-lab.de/msg01949.html

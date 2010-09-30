@@ -1,4 +1,4 @@
-# 13jun10abu
+# 11sep10abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -77,115 +77,118 @@
 ========================================================================
 
    Instruction set:
-      nop                  # No operation
+      nop               # No operation
 
    Move Instructions:
-      ld dst src           # Load 'dst' from 'src' [---]
-      ld2 src              # Load 'A' from two bytes 'src' (unsigned)
-      ld4 src              # Load 'A' from four bytes 'src' (unsigned)
-      ldc dst src          # Load if Carry 'dst' from 'src'
-      ldnc dst src         # Load if not Carry 'dst' from 'src'
-      ldz dst src          # Load if Zero 'dst' from 'src'
-      ldnz dst src         # Load if not Zero 'dst' from 'src'
-      lea dst src          # Load 'dst' with effective address of 'src'
-      st2 dst              # Store two bytes from 'A' into 'dst'
-      st4 dst              # Store four bytes from 'A' into 'dst'
-      xchg dst dst         # Exchange 'dst's
-      movn dst src cnt     # Move 'cnt' bytes from 'src' to 'dst'
-      mset dst cnt         # Set 'cnt' bytes of memory to B
-      movm dst src end     # Move memory 'src'..'end' to 'dst' (aligned)
-      save src end dst     # Save 'src'..'end' to 'dst' (non-overlapping)
-      load dst end src     # Load 'dst'..'end' from 'src' (non-overlapping)
+      ld dst src        # Load 'dst' from 'src' [---]
+      ld2 src           # Load 'A' from two bytes 'src' (unsigned)
+      ld4 src           # Load 'A' from four bytes 'src' (unsigned)
+      ldc dst src       # Load if Carry 'dst' from 'src'
+      ldnc dst src      # Load if not Carry 'dst' from 'src'
+      ldz dst src       # Load if Zero 'dst' from 'src'
+      ldnz dst src      # Load if not Zero 'dst' from 'src'
+      lea dst src       # Load 'dst' with effective address of 'src'
+      st2 dst           # Store two bytes from 'A' into 'dst'
+      st4 dst           # Store four bytes from 'A' into 'dst'
+      xchg dst dst      # Exchange 'dst's
+      movn dst src cnt  # Move 'cnt' bytes from 'src' to 'dst'
+      mset dst cnt      # Set 'cnt' bytes of memory to B
+      movm dst src end  # Move memory 'src'..'end' to 'dst' (aligned)
+      save src end dst  # Save 'src'..'end' to 'dst' (non-overlapping)
+      load dst end src  # Load 'dst'..'end' from 'src' (non-overlapping)
 
    Arithmetics:
-      add dst src          # Add 'src' to 'dst'
-      addc dst src         # Add 'src' to 'dst' with Carry
-      sub dst src          # Subtract 'src' from 'dst'
-      subc dst src         # Subtract 'src' from 'dst' with Carry
+      add dst src       # Add 'src' to 'dst'
+      addc dst src      # Add 'src' to 'dst' with Carry
+      sub dst src       # Subtract 'src' from 'dst'
+      subc dst src      # Subtract 'src' from 'dst' with Carry
 
-      inc dst              # Increment 'dst' [z..]
-      dec dst              # Increment 'dst' [z..]
-      not dst              # One's complement negation of 'dst'
-      neg dst              # Two's complement negation of 'dst'
+      inc dst           # Increment 'dst' [z..]
+      dec dst           # Increment 'dst' [z..]
+      not dst           # One's complement negation of 'dst'
+      neg dst           # Two's complement negation of 'dst'
 
-      and dst src          # Bitwise AND 'dst' with 'src'
-      or dst src           # Bitwise OR 'dst' with 'src'
-      xor dst src          # Bitwise XOR 'dst' with 'src'
-      off dst src          # Clear 'src' bits in 'src'
-      test dst src         # Bit-test 'dst' with 'src'
+      and dst src       # Bitwise AND 'dst' with 'src'
+      or dst src        # Bitwise OR 'dst' with 'src'
+      xor dst src       # Bitwise XOR 'dst' with 'src'
+      off dst src       # Clear 'src' bits in 'src'
+      test dst src      # Bit-test 'dst' with 'src'
 
-      shl dst src          # Shift 'dst' left into Carry by 'src' bits
-      shr dst src          # Shift 'dst' right into Carry by 'src' bits
-      rol dst src          # Rotate 'dst' left by 'src' bits
-      ror dst src          # Rotate 'dst' right by 'src' bits
-      rcl dst src          # Rotate 'dst' with Carry left by 'src' bits
-      rcr dst src          # Rotate 'dst' with Carry right by 'src' bits
+      shl dst src       # Shift 'dst' left into Carry by 'src' bits
+      shr dst src       # Shift 'dst' right into Carry by 'src' bits
+      rol dst src       # Rotate 'dst' left by 'src' bits
+      ror dst src       # Rotate 'dst' right by 'src' bits
+      rcl dst src       # Rotate 'dst' with Carry left by 'src' bits
+      rcr dst src       # Rotate 'dst' with Carry right by 'src' bits
 
-      mul src              # Multiplication of 'A' and 'src' into 'D' [...]
-      div src              # Division of 'D' by 'src' into 'A', 'C' [...]
+      mul src           # Multiplication of 'A' and 'src' into 'D' [...]
+      div src           # Division of 'D' by 'src' into 'A', 'C' [...]
 
-      zxt                  # Zero-extend 'B' to 'A'
+      zxt               # Zero-extend 'B' to 'A'
 
-      setc                 # Set Carry flag
-      clrc                 # Clear Carry flag
-      setz                 # Set Zero flag
-      clrz                 # Clear Zero flag
+      setz              # Set Zero flag [z__]
+      clrz              # Clear Zero flag [z..]
+      setc              # Set Carry flag [--c]
+      clrc              # Clear Carry flag [--c]
 
    Comparisons:
-      cmp dst src          # Compare 'dst' with 'src' [z.c]
-      cmp4 src             # Compare four bytes in 'A' with 'src'
-      cmpn dst src cnt     # Compare 'cnt' bytes 'dst' with 'src'
-      slen dst src         # Set 'dst' to the string length of 'src'
-      memb src cnt         # Find B in 'cnt' bytes of memory
-      null src             # Compare 'src' with 0 [zs.]
-      zero src             # Test if ZERO [z..]
-      nul4                 # Compare four bytes in 'A' with 0 [zs.]
+      cmp dst src       # Compare 'dst' with 'src' [z.c]
+      cmp4 src          # Compare four bytes in 'A' with 'src'
+      cmpn dst src cnt  # Compare 'cnt' bytes 'dst' with 'src'
+      slen dst src      # Set 'dst' to the string length of 'src'
+      memb src cnt      # Find B in 'cnt' bytes of memory
+      null src          # Compare 'src' with 0 [zs_]
+      zero src          # Test if ZERO [z..]
+      nul4              # Compare four bytes in 'A' with 0 [zs_]
 
    Byte addressing:
-      set dst src          # Set 'dst' byte to 'src'
-      nul src              # Compare byte 'src' with 0
+      set dst src       # Set 'dst' byte to 'src'
+      nul src           # Compare byte 'src' with 0 [zs_]
 
    Types:
-      cnt src              # Non-'z' if small number
-      big src              # Non-'z' if bignum
-      num src              # Non-'z' if number
-      sym src              # Non-'z' if symbol
-      atom src             # Non-'z' if atom
+      cnt src           # Non-'z' if small number
+      big src           # Non-'z' if bignum
+      num src           # Non-'z' if number
+      sym src           # Non-'z' if symbol
+      atom src          # Non-'z' if atom
 
    Flow Control:
-      jmp adr              # Jump to 'adr'
-      jz adr               # Jump to 'adr' if Zero
-      jnz adr              # Jump to 'adr' if not Zero
-      js adr               # Jump to 'adr' if Sign
-      jns adr              # Jump to 'adr' if not Sign
-      jc adr               # Jump to 'adr' if Carry
-      jnc adr              # Jump to 'adr' if not Carry
+      jmp adr           # Jump to 'adr'
+      jz adr            # Jump to 'adr' if Zero
+      jnz adr           # Jump to 'adr' if not Zero
+      js adr            # Jump to 'adr' if Sign
+      jns adr           # Jump to 'adr' if not Sign
+      jc adr            # Jump to 'adr' if Carry
+      jnc adr           # Jump to 'adr' if not Carry
 
-      call adr             # Call 'adr'
-      cc adr(src ..)       # C-Call to 'adr' with 'src' arguments
-      cc adr reg           # C-Call to 'adr' with end of stacked args in 'reg'
+      call adr          # Call 'adr'
+      cc adr(src ..)    # C-Call to 'adr' with 'src' arguments
+      cc adr reg        # C-Call to 'adr' with end of stacked args in 'reg'
+      dval              # Set up double value pointed to by 'C'
+      fval              # Set up float value pointed to by 'C'
+      fix               # Convert double with scale 'E' to fixnum in 'E'
 
-      ret                  # Return
-      begin src            # Called from C-function with 'src' arguments
-      return src           # Return to C-function
+      ret               # Return
+      begin src         # Called from C-function with 'src' arguments
+      return src        # Prepare to return to C-function
 
    Stack Manipulations:
-      push src             # Push 'src' [---]
-      pop dst              # Pop 'dst' [---]
-      link                 # Setup frame
-      tuck src             # Extend frame
-      drop                 # Drop frame
+      push src          # Push 'src' [---]
+      pop dst           # Pop 'dst' [---]
+      link              # Setup frame
+      tuck src          # Extend frame
+      drop              # Drop frame [---]
 
    Evaluation:
-      eval                 # Evaluate expression in 'E'
-      eval+                # Evaluate expression in partial stack frame
-      eval/ret             # Evaluate expression and return
-      exec reg             # Execute lists in 'reg', ignore results
-      prog reg             # Evaluate expressions in 'reg', return last result
+      eval              # Evaluate expression in 'E'
+      eval+             # Evaluate expression in partial stack frame
+      eval/ret          # Evaluate expression and return
+      exec reg          # Execute lists in 'reg', ignore results
+      prog reg          # Evaluate expressions in 'reg', return last result
 
    System:
-      init                 # Init runtime system
-      dbg                  # Debug breakpoint
+      init              # Init runtime system
+      dbg               # Debug breakpoint
 
 ========================================================================
 

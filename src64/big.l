@@ -1,4 +1,4 @@
-# 11jun10abu
+# 03jul10abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -32,7 +32,7 @@
          ld A ((E) DIG)  # Digit in null-tail
          test A (hex "F000000000000000")  # Fit in short number?
          if nz  # No
-            ld (C) ZERO  # Trim short-tail
+            ld ((E) BIG) ZERO  # Trim null-tail
          else
             shl A 4  # Make short number
             or A CNT
@@ -54,6 +54,7 @@
       shr A 3
       jmp boxNumA_A  # Return bignum
    end
+: twiceBigA_A
    push A  # Save bignum
    ld C (A DIG)  # Lowest digit
    shl C 1  # Shift left
@@ -1040,8 +1041,8 @@
    pop X
    jmp zapZeroA_A  # Remove leading zeroes
 
-# Divide two (unsigned) numbers
-(code 'divuAE_AC 0)
+# Divide two (unsigned) numbers (Knuth Vol.2, p.257)
+(code 'divuAE_A 0)
    cnt A  # A short?
    if nz  # Yes
       cnt E  # E also short?
@@ -1052,123 +1053,439 @@
          div E  # Divide
          shl A 4  # Make short number
          or A CNT  # Quotient
-         shl C 4
-         or C CNT  # Remainder
          ret
       end
-      ld C A
       ld A ZERO  # Else return zero
       ret
    end
+   push X
+   push Y
+   push Z
    link
    push ZERO  # <L III> Quotient
-   push A  # <L II> Dividend
-   push E  # <L I> Divisor
+   push A  # <L II> Dividend 'u'
+   push E  # <L I> Divisor 'v'
    link
-   # Calculate dividend's bit count
-   ld C 0  # Counter
+   ld E (A DIG)  # Copy dividend
+   call boxNumE_E
+   ld (L II) E  # Save new 'u'
+   ld X 0  # Calculate 'm'
    do
-      cnt (A BIG)  # Last cell?
+      ld A (A BIG)  # Next cell of 'u'
+      cnt A  # Last one?
    while z  # No
-      add C 64  # Increment by digit size
-      ld A (A BIG)
+      call boxNum_C  # Copy next digit
+      ld (C DIG) (A DIG)
+      ld (E BIG) C
+      ld E C
+      inc X  # Increment 'm'
    loop
-   zero (A BIG)  # Last short zero?
-   if eq  # Yes
-      ld A (A DIG)  # Take last digit
-   else
-      add C 64  # Increment for last digit
-      ld A (A BIG)  # Take last short
+   zero A  # Trailing short zero?
+   if ne  # No
       shr A 4  # Normalize
+      call boxNum_C  # Append in new cell
+      ld (C DIG) A
+      ld (E BIG) C
+      ld E C
+      inc X  # Increment 'm'
    end
-   do
-      inc C  # Increment counter
-      shr A 1  # More bits?
-   until z  # No
-   # Subtract divisor's bit count
-   cnt E  # E short?
+   ld Z E  # Keep last cell in Z
+   push X  # <L -I> 'm'
+   ld Y 0  # Last cell
+   ld C 0  # Calculate 'n'
+   ld A (L I)  # Get divisor
+   cnt A  # Short?
    if nz  # Yes
-      shr E 4  # Normalize
-      do
-         dec C  # Decrement counter
-         shr E 1  # More bits?
-      until z  # No
+      shr A 4  # Normalize
+      call boxNumA_A  # Make big
+      ld (L I) A  # Save new 'v'
+      ld X A  # Keep in X
+      inc C  # 'n' = 1
    else
+      call boxNum_X  # Copy divisor
+      ld (X DIG) (A DIG)
+      ld (L I) X  # Save new 'v'
       do
-         cnt (E BIG)  # Last cell?
+         inc C  # Increment 'n'
+         ld A (A BIG)  # Next cell of 'v'
+         cnt A  # Last one?
       while z  # No
-         sub C 64  # Decrement by digit size
-         ld E (E BIG)
+         ld E (A DIG)  # Copy next digit
+         call boxNumE_E
+         ld (X BIG) E  # Append to 'v'
+         ld Y X  # Keep last cell
+         ld X E
+         dec (L -I)  # Decrement 'm'
       loop
-      zero (E BIG)  # Last short zero?
-      if eq  # Yes
-         ld E (E DIG)  # Take last digit
-      else
-         sub C 64  # Decrement for last digit
-         ld E (E BIG)  # Take last short
-         shr E 4  # Normalize
+      zero A  # Trailing short zero?
+      if ne  # No
+         shr A 4  # Normalize
+         call boxNumA_A  # Append in new cell
+         ld (X BIG) A  # Append to 'v'
+         ld Y X  # Set last cell
+         ld X A
+         dec (L -I)  # Decrement 'm'
+         inc C  # Increment 'n'
       end
-      do
-         dec C  # Decrement counter
-         shr E 1  # More bits?
-      until z  # No
+      null (L -I)  # 'm' negative?
+      js divUnder  # Yes
    end
-   push C  # <L -I> Shift offsets
-   inc C
-   push C  # <L -II>
-   sub (L -I) 1  # Any shift?
-   if ns  # Yes
-      ld A (L I)  # Get divisor
-      call shluA_A  # Shift (non-destructive)
-      ld (L I) A
-      ld C (L -I)  # Shift offset
-      do
-         cmp C 64  # More than 64 bits?
-      while ge  # Yes
-         sub C 64  # Decrement shift count by digit size
-         ld E 0  # Cons zero
-         call consNumEA_A
-      loop
-      ld (L I) A  # Save shifted divisor
-      ld (L -I) C  # Save remaining count
-      do
-         sub (L -I) 1  # Shift remaining bits?
-      while ns  # Yes
-         call twiceA_A  # Shift divisor left (destructive)
-         ld (L I) A  # Save again
-      loop
-   end
+   push C  # <L -II> 'n'
+   ld A 0  # Append additional cell
+   call boxNumA_A
+   ld (Z BIG) A
+   ld Z 0  # Calculate 'd'
    do
-      sub (L -II) 1  # Division steps?
-   while ns  # Yes
-      ld A (L III)  # Get quotient
-      call twiceA_A  # Shift (destructive)
-      ld (L III) A
-      ld E (L II)  # Get dividend
-      ld A (L I)  # and divisor
-      call cmpuAE_F  # Divisor <= dividend?
-      if le  # Yes
-         ld A (L II)  # Subtract divisor from dividend
-         ld E (L I)
-         call subuAE_A
-         ld (L II) A  # Save dividend
-         ld A (L III)  # Quotient
-         cnt A  # Short?
-         if nz  # Yes
-            add B (hex "10")  # Increment short
-            ld (L III) A
-         else
-            inc (A DIG)  # Increment digit
+      null (X DIG)  # Max left position?
+   while ns  # No
+      ld A (L II)  # Shift left 'u'
+      call twiceBigA_A
+      ld A (L I)  # and 'v'
+      call twiceBigA_A
+      inc Z  # Increment 'd'
+   loop
+   push Z  # <L -III> 'd'
+   push (X DIG)  # <L -IV> 'v1'
+   null Y  # Last cell?
+   if nz  # Yes
+      ld Y (Y DIG)  # Yes: Get digit
+   end
+   push Y  # <L -V> Last cell 'v2'
+   push 0  # <S> tmp
+   do
+      ld C (L -I)  # Get 'm'
+      ld X (L II)  # and 'u'
+      do
+         sub C 1
+      while ge
+         ld X (X BIG)  # Index X -> u
+      loop
+      ld E (L -II)  # Get 'n' in E
+      ld Y X
+      ld C 0  # 'u1' in C
+      ld A 0  # 'u2' in A
+      do
+         ld (S) A  # Save 'u3' im tmp
+         ld A C  # Shift words
+         ld C (Y DIG)
+         ld Y (Y BIG)
+         sub E 1
+      until lt
+      ld Z C  # Keep 'r' = 't' in Z,Y
+      ld Y A
+      cmp C (L -IV)  # 'u1' = 'v1'?
+      if ne  # No
+         div (L -IV)  # 'q' = 't' / 'v1'
+      else
+         ld A -1  # 'q' = MAX
+      end
+      ld E A  # Save 'q' in E
+      mul (L -IV)  # 'q' * 'v1'
+      sub Y A  # Subtract from 'r'
+      subc Z C
+      do
+         null Z  # 'r' <= MAX?
+      while z  # Yes
+         ld A E  # 'q' * 'v2'
+         mul (L -V)
+         cmp C Y  # > lo(r), 'u3'?
+      while ge
+         if eq
+            cmp A (S)  # 'u3' in tmp
+            break le
+         end
+         dec E  # Yes: Decrement 'q'
+         add Y (L -IV)  # Increment 'r' by 'v1'
+         addc Z 0
+      loop
+      ld (S) E  # Save 'q' in tmp
+      ld Z X  # Get 'x'
+      ld Y (L I)  # 'v'
+      ld A E  # and 'q'
+      mul (Y DIG)  # Multiply lowest digit
+      sub (Z DIG) A  # Subtract from 'x'
+      addc C 0
+      ld E C  # Borrow in E
+      do
+         ld Y (Y BIG)  # More in 'v'?
+         cnt Y
+      while z  # Yes
+         ld Z (Z BIG)  # Next 'x'
+         ld A (S)  # Multiply with 'q' in tmp
+         mul (Y DIG)  # 't' in D
+         sub (Z DIG) E  # Subtract borrow
+         ld E 0
+         rcl E 1  # New borrow
+         sub (Z DIG) A  # Subtract lo(t)
+         addc E C  # Adjust borrow plus hi(t)
+      loop
+      null E  # Borrow?
+      if nz  # Yes
+         ld Z (Z BIG)  # Next 'x'
+         sub (Z DIG) E  # Subtract borrow
+         if c
+            dec (S)  # Decrement 'q'
+            null (L -I)  # 'm' ?
+            if nz  # Yes
+               ld Y (L I)  # Get 'v'
+               add (X DIG) (Y DIG)  # 'x' += 'v'
+               push F  # Save carry
+               do
+                  ld X (X BIG)  # More?
+                  ld Y (Y BIG)
+                  cnt Y
+               while z  # Yes
+                  pop F  # Get carry
+                  addc (X DIG) (Y DIG)  # Add digits
+                  push F
+               loop
+               pop F  # Final carry
+               addc (X DIG) 0
+            end
          end
       end
-      ld A (L I)  # Divisor
-      call shruA_A  # Shift divisor right (non-destructive)
-      ld (L I) A
-   loop
+      ld A (S)  # Get 'q'
+      ld C (L III)  # Quotient so far
+      call consNumAC_A  # Prepend 'q'
+      ld (L III) A  # Store result
+      sub (L -I) 1  # Decrement 'm'
+   until lt
    ld A (L III)  # Return quotient in A
-   ld C (L II)  # and remainder in C
+   call zapZeroA_A
+: divDone
    drop
+   pop Z
+   pop Y
+   pop X
    ret
+: divUnder  # Dividend smaller than divisor
+   ld A ZERO  # Return quotient 0
+   jmp divDone
+
+# Remainder of two (unsigned) numbers
+(code 'remuAE_A 0)
+   cnt A  # A short?
+   if nz  # Yes
+      cnt E  # E also short?
+      if nz  # Yes
+         shr A 4  # Normalize A
+         ld C 0
+         shr E 4  # Normalize E
+         div E  # Divide
+         ld A C  # Get remainder
+         shl A 4  # Make short number
+         or A CNT  # Quotient
+         ret
+      end
+      ret  # Remainder is in A
+   end
+   push X
+   push Y
+   push Z
+   link
+   push ZERO  # <L III> Quotient
+   push A  # <L II> Dividend 'u'
+   push E  # <L I> Divisor 'v'
+   link
+   ld E (A DIG)  # Copy dividend
+   call boxNumE_E
+   ld (L II) E  # Save new 'u'
+   ld X 0  # Calculate 'm'
+   do
+      ld A (A BIG)  # Next cell of 'u'
+      cnt A  # Last one?
+   while z  # No
+      call boxNum_C  # Copy next digit
+      ld (C DIG) (A DIG)
+      ld (E BIG) C
+      ld E C
+      inc X  # Increment 'm'
+   loop
+   zero A  # Trailing short zero?
+   if ne  # No
+      shr A 4  # Normalize
+      call boxNum_C  # Append in new cell
+      ld (C DIG) A
+      ld (E BIG) C
+      ld E C
+      inc X  # Increment 'm'
+   end
+   ld Z E  # Keep last cell in Z
+   push X  # <L -I> 'm'
+   ld Y 0  # Last cell
+   ld C 0  # Calculate 'n'
+   ld A (L I)  # Get divisor
+   cnt A  # Short?
+   if nz  # Yes
+      shr A 4  # Normalize
+      call boxNumA_A  # Make big
+      ld (L I) A  # Save new 'v'
+      ld X A  # Keep in X
+      inc C  # 'n' = 1
+   else
+      call boxNum_X  # Copy divisor
+      ld (X DIG) (A DIG)
+      ld (L I) X  # Save new 'v'
+      do
+         inc C  # Increment 'n'
+         ld A (A BIG)  # Next cell of 'v'
+         cnt A  # Last one?
+      while z  # No
+         ld E (A DIG)  # Copy next digit
+         call boxNumE_E
+         ld (X BIG) E  # Append to 'v'
+         ld Y X  # Keep last cell
+         ld X E
+         dec (L -I)  # Decrement 'm'
+      loop
+      zero A  # Trailing short zero?
+      if ne  # No
+         shr A 4  # Normalize
+         call boxNumA_A  # Append in new cell
+         ld (X BIG) A  # Append to 'v'
+         ld Y X  # Set last cell
+         ld X A
+         dec (L -I)  # Decrement 'm'
+         inc C  # Increment 'n'
+      end
+      null (L -I)  # 'm' negative?
+      js remUnder  # Yes
+   end
+   push C  # <L -II> 'n'
+   ld A 0  # Append additional cell
+   call boxNumA_A
+   ld (Z BIG) A
+   ld Z 0  # Calculate 'd'
+   do
+      null (X DIG)  # Max left position?
+   while ns  # No
+      ld A (L II)  # Shift left 'u'
+      call twiceBigA_A
+      ld A (L I)  # and 'v'
+      call twiceBigA_A
+      inc Z  # Increment 'd'
+   loop
+   push Z  # <L -III> 'd'
+   push (X DIG)  # <L -IV> 'v1'
+   null Y  # Last cell?
+   if nz  # Yes
+      ld Y (Y DIG)  # Yes: Get digit
+   end
+   push Y  # <L -V> Last cell 'v2'
+   push 0  # <S> tmp
+   do
+      ld C (L -I)  # Get 'm'
+      ld X (L II)  # and 'u'
+      do
+         sub C 1
+      while ge
+         ld X (X BIG)  # Index X -> u
+      loop
+      ld E (L -II)  # Get 'n' in E
+      ld Y X
+      ld C 0  # 'u1' in C
+      ld A 0  # 'u2' in A
+      do
+         ld (S) A  # Save 'u3' im tmp
+         ld A C  # Shift words
+         ld C (Y DIG)
+         ld Y (Y BIG)
+         sub E 1
+      until lt
+      ld Z C  # Keep 'r' = 't' in Z,Y
+      ld Y A
+      cmp C (L -IV)  # 'u1' = 'v1'?
+      if ne  # No
+         div (L -IV)  # 'q' = 't' / 'v1'
+      else
+         ld A -1  # 'q' = MAX
+      end
+      ld E A  # Save 'q' in E
+      mul (L -IV)  # 'q' * 'v1'
+      sub Y A  # Subtract from 'r'
+      subc Z C
+      do
+         null Z  # 'r' <= MAX?
+      while z  # Yes
+         ld A E  # 'q' * 'v2'
+         mul (L -V)
+         cmp C Y  # > lo(r), 'u3'?
+      while ge
+         if eq
+            cmp A (S)  # 'u3' in tmp
+            break le
+         end
+         dec E  # Yes: Decrement 'q'
+         add Y (L -IV)  # Increment 'r' by 'v1'
+         addc Z 0
+      loop
+      ld (S) E  # Save 'q' in tmp
+      ld Z X  # Get 'x'
+      ld Y (L I)  # 'v'
+      ld A E  # and 'q'
+      mul (Y DIG)  # Multiply lowest digit
+      sub (Z DIG) A  # Subtract from 'x'
+      addc C 0
+      ld E C  # Borrow in E
+      do
+         ld Y (Y BIG)  # More in 'v'?
+         cnt Y
+      while z  # Yes
+         ld Z (Z BIG)  # Next 'x'
+         ld A (S)  # Multiply with 'q' in tmp
+         mul (Y DIG)  # 't' in D
+         sub (Z DIG) E  # Subtract borrow
+         ld E 0
+         rcl E 1  # New borrow
+         sub (Z DIG) A  # Subtract lo(t)
+         addc E C  # Adjust borrow plus hi(t)
+      loop
+      null E  # Borrow?
+      if nz  # Yes
+         ld Z (Z BIG)  # Next 'x'
+         sub (Z DIG) E  # Subtract borrow
+         if c
+            dec (S)  # Decrement 'q'
+            ld Y (L I)  # Get 'v'
+            add (X DIG) (Y DIG)  # 'x' += 'v'
+            push F  # Save carry
+            do
+               ld X (X BIG)  # More?
+               ld Y (Y BIG)
+               cnt Y
+            while z  # Yes
+               pop F  # Get carry
+               addc (X DIG) (Y DIG)  # Add digits
+               push F
+            loop
+            pop F  # Final carry
+            addc (X DIG) 0
+         end
+      end
+      ld A (S)  # Get 'q'
+      ld C (L III)  # Quotient so far
+      call consNumAC_A  # Prepend 'q'
+      ld (L III) A  # Store result
+      sub (L -I) 1  # Decrement 'm'
+   until lt
+   ld A (L II)  # Get remainder
+   call zapZeroA_A
+   do
+      null (L -III)  # 'd'?
+   while nz  # Yes
+      call halfA_A  # Shift right (destructive)
+      dec (L -III)  # Decrement 'd'
+   loop
+: remDone
+   drop
+   pop Z
+   pop Y
+   pop X
+   ret
+: remUnder  # Dividend smaller than divisor
+   ld A (L II)  # Get remainder
+   call zapZeroA_A
+   jmp remDone
 
 # Increment a (signed) number
 (code 'incE_A 0)
@@ -2175,7 +2492,7 @@
       ld E (L I)  # Product
       call adduAE_A  # Add for rounding
       ld E (L II)  # Last argument
-      call divuAE_AC  # Divide
+      call divuAE_A  # Divide
       ld E A  # Result
       test (L -I) 1  # Sign?
       if nz  # Yes
@@ -2232,7 +2549,7 @@
          end
          ld (L II) E  # Save arg
          ld A (L I)  # Result
-         call divuAE_AC  # Divide
+         call divuAE_A  # Divide
          ld (L I) A  # Result
       loop
       ld E (L I)  # Result
@@ -2287,8 +2604,8 @@
          off E SIGN  # Make argument positive
          ld (L II) E  # Save arg
          ld A (L I)  # Result
-         call divuAE_AC  # Divide
-         ld (L I) C  # Result
+         call remuAE_A  # Remainder
+         ld (L I) A  # Result
       loop
       ld E (L I)  # Result
       test (L -I) 1  # Sign?

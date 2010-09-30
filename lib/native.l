@@ -1,4 +1,4 @@
-# 19feb10abu
+# 22jul10abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (Nm L . Lst)
@@ -19,5 +19,8 @@
             (cons 'native (tmp Nm) (name (caddr L)) (cdddr L)) ) )
       (when (== '@ (fin (cadr L)))
          (push (cdaar L) 'pass) ) ) )
+
+(de unsigned (N)
+   (& `(dec (** 2 32)) (+ N `(** 2 32))) )
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-/* 20jul09abu
+/* 07aug10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -172,7 +172,7 @@ int main(int ac, char *av[]) {
    sd = gatePort(atoi(av[1]));  // e.g. 80 or 443
    ports[0] = atoi(av[2]);  // e.g. 8080
    if (ac == 3 || *av[3] == '\0')
-      ssl = NULL,  gate = "Gate: http %s\r\n";
+      ssl = NULL,  gate = "X-Pil: *Gate=http\r\nX-Pil: *Adr=%s\r\n";
    else {
       SSL_library_init();
       SSL_load_error_strings();
@@ -183,7 +183,7 @@ int main(int ac, char *av[]) {
          ERR_print_errors_fp(stderr);
          giveup("SSL init");
       }
-      ssl = SSL_new(ctx),  gate = "Gate: https %s\r\n";
+      ssl = SSL_new(ctx),  gate = "X-Pil: *Gate=https\r\nX-Pil: *Adr=%s\r\n";
    }
    for (n = 1; n < cnt; ++n)
       ports[n] = atoi(av[n+3]);

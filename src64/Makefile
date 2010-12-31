@@ -1,4 +1,4 @@
-# 03may10abu
+# 12nov10abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -49,15 +49,12 @@ $(lib)/ht: $(ARCH).$(SYS).ht.o
 	as -o $*.o $*.s
 
 $(ARCH).$(SYS).base.s: $(baseFiles)
-	test -x ../bin/picolisp || { echo "bin/picolisp not found"; exit 1; }
 	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/tags $(baseFiles)
 
 $(ARCH).$(SYS).ext.s: ext.l
-	test -x ../bin/picolisp || { echo "bin/picolisp not found"; exit 1; }
 	./mkAsm $(ARCH) $(SYS) $(OS) ext "" -fpic ext.l
 
 $(ARCH).$(SYS).ht.s: ht.l
-	test -x ../bin/picolisp || { echo "bin/picolisp not found"; exit 1; }
 	./mkAsm $(ARCH) $(SYS) $(OS) ht "" -fpic ht.l
 
 

@@ -1,4 +1,4 @@
-# 29jun07abu
+# 15nov10abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
@@ -44,7 +44,8 @@
                (wait *DbgcDly)
                (unless (mark S)
                   (sync)
-                  (unless (mark S)
+                  (if (mark S)
+                     (tell)
                      (and (isa '+Entity S) (zap> S))
                      (zap S)
                      (commit)

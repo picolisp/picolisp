@@ -1,4 +1,4 @@
-# 23sep10abu
+# 25nov10abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Globals 0)
@@ -232,7 +232,6 @@
 
    # Control flow
    initSym NIL       "as"        doAs
-   initSym NIL       "pid"       doPid
    initSym NIL       "lit"       doLit
    initSym NIL       "eval"      doEval
    initSym NIL       "run"       doRun
@@ -434,6 +433,7 @@
    initSym NIL       "min"       doMin
    initSym NIL       "atom"      doAtom
    initSym NIL       "pair"      doPair
+   initSym NIL       "circ?"     doCircQ
    initSym NIL       "lst?"      doLstQ
    initSym NIL       "num?"      doNumQ
    initSym NIL       "sym?"      doSymQ
@@ -445,6 +445,7 @@
    initSym NIL       "diff"      doDiff
    initSym NIL       "index"     doIndex
    initSym NIL       "offset"    doOffset
+   initSym NIL       "prior"     doPrior
    initSym NIL       "length"    doLength
    initSym NIL       "size"      doSize
    initSym NIL       "assoc"     doAssoc
@@ -583,8 +584,9 @@
 : EnvCtlFrames word  0        # <VI> Control frames
 : EnvArgs      word  0        # Varargs frame
 : EnvNext      word  0        # Next vararg
+: EnvCls       word  0        # Method class
+: EnvKey       word  0        # Method key
 : EnvApply     word  0        # Apply frames
-: EnvMeth      word  0        # Method frames
 : EnvMake      word  0        # 'make' env
 : EnvYoke      word  0
 : EnvParseX    word  0        # Parser status

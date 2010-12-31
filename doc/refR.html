@@ -298,7 +298,7 @@ symbol <code>recurse</code> is bound to the function definition
    (when (lt0 N)
       (quit "Bad fibonacci" N) )
    (recur (N)
-      (if (< N 2)
+      (if (> 2 N)
          1
          (+
             (recurse (dec N))
@@ -450,8 +450,9 @@ href="refD.html#db/3">db/3</a></code>.
 </code></pre>
 
 <dt><a name="remove"><code>(remove 'cnt 'lst) -> lst</code></a>
-<dd>Removes the element at position <code>cnt</code> from <code>lst</code>. See
-also <code><a href="refI.html#insert">insert</a></code>, <code><a
+<dd>Removes the element at position <code>cnt</code> from <code>lst</code>. This
+is a non-destructive operation. See also <code><a
+href="refI.html#insert">insert</a></code>, <code><a
 href="refP.html#place">place</a></code>, <code><a
 href="refA.html#append">append</a></code>, <code><a
 href="refD.html#delete">delete</a></code> and <code><a
@@ -510,7 +511,8 @@ backtracking. See also <code><a href="refR.html#repeat">repeat</a></code> and
 <dt><a name="replace"><code>(replace 'lst 'any1 'any2 ..) -> lst</code></a>
 <dd>Replaces in <code>lst</code> all occurrences of <code>any1</code> with
 <code>any2</code>. For optional additional argument pairs, this process is
-repeated. See also <code><a href="refA.html#append">append</a></code>, <code><a
+repeated. This is a non-destructive operation. See also <code><a
+href="refA.html#append">append</a></code>, <code><a
 href="refD.html#delete">delete</a></code>, <code><a
 href="refI.html#insert">insert</a></code>, <code><a
 href="refR.html#remove">remove</a></code> and <code><a

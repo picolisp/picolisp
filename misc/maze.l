@@ -1,9 +1,9 @@
-# 31jan10abu
+# 16dec10abu
 # (c) Software Lab. Alexander Burger
 
-# ./dbg misc/maze.l -"setq M (maze 16 10)" -"display M"
+# ./dbg misc/maze.l -"setq M (maze 16 12)" -"display M" -bye
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 (de maze (DX DY)
    (let Maze (grid DX DY)
@@ -15,16 +15,20 @@
                      (put Fld (car Dir) This)
                      (put This (cdr Dir) Fld)
                      (recurse This) ) ) ) ) )
-      (for Col Maze
-         (for This Col
+      (for (X . Col) Maze
+         (for (Y . This) Col
             (set This
                (cons
-                  (cons (: west) (: east))
-                  (cons (: south) (: north)) ) )
-            (=: west)
-            (=: east)
-            (=: south)
-            (=: north) ) )
+                  (cons
+                     (: west)
+                     (or
+                        (: east)
+                        (and (= Y 1) (= X DX)) ) )
+                  (cons
+                     (: south)
+                     (or
+                        (: north)
+                        (and (= X 1) (= Y DY)) ) ) ) ) ) )
       Maze ) )
 
 (de display (Maze)

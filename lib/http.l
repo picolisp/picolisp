@@ -1,4 +1,4 @@
-# 24aug10abu
+# 08dec10abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -23,6 +23,7 @@
    (`(chop "bmp") "image/bmp" 3600)
    (`(chop "png") "image/png" 3600)
    (`(chop "jpg") "image/jpeg" 3600)
+   (`(chop "jpeg") "image/jpeg" 3600)
    (`(chop "txt") "text/octet-stream" 1 T)
    (`(chop "csv") "text/csv; charset=utf-8" 1 T)
    (`(chop "css") "text/css" 3600)

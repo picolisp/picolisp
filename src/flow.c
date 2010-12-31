@@ -1,4 +1,4 @@
-/* 04sep10abu
+/* 19oct10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -64,20 +64,6 @@ any doAs(any x) {
    if (isNil(EVAL(car(x))))
       return Nil;
    return cdr(x);
-}
-
-// (pid 'pid|lst . exe) -> any
-any doPid(any x) {
-   any y;
-
-   x = cdr(x);
-   if (!isCell(y = EVAL(car(x))))
-      return equal(y, val(Pid))? EVAL(cdr(x)) : Nil;
-   do
-      if (equal(car(y), val(Pid)))
-         return EVAL(cdr(x));
-   while (isCell(y = cdr(y)));
-   return Nil;
 }
 
 // (lit 'any) -> any
@@ -304,16 +290,13 @@ any doDm(any ex) {
 /* Evaluate method invocation */
 static any evMethod(any o, any expr, any x) {
    any y = car(expr);
-   methFrame m;
+   any cls = TheCls, key = TheKey;
    struct {  // bindFrame
       struct bindFrame *link;
       int i, cnt;
       struct {any sym; any val;} bnd[length(y)+3];
    } f;
 
-   m.link = Env.meth;
-   m.key = TheKey;
-   m.cls = TheCls;
    f.link = Env.bind,  Env.bind = (bindFrame*)&f;
    f.i = sizeof(f.bnd) / (2*sizeof(any)) - 2;
    f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
@@ -329,7 +312,8 @@ static any evMethod(any o, any expr, any x) {
          f.bnd[f.i].val = x;
       }
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
-      Env.meth = &m;
+      y = cls,  cls = Env.cls;  Env.cls = y;
+      y = key,  key = Env.key;  Env.key = y;
       x = prog(cdr(expr));
    }
    else if (y != At) {
@@ -340,7 +324,8 @@ static any evMethod(any o, any expr, any x) {
          f.bnd[f.i].val = x;
       }
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
-      Env.meth = &m;
+      y = cls,  cls = Env.cls;  Env.cls = y;
+      y = key,  key = Env.key;  Env.key = y;
       x = prog(cdr(expr));
    }
    else {
@@ -358,7 +343,8 @@ static any evMethod(any o, any expr, any x) {
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
-      Env.meth = &m;
+      y = cls,  cls = Env.cls;  Env.cls = y;
+      y = key,  key = Env.key;  Env.key = y;
       x = prog(cdr(expr));
       if (cnt)
          drop(c[cnt-1]);
@@ -367,7 +353,7 @@ static any evMethod(any o, any expr, any x) {
    while (--f.cnt >= 0)
       val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
    Env.bind = f.link;
-   Env.meth = Env.meth->link;
+   Env.cls = cls,  Env.key = key;
    return x;
 }
 
@@ -402,7 +388,7 @@ any doNew(any ex) {
 
    x = cdr(ex);
    if (isCell(y = EVAL(car(x))))
-      Push(c1, consSym(Nil,Nil));
+      Push(c1, consSym(y,Nil));
    else {
       if (isNil(y))
          data(c1) = consSym(Nil,Nil);
@@ -415,10 +401,9 @@ any doNew(any ex) {
          mkExt(data(c1));
       }
       Save(c1);
-      x = cdr(x),  y = EVAL(car(x));
+      x = cdr(x),  val(data(c1)) = EVAL(car(x));
    }
-   val(data(c1)) = y;
-   TheKey = T,  TheCls = Nil;
+   TheKey = T,  TheCls = NULL;
    if (y = method(data(c1)))
       evMethod(data(c1), y, cdr(x));
    else {
@@ -528,7 +513,7 @@ any doMeth(any ex) {
       if (!isSym(TheKey))
          err(ex, TheKey, "Bad message");
       if (isNum(val(TheKey))) {
-         TheCls = Nil;
+         TheCls = NULL;
          if (y = method(data(c1))) {
             x = evMethod(data(c1), y, cdr(x));
             drop(c1);
@@ -549,7 +534,7 @@ any doSend(any ex) {
    x = cdr(x),  Push(c2,  EVAL(car(x)));
    NeedSym(ex,data(c2));
    Fetch(ex,data(c2));
-   TheKey = data(c1),  TheCls = Nil;
+   TheKey = data(c1),  TheCls = NULL;
    if (y = method(data(c2))) {
       x = evMethod(data(c2), y, cdr(x));
       drop(c1);
@@ -572,7 +557,7 @@ any doTry(any ex) {
             return Nil;
          db(ex,data(c2),1);
       }
-      TheKey = data(c1),  TheCls = Nil;
+      TheKey = data(c1),  TheCls = NULL;
       if (y = method(data(c2))) {
          x = evMethod(data(c2), y, cdr(x));
          drop(c1);
@@ -585,19 +570,18 @@ any doTry(any ex) {
 
 // (super ['any ..]) -> any
 any doSuper(any ex) {
-   any x, y;
-   methFrame m;
+   any x, y, cls, key;
 
-   m.key = TheKey = Env.meth->key;
-   x = val(isNil(Env.meth->cls)? val(This) : car(Env.meth->cls));
+   TheKey = Env.key;
+   x = val(Env.cls? car(Env.cls) : val(This));
    while (isCell(car(x)))
       x = cdr(x);
    while (isCell(x)) {
       if (y = method(car(TheCls = x))) {
-         m.cls = TheCls;
-         m.link = Env.meth,  Env.meth = &m;
+         cls = Env.cls,  Env.cls = TheCls;
+         key = Env.key,  Env.key = TheKey;
          x = evExpr(y, cdr(ex));
-         Env.meth = Env.meth->link;
+         Env.key = key,  Env.cls = cls;
          return x;
       }
       x = cdr(x);
@@ -610,7 +594,7 @@ static any extra(any x) {
 
    for (x = val(x); isCell(car(x)); x = cdr(x));
    while (isCell(x)) {
-      if (x == Env.meth->cls  ||  !(y = extra(car(x)))) {
+      if (x == Env.cls  ||  !(y = extra(car(x)))) {
          while (isCell(x = cdr(x)))
             if (y = method(car(TheCls = x)))
                return y;
@@ -625,15 +609,14 @@ static any extra(any x) {
 
 // (extra ['any ..]) -> any
 any doExtra(any ex) {
-   any x, y;
-   methFrame m;
+   any x, y, cls, key;
 
-   m.key = TheKey = Env.meth->key;
+   TheKey = Env.key;
    if ((y = extra(val(This)))  &&  num(y) != 1) {
-      m.cls = TheCls;
-      m.link = Env.meth,  Env.meth = &m;
+      cls = Env.cls,  Env.cls = TheCls;
+      key = Env.key,  Env.key = TheKey;
       x = evExpr(y, cdr(ex));
-      Env.meth = Env.meth->link;
+      Env.key = key,  Env.cls = cls;
       return x;
    }
    err(ex, TheKey, "Bad extra");
@@ -706,7 +689,6 @@ any doBind(any ex) {
 any doJob(any ex) {
    any x = cdr(ex);
    any y = EVAL(car(x));
-   any z;
    cell c1;
    struct {  // bindFrame
       struct bindFrame *link;
@@ -723,13 +705,13 @@ any doJob(any ex) {
       val(caar(y)) = cdar(y);
       ++f.cnt,  y = cdr(y);
    }
-   z = prog(cdr(x));
+   x = prog(cdr(x));
    for (f.cnt = 0, y = Pop(c1);  isCell(y);  ++f.cnt, y = cdr(y)) {
       cdar(y) = val(caar(y));
       val(caar(y)) = f.bnd[f.cnt].val;
    }
    Env.bind = f.link;
-   return z;
+   return x;
 }
 
 // (let sym 'any . prg) -> any
@@ -826,8 +808,7 @@ any doAnd(any x) {
       if (isNil(a = EVAL(car(x))))
          return Nil;
       val(At) = a;
-   }
-   while (isCell(x = cdr(x)));
+   } while (isCell(x = cdr(x)));
    return a;
 }
 
@@ -852,8 +833,7 @@ any doNand(any x) {
       if (isNil(a = EVAL(car(x))))
          return T;
       val(At) = a;
-   }
-   while (isCell(x = cdr(x)));
+   } while (isCell(x = cdr(x)));
    return Nil;
 }
 
@@ -862,12 +842,12 @@ any doNor(any x) {
    any a;
 
    x = cdr(x);
-   do {
+   do
       if (!isNil(a = EVAL(car(x)))) {
          val(At) = a;
          return Nil;
       }
-   } while (isCell(x = cdr(x)));
+   while (isCell(x = cdr(x)));
    return T;
 }
 

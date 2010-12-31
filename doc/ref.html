@@ -126,7 +126,7 @@ except for the total memory size of the host machine.
 
 <dt>Dynamic
 <dd>Behavior should be as dynamic as possible ("run"-time vs. "compile"-time).
-All decisions are delayed till runtime where possible. This involves matters
+All decisions are delayed until runtime where possible. This involves matters
 like memory management, dynamic symbol binding, and late method binding.
 
 <dt>Practical
@@ -188,12 +188,16 @@ mark bit for garbage collection.
 form a "free list". To create higher level data types at runtime, cells are
 taken from that free list, and returned by the garbage collector when they are
 no longer needed. All memory management is done via that free list; there are no
-additional buffers, string spaces or special memory areas (With two exceptions:
-A certain fixed area of memory is set aside to contain the executable code and
-global variables of the interpreter itself, and a standard push down stack for
-return addresses and temporary storage. Both are not directly accessible by the
-programmer).
+additional buffers, string spaces or special memory areas, with two exceptions:
 
+<p><ul>
+<li>A certain fixed area of memory is set aside to contain the executable code
+and global variables of the interpreter itself, and
+
+<li>a standard push down stack for return addresses and temporary storage. Both
+are not directly accessible by the programmer).
+
+</ul>
 
 <p><hr>
 <h3><a name="data">Data Types</a></h3>
@@ -201,9 +205,9 @@ programmer).
 <p>On the virtual machine level, PicoLisp supports
 
 <p><ul>
-<li>three base data types: Numbers, Symbols and Cons Pairs (Lists)
-<li>the three scope variations of symbols: Internal, Transient and External
-<li>and the special symbol <code>NIL</code>.
+<li>three base data types: Numbers, Symbols and Cons Pairs (Lists),
+<li>the three scope variations of symbols: Internal, Transient and External, and
+<li>the special symbol <code>NIL</code>.
 </ul>
 
 <p>They are all built from the single cell data structure, and all runtime data
@@ -284,7 +288,7 @@ from the cell's start address. Therefore, the bit pattern of a symbol will be:
 
 <p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero.
 
-<p>A property is a key-value-pair, represented as a cell in the symbol's tail.
+<p>A property is a key-value pair, represented as a cell in the symbol's tail.
 This is called a "property list". The property list may be terminated by a
 number representing the symbol's name. In the following example, a symbol with
 the name <code>"abc"</code> has three properties: A KEY/VAL cell, a cell with
@@ -412,9 +416,9 @@ href="refN.html#new">new</a></code> functions.
 <p><hr>
 <h5><a name="external">External Symbols</a></h5>
 
-<p>External symbols reside in a database file (or a similar resources (see
-<code><a href="refE.html#*Ext">*Ext</a></code>)), and are loaded into memory -
-and written back to the file - dynamically as needed, and transparent to the
+<p>External symbols reside in a database file (or a similar resources, see
+<code><a href="refE.html#*Ext">*Ext</a></code>), and are loaded into memory -
+and written back to the file - dynamically as needed, and transparently to the
 programmer.
 
 <p>The interpreter recognizes external symbols internally by an additional tag
@@ -423,7 +427,7 @@ bit in the tail structure.
 <p>There cannot be two different external symbols with the same name. External
 symbols are maintained in index structures while they are loaded into memory,
 and have their external location (disk file and block offset) directly coded
-into their names.
+into their names (more details <a href="#external-io">here</a>).
 
 <p>Initially, a new external symbol's VAL is <code>NIL</code>, unless otherwise
 specified at creation time.
@@ -439,7 +443,7 @@ arrays, trees, stacks or queues.
 <p>In contrast to lists, numbers and symbols are collectively called "Atoms".
 
 <p>Typically, the CDR of each cell in a list points to the following cell,
-except for the last cell which points <code>NIL</code>. If, however, the CDR of
+except for the last cell which points to <code>NIL</code>. If, however, the CDR of
 the last cell points to an atom, that cell is called a "dotted pair" (because of
 its I/O syntax with a dot '.' between the two values).
 
@@ -548,7 +552,7 @@ $ ./dbg myProject.l -main
 
 <p>In any case, the directory part of the first file name supplied on the
 command line (normally, the path to "lib.l") is remembered internally as the
-<u>PicoLisp Home Directory</u>. This path is later automatically substituted for
+<i>PicoLisp Home Directory</i>. This path is later automatically substituted for
 any leading "<code>@</code>" character in file name arguments to I/O functions
 (see <code><a href="refP.html#path">path</a></code>).
 
@@ -578,7 +582,8 @@ character. Everything up to the end of that line will be ignored by the reader.
 <code>}#</code>.
 
 
-<p>Here is the I/O syntax for the individual PicoLisp data types:
+<p>Here is the I/O syntax for the individual PicoLisp data types (numbers,
+symbols and lists) and for read-macros:
 
 
 <p><hr>
@@ -697,7 +702,7 @@ completely with
 : (off *Tsm)
 </code></pre>
 
-<p>Keyboard input of transient symbols is always via the double quote key.
+<p>Keyboard input of transient symbols is always done via the double quote key.
 
 <p>A transient symbol may be used (and, in double quote representation, also
 look) like a string constant in other languages. However, it is a real symbol,
@@ -707,7 +712,7 @@ and may be assigned a value or a function definition, and properties.
 not need to be quoted for evaluation:
 
 <pre><code>
-: <u>This is a string</u>   # "This is a string" if *Tsm is off
+: <u>This is a string</u>   # Would be "This is a string" if *Tsm were off
 -> <u>This is a string</u>
 </code></pre>
 
@@ -721,10 +726,11 @@ This may cause unexpected behavior:
 -> 12345
 </code></pre>
 
-<p>The name of a transient symbol can contain any character except zero. A
-double quote character can be escaped with a backslash '<code>\</code>', and a
-backslash itself has to be escaped with another backslash. Control characters
-can be written with a preceding hat '<code>^</code>' character.
+<p>The name of a transient symbol can contain any character except the
+null-byte. A double quote character can be escaped with a backslash
+'<code>\</code>', and a backslash itself has to be escaped with another
+backslash. Control characters can be written with a preceding hat
+'<code>^</code>' character.
 
 <pre><code>
 : <u>We^Ird\\Str\"ing</u>
@@ -813,8 +819,9 @@ because many functions won't terminate or will crash when given such a list.
 <h4><a name="macro-io">Read-Macros</a></h4>
 
 <p>Read-macros in PicoLisp are special forms that are recognized by the reader,
-and modify its behavior. Note that they take effect immediately while reading an
-expression, and are not seen by the <code>eval</code> in the main loop.
+and modify its behavior. Note that they take effect immediately while <code><a
+href="refR.html#read">read</a></code>ing an expression, and are not seen by the
+<code>eval</code> in the main loop.
 
 <p>The most prominent read-macro in Lisp is the single quote character
 <code>'</code>, which expands to a call of the <code><a
@@ -837,7 +844,8 @@ item into an <code><a href="refI.html#idx">idx</a></code> tree in the global
 variable <code><a href="refU.html#*Uni">*Uni</a></code>, and to return a
 previously inserted equal item if present. This makes it possible to create a
 unique list of references to data which do normally not follow the rules of
-pointer equality.
+pointer equality. If the value of <code>*Uni</code> is <code>T</code>, the
+comma read macro mechanism is disabled.
 
 <p>A single backquote character <code>`</code> will cause the reader to evaluate
 the following expression, and return the result.
@@ -926,7 +934,7 @@ PicoLisp is
 
 <p><dl>
 <dt>either
-<dd>a <u>number</u>. When a number is used as a function, it is simply taken as
+<dd>a <i>number</i>. When a number is used as a function, it is simply taken as
 a pointer to executable code that will be called with the list of (unevaluated)
 arguments as its single parameter. It is up to that code to evaluate the
 arguments, or not. Some functions do not evaluate their arguments (e.g.
@@ -934,7 +942,7 @@ arguments, or not. Some functions do not evaluate their arguments (e.g.
 <code>setq</code>).
 
 <dt>or
-<dd>a <u>lambda expression</u>. A lambda expression is a list, whose CAR is
+<dd>a <i>lambda expression</i>. A lambda expression is a list, whose CAR is
 either a symbol or a list of symbols, and whose CDR is a list of expressions.
 Note: In contrast to other Lisp implementations, the symbol LAMBDA itself does
 not exist in PicoLisp but is implied from context.
@@ -950,11 +958,11 @@ like the <code>*</code> in:
 -> 6
 </code></pre>
 
-<p>Inspecting the VAL of <code>*</code>, however, gives
+<p>Inspecting the VAL of <code>*</code> gives
 
 <pre><code>
 : *            # Get the VAL of the symbol '*'
--> 67291944
+-> 67318096
 </code></pre>
 
 <p>The VAL of <code>*</code> is a number. In fact, it is the numeric
@@ -1000,14 +1008,18 @@ whose VAL is used then. It is also legal, though quite dangerous, to use the
 code-pointer directly:
 
 <pre><code>
-: car
--> 67306152
-: ((* 2 33653076) (1 2 3))
--> 1
+: *
+-> 67318096
+: ((* 2 33659048) 1 2 3)
+-> 6
+: ((quote . 67318096) 1 2 3)
+-> 6
+: ((quote . 1234) (1 2 3))
+Segmentation fault
 </code></pre>
 
 <p>When an executable function is defined in Lisp itself, we call it a <a
-name="lambda"><u>lambda expression</u></a>. A lambda expression always has a
+name="lambda"><i>lambda expression</i></a>. A lambda expression always has a
 list of executable expressions as its CDR. The CAR, however, must be a either a
 list of symbols, or a single symbol, and it controls the evaluation of the
 arguments to the executable function according to the following rules:
@@ -1075,7 +1087,7 @@ bind all other arguments (unevaluated) to <code>Z</code>:
    (list X Y Z) )                   # Return a list of all arguments
 -> foo
 : (foo (+ 1 2) (+ 3 4) (+ 5 6))
--> (3 7 ((+ 5 6)))                  # two arguments are evaluated
+-> (3 7 ((+ 5 6)))                  # Only the first two arguments are evaluated
 </code></pre>
 
 <p>Or, a single argument followed by a variable number of arguments:
@@ -1088,8 +1100,8 @@ bind all other arguments (unevaluated) to <code>Z</code>:
 -> foo
 : (foo (+ 1 2) (+ 3 4) (+ 5 6))
 3                                   # X
-7                                   # Next arg
-11
+7                                   # next argument
+11                                  # and the last argument
 -> 11
 </code></pre>
 
@@ -1110,9 +1122,9 @@ and exit points, and preserve their environment between invocations.
 functions, and (re)invoked as needed. In this regard coroutines are similar to
 "continuations" in other languages.
 
-<p>When the goes out of scope, the coroutine will be garabage collected. In
-cases where this is desired, using a <a href="#transient">transient</a> symbol
-for the tag is recommended.
+<p>When the tag goes out of scope while it is not actively running, the
+coroutine will be garabage collected. In cases where this is desired, using a <a
+href="#transient">transient</a> symbol for the tag is recommended.
 
 <p>A coroutine is created by calling <code><a href="refC.html#co">co</a></code>.
 Its <code>prg</code> body will be executed, and unless <code><a
@@ -1126,17 +1138,15 @@ and already running - coroutine.
 <p>A coroutine is stopped and disposed when
 
 <p><ul>
-<li>it simply falls off the end,
+<li>execution falls off the end
 
 <li>some other (co)routine calls <code><a href="refC.html#co">co</a></code> with
-that tag but without a <code>prg</code> body,
-
-<li>the tag goes out of scope, so that the garbage collector stops it,
+that tag but without a <code>prg</code> body
 
 <li>a <code><a href="refT.html#throw">throw</a></code> into another (co)routine
-environment is executed, or
+environment is executed
 
-<li>an error occurred, and <a href="#errors">error handling</a> was entered.
+<li>an error occurred, and <a href="#errors">error handling</a> was entered
 
 </ul>
 
@@ -1159,7 +1169,7 @@ href="refD.html#debug">debug</a></code>, <code><a
 href="refE.html#e">e</a></code>, <code><a href="ref_.html#^">^</a></code> and
 <code><a href="refD.html#*Dbg">*Dbg</a></code>
 
-<p>Other interrups may be handled by <code><a
+<p>Other interrupts may be handled by <code><a
 href="refA.html#alarm">alarm</a></code>, <code><a
 href="refS.html#sigio">sigio</a></code>, <code><a
 href="refH.html#*Hup">*Hup</a></code> and <code><a
@@ -1876,6 +1886,7 @@ abbreviations:
 <dd><code>
    <a href="refA.html#atom">atom</a>
    <a href="refP.html#pair">pair</a>
+   <a href="refC.html#circ?">circ?</a>
    <a href="refL.html#lst?">lst?</a>
    <a href="refN.html#num?">num?</a>
    <a href="refS.html#sym?">sym?</a>
@@ -1935,6 +1946,7 @@ abbreviations:
    <a href="refP.html#pad">pad</a>
    <a href="refM.html#money">money</a>
    <a href="refR.html#round">round</a>
+   <a href="refB.html#bin">bin</a>
    <a href="refO.html#oct">oct</a>
    <a href="refH.html#hex">hex</a>
    <a href="refH.html#hax">hax</a>
@@ -2001,6 +2013,7 @@ abbreviations:
    <a href="refD.html#diff">diff</a>
    <a href="refI.html#index">index</a>
    <a href="refO.html#offset">offset</a>
+   <a href="refP.html#prior">prior</a>
    <a href="refA.html#assoc">assoc</a>
    <a href="refA.html#asoq">asoq</a>
    <a href="refR.html#rank">rank</a>
@@ -2035,7 +2048,6 @@ abbreviations:
    <a href="refP.html#pass">pass</a>
    <a href="refQ.html#quote">quote</a>
    <a href="refA.html#as">as</a>
-   <a href="refP.html#pid">pid</a>
    <a href="refL.html#lit">lit</a>
    <a href="refE.html#eval">eval</a>
    <a href="refR.html#run">run</a>

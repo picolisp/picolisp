@@ -1,4 +1,4 @@
-# 31may10abu
+# 07dec10abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -44,9 +44,9 @@
 (test '((B . 2) (A . 1))
    (let (A 1 B 2)
       (env '(A B)) ) )
-(test '((Y . 8) (B . 2) (A . 1) (X . 7))
+(test '((Y . 8) (C . 3) (B . 2) (A . 1) (X . 7))
    (let (A 1 B 2)
-      (env 'X 7 '(A B) 'Y 8) ) )
+      (env 'X 7 '(A B (C . 3)) 'Y 8) ) )
 
 
 ### up ###

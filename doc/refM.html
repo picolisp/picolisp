@@ -407,7 +407,7 @@ href="refD.html#delq">delq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 <pre><code>
 : (memq 'c '(a b c d e f))
 -> (c d e f)
-: (memq (2) ((1) (2) (3)))
+: (memq (2) '((1) (2) (3)))
 -> NIL
 </code></pre>
 
@@ -416,7 +416,7 @@ href="refD.html#delq">delq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 of the classes and superclasses of <code>obj</code>, or the classes in
 <code>typ</code>, for the property key <code>sym</code>, and by applying the
 <code><a href="refG.html#get">get</a></code> algorithm to the following optional
-arguments.
+arguments. See also <code><a href="refV.html#var:">var:</a></code>.
 
 <pre><code>
 : (setq A '(B))            # Be 'A' an object of class 'B'

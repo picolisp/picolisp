@@ -1,4 +1,4 @@
-# 27aug10abu
+# 23nov10abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -254,7 +254,7 @@
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless while until do case state for
-   with catch finally ! setq default push job use let let?
+   with catch finally co ! setq default push job use let let?
    prog1 later recur redef =: in out ctl tab new )
 (de *PP1 let let? for redef)
 (de *PP2 setq default)
@@ -303,34 +303,34 @@
 
 (de pp ("X" C)
    (let *Dbg NIL
-      (when (pair "X")
-         (setq C (cdr "X")) )
+      (and (pair "X") (setq C (cdr "X")))
       (prin "(")
       (printsp (if C 'dm 'de))
-      (prog1
-         (printsp "X")
+      (prog1 (printsp "X")
          (setq "X"
             (if C
                (method (if (pair "X") (car "X") "X") C)
                (val "X") ) )
          (cond
-            ((atom "X")
-               (prin ". ")
-               (print "X") )
+            ((atom "X") (prin ". ") (print "X"))
             ((atom (cdr "X"))
                (ifn (cdr "X")
                   (print (car "X"))
                   (print (car "X"))
                   (prin " . ")
                   (print @) ) )
-            (T (print (pop '"X"))
-               (while (pair "X")
-                  (prinl)
-                  (pretty (pop '"X") 3) )
-               (when "X"
-                  (prin " . ")
-                  (print "X") )
-               (space) ) )
+            (T
+               (let Z "X"
+                  (print (pop '"X"))
+                  (loop
+                     (T (== Z "X") (prin " ."))
+                     (NIL "X")
+                     (T (atom "X")
+                        (prin " . ")
+                        (print "X") )
+                     (prinl)
+                     (pretty (pop '"X") 3) )
+                  (space) ) ) )
          (prinl ")") ) ) )
 
 (de show ("X" . @)

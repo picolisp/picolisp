@@ -1,4 +1,4 @@
-12nov09abu
+12nov10abu
 (c) Software Lab. Alexander Burger
 
 
@@ -16,14 +16,12 @@ two versions are compatible (see "Differences" below).
       -------------------
 
 No C-compiler is needed to build the interpreter kernel, only a 64-bit version
-of the GNU assembler for the target architecture. The kernel sources are the
-"*.l" files in the "src64/" directory. The PicoLisp assembler parses them, and
-generates a few "*.s" files (already pre-generated in the distribution), which
-the GNU assembler accepts to build the executable binary file.
+of the GNU assembler for the target architecture.
 
-In case of modifying "*.l" source files, a running PicoLisp system (32-bit or
-64-bit) is required to re-generate the "*.s" files. Due to the pre-generated
-distribution, it is not necessary to compile a 32-bit version first.
+The kernel sources are the "*.l" files in the "src64/" directory. The PicoLisp
+assembler parses them and generates a few "*.s" files, which the GNU assembler
+accepts to build the executable binary file. See the details for bootstrapping
+the "*.s" files in INSTALL.
 
 The generic assembler is in "src64/lib/asm.l". It is driven by the script
 "src64/mkAsm" which is called by "src64/Makefile".

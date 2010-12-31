@@ -1,4 +1,4 @@
-/* 24jun09abu
+/* 25oct10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -784,8 +784,10 @@ any doFifo(any ex) {
       y = EVAL(car(x));
       if (isCell(z = val(data(c1))))
          val(data(c1)) = z = cdr(z) = cons(y,cdr(z));
-      else
-         cdr(z) = z = val(data(c1)) = cons(y,Nil);
+      else {
+         z = val(data(c1)) = cons(y,Nil);
+         cdr(z) = z;
+      }
       while (isCell(x = cdr(x)))
          val(data(c1)) = z = cdr(z) = cons(y = EVAL(car(x)), cdr(z));
    }

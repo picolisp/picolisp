@@ -1,4 +1,4 @@
-/* 23sep10abu
+/* 25nov10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -75,11 +75,6 @@ typedef struct bindFrame {
    struct {any sym; any val;} bnd[1];
 } bindFrame;
 
-typedef struct methFrame {
-   struct methFrame *link;
-   any key, cls;
-} methFrame;
-
 typedef struct inFile {
    int fd, ix, cnt, next;
    int line, src;
@@ -120,9 +115,8 @@ typedef struct parseFrame {
 typedef struct stkEnv {
    cell *stack, *arg;
    bindFrame *bind;
-   methFrame *meth;
    int next, protect, trace;
-   any task, *make, *yoke;
+   any cls, key, task, *make, *yoke;
    inFrame *inFrames;
    outFrame *outFrames;
    ctlFrame *ctlFrames;
@@ -296,6 +290,7 @@ void db(any,any,int);
 int dbSize(any,any);
 void digAdd(any,word);
 void digDiv2(any);
+void digMul(any,word);
 void digMul2(any);
 void digSub1(any);
 any doubleToNum(double);
@@ -466,6 +461,7 @@ any doChain(any);
 any doChar(any);
 any doChop(any);
 any doCirc(any);
+any doCircQ(any);
 any doClip(any);
 any doClose(any);
 any doCmd(any);
@@ -636,7 +632,6 @@ any doPath(any);
 any doPatQ(any);
 any doPeek(any);
 any doPick(any);
-any doPid(any);
 any doPipe(any);
 any doPoll(any);
 any doPool(any);
@@ -649,6 +644,7 @@ any doPrinl(any);
 any doPrint(any);
 any doPrintln(any);
 any doPrintsp(any);
+any doPrior(any);
 any doProg(any);
 any doProg1(any);
 any doProg2(any);

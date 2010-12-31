@@ -199,11 +199,13 @@ numeric return value. All numbers in this context should not be larger than 60
 bits (signed). See also <code><a href="refL.html#lisp">lisp</a></code>.
 
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
+<dt><code>(need 'cnt ['num|sym]) -> lst</code>
 <dd>Produces a list of at least <code>cnt</code> elements. When called without
 optional arguments, a list of <code>cnt</code> <code>NIL</code>'s is returned.
 When <code>lst</code> is given, it is extended to the left (if <code>cnt</code>
 is positive) or (destructively) to the right (if <code>cnt</code> is negative)
-with <code>any</code> elements. See also <code><a
+with <code>any</code> elements. In the second form, a list of <code>cnt</code>
+atomic values is returned. See also <code><a
 href="refR.html#range">range</a></code>.
 
 <pre><code>
@@ -215,6 +217,8 @@ href="refR.html#range">range</a></code>.
 -> (a b c NIL NIL)
 : (need 5 '(a b c) " ")  # String alignment
 -> (" " " " a b c)
+: (need 7 0)
+-> (0 0 0 0 0 0 0)
 </code></pre>
 
 <dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> obj</code></a>
@@ -245,7 +249,7 @@ href="ref.html#dbase">Database</a></code>.
 <dt><a name="new!"><code>(new! 'typ ['any ..]) -> obj</code></a>
 <dd><a href="ref.html#trans">Transaction</a> wrapper function for <code><a
 href="refN.html#new">new</a></code>. <code>(new! '(+Cls) 'key 'val ...)</code>
-is equivalent to <code>(dbSync) (new (db: +Cls) 'key 'val ...) (commit
+is equivalent to <code>(dbSync) (new (db: +Cls) '(+Cls) 'key 'val ...) (commit
 'upd)</code>. See also <code><a href="refS.html#set!">set!</a></code>, <code><a
 href="refP.html#put!">put!</a></code> and <code><a
 href="refI.html#inc!">inc!</a></code>.

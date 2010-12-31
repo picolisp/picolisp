@@ -1,4 +1,4 @@
-16mar10abu
+17nov10abu
 (c) Software Lab. Alexander Burger
 
 
@@ -34,11 +34,31 @@ Please follow these steps:
 
    In both cases the executable bin/picolisp will be created.
 
+
+   To build the 64-bit version the first time (bootstrapping), you have the
+   following three options:
+
+   - If a Java runtime system (version 1.6 or higher) is installed, it will
+     build right out of the box.
+
+   - Otherwise, download the pre-generated "*.s" files in
+     "http://software-lab.de/x86-64.linux.tgz".
+
+   - Else, build a 32-bit version first, and use the resulting bin/picolisp to
+     generate the "*.s" files:
+
+      $ (cd src; make)
+      $ cd src64
+      $ make x86-64.linux.base.s x86-64.linux.ext.s x86-64.linux.ht.s
+
+   After that, the 64-bit binary can be used to rebuild itself.
+
+
    Note that on the BSD family of operating systems, 'gmake' must be used
    instead of 'make'.
 
-4. Optional (but recommended) are two symbolic links from /usr/lib and /usr/bin
-   to the installation directory
+4. Optional (but recommended if you have permission to switch to root) are two
+   symbolic links from /usr/lib and /usr/bin to the installation directory
 
       # ln -s /<installdir> /usr/lib/picolisp
       # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
@@ -66,6 +86,15 @@ To exit the interpreter, enter
    : (bye)
 
 or simply type an empy line (Return).
+
+
+If you just want to test the ready-to-run Ersatz PicoLisp (it needs a Java
+runtime system), use
+
+   $ ersatz/picolisp
+   :
+
+instead of 'dbg'.
 
 
          Console Underlines

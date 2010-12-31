@@ -1,4 +1,4 @@
-# 14jan10abu
+# 15nov10abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/" "img/")
@@ -50,6 +50,7 @@
             (in Sock
                (while (rd)
                   (sync)
+                  (tell)
                   (out Sock
                      (pr (eval @)) ) ) )
             (bye) )

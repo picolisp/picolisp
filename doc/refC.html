@@ -310,11 +310,25 @@ is returned. A list argument is returned unchanged.
 <dd>Produces a circular list of all <code>any</code> arguments by <code><a
 href="refC.html#cons">cons</a></code>ing them to a list and then connecting the
 CDR of the last cell to the first cell. See also <code><a
+href="refC.html#circ?">circ?</a></code> and <code><a
 href="refL.html#list">list</a></code>.
 
 <pre><code>
 : (circ 'a 'b 'c)
 -> (a b c .)
+</code></pre>
+
+<dt><a name="circ?"><code>(circ? 'any) -> any</code></a> <dd>Returs the circular
+(sub)list if <code>any</code> is a circular list, else <code>NIL</code>. See
+also <code><a href="refC.html#circ">circ</a></code>.
+
+<pre><code>
+: (circ? 'a)
+-> NIL
+: (circ? (1 2 3))
+-> NIL
+: (circ? (1 . (2 3 .)))
+-> (2 3 .)
 </code></pre>
 
 <dt><a name="class"><code>(class sym . typ) -> obj</code></a>
@@ -627,11 +641,12 @@ serving the PicoLisp process with the process ID <code>pid</code>. See also
 </code></pre>
 
 <dt><a name="curry"><code>(curry lst . fun) -> fun</code></a>
-<dd>Builds a new function from the list of symbols <code>lst</code> and the
-functional expression <code>fun</code>. Each member in <code>lst</code> that is
-a <code><a href="refP.html#pat?">pat?</a></code> symbol is substituted inside
-<code>fun</code> by its value. All other symbols in <code>lst</code> are
-collected into a <code><a href="refJ.html#job">job</a></code> environment.
+<dd>Builds a new function from the list of symbols or symbol-value pairs
+<code>lst</code> and the functional expression <code>fun</code>. Each member in
+<code>lst</code> that is a <code><a href="refP.html#pat?">pat?</a></code> symbol
+is substituted inside <code>fun</code> by its value. All other symbols in
+<code>lst</code> are collected into a <code><a
+href="refJ.html#job">job</a></code> environment.
 
 <pre><code>
 : (de multiplier (@X)
@@ -642,14 +657,13 @@ collected into a <code><a href="refJ.html#job">job</a></code> environment.
 : ((multiplier 7) 3))
 -> 21
 
-: (let (N1 0  N2 1)
-   (def 'fiboCounter
-      (curry (N1 N2) (Cnt)
-         (do Cnt
-            (println
-               (prog1
-                  (+ N1 N2)
-                  (setq N1 N2  N2 @) ) ) ) ) ) )
+: (def 'fiboCounter
+   (curry ((N1 . 0) (N2 . 1)) (Cnt)
+      (do Cnt
+         (println
+            (prog1
+               (+ N1 N2)
+               (setq N1 N2  N2 @) ) ) ) ) )
 -> fiboCounter
 : (pp 'fiboCounter)
 (de fiboCounter (Cnt)

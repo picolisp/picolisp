@@ -1,58 +1,23 @@
-28sep10abu
+02dec10abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0.4
+         Release Notes for picoLisp-3.0.5
          ================================
 
-A. In the 64-bit version bignum division is now faster by a factor between 20
-   and 60. That version had used an inefficient algorithm (bitwise shifts),
-   which was now replaced by Knuth's wordwise division algorithm (as is used
-   32-bit version).
-
-B. An OpenGL library (64-bit) is now part of the standard release.
-
-C. The 'native' function now also accepts up to six fixpoint arguments of the
-   form (value . 1.0), and can return scaled fixpoint numbers if the return spec
-   is a number (typically 1.0).
-
-D. HTTP file uploads can now be achieved with Drag & Drop, using the new '+Drop'
-   button prefix class. For example, a simple file-upload GUI which accepts a
-   file and copies it to some destination:
-
-      (gui '(+UpField) 30)
-      (gui '(+Button) "Upload File"
-         '(let? F (val> (field -1))
-            (call 'cp (tmp F) (some-destination)) ) )
-
-   may now be written as
-
-      (gui '(+UpField) 30)
-      (gui '(+Drop +Button) '(field -1) "Upload File"
-         '(when (: drop)
-            (call 'cp @ (some-destination)) ) )
-
-   This allows manual file selection as before, but you can also drag the file
-   and drop it onto the "Upload File" button. The '+Drag' prefix takes a
-   references of the related '+UpField', and sets the 'drop' property of its GUI
-   component to a proper value that can be used in the action expression.
-
-   Note that this works only in HTML5 capable browsers (e.g Firefox 3.6),
-   supporting the JavaScript File API.
-
-E. The license was changed from GPL to the MIT/X11 License with this release
-   (see the file "COPYING").
-
-F. The usage of the poll(2) system call in the 64-bit version was found to cause
-   errors. The database stress test in "misc/stress.l" occasionally indicated
-   inconsistencies (for reasons which are not completely clear). Therefore, the
-   64-bit version is now - like the 32-bit version - based on select(2). And,
-   both versions employ now a different strategy for syncing the communication
-   between child processes. This required a slight change in the semantics of
-   'sync' and 'tell', which should however not have any influence on normal
-   applications.
-
-G. The 'pid' function is deprecated. It will be removed in the next release.
-   This was announced in the mailing list in
+A. The 'pid' function was removed. This was announced in the previous version,
+   and in the mailing list in
 
       http://www.mail-archive.com/picolisp@software-lab.de/msg01949.html
+
+B. "Ersatz PicoLisp" (written in Java) was included for a first evaluation. For
+   further informations, please look at "ersatz/README".
+
+C. The pre-generated "*.s" files for the 64-bit version are no longer part of
+   the release. They are rather large, and would multiply when further
+   architectures and operating systems are supported. Instead, they may
+   initially be generated with Ersatz PicoLisp, or downloaded from
+   "http://software-lab.de/x86-64.linux.tgz".
+
+D. The 'easter' function in "lib/cal.l" is no longer restricted to the years
+   1900 through 2099.

@@ -1,0 +1,60 @@
+03dec10abu
+(c) Software Lab. Alexander Burger
+
+
+         Ersatz PicoLisp
+         ===============
+
+Ersatz PicoLisp is a version of PicoLisp completely written in Java. It requires
+a 1.6 Java Runtime Environment.
+
+It should be the last resort when there is no other way to run a "real"
+PicoLisp. Also, it may be used to bootstrap the 64-bit version, which requires a
+running PicoLisp to build from the sources.
+
+Performance is rather poor. It is 5 to 10 times slower, allocates a huge amount
+of memory at startup (600 MB vs. 3 MB), and needs 2.5 to 4 times the space for
+runtime Lisp data. But efficiency was not a major goal. Instead, performance was
+often sacrificed in favor of simpler or more modular structures.
+
+There is no support for
+
+- raw console inpt ('key') and line editing
+- child processes ('fork')
+- interprocess communication ('tell', 'hear', 'ipc', 'udp' etc.)
+- databases (external symbols)
+- signal handling
+
+
+      Invocation
+      ----------
+
+Ersatz PicoLisp can be started - analog to 'bin/picolisp' - as
+
+   $ ersatz/picolisp
+
+This already includes slighly simplfied versions of the standard libraries as
+loaded by './dbg' (without database, but with Pilog and XML support).
+
+On non-Unix systems, you might start 'java' directly, e.g.:
+
+   java -DPID=42 -cp .;tmp;picolisp.jar PicoLisp lib.l
+
+Instead of '42' some other number may be passed. It is used to simulate a
+"process ID", so it should be different for every running instance of Ersatz
+PicoLisp.
+
+
+      Building the JAR file
+      ---------------------
+
+The actual source files are
+
+   sys.src  # The system
+   fun.src  # Function definitions
+
+The PicoLisp script "mkJar" will read them, generate the Java source file
+"PicoLisp.java", compile that with 'javac', and pack the result into a JAR (Java
+Archive) file. "mkJar" expects to be run in the "ersatz/" directory, e.g.:
+
+   $ (cd ersatz; ./mkJar)

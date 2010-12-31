@@ -1,4 +1,4 @@
-/* 22jul10abu
+/* 07dec10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -65,7 +65,7 @@ void bye(int n) {
 }
 
 void execError(char *s) {
-   fprintf(stderr, "%s: can't exec\n", s);
+   fprintf(stderr, "%s: Can't exec\n", s);
    exit(127);
 }
 
@@ -300,7 +300,9 @@ any doEnv(any x) {
          Push(c2, EVAL(car(x)));
          if (isCell(data(c2))) {
             do
-               data(c1) = cons(cons(car(data(c2)), val(car(data(c2)))), data(c1));
+               data(c1) = cons(
+                  isCell(car(data(c2)))? car(data(c2)) : cons(car(data(c2)), val(car(data(c2)))),
+                  data(c1) );
             while (isCell(data(c2) = cdr(data(c2))));
          }
          else if (!isNil(data(c2))) {
@@ -380,36 +382,48 @@ bool equal(any x, any y) {
          if (!isSym(y)  || !isNum(x = name(x))  ||  !isNum(y = name(y)))
             return NO;
       }
+      else if (!isCell(y))
+         return NO;
       else {
-         any a, b;
+         any a = x, b = y;
+         bool res = NO;
 
-         if (!isCell(y))
-            return NO;
-         while (car(x) == Quote) {
-            if (car(y) != Quote)
-               return NO;
-            if (x == cdr(x))
-               return y == cdr(y);
-            if (y == cdr(y))
-               return NO;
-            if (!isCell(x = cdr(x)))
-               return equal(x, cdr(y));
-            if (!isCell(y = cdr(y)))
-               return NO;
-         }
-         a = x, b = y;
          for (;;) {
             if (!equal(car(x), car(y)))
-               return NO;
-            if (!isCell(x = cdr(x)))
-               return equal(x, cdr(y));
-            if (!isCell(y = cdr(y)))
-               return NO;
-            if (x == a)
-               return y == b;
-            if (y == b)
-               return NO;
+               break;
+            if (!isCell(cdr(x))) {
+               res = equal(cdr(x), cdr(y));
+               break;
+            }
+            if (!isCell(cdr(y)))
+               break;
+            *(word*)&car(x) |= 1,  x = cdr(x);
+            *(word*)&car(y) |= 1,  y = cdr(y);
+            if (num(car(x)) & 1 || num(car(y)) & 1) {
+               for (;;) {
+                  if (a == x) {
+                     res = b == y;
+                     break;
+                  }
+                  if (b == y) {
+                     res = NO;
+                     break;
+                  }
+                  *(word*)&car(a) &= ~1,  a = cdr(a);
+                  *(word*)&car(b) &= ~1,  b = cdr(b);
+               }
+               do {
+                  *(word*)&car(a) &= ~1,  a = cdr(a);
+                  *(word*)&car(b) &= ~1,  b = cdr(b);
+               } while (a != x);
+               return res;
+            }
          }
+         while (a != x) {
+            *(word*)&car(a) &= ~1,  a = cdr(a);
+            *(word*)&car(b) &= ~1,  b = cdr(b);
+         }
+         return res;
       }
    }
 }
@@ -523,7 +537,6 @@ void err(any ex, any x, char *fmt, ...) {
    }
    unwind(NULL);
    Env.stack = NULL;
-   Env.meth = NULL;
    Env.protect = Env.trace = 0;
    Env.next = -1;
    Env.task = Nil;
@@ -567,7 +580,7 @@ void unwind(catchFrame *catch) {
 
    while (q = CatchPtr) {
       while (p = Env.bind) {
-         if ((i = Env.bind->i) < 0) {
+         if ((i = p->i) < 0) {
             j = i, n = 0;
             while (++n, ++j && (p = p->link))
                if (p->i >= 0 || p->i < i)

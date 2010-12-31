@@ -1,4 +1,4 @@
-# 30aug10abu
+# 25dec10abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -126,22 +126,33 @@
       (format (*/ N (** 10 (- *Scl D))) D *Sep0 *Sep3)
       (format N *Scl *Sep0 *Sep3) ) )
 
-# Octal notation
-(de oct (X)
+# Binary notation
+(de bin (X)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (oct1 X))
-            (until (=0 (setq X (>> 3 X)))
-               (push 'L (oct1 X)) )
+         (let (S (and (lt0 X) '-)  L (& 1 X))
+            (until (=0 (setq X (>> 1 X)))
+               (push 'L (& 1 X)) )
             (pack S L) ) )
       ((setq X (chop X))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
-               (setq N (+ (format C) (>> -3 N))) )
+               (setq N (| (format C) (>> -1 N))) )
             (if S (- N) N) ) ) ) )
 
-(de oct1 (N)
-   (char (+ (& N 7) `(char "0"))) )
+# Octal notation
+(de oct (X)
+   (cond
+      ((num? X)
+         (let (S (and (lt0 X) '-)  L (& 7 X))
+            (until (=0 (setq X (>> 3 X)))
+               (push 'L (& 7 X)) )
+            (pack S L) ) )
+      ((setq X (chop X))
+         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+            (for C X
+               (setq N (| (format C) (>> -3 N))) )
+            (if S (- N) N) ) ) ) )
 
 # Hexadecimal notation
 (de hex (X)
@@ -157,7 +168,7 @@
                (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
                (and (> C 22) (dec 'C 32))
-               (setq N (+ C (>> -4 N))) )
+               (setq N (| C (>> -4 N))) )
             (if S (- N) N) ) ) ) )
 
 (de hex1 (N)

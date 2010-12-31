@@ -1,4 +1,4 @@
-/* 02jul10abu
+/* 03oct10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -237,7 +237,7 @@ static any bigMul(any x1, any x2) {
 }
 
 /* Multiply digit with a (positive) bignum */
-static void digMul(any x, word n) {
+void digMul(any x, word n) {
    word2 t;
    any y;
 

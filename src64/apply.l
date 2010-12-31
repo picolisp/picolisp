@@ -1,4 +1,4 @@
-# 10jun10abu
+# 12oct10abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -165,13 +165,13 @@
          push Z  # Save arg pointers
          push Y
          ld Y C  # 'msg'
-         ld Z Nil  # No classes
+         ld Z 0  # No classes
          call methodEY_FCYZ  # Found?
          jne msgErrYX  # No
-         xchg Z (S I)  # 'cls'
-         xchg Y (S)  # 'key'
-         push (EnvMeth)  # Method frame
-         ld (EnvMeth) S
+         ld (S I) (EnvCls)  # 'cls'
+         ld (S) (EnvKey)  # 'key'
+         ld (EnvCls) Z  # Set new
+         ld (EnvKey) Y  # 'key'
          ld X (C)  # Parameter list in X
          push (EnvBind)  # Build bind frame
          link
@@ -211,9 +211,8 @@
             until eq  # No
             pop L  # Restore link
             pop (EnvBind)  # Restore bind link
-            pop (EnvMeth)  # and method link
-            pop A  # Drop frame
-            pop A
+            pop (EnvKey)  # 'key'
+            pop (EnvCls)  # and 'cls'
             pop X
             ret
          end
@@ -237,9 +236,8 @@
             until eq  # No
             pop L  # Restore link
             pop (EnvBind)  # Restore bind link
-            pop (EnvMeth)  # and method link
-            pop A  # Drop frame
-            pop A
+            pop (EnvKey)  # 'key'
+            pop (EnvCls)  # and 'cls'
             pop X
             ret
          end
@@ -283,9 +281,8 @@
          until eq  # No
          pop L  # Restore link
          pop (EnvBind)  # Restore bind link
-         pop (EnvMeth)  # and method link
-         pop A  # Drop frame
-         pop A
+         pop (EnvKey)  # 'key'
+         pop (EnvCls)  # and 'cls'
          pop X
          ret
       end
@@ -464,10 +461,10 @@
          ld Z Nil  # No classes
          call methodEY_FCYZ  # Found?
          jne msgErrYX  # No
-         xchg Z (S I)  # 'cls'
-         xchg Y (S)  # 'key'
-         push (EnvMeth)  # Method frame
-         ld (EnvMeth) S
+         ld (S I) (EnvCls)  # 'cls'
+         ld (S) (EnvKey)  # 'key'
+         ld (EnvCls) Z  # Set new
+         ld (EnvKey) Y  # 'key'
          ld X (C)  # Parameter list in X
          push (EnvBind)  # Build bind frame
          link
@@ -507,9 +504,8 @@
             until eq  # No
             pop L  # Restore link
             pop (EnvBind)  # Restore bind link
-            pop (EnvMeth)  # and method link
-            pop A  # Drop frame
-            pop A
+            pop (EnvKey)  # 'key'
+            pop (EnvCls)  # and 'cls'
             pop X
             ret
          end
@@ -533,9 +529,8 @@
             until eq  # No
             pop L  # Restore link
             pop (EnvBind)  # Restore bind link
-            pop (EnvMeth)  # and method link
-            pop A  # Drop frame
-            pop A
+            pop (EnvKey)  # 'key'
+            pop (EnvCls)  # and 'cls'
             pop X
             ret
          end
@@ -579,9 +574,8 @@
          until eq  # No
          pop L  # Restore link
          pop (EnvBind)  # Restore bind link
-         pop (EnvMeth)  # and method link
-         pop A  # Drop frame
-         pop A
+         pop (EnvKey)  # 'key'
+         pop (EnvCls)  # and 'cls'
          pop X
          ret
       end

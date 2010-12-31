@@ -1,4 +1,4 @@
-# 12aug10abu
+# 04oct10abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -113,28 +113,28 @@ $(lib)/z3d$(dll): z3d.o
 	$(STRIP) $(lib)/z3d$(dll)
 
 
-$(bin)/lat1: lat1.o
-	gcc -m32 -o $(bin)/lat1$(exe) lat1.o
+$(bin)/lat1: lat1.c
+	gcc -o $(bin)/lat1$(exe) lat1.c
 	$(STRIP) $(bin)/lat1$(exe)
 
-$(bin)/utf2: utf2.o
-	gcc -m32 -o $(bin)/utf2$(exe) utf2.o
+$(bin)/utf2: utf2.c
+	gcc -o $(bin)/utf2$(exe) utf2.c
 	$(STRIP) $(bin)/utf2$(exe)
 
-$(bin)/balance: balance.o
-	gcc -m32 -o $(bin)/balance$(exe) balance.o
+$(bin)/balance: balance.c
+	gcc -o $(bin)/balance$(exe) balance.c
 	$(STRIP) $(bin)/balance$(exe)
 
-$(bin)/ssl: ssl.o
-	gcc -m32 -o $(bin)/ssl$(exe) ssl.o -lssl -lcrypto
+$(bin)/ssl: ssl.c
+	gcc -o $(bin)/ssl$(exe) ssl.c -lssl -lcrypto
 	$(STRIP) $(bin)/ssl$(exe)
 
-$(bin)/httpGate: httpGate.o
-	gcc -m32 -o $(bin)/httpGate$(exe) httpGate.o -lssl -lcrypto
+$(bin)/httpGate: httpGate.c
+	gcc -o $(bin)/httpGate$(exe) httpGate.c -lssl -lcrypto
 	$(STRIP) $(bin)/httpGate$(exe)
 
-$(bin)/z3dClient: z3dClient.o
-	gcc -m32 -o $(bin)/z3dClient$(exe) z3dClient.o  -L/usr/X11R6/lib -lXext -lX11
+$(bin)/z3dClient: z3dClient.c
+	gcc -o $(bin)/z3dClient$(exe) z3dClient.c  -L/usr/X11R6/lib -lXext -lX11
 	$(STRIP) $(bin)/z3dClient$(exe)
 
 

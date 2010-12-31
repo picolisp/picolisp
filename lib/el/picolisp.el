@@ -298,7 +298,7 @@ See `run-hooks'."
                       "balance" "get" "fill" "apply" "range"
                       ;; Control Flow
                       "load" "args" "next" "arg" "rest" "pass" "quote" "as" 
-                      "pid" "lit" "eval" "run" "macro" "curry" "def" "de" "dm" 
+                      "lit" "eval" "run" "macro" "curry" "def" "de" "dm" 
                       "recur" "recurse" "undef" "box" "new" "type" "isa" 
                       "method" "meth" "send" "try" "super" "extra" "with" 
                       "bind" "job" "let" "let?" "use" "and" "or" "nand" "nor" 

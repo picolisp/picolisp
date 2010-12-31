@@ -1,4 +1,4 @@
-# 30apr10abu
+# 17nov10abu
 # (c) Software Lab. Alexander Burger
 
 # Check or write header
@@ -72,7 +72,7 @@
                         (pack (xmlEsc (trim (cons X (till "^J<"))))) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
-   (use (@A @X @Z)
+   (use (@X @Z)
       (make
          (while L
             (ifn (match '("&" @X ";" @Z) L)

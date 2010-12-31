@@ -1,0 +1,30 @@
+Using the TinyMCE Javascript/HTML WYSIWYG editor in PicoLisp applications
+
+1. Install the 'tinymce' package
+
+   $ apt-get install tinymce
+
+2. In the application's runtime directory, create a link to the tinymce
+   installation, e.g.:
+
+   $ ln -s /usr/share/tinymce/www tinymce
+
+3. In your application, 'allow' the tinymce installation directory:
+
+   (allowed ("myApp/" "img/" "tinymce/")
+      ... )
+
+4. On each page where you want to use tinymce in textareas, insert somewhere at
+   the beginning, but before the first text field, e.g.:
+
+   (action
+      (html 0 "Title" "lib.css" NIL
+         (javascript "tinymce/tiny_mce.js")
+         (javascript "lib/tinymce.js")
+         (form NIL
+            ...
+            (gui '(+BlobField) '(txt : home obj) 60 8 "Memo")
+
+5. Normally, you would use an application-specific configuration. In that
+   case, copy "lib/tinymce.js" to "myApp/tinymce.js", modify the plugins,
+   buttons etc, and use (javascript "myApp/tinymce.js") in your code.

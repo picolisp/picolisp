@@ -1,4 +1,4 @@
-/* 20may10abu
+/* 25nov10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -75,6 +75,7 @@ static symInit Symbols[] = {
    {doChain, "chain"},
    {doChop, "chop"},
    {doCirc, "circ"},
+   {doCircQ, "circ?"},
    {doClip, "clip"},
    {doClose, "close"},
    {doCmd, "cmd"},
@@ -243,7 +244,6 @@ static symInit Symbols[] = {
    {doPath, "path"},
    {doPatQ, "pat?"},
    {doPeek, "peek"},
-   {doPid, "pid"},
    {doPick, "pick"},
    {doPipe, "pipe"},
    {doPoll, "poll"},
@@ -257,6 +257,7 @@ static symInit Symbols[] = {
    {doPrint, "print"},
    {doPrintln, "println"},
    {doPrintsp, "printsp"},
+   {doPrior, "prior"},
    {doProg, "prog"},
    {doProg1, "prog1"},
    {doProg2, "prog2"},

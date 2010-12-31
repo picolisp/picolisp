@@ -1,4 +1,4 @@
-# 26aug10abu
+# 30sep10abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -8,12 +8,6 @@
 ### as ###
 (test NIL (as (= 3 4) A B C))
 (test '(A B C) (as (= 3 3) A B C))
-
-
-### pid ###
-(test NIL (pid 1 '+ 3 4)))
-(test 7 (pid *Pid '+ 3 4))
-(test 7 (pid (list 0 *Pid 1) '+ 3 4))
 
 
 ### lit ###

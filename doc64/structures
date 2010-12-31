@@ -1,4 +1,4 @@
-# 07jun10abu
+# 12oct10abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -189,13 +189,6 @@
          |     NIL    |   |   (gc)
          |     carN --+ <-+
          +---- LINK  <-- L <-- Apply
-
-
-      Method frame:
-                        ^
-         <II>  cls      |
-         <I>   key      |
-               LINK ----+  <-- Meth
 
 
       Catch frame:

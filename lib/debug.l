@@ -1,4 +1,4 @@
-# 12mar10abu
+# 11nov10abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -28,6 +28,7 @@
             "Fun" (list '(X) (list 'pp 'X (lit "M")))
             "M" (mapcar car (filter pair (val "M"))) ) )
       (loop
+         (flush)
          (T (atom "M") (prinl))
          (T (line) T)
          ("Fun" (pop '"M")) ) ) )

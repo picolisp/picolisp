@@ -1,4 +1,4 @@
-# 30aug10abu
+# 12oct10abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -179,6 +179,10 @@
          (prinst Cmd "%al" (byteVal Dst)) )
       ((or (pre? "%" Dst) (pre? "%" Dst2))
          (prinst Cmd Dst2 Dst) )
+      ((sub? "%r10" Dst2)
+         (prinst "mov" Dst "%r11")
+         (prinst Cmd "%r11" Dst2)
+         (prinst "mov" "%r11" Dst) )
       (T
          (prinst "mov" Dst "%r10")
          (prinst Cmd "%r10" Dst2)

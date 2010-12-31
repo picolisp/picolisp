@@ -1,22 +1,22 @@
-# 17sep02abu
+# 01dec10abu
 # (c) Software Lab. Alexander Burger
 
-# Easter date
+# Easter date algorithm from J.M. Oudin (1940)
 (de easter (Year)
-   (unless (<= 1900 Year 2099)
-      (quit "Illegal Year" Year) )
    (let
-      (A (% Year 19)
-         B (% Year 4)
-         C (% Year 7)
-         D (% (+ 24 (* 19 A)) 30)
-         E (% (+ 5 (* 2 B) (* 4 C) (* 6 D)) 7)
-         Day (+ 22 D E)
-         Mon 3 )
-      (and (> Day 31) (setq  Day (+ D E -9)  Mon 4))
-      (and (= Day 26) (= Mon 4) (setq Day 19))
-      (and (= Day 25) (= Mon 4) (= D 28) (= E 6) (> A 10) (setq Day 18))
-      (date Year Mon Day) ) )
+      (C (/ Year 100)
+         N (% Year 19)  # Metonic cycle
+         I (%
+            (+
+               (- C (/ C 4) (/ (- C (/ (- C 17) 25)) 3))
+               (* 19 N)
+               15 )
+            30 ) )
+      (dec 'I (* (/ I 28) (- 1 (* (/ I 28) (/ 29 (inc I)) (/ (- 21 N) 11)))))
+      (let
+         (L (- I (% (+ Year (/ Year 4) I 2 (- C) (/ C 4)) 7))
+            Mon (+ 3 (/ (+ L 40) 44)) )
+         (date Year Mon (+ L 28 (* (/ Mon 4) -31))) ) ) )
 
 # Feiertage
 (de feier (X Year)

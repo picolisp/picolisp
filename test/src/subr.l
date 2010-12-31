@@ -1,4 +1,4 @@
-# 07nov09abu
+# 13dec10abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -69,6 +69,7 @@
 (test '(NIL NIL a b c) (need 5 '(a b c)))
 (test '(a b c NIL NIL) (need -5 '(a b c)))
 (test '(" " " " a b c) (need 5 '(a b c) " "))
+(test (0 0 0) (need 3 0))
 
 
 ### range ###
@@ -228,6 +229,7 @@
 (test T (= "a" "a"))
 (test T (== "a" "a"))
 (test T (= (1 (2) 3) (1 (2) 3)))
+(test T (= (1 . (2 3 .)) (1 . (2 3 .))))
 
 
 ### <> ###
@@ -305,6 +307,12 @@
 (test (1 2 3) (pair (1 2 3)))
 
 
+### circ? ###
+(test NIL (circ? 'a))
+(test NIL (circ? (1 2 3)))
+(test (2 3 . @) (circ? (1 . (2 3 .))))
+
+
 ### lst? ###
 (test T (lst? NIL))
 (test NIL (lst? T))
@@ -377,12 +385,19 @@
 (test NIL (offset '(c d e) '(a b c d e f)))
 
 
+### prior ###
+(let (L (1 2 3 4 5 6)  X (cdddr L))
+   (test NIL (prior L L))
+   (test (3 4 5 6) (prior X L)) )
+
+
 ### length ###
 (test 3 (length "abc"))
 (test 3 (length "äbc"))
 (test 3 (length 123))
 (test 3 (length (1 (2) 3)))
 (test T (length (1 2 3 .)))
+(test T (length (1 . (2 3 .))))
 
 
 ### size ###
@@ -394,6 +409,7 @@
 (test 3 (size (1 2 3 .)))
 (test 8 (size '((1 2 3) (4 5 6))))
 (test 6 (size '((1 2 .) (4 5 .))))
+(test 3 (size (1 . (2 3 .))))
 
 
 ### assoc ###

@@ -1,4 +1,4 @@
-# 28jul10abu
+# 12oct10abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -123,16 +123,6 @@
          call markE  # Yes
       end
       ld E (Y II)  # Mark 'fin'
-      call markE
-      ld Y (Y)  # Next frame
-   loop
-   ld Y (EnvMeth)  # Method frames
-   do
-      null Y  # Any?
-   while ne  # Yes
-      ld E (Y I)  # Mark 'key'
-      call markE
-      ld E (Y II)  # Mark 'cls'
       call markE
       ld Y (Y)  # Next frame
    loop

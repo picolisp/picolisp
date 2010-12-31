@@ -1,4 +1,4 @@
-/* 06jun09abu
+/* 12oct10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -54,19 +54,17 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
          o = cf? car(data(p[0])) : data(p[0]);
          NeedSym(ex,o);
          Fetch(ex,o);
-         TheKey = foo,  TheCls = Nil;
+         TheCls = NULL,  TheKey = foo;
          if (expr = method(o)) {
             int i;
-            methFrame m;
+            any cls = Env.cls, key = Env.key;
             struct {  // bindFrame
                struct bindFrame *link;
                int i, cnt;
                struct {any sym; any val;} bnd[length(x = car(expr))+3];
             } f;
 
-            m.link = Env.meth;
-            m.key = TheKey;
-            m.cls = TheCls;
+            Env.cls = TheCls,  Env.key = TheKey;
             f.link = Env.bind,  Env.bind = (bindFrame*)&f;
             f.i = 0;
             f.cnt = 1,  f.bnd[0].sym = At,  f.bnd[0].val = val(At);
@@ -80,7 +78,6 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;
-               Env.meth = &m;
                x = prog(cdr(expr));
             }
             else if (x != At) {
@@ -88,7 +85,6 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;
-               Env.meth = &m;
                x = prog(cdr(expr));
             }
             else {
@@ -103,7 +99,6 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;
-               Env.meth = &m;
                x = prog(cdr(expr));
                if (cnt)
                   drop(c[cnt-1]);
@@ -112,7 +107,7 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
             while (--f.cnt >= 0)
                val(f.bnd[f.cnt].sym) = f.bnd[f.cnt].val;
             Env.bind = f.link;
-            Env.meth = Env.meth->link;
+            Env.cls = cls,  Env.key = key;
             return x;
          }
          err(ex, o, "Bad object");
@@ -262,8 +257,7 @@ any doMaplist(any ex) {
       while (isCell(data(c[0]) = cdr(data(c[0])))) {
          for (i = 1; i < n; ++i)
             data(c[i]) = cdr(data(c[i]));
-         cdr(x) = cons(apply(ex, data(foo), NO, n, c), Nil);
-         x = cdr(x);
+         x = cdr(x) = cons(apply(ex, data(foo), NO, n, c), Nil);
       }
    }
    return Pop(res);
@@ -289,8 +283,7 @@ any doMapcar(any ex) {
       while (isCell(data(c[0]) = cdr(data(c[0])))) {
          for (i = 1; i < n; ++i)
             data(c[i]) = cdr(data(c[i]));
-         cdr(x) = cons(apply(ex, data(foo), YES, n, c), Nil);
-         x = cdr(x);
+         x = cdr(x) = cons(apply(ex, data(foo), YES, n, c), Nil);
       }
    }
    return Pop(res);
@@ -665,8 +658,7 @@ any doBy(any ex) {
       while (isCell(data(c[0]) = cdr(data(c[0])))) {
          for (i = 1; i < n; ++i)
             data(c[i]) = cdr(data(c[i]));
-         cdr(x) = cons(cons(apply(ex, data(foo1), YES, n, c), car(data(c[0]))), Nil);
-         x = cdr(x);
+         x = cdr(x) = cons(cons(apply(ex, data(foo1), YES, n, c), car(data(c[0]))), Nil);
       }
       data(res) = apply(ex, data(foo2), NO, 1, &res);
       for (x = data(res); isCell(x); x = cdr(x))

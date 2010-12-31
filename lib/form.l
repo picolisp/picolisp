@@ -1,4 +1,4 @@
-# 09aug10abu
+# 15nov10abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -231,7 +231,8 @@
                   (when *Lock
                      (if (lock @)
                         (=: able (off *Lock))
-                        (sync) ) )
+                        (sync)
+                        (tell) ) )
                   (for This (: gui)
                      (nond
                         ((: id) (setq "*Chart" This))
@@ -1765,6 +1766,7 @@
    (if (lock Obj)
       (err (text ,"Currently edited by '@2' (@1)" @  (cdr (lup *Users @))))
       (sync)
+      (tell)
       (setq *Lock Obj) ) )
 
 

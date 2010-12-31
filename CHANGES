@@ -1,3 +1,10 @@
+* 31dec10 picoLisp-3.0.5
+   'bin' function
+   'prior' function
+   'circ?' function
+   Ersatz PicoLisp (Java) version
+   Bug in (rd 'cnt)
+
 * 30sep10 picoLisp-3.0.4
    'tell' accepts PID argument
    Deprecated 'pid'

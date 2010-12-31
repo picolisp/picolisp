@@ -1,4 +1,4 @@
-# 10jun10abu
+# 13dec10abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -915,6 +915,7 @@
    ret
 
 # (need 'cnt ['lst ['any]]) -> lst
+# (need 'cnt ['num|sym]) -> lst
 (code 'doNeed 2)
    push X
    push Y
@@ -926,11 +927,19 @@
    ld E (Y)  # Eval next
    eval
    link
-   push E  # <L II> 'lst'
-   ld Y (Y CDR)
-   ld E (Y)  # Eval 'any'
-   eval+
-   push E  # <L I> 'any'
+   atom E  # First form?
+   jz 10  # Yes
+   cmp E Nil
+   if eq  # Yes
+10    push E  # <L II> 'lst'
+      ld Y (Y CDR)
+      ld E (Y)  # Eval 'any'
+      eval+
+      push E  # <L I> 'any'
+   else
+      push Nil  # <L II> 'lst'
+      push E  # <L I> 'num|sym'
+   end
    link
    ld E (L II)  # Get 'lst'
    or X X  # 'cnt'?
@@ -2385,6 +2394,19 @@
    jnz retNil  # Yes
    ret
 
+# (circ? 'any) -> any
+(code 'doCircQ 2)
+   ld E ((E CDR))  # Get arg
+   eval  # Eval it
+   atom E  # Atom?
+   jnz retNil  # Yes
+   push Y
+   call circE_YF  # Circular?
+   ldz E Y  # Yes
+   ldnz E Nil
+   pop Y
+   ret
+
 # (lst? 'any) -> flg
 (code 'doLstQ 2)
    ld E ((E CDR))  # Get arg
@@ -2654,9 +2676,9 @@
    ld E (X)  # Eval first
    eval
    link
-   push E  # <L I> 'any'
+   push E  # <L I> 'lst1'
    link
-   ld E ((X CDR))  # Eval second
+   ld E ((X CDR))  # Eval 'lst2'
    eval
    ld C 0  # Init result
    ld X (L I)  # Get 'lst1'
@@ -2683,6 +2705,34 @@
    pop X
    ret
 
+# (prior 'lst1 'lst2) -> lst | NIL
+(code 'doPrior 2)
+   push X
+   ld X (E CDR)  # Args
+   ld E (X)  # Eval first
+   eval
+   link
+   push E  # <L I> 'lst1'
+   link
+   ld E ((X CDR))  # Eval 'lst2'
+   eval
+   ld C (L I)  # Get 'lst1'
+   drop
+   pop X
+   cmp C E  # First cell?
+   if ne  # No
+      do
+         atom E  # More?
+      while z  # Yes
+         ld A (E CDR)
+         cmp A C  # Found prior cell?
+         jeq ret  # Yes
+         ld E A
+      loop
+   end
+   ld E Nil
+   ret
+
 # (length 'any) -> cnt | T
 (code 'doLength 2)
    ld E (E CDR)  # Get arg
@@ -2695,33 +2745,39 @@
    end
    sym E  # Symbol?
    if z  # No (list)
-      push X
-      push Y
-      ld X E  # List in X
-      ld E ONE  # Counter
+      ld C E  # Keep list in C
+      ld A ONE  # Init counter
       do
-         cmp X Quote
-      while eq
-         ld Y (X CDR)  # Next cell
-         cmp Y X  # Circular?
-         jz lengthT  # Yes
-         ld X Y
-         atom X  # Done?
-         jnz 10  # Yes
-         add E (hex "10")  # Increment counter
+         or (E) 1  # Mark
+         ld E (E CDR)  # Normal list?
+         atom E
+         if nz  # Yes
+            do
+               off (C) 1  # Unmark
+               ld C (C CDR)
+               atom C  # Done?
+            until nz  # Yes
+            ld E A  # Get count
+            ret  # Return length
+         end
+         test (E) 1  # Detected circularity?
+         if nz  # Yes
+            do
+               cmp C E  # Skip non-circular part
+            while ne
+               off (C) 1  # Unmark
+               ld C (C CDR)
+            loop
+            do
+               off (C) 1  # Unmark circular part
+               ld C (C CDR)
+               cmp C E  # Done?
+            until eq  # Yes
+            ld E TSym
+            ret  # Return T
+         end
+         add A (hex "10")  # Increment counter
       loop
-      ld Y X  # Keep list head
-      do
-         ld X (X CDR)  # Next cell
-         atom X  # Any?
-      while z  # Yes
-         cmp X Y  # Hit head?
-         jz lengthT  # Yes
-         add E (hex "10")  # Increment counter
-      loop
-10    pop Y
-      pop X
-      ret
    end
    # Symbol
    cmp E Nil  # NIL?
@@ -2739,12 +2795,6 @@
    while nz
       add E (hex "10")  # Increment counter
    loop
-   pop X
-   ret
-
-: lengthT
-   ld E TSym  # Return T
-   pop Y
    pop X
    ret
 
@@ -2870,20 +2920,9 @@
    ret
 
 (code 'sizeCE_C 0)
-   add C (hex "10")  # Increment count
+   push E  # Save list
    do
-      cmp (E) Quote  # CAR is 'quote'?
-   while eq  # Yes
-      cmp E (E CDR)  # Circular?
-      jeq ret  # Yes
-      ld E (E CDR)  # More cells?
-      atom E
-      jnz ret  # No
       add C (hex "10")  # Increment count
-   loop
-   push X
-   ld X E  # Keep head in X
-   do
       atom (E)  # Is CAR a cell?
       if z  # Yes
          push E
@@ -2893,15 +2932,35 @@
          call sizeCE_C
          pop E
       end
-      ld E (E CDR)  # More cells?
+      or (E) 1  # Mark
+      ld E (E CDR)  # Normal list?
       atom E
-   while z  # Yes
-      cmp E X  # Circular?
-   while ne  # No
-      add C (hex "10")  # Increment count
+      if nz  # Yes
+         pop E  # Get original list
+         do
+            off (E) 1  # Unmark
+            ld E (E CDR)
+            atom E  # Done?
+         until nz  # Yes
+         ret
+      end
+      test (E) 1  # Detected circularity?
+      if nz  # Yes
+         pop A  # Get original list
+         do
+            cmp A E  # Skip non-circular part
+         while ne
+            off (A) 1  # Unmark
+            ld A (A CDR)
+         loop
+         do
+            off (A) 1  # Unmark circular part
+            ld A (A CDR)
+            cmp A E  # Done?
+         until eq  # Yes
+         ret
+      end
    loop
-   pop X
-   ret
 
 # (assoc 'any 'lst) -> lst
 (code 'doAssoc 2)

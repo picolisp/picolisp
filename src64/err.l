@@ -1,4 +1,4 @@
-# 11jun10abu
+# 12oct10abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -154,7 +154,6 @@
    ld (EnvTask) Nil
    ld (EnvArgs) 0
    ld (EnvNext) 0
-   ld (EnvMeth) 0
    ld (EnvMake) 0
    ld (EnvYoke) 0
    ld (EnvTrace) 0
@@ -191,26 +190,25 @@
                ld Z ((Z) I)  # Follow link
                null Z  # Any?
             while nz  # Yes
-               cmp (Z -I) A  # Env swap nesting?
+               cmp (Z -I) C  # Env swap nesting?
                if lt  # Yes
                   dec A  # Adjust
                end
             loop
             do
-               ld A E  # Get 'n'
-               ld Z Y  # Bindings
+               ld Z Y  # Get bindings
+               ld A E  # and 'n'
                do
                   dec A  # 'n-1' times
                while nz
                   ld Z ((Z) I)  # Follow link
                loop
-               ld A (Z)  # End of bindings in A
                sub (Z -I) C  # Increment 'eswp' by absolute first eswp
-               if gt  # Overflowed
-                  ld (Z -I) 0  # Reset
-               end
                if ge  # Last pass
-                  sub A II
+                  if gt  # Overflowed
+                     ld (Z -I) 0  # Reset
+                  end
+                  lea A ((Z) -II)  # End of bindings in A
                   do
                      xchg ((A)) (A I)  # Exchange next symbol value with saved value
                      sub A II

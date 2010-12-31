@@ -131,9 +131,9 @@ If <code>cnt</code> is given, only that many bytes are actually echoed. In case
 of two <code>cnt</code> arguments, the first one specifies the number of bytes
 to skip in the input stream. Otherwise, if one or more <code>sym</code>
 arguments are given, the echo process stops as soon as one of the symbol's names
-is encountered in the input stream (in that case, the name will be read (and
-that symbol returned), but not written). Returns non-<code>NIL</code> if the
-operation was successfully completed.
+is encountered in the input stream. In this case the name will be read and
+returned, but not written. Returns non-<code>NIL</code> if the operation was
+successfully completed.
 
 <pre><code>
 : (in "x.l" (echo))  # Display file on console
@@ -207,9 +207,9 @@ href="refS.html#show">show</a></code>.
 
 <dt><a name="env"><code>(env ['lst] | ['sym 'val] ..) -> lst</code></a>
 <dd>Return a list of symbol-value pairs of all dynamically bound symbols if
-called without arguments, or of the symbols in <code>lst</code>, or the
-explicitly given <code>sym</code>-<code>val</code> arguments. See also <code><a
-href="refB.html#bind">bind</a></code> and <code><a
+called without arguments, or of the symbols or symbol-value pairs in
+<code>lst</code>, or the explicitly given <code>sym</code>-<code>val</code>
+arguments. See also <code><a href="refB.html#bind">bind</a></code> and <code><a
 href="refJ.html#job">job</a></code>.
 
 <pre><code>
@@ -219,8 +219,8 @@ href="refJ.html#job">job</a></code>.
 -> ((A . 1) (B . 2))
 : (let (A 1 B 2) (env '(A B)))
 -> ((B . 2) (A . 1))
-: (let (A 1 B 2) (env 'X 7 '(A B) 'Y 8))
--> ((Y . 8) (B . 2) (A . 1) (X . 7))
+: (let (A 1 B 2) (env 'X 7 '(A B (C . 3)) 'Y 8))
+-> ((Y . 8) (C . 3) (B . 2) (A . 1) (X . 7))
 </code></pre>
 
 <dt><a name="eof"><code>(eof ['flg]) -> flg</code></a>

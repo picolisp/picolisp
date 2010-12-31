@@ -1,4 +1,4 @@
-# 15aug10abu
+# 23dec10abu
 # (c) Software Lab. Alexander Burger
 
 ### Global return labels ###
@@ -196,7 +196,7 @@
    cc fprintf((stderr) ExecErr (S))
    ld E 127
    jmp finishE
-: ExecErr asciz "%s: can't exec\\n"
+: ExecErr asciz "%s: Can't exec\\n"
 
 # Install interrupting signal
 (code 'iSignalCE)
@@ -674,9 +674,13 @@
          atom E  # 'lst'?
          if z  # Yes
             do
-               call cons_A  # Cons symbol and its value
-               ld (A) (E)
-               ld (A CDR) ((E))
+               ld A (E)  # Already a pair?
+               atom A
+               if nz  # No
+                  call cons_A  # Cons symbol and its value
+                  ld (A) (E)
+                  ld (A CDR) ((E))
+               end
                call consA_C  # Cons to result
                ld (C) A
                ld (C CDR) (L I)
@@ -756,8 +760,7 @@
    pop X
    ret
 
-(code 'circE_XYF)
-   ld X E  # Return list in X
+(code 'circE_YF)
    ld Y E  # Keep list in Y
    do
       or (E) 1  # Mark
@@ -836,60 +839,84 @@
    end
    atom E  # E atomic?
    jnz ret  # Yes: 'ne'
+   push X
+   push Y
+   ld X A  # Keep list heads
+   ld Y E
    do
-      cmp (A) Quote  # A quoted?
-   while eq  # Yes
-      cmp (E) Quote  # E also quoted?
-      jnz ret  # No: 'ne'
-      cmp A (A CDR)  # A circular?
-      if eq  # Yes
-         cmp E (E CDR)  # Check if E also circular
-         ret
-      end
-      cmp E (E CDR)  # E circular?
-      jz retnz  # Yes: 'ne'
-      ld A (A CDR)  # Next cells
-      ld E (E CDR)
-      atom A  # Any?
-      jnz equalAE_F  # No: Compare with E's CDR
-      atom E
-      jnz ret  # No: 'ne'
-   loop
-   push A  # Save list heads
-   push E
-   do
-      push (A CDR)  # Save CDRs
-      push (E CDR)
-      ld A (A)  # Recurse on CARs
-      ld E (E)
+      push A  # Save lists
+      push E
       cmp S (StkLimit)  # Stack check
       jlt stkErr
+      ld A (A)  # Recurse on CARs
+      ld E (E)
       call equalAE_F  # Equal?
-      pop E  # Retrieve CDRs
+      pop E  # Retrieve lists
       pop A
       break ne  # No: 'ne'
-      atom A  # A's CDR atomic?
+      atom (A CDR)  # A's CDR atomic?
       if nz  # Yes
-         cmp S (StkLimit)  # Stack check
-         jlt stkErr
+         push A  # Save lists
+         push E
+         ld A (A CDR)  # Recurse on CDRs
+         ld E (E CDR)
          call equalAE_F  # Compare with E's CDR
+         pop E  # Retrieve lists
+         pop A
          break T
       end
-      atom E  # E's CDR atomic?
+      atom (E CDR)  # E's CDR atomic?
       break nz  # Yes: 'ne'
-      cmp A (S I)  # A circular?
-      if eq  # Yes
-         cmp E (S)  # Return whether E is also circular
-         break T
-      end
-      cmp E (S)  # E circular?
-      if eq  # Yes
-         clrz
-         break T  # Yes: 'ne'
+      or (A) 1  # Mark
+      ld A (A CDR)
+      or (E) 1
+      ld E (E CDR)
+      test (A) 1  # Detected circularity?
+      jnz 10  # Yes
+      test (E) 1
+      if nz
+10       do
+            cmp X A  # Skip non-circular parts
+            if eq  # Done?
+               cmp Y E  # Set result
+               break T
+            end
+            cmp Y E
+            if eq
+               clrz  # Result "No"
+               break T
+            end
+            off (X) 1  # Unmark
+            ld X (X CDR)
+            off (Y) 1
+            ld Y (Y CDR)
+         loop
+         push F  # Save result
+         do
+            off (X) 1  # Unmark circular part
+            ld X (X CDR)
+            off (Y) 1
+            ld Y (Y CDR)
+            cmp X A
+         until eq
+         pop F  # Get result
+         pop Y
+         pop X
+         ret
       end
    loop
-   pop A  # Drop list heads
-   pop A
+   push F  # Save result
+   do
+      cmp X A  # Skip non-circular part
+   while ne
+      off (X) 1  # Unmark
+      ld X (X CDR)
+      off (Y) 1
+      ld Y (Y CDR)
+   loop
+   pop F  # Get result
+   pop Y
+   pop X
    ret
 
 (code 'compareAE_F 0)  # C
@@ -1691,54 +1718,58 @@
                      else
                         atom E  # Atomic?
                         if z  # No: Arrary or structure
-                           null C  # Pointer?
-                           ldz C A  # Yes: Load into C
-                           push X
-                           push Y
-                           push Z
-                           ld X E  # Get specification in X
-                           ld E (X)
-                           call natRetACE_CE  # First item
-                           call cons_Y  # Make cell
-                           ld (Y) E
-                           ld (Y CDR) Nil
-                           link
-                           push Y  # <L I> Result
-                           link
-                           do
-                              ld Z (X CDR)
-                              cnt Z  # (sym . cnt)
-                              if nz
-                                 shr Z 4  # Normalize
-                                 do
-                                    dec Z  # Decrement count
-                                 while nz
-                                    ld E (X)  # Repeat last type
-                                    call natRetACE_CE  # Next item
-                                    call cons_A  # Cons into cell
-                                    ld (A) E
-                                    ld (A CDR) Nil
-                                    ld (Y CDR) A  # Append to result
-                                    ld Y A
-                                 loop
-                                 break T
-                              end
-                              atom Z  # End of specification?
-                           while z  # No
-                              ld X Z
-                              ld E (X)  # Next type
-                              call natRetACE_CE  # Next item
-                              call cons_A  # Cons into cell
-                              ld (A) E
-                              ld (A CDR) Nil
-                              ld (Y CDR) A  # Append to result
-                              ld Y A
-                           loop
-                           ld E (L I)  # Get result
-                           drop
-                           pop Z
-                           pop Y
-                           pop X
+                           null A  # Returned NULL?
+                           ldz E Nil  # Yes: Return NIL
+                           if nz
+                              null C  # Pointer?
+                              ldz C A  # Yes: Load into C
+                              push X
+                              push Y
+                              push Z
+                              ld X E  # Get specification in X
+                              ld E (X)
+                              call natRetACE_CE  # First item
+                              call cons_Y  # Make cell
+                              ld (Y) E
+                              ld (Y CDR) Nil
+                              link
+                              push Y  # <L I> Result
+                              link
+                              do
+                                 ld Z (X CDR)
+                                 cnt Z  # (sym . cnt)
+                                 if nz
+                                    shr Z 4  # Normalize
+                                    do
+                                       dec Z  # Decrement count
+                                    while nz
+                                       ld E (X)  # Repeat last type
+                                       call natRetACE_CE  # Next item
+                                       call cons_A  # Cons into cell
+                                       ld (A) E
+                                       ld (A CDR) Nil
+                                       ld (Y CDR) A  # Append to result
+                                       ld Y A
+                                    loop
+                                    break T
+                                 end
+                                 atom Z  # End of specification?
+                              while z  # No
+                                 ld X Z
+                                 ld E (X)  # Next type
+                                 call natRetACE_CE  # Next item
+                                 call cons_A  # Cons into cell
+                                 ld (A) E
+                                 ld (A CDR) Nil
+                                 ld (Y CDR) A  # Append to result
+                                 ld Y A
+                              loop
+                              ld E (L I)  # Get result
+                              drop
+                              pop Z
+                              pop Y
+                              pop X
+                           end
                         end
                      end
                   end

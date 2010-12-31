@@ -1,4 +1,4 @@
-/* 27sep10abu
+/* 24dec10abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1139,10 +1139,13 @@ static any read0(bool top) {
    }
    if (Chr == ',') {
       Env.get();
-      Push(c1, x = read0(NO));
-      if (isCell(y = idx(Uni, data(c1), 1)))
-         x = car(y);
-      drop(c1);
+      x = read0(NO);
+      if (val(Uni) != T) {
+         Push(c1, x);
+         if (isCell(y = idx(Uni, data(c1), 1)))
+            x = car(y);
+         drop(c1);
+      }
       return x;
    }
    if (Chr == '`') {
@@ -1237,7 +1240,7 @@ any token(any x, int c) {
       while (Env.get(), Chr != '"' && testEsc())
          byteSym(Chr, &i, &y);
       Env.get();
-      return consStr(y = Pop(c1));
+      return consStr(Pop(c1));
    }
    if (Chr >= '0' && Chr <= '9') {
       i = 0,  Push(c1, y = box(Chr));
@@ -1988,8 +1991,8 @@ any load(any ex, int pr, any x) {
       return x;
    }
    rdOpen(ex, x, &f);
-   doHide(Nil);
    pushInFiles(&f);
+   doHide(Nil);
    x = Nil;
    for (;;) {
       if (InFile != InFiles[STDIN_FILENO])
@@ -2514,9 +2517,8 @@ any doExt(any ex) {
 // (rd ['sym]) -> any
 // (rd 'cnt) -> num | NIL
 any doRd(any x) {
-   int i, j;
    long cnt;
-   word n;
+   int n, i;
    cell c1;
 
    x = cdr(x),  x = EVAL(car(x));
@@ -2527,58 +2529,30 @@ any doRd(any x) {
       drop(c1);
       return x;
    }
-   if (!InFile)
-      return Nil;
    if ((cnt = unBox(x)) < 0) {
-      byte buf[cnt = -cnt];
-
-      if (!rdBytes(InFile->fd, buf, cnt, NO))  // Little Endian
+      if ((n = getBinary()) < 0)
          return Nil;
-      if (cnt % sizeof(word) == 0)
-         Push(c1, Nil);
-      else {
-         n = buf[--cnt];
-
-         while (cnt % sizeof(word))
-            n = n << 8 | buf[--cnt];
-         Push(c1, box(n));
+      i = 0,  Push(c1, x = box(n));
+      while (++cnt) {
+         if ((n = getBinary()) < 0)
+            return Nil;
+         byteSym(n, &i, &x);
       }
-      while ((cnt -= WORD) >= 0) {
-         n = buf[cnt + WORD-1];
-         i = WORD-2;
-         do
-            n = n << 8 | buf[cnt + i];
-         while (--i >= 0);
-         data(c1) = consNum(n, data(c1));
-      }
+      zapZero(data(c1));
+      digMul2(data(c1));
    }
    else {
-      byte buf[cnt];
-
-      if (!rdBytes(InFile->fd, buf, cnt, NO))
+      if ((n = getBinary()) < 0)
          return Nil;
-      if (cnt % sizeof(word) == 0) {
-         i = 0;
-         Push(c1, Nil);
+      i = 0,  Push(c1, x = box(n+n));
+      while (--cnt) {
+         if ((n = getBinary()) < 0)
+            return Nil;
+         digMul(data(c1), 256);
+         setDig(data(c1), unDig(data(c1)) | n+n);
       }
-      else {
-         n = buf[0];
-
-         for (i = 1;  i < (int)(cnt % sizeof(word));  ++i)
-            n = n << 8 | buf[i];
-         Push(c1, box(n));
-      }
-      while (i < cnt) {
-         n = buf[i++];
-         j = 1;
-         do
-            n = n << 8 | buf[i++];
-         while (++j < WORD);
-         data(c1) = consNum(n, data(c1));
-      }
+      zapZero(data(c1));
    }
-   zapZero(data(c1));
-   digMul2(data(c1));
    return Pop(c1);
 }
 

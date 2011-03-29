@@ -1,4 +1,4 @@
-# 25dec10abu
+# 25feb11abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -38,40 +38,6 @@
             (if (=T X)
                ("loc" (read))
                (set (link @) (name (read))) ) ) ) ) )
-
-### Math ###
-(de sqrt (N F)
-   (cond
-      ((lt0 N) (quit "Bad argument" N))
-      (N
-         (let (A 1  B 0)
-            (while (>= N A)
-               (setq A (>> -2 A)) )
-            (loop
-               (if (> (inc 'B A) N)
-                  (dec 'B A)
-                  (dec 'N B)
-                  (inc 'B A) )
-               (setq B (>> 1 B)  A (>> 2 A))
-               (T (=0 A)) )
-            (and F (> N B) (inc 'B))
-            B ) ) ) )
-
-# (Knuth Vol.2, p.442)
-(de ** (X N)  # N th power of X
-   (let Y 1
-      (loop
-         (when (bit? 1 N)
-            (setq Y (* Y X)) )
-         (T (=0 (setq N (>> 1 N)))
-            Y )
-         (setq X (* X X)) ) ) )
-
-(de accu (Var Key Val)
-   (when Val
-      (if (assoc Key (val Var))
-         (con @ (+ Val (cdr @)))
-         (push Var (cons Key Val)) ) ) )
 
 ### String ###
 (de align (X . @)
@@ -122,47 +88,50 @@
       (format N 2 *Sep0 *Sep3) ) )
 
 (de round (N D)
-   (if (>= *Scl D)
+   (if (> *Scl (default D 3))
       (format (*/ N (** 10 (- *Scl D))) D *Sep0 *Sep3)
       (format N *Scl *Sep0 *Sep3) ) )
 
 # Binary notation
-(de bin (X)
+(de bin (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (& 1 X))
+         (let (S (and (lt0 X) '-)  L (& 1 X)  A (cons 0 I))
             (until (=0 (setq X (>> 1 X)))
+               (at A (push 'L " "))
                (push 'L (& 1 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq N (| (format C) (>> -1 N))) )
             (if S (- N) N) ) ) ) )
 
 # Octal notation
-(de oct (X)
+(de oct (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (& 7 X))
+         (let (S (and (lt0 X) '-)  L (& 7 X)  A (cons 0 I))
             (until (=0 (setq X (>> 3 X)))
+               (at A (push 'L " "))
                (push 'L (& 7 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq N (| (format C) (>> -3 N))) )
             (if S (- N) N) ) ) ) )
 
 # Hexadecimal notation
-(de hex (X)
+(de hex (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (hex1 X))
+         (let (S (and (lt0 X) '-)  L (hex1 X)  A (cons 0 I))
             (until (=0 (setq X (>> 4 X)))
+               (at A (push 'L " "))
                (push 'L (hex1 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq C (- (char C) `(char "0")))
@@ -408,15 +377,6 @@
 (de basename (F)
    (pack (stem (chop F) '/)) )
 
-# Temporary Files
-(de tmp @
-   (unless *Tmp
-      (push '*Bye '(call 'rm "-r" *Tmp))
-      (push '*Fork '(off *Tmp) '(del '(call 'rm "-r" *Tmp) '*Bye))
-      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
-   (pass pack *Tmp) )
-
-
 # Print or eval
 (de prEval (Prg Ofs)
    (default Ofs 1)
@@ -491,18 +451,24 @@
    (out S (prinl "RCPT TO:" To "^M"))
    (pre? "250 " (in S (line T))) )
 
-### Assertions ###
-(de assert Prg
-   (when *Dbg
-      (cons
-         (list 'unless
-            (if (cdr Prg) (cons 'and Prg) (car Prg))
-            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+`*Dbg
 
-(de test (Pat . Prg)
-   (bind (fish pat? Pat)
-      (unless (match Pat (run Prg 1))
-         (msg Prg)
-         (quit "'test' failed" Pat) ) ) )
+# Hex Dump
+(de hd (File Cnt)
+   (in File
+      (let Pos 0
+         (while
+            (and
+               (nand Cnt (lt0 (dec 'Cnt)))
+               (make (do 16 (and (rd 1) (link @)))) )
+            (let L @
+               (prin (pad 8 (hex Pos)) "  ")
+               (inc 'Pos 16)
+               (for N L
+                  (prin (pad 2 (hex N)) " ") )
+               (space (inc (* 3 (- 16 (length L)))))
+               (for N L
+                  (prin (if (<= 32 N 127) (char N) ".")) )
+               (prinl) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

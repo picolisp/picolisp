@@ -1,4 +1,4 @@
-# 22jul10abu
+# 24mar11abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (Nm L . Lst)
@@ -7,7 +7,15 @@
       (("Linux" "FreeBSD")
          (quote
             (apply call L 'gcc "-o" (tmp Nm)
-               "-fPIC" "-shared" "-export-dynamic"
+               "-fPIC" "-m64" "-shared" "-export-dynamic"
+               "-O" "-falign-functions" "-fomit-frame-pointer"
+               "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
+               "-Wuninitialized" "-Wstrict-prototypes"
+               "-pipe" "-D_GNU_SOURCE" (tmp Nm ".c") ) ) )
+      ("SunOS"
+         (quote
+            (apply call L 'gcc "-o" (tmp Nm)
+               "-fPIC" "-m64" "-shared"
                "-O" "-falign-functions" "-fomit-frame-pointer"
                "-W" "-Wimplicit" "-Wreturn-type" "-Wunused" "-Wformat"
                "-Wuninitialized" "-Wstrict-prototypes"

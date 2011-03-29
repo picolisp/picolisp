@@ -1,4 +1,4 @@
-# 07aug10abu
+# 09mar11abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -112,7 +112,7 @@
 (test 6 (load "-* 1 2 3"))
 
 
-### in out ###
+### in out err ###
 (out (tmp "file")
    (println 123)
    (println 'abc)
@@ -123,6 +123,11 @@
       (test 123 (read))
       (test 'abc (in -1 (read))) )
    (test '(d e f) (read)) )
+
+(let Err (tmp "err")
+   (test 1 (err Err (msg 1)))
+   (test 2 (err (pack "+" Err) (msg 2)))
+   (test "1^J2^J" (in Err (till NIL T))) )
 
 
 ### pipe ###
@@ -218,10 +223,5 @@
 (test (hex "010203")
    (in (tmp "wr")
       (rd 3) ) )
-
-
-### rpc ###
-(test *Pid
-   (pipe (rpc '*Pid) (run (rd))) )
 
 # vi:et:ts=3:sw=3

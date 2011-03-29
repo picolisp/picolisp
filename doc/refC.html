@@ -253,10 +253,16 @@ A                          # (typed 'A' and a space/return)
 -> "A"
 : (char 100)               # Convert unicode to symbol
 -> "d"
-: (char T)                 # Special case, catch all
--> # (not printable)
 : (char "d")               # Convert symbol to unicode
 -> 100
+
+: (char T)                 # Special case
+-> # (not printable)
+
+: (char 0)
+-> NIL
+: (char NIL)
+-> 0
 </code></pre>
 
 <dt><a name="chdir"><code>(chdir 'any . prg) -> any</code></a>
@@ -383,6 +389,7 @@ href="refT.html#trim">trim</a></code>.
 <dd>Closes a file descriptor <code>cnt</code>, and returns it when successful.
 Should not be called inside an <code><a href="refO.html#out">out</a></code> body
 for that descriptor. See also <code><a href="refO.html#open">open</a></code>,
+<code><a href="refP.html#poll">poll</a></code>,
 <code><a href="refL.html#listen">listen</a></code> and <code><a
 href="refC.html#connect">connect</a></code>.
 
@@ -396,8 +403,8 @@ href="refC.html#connect">connect</a></code>.
 picolisp interpreter is returned. Otherwise, the command name is set to
 <code>any</code>. Setting the name may not work on some operating systems. Note
 that the new name must not be longer than the original one. See also <code><a
-href="refA.html#argv">argv</a></code> and <code><a
-href="ref.html#invoc">Invocation</a></code>.
+href="refA.html#argv">argv</a></code> and <a
+href="ref.html#invoc">Invocation</a>.
 
 <pre><code>
 $ ./dbg
@@ -612,8 +619,9 @@ files does not exist, it will be created. When <code>sym</code> is
 <code>NIL</code>, a shared lock is tried on the current innermost I/O channel,
 and when it is <code>T</code>, an exclusive lock is tried instead. See also
 <code><a href="refI.html#in">in</a></code>, <code><a
-href="refP.html#pipe">pipe</a></code> and <code><a
-href="refO.html#out">out</a></code>.
+href="refO.html#out">out</a></code>, <code><a
+href="refE.html#err">err</a></code> and <code><a
+href="refP.html#pipe">pipe</a></code>.
 
 <pre><code>
 $ echo 9 >count                           # Write '9' to file "count"

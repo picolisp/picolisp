@@ -1,4 +1,4 @@
-# 12oct10abu
+# 16feb11abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -324,6 +324,9 @@
          test ((Y -I)) 1  # 'tag' symbol gone?
          if nz  # Yes
             xor (Stacks) A  # Clear in segment bitmask
+            if z  # Last coroutine?
+               ld (StkLimit) 0  # Yes: Clear stack limit
+            end
          else
             null (Y -II)  # Active?
             if nz  # No

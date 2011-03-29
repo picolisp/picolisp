@@ -155,11 +155,12 @@ returns the result. See also <code><a href="refU.html#usec">usec</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="bin"><code>(bin 'num) -> sym</code></a>
+<dt><a name="bin"><code>(bin 'num ['num]) -> sym</code></a>
 <dt><code>(bin 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a binary string, or a binary string
-<code>sym</code> to a number. See also <code><a
-href="refO.html#oct">oct</a></code>, <code><a
+<code>sym</code> to a number. In the first case, if the second argument is
+given, the result is separated by spaces into groups of such many digits. See
+also <code><a href="refO.html#oct">oct</a></code>, <code><a
 href="refH.html#hex">hex</a></code>, <code><a
 href="refF.html#fmt64">fmt64</a></code>, <code><a
 href="refH.html#hax">hax</a></code> and <code><a
@@ -170,6 +171,8 @@ href="refF.html#format">format</a></code>.
 -> "1001001"
 : (bin "1001001")
 -> 73
+: (bin 1234567 4)
+-> "100 1011 0101 1010 0001 11"
 </code></pre>
 
 <dt><a name="bind"><code>(bind 'sym|lst . prg) -> any</code></a>

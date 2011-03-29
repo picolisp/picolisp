@@ -1,4 +1,4 @@
-# 12oct10abu
+# 26feb11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -753,8 +753,8 @@
       link  # Close varArgs frame
    end
    ld (EnvBind) Y  # Close bind frame
-   xchg (EnvCls) ((L) III)  # 'cls'
-   xchg (EnvKey) ((L) II)  # 'key'
+   xchg (EnvCls) ((Y) III)  # 'cls'
+   xchg (EnvKey) ((Y) II)  # 'key'
    ld C (Y)  # End of bindings in C
    add Y I
    do
@@ -767,7 +767,7 @@
       cmp Y C  # End?
    until eq  # Yes
    prog Z  # Run body
-   null (EnvNext)  # VarArgs?
+   null (EnvArgs)  # VarArgs?
    if nz  # Yes
       drop  # Drop varArgs
    end
@@ -1971,7 +1971,7 @@
    while z  # Yes
       ld C ((X))  # Item(s) in C
       cmp C TSym  # Catch-all?
-      jz 10  # Yes
+      jeq 10  # Yes
       ld A (At)  # Equal to argument item?
       ld E C
       call equalAE_F
@@ -2021,10 +2021,10 @@
       ld X (Y)  # Get clause in X
       ld E (X)  # Get sym|lst in E
       cmp E TSym  # T?
-      jz 10  # Yes
+      jeq 10  # Yes
       ld A ((L I))  # 'var's value
       cmp A E  #  Same?
-      jz 10  # Yes
+      jeq 10  # Yes
       do  # 'memq'
          atom E  # List?
       while z  # Yes
@@ -2102,7 +2102,7 @@
    pop X
    ret
 
-# (at '(cnt1 . cnt2) . prg) -> any
+# (at '(cnt1 . cnt2|NIL) . prg) -> any
 (code 'doAt 2)
    push X
    push Y
@@ -2112,6 +2112,8 @@
    eval
    atom E  # Need cell
    jnz cellErrEX
+   cmp (E CDR) Nil  # CDR?
+   jeq 10  # No
    ld A (E)  # Get 'cnt1'
    cnt A  # Need short
    jz cntErrAX
@@ -2122,7 +2124,7 @@
    cmp A C  # Reached count?
    if lt  # No
       ld (E) A
-      ld E Nil
+10    ld E Nil
    else
       ld (E) ZERO
       ld Y (Y CDR)  # Run body
@@ -2499,9 +2501,9 @@
       null C  # Any?
       jz throwErrZX  # No
       cmp (C I) TSym  # Catch-all?
-   while nz  # No
+   while ne  # No
       cmp Z (C I)  # Found tag?
-   while nz  # No
+   while ne  # No
       ld C (C)  # Next frame
    loop
    push E  # Save thrown value
@@ -2633,6 +2635,14 @@
       ld Y (Stack0)  # Find unused stack segment
       ld Z 1  # New mask
       ld C (Stacks)  # Segment bitmask
+      null C  # Starting first coroutine?
+      if z  # Yes
+         lea A ((Stack0) 4096)  # Set stack limit
+         sub A (StkSize)
+         cmp S A  # Check it
+         jlt stkErr
+         ld (StkLimit) A
+      end
       do
          sub Y (StkSize)  # Next segment
          test C Z  # Free?
@@ -2657,11 +2667,14 @@
       sub S "EnvMid-EnvCo"  # Space for 'env'
       ld X (X CDR)  # Run 'prg'
       prog X
-      xor (Stacks) Z  # Not yielded: Mark segment as unused
-      ld S (EnvCo7)  # Restore stack pointer
+      ld S (EnvCo7)  # Not yielded: Restore stack pointer
       load (EnvCo) (EnvMid) (S III)  # Restore environment
       pop (EnvCo7)  # Restore coroutine link
       pop (StkLimit)  # 'lim'
+      xor (Stacks) Z  # Mark segment as unused
+      if z  # Last coroutine?
+         ld (StkLimit) 0  # Yes: Clear stack limit
+      end
       add S (pack I "+(EnvMid-EnvCo)")  # Clean up
       pop L
       pop Z
@@ -2682,6 +2695,9 @@
             ldz E Nil
             if nz  # No
                xor (Stacks) A  # Clear in segment bitmask
+               if z  # Stopped last coroutine?
+                  ld (StkLimit) 0  # Yes: Clear stack limit
+               end
                ld E TSym  # Return T
             end
             pop X
@@ -3430,6 +3446,21 @@
    else
       call xCntEX_FE
    end
-   jmp byeE
+# Exit
+(code 'byeE)
+   nul (InBye)  # Re-entered?
+   if z  # No
+      set (InBye) 1
+      push E  # Save exit code
+      ld C 0  # Top frame
+      call unwindC_Z  # Unwind
+      ld E (Bye)  # Run exit expression(s)
+      call execE
+      pop E  # Restore exit code
+   end
+   call flushAll  # Flush all output channels
+(code 'finishE)
+   call setCooked  # Set terminal to cooked mode
+   cc exit(E)
 
 # vi:et:ts=3:sw=3

@@ -32,11 +32,6 @@ All examples were also tested using the w3m text browser.
 href="ref.html">PicoLisp Reference</a> and the <a href="tut.html">PicoLisp
 Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
 
-<p>Throughout this document, transient symbols will be displayed with <code><a
-href="refT.html#*Tsm">*Tsm</a></code> turned off, i.e. as "Name" (double-quoted)
-instead of <u>Name</u> (underlined), to make it easier to copy/paste the
-examples.
-
 <p><ul>
 <li><a href="#static">Static Pages</a>
    <ul>
@@ -264,13 +259,13 @@ contents.
 href="refA.html#allow">allow</a></code> functions
 
 <pre><code>
-(allowed ("img/" "demo/")
+(allowed ("img/")
    "favicon.ico" "lib.css"
    "@start" "customer.l" "article.l")
 </code></pre>
 
 <p>This is usually called in the beginning of an application, and allows access
-to the directories "img/" and "demo/", to the function 'start', and to the files
+to the directory "img/", to the function 'start', and to the files
 "favicon.ico", "lib.css", "customer.l" and "article.l".
 
 <p>Later in the program, <code>*Allow</code> may be dynamically extended with
@@ -347,7 +342,7 @@ Content-Type: text/html; charset=utf-8
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
 -&gt; &lt;/html&gt;
-:  # (type ENTER here to terminate the PicoLisp Shell)
+:  # (type Ctrl-D here to terminate PicoLisp)
 </code></pre>
 
 <p>These are the arguments to <code>html</code>:
@@ -800,8 +795,8 @@ variable,
 client.
 
 <p>You can terminate this process (like any interactive PicoLisp) by hitting
-ENTER on an empty line. Otherwise, it will terminate by itself if no other
-browser requests arrive within a default timeout period of 5 minutes.
+<code>Ctrl-D</code> on an empty line. Otherwise, it will terminate by itself if
+no other browser requests arrive within a default timeout period of 5 minutes.
 
 <p>To start a (non-debug) production version, the server is commonly started not
 as 'dbg' but with a 'p', and with <code>-wait</code>

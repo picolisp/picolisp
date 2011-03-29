@@ -444,8 +444,8 @@ break if we call it as <code>(double 'Var)</code>. Therefore, the correct
 implementation of <code>double</code> should be:
 
 <pre><code>
-(de double (<u>Var</u>)
-   (set <u>Var</u> (* 2 (val <u>Var</u>))) )
+(de double ("Var")
+   (set "Var" (* 2 (val "Var"))) )
 </code></pre>
 
 <p>If <code>double</code> is defined that way in a separate source file, and/or
@@ -462,8 +462,7 @@ is safe to use them even when not necessary, it will take more space then and be
 more difficult to debug.
 
 <li>The string-like syntax of transient symbols as variables may look strange to
-alumni of other languages. Therefore, the use of <a
-href="refT.html#*Tsm">transient symbol markup</a> is recommended.
+alumni of other languages.
 
 </ol>
 
@@ -566,7 +565,7 @@ strings in any respect, but are nevertheless true symbols, with a value cell and
 a property list.
 
 <p>This leads to interesting opportunities. The value cell, for example, can
-point to other data that represent the string's the translation. This is used
+point to other data that represent the string's translation. This is used
 extensively for localization. When a program calls
 
 <pre><code>

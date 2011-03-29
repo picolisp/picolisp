@@ -37,8 +37,8 @@ $ ./dbg
 <p>It loads the PicoLisp base system and the debugging environment, and waits
 for you to enter input lines at the interpreter prompt (<code>:</code>). You can
 terminate the interpreter and return to the shell at any time, by either hitting
-the ENTER key (i.e. by entering an empty line), or by executing the function
-<code><a href="refB.html#bye">(bye)</a></code>.
+the <code>Ctrl-D</code> key, or by executing the function <code><a
+href="refB.html#bye">(bye)</a></code>.
 
 <p>Please note that special handling is done during character input. This one
 is incompatible with <code>rlwrap</code> for example but is more powerful.
@@ -90,7 +90,7 @@ just jump anywhere you are interested in.
 console in interactive mode), evaluates it, and prints the result to the current
 output channel. This is called a "read-eval-print-loop" (REPL).
 
-<h3>VI-like edition</h3>
+<h3>VI-like editing</h3>
 
 <p>It is very helpful - though not absolutely necessary - when you know how to
 use the <code>vi</code> editor.
@@ -136,9 +136,9 @@ whole command, but type
 "right") repeatedly till you reach the correct position.
 
 <p>The key commands in the <i>Command Mode</i> are listed below. Some commands
-change the mode back to <i>Insert Mode</i> as indicated in parentheses. Commands
-which operate on a "word" take either the current atom (number or symbol), or a
-whole expression when the cursor is at a left parenthesis.
+change the mode back to <i>Insert Mode</i> as indicated in parentheses. Deleting
+or changing a "word" take either the current atom (number or symbol), or a whole
+expression when the cursor is at a left parenthesis.
 
 <p><ul>
 <li><code>k</code> - Go up one line
@@ -195,9 +195,7 @@ directory. The length of the history is limited to 1000 lines.
 
 <p><ul>
 
-<li><code>Ctrl-D</code> will immediately terminate the current process, and also
-all of its sister processes (i.e. children of the same parent process, typically
-an application server during debugging).
+<li><code>Ctrl-D</code> will immediately terminate the current process.
 
 <li><code>Ctrl-X</code> discards all input, abandons further processing, and
 returns to the interpreter's top level (equivalent to invoking <code><a
@@ -1143,9 +1141,8 @@ work: via command line arguments, or as a stand-alone script.
 <h3>Command line arguments for the PicoLisp interpreter</h3>
 
 <p>The command line can specify either files for execution, or arbitrary Lisp
-expressions for direct evaluation (see <code><a
-href="ref.html#invoc">Invocation</a></code>): if an argument starts with a
-hyphen, it is evaluated, otherwise it is <code><a
+expressions for direct evaluation (see <a href="ref.html#invoc">Invocation</a>):
+if an argument starts with a hyphen, it is evaluated, otherwise it is <code><a
 href="refL.html#load">load</a></code>ed as a file. A typical invocation might
 look like:
 
@@ -2139,8 +2136,8 @@ $ ./p doc/family.l -main -go -wait
 process which will continue to run until it is killed. The other is a child
 process holding the state of the GUI in the browser. It will terminate some time
 after the browser is closed, or when <code>(<a
-href="refB.html#bye">bye</a>)</code> or a plain ENTER is entered at the PicoLisp
-prompt.
+href="refB.html#bye">bye</a>)</code> or a <code>Ctrl-D</code> is entered at the
+PicoLisp prompt.
 
 <p>Now back to the explanation of the GUI function <code>person</code>:
 

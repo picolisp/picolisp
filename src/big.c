@@ -1,4 +1,4 @@
-/* 03oct10abu
+/* 07mar11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -499,7 +499,8 @@ any numToSym(any x, int scl, int sep, int ign) {
          break;
       n = 1;
    }
-   n = (ta - acc) * 9 + sprintf(b = buf, "%ld", *ta--);
+   n = (ta - acc) * 9;
+   n += sprintf(b = buf, "%ld", *ta--);
    if (sep < 0)
       return boxCnt(n + sign);
    i = -8,  Push(c1, x = box(0));
@@ -959,6 +960,12 @@ any doShift(any ex) {
 any doLt0(any x) {
    x = cdr(x);
    return isNum(x = EVAL(car(x))) && isNeg(x)? x : Nil;
+}
+
+// (le0 'any) -> num | NIL
+any doLe0(any x) {
+   x = cdr(x);
+   return isNum(x = EVAL(car(x))) && (isNeg(x) || IsZero(x))? x : Nil;
 }
 
 // (ge0 'any) -> num | NIL

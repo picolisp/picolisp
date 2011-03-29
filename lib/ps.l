@@ -1,4 +1,4 @@
-# 08jun10abu
+# 10feb11abu
 # (c) Software Lab. Alexander Burger
 
 # "*Glyph" "*PgX" "*PgY"
@@ -255,8 +255,8 @@
 (de vline (X Y2 Y1)
    (poly NIL X (or Y2 "*DY") X (or Y1 0)) )
 
-(de border (Y)
-   (rect 0 (or Y 0) "*DX" "*Pos") )
+(de border (Y Y2)
+   (rect 0 (or Y 0) "*DX" (or Y2 "*DY")) )
 
 (de psEval ("Prg")
    (while "Prg"

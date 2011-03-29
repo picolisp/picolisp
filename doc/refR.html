@@ -30,7 +30,7 @@ timeout occurred. See also <code><a href="refT.html#task">task</a></code>.
 : 2sec                                    # Prints "2sec" every 2 seconds
 2sec
 2sec
-                                          # (Enter) Exit
+                                          # (Ctrl-D) Exit
 $
 </code></pre>
 
@@ -238,8 +238,7 @@ little endian) is read as a single number. Upon end of file, if the
 <code>sym</code> argument is given, it is returned, otherwise <code>NIL</code>.
 See also <code><a href="refP.html#pr">pr</a></code>, <code><a
 href="refT.html#tell">tell</a></code>, <code><a
-href="refH.html#hear">hear</a></code>, <code><a
-href="refR.html#rpc">rpc</a></code> and <code><a
+href="refH.html#hear">hear</a></code> and <code><a
 href="refW.html#wr">wr</a></code>.
 
 <pre><code>
@@ -491,7 +490,7 @@ circular list. See also <code><a href="refB.html#be">be</a></code>.
 <dt><a name="repeat/0"><code>repeat/0</code></a>
 <dd><a href="ref.html#pilog">Pilog</a> predicate that always succeeds, also on
 backtracking. See also <code><a href="refR.html#repeat">repeat</a></code> and
-<code><a href="refT.html#true">true</a></code>.
+<code><a href="refT.html#true/0">true/0</a></code>.
 
 <pre><code>
 : (be int (@N)       # Generate unlimited supply of integers
@@ -667,32 +666,19 @@ href="refF.html#flip">flip</a></code> .
 <dt><a name="round"><code>(round 'num1 'num2) -> sym</code></a>
 <dd>Formats a number <code>num1</code> with <code>num2</code> decimal places,
 according to the current scale <code><a href="refS.html#*Scl">*Scl</a></code>.
-See also <code><a href="refF.html#format">format</a></code> and <code><a
+<code>num2</code> defaults to 3. See also <code><a
+href="refF.html#format">format</a></code> and <code><a
 href="ref.html#num-io">Numbers</a></code>.
 
 <pre><code>
 : (scl 4)               # Set scale to 4
 -> 4
+: (round 123456)        # Format with three decimal places
+-> "12.346"
 : (round 123456 2)      # Format with two decimal places
 -> "12.35"
 : (format 123456 *Scl)  # Format with full precision
 -> "12.3456"
-</code></pre>
-
-<dt><a name="rpc"><code>(rpc 'sym ['any ..]) -> flg</code></a>
-<dd><i>Rapid</i> (or <i>remote</i>) procedure call: Send an executable list
-<code>(sym any ..)</code> via standard output in encoded binary format. See also
-<code><a href="refP.html#pr">pr</a></code>, <code><a
-href="refP.html#pipe">pipe</a></code>, <code><a
-href="refT.html#tell">tell</a></code> and <code><a
-href="refH.html#hear">hear</a></code>.
-
-<pre><code>
-: (hear (pipe (do 3 (wait 2000) (rpc 'println ''OK))))
--> 3
-: OK  # every two seconds
-OK
-OK
 </code></pre>
 
 <dt><a name="rules"><code>(rules 'sym ..) -> sym</code></a>

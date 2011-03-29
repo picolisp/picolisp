@@ -1,4 +1,4 @@
-# 12oct10abu
+# 09mar11abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -177,17 +177,17 @@
                Apply    |
          +---> LINK ----+
          |     ...
-         | +-- cdr
-         | |   fun         <-- exe
-         | |   val1 <-+       (gc)
-         | |   zero   |
-         | |   cdr1 --|---+   (gc)
-         | +-> car1 --+   |
-         |     ...        |
-         |     valN <-+   |   (gc)
-         |     zero   |   |
-         |     NIL    |   |   (gc)
+         |     valN <-+       (gc)
+         |     zero   |
+         |     NIL    |       (gc)
          |     carN --+ <-+
+         |     ...        |
+         |     val1 <-+   |   (gc)
+         |     zero   |   |
+         |     cdr1 --|---+   (gc)
+         | +-> car1 --+
+         | +-- cdr            (gc)
+         |     fun         <-- exe
          +---- LINK  <-- L <-- Apply
 
 
@@ -208,7 +208,7 @@
          <III> put/get  |
          <II>  pid      |
          <I>   fd       |
-               LINK ----+  <-- inFrames, outFrames, ctlFrames
+               LINK ----+  <-- inFrames, outFrames, errFrames, ctlFrames
 
 
       Coroutine frame:

@@ -1,8 +1,9 @@
-/* 07dec10abu
+/* 09mar11abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
+#include "vers.h"
 
 #ifdef __CYGWIN__
 #define O_ASYNC FASYNC
@@ -370,6 +371,9 @@ any circ(any x) {
 
 /* Comparisons */
 bool equal(any x, any y) {
+   any a, b;
+   bool res;
+
    for (;;) {
       if (x == y)
          return YES;
@@ -377,54 +381,60 @@ bool equal(any x, any y) {
          if (!isNum(y)  ||  unDig(x) != unDig(y))
             return NO;
          x = cdr(numCell(x)),  y = cdr(numCell(y));
+         continue;
       }
-      else if (isSym(x)) {
+      if (isSym(x)) {
          if (!isSym(y)  || !isNum(x = name(x))  ||  !isNum(y = name(y)))
             return NO;
+         continue;
       }
-      else if (!isCell(y))
+      if (!isCell(y))
          return NO;
-      else {
-         any a = x, b = y;
-         bool res = NO;
-
-         for (;;) {
-            if (!equal(car(x), car(y)))
-               break;
-            if (!isCell(cdr(x))) {
-               res = equal(cdr(x), cdr(y));
-               break;
-            }
-            if (!isCell(cdr(y)))
-               break;
-            *(word*)&car(x) |= 1,  x = cdr(x);
-            *(word*)&car(y) |= 1,  y = cdr(y);
-            if (num(car(x)) & 1 || num(car(y)) & 1) {
-               for (;;) {
-                  if (a == x) {
-                     res = b == y;
-                     break;
-                  }
+      a = x, b = y;
+      res = NO;
+      for (;;) {
+         if (!equal(car(x), (any)(num(car(y)) & ~1)))
+            break;
+         if (!isCell(cdr(x))) {
+            res = equal(cdr(x), cdr(y));
+            break;
+         }
+         if (!isCell(cdr(y)))
+            break;
+         *(word*)&car(x) |= 1,  x = cdr(x),  y = cdr(y);
+         if (num(car(x)) & 1) {
+            for (;;) {
+               if (a == x) {
                   if (b == y) {
-                     res = NO;
-                     break;
+                     for (;;) {
+                        a = cdr(a);
+                        if ((b = cdr(b)) == y) {
+                           res = a == x;
+                           break;
+                        }
+                        if (a == x) {
+                           res = YES;
+                           break;
+                        }
+                     }
                   }
-                  *(word*)&car(a) &= ~1,  a = cdr(a);
-                  *(word*)&car(b) &= ~1,  b = cdr(b);
+                  break;
                }
-               do {
-                  *(word*)&car(a) &= ~1,  a = cdr(a);
-                  *(word*)&car(b) &= ~1,  b = cdr(b);
-               } while (a != x);
-               return res;
+               if (b == y) {
+                  res = NO;
+                  break;
+               }
+               *(word*)&car(a) &= ~1,  a = cdr(a),  b = cdr(b);
             }
+            do
+               *(word*)&car(a) &= ~1,  a = cdr(a);
+            while (a != x);
+            return res;
          }
-         while (a != x) {
-            *(word*)&car(a) &= ~1,  a = cdr(a);
-            *(word*)&car(b) &= ~1,  b = cdr(b);
-         }
-         return res;
       }
+      while (a != x)
+         *(word*)&car(a) &= ~1,  a = cdr(a);
+      return res;
    }
 }
 
@@ -606,6 +616,8 @@ void unwind(catchFrame *catch) {
          popInFiles();
       while (Env.outFrames != q->env.outFrames)
          popOutFiles();
+      while (Env.errFrames != q->env.errFrames)
+         popErrFiles();
       while (Env.ctlFrames != q->env.ctlFrames)
          popCtlFiles();
       Env = q->env;
@@ -624,6 +636,8 @@ void unwind(catchFrame *catch) {
       popInFiles();
    while (Env.outFrames)
       popOutFiles();
+   while (Env.errFrames)
+      popErrFiles();
    while (Env.ctlFrames)
       popCtlFiles();
 }
@@ -1153,6 +1167,28 @@ any doOpt(any ex __attribute__((unused))) {
    return *AV && strcmp(*AV,"-")? mkStr(*AV++) : Nil;
 }
 
+// (version ['flg]) -> lst
+any doVersion(any x) {
+   int i;
+   cell c1;
+
+   x = cdr(x);
+   if (isNil(EVAL(car(x)))) {
+      for (i = 0; i < 4; ++i) {
+         outWord((word)Version[i]);
+         Env.put(i == 3? ' ' : '.');
+      }
+      Env.put('C');
+      newline();
+   }
+   Push(c1, Nil);
+   i = 4;
+   do
+      data(c1) = cons(box(Version[--i] * 2), data(c1));
+   while (i);
+   return Pop(c1);
+}
+
 any loadAll(any ex) {
    any x = Nil;
 
@@ -1163,23 +1199,20 @@ any loadAll(any ex) {
 
 /*** Main ***/
 static void init(int ac, char *av[]) {
-   int i;
    char *p;
    sigset_t sigs;
 
-   for (i = 1; i < ac; ++i)
-      if (*av[i] != '-') {
-         if ((p = strrchr(av[i], '/')) && !(p == av[i]+1 && *av[i] == '.')) {
-            Home = malloc(p - av[i] + 2);
-            memcpy(Home, av[i], p - av[i] + 1);
-            Home[p - av[i] + 1] = '\0';
-         }
-         break;
-      }
    AV0 = *av++;
    AV = av;
    heapAlloc();
    initSymbols();
+   if (strcmp(av[ac-2], "+") == 0)
+      val(Dbg) = T,  av[ac-2] = NULL;
+   if (av[0] && *av[0] != '-' && (p = strrchr(av[0], '/')) && !(p == av[0]+1 && *av[0] == '.')) {
+      Home = malloc(p - av[0] + 2);
+      memcpy(Home, av[0], p - av[0] + 1);
+      Home[p - av[0] + 1] = '\0';
+   }
    Env.get = getStdin;
    InFile = initInFile(STDIN_FILENO, NULL);
    Env.put = putStdout;
@@ -1214,6 +1247,6 @@ int MAIN(int ac, char *av[]) {
       ++Repl;
       iSignal(SIGINT, sig);
    }
-   load(NULL, ':', Nil);
-   bye(0);
+   for (;;)
+      load(NULL, ':', Nil);
 }

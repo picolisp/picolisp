@@ -1,9 +1,9 @@
-# 16feb10abu
+# 17jan11abu
 # (c) Software Lab. Alexander Burger
 
 (on *Dbg)
-(off *Tsm)
-(load "@lib/debug.l" "@lib/edit.l" "@lib/lint.l" "@lib/sq.l")
+
+(load "@lib/debug.l" "@lib/edit.l" "@lib/lint.l")
 
 (noLint 'later (loc "@Prg" later))
 

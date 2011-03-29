@@ -1,0 +1,15 @@
+#!../bin/picolisp ../lib.l
+# 07mar11abu
+# (c) Software Lab. Alexander Burger
+
+(load "../src64/version.l")
+
+(out "vers.h"
+   (prinl
+      "static byte Version[4] = {"
+      (glue "," *Version)
+      "};" ) )
+
+(bye)
+
+# vi:et:ts=3:sw=3

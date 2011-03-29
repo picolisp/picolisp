@@ -1,4 +1,4 @@
-# 04oct10abu
+# 07mar11abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -77,6 +77,7 @@ all: picolisp tools gate x11
 
 
 $(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
+main.o: vers.h
 
 
 ifeq ($(OS), Cygwin)

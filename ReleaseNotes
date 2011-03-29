@@ -1,23 +1,56 @@
-02dec10abu
+12mar11abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0.5
+         Release Notes for picoLisp-3.0.6
          ================================
 
-A. The 'pid' function was removed. This was announced in the previous version,
-   and in the mailing list in
+1. On the command line, debug mode can now enabled by appending a single '+' as
+   the very last argument. This '+' will not be seen by the application, but
+   switches on '*Dbg' before any other command line argument is processed.
 
-      http://www.mail-archive.com/picolisp@software-lab.de/msg01949.html
+   So the following three commands are equivalent:
 
-B. "Ersatz PicoLisp" (written in Java) was included for a first evaluation. For
-   further informations, please look at "ersatz/README".
+      $ ./dbg myApp.l -main
 
-C. The pre-generated "*.s" files for the 64-bit version are no longer part of
-   the release. They are rather large, and would multiply when further
-   architectures and operating systems are supported. Instead, they may
-   initially be generated with Ersatz PicoLisp, or downloaded from
-   "http://software-lab.de/x86-64.linux.tgz".
+      $ ./p myApp.l -main +
 
-D. The 'easter' function in "lib/cal.l" is no longer restricted to the years
-   1900 through 2099.
+      $ pil myApp.l -main +
+
+   The last line works only if "bin/pil" was copied to "/usr/bin", as
+   recommended in the INSTALL file.
+
+   The debug switch is also available for Ersatz PicoLisp:
+
+      $ ersatz/picolisp myApp.l -main +
+
+2. *Tsm, the transient symbol markup (the underlining of transient symbols) is
+   now off by default. "lib/tsm.l" can be loaded to switch it on.
+
+3. The interpreter does not exit automatically any more when an empty line is
+   entered on the top level. To exit the interpreter, either Ctrl-D or and
+   explicit call to (bye) is needed.
+
+4. The 'fill' function now handles '^' symbols in the pattern specially. An
+   expression following that symbol should evaluate to a list, which is then
+   (destructively) spliced into the result. As before, if 'fill' is passed a
+   second argument (a symbol or a list of symbols), then only those symbols are
+   replaced in the pattern without any further treatment.
+
+5. The name of the GUI function 'err' in "lib/form.l" was changed to 'error'
+   (and also that of the corresponding default CSS type in "lib.css"). This was
+   done to reserve the name "err" for standard error redirection (point 8).
+
+6. The "opt/" directory (until now containing only a single "pilog.l" file), and
+   "misc/pilog.l" were removed from the base distribution. They are now tracked
+   separately. To install the addons, you can download them as a tarball from
+
+      http://code.google.com/p/picolisp/source/browse/?repo=addons
+
+   and untar them over the install directory.
+
+7. The 'rpc' function was removed from the release. It is seldom used, and also
+   redundant: (rpc 'foo ''arg) is equivalent to (pr '(foo 'arg))
+
+8. A new function 'err' for standard error redirection is now available. It is
+   analog to 'out', but accepts only a symbolic argument (like 'ctl').

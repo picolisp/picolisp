@@ -1,4 +1,4 @@
-# 27sep10abu
+# 03mar11abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1248,7 +1248,7 @@
       if nz  # Yes
          ld X (X TAIL)
          call nameX_X  # Get name
-         zero X  # Any?
+         cmp X ZERO  # Any?
          if ne  # Yes
             cnt X  # Short name?
             if nz  # Yes
@@ -1969,7 +1969,7 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval first
    eval
-   zero E  # Zero?
+   cmp E ZERO  # Zero?
    if eq  # Yes
       ld X (DbFiles)  # Iterate DB files
       ld Y (DBs)  # Count
@@ -2031,7 +2031,7 @@
       end
       ld E Nil  # Return NIL
    else  # Bit was set
-      zero (S)  # Second arg '0'?
+      cmp (S) ZERO  # Second arg '0'?
       if eq  # Yes
          not B
          and (E) B  # Clear mark

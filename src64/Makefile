@@ -1,4 +1,4 @@
-# 12nov10abu
+# 27mar11abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -10,22 +10,23 @@ ifeq ($(shell uname), Linux)
 	OS = Linux
 	SYS = linux
 	ARCH = x86-64
-	LINK-FLAGS = -rdynamic -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -shared -export-dynamic
+	AS = as
+	LD-MAIN = gcc -m64 -rdynamic -lc -lm -ldl
+	LD-SHARED = gcc -m64 -shared -export-dynamic
 	STRIP = strip
 else
-ifeq ($(shell uname), Darwin)
-	OS = Darwin
-	SYS = darwin
+ifeq ($(shell uname), SunOS)
+	OS = SunOS
+	SYS = sunOs
 	ARCH = x86-64
-	export MACOSX_DEPLOYMENT_TARGET=10.4
-	LINK-FLAGS = -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -dynamiclib -undefined dynamic_lookup -export-dynamic
-	STRIP = :
+	AS = gas --64
+	LD-MAIN = gcc -m64 -lc -lm -ldl -lsocket -lnsl
+	LD-SHARED = gcc -m64 -shared
+	STRIP = strip
 endif
 endif
 
-baseFiles = version.l glob.l main.l sys/$(SYS).code.l \
+baseFiles = version.l glob.l main.l \
 	gc.l apply.l flow.l sym.l subr.l big.l io.l db.l net.l err.l
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
@@ -34,28 +35,40 @@ all: picolisp
 
 $(bin)/picolisp: $(ARCH).$(SYS).base.o
 	mkdir -p $(bin) $(lib)
-	gcc -o $(bin)/picolisp $(LINK-FLAGS) $(ARCH).$(SYS).base.o
+	$(LD-MAIN) -o $(bin)/picolisp $(ARCH).$(SYS).base.o
 	$(STRIP) $(bin)/picolisp
 
 $(lib)/ext: $(ARCH).$(SYS).ext.o
-	gcc -o $(lib)/ext $(DYNAMIC-LIB-FLAGS) $(ARCH).$(SYS).ext.o
+	$(LD-SHARED) -o $(lib)/ext $(ARCH).$(SYS).ext.o
 	$(STRIP) $(lib)/ext
 
 $(lib)/ht: $(ARCH).$(SYS).ht.o
-	gcc -o $(lib)/ht $(DYNAMIC-LIB-FLAGS) $(ARCH).$(SYS).ht.o
+	$(LD-SHARED) -o $(lib)/ht $(ARCH).$(SYS).ht.o
 	$(STRIP) $(lib)/ht
 
 .s.o:
-	as -o $*.o $*.s
+	$(AS) -o $*.o $*.s
 
-$(ARCH).$(SYS).base.s: $(baseFiles)
-	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/tags $(baseFiles)
 
-$(ARCH).$(SYS).ext.s: ext.l
-	./mkAsm $(ARCH) $(SYS) $(OS) ext "" -fpic ext.l
+# Explicit builds for cross-assembly
+x86-64.linux.base.s: $(baseFiles) sys/x86-64.linux.code.l
+	./mkAsm x86-64 linux Linux base $(lib)/tags $(baseFiles) sys/x86-64.linux.code.l
 
-$(ARCH).$(SYS).ht.s: ht.l
-	./mkAsm $(ARCH) $(SYS) $(OS) ht "" -fpic ht.l
+x86-64.linux.ext.s: ext.l
+	./mkAsm x86-64 linux Linux ext "" -fpic ext.l
+
+x86-64.linux.ht.s: ht.l
+	./mkAsm x86-64 linux Linux ht "" -fpic ht.l
+
+
+x86-64.sunOs.base.s: $(baseFiles) sys/x86-64.sunOs.code.l
+	./mkAsm x86-64 sunOs SunOS base $(lib)/tags $(baseFiles) sys/x86-64.sunOs.code.l
+
+x86-64.sunOs.ext.s: ext.l
+	./mkAsm x86-64 sunOs SunOS ext "" -fpic ext.l
+
+x86-64.sunOs.ht.s: ht.l
+	./mkAsm x86-64 sunOs SunOS ht "" -fpic ht.l
 
 
 # Clean up

@@ -1,4 +1,4 @@
-# 03jul10abu
+# 03mar11abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -17,7 +17,7 @@
       lea C (A BIG)  # New short-tail
       ld A (C)  # Next cell
    loop
-   zero (A BIG)  # Trailing short zero?
+   cmp (A BIG) ZERO  # Trailing short zero?
    if eq  # Yes
       ld A (A DIG)
       null A  # Null digit?
@@ -693,7 +693,7 @@
       end
       xchg A E  # Exchange args
       call 10  # Subtract short from big
-      zero A  # Zero?
+      cmp A ZERO  # Zero?
       if ne  # No
          or A SIGN  # Set negative
       end
@@ -707,7 +707,7 @@
       sub C E  # Subtract from first digit
       ld E (A BIG)  # Tail in E
       if nc  # No borrow
-         zero E  # Leading zero?
+         cmp E ZERO  # Leading zero?
          jne consNumCE_A  # No: Cons new cell
          test C (hex "F000000000000000")  # Fit in short number?
          jnz consNumCE_A  # No: Cons new cell
@@ -859,7 +859,7 @@
 (code 'muluAE_A 0)
    cnt A  # A short?
    if nz  # Yes
-      zero A  # Multiply with zero?
+      cmp A ZERO  # Multiply with zero?
       jeq ret  # Yes: Return zero
       shr A 4  # Normalize
       cnt E  # E also short?
@@ -930,7 +930,7 @@
    # A is big
    cnt E  # E short?
    if nz  # Yes
-      zero E  # Multiply with zero?
+      cmp E ZERO  # Multiply with zero?
       jeq ret  # Yes: Return zero
       xchg A E  # Exchange args
       shr A 4  # Normalize
@@ -1080,7 +1080,7 @@
       ld E C
       inc X  # Increment 'm'
    loop
-   zero A  # Trailing short zero?
+   cmp A ZERO  # Trailing short zero?
    if ne  # No
       shr A 4  # Normalize
       call boxNum_C  # Append in new cell
@@ -1117,7 +1117,7 @@
          ld X E
          dec (L -I)  # Decrement 'm'
       loop
-      zero A  # Trailing short zero?
+      cmp A ZERO  # Trailing short zero?
       if ne  # No
          shr A 4  # Normalize
          call boxNumA_A  # Append in new cell
@@ -1301,7 +1301,7 @@
       ld E C
       inc X  # Increment 'm'
    loop
-   zero A  # Trailing short zero?
+   cmp A ZERO  # Trailing short zero?
    if ne  # No
       shr A 4  # Normalize
       call boxNum_C  # Append in new cell
@@ -1338,7 +1338,7 @@
          ld X E
          dec (L -I)  # Decrement 'm'
       loop
-      zero A  # Trailing short zero?
+      cmp A ZERO  # Trailing short zero?
       if ne  # No
          shr A 4  # Normalize
          call boxNumA_A  # Append in new cell
@@ -1494,7 +1494,7 @@
    jz adduAE_A  # Increment
    off E SIGN  # Make positive
    call subuAE_A  # Subtract
-   zero A  # Zero?
+   cmp A ZERO  # Zero?
    if ne  # No
       or A SIGN  # Negate again
    end
@@ -1532,7 +1532,7 @@
       off E SIGN
       call adduAE_A  # Add
    end
-   zero A  # Zero?
+   cmp A ZERO  # Zero?
    if ne  # No
       xor A SIGN  # Negate
    end
@@ -1557,7 +1557,7 @@
       off E SIGN
       call subuAE_A  # Sub
    end
-   zero A  # Zero?
+   cmp A ZERO  # Zero?
    if ne  # No
       xor A SIGN  # Negate
    end
@@ -1704,7 +1704,7 @@
    end
    sub A (char "0")  # First digit
    cmp A 10  # Too big?
-   jnc 99  # Return NO
+   jge 99  # Return NO
    shl A 4  # Make short number
    or A CNT
    ld (L I) A  # Save
@@ -1717,7 +1717,7 @@
          if z  # No
             sub A (char "0")  # Next digit
             cmp A 10  # Too big?
-            jnc 99  # Return NO
+            jge 99  # Return NO
             cmp A 5  # Round?
             if ge  # Yes
                ld A ONE  # Increment
@@ -1732,7 +1732,7 @@
             while nz  # Yes
                sub A (char "0")  # Next digit
                cmp A 10  # Too big?
-               jnc 99  # Return NO
+               jge 99  # Return NO
             loop
             break T
          end
@@ -1747,7 +1747,7 @@
          if ne  # No
             sub A (char "0")  # Next digit
             cmp A 10  # Too big?
-            jnc 99  # Return NO
+            jge 99  # Return NO
             push C  # Save symByte args
             push X
             push A  # Save digit
@@ -1781,7 +1781,7 @@
    ld E (L I)  # Get result
    test (L -II) 1  # Sign?
    if nz  # Yes
-      zero E  # Zero?
+      cmp E ZERO  # Zero?
       if ne  # No
          xor E SIGN  # Negate
       end
@@ -1861,7 +1861,7 @@
                add A C  # Add BCD-Carry
                ld C 0  # Clear BCD-Carry
                cmp A 1000000000000000000  # BCD overflow?
-               if nc  # Yes
+               if ge  # Yes
                   sub A 1000000000000000000
                   ld C 1  # Set BCD-Carry
                end
@@ -1885,7 +1885,7 @@
             add A C  # Add BCD-Carry
             ld C 0  # Clear BCD-Carry
             cmp A 1000000000000000000  # BCD overflow?
-            if nc  # Yes
+            if ge  # Yes
                sub A 1000000000000000000
                ld C 1  # Set BCD-Carry
             end
@@ -2220,7 +2220,7 @@
       ld Y (Y CDR)  # More than one arg?
       atom Y
       if nz  # No: Unary minus
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          if ne  # No
             xor E SIGN  # Negate
          end
@@ -2431,7 +2431,7 @@
       ld E (L I)  # Result
       test (L -I) 1  # Sign?
       if nz  # Yes
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          if ne  # No
             or E SIGN  # Set negative
          end
@@ -2485,7 +2485,7 @@
          call muluAE_A  # Multiply
          ld (L I) A  # Result
       loop
-      zero E  # Zero?
+      cmp E ZERO  # Zero?
       jeq divErrX  # Yes
       ld A E  # Last argument
       call shruA_A  # / 2
@@ -2496,7 +2496,7 @@
       ld E A  # Result
       test (L -I) 1  # Sign?
       if nz  # Yes
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          if ne  # No
             or E SIGN  # Set negative
          end
@@ -2540,7 +2540,7 @@
          jz 10  # Abort if NIL
          num E  # Number?
          jz numErrEX  # No
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          jeq divErrX  # Yes
          test E SIGN  # Arg negative?
          if nz  # Yes
@@ -2555,7 +2555,7 @@
       ld E (L I)  # Result
       test (L -I) 1  # Sign?
       if nz  # Yes
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          if ne  # No
             or E SIGN  # Set negative
          end
@@ -2599,7 +2599,7 @@
          jz 10  # Abort if NIL
          num E  # Number?
          jz numErrEX  # No
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          jeq divErrX  # Yes
          off E SIGN  # Make argument positive
          ld (L II) E  # Save arg
@@ -2610,7 +2610,7 @@
       ld E (L I)  # Result
       test (L -I) 1  # Sign?
       if nz  # Yes
-         zero E  # Zero?
+         cmp E ZERO  # Zero?
          if ne  # No
             or E SIGN  # Set negative
          end
@@ -2665,7 +2665,7 @@
             loop
          end
       end
-      zero A  # Result zero?
+      cmp A ZERO  # Result zero?
       if ne  # No
          or A (L -II)  # Sign bit
       end
@@ -2687,6 +2687,20 @@
    jz retNil
    ret  # Yes: Return num
 
+# (le0 'any) -> num | NIL
+(code 'doLe0 2)
+   ld E (E CDR)  # Get arg
+   ld E (E)
+   eval  # Eval it
+   num E  # Number?
+   jz retNil
+   cmp E ZERO  # Zero?
+   if ne  # No
+      test E SIGN  # Negative?
+      jz retNil
+   end
+   ret  # Yes: Return num
+
 # (ge0 'any) -> num | NIL
 (code 'doGe0 2)
    ld E (E CDR)  # Get arg
@@ -2705,7 +2719,7 @@
    eval  # Eval it
    num E  # Number?
    jz retNil
-   zero E  # Zero?
+   cmp E ZERO  # Zero?
    jeq retNil
    test E SIGN  # Positive?
    jnz retNil
@@ -2762,7 +2776,7 @@
          ld A (E DIG)  # Get digit
          and A (C DIG)  # Match?
          cmp A (C DIG)
-         jnz 10  # No: Return NIL
+         jne 10  # No: Return NIL
          ld C (C BIG)
          ld E (E BIG)
       loop
@@ -2811,7 +2825,7 @@
          ld E (Y)
          eval  # Eval next arg
          cmp E Nil
-         jz 10  # Abort if NIL
+         jeq 10  # Abort if NIL
          num E  # Number?
          jz numErrEX  # No
          off E SIGN  # Clear sign
@@ -2851,7 +2865,7 @@
          ld E (Y)
          eval  # Eval next arg
          cmp E Nil
-         jz 10  # Abort if NIL
+         jeq 10  # Abort if NIL
          num E  # Number?
          jz numErrEX  # No
          off E SIGN  # Clear sign
@@ -2891,7 +2905,7 @@
          ld E (Y)
          eval  # Eval next arg
          cmp E Nil
-         jz 10  # Abort if NIL
+         jeq 10  # Abort if NIL
          num E  # Number?
          jz numErrEX  # No
          off E SIGN  # Clear sign

@@ -1,4 +1,4 @@
-/* 24dec10abu
+/* 09mar11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,6 +27,7 @@ static byte TBuf[] = {INTERN+4, 'T'};
 static void openErr(any ex, char *s) {err(ex, NULL, "%s open: %s", s, strerror(errno));}
 static void closeErr(void) {err(NULL, NULL, "Close error: %s", strerror(errno));}
 static void eofErr(void) {err(NULL, NULL, "EOF Overrun");}
+static void badInput(void) {err(NULL, NULL, "Bad input '%c'", Chr);}
 static void badFd(any ex, any x) {err(ex, x, "Bad FD");}
 static void lockErr(void) {err(NULL, NULL, "File lock: %s", strerror(errno));}
 static void writeErr(char *s) {err(NULL, NULL, "%s write: %s", s, strerror(errno));}
@@ -122,8 +123,12 @@ int slow(inFile *p, bool nb) {
       n = read(p->fd, p->buf, BUFSIZ);
       if (nb)
          fcntl(p->fd, F_SETFL, f);
-      if (n >= 0)
+      if (n > 0)
          return p->cnt = n;
+      if (n == 0) {
+         p->ix = p->cnt = -1;
+         return 0;
+      }
       if (errno == EAGAIN)
          return -1;
       if (errno != EINTR)
@@ -242,13 +247,13 @@ void flushAll(void) {
 static int stdinByte(void) {
    inFile *p;
 
-   if (!(p = InFiles[STDIN_FILENO])  ||  p->ix == p->cnt  &&  !slow(p,NO))
-      return -1;
+   if (!(p = InFiles[STDIN_FILENO]) || p->ix == p->cnt && (p->ix < 0 || !slow(p,NO)))
+      bye(0);
    return p->buf[p->ix++];
 }
 
 static int getBinary(void) {
-   if (!InFile  ||  InFile->ix == InFile->cnt  &&  !slow(InFile,NO))
+   if (!InFile || InFile->ix == InFile->cnt && (InFile->ix < 0 || !slow(InFile,NO)))
       return -1;
    return InFile->buf[InFile->ix++];
 }
@@ -790,6 +795,38 @@ void wrOpen(any ex, any x, outFrame *f) {
    }
 }
 
+void erOpen(any ex, any x, errFrame *f) {
+   int fd;
+
+   NeedSym(ex,x);
+   f->fd = dup(STDERR_FILENO);
+   if (isNil(x))
+      fd = dup(OutFile->fd);
+   else {
+      char nm[pathSize(x)];
+
+      pathString(x,nm);
+      if (nm[0] == '+') {
+         while ((fd = open(nm+1, O_APPEND|O_CREAT|O_WRONLY, 0666)) < 0) {
+            if (errno != EINTR)
+               openErr(ex, nm);
+            if (*Signal)
+               sighandler(ex);
+         }
+      }
+      else {
+         while ((fd = open(nm, O_CREAT|O_TRUNC|O_WRONLY, 0666)) < 0) {
+            if (errno != EINTR)
+               openErr(ex, nm);
+            if (*Signal)
+               sighandler(ex);
+         }
+      }
+      closeOnExec(ex, fd);
+   }
+   dup2(fd, STDERR_FILENO),  close(fd);
+}
+
 void ctOpen(any ex, any x, ctlFrame *f) {
    NeedSym(ex,x);
    if (isNil(x)) {
@@ -831,7 +868,7 @@ void getStdin(void) {
    if (!InFile)
       Chr = -1;
    else if (InFile != InFiles[STDIN_FILENO]) {
-      if (InFile->ix == InFile->cnt  &&  !slow(InFile,NO)) {
+      if (InFile->ix == InFile->cnt  && (InFile->ix < 0 || !slow(InFile,NO))) {
          Chr = -1;
          return;
       }
@@ -877,6 +914,10 @@ void pushOutFiles(outFrame *f) {
    f->link = Env.outFrames,  Env.outFrames = f;
 }
 
+void pushErrFiles(errFrame *f) {
+   f->link = Env.errFrames,  Env.errFrames = f;
+}
+
 void pushCtlFiles(ctlFrame *f) {
    f->link = Env.ctlFrames,  Env.ctlFrames = f;
 }
@@ -914,6 +955,12 @@ void popOutFiles(void) {
    }
    Env.put = Env.outFrames->put;
    OutFile = OutFiles[(Env.outFrames = Env.outFrames->link)? Env.outFrames->fd : STDOUT_FILENO];
+}
+
+void popErrFiles(void) {
+   dup2(Env.errFrames->fd, STDERR_FILENO);
+   close(Env.errFrames->fd);
+   Env.errFrames = Env.errFrames->link;
 }
 
 void popCtlFiles(void) {
@@ -983,6 +1030,8 @@ static bool testEsc(void) {
          return NO;
       if (Chr == '^') {
          Env.get();
+         if (Chr == '@')
+            badInput();
          if (Chr == '?')
             Chr = 127;
          else
@@ -1197,7 +1246,7 @@ static any read0(bool top) {
       return x;
    }
    if (Chr == ')' || Chr == ']' || Chr == '~')
-      err(NULL, NULL, "Bad input '%c' (%d)", isprint(Chr)? Chr:'?', Chr);
+      badInput();
    if (Chr == '\\')
       Env.get();
    i = Chr;
@@ -1620,27 +1669,21 @@ any doPoll(any ex) {
 // (key ['cnt]) -> sym
 any doKey(any ex) {
    any x;
-   int c, d, e;
+   int c, d;
 
    flushAll();
    setRaw();
    x = cdr(ex);
    if (!waitFd(ex, STDIN_FILENO, isNil(x = EVAL(car(x)))? -1 : xCnt(ex,x)))
       return Nil;
-   if ((c = stdinByte()) < 0)
-      return Nil;
-   if (c == 0xFF)
+   if ((c = stdinByte()) == 0xFF)
       c = TOP;
    else if (c & 0x80) {
-      if ((d = stdinByte()) < 0)
-         return Nil;
+      d = stdinByte();
       if ((c & 0x20) == 0)
          c = (c & 0x1F) << 6 | d & 0x3F;
-      else {
-         if ((e = stdinByte()) < 0)
-            return Nil;
-         c = ((c & 0xF) << 6 | d & 0x3F) << 6 | e & 0x3F;
-      }
+      else
+         c = ((c & 0xF) << 6 | d & 0x3F) << 6 | stdinByte() & 0x3F;
    }
    return mkChar(c);
 }
@@ -2004,8 +2047,11 @@ any load(any ex, int pr, any x) {
          if (Chr == '\n')
             Chr = 0;
       }
-      if (isNil(data(c1)))
-         break;
+      if (isNil(data(c1))) {
+         popInFiles();
+         doHide(Nil);
+         return x;
+      }
       Save(c1);
       if (InFile != InFiles[STDIN_FILENO] || Chr || !pr)
          x = EVAL(data(c1));
@@ -2018,9 +2064,6 @@ any load(any ex, int pr, any x) {
       }
       drop(c1);
    }
-   popInFiles();
-   doHide(Nil);
-   return x;
 }
 
 // (load 'any ..) -> any
@@ -2063,6 +2106,32 @@ any doOut(any ex) {
    return x;
 }
 
+// (err 'sym . prg) -> any
+any doErr(any ex) {
+   any x;
+   errFrame f;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   erOpen(ex,x,&f);
+   pushErrFiles(&f);
+   x = prog(cddr(ex));
+   popErrFiles();
+   return x;
+}
+
+// (ctl 'sym . prg) -> any
+any doCtl(any ex) {
+   any x;
+   ctlFrame f;
+
+   x = cdr(ex),  x = EVAL(car(x));
+   ctOpen(ex,x,&f);
+   pushCtlFiles(&f);
+   x = prog(cddr(ex));
+   popCtlFiles();
+   return x;
+}
+
 // (pipe exe) -> cnt
 // (pipe exe . prg) -> any
 any doPipe(any ex) {
@@ -2097,19 +2166,6 @@ any doPipe(any ex) {
    pushInFiles(&f.in);
    x = prog(cddr(ex));
    popInFiles();
-   return x;
-}
-
-// (ctl 'sym . prg) -> any
-any doCtl(any ex) {
-   any x;
-   ctlFrame f;
-
-   x = cdr(ex),  x = EVAL(car(x));
-   ctOpen(ex,x,&f);
-   pushCtlFiles(&f);
-   x = prog(cddr(ex));
-   popCtlFiles();
    return x;
 }
 
@@ -2576,21 +2632,6 @@ any doWr(any x) {
       putStdout(unDig(y = EVAL(car(x))) / 2);
    while (isCell(x = cdr(x)));
    return y;
-}
-
-static void putChar(int c) {putchar_unlocked(c);}
-
-// (rpc 'sym ['any ..]) -> flg
-any doRpc(any x) {
-   any y;
-
-   x = cdr(x);
-   putChar(BEG);
-   do
-      y = EVAL(car(x)),  putBin = putChar,  binPrint(ExtN, y);
-   while (isCell(x = cdr(x)));
-   putChar(END);
-   return fflush(stdout)? Nil : T;
 }
 
 /*** DB-I/O ***/

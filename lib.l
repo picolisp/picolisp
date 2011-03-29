@@ -1,4 +1,4 @@
-# 23nov10abu
+# 25feb11abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -181,6 +181,14 @@
 (de release (File)
    (ctl File (out File)) )
 
+# Temporary Files
+(de tmp @
+   (unless *Tmp
+      (push '*Bye '(call 'rm "-r" *Tmp))
+      (push '*Fork '(off *Tmp) '(del '(call 'rm "-r" *Tmp) '*Bye))
+      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+   (pass pack *Tmp) )
+
 ### List ###
 (de insert (N Lst X)
    (conc
@@ -251,6 +259,40 @@
 (de var: X
    (apply meta X This) )
 
+### Math ###
+(de sqrt (N F)
+   (cond
+      ((lt0 N) (quit "Bad argument" N))
+      (N
+         (let (A 1  B 0)
+            (while (>= N A)
+               (setq A (>> -2 A)) )
+            (loop
+               (if (> (inc 'B A) N)
+                  (dec 'B A)
+                  (dec 'N B)
+                  (inc 'B A) )
+               (setq B (>> 1 B)  A (>> 2 A))
+               (T (=0 A)) )
+            (and F (> N B) (inc 'B))
+            B ) ) ) )
+
+# (Knuth Vol.2, p.442)
+(de ** (X N)  # N th power of X
+   (let Y 1
+      (loop
+         (when (bit? 1 N)
+            (setq Y (* Y X)) )
+         (T (=0 (setq N (>> 1 N)))
+            Y )
+         (setq X (* X X)) ) ) )
+
+(de accu (Var Key Val)
+   (when Val
+      (if (assoc Key (val Var))
+         (con @ (+ Val (cdr @)))
+         (push Var (cons Key Val)) ) ) )
+
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless while until do case state for
@@ -258,6 +300,7 @@
    prog1 later recur redef =: in out ctl tab new )
 (de *PP1 let let? for redef)
 (de *PP2 setq default)
+(de *PP3 if2)
 
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
@@ -270,27 +313,31 @@
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) *PP)
-            (cond
-               ((memq (car Z) *PP1)
-                  (if (and (pair (car X)) (pair (cdar X)))
-                     (when (>= 12 (size (car X)))
+         (cond
+            ((memq (print (pop 'X)) *PP)
+               (cond
+                  ((memq (car Z) *PP1)
+                     (if (and (pair (car X)) (pair (cdar X)))
+                        (when (>= 12 (size (car X)))
+                           (space)
+                           (print (pop 'X)) )
                         (space)
-                        (print (pop 'X)) )
+                        (print (pop 'X))
+                        (when (or (atom (car X)) (>= 12 (size (car X))))
+                           (space)
+                           (print (pop 'X)) ) ) )
+                  ((memq (car Z) *PP2)
+                     (inc 'N 3)
+                     (loop
+                        (prinl)
+                        (pretty (cadr X) N (car X))
+                        (NIL (setq X (cddr X)) (space)) ) )
+                  ((or (atom (car X)) (>= 12 (size (car X))))
                      (space)
-                     (print (pop 'X))
-                     (when (or (atom (car X)) (>= 12 (size (car X))))
-                        (space)
-                        (print (pop 'X)) ) ) )
-               ((memq (car Z) *PP2)
-                  (inc 'N 3)
-                  (loop
-                     (prinl)
-                     (pretty (cadr X) N (car X))
-                     (NIL (setq X (cddr X)) (space)) ) )
-               ((or (atom (car X)) (>= 12 (size (car X))))
-                  (space)
-                  (print (pop 'X)) ) ) )
+                     (print (pop 'X)) ) ) )
+            ((and (memq (car Z) *PP3) (>= 12 (size (head 2 X))))
+               (space)
+               (print (pop 'X) (pop 'X)) ) )
          (when X
             (loop
                (T (== Z X) (prin " ."))
@@ -372,5 +419,26 @@
                (T (== Z X) (println '*))
                (println '|)
                (mapc prin Y) ) ) ) ) )
+
+### Check ###
+# Assertions
+(de assert Prg
+   (when *Dbg
+      (cons
+         (list 'unless
+            (if (cdr Prg) (cons 'and Prg) (car Prg))
+            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+
+# Unit tests
+(de test (Pat . Prg)
+   (bind (fish pat? Pat)
+      (unless (match Pat (run Prg 1))
+         (msg Prg)
+         (quit "'test' failed" Pat) ) ) )
+
+### Debug ###
+`*Dbg
+(load "@lib/debug.l" "@lib/led.l" "@lib/edit.l" "@lib/lint.l")
+(noLint 'later (loc "@Prg" later))
 
 # vi:et:ts=3:sw=3

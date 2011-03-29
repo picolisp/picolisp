@@ -1,4 +1,4 @@
-03dec10abu
+19jan11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -34,7 +34,12 @@ Ersatz PicoLisp can be started - analog to 'bin/picolisp' - as
    $ ersatz/picolisp
 
 This already includes slighly simplfied versions of the standard libraries as
-loaded by './dbg' (without database, but with Pilog and XML support).
+loaded by './p' (without database, but with Pilog and XML support).
+
+To start it in debug mode, use
+
+   $ ersatz/picolisp +
+
 
 On non-Unix systems, you might start 'java' directly, e.g.:
 

@@ -50,8 +50,8 @@ href="refG.html#glue">glue</a></code>.
 -> "car is 1 symbol name"
 </code></pre>
 
-<dt><a name="pad"><code>(pad 'cnt 'num) -> sym</code></a>
-<dd>Returns a transient symbol with <code>num</code> <code><a
+<dt><a name="pad"><code>(pad 'cnt 'any) -> sym</code></a>
+<dd>Returns a transient symbol with <code>any</code> <code><a
 href="refP.html#pack">pack</a></code>ed with leading '0' characters, up to a
 field width of <code>cnt</code>. See also <code><a
 href="refF.html#format">format</a></code> and <code><a
@@ -176,8 +176,8 @@ argument with the <u>PicoLisp Home Directory</u>, as it was remembered during
 interpreter startup. Optionally, the name may be preceded by a "<code>+</code>"
 character (as used by <code><a href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>). This mechanism is used internally by all
-I/O functions. See also <code><a href="ref.html#invoc">Invocation</a></code>,
-<code><a href="refB.html#basename">basename</a></code>. and <code><a
+I/O functions. See also <a href="ref.html#invoc">Invocation</a>, <code><a
+href="refB.html#basename">basename</a></code>. and <code><a
 href="refD.html#dirname">dirname</a></code>.
 
 <pre><code>
@@ -265,9 +265,10 @@ thereafter). In the first form, <code>pipe</code> just returns a file descriptor
 to read from the standard output of that process. In the second form, it opens
 the standard output of that process as input channel during the execution of
 <code>prg</code>. The current input channel will be saved and restored
-appropriately. See also <code><a href="refI.html#ipid">ipid</a></code>, <code><a
-href="refI.html#in">in</a></code>, <code><a href="refO.html#out">out</a></code>
-and <code><a href="refR.html#rpc">rpc</a></code>.
+appropriately. See also <code><a href="refL.html#later">later</a></code>,
+<code><a href="refI.html#ipid">ipid</a></code>, <code><a
+href="refI.html#in">in</a></code> and <code><a
+href="refO.html#out">out</a></code>.
 
 <pre><code>
 : (pipe                                # equivalent to 'any'
@@ -442,8 +443,7 @@ href="refV.html#vi">vi</a></code>.
 channel in encoded binary format. See also <code><a
 href="refR.html#rd">rd</a></code>, <code><a
 href="refT.html#tell">tell</a></code>, <code><a
-href="refH.html#hear">hear</a></code>, <code><a
-href="refR.html#rpc">rpc</a></code> and <code><a
+href="refH.html#hear">hear</a></code> and <code><a
 href="refW.html#wr">wr</a></code>.
 
 <pre><code>

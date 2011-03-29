@@ -81,6 +81,23 @@ href="refP.html#pipe">pipe</a></code>'ed child process. The return value of
 -> go
 </code></pre>
 
+<dt><a name="le0"><code>(le0 'any) -> num | NIL</code></a>
+<dd>Returns <code>num</code> when the argument is a number less or equal zero,
+otherwise <code>NIL</code>. See also <code><a
+href="refL.html#lt0">lt0</a></code>, <code><a
+href="refG.html#ge0">ge0</a></code>, <code><a
+href="refG.html#gt0">gt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
+and <code><a href="refN.html#n0">n0</a></code>.
+
+<pre><code>
+: (le0 -2)
+-> -2
+: (le0 0)
+-> 0
+: (le0 3)
+-> NIL
+</code></pre>
+
 <dt><a name="leaf"><code>(leaf 'tree) -> any</code></a>
 <dd>Returns the first leaf (i.e. the value of the smallest key) in a database
 tree. See also <code><a href="refT.html#tree">tree</a></code>, <code><a
@@ -242,11 +259,11 @@ href="refM.html#made">made</a></code>.
 <dt><code>(lint 'sym 'cls) -> lst</code>
 <dt><code>(lint '(sym . cls)) -> lst</code>
 <dd>Checks the function definition or file contents (in the first form), or the
-method body of sym (second and third form), for possible pitfalls. Returns a
-list of diagnoses, where <code>var</code> indicates improper variables,
-<code>dup</code> duplicate parameters, <code>def</code> an undefined function,
-<code>bnd</code> an unbound variable, and <code>use</code> unused variables. See
-also <code><a href="refN.html#noLint">noLint</a></code>, <code><a
+method body of sym (second and third form), for possible pitfalls. Returns an
+association list of diagnoses, where <code>var</code> indicates improper
+variables, <code>dup</code> duplicate parameters, <code>def</code> an undefined
+function, <code>bnd</code> an unbound variable, and <code>use</code> unused
+variables. See also <code><a href="refN.html#noLint">noLint</a></code>, <code><a
 href="refL.html#lintAll">lintAll</a></code>, <code><a
 href="refD.html#debug">debug</a></code>, <code><a
 href="refT.html#trace">trace</a></code> and <code><a
@@ -511,6 +528,7 @@ href="refL.html#low?">low?</a></code>.
 <dt><a name="lt0"><code>(lt0 'any) -> num | NIL</code></a>
 <dd>Returns <code>num</code> when the argument is a number and less than zero,
 otherwise <code>NIL</code>. See also <code><a
+href="refL.html#le0">le0</a></code>, <code><a
 href="refG.html#ge0">ge0</a></code>, <code><a
 href="refG.html#gt0">gt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
 and <code><a href="refN.html#n0">n0</a></code>.

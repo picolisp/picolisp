@@ -1,4 +1,4 @@
-/* 13dec10abu
+/* 25jan11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -678,7 +678,7 @@ any doSplit(any x) {
          y = data(sub) = cons(car(data(c1)), Nil);
       else
          y = cdr(y) = cons(car(data(c1)), Nil);
-   spl1: ;
+spl1: ;
    } while (isCell(data(c1) = cdr(data(c1))));
    y = cons(data(sub), Nil);
    drop(c1);
@@ -1386,13 +1386,23 @@ static any fill(any x, any s) {
    if (isNum(x))
       return NULL;
    if (isSym(x))
-      return (isNil(s)? x!=At && firstByte(x)=='@' : memq(x,s)!=NULL)? val(x) : NULL;
-   if (y = fill(car(x),s)) {
+      return x != val(x) && (isNil(s)? x!=At && firstByte(x)=='@' : memq(x,s)!=NULL)? val(x) : NULL;
+   if (car(x) == Up) {
+      x = cdr(x);
+      if (!isCell(y = EVAL(car(x))))
+         return fill(cdr(x), s) ?: cdr(x);
+      Push(c1, y);
+      while (isCell(cdr(y)))
+         y = cdr(y);
+      cdr(y) = fill(cdr(x), s) ?: cdr(x);
+      return Pop(c1);
+   }
+   if (y = fill(car(x), s)) {
       Push(c1,y);
-      y = fill(cdr(x),s);
+      y = fill(cdr(x), s);
       return cons(Pop(c1), y ?: cdr(x));
    }
-   if (y = fill(cdr(x),s))
+   if (y = fill(cdr(x), s))
       return cons(car(x), y);
    return NULL;
 }
@@ -1403,7 +1413,7 @@ any doFill(any x) {
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  Push(c2, EVAL(car(x)));
-   if (x = fill(data(c1),data(c2))) {
+   if (x = fill(data(c1), data(c2))) {
       drop(c1);
       return x;
    }
@@ -1416,7 +1426,7 @@ cell *Penv, *Pnl;
 static bool unify(any n1, any x1, any n2, any x2) {
    any x, env;
 
-   lookup1:
+lookup1:
    if (isSym(x1)  &&  firstByte(x1) == '@')
       for (x = data(*Penv);  isCell(car(x));  x = cdr(x))
          if (unDig(n1) == unDig(caaar(x))  &&  x1 == cdaar(x)) {
@@ -1424,7 +1434,7 @@ static bool unify(any n1, any x1, any n2, any x2) {
             x1 = cddar(x);
             goto lookup1;
          }
-   lookup2:
+lookup2:
    if (isSym(x2)  &&  firstByte(x2) == '@')
       for (x = data(*Penv);  isCell(car(x));  x = cdr(x))
          if (unDig(n2) == unDig(caaar(x))  &&  x2 == cdaar(x)) {
@@ -1461,7 +1471,7 @@ static any lup(any n, any x) {
    any y;
    cell c1;
 
-   lup:
+lup:
    if (isSym(x)  &&  firstByte(x) == '@')
       for (y = data(*Penv);  isCell(car(y));  y = cdr(y))
          if (unDig(n) == unDig(caaar(y))  &&  x == cdaar(y)) {

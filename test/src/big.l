@@ -1,4 +1,4 @@
-# 14may10abu
+# 23jan11abu
 # (c) Software Lab. Alexander Burger
 
 ### format ###
@@ -98,6 +98,12 @@
 (test -2 (lt0 -2))
 (test NIL (lt0 7))
 (test NIL (lt0 0))
+
+
+### le0 ###
+(test -7 (le0 -7))
+(test NIL (le0 2))
+(test 0 (le0 0))
 
 
 ### ge0 ###

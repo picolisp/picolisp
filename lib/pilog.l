@@ -1,4 +1,4 @@
-# 28jan10abu
+# 17jan11abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -546,5 +546,8 @@
          (NIL (set Box (setq Lst (cdr Lst)))) ) ) )
 
 (repeat)
+
+`*Dbg
+(load "@lib/sq.l")
 
 # vi:et:ts=3:sw=3

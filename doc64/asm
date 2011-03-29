@@ -1,4 +1,4 @@
-# 11sep10abu
+# 21mar11abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -72,6 +72,7 @@
       jmp 1234             # Absolute
       jmp Label
       jmp (R)              # Indexed
+      jmp (R T)            # Indexed SUBR
       jmp (Global)         # Indirect
 
 ========================================================================
@@ -103,8 +104,8 @@
       sub dst src       # Subtract 'src' from 'dst'
       subc dst src      # Subtract 'src' from 'dst' with Carry
 
-      inc dst           # Increment 'dst' [z..]
-      dec dst           # Increment 'dst' [z..]
+      inc dst           # Increment 'dst' [zs.]
+      dec dst           # Increment 'dst' [zs.]
       not dst           # One's complement negation of 'dst'
       neg dst           # Two's complement negation of 'dst'
 
@@ -138,7 +139,6 @@
       slen dst src      # Set 'dst' to the string length of 'src'
       memb src cnt      # Find B in 'cnt' bytes of memory
       null src          # Compare 'src' with 0 [zs_]
-      zero src          # Test if ZERO [z..]
       nul4              # Compare four bytes in 'A' with 0 [zs_]
 
    Byte addressing:

@@ -267,6 +267,22 @@ href="refM.html#member/2">member/2</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="err"><code>(err 'sym . prg) -> any</code></a>
+<dd>Redirects the standard error stream to <code>sym</code> during the execution
+of <code>prg</code>. The current standard error stream will be saved and
+restored appropriately. If the argument is <code>NIL</code>, the current output
+stream will be used. Otherwise, <code>sym</code> is taken as a file name (opened
+in "append" mode if the first character is "+"), where standard error is to be
+written to. See also <code><a href="refI.html#in">in</a></code>, <code><a
+href="refO.html#out">out</a></code> and <code><a
+href="refC.html#ctl">ctl</a></code>.
+
+<pre><code>
+: (err "/dev/null"             # Suppress error messages
+   (call 'ls 'noSuchFile) )
+-> NIL
+</code></pre>
+
 <dt><a name="errno"><code>(errno) -> cnt</code></a>
 <dd>(64-bit version only) Returns the value of the standard I/O 'errno'
 variable.
@@ -375,13 +391,12 @@ href="refS.html#subr">subr</a></code>.
 <dt><a name="ext"><code>(ext 'cnt . prg) -> any</code></a>
 <dd>During the execution of <code>prg</code>, all <code><a
 href="ref.html#external">external symbols</a></code> processed by <code><a
-href="refR.html#rd">rd</a></code>, <code><a href="refP.html#pr">pr</a></code>,
-<code><a href="refR.html#rpc">rpc</a></code> or <code><a
-href="refU.html#udp">udp</a></code> are modified by an offset <code>cnt</code>
-suitable for mapping via the <code><a href="refE.html#*Ext">*Ext</a></code>
-mechanism. All external symbol's file numbers are decremented by
-<code>cnt</code> during output, and incremented by <code>cnt</code> during
-input.
+href="refR.html#rd">rd</a></code>, <code><a href="refP.html#pr">pr</a></code> or
+<code><a href="refU.html#udp">udp</a></code> are modified by an offset
+<code>cnt</code> suitable for mapping via the <code><a
+href="refE.html#*Ext">*Ext</a></code> mechanism. All external symbol's file
+numbers are decremented by <code>cnt</code> during output, and incremented by
+<code>cnt</code> during input.
 
 <pre><code>
 : (out 'a (ext 5 (pr '({6-2} ({8-9} . a) ({7-7} . b)))))

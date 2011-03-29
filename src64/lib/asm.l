@@ -1,4 +1,4 @@
-# 05aug10abu
+# 21mar11abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *Registers optimize
@@ -54,7 +54,7 @@
                (prinl Sym " (" (cdr @) " . \"@src64/" (car @) "\")") ) ) ) ) )
 
 (de asm Args
-   (put (car Args) 'asm (cdr Args)) )
+   (def (car Args) 'asm (cdr Args)) )
 
 (de fpic ()
    (on *FPic) )
@@ -63,16 +63,15 @@
 (de section (Fun @Sym)
    (def Fun
       (curry (@Sym) (Lbl Align)
-         (put Lbl 'src (cdr (file)))
+         (def Lbl 'src (cdr (file)))
          (unless (== *Section '@Sym)
             (prinl)
             (prinl "   ." '@Sym)
             (setq *Section '@Sym) )
          (prinl)
          (when Align
-            (prinl "   .balign  16")
-            (do Align
-               ((get 'nop 'asm)) ) )
+            ((get 'align 'asm) 16)
+            ((get 'skip 'asm) Align) )
          (when (reg Lbl)
             (quit "Register" Lbl) )
          (when Lbl
@@ -106,7 +105,13 @@
                (prinl (cdr *Statement) ':)
                (apply (get (car *Statement) 'asm) (cdr *Statement)) ) ) ) ) )
 
+# (data 'lbl)
+# (data 'lbl 0)
 (section 'data 'data)
+
+# (code 'lbl)
+# (code 'lbl 0)
+# (code 'lbl 2)
 (section 'code 'text)
 
 (de cleanUp ()
@@ -218,14 +223,16 @@
    (| 2 (>> -4 N)) )
 
 (de equ Args
-   (def (car Args)
-      (put (car Args) 'equ (run (cdr Args) 1)) ) )
+   (let Val (run (cdr Args) 1)
+      (def (car Args) 'equ Val)
+      (def (car Args) Val) ) )
 
 
 # Source/Destination addressing mode:
 #  0    -> Immediate
 #  NIL  -> Register
 #  T    -> Direct
+# (..)  -> Combined
 (de "source" (X F)
    (setq X (operand X))
    (cond
@@ -292,9 +299,10 @@
 
 
 # Target addressing mode:
-#  NIL -> Absolute
-#  0   -> Indexed
-#  T   -> Indirect
+#  NIL  -> Absolute
+#  0    -> Indexed
+# (0)   -> SUBR
+#  T    -> Indirect
 (de address ()
    (let X (read)
       (off "*Mode")
@@ -302,6 +310,9 @@
          ((num? X) (pack *Label "_" X))            # Label
          ((reg X) (quit "Bad address" X))          # Register
          ((atom X) X)                              # Absolute
+         ((and (=T (cadr X)) (reg (car X)))        # SUBR
+            (setq "*Mode" (0))
+            @ )
          ((cdr X) (quit "Bad address" X))
          ((reg (car X)) (zero "*Mode") @)          # Register indirect
          (T (on "*Mode") (car X)) ) ) )            # Indirect
@@ -407,6 +418,7 @@
       (inc (destination) "*Mode")
       (initCode)
       (initData)
+      (initFun (read) (read) (operand (read)))
       (initSym (read) (read) (operand (read)))
       (jc (address) "*Mode")
       (jcz (address) "*Mode")
@@ -477,7 +489,6 @@
       (word (operand (read)))
       (xchg (destination) "*Mode" (destination) "*Mode")
       (xor (destination) "*Mode" (source) "*Mode")
-      (zero (source) "*Mode")
       (zxt) ) )
 
 
@@ -488,9 +499,6 @@
 
 (asm :: (Lbl)
    (label Lbl) )
-
-(asm align (N)
-   (prinst ".balign" N) )
 
 (asm word (N)
    (prinst ".quad" N) )
@@ -510,11 +518,14 @@
 (asm asciz (Str)
    (prinst ".asciz " (pack "\"" Str "\"")) )
 
-(asm skip (N)
-   (prinst ".space" N) )
+(asm initFun (Lbl Name Val)
+   (initSym Lbl Name Val (boxfun Val)) )
 
 (asm initSym (Lbl Name Val)
-   (idx '*Tags (def Name Val) T)
+   (initSym Lbl Name Val Val) )
+
+(de initSym (Lbl Name Sym Val)
+   (idx '*Tags (def Name Sym) T)
    (setq Name
       (let (N 2  Lst (chop Name)  C)
          (make

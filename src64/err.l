@@ -1,4 +1,4 @@
-# 12oct10abu
+# 09mar11abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -7,7 +7,6 @@
    xchg E (S I)  # Get argument, save return
    push C  # Save all registers
    push A
-   push F  # And flags
    push (OutFile)  # Save output channel
    ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
    push (PutB)  # Save 'put'
@@ -16,7 +15,6 @@
    call newline  # and a newline
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
-   pop F
    pop A
    pop C
    pop E
@@ -159,9 +157,7 @@
    ld (EnvTrace) 0
    ld L 0  # Init link register
    ld S (Stack0)  # stack pointer
-   lea A (S 4096)  # and stack limit
-   sub A (StkSize)
-   ld (StkLimit) A
+   ld (StkLimit) 0  # Clear stack limit
    ld (Stacks) 0  # Free all stack segments
    jmp restart  # Restart interpreter
 : ErrTok asciz "!? "
@@ -245,7 +241,12 @@
          call popOutFiles  # Clean up
       loop
       do
-         cmp (EnvCtlFrames) (X VI)  # Open control frames?
+         cmp (EnvErrFrames) (X VI)  # Open error frames?
+      while ne  # Yes
+         call popErrFiles  # Clean up
+      loop
+      do
+         cmp (EnvCtlFrames) (X VII)  # Open control frames?
       while ne  # Yes
          call popCtlFiles  # Clean up
       loop
@@ -261,8 +262,10 @@
          while ne  # No
             add A A
          loop
-         not A  # Clear in segment bitmask
-         and (Stacks) A
+         xor (Stacks) A  # Clear in segment bitmask
+         if z  # Last coroutine?
+            ld (StkLimit) 0  # Yes: Clear stack limit
+         end
          ld Z (Z)  # Next coroutine
       loop
       load (Env) (EnvEnd) (X III)  # Restore environment
@@ -306,6 +309,11 @@
       call popOutFiles  # Clean up
    loop
    do
+      null (EnvErrFrames)  # Open error frames?
+   while nz  # Yes
+      call popErrFiles  # Clean up
+   loop
+   do
       null (EnvCtlFrames)  # Open control frames?
    while nz  # Yes
       call popCtlFiles  # Clean up
@@ -319,9 +327,9 @@
    sym A
    jz symErrAX
    cmp A Nil  # A < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp A TSym  # A > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    ld E A
    jmp protErrEX
 
@@ -331,18 +339,18 @@
    sym E
    jz symErrEX
    cmp E Nil  # E < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp E TSym  # E > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    jmp protErrEX
 
 (code 'needVarAX 0)
    num A  # Need variable
    jnz varErrAX
    cmp A Nil  # A < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp A TSym  # A > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    ld E A
    jmp protErrEX
 
@@ -350,32 +358,32 @@
    num E  # Need variable
    jnz varErrEX
    cmp E Nil  # E < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp E TSym  # E > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    jmp protErrEX
 
 (code 'checkVarAX 0)
    cmp A Nil  # A < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp A TSym  # A > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    ld E A
    jmp protErrEX
 
 (code 'checkVarYX 0)
    cmp Y Nil  # Y < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp Y TSym  # Y > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
    ld E Y
    jmp protErrEX
 
 (code 'checkVarEX 0)
    cmp E Nil  # E < NIL ?
-   jc ret  # Yes
+   jlt ret  # Yes
    cmp E TSym  # E > T ?
-   jncz Ret  # Yes
+   jgt Ret  # Yes
 (code 'protErrEX)
    ld Y ProtErr
    jmp errEXYZ
@@ -390,7 +398,7 @@
    ld E 0
 (code 'stkErrEX)
    ld Y StkErr
-   ld (StkLimit) 0  # Temporarily without stack limit
+   ld (StkLimit) 0  # Reset stack limit
    jmp errEXYZ
 : StkErr asciz "Stack overflow"
 

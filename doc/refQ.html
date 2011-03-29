@@ -91,7 +91,7 @@ be the reason for the error. See also <code><a href="ref.html#errors">Error
 Handling</a></code>.
 
 <pre><code>
-: (de foo (X) (quit <u>Sorry, my error</u> X))
+: (de foo (X) (quit "Sorry, my error" X))
 -> foo
 : (foo 123)                                  # 'X' is bound to '123'
 123 -- Sorry, my error                       # Error entered

@@ -1,13 +1,7 @@
-# 14apr10abu
+# 18jan11abu
 # (c) Software Lab. Alexander Burger
 
 (on *Dbg)
-
-(when (sys "TERM")
-   (setq *Tsm
-      (cons
-         (in '("tput" "smul") (line T))
-         (in '("tput" "rmul") (line T)) ) ) )
 
 (load "@lib/debug.l" "@lib/led.l" "@lib/edit.l" "@lib/lint.l" "@lib/sq.l")
 

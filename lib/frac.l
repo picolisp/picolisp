@@ -1,4 +1,4 @@
-# 25jun10abu
+# 23jan11abu
 # (c) Software Lab. Alexander Burger
 
 (de gcd (A B)
@@ -41,9 +41,7 @@
 
 (de f- (A B)
    (if B
-      (prog1
-         (f+ A B)
-         (set @ (- (car A))) )
+      (f+ A (f- B))
       (cons (- (car A)) (cdr A)) ) )
 
 (de f* (A B)

@@ -214,8 +214,7 @@ process. <code>tell</code> is also used internally by <code><a
 href="refC.html#commit">commit</a></code> to notify about database changes. When
 called without arguments, no message is actually sent, and the parent process
 may grant <code><a href="refS.html#sync">sync</a></code> to the next waiting
-process. See also <code><a href="refH.html#hear">hear</a></code> and <code><a
-href="refR.html#rpc">rpc</a></code>.
+process. See also <code><a href="refH.html#hear">hear</a></code>.
 
 <pre><code>
 : (call 'ps "x")                            # Show processes
@@ -300,7 +299,8 @@ href="refF.html#finally">finally</a></code> expressions are executed, local
 symbol bindings are restored, open files are closed and internal data structures
 are reset appropriately, as the environment was at the time when the
 corresponding <code>catch</code> was called. Then <code>any</code> is returned
-from that <code>catch</code>.
+from that <code>catch</code>. See also <code><a
+href="refQ.html#quit">quit</a></code>.
 
 <pre><code>
 : (de foo (N)

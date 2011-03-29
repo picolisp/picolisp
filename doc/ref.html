@@ -176,7 +176,7 @@ bit-representation will look like:
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000
 </code></pre>
 
-<p>(the <code>'x'</code> means "don't care"). For the individual data types, the
+<p>(the '<code>x</code>' means "don't care"). For the individual data types, the
 pointer is adjusted to point to other parts of a cell, in effect setting some of
 the lower three bits to non-zero values. These bits are then used by the
 interpreter to determine the data type.
@@ -277,7 +277,7 @@ a symbol consists of a single cell, and has no name or properties:
 </code></pre>
 
 <p>That is, the symbol's tail is empty (points to <code>NIL</code>, as indicated
-by the '/' character).
+by the '<code>/</code>' character).
 
 <p>The pointer to a symbol points to the CDR of the cell, with an offset of 4
 from the cell's start address. Therefore, the bit pattern of a symbol will be:
@@ -445,7 +445,7 @@ arrays, trees, stacks or queues.
 <p>Typically, the CDR of each cell in a list points to the following cell,
 except for the last cell which points to <code>NIL</code>. If, however, the CDR of
 the last cell points to an atom, that cell is called a "dotted pair" (because of
-its I/O syntax with a dot '.' between the two values).
+its I/O syntax with a dot '<code>.</code>' between the two values).
 
 
 <p><hr>
@@ -494,18 +494,23 @@ and environment are described.
 arguments may follow the command name.
 
 <p>By default, each argument is the name of a file to be executed by the
-interpreter. If, however, the argument's first character is a hyphen '-', then
-the rest of that argument is taken as a Lisp function call (without the
-surrounding parentheses), and a hyphen by itself as an argument stops evaluation
-of the rest of the command line (it may be processed later using the <code><a
-href="refA.html#argv">argv</a></code> and <code><a
+interpreter. If, however, the argument's first character is a hyphen
+'<code>-</code>', then the rest of that argument is taken as a Lisp function
+call (without the surrounding parentheses), and a hyphen by itself as an
+argument stops evaluation of the rest of the command line (it may be processed
+later using the <code><a href="refA.html#argv">argv</a></code> and <code><a
 href="refO.html#opt">opt</a></code> functions). This whole mechanism corresponds
 to calling <code>(<a href="refL.html#load">load</a> T)</code>.
+
+<p>A special case is if the last argument is a single '<code>+</code>'. This
+will switch on debug mode (the <code><a href="refD.html#*Dbg">*Dbg</a></code>
+global variable) and discard the '<code>+</code>'.
 
 <p>As a convention, PicoLisp source files have the extension "<code>.l</code>".
 
 <p>Note that the PicoLisp executable itself does not expect or accept any
-command line flags or options. They are reserved for application programs.
+command line flags or options (except the '<code>+</code>', see above). They are
+reserved for application programs.
 
 <p>The simplest and shortest invocation of PicoLisp does nothing, and exits
 immediately by calling <code><a href="refB.html#bye">bye</a></code>:
@@ -516,13 +521,12 @@ $
 </code></pre>
 
 <p>In interactive mode, the PicoLisp interpreter (see <code><a
-href="refL.html#load">load</a></code>) will also exit when an empty line is
-entered:
+href="refL.html#load">load</a></code>) will also exit when <code>Ctrl-D</code>
+is entered:
 
 <pre><code>
 $ bin/picolisp
-:                       # Typed ENTER
-$
+: $                     # Typed Ctrl-D
 </code></pre>
 
 <p>To start up the standard PicoLisp environment, several files should be
@@ -542,13 +546,28 @@ would look like:
 $ ./p myProject.l -main
 </code></pre>
 
-<p>For interactive development and debugging it is recommended also to load
-"dbg.l" (or use './dbg' instead of './p'), to get the vi-style command line
-editor, single-stepping, tracing and other debugging utilities.
+<p>For interactive development it is recommended to enable debugging mode, to
+get the vi-style command line editor, single-stepping, tracing and other
+debugging utilities.
+
+<pre><code>
+$ ./p myProject.l -main +
+</code></pre>
+
+<p>This is equivalent to
 
 <pre><code>
 $ ./dbg myProject.l -main
 </code></pre>
+
+<p>or
+
+<pre><code>
+$ pil myProject.l -main +
+</code></pre>
+
+if PicoLisp is globally installed in "/usr/bin/" and "/usr/lib/" as recommended
+in the INSTALL file.
 
 <p>In any case, the directory part of the first file name supplied on the
 command line (normally, the path to "lib.l") is remembered internally as the
@@ -589,9 +608,9 @@ symbols and lists) and for read-macros:
 <p><hr>
 <h4><a name="num-io">Numbers</a></h4>
 
-<p>A number consists of an arbitrary number of digits (<code>'0'</code> through
-<code>'9'</code>), optionally preceded by a sign character (<code>'+'</code> or
-<code>'-'</code>). Legal number input is:
+<p>A number consists of an arbitrary number of digits ('<code>0</code>' through
+'<code>9</code>'), optionally preceded by a sign character ('<code>+</code>' or
+'<code>-</code>'). Legal number input is:
 
 <pre><code>
 : 7
@@ -601,7 +620,7 @@ symbols and lists) and for read-macros:
 </code></pre>
 
 <p>Fixed-point numbers can be input by embedding a decimal point
-<code>'.'</code>, and setting the global variable <code><a
+'<code>.</code>', and setting the global variable <code><a
 href="refS.html#*Scl">*Scl</a></code> appropriately:
 
 <pre><code>
@@ -689,40 +708,26 @@ returned as an internal symbol.
 <p><hr>
 <h5><a name="transient-io">Transient Symbols</a></h5>
 
-<p>In an interactive environment (console), transient symbols should appear as
-an <u>underlined</u> sequence of characters. Where this is not possible (e.g.
-for representation in files), or inconvenient (while editing), double quotes
-'<code>"</code>' are used instead of underlining.
-
-<p>The underlining of transient symbols is controlled by the global variable
-<code><a href="refT.html#*Tsm">*Tsm</a></code>, and can be switched off
-completely with
-
-<pre><code>
-: (off *Tsm)
-</code></pre>
-
-<p>Keyboard input of transient symbols is always done via the double quote key.
-
-<p>A transient symbol may be used (and, in double quote representation, also
-look) like a string constant in other languages. However, it is a real symbol,
-and may be assigned a value or a function definition, and properties.
+<p>A transient symbol is anything surrounded by double quotes '<code>"</code>'.
+With that, it looks - and can be used - like a string constant in other
+languages. However, it is a real symbol, and may be assigned a value or a
+function definition, and properties.
 
 <p>Initially, a transient symbol's value is that symbol itself, so that it does
 not need to be quoted for evaluation:
 
-<pre><code>
-: <u>This is a string</u>   # Would be "This is a string" if *Tsm were off
--> <u>This is a string</u>
+<p><pre><code>
+: "This is a string"
+-> "This is a string"
 </code></pre>
 
 <p>However, care must be taken when assigning a value to a transient symbol.
 This may cause unexpected behavior:
 
-<pre><code>
-: (setq <u>This is a string</u> 12345)  # (setq "This is a string" 12345)
+<p><pre><code>
+: (setq "This is a string" 12345)
 -> 12345
-: <u>This is a string</u>
+: "This is a string"
 -> 12345
 </code></pre>
 
@@ -732,11 +737,11 @@ null-byte. A double quote character can be escaped with a backslash
 backslash. Control characters can be written with a preceding hat
 '<code>^</code>' character.
 
-<pre><code>
-: <u>We^Ird\\Str\"ing</u>
--> <u>We^Ird\\Str"ing</u>
+<p><pre><code>
+: "We^Ird\\Str\"ing"
+-> "We^Ird\\Str\"ing"
 : (chop @)
--> (<u>W</u> <u>e</u> <u>^I</u> <u>r</u> <u>d</u> <u>\\</u> <u>S</u> <u>t</u> <u>r</u> <u>"</u> <u>i</u> <u>n</u> <u>g</u>)
+-> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
 </code></pre>
 
 <p>The index for transient symbols is cleared automatically before and after
@@ -752,15 +757,12 @@ href="refN.html#new">new</a></code>). They print as a dollar sign
 (<code>$</code>) followed by a decimal digit string (actually their machine
 address).
 
-<p>To allow an easier copy/paste of the examples, most of the documentation uses
-the double quote notation for transient symbols.
-
 
 <p><hr>
 <h5><a name="external-io">External Symbols</a></h5>
 
-<p>External symbol names are surrounded by braces (<code>'{'</code> and
-<code>'}'</code>). The characters of the symbol's name itself identify the
+<p>External symbol names are surrounded by braces ('<code>{</code>' and
+'<code>}</code>'). The characters of the symbol's name itself identify the
 physical location of the external object. This is
 
 <ul>
@@ -771,9 +773,10 @@ base-64 notation (characters '<code>0</code>' through '<code>9</code>',
 and '<code>a</code>' through '<code>z</code>').
 
 <li>in the 64-bit version: The number of the database file minus 1 in "hax"
-notation (i.e. hexadecimal/alpha notation, where '@' is zero, 'A' is 1 and 'O'
-is 15 (from "alpha" to "omega")), immediately followed (without a hyphen) the
-starting block in octal ('0' through '7').
+notation (i.e. hexadecimal/alpha notation, where '<code>@</code>' is zero,
+'<code>A</code>' is 1 and '<code>O</code>' is 15 (from "alpha" to "omega")),
+immediately followed (without a hyphen) the starting block in octal
+('<code>0</code>' through '<code>7</code>').
 
 </ul>
 
@@ -783,7 +786,7 @@ first (default) file.
 <p><hr>
 <h4><a name="lst-io">Lists</a></h4>
 
-<p>Lists are surrounded by parentheses (<code>'('</code> and <code>')'</code>).
+<p>Lists are surrounded by parentheses ('<code>(</code>' and '<code>)</code>').
 
 <p><code>(A)</code> is a list consisting of a single cell, with the symbol
 <code>A</code> in its CAR, and <code>NIL</code> in its CDR.
@@ -856,14 +859,15 @@ the following expression, and return the result.
 </code></pre>
 
 <p>A tilde character <code>~</code> inside a list will cause the reader to
-evaluate the following expression, and splice the result into the list.
+evaluate the following expression, and (destructively) splice the result into
+the list.
 
 <pre><code>
 : '(a b c ~(list 'd 'e 'f) g h i)
 -> (a b c d e f g h i)
 </code></pre>
 
-<p>Brackets (<code>'['</code> and <code>']'</code>) can be used as super
+<p>Brackets ('<code>[</code>' and '<code>]</code>') can be used as super
 parentheses. A closing bracket will match the innermost opening bracket, or all
 currently open parentheses.
 
@@ -1215,6 +1219,9 @@ if a list of substrings of possible error messages is supplied for the first
 argument. In such a case, the matching substring (or the whole error message if
 the substring is <code>NIL</code>) is returned.
 
+<p>An arbitrary error can be thrown explicitly with <code><a
+href="refC.html#quit">quit</a></code>.
+
 
 <p><hr>
 <h3><a name="atres">@ Result</a></h3>
@@ -1222,6 +1229,8 @@ the substring is <code>NIL</code>) is returned.
 <p>In certain situations, the result of the last evaluation is stored in the VAL
 of the symbol <code>@</code>. This can be very convenient, because it often
 makes the assignment to temporary variables unnecessary.
+
+<p>This happens in two - only superficially similar - situations:
 
 <p><dl>
 
@@ -1927,6 +1936,7 @@ abbreviations:
    <a href="refD.html#dec">dec</a>
    <a href="ref_.html#>>">>></a>
    <a href="refL.html#lt0">lt0</a>
+   <a href="refL.html#le0">le0</a>
    <a href="refG.html#ge0">ge0</a>
    <a href="refG.html#gt0">gt0</a>
    <a href="refA.html#abs">abs</a>
@@ -2154,11 +2164,12 @@ abbreviations:
 <dd><code>
    <a href="refP.html#path">path</a>
    <a href="refI.html#in">in</a>
-   <a href="refI.html#ipid">ipid</a>
    <a href="refO.html#out">out</a>
+   <a href="refE.html#err">err</a>
+   <a href="refC.html#ctl">ctl</a>
+   <a href="refI.html#ipid">ipid</a>
    <a href="refO.html#opid">opid</a>
    <a href="refP.html#pipe">pipe</a>
-   <a href="refC.html#ctl">ctl</a>
    <a href="refA.html#any">any</a>
    <a href="refS.html#sym">sym</a>
    <a href="refS.html#str">str</a>
@@ -2192,7 +2203,6 @@ abbreviations:
    <a href="refR.html#rd">rd</a>
    <a href="refP.html#pr">pr</a>
    <a href="refW.html#wr">wr</a>
-   <a href="refR.html#rpc">rpc</a>
    <a href="refW.html#wait">wait</a>
    <a href="refS.html#sync">sync</a>
    <a href="refE.html#echo">echo</a>

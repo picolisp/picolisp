@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 05sep08abu
+# 14mar11abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
@@ -22,7 +22,7 @@
             (while (setq *From (lowc (till " " T)))
                (off
                   *Name *Subject *Date *MessageID *InReplyTo *MimeVersion
-                  *ContentType *ContentDisposition *UserAgent )
+                  *ContentType *ContentTransferEncoding *ContentDisposition *UserAgent )
                (while (split (line) " ")
                   (setq *Line (glue " " (cdr @)))
                   (case (pack (car @))
@@ -33,6 +33,7 @@
                      ("In-Reply-To:" (setq *InReplyTo *Line))
                      ("MIME-Version:" (setq *MimeVersion *Line))
                      ("Content-Type:" (setq *ContentType *Line))
+                     ("Content-Transfer-Encoding:" (setq *ContentTransferEncoding *Line))
                      ("Content-Disposition:" (setq *ContentDisposition *Line))
                      ("User-Agent:" (setq *UserAgent *Line)) ) )
                (if (nor (member *From *Mailings) (= "subscribe" (lowc *Subject)))
@@ -66,6 +67,7 @@
                         (and *InReplyTo (prinl "In-Reply-To: " @ "^M"))
                         (and *MimeVersion (prinl "MIME-Version: " @ "^M"))
                         (and *ContentType (prinl "Content-Type: " @ "^M"))
+                        (and *ContentTransferEncoding (prinl "Content-Transfer-Encoding: " @ "^M"))
                         (and *ContentDisposition (prinl "Content-Disposition: " @ "^M"))
                         (and *UserAgent (prinl "User-Agent: " @ "^M"))
                         (prinl "^M")

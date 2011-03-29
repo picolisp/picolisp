@@ -1,4 +1,4 @@
-# 26apr10abu
+# 18jan11abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -363,7 +363,7 @@
             '("^J" "^M") )
          (case "C"
             (NIL (bye))
-            ("^D" (prinl) (tell 'bye) (bye))
+            ("^D" (prinl) (bye))
             ("^X" (prin (cdr *Tsm)) (prinl) (quit)) )
          ((if "Insert" insMode cmdMode) "C") ) ) )
 

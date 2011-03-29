@@ -1,4 +1,4 @@
-12nov10abu
+08mar11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -30,9 +30,9 @@ The CPU registers and instruction set of the PicoLisp processor are described in
 "doc64/asm", and the internal data structures of the PicoLisp machine in
 "doc64/structures".
 
-Currently, only Linux on the x86-64 architecture is supported. The platform
-dependent files are in the "src64/arch/" for the target architecture, and in
-"src64/sys/" for the target operating system.
+Currently, Linux and SunOS on the x86-64 architecture are supported. The
+platform dependent files are in the "src64/arch/" for the target architecture,
+and in "src64/sys/" for the target operating system.
 
 
       Reasons for the Use of Assembly Language
@@ -99,8 +99,8 @@ gives a nice feeling to be independent of a heavy-weight C compiler.
       Differences to the 32-bit Version
       ---------------------------------
 
-Except for the following six cases, the 64-bit version should behave identically
-to the 32-bit version.
+Except for the following six cases, the 64-bit version should be upward
+compatible to the 32-bit version.
 
 1. Internal format and printed representation of external symbols
    This is probably the most significant change. External (i.e. database)

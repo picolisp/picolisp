@@ -1,4 +1,4 @@
-# 12oct10abu
+# 21mar11abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -15,6 +15,9 @@
 # Temporary: %r10 %r11
 # Block operations: %rcx %rsi %rdi
 # C arguments: %rdi %rsi %rdx %rcx %r8 %r9
+
+# Machine specific
+(de boxfun (Adr) Adr)
 
 # Addressing modes
 (de byteReg (Reg)
@@ -194,10 +197,17 @@
       (prinst "mov" (byteVal Src) "%cl")
       (prinst (pack Cmd (unless (pre? "%" Dst) "q")) "%cl" Dst) ) )
 
-
 ### Instruction set ###
 (asm nop ()
    (prinst "nop") )
+
+(asm align (N)
+   (prinst ".balign" N) )
+
+(asm skip (N)
+   (if (== 'data *Section)
+      (or (=0 N) (prinst ".space" N))
+      (do N (prinst "nop")) ) )
 
 # Move data
 (asm ld (Dst D Src S)
@@ -311,7 +321,6 @@
    (prinst "cld")
    (prinst "rep movsq") )
 
-
 # Arithmetics
 (asm add (Dst D Src S)
    (setq Dst (dst Dst D)  Src (src Src S))
@@ -421,7 +430,6 @@
 (asm clrc ()
    (prinst "clc") )
 
-
 # Comparisons
 (asm cmp (Dst D Src S)
    (dstSrc "cmp" (dst Dst D) (src Src S)) )
@@ -462,12 +470,8 @@
 (asm null (Src S)
    (prinst "cmp" "%r12" (src Src S)) )
 
-(asm zero (Src S)
-   (prinst "cmpq" "$2" (src Src S)) )
-
 (asm nul4 ()
    (prinst "cmp" "%r12d" "%eax") )
-
 
 # Byte addressing
 (asm set (Dst D Src S)
@@ -483,7 +487,6 @@
 
 (asm nul (Src S)
    (prinst "cmp" "%r12b" (src Src S)) )
-
 
 # Types
 (asm cnt (Src S)
@@ -501,12 +504,12 @@
 (asm atom (Src S)
    (prinst "testb" "$0x0E" (lowByte (src Src S))) )
 
-
 # Flow Control
 (asm call (Adr A)
    (nond
       (A (prinst "call" (target Adr)))
-      ((=T A) (prinst "call" (pack "*" Adr)))
+      ((=T A)  # Ignore SUBR
+         (prinst "call" (pack "*" Adr)) )
       (NIL
          (prinst "mov" (target Adr T) "%r10")
          (prinst "call" "*%r10") ) ) )
@@ -514,7 +517,8 @@
 (asm jmp (Adr A)
    (nond
       (A (prinst "jmp" (target Adr)))
-      ((=T A) (prinst "jmp" (pack "*" Adr)))
+      ((=T A)  # Ignore SUBR
+         (prinst "jmp" (pack "*" Adr)) )
       (NIL
          (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") ) ) )
@@ -523,7 +527,7 @@
    (ifn A
       (prinst Opc (target Adr))
       (prinst Opc2 "1f")
-      (ifn (=T A)
+      (ifn (=T A)  # Ignore SUBR
          (prinst "jmp" (pack "*" Adr))
          (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") )
@@ -656,7 +660,7 @@
                Arg
                M )
             # Don't use SSE registers in varargs for static calls
-            (when (member Adr '("printf" "fprintf" "sprintf"))
+            (when (member Adr '("printf" "fprintf" "sprintf" "open" "fcntl"))
                (prinst "xor" "%al" "%al") ) )
          (prinst "lea" "5f(%rip)" "%r11")
          (mapc
@@ -775,7 +779,6 @@
    (prinst "pop" "%r12")
    (prinst "pop" "%rbx") )
 
-
 # Stack Manipulations
 (asm push (Src S)
    (setq Src (src Src S))
@@ -874,23 +877,15 @@
       (byteReg Reg) )
    (prinst "jz" "1b") )                # until nz
 
-
 # System
 (asm initData ())
 
 (asm initCode ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
-   (prinst "mov" "(%rsi)" "%r10")  # Get command
-   (ifn *FPic
-      (prinst "mov" "%r10" "AV0")
-      (prinst "mov" "AV0@GOTPCREL(%rip)" "%r11")
-      (prinst "mov" "%r10" "(%r11)") )
-   (prinst "lea" "8(%rsi)" "%r10")  # Get argument vector
-   (ifn *FPic
-      (prinst "mov" "%r10" "AV")
-      (prinst "mov" "AV@GOTPCREL(%rip)" "%r11")
-      (prinst "mov" "%r10" "(%r11)") ) )
-
+   (prinst "mov" "(%rsi)" "%r13")  # Get command in X
+   (prinst "lea" "8(%rsi)" "%r14")  # argument vector in Y
+   (prinst "dec" "%rdi")  # and pointer to last argument in Z
+   (prinst "lea" "0(%rsi,%rdi,8)" "%r15") )
 
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'

@@ -1,4 +1,4 @@
-# 13dec10abu
+# 07mar11abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -410,8 +410,8 @@ opt (str)
 version (i x)
    if (ex.Cdr.Car.eval() == Nil) {
       for (i = 0; i < 4; ++i)
-         OutFile.Wr.print(Version[i] + (i == 3? "-" : "."));
-      OutFile.Wr.println('J');
+         OutFile.Wr.print(Version[i] + (i == 3? " " : "."));
+      OutFile.Wr.println("JVM");
       OutFile.Wr.flush();
    }
    for (x = Nil, i = 4; --i >= 0;)
@@ -1376,9 +1376,11 @@ do (n w x y)
 loop T
    return loop(ex.Cdr);
 
-# (at '(cnt1 . cnt2) . prg) -> any
+# (at '(cnt1 . cnt2|NIL) . prg) -> any
 at (num x)
    x = (ex = ex.Cdr).Car.eval();
+   if (x.Cdr == Nil)
+      return Nil;
    if ((num = ((Number)x.Car).add(One)).compare((Number)x.Cdr) < 0) {
       x.Car = num;
       return Nil;
@@ -3110,6 +3112,10 @@ dec (x y)
 lt0 (x)
    return (x = ex.Cdr.Car.eval()) instanceof Number && x.compare(Zero) < 0? x : Nil;
 
+# (le0 'any) -> num | NIL
+le0 (x)
+   return (x = ex.Cdr.Car.eval()) instanceof Number && x.compare(Zero) <= 0? x : Nil;
+
 # (ge0 'any) -> num | NIL
 ge0 (x)
    return (x = ex.Cdr.Car.eval()) instanceof Number && x.compare(Zero) >= 0? x : Nil;
@@ -3234,8 +3240,8 @@ char (x)
       return x;
    }
    if ((x = ex.Car.eval()) instanceof Number)
-      return x.equals(Zero)? Nil : mkChar((char)((Number)x).Cnt);
-   return x == T? mkChar((char)0x10000) : new Number(firstChar(x));
+      return x.equal(Zero)? Nil : mkChar((char)((Number)x).Cnt);
+   return x == T? mkChar((char)0xFFFF) : new Number(firstChar(x));
 
 # (skip ['any]) -> sym
 skip (c)

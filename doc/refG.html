@@ -32,8 +32,9 @@ href="refH.html#heap">heap</a></code>.
 <dt><a name="ge0"><code>(ge0 'any) -> num | NIL</code></a>
 <dd>Returns <code>num</code> when the argument is a number and greater or equal
 zero, otherwise <code>NIL</code>. See also <code><a
-href="refG.html#gt0">gt0</a></code>, <code><a
-href="refL.html#lt0">lt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
+href="refL.html#lt0">lt0</a></code>, <code><a
+href="refL.html#le0">le0</a></code>, <code><a
+href="refG.html#gt0">gt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
 and <code><a href="refN.html#n0">n0</a></code>.
 
 <pre><code>
@@ -49,7 +50,8 @@ and <code><a href="refN.html#n0">n0</a></code>.
 <dd>Generates a key for a database tree. If a minimal key <code>num1</code>
 and/or a maximal key <code>num2</code> is given, the next free number in that
 range is returned. Otherwise, the current maximal key plus one is returned. See
-also <code><a href="refU.html#useKey">useKey</a></code> and <code><a
+also <code><a href="refU.html#useKey">useKey</a></code>, <code><a
+href="refG.html#genStrKey">genStrKey</a></code> and <code><a
 href="refM.html#maxKey">maxKey</a></code>.
 
 <pre><code>
@@ -57,6 +59,16 @@ href="refM.html#maxKey">maxKey</a></code>.
 -> 8
 : (genKey 'nr '+Item)
 -> 9
+</code></pre>
+
+<dt><a name="genStrKey"><code>(genStrKey 'sym 'var 'cls ['hook]) -> sym</code></a>
+<dd>Generates a unique string for a database tree, by prepending as many "# "
+sequences as necessary. See also <code><a
+href="refG.html#genKey">genKey</a></code>.
+
+<pre><code>
+: (genStrKey "ben" 'nm '+User)
+-> "# ben"
 </code></pre>
 
 <dt><a name="get"><code>(get 'sym1|lst ['sym2|cnt ..]) -> any</code></a>
@@ -171,8 +183,9 @@ href="refU.html#uniq">uniq</a></code>.
 <dt><a name="gt0"><code>(gt0 'any) -> num | NIL</code></a>
 <dd>Returns <code>num</code> when the argument is a number and greater than
 zero, otherwise <code>NIL</code>. See also <code><a
-href="refG.html#ge0">ge0</a></code>, <code><a
-href="refL.html#lt0">lt0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
+href="refL.html#lt0">lt0</a></code>, <code><a
+href="refL.html#le0">le0</a></code>, <code><a
+href="refG.html#ge0">ge0</a></code>, <code><a href="ref_.html#=0">=0</a></code>
 and <code><a href="refN.html#n0">n0</a></code>.
 
 <pre><code>

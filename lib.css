@@ -1,4 +1,4 @@
-/* 18nov10abu
+/* 28feb11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -167,7 +167,7 @@ a:hover {
 }
 
 /* Errors */
-.err {
+.error {
    color: red;
    background-color: yellow;
 }

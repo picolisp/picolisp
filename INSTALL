@@ -1,4 +1,4 @@
-17nov10abu
+08mar11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -28,7 +28,7 @@ Please follow these steps:
 
       $ (cd src; make picolisp)
 
-   or, if you have an x86-64 Linux system, build the 64-bit version
+   or, if you have an x86-64 Linux or SunOS system, build the 64-bit version
 
       $ (cd src64; make picolisp)
 
@@ -41,8 +41,10 @@ Please follow these steps:
    - If a Java runtime system (version 1.6 or higher) is installed, it will
      build right out of the box.
 
-   - Otherwise, download the pre-generated "*.s" files in
-     "http://software-lab.de/x86-64.linux.tgz".
+   - Otherwise, download one of the pre-generated "*.s" file packages
+
+     - http://software-lab.de/x86-64.linux.tgz
+     - http://software-lab.de/x86-64.sunOs.tgz
 
    - Else, build a 32-bit version first, and use the resulting bin/picolisp to
      generate the "*.s" files:
@@ -63,20 +65,32 @@ Please follow these steps:
       # ln -s /<installdir> /usr/lib/picolisp
       # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
 
-   In that case, you might also copy the script bin/pil to /usr/bin, for a
-   convenient global invocation.
+   and a copy of the startup script
+
+      # cp /<installdir>/bin/pil /usr/bin
+
+   for a convenient global invocation. 'pil' can also serve as a template for
+   your own stand-alone scripts.
 
 
       Invocation
       ----------
 
-The shell script 'dbg' is usually called to start up PicoLisp in interactive
-debugging mode
+The shell script 'dbg' is usually called to start up a local PicoLisp in
+interactive debugging mode
 
    $ ./dbg
    :
 
-The colon ':' is PicoLisp's prompt. You may enter some Lisp expression,
+In a global installation, the equivalent call is
+
+   $ pil +
+   :
+
+(Note the trailing '+' for the debugging mode)
+
+In both cases, the colon ':' is PicoLisp's prompt. You may enter some Lisp
+expression,
 
    : (+ 1 2 3)
    -> 6
@@ -85,25 +99,16 @@ To exit the interpreter, enter
 
    : (bye)
 
-or simply type an empy line (Return).
+or just type Ctrl-D.
 
 
 If you just want to test the ready-to-run Ersatz PicoLisp (it needs a Java
 runtime system), use
 
-   $ ersatz/picolisp
+   $ ersatz/picolisp +
    :
 
-instead of 'dbg'.
-
-
-         Console Underlines
-         ==================
-
-In case that your console (terminal) does not support underlining, you might
-want to remove or replace the first statement int "ext.l" which uses the
-terminfo database to initialize the global variable '*Tsm' (transient symbol
-markup). Unfortunately, the VGA text mode does not properly support underlines.
+instead of 'dbg' (or 'pil +').
 
 
       Documentation

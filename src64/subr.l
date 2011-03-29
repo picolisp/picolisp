@@ -1,4 +1,4 @@
-# 13dec10abu
+# 03mar11abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1018,7 +1018,7 @@
    if ne  # No
       num E  # Number?
       jz numErrEX  # No
-      zero E  # Zero?
+      cmp E ZERO  # Zero?
       jeq argErrEX  # Yes
       test E SIGN  # Negative?
       jnz argErrEX  # Yes
@@ -2881,7 +2881,7 @@
             else
                ld E (E TAIL)
                call nameE_E  # Get name
-               zero E  # Any?
+               cmp E ZERO  # Any?
                if eq  # No
                   ld C ZERO  # Return zero
                else
@@ -3256,6 +3256,8 @@
    jnz ret  # Return 'nz'
    sym E  # Data symbolic?
    if nz  # Yes
+      cmp E (E)  # Auto-quoting?
+      jeq retnz  # Yes
       cmp X Nil  # 'sym|lst'?
       if eq  # No
          cmp E At  # '@'?
@@ -3289,6 +3291,38 @@
    ld E (E)  # Recurse on CAR
    cmp S (StkLimit)  # Stack check
    jlt stkErr
+   cmp E Up  # Expand expression?
+   if eq  # Yes
+      pop E  # Get pattern
+      ld E (E CDR)  # Skip '^'
+      push (E CDR)  # Save rest
+      ld E (E)  # Eval expression
+      eval
+      atom E  # List?
+      if nz  # No
+         pop E  # Recurse on rest
+         call fillE_FE
+         setz  # Set modified
+         ret
+      end
+      pop C  # Get pattern
+      link
+      push E  # <L I> Result
+      link
+      ld E C  # Recurse on rest
+      call fillE_FE
+      ld C (L I)  # Result
+      do
+         atom (C CDR)  # Find last cell
+      while z
+         ld C (C CDR)
+      loop
+      ld (C CDR) E  # Set rest
+      ld E (L I)  # Get result
+      drop
+      setz  # Modified
+      ret
+   end
    call fillE_FE  # Modified?
    if z  # Yes
       pop C  # Get pattern
@@ -3296,8 +3330,6 @@
       push E  # <L I> Modified CAR
       link
       ld E (C CDR)  # Recurse on CDR
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call fillE_FE
       call consE_A  # Cons result
       ld (A) (L I)
@@ -3308,8 +3340,6 @@
       ret
    end
    ld E ((S) CDR)  # Recurse on CDR
-   cmp S (StkLimit)  # Stack check
-   jlt stkErr
    call fillE_FE  # Modified?
    if z  # Yes
       call consE_A  # Cons result

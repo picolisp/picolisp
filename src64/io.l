@@ -1,4 +1,4 @@
-# 24dec10abu
+# 16mar11abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -217,9 +217,14 @@
       cc fcntl((C) F_SETFL A)  # Restore file status flags
       pop A  # Get 'read' return value
       null A  # OK?
-      if ns  # Yes
+      if nsz  # Yes
          ld (C II) A  # Set new 'cnt'
          ret  # Return 'ge'
+      end
+      if z  # Closed
+         dec (C I)  # 'ix' = 'cnt' = -1
+         dec (C II)
+         ret  # z
       end
       call errno_A
       cmp A EAGAIN  # No data available?
@@ -418,24 +423,27 @@
    ret
 
 ### Low level I/O ###
-(code 'stdinByte_FA)
+(code 'stdinByte_A)
    push Z
    ld Z ((InFiles))  # Get stdin
    null Z  # Open?
    if nz  # Yes
       call getBinaryZ_FB  # Get byte
-      zxt
-      pop Z
-      ret
+      if nc
+         zxt
+         pop Z
+         ret
+      end
    end
-   setc
-   pop Z
-   ret
+   ld E 0  # Exit OK
+   jmp byeE
 
 (code 'getBinaryZ_FB 0)
    ld A (Z I)  # Get 'ix'
    cmp A (Z II)  # Equals 'cnt'?
    if eq  # Yes
+      null A  # Closed?
+      js retc  # Yes
       call slowZ_F  # Read into buffer
       jz retc  # EOF (c)
       ld A 0  # 'ix'
@@ -830,7 +838,7 @@
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
-      zero X  # Any?
+      cmp X ZERO  # Any?
       if eq  # No
          ld B NIX  # Output NIX
          call (PutBinBZ)
@@ -1074,7 +1082,7 @@
 (code 'symByteCX_FACX 0)
    null C  # New round?
    if z  # Yes
-      zero X  # Done?
+      cmp X ZERO  # Done?
       jeq ret  # Yes: Return 'z'
       cnt X  # Short?
       if nz  # Yes
@@ -1503,7 +1511,7 @@
          ld (Y I) A  # Store 'fd'
          shl A 3  # Vector index
          cmp A (OutFDs)  # 'fd' >= 'OutFDs'?
-         jnc badFdErrEX  # Yes
+         jge badFdErrEX  # Yes
          add A (OutFiles)  # Get vector
          ld A (A)  # Slot?
          null A  # Any?
@@ -1581,7 +1589,7 @@
                ld4 (S 4)  # Close write pipe
                call closeAX
                ld4 (S)  # Get read pipe
-               cmp A 0  # STDIN_FILENO?
+               null A  # STDIN_FILENO?
                if ne  # No
                   cc dup2(A 0)  # Dup to STDIN_FILENO
                   ld4 (S)  # Close read pipe
@@ -1607,6 +1615,48 @@
          pop Z
       end
    end
+   ret
+
+(code 'erOpenEXY)
+   num E  # Need symbol
+   jnz symErrEX
+   sym E
+   jz symErrEX
+   cc dup(2)  # Duplicate current stderr
+   ld (Y I) A  # Save it
+   cmp E Nil  # Use current output channel?
+   if eq  # Yes
+      cc dup(((OutFile)))  # Duplicate 'fd'
+      ld C A  # Keep in C
+   else
+      push Z
+      call pathStringE_SZ  # File name
+      do
+         ld B (S)  # First char
+         cmp B (char "+")  # Plus?
+         if eq  # Yes
+            cc open(&(S 1) (| O_APPEND O_CREAT O_WRONLY) (oct "0666"))
+         else
+            cc open(S (| O_CREAT O_TRUNC O_WRONLY) (oct "0666"))
+         end
+         nul4  # OK?
+      while s  # No
+         call errno_A
+         cmp A EINTR  # Interrupted?
+         jne openErrEX  # No
+         null (Signal)  # Signal?
+         if nz  # Yes
+            call sighandlerX
+         end
+      loop
+      ld S Z  # Drop buffer
+      pop Z
+      ld C A  # Keep 'fd' in C
+      call closeOnExecAX
+   end
+   cc dup2(C 2)  # Dup 'fd' to STDERR_FILENO
+   ld A C
+   call closeAX
    ret
 
 (code 'ctOpenEXY)
@@ -1673,6 +1723,8 @@
          ld A (Z I)  # Get 'ix'
          cmp A (Z II)  # Equals 'cnt'?
          if eq  # Yes
+            null A  # Closed?
+            js 90  # Return -1
             call slowZ_F  # Read into buffer
             jz 90  # Return -1
             ld A 0  # 'ix'
@@ -1695,10 +1747,7 @@
             ld E -1  # No timeout
             ld X 0  # Runtime expression
             call waitFdCEX_A  # Wait for events
-            call stdinByte_FA  # Get byte?
-            if c  # No
-               ld A -1  # Return -1
-            end
+            call stdinByte_A  # Get byte
          else
             ld C (LineC)
             null C  # First call?
@@ -1791,6 +1840,11 @@
    ld (PutB) putStdoutB  # Set new
    ld (Y) (EnvOutFrames)  # Set link
    ld (EnvOutFrames) Y  # Link frame
+   ret
+
+(code 'pushErrFilesY)
+   ld (Y) (EnvErrFrames)  # Set link
+   ld (EnvErrFrames) Y  # Link frame
    ret
 
 (code 'pushCtlFilesY)
@@ -1887,6 +1941,13 @@
       ld A (A)  # Get previous OutFile
    end
    ld (OutFile) A  # Set OutFile
+   ret
+
+(code 'popErrFiles)  # C
+   ld C (EnvErrFrames)  # Get ErrFrames
+   cc dup2((C I) 2)  # Restore stderr
+   cc close((C I))  # Close 'fd'
+   ld (EnvErrFrames) ((EnvErrFrames))  # Restore ErrFrames
    ret
 
 (code 'popCtlFiles)  # C
@@ -1988,6 +2049,8 @@
       cmp B (char "\^")  # Caret?
       if eq  # Yes
          call (Get_A)  # Skip '^'
+         cmp B (char "@")  # At-mark?
+         jeq badInputErrB  # Yes
          cmp B (char "?")  # Question-mark?
          if eq  # Yes
             ld B 127  # DEL
@@ -3255,7 +3318,7 @@
          ld Y (C)  # fd + 1
          inc Y
          do
-            cc select(Y S 0 &(S FD_SET))  # Check
+            cc select(Y S 0 0 &(S FD_SET))  # Check
             nul4  # OK?
          while s  # No
             call errno_A
@@ -3295,40 +3358,38 @@
    call waitFdCEX_A  # Wait for events
    null A  # Timeout?
    if nz  # No
-      call stdinByte_FA  # First byte?
-      if nc  # Yes
-         cmp B (hex "FF")  # Special "top" character?
-         if ne  # No
-            cmp B 128  # Single byte?
-            if ge  # No
-               test B (hex "20")  # Two bytes?
-               if z  # Yes
-                  and B (hex "1F")  # First byte 110xxxxx
-                  shl A 6  # xxxxx000000
-                  push A
-               else  # Three bytes
-                  and B (hex "F")  # First byte 1110xxxx
-                  shl A 6  # xxxx000000
-                  push A
-                  call stdinByte_FA  # Read second byte
-                  and B (hex "3F")  # 10xxxxxx
-                  or A (S)  # Combine
-                  shl A 6  # xxxxxxxxxx000000
-                  ld (S) A
-               end
-               call stdinByte_FA  # Read last byte
+      call stdinByte_A  # Read first byte
+      cmp B (hex "FF")  # Special "top" character?
+      if ne  # No
+         cmp B 128  # Single byte?
+         if ge  # No
+            test B (hex "20")  # Two bytes?
+            if z  # Yes
+               and B (hex "1F")  # First byte 110xxxxx
+               shl A 6  # xxxxx000000
+               push A
+            else  # Three bytes
+               and B (hex "F")  # First byte 1110xxxx
+               shl A 6  # xxxx000000
+               push A
+               call stdinByte_A  # Read second byte
                and B (hex "3F")  # 10xxxxxx
-               or (S) A  # Combine
-               pop A  # Get result
+               or A (S)  # Combine
+               shl A 6  # xxxxxxxxxx000000
+               ld (S) A
             end
-         else
-            ld A TOP
+            call stdinByte_A  # Read last byte
+            and B (hex "3F")  # 10xxxxxx
+            or (S) A  # Combine
+            pop A  # Get result
          end
-         call mkCharA_A  # Return char
-         ld E A
-         pop X
-         ret
+      else
+         ld A TOP
       end
+      call mkCharA_A  # Return char
+      ld E A
+      pop X
+      ret
    end
    ld E Nil
    pop X
@@ -4132,6 +4193,46 @@
    pop X
    ret
 
+# (err 'sym . prg) -> any
+(code 'doErr 2)
+   push X
+   push Y
+   ld X E  # Expression in X
+   ld E (E CDR)
+   ld E (E)  # Eval 'any'
+   eval
+   sub S II  # ErrFrame
+   ld Y S
+   call erOpenEXY
+   call pushErrFilesY
+   ld X ((X CDR) CDR)  # Get 'prg'
+   prog X
+   call popErrFiles
+   add S II  # Drop ErrFrame
+   pop Y
+   pop X
+   ret
+
+# (ctl 'sym . prg) -> any
+(code 'doCtl 2)
+   push X
+   push Y
+   ld X E  # Expression in X
+   ld E (E CDR)
+   ld E (E)  # Eval 'any'
+   eval
+   sub S II  # CtlFrame
+   ld Y S
+   call ctOpenEXY
+   call pushCtlFilesY
+   ld X ((X CDR) CDR)  # Get 'prg'
+   prog X
+   call popCtlFiles
+   add S II  # Drop CtlFrame
+   pop Y
+   pop X
+   ret
+
 # (pipe exe) -> cnt
 # (pipe exe . prg) -> any
 (code 'doPipe 2)
@@ -4192,28 +4293,6 @@
       call popInFiles
    end
    add S (+ 8 IV)  # Drop 'pipe' structure and In/OutFrame
-   pop Y
-   pop X
-   ret
-
-# (ctl 'sym . prg) -> any
-(code 'doCtl 2)
-   push X
-   push Y
-   ld X E  # Expression in X
-   ld E (E CDR)
-   ld E (E)  # Eval 'any'
-   eval
-   push A  # CtlFrame
-   push A
-   ld Y S
-   call ctOpenEXY
-   call pushCtlFilesY
-   ld X ((X CDR) CDR)  # Get 'prg'
-   prog X
-   call popCtlFiles
-   pop A  # Drop CtlFrame
-   pop A
    pop Y
    pop X
    ret
@@ -4664,7 +4743,7 @@
    if nz  # Yes
       ld X (E TAIL)
       call nameX_X  # Get name
-      zero X  # Any?
+      cmp X ZERO  # Any?
       if eq  # No
          ld B (char "$")  # $xxxxxx
          call (PutB)
@@ -4883,7 +4962,7 @@
       if nz  # Yes
          ld X (E TAIL)
          call nameX_X  # Get name
-         zero X  # Any?
+         cmp X ZERO  # Any?
          if ne  # Yes
             sym (E TAIL)  # External symbol?
             if z  # No
@@ -5131,35 +5210,6 @@
       atom X  # Done?
    until nz  # Yes
    pop X
-   ret
-
-# (rpc 'sym ['any ..]) -> flg
-(code 'doRpc 2)
-   push X
-   ld X (E CDR)  # Args
-   ld A BEG  # Begin list
-   call putCharB
-   do
-      ld E (X)  # Eval next arg
-      eval
-      ld (PutBinBZ) putCharB  # Set binary print function
-      ld (Extn) (ExtN)  # Set external symbol offset
-      call binPrintEZ
-      ld X (X CDR)  # X on rest
-      atom X  # Any
-   until nz  # No
-   ld A END  # End list
-   call putCharB
-   cc fflush((stdout))  # Flush
-   nul4  # OK?
-   ld E Nil
-   ldz E TSym  # Yes
-   pop X
-   ret
-
-(code 'putCharB 0)
-   zxt  # Extend into A
-   cc putchar_unlocked(A)
    ret
 
 # vi:et:ts=3:sw=3

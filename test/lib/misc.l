@@ -1,4 +1,4 @@
-# 25dec10abu
+# 10jan11abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -82,6 +82,7 @@
 (scl 4)
 (test "12.35" (round 123456 2))
 (test "12.3456" (round 123456 6))
+(test "12.346" (round 123456))
 
 
 ### balance ###

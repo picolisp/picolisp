@@ -1,4 +1,4 @@
-# 14jun10abu
+# 09mar11abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -120,6 +120,11 @@
    (let (Tree (tree Var Cls Hook)  Max (* 2 (inc (count Tree)))  N)
       (while (fetch Tree (setq N (rand 1 Max))))
       N ) )
+
+(de genStrKey (Str Var Cls Hook)
+   (while (fetch (tree Var Cls Hook) Str)
+      (setq Str (pack "# " Str)) )
+   Str )
 
 
 ### Relations ###
@@ -1080,10 +1085,7 @@
       ((isa '+Number Rel)
          (genKey Var (get Rel 'cls) Hook) )
       ((isa '+String Rel)
-         (let S (pack "# " Val)
-            (while (fetch (tree Var (get Rel 'cls) Hook) S)
-               (setq S (pack "# " S)) )
-            S ) ) ) )
+         (genStrKey (pack "# " Val) Var (get Rel 'cls) Hook) ) ) )
 
 (dm clone!> ()
    (prog2

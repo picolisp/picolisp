@@ -1,4 +1,4 @@
-# 12oct10abu
+# 21mar11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -12,25 +12,26 @@
          if nz
             push ZERO
          end
-         push Nil  # Init CDR
-         push C  # 'fun'
-         ld E S  # 'exe in E
+         ld E Nil  # Init 'args' list
          do
-            cmp Y Z  # Any args?
+            cmp Z Y  # Any args?
          while ne  # Yes
-            sub Y I
-            push (Y)  # Next arg
+            push (Z)  # Next arg
+            ld A S  # Value address
             push ZERO  # Dummy symbol's tail
-            push Nil  # Init CDR
-            lea A (S II)  # Value address
+            push E  # Dummy cell's CDR
             push A  # CAR
-            ld (S V) S  # Store CDR of previous cell
             cmp S (StkLimit)  # Stack check
             jlt stkErrX
+            ld E S  # Set 'args' list
+            add Z I
          loop
+         push E  # 'args' list
+         push C  # 'fun'
+         ld E S  # Set 'exe'
          link
          ld (EnvApply) L  # Close apply frame
-         call (C)  # Eval SUBR
+         call (C T)  # Eval SUBR
          drop
          pop (EnvApply)
          ret
@@ -87,12 +88,42 @@
          if ne  # No
             push (X)  # Save last parameter's old value
             push X  # and the last parameter
-            ld (X) Nil  # Set new value to NIL
             link
             ld (EnvBind) L  # Close bind frame
             push 0  # Init env swap
-            ld Z (C CDR)  # Body in Z
-            prog Z  # Run body
+            cmp Y Z  # More args?
+            if eq  # No
+               ld (X) Nil  # Set new value to NIL
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+            else
+               push (EnvApply)  # Build apply frame
+               link
+               sym S  # Align stack to cell boundary
+               if nz
+                  push ZERO
+               end
+               ld E Nil  # Init 'args' list
+               do
+                  push (Z)  # Next arg
+                  push ZERO  # Dummy symbol's tail
+                  push E  # Dummy cell's CDR
+                  lea A (S II)  # Value address
+                  push A  # CAR
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
+                  ld E S  # Set 'args' list
+                  add Z I
+                  cmp Z Y  # More args?
+               until eq  # No
+               ld (X) E  # Set new value to 'args' list
+               link
+               ld (EnvApply) L  # Close apply frame
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+               drop
+               pop (EnvApply)
+            end
             pop A  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
@@ -130,7 +161,7 @@
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
-         null (EnvNext)  # VarArgs?
+         null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
@@ -168,10 +199,10 @@
          ld Z 0  # No classes
          call methodEY_FCYZ  # Found?
          jne msgErrYX  # No
-         ld (S I) (EnvCls)  # 'cls'
-         ld (S) (EnvKey)  # 'key'
-         ld (EnvCls) Z  # Set new
-         ld (EnvKey) Y  # 'key'
+         xchg Z (S I)  # 'cls'
+         xchg (S I) (EnvCls)
+         xchg Y (S)  # 'key'
+         xchg (S) (EnvKey)  # 'key'
          ld X (C)  # Parameter list in X
          push (EnvBind)  # Build bind frame
          link
@@ -221,12 +252,42 @@
          if ne  # No
             push (X)  # Save last parameter's old value
             push X  # and the last parameter
-            ld (X) Nil  # Set new value to NIL
             link
             ld (EnvBind) L  # Close bind frame
             push 0  # Init env swap
-            ld Z (C CDR)  # Body in Z
-            prog Z  # Run body
+            cmp Y Z  # More args?
+            if eq  # No
+               ld (X) Nil  # Set new value to NIL
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+            else
+               push (EnvApply)  # Build apply frame
+               link
+               sym S  # Align stack to cell boundary
+               if nz
+                  push ZERO
+               end
+               ld E Nil  # Init 'args' list
+               do
+                  push (Z)  # Next arg
+                  push ZERO  # Dummy symbol's tail
+                  push E  # Dummy cell's CDR
+                  lea A (S II)  # Value address
+                  push A  # CAR
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
+                  ld E S  # Set 'args' list
+                  add Z I
+                  cmp Z Y  # More args?
+               until eq  # No
+               ld (X) E  # Set new value to 'args' list
+               link
+               ld (EnvApply) L  # Close apply frame
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+               drop
+               pop (EnvApply)
+            end
             pop A  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
@@ -266,7 +327,7 @@
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
-         null (EnvNext)  # VarArgs?
+         null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
@@ -305,25 +366,26 @@
          if nz
             push ZERO
          end
-         push Nil  # Init CDR
-         push C  # 'fun'
-         ld E S  # 'exe in E
+         ld E Nil  # Init 'args' list
          do
-            cmp Y Z  # Any args?
+            cmp Z Y  # Any args?
          while ne  # Yes
-            sub Y I
-            push ((Y))  # CAR of next arg
+            push ((Z))  # Next arg
+            ld A S  # Value address
             push ZERO  # Dummy symbol's tail
-            push Nil  # Init CDR
-            lea A (S II)  # Value address
+            push E  # Dummy cell's CDR
             push A  # CAR
-            ld (S V) S  # Store CDR of previous cell
             cmp S (StkLimit)  # Stack check
             jlt stkErrX
+            ld E S  # Set 'args' list
+            add Z I
          loop
+         push E  # 'args' list
+         push C  # 'fun'
+         ld E S  # Set 'exe'
          link
          ld (EnvApply) L  # Close apply frame
-         call (C)  # Eval SUBR
+         call (C T)  # Eval SUBR
          drop
          pop (EnvApply)
          ret
@@ -380,12 +442,42 @@
          if ne  # No
             push (X)  # Save last parameter's old value
             push X  # and the last parameter
-            ld (X) Nil  # Set new value to NIL
             link
             ld (EnvBind) L  # Close bind frame
             push 0  # Init env swap
-            ld Z (C CDR)  # Body in Z
-            prog Z  # Run body
+            cmp Y Z  # More args?
+            if eq  # No
+               ld (X) Nil  # Set new value to NIL
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+            else
+               push (EnvApply)  # Build apply frame
+               link
+               sym S  # Align stack to cell boundary
+               if nz
+                  push ZERO
+               end
+               ld E Nil  # Init 'args' list
+               do
+                  push ((Z))  # Next arg
+                  push ZERO  # Dummy symbol's tail
+                  push E  # Dummy cell's CDR
+                  lea A (S II)  # Value address
+                  push A  # CAR
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
+                  ld E S  # Set 'args' list
+                  add Z I
+                  cmp Z Y  # More args?
+               until eq  # No
+               ld (X) E  # Set new value to 'args' list
+               link
+               ld (EnvApply) L  # Close apply frame
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+               drop
+               pop (EnvApply)
+            end
             pop A  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
@@ -423,7 +515,7 @@
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
-         null (EnvNext)  # VarArgs?
+         null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
@@ -458,13 +550,13 @@
          push Z  # Save arg pointers
          push Y
          ld Y C  # 'msg'
-         ld Z Nil  # No classes
+         ld Z 0  # No classes
          call methodEY_FCYZ  # Found?
          jne msgErrYX  # No
-         ld (S I) (EnvCls)  # 'cls'
-         ld (S) (EnvKey)  # 'key'
-         ld (EnvCls) Z  # Set new
-         ld (EnvKey) Y  # 'key'
+         xchg Z (S I)  # 'cls'
+         xchg (S I) (EnvCls)
+         xchg Y (S)  # 'key'
+         xchg (S) (EnvKey)  # 'key'
          ld X (C)  # Parameter list in X
          push (EnvBind)  # Build bind frame
          link
@@ -514,12 +606,42 @@
          if ne  # No
             push (X)  # Save last parameter's old value
             push X  # and the last parameter
-            ld (X) Nil  # Set new value to NIL
             link
             ld (EnvBind) L  # Close bind frame
             push 0  # Init env swap
-            ld Z (C CDR)  # Body in Z
-            prog Z  # Run body
+            cmp Y Z  # More args?
+            if eq  # No
+               ld (X) Nil  # Set new value to NIL
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+            else
+               push (EnvApply)  # Build apply frame
+               link
+               sym S  # Align stack to cell boundary
+               if nz
+                  push ZERO
+               end
+               ld E Nil  # Init 'args' list
+               do
+                  push ((Z))  # Next arg
+                  push ZERO  # Dummy symbol's tail
+                  push E  # Dummy cell's CDR
+                  lea A (S II)  # Value address
+                  push A  # CAR
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
+                  ld E S  # Set 'args' list
+                  add Z I
+                  cmp Z Y  # More args?
+               until eq  # No
+               ld (X) E  # Set new value to 'args' list
+               link
+               ld (EnvApply) L  # Close apply frame
+               ld Z (C CDR)  # Body in Z
+               prog Z  # Run body
+               drop
+               pop (EnvApply)
+            end
             pop A  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
@@ -559,7 +681,7 @@
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
-         null (EnvNext)  # VarArgs?
+         null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end

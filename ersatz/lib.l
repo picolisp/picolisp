@@ -1,7 +1,5 @@
-# 25dec10abu
+# 25feb11abu
 # (c) Software Lab. Alexander Burger
-
-(on *Dbg)
 
 ############ lib.l ############
 
@@ -143,6 +141,13 @@
    (unless (idx '*Once (file) T)
       (run Prg 1) ) )
 
+# Temporary Files
+(de tmp @
+   (unless *Tmp
+      (push '*Bye '(call 'rm "-r" *Tmp))
+      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+   (pass pack *Tmp) )
+
 ### List ###
 (de insert (N Lst X)
    (conc
@@ -213,6 +218,40 @@
 (de var: X
    (apply meta X This) )
 
+### Math ###
+(de sqrt (N F)
+   (cond
+      ((lt0 N) (quit "Bad argument" N))
+      (N
+         (let (A 1  B 0)
+            (while (>= N A)
+               (setq A (>> -2 A)) )
+            (loop
+               (if (> (inc 'B A) N)
+                  (dec 'B A)
+                  (dec 'N B)
+                  (inc 'B A) )
+               (setq B (>> 1 B)  A (>> 2 A))
+               (T (=0 A)) )
+            (and F (> N B) (inc 'B))
+            B ) ) ) )
+
+# (Knuth Vol.2, p.442)
+(de ** (X N)  # N th power of X
+   (let Y 1
+      (loop
+         (when (bit? 1 N)
+            (setq Y (* Y X)) )
+         (T (=0 (setq N (>> 1 N)))
+            Y )
+         (setq X (* X X)) ) ) )
+
+(de accu (Var Key Val)
+   (when Val
+      (if (assoc Key (val Var))
+         (con @ (+ Val (cdr @)))
+         (push Var (cons Key Val)) ) ) )
+
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless while until do case state for
@@ -220,6 +259,7 @@
    prog1 recur redef =: in out tab new )
 (de *PP1 let let? for redef)
 (de *PP2 setq default)
+(de *PP3 if2)
 
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
@@ -232,27 +272,31 @@
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) *PP)
-            (cond
-               ((memq (car Z) *PP1)
-                  (if (and (pair (car X)) (pair (cdar X)))
-                     (when (>= 12 (size (car X)))
+         (cond
+            ((memq (print (pop 'X)) *PP)
+               (cond
+                  ((memq (car Z) *PP1)
+                     (if (and (pair (car X)) (pair (cdar X)))
+                        (when (>= 12 (size (car X)))
+                           (space)
+                           (print (pop 'X)) )
                         (space)
-                        (print (pop 'X)) )
+                        (print (pop 'X))
+                        (when (or (atom (car X)) (>= 12 (size (car X))))
+                           (space)
+                           (print (pop 'X)) ) ) )
+                  ((memq (car Z) *PP2)
+                     (inc 'N 3)
+                     (loop
+                        (prinl)
+                        (pretty (cadr X) N (car X))
+                        (NIL (setq X (cddr X)) (space)) ) )
+                  ((or (atom (car X)) (>= 12 (size (car X))))
                      (space)
-                     (print (pop 'X))
-                     (when (or (atom (car X)) (>= 12 (size (car X))))
-                        (space)
-                        (print (pop 'X)) ) ) )
-               ((memq (car Z) *PP2)
-                  (inc 'N 3)
-                  (loop
-                     (prinl)
-                     (pretty (cadr X) N (car X))
-                     (NIL (setq X (cddr X)) (space)) ) )
-               ((or (atom (car X)) (>= 12 (size (car X))))
-                  (space)
-                  (print (pop 'X)) ) ) )
+                     (print (pop 'X)) ) ) )
+            ((and (memq (car Z) *PP3) (>= 12 (size (head 2 X))))
+               (space)
+               (print (pop 'X) (pop 'X)) ) )
          (when X
             (loop
                (T (== Z X) (prin " ."))
@@ -335,6 +379,14 @@
                (println '|)
                (mapc prin Y) ) ) ) ) )
 
+### Assertions ###
+(de assert Prg
+   (when *Dbg
+      (cons
+         (list 'unless
+            (if (cdr Prg) (cons 'and Prg) (car Prg))
+            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+
 ############ lib/misc.l ############
 
 # *Allow *Tmp
@@ -374,40 +426,6 @@
             (if (=T X)
                ("loc" (read))
                (set (link @) (name (read))) ) ) ) ) )
-
-### Math ###
-(de sqrt (N F)
-   (cond
-      ((lt0 N) (quit "Bad argument" N))
-      (N
-         (let (A 1  B 0)
-            (while (>= N A)
-               (setq A (>> -2 A)) )
-            (loop
-               (if (> (inc 'B A) N)
-                  (dec 'B A)
-                  (dec 'N B)
-                  (inc 'B A) )
-               (setq B (>> 1 B)  A (>> 2 A))
-               (T (=0 A)) )
-            (and F (> N B) (inc 'B))
-            B ) ) ) )
-
-# (Knuth Vol.2, p.442)
-(de ** (X N)  # N th power of X
-   (let Y 1
-      (loop
-         (when (bit? 1 N)
-            (setq Y (* Y X)) )
-         (T (=0 (setq N (>> 1 N)))
-            Y )
-         (setq X (* X X)) ) ) )
-
-(de accu (Var Key Val)
-   (when Val
-      (if (assoc Key (val Var))
-         (con @ (+ Val (cdr @)))
-         (push Var (cons Key Val)) ) ) )
 
 ### String ###
 (de align (X . @)
@@ -458,47 +476,50 @@
       (format N 2 *Sep0 *Sep3) ) )
 
 (de round (N D)
-   (if (>= *Scl D)
+   (if (> *Scl (default D 3))
       (format (*/ N (** 10 (- *Scl D))) D *Sep0 *Sep3)
       (format N *Scl *Sep0 *Sep3) ) )
 
 # Binary notation
-(de bin (X)
+(de bin (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (& 1 X))
+         (let (S (and (lt0 X) '-)  L (& 1 X)  A (cons 0 I))
             (until (=0 (setq X (>> 1 X)))
+               (at A (push 'L " "))
                (push 'L (& 1 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq N (| (format C) (>> -1 N))) )
             (if S (- N) N) ) ) ) )
 
 # Octal notation
-(de oct (X)
+(de oct (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (& 7 X))
+         (let (S (and (lt0 X) '-)  L (& 7 X)  A (cons 0 I))
             (until (=0 (setq X (>> 3 X)))
+               (at A (push 'L " "))
                (push 'L (& 7 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq N (| (format C) (>> -3 N))) )
             (if S (- N) N) ) ) ) )
 
 # Hexadecimal notation
-(de hex (X)
+(de hex (X I)
    (cond
       ((num? X)
-         (let (S (and (lt0 X) '-)  L (hex1 X))
+         (let (S (and (lt0 X) '-)  L (hex1 X)  A (cons 0 I))
             (until (=0 (setq X (>> 4 X)))
+               (at A (push 'L " "))
                (push 'L (hex1 X)) )
             (pack S L) ) )
-      ((setq X (chop X))
+      ((setq X (filter '((C) (not (sp? C))) (chop X)))
          (let (S (and (= '- (car X)) (pop 'X))  N 0)
             (for C X
                (setq C (- (char C) `(char "0")))
@@ -700,14 +721,6 @@
 (de basename (F)
    (pack (stem (chop F) '/)) )
 
-# Temporary Files
-(de tmp @
-   (unless *Tmp
-      (push '*Bye '(call 'rm "-r" *Tmp))
-      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
-   (pass pack *Tmp) )
-
-
 # Print or eval
 (de prEval (Prg Ofs)
    (default Ofs 1)
@@ -721,15 +734,7 @@
    (line)
    (echo S) )
 
-
-### Assertions ###
-(de assert Prg
-   (when *Dbg
-      (cons
-         (list 'unless
-            (if (cdr Prg) (cons 'and Prg) (car Prg))
-            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
-
+# Unit tests
 (de test (Pat . Prg)
    (bind (fish pat? Pat)
       (unless (match Pat (run Prg 1))
@@ -1071,6 +1076,220 @@
          (NIL (set Box (setq Lst (cdr Lst)))) ) ) )
 
 (repeat)
+
+############ lib/xm.l ############
+
+# Check or write header
+(de xml? (Flg)
+   (if Flg
+      (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+      (skip)
+      (prog1
+         (head '("<" "?" "x" "m" "l") (till ">"))
+         (char) ) ) )
+
+# Generate/Parse XML data
+(de xml (Lst N)
+   (if Lst
+      (let Tag (pop 'Lst)
+         (space (default N 0))
+         (prin "<" Tag)
+         (for X (pop 'Lst)
+            (prin " " (car X) "=\"")
+            (escXml (cdr X))
+            (prin "\"") )
+         (nond
+            (Lst (prinl "/>"))
+            ((or (cdr Lst) (pair (car Lst)))
+               (prin ">")
+               (escXml (car Lst))
+               (prinl "</" Tag ">") )
+            (NIL
+               (prinl ">")
+               (for X Lst
+                  (if (pair X)
+                     (xml X (+ 3 N))
+                     (space (+ 3 N))
+                     (escXml X)
+                     (prinl) ) )
+               (space N)
+               (prinl "</" Tag ">") ) ) )
+      (skip)
+      (unless (= "<" (char))
+         (quit "Bad XML") )
+      (_xml (till " /<>" T)) ) )
+
+(de _xml (Tok)
+   (use X
+      (make
+         (link (intern Tok))
+         (let L
+            (make
+               (loop
+                  (NIL (skip) (quit "XML parse error"))
+                  (T (member @ '`(chop "/>")))
+                  (NIL (setq X (intern (till "=" T))))
+                  (char)
+                  (unless (= "\"" (char))
+                     (quit "XML parse error" X) )
+                  (link (cons X (pack (xmlEsc (till "\"")))))
+                  (char) ) )
+            (if (= "/" (char))
+               (prog (char) (and L (link L)))
+               (link L)
+               (loop
+                  (NIL (skip) (quit "XML parse error" Tok))
+                  (T (and (= "<" (setq X (char))) (= "/" (peek)))
+                     (char)
+                     (unless (= Tok (till " /<>" T))
+                        (quit "Unbalanced XML" Tok) )
+                     (char) )
+                  (if (= "<" X)
+                     (and (_xml (till " /<>" T)) (link @))
+                     (link
+                        (pack (xmlEsc (trim (cons X (till "^J<"))))) ) ) ) ) ) ) ) )
+
+(de xmlEsc (L)
+   (use (@X @Z)
+      (make
+         (while L
+            (ifn (match '("&" @X ";" @Z) L)
+               (link (pop 'L))
+               (link
+                  (cond
+                     ((= @X '`(chop "quot")) "\"")
+                     ((= @X '`(chop "amp")) "&")
+                     ((= @X '`(chop "lt")) "<")
+                     ((= @X '`(chop "gt")) ">")
+                     ((= @X '`(chop "apos")) "'")
+                     ((= "#" (car @X))
+                        (char
+                           (if (= "x" (cadr @X))
+                              (hex (cddr @X))
+                              (format (cdr @X)) ) ) )
+                     (T @X) ) )
+               (setq L @Z) ) ) ) ) )
+
+(de escXml (X)
+   (for C (chop X)
+      (if (member C '`(chop "\"&<"))
+         (prin "&#" (char C) ";")
+         (prin C) ) ) )
+
+
+# Access functions
+(de body (Lst . @)
+   (while (and (setq Lst (cddr Lst)) (args))
+      (setq Lst (assoc (next) Lst)) )
+   Lst )
+
+(de attr (Lst Key . @)
+   (while (args)
+      (setq
+         Lst (assoc Key (cddr Lst))
+         Key (next) ) )
+   (cdr (assoc Key (cadr Lst))) )
+
+############ lib/xmlrpc.l ############
+
+# (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
+(de xmlrpc (Host Port Meth . @)
+   (let? Sock (connect Host Port)
+      (let Xml (tmp 'xmlrpc)
+         (out Xml
+            (xml? T)
+            (xml
+               (list 'methodCall NIL
+                  (list 'methodName NIL Meth)
+                  (make
+                     (link 'params NIL)
+                     (while (args)
+                        (link
+                           (list 'param NIL
+                              (list 'value NIL (list (next) NIL (next))) ) ) ) ) ) ) )
+         (prog1
+            (out Sock
+               (prinl "POST /RPC2 HTTP/1.0^M")
+               (prinl "Host: " Host "^M")
+               (prinl "User-Agent: PicoLisp^M")
+               (prinl "Content-Type: text/xml^M")
+               (prinl "Accept-Charset: utf-8^M")
+               (prinl "Content-Length: " (car (info Xml)) "^M")
+               (prinl "^M")
+               (in Xml (echo))
+               (flush)
+               (in Sock
+                  (while (line))
+                  (let? L (and (xml?) (xml))
+                     (when (== 'methodResponse (car L))
+                        (xmlrpcValue
+                           (car (body L 'params 'param 'value)) ) ) ) ) )
+            (close Sock) ) ) ) )
+
+(de xmlrpcKey (Str)
+   (or (format Str) (intern Str)) )
+
+(de xmlrpcValue (Lst)
+   (let X (caddr Lst)
+      (case (car Lst)
+         (string X)
+         ((i4 int) (format X))
+         (boolean (= "1" X))
+         (double (format X *Scl))
+         (array
+            (when (== 'data (car X))
+               (mapcar
+                  '((L)
+                     (and (== 'value (car L)) (xmlrpcValue (caddr L))) )
+                  (cddr X) ) ) )
+         (struct
+            (extract
+               '((L)
+                  (when (== 'member (car L))
+                     (cons
+                        (xmlrpcKey (caddr (assoc 'name L)))
+                        (xmlrpcValue (caddr (assoc 'value L))) ) ) )
+               (cddr Lst) ) ) ) ) )
+
+############ lib/http.l ############
+
+### HTTP-Client ###
+(de client (Host Port How . Prg)
+   (let? Sock (connect Host Port)
+      (prog1
+         (out Sock
+            (if (atom How)
+               (prinl "GET /" How " HTTP/1.0^M")
+               (prinl "POST /" (car How) " HTTP/1.0^M")
+               (prinl "Content-Length: " (size (cdr How)) "^M") )
+            (prinl "User-Agent: PicoLisp^M")
+            (prinl "Host: " Host "^M")
+            (prinl "Accept-Charset: utf-8^M")
+            (prinl "^M")
+            (and (pair How) (prin (cdr @)))
+            (flush)
+            (in Sock (run Prg 1)) )
+         (close Sock) ) ) )
+
+############ Native Java ############
+
+(de javac (Cls Ext Impl . @)
+   (let (J (pack "tmp/" Cls ".java")  C (pack "tmp/" Cls ".class"))
+      (call 'mkdir "-p" "tmp/")
+      (out J
+         (while (args)
+            (prinl "import " (next) ";") )
+         (prinl "public class " Cls
+            (and Ext (pack " extends " @))
+            (and Impl (pack " implements " (glue ", " Impl)))
+            " {"  )
+         (here "/**/")
+         (prinl "}") )
+      (call "javac" "-O" "-g:none" J)
+      (push1 '*Bye (list 'call "rm" J C)) ) )
+
+### Debug ###
+`*Dbg
 
 ############ lib/debug.l ############
 
@@ -1640,216 +1859,5 @@
                   (link (cons "X" @)) ) ) )
          (while (args)
             (and (lint (next)) (link (cons (arg) @))) ) ) ) )
-
-############ lib/xm.l ############
-
-# Check or write header
-(de xml? (Flg)
-   (if Flg
-      (prinl "<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-      (skip)
-      (prog1
-         (head '("<" "?" "x" "m" "l") (till ">"))
-         (char) ) ) )
-
-# Generate/Parse XML data
-(de xml (Lst N)
-   (if Lst
-      (let Tag (pop 'Lst)
-         (space (default N 0))
-         (prin "<" Tag)
-         (for X (pop 'Lst)
-            (prin " " (car X) "=\"")
-            (escXml (cdr X))
-            (prin "\"") )
-         (nond
-            (Lst (prinl "/>"))
-            ((or (cdr Lst) (pair (car Lst)))
-               (prin ">")
-               (escXml (car Lst))
-               (prinl "</" Tag ">") )
-            (NIL
-               (prinl ">")
-               (for X Lst
-                  (if (pair X)
-                     (xml X (+ 3 N))
-                     (space (+ 3 N))
-                     (escXml X)
-                     (prinl) ) )
-               (space N)
-               (prinl "</" Tag ">") ) ) )
-      (skip)
-      (unless (= "<" (char))
-         (quit "Bad XML") )
-      (_xml (till " /<>" T)) ) )
-
-(de _xml (Tok)
-   (use X
-      (make
-         (link (intern Tok))
-         (let L
-            (make
-               (loop
-                  (NIL (skip) (quit "XML parse error"))
-                  (T (member @ '`(chop "/>")))
-                  (NIL (setq X (intern (till "=" T))))
-                  (char)
-                  (unless (= "\"" (char))
-                     (quit "XML parse error" X) )
-                  (link (cons X (pack (xmlEsc (till "\"")))))
-                  (char) ) )
-            (if (= "/" (char))
-               (prog (char) (and L (link L)))
-               (link L)
-               (loop
-                  (NIL (skip) (quit "XML parse error" Tok))
-                  (T (and (= "<" (setq X (char))) (= "/" (peek)))
-                     (char)
-                     (unless (= Tok (till " /<>" T))
-                        (quit "Unbalanced XML" Tok) )
-                     (char) )
-                  (if (= "<" X)
-                     (and (_xml (till " /<>" T)) (link @))
-                     (link
-                        (pack (xmlEsc (trim (cons X (till "^J<"))))) ) ) ) ) ) ) ) )
-
-(de xmlEsc (L)
-   (use (@X @Z)
-      (make
-         (while L
-            (ifn (match '("&" @X ";" @Z) L)
-               (link (pop 'L))
-               (link
-                  (cond
-                     ((= @X '`(chop "quot")) "\"")
-                     ((= @X '`(chop "amp")) "&")
-                     ((= @X '`(chop "lt")) "<")
-                     ((= @X '`(chop "gt")) ">")
-                     ((= @X '`(chop "apos")) "'")
-                     ((= "#" (car @X))
-                        (char
-                           (if (= "x" (cadr @X))
-                              (hex (cddr @X))
-                              (format (cdr @X)) ) ) )
-                     (T @X) ) )
-               (setq L @Z) ) ) ) ) )
-
-(de escXml (X)
-   (for C (chop X)
-      (if (member C '`(chop "\"&<"))
-         (prin "&#" (char C) ";")
-         (prin C) ) ) )
-
-
-# Access functions
-(de body (Lst . @)
-   (while (and (setq Lst (cddr Lst)) (args))
-      (setq Lst (assoc (next) Lst)) )
-   Lst )
-
-(de attr (Lst Key . @)
-   (while (args)
-      (setq
-         Lst (assoc Key (cddr Lst))
-         Key (next) ) )
-   (cdr (assoc Key (cadr Lst))) )
-
-############ lib/xmlrpc.l ############
-
-# (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
-(de xmlrpc (Host Port Meth . @)
-   (let? Sock (connect Host Port)
-      (let Xml (tmp 'xmlrpc)
-         (out Xml
-            (xml? T)
-            (xml
-               (list 'methodCall NIL
-                  (list 'methodName NIL Meth)
-                  (make
-                     (link 'params NIL)
-                     (while (args)
-                        (link
-                           (list 'param NIL
-                              (list 'value NIL (list (next) NIL (next))) ) ) ) ) ) ) )
-         (prog1
-            (out Sock
-               (prinl "POST /RPC2 HTTP/1.0^M")
-               (prinl "Host: " Host "^M")
-               (prinl "User-Agent: PicoLisp^M")
-               (prinl "Content-Type: text/xml^M")
-               (prinl "Accept-Charset: utf-8^M")
-               (prinl "Content-Length: " (car (info Xml)) "^M")
-               (prinl "^M")
-               (in Xml (echo))
-               (flush)
-               (in Sock
-                  (while (line))
-                  (let? L (and (xml?) (xml))
-                     (when (== 'methodResponse (car L))
-                        (xmlrpcValue
-                           (car (body L 'params 'param 'value)) ) ) ) ) )
-            (close Sock) ) ) ) )
-
-(de xmlrpcKey (Str)
-   (or (format Str) (intern Str)) )
-
-(de xmlrpcValue (Lst)
-   (let X (caddr Lst)
-      (case (car Lst)
-         (string X)
-         ((i4 int) (format X))
-         (boolean (= "1" X))
-         (double (format X *Scl))
-         (array
-            (when (== 'data (car X))
-               (mapcar
-                  '((L)
-                     (and (== 'value (car L)) (xmlrpcValue (caddr L))) )
-                  (cddr X) ) ) )
-         (struct
-            (extract
-               '((L)
-                  (when (== 'member (car L))
-                     (cons
-                        (xmlrpcKey (caddr (assoc 'name L)))
-                        (xmlrpcValue (caddr (assoc 'value L))) ) ) )
-               (cddr Lst) ) ) ) ) )
-
-############ lib/http.l ############
-
-### HTTP-Client ###
-(de client (Host Port How . Prg)
-   (let? Sock (connect Host Port)
-      (prog1
-         (out Sock
-            (if (atom How)
-               (prinl "GET /" How " HTTP/1.0^M")
-               (prinl "POST /" (car How) " HTTP/1.0^M")
-               (prinl "Content-Length: " (size (cdr How)) "^M") )
-            (prinl "User-Agent: PicoLisp^M")
-            (prinl "Host: " Host "^M")
-            (prinl "Accept-Charset: utf-8^M")
-            (prinl "^M")
-            (and (pair How) (prin (cdr @)))
-            (flush)
-            (in Sock (run Prg 1)) )
-         (close Sock) ) ) )
-
-############ Native Java ############
-
-(de javac (Cls Ext Impl . @)
-   (let (J (pack "tmp/" Cls ".java")  C (pack "tmp/" Cls ".class"))
-      (call 'mkdir "-p" "tmp/")
-      (out J
-         (while (args)
-            (prinl "import " (next) ";") )
-         (prinl "public class " Cls
-            (and Ext (pack " extends " @))
-            (and Impl (pack " implements " (glue ", " Impl)))
-            " {"  )
-         (here "/**/")
-         (prinl "}") )
-      (call "javac" "-O" "-g:none" J)
-      (push1 '*Bye (list 'call "rm" J C)) ) )
 
 # vi:et:ts=3:sw=3

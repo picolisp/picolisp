@@ -1,7 +1,7 @@
-# 12jul10abu
+# 08feb11abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/term.l")
+(load "@lib/term.l")
 
 # Spielfeldbelegung:
 # NIL    Verdeckt: Leeres Feld
@@ -122,3 +122,5 @@
                   (xtRight (+ 2 (* 2 X))) ) ) )
          (xtLeft (+ 2 (* 2 X)))
          (xtDown (+ 3 (- *FeldY Y))) ) ) )
+
+# vi:et:ts=3:sw=3

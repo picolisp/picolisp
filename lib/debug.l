@@ -1,4 +1,4 @@
-# 11nov10abu
+# 17jan11abu
 # (c) Software Lab. Alexander Burger
 
 # Browsing
@@ -332,24 +332,6 @@
    (apply call
       (make (while (args) (link "-C" (next))))
       'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) )
-
-# Hex Dump
-(de hd (File Cnt)
-   (in File
-      (let Pos 0
-         (while
-            (and
-               (nand Cnt (lt0 (dec 'Cnt)))
-               (make (do 16 (and (rd 1) (link @)))) )
-            (let L @
-               (prin (pad 8 (hex Pos)) "  ")
-               (inc 'Pos 16)
-               (for N L
-                  (prin (pad 2 (hex N)) " ") )
-               (space (inc (* 3 (- 16 (length L)))))
-               (for N L
-                  (prin (if (<= 32 N 127) (char N) ".")) )
-               (prinl) ) ) ) ) )
 
 # Benchmarking
 (de bench Prg

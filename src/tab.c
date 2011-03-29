@@ -1,4 +1,4 @@
-/* 25nov10abu
+/* 09mar11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -114,6 +114,7 @@ static symInit Symbols[] = {
    {doEq0, "=0"},
    {doEqT, "=T"},
    {doEqual, "="},
+   {doErr, "err"},
    {doEval, "eval"},
    {doExt, "ext"},
    {doExtern, "extern"},
@@ -171,6 +172,7 @@ static symInit Symbols[] = {
    {doKill, "kill"},
    {doLast, "last"},
    {doLe, "<="},
+   {doLe0, "le0"},
    {doLength, "length"},
    {doLet, "let"},
    {doLetQ, "let?"},
@@ -285,7 +287,6 @@ static symInit Symbols[] = {
    {doRewind, "rewind"},
    {doRollback, "rollback"},
    {doRot, "rot"},
-   {doRpc, "rpc"},
    {doRun, "run"},
    {doSect, "sect"},
    {doSeed, "seed"},
@@ -340,6 +341,7 @@ static symInit Symbols[] = {
    {doUse, "use"},
    {doUsec, "usec"},
    {doVal, "val"},
+   {doVersion, "version"},
    {doWait, "wait"},
    {doWhen, "when"},
    {doWhile, "while"},

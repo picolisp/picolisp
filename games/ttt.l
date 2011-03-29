@@ -1,9 +1,9 @@
-# 15may07abu
+# 08feb11abu
 # (c) Software Lab. Alexander Burger
 
 # *Board
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 (de display ()
    (for Y (3 2 1)
@@ -70,3 +70,5 @@
       ((find3 T) "Congratulation, you won!")
       ((not (myMove)) "No moves")
       ((find3 0) "Sorry, you lost!") ) )
+
+# vi:et:ts=3:sw=3

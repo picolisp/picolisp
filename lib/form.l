@@ -1,4 +1,4 @@
-# 15nov10abu
+# 22mar11abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -52,7 +52,7 @@
                      (with (get "*App" 'gui (inc '"*Ix"))
                         (for E "*Err"
                            (when (== This (car E))
-                              (<div> 'err
+                              (<div> 'error
                                  (if (atom (cdr E))
                                     (ht:Prin (eval (cdr E) 1))
                                     (eval (cdr E) 1) ) ) ) )
@@ -184,7 +184,7 @@
                ((match '("-" @X "." "h" "t" "m" "l") Url)
                   (try 'html> (extern (ht:Pack @X))) )
                ((disallowed)
-                  (msg *Url " not allowed")
+                  (notAllowed *Url)
                   (http404) )
                ((= '@ (car Url))
                   ((intern (pack (cdr Url)))) )
@@ -216,13 +216,13 @@
             (for This (: gui)
                (cond
                   ((not (: id)) (setq "*Chart" This))
-                  ((chk> This) (err @))
+                  ((chk> This) (error @))
                   ((or (: rid) (: home able))
                      (set> This (val> This) T) ) ) )
             (for This (: gui)
                (cond
                   ((: id))
-                  ((chk> (setq "*Chart" This)) (err @))
+                  ((chk> (setq "*Chart" This)) (error @))
                   ((or (: rid) (: home able))
                      (set> This (val> This)) ) ) )
             (if (pair "*Err")
@@ -245,7 +245,7 @@
                   (or (: id) (setq "*Chart" This))
                   (upd> This) ) ) ) ) ) )
 
-(de err (Exe)
+(de error (Exe)
    (cond
       ((=T Exe) (on "*Err"))
       ((nT "*Err") (queue '"*Err" (cons This Exe))) ) )
@@ -710,6 +710,9 @@
 
 # Case conversions
 (class +Uppc)
+
+(dm set> (Val Dn)
+   (extra (uppc Val) Dn) )
 
 (dm val> ()
    (uppc (extra)) )
@@ -1442,14 +1445,16 @@
    (and
       (<> Val (: org))
       (eval (: file))
-      (out @ (prin (=: org Val))) )
+      (out @ (ctl T (prin (=: org Val)))) )
    (super Val Dn) )
 
 (dm upd> ()
    (set> This
       (=: org
          (let? F (eval (: file))
-            (and (info F) (in F (till NIL T))) ) ) ) )
+            (and
+               (info F)
+               (in F (ctl NIL (till NIL T))) ) ) ) ) )
 
 
 (class +Url)
@@ -1764,7 +1769,7 @@
 
 (de tryLock (Obj)
    (if (lock Obj)
-      (err (text ,"Currently edited by '@2' (@1)" @  (cdr (lup *Users @))))
+      (error (text ,"Currently edited by '@2' (@1)" @  (cdr (lup *Users @))))
       (sync)
       (tell)
       (setq *Lock Obj) ) )
@@ -1862,6 +1867,27 @@
       (and
          (eval (: erObj))
          (mis> @ (: erVar) (val> This)) ) ) )
+
+
+(class +SubE/R +E/R)
+# sub
+
+(dm T (Lst . @)
+   (pass super
+      (cons
+         (pop 'Lst)
+         (append '(: home obj) (cons (car Lst))) ) )
+   (=: sub Lst)
+   (=: able (bool (: able))) )
+
+(dm set> (Val Dn)
+   (when (and Val (not (eval (: erObj))))
+      (dbSync)
+      (put> (: home obj)
+         (: sub 1)
+         (new (or (meta (: sub -1) 'Dbf 1) 1) (: sub -1)) )
+      (commit 'upd) )
+   (super Val Dn) )
 
 
 (class +BlobField +/R +TextField)

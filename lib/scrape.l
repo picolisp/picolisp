@@ -1,4 +1,4 @@
-# 16may10abu
+# 28feb11abu
 # (c) Software Lab. Alexander Burger
 
 # *ScrHost *ScrPort *ScrGate *Title *Expect *Found
@@ -23,7 +23,7 @@
             "<option selected=\"selected\">"
             "<textarea name=\""
             "<span id=\""
-            "<div class=\"err\">"
+            "<div class=\"error\">"
             *Expect )
          (case @
             ("303 See Other"
@@ -94,7 +94,7 @@
             ("<span id=\""
                (from ">")
                (queue '*Fields (ht:Pack (till "<"))) )
-            ("<div class=\"err\">"
+            ("<div class=\"error\">"
                (queue '*Errors (ht:Pack (till "<"))) )
             (T  (on *Found)) ) )
       (or *Errors *Title) ) )

@@ -62,11 +62,12 @@ Obj (+A +B +C)
 -> Obj
 </code></pre>
 
-<dt><a name="oct"><code>(oct 'num) -> sym</code></a>
+<dt><a name="oct"><code>(oct 'num ['num]) -> sym</code></a>
 <dt><code>(oct 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to an octal string, or an octal string
-<code>sym</code> to a number. See also <code><a
-href="refB.html#bin">bin</a></code>, <code><a
+<code>sym</code> to a number. In the first case, if the second argument is
+given, the result is separated by spaces into groups of such many digits. See
+also <code><a href="refB.html#bin">bin</a></code>, <code><a
 href="refH.html#hex">hex</a></code>, <code><a
 href="refF.html#fmt64">fmt64</a></code>, <code><a
 href="refH.html#hax">hax</a></code> and <code><a
@@ -77,6 +78,8 @@ href="refF.html#format">format</a></code>.
 -> "111"
 : (oct "111")
 -> 73
+: (oct 1234567 3)
+-> "4 553 207"
 </code></pre>
 
 <dt><a name="off"><code>(off var ..) -> NIL</code></a>
@@ -180,7 +183,8 @@ leading "<code>@</code>" character in <code>any</code> is substituted with the
 If the file does not exist, it is created. The file descriptor can be used in
 subsequent calls to <code><a href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>. See also <code><a
-href="refC.html#close">close</a></code>.
+href="refC.html#close">close</a></code> and <code><a
+href="refP.html#poll">poll</a></code>.
 
 <pre><code>
 : (open "x")
@@ -201,9 +205,10 @@ href="refO.html#out">out</a></code>.
 </code></pre>
 
 <dt><a name="opt"><code>(opt) -> sym</code></a>
-<dd>Return the next command line argument (option) as a string, and remove it
-from the remaining command line arguments. See also <code><a
-href="ref.html#invoc">Invocation</a></code> and <code><a
+<dd>Return the next command line argument ("option", as would be processed by
+<code><a href="refL.html#load">load</a></code>) as a string, and remove it from
+the remaining command line arguments. See also <a
+href="ref.html#invoc">Invocation</a> and <code><a
 href="refA.html#argv">argv</a></code>.
 
 <pre><code>
@@ -249,8 +254,10 @@ list), it is taken as a command with arguments, and a pipe is opened for output.
 See also <code><a href="refO.html#opid">opid</a></code>, <code> <a
 href="refC.html#call">call</a></code>, <code><a
 href="refI.html#in">in</a></code>, <code> <a
-href="refP.html#pipe">pipe</a></code>, <code> <a
+href="refE.html#err">err</a></code>, <code> <a
 href="refC.html#ctl">ctl</a></code>, <code><a
+href="refP.html#pipe">pipe</a></code>, <code> <a
+href="refP.html#poll">poll</a></code>, <code> <a
 href="refC.html#close">close</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 

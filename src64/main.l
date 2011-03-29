@@ -1,4 +1,4 @@
-# 23dec10abu
+# 21mar11abu
 # (c) Software Lab. Alexander Burger
 
 ### Global return labels ###
@@ -29,12 +29,23 @@
 ### Main entry point ###
 (code 'main)
    initCode
+   ld (AV0) X  # Save command
+   ld (AV) Y  # and argument vector
+   # Check debug mode
+   ld C (Z)  # Last argument
+   ld B (C)  # First byte
+   cmp B (char "+")  # Single plus?
+   if eq  # Yes
+      nul (C 1)
+      if z  # Yes
+         ld (Dbg) TSym  # Set '*Dbg'
+         ld (Z) 0  # Clear last argument
+      end
+   end
    # Locate home directory
-   ld X (AV)  # Command line vector
-   do
-      ld Y (X)  # Next command
-      null Y  # Any?
-   while nz  # Yes
+   ld Y (Y)  # First argument
+   null Y  # Any?
+   if nz  # Yes
       ld B (Y)  # First byte
       cmp B (char "-")  # Dash?
       if ne  # No
@@ -63,17 +74,15 @@
                set (Z) 0  # Clear it
             end
          end
-         break T
       end
-      add X I
-   loop
+   end
    # Initialize globals
    cc getpid()  # PID in A
    shl A 4  # Make short number
    or A CNT
    ld (Pid) A
    ld (Stack0) S  # Save top level stack pointer
-   lea (StkLimit) (S (- 4096 STACK))  # Set stack limit
+   ld (StkLimit) 0  # Initially without stack limit
    ld L 0  # Init link register
    call heapAlloc  # Allocate initial heap
    ld E Nil  # Init internal symbols
@@ -147,23 +156,7 @@
    ld E Nil  # REPL
    ld X 0  # Runtime expression
    call loadBEX_E
-   ld E 0
-# Exit
-(code 'byeE)
-   nul (InBye)  # Re-entered?
-   if z  # No
-      set (InBye) 1
-      push E  # Save exit code
-      ld C 0  # Top frame
-      call unwindC_Z  # Unwind
-      ld E (Bye)  # Run exit expression(s)
-      call execE
-      pop E  # Restore exit code
-   end
-   call flushAll  # Flush all output channels
-(code 'finishE)
-   call setCooked  # Set terminal to cooked mode
-   cc exit(E)
+   jmp restart
 
 # Load all remaining arguments
 (code 'loadAllX_E)
@@ -580,9 +573,6 @@
          call evCntEX_FE
          shl E 20  # [MB]
          ld (StkSize) E  # Set new stack size
-         lea A ((Stack0) 4096)  # and stack limit
-         sub A E
-         ld (StkLimit) A
          shr E 16  # Make short number [MB]
          or E CNT
          pop X
@@ -794,7 +784,7 @@
 ### Comparisons ###
 (code 'equalAE_F 0)
    cmp A E  # Pointer-equal?
-   jz ret  # Yes: 'eq'
+   jeq ret  # Yes: 'eq'
    cnt A  # A short?
    jnz ret  # Yes: 'ne'
    big A  # A big?
@@ -829,11 +819,11 @@
       jz Retnz  # No: 'ne'
       ld A (A TAIL)
       call nameA_A  # Get name of A
-      zero A  # Any?
+      cmp A ZERO  # Any?
       jeq retnz  # No: 'ne'
       ld E (E TAIL)
       call nameE_E  # Get name of E
-      zero E  # Any?
+      cmp E ZERO  # Any?
       jeq retnz  # No: 'ne'
       jmp equalAE_F
    end
@@ -850,6 +840,7 @@
       jlt stkErr
       ld A (A)  # Recurse on CARs
       ld E (E)
+      off E 1  # Clear possible mark
       call equalAE_F  # Equal?
       pop E  # Retrieve lists
       pop A
@@ -869,16 +860,26 @@
       break nz  # Yes: 'ne'
       or (A) 1  # Mark
       ld A (A CDR)
-      or (E) 1
       ld E (E CDR)
       test (A) 1  # Detected circularity?
-      jnz 10  # Yes
-      test (E) 1
       if nz
-10       do
+         do
             cmp X A  # Skip non-circular parts
-            if eq  # Done?
-               cmp Y E  # Set result
+            if eq  # Done
+               cmp Y E  # Circular parts same length?
+               if eq  # Perhaps
+                  do
+                     ld X (X CDR)  # Compare
+                     ld Y (Y CDR)
+                     cmp Y E  # End of second?
+                     if eq  # Yes
+                        cmp X A  # Also end of first?
+                        break T
+                     end
+                     cmp X A  # End of first?
+                     break eq  # Yes
+                  loop
+               end
                break T
             end
             cmp Y E
@@ -888,15 +889,12 @@
             end
             off (X) 1  # Unmark
             ld X (X CDR)
-            off (Y) 1
             ld Y (Y CDR)
          loop
          push F  # Save result
          do
             off (X) 1  # Unmark circular part
             ld X (X CDR)
-            off (Y) 1
-            ld Y (Y CDR)
             cmp X A
          until eq
          pop F  # Get result
@@ -911,8 +909,6 @@
    while ne
       off (X) 1  # Unmark
       ld X (X CDR)
-      off (Y) 1
-      ld Y (Y CDR)
    loop
    pop F  # Get result
    pop Y
@@ -921,7 +917,7 @@
 
 (code 'compareAE_F 0)  # C
    cmp A E  # Pointer-equal?
-   jz ret  # Yes
+   jeq ret  # Yes
    cmp A Nil
    if eq  # [NIL E]
 10    or B B  # nz
@@ -939,7 +935,7 @@
       num E  # Both?
       jnz cmpNumAE_F  # [<num> <num>]
       cmp E Nil
-      jz 30  # [<num> NIL]
+      jeq 30  # [<num> NIL]
       setc  # lt
       ret
    end
@@ -948,19 +944,19 @@
       num E
       jnz 40  # [<sym> <num>]
       cmp E Nil
-      jz 30  # [<sym> NIL]
+      jeq 30  # [<sym> NIL]
       atom E
       jz 10  # [<sym> <cell>]
       cmp E TSym
-      jz 10  # [<sym> T]
+      jeq 10  # [<sym> T]
       push X  # [<sym> <sym>]
       ld X (A TAIL)
       call nameX_X  # Get A's name in X
-      zero X  # Any?
+      cmp X ZERO  # Any?
       if eq  # No
          ld E (E TAIL)
          call nameE_E  # Second name in E
-         zero E  # Any?
+         cmp E ZERO  # Any?
          if eq  # No
             rol B 4  # Random bit from A (...x1000) into carry (non-zero)
          else
@@ -971,7 +967,7 @@
       end
       ld E (E TAIL)
       call nameE_E  # Get E's name in E
-      zero E  # Any?
+      cmp E ZERO  # Any?
       if eq  # No
 50       or B B  # nz
 60       clrc  # gt
@@ -999,7 +995,7 @@
          end
          do
             cmp B C  # Bytes equal?
-            jnz 70  # No: lt or gt
+            jne 70  # No: lt or gt
             shr A 8  # Next byte in A?
             if z  # No
                shr C 8  # Next byte in C?
@@ -1241,7 +1237,7 @@
       cmp Y C  # End?
    until eq  # Yes
    prog Z  # Run body
-   null (EnvNext)  # VarArgs?
+   null (EnvArgs)  # VarArgs?
    if nz  # Yes
       drop  # Drop varArgs
    end
@@ -1277,7 +1273,7 @@
          end
          ld A (C)  # Get VAL
          cnt A  # Short number?
-         jnz (A)  # Yes: Eval SUBR
+         jnz (A T)  # Yes: Eval SUBR
          big A  # Undefined if bignum
          jnz undefinedCE
          cmp A (A)  # Auto-symbol?
@@ -1287,7 +1283,7 @@
             jz evExprCE_E  # No: Apply EXPR
          else
             call sharedLibC_FA  # Try dynamic load
-            jnz (A)  # Eval SUBR
+            jnz (A T)  # Eval SUBR
             jmp undefinedCE
          end
       loop
@@ -1300,7 +1296,7 @@
    ld C E
    pop E
    cnt C  # Short number?
-   jnz (C)  # Yes: Eval SUBR
+   jnz (C T)  # Yes: Eval SUBR
    big C  # Undefined if bignum
    jnz undefinedCE
    link
@@ -1337,7 +1333,7 @@
       inc Y  # Increment buffer pointer
    loop
    cmp Y Z  # At start of buffer?
-   jz 90  # Yes
+   jeq 90  # Yes
    nul (Y 1)  # At end of buffer?
    jz 90  # Yes
    set (Y) 0  # Replace colon with null byte
@@ -2325,12 +2321,12 @@
    ld Z A
 # Date function
 (code 'dateXYZ_E 0)
-   cmp Y 0  # Month <= 0?
-   jle retNil
+   null Y  # Month <= 0?
+   jsz retNil
    cmp Y 12  # Month > 12?
    jgt retNil
-   cmp X 0  # Day <= 0?
-   jle retNil
+   null X  # Day <= 0?
+   jsz retNil
    ld B (Y Month)  # Max monthly days
    cmp X B  # Day > max?
    if gt  # Yes
@@ -2637,7 +2633,7 @@
 
 # (pwd) -> sym
 (code 'doPwd 2)
-   cc getcwd(0 0)  # Get current working directory
+   cc getcwd(0 MAXPATHLEN)  # Get current working directory
    null A  # OK?
    jz retNil  # No
    push A  # Save buffer pointer
@@ -2653,7 +2649,7 @@
    call evSymE_E  # Evaluate to a symbol
    call pathStringE_SZ  # Write to stack buffer
    ld E Nil  # Preload return value
-   cc getcwd(0 0)  # Get current working directory
+   cc getcwd(0 MAXPATHLEN)  # Get current working directory
    null A  # OK?
    if nz  # Yes
       push A  # Save buffer pointer

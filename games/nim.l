@@ -1,7 +1,7 @@
-# 31jan08abu
+# 08feb11abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 # Nim
 (de nim Pos

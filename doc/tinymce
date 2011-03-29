@@ -14,16 +14,17 @@ Using the TinyMCE Javascript/HTML WYSIWYG editor in PicoLisp applications
    (allowed ("myApp/" "img/" "tinymce/")
       ... )
 
-4. On each page where you want to use tinymce in textareas, insert somewhere at
-   the beginning, but before the first text field, e.g.:
+4. On each page where you want to use tinymce in textareas, insert two calls to
+   'javascript' somewhere at the beginning, but before the first textarea,
+   e.g.:
 
    (action
       (html 0 "Title" "lib.css" NIL
-         (javascript "tinymce/tiny_mce.js")
+         (javascript "tinymce/tiny_mce.js")  # Insert two lines
          (javascript "lib/tinymce.js")
          (form NIL
             ...
-            (gui '(+BlobField) '(txt : home obj) 60 8 "Memo")
+            (gui '(+BlobField) '(txt : home obj) 60 8 "Memo")  # Use textareas
 
 5. Normally, you would use an application-specific configuration. In that
    case, copy "lib/tinymce.js" to "myApp/tinymce.js", modify the plugins,

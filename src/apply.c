@@ -1,4 +1,4 @@
-/* 12oct10abu
+/* 03feb11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -26,7 +26,10 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
          if (isNil(x))
             x = prog(cdr(foo));
          else if (x != At) {
-            f.bnd[f.cnt].sym = x,  f.bnd[f.cnt++].val = val(x),  val(x) = Nil;
+            f.bnd[f.cnt].sym = x,  f.bnd[f.cnt].val = val(x),  val(x) = Nil;
+            while (--n >= 0)
+               val(x) = cons(consSym(cf? car(data(p[n+f.cnt-1])) : data(p[n+f.cnt-1]), Nil), val(x));
+            ++f.cnt;
             x = prog(cdr(foo));
          }
          else {
@@ -81,7 +84,10 @@ any apply(any ex, any foo, bool cf, int n, cell *p) {
                x = prog(cdr(expr));
             }
             else if (x != At) {
-               f.bnd[f.cnt].sym = x,  f.bnd[f.cnt++].val = val(x),  val(x) = Nil;
+               f.bnd[f.cnt].sym = x,  f.bnd[f.cnt].val = val(x),  val(x) = Nil;
+               while (--n >= 0)
+                  val(x) = cons(consSym(cf? car(data(p[n+f.cnt-1])) : data(p[n+f.cnt-1]), Nil), val(x));
+               ++f.cnt;
                f.bnd[f.cnt].sym = This;
                f.bnd[f.cnt++].val = val(This);
                val(This) = o;

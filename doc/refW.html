@@ -50,7 +50,7 @@ href="refS.html#strDat">strDat</a></code>.
 
 <pre><code>
 : (datStr (date))
--> <u>2007-06-01</u>
+-> "2007-06-01"
 : (week (date))
 -> 22
 </code></pre>
@@ -93,7 +93,7 @@ NIL
 href="refC.html#can">can</a></code>.
 
 <pre><code>
-: (what <u>cd@dr</u>)
+: (what "cd@dr")
 -> (cdaddr cdaadr cddr cddddr cdddr cddadr cdadr)
 </code></pre>
 
@@ -108,15 +108,15 @@ href="refC.html#can">can</a></code>.
 : (who 'caddr)                         # Who is using 'caddr'?
 -> ($dat lint1 expDat datStr $tim tim$ mail _gen dat$ datSym)
 
-: (who <u>Type error</u>)
+: (who "Type error")
 -> ((mis> . +Link) *Uni (mis> . +Joint))
 
-: (more (who <u>Type error</u>) pp)           # Pretty print all results
+: (more (who "Type error") pp)         # Pretty print all results
 (dm (mis> . +Link) (Val Obj)
    (and
       Val
       (nor (isa (: type) Val) (canQuery Val))
-      <u>Type error</u> ) )
+      "Type error" ) )
 .                                      # Stop
 -> T
 </code></pre>
@@ -170,9 +170,9 @@ channel. See also <code><a href="refR.html#rd">rd</a></code> and <code><a
 href="refP.html#pr">pr</a></code>.
 
 <pre><code>
-: (out <u>x</u> (wr 1 255 257))  # Write to "x"
+: (out "x" (wr 1 255 257))  # Write to "x"
 -> 257
-: (hd <u>x</u>)
+: (hd "x")
 00000000  01 FF 01                                         ...
 -> NIL
 </code></pre>
@@ -185,10 +185,10 @@ href="refP.html#pack">pack</a></code>ed in lines with a maximal length of
 href="refC.html#center">center</a></code>.
 
 <pre><code>
-: (wrap 20 (chop <u>The quick brown fox jumps over the lazy dog</u>))
--> <u>The quick brown fox^Jjumps over the lazy^Jdog</u>
-: (wrap 8 (chop <u>The quick brown fox jumps over the lazy dog</u>))
--> <u>The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog</u>
+: (wrap 20 (chop "The quick brown fox jumps over the lazy dog"))
+-> "The quick brown fox^Jjumps over the lazy^Jdog"
+: (wrap 8 (chop "The quick brown fox jumps over the lazy dog"))
+-> "The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog"
 </code></pre>
 
 </dl>

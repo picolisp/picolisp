@@ -1,4 +1,4 @@
-// 24dec10abu
+// 01mar11abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -73,8 +73,8 @@ public class PicoLisp {
          try {
             if (first)
                loadAll(null);
-            load(null, ':', Nil);
-            bye(0);
+            for (;;)
+               load(null, ':', Nil);
          }
          catch (Control e) {}
          catch (Throwable e) {error(null, null, e.toString());}
@@ -82,14 +82,17 @@ public class PicoLisp {
    }
 
    final static void init() {
+      int i;
       String s;
       Home = "";
-      for (int i = 0; i < Argv.length; ++i)
-         if ((s = Argv[i]).charAt(0) != '-') {
-            if ((i = s.lastIndexOf('/')) >= 0 && !(i == 1 && s.charAt(0) == '.'))
-               Home = s.substring(0, i+1);
-            break;
-         }
+      if (Argv.length > 0 && Argv[Argv.length-1].equals("+")) {
+         Dbg.Car = T;
+         String[] a = new String[Argv.length-1];
+         System.arraycopy(Argv, 0, a, 0, a.length);
+         Argv = a;
+      }
+      if (Argv.length > 0 && (s = Argv[0]).charAt(0) != '-' && ((i = s.lastIndexOf('/')) >= 0 && !(i == 1 && s.charAt(0) == '.')))
+         Home = s.substring(0, i+1);
       try {
          if (Term != null) {
             final Pipe p = Pipe.open();
@@ -99,12 +102,12 @@ public class PicoLisp {
                public void run() {
                   for (;;) {
                      String s = Term.readLine();
-                     if (s == null)
-                        Line.append('\0');
-                     else {
-                        Line.append(s);
-                        Line.append('\n');
+                     if (s == null) {
+                        StdOut.newline();
+                        bye(0);
                      }
+                     Line.append(s);
+                     Line.append('\n');
                      try {p.sink().write(ByteBuffer.allocate(1));}
                      catch (IOException e) {giveup(e);}
                   }
@@ -365,6 +368,9 @@ public class PicoLisp {
                }
          }
       }
+      InFile.Chr = 0;
+      Break = false;
+      Line.delete(0, Line.length());
       Env.pushOutFile(new OutFrame(OutFiles[2], 0));
       if (InFile.Name != null)
          StdErr.Wr.print('[' + InFile.Name + ':' + InFile.Src  + "] ");
@@ -469,8 +475,11 @@ public class PicoLisp {
             if (InFile.Chr == '\n')
                InFile.Chr = 0;
          }
-         if (y == Nil)
-            break;
+         if (y == Nil) {
+            Env.popInFiles();
+            Transient.clear();
+            return x;
+         }
          if (InFile.Name != null || InFile.Chr != 0 || pr == '\0')
             x = y.eval();
          else {
@@ -484,9 +493,6 @@ public class PicoLisp {
             OutFile.newline();
          }
       }
-      Env.popInFiles();
-      Transient.clear();
-      return x;
    }
 
    final static String opt() {
@@ -728,7 +734,17 @@ public class PicoLisp {
       if (x instanceof Number || x == Nil)
          return null;
       if (x instanceof Symbol)
-         return (s==Nil? x!=At && firstChar(x)=='@' : memq(x,s)!=null)? x.Car : null;
+         return x != x.Car && (s==Nil? x!=At && firstChar(x)=='@' : memq(x,s)!=null)? x.Car : null;
+      if (x.Car == Up) {
+         x = x.Cdr;
+         if (!((y = x.Car.eval()) instanceof Cell))
+            return (z = fill(x.Cdr, s)) == null? x.Cdr : z;
+         Any w = y;
+         while (y.Cdr instanceof Cell)
+            y = y.Cdr;
+         y.Cdr = (z = fill(x.Cdr, s)) == null? x.Cdr : z;
+         return w;
+      }
       if ((y = fill(x.Car, s)) != null) {
          z = fill(x.Cdr, s);
          return new Cell(y, z == null? x.Cdr : z);
@@ -1329,6 +1345,7 @@ public class PicoLisp {
       }
 
       final void eofErr() {err(null, null, "EOF Overrun");}
+      final void badInput() {err(null, null, "Bad input '" + (char)Chr + "'");}
 
       final int get() {
          try {
@@ -1339,8 +1356,7 @@ public class PicoLisp {
                   waitFd(null, 0, -1);
                   ((Pipe.SourceChannel)StdIn.Chan).read(ByteBuffer.allocate(1));
                }
-               if ((Chr = Line.charAt(0)) == '\0')
-                  Chr = -1;
+               Chr = Line.charAt(0);
                Line.deleteCharAt(0);
             }
             if (Chr < 0) {
@@ -1410,6 +1426,8 @@ public class PicoLisp {
                return false;
             if (Chr == '^') {
                get();
+               if (Chr == '@')
+                  badInput();
                if (Chr == '?')
                   Chr = 127;
                else
@@ -1546,7 +1564,7 @@ public class PicoLisp {
             return mkSymbol(null, sb.toString(), Transient);
          }
          if (Chr == ')' || Chr == ']' || Chr == '~')
-            err(null, null, "Bad input '" + (char)Chr + "' (" + Chr + ')');
+            badInput();
          if (Chr == '\\')
             get();
          int i = Chr;
@@ -2256,6 +2274,8 @@ public class PicoLisp {
                      bnd.add(x.Car);  // Save value
                      bnd.add(x);  // and symbol
                      x.Car = Nil;  // Set to NIL
+                     while (--n >= i)
+                        x.Car = new Cell(mkSymbol(cf? v[n].Car : v[n]), x.Car);
                   }
                   bnd.add(This.Car);
                   bnd.add(This);
@@ -2570,6 +2590,8 @@ public class PicoLisp {
                bnd.add(x.Car);  // Save old value
                bnd.add(x);  // and symbol
                x.Car = Nil;  // Set to NIL
+               while (--n >= i)
+                  x.Car = new Cell(mkSymbol(cf? v[n].Car : v[n]), x.Car);
             }
             Env.Bind = bnd;
             x = Cdr.prog();
@@ -2601,26 +2623,36 @@ public class PicoLisp {
       final boolean equal(Any x) {
          if (!(x instanceof Cell))
             return false;
+         if (!x.Car.equal(Car))
+            return false;
          HashSet<Any> mark = new HashSet<Any>();
          Any y = this, a = x, b = y;
          for (;;) {
-            if (!x.Car.equal(y.Car))
-               return false;
             if (!(x.Cdr instanceof Cell))
                return x.Cdr.equal(y.Cdr);
             if (!(y.Cdr instanceof Cell))
                return false;
-            mark.add(x);  x = x.Cdr;
-            mark.add(y);  y = y.Cdr;
-            if (mark.contains(x) || mark.contains(y)) {
+            mark.add(x);  x = x.Cdr;  y = y.Cdr;
+            if (mark.contains(x)) {
                for (;;) {
-                  if (a == x)
-                     return b == y;
+                  if (a == x) {
+                     if (b != y)
+                        return false;
+                     for (;;) {
+                        a = a.Cdr;
+                        if ((b = b.Cdr) == y)
+                           return a == x;
+                        if (a == x)
+                           return true;
+                     }
+                  }
                   if (b == y)
                      return false;
                   a = a.Cdr;  b = b.Cdr;
                }
             }
+            if (!x.Car.equal(y.Car))
+               return false;
          }
       }
 

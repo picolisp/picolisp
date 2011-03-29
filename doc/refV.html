@@ -86,9 +86,10 @@ href="ref_.html#::">::</a></code>.
 </code></pre>
 
 <dt><a name="version"><code>(version ['flg]) -> lst</code></a>
-<dd>(64-bit version only) Prints the current version as a string of
-dot-separated numbers, and returns the current version as a list of numbers.
-When <code>flg</code> is non-NIL, printing is suppressed.
+<dd>Prints the current version as a string of dot-separated numbers, and returns
+the current version as a list of numbers. The JVM- and C-versions print an
+additional "JVM" or "C", respectively, separated by a space. When
+<code>flg</code> is non-NIL, printing is suppressed.
 
 <pre><code>
 $ ./p -version

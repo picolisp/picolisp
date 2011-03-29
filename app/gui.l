@@ -1,4 +1,4 @@
-# 20apr10abu
+# 28feb11abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -50,7 +50,7 @@
                (*Login (logout))
                ((login (val> (: home nm)) (val> (: home pw)))
                   (clr> (: home pw)) )
-               (T (err ,"Permission denied")) ) )
+               (T (error ,"Permission denied")) ) )
          (when *Login
             (<nbsp> 4)
             (<span> "bold green"

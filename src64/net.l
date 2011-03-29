@@ -1,4 +1,4 @@
-# 19may10abu
+# 16mar11abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -111,7 +111,7 @@
    do
       cc accept(E Addr Buf)  # Accept connection
       nul4  # OK?
-      if nz  # Yes
+      if ns  # Yes
          xchg A (S)  # Save new socket, retrieve flags
          cc fcntl(E F_SETFL A)  # Restore socket status flags
          ld4 (Addr SIN_ADDR.S_ADDR)  # Get address

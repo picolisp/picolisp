@@ -592,13 +592,13 @@ href="refS.html#stem">stem</a></code>.
 </code></pre>
 
 <dt><a name="stack"><code>(stack ['cnt]) -> cnt | (.. sym . cnt)</code></a>
-<dd>(64-bit version only) Maintains the stack segment size. If called without a
-<code>cnt</code> argument, or if already one or more <a
+<dd>(64-bit version only) Maintains the stack segment size for coroutines. If
+called without a <code>cnt</code> argument, or if already one or more <a
 href="ref.html#coroutines">coroutines</a> are running, the current size in
-megabytes is returned. Otherwise, the stack segment size is set to the new
-value. Default is 4 MB. If there are running coroutines, their tags will be
-<code><a href="refC.html#cons">cons</a></code>ed in front of the size. See also
-<code><a href="refH.html#heap">heap</a></code>.
+megabytes is returned. Otherwise, the stack segment size is set to the new value
+(default 4 MB). If there are running coroutines, their tags will be <code><a
+href="refC.html#cons">cons</a></code>ed in front of the size. See also <code><a
+href="refH.html#heap">heap</a></code>.
 
 <pre><code>
 : (stack)         # Get current stack segment size

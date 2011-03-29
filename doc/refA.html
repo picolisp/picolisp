@@ -389,10 +389,10 @@ T
 <dd>If called without arguments, <code>argv</code> returns a list of strings
 containing all remaining command line arguments. Otherwise, the
 <code>var/sym</code> arguments are subsequently bound to the command line
-arguments. A hyphen "<code>-</code>" can be used to stop <code>load</code>ing
-further arguments. See also <code><a href="refC.html#cmd">cmd</a></code>,
-<code><a href="ref.html#invoc">Invocation</a></code> and <code><a
-href="refO.html#opt">opt</a></code>.
+arguments. A hyphen "<code>-</code>" can be used to inhibit the automatic
+<code>load</code>ing further arguments. See also <code><a
+href="refC.html#cmd">cmd</a></code>, <a href="ref.html#invoc">Invocation</a> and
+<code><a href="refO.html#opt">opt</a></code>.
 
 <pre><code>
 $ ./p -"println 'OK" - abc 123
@@ -572,10 +572,12 @@ equal to <code>any</code>, or <code>NIL</code> if no match is found. See also
 -> NIL
 </code></pre>
 
-<dt><a name="at"><code>(at '(cnt1 . cnt2) . prg) -> any</code></a>
+<dt><a name="at"><code>(at '(cnt1 . cnt2|NIL) . prg) -> any</code></a>
 <dd>Increments <code>cnt1</code> (destructively), and returns <code>NIL</code>
 when it is less than <code>cnt2</code>. Otherwise, <code>cnt1</code> is reset to
 zero and <code>prg</code> is executed. Returns the result of <code>prg</code>.
+If <code>cnt2</code> is <code>NIL</code>, nothing is done, and <code>NIL</code>
+is returned immediately.
 
 <pre><code>
 : (do 11 (prin ".") (at (0 . 3) (prin "!")))

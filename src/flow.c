@@ -1,4 +1,4 @@
-/* 19oct10abu
+/* 25feb11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1164,12 +1164,14 @@ any doDo(any x) {
    }
 }
 
-// (at '(cnt1 . cnt2) . prg) -> any
+// (at '(cnt1 . cnt2|NIL) . prg) -> any
 any doAt(any ex) {
    any x;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedCell(ex,x);
+   if (isNil(cdr(x)))
+      return Nil;
    NeedCnt(ex,car(x));
    NeedCnt(ex,cdr(x));
    if (num(setDig(car(x), unDig(car(x))+2)) < unDig(cdr(x)))

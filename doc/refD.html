@@ -38,8 +38,10 @@ the program).
 </code></pre>
 
 <dt><a name="*Dbg"><code>*Dbg</code></a>
-<dd>A boolean variable indicating "debug mode". When non-<code>NIL</code>, the
-<code><a href="ref_.html#$">$</a></code> (tracing) and <code><a
+<dd>A boolean variable indicating "debug mode". It can be conveniently switched
+on with a trailing <code>+</code> command line argument (see <a
+href="ref.html#invoc">Invocation</a>). When non-<code>NIL</code>, the <code><a
+href="ref_.html#$">$</a></code> (tracing) and <code><a
 href="ref_.html#!">!</a></code> (breakpoint) functions are enabled, and the
 current line number and file name will be stored in symbol properties by
 <code><a href="refD.html#de">de</a></code>, <code><a

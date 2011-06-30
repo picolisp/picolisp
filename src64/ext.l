@@ -1,5 +1,8 @@
-# 19may10abu
+# 23apr11abu
 # (c) Software Lab. Alexander Burger
+
+(data 'ExtData)
+   initData
 
 ### Soundex Algorithm ###
 (data 'SnxTab)
@@ -32,6 +35,9 @@ bytes (
 
 (equ SNXBASE 48)
 (equ SNXSIZE (+ (* 24 8) 2))
+
+(code 'ExtCode)
+   initCode
 
 # (ext:Snx 'any ['cnt]) -> sym
 (code 'Snx 2)
@@ -195,9 +201,9 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
          shl E 4  # Shift to upper position
          call chr64E  # Output encoded
          ld B (char "=")  # and two equal signs
-         call envPutB
+         call (PutB)
          ld B (char "=")
-         call envPutB
+         call (PutB)
          ld E Nil  # Return NIL
       else
          shr E 4  # Normalize second arg
@@ -218,7 +224,7 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
             shl A 2  # Shift
             call chr64A  # Output encoded
             ld B (char "=")  # and an equal sign
-            call envPutB
+            call (PutB)
             ld E Nil  # Return NIL
          else
             shr E 4  # Normalize third arg
@@ -243,6 +249,6 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
    ld A E
 (code 'chr64A)
    ld B (A Chr64)  # Fetch from table
-   jmp envPutB  # Output byte
+   jmp (PutB)  # Output byte
 
 # vi:et:ts=3:sw=3

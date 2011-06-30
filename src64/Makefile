@@ -1,4 +1,4 @@
-# 27mar11abu
+# 16jun11abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -9,8 +9,15 @@ lib = ../lib
 ifeq ($(shell uname), Linux)
 	OS = Linux
 	SYS = linux
-	ARCH = x86-64
-	AS = as
+	ifeq ($(shell uname -m), x86_64)
+		ARCH = x86-64
+		AS = as
+	else
+	ifeq ($(shell uname -m), ppc64)
+		ARCH = ppc64
+		AS = as -mppc64 -a64
+	endif
+	endif
 	LD-MAIN = gcc -m64 -rdynamic -lc -lm -ldl
 	LD-SHARED = gcc -m64 -shared -export-dynamic
 	STRIP = strip
@@ -51,23 +58,33 @@ $(lib)/ht: $(ARCH).$(SYS).ht.o
 
 
 # Explicit builds for cross-assembly
-x86-64.linux.base.s: $(baseFiles) sys/x86-64.linux.code.l
+x86-64.linux.base.s: lib/asm.l arch/x86-64.l $(baseFiles) sys/x86-64.linux.code.l
 	./mkAsm x86-64 linux Linux base $(lib)/tags $(baseFiles) sys/x86-64.linux.code.l
 
-x86-64.linux.ext.s: ext.l
+x86-64.linux.ext.s: lib/asm.l arch/x86-64.l ext.l
 	./mkAsm x86-64 linux Linux ext "" -fpic ext.l
 
-x86-64.linux.ht.s: ht.l
+x86-64.linux.ht.s: lib/asm.l arch/x86-64.l ht.l
 	./mkAsm x86-64 linux Linux ht "" -fpic ht.l
 
 
-x86-64.sunOs.base.s: $(baseFiles) sys/x86-64.sunOs.code.l
+ppc64.linux.base.s: lib/asm.l arch/ppc64.l $(baseFiles) sys/ppc64.linux.code.l
+	./mkAsm ppc64 linux Linux base $(lib)/tags $(baseFiles) sys/ppc64.linux.code.l -'prSym "ppc64.symtab"'
+
+ppc64.linux.ext.s: lib/asm.l arch/ppc64.l ext.l ppc64.linux.base.s
+	./mkAsm ppc64 linux Linux ext "" -fpic -'rdSym "ppc64.symtab"' ext.l
+
+ppc64.linux.ht.s: lib/asm.l arch/ppc64.l ht.l ppc64.linux.base.s
+	./mkAsm ppc64 linux Linux ht "" -fpic -'rdSym "ppc64.symtab"' ht.l
+
+
+x86-64.sunOs.base.s: lib/asm.l arch/x86-64.l $(baseFiles) sys/x86-64.sunOs.code.l
 	./mkAsm x86-64 sunOs SunOS base $(lib)/tags $(baseFiles) sys/x86-64.sunOs.code.l
 
-x86-64.sunOs.ext.s: ext.l
+x86-64.sunOs.ext.s: lib/asm.l arch/x86-64.l ext.l
 	./mkAsm x86-64 sunOs SunOS ext "" -fpic ext.l
 
-x86-64.sunOs.ht.s: ht.l
+x86-64.sunOs.ht.s: lib/asm.l arch/x86-64.l ht.l
 	./mkAsm x86-64 sunOs SunOS ht "" -fpic ht.l
 
 

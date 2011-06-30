@@ -1,7 +1,7 @@
-# 21may10abu
+# 25may11abu
 # (c) Software Lab. Alexander Burger
 
-(if (== 64 64) (load "lib/native.l") (from "/**/"))
+(if (== 64 64) (load "@lib/native.l") (from "/**/"))
 
 (gcc "util" NIL
    (crc (Len Lst) "crc" 'I Len (cons NIL (cons Len) Lst)) )
@@ -23,7 +23,7 @@ int crc(int len, char *p) {
 /**/
 
 
-(ifn (== 64 64) (load "lib/gcc.l") (from "/**/"))
+(ifn (== 64 64) (load "@lib/gcc.l") (from "/**/"))
 
 (gcc "crc" NIL 'crc)
 

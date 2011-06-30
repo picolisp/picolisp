@@ -1,7 +1,7 @@
-# 21mar11abu
+# 23apr11abu
 # (c) Software Lab. Alexander Burger
 
-# *LittleEndian *Registers optimize
+# *LittleEndian *AlignedCode *Registers optimize
 
 # *FPic *Section *Label *Tags *Program *Statement
 # *Instructions *IfStack *DoStack
@@ -63,7 +63,6 @@
 (de section (Fun @Sym)
    (def Fun
       (curry (@Sym) (Lbl Align)
-         (def Lbl 'src (cdr (file)))
          (unless (== *Section '@Sym)
             (prinl)
             (prinl "   ." '@Sym)
@@ -75,14 +74,19 @@
          (when (reg Lbl)
             (quit "Register" Lbl) )
          (when Lbl
-            (label (setq *Label Lbl)) )
+            (def Lbl 'src (cdr (file)))
+            (label (setq *Label Lbl) T) )
          (setq *Program
             (make
                (while (and (skip "#") (<> "(" (peek)))
                   (let Atom (read)
                      (cond
-                        ((== ': Atom)
+                        ((== ': Atom)  # Label
                            (link (cons ': (read))) )
+                        ((== '? Atom)  # Conditional
+                           (unless (eval (read))
+                              (while (and (skip "#") (n== '= (read)))) ) )
+                        ((== '= Atom))  # Conditional end
                         ((num? Atom)
                            (link (cons ': (pack *Label "_" Atom))) )
                         ((lup *FlowControl Atom)
@@ -102,7 +106,7 @@
                      (chain (cdr @)) ) ) ) )
          (for *Statement *Program
             (if (== ': (car *Statement))
-               (prinl (cdr *Statement) ':)
+               (label (cdr *Statement))
                (apply (get (car *Statement) 'asm) (cdr *Statement)) ) ) ) ) )
 
 # (data 'lbl)
@@ -238,7 +242,7 @@
    (cond
       ((num? X)                                 # Immediate
          (zero "*Mode")
-         (pack '$ (and F "~") X) )
+         (pack (and F "~") X) )
       ((reg X) (off "*Mode") @)                 # Register
       ((atom X) (on "*Mode") X)                 # Direct
       ((or (num? (cdr X)) (get (cdr X) 'equ))
@@ -391,7 +395,7 @@
       (ascii (operand (read)))
       (asciz (operand (read)))
       (atom (source) "*Mode")
-      (begin (operand (read)))
+      (begin)
       (big (source) "*Mode")
       (byte (operand (read)))
       (bytes (mapcar operand (read)))
@@ -419,6 +423,7 @@
       (initCode)
       (initData)
       (initFun (read) (read) (operand (read)))
+      (initMain)
       (initSym (read) (read) (operand (read)))
       (jc (address) "*Mode")
       (jcz (address) "*Mode")
@@ -468,7 +473,7 @@
       (rcl (destination) "*Mode" (source) "*Mode")
       (rcr (destination) "*Mode" (source) "*Mode")
       (ret)
-      (return (operand (read)))
+      (return)
       (rol (destination) "*Mode" (source) "*Mode")
       (ror (destination) "*Mode" (source) "*Mode")
       (save (source) "*Mode" (source) "*Mode" (destination) "*Mode")
@@ -493,12 +498,12 @@
 
 
 # Directives
-(de label (Lbl)
-   (prinl "   .globl  " Lbl)
+(de label (Lbl Flg)
+   (and Flg (prinl "   .globl  " Lbl))
    (prinl Lbl ':) )
 
 (asm :: (Lbl)
-   (label Lbl) )
+   (label Lbl T) )
 
 (asm word (N)
    (prinst ".quad" N) )
@@ -513,13 +518,13 @@
    (prinst ".short" (glue ", " (mapcar hex Lst))) )
 
 (asm ascii (Str)
-   (prinst ".ascii " (pack "\"" Str "\"")) )
+   (prinst ".ascii" (pack "\"" Str "\"")) )
 
 (asm asciz (Str)
-   (prinst ".asciz " (pack "\"" Str "\"")) )
+   (prinst ".asciz" (pack "\"" Str "\"")) )
 
 (asm initFun (Lbl Name Val)
-   (initSym Lbl Name Val (boxfun Val)) )
+   (initSym Lbl Name Val (pack Val (and *AlignedCode "+2"))) )
 
 (asm initSym (Lbl Name Val)
    (initSym Lbl Name Val Val) )
@@ -546,13 +551,13 @@
                (chain L) ) ) ) )
    (if (nth Name 9)
       (prinst ".quad" ".+20")
-      (prinl "   .byte    " (glue ", " Name))
+      (prinst ".byte" (glue ", " Name))
       (off Name) )
    (when Lbl
-      (label Lbl) )
+      (label Lbl T) )
    (prinst ".quad" Val)
    (while Name
-      (prinl "   .byte    " (glue ", " (cut 8 'Name))) ) )
+      (prinst ".byte" (glue ", " (cut 8 'Name))) ) )
 
 (de warn (Msg)
    (out 2

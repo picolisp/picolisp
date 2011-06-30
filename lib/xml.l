@@ -1,4 +1,4 @@
-# 30apr10abu
+# 13apr11abu
 # 21jan09 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
@@ -117,7 +117,8 @@
                         (prog (char) (and L (link L)))
                         (link L)
                         (loop
-                           (NIL (skip) (quit "Unexpected end of XML" Tok))
+                           (NIL (if *XmlKeepBlanks (peek) (skip))
+                              (quit "Unexpected end of XML" Tok) )
                            (T (and (= "<" (setq X (char))) (= "/" (peek)))
                               (char)
                               (unless (= Tok (till " ^I^M^J/>" T))
@@ -128,7 +129,10 @@
                               (when (_xml T "<")
                                  (link @) )
                               (link
-                                 (pack (xmlEsc (trim (cons X (till "^M^J<"))))) ) ) ) ) ) ) ) ) ) ) )
+                                 (pack
+                                    (xmlEsc
+                                       ((if *XmlKeepBlanks prog trim)
+                                          (cons X (till "<")) ) ) ) ) ) ) ) ) ) ) ) ) ) )
 
 (de xmlEsc (L)
    (use (@X @Z)

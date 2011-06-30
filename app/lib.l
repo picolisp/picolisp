@@ -1,11 +1,11 @@
-# 08jun10abu
+# 09may11abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
 (dm (ps> . +Ord) ()
    (a4 (pack "Order" (: nr)))
    (font (12 . "Helvetica"))
-   (eps "img/7fach.eps" 340 150 75)
+   (eps "@img/7fach.eps" 340 150 75)
    (window 380 120 120 30
       (font (21 . "Times-Roman") (ps ,"Order" 0)) )
    (brief NIL 8 "7fach GmbH, Bawaria"
@@ -39,7 +39,7 @@
             (down 12)
             (font 9 (ps (text ,"Continued on page @1" (inc 'Page))))
             (page T)
-            (eps "img/7fach.eps" 340 150 75)
+            (eps "@img/7fach.eps" 340 150 75)
             (down 40)
             (font 9 (ps (text ,"Page @1" Page)))
             (down 80)

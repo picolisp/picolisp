@@ -1,12 +1,12 @@
-# 18mar10abu
+# 10jun11abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
 (test (3 . 4)
    (let (*Run NIL  *A NIL  *B NIL)
       (task -10 0 (setq *A 3))
-      (task (port T 4444) (eval (udp @)))
-      (udp "localhost" 4444 '(setq *B 4))
+      (task (port T 0 "TaskPort") (eval (udp @)))
+      (udp "localhost" "TaskPort" '(setq *B 4))
       (wait NIL (and *A *B))
       (cons *A *B) ) )
 

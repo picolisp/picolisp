@@ -1,8 +1,8 @@
-# 18jan11abu
+# 27apr11abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
-# $(/bin/pwd)/p lib/test.l -bye +
+# $(/bin/pwd)/pil lib/test.l -bye +
 
 (test T (pool (tmp "db")))
 

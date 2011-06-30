@@ -1,4 +1,4 @@
-# 23jan11abu
+# 26may11abu
 # (c) Software Lab. Alexander Burger
 
 (de gcd (A B)
@@ -8,7 +8,7 @@
    (abs A) )
 
 (de lcm (A B)
-   (* B (/ A (gcd A B))) )
+   (*/ A B (gcd A B)) )
 
 (de frac (N D)
    (if (=0 N)

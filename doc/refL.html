@@ -295,8 +295,9 @@ function <code>fun</code>, and returns a pointer <code>num</code> suitable to be
 passed to a C function via 'native'. If <code>fun</code> is <code>NIL</code>,
 the corresponding entry is freed. Maximally 24 callback functions can be
 installed that way. 'fun' should be a function of maximally five numbers, and
-should return a number. See also <code><a
-href="refN.html#native">native</a></code>.
+should return a number. "Numbers" in this context are 64-bit scalars, and may
+not only represent integers, but also pointers or other encoded data. See also
+<code><a href="refN.html#native">native</a></code>.
 
 <pre><code>
 (load "lib/native.l")

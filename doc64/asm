@@ -1,4 +1,4 @@
-# 21mar11abu
+# 29apr11abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -84,15 +84,15 @@
       ld dst src        # Load 'dst' from 'src' [---]
       ld2 src           # Load 'A' from two bytes 'src' (unsigned)
       ld4 src           # Load 'A' from four bytes 'src' (unsigned)
-      ldc dst src       # Load if Carry 'dst' from 'src'
-      ldnc dst src      # Load if not Carry 'dst' from 'src'
-      ldz dst src       # Load if Zero 'dst' from 'src'
-      ldnz dst src      # Load if not Zero 'dst' from 'src'
+      ldc reg src       # Load if Carry 'reg' from 'src'
+      ldnc reg src      # Load if not Carry 'reg' from 'src'
+      ldz reg src       # Load if Zero 'reg' from 'src'
+      ldnz reg src      # Load if not Zero 'reg' from 'src'
       lea dst src       # Load 'dst' with effective address of 'src'
       st2 dst           # Store two bytes from 'A' into 'dst'
       st4 dst           # Store four bytes from 'A' into 'dst'
       xchg dst dst      # Exchange 'dst's
-      movn dst src cnt  # Move 'cnt' bytes from 'src' to 'dst'
+      movn dst src cnt  # Move 'cnt' bytes from 'src' to 'dst' (non-overlapping)
       mset dst cnt      # Set 'cnt' bytes of memory to B
       movm dst src end  # Move memory 'src'..'end' to 'dst' (aligned)
       save src end dst  # Save 'src'..'end' to 'dst' (non-overlapping)
@@ -112,8 +112,8 @@
       and dst src       # Bitwise AND 'dst' with 'src'
       or dst src        # Bitwise OR 'dst' with 'src'
       xor dst src       # Bitwise XOR 'dst' with 'src'
-      off dst src       # Clear 'src' bits in 'src'
-      test dst src      # Bit-test 'dst' with 'src'
+      off dst src       # Clear 'src' bits in 'dst'
+      test dst src      # Bit-test 'dst' with 'src' [z._]
 
       shl dst src       # Shift 'dst' left into Carry by 'src' bits
       shr dst src       # Shift 'dst' right into Carry by 'src' bits
@@ -137,7 +137,7 @@
       cmp4 src          # Compare four bytes in 'A' with 'src'
       cmpn dst src cnt  # Compare 'cnt' bytes 'dst' with 'src'
       slen dst src      # Set 'dst' to the string length of 'src'
-      memb src cnt      # Find B in 'cnt' bytes of memory
+      memb src cnt      # Find B in 'cnt' bytes of memory [z..]
       null src          # Compare 'src' with 0 [zs_]
       nul4              # Compare four bytes in 'A' with 0 [zs_]
 
@@ -169,8 +169,8 @@
       fix               # Convert double with scale 'E' to fixnum in 'E'
 
       ret               # Return
-      begin src         # Called from C-function with 'src' arguments
-      return src        # Prepare to return to C-function
+      begin             # Called from foreign function
+      return            # Return to foreign function
 
    Stack Manipulations:
       push src          # Push 'src' [---]
@@ -187,7 +187,9 @@
       prog reg          # Evaluate expressions in 'reg', return last result
 
    System:
-      init              # Init runtime system
+      initData          # Init runtime system
+      initCode
+      initMain
       dbg               # Debug breakpoint
 
 ========================================================================

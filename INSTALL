@@ -1,4 +1,4 @@
-08mar11abu
+16may11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -10,11 +10,25 @@ enough to get along without it (we hope). It should compile and run on
 GNU/Linux, FreeBSD, Mac OS X (Darwin), Cygwin/Win32, and possibly other systems
 without problems.
 
-By default, PicoLisp installs completely in a local directory. No need to touch
-any system locations, so you don't have to be root.
+PicoLisp supports two installation strategies: Local and Global.
+
+The default (if you just download, unpack and compile the release) is a local
+installation. It will not interfere in any way with the world outside its
+directory. There is no need to touch any system locations, and you don't have to
+be root to install it. Many different versions - or local modifications - of
+PicoLisp can co-exist on a single machine.
+
+For a global installation, allowing system-wide access to the executable and
+library/documentation files, you can either install it from a ready-made
+distribution, or set some symbolic links to one of the local installation
+directories as described below.
+
+Note that you are still free to have local installations along with a global
+installation, and invoke them explicitly as desired.
 
 
-Please follow these steps:
+      Local Installation
+      ------------------
 
 1. Unpack the distribution
 
@@ -28,7 +42,8 @@ Please follow these steps:
 
       $ (cd src; make picolisp)
 
-   or, if you have an x86-64 Linux or SunOS system, build the 64-bit version
+   or - if you have an x86-64/Linux, x86-64/SunOS or ppc64/Linux system - build
+   the 64-bit version
 
       $ (cd src64; make picolisp)
 
@@ -45,6 +60,7 @@ Please follow these steps:
 
      - http://software-lab.de/x86-64.linux.tgz
      - http://software-lab.de/x86-64.sunOs.tgz
+     - http://software-lab.de/ppc64.linux.tgz
 
    - Else, build a 32-bit version first, and use the resulting bin/picolisp to
      generate the "*.s" files:
@@ -59,35 +75,35 @@ Please follow these steps:
    Note that on the BSD family of operating systems, 'gmake' must be used
    instead of 'make'.
 
-4. Optional (but recommended if you have permission to switch to root) are two
-   symbolic links from /usr/lib and /usr/bin to the installation directory
 
-      # ln -s /<installdir> /usr/lib/picolisp
-      # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+      Global Installation
+      -------------------
 
-   and a copy of the startup script
+The recommended way for a global installation is to use a picolisp package from
+the OS distribution.
 
-      # cp /<installdir>/bin/pil /usr/bin
+If that is not available, you can (as root) create four symbolic links from
+/usr/lib, /usr/share and /usr/bin to a local installation directory
 
-   for a convenient global invocation. 'pil' can also serve as a template for
-   your own stand-alone scripts.
+   # ln -s /<installdir> /usr/lib/picolisp
+   # ln -s /<installdir> /usr/share/picolisp
+   # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
+   # ln -s /usr/lib/picolisp/bin/pil /usr/bin/pil
 
 
       Invocation
       ----------
 
-The shell script 'dbg' is usually called to start up a local PicoLisp in
-interactive debugging mode
+In a global installation, the 'pil' command should be used. You can either start
+in plain or in debug mode. The difference is that for debug mode the command is
+followed by single plus ('+') sign. The '+' must be the very last argument on
+the command line.
 
-   $ ./dbg
+   $ pil       # Plain mode
    :
 
-In a global installation, the equivalent call is
-
-   $ pil +
+   $ pil +     # Debug mode
    :
-
-(Note the trailing '+' for the debugging mode)
 
 In both cases, the colon ':' is PicoLisp's prompt. You may enter some Lisp
 expression,
@@ -102,13 +118,38 @@ To exit the interpreter, enter
 or just type Ctrl-D.
 
 
+For a local invocation, specify a path name, e.g.
+
+   $ ./pil     # Plain mode
+   :
+
+   $ ./pil +   # Debug mode
+   :
+
+or
+
+   $ /home/app/pil  # Invoking a local installation from some other directory
+
+
+A shortcut for debug mode is the 'dbg' script:
+
+   $ ./dbg
+   :
+
+It is available only for local installaions, and is eqivalent to
+
+   $ ./pil +
+
+Note that 'pil' can also serve as a template for your own stand-alone scripts.
+
+
 If you just want to test the ready-to-run Ersatz PicoLisp (it needs a Java
 runtime system), use
 
-   $ ersatz/picolisp +
+   $ ersatz/pil +
    :
 
-instead of 'dbg' (or 'pil +').
+instead of './dbg' or './pil +'.
 
 
       Documentation

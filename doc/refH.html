@@ -40,11 +40,11 @@ href="ref.html#dbase">Database</a></code>.
 <dt><code>(hax 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a string in hexadecimal/alpha
 notation, or a hexadecimal/alpha formatted string to a number. The digits are
-represented with the characters <code>@</code> - <code>O</code> (from "alpha" to
-"omega"). This format is used internally for the names of <code><a
-href="ref.html#external-io">external symbols</a></code> in the 64-bit version.
-See also <code><a href="refF.html#fmt64">fmt64</a></code>, <code><a
-href="refH.html#hex">hex</a></code>, <code><a
+represented with '<code>@</code>' (zero) and the letters '<code>A</code>' -
+'<code>O</code>' (from "alpha" to "omega"). This format is used internally for
+the names of <code><a href="ref.html#external-io">external symbols</a></code> in
+the 64-bit version. See also <code><a href="refF.html#fmt64">fmt64</a></code>,
+<code><a href="refH.html#hex">hex</a></code>, <code><a
 href="refB.html#bin">bin</a></code> and <code><a
 href="refO.html#oct">oct</a></code>.
 
@@ -164,7 +164,7 @@ $ cat hello.l
 &lt;p&gt;Hello!&lt;/p&gt;
 &lt;p&gt;This is a test.&lt;/p&gt;
 
-$ ./p lib/http.l lib/xhtml.l hello.l
+$ pil @lib/http.l @lib/xhtml.l hello.l
 HTTP/1.0 200 OK
 Server: PicoLisp
 Date: Sun, 03 Jun 2007 11:41:27 GMT

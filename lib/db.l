@@ -1,4 +1,4 @@
-# 09mar11abu
+# 06jun11abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -53,8 +53,9 @@
                (fetch Tree Val) )
             (let Key (cons (if (isa '+Fold This) (fold Val) Val))
                (let? A (: aux)
-                   (for (L (rest) (and L (== (pop 'A) (pop 'L))) (cdr L))
-                     (conc Key (cons (car L))) ) )
+                  (while (and (args) (== (pop 'A) (next)))
+                     (conc Key (cons (next))) )
+                  (and (: ub) (setq Key (ubZval Key))) )
                (let Q (init Tree Key (append Key T))
                   (loop
                      (NIL (step Q T))
@@ -70,10 +71,11 @@
 # (aux 'var 'cls ['hook] 'any ..) -> sym
 (de aux (Var Cls . @)
    (with (treeRel Var Cls)
-      (step
-         (init (tree (: var) (: cls) (and (: hook) (next)))
-            (rest)
-            (conc (rest) T) ) ) ) )
+      (let Key (if (: ub) (ubZval (rest)) (rest))
+         (step
+            (init (tree (: var) (: cls) (and (: hook) (next)))
+               Key
+               (append Key T) ) ) ) ) )
 
 
 # (collect 'var 'cls ['hook] ['any|beg ['end [var ..]]]) -> lst
@@ -469,31 +471,51 @@
 
 # (+Ref) hook
 (class +Ref +index)
-# aux
+# aux ub
 
 (dm rel> (Obj Old New Hook)
    (let
       (Tree (tree (: var) (: cls) (or Hook (get Obj (: hook))))
-         Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
+         Aux (mapcar '((S) (get Obj S)) (: aux)) )
       (when Old
-         (store Tree (cons Old Aux) NIL (: dbf)) )
+         (let Key (cons Old Aux)
+            (store Tree
+               (if (: ub)
+                  (ubZval Key Obj)
+                  (append Key Obj) )
+               NIL
+               (: dbf) ) ) )
       (and New
          (not (get Obj T))
-         (store Tree (cons New Aux) Obj (: dbf)) ) )
+         (let Key (cons New Aux)
+            (store Tree
+               (if (: ub)
+                  (ubZval Key Obj)
+                  (conc Key Obj) )
+               Obj
+               (: dbf) ) ) ) )
    (extra Obj Old New Hook) )
 
 (dm lose> (Obj Val Hook)
-   (store
-      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
-      (cons Val (conc (mapcar '((S) (get Obj S)) (: aux)) Obj))
-      NIL (: dbf) )
+   (let Key (cons Val (mapcar '((S) (get Obj S)) (: aux)))
+      (store
+         (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         (if (: ub)
+            (ubZval Key Obj)
+            (conc Key Obj) )
+         NIL
+         (: dbf) ) )
    (extra Obj Val Hook) )
 
 (dm keep> (Obj Val Hook)
-   (store
-      (tree (: var) (: cls) (or Hook (get Obj (: hook))))
-      (cons Val (conc (mapcar '((S) (get Obj S)) (: aux)) Obj))
-      Obj (: dbf) )
+   (let Key (cons Val (mapcar '((S) (get Obj S)) (: aux)))
+      (store
+         (tree (: var) (: cls) (or Hook (get Obj (: hook))))
+         (if (: ub)
+            (ubZval Key Obj)
+            (conc Key Obj) )
+         Obj
+         (: dbf) ) )
    (extra Obj Val Hook) )
 
 
@@ -575,7 +597,6 @@
    (extra Obj Val Hook) )
 
 
-
 # (+Sn +index) hook
 (class +Sn)
 
@@ -638,26 +659,49 @@
       (let? Val (get Obj A)
          (with (meta Obj A)
             (let Tree (tree (: var) (: cls) (get Obj (: hook)))
-               (store Tree
-                  (conc
-                     (cons Val
-                        (mapcar
-                           '((S)
-                              (if (== S Var) Old (get Obj S)) )
-                           (: aux) ) )
-                     Obj )
-                  NIL
-                  (: dbf) )
-               (store Tree
-                  (conc
-                     (cons Val
-                        (mapcar
-                           '((S)
-                              (if (== S Var) (get Obj Var) (get Obj S)) )
-                           (: aux) ) )
-                     Obj )
-                  Obj
-                  (: dbf) ) ) ) ) ) )
+               (let Key
+                  (cons Val
+                     (mapcar
+                        '((S)
+                           (if (== S Var) Old (get Obj S)) )
+                        (: aux) ) )
+                  (store Tree
+                     (if (: ub)
+                        (ubZval Key Obj)
+                        (conc Key Obj) )
+                     NIL
+                     (: dbf) ) )
+               (let Key
+                  (cons Val
+                     (mapcar
+                        '((S)
+                           (if (== S Var) (get Obj Var) (get Obj S)) )
+                        (: aux) ) )
+                  (store Tree
+                     (if (: ub)
+                        (ubZval Key Obj)
+                        (conc Key Obj) )
+                     Obj
+                     (: dbf) ) ) ) ) ) ) )
+
+
+# UB-Tree (+Aux prefix)
+(class +UB)
+
+(dm T (Var Lst)
+   (=: ub T)
+   (extra Var Lst) )
+
+(de ubZval (Lst X)
+   (let (Res 0  P 1)
+      (while (find gt0 Lst)
+         (map
+            '((L)
+               (and (bit? 1 (car L)) (setq Res (| Res P)))
+               (setq P (>> -1 P))
+               (set L (>> 1 (car L))) )
+            Lst ) )
+      (cons Res X) ) )
 
 
 ### Relation prefix classes ###
@@ -762,9 +806,10 @@
 (var Dbf)
 (var Aux)
 
-(de dbSync ()
+(de dbSync (Obj)
    (let *Run NIL
-      (while (lock *DB) (wait 40))
+      (while (lock (or Obj *DB))
+         (wait 40) )
       (sync) ) )
 
 (de new! ("Typ" . @)

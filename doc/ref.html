@@ -52,6 +52,7 @@ href="faq.html">Frequently Asked Questions (FAQ)</a>.
    </ul>
 <li><a href="#penv">Programming Environment</a>
    <ul>
+   <li><a href="#inst">Installation</a>
    <li><a href="#invoc">Invocation</a>
    <li><a href="#io">Input/Output</a>
       <ul>
@@ -488,6 +489,29 @@ and environment are described.
 
 
 <p><hr>
+<h3><a name="inst">Installation</a></h3>
+
+<p>PicoLisp supports two installation strategies: Local and Global.
+
+<p>Normally, if you didn't build PicoLisp yourself but installed it with your
+operating system's package manager, you will have a global installation. This
+allows system-wide access to the executable and library/documentation files.
+
+<p>To get a local installation, you can directly download the PicoLisp tarball,
+and follow the instructions in the INSTALL file.
+
+<p>A local installation will not interfere in any way with the world outside its
+directory. There is no need to touch any system locations, and you don't have to
+be root to install it. Many different versions - or local modifications - of
+PicoLisp can co-exist on a single machine.
+
+<p>Note that you are still free to have local installations along with a global
+installation, and invoke them explicitly as desired.
+
+<p>Most examples in the following apply to a global installation.
+
+
+<p><hr>
 <h3><a name="invoc">Invocation</a></h3>
 
 <p>When PicoLisp is invoked from the command line, an arbitrary number of
@@ -516,7 +540,7 @@ reserved for application programs.
 immediately by calling <code><a href="refB.html#bye">bye</a></code>:
 
 <pre><code>
-$ bin/picolisp -bye
+$ picolisp -bye
 $
 </code></pre>
 
@@ -525,7 +549,7 @@ href="refL.html#load">load</a></code>) will also exit when <code>Ctrl-D</code>
 is entered:
 
 <pre><code>
-$ bin/picolisp
+$ picolisp
 : $                     # Typed Ctrl-D
 </code></pre>
 
@@ -534,16 +558,16 @@ loaded. The most commonly used things are in "lib.l" and in a bunch of other
 files, which are in turn loaded by "ext.l". Thus, a typical call would be:
 
 <pre><code>
-$ bin/picolisp lib.l ext.l
+$ picolisp lib.l ext.l
 </code></pre>
 
-<p>The recommended way, however, is to call the "p" shell script, which includes
-"lib.l" and "ext.l". Given that your current project is loaded by some file
-"myProject.l" and your startup function is <code>main</code>, your invocation
-would look like:
+<p>The recommended way, however, is to call the "pil" shell script, which
+includes "lib.l" and "ext.l". Given that your current project is loaded by some
+file "myProject.l" and your startup function is <code>main</code>, your
+invocation would look like:
 
 <pre><code>
-$ ./p myProject.l -main
+$ pil myProject.l -main
 </code></pre>
 
 <p>For interactive development it is recommended to enable debugging mode, to
@@ -551,10 +575,10 @@ get the vi-style command line editor, single-stepping, tracing and other
 debugging utilities.
 
 <pre><code>
-$ ./p myProject.l -main +
+$ pil myProject.l -main +
 </code></pre>
 
-<p>This is equivalent to
+<p>This is - in a local installation - equivalent to
 
 <pre><code>
 $ ./dbg myProject.l -main
@@ -563,14 +587,11 @@ $ ./dbg myProject.l -main
 <p>or
 
 <pre><code>
-$ pil myProject.l -main +
+$ ./pil myProject.l -main +
 </code></pre>
 
-if PicoLisp is globally installed in "/usr/bin/" and "/usr/lib/" as recommended
-in the INSTALL file.
-
-<p>In any case, the directory part of the first file name supplied on the
-command line (normally, the path to "lib.l") is remembered internally as the
+<p>In any case, the directory part of the first file name supplied (normally,
+the path to "lib.l" as called by 'pil' or 'dbg') is remembered internally as the
 <i>PicoLisp Home Directory</i>. This path is later automatically substituted for
 any leading "<code>@</code>" character in file name arguments to I/O functions
 (see <code><a href="refP.html#path">path</a></code>).
@@ -2300,6 +2321,7 @@ abbreviations:
    <a href="refS.html#+Sn">+Sn</a>
    <a href="refF.html#+Fold">+Fold</a>
    <a href="refA.html#+Aux">+Aux</a>
+   <a href="refU.html#+UB">+UB</a>
    <a href="refD.html#+Dep">+Dep</a>
    <a href="refL.html#+List">+List</a>
    <a href="refN.html#+Need">+Need</a>

@@ -49,18 +49,18 @@ href="refP.html#pre?">pre?</a></code>.
 
 <pre><code>
 : (allowed ("app/" "img/")  # Initialize
-   "@start" "@stop" "favicon.ico" "lib.css" "@psh" )
+   "!start" "!stop" "lib.css" "!psh" )
 -> NIL
-: (allow "@myFoo")  # additional item
--> "@myFoo"
+: (allow "!myFoo")  # additional item
+-> "!myFoo"
 : (allow "myDir/" T)  # additional prefix
 -> "myDir/"
 
 : *Allow
--> (("@stop" ("@psh" ("@myFoo") "@start") "favicon.ico" NIL "lib.css") "app/" "img/" "myDir/")
+-> (("!start" ("!psh" ("!myFoo")) "!stop" NIL "lib.css") "app/" "img/" "myDir/")
 
 : (idx *Allow)  # items
--> ("@myFoo" "@psh" "@start" "@stop" "favicon.ico" "lib.css")
+-> ("!myFoo" "!psh" "!start" "!stop" "lib.css")
 : (cdr *Allow)  # prefixes
 -> ("app/" "img/" "myDir/")
 </code></pre>
@@ -96,7 +96,8 @@ href="refR.html#+relation">+relation</a></code>s, in addition to <code><a
 href="refR.html#+Ref">+Ref</a></code> or <code><a
 href="refI.html#+Idx">+Idx</a></code> indexes. Expects a list of auxiliary
 attributes of the same object, and combines all keys in that order into a single
-index key. See also <code><a href="refA.html#aux">aux</a></code> and <code><a
+index key. See also <code><a href="refU.html#+UB">+UB</a></code>, <code><a
+href="refA.html#aux">aux</a></code> and <code><a
 href="ref.html#dbase">Database</a></code>.
 
 <pre><code>
@@ -241,9 +242,9 @@ href="refA.html#allowed">allowed</a></code>.
 
 <pre><code>
 : *Allow
--> (("@stop" ("@psh" NIL "@start") "favicon.ico" NIL "lib.css") "app/" "img/")
-: (allow "@myFoo")  # additionally allowed item
--> "@myFoo"
+-> (("!start" ("!psh") "!stop" NIL "lib.css") "app/" "img/")
+: (allow "!myFoo")  # additionally allowed item
+-> "!myFoo"
 : (allow "myDir/" T)  # additionally allowed prefix
 -> "myDir/"
 </code></pre>
@@ -258,7 +259,7 @@ href="refA.html#allow">allow</a></code>.
 
 <pre><code>
 : (allowed ("app/" "img/")  # allowed prefixes
-   "@start" "@stop" "favicon.ico" "lib.css" "@psh" )  # allowed items
+   "!start" "!stop" "lib.css" "!psh" )  # allowed items
 -> NIL
 </code></pre>
 
@@ -395,7 +396,7 @@ href="refC.html#cmd">cmd</a></code>, <a href="ref.html#invoc">Invocation</a> and
 <code><a href="refO.html#opt">opt</a></code>.
 
 <pre><code>
-$ ./p -"println 'OK" - abc 123
+$ pil -"println 'OK" - abc 123 +
 OK
 : (argv)
 -> ("abc" "123")
@@ -451,7 +452,7 @@ in debug mode. See also <code><a href="refT.html#test">test</a></code>.
 
 <pre><code>
 # Start in debug mode
-$ ./dbg
+$ pil +
 : (de foo (N)
    ~(assert (>= 90 N 10))
    (bar N) )
@@ -467,7 +468,7 @@ $ ./dbg
 ?
 
 # Start in non-debug mode
-$ ./p
+$ pil
 : (de foo (N)
    ~(assert (>= 90 N 10))
    (bar N) )

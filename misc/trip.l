@@ -1,7 +1,7 @@
-# 11mar10abu
+# 25may11abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/simul.l")
+(load "@lib/simul.l")
 
 # Set up distance properties
 # See "misc/travel.l" and "doc/travel"

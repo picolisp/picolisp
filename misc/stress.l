@@ -1,8 +1,8 @@
-# 30aug10abu
+# 25may11abu
 # (c) Software Lab. Alexander Burger
-# Use: nice ./p misc/stress.l -main -go -bye; rm db/test jnl db/test2
+# Use: nice pil misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
-(load "lib/too.l")
+(load "@lib/too.l")
 
 (class +A +Entity)
 (rel key (+Key +Number))               # Key  1 .. 999

@@ -1,4 +1,4 @@
-# 14aug05abu
+# 16jun11abu
 # (c) Software Lab. Alexander Burger
 
 ##############################
@@ -11,7 +11,7 @@
 ##############################
 
 (de pi (N Eps)
-   (default Eps 100)
+   (default N *Scl  Eps 100)
    (let (Scl (** 10 N)  S 0  N2 (* 2 Scl)  P N2  P2 0)
       (while (> (- P P2) Eps)
          (setq

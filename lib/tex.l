@@ -1,4 +1,4 @@
-# 03jun07abu
+# 10may11abu
 # (c) Software Lab. Alexander Burger
 
 # Convert to PDF document
@@ -78,7 +78,7 @@
 
 ### TeX Document ###
 (de document (Doc Cls Typ Use . Prg)
-   (out (list "bin/lat1" (pack Doc ".tex"))
+   (out (list "@bin/lat1" (pack Doc ".tex"))
       (prinl "\\documentclass[" Cls "]{" Typ "}")
       (while Use
          (if (atom (car Use))

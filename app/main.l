@@ -1,14 +1,14 @@
-# 15nov10abu
+# 14may11abu
 # (c) Software Lab. Alexander Burger
 
-(allowed ("app/" "img/")
-   "@start" "@stop" "favicon.ico" "lib.css" "@psh" )
+(allowed ("app/" "@img/")
+   "!start" "!stop" "@lib.css" "!psh" )
 
-(load "lib/http.l" "lib/xhtml.l" "lib/form.l" "lib/ps.l" "lib/adm.l")
+(load "@lib/http.l" "@lib/xhtml.l" "@lib/form.l" "@lib/ps.l" "@lib/adm.l")
 
 (setq
    *Scl 2
-   *Css "lib.css"
+   *Css "@lib.css"
    *Blob "blob/app/" )
 
 (load "app/er.l" "app/lib.l" "app/gui.l")
@@ -57,6 +57,6 @@
          (close Sock) ) )
    (forked)
    (rollback)
-   (server 8080 "@start") )
+   (server 8080 "!start") )
 
 # vi:et:ts=3:sw=3

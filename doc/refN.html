@@ -160,12 +160,37 @@ structures, e.g.
    (N (B . 7))    # {long; byte[7];}   -> (1234 (1 2 3 4 5 6 7))
 </code></pre>
 
-<p>Arguments can be numbers (passed as 64-bit integers), fixpoint numbers
-(passed as cons pairs consisting of a the value and the scale), symbols (passed
-as strings), or a list with a variable in the CAR (to recieve the returned
-structure data, ignored when the CAR is <code>NIL</code>), a cons pair for the
-size- and value-specification in the CADR, and an optional sequence of
-initialization bytes in the CDDR.
+<p>Arguments can be
+<ul>
+<li>integers (up to 64-bit) or pointers, passed as numbers
+<li>fixpoint numbers, passed as cons pairs consisting of a the value and the
+   scale. If the scale is positive, the number is passed as a
+   <code>double</code>, otherwise as a <code>float</code>.
+<li>strings, passed as symbols, or
+<li>structures, passed as lists with
+   <ul>
+   <li>a variable in the CAR (to recieve the returned structure data, ignored
+      when the CAR is <code>NIL</code>)
+   <li>a cons pair for the size and value specification in the CADR (see above),
+      and
+   <li>an optional sequence of initialization items in the CDDR, where each
+      may be
+      <ul>
+      <li>a positive number, stored as an unsigned byte value
+      <li>a negative number, whose absolute value is stored as an unsigned
+         integer
+      <li>a pair <code>(num . cnt)</code> where '<code>num</code>' is stored in
+         a field of '<code>cnt</code>' bytes
+      <li>a pair <code>(sym . cnt)</code> where '<code>sym</code>' is stored as
+         a null-terminated string in a field of '<code>cnt</code>' bytes
+      </ul>
+      If the last CDR of the initialization sequence is a number, it is used
+      as a fill-byte value for the remaining space in the structure.
+   </ul>
+</ul>
+
+<p><code>native</code> takes care of allocating memory for strings, arrays or
+structures, and frees that memory when done.
 
 <p>The number of fixpoint arguments is limited to six. For NaN or negative
 infinity <code>NIL</code>, and for positive infinity <code>T</code> is returned.
@@ -196,8 +221,9 @@ This is 123.456
 
 <p>which accepts a symbol name as the first argument, and up to 5 numbers.
 <code>lisp()</code> calls that symbol with the five numbers, and expects a
-numeric return value. All numbers in this context should not be larger than 60
-bits (signed). See also <code><a href="refL.html#lisp">lisp</a></code>.
+numeric return value. "Numbers" in this context are 64-bit scalars, and may not
+only represent integers, but also pointers or other encoded data. See also
+<code><a href="refL.html#lisp">lisp</a></code>.
 
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
 <dt><code>(need 'cnt ['num|sym]) -> lst</code>

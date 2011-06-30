@@ -1,4 +1,4 @@
-19jan11abu
+16may11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -29,16 +29,16 @@ There is no support for
       Invocation
       ----------
 
-Ersatz PicoLisp can be started - analog to 'bin/picolisp' - as
+Ersatz PicoLisp can be started - analog to 'pil' - as
 
-   $ ersatz/picolisp
+   $ ersatz/pil
 
-This already includes slighly simplfied versions of the standard libraries as
-loaded by './p' (without database, but with Pilog and XML support).
+This includes slighly simplfied versions of the standard libraries as loaded by
+the "real" 'pil' (without database, but with Pilog and XML support).
 
 To start it in debug mode, use
 
-   $ ersatz/picolisp +
+   $ ersatz/pil +
 
 
 On non-Unix systems, you might start 'java' directly, e.g.:

@@ -1,4 +1,4 @@
-# 10jul08abu
+# 10may11abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
@@ -36,7 +36,7 @@
                               (rd 1) ) ) ) )       # Prec
                   (rd 14) ) ) ) )  # Skip
 
-      (in (list "bin/utf2" "-dd" (pack "if=" File) (pack "bs=" Hdr) "skip=1")
+      (in (list "@bin/utf2" "-dd" (pack "if=" File) (pack "bs=" Hdr) "skip=1")
          (prog1
             (make
                (do Cnt

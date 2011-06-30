@@ -1,4 +1,4 @@
-# 21mar11abu
+# 20apr11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -180,7 +180,7 @@
          ret
       end
       ld A (C)  # Else symbolic, get value
-      cmp A doMeth  # Method?
+      cmp A (Meth)  # Method?
       if eq  # Yes
          sub Y I  # First arg
          ld E (Y)  # Get object
@@ -534,7 +534,7 @@
          ret
       end
       ld A (C)  # Else symbolic, get value
-      cmp A doMeth  # Method?
+      cmp A (Meth)  # Method?
       if eq  # Yes
          sub Y I  # First arg
          ld E ((Y))  # Get object

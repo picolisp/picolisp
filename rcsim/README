@@ -1,4 +1,4 @@
-12nov09abu
+25jun11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -51,11 +51,11 @@ PicoLisp servers with 'killall picolisp'.
 
    You can start the PicoLisp server with
 
-      $ ./p rcsim/applet.main.l -main -go -wait
+      $ ./pil rcsim/applet.main.l -main -go -wait
 
    or (to get an interactive PicoLisp command line) with
 
-      $ ./dbg rcsim/main.l -main -go
+      $ ./pil rcsim/main.l -main -go +
 
    and then point your browser to "http://localhost:8080".
 

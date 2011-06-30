@@ -26,11 +26,12 @@ specificities of PicoLisp, and its differences with other Lisp dialects.
 
 <h3>Now let's start</h3>
 
-<p>If not stated otherwise, all examples assume that PicoLisp was started in the
-installation directory from the shell prompt as
+<p>If not stated otherwise, all examples assume that PicoLisp was started from a
+global installation (see <a href="ref.html#inst">Installation</a>) from the
+shell prompt as
 
 <pre><code>
-$ ./dbg
+$ pil +
 :
 </code></pre>
 
@@ -56,9 +57,9 @@ debugging environment will set the console (tty) to raw mode by itself and do
 the special handling seen above during character input.
 
 <p>If you feel that you absolutely have to use an IDE, <code>rlwrap</code> or
-another input front-end, please remove the entry "@lib/led.l" from "dbg.l".
-Note that in this case, however, you will not have the TAB symbol completion
-feature available during command line editing.
+another input front-end, please remove the entry "@lib/led.l" from "lib.l" and
+"dbg.l". Note that in this case, however, you will not have the TAB symbol
+completion feature available during command line editing.
 
 <h3>Table of content</h3>
 
@@ -100,8 +101,8 @@ which is similar to (though much simpler than) the <code>readline</code> feature
 of the <code>bash</code> shell. Only a subset of the <code>vi</code> mode is
 supported, which is restricted to single-key commands (the "real"
 <code>vi</code> supports multi-key commands and the modification of most
-commands with count prefixes). It is loaded at startup via "dbg.l", you find its
-source in "lib/led.l".
+commands with count prefixes). It is loaded at startup in debug mode, you find
+its source in "lib/led.l".
 
 <p>You can enter lines in the normal way, correcting mistypes with the BACKSPACE
 key, and terminating them with the ENTER key. This is the <i>Insert Mode</i>.
@@ -186,7 +187,7 @@ expression when the cursor is at a left parenthesis.
 <li>Lines shorter than 3 characters, lines beginning with a space character, or
 duplicate lines are not entered into the history.
 
-<li>The history is stored in a file named ".picoHistory" in the PicoLisp home
+<li>The history is stored in the file ".pil/history" in the user's home
 directory. The length of the history is limited to 1000 lines.
 
 </ul>
@@ -341,8 +342,7 @@ and indented way.
 : (pp 'pretty)
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
-   (while (args)
-      (printsp (next)) )
+   (while (args) (printsp (next)))
    (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
@@ -350,27 +350,34 @@ and indented way.
          (pop 'X) )
       (let Z X
          (prin "(")
-         (when (memq (print (pop 'X)) *PP)
-            (cond
-               ((memq (car Z) *PP1)
-                  (if (and (pair (car X)) (pair (cdar X)))
-                     (when (>= 12 (size (car X)))
+         (cond
+            ((memq (print (pop 'X)) *PP)
+               (cond
+                  ((memq (car Z) *PP1)
+                     (if (and (pair (car X)) (pair (cdar X)))
+                        (when (>= 12 (size (car X)))
+                           (space)
+                           (print (pop 'X)) )
                         (space)
-                        (print (pop 'X)) )
+                        (print (pop 'X))
+                        (when
+                           (or
+                              (atom (car X))
+                              (>= 12 (size (car X))) )
+                           (space)
+                           (print (pop 'X)) ) ) )
+                  ((memq (car Z) *PP2)
+                     (inc 'N 3)
+                     (loop
+                        (prinl)
+                        (pretty (cadr X) N (car X))
+                        (NIL (setq X (cddr X)) (space)) ) )
+                  ((or (atom (car X)) (>= 12 (size (car X))))
                      (space)
-                     (print (pop 'X))
-                     (when (or (atom (car X)) (>= 12 (size (car X))))
-                        (space)
-                        (print (pop 'X)) ) ) )
-               ((memq (car Z) *PP2)
-                  (inc 'N 3)
-                  (loop
-                     (prinl)
-                     (pretty (cadr X) N (car X))
-                     (NIL (setq X (cddr X)) (space)) ) )
-               ((or (atom (car X)) (>= 12 (size (car X))))
-                  (space)
-                  (print (pop 'X)) ) ) )
+                     (print (pop 'X)) ) ) )
+            ((and (memq (car Z) *PP3) (>= 12 (size (head 2 X))))
+               (space)
+               (print (pop 'X) (pop 'X)) ) )
          (when X
             (loop
                (T (== Z X) (prin " ."))
@@ -452,8 +459,8 @@ somewhere in their value or property list.
 
 <pre><code>
 : (who 'print)
--> ((print> . +relation) query show select pretty "edit" msg rules pp more
-(print> . +Date)) </code></pre>
+-> (query pretty pp msg more "edit" view show (print> . +Date) rules select
+(print> . +relation))</code></pre>
 
 <p>A dotted pair indicates either a method definition or a property entry. So
 <code>(print> . +relation)</code> denotes the <code>print&gt;</code> method of
@@ -464,10 +471,20 @@ the <code><a href="refR.html#+relation">+relation</a></code> class.
 
 <pre><code>
 : (more (who 'print) pp)
-(dm (print> . +relation) (Val)   # Pretty-print these functions one by one
-   (print Val) )
+(de query ("Q" "Dbg")  # Pretty-print these functions one by one
+   (use "R"
+      (loop
+         (NIL (prove "Q" "Dbg"))
+         (T (=T (setq "R" @)) T)
+         (for X "R"
+            (space)
+            (print (car X))
+            (print '=)
+            (print (cdr X))
+            (flush) )
+         (T (line)) ) ) )
 
-(de query ("Q" "Dbg")
+(de pretty (X N . @)
    ...
 </code></pre>
 
@@ -496,10 +513,11 @@ list is suitable for iteration with <code>pp</code>:
 
 <pre><code>
 : (can 'del>)                                   # Which classes accept 'del>' ?
--> ((del> . +relation) (del> . +Entity) (del> . +List))
+-> ((del> . +List) (del> . +Entity) (del> . +relation))
+
 : (more (can 'del>) pp)                         # Inspect the methods with 'pp'
-(dm (del> . +relation) (Obj Old Val)
-   (and (&lt;> Old Val) Val) )
+(dm (del> . +List) (Obj Old Val)
+   (and ((&lt;> Old Val) (delete Val Old)) )
 
 (dm (del> . +Entity) (Var Val)
    (when
@@ -512,10 +530,12 @@ list is suitable for iteration with <code>pp</code>:
             This
             Old
             (put This Var (del> (meta This Var) This Old @)) )
+         (when (asoq Var (meta This 'Aux))
+            (relAux This Var Old (cdr @)) )
          (upd> This Var Old) ) ) )
 
-(dm (del> . +List) (Obj Old Val)
-   (and (&lt;> Old Val) (delete Val Old)) )
+(dm (del> . +relation) (Obj Old Val)
+   (and ((&lt;> Old Val) Val) )
 </code></pre>
 
 <h3>Inspect dependencies with <i>dep</i></h3>
@@ -530,17 +550,17 @@ class hierarchy. That is, for a given class it displays the tree of its
 <pre><code>
 : (dep '+relation)
 +relation
-   +Number
-      +Time
-      +Date
-   +Symbol
-      +String
+   +Bag
+   +Any
    +Blob
    +Link
       +Joint
    +Bool
-   +Any
-   +Bag
+   +Symbol
+      +String
+   +Number
+      +Time
+      +Date
 -> +relation
 </code></pre>
 
@@ -598,6 +618,7 @@ Hello world
 : (de hello (X)
    (prinl "Hello " X) )
 # hello redefined
+-> hello
 </code></pre>
 
 <p>PicoLisp informs you that you have just redefined the function. This might be
@@ -754,7 +775,7 @@ also <a href="faq.html#lambda">this FAQ entry</a>).
 </code></pre>
 
 <pre><code>
-: (setq f '((X) (* X X)))
+: (setq f '((X) (* X X)))  # This is equivalent to (de f (X) (* X X))
 -> ((X) (* X X))
 : f
 -> ((X) (* X X))
@@ -769,12 +790,12 @@ also <a href="faq.html#lambda">this FAQ entry</a>).
 <p>There are two major ways to debug functions (and methods) at runtime:
 <i>Tracing</i> and <i>single-stepping</i>.
 
-In this section we will use the REPL to explore the debugging facilities, but in
-the <a href="#script">Scripting</a> section, you will learn how to launch
+<p>In this section we will use the REPL to explore the debugging facilities, but
+in the <a href="#script">Scripting</a> section, you will learn how to launch
 PicoLisp scripts with some selected functions debugged:
 
 <pre><code>
-$ ./dbg app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l
+$ pil app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l +
 </code></pre>
 
 <h3>Tracing</h3>
@@ -785,7 +806,7 @@ exited.
 
 <p>For demonstration, let's define the unavoidable factorial function (or just
 <code><a href="refL.html#load">load</a></code> the file "<code><a
-href="fun.l">doc/fun.l</a></code>"):
+href="fun.l">@doc/fun.l</a></code>"):
 
 <pre><code>
 (de fact (N)
@@ -1039,7 +1060,7 @@ href="refI.html#in">in</a></code>. Note that comments and white space are
 automatically skipped by <code>read</code>:
 
 <pre><code>
-: (in "doc/fun.l" (read))
+: (in "@doc/fun.l" (read))
 -> (de fact (N) (if (=0 N) 1 (* N (fact (dec N)))))
 </code></pre>
 
@@ -1048,7 +1069,7 @@ directly. To get the first non-white character in the file with <code><a
 href="refC.html#char">char</a></code>:
 
 <pre><code>
-: (in "doc/fun.l" (skip "#") (char))
+: (in "@doc/fun.l" (skip "#") (char))
 -> "("
 </code></pre>
 
@@ -1058,7 +1079,7 @@ stream for given patterns. Typically, this is not done with Lisp source files
 immediately following <code>fact</code> in the file,
 
 <pre><code>
-: (in "doc/fun.l" (while (from "fact ") (println (read))))
+: (in "@doc/fun.l" (while (from "fact ") (println (read))))
 (N)
 (dec N)
 </code></pre>
@@ -1067,7 +1088,7 @@ immediately following <code>fact</code> in the file,
 href="refT.html#till">till</a></code>:
 
 <pre><code>
-: (in "doc/fun.l" (from "(de ") (till " " T)))
+: (in "@doc/fun.l" (from "(de ") (till " " T)))
 -> "fact"
 </code></pre>
 
@@ -1077,14 +1098,14 @@ read, either into a single <a href="ref.html#transient-io">transient</a> symbol
 (the type used by PicoLisp for strings),
 
 <pre><code>
-: (in "doc/tut.html" (line T))
+: (in "@doc/tut.html" (line T))
 -> "&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://..."
 </code></pre>
 
 <p>or into a list of symbols (characters):
 
 <pre><code>
-: (in "doc/tut.html" (line))
+: (in "@doc/tut.html" (line))
 -> ("&lt;" "!" "D" "O" "C" "T" "Y" "P" "E" " " "H" "T" "M" "L" ...
 </code></pre>
 
@@ -1096,7 +1117,7 @@ href="refS.html#split">split</a></code> function can be used to extract the
 fields. A typical way to import the contents of such a file is:
 
 <pre><code>
-(load "lib/import.l")
+(load "@lib/import.l")
 
 (in '("bin/utf2" "importFile.txt")              # Pipe: Convert to UTF-8
    (until (eof)                                 # Process whole file
@@ -1111,7 +1132,7 @@ fields. A typical way to import the contents of such a file is:
    (out "b"                                     # from file "a" to file "b"
       (echo 40) ) )
 
-(in "doc/tut.html"                              # Show the HTTP-header
+(in "@doc/tut.html"                             # Show the HTTP-header
    (line)
    (echo "&lt;body>") )
 
@@ -1147,7 +1168,7 @@ href="refL.html#load">load</a></code>ed as a file. A typical invocation might
 look like:
 
 <pre><code>
-$ ./dbg app/file1.l -main app/file2.l
+$ pil app/file1.l -main app/file2.l +
 </code></pre>
 
 <p>It loads the debugging environment, an application source file, calls the
@@ -1156,7 +1177,7 @@ development and debugging session, this line is often modified using the shell's
 history mechanisms, e.g. by inserting debugging statements:
 
 <pre><code>
-$ ./dbg app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l
+$ pil app/file1.l -"trace 'foo" -main -"debug 'bar" app/file2.l +
 </code></pre>
 
 <p>Another convenience during debugging and testing is to put things into the
@@ -1164,7 +1185,7 @@ command line (shell history) which would otherwise have to be done each time in
 the application's user interface:
 
 <pre><code>
-$ ./dbg app/file1.l -main app/file2.l -go -'login "name" "password"'
+$ pil app/file1.l -main app/file2.l -go -'login "name" "password"' +
 </code></pre>
 
 <p>The final production release of an application usually includes a shell
@@ -1262,8 +1283,8 @@ processing.
 <p>Utilities are typically used outside the context of the PicoLisp environment.
 All examples above assumed that the current working directory is the PicoLisp
 installation directory, which is usually all right for applications developed in
-that environment. Command line file arguments like "dbg.l" or "app/file1.l" will
-be properly found.
+that environment. Command line file arguments like "app/file1.l" will be
+properly found.
 
 <p>To allow utilities to run in arbitrary places on the host file system, the
 concept of <i>home directory substitution</i> was introduced. The interpreter
@@ -1320,11 +1341,11 @@ site, and prints it to standard output:
 
 <p>We recommend that you have a terminal window open, and try the examples by
 yourself. You may either type them in, directly to the PicoLisp interpreter, or
-edit a separate source file (e.g. <code>"doc/fun.l"</code>) in a second terminal
-window and load it into PicoLisp with
+edit a separate source file (e.g. <code>"@doc/fun.l"</code>) in a second
+terminal window and load it into PicoLisp with
 
 <pre><code>
-: (load "doc/fun.l")
+: (load "@doc/fun.l")
 </code></pre>
 
 <p>each time you have modified and saved it.
@@ -1387,12 +1408,12 @@ hierarchy of geometric shapes, with a base class <code>+Shape</code> and two
 subclasses <code>+Rectangle</code> and <code>+Circle</code>.
 
 <p>The source code is included as "<code><a
-href="shape.l">doc/shape.l</a></code>" in the PicoLisp distribution, so you
+href="shape.l">@doc/shape.l</a></code>" in the PicoLisp distribution, so you
 don't have to type it in. Just <code><a href="refL.html#load">load</a></code>
 the file, or start it from the shell as:
 
 <pre><code>
-$ ./dbg doc/shape.l
+$ pil @doc/shape.l +
 </code></pre>
 
 <p>Let's look at it piece by piece. Here's the base class:
@@ -1755,7 +1776,7 @@ $                    # back to the shell
 <p>So, the next time when ..
 
 <pre><code>
-$ ./dbg                 # .. we start PicoLisp
+$ pil +                 # .. we start PicoLisp
 : (pool "test.db")      # and open the database file,
 -> T
 : (show *DB)            # our two symbols are there again
@@ -1779,11 +1800,15 @@ entity/relation class framework (see also <a href="ref.html#dbase">Database</a>)
 which allows a close mapping of the application data structure to the database.
 
 <p>We provided a simple yet complete database and GUI demo application in
-<code><a href="family.l">doc/family.l</a></code>. We recommend to start it up
-for test purposes in the following way:
+<code><a href="family.tgz">@doc/family.tgz</a></code>. It contains the sources
+in <code><a href="family.l">@doc/family.l</a></code>, and an initial database in
+the "family/" subdirectory.
+
+<p>To use it, please unpack it first in your current working directory, then
+start it up in the following way:
 
 <pre><code>
-$ ./dbg doc/family.l -main
+$ pil family.l -main +
 :
 </code></pre>
 
@@ -1905,7 +1930,7 @@ first of March in the year zero.
 
 <pre><code>
 (dm url> ()
-   (list "@person" '*ID This) )
+   (list "!person" '*ID This) )
 </code></pre>
 
 <p>It is needed later in the GUI, to cause a click on a link to switch to that
@@ -2038,10 +2063,10 @@ XHTML/CSS framework with the optional use of JavaScript.
 
 <p>Before we explain the GUI of our demo database application, we present a
 minimal example for a plain HTML-GUI in <code><a
-href="hello.l">doc/hello.l</a></code>. Start the application server as:
+href="hello.l">@doc/hello.l</a></code>. Start the application server as:
 
 <pre><code>
-$ ./p lib/http.l -'server 8080 "doc/hello.l"' -wait
+$ pil @lib/http.l -'server 8080 "@doc/hello.l"' -wait
 </code></pre>
 
 <p>Now point your browser to the address '<code><a
@@ -2050,25 +2075,25 @@ very simple HTML page. You can come back here with the browser's BACK button.
 
 <p>You can call the page repeatedly, or concurrently with many clients if you
 like. To terminate the server, you have to send it a TERM signal (e.g.
-'<code>killall picolisp</code>'), or type the <code>Ctrl-C</code> key in the
-console window.
+'<code>killall pil</code>'), or type the <code>Ctrl-C</code> key in the console
+window.
 
 <p>In our demo database application, a single function <code>person</code> is
 responsible for the whole GUI. Again, please look at <code><a
-href="family.l">doc/family.l</a></code>.
+href="family.l">@doc/family.l</a></code>.
 
 <p>To start the database <i>and</i> the application server, call:
 
 <pre><code>
-$ ./dbg doc/family.l -main -go
+$ pil family.l -main -go +
 </code></pre>
 
 <p>As before, the database is opened with <code>main</code>. The function
-<code>go</code> is also defined in <code>doc/family.l</code>:
+<code>go</code> is also defined in <code>@doc/family.l</code>:
 
 <pre><code>
 (de go ()
-   (server 8080 "@person") )
+   (server 8080 "!person") )
 </code></pre>
 
 <p>It starts the HTTP server listening on TCP port 8080 (we did a similar thing
@@ -2079,9 +2104,9 @@ that port will cause the function <code>person</code> to be invoked.
 href="http://localhost:8080" target="GUI">http://localhost:8080</a></code>'.
 
 <p>You should see a new browser window with an input form created by the
-function <code>person</code>. We provided an initial database in
-"doc/family/[1-4]". You can navigate through it by clicking on the pencil icons
-besides the input fields.
+function <code>person</code>. We provided an initial database in "family/[1-4]".
+You can navigate through it by clicking on the pencil icons besides the input
+fields.
 
 <p>The chart with the children data can be scrolled using the down
 (<code>v</code>) and up (<code>^</code>) buttons.
@@ -2128,11 +2153,11 @@ interactively while it is running. For example, the global variable
 <p>A production application would be started in a slightly different way:
 
 <pre><code>
-$ ./p doc/family.l -main -go -wait
+$ pil family.l -main -go -wait
 </code></pre>
 
 <p>In that case, no debug prompt will appear. In both cases, however, two
-<code>picolisp</code> processes will be running now. One is the initial server
+<code>pil</code> processes will be running now. One is the initial server
 process which will continue to run until it is killed. The other is a child
 process holding the state of the GUI in the browser. It will terminate some time
 after the browser is closed, or when <code>(<a
@@ -2145,9 +2170,9 @@ PicoLisp prompt.
 (de person ()
    (app)
    (action
-      (html 0 (get (default *ID (seq (db: +Person))) 'nm) "lib.css" NIL
+      (html 0 (get (default *ID (val *DB)) 'nm) "@lib.css" NIL
          (form NIL
-            (&lt;h3&gt; (&lt;id&gt; (: nm)))
+            (&lt;h2&gt; (&lt;id&gt; (: nm)))
 </code></pre>
 
 <p>For an in-depth explanation of that startup code, please refer to the guide
@@ -2210,7 +2235,7 @@ to the <a href="ref.html#pilog">Pilog</a> section of the PicoLisp Reference for
 the basic usage of Pilog.
 
 <p>Again, we use our demo application <code><a
-href="family.l">doc/family.l</a></code> that was introduced in the <a
+href="family.l">@doc/family.l</a></code> that was introduced in the <a
 href="#db">Database Programming</a> section.
 
 <p>Normally, Pilog is used either interactively to query the database during
@@ -2362,7 +2387,7 @@ kids nm)</code>
 
 <p>A more typical and extensive example for the usage of <code>select</code> can
 be found in the <code>qPerson</code> function in <code><a
-href="family.l">doc/family.l</a></code>. It is used in the search dialog of the
+href="family.l">@doc/family.l</a></code>. It is used in the search dialog of the
 demo application, and searches for a person with the name, the parents' and
 partner's names, the occupation and a time range for the birth date. The
 relevant index trees in the database are searched (actually only those trees

@@ -1,3 +1,16 @@
+* 30jun11 picoLisp-3.0.7
+   Numbers and strings in 'native' structure arguments
+   Signal portability problems
+   'dbSync' on arbitrary objects
+   UB-Tree support in "lib/db.l"
+   Renamed "ersatz/picolisp" to "ersatz/pil"
+   Changed '@' to '!' for functions in URLs
+   64-bit version for PowerPC (ppc64)
+   Local 'pil' startup script
+   Bug in 'replace' (64-bit)
+   Moved temporary directories to ~/.pil/tmp/
+   Moved line editor history to ~/.pil/history
+
 * 29mar11 picoLisp-3.0.6
    Bug in 'poll' (64-bit)
    Bug in 'accept' (64-bit)

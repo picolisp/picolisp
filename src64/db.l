@@ -1,4 +1,4 @@
-# 03mar11abu
+# 21apr11abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -742,7 +742,7 @@
          if nz
             shr A 4  # Else normalize
          end
-         ld (Y II) B  # Set block shift
+         ld (Y II) A  # Set block shift
          ld (DbFile) Y  # Set current file
          cc open(&(S II) O_RDWR)  # Try to open
          nul4  # OK?
@@ -917,12 +917,10 @@
    pop X
    ld E TSym  # Return T
    ret
-: RolbLog asciz "Last transaction not completed: Rollback\n"
 
 (code 'ignLog)
    cc fprintf((stderr) IgnLog)
    ret
-: IgnLog asciz "Discarding incomplete transaction.\n"
 
 (code 'rewindLog)
    cc fseek((DbLog) 0 SEEK_SET)  # Rewind transaction log
@@ -2255,8 +2253,5 @@
    pop Y
    pop X
    ret
-: CircFree asciz "Circular free list"
-: BadChain asciz "Bad chain"
-: BadCount asciz "Bad count"
 
 # vi:et:ts=3:sw=3

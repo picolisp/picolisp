@@ -1,4 +1,4 @@
-# 28feb11abu
+# 09may11abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -8,8 +8,8 @@
          (<div> '(id . menu)
             (expires)
             (<menu>
-               (,"Home" "@start")
-               (,"logout" (and *Login "@stop"))
+               (,"Home" "!start")
+               (,"logout" (and *Login "!stop"))
                (NIL (<hr>))
                (T ,"Data"
                   (,"Orders" (and (may Order) "app/ord.l"))
@@ -25,11 +25,11 @@
          (<div> '(id . main) (run Prg 1)) ) ) )
 
 (de start ()
-   (setq *Url "@start")
+   (setq *Url "!start")
    (and (app) (setq *Menu 3))
    (menu "PicoLisp App"
       (<h2> NIL "PicoLisp App")
-      (<img> "img/7fach.gif" "7fach Logo")
+      (<img> "@img/7fach.gif" "7fach Logo")
       (----)
       (form NIL
          (gui '(+Init +Map +TextField)

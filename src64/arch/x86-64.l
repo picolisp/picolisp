@@ -1,8 +1,9 @@
-# 21mar11abu
+# 27apr11abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
 (on *LittleEndian)
+(off *AlignedCode)
 
 # Register assignments
 (de *Registers
@@ -15,9 +16,6 @@
 # Temporary: %r10 %r11
 # Block operations: %rcx %rsi %rdi
 # C arguments: %rdi %rsi %rdx %rcx %r8 %r9
-
-# Machine specific
-(de boxfun (Adr) Adr)
 
 # Addressing modes
 (de byteReg (Reg)
@@ -79,9 +77,9 @@
 
 (de src (Src S)
    (cond
-      ((=0 S) (if (= "$0" Src) "%r12" Src))     # Immediate
-      ((not S) Src)                             # Register
-      ((=T S)                                   # Direct
+      ((=0 S) (if (= "0" Src) "%r12" (pack "$" Src)))  # Immediate
+      ((not S) Src)                                    # Register
+      ((=T S)                                          # Direct
          (if (and *FPic (not (pre? "(" Src)))
             (pack Src "@GOTPCREL(%rip)")
             (pack "$" Src) ) )
@@ -235,7 +233,7 @@
    (prinst "movzwq" (src Src S) "%rax") )
 
 (asm ld4 (Src S)
-   (prinst "movl" (src Src S) "%eax") )  # Clears upper word of %rax
+   (prinst "mov" (src Src S) "%eax") )  # Clears upper word of %rax
 
 (de _cmov (Cmd Jmp)
    (setq Dst (dst Dst D)  Src (src Src S))
@@ -588,22 +586,18 @@
    (prinst "movss" "(%rdx)" "%xmm0") )
 
 (asm fix ()
-   (prinst "sub" "$8" "%rsp")                # Space for buffer
    (prinst "shr" "$4" "%rbx")                # Normalize scale
    (prinst "jc" "1f")                        # Jump if negative
    (prinst "cvtsi2sd" "%rbx" "%xmm7")        # Mulitply double with scale
    (prinst "mulsd" "%xmm7" "%xmm0")
-   (prinst "movsd" "%xmm0" "(%rsp)")         # Keep result
-   (prinst "call" "lround")
+   (prinst "cvtsd2si" "%xmm0" "%rbx")        # Convert to integer
    (prinst "jmp" "2f")
    (prinl "1:")
    (prinst "cvtsi2ss" "%rbx" "%xmm7")        # Mulitply float with scale
    (prinst "mulss" "%xmm7" "%xmm0")
-   (prinst "movss" "%xmm0" "4(%rsp)")        # Keep result
-   (prinst "call" "lroundf")
+   (prinst "cvtss2si" "%xmm0" "%rbx")        # Convert to integer
    (prinl "2:")
-   (prinst "mov" "%rax" "%rbx")              # Get into E
-   (prinst "or" "%rax" "%rax")               # Negative?
+   (prinst "or" "%rbx" "%rbx")               # Negative?
    (prinst "js" "3f")                        # Yes: Skip
    (prinst "shl" "$4" "%rbx")                # Make positive short
    (prinst "orb" "$2" "%bl")
@@ -616,11 +610,11 @@
    (prinst "jmp" "5f")
    (prinl "4:")                              # Infinite/NaN
    (prinst "mov" "$Nil" "%rbx")              # Preload NIL
-   (prinst "testb" "$0x80" "7(%rsp)")        # Float value negative?
-   (prinst "jnz" "5f")                       # Yes: Skip
+   (prinst "xorpd" "%xmm7" "%xmm7")          # Float value negative?
+   (prinst "ucomisd" "%xmm7" "%xmm0")
+   (prinst "jc" "5f")                        # Yes: Skip
    (prinst "mov" "$TSym" "%rbx")             # Load T
-   (prinl "5:")
-   (prinst "add" "$8" "%rsp") )              # Drop buffer
+   (prinl "5:") )
 
 (asm cc (Adr A Arg M)
    (unless (== 'cc (caar (seek '((L) (== (cadr L) *Statement)) *Program)))
@@ -636,7 +630,7 @@
                '((Src S)
                   (if (== '& Src)
                      (on Lea)
-                     (unless (= "$0" Src)  # Keep for 'xor' later
+                     (unless (and (=0 S) (= "0" Src))  # Keep for 'xor' later
                         (setq Src
                            (src
                               (recur (Src)
@@ -651,7 +645,7 @@
                               (prinst "pushq" Src)
                               (prinst "lea" Src "%rax")
                               (prinst "pushq" "%rax") ) )
-                        ((= "$0" Src)
+                        ((and (=0 S) (= "0" Src))
                            (prinst "xor" (car Reg) (pop 'Reg)) )
                         ((= "$pop" Src)
                            (prinst "pop" (pop 'Reg)) )
@@ -724,13 +718,13 @@
                (prinst "pop" R) )
             Reg
             '("%xmm0" "%xmm1" "%xmm2" "%xmm3" "%xmm4" "%xmm5") )
-         (prinst "mov" "%rax" "%r11")
+         (prinst "mov" Arg "%r11")
          (prinl "1:")
-         (prinst "cmp" "%rsp" "%rax")
+         (prinst "cmp" "%rsp" Arg)
          (prinst "jz" "1f")
-         (prinst "sub" "$16" "%rax")
+         (prinst "sub" "$16" Arg)
          (prinst "sub" "$8" "%r11")
-         (prinst "mov" "8(%rax)" "%r10")
+         (prinst "mov" (pack "8(" Arg ")") "%r10")
          (prinst "or" "%r10" "(%r11)")
          (prinst "jmp 1b")
          (prinl "1:")
@@ -755,29 +749,11 @@
       (prinst "rep") )
    (prinst "ret") )
 
-(asm begin (N)
-   (prinst "push" "%rbx")
-   (prinst "push" "%r12")
-   (prinst "xor" "%r12" "%r12")  # NULL register
-   (when (>= N 6)                                  # Z
-      (prinst "push" "%r15")
-      (prinst "mov" "%r9" "%r15") )
-   (when (>= N 5)                                  # Y
-      (prinst "push" "%r14")
-      (prinst "mov" "%r8" "%r14") )
-   (when (>= N 4)                                  # X
-      (prinst "push" "%r13")
-      (prinst "mov" "%rcx" "%r13") )
-   (and (>= N 3) (prinst "mov" "%rdx" "%rbx"))     # E
-   (and (>= N 2) (prinst "mov" "%rsi" "%rdx"))     # C
-   (and (>= N 1) (prinst "mov" "%rdi" "%rax")) )   # A
+(asm begin ()
+   (prinst "call" "begin") )
 
-(asm return (N)
-   (and (>= N 4) (prinst "pop" "%r13"))
-   (and (>= N 5) (prinst "pop" "%r14"))
-   (and (>= N 6) (prinst "pop" "%r15"))
-   (prinst "pop" "%r12")
-   (prinst "pop" "%rbx") )
+(asm return ()
+   (prinst "jmp" "return") )
 
 # Stack Manipulations
 (asm push (Src S)
@@ -881,14 +857,39 @@
 (asm initData ())
 
 (asm initCode ()
+   (unless *FPic
+      (label "begin")
+      (prinst "pop" "%r10")         # Get return address
+      (prinst "push" "%r15")        # Z
+      (prinst "mov" "%r9" "%r15")
+      (prinst "push" "%r14")        # Y
+      (prinst "mov" "%r8" "%r14")
+      (prinst "push" "%r13")        # X
+      (prinst "mov" "%rcx" "%r13")
+      (prinst "push" "%r12")
+      (prinst "xor" "%r12" "%r12")  # NULL register
+      (prinst "push" "%rbx")
+      (prinst "mov" "%rdx" "%rbx")  # E
+      (prinst "mov" "%rsi" "%rdx")  # C
+      (prinst "mov" "%rdi" "%rax")  # A
+      (prinst "jmp" "*%r10")        # Return
+      (prinl)
+      (label "return")
+      (prinst "pop" "%rbx")
+      (prinst "pop" "%r12")
+      (prinst "pop" "%r13")
+      (prinst "pop" "%r14")
+      (prinst "pop" "%r15")
+      (prinst "ret") ) )
+
+(asm initMain ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
    (prinst "mov" "(%rsi)" "%r13")  # Get command in X
    (prinst "lea" "8(%rsi)" "%r14")  # argument vector in Y
-   (prinst "dec" "%rdi")  # and pointer to last argument in Z
-   (prinst "lea" "0(%rsi,%rdi,8)" "%r15") )
+   (prinst "lea" "-8(%rsi,%rdi,8)" "%r15") )  # pointer to last argument in Z
 
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'
-(de optimize (L))  #> (cnt . lst)
+(de optimize (Lst))  #> (cnt . lst)
 
 # vi:et:ts=3:sw=3

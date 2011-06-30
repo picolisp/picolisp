@@ -85,6 +85,7 @@ href="refI.html#+Idx">+Idx</a></code>, <code><a
 href="refS.html#+Sn">+Sn</a></code>, <code><a
 href="refF.html#+Fold">+Fold</a></code>, <code><a
 href="refA.html#+Aux">+Aux</a></code>, <code><a
+href="refU.html#+UB">+UB</a></code>, <code><a
 href="refD.html#+Dep">+Dep</a></code>, <code><a
 href="refL.html#+List">+List</a></code>, <code><a
 href="refN.html#+Need">+Need</a></code>, <code><a
@@ -194,10 +195,10 @@ console is set to the new state. See also <code><a
 href="refK.html#key">key</a></code>.
 
 <pre><code>
-$ ./p
+$ pil
 : (raw)
 -> NIL
-$ ./dbg
+$ pil +
 : (raw)
 -> T
 </code></pre>
@@ -314,6 +315,7 @@ symbol <code>recurse</code> is bound to the function definition
 saved in a new symbol, which is substituted for each occurrence of
 <code>sym</code> in <code>fun</code>, and which is also returned. See also
 <code><a href="refD.html#de">de</a></code>, <code><a
+href="refU.html#undef">undef</a></code>, <code><a
 href="refD.html#daemon">daemon</a></code> and <code><a
 href="refP.html#patch">patch</a></code>.
 
@@ -553,7 +555,7 @@ href="refP.html#pass">pass</a></code>.
 -> (1 2 3)
 </code></pre>
 
-<dt><a name="retract">(retract ) -> lst<code></code></a>
+<dt><a name="retract">(retract) -> lst<code></code></a>
 <dd>Removes a <a href="ref.html#pilog">Pilog</a> fact or rule. <code><a
 href="refB.html#be">be</a></code>, <code><a
 href="refA.html#asserta">asserta</a></code> and <code><a

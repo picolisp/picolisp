@@ -1,5 +1,8 @@
-# 21mar11abu
+# 20jun11abu
 # (c) Software Lab. Alexander Burger
+
+(code 'Code)
+   initCode
 
 ### Global return labels ###
 (code 'Ret 0)
@@ -28,7 +31,7 @@
 
 ### Main entry point ###
 (code 'main)
-   initCode
+   initMain
    ld (AV0) X  # Save command
    ld (AV) Y  # and argument vector
    # Check debug mode
@@ -133,10 +136,7 @@
    ld E sigTerm  # Install terminating signal handler for SIGINT
    ld C SIGINT
    call iSignalCE
-   ld E sigChld  # Install child signal handler for SIGCHLD
-   ld C SIGCHLD
-   call iSignalCE
-   cc signal(SIGCHLD sigChld)
+   cc signal(SIGCHLD sigChld)  # Install child signal handler for SIGCHLD
    cc signal(SIGPIPE SIG_IGN)  # Ignore signals
    cc signal(SIGTTIN SIG_IGN)
    cc signal(SIGTTOU SIG_IGN)
@@ -183,13 +183,11 @@
    cc fprintf((stderr) Giveup A X)
    ld E 1
    jmp finishE
-: Giveup asciz "%d %s\\n"
 
 (code 'execErrS)
    cc fprintf((stderr) ExecErr (S))
    ld E 127
    jmp finishE
-: ExecErr asciz "%s: Can't exec\\n"
 
 # Install interrupting signal
 (code 'iSignalCE)
@@ -212,9 +210,8 @@
    null A  # OK?
    jnz Ret  # Return
 : NoMemory
-   ld X Alloc  # No memory
+   ld X AllocErr  # No memory
    jmp giveupX
-: Alloc asciz "No memory"
 
 
 # Allocate cell heap
@@ -344,7 +341,7 @@
    ret
 
 (code 'sig)
-   begin 1  # Signal number in A
+   begin  # Signal number in A
    null (TtyPid)  # Kill terminal process?
    if nz  # Yes
       cc kill((TtyPid) A)
@@ -353,11 +350,10 @@
       inc (A Signal)
       inc (Signal)
    end
-   return 1
-   ret
+   return
 
 (code 'sigTerm)
-   begin 0  # Ignore signal number
+   begin  # Ignore signal number
    null (TtyPid)  # Kill terminal process?
    if nz  # Yes
       cc kill((TtyPid) SIGTERM)
@@ -365,11 +361,10 @@
       inc (Signal (* I SIGTERM))
       inc (Signal)
    end
-   return 0
-   ret
+   return
 
 (code 'sigChld)
-   begin 0  # Ignore signal number
+   begin  # Ignore signal number
    call errno_A  # Save 'errno'
    push A
    sub S I  # 'stat'
@@ -387,9 +382,7 @@
    add S I  # Drop 'stat'
    pop C  # Restore 'errno'
    call errnoC
-   return 0
-   ret
-: PidSigMsg asciz "%d SIG-%d\\n"
+   return
 
 (code 'tcSetC)
    null (Termio)  # In raw mode?
@@ -405,7 +398,7 @@
    ret
 
 (code 'sigTermStop)
-   begin 0  # Ignore signal number
+   begin  # Ignore signal number
    ld C OrgTermio  # Set original terminal I/O
    call tcSetC
    sub S SIGSET_T  # Create mask structure
@@ -418,8 +411,7 @@
    cc signal(SIGTSTP sigTermStop)
    ld C (Termio)
    call tcSetC
-   return 0
-   ret
+   return
 
 (code 'setRaw 0)
    nul (Tio)  # Terminal I/O?
@@ -958,7 +950,7 @@
          call nameE_E  # Second name in E
          cmp E ZERO  # Any?
          if eq  # No
-            rol B 4  # Random bit from A (...x1000) into carry (non-zero)
+            shr A 5  # Random bit from A (...x1000) into carry (non-zero)
          else
             setc  # lt
          end
@@ -1110,7 +1102,6 @@
    ld Y QuitMsg  # Format string
    ld Z S  # Buffer pointer
    jmp errEXYZ  # Jump to error handler
-: QuitMsg asciz "%s"
 
 ### Evaluation ###
 # Apply EXPR in C to CDR of E
@@ -1367,6 +1358,9 @@
       cc dlsym(A Y)  # Find dynamic symbol
       null A  # OK?
       if nz  # Yes
+         ? *AlignedCode
+            or A CNT  # Make short number
+         =
          ld (E) A  # 'nz' - Set function definition
       end
    end
@@ -1486,21 +1480,11 @@
                neg E  # Yes
             end
          else
-            test E SIGN  # Get sign
-            push F  # Save
-            off E (| SIGN BIG)  # Get cell pointer
-            ld A (E CDR)  # High word
-            ld E (E)  # Low word
-            shr A 5  # Get highest four bits
-            rcr E 1
-            shr A 1
-            rcr E 1
-            shr A 1
-            rcr E 1
-            shr A 1
-            rcr E 1
-            pop F  # Negative
-            if nz  # Yes
+            test E SIGN  # Sign?
+            if z  # No
+               ld E (E DIG)
+            else
+               ld E (E (- DIG SIGN))
                neg E  # Negate
             end
          end
@@ -1545,13 +1529,86 @@
                      loop
                      break T
                   end
-                  atom E  # Fill bytes?
+                  atom E  # Fill structure?
                while z  # Yes
-                  ld A (E)  # Next byte value
-                  shr A 4  # in B
-                  ld (Z) B  # Store in buffer
-                  inc Z  # Increment buffer pointer
-                  dec C  # Buffer full?
+                  ld A (E)  # Next value
+                  atom A  # Byte or unsigned?
+                  if nz  # Yes
+                     shr A 4  # Byte?
+                     if nc  # Yes
+                        ld (Z) B  # Store byte in buffer
+                        inc Z  # Increment buffer pointer
+                        dec C  # Buffer full?
+                     else
+                        st4 (Z)  # Store unsigned in buffer
+                        add Z 4  # Size of unsigned
+                        sub C 4  # Buffer full?
+                     end
+                  else
+                     push C
+                     push X
+                     push Y
+                     ld Y Z  # Y on buffer
+                     ld C (A CDR)  # Get length
+                     shr C 4  # Normalize
+                     add Z C  # Size of buffer
+                     push C  # Save it
+                     ld A (A)  # 'num' or 'sym'
+                     num A  # (num . cnt)?
+                     if nz  # Yes
+                        cnt A  # Short?
+                        if nz  # Yes
+                           shr A 4  # Normalize
+                           if c  # Sign?
+                              neg A  # Yes
+                           end
+                        else
+                           test A SIGN  # Sign?
+                           if z  # No
+                              ld A (A DIG)
+                           else
+                              ld A (A (- DIG SIGN))
+                              neg A  # Negate
+                           end
+                        end
+                        ? *LittleEndian
+                           do
+                              ld (Y) B  # Store byte
+                              inc Y  # Increment pointer
+                              shr A 8
+                              dec C  # Done?
+                           until z  # Yes
+                        =
+                        ? (not *LittleEndian)
+                           ld Y Z
+                           do
+                              dec Y  # Decrement pointer
+                              ld (Y) B  # Store byte
+                              shr A 8
+                              dec C  # Done?
+                           until z  # Yes
+                        =
+                     else
+                        sym A  # (sym . cnt)?
+                        if nz  # Yes
+                           ld X (A TAIL)  # Get name
+                           call nameX_X
+                           ld C 0
+                           do
+                              call symByteCX_FACX  # Next byte
+                           while nz
+                              ld (Y) B  # Store it
+                              inc Y  # Increment pointer
+                           loop
+                           set (Y) 0  # Null byte
+                        end
+                     end
+                     pop A  # 'cnt'
+                     pop Y
+                     pop X
+                     pop C
+                     sub C A  # Buffer full?
+                  end
                until z  # Yes
                pop Z
             end
@@ -1656,26 +1713,7 @@
                   add C 8  # Size of long/pointer
                end
                ld E A  # Number
-               null E  # Negative?
-               if ns  # No
-                  test E (hex "F000000000000000")  # Fit in short?
-                  if z  # Yes
-                     shl E 4  # Make short number
-                     or E CNT
-                  else
-                     call boxNumE_E  # Make bignum
-                  end
-               else
-                  neg E  # Negate
-                  test E (hex "F000000000000000")  # Fit in short?
-                  if z  # Yes
-                     shl E 4  # Make negative short number
-                     or E (| SIGN CNT)
-                  else
-                     call boxNumE_E  # Make bignum
-                     or E SIGN  # Set negative
-                  end
-               end
+               call boxE_E
             else
                cmp E SSym  # 'S'?
                if eq  # Yes
@@ -1714,11 +1752,11 @@
                      else
                         atom E  # Atomic?
                         if z  # No: Arrary or structure
-                           null A  # Returned NULL?
+                           null C  # Primary return value?
+                           ldz C A  # Yes: Get into C
+                           null C  # Value NULL?
                            ldz E Nil  # Yes: Return NIL
                            if nz
-                              null C  # Pointer?
-                              ldz C A  # Yes: Load into C
                               push X
                               push Y
                               push Z
@@ -1812,25 +1850,24 @@
    ret
 
 : cbl
-   begin 5  # Arguments in A, C, E, X and Y
    push L  # Save C frame pointer
    ld L (Link)  # Restore link register
    link  # Apply args
    push (Z I)  # 'fun'
    xchg A E  # First arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E C  # Second arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E A  # Third arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E X  # Fourth arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E Y  # Fifth arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld Z S  # Z on last argument
    link  # Close frame
@@ -1843,104 +1880,102 @@
    end
    drop
    pop L  # Restore C frame pointer
-   return 5
-   pop Z
-   ret
+   return
 
 (code 'cbl1 0)
-   push Z
+   begin  # Arguments in A, C, E, X and Y
    lea Z (Lisp)  # Address of callback function
    jmp cbl
 : cbl2
-   push Z
+   begin
    lea Z (Lisp II)
    jmp cbl
 : cbl3
-   push Z
+   begin
    lea Z (Lisp (* 2 II))
    jmp cbl
 : cbl4
-   push Z
+   begin
    lea Z (Lisp (* 3 II))
    jmp cbl
 : cbl5
-   push Z
+   begin
    lea Z (Lisp (* 4 II))
    jmp cbl
 : cbl6
-   push Z
+   begin
    lea Z (Lisp (* 5 II))
    jmp cbl
 : cbl7
-   push Z
+   begin
    lea Z (Lisp (* 6 II))
    jmp cbl
 : cbl8
-   push Z
+   begin
    lea Z (Lisp (* 7 II))
    jmp cbl
 : cbl9
-   push Z
+   begin
    lea Z (Lisp (* 8 II))
    jmp cbl
 : cbl10
-   push Z
+   begin
    lea Z (Lisp (* 9 II))
    jmp cbl
 : cbl11
-   push Z
+   begin
    lea Z (Lisp (* 10 II))
    jmp cbl
 : cbl12
-   push Z
+   begin
    lea Z (Lisp (* 11 II))
    jmp cbl
 : cbl13
-   push Z
+   begin
    lea Z (Lisp (* 12 II))
    jmp cbl
 : cbl14
-   push Z
+   begin
    lea Z (Lisp (* 13 II))
    jmp cbl
 : cbl15
-   push Z
+   begin
    lea Z (Lisp (* 14 II))
    jmp cbl
 : cbl16
-   push Z
+   begin
    lea Z (Lisp (* 15 II))
    jmp cbl
 : cbl17
-   push Z
+   begin
    lea Z (Lisp (* 16 II))
    jmp cbl
 : cbl18
-   push Z
+   begin
    lea Z (Lisp (* 17 II))
    jmp cbl
 : cbl19
-   push Z
+   begin
    lea Z (Lisp (* 18 II))
    jmp cbl
 : cbl20
-   push Z
+   begin
    lea Z (Lisp (* 19 II))
    jmp cbl
 : cbl21
-   push Z
+   begin
    lea Z (Lisp (* 20 II))
    jmp cbl
 : cbl22
-   push Z
+   begin
    lea Z (Lisp (* 21 II))
    jmp cbl
 : cbl23
-   push Z
+   begin
    lea Z (Lisp (* 22 II))
    jmp cbl
 : cbl24
-   push Z
+   begin
    lea Z (Lisp (* 23 II))
    jmp cbl
 
@@ -1987,28 +2022,27 @@
    until eq
    ld Y CbErr
    jmp errEXYZ
-: CbErr asciz "Too many callbacks"
 
 (code 'lisp 0)
-   begin 6  # Function name in A, arguments in C, E, X, Y and Z
+   begin  # Function name in A, arguments in C, E, X, Y and Z
    push L  # Save C frame pointer
    ld L (Link)  # Restore link register
    link  # Apply args
    push ZERO  # Space for 'fun'
    xchg C E  # First arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E C  # Second arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E X  # Third arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E Y  # Fourth arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld E Z  # Fifth arg
-   call boxCntE_E  # Make number
+   call boxE_E  # Make number
    push E
    ld Z S  # Z on last argument
    link  # Close frame
@@ -2033,8 +2067,7 @@
    end
    drop
    pop L  # Restore C frame pointer
-   return 6
-   ret
+   return
 
 (code 'execE 0)
    push X
@@ -2181,16 +2214,24 @@
    end
    ret  # 'z' if null, 's' if negative
 
-(code 'boxCntE_E 0)
+(code 'boxE_E 0)
    null E  # Positive?
    if ns  # Yes
+      test E (hex "F000000000000000")  # Fit in short number?
+      jnz boxNumE_E  # No
       shl E 4  # Make short number
       or E CNT
       ret
    end
    neg E  # Else negate
-   shl E 4  # Make short number
-   or E 10  # with SIGN
+   test E (hex "F000000000000000")  # Fit in short?
+   if z  # Yes
+      shl E 4  # Make negative short number
+      or E (| SIGN CNT)
+      ret
+   end
+   call boxNumE_E  # Make bignum
+   or E SIGN  # Set negative
    ret
 
 (code 'putStringB 0)
@@ -2376,7 +2417,6 @@
    shl E 4  # Make short number
    or E CNT
    ret
-: Month bytes (31 31 28 31 30 31 30 31 31 30 31 30 31)
 
 # (date ['T]) -> dat
 # (date 'dat) -> (y m d)

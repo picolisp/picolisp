@@ -1,11 +1,11 @@
 #!bin/picolisp lib.l
-# 21aug07abu
+# 06may11abu
 # Use: bin/replica <port> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
-#    : bin/ssl <host> 443 <port>/@replica <keyFile> <journal> <blob/app/> 60
+#    : bin/ssl <host> 443 '<port>/!replica' <keyFile> <journal> <blob/app/> 60
 
 (load "@lib/misc.l" "@lib/http.l")
 
-(allowed NIL "@replica")
+(allowed NIL "!replica")
 
 (argv *Port *KeyFile *Journal *Pool *Blob . *Dbs)
 

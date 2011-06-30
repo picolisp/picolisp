@@ -21,7 +21,7 @@ flexible in layout design, and does not depend on plug-ins, JavaScript or
 cookies.
 
 <p>A plain HTTP/HTML GUI has various advantages: It runs on any browser, and can
-be fully driven by scripts ("lib/scrape.l").
+be fully driven by scripts ("@lib/scrape.l").
 
 <p>To be precise: CSS <i>can</i> be used to enhance the layout. And browsers
 <i>with</i> JavaScript will respond faster and smoother. But this framework
@@ -31,6 +31,9 @@ All examples were also tested using the w3m text browser.
 <p>For basic informations about the PicoLisp system please look at the <a
 href="ref.html">PicoLisp Reference</a> and the <a href="tut.html">PicoLisp
 Tutorial</a>. Knowledge of HTML, and a bit of CSS and HTTP is assumed.
+
+<p>The examples assume that PicoLisp was started from a global installation (see
+<a href="ref.html#inst">Installation</a>).
 
 <p><ul>
 <li><a href="#static">Static Pages</a>
@@ -137,7 +140,7 @@ directory.
 
 <pre><code>
 ########################################################################
-(html 0 "Hello" "lib.css" NIL
+(html 0 "Hello" "@lib.css" NIL
    "Hello World!" )
 ########################################################################
 </code></pre>
@@ -153,12 +156,12 @@ browser to view the effects)
 <p>Open a second terminal window, and start a PicoLisp application server
 
 <pre><code>
-$ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' +
 </code></pre>
 
 <p>No prompt appears. The server just sits, and waits for connections. You can
 stop it later by hitting <code>Ctrl-C</code> in that terminal, or by executing
-'<code>killall picolisp</code>' in some other window.
+'<code>killall pil</code>' in some other window.
 
 <p>(In the following, we assume that this HTTP server is up and running)
 
@@ -169,10 +172,10 @@ browser. You should see an empty page with a single line of text.
 
 <h4><a name="how">How does it work?</a></h4>
 
-<p>The above line loads the debugger ('./dbg', which is equivalent to "./p
-dbg.l"), the HTTP server code ("lib/http.l"), the XHTML functions
-("lib/xhtml.l") and the input form framework ("lib/form.l", it will be needed
-later for <a href="#forms">interactive forms</a>).
+<p>The above line loads the debugger (via the '+' switch), the HTTP server code
+("@lib/http.l"), the XHTML functions ("@lib/xhtml.l") and the input form
+framework ("@lib/form.l", it will be needed later for <a
+href="#forms">interactive forms</a>).
 
 <p>Then the <code>server</code> function is called with a port number and a
 default URL. It will listen on that port for incoming HTTP requests in an
@@ -201,9 +204,9 @@ are stripped off - is interpreted according so some rules. The most prominent
 ones are:
 
 <p><ul>
-<li>If a path starts with an at-mark ('@'), the rest (without the '@') is taken
-as the name of a Lisp function to be called. All arguments following the
-question mark are passed to that function.
+<li>If a path starts with an exclamation-mark ('!'), the rest (without the '!')
+is taken as the name of a Lisp function to be called. All arguments following
+the question mark are passed to that function.
 
 <li>If a path ends with ".l" (a dot and a lower case 'L'), it is taken as a Lisp
 source file name to be <code><a href="refL.html#load">(load)</a></code>ed. This
@@ -260,19 +263,18 @@ href="refA.html#allow">allow</a></code> functions
 
 <pre><code>
 (allowed ("img/")
-   "favicon.ico" "lib.css"
-   "@start" "customer.l" "article.l")
+   "!start" "@lib.css" "customer.l" "article.l" )
 </code></pre>
 
 <p>This is usually called in the beginning of an application, and allows access
-to the directory "img/", to the function 'start', and to the files
-"favicon.ico", "lib.css", "customer.l" and "article.l".
+to the directory "img/", to the function 'start', and to the files "@lib.css",
+"customer.l" and "article.l".
 
 <p>Later in the program, <code>*Allow</code> may be dynamically extended with
 <code>allow</code>
 
 <pre><code>
-(allow "@foo")
+(allow "!foo")
 (allow "newdir/" T)
 </code></pre>
 
@@ -289,10 +291,10 @@ line of arbitrary data, to be used as a password for identifying local
 resources.
 
 <p>The recommeded way to create this file is to call the <code>pw</code>
-function, defined in "lib/http.l"
+function, defined in "@lib/http.l"
 
 <pre><code>
-$ ./p lib/http.l -'pw 12' -bye
+$ pil @lib/http.l -'pw 12' -bye
 </code></pre>
 
 <p>Please execute this command.
@@ -323,8 +325,8 @@ the server process (you must have generated a <a href="#pw">".pw" file</a> for
 this), and enter the <code>html</code> statement
 
 <pre><code>
-$ bin/psh 8080
-: (html 0 "Hello" "lib.css" NIL "Hello World!")
+$ /usr/lib/picolisp/bin/psh 8080
+: (html 0 "Hello" "@lib.css" NIL "Hello World!")
 HTTP/1.0 200 OK
 Server: PicoLisp
 Date: Fri, 29 Dec 2006 07:28:58 GMT
@@ -337,7 +339,7 @@ Content-Type: text/html; charset=utf-8
 &lt;head&gt;
 &lt;title&gt;Hello&lt;/title&gt;
 &lt;base href="http://localhost:8080/"/&gt;
-&lt;link rel="stylesheet" href="http://localhost:8080/lib.css" type="text/css"/&gt;
+&lt;link rel="stylesheet" type="text/css" href="http://localhost:8080/@lib.css"/&gt;
 &lt;/head&gt;
 &lt;body&gt;Hello World!&lt;/body&gt;
 &lt;/html&gt;
@@ -355,9 +357,9 @@ Content-Type: text/html; charset=utf-8
 
 <li><code>"Hello"</code>: The page title.
 
-<li><code>"lib.css"</code>: A CSS-File name. Pass <code>NIL</code> if you do not want
-to use any CSS-File, or a list of file names if you want to give more than one
-CSS-File.
+<li><code>"@lib.css"</code>: A CSS-File name. Pass <code>NIL</code> if you do
+not want to use any CSS-File, or a list of file names if you want to give more
+than one CSS-File.
 
 <li><code>NIL</code>: A CSS style attribute specification (see the description
 of <a href="#cssAttr">CSS Attributes</a> below). It will be passed to the
@@ -384,7 +386,7 @@ of print statement).
 
 <pre><code>
 ########################################################################
-(html 0 "Hello" "lib.css" NIL
+(html 0 "Hello" "@lib.css" NIL
    (prinl "Hello World!") )
 ########################################################################
 </code></pre>
@@ -393,7 +395,7 @@ of print statement).
 
 <pre><code>
 ########################################################################
-(html 0 "Hello" "lib.css" NIL
+(html 0 "Hello" "@lib.css" NIL
    (&lt;h1&gt; NIL "Hello World!")
    (&lt;br&gt; "This is some text.")
    (ht:Prin "And this is a number: " (+ 1 2 3)) )
@@ -442,7 +444,7 @@ attribute's value
 <p><hr>
 <h3><a name="tags">Tag Functions</a></h3>
 
-<p>All pre-defined XHTML tag functions can be found in "lib/xhtml.l". We
+<p>All pre-defined XHTML tag functions can be found in "@lib/xhtml.l". We
 recommend to look at their sources, and to experiment a bit, by executing them
 at a PicoLisp prompt, or by pressing the browser's "Reload" button after editing
 the "project.l" file.
@@ -453,14 +455,14 @@ application server is running, and you did generate a <a href="#pw">".pw"
 file</a>)
 
 <pre><code>
-$ bin/psh 8080
+$ /usr/lib/picolisp/bin/psh 8080
 :
 </code></pre>
 
-<p>or start the interpreter stand-alone, with "lib/xhtml.l" loaded
+<p>or start the interpreter stand-alone, with "@lib/xhtml.l" loaded
 
 <pre><code>
-$ ./dbg lib/http.l lib/xhtml.l
+$ pil @lib/http.l @lib/xhtml.l +
 :
 </code></pre>
 
@@ -521,7 +523,7 @@ want to paste the following code into your copy of "project.l":
 
 <pre><code>
 ########################################################################
-(html 0 "Unordered List" "lib.css" NIL
+(html 0 "Unordered List" "@lib.css" NIL
    (&lt;ul&gt; NIL
       (&lt;li&gt; NIL "Item 1")
       (&lt;li&gt; NIL
@@ -553,7 +555,7 @@ two-dimensional tables with the <code>&lt;table&gt;</code> and
 
 <pre><code>
 ########################################################################
-(html 0 "Table" "lib.css" NIL
+(html 0 "Table" "@lib.css" NIL
    (&lt;table&gt; NIL NIL NIL
       (for N 10                                    # A table with 10 rows
          (&lt;row&gt; NIL N (prin (* N N))) ) ) )     # and 2 columns
@@ -580,7 +582,7 @@ columns, and print each row in an alternating red and blue color
 
 <pre><code>
 ########################################################################
-(html 0 "Table" "lib.css" NIL
+(html 0 "Table" "@lib.css" NIL
    (&lt;table&gt;
       '((width . "200px") (style . "border: dotted 1px;"))    # table style
       "Square Numbers"                                        # caption
@@ -606,7 +608,7 @@ simpler <code>&lt;grid&gt;</code> function might be convenient:
 
 <pre><code>
 ########################################################################
-(html 0 "Grid" "lib.css" NIL
+(html 0 "Grid" "@lib.css" NIL
    (&lt;grid&gt; 3
       "A" "B" "C"
       123 456 789 ) )
@@ -644,7 +646,7 @@ functionality:
 
 <pre><code>
 ########################################################################
-(html 0 "Menu+Tab" "lib.css" NIL
+(html 0 "Menu+Tab" "@lib.css" NIL
    (&lt;div&gt; '(id . menu)
       (&lt;menu&gt;
          ("Item" "project.l")                      # Top level item
@@ -701,13 +703,13 @@ name, followed by arbitrary code (typically HTML tags).
 and <code>&lt;input&gt;</code> elements, using the HTTP POST method to
 communicate with the server.
 
-<p>"lib/xhtml.l" defines a function called <code>&lt;post&gt;</code>, and a
+<p>"@lib/xhtml.l" defines a function called <code>&lt;post&gt;</code>, and a
 collection of input tag functions, which allow direct programming of HTML forms.
 We will supply only one simple example:
 
 <pre><code>
 ########################################################################
-(html 0 "Simple Form" "lib.css" NIL
+(html 0 "Simple Form" "@lib.css" NIL
    (&lt;post&gt; NIL "project.l"
       (&lt;field&gt; 10 '*Text)
       (&lt;submit&gt; "Save") ) )
@@ -742,7 +744,7 @@ will take effect only when the submit button is pressed.
 </ol>
 
 <p>Though we wrote a few applications in that style, we recommend the GUI
-framework provided by "lib/form.l". It does not need any variables for the
+framework provided by "@lib/form.l". It does not need any variables for the
 client/server communication, but implements a class hierarchy of GUI components
 for the abstraction of application logic, button actions and data linkage.
 
@@ -762,7 +764,7 @@ somewhere in the application's startup code.
 ########################################################################
 (app)  # Start a session
 
-(html 0 "Simple Session" "lib.css" NIL
+(html 0 "Simple Session" "@lib.css" NIL
    (&lt;post&gt; NIL "project.l"
       (&lt;field&gt; 10 '*Text)
       (&lt;submit&gt; "Save") ) )
@@ -774,7 +776,7 @@ your browser and then look at the terminal window where you started the
 application server, you'll notice a colon, the PicoLisp prompt
 
 <pre><code>
-$ ./dbg lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"'
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' +
 :
 </code></pre>
 
@@ -798,11 +800,11 @@ client.
 <code>Ctrl-D</code> on an empty line. Otherwise, it will terminate by itself if
 no other browser requests arrive within a default timeout period of 5 minutes.
 
-<p>To start a (non-debug) production version, the server is commonly started not
-as 'dbg' but with a 'p', and with <code>-wait</code>
+<p>To start a (non-debug) production version, the server is commonly started
+without the '+' flag, and with <code>-wait</code>
 
 <pre><code>
-$ ./p lib/http.l lib/xhtml.l lib/form.l -'server 8080 "project.l"' -wait
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' -wait
 </code></pre>
 
 <p>In that way, no command line prompt appears when a client connects.
@@ -823,7 +825,7 @@ to all other kinds of tag functions - one or more calls to <code>form</code>
 (app)                                              # Start session
 
 (action                                            # Action handler
-   (html 0 "Form" "lib.css" NIL                    # HTTP/HTML protocol
+   (html 0 "Form" "@lib.css" NIL                   # HTTP/HTML protocol
       (form NIL                                    # Form
          (gui 'a '(+TextField) 10)                 # Text Field
          (gui '(+Button) "Print"                   # Button
@@ -952,7 +954,7 @@ into the "Source" field, you can copy it in upper or lower case to the
 (app)
 
 (action
-   (html 0 "Case Conversion" "lib.css" NIL
+   (html 0 "Case Conversion" "@lib.css" NIL
       (form NIL
          (&lt;grid&gt; 2
             "Source" (gui 'src '(+TextField) 30)
@@ -985,12 +987,12 @@ document via the second button
 
 <pre><code>
 ########################################################################
-(load "lib/ps.l")
+(load "@lib/ps.l")
 
 (app)
 
 (action
-   (html 0 "Export" "lib.css" NIL
+   (html 0 "Export" "@lib.css" NIL
       (form NIL
          (gui '(+TextField) 30 8)
          (gui '(+Button) "Text"
@@ -1019,7 +1021,7 @@ of the text area (this time we did not bother to give it a name, we simply refer
 to it as the form's first gui list element) into that file, and then calls the
 <code>url</code> function with the file name.
 
-<p>The second button uses the PostScript library "lib/ps.l" to create a
+<p>The second button uses the PostScript library "@lib/ps.l" to create a
 temporary file "foo.pdf". Here, the temporary file creation and the call to the
 <code>url</code> function is hidden in the internal mechanisms of
 <code>psOut</code>. The effect is that the browser receives a PDF document and
@@ -1043,7 +1045,7 @@ beginning, it displays a simple form, with a locked text field, and two buttons
 (app)
 
 (action
-   (html 0 "Alerts and Dialogs" "lib.css" NIL
+   (html 0 "Alerts and Dialogs" "@lib.css" NIL
       (form NIL
          (gui '(+Init +Lock +TextField) "Initial Text" 20 "My Text")
          (gui '(+Button) "Alert"
@@ -1086,8 +1088,8 @@ so far, we want to build a simple bignum calculator. ("bignum" because PicoLisp
 can do <i>only</i> bignums)
 
 <p>It uses a single form, a single numeric input field, and lots of buttons. It
-can be found in the PicoLisp distribution in "misc/calc.l", together with a
-directly executable wrapper script "misc/calc".
+can be found in the PicoLisp distribution (e.g. under "/usr/share/picolisp/") in
+"misc/calc.l", together with a directly executable wrapper script "misc/calc".
 
 <p>To use it, change to the PicoLisp installation directory, and start it as
 
@@ -1095,15 +1097,16 @@ directly executable wrapper script "misc/calc".
 $ misc/calc
 </code></pre>
 
-<p>If you want to use it from other directories too, change the two relative
-path names in the first line to absolute paths. We recommend symbolic links in
-some global directories, as described in the <a
-href="tut.html#script">Scripting</a> section of the PicoLisp Tutorial.
+<p>or call it with an absolute path, e.g.
+
+<pre><code>
+$ /usr/share/picolisp/misc/calc
+</code></pre>
 
 <p>If you like to get a PicoLisp prompt for inspection, start it instead as
 
 <pre><code>
-$ ./dbg misc/calc.l -main -go
+$ pil misc/calc.l -main -go +
 </code></pre>
 
 <p>Then - as before - point your browser to '<code><a
@@ -1119,7 +1122,7 @@ needed once the calculator is running.
 recommended by the <a href="#security">Security</a> chapter)
 
 <pre><code>
-(allowed NIL "@calculator" "favicon.ico" "lib.css")
+(allowed NIL "!calculator" "@lib.css")
 </code></pre>
 
 <p>at the beginning of "misc/calc.l". This will restrict external access to that
@@ -1206,7 +1209,7 @@ table
 (app)
 
 (action
-   (html 0 "Table" "lib.css" NIL
+   (html 0 "Table" "@lib.css" NIL
       (form NIL
          (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
             (do 4
@@ -1250,7 +1253,7 @@ way to scroll down and make space for more.
 (app)
 
 (action
-   (html 0 "Chart" "lib.css" NIL
+   (html 0 "Chart" "@lib.css" NIL
       (form NIL
          (gui '(+Chart) 2)                         # Inserted a +Chart
          (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
@@ -1301,7 +1304,7 @@ classes <code>+UpButton</code> and <code>+DnButton</code>
 (app)
 
 (action
-   (html 0 "Scrollable Chart" "lib.css" NIL
+   (html 0 "Scrollable Chart" "@lib.css" NIL
       (form NIL
          (gui '(+Chart) 2)
          (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
@@ -1368,10 +1371,10 @@ of numbers, but expands in the GUI to show also a textual form of each number
 ########################################################################
 (app)
 
-(load "lib/zahlwort.l")
+(load "@lib/zahlwort.l")
 
 (action
-   (html 0 "Numerals" "lib.css" NIL
+   (html 0 "Numerals" "@lib.css" NIL
       (form NIL
          (gui '(+Init +Chart) (1 5 7) 2
             '((N) (list N (zahlwort N)))
@@ -1388,9 +1391,9 @@ of numbers, but expands in the GUI to show also a textual form of each number
 ########################################################################
 </code></pre>
 
-<p>"lib/zahlwort.l" defines the utility function <code>zahlwort</code>, which is
-required later by the 'put' function. <code>zahlwort</code> accepts a number and
-returns its wording in German.
+<p>"@lib/zahlwort.l" defines the utility function <code>zahlwort</code>, which
+is required later by the 'put' function. <code>zahlwort</code> accepts a number
+and returns its wording in German.
 
 <p>Now look at the code
 
@@ -1509,14 +1512,14 @@ Inspecting <code>+DnButton</code> directly
 
 <p>shows that <code>+DnButton</code> inherits from <code>+Tiny</code>,
 <code>+Rid</code>, <code>+Able</code> and <code>+Button</code>. The actual
-definition of <code>+DnButton</code> can be found in "lib/form.l"
+definition of <code>+DnButton</code> can be found in "@lib/form.l"
 
 <pre><code>
 (class +DnButton +Tiny +Rid +JS +Able +Button)
 ...
 </code></pre>
 
-<p>In general, "lib/form.l" is the ultimate reference to the framework, and
+<p>In general, "@lib/form.l" is the ultimate reference to the framework, and
 should be freely consulted.
 
 
@@ -1599,7 +1602,7 @@ current locale.
 (app)
 
 (action
-   (html 0 "+NumField" "lib.css" NIL
+   (html 0 "+NumField" "@lib.css" NIL
       (form NIL
          (gui '(+NumField) 10)
          (gui '(+JS +Button) "Print value"
@@ -1619,7 +1622,7 @@ accepts/returns scaled fixpoint numbers.
 (app)
 
 (action
-   (html 0 "+FixField" "lib.css" NIL
+   (html 0 "+FixField" "@lib.css" NIL
       (form NIL
          (gui '(+FixField) 3 10)
          (gui '(+JS +Button) "Print value"
@@ -1640,7 +1643,7 @@ href="refD.html#date">date</a></code> value.
 (app)
 
 (action
-   (html 0 "+DateField" "lib.css" NIL
+   (html 0 "+DateField" "@lib.css" NIL
       (form NIL
          (gui '(+DateField) 10)
          (gui '(+JS +Button) "Print value"
@@ -1688,7 +1691,7 @@ href="refT.html#time">time</a></code> value.
 (app)
 
 (action
-   (html 0 "+TimeField" "lib.css" NIL
+   (html 0 "+TimeField" "@lib.css" NIL
       (form NIL
          (gui '(+TimeField) 8)
          (gui '(+JS +Button) "Print value"
@@ -1733,7 +1736,7 @@ single leading zero is replaced with the current locale's country code (see
 (locale "DE" "de")
 
 (action
-   (html 0 "+TelField" "lib.css" NIL
+   (html 0 "+TelField" "@lib.css" NIL
       (form NIL
          (gui '(+TelField) 20)
          (gui '(+JS +Button) "Print value"
@@ -1755,7 +1758,7 @@ non-<code>NIL</code>) values, and returns <code>T</code> or <code>NIL</code>.
 (app)
 
 (action
-   (html 0 "+Checkbox" "lib.css" NIL
+   (html 0 "+Checkbox" "@lib.css" NIL
       (form NIL
          (gui '(+Checkbox))
          (gui '(+JS +Button) "Print value"
@@ -1918,7 +1921,7 @@ or 3 internally
 (app)
 
 (action
-   (html 0 "+Map" "lib.css" NIL
+   (html 0 "+Map" "@lib.css" NIL
       (form NIL
          (gui '(+Map +TextField)
             '(("One" . 1) ("Two" . 2) ("Three" . 3))
@@ -1948,7 +1951,7 @@ print updated values to standard error
 (default *Number 0)
 
 (action
-   (html 0 "+Upd" "lib.css" NIL
+   (html 0 "+Upd" "@lib.css" NIL
       (form NIL
          (gui '(+Upd +Var +NumField)
             '(prog (extra) (msg *Number))
@@ -1981,7 +1984,7 @@ error string when the current value is greater than 9.
 (app)
 
 (action
-   (html 0 "+Chk" "lib.css" NIL
+   (html 0 "+Chk" "@lib.css" NIL
       (form NIL
          (gui '(+Chk +NumField)
             '(or
@@ -2003,7 +2006,7 @@ allowed into the field.
 (app)
 
 (action
-   (html 0 "+Limit" "lib.css" NIL
+   (html 0 "+Limit" "@lib.css" NIL
       (form NIL
          (gui '(+Limit +TextField) 4 8)
          (gui '(+JS +Button) "Print"
@@ -2033,7 +2036,7 @@ its current value.
 (setq *TextVariable "abc")
 
 (action
-   (html 0 "+Var" "lib.css" NIL
+   (html 0 "+Var" "@lib.css" NIL
       (form NIL
          (gui '(+Var +TextField) '*TextVariable 8)
          (gui '(+JS +Button) "Print"
@@ -2061,7 +2064,7 @@ global variable <code>*Obj</code>.
       (new! '(+Tst) 'nr 1 'nm "New Object") ) )
 
 (action
-   (html 0 "+E/R" "lib.css" NIL
+   (html 0 "+E/R" "@lib.css" NIL
       (form NIL
          (gui '(+E/R +NumField) '(nr . *Obj) 8)    # Linkage to 'nr'
          (gui '(+E/R +TextField) '(nm . *Obj) 20)  # Linkage to 'nm'
@@ -2175,16 +2178,25 @@ with a some initial data and two sample reports.
 <p><hr>
 <h3><a name="getStarted">Getting Started</a></h3>
 
+<p>For a global installation (see <a href="ref.html#inst">Installation</a>),
+please create a symbolic link to the place where the program files are
+installed. This is necessary because the application needs read/write access to
+the current working directory (for the database and other runtime data).
+
+<pre><code>
+$ ln -s /usr/share/picolisp/app
+</code></pre>
+
 <p>As ever, you may start up the application in debugging mode
 
 <pre><code>
-$ ./dbg app/main.l -main -go
+$ pil app/main.l -main -go +
 </code></pre>
 
 <p>or in (non-debug) production mode
 
 <pre><code>
-$ ./p app/main.l -main -go -wait
+$ pil app/main.l -main -go -wait
 </code></pre>
 
 <p>and go to '<code><a
@@ -2364,7 +2376,7 @@ authentication and authorization.
 </ul>
 
 <p>The classes <code>+Role</code> and <code>+User</code> are defined in
-"lib/adm.l". A <code>+Role</code> has a name, a list of permissions, and a list
+"@lib/adm.l". A <code>+Role</code> has a name, a list of permissions, and a list
 of users assigned to this role. A <code>+User</code> has a name, a password and
 a role.
 

@@ -407,9 +407,9 @@ href="refA.html#argv">argv</a></code> and <a
 href="ref.html#invoc">Invocation</a>.
 
 <pre><code>
-$ ./dbg
+$ pil +
 : (cmd)
--> "./bin/picolisp"
+-> "/usr/bin/picolisp"
 : (cmd "!/bin/picolust")
 -> "!/bin/picolust"
 : (cmd)
@@ -625,7 +625,7 @@ href="refP.html#pipe">pipe</a></code>.
 
 <pre><code>
 $ echo 9 >count                           # Write '9' to file "count"
-$ ./dbg
+$ pil +
 : (ctl ".ctl"                             # Exclusive control, using ".ctl"
    (in "count"
       (let Cnt (read)                     # Read '9'

@@ -1,5 +1,5 @@
 ;;;;;; picolisp-mode: Major mode to edit picoLisp.
-;;;;;; Version: 1.1
+;;;;;; Version: 1.2
 
 ;;; Copyright (c) 2009, Guillermo R. Palavecino
 
@@ -139,6 +139,10 @@
 
   ;; This is just to avoid tabsize-variations fuck-up.
   (make-local-variable 'indent-tabs-mode)
+  (setq indent-tabs-mode)
+
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-case-replace nil)
 
   (setq mode-line-process '("" picolisp-mode-line-process))
   (set (make-local-variable 'font-lock-defaults)
@@ -226,37 +230,45 @@ See `run-hooks'."
      ;;
      ;; Declarations.
      (list 
-      (concat "(" (regexp-opt '("be" "de" "dm" "set" "setq") t) "\\>"
+      (concat "(" (regexp-opt '("be" "de" "dm") t) "\\>"
               ;; Any whitespace and declared object.
-              "[ \t]*(?"
+              "[ \t]*"
               "\\(\\sw+\\)?" )
-      '(1 font-lock-keyword-face)
-      '(2 (cond ((match-beginning 0) font-lock-function-name-face)
-                ((match-beginning 3) font-lock-variable-name-face)
-                (t font-lock-type-face) )
+      '(2 font-lock-function-name-face
           nil t ) )
-     (list (concat "[( \t]'?"
+     (list (concat "\\<"
                    (regexp-opt '("NIL" "T") t)  
-                   "[ )\n\t]" )
+                   "\\>" )
            '(1 font-lock-constant-face) )
      (list
-      (concat "[( ]"
+      (concat "\\<"
               (regexp-opt '("*OS" "*DB" "*Solo" "*PPid" "*Pid" "@" "@@" "@@@"
                             "This" "*Dbg" "*Zap" "*Scl" "*Class" "*Dbs" "*Run"
                             "*Hup" "*Sig1" "*Sig2" "^" "*Err" "*Msg" "*Uni" 
                             "*Led" "*Adr" "*Allow" "*Fork" "*Bye" ) t )
-              "[ )\n\t]" )
+              "\\>" )
       '(1 font-lock-builtin-face) )
      ;; This is so we make the point used in conses more visible
-     '("[ \t]\\(\\.\\)[ \t)]" (1 font-lock-negation-char-face))
-     '("(\\(====\\)\\>" (1 font-lock-negation-char-face)) ) )
+     '("\\<\\(\\.\\)\\>" (1 font-lock-negation-char-face))
+     '("(\\(====\\)\\>" (1 font-lock-negation-char-face)) 
+     (list ;; Functions that modify @
+      (concat "("
+              (regexp-opt '("prog1" "prog2"
+                            "cond" "case"
+                            "if" "if2" "ifn"
+                            "when" "unless"
+                            "and" "or" "nor" "not"
+                            "nand" "nond"
+                            "loop" "do" "while" "until" "for"
+                            "state" ) t )
+              "\\>" )
+      '(1 font-lock-preprocessor-face) ) ) )
   "Subdued expressions to highlight in Picolisp modes." )
 
 (defconst picolisp-font-lock-keywords-2
   (append picolisp-font-lock-keywords-1
           (eval-when-compile
             (list
-             ;;
              ;; Control structures.
              (cons
               (concat
@@ -273,7 +285,7 @@ See `run-hooks'."
                       "pop" "cut" "del" "queue" "fifo" "idx" "lup" "cache" 
                       "locale" "dirname"
                       ;; Property Access
-                      "put" "get" "prop" ";" "=:" ":" "::" "putl" "getl" "wipe" 
+                      "put" "get" "prop" ";" "=:" ":" "::" "putl" "getl" "wipe" ;
                       "meta"
                       ;; Predicates
                       "atom" "pair" "lst?" "num?" "sym?" "flg?" "sp?" "pat?" 
@@ -298,16 +310,13 @@ See `run-hooks'."
                       "balance" "get" "fill" "apply" "range"
                       ;; Control Flow
                       "load" "args" "next" "arg" "rest" "pass" "quote" "as" 
-                      "lit" "eval" "run" "macro" "curry" "def" "de" "dm" 
+                      "pid" "lit" "eval" "run" "macro" "curry" "def" "de" "dm" 
                       "recur" "recurse" "undef" "box" "new" "type" "isa" 
                       "method" "meth" "send" "try" "super" "extra" "with" 
-                      "bind" "job" "let" "let?" "use" "and" "or" "nand" "nor" 
-                      "xor" "bool" "not" "nil" "t" "prog" "prog1" "prog2" "if" 
-                      "if2" "ifn" "when" "unless" "cond" "nond" "case" "state" 
-                      "while" "until" "loop" "do" "at" "for" "catch" "throw" 
-                      "finally" "!" "e" "$" "sys" "call" "tick" "ipid" "opid" 
-                      "kill" "quit" "task" "fork" "pipe" "later" "timeout" 
-                      "abort" "bye"
+                      "bind" "job" "let" "let?" "use" "xor" "bool" "nil" "t"
+                      "prog" "at" "catch" "throw" "finally" "!" "e" "$" "sys"
+                      "call" "tick" "ipid" "opid" "kill" "quit" "task" "fork"
+                      "pipe" "later" "timeout" "abort" "bye"
                       ;; Mapping
                       "apply" "pass" "maps" "map" "mapc" "maplist" "mapcar" 
                       "mapcon" "mapcan" "filter" "extract" "seek" "find" "pick" 
@@ -318,9 +327,9 @@ See `run-hooks'."
                       "skip" "eol" "eof" "from" "till" "line" "format" "scl" 
                       "read" "print" "println" "printsp" "prin" "prinl" "msg" 
                       "space" "beep" "tab" "flush" "rewind" "rd" "pr" "wr" 
-                      "wait" "sync" "echo" "info" "file" "dir" "lines" 
+                      "rpc" "wait" "sync" "echo" "info" "file" "dir" "lines" 
                       "open" "close" "port" "listen" "accept" "host" "connect" 
-                      "udp" "script" "once" "rc" "pretty" "pp" "show" 
+                      "nagle" "udp" "script" "once" "rc" "pretty" "pp" "show" 
                       "view" "here" "prEval" "mail"
                       ;; Object Orientation
                       "*Class" "class" "dm" "rel" "var" "var:" "new" "type" 
@@ -437,7 +446,20 @@ rigidly along with this one."
                          'picolisp-indent ) ) )
         (if (integerp method)
             (lisp-indent-specform method state indent-point normal-indent)
-          (funcall method state indent-point normal-indent) ) ) ) ) )
+          (funcall (if (save-excursion
+                         (let ((state9 (reverse (elt state 9))))
+                           (when (cadr state9)
+                             (goto-char (+ 1 (cadr (reverse (elt state 9)))))
+                             (and (looking-at "let\\|use")
+                                 (save-excursion
+                                   (forward-sexp)
+                                   (forward-sexp)
+                                   (backward-sexp)
+                                   (when (equal (point)  (car state9))
+                                     (looking-at "(") ) ) ) ) ) )
+                       'picolisp-indent-let
+                     method )
+                   state indent-point normal-indent ) ) ) ) ) )
 
 
 ;;; Some functions are different in picoLisp
@@ -445,6 +467,13 @@ rigidly along with this one."
   (let ((lisp-body-indent picolisp-body-indent))
     (lisp-indent-defform state indent-point) ) )
 
+(defun picolisp-indent-let (state indent-point normal-indent)
+  (goto-char (cadr state))
+  (forward-line 1)
+  (if (> (point) (elt state 2))
+      (progn
+	(goto-char (car (cdr state)))
+	(+ 1 (current-column)) ) ) )
 
 ;;; This is to space closing parens when they close a previous line.
 (defun picolisp-parensep ()

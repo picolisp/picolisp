@@ -29,6 +29,58 @@ href="refL.html#locale">locale</a></code>.
 -> ("abc" NIL (1 2 3))
 </code></pre>
 
+<dt><a name="+UB"><code>+UB</code></a>
+<dd>Prefix class for <code><a href="refA.html#+Aux">+Aux</a></code> to maintain
+an UB-Tree index instead of the direct values. This allows efficient range
+access to multidimensional data. Only numeric keys are supported. See also
+<code><a href="ref.html#dbase">Database</a></code>.
+
+<pre><code>
+(class +Pos +Entity)
+(rel x (+UB +Aux +Ref +Number) (y z))
+(rel y (+Number))
+(rel z (+Number))
+
+: (scan (tree 'x '+Pos))
+...
+(664594005183881683 . {B}) {B}
+(899018453307525604 . {C}) {C}  # UBKEY of (516516 690628 706223)
+(943014863198293414 . {2}) {2}
+(988682500781514058 . {A}) {A}
+(994667870851824704 . {8}) {8}
+(1016631364991047263 . {:}) {:}
+...
+
+: (show '{C})
+{C} (+Pos)
+   z 706223
+   y 690628
+   x 516516
+-> {C}
+
+# Discrete queries work the same way as without the +UB prefix
+: (db 'x '+Pos 516516 'y 690628 'z 706223)
+-> {C}
+: (aux 'x '+Pos 516516 690628 706223)
+-> {C}
+: (? (db x +Pos (516516 690628 706223) @Pos))
+ @Pos={C}
+-> NIL
+
+# Efficient range queries are are possible now
+: (?
+   @X (416511 . 616519)
+   @Y (590621 . 890629)
+   @Z (606221 . 906229)
+   (select (@@)
+      ((x +Pos (@X @Y @Z)))   # Range query
+      (range @X @@ x)         # Filter
+      (range @Y @@ y)
+      (range @Z @@ z) ) )
+ @X=(416511 . 616519) @Y=(590621 . 890629) @Z=(606221 . 906229) @@={C}
+ @X=(416511 . 616519) @Y=(590621 . 890629) @Z=(606221 . 906229) @@={8}
+</code></pre>
+
 <dt><a name="u"><code>(u) -> T</code></a>
 <dd>Removes <code><a href="ref_.html#!">!</a></code> all breakpoints in all
 subexpressions of the current breakpoint. Typically used when single-stepping a

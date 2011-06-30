@@ -1,4 +1,4 @@
-# 16mar11abu
+# 23apr11abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -46,7 +46,6 @@
    jns Ret  # Yes
    ld Y SetFD
    jmp errnoEXY
-: SetFD asciz "SETFD %s"
 
 # Set file descriptor to non-blocking / blocking
 (code 'nonblockingA_A)
@@ -2138,8 +2137,6 @@
       end
    end
    ret
-: Delim ascii " \\t\\n\\r\\\"'(),[]`~{}"
-: DelimEnd
 
 (code 'rdList_E)
    cmp S (StkLimit)  # Stack check
@@ -2680,6 +2677,9 @@
    ld B 1  # Bit mask
    shl B C  # Shift it
    shr X 3  # Offset
+   ? (not *LittleEndian)
+      xor X 7  # Invert byte offset
+   =
    add X L  # Point to byte
    ret
 
@@ -4128,7 +4128,6 @@
    drop
    pop Y
    ret
-: Arrow asciz "-> "
 
 # (load 'any ..) -> any
 (code 'doLoad 2)
@@ -4629,11 +4628,7 @@
 
 (code 'space)
    ld B 32
-(code 'envPutB)  # DLL hook
    jmp (PutB)
-
-(code 'envGet_A)  # DLL hook
-   jmp (Get_A)
 
 # Output decimal number
 (code 'outNumE)

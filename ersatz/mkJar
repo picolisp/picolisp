@@ -1,5 +1,5 @@
-#!./picolisp
-# 17nov10abu
+#!./pil
+# 20may11abu
 # (c) Software Lab. Alexander Burger
 
 (load "../src64/version.l")

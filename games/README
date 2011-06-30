@@ -1,4 +1,4 @@
-12nov09abu
+10may11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -8,11 +8,14 @@
 This directory contains a few simple games. They are neither especially
 interesting, nor powerful, but may be useful as programming examples.
 
+For a global PicoLisp installation (see the INSTALL file), either supply a full
+path to "/usr/share/picolisp/games/<file>.l" instead of just "games/<file>.l" in
+the commands below, or change the working directory to "/usr/share/picolisp/".
 
 
 'mine' is a simplified version of the minesweeper game. You can start it as:
 
-$ ./dbg games/mine.l -main -go
+$ pil games/mine.l -main -go +
 
 It will display a 12-by-12 field with 24 (default) hidden mines. You can move
 around using the standard 'vi'-keys 'j' (down), 'k' (up), 'l' (right) and 'h'
@@ -38,7 +41,7 @@ their underlying principles and strategies).
 
 Start 'nim' as
 
-$ ./dbg games/nim.l
+$ pil games/nim.l +
 
 and then find the optimal move path for, let's say, three heaps of four matches
 each:
@@ -54,7 +57,7 @@ from heap 3).
 
 To play Tic-Tac-Toe, enter
 
-$ ./dbg games/ttt.l -main
+$ pil games/ttt.l -main +
 
 A three-by-three board is displayed. Enter your moves with the 'go' function:
 
@@ -75,7 +78,7 @@ Your positions are marked with 'T', the computer's with '0'.
 The 'chess' game is minimalistic (441 lines of code). Nevertheless, it plays
 some slow - though correct - chess. Start it as:
 
-$ ./dbg games/chess.l -main
+$ pil games/chess.l -main +
    +---+---+---+---+---+---+---+---+
  8 |<R>|<N>|<B>|<Q>|<K>|<B>|<N>|<R>|
    +---+---+---+---+---+---+---+---+
@@ -102,10 +105,6 @@ k'N'ight and 'P'awn, with black pieces in angular brackets.
 Alternatively, you can also run it through XBoard (in the X Window System):
 
 $ xboard -fcp games/xchess
-
-This requires the symbolic links in "/usr/lib/" and "/usr/bin/", as recommended
-in INSTALL. If this is not an option, please modify the first line ("#!") of
-"games/xchess".
 
 
 Without XBoard, you may enter your moves with the field names (in lower case)
@@ -192,7 +191,7 @@ which later can be restored with
 
 There is also a plain 'sudoku' solver:
 
-$ ./dbg games/sudoku.l
+$ pil games/sudoku.l +
 
 : (main
    (quote

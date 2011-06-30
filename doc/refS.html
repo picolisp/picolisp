@@ -196,7 +196,7 @@ href="refR.html#rest">rest</a></code>.
 $ cat x
 (* (next) (next))
 
-$ ./dbg
+$ pil +
 :  (script "x" 3 4)
 -> 12
 </code></pre>
@@ -495,7 +495,7 @@ href="refE.html#eof">eof</a></code>.
 $ cat a
 # Comment
 abcd
-$ ./dbg
+$ pil +
 : (in "a" (skip "#"))
 -> "a"
 </code></pre>

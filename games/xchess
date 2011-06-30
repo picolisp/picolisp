@@ -1,8 +1,8 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 12nov09abu
+# 29apr11abu
 # (c) Software Lab. Alexander Burger
 
-(load "@games/chess.l")
+(load "/usr/share/picolisp/games/chess.l")  # (load "@games/chess.l")
 
 (de reply @
    (prinl (glue " " (rest)))

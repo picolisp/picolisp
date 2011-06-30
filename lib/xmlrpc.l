@@ -1,4 +1,4 @@
-# 02jan09abu
+# 13apr11abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -59,5 +59,26 @@
                         (xmlrpcKey (caddr (assoc 'name L)))
                         (xmlrpcValue (caddr (assoc 'value L))) ) ) )
                (cddr Lst) ) ) ) ) )
+
+# SSL transactions
+# By meingbg <meingbg@gmail.com>
+(de xmlrpcssl (Url Meth . @)
+   (let Xml (tmp "xmlrpcssl")
+      (out Xml
+         (xml? T)
+         (xml
+            (list 'methodCall NIL
+               (list 'methodName NIL Meth)
+               (make
+                  (link 'params NIL)
+                  (while (args)
+                     (link
+                        (list 'param NIL
+                           (list 'value NIL (list (next) NIL (next))) ) ) ) ) ) ) )
+      (in (list "wget" "--no-http-keep-alive" "--no-check-certificate" (pack "--post-file=" Xml) "-O" "-" "-o" "/dev/null" Url)
+         (let? L (and (xml?) (xml))
+            (when (== 'methodResponse (car L))
+               (xmlrpcValue
+                  (car (body L 'params 'param 'value)) ) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

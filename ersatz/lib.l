@@ -1,4 +1,4 @@
-# 25feb11abu
+# 15apr11abu
 # (c) Software Lab. Alexander Burger
 
 ############ lib.l ############
@@ -141,11 +141,16 @@
    (unless (idx '*Once (file) T)
       (run Prg 1) ) )
 
+(de pil @
+   (when (== "Pil" '"Pil")
+      (call 'mkdir "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
+   (pass pack "Pil") )
+
 # Temporary Files
 (de tmp @
    (unless *Tmp
       (push '*Bye '(call 'rm "-r" *Tmp))
-      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+      (call 'mkdir "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
 ### List ###

@@ -1,5 +1,8 @@
-# 11jun10abu
+# 23apr11abu
 # (c) Software Lab. Alexander Burger
+
+(data 'HtData)
+   initData
 
 ### Hypertext I/O functions ###
 (data 'HtOK)
@@ -27,6 +30,9 @@ align 8  asciz "<hr>"
 
 : HtEsc ascii " \\\"#%&:;<=>?_"
 (equ HTESC 12)
+
+(code 'HtCode)
+   initCode
 
 (code 'findHtOkY_FE 0)
    push X
@@ -88,7 +94,7 @@ align 8  asciz "<hr>"
             if z  # Yes
                do
                   ld B (Y)  # Output partial string
-                  call envPutB
+                  call (PutB)
                   inc Y  # till end pointer in E
                   cmp Y E
                until eq
@@ -117,24 +123,24 @@ align 8  asciz "<hr>"
                            cmp B (hex "FF")
                            if eq
                               ld B (hex "EF")
-                              call envPutB
+                              call (PutB)
                               ld B (hex "BF")
-                              call envPutB
+                              call (PutB)
                               ld B (hex "BF")
-                              call envPutB
+                              call (PutB)
                            else
                               ld C A  # Save char
-                              call envPutB  # Output it
+                              call (PutB)  # Output it
                               test C (hex "80")  # Double byte?
                               if nz  # Yes
                                  inc Y  # Next
                                  ld B (Y)  # Output second byte
-                                 call envPutB
+                                 call (PutB)
                                  test C (hex "20")  # Triple byte?
                                  if nz  # Yes
                                     inc Y  # Next
                                     ld B (Y)  # Output third byte
-                                    call envPutB
+                                    call (PutB)
                                  end
                               end
                            end
@@ -159,7 +165,7 @@ align 8  asciz "<hr>"
 (code 'putHexB 0)  # E
    ld E A  # Save B
    ld B (char "%")  # Prefix with "%"
-   call envPutB
+   call (PutB)
    ld A E  # Get B
    shr B 4  # Get upper nibble
    and B 15
@@ -168,7 +174,7 @@ align 8  asciz "<hr>"
       add B 7
    end
    add B (char "0")
-   call envPutB  # Output upper nibble
+   call (PutB)  # Output upper nibble
    ld A E  # Get B again
    and B 15  # Get lower nibble
    cmp B 9  # Letter?
@@ -176,7 +182,7 @@ align 8  asciz "<hr>"
       add B 7
    end
    add B (char "0")
-   jmp envPutB  # Output lower nibble
+   jmp (PutB)  # Output lower nibble
 
 (code 'htFmtE 0)
    cmp E Nil  # NIL?
@@ -184,7 +190,7 @@ align 8  asciz "<hr>"
       num E  # Number?
       if nz  # Yes
          ld B (char "+")  # Prefix with "+"
-         call envPutB
+         call (PutB)
          jmp prinE  # and print it
       end
       push X
@@ -193,7 +199,7 @@ align 8  asciz "<hr>"
          ld X E
          do
             ld B (char "_")  # Prefix with "_"
-            call envPutB
+            call (PutB)
             ld E (X)  # Print next item
             call htFmtE
             ld X (X CDR)  # End of list?
@@ -207,7 +213,7 @@ align 8  asciz "<hr>"
             sym (E TAIL)  # External symbol?
             if nz  # Yes
                ld B (char "-")  # Prefix with "-"
-               call envPutB
+               call (PutB)
                call prExtNmX  # Print external
             else
                push Y
@@ -216,7 +222,7 @@ align 8  asciz "<hr>"
                ld C 0
                if eq  # Yes
                   ld B (char "$")  # Prefix with "$"
-                  call envPutB
+                  call (PutB)
                else
                   call symByteCX_FACX  # Get first byte
                   cmp B (char "$")  # Dollar, plus or dot?
@@ -227,7 +233,7 @@ align 8  asciz "<hr>"
                   if eq
 40                   call putHexB  # Encode hexadecimal
                   else
-                     call envPutB
+                     call (PutB)
                   end
                end
                do
@@ -238,15 +244,15 @@ align 8  asciz "<hr>"
                      call putHexB  # Encode hexadecimal
                   else
                      ld E A  # Save char
-                     call envPutB  # Output it
+                     call (PutB)  # Output it
                      test E (hex "80")  # Double byte?
                      if nz  # Yes
                         call symByteCX_FACX  # Next byte
-                        call envPutB  # Output second byte
+                        call (PutB)  # Output second byte
                         test E (hex "20")  # Triple byte?
                         if nz  # Yes
                            call symByteCX_FACX  # Next byte
-                           call envPutB  # Output third byte
+                           call (PutB)  # Output third byte
                         end
                      end
                   end
@@ -283,7 +289,7 @@ align 8  asciz "<hr>"
       cmp Y Z  # More args?
    while ne  # Yes
       ld B (char "&")
-      call envPutB
+      call (PutB)
       sub Y I  # Next arg
       ld E (Y)
       call htFmtE  # Format it
@@ -375,7 +381,7 @@ align 8  asciz "<hr>"
          ld C A  # into C
          call getHexX_A  # Get lower nibble
          or A C  # Combine
-         call envPutB  # Output
+         call (PutB)  # Output
       else
          ld X (X CDR)  # Next symbol
          cmp B (char "&")  # Ampersand?
@@ -386,31 +392,31 @@ align 8  asciz "<hr>"
             call headCX_FX
             if eq
                ld B (char "<")
-               call envPutB
+               call (PutB)
             else
                ld C HtGt  # "&gt;"
                call headCX_FX
                if eq
                   ld B (char ">")
-                  call envPutB
+                  call (PutB)
                else
                   ld C HtAmp  # "&amp;"
                   call headCX_FX
                   if eq
                      ld B (char "&")
-                     call envPutB
+                     call (PutB)
                   else
                      ld C HtQuot  # "&quot;"
                      call headCX_FX
                      if eq
                         ld B (char "\"")
-                        call envPutB
+                        call (PutB)
                      else
                         ld C HtNbsp  # "&nbsp;"
                         call headCX_FX
                         if eq
                            ld B (char " ")
-                           call envPutB
+                           call (PutB)
                         else
                            ld A ((X) TAIL)  # Get next byte
                            call firstByteA_B
@@ -423,7 +429,7 @@ align 8  asciz "<hr>"
                               call outNameE  # Output unicode char
                            else
 40                            ld B (char "&")  # Else ouput an ampersand
-                              call envPutB
+                              call (PutB)
                            end
                         end
                      end
@@ -449,7 +455,7 @@ align 8  asciz "<hr>"
       ld A (Chr)  # Look ahead char?
       null A
       if z  # No
-         call envGet_A  # Get next char
+         call (Get_A)  # Get next char
       end
       null A  # EOF?
       if ns  # No
@@ -477,7 +483,7 @@ align 8  asciz "<hr>"
                   ld E (L I)  # Return result
                   break T
                end
-               call envGet_A  # Get next char
+               call (Get_A)  # Get next char
                null A  # EOF?
                if s  # Yes
                   ld E Nil  # Return NIL
@@ -528,7 +534,7 @@ skip CHUNK  # <Y III> Chunk buffer
 : Newlines asciz "0\\r\\n\\r\\n"
 
 (code 'chrHex_AF 0)
-   ld B (Chr)
+   ld A (Chr)
    cmp B (char "0")  # Decimal digit?
    if ge
       cmp B (char "9")
@@ -652,27 +658,27 @@ skip CHUNK  # <Y III> Chunk buffer
       add B 39  # Make lower case letter
    end
    add B (char "0")  # Make ASCII digit
-   jmp envPutB
+   jmp (PutB)
 
 (code 'wrChunkY 0)  # X
    ld (PutB) (Y II)  # Restore 'put'
    ld A (Y)  # Get count
    call outHexA  # Print as hex
    ld B 13  # Output 'return'
-   call envPutB
+   call (PutB)
    ld B 10  # Output 'newline'
-   call envPutB
+   call (PutB)
    lea X (Y III)  # X on chunk buffer
    do
       ld B (X)  # Next byte from chunk buffer
-      call envPutB  # Output
+      call (PutB)  # Output
       inc X  # Increment pointer
       dec (Y)  # Decrement 'Cnt'
    until z
    ld B 13  # Output 'return'
-   call envPutB
+   call (PutB)
    ld B 10  # Output 'newline'
-   call envPutB
+   call (PutB)
    ld (Y II) (PutB)  # Save 'put'
    ld (PutB) putChunkedB  # Set new
    ret

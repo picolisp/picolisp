@@ -1,4 +1,4 @@
-# 08mar10abu
+# 25may11abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
@@ -35,7 +35,7 @@
 # Coded in 'C'
 `(== 64 64)  # Only in the 64-bit version
 
-(load "lib/native.l")
+(load "@lib/native.l")
 
 (gcc "fibo" NIL
    (cFibo (N) "Fibo" 'I N) )

@@ -32,7 +32,7 @@ NIL 5286
 : (call "ps")  # Show processes
   PID TTY          TIME CMD
  .... ...      ........ .....
- 6386 pts/1    00:00:00 bin/picolisp   # <- current process
+ 6386 pts/1    00:00:00 pil   # <- current process
  6388 pts/1    00:00:00 ps
 -> T
 </code></pre>
@@ -199,7 +199,7 @@ href="refS.html#skip">skip</a></code>.
 $ cat a
 # Comment
 abcd
-$ ./dbg
+$ pil +
 : (in "a" (list (peek) (char)))
 -> ("#" "#")
 </code></pre>
@@ -238,6 +238,17 @@ href="refE.html#extract">extract</a></code>.
 -> B
 : (pick val '(A B C D E))
 -> 1
+</code></pre>
+
+<dt><a name="pil"><code>(pil ['any ..]) -> sym</code></a>
+<dd>Returns the path name to the <code><a
+href="refP.html#pack">pack</a></code>ed <code>any</code> arguments in
+the directory ".pil/" in the user's home directory.
+See also <code><a href="refT.html#tmp">tmp</a></code>.
+
+<pre><code>
+: (pil "history")  # Path to the line editor's history file
+-> "/home/app/.pil/history"
 </code></pre>
 
 <dt><a name="pilog"><code>(pilog 'lst . prg) -> any</code></a>
@@ -599,11 +610,13 @@ arguments, using the system <code>ps</code> utility. See also <code><a
 href="refH.html#hd">hd</a></code>.
 
 <pre><code>
-:  (proc 'picolisp)
-  PID  PPID  STARTED    SZ %CPU WCHAN  CMD
- 9781  8895 16:06:53  2536  0.8 select ./bin/picolisp -on *Dbg ./lib.l @ext.l @dbg.l app/main.l lib/too.l -main -go
- 9884  9781 16:07:01  2540  0.0 wait     ./bin/picolisp -on *Dbg ./lib.l @ext.l @dbg.l app/main.l lib/too.l -main -go
--> T</code></pre>
+: (proc 'pil)
+  PID  PPID  STARTED  SIZE %CPU WCHAN  CMD
+16993  3267 12:38:21  1516  0.5 -      /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil +
+15731  1834 12:36:35  2544  0.1 -      /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil app/main.l -main -go +
+15823 15731 12:36:44  2548  0.0 -        /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil app/main.l -main -go +
+-> T
+</code></pre>
 
 <dt><a name="prog"><code>(prog . prg) -> any</code></a>
 <dd>Executes <code>prg</code>, and returns the result of the last expression.

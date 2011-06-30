@@ -1,4 +1,4 @@
-# 22feb11abu
+# 10jun11abu
 # (c) Software Lab. Alexander Burger
 
 ### alarm ###
@@ -13,10 +13,10 @@
 ### sigio ###
 (unless (= *OS "SunOS")
    (off "SigVal")
-   (sigio (setq "SigSock" (port T 4444))
+   (sigio (setq "SigSock" (port T 0 "SigPort"))
       (setq "SigVal" (udp "SigSock")) )
    (test '((setq "SigVal" (udp "SigSock"))) (sigio))
-   (udp "localhost" 4444 '(a b c))
+   (udp "localhost" "SigPort" '(a b c))
    (wait 200)
    (test '(a b c) "SigVal")
    (sigio "SigSock")

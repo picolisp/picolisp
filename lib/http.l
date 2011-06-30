@@ -1,4 +1,4 @@
-# 28jan11abu
+# 23jun11abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -65,7 +65,7 @@
 # Local Password
 (de pw (N)
    (if N
-      (out ".pw" (prinl (fmt64 (in "/dev/random" (rd N)))))
+      (out ".pw" (prinl (fmt64 (in "/dev/urandom" (rd N)))))
       (in ".pw" (line T)) ) )
 
 # PicoLisp Shell
@@ -209,7 +209,7 @@
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
                         (and *SesId (timeout *Timeout))
                         (try 'html> (extern (ht:Pack @X))) )
-                     ((= '@ (car @U))
+                     ((= '! (car @U))
                         (if (disallowed)
                            (prog (notAllowed *Url) (http404))
                            (and *SesId (timeout *Timeout))
@@ -220,12 +220,12 @@
                      ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
                         (apply script L *Url) )
-                     ((assoc (stem @U ".") *Mimes)
-                        (apply httpEcho (cdr @) *Url) )
                      ((=T (car (info *Url)))
-                        (if (info (setq *Url (pack *Url "default")))
+                        (if (info (setq *Url (pack *Url "/default")))
                            (apply script L *Url)
                            (http404) ) )
+                     ((assoc (stem @U ".") *Mimes)
+                        (apply httpEcho (cdr @) *Url) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (task (close S))) ) )
 

@@ -1,10 +1,10 @@
-# 17apr08abu
+# 14may11abu
 # (c) Software Lab. Alexander Burger
 
 # *Init *Accu *Stack
 
-(allowed NIL "@calculator" "favicon.ico" "lib.css")
-(load "lib/http.l" "lib/xhtml.l" "lib/form.l")
+(allowed NIL "!calculator" "@lib.css")
+(load "@lib/http.l" "@lib/xhtml.l" "@lib/form.l")
 
 # Calculator logic
 (de digit (N)
@@ -31,7 +31,7 @@
 (de calculator ()
    (app)
    (action
-      (html 0 "Bignum Calculator" "lib.css" NIL
+      (html 0 "Bignum Calculator" "@lib.css" NIL
          (<h2> NIL "Bignum Calculator")
          (form NIL
             (<br> (gui '(+Var +NumField) '*Accu 60))
@@ -70,4 +70,4 @@
 
 # Start server
 (de go ()
-   (server 8080 "@calculator") )
+   (server 8080 "!calculator") )

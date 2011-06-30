@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 14mar11abu
+# 20may11abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
@@ -90,6 +90,6 @@
                   (close *Sock) ) ) )
          (out *SpoolFile (rewind)) ) )
    (call "fetchmail" "-as")
-   (wait `(* 5 60 1000)) )
+   (wait `(* 4 60 1000)) )
 
 # vi:et:ts=3:sw=3

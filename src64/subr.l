@@ -1,4 +1,4 @@
-# 03mar11abu
+# 21apr11abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1512,13 +1512,17 @@
          ld X (X CDR)  # 'anyN' args?
          atom X
       while z  # Yes
-         ld E (X)  # Eval next arg
+         ld E (X)  # Eval next two args
          eval+
-         push E  # and save it
+         push E  # Save first
+         ld X (X CDR)
+         ld E (X)  # Eval second
+         eval+
+         push E  # Save second
       loop
       ld X L  # X above 'any1'
-      lea C (S -I)  # C on end of 'any' items
       link
+      ld C S  # C below end of 'any' items
       call cons_Z  # Build first result cell
       do
          sub X II  # Try next 'any' pair

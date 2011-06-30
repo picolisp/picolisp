@@ -1,7 +1,9 @@
-# 09mar11abu
+# 20apr11abu
 # (c) Software Lab. Alexander Burger
 
-(data 'Globals 0)
+(data 'Data)
+   initData
+
 :: AV          word  0           # Command line argument vector
 :: AV0         word  0           # Command name
 :: Home        word  0           # Home directory
@@ -601,8 +603,6 @@
 : EnvTrace     word  0        # Trace level
 : EnvEnd  # Must be aligned
 
-initData
-
 : OrgTermio skip TERMIOS         # Original termio structure
 : Flock     skip FLOCK           # File lock structure
 : Tms       skip TMS             # 'times' structure
@@ -610,23 +610,6 @@ initData
 
 : TBuf      byte (+ INTERN 4)    # 'T' in PLIO format
             byte (char "T")
-
-# Strings
-:: _r_ asciz "r"
-:: _w_ asciz "w"
-:: _a_ asciz "a"
-:: _ap_ asciz "a+"
-:: _dot_ asciz "."
-
-# Bytes
-:: Tio      byte 0            # Terminal I/O
-
-: Repl      byte 0            # REPL flag
-: PRepl     byte 0            # Parent REPL
-: Jam       byte 0            # Error jam
-: InBye     byte 0            # Exit status
-: Sync      byte 0            # Family IPC synchronization
-
 
 # Case mappings from the GNU Kaffe Project
    align 2
@@ -1144,5 +1127,107 @@ initData
    hx2 ("0" "0" "0" "0" "0" "0" "0" "0" "1A" "0" "0" "0" "0" "0" "0" "0")
    hx2 ("0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0" "0")
    hx2 ("0" "0" "0" "0" "0" "0" "0")
+
+# Bytes
+:: Tio      byte 0            # Terminal I/O
+
+: Repl      byte 0            # REPL flag
+: PRepl     byte 0            # Parent REPL
+: Jam       byte 0            # Error jam
+: InBye     byte 0            # Exit status
+: Sync      byte 0            # Family IPC synchronization
+: Month bytes (31 31 28 31 30 31 30 31 31 30 31 30 31)
+
+# Strings
+:: _r_ asciz "r"
+:: _w_ asciz "w"
+:: _a_ asciz "a"
+:: _ap_ asciz "a+"
+:: _dot_ asciz "."
+
+### System messages ###
+# main.l
+: Giveup asciz "%d %s\\n"
+: ExecErr asciz "%s: Can't exec\\n"
+: AllocErr asciz "No memory"
+: PidSigMsg asciz "%d SIG-%d\\n"
+: QuitMsg asciz "%s"
+: CbErr asciz "Too many callbacks"
+# flow.l
+: HashBlank asciz "# "
+: Redefined asciz " redefined\\n"
+: SuperErr asciz "Bad super"
+: ExtraErr asciz "Bad extra"
+: ThrowErr asciz "Tag not found"
+: Trc1 asciz " :"
+: Trc2 asciz " = "
+# io.l
+: SetFD asciz "SETFD %s"
+: Delim ascii " \\t\\n\\r\\\"'(),[]`~{}"
+: DelimEnd
+: Arrow asciz "-> "
+# db.l
+: RolbLog asciz "Last transaction not completed: Rollback\n"
+: IgnLog asciz "Discarding incomplete transaction.\n"
+: CircFree asciz "Circular free list"
+: BadChain asciz "Bad chain"
+: BadCount asciz "Bad count"
+# err.l
+: ErrTok asciz "!? "
+: Dashes asciz " -- "
+: ProtErr asciz "Protected symbol"
+: StkErr asciz "Stack overflow"
+: ArgErr asciz "Bad argument"
+: NumErr asciz "Number expected"
+: CntErr asciz "Small number expected"
+: SymErr asciz "Symbol expected"
+: ExtErr asciz "External symbol expected"
+: CellErr asciz "Cell expected"
+: AtomErr asciz "Atom expected"
+: LstErr asciz "List expected"
+: VarErr asciz "Variable expected"
+: DivErr asciz "Div/0"
+: RenErr asciz "Can't rename"
+: MakeErr asciz "Not making"
+: ReentErr asciz "Reentrant coroutine"
+: YieldErr asciz "No coroutine"
+: MsgErr asciz "Bad message"
+: BrkErr asciz "No Break"
+: OpenErr asciz "Open error: %s"
+: CloseErr asciz "Close error: %s"
+: PipeErr asciz "Pipe error: %s"
+: ForkErr asciz "Can't fork"
+: WaitPidErr asciz "wait pid"
+: BadFdErr asciz "Bad FD"
+: NoFdErr asciz "No current fd"
+: EofErr asciz "EOF Overrun"
+: SuparErr asciz "Super parentheses mismatch"
+: BadInput asciz "Bad input '%c'"
+: BadDot asciz "Bad dotted pair"
+: SelectErr asciz "Select error: %s"
+: WrBytesErr asciz "bytes write: %s"
+: WrChildErr asciz "child write: %s"
+: WrSyncErr asciz "sync write: %s"
+: WrJnlErr asciz "Journal write: %s"
+: WrLogErr asciz "Log write: %s"
+: TruncErr asciz "Log truncate error: %s"
+: DbSyncErr asciz "DB fsync error: %s"
+: TrSyncErr asciz "Transaction fsync error: %s"
+: LockErr asciz "File lock: %s"
+: DbfErr asciz "Bad DB file"
+: JnlErr asciz "Bad Journal"
+: IdErr asciz "Bad ID"
+: DbRdErr asciz "DB read: %s"
+: DbWrErr asciz "DB write: %s"
+: DbSizErr asciz "DB Oversize"
+: TellErr asciz "Tell PIPE_BUF"
+: IpSocketErr asciz "IP socket error: %s"
+: IpGetsocknameErr asciz "IP getsockname error: %s"
+: IpSetsockoptErr asciz "IP setsockopt error: %s"
+: IpBindErr asciz "IP bind error: %s"
+: IpListenErr asciz "IP listen error: %s"
+: UdpOvflErr asciz "UDP overflow"
+: UndefErr asciz "Undefined"
+: DlErr asciz "[DLL] %s"
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 22mar11abu
+# 06may11abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -6,7 +6,7 @@
 
 (allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
-(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "@jsForm" "@jsHint"))
+(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" "!jsHint"))
 
 (one "*Cnt")
 (off "*Lst" "*Post2" "*Cho")
@@ -186,7 +186,7 @@
                ((disallowed)
                   (notAllowed *Url)
                   (http404) )
-               ((= '@ (car Url))
+               ((= '! (car Url))
                   ((intern (pack (cdr Url)))) )
                ((tail '("." "l") Url)
                   (load *Url) ) ) ) ) ) )
@@ -2113,6 +2113,7 @@
    (=: able
       (cond
          ((: obj T))
+         ((not (: obj)))
          ((=T (car "Lst")) T)
          ((== *Lock (: obj)) T)
          (*Lock (rollback) (off *Lock)) ) ) )

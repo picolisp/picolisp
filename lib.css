@@ -1,4 +1,4 @@
-/* 28feb11abu
+/* 28may11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,6 +24,8 @@
 .em20 {width: 20em;}
 .em25 {width: 25em;}
 .em30 {width: 30em;}
+.em50 {width: 50em;}
+.em70 {width: 70em;}
 
 /* Defaults */
 body {

@@ -20,9 +20,9 @@ href="refB.html#*Bye">*Bye</a></code>.
 : *Bye
 -> ((saveHistory) (and *Tmp (call 'rm "-r" *Tmp)))
 : (tmp "foo" 123)
--> "tmp/27140/foo123"
+-> "/home/app/.pil/tmp/27140/foo123"
 : *Tmp
--> "tmp/27140/"
+-> "/home/app/.pil/tmp/27140/"
 </code></pre>
 
 <p><dt><a name="*Tsm"><code>*Tsm</code></a>
@@ -217,17 +217,17 @@ may grant <code><a href="refS.html#sync">sync</a></code> to the next waiting
 process. See also <code><a href="refH.html#hear">hear</a></code>.
 
 <pre><code>
-: (call 'ps "x")                            # Show processes
+: (call 'ps "x")                          # Show processes
   PID TTY      STAT   TIME COMMAND
   ..
- 1321 pts/0    S      0:00 bin/picolisp ..  # Parent process
- 1324 pts/0    S      0:01 bin/picolisp ..  # First child
- 1325 pts/0    S      0:01 bin/picolisp ..  # Second child
+ 1321 pts/0    S      0:00 /usr/bin/picolisp ..  # Parent process
+ 1324 pts/0    S      0:01 /usr/bin/picolisp ..  # First child
+ 1325 pts/0    S      0:01 /usr/bin/picolisp ..  # Second child
  1326 pts/0    R      0:00 ps x
 -> T
-: *Pid                                      # We are the second child
+: *Pid                                    # We are the second child
 -> 1325
-: (tell 'println '*Pid)                     # Ask all others to print their Pid's
+: (tell 'println '*Pid)                   # Ask all others to print their Pid's
 1324
 -> *Pid
 </code></pre>
@@ -383,23 +383,20 @@ href="ref_.html#$tim">$tim</a></code>.
 <dt><a name="tmp"><code>(tmp ['any ..]) -> sym</code></a>
 <dd>Returns the path name to the <code><a
 href="refP.html#pack">pack</a></code>ed <code>any</code> arguments in a
-process-local temporary directory. The directory name consists of "tmp/"
-followed by the current process ID <code><a
-href="refP.html#*Pid">*Pid</a></code>. This directory is automatically created
-if necessary, and removed upon termination of the process (<code><a
+process-local temporary directory. The directory name consists of the path to
+".pil/tmp/" in the user's home directory, followed by the current process ID
+<code><a href="refP.html#*Pid">*Pid</a></code>. This directory is automatically
+created if necessary, and removed upon termination of the process (<code><a
 href="refB.html#bye">bye</a></code>). See also <code><a
+href="refP.html#pil">pil</a></code>, <code><a
 href="refT.html#*Tmp">*Tmp</a></code> and <code><a
 href="refB.html#*Bye">*Bye</a></code> .
 
 <pre><code>
-: *Bye
--> ((saveHistory) (and *Tmp (call 'rm "-r" *Tmp)))
 : *Pid
 -> 27140
 : (tmp "foo" 123)
--> "tmp/27140/foo123"
-: (dir "tmp/")
--> ("27140")
+-> "/home/app/.pil/tmp/27140/foo123"
 : (out (tmp "foo" 123) (println 'OK))
 -> OK
 : (dir (tmp))

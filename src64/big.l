@@ -1,4 +1,4 @@
-# 03mar11abu
+# 20jun11abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2964,7 +2964,10 @@
    mul E  # times 'Seed'
    add D 1  # plus 1
    ld (Seed) D  # Save
-   ld E (Seed 4)  # Get high halfword
+   shl C 32  # Get middle 64 bits
+   shr A 32
+   or A C
+   ld E A
    off E 7  # Keep sign
    or E CNT  # Make short number
    ret
@@ -2981,9 +2984,12 @@
    ld (Seed) D  # Save
    ld E (Y)
    eval  # Eval first arg
-   cmp E Nil  # Any
+   cmp E Nil  # Any?
    if eq  # No
-      ld E (Seed 4)  # Get high halfword
+      shl C 32  # Get middle 64 bits
+      shr A 32
+      or A C
+      ld E A
       off E 7  # Keep sign
       or E CNT  # Make short number
       pop Y
@@ -3007,13 +3013,15 @@
    call evCntXY_FE  # Get cnt2
    inc E  # Seed % (cnt2 + 1 - cnt1) + cnt1
    sub E (S)
-   ld A (Seed 4)  # Get high halfword
+   shl C 32  # Get middle 64 bits
+   shr A 32
+   or A C
    ld C 0
    div E  # Modulus in C
    pop E  # + cnt1
    add E C
    pop Y
    pop X
-   jmp boxCntE_E  # Return short number
+   jmp boxE_E  # Return short number
 
 # vi:et:ts=3:sw=3

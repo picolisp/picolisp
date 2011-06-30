@@ -1,4 +1,4 @@
-/* 09mar11abu
+/* 10jun11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -256,7 +256,7 @@ extern any Nil, DB, Meth, Quote, T;
 extern any Solo, PPid, Pid, At, At2, At3, This, Dbg, Zap, Ext, Scl, Class;
 extern any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Tsm, Adr, Fork, Bye;
 extern bool Break;
-extern sig_atomic_t Signal[SIGIO+1];  // SIGIO is highest used signal number
+extern sig_atomic_t Signal[NSIG];
 
 /* Prototypes */
 void *alloc(void*,size_t);

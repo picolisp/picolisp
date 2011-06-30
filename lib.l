@@ -1,4 +1,4 @@
-# 25feb11abu
+# 15apr11abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -157,6 +157,11 @@
    (unless (idx '*Once (file) T)
       (run Prg 1) ) )
 
+(de pil @
+   (when (== "Pil" '"Pil")
+      (call 'mkdir "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
+   (pass pack "Pil") )
+
 (de rc (File Key . @)
    (ctl File
       (let Lst (in File (read))
@@ -186,7 +191,7 @@
    (unless *Tmp
       (push '*Bye '(call 'rm "-r" *Tmp))
       (push '*Fork '(off *Tmp) '(del '(call 'rm "-r" *Tmp) '*Bye))
-      (call 'mkdir "-p" (setq *Tmp (pack "tmp/" *Pid "/"))) )
+      (call 'mkdir "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
 ### List ###

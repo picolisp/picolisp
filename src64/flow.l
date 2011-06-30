@@ -1,4 +1,4 @@
-# 26feb11abu
+# 20apr11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -21,8 +21,6 @@
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    ret
-: HashBlank asciz "# "
-: Redefined asciz " redefined\\n"
 
 (code 'putSrcEC_E)
    cmp (Dbg) Nil  # Debug?
@@ -133,7 +131,7 @@
       end
    end
    ld (E) C  # Set definition
-   ld C 0  # No class
+   ld C 0  # No key
    call putSrcEC_E  # Put source information
    ret
 
@@ -490,7 +488,7 @@
       end
       ld E (L II)  # Get symbol
       ld (E) (L I)  # Set new value
-      ld C 0  # No class
+      ld C 0  # No key
       call putSrcEC_E  # Put source information
    else
       ld E (Y)
@@ -568,7 +566,7 @@
    cmp E TSym  # 'msg' is T?
    if ne  # No
       push C  # Save class
-      ld C doMeth  # Get 'meth' code pointer
+      ld C (Meth)  # Get 'meth' code pointer
       call redefineCEX  # Redefine
       pop C
    end
@@ -612,10 +610,7 @@
          end
          pop E
          ld ((X) CDR) (Y CDR)  # Set new body
-         call putSrcEC_E  # Put source information
-         pop Y
-         pop X
-         ret
+         jmp 90
       end
       ld X (X CDR)
    loop
@@ -634,7 +629,9 @@
       ld (A CDR) (C)
    end
    ld (C) A
+90 xchg C E  # 'msg' <-> 'cls'
    call putSrcEC_E  # Put source information
+   ld E C  # Return 'msg'
    pop Y
    pop X
    ret
@@ -1257,7 +1254,6 @@
    pop X  # Expression
    ld Y SuperErr
    jmp errEXYZ
-: SuperErr asciz "Bad super"
 
 # (extra ['any ..]) -> any
 (code 'doExtra 2)
@@ -1286,7 +1282,6 @@
    pop X  # Expression
    ld Y ExtraErr
    jmp errEXYZ
-: ExtraErr asciz "Bad extra"
 
 (code 'extraXY_FCYZ 0)
    ld X (X)  # Get class definition
@@ -2516,7 +2511,6 @@
    ld E Z
    ld Y ThrowErr
    jmp errEXYZ
-: ThrowErr asciz "Tag not found"
 
 # (finally exe . prg) -> any
 (code 'doFinally 2)
@@ -2976,7 +2970,7 @@
       inc (EnvTrace)  # Increment trace level
       ld C (EnvTrace)  # Get it
       call traceCY  # Print trace information
-      ld C trc1  # Print " :"
+      ld C Trc1  # Print " :"
       call outStringC
       ld X (X)  # Get 'lst'
       do
@@ -3016,7 +3010,7 @@
       ld C (EnvTrace)  # Get trace level
       dec (EnvTrace)  # Decrement it
       call traceCY  # Print trace information
-      ld C trc2  # Print " = "
+      ld C Trc2  # Print " = "
       call outStringC
       call printE_E  # Print result
       call newline
@@ -3027,8 +3021,6 @@
    end
    pop X
    ret
-: trc1 asciz " :"
-: trc2 asciz " = "
 
 (code 'traceCY)
    cmp C 64  # Limit to 64

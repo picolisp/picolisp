@@ -1,8 +1,8 @@
 #!bin/picolisp lib.l
-# 23jan10abu
+# 25apr11abu
 # misc/bigtest <seed>
 
-(load "lib/misc.l")
+(load "@lib/misc.l")
 
 (seed (car (argv)))
 

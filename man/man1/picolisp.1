@@ -1,4 +1,4 @@
-.\" 08mar11abu
+.\" 15apr11abu
 .\"
 .TH PICOLISP 1 "" "" "User Commands"
 .SH NAME
@@ -74,6 +74,12 @@ pil +
 .RE
 .P
 The interpreter can be terminated by typing Ctrl-D or (bye).
+.SH FILES
+Runtime files are maintained in the ~/.pil directory:
+.IP ~/.pil/tmp/<pid>/
+Process-local temporary directories
+.IP ~/.pil/history
+The line editor's history file
 .SH BUGS
 .B PicoLisp
 doesn't try to protect you from every possible programming error ("You asked for

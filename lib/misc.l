@@ -1,4 +1,4 @@
-# 25feb11abu
+# 13jun11abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -468,7 +468,7 @@
                   (prin (pad 2 (hex N)) " ") )
                (space (inc (* 3 (- 16 (length L)))))
                (for N L
-                  (prin (if (<= 32 N 127) (char N) ".")) )
+                  (prin (if (>= 126 N 32) (char N) ".")) )
                (prinl) ) ) ) ) )
 
 # vi:et:ts=3:sw=3

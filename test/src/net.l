@@ -1,25 +1,27 @@
-# 24nov09abu
+# 10jun11abu
 # (c) Software Lab. Alexander Burger
 
 ### port listen connect ###
 (test '(a b c)
-   (if (fork)
-      (let P (port 4445)
+   (let P (port 0 "ListenPort")
+      (if (fork)
          (prog1
             (in (listen P) (rd))
-            (close P) ) )
-      (wait 400)
-      (and (connect "localhost" 4445) (out @ (pr '(a b c))))
-      (bye) ) )
+            (close P) )
+         (close P)
+         (wait 400)
+         (and (connect "localhost" "ListenPort") (out @ (pr '(a b c))))
+         (bye) ) ) )
 
 
 ### udp ###
 (test '(a b c)
-   (ifn (fork)
-      (prog
+   (let P (port T 0 "UdpPort")
+      (if (fork)
+         (udp P)
+         (close P)
          (wait 400)
-         (udp "localhost" 4446 '(a b c))
-         (bye) )
-      (udp (port T 4446)) ) )
+         (udp "localhost" "UdpPort" '(a b c))
+         (bye) ) ) )
 
 # vi:et:ts=3:sw=3

@@ -1,56 +1,40 @@
-12mar11abu
+25jun11abu
 (c) Software Lab. Alexander Burger
 
 
-         Release Notes for picoLisp-3.0.6
+         Release Notes for picoLisp-3.0.7
          ================================
 
-1. On the command line, debug mode can now enabled by appending a single '+' as
-   the very last argument. This '+' will not be seen by the application, but
-   switches on '*Dbg' before any other command line argument is processed.
+1. Runtime files, like the line editor history and temporary directories, were
+   moved to a ".pil/" directory in the user's home directory. The reason is that
+   for a global installation of PicoLisp, neither the installation directory nor
+   the current working directory can be assumed to be writable.
 
-   So the following three commands are equivalent:
+   The line editor history used to reside in the installation directory, in the
+   file "@.picoHistory". It is now in "~/.pil/history".
 
-      $ ./dbg myApp.l -main
+   Temporary directories (with the PID as name) were created in a "tmp/"
+   directory in the current working directory. They are now in "~/.pil/tmp/".
 
-      $ ./p myApp.l -main +
+2. A local startup script './pil' was introduced, analog to the global
+   "/usr/bin/pil" script. It replaces './p'. Instead of './dbg', it is
+   recommended to use './pil +'.
 
-      $ pil myApp.l -main +
+3. An implementation of the 64-bit version for PowerPC (ppc64). Code generation
+   could probably be further optimized, and there may be bugs. But self-assembly
+   works, and the unit tests pass.
 
-   The last line works only if "bin/pil" was copied to "/usr/bin", as
-   recommended in the INSTALL file.
+4. Changed the meta-character for function calls in URLs from '@' to '!' This
+   was necessary, because '@' may conflict with home directory specifiers in
+   path names.
 
-   The debug switch is also available for Ersatz PicoLisp:
+   As a result, it may be necessary to fix existing applications. This involves
+   usually changing things like "@start" and "@stop" to "!start" and "!stop" in
+   all relevant places.
 
-      $ ersatz/picolisp myApp.l -main +
+5. For Ersatz PicoLisp, the startup script's name was changed from "picolisp" to
+   "pil", to be consistent with 'pil' in "real" PicoLisp.
 
-2. *Tsm, the transient symbol markup (the underlining of transient symbols) is
-   now off by default. "lib/tsm.l" can be loaded to switch it on.
-
-3. The interpreter does not exit automatically any more when an empty line is
-   entered on the top level. To exit the interpreter, either Ctrl-D or and
-   explicit call to (bye) is needed.
-
-4. The 'fill' function now handles '^' symbols in the pattern specially. An
-   expression following that symbol should evaluate to a list, which is then
-   (destructively) spliced into the result. As before, if 'fill' is passed a
-   second argument (a symbol or a list of symbols), then only those symbols are
-   replaced in the pattern without any further treatment.
-
-5. The name of the GUI function 'err' in "lib/form.l" was changed to 'error'
-   (and also that of the corresponding default CSS type in "lib.css"). This was
-   done to reserve the name "err" for standard error redirection (point 8).
-
-6. The "opt/" directory (until now containing only a single "pilog.l" file), and
-   "misc/pilog.l" were removed from the base distribution. They are now tracked
-   separately. To install the addons, you can download them as a tarball from
-
-      http://code.google.com/p/picolisp/source/browse/?repo=addons
-
-   and untar them over the install directory.
-
-7. The 'rpc' function was removed from the release. It is seldom used, and also
-   redundant: (rpc 'foo ''arg) is equivalent to (pr '(foo 'arg))
-
-8. A new function 'err' for standard error redirection is now available. It is
-   analog to 'out', but accepts only a symbolic argument (like 'ctl').
+6. There is a new prefix class '+UB' for '+Aux' relations. It maintains
+   UB-Trees, which allow efficient range access to multidimensional data.
+   Currently, only numeric keys are supported.

@@ -1,4 +1,4 @@
-# 30sep10abu
+# 11jul11abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -435,8 +435,8 @@
 
 
 ### call ###
-(test T (call 'test "-d" "test"))
-(test NIL (call 'test "-f" "test"))
+(test T (call 'test "-d" (path "@test")))
+(test NIL (call 'test "-f" (path "@test")))
 
 
 ### kill ###

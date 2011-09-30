@@ -1,4 +1,4 @@
-# 06may11abu
+# 08sep11abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1857,6 +1857,7 @@
 
 (dm set> (Val Dn)
    (and
+      (not (: lock))
       (eval (: erObj))
       (put!> @ (: erVar) Val) )
    (extra Val Dn) )
@@ -1895,6 +1896,7 @@
 
 (dm set> (Val Dn)
    (and
+      (not (: lock))
       (<> Val (: org))
       (let? Obj (eval (: erObj))
          (protect

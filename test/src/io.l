@@ -1,8 +1,8 @@
-# 09mar11abu
+# 11jul11abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
-(test (path '@) (pack (pwd) '/))
+(test 'task (cadr (in (path "@lib.l") (read))))
 (test (char "+") (char (path "+@")))
 
 

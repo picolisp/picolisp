@@ -1,4 +1,4 @@
-# 06apr11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -149,6 +149,7 @@
    ld C 0  # Top frame
    call unwindC_Z  # Unwind
    ld (EnvProtect) 0  # Reset environments
+   ld (EnvIntern) pico
    ld (EnvTask) Nil
    ld (EnvArgs) 0
    ld (EnvNext) 0
@@ -277,7 +278,7 @@
          ret
       end
    loop
-   pop A  # Drop target frame
+   add S I  # Drop target frame
    do  # Top level bindings
       null Y  # Any?
    while nz  # Yes
@@ -384,6 +385,10 @@
    jgt Ret  # Yes
 (code 'protErrEX)
    ld Y ProtErr
+   jmp errEXYZ
+
+(code 'symNsErrEX)
+   ld Y SymNsErr
    jmp errEXYZ
 
 ### Error messages ###

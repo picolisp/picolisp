@@ -35,6 +35,7 @@
 <li><a href="#macros">Do you have macros?</a>
 <li><a href="#strings">Why are there no strings?</a>
 <li><a href="#arrays">What about arrays?</a>
+<li><a href="#floats">How to do floating point arithmetics?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
 <li><a href="#hardware">Would it make sense to build PicoLisp in hardware?</a>
 <li><a href="#segfault">I get a segfault if I ...</a>
@@ -232,15 +233,15 @@ write country- and language-independent applications.
 is quite good. Typical Lisp programs operating on list data structures are
 executed in (interpreted) PicoLisp at about the same speed as in (compiled)
 CMUCL, and about two or three times faster than in CLisp or Scheme48. Programs
-with lots of numeric calculations, however, are several times slower. This is
-mainly due to PicoLisp's somewhat inefficient implementation of bignums in the
-32-bit version.
+with lots of numeric calculations, however, may be slower on a 32-bit system,
+due to PicoLisp's somewhat inefficient implementation of numbers. The 64-bit
+version improved on that.
 
 <p>But in practice, speed was never a problem, even with the first versions of
 PicoLisp in 1988 on a Mac II with a 12 MHz CPU. And certain things are cleaner
-and easier to do in plain <code>C</code> anyway. It is very easy to write
-<code>C</code> functions in PicoLisp, either in the kernel, as shared object
-libraries, or even inline in the Lisp code.
+and easier to do in plain <code>C</code> or <code>asm</code> anyway. It is very
+easy to write <code>C</code> functions in PicoLisp, either in the kernel, as
+shared object libraries, or even inline in the Lisp code.
 
 <p>PicoLisp is very space-effective. Other Lisp systems reserve heap space twice
 as much as needed, or use rather large internal structures to store cells and
@@ -305,11 +306,10 @@ dynamically generated GUI, a fast interpreter is preferable over any compiler.
 structure. A compiler transforms it to another (physical) machine, with the
 result that many assumptions about the machine's behavior won't hold any more.
 Besides that, PicoLisp primitive functions evaluate their arguments
-independently and are not very much suited for being called from compiled code.
-Finally, the gain in execution speed would probably not be worth the effort.
-Typical PicoLisp applications often use single-pass code which is loaded,
-executed and thrown away; a process that would be considerably slowed down by
-compilation.
+independently and are not suited for being called from compiled code. Finally,
+the gain in execution speed would probably not be worth the effort. Typical
+PicoLisp applications often use single-pass code which is loaded, executed and
+thrown away; a process that would be considerably slowed down by compilation.
 
 
 <p><hr>
@@ -335,9 +335,6 @@ applications, and needed something platform independent. The solution was
 obvious: Browsers are installed virtually everywhere. So we developed a protocol
 which persuades a browser to function as a GUI front-end to our applications.
 This is much simpler than to develop a full-blown web server.
-
-<p>In a sense, PicoLisp is a "pure" application server, not a web server
-handling "web applications".
 
 
 <p><hr>
@@ -475,10 +472,11 @@ utilities than in production code, so that they can be easily encapsulated.
 
 <p>This is not true. Closures are a matter of scope, not of binding.
 
-<p>For a closure it is necessary to build and maintain an environment. For
-lexical bindings, this has <i>always</i> to be done, and in case of compiled
-code it is the most efficient strategy anyway, because it is done once by the
-compiler, and can then be accessed as stack frames at runtime.
+<p>For a closure it is necessary to build and maintain a separate environment.
+In a system with lexical bindings, this has to be done at <i>each</i> function
+call, and for compiled code it is the most efficient strategy anyway, because it
+is done once by the compiler, and can then be accessed as stack frames at
+runtime.
 
 <p>For an interpreter, however, this is quite an overhead. So it should not be
 done automatically at each and every function invocation, but only if needed.
@@ -489,6 +487,10 @@ symbols</a>. For the general case, PicoLisp has built-in functions like <code><a
 href="refB.html#bind">bind</a></code> or <code><a
 href="refJ.html#job">job</a></code>, which dynamically manage statically scoped
 environments.
+
+<p>Environments are first-class objects in PicoLisp, more flexible than
+hard-coded closures, because they can be created and manipulated independently
+from the code.
 
 <p>As an example, consider a currying function:
 
@@ -614,6 +616,31 @@ such a way that long arrays (or at least an indexed access) are avoided.
 functions that uniformly operate on lists. There is no separate data type that
 has to be handled by the interpreter, garbage collector, I/O, database and so
 on. Lists can be made circular. And lists don't cause memory fragmentation.
+
+
+<p><hr>
+<h2><a name="floats">How to do floating point arithmetics?</a></h2>
+
+<p>PicoLisp does not support real floating point numbers. You can do all kinds
+of floating point calculations by calling existing library functions via
+<code><a href="refN.html#native">native</a></code>, inline-C code, and/or by
+loading the "@lib/math.l" library.
+
+<p>But PicoLisp has something even (arguably) better: Scaled <a
+href="ref.html#num-io">fixpoint numbers</a>, with unlimited precision.
+
+<p>The reasons for this design decision are manifold. Floating point numbers
+smack of imperfection, they don't give "exact" results, have limited precision
+and range, and require an extra data type. It is hard to understand what really
+goes on (How many digits of precision do we have today? Are perhaps 10-byte
+floats used for intermediate results? How does rounding behave?).
+
+<p>For fixpoint support, the system must handle just integer arithmetics, I/O
+and string conversions. The rest is under programmer's control and
+responsibility (the essence of PicoLisp).
+
+<p>Carefully scaled fixpoint calculations can do anything floating points can
+do.
 
 
 <p><hr>

@@ -1,8 +1,9 @@
-/* 10jun11abu
+/* 08sep11abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -324,7 +325,7 @@ any get(any,any);
 int getChar(void);
 void getStdin(void);
 void giveup(char*) __attribute__ ((noreturn));
-bool hashed(any,long,any*);
+bool hashed(any,any);
 void heapAlloc(void);
 any idx(any,any,int);
 unsigned long ihash(any);
@@ -393,6 +394,7 @@ void symError(any,any) __attribute__ ((noreturn));
 any symToNum(any,int,int,int);
 word2 unBoxWord2(any);
 void undefined(any,any);
+void unintern(any,any*);
 void unwind (catchFrame*);
 void varError(any,any) __attribute__ ((noreturn));
 long waitFd(any,int,long);
@@ -544,6 +546,7 @@ any doGetl(any);
 any doGlue(any);
 any doGt(any);
 any doGt0(any);
+any doHash(any);
 any doHead(any);
 any doHeap(any);
 any doHear(any);

@@ -1,4 +1,4 @@
-# 23apr11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -434,6 +434,13 @@
          ret
       end
    end
+   cc isatty(0)  # STDIN
+   nul4  # on a tty?
+   if z  # No
+      ld A -1  # Return EOF
+      pop Z
+      ret
+   end
    ld E 0  # Exit OK
    jmp byeE
 
@@ -785,7 +792,7 @@
             until z  # No
             sub (S I) 255  # Decrement counter
          loop
-         pop A  # Drop second count
+         add S I  # Drop second count
          ld A (S)  # Retrieve count
          call (PutBinBZ)  # Output last count
          do
@@ -794,7 +801,7 @@
             call prByteCEXY  # Output next data byte
          loop
       end
-      pop A  # Drop count
+      add S I  # Drop count
       pop Y
       pop X
       ret
@@ -842,7 +849,7 @@
          ld B NIX  # Output NIX
          call (PutBinBZ)
       else
-         ld Y Intern
+         ld Y ((EnvIntern))
          call isInternEXY_F  # Internal symbol?
          ld C INTERN  # Yes
          ldnz C TRANSIENT  # No
@@ -1462,7 +1469,8 @@
                   ld4 (S 4)  # Close write pipe
                   call closeAX
                end
-               cc execvp((S 8) &(S 8))  # Execute program
+               add S I  # Drop 'pipe' structure
+               cc execvp((S) S)  # Execute program
                jmp execErrS  # Error if failed
             end
             cc setpgid(A 0)  # Set process group
@@ -1471,7 +1479,7 @@
             ld4 (S)  # Get read pipe
             ld (Y I) A  # Set 'fd'
             call initInFileA_A
-            pop A  # Drop 'pipe' structure
+            add S I  # Drop 'pipe' structure
             do
                ld S Z  # Clean up buffers
                pop Z  # Chain
@@ -1594,7 +1602,8 @@
                   ld4 (S)  # Close read pipe
                   call closeAX
                end
-               cc execvp((S 8) &(S 8))  # Execute program
+               add S I  # Drop 'pipe' structure
+               cc execvp((S) S)  # Execute program
                jmp execErrS  # Error if failed
             end
             cc setpgid(A 0)  # Set process group
@@ -1603,7 +1612,7 @@
             ld4 (S 4)  # Get write pipe
             ld (Y I) A  # Set 'fd'
             call initOutFileA_A
-            pop C  # Drop 'pipe' structure
+            add S I  # Drop 'pipe' structure
             do
                ld S Z  # Clean up buffers
                pop Z  # Chain
@@ -2105,16 +2114,34 @@
    end
    ret
 
-(code 'rdAtomBYL_E)  # X
+(code 'rdAtomBY_E)  # X
+   link
+   push (EnvIntern)  # <L II> Current symbol namespace
+   push ZERO  # <L I> Result
    ld C 4  # Build name
-   lea X (L I)  # Safe
+   ld X S
+   link
    call byteSymBCX_CX  # Pack first char
    ld A Y  # Get second
    do
       null A  # EOF?
    while ns  # No
+      cmp B (char "~")  # Tilde?
+      if eq  # Yes
+         ld X (L I)  # Get name so far
+         call findSymX_E  # Find or create symbol
+         ld X 0  # Clear error context
+         atom (E)  # Value must be a cell
+         jnz symNsErrEX
+         ld (EnvIntern) E  # Switch symbol namespace
+         ld C 4  # Build new name
+         lea X (L I)  # Safe
+         ld (X) ZERO
+         call (Get_A)  # Get next char
+         continue T
+      end
       memb Delim "(DelimEnd-Delim)"  # Delimiter?
-      jeq 10  # Yes
+      break eq   # Yes
       cmp B (char "\\")  # Backslash?
       if eq  # Yes
          call (Get_A)  # Get next char
@@ -2122,7 +2149,7 @@
       call byteSymBCX_CX  # Pack char
       call (Get_A)  # Get next
    loop
-10 ld X (L I)  # Get name
+   ld X (L I)  # Get name
    ld A (Scl)  # Scale
    shr A 4  # Normalize
    ld (Sep3) 0  # Thousand separator
@@ -2136,6 +2163,8 @@
          call findSymX_E  # Find or create symbol
       end
    end
+   ld (EnvIntern) (L II)  # Restore current symbol namespace
+   drop
    ret
 
 (code 'rdList_E)
@@ -2229,20 +2258,16 @@
          end
          push X
          push Y
-         link
-         push ZERO  # <L I> Safe
-         link
          push E
          ld Y A  # Save first char
          ld B (char ".")  # Restore dot
-         call rdAtomBYL_E  # Read atom
+         call rdAtomBY_E  # Read atom
          call consE_A  # Make a pair
          ld (A) E
          ld (A CDR) Nil
          pop E
          ld (E CDR) A  # Store in last cell
          ld E A
-         drop
          pop Y
          pop X
       else
@@ -2283,20 +2308,17 @@
 (code 'readA_E)
    push X
    push Y
-   link
-   push ZERO  # <L I> Safe
-   link
-   push A  # <L -I> Top flag
+   push A  # <S> Top flag
    ld C (char "#")
    call skipC_A
    null A  # EOF?
    if s  # Yes
-      null (L -I)  # Top?
+      null (S)  # Top?
       jz eofErr  # No: Error
       ld E Nil  # Yes: Return NIL
       jmp 99
    end
-   null (L -I)  # Top?
+   null (S)  # Top?
    if nz  # Yes
       ld C (InFile)  # And reading file?
       null C
@@ -2307,7 +2329,7 @@
    cmp B (char "(")  # Opening a list?
    if eq  # Yes
       call rdList_E  # Read it
-      null (L -I)  # Top?
+      null (S)  # Top?
       if nz  # Yes
          cmp (Chr) (char "]")  # And super-parentheses?
          if eq  # Yes
@@ -2343,7 +2365,9 @@
       ld X Uni  # Maintain '*Uni' index
       cmp (X) TSym  # Disabled?
       jeq 99  # Yes
-      ld (L I) E  # Else save expression
+      link
+      push E  # Else save expression
+      link
       ld Y E
       call idxPutXY_E
       atom E  # Pair?
@@ -2352,6 +2376,7 @@
       else
          ld E Y  # 'read' value
       end
+      drop
       jmp 99
    end
    cmp B (char "`")  # Backquote?
@@ -2359,8 +2384,11 @@
       call (Get_A)  # Skip '`'
       ld A 0
       call readA_E  # Read expression
-      ld (L I) E  # Save it
+      link
+      push E  # Save it
+      link
       eval  # Evaluate
+      drop
       jmp 99
    end
    cmp B (char "\"")  # String?
@@ -2374,8 +2402,11 @@
       end
       call testEscA_F
       jnc eofErr
+      link
+      push ZERO  # <L I> Result
       ld C 4  # Build name
-      lea X (L I)  # Safe
+      ld X S
+      link
       do
          call byteSymBCX_CX  # Pack char
          call (Get_A)  # Get next
@@ -2389,6 +2420,7 @@
       ld Y Transient
       ld E 0  # No symbol yet
       call internEXY_FE  # Check transient symbol
+      drop
       jmp 99
    end
    cmp B (char "{")  # External symbol?
@@ -2451,8 +2483,8 @@
    ld Y A  # Save in Y
    call (Get_A)  # Next char
    xchg A Y  # Get first char
-   call rdAtomBYL_E  # Read atom
-99 drop
+   call rdAtomBY_E  # Read atom
+99 pop A
    pop Y
    pop X
    ret
@@ -3146,7 +3178,7 @@
       end
       ld (S) A  # New milliseconds
    loop
-   pop A  # Drop milliseconds
+   add S I  # Drop milliseconds
    pop Z
    pop Y
    pop X
@@ -3918,7 +3950,7 @@
          ld E (L I)  # Get result
          drop
       end
-      pop A  # Drop set
+      add S I  # Drop set
       pop X
    end
    drop
@@ -4057,6 +4089,7 @@
    end
    push Y
    link
+   push (EnvIntern)  # <L III> Keep current namespace
    push ZERO  # <L II>
    push ZERO  # <L I>
    link
@@ -4068,8 +4101,7 @@
    ld E Nil  # Close transient scope
    call doHide
    do
-      ld A ((InFiles))  # Get stdin
-      cmp A (InFile)  # Reading from file?
+      cmp ((InFiles)) (InFile)  # Reading from file?
       if ne  # Yes
          ld C 0  # No terminator
          call readC_E  # Read expression
@@ -4097,8 +4129,7 @@
       cmp E Nil
    while ne
       ld (L I) E  # Save read expression
-      ld A ((InFiles))  # Get stdin
-      cmp A (InFile)  # Reading from file?
+      cmp ((InFiles)) (InFile)  # Reading from file?
       if nz  # Yes
 10       eval  # Evaluate
       else
@@ -4121,6 +4152,10 @@
       end
       ld (L I) E  # Save result
    loop
+   null ((InFile) VI)  # File?
+   if nz  # Yes
+      ld (EnvIntern) (L III)  # Restore namespace
+   end
    call popInFiles
    ld E Nil  # Close transient scope
    call doHide
@@ -4405,7 +4440,7 @@
          call evCntEX_FE  # Evaluate second
          ld A (Chr)  # Get Chr again
          do
-            sub Y 1  # Decrement first 'cnt'
+            dec Y  # Decrement first 'cnt'
          while ns
             null A  # EOF?
             if s  # Yes
@@ -4428,7 +4463,7 @@
                ret
             end
             call (PutB)  # Output byte
-            sub E 1  # Decrement 'cnt'
+            dec E  # Decrement 'cnt'
          while nz
             call (Get_A)  # Get next
          loop
@@ -4759,7 +4794,7 @@
          ret
       end
       push Y
-      ld Y Intern
+      ld Y ((EnvIntern))
       call isInternEXY_F  # Internal symbol?
       if eq  # Yes
          cmp X (hex "2E2")  # Dot?
@@ -4772,9 +4807,11 @@
             ld C 0
             call symByteCX_FACX  # Get first byte
             do
+               cmp B (char "\\")  # Backslash?
+               jeq 10  # Yes
                memb Delim "(DelimEnd-Delim)"  # Delimiter?
                if eq  # Yes
-                  push A  # Save char
+10                push A  # Save char
                   ld B (char "\\")  # Print backslash
                   call (PutB)
                   pop A
@@ -4804,9 +4841,9 @@
          call symByteCX_FACX  # Get first byte
          do
             cmp B (char "\\")  # Backslash?
-            jz 20
+            jeq 20
             cmp B (char "\^")  # Caret?
-            jz 20
+            jeq 20
             null Y  # Transient symbol markup?
             jnz 30  # Yes
             cmp B (char "\"")  # Double quote?
@@ -5022,7 +5059,7 @@
       ld C E  # Keep in E
       call xCntCX_FC  # Get cnt
       do
-         sub C 1  # 'cnt' times
+         dec C  # 'cnt' times
       while ns
          call space  # Output spaces
       loop

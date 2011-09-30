@@ -1,4 +1,4 @@
-/* 07mar11abu
+/* 08sep11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1118,10 +1118,10 @@ any doBitXor(any ex) {
 }
 
 /* Random numbers */
-static u_int64_t Seed;
+static uint64_t Seed;
 
-static u_int64_t initSeed(any x) {
-   u_int64_t n;
+static uint64_t initSeed(any x) {
+   uint64_t n;
 
    for (n = 0; isCell(x); x = cdr(x))
       n += initSeed(car(x));
@@ -1137,8 +1137,21 @@ static u_int64_t initSeed(any x) {
 
 // (seed 'any) -> cnt
 any doSeed(any ex) {
-   return boxCnt(
-         hi(Seed = initSeed(EVAL(cadr(ex))) * 6364136223846793005LL + 1) );
+   return box(hi(Seed = initSeed(EVAL(cadr(ex))) * 6364136223846793005LL));
+}
+
+// (hash 'any) -> cnt
+any doHash(any ex) {
+   word2 n = initSeed(EVAL(cadr(ex)));
+   int i = 64;
+   int j = 0;
+
+   do {
+      if (((int)n ^ j) & 1)
+         j ^= 0x14002;  /* CRC Polynom x**16 + x**15 + x**2 + 1 */
+      n >>= 1,  j >>= 1;
+   } while (--i);
+   return box(2 * (j + 1));
 }
 
 // (rand ['cnt1 'cnt2] | ['T]) -> cnt | flg
@@ -1149,7 +1162,7 @@ any doRand(any ex) {
    x = cdr(ex);
    Seed = Seed * 6364136223846793005LL + 1;
    if (isNil(x = EVAL(car(x))))
-      return boxCnt(hi(Seed));
+      return box(hi(Seed));
    if (x == T)
       return hi(Seed) & 1 ? T : Nil;
    n = xCnt(ex,x);

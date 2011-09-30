@@ -1,4 +1,4 @@
-/* 09mar11abu
+/* 09jul11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -149,6 +149,7 @@ static symInit Symbols[] = {
    {doGlue, "glue"},
    {doGt, ">"},
    {doGt0, "gt0"},
+   {doHash, "hash"},
    {doHead, "head"},
    {doHeap, "heap"},
    {doHear, "hear"},

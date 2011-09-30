@@ -1,4 +1,4 @@
-# 29apr11abu
+# 25aug11abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -88,7 +88,7 @@
       ldnc reg src      # Load if not Carry 'reg' from 'src'
       ldz reg src       # Load if Zero 'reg' from 'src'
       ldnz reg src      # Load if not Zero 'reg' from 'src'
-      lea dst src       # Load 'dst' with effective address of 'src'
+      lea dst src       # Load 'dst' with effective address of 'src' [---]
       st2 dst           # Store two bytes from 'A' into 'dst'
       st4 dst           # Store four bytes from 'A' into 'dst'
       xchg dst dst      # Exchange 'dst's
@@ -99,10 +99,10 @@
       load dst end src  # Load 'dst'..'end' from 'src' (non-overlapping)
 
    Arithmetics:
-      add dst src       # Add 'src' to 'dst'
-      addc dst src      # Add 'src' to 'dst' with Carry
-      sub dst src       # Subtract 'src' from 'dst'
-      subc dst src      # Subtract 'src' from 'dst' with Carry
+      add dst src       # Add 'src' to 'dst' [zsc]
+      addc dst src      # Add 'src' to 'dst' with Carry [zsc]
+      sub dst src       # Subtract 'src' from 'dst' [zsc]
+      subc dst src      # Subtract 'src' from 'dst' with Carry [zsc]
 
       inc dst           # Increment 'dst' [zs.]
       dec dst           # Increment 'dst' [zs.]

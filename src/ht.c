@@ -1,4 +1,4 @@
-/* 01apr10abu
+/* 22jul11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -125,7 +125,7 @@ static void htFmt(any x) {
       bufString(x, nm);
       if (isExt(x))
          Env.put('-'),  htEncode(nm);
-      else if (hashed(x, ihash(y), Intern))
+      else if (hashed(x, Intern[ihash(y)]))
          Env.put('$'),  htEncode(nm);
       else if (strchr("$+-", *nm)) {
          putHex(*nm);

@@ -141,6 +141,7 @@ the first argument is a <code>lst</code>, <code>tail</code> is a predicate
 function returning that argument list if it is <code>equal</code> to the tail of
 the second argument, and <code>NIL</code> otherwise. <code>(tail -2 Lst)</code>
 is equivalent to <code>(nth Lst 3)</code>. See also <code><a
+href="refO.html#offset">offset</a></code>, <code><a
 href="refH.html#head">head</a></code>, <code><a
 href="refL.html#last">last</a></code> and <code><a
 href="refS.html#stem">stem</a></code>.
@@ -509,7 +510,7 @@ href="refC.html#chkTree">chkTree</a></code>.
 </code></pre>
 
 <dt><a name="trim"><code>(trim 'lst) -> lst</code></a>
-<dd>Returns a copy of <code>lst</code> with all trailing white space characters
+<dd>Returns a copy of <code>lst</code> with all trailing whitespace characters
 or <code>NIL</code> elements removed. See also <code><a
 href="refC.html#clip">clip</a></code>.
 
@@ -532,9 +533,9 @@ href="refR.html#repeat/0">repeat/0</a></code>.
 
 <dt><a name="try"><code>(try 'msg 'obj ['any ..]) -> any</code></a>
 <dd>Tries to send the message <code>msg</code> to the object <code>obj</code>,
-optionally with arguments <code>any</code>. If <code>any</code> is not an
-object, or if the message cannot be located in <code>obj</code>, its classes and
-superclasses, <code>NIL</code> is returned. See also <code><a
+optionally with arguments <code>any</code>. If <code>obj</code> is not an
+object, or if the message cannot be located in <code>obj</code>, in its classes
+or superclasses, <code>NIL</code> is returned. See also <code><a
 href="ref.html#oop">OO Concepts</a></code>, <code><a
 href="refS.html#send">send</a></code>, <code><a
 href="refM.html#method">method</a></code>, <code><a

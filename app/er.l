@@ -1,4 +1,4 @@
-# 01dec09abu
+# 21jul11abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -151,17 +151,17 @@
 
 # Database sizes
 (dbs
-   (1 +Role +User +Sal)                         # (1 . 128)
-   (2 +CuSu)                                    # (2 . 256)
-   (1 +Item +Ord)                               # (3 . 128)
-   (0 +Pos)                                     # (4 . 64)
-   (2 (+Role nm) (+User nm) (+Sal nm))          # (5 . 256)
-   (4 (+CuSu nr plz tel mob))                   # (6 . 1024)
-   (4 (+CuSu nm))                               # (7 . 1024)
-   (4 (+CuSu ort))                              # (8 . 1024)
-   (4 (+Item nr sup pr))                        # (9 . 1024)
-   (4 (+Item nm))                               # (10 . 1024)
-   (4 (+Ord nr dat cus))                        # (11 . 1024)
-   (4 (+Pos itm)) )                             # (12 . 1024)
+   (3 +Role +User +Sal)                         # 512 Prevalent objects
+   (0 +Pos)                                     # A:64 Tiny objects
+   (1 +Item +Ord)                               # B:128 Small objects
+   (2 +CuSu)                                    # C:256 Normal objects
+   (2 (+Role nm) (+User nm) (+Sal nm))          # D:256 Small indexes
+   (4 (+CuSu nr plz tel mob))                   # E:1024 Normal indexes
+   (4 (+CuSu nm))                               # F:1024
+   (4 (+CuSu ort))                              # G:1024
+   (4 (+Item nr sup pr))                        # H:1024
+   (4 (+Item nm))                               # I:1024
+   (4 (+Ord nr dat cus))                        # J:1024
+   (4 (+Pos itm)) )                             # K:1024
 
 # vi:et:ts=3:sw=3

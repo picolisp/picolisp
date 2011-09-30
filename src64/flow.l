@@ -1,4 +1,4 @@
-# 20apr11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -106,12 +106,7 @@
    end
    ret
 
-(code 'redefineCEX 0)
-   num E  # Need symbol
-   jnz symErrEX
-   sym E
-   jz symErrEX
-   call checkVarEX
+(code 'redefineCE 0)
    ld A (E)  # Current value
    cmp A Nil  # NIL?
    if ne  # NO
@@ -271,7 +266,7 @@
          ld (EnvBind) L  # Close bind frame
          push 0  # Init env swap
          eval  # Evaluate 'any'
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind excluded symbols
             pop X  # Next symbol
@@ -412,7 +407,7 @@
          else
             call runE_E  # Execute
          end
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind excluded symbols
             pop X  # Next symbol
@@ -457,11 +452,10 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval first
    eval
-   call needSymEX  # Check symbol
-   sym (E TAIL)  # External symbol?
-   if nz  # Yes
-      call dbTouchEX  # Touch it
-   end
+   num E  # Need symbol
+   jnz symErrEX
+   sym E
+   jz symErrEX
    link
    push E  # <L II/III> First symbol
    ld Y (Y CDR)  # Next arg
@@ -472,22 +466,28 @@
    ld Y (Y CDR)  # Third arg?
    atom Y
    if nz  # No
-      ld C (L II)  # First symbol
-      ld A (C)  # Current value
+      ld E (L II)  # First symbol
+      call checkVarEX  # Check
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         call dbTouchEX  # Touch it
+      end
+      ld A (E)  # Current value
       cmp A Nil  # NIL?
       if ne  # NO
-         cmp A C  # Auto-symbol?
+         cmp A E  # Auto-symbol?
          if ne  # No
+            ld E (L I)  # New value
             call equalAE_F  # Changing?
             if ne  # Yes
-               ld E C  # Get sym
+               ld E (L II)  # Get symbol
                ld C 0  # No class
                call redefMsgEC
+               ld E (L II)  # Get symbol again
             end
          end
       end
-      ld E (L II)  # Get symbol
-      ld (E) (L I)  # Set new value
+      ld (E) (L I)  # Set symbol to new value
       ld C 0  # No key
       call putSrcEC_E  # Put source information
    else
@@ -515,7 +515,7 @@
       ld A (L III)  # Symbol
       ld C (L II)  # Key
       ld E (L I)  # Value
-      call putACE
+      call putACE  # Put propery
       ld E (L III)  # Symbol
       ld C (L II)  # Key
       call putSrcEC_E  # Put source information
@@ -531,7 +531,8 @@
    ld X (E CDR)  # Args
    ld E (X)  # Symbol in E
    ld C (X CDR)  # Body in C
-   call redefineCEX  # Redefine
+   call needSymEX
+   call redefineCE  # Redefine
    pop X
    ret
 
@@ -567,7 +568,8 @@
    if ne  # No
       push C  # Save class
       ld C (Meth)  # Get 'meth' code pointer
-      call redefineCEX  # Redefine
+      call needSymEX
+      call redefineCE  # Redefine
       pop C
    end
    ld A (Y CDR)  # Explicit inheritance?
@@ -678,7 +680,7 @@
       xchg (EnvCls) ((L) III)  # 'cls'
       xchg (EnvKey) ((L) II)  # 'key'
       prog Z  # Run body
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       do  # Unbind symbols
          pop X  # Next symbol
@@ -713,7 +715,7 @@
       xchg (EnvCls) ((L) III)  # 'cls'
       xchg (EnvKey) ((L) II)  # 'key'
       prog Z  # Run body
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       do  # Unbind symbols
          pop X  # Next symbol
@@ -770,7 +772,7 @@
    end
    pop (EnvArgs)  # Restore varArgs base
    pop (EnvNext)   # and 'next'
-   pop A  # Drop env swap
+   add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
       pop X  # Next symbol
@@ -894,7 +896,7 @@
          eval
          ld A (L II)  # 'obj'
          ld C (L I)  # Key
-         call putACE  # Put value
+         call putACE  # Put property
          ld X (X CDR)
       loop
    end
@@ -1340,9 +1342,7 @@
       ld (This) E  # Set new
       ld X (X CDR)  # Run 'prg'
       prog X
-      pop A  # Drop 'eswp' + link + 'This'
-      pop A
-      pop A
+      add S III  # Drop 'eswp' + link + 'This'
       pop (This)  # Restore value
       pop L  # Restore link
       pop (EnvBind)  # Restore bind link
@@ -1375,7 +1375,7 @@
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
       prog X  # Run 'prg'
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       pop X  # Unbind symbol
       pop (X)  # Restore value
@@ -1405,7 +1405,7 @@
    ld (EnvBind) L  # Close bind frame
    push 0  # Init env swap
    prog X  # Run 'prg'
-   pop A  # Drop env swap
+   add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
       pop X  # Next symbol
@@ -1445,12 +1445,12 @@
    link
    ld X (X CDR)  # X on 'prg'
    prog X  # Run 'prg'
-   pop A  # Drop link
+   add S I  # Drop link
    pop C  # Retrieve 'lst'
    pop L  # Unlink
    cmp C Nil  # Empty env 'lst'?
    if ne  # No
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       lea X ((L) -II)  # X on bindings
       do  # Unbind symbols
          ld A (X)  # Next symbol
@@ -1488,7 +1488,7 @@
       ld (Y) E  # Set new value
       ld X (X CDR)  # Run 'prg'
       prog X
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       pop X  # Unbind symbol
       pop (X)  # Restore value
@@ -1515,7 +1515,7 @@
       pop L  # and link
    loop
    prog X  # Run 'prg'
-   pop A  # Drop env swap
+   add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
       pop X  # Next symbol
@@ -1549,7 +1549,7 @@
       ld (Y) E  # Set new value
       ld X (X CDR)  # Run 'prg'
       prog X
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       pop X  # Unbind symbol
       pop (X)  # Restore value
@@ -1578,7 +1578,7 @@
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
       prog X  # Run 'prg'
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       pop X  # Unbind symbol
       pop (X)  # Restore value
@@ -1599,7 +1599,7 @@
    ld (EnvBind) L  # Close bind frame
    push 0  # Init env swap
    prog X  # Run 'prg'
-   pop A  # Drop env swap
+   add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
       pop X  # Next symbol
@@ -1880,7 +1880,7 @@
    eval  # Eval condition
    cmp E Nil
    if eq  # NIL
-      pop A  # Drop rest
+      add S I  # Drop rest
       ret
    end
    ld (At) E
@@ -1898,7 +1898,7 @@
    cmp E Nil
    if ne  # NIL
       ld (At) E
-      pop A  # Drop rest
+      add S I  # Drop rest
       ld E Nil  # Return NIL
       ret
    end
@@ -2151,7 +2151,7 @@
          while nz
             dec (S)  # Decrement count
          until z
-         pop A  # Drop count
+         add S I  # Drop count
       else
          ld E Nil  # Return NIL if zero
       end
@@ -2271,7 +2271,7 @@
          until z
       end
       drop
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
    else
       ld Z (Y CDR)  # CDR of first arg
@@ -2304,7 +2304,7 @@
             call loopY_FE
          until z
          drop
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          pop X  # Unbind 'sym2'
          pop (X)  # Restore value
@@ -2347,7 +2347,7 @@
                end
             loop
             drop
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
          else
             # (for ((sym2 . sym) ..) ..)
@@ -2390,7 +2390,7 @@
                end
             loop
             drop
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             pop X  # Unbind 'sym2'
             pop (X)  # Restore value
@@ -3029,7 +3029,7 @@
    end
    do
       call space  # Output spaces
-      sub C 1  # 'cnt' times
+      dec C  # 'cnt' times
    until sz
    push E
    atom Y  # 'sym'?
@@ -3150,7 +3150,7 @@
          or A A
          ld E TSym  # Return 'flg'
          ldnz E Nil
-         pop X  # Drop expression
+         add S I  # Drop expression
          pop Z
          pop X
          ret

@@ -1,4 +1,4 @@
-/* 09mar11abu
+/* 18aug11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -247,9 +247,11 @@ void flushAll(void) {
 static int stdinByte(void) {
    inFile *p;
 
-   if (!(p = InFiles[STDIN_FILENO]) || p->ix == p->cnt && (p->ix < 0 || !slow(p,NO)))
-      bye(0);
-   return p->buf[p->ix++];
+   if ((p = InFiles[STDIN_FILENO]) && (p->ix != p->cnt || (p->ix >= 0 && slow(p,NO))))
+      return p->buf[p->ix++];
+   if (!isatty(STDIN_FILENO))
+      return -1;
+   bye(0);
 }
 
 static int getBinary(void) {
@@ -403,7 +405,7 @@ void binPrint(int extn, any x) {
       if (!isNum(y = name(x)))
          binPrint(extn, y);
       else if (!isExt(x))
-         prNum(hashed(x, ihash(y), Intern)? INTERN : TRANSIENT, y);
+         prNum(hashed(x, Intern[ihash(y)])? INTERN : TRANSIENT, y);
       else
          prNum(EXTERN, extn? extOffs(-extn, y) : y);
    }
@@ -2377,12 +2379,12 @@ void print1(any x) {
          Env.put('$'),  outWord(num(x)/sizeof(cell));
       else if (isExt(x))
          Env.put('{'),  outSym(c),  Env.put('}');
-      else if (hashed(x, ihash(y), Intern)) {
+      else if (hashed(x, Intern[ihash(y)])) {
          if (unDig(y) == '.')
             Env.put('\\'),  Env.put('.');
          else {
             do {
-               if (strchr(Delim, c))
+               if (c == '\\' || strchr(Delim, c))
                   Env.put('\\');
                Env.put(c);
             } while (c = symByte(NULL));

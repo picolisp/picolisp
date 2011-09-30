@@ -207,7 +207,7 @@ href="refF.html#filter">filter</a></code>.
 
 <dt><a name="fish"><code>(fish 'fun 'any) -> lst</code></a>
 <dd>Applies <code>fun</code> to each element - and recursively to all sublists -
-of <code>lst</code>. Returns a list of all items where <code>fun</code> returned
+of <code>any</code>. Returns a list of all items where <code>fun</code> returned
 non-<code>NIL</code>. See also <code><a
 href="refF.html#filter">filter</a></code>.
 
@@ -412,8 +412,9 @@ only be called immediately after <code><a href="refT.html#task">task</a></code>.
 <code>sym|lst</code> to a number. In both cases, optionally a precision
 <code>cnt</code>, a decimal-separator <code>sym1</code> and a
 thousands-separator <code>sym2</code> can be supplied. Returns <code>NIL</code>
-if the conversion is unsuccessful. See also <code><a
-href="ref.html#num-io">Numbers</a></code>.
+if the conversion is unsuccessful. See also <a
+href="ref.html#num-io">Numbers</a> and <code><a
+href="refR.html#round">round</a></code>.
 
 <pre><code>
 : (format 123456789)                   # Integer conversion

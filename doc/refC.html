@@ -32,11 +32,11 @@ href="refR.html#rel">rel</a></code>.
 <code><a href="refI.html#idx">idx</a></code> tree structure. Such an
 optimization is sometimes called "memoization". <code>sym</code> must be a
 transient symbol representing a unique key for the argument(s) to the
-calculation.
+calculation. See also <code><a href="refH.html#hash">hash</a></code>.
 
 <pre><code>
 : (de fibonacci (N)
-   (cache '*Fibonacci (format N)
+   (cache '(NIL) (pack (char (hash N)) N)
       (if (> 2 N)
          1
          (+
@@ -359,6 +359,22 @@ href="refO.html#object">object</a></code>.
 -> ((foo> (X) (bar X)) +B +C +D)
 </code></pre>
 
+<dt><a name="clause"><code>(clause '(sym . any)) -> sym</code></a>
+<dd>Declares a <a href="ref.html#pilog">Pilog</a> fact or rule for the
+<code>sym</code> argument, by concatenating the <code>any</code> argument to the
+<code>T</code> property of <code>sym</code>. See also <code><a
+href="refB.html#be">be</a></code>.
+
+<pre><code>
+: (clause '(likes (John Mary)))
+-> likes
+: (clause '(likes (John @X) (likes @X wine) (likes @X food)))
+-> likes
+: (? (likes @X @Y))
+ @X=John @Y=Mary
+-> NIL
+</code></pre>
+
 <dt><a name="clause/2"><code>clause/2</code></a>
 <dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
 argument is a predicate which has the second argument defined as a clause.
@@ -374,7 +390,7 @@ argument is a predicate which has the second argument defined as a clause.
 </code></pre>
 
 <dt><a name="clip"><code>(clip 'lst) -> lst</code></a>
-<dd>Returns a copy of <code>lst</code> with all white space characters or
+<dd>Returns a copy of <code>lst</code> with all whitespace characters or
 <code>NIL</code> elements removed from both sides. See also <code><a
 href="refT.html#trim">trim</a></code>.
 
@@ -403,7 +419,8 @@ href="refC.html#connect">connect</a></code>.
 picolisp interpreter is returned. Otherwise, the command name is set to
 <code>any</code>. Setting the name may not work on some operating systems. Note
 that the new name must not be longer than the original one. See also <code><a
-href="refA.html#argv">argv</a></code> and <a
+href="refA.html#argv">argv</a></code>, <code><a
+href="refF.html#file">file</a></code> and <a
 href="ref.html#invoc">Invocation</a>.
 
 <pre><code>

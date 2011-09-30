@@ -1,4 +1,4 @@
-# 20apr11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -71,8 +71,7 @@
 : DbLog        word  0           # Transaction log file
 
 # GC relevant data
-:: Intern      word  Nil         # Short internal names
-               word  Nil         # Long internal names
+: GcMark
 :: Transient   word  Nil         # Short transient names
                word  Nil         # Long transient names
 : Alarm        word  Nil         # Alarm handler
@@ -136,7 +135,11 @@
                word  Nil         # CDR when NIL is accessed as an empty list
                word  0           # Padding
 
+               word  Nil         # Short internal names
+               word  Nil         # Long internal names
+
    # Protected symbols
+   initSym pico      "pico"      .-24
    initSym OS        "*OS"       TgOS
    initSym DB        "*DB"       Db1
    initFun Meth      "meth"      doMeth
@@ -306,6 +309,7 @@
    initFun NIL       "fun?"      doFunQ
    initFun NIL       "getd"      doGetd
    initFun NIL       "all"       doAll
+   initFun NIL       "symbols"   doSymbols
    initFun NIL       "intern"    doIntern
    initFun NIL       "extern"    doExtern
    initFun NIL       "===="      doHide
@@ -481,6 +485,7 @@
    initFun NIL       "|"         doBitOr
    initFun NIL       "x|"        doBitXor
    initFun NIL       "seed"      doSeed
+   initFun NIL       "hash"      doHash
    initFun NIL       "rand"      doRand
 
    # Input/Output
@@ -575,32 +580,33 @@
 
 # Structures
 : EnvCo  # Coroutine environment
-:: Chr         word  0        # Single-char buffer
-:: PutB        word  0        # Character output function
-:: Get_A       word  0        # Character input function
-:: InFile      word  0        # Input file
-:: OutFile     word  0        # Output file
+:: Chr         word  0           # Single-char buffer
+:: PutB        word  0           # Character output function
+:: Get_A       word  0           # Character input function
+:: InFile      word  0           # Input file
+:: OutFile     word  0           # Output file
 : Env  # <Catch III> environment
-: EnvBind      word  0        # <III> Bind frames (first item in Env)
-: EnvInFrames  word  0        # <IV> Input frames
-: EnvOutFrames word  0        # <V> Output frames
-: EnvErrFrames word  0        # <VI> Error frames
-: EnvCtlFrames word  0        # <VII> Control frames
-: EnvArgs      word  0        # Varargs frame
-: EnvNext      word  0        # Next vararg
-: EnvCls       word  0        # Method class
-: EnvKey       word  0        # Method key
-: EnvApply     word  0        # Apply frames
-: EnvMake      word  0        # 'make' env
+: EnvBind      word  0           # <III> Bind frames (first item in Env)
+: EnvInFrames  word  0           # <IV> Input frames
+: EnvOutFrames word  0           # <V> Output frames
+: EnvErrFrames word  0           # <VI> Error frames
+: EnvCtlFrames word  0           # <VII> Control frames
+:: EnvIntern   word  pico        # Current namespace of internal symbols
+: EnvArgs      word  0           # Varargs frame
+: EnvNext      word  0           # Next vararg
+: EnvCls       word  0           # Method class
+: EnvKey       word  0           # Method key
+: EnvApply     word  0           # Apply frames
+: EnvMake      word  0           # 'make' env
 : EnvYoke      word  0
-: EnvParseX    word  0        # Parser status
+: EnvParseX    word  0           # Parser status
 : EnvParseC    word  0
 : EnvParseEOF  word  -1
 : EnvMid  # Must be aligned
-: EnvCo7       word  0        # Coroutines
-: EnvTask      word  Nil      # Task list
-: EnvProtect   word  0        # Signal protection
-: EnvTrace     word  0        # Trace level
+: EnvCo7       word  0           # Coroutines
+: EnvTask      word  Nil         # Task list
+: EnvProtect   word  0           # Signal protection
+: EnvTrace     word  0           # Trace level
 : EnvEnd  # Must be aligned
 
 : OrgTermio skip TERMIOS         # Original termio structure
@@ -1129,13 +1135,13 @@
    hx2 ("0" "0" "0" "0" "0" "0" "0")
 
 # Bytes
-:: Tio      byte 0            # Terminal I/O
+:: Tio      byte 0               # Terminal I/O
 
-: Repl      byte 0            # REPL flag
-: PRepl     byte 0            # Parent REPL
-: Jam       byte 0            # Error jam
-: InBye     byte 0            # Exit status
-: Sync      byte 0            # Family IPC synchronization
+: Repl      byte 0               # REPL flag
+: PRepl     byte 0               # Parent REPL
+: Jam       byte 0               # Error jam
+: InBye     byte 0               # Exit status
+: Sync      byte 0               # Family IPC synchronization
 : Month bytes (31 31 28 31 30 31 30 31 31 30 31 30 31)
 
 # Strings
@@ -1176,6 +1182,7 @@
 : ErrTok asciz "!? "
 : Dashes asciz " -- "
 : ProtErr asciz "Protected symbol"
+: SymNsErr asciz "Bad symbol namespace"
 : StkErr asciz "Stack overflow"
 : ArgErr asciz "Bad argument"
 : NumErr asciz "Number expected"

@@ -1,4 +1,4 @@
-# 07mar11abu
+# 22jul11abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -1638,6 +1638,8 @@ name (x y s)
       return mkStr(y.name());
    if ((s = ((Symbol)y)).Name != null && Intern.get(s.Name) == s)
       err(ex, s, "Can't rename");
+   if (Transient.get(((Symbol)y).Name) == y)
+      Transient.remove(((Symbol)y).Name);
    s.Name = ((Symbol)(x = x.Car.eval())).Name;
    return s;
 
@@ -1697,7 +1699,8 @@ ext? T
 # (zap 'sym) -> sym
 zap (s)
    s = (Symbol)ex.Cdr.Car.eval();
-   Intern.remove(s.name());
+   if (Intern.get(s.Name) == s)
+      Intern.remove(s.Name);
    return s;
 
 # (chop 'any) -> lst
@@ -1990,7 +1993,7 @@ get (x)
       x = x.get(ex.Car.eval());
    return x;
 
-# (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym
+# (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> var
 prop (x)
    x = (ex = ex.Cdr).Car.eval();
    while ((ex = ex.Cdr).Cdr instanceof Cell)
@@ -2021,7 +2024,7 @@ prop (x)
    while (ex.Cdr instanceof Cell);
    return x;
 
-# (:: sym|0 [sym1|cnt .. sym2]) -> lst|sym
+# (:: sym|0 [sym1|cnt .. sym2]) -> var
 :: (x)
    x = This.Car;
    while ((ex = ex.Cdr).Cdr instanceof Cell)
@@ -3165,8 +3168,20 @@ x| (num x)
 
 # (seed 'any) -> cnt
 seed (n)
-   n = initSeed(ex.Cdr.Car.eval()) * 6364136223846793005L + 1;
+   n = initSeed(ex.Cdr.Car.eval()) * 6364136223846793005L;
    return new Number(Seed = n);
+
+# (hash 'any) -> cnt
+hash (i j n)
+   n = initSeed(ex.Cdr.Car.eval());
+   i = 64;
+   j = 0;
+   do {
+      if ((((int)n ^ j) & 1) != 0)
+         j ^= 0x14002;  /* CRC Polynom x**16 + x**15 + x**2 + 1 */
+      n >>>= 1;  j >>= 1;
+   } while (--i != 0);
+   return new Number(j + 1);
 
 # (rand ['cnt1 'cnt2] | ['T]) -> cnt | flg
 rand (x)
@@ -3225,7 +3240,7 @@ poll (i x)
 peek ()
    if (InFile.Chr == 0)
       InFile.get();
-   return InFile.Chr<0? Nil : mkChar((char)InFile.Chr);
+   return InFile.Chr<0? Nil : mkChar(InFile.Chr);
 
 # (char) -> sym
 # (char 'cnt) -> sym
@@ -3235,17 +3250,17 @@ char (x)
    if (!((ex = ex.Cdr) instanceof Cell)) {
       if (InFile.Chr == 0)
          InFile.get();
-      x = InFile.Chr < 0? Nil : mkChar((char)InFile.Chr);
+      x = InFile.Chr < 0? Nil : mkChar(InFile.Chr);
       InFile.get();
       return x;
    }
    if ((x = ex.Car.eval()) instanceof Number)
-      return x.equal(Zero)? Nil : mkChar((char)((Number)x).Cnt);
-   return x == T? mkChar((char)0xFFFF) : new Number(firstChar(x));
+      return x.equal(Zero)? Nil : mkChar(((Number)x).Cnt);
+   return x == T? mkChar(0x10000) : new Number(firstChar(x));
 
 # (skip ['any]) -> sym
 skip (c)
-   return InFile.skip(firstChar(ex.Cdr.Car.eval())) < 0? Nil : mkChar((char)InFile.Chr);
+   return InFile.skip(firstChar(ex.Cdr.Car.eval())) < 0? Nil : mkChar(InFile.Chr);
 
 # (eol) -> flg
 eol ()
@@ -3299,9 +3314,9 @@ till (x y str sb)
    if (InFile.Chr < 0 || str.indexOf((char)InFile.Chr) >= 0)
       return Nil;
    if (x.Cdr.Car.eval() == Nil) {
-      y = x = new Cell(mkChar((char)InFile.Chr), Nil);
+      y = x = new Cell(mkChar(InFile.Chr), Nil);
       while (InFile.get() > 0 && str.indexOf((char)InFile.Chr) < 0)
-         x = x.Cdr = new Cell(mkChar((char)InFile.Chr), Nil);
+         x = x.Cdr = new Cell(mkChar(InFile.Chr), Nil);
       return y;
    }
    sb = new StringBuilder();
@@ -3324,11 +3339,11 @@ line (i x y z sb)
       } while (!InFile.eol());
       return mkStr(sb);
    }
-   for (x = y = new Cell(mkChar((char)InFile.Chr), Nil);;) {
+   for (x = y = new Cell(mkChar(InFile.Chr), Nil);;) {
       InFile.get();
       if (InFile.eol())
          return x;
-      y = y.Cdr = new Cell(mkChar((char)InFile.Chr), Nil);
+      y = y.Cdr = new Cell(mkChar(InFile.Chr), Nil);
    }
 
 # (any 'sym) -> any

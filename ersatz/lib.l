@@ -1,4 +1,4 @@
-# 15apr11abu
+# 20sep11abu
 # (c) Software Lab. Alexander Burger
 
 ############ lib.l ############
@@ -48,6 +48,7 @@
 
 (====)
 
+### Definitions ###
 (de expr ("F")
    (set "F"
       (list '@ (list 'pass (box (getd "F")))) ) )
@@ -111,9 +112,6 @@
       (NIL (val "Var")) ) )
 
 (====)
-
-(de scl (N)
-   (setq *Scl N) )
 
 ### I/O ###
 (de tab (Lst . @)
@@ -224,6 +222,9 @@
    (apply meta X This) )
 
 ### Math ###
+(de scl (N)
+   (setq *Scl N) )
+
 (de sqrt (N F)
    (cond
       ((lt0 N) (quit "Bad argument" N))
@@ -751,6 +752,9 @@
 # *Rule
 
 (de be CL
+   (clause CL) )
+
+(de clause (CL)
    (with (car CL)
       (if (== *Rule This)
          (=: T (conc (: T) (cons (cdr CL))))

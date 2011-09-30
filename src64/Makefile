@@ -1,4 +1,4 @@
-# 16jun11abu
+# 06sep11abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -6,51 +6,99 @@
 bin = ../bin
 lib = ../lib
 
-ifeq ($(shell uname), Linux)
+ifneq ($(filter x86-64.linux, $(MAKECMDGOALS)),)
+	UNAME = Linux
+	MACHINE = x86_64
+else
+	ifneq ($(filter x86-64.sunOs, $(MAKECMDGOALS)),)
+		UNAME = SunOS
+		MACHINE = x86_64
+	else
+		ifneq ($(filter x86-64.openBsd, $(MAKECMDGOALS)),)
+			UNAME = OpenBSD
+			MACHINE = x86_64
+		else
+			ifneq ($(filter ppc64.linux, $(MAKECMDGOALS)),)
+				UNAME = Linux
+				MACHINE = ppc64
+			else
+				UNAME = $(shell uname)
+				MACHINE = $(shell uname -m)
+			endif
+		endif
+	endif
+endif
+
+ifeq ($(UNAME), Linux)
 	OS = Linux
 	SYS = linux
-	ifeq ($(shell uname -m), x86_64)
+	ifeq ($(MACHINE), x86_64)
 		ARCH = x86-64
+		MKASM-BASE =
+		MKASM-LIB = -fpic
 		AS = as
 	else
-	ifeq ($(shell uname -m), ppc64)
+	ifeq ($(MACHINE), ppc64)
 		ARCH = ppc64
+		MKASM-BASE = -'prSym "ppc64.symtab"'
+		MKASM-LIB = -fpic -'rdSym "ppc64.symtab"'
 		AS = as -mppc64 -a64
 	endif
 	endif
-	LD-MAIN = gcc -m64 -rdynamic -lc -lm -ldl
-	LD-SHARED = gcc -m64 -shared -export-dynamic
+	LD-MAIN = -m64 -rdynamic -lc -lm -ldl
+	LD-SHARED = -m64 -shared -export-dynamic
 	STRIP = strip
 else
-ifeq ($(shell uname), SunOS)
+ifeq ($(UNAME), SunOS)
 	OS = SunOS
 	SYS = sunOs
 	ARCH = x86-64
+	MKASM-BASE =
+	MKASM-LIB = -fpic
 	AS = gas --64
-	LD-MAIN = gcc -m64 -lc -lm -ldl -lsocket -lnsl
-	LD-SHARED = gcc -m64 -shared
+	LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
+	LD-SHARED = -m64 -shared
 	STRIP = strip
+else
+ifeq ($(UNAME), OpenBSD)
+	OS = OpenBSD
+	SYS = openBsd
+	ARCH = x86-64
+	MKASM-BASE =
+	MKASM-LIB = -fpic
+	AS = as
+	LD-MAIN = -m64 -rdynamic -lc -lm
+	LD-SHARED = -m64 -shared
+	STRIP = strip
+endif
 endif
 endif
 
 baseFiles = version.l glob.l main.l \
 	gc.l apply.l flow.l sym.l subr.l big.l io.l db.l net.l err.l
 
-picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
+sFiles = $(ARCH).$(SYS).base.s $(ARCH).$(SYS).ext.s $(ARCH).$(SYS).ht.s
 
 all: picolisp
 
+x86-64.linux: $(sFiles)
+x86-64.sunOs: $(sFiles)
+x86-64.openBsd: $(sFiles)
+ppc64.linux: $(sFiles)
+
+picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
+
 $(bin)/picolisp: $(ARCH).$(SYS).base.o
 	mkdir -p $(bin) $(lib)
-	$(LD-MAIN) -o $(bin)/picolisp $(ARCH).$(SYS).base.o
+	gcc -o $(bin)/picolisp $(ARCH).$(SYS).base.o $(LD-MAIN)
 	$(STRIP) $(bin)/picolisp
 
 $(lib)/ext: $(ARCH).$(SYS).ext.o
-	$(LD-SHARED) -o $(lib)/ext $(ARCH).$(SYS).ext.o
+	gcc -o $(lib)/ext $(ARCH).$(SYS).ext.o $(LD-SHARED)
 	$(STRIP) $(lib)/ext
 
 $(lib)/ht: $(ARCH).$(SYS).ht.o
-	$(LD-SHARED) -o $(lib)/ht $(ARCH).$(SYS).ht.o
+	gcc -o $(lib)/ht $(ARCH).$(SYS).ht.o $(LD-SHARED)
 	$(STRIP) $(lib)/ht
 
 .s.o:
@@ -58,38 +106,18 @@ $(lib)/ht: $(ARCH).$(SYS).ht.o
 
 
 # Explicit builds for cross-assembly
-x86-64.linux.base.s: lib/asm.l arch/x86-64.l $(baseFiles) sys/x86-64.linux.code.l
-	./mkAsm x86-64 linux Linux base $(lib)/tags $(baseFiles) sys/x86-64.linux.code.l
+$(ARCH).$(SYS).base.s: lib/asm.l arch/$(ARCH).l $(baseFiles) sys/$(ARCH).$(SYS).code.l
+	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/tags $(baseFiles) sys/$(ARCH).$(SYS).code.l $(MKASM-BASE)
 
-x86-64.linux.ext.s: lib/asm.l arch/x86-64.l ext.l
-	./mkAsm x86-64 linux Linux ext "" -fpic ext.l
+$(ARCH).$(SYS).ext.s: lib/asm.l arch/$(ARCH).l ext.l $(ARCH).$(SYS).base.s
+	./mkAsm $(ARCH) $(SYS) $(OS) ext "" $(MKASM-LIB) ext.l
 
-x86-64.linux.ht.s: lib/asm.l arch/x86-64.l ht.l
-	./mkAsm x86-64 linux Linux ht "" -fpic ht.l
-
-
-ppc64.linux.base.s: lib/asm.l arch/ppc64.l $(baseFiles) sys/ppc64.linux.code.l
-	./mkAsm ppc64 linux Linux base $(lib)/tags $(baseFiles) sys/ppc64.linux.code.l -'prSym "ppc64.symtab"'
-
-ppc64.linux.ext.s: lib/asm.l arch/ppc64.l ext.l ppc64.linux.base.s
-	./mkAsm ppc64 linux Linux ext "" -fpic -'rdSym "ppc64.symtab"' ext.l
-
-ppc64.linux.ht.s: lib/asm.l arch/ppc64.l ht.l ppc64.linux.base.s
-	./mkAsm ppc64 linux Linux ht "" -fpic -'rdSym "ppc64.symtab"' ht.l
-
-
-x86-64.sunOs.base.s: lib/asm.l arch/x86-64.l $(baseFiles) sys/x86-64.sunOs.code.l
-	./mkAsm x86-64 sunOs SunOS base $(lib)/tags $(baseFiles) sys/x86-64.sunOs.code.l
-
-x86-64.sunOs.ext.s: lib/asm.l arch/x86-64.l ext.l
-	./mkAsm x86-64 sunOs SunOS ext "" -fpic ext.l
-
-x86-64.sunOs.ht.s: lib/asm.l arch/x86-64.l ht.l
-	./mkAsm x86-64 sunOs SunOS ht "" -fpic ht.l
+$(ARCH).$(SYS).ht.s: lib/asm.l arch/$(ARCH).l ht.l $(ARCH).$(SYS).base.s
+	./mkAsm $(ARCH) $(SYS) $(OS) ht "" $(MKASM-LIB) ht.l
 
 
 # Clean up
 clean:
-	rm -f *.s *.o
+	rm -f *.s *.o *.symtab
 
 # vi:noet:ts=4:sw=4

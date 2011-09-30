@@ -420,7 +420,10 @@ href="refN.html#new">new</a></code> functions.
 <p>External symbols reside in a database file (or a similar resources, see
 <code><a href="refE.html#*Ext">*Ext</a></code>), and are loaded into memory -
 and written back to the file - dynamically as needed, and transparently to the
-programmer.
+programmer. They are kept in memory ("cached") as long as they are accessible
+("referred to") from other parts of the program, or when they were modified but
+not yet written to the database file (by <code><a
+href="refC.html#commit">commit</a></code>).
 
 <p>The interpreter recognizes external symbols internally by an additional tag
 bit in the tail structure.
@@ -640,9 +643,9 @@ symbols and lists) and for read-macros:
 -> -12345678901245678901234567890
 </code></pre>
 
-<p>Fixed-point numbers can be input by embedding a decimal point
-'<code>.</code>', and setting the global variable <code><a
-href="refS.html#*Scl">*Scl</a></code> appropriately:
+<p>Fixpoint numbers can be input by embedding a decimal point '<code>.</code>',
+and setting the global variable <code><a href="refS.html#*Scl">*Scl</a></code>
+appropriately:
 
 <pre><code>
 : *Scl
@@ -661,12 +664,13 @@ href="refS.html#*Scl">*Scl</a></code> appropriately:
 -> 456780
 </code></pre>
 
-<p>Thus, fixed-point input simply scales the number to an integer value
+<p>Thus, fixpoint input simply scales the number to an integer value
 corresponding to the number of digits in <code><a
 href="refS.html#*Scl">*Scl</a></code>.
 
-<p>Formatted output of scaled fixed-point values can be done with the <code><a
-href="refF.html#format">format</a></code> function:
+<p>Formatted output of scaled fixpoint values can be done with the <code><a
+href="refF.html#format">format</a></code> and <code><a
+href="refR.html#round">round</a></code> functions:
 
 <pre><code>
 : (format 1234567890 2)
@@ -887,6 +891,20 @@ the list.
 : '(a b c ~(list 'd 'e 'f) g h i)
 -> (a b c d e f g h i)
 </code></pre>
+
+<p>When a tilde character is used to separate two symbol names (without
+surrounding whitespace), the first is taken as a namespace to look up the second
+(64-bit version only).
+
+<pre><code>
+: 'libA~foo  # Look up 'foo' in namespace 'libA'
+-> "foo"     # "foo" is not interned in the current namespace
+</code></pre>
+
+<p>Reading <code>libA~foo</code> is equivalent to switching the current
+namespace to <code>libA</code> (with <code><a
+href="refS.html#symbols">symbols</a></code>), reading the symbol
+<code>foo</code>, and then switching back to the original namespace.
 
 <p>Brackets ('<code>[</code>' and '<code>]</code>') can be used as super
 parentheses. A closing bracket will match the innermost opening bracket, or all
@@ -1512,7 +1530,7 @@ include
    <dt><code><a href="refS.html#+String">+String</a></code>
    <dd>Strings (just a general case of symbols)
    <dt><code><a href="refN.html#+Number">+Number</a></code>
-   <dd>Integers and fixed-point numbers
+   <dd>Integers and fixpoint numbers
    <dt><code><a href="refD.html#+Date">+Date</a></code>
    <dd>Calendar date values, represented by a number
    <dt><code><a href="refT.html#+Time">+Time</a></code>
@@ -1772,7 +1790,7 @@ abbreviations:
 <li><code>any</code> - Anything: Any primary data type
 <li><code>flg</code> - Flag: Boolean value (<code>NIL</code> or non-<code>NIL</code>)
 <li><code>cnt</code> - A count or a small number
-<li><code>dat</code> - Date: Days since first of March, in the year 0 A.D.
+<li><code>dat</code> - Date: Days, starting first of March of the year 0 A.D.
 <li><code>tim</code> - Time: Seconds since midnight
 <li><code>obj</code> - Object/Class: A symbol with methods and/or classes
 <li><code>var</code> - Variable: Either a symbol or a cell
@@ -1830,6 +1848,7 @@ abbreviations:
    <a href="refP.html#pat?">pat?</a>
    <a href="refF.html#fun?">fun?</a>
    <a href="refA.html#all">all</a>
+   <a href="refS.html#symbols">symbols</a>
    <a href="refI.html#intern">intern</a>
    <a href="refE.html#extern">extern</a>
    <a href="ref_.html#====">====</a>
@@ -2377,6 +2396,7 @@ abbreviations:
    <a href="ref_.html#->">-&gt</a>
    <a href="refU.html#unify">unify</a>
    <a href="refB.html#be">be</a>
+   <a href="refC.html#clause">clause</a>
    <a href="refR.html#repeat">repeat</a>
    <a href="refA.html#asserta">asserta</a>
    <a href="refA.html#assertz">assertz</a>
@@ -2520,6 +2540,7 @@ abbreviations:
 <dt>Globals
 <dd><code>
    <a href="#nilSym">NIL</a>
+   <a href="refP.html#pico">pico</a>
    <a href="refO.html#*OS">*OS</a>
    <a href="refD.html#*DB">*DB</a>
    <a href="refT.html#T">T</a>

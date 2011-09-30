@@ -12,7 +12,7 @@
 <dl>
 
 <dt><a name="*Scl"><code>*Scl</code></a>
-<dd>A global variable holding the current fixed-point input scale. See also <a
+<dd>A global variable holding the current fixpoint input scale. See also <a
 href="ref.html#num-io">Numbers</a> and <code><a
 href="refS.html#scl">scl</a></code>.
 
@@ -197,7 +197,7 @@ $ cat x
 (* (next) (next))
 
 $ pil +
-:  (script "x" 3 4)
+: (script "x" 3 4)
 -> 12
 </code></pre>
 
@@ -215,7 +215,8 @@ $ pil +
 <dt><a name="seed"><code>(seed 'any) -> cnt</code></a>
 <dd>Initializes the random generator's seed, and returns a pseudo random number
 in the range -2147483648 .. +2147483647. See also <code><a
-href="refR.html#rand">rand</a></code>.
+href="refR.html#rand">rand</a></code> and <code><a
+href="refH.html#hash">hash</a></code>.
 
 <pre><code>
 : (seed "init string")
@@ -486,7 +487,7 @@ href="refL.html#length">length</a></code>.
 </code></pre>
 
 <dt><a name="skip"><code>(skip ['any]) -> sym</code></a>
-<dd>Skips all white space (and comments if <code>any</code> is given) in the
+<dd>Skips all whitespace (and comments if <code>any</code> is given) in the
 input stream. Returns the next available character, or <code>NIL</code> upon end
 of file. See also <code><a href="refP.html#peek">peek</a></code> and <code><a
 href="refE.html#eof">eof</a></code>.
@@ -699,6 +700,8 @@ href="refS.html#split">split</a></code>.
 structure as received from <code><a href="refI.html#init">init</a></code>. If
 <code>flg</code> is non-<code>NIL</code>, partial keys are skipped. See also
 <code><a href="refT.html#tree">tree</a></code>, <code><a
+href="refS.html#scan">scan</a></code>, <code><a
+href="refI.html#iter">iter</a></code>, <code><a
 href="refL.html#leaf">leaf</a></code> and <code><a
 href="refF.html#fetch">fetch</a></code>.
 
@@ -802,8 +805,8 @@ href="refE.html#ext?">ext?</a></code>.
 
 <dt><a name="sub?"><code>(sub? 'any1 'any2) -> any2 | NIL</code></a>
 <dd>Returns <code>any2</code> when the string representation of
-<code>sym1</code> is a substring of the string representation of
-<code>sym2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>.
+<code>any1</code> is a substring of the string representation of
+<code>any2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>.
 
 <pre><code>
 : (sub? "def" "abcdef")
@@ -891,6 +894,45 @@ href="refE.html#ext?">ext?</a></code>.
 -> NIL
 : (sym? '(a b))
 -> NIL
+</code></pre>
+
+<dt><a name="symbols"><code>(symbols) -> sym</code></a>
+<dt><code>(symbols 'sym1) -> sym2</code>
+<dt><code>(symbols 'sym1 'sym2) -> sym3</code>
+<dd>(64-bit version only) Creates and manages namespaces of internal symbols: In
+the first form, the current namespace is returned. In the second form, the
+current namespace is set to <code>sym1</code>, and the previous namespace
+<code>sym2</code> is returned. In the third form, <code>sym1</code> is assigned
+a <code><a href="refB.html#balance">balance</a></code>d copy of an existing
+namespace <code>sym2</code> and becomes the new current namespace, returning the
+previous namespace <code>sym3</code>. See also <code><a
+href="refP.html#pico">pico</a></code>, <code><a
+href="refI.html#import">import</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<pre><code>
+: (symbols 'myLib 'pico)
+-> pico
+: (de foo (X)
+   (bar (inx X)) )
+-> foo
+
+: (symbols 'pico)
+-> myLib
+: (pp 'foo)
+(de foo . NIL)
+-> foo
+: (pp 'myLib~foo)
+(de "foo" (X)
+   ("bar" ("inx" X)) )
+-> "foo"
+
+: (symbols 'myLib)
+-> pico
+: (pp 'foo)
+(de foo (X)
+   (bar (inx X)) )
+-> foo
 </code></pre>
 
 <dt><a name="sync"><code>(sync) -> flg</code></a>

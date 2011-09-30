@@ -51,10 +51,8 @@ arrows),</li>
 to make <code>&quot;</code> appear).</li>
 </ul>
 
-<p>We notice that some people try to use Emacs - or some other IDE - as a
-front-end to the PicoLisp console. This is not recommended, because the PicoLisp
-debugging environment will set the console (tty) to raw mode by itself and do
-the special handling seen above during character input.
+<p>If you prefer to use Emacs, please use the picolisp-mode bundled in
+"@lib/el".
 
 <p>If you feel that you absolutely have to use an IDE, <code>rlwrap</code> or
 another input front-end, please remove the entry "@lib/led.l" from "lib.l" and
@@ -222,11 +220,6 @@ path names in the file system) matching the partial input are shown in sequence.
 <li>ESC terminates <i>Input Mode</i> and enters <i>Command Mode</i>
 
 </ul>
-
-<h3>Behaviour of double-quoted strings</h3>
-
-Don't try to display &quot; in the REPL, it may be removed and the string you
-wanted to quote will be underlined. Just close with another &quot; keystroke.
 
 <h3>Conclusion</h3>
 
@@ -1056,7 +1049,7 @@ single expression:
 </code></pre>
 
 <p>To read from a file, we redirect the input with <code><a
-href="refI.html#in">in</a></code>. Note that comments and white space are
+href="refI.html#in">in</a></code>. Note that comments and whitespace are
 automatically skipped by <code>read</code>:
 
 <pre><code>
@@ -1800,9 +1793,11 @@ entity/relation class framework (see also <a href="ref.html#dbase">Database</a>)
 which allows a close mapping of the application data structure to the database.
 
 <p>We provided a simple yet complete database and GUI demo application in
-<code><a href="family.tgz">@doc/family.tgz</a></code>. It contains the sources
-in <code><a href="family.l">@doc/family.l</a></code>, and an initial database in
-the "family/" subdirectory.
+<code><a href="family.tgz">@doc/family.tgz</a></code> and <code><a
+href="family64.tgz">@doc/family64.tgz</a></code>. Please unpack the first one if
+you use a 32-bit system, and the second one on a 64-bit system. Both contain the
+sources in <code><a href="family.l">@doc/family.l</a></code>, and an initial
+database in the "family/" subdirectory.
 
 <p>To use it, please unpack it first in your current working directory, then
 start it up in the following way:
@@ -1923,8 +1918,8 @@ relations as <code>+Joint</code>s.
 </code></pre>
 
 <p>They are all searchable via a non-unique index (<code>+Ref</code>). Date
-values in PicoLisp are just numbers, representing the numbers of days since
-first of March in the year zero.
+values in PicoLisp are just numbers, representing the day number (starting first
+of March of the year zero).
 
 <p>A method <code>url&gt;</code> is defined:
 

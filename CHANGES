@@ -1,3 +1,19 @@
+* 30sep11 picoLisp-3.0.8
+   'load' preserves current namespace
+   "src64/tags" for 'vi' source access
+   'import' symbols function
+   Namespace support with 'symbols' (64-bit)
+   Bug in '@' lambda bindings (32-bit)
+   GC bug in 64-bit bignums
+   Bug in 64-bit 'exec' error handling
+   Bug in 'rand' (64-bit)
+   EOF bug in pipes to stdin
+   'clause' function
+   'prop' and '::' cons default cell
+   "lib/test.l" position independent
+   'hash' function
+   Bug in 'dbFetchEX' for db extensions
+
 * 30jun11 picoLisp-3.0.7
    Numbers and strings in 'native' structure arguments
    Signal portability problems

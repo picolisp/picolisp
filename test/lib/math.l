@@ -1,7 +1,7 @@
-# 18may10abu
+# 11jul11abu
 # (c) Software Lab. Alexander Burger
 
-(load "lib/math.l")
+(load "@lib/math.l")
 
 ### pow ###
 (test 8.0 (pow 2.0 3.0))

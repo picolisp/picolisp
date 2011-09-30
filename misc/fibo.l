@@ -1,4 +1,4 @@
-# 25may11abu
+# 10jul11abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
@@ -26,7 +26,7 @@
 
 # Using a cache (fastest)
 (de cachedFibo (N)
-   (cache '*Fibo (format (seed N))
+   (cache '(NIL) (pack (char (hash N)) N)
       (if (> 2 N)
          1
          (+ (cachedFibo (dec N)) (cachedFibo (- N 2))) ) ) )

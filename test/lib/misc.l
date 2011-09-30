@@ -1,4 +1,4 @@
-# 14may11abu
+# 11jul11abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -209,9 +209,9 @@
 
 ### chdir ###
 (let P (pwd)
-   (chdir "test"
-      (test (pwd) (pack P "/test")) )
-   (test P (pwd)) )
+   (chdir "/tmp"
+      (test "/tmp" (pwd)) )
+   (test P *PWD) )
 
 
 ### dirname basename ###

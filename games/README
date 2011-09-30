@@ -1,4 +1,4 @@
-10may11abu
+15jul11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -75,7 +75,7 @@ Your positions are marked with 'T', the computer's with '0'.
 
 
 
-The 'chess' game is minimalistic (441 lines of code). Nevertheless, it plays
+The 'chess' game is minimalistic (444 lines of code). Nevertheless, it plays
 some slow - though correct - chess. Start it as:
 
 $ pil games/chess.l -main +

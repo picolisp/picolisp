@@ -409,7 +409,9 @@ operation, the results are printed to standard output (read-eval-print loop),
 and <code>load</code> terminates when an empty line is entered. In any case,
 <code>load</code> terminates upon end of file, or when <code>NIL</code> is read.
 The index for transient symbols is cleared before and after the load, so that
-all transient symbols in the file have a local scope. Returns the value of the
+all transient symbols in a file have a local scope. If the namespace was
+switched (with <code><a href="refS.html#symbols">symbols</a></code>) while
+executing a file, it is restored to the previous one. Returns the value of the
 last evaluated expression. See also <code><a
 href="refS.html#script">script</a></code>, <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a

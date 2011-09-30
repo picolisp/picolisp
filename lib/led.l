@@ -1,4 +1,4 @@
-# 15apr11abu
+# 27jul11abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -254,9 +254,11 @@
                      '((X)
                         (setq X
                            (nth
-                              (mapcar
+                              (mapcan
                                  '((C)
-                                    (if (delim? C) (pack "\\" C) C) )
+                                    (if (or (= "\\" C) (delim? C))
+                                       (list "\\" C)
+                                       (cons C) ) )
                                  (chop X) )
                               "N" ) )
                         (cons
@@ -382,7 +384,7 @@
    (default "tabFun"
       '((S)
          (conc
-            (filter '((X) (pre? S X)) (all))
+            (filter '((X) (pre? S (sym X))) (all))
             (let P (rot (split (chop S) "/"))
                (setq
                   S (pack (car P))

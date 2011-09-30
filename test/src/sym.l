@@ -1,4 +1,4 @@
-# 09sep09abu
+# 20sep11abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -36,6 +36,18 @@
 (test '(test)
    (filter '((S) (= S "test")) (all)) )
 
+
+### symbols ###
+(when (== 64 64)
+   (test T (bool (pair pico)))
+   (test 'pico (symbols 'myLib 'pico)) )
+
+(when (== 64 64)
+   (one Foo)
+   (test 'myLib (symbols 'pico)) )
+
+(when (== 64 64)
+   (test 1 myLib~Foo) )
 
 ### intern ###
 (test car (val (intern (pack "c" "a" "r"))))
@@ -267,6 +279,7 @@
    (put A 'x 1)
    (put B 'a 'y 2)
    (put C 0 -1 'a 'z 3)
+   (test '(NIL . p) (prop 'A 'p))
    (test 1 (get A 'x))
    (test 1 (; A x))
    (test 2 (with A (: y)))
@@ -281,6 +294,9 @@
    (test 3 (get C 0 1 'z))
    (test 3 (get C 0 -1 'a 'z))
    (test 3 (; C 0 -1 a z))
+   (test 1 (push (prop 'A 'p) 1))
+   (test 1 (with 'A (pop (:: p))))
+   (test NIL (get 'A 'p))
    (test (3 . z) (prop C 0 -1 'a 'z))
    (test 9 (with C (=: 0 -1 a z (* 3 3))))
    (test (9 . z) (with C (:: 0 -1 a z)))

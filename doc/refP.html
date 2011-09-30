@@ -240,6 +240,22 @@ href="refE.html#extract">extract</a></code>.
 -> 1
 </code></pre>
 
+<dt><a name="pico"><code>pico</code></a>
+<dd>(64-bit version only) A global constant holding the initial (default)
+namespace of internal symbols. Its value is a cons pair of two '<code><a
+href="refI.html#idx">idx</a></code>' trees, one for symbols with short names and
+one for symbols with long names (more than 7 bytes in the name). See also
+<code><a href="refS.html#symbols">symbols</a></code>, <code><a
+href="refI.html#import">import</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<pre><code>
+: (symbols)
+-> pico
+: (cdr pico)
+-> (rollback (*NoTrace (ledSearch (expandTab (********)) *CtryCode ...
+</code></pre>
+
 <dt><a name="pil"><code>(pil ['any ..]) -> sym</code></a>
 <dd>Returns the path name to the <code><a
 href="refP.html#pack">pack</a></code>ed <code>any</code> arguments in
@@ -654,13 +670,14 @@ href="refP.html#prog1">prog1</a></code>.
 123-> 2
 </code></pre>
 
-<dt><a name="prop"><code>(prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym</code></a>
+<dt><a name="prop"><code>(prop 'sym1|lst ['sym2|cnt ..] 'sym) -> var</code></a>
 <dd>Fetches a property for a property key <code>sym</code> from a symbol. That
 symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
 by applying the <code><a href="refG.html#get">get</a></code> algorithm to
 <code>sym1|lst</code> and the following arguments. The property (the cell, not
-just its value) is returned, suitable for direct (destructive) manipulations.
-See also <code><a href="ref_.html#::">::</a></code>.
+just its value) is returned, suitable for direct (destructive) manipulations
+with functions expecting a <code>var</code> argument. See also <code><a
+href="ref_.html#::">::</a></code>.
 
 <pre><code>
 : (put 'X 'cnt 0)

@@ -1,4 +1,4 @@
-# 16feb11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -91,13 +91,16 @@
       null X  # Done?
    until eq  # Yes
    ### Mark ###
-   ld Y Intern  # Mark globals
+   ld Y GcMark  # Mark globals
    do
       ld E (Y)  # Next global
       call markE  # Mark it
       add Y I
       cmp Y GcMarkEnd  # Done?
    until eq  # Yes
+   ### Mark Env ###
+   ld E (EnvIntern)  # Mark current namespace
+   call markE
    ### Mark stack(s) ###
    ld Y L
    do
@@ -132,13 +135,13 @@
       sub Y (StkSize)  # Next segment
       shr C 1  # In use?
       if c  # Yes
+         push C
          null (Y -II)  # Active?
          if z  # Yes
             ld E (Y -I)  # Mark 'tag'
             call markE
          else
             push Y
-            push C
             ld Y ((Y -II))  # Else get saved L
             do
                null Y  # End of stack?
@@ -153,9 +156,9 @@
                loop
                ld Y (Y)  # Next frame
             loop
-            pop C
             pop Y
          end
+         pop C
          continue T
       end
    until z

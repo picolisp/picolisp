@@ -1,4 +1,4 @@
-# 20jun11abu
+# 26aug11abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2489,8 +2489,10 @@
       jeq divErrX  # Yes
       ld A E  # Last argument
       call shruA_A  # / 2
-      ld E (L I)  # Product
+      ld E (L I)  # Get product
+      ld (L I) A  # Save halved argument
       call adduAE_A  # Add for rounding
+      ld (L I) A  # Save rounded product
       ld E (L II)  # Last argument
       call divuAE_A  # Divide
       ld E A  # Result
@@ -2948,6 +2950,7 @@
          add C (E DIG)  # Add next digit
          ld E (E BIG)
       loop
+      shr E 3  # Keep sign
       add C E  # Add final short
    end
    ld E C  # Return counter
@@ -2962,14 +2965,38 @@
    call initSeedE_E  # Initialize 'Seed'
    ld A 6364136223846793005  # Multiplier
    mul E  # times 'Seed'
-   add D 1  # plus 1
    ld (Seed) D  # Save
-   shl C 32  # Get middle 64 bits
-   shr A 32
-   or A C
+   shr A (- 32 3)  # Get higher 32 bits
    ld E A
    off E 7  # Keep sign
    or E CNT  # Make short number
+   ret
+
+# (hash 'any) -> cnt
+(code 'doHash 2)
+   push X
+   ld E (E CDR)  # Get arg
+   ld E (E)
+   eval  # Eval it
+   call initSeedE_E  # Initialize
+   ld X E  # Value in X
+   ld C 64  # Counter
+   ld E 0  # Result
+   do
+      ld A X  # Value XOR Result
+      xor A E
+      test A 1  # LSB set?
+      if nz  # Yes
+         xor E (hex "14002")  # CRC Polynom x**16 + x**15 + x**2 + 1
+      end
+      shr X 1  # Shift value
+      shr E 1  # and result
+      dec C  # Done?
+   until z  # Yes
+   inc E  # Plus 1
+   shl E 4  # Make short number
+   or E CNT  # Make short number
+   pop X
    ret
 
 # (rand ['cnt1 'cnt2] | ['T]) -> cnt | flg
@@ -2986,9 +3013,7 @@
    eval  # Eval first arg
    cmp E Nil  # Any?
    if eq  # No
-      shl C 32  # Get middle 64 bits
-      shr A 32
-      or A C
+      shr A (- 32 3)  # Get higher 32 bits
       ld E A
       off E 7  # Keep sign
       or E CNT  # Make short number
@@ -3013,6 +3038,7 @@
    call evCntXY_FE  # Get cnt2
    inc E  # Seed % (cnt2 + 1 - cnt1) + cnt1
    sub E (S)
+   ld D (Seed)  # Get 'Seed'
    shl C 32  # Get middle 64 bits
    shr A 32
    or A C

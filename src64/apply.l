@@ -1,4 +1,4 @@
-# 20apr11abu
+# 24aug11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -71,7 +71,7 @@
             push 0  # Init env swap
             ld Z (C CDR)  # Body in Z
             prog Z  # Run body
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -124,7 +124,7 @@
                drop
                pop (EnvApply)
             end
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -167,7 +167,7 @@
          end
          pop (EnvArgs)  # Restore varArgs base
          pop (EnvNext)   # and 'next'
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
             pop X  # Next symbol
@@ -233,7 +233,7 @@
             push 0  # Init env swap
             ld Z (C CDR)  # Body in Z
             prog Z  # Run body
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -288,7 +288,7 @@
                drop
                pop (EnvApply)
             end
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -333,7 +333,7 @@
          end
          pop (EnvArgs)  # Restore varArgs base
          pop (EnvNext)   # and 'next'
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
             pop X  # Next symbol
@@ -425,7 +425,7 @@
             push 0  # Init env swap
             ld Z (C CDR)  # Body in Z
             prog Z  # Run body
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -478,7 +478,7 @@
                drop
                pop (EnvApply)
             end
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -521,7 +521,7 @@
          end
          pop (EnvArgs)  # Restore varArgs base
          pop (EnvNext)   # and 'next'
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
             pop X  # Next symbol
@@ -587,7 +587,7 @@
             push 0  # Init env swap
             ld Z (C CDR)  # Body in Z
             prog Z  # Run body
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -642,7 +642,7 @@
                drop
                pop (EnvApply)
             end
-            pop A  # Drop env swap
+            add S I  # Drop env swap
             pop L  # Get link
             do  # Unbind symbols
                pop X  # Next symbol
@@ -687,7 +687,7 @@
          end
          pop (EnvArgs)  # Restore varArgs base
          pop (EnvNext)   # and 'next'
-         pop A  # Drop env swap
+         add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
             pop X  # Next symbol

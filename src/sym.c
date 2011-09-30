@@ -1,4 +1,4 @@
-/* 25oct10abu
+/* 24sep11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -26,12 +26,12 @@ unsigned long ehash(any x) {
    return h % EHASH;
 }
 
-bool hashed(any s, long h, any *tab) {
-   any x;
-
-   for (x = tab[h];  isCell(x);  x = cdr(x))
+bool hashed(any s, any x) {
+   while (isCell(x)) {
       if (s == car(x))
          return YES;
+      x = cdr(x);
+   }
    return NO;
 }
 
@@ -61,6 +61,18 @@ any findHash(any s, any *p) {
    return NULL;
 }
 
+void unintern(any s, any *p) {
+   any x;
+
+   while (isCell(x = *p)) {
+      if (s == car(x)) {
+         *p = cdr(x);
+         return;
+      }
+      p = &x->cdr;
+   }
+}
+
 /* Get symbol name */
 any name(any s) {
    for (s = tail1(s); isCell(s); s = cdr(s));
@@ -70,6 +82,7 @@ any name(any s) {
 // (name 'sym ['sym2]) -> sym
 any doName(any ex) {
    any x, y, *p;
+   unsigned long n;
    cell c1;
 
    x = cdr(ex),  data(c1) = EVAL(car(x));
@@ -77,11 +90,13 @@ any doName(any ex) {
    y = name(data(c1));
    if (!isCell(x = cdr(x)))
       return isNum(y)? consStr(y) : Nil;
-   if (isNil(data(c1)) || isExt(data(c1)) || hashed(data(c1), ihash(y), Intern))
+   n = ihash(y);
+   if (isNil(data(c1)) || isExt(data(c1)) || hashed(data(c1), Intern[n]))
       err(ex, data(c1), "Can't rename");
    Save(c1);
    x = EVAL(car(x));
    NeedSym(ex,x);
+   unintern(data(c1), Transient + n);
    for (p = &tail(data(c1)); isCell(*p); p = &cdr(*p));
    *p = name(x);
    return Pop(c1);
@@ -262,7 +277,7 @@ any doBoxQ(any x) {
 any doStrQ(any x) {
    x = cdr(x);
    return isSym(x = EVAL(car(x))) &&
-         !isExt(x) && !hashed(x, ihash(name(x)), Intern)? x : Nil;
+         !isExt(x) && !hashed(x, Intern[ihash(name(x))])? x : Nil;
 }
 
 // (ext? 'any) -> sym | NIL
@@ -282,7 +297,7 @@ any doTouch(any ex) {
 
 // (zap 'sym) -> sym
 any doZap(any ex) {
-   any x, y, *h;
+   any x;
 
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
@@ -291,11 +306,7 @@ any doZap(any ex) {
    else {
       if (x >= Nil  &&  x <= Bye)
          protError(ex,x);
-      for (h = Intern + ihash(name(x)); isCell(y = *h); h = &y->cdr)
-         if (x == car(y)) {
-            *h = cdr(y);
-            break;
-         }
+      unintern(x, Intern + ihash(name(x)));
    }
    return x;
 }
@@ -1056,28 +1067,29 @@ any get(any x, any key) {
 any prop(any x, any key) {
    any y, z;
 
-   if (!isCell(y = tail1(x)))
-      return Nil;
-   if (!isCell(car(y))) {
-      if (key == car(y))
-         return key;
-   }
-   else if (key == cdar(y))
-      return car(y);
-   while (isCell(z = cdr(y))) {
-      if (!isCell(car(z))) {
-         if (key == car(z)) {
-            cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
+   if (isCell(y = tail1(x))) {
+      if (!isCell(car(y))) {
+         if (key == car(y))
             return key;
+      }
+      else if (key == cdar(y))
+         return car(y);
+      while (isCell(z = cdr(y))) {
+         if (!isCell(car(z))) {
+            if (key == car(z)) {
+               cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
+               return key;
+            }
          }
+         else if (key == cdar(z)) {
+            cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
+            return car(z);
+         }
+         y = z;
       }
-      else if (key == cdar(z)) {
-         cdr(y) = cdr(z),  cdr(z) = tail1(x),  Tail(x, z);
-         return car(z);
-      }
-      y = z;
    }
-   return Nil;
+   Tail(x, cons(y = cons(Nil,key), tail1(x)));
+   return y;
 }
 
 // (put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) -> any
@@ -1098,11 +1110,12 @@ any doPut(any ex) {
       data(c2) = EVAL(car(x));
    }
    NeedSym(ex,data(c1));
-   CheckNil(ex,data(c1));
    Push(c3, EVAL(car(x)));
    Touch(ex,data(c1));
-   if (isNum(data(c2)) && IsZero(data(c2)))
+   if (isNum(data(c2)) && IsZero(data(c2))) {
+      CheckVar(ex,data(c1));
       val(data(c1)) = x = data(c3);
+   }
    else
       put(data(c1), data(c2), x = data(c3));
    drop(c1);
@@ -1131,7 +1144,7 @@ any doGet(any ex) {
    return Pop(c1);
 }
 
-// (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym
+// (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> var
 any doProp(any ex) {
    any x;
    cell c1, c2;
@@ -1149,7 +1162,8 @@ any doProp(any ex) {
       data(c2) = EVAL(car(x));
    }
    NeedSym(ex,data(c1));
-   Fetch(ex,data(c1));
+   CheckNil(ex,data(c1));
+   Touch(ex,data(c1));
    return prop(Pop(c1), data(c2));
 }
 
@@ -1194,11 +1208,12 @@ any doSetCol(any ex) {
       }
    }
    NeedSym(ex,y);
-   CheckNil(ex,y);
    Push(c1, EVAL(car(x)));
    Touch(ex,y);
-   if (isNum(z) && IsZero(z))
+   if (isNum(z) && IsZero(z)) {
+      CheckVar(ex,y);
       val(y) = x = data(c1);
+   }
    else
       put(y, z, x = data(c1));
    drop(c1);
@@ -1224,7 +1239,7 @@ any doCol(any ex) {
    return y;
 }
 
-// (:: sym|0 [sym1|cnt .. sym2]) -> lst|sym
+// (:: sym|0 [sym1|cnt .. sym2]) -> var
 any doPropCol(any ex) {
    any x, y;
 
@@ -1242,6 +1257,9 @@ any doPropCol(any ex) {
          }
       }
    }
+   NeedSym(ex,y);
+   CheckNil(ex,y);
+   Touch(ex,y);
    return prop(y, car(x));
 }
 
@@ -1385,7 +1403,7 @@ any doMeta(any ex) {
 #define CHAR_LETTER     62
 #define CHAR_DIGIT      512
 
-static u_int16_t Blocks[] = {
+static uint16_t Blocks[] = {
    0x1C2, 0x1C2, 0x1C1, 0x12C, 0x12B, 0x1A0, 0x1F8, 0x2DC, 0x25F, 0x2EE, 0x215, 0x346, 0x2DC, 0x326, 0x2BC, 0x216,
    0x15F, 0x2D4, 0x376, 0x376, 0x376, 0x369, 0xFE8F, 0x344, 0xFF85, 0xFF65, 0xFDB5, 0xFDA1, 0x1B, 0x2C4, 0x1C, 0x47,
    0xFEA8, 0xFF8C, 0x235, 0xFEFF, 0x1A, 0xFEBF, 0x26, 0xFB20, 0xFE28, 0x113, 0x104, 0xFB61, 0xFB5A, 0x10B, 0x109, 0xFE,
@@ -1516,7 +1534,7 @@ static u_int16_t Blocks[] = {
    0x528, 0x166B, 0x1667, 0x3FF, 0x9FC, 0x9DC, 0x9BC, 0x659, 0xBB8, 0x15A7, 0xFC6, 0x1C0, 0x1B1, 0x9CB, 0x82C, 0x1285,
 };
 
-static u_int16_t Data[] = {
+static uint16_t Data[] = {
    0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082,
    0x3001, 0x3082, 0x3001, 0x3082, 0x3001, 0x3082, 0x3E80, 0x3E80, 0x3001, 0x3082, 0x3E80, 0x3E80, 0x3E80, 0x3E80, 0x3E80, 0x3E80,
    0x3A85, 0x3A85, 0x3E80, 0x3E80, 0x3E80, 0x3A85, 0x3A85, 0x3A85, 0x3E80, 0x3E80, 0x3E80, 0x3A85, 0x3A85, 0x3A85, 0x3A85, 0x3A85,

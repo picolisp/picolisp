@@ -1,4 +1,4 @@
-// 01mar11abu
+// 27jul11abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -243,7 +243,7 @@ public class PicoLisp {
                n += b[i];
          }
       }
-      return n;
+      return n>=0? n*2 : -n*2+1;
    }
 
    final static Any date(int y, int m, int d) {
@@ -574,7 +574,7 @@ public class PicoLisp {
       return null;
    }
 
-   final static Any mkChar(char c) {return new Symbol(null, "" + c);}
+   final static Any mkChar(int c) {return new Symbol(null, "" + (char)(c >= 0x10000? 0xFFFF : c));}
    final static Any mkStr(String nm) {return nm == null || nm.length() == 0? Nil : new Symbol(null, nm);}
    final static Any mkStr(StringBuilder sb) {return mkStr(sb.toString());}
    final static Symbol mkSymbol(Any val) {return new Symbol(val, null);}
@@ -2179,7 +2179,7 @@ public class PicoLisp {
                   System.arraycopy(Prop, 0, a, 0, p);
                   Prop = a;
                }
-               Prop[p] = val != T? new Cell(val, key): key;
+               Prop[p] = val != T? new Cell(val, key) : key;
             }
          }
          else if (val != Nil)
@@ -2208,21 +2208,30 @@ public class PicoLisp {
       }
 
       final Any prop(Any key) {
-         if (Prop == null)
-            return Nil;
          Any x;
-         int i = Prop.length;
+
+         if (Prop == null) {
+            (Prop = new Any[3])[2] = x = new Cell(Nil, key);
+            return x;
+         }
+         int i = Prop.length, p = -1;
          do {
-            if ((x = Prop[--i]) != null) {
-               if (x instanceof Cell) {
-                  if (key == x.Cdr)
-                     return x;
-               }
-               else if (key == x)
-                  return key;
+            if ((x = Prop[--i]) == null)
+               p = i;
+            else if (x instanceof Cell) {
+               if (key == x.Cdr)
+                  return x;
             }
+            else if (key == x)
+               return key;
          } while (i != 0);
-         return Nil;
+         if (p < 0) {
+            Any[] a = new Any[(p = Prop.length) * 2];
+            System.arraycopy(Prop, 0, a, 0, p);
+            Prop = a;
+         }
+         Prop[p] = x = new Cell(Nil, key);
+         return x;
       }
 
       final Any putl(Any lst) {
@@ -2396,7 +2405,7 @@ public class PicoLisp {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < Name.length(); ++i) {
                char c = Name.charAt(i);
-               if (Delim.indexOf(c) >= 0)
+               if (c == '\\' || Delim.indexOf(c) >= 0)
                   sb.append('\\');
                sb.append(c);
             }

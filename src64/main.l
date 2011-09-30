@@ -1,4 +1,4 @@
-# 20jun11abu
+# 20sep11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -89,10 +89,10 @@
    ld L 0  # Init link register
    call heapAlloc  # Allocate initial heap
    ld E Nil  # Init internal symbols
-   lea Z (E IV)  # Skip padding
+   lea Z (E VI)  # Skip padding and 'pico' cell
    do
       ld X (E TAIL)  # Get name
-      ld Y Intern
+      ld Y "pico-24"  # From initial symbol namespace
       call internEXY_FE  # Store to internals
       ld E Z
       cnt (Z TAIL)  # Short name?
@@ -186,8 +186,7 @@
 
 (code 'execErrS)
    cc fprintf((stderr) ExecErr (S))
-   ld E 127
-   jmp finishE
+   cc exit(127)
 
 # Install interrupting signal
 (code 'iSignalCE)
@@ -1144,7 +1143,7 @@
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
       prog Z  # Run body
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       do  # Unbind symbols
          pop X  # Next symbol
@@ -1178,7 +1177,7 @@
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
       prog Z  # Run body
-      pop A  # Drop env swap
+      add S I  # Drop env swap
       pop L  # Get link
       do  # Unbind symbols
          pop X  # Next symbol
@@ -1234,7 +1233,7 @@
    end
    pop (EnvArgs)  # Restore varArgs base
    pop (EnvNext)   # and 'next'
-   pop A  # Drop env swap
+   add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
       pop X  # Next symbol
@@ -1522,7 +1521,7 @@
                      ld A E  # Byte value
                      shr A 4  # in B
                      do
-                        sub C 1  # Done?
+                        dec C  # Done?
                      while ns  # No
                         ld (Z) B  # Store byte in buffer
                         inc Z  # Increment buffer pointer
@@ -1660,7 +1659,7 @@
    loop
    ld E (Z -II)  # Get result
    drop
-   pop A  # Drop library handle
+   add S I  # Drop library handle
    pop Z
    pop Y
    pop X

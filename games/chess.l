@@ -1,4 +1,4 @@
-# 04aug07abu
+# 16jul11abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -120,7 +120,7 @@
 
 (dm name> () 'Q)
 
-(dm val> () 95)
+(dm val> () 90)
 
 (dm moves> ()
    (make
@@ -137,7 +137,7 @@
 
 (dm name> () 'R)
 
-(dm val> () 50)
+(dm val> () 47)
 
 (dm moves> ()
    (make (tryMoves *Straight)) )
@@ -166,7 +166,7 @@
 
 (dm name> () 'N)
 
-(dm val> () 33)
+(dm val> () 28)
 
 (dm ctl> ()
    (when (=0 (: cnt)) -10) )
@@ -378,7 +378,7 @@
 # Capture   ((p1 (p2) (p1 . f2))   . ((p1 . f1) (p2 . f2)))
 # Castle    ((K (K) (C . f2) (R . f4)) . ((R . f3) (K . f1)))
 # Promote   ((P (P) (Q . f2))      . ((Q) (P . f1)))
-# Capt/Prom ((P (p1) (P) (Q . f2)) . ((Q) (P . f2) (p1 . f1)))
+# Capt/Prom ((P (p1) (P) (Q . f2)) . ((Q) (P . f1) (p1 . f2)))
 (de moves (Color)
    (filter
       '((Lst)
@@ -485,18 +485,22 @@
 
 (de myMove ()
    (let? M
-      (cond
-         ((moved? (if *Me *Black *White))
-            (game *Me *Depth moves move cost) )
-         (*Me
-            (if (member (get *Moved 1 'field 'x) (1 2 3 5))
-               (bookMove 'e7 'e5)
-               (bookMove 'd7 'd5) ) )
-         ((rand T) (bookMove 'e2 'e4))
-         (T (bookMove 'd2 'd4)) )
-      (move (car (push '*Undo (cadr M))))
+      (cadr
+         (cond
+            ((moved? (if *Me *Black *White))
+               (game *Me *Depth moves move cost) )
+            (*Me
+               (if (member (get *Moved 1 'field 'x) (1 2 3 5))
+                  (bookMove 'e7 'e5)
+                  (bookMove 'd7 'd5) ) )
+            ((rand T) (bookMove 'e2 'e4))
+            (T (bookMove 'd2 'd4)) ) )
+      (move (car (push '*Undo M)))
       (off *Redo)
-      (cons (car M) (mapcar cdar (cdr M))) ) )
+      (cons
+         (caar M)
+         (cdr (asoq (caar M) (cdr M)))
+         (pick cdr (cdar M)) ) ) )
 
 (de yourMove (From To)
    (when
@@ -506,8 +510,7 @@
                (== (caar Lst) (get From 'piece))
                (== To (pick cdr (cdar Lst))) ) )
          (moves *You) )
-      (prog1
-         (car (push '*Undo @))
+      (prog1 (car (push '*Undo @))
          (off *Redo)
          (move @) ) ) )
 

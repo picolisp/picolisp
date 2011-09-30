@@ -1,4 +1,4 @@
-16may11abu
+30sep11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -42,8 +42,8 @@ installation, and invoke them explicitly as desired.
 
       $ (cd src; make picolisp)
 
-   or - if you have an x86-64/Linux, x86-64/SunOS or ppc64/Linux system - build
-   the 64-bit version
+   or - if you have an x86-64 system (under Linux or SunOS), or a ppc64 system
+   (under Linux) - build the 64-bit version
 
       $ (cd src64; make picolisp)
 
@@ -66,8 +66,7 @@ installation, and invoke them explicitly as desired.
      generate the "*.s" files:
 
       $ (cd src; make)
-      $ cd src64
-      $ make x86-64.linux.base.s x86-64.linux.ext.s x86-64.linux.ht.s
+      $ (cd src64; make x86-64.linux)
 
    After that, the 64-bit binary can be used to rebuild itself.
 

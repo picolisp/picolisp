@@ -1,11 +1,11 @@
-# 05feb10abu
+# 21jul11abu
 # (c) Software Lab. Alexander Burger
 
 ## 1. On the 32-bit system, in single-user mode:
 ##    : (load "lib/db32-64.l")
 ##    : (export64 *Pool *Dbs *Blob)
 ##
-## 2. Transfer the resulting file "db64.tgz" to the 64-bit system,
+## 2. Transfer the resulting file "~/.pil/db64.tgz" to the 64-bit system,
 ##    and unpack it in the application's runtime directory
 ##
 ## 3. On the 64-bit system, in single-user mode:

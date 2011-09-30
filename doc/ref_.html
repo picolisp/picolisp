@@ -250,14 +250,15 @@ href="ref_.html#;">;</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
 -> 1
 </code></pre>
 
-<dt><a name="::"><code>(:: sym [sym1|cnt .. sym2]) -> lst|sym</code></a>
+<dt><a name="::"><code>(:: sym [sym1|cnt .. sym2]) -> var</code></a>
 <dd>Fetches a property for a property key <code>sym</code> or <code>sym2</code>
 from a symbol. That symbol is <code>This</code> (if no other arguments are
 given), or a symbol found by applying the <code><a
 href="refG.html#get">get</a></code> algorithm to <code>This</code> and the
 following arguments. The property (the cell, not just its value) is returned,
-suitable for direct (destructive) manipulations. Used typically in methods or
-<code><a href="refW.html#with">with</a></code> bodies. See also <code><a
+suitable for direct (destructive) manipulations with functions expecting a
+<code>var</code> argument. Used typically in methods or <code><a
+href="refW.html#with">with</a></code> bodies. See also <code><a
 href="ref_.html#=:">=:</a></code>, <code><a
 href="refP.html#prop">prop</a></code> and <code><a
 href="ref_.html#:">:</a></code>.

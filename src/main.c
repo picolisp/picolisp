@@ -1,4 +1,4 @@
-/* 10jun11abu
+/* 09sep11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -660,20 +660,20 @@ any evExpr(any expr, any x) {
       ++f.cnt, x = cdr(x), y = cdr(y);
    }
    if (isNil(y)) {
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       x = prog(cdr(expr));
    }
    else if (y != At) {
       f.bnd[f.cnt].sym = y,  f.bnd[f.cnt++].val = val(y),  val(y) = x;
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       x = prog(cdr(expr));
    }
    else {
@@ -683,11 +683,11 @@ any evExpr(any expr, any x) {
 
       while (--n >= 0)
          Push(c[n], EVAL(car(x))),  x = cdr(x);
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
       x = prog(cdr(expr));

@@ -76,9 +76,11 @@ href="refG.html#gt0">gt0</a></code>.
 <dt><a name="name"><code>(name 'sym ['sym2]) -> sym</code></a>
 <dd>Returns, if <code>sym2</code> is not given, a new transient symbol with the
 name of <code>sym</code>. Otherwise <code>sym</code> must be a transient symbol,
-and its name is changed to that of <code>sym2</code>. See also <code><a
-href="refS.html#str">str</a></code>, <code><a
+and its name is changed to that of <code>sym2</code> (note that this may give
+inconsistencies if the symbol is still referred to from other namespaces). See
+also <code><a href="refS.html#str">str</a></code>, <code><a
 href="refS.html#sym">sym</a></code>, <code><a
+href="refS.html#symbols">symbols</a></code>, <code><a
 href="refZ.html#zap">zap</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
@@ -223,7 +225,8 @@ This is 123.456
 <code>lisp()</code> calls that symbol with the five numbers, and expects a
 numeric return value. "Numbers" in this context are 64-bit scalars, and may not
 only represent integers, but also pointers or other encoded data. See also
-<code><a href="refL.html#lisp">lisp</a></code>.
+<code><a href="refE.html#errno">errno</a></code> and <code><a
+href="refL.html#lisp">lisp</a></code>.
 
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
 <dt><code>(need 'cnt ['num|sym]) -> lst</code>

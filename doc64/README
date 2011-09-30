@@ -1,4 +1,4 @@
-14apr11abu
+26sep11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -99,7 +99,7 @@ gives a nice feeling to be independent of a heavy-weight C compiler.
       Differences to the 32-bit Version
       ---------------------------------
 
-Except for the following six cases, the 64-bit version should be upward
+Except for the following seven cases, the 64-bit version should be upward
 compatible to the 32-bit version.
 
 1. Internal format and printed representation of external symbols
@@ -131,4 +131,6 @@ compatible to the 32-bit version.
    interface to native C functions directly, without the need of glue code to
    convert arguments and return values.
 
-6. Bugs (in the implementation, or in this list ;-)
+6. New features were added, like coroutines or namespaces.
+
+7. Bugs (in the implementation, or in this list ;-)

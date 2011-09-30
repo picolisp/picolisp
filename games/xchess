@@ -1,8 +1,8 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 29apr11abu
+# 15jul11abu
 # (c) Software Lab. Alexander Burger
 
-(load "/usr/share/picolisp/games/chess.l")  # (load "@games/chess.l")
+(load "/usr/share/picolisp/games/chess.l")
 
 (de reply @
    (prinl (glue " " (rest)))
@@ -13,7 +13,7 @@
       (let L (car *Undo)
          (reply "move"
             (pack
-               (cdr (assoc (caar L) (cdr L)))
+               (cdr (asoq (caar L) (cdr L)))
                (pick cdr (cdar L)) ) ) ) ) )
 
 (in NIL

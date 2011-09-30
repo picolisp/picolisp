@@ -1,4 +1,4 @@
-# 28mar11abu
+# 29sep11abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -256,7 +256,7 @@
 
 (code 'findSymX_E 0)  # Y
    ld E 0  # No symbol yet
-   ld Y Intern
+   ld Y ((EnvIntern))
    call internEXY_FE  # New internal symbol?
    jnc Ret  # No
    ld (E) Nil  # Init to 'NIL'
@@ -278,7 +278,7 @@
       mul 6364136223846793005  # Randomize
       cmp A E  # Equal to key?
       if eq  # Yes
-         pop A  # Drop name
+         add S I  # Drop name
          ld E (X)  # Found symbol
          ret
       end
@@ -350,9 +350,10 @@
    loop
 
 ### Unintern a symbol ###
+# E symbol
 # X name
 # Y tree
-(code 'uninternXY 0)
+(code 'uninternEXY 0)
    cmp X ZERO  # Name?
    jeq ret  # No
    cnt X  # Short name?
@@ -365,6 +366,8 @@
          call nameA_A  # Get name
          cmp A X  # Equal?
          if eq  # Yes
+            cmp E (C)  # Correct symbol?
+            jne Ret  # No
             ld A (C CDR)  # Get subtrees
             atom (A)  # Left branch?
             if nz  # No
@@ -418,6 +421,8 @@
       call nameA_A  # Get name
       call cmpLongAX_F  # Equal?
       if eq  # Yes
+         cmp E (C)  # Correct symbol?
+         jne Ret  # No
          ld A (C CDR)  # Get subtrees
          atom (A)  # Left branch?
          if nz  # No
@@ -529,7 +534,7 @@
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
-      ld Y Intern  # Internal symbol?
+      ld Y ((EnvIntern))  # Internal symbol?
       call isInternEXY_F
       pop Y
       pop X
@@ -545,14 +550,19 @@
       jz symErrEX
       ld X (E TAIL)
       call nameX_X  # Get name
+      push X  # Save new name
       ld E (L I)  # Get first symbol
+      ld X (E TAIL)
+      call nameX_X  # Get name
+      ld Y Transient
+      call uninternEXY  # Unintern
       lea Y (E TAIL)
       do
          num (Y)  # Find name
       while z
          lea Y ((Y) CDR)
       loop
-      ld (Y) X  # Store name of second
+      pop (Y)  # Store name of second
       drop
    end
    pop Y
@@ -776,8 +786,8 @@
       cmp (E) Nil  # Internal trees?
       if eq  # Yes
          cmp (E CDR) Nil  # Short names?
-         ldz E (Intern)  # Yes
-         ldnz E (Intern I)
+         ldz E (((EnvIntern)))  # Yes
+         ldnz E (((EnvIntern)) I)
       else
          cmp (E) TSym  # Transient trees?
          ldnz E Extern  # No: External symbols
@@ -790,9 +800,9 @@
    else
       cmp E Nil  # Nil?
       if eq  # Yes
-         ld X (Intern I)  # Internal symbols
+         ld X (((EnvIntern)) I)  # Internal symbols
          call consTreeXE_E
-         ld X (Intern)
+         ld X (((EnvIntern)))
       else
          cmp E TSym  # T?
          if eq  # Yes
@@ -810,6 +820,7 @@
    pop X
    ret
 
+# Build sorted list from tree
 (code 'consTreeXE_E 0)
    atom X  # Tree empty?
    jnz ret  # Yes
@@ -869,6 +880,112 @@
 90 drop  # Return E
    ret
 
+# Build balanced copy of a namespace
+(code 'balanceXY)  # ACE
+   ld E Nil  # Build list
+   call consTreeXE_E
+   link
+   push E  # <L I> Save list
+   link
+   ld A E  # Get list in A
+   ld C 0  # Calculate length
+   do
+      atom A  # More cells?
+   while z  # Yes
+      inc C  # Increment length
+      ld A (A CDR)  # Next cell
+   loop
+   call balanceCEY
+   drop
+   ret
+
+(code 'balanceCEY 0)
+   do
+      null C  # Length zero?
+      jz ret  # Yes
+      push C  # <S II> Save length
+      push E  # <S I> and list
+      inc C  # (length + 1) / 2
+      shr C 1
+      push C  # <S> Rest length
+      do
+         dec C  # nth
+      while nsz
+         ld E (E CDR)
+      loop
+      push (E CDR)  # Save rest
+      ld E (E)  # Next symbol
+      ld X (E TAIL)  # Get name
+      call nameX_X
+      call internEXY_FE  # Insert
+      pop E  # Retrieve rest
+      ld C (S II)  # Get length
+      sub C (S)  # minus rest length
+      call balanceCEY  # Recurse
+      pop C  # Retrieve rest length
+      dec C  # Decrement
+      pop E  # Retrieve list
+      add S I  # Drop length
+   loop  # Tail recurse
+
+# (symbols) -> sym
+# (symbols 'sym1) -> sym2
+# (symbols 'sym1 'sym2) -> sym3
+(code 'doSymbols 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   atom Y  # Any?
+   if nz  # No
+      ld E (EnvIntern)  # Return current symbol namespace
+   else
+      ld E (Y)  # Eval first
+      eval
+      num E  # Need symbol
+      jnz symErrEX
+      sym E
+      jz symErrEX
+      ld Y (Y CDR)  # Second arg?
+      atom Y  # Any?
+      if nz  # No
+         atom (E)  # Value must be a cell
+         jnz symNsErrEX
+      else
+         call checkVarEX
+         link
+         push E  # <L III> Save new symbol namespace
+         ld E (Y)
+         eval+  # Eval source symbol namespace
+         push E  # <L II> Source
+         link
+         num E  # Need symbol
+         jnz symErrEX
+         sym E
+         jz symErrEX
+         ld C (E)  # Get source
+         atom C  # Must be a cell
+         jnz symNsErrEX
+         ld X (C)  # Source short names
+         call cons_Y  # Create namespace cell
+         ld (Y) Nil  # Initialize
+         ld (Y CDR) Nil
+         tuck Y  # <L I> New value
+         link
+         call balanceXY  # Balanced copy of short names
+         ld X (((L II)) CDR)  # Source long names
+         call balanceXY  # Balanced copy of long names
+         ld C (L I)  # Get value
+         ld E (L III)  # And new symbol namespace
+         call redefineCE  # Redefine
+         drop
+      end
+      xchg (EnvIntern) E  # Set new symbol namespace, return old
+   end
+   pop Y
+   pop X
+   ret
+
 # (intern 'sym) -> sym
 (code 'doIntern 2)
    push X
@@ -884,7 +1001,7 @@
    cmp X ZERO  # Any?
    if ne  # Yes
       push Y
-      ld Y Intern  # Insert internal
+      ld Y ((EnvIntern))  # Insert internal
       call internEXY_FE
       pop Y
       pop X
@@ -1021,7 +1138,7 @@
    push Y
    ld X (E TAIL)  # Get name
    call nameX_X
-   ld Y Intern  # Internal symbol?
+   ld Y ((EnvIntern))  # Internal symbol?
    call isInternEXY_F
    ldz E Nil  # Return NIL
    pop Y
@@ -1080,8 +1197,8 @@
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
-      ld Y Intern
-      call uninternXY  # Unintern symbol
+      ld Y ((EnvIntern))
+      call uninternEXY  # Unintern symbol
       pop Y
    end
    pop X
@@ -1398,12 +1515,11 @@
       end
       ld (S) A
    loop
-   pop A  # Drop locals
-   pop A
+   lea S (S II)  # Drop locals
    pop Z
    pop Y
    pop X
-   ret
+   ret  # 'z' or 'nz'
 
 # (pre? 'any1 'any2) -> any2 | NIL
 (code 'doPreQ 2)
@@ -2361,13 +2477,7 @@
    ret
 
 ### Property access ###
-(code 'setAE 0)
-   ld (A) E  # Set value
-   ret
-
 (code 'putACE 0)
-   cmp C ZERO  # Key is zero?
-   jeq setAE  # Yes
    push X
    ld X (A TAIL)  # Properties
    num X  # Any?
@@ -2622,73 +2732,91 @@
    ret
 
 (code 'propEC_E 0)
-   ld A (E TAIL)  # Get tail
-   num A  # No properties?
-   jnz retNil  # Return NIL
-   off A SYM  # Clear 'extern' tag
-   atom (A)  # First property atomic?
-   if nz  # Yes
-      cmp C (A)  # Found flag?
-      if eq  # Yes
-         ld E C  # Return key
-         ret
-      end
-   else
-      cmp C ((A) CDR)  # Found property?
-      if eq  # Yes
-         ld E (A)  # Return property
-         ret
-      end
-   end
    push X
-   do
-      ld X (A CDR)  # Next property
-      atom X  # Any?
-   while z  # Yes
-      atom (X)  # Atomic?
+   ld A (E TAIL)  # Get tail
+   num A  # Properties?
+   if z  # Yes
+      off A SYM  # Clear 'extern' tag
+      atom (A)  # First property atomic?
       if nz  # Yes
-         cmp C (X)  # Found flag?
+         cmp C (A)  # Found flag?
          if eq  # Yes
-            ld (A CDR) (X CDR)  # Unlink cell
-            ld A (E TAIL)  # Get tail
-            sym A  # Extern?
-            if z  # No
-               ld (X CDR) A  # Insert cell in front
-            else
-               off A SYM  # Clear 'extern' tag
-               ld (X CDR) A  # Insert cell in front
-               or X SYM  # Set 'extern' tag
-            end
-            ld (E TAIL) X
             ld E C  # Return key
             pop X
             ret
          end
       else
-         cmp C ((X) CDR)  # Found property?
+         cmp C ((A) CDR)  # Found property?
          if eq  # Yes
-            ld (A CDR) (X CDR)  # Unlink cell
-            ld A (E TAIL)  # Get tail
-            sym A  # Extern?
-            if z  # No
-               ld (X CDR) A  # Insert cell in front
-               ld (E TAIL) X
-               ld E (X)  # Return property
-            else
-               off A SYM  # Clear 'extern' tag
-               ld (X CDR) A  # Insert cell in front
-               ld A (X)  # Return property
-               or X SYM  # Set 'extern' tag
-               ld (E TAIL) X
-               ld E A
-            end
+            ld E (A)  # Return property
             pop X
             ret
          end
       end
-      ld A X
-   loop
-   ld E Nil  # Return NIL
+      do
+         ld X (A CDR)  # Next property
+         atom X  # Any?
+      while z  # Yes
+         atom (X)  # Atomic?
+         if nz  # Yes
+            cmp C (X)  # Found flag?
+            if eq  # Yes
+               ld (A CDR) (X CDR)  # Unlink cell
+               ld A (E TAIL)  # Get tail
+               sym A  # Extern?
+               if z  # No
+                  ld (X CDR) A  # Insert cell in front
+               else
+                  off A SYM  # Clear 'extern' tag
+                  ld (X CDR) A  # Insert cell in front
+                  or X SYM  # Set 'extern' tag
+               end
+               ld (E TAIL) X
+               ld E C  # Return key
+               pop X
+               ret
+            end
+         else
+            cmp C ((X) CDR)  # Found property?
+            if eq  # Yes
+               ld (A CDR) (X CDR)  # Unlink cell
+               ld A (E TAIL)  # Get tail
+               sym A  # Extern?
+               if z  # No
+                  ld (X CDR) A  # Insert cell in front
+                  ld (E TAIL) X
+                  ld E (X)  # Return property
+               else
+                  off A SYM  # Clear 'extern' tag
+                  ld (X CDR) A  # Insert cell in front
+                  ld A (X)  # Return property
+                  or X SYM  # Set 'extern' tag
+                  ld (E TAIL) X
+                  ld E A
+               end
+               pop X
+               ret
+            end
+         end
+         ld A X
+      loop
+   end
+   call cons_A  # New property cell
+   ld (A) Nil  # (NIL . key)
+   ld (A CDR) C
+   call consA_C  # New first property
+   ld (C) A
+   ld X (E TAIL)  # Get tail
+   sym X  # Extern?
+   if z  # No
+      ld (C CDR) X
+   else
+      off X SYM  # Clear 'extern' tag
+      ld (C CDR) X
+      or C SYM  # Set 'extern' tag
+   end
+   ld (E TAIL) C  # Set new tail
+   ld E A  # Return first (new) cell
    pop X
    ret
 
@@ -2724,8 +2852,6 @@
    jnz symErrEX
    sym E
    jz symErrEX
-   cmp E Nil  # Can't be NIL
-   jeq protErrEX
    ld E (Y)  # Eval 'any'
    eval
    ld A (L II)  # Get symbol
@@ -2738,7 +2864,13 @@
       pop E
    end
    ld C (L I)  # Get key
-   call putACE  # Put value or propery
+   cmp C ZERO  # Key is zero?
+   if eq  # Yes
+      call checkVarAX  # Check variable
+      ld (A) E  # Set value
+   else
+      call putACE  # Put value or propery
+   end
    drop
    pop Y
    pop X
@@ -2775,7 +2907,7 @@
    pop X
    ret
 
-# (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> lst|sym
+# (prop 'sym1|lst ['sym2|cnt ..] 'sym) -> var
 (code 'doProp 2)
    push X
    push Y
@@ -2807,9 +2939,11 @@
    jnz symErrEX
    sym E
    jz symErrEX
+   cmp E Nil  # Can't be NIL
+   jeq protErrEX
    sym (E TAIL)  # External symbol?
    if nz  # Yes
-      call dbFetchEX  # Fetch it
+      call dbTouchEX  # Touch it
    end
    ld C (L I)  # Get key
    call propEC_E
@@ -2875,8 +3009,6 @@
    jnz symErrEX
    sym E
    jz symErrEX
-   cmp E Nil  # Can't be NIL
-   jeq protErrEX
    sym (E TAIL)  # External symbol?
    if nz  # Yes
       call dbTouchEX  # Touch it
@@ -2887,7 +3019,13 @@
    eval
    pop A  # Retrieve symbol
    pop C  # and key
-   call putACE  # Put value or propery
+   cmp C ZERO  # Key is zero?
+   if eq  # Yes
+      call checkVarAX  # Check variable
+      ld (A) E  # Set value
+   else
+      call putACE  # Put value or propery
+   end
    pop Y
    pop X
    ret
@@ -2916,7 +3054,7 @@
    pop X
    ret
 
-# (:: sym|0 [sym1|cnt .. sym2]) -> lst|sym
+# (:: sym|0 [sym1|cnt .. sym2]) -> var
 (code 'doPropCol 2)
    push X
    push Y
@@ -2938,6 +3076,16 @@
       while z  # Yes
          call getnECX_E
       loop
+   end
+   num E  # Need symbol
+   jnz symErrEX
+   sym E
+   jz symErrEX
+   cmp E Nil  # Can't be NIL
+   jeq protErrEX
+   sym (E TAIL)  # External symbol?
+   if nz  # Yes
+      call dbTouchEX  # Touch it
    end
    call propEC_E
    pop Y

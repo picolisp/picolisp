@@ -1,4 +1,4 @@
-/* 07aug10abu
+/* 26jul11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -199,7 +199,7 @@ int main(int ac, char *av[]) {
       socklen_t len = sizeof(addr);
       if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
          if (!n) {
-            int fd, port;
+            int fd, port, i;
             char *p, *q, buf[4096], buf2[64];
 
             close(sd);
@@ -232,10 +232,16 @@ int main(int ac, char *av[]) {
             port = (int)strtol(p, &q, 10);
             if (q == p  ||  *q != ' ' && *q != '/')
                port = ports[0],  q = p;
-            else if (port < cnt)
-               port = ports[port];
+            else if (port < cnt) {
+               if ((port = ports[port]) < 0)
+                  return 1;
+            }
             else if (port < 1024)
                return 1;
+            else
+               for (i = 1; i < cnt; ++i)
+                  if (port == -ports[i])
+                     return 1;
 
             if ((srv = gateConnect((unsigned short)port)) < 0) {
                if (!memchr(q,'~', buf + n - q))

@@ -1,4 +1,4 @@
-14apr11abu
+04aug11abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -48,8 +48,7 @@ PicoLisp is very different from any other Lisp dialect. This is partly due to
 the above design principles, and partly due to its long development history
 since 1984.
 
-You can download the latest release version at
-"http://software-lab.de/down.html".
+You can download the latest release version at http://software-lab.de/down.html
 
 
 (2) As an application server framework, PicoLisp provides for

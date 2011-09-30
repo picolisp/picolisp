@@ -36,6 +36,22 @@ href="ref.html#dbase">Database</a></code>.
 (rel dsc (+Ref +String) Sup)     # Item description, indexed per supplier
 </code></pre>
 
+<dt><a name="hash"><code>(hash 'any) -> cnt</code></a>
+<dd>Generates a 16-bit number (1-65536) from <code>any</code>, suitable as a
+hash value for various purposes, like randomly balanced <code><a
+href="refI.html#idx">idx</a></code> structures. See also <code><a
+href="refC.html#cache">cache</a></code> and <code><a
+href="refS.html#seed">seed</a></code>.
+
+<pre><code>
+: (hash 0)
+-> 1
+: (hash 1)
+-> 55682
+: (hash "abc")
+-> 45454
+</code></pre>
+
 <dt><a name="hax"><code>(hax 'num) -> sym</code></a>
 <dt><code>(hax 'sym) -> num</code>
 <dd>Converts a number <code>num</code> to a string in hexadecimal/alpha

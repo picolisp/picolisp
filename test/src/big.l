@@ -1,4 +1,4 @@
-# 23jan11abu
+# 09jul11abu
 # (c) Software Lab. Alexander Burger
 
 ### format ###
@@ -157,11 +157,15 @@
 (test NIL (sqrt NIL))
 
 
-### seed rand ###
-(test (if (== 64 64) 963569716595329593 2015582081) (seed "init string"))
-(test (if (== 64 64) 881495644906500132 -706917003) (rand))
-(test (if (== 64 64) -510782208671386616 1224196082) (rand))
-(test (if (== 64 64) 4 8) (rand 3 9))
-(test (if (== 64 64) 5 5) (rand 3 9))
+### seed rand hash ###
+(test (if (== 64 64) -1883594281 -1007791040) (seed "init string"))
+(test (if (== 64 64) 1699219178 -1053142179) (rand))
+(test (if (== 64 64) 494771840 1884033960) (rand))
+(test (if (== 64 64) 3 3) (rand 3 9))
+(test (if (== 64 64) 3 6) (rand 3 9))
+(test 1 (hash 0))
+(test 55682 (hash 1))
+(test 35970 (hash 7))
+(test 29691 (hash 1234567))
 
 # vi:et:ts=3:sw=3

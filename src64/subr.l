@@ -1,4 +1,4 @@
-# 21apr11abu
+# 20sep11abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -698,11 +698,11 @@
    while z  # No
       call evCntXY_FE  # Next 'cnt'
       ld C E  # into C
-      sub C 1  # 'cnt' greater zero?
+      dec C  # 'cnt' greater zero?
       if ns  # Yes
          ld E (L I)  # Get result
          do
-            sub C 1  # Iterate
+            dec C  # Iterate
          while ns
             ld E (E CDR)
          loop
@@ -953,7 +953,7 @@
             dec X  # Decrement 'cnt'
          loop
          do
-            sub X 1  # 'cnt' > 0?
+            dec X  # 'cnt' > 0?
          while ns  # Yes
             ld C E
             call consC_E  # Cons 'any' with 'lst'
@@ -1731,7 +1731,7 @@
          ld X (C CDR)  # More than one element?
          atom X
          if z  # Yes
-            sub E 1  # 'cnt' > 1?
+            dec E  # 'cnt' > 1?
             if nsz  # Yes
                ld (C CDR) (X CDR)  # Swap first two cells
                ld (X CDR) C
@@ -1779,7 +1779,7 @@
          ld E (S)  # Get CAR
          call isBlankE_F  # Blank?
          if eq  # Yes
-            pop A  # Drop CAR
+            add S I  # Drop CAR
             ld E Nil  # Return NIL
             ret
          end
@@ -3511,7 +3511,7 @@
             jlt stkErr
             call unifyCEYZ_F  # Match?
             if eq  # Yes
-               pop A  # Drop pilog environment
+               lea S (S I)  # Drop pilog environment
                ret  # 'z'
             end
          end
@@ -3699,7 +3699,7 @@
          shr C 4  # Normalize short
          ld A (L V)  # nl
          do
-            sub C 1  # Decrement
+            dec C  # Decrement
          while nsz
             ld A (A CDR)  # Skip
          loop
@@ -3920,7 +3920,7 @@
       ld A (A)  # Get count
       shr A 4  # Normalize short
       do
-         sub A 1  # Decrement
+         dec A  # Decrement
       while nsz
          ld C (C CDR)  # Skip
       loop

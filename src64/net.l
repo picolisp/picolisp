@@ -1,4 +1,4 @@
-# 16mar11abu
+# 24aug11abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -62,7 +62,7 @@
          jmp ipBindErrX
       end
    loop
-   pop A  # Drop range limit
+   add S I  # Drop range limit
    cmp Z SOCK_STREAM  # TCP socket?
    if eq  # Yes
       cc listen(C 5)  # Mark as server socket

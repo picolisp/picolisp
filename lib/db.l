@@ -1,4 +1,4 @@
-# 06jun11abu
+# 13jul11abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -835,9 +835,7 @@
 (de inc! (Obj Var Val)
    (when (num? (get Obj Var))
       (dbSync)
-      (prog2
-         (touch Obj)
-         (inc (prop Obj Var) (or Val 1))
+      (prog1 (inc (prop Obj Var) (or Val 1))
          (commit 'upd) ) ) )
 
 (de blob! (Obj Var File)
@@ -916,7 +914,6 @@
 
 (dm inc> (Var Val)
    (when (num? (get This Var))
-      (touch This)
       (let Old (get This Var)
          (rel> (meta This Var) This Old
             (inc (prop This Var) (or Val 1)) )
@@ -927,7 +924,6 @@
 (dm inc!> (Var Val)
    (when (num? (get This Var))
       (dbSync)
-      (touch This)
       (let Old (get This Var)
          (rel> (meta This Var) This Old
             (inc (prop This Var) (or Val 1)) )
@@ -938,7 +934,6 @@
 
 (dm dec> (Var Val)
    (when (num? (get This Var))
-      (touch This)
       (let Old (get This Var)
          (rel> (meta This Var) This Old
             (dec (prop This Var) (or Val 1)) )
@@ -949,7 +944,6 @@
 (dm dec!> (Var Val)
    (when (num? (get This Var))
       (dbSync)
-      (touch This)
       (let Old (get This Var)
          (rel> (meta This Var) This Old
             (dec (prop This Var) (or Val 1)) )

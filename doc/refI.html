@@ -68,6 +68,7 @@ the third form (when called with a single <code>var</code> argument) the
 contents of the tree are returned as a sorted list. If all elements are inserted
 in sorted order, the tree degenerates into a linear list. See also <code><a
 href="refL.html#lup">lup</a></code>, <code><a
+href="refH.html#hash">hash</a></code>, <code><a
 href="refD.html#depth">depth</a></code>, <code><a
 href="refS.html#sort">sort</a></code>, <code><a
 href="refB.html#balance">balance</a></code> and <code><a
@@ -151,6 +152,19 @@ Otherwise, <code>prg</code> is executed and the result returned.
 : (ifn (= 3 4) (println 'OK) (println 'Bad))
 OK
 -> OK
+</code></pre>
+
+<dt><a name="import"><code>(import lst) -> NIL</code></a>
+<dd>Wrapper function for <code><a href="refI.html#intern">intern</a></code>.
+Typically used to import symbols from other namespaces, as created by <code><a
+href="refS.html#symbols">symbols</a></code>. <code>lst</code> should be a list
+of symbols. An import conflict error is issued when a symbol with the same name
+already exists in the current namespace. See also <code><a
+href="refP.html#pico">pico</a></code>.
+
+<pre><code>
+: (import libA~foo libB~bar)
+-> NIL
 </code></pre>
 
 <dt><a name="in"><code>(in 'any . prg) -> any</code></a>
@@ -289,8 +303,10 @@ href="refR.html#replace">replace</a></code>.
 <dt><a name="intern"><code>(intern 'sym) -> sym</code></a>
 <dd>Creates or finds an internal symbol. If a symbol with the name
 <code>sym</code> is already intern, it is returned. Otherwise, <code>sym</code>
-is interned and returned. See also <code><a href="refZ.html#zap">zap</a></code>,
-<code><a href="refE.html#extern">extern</a></code> and <code><a
+is interned and returned. See also <code><a
+href="refS.html#symbols">symbols</a></code>, <code><a
+href="refZ.html#zap">zap</a></code>, <code><a
+href="refE.html#extern">extern</a></code> and <code><a
 href="ref_.html#====">====</a></code>.
 
 <pre><code>

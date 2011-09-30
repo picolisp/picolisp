@@ -1,4 +1,4 @@
-/* 25feb11abu
+/* 25sep11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -218,10 +218,10 @@ any doDef(any ex) {
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedSym(ex,data(c1));
-   CheckVar(ex,data(c1));
-   Touch(ex,data(c1));
    x = cdr(x),  Push(c2, EVAL(car(x)));
    if (!isCell(cdr(x))) {
+      CheckVar(ex,data(c1));
+      Touch(ex,data(c1));
       if (!isNil(y = val(data(c1)))  &&  y != data(c1)  &&  !equal(data(c2), y))
          redefMsg(data(c1), NULL);
       val(data(c1)) = data(c2);
@@ -229,6 +229,7 @@ any doDef(any ex) {
    }
    else {
       x = cdr(x),  Push(c3, EVAL(car(x)));
+      Touch(ex,data(c1));
       if (!isNil(y = get(data(c1), data(c2)))  &&  !equal(data(c3), y))
          redefMsg(data(c1), data(c2));
       put(data(c1), data(c2), data(c3));
@@ -306,11 +307,11 @@ static any evMethod(any o, any expr, any x) {
       ++f.cnt, x = cdr(x), y = cdr(y);
    }
    if (isNil(y)) {
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
       y = cls,  cls = Env.cls;  Env.cls = y;
       y = key,  key = Env.key;  Env.key = y;
@@ -318,11 +319,11 @@ static any evMethod(any o, any expr, any x) {
    }
    else if (y != At) {
       f.bnd[f.cnt].sym = y,  f.bnd[f.cnt++].val = val(y),  val(y) = x;
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;
       y = cls,  cls = Env.cls;  Env.cls = y;
       y = key,  key = Env.key;  Env.key = y;
@@ -335,11 +336,11 @@ static any evMethod(any o, any expr, any x) {
 
       while (--n >= 0)
          Push(c[n], EVAL(car(x))),  x = cdr(x);
-      while (--f.i > 0) {
-         x = val(f.bnd[f.i].sym);
+      do {
+         x = val(f.bnd[--f.i].sym);
          val(f.bnd[f.i].sym) = f.bnd[f.i].val;
          f.bnd[f.i].val = x;
-      }
+      } while (f.i);
       n = Env.next,  Env.next = cnt;
       arg = Env.arg,  Env.arg = c;
       f.bnd[f.cnt].sym = This,  f.bnd[f.cnt++].val = val(This),  val(This) = o;

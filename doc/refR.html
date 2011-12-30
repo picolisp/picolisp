@@ -204,7 +204,7 @@ $ pil +
 </code></pre>
 
 <dt><a name="rc"><code>(rc 'sym 'any1 ['any2]) -> any</code></a>
-<dd>Fetches a value from a ressource file <code>sym</code>, or stores a value
+<dd>Fetches a value from a resource file <code>sym</code>, or stores a value
 <code>any2</code> in that file, using a key <code>any1</code>. All values are
 stored in a list in the file, using <code><a
 href="refA.html#assoc">assoc</a></code>. During the whole operation, the file is
@@ -407,16 +407,15 @@ href="refD.html#db/3">db/3</a></code>.
 (setq *Ext           # Set up external offsets
    (mapcar
       '((@Host @Ext)
-         (let Sock NIL
-            (cons @Ext
-               (curry (@Host @Ext Sock) (Obj)
-                  (when (or Sock (setq Sock (connect @Host 4040)))
-                     (ext @Ext
-                        (out Sock (pr (cons 'qsym Obj)))
-                        (prog1 (in Sock (rd))
-                           (unless @
-                              (close Sock)
-                              (off Sock) ) ) ) ) ) ) ) )
+         (cons @Ext
+            (curry (@Host @Ext (Sock)) (Obj)
+               (when (or Sock (setq Sock (connect @Host 4040)))
+                  (ext @Ext
+                     (out Sock (pr (cons 'qsym Obj)))
+                     (prog1 (in Sock (rd))
+                        (unless @
+                           (close Sock)
+                           (off Sock) ) ) ) ) ) ) )
       '("localhost")
       '(20) ) )
 
@@ -697,13 +696,12 @@ href="ref.html#pilog">Pilog</a> and <code><a href="refB.html#be">be</a></code>.
 </code></pre>
 
 <dt><a name="run"><code>(run 'any ['cnt ['lst]]) -> any</code></a>
-<dd>If <code>any</code> is an atom, <code>run</code> behaves like
-<code>eval</code>. Otherwise <code>any</code> is a list, which is evaluated in
-sequence. The last result is returned. If a binding environment offset
-<code>cnt</code> is given, that evaluation takes place in the corresponding
-environment, and an optional <code>lst</code> of excluded symbols can be
-supplied. See also <code><a href="refE.html#eval">eval</a></code> and <code><a
-href="refU.html#up">up</a></code>.
+<dd>If <code>any</code> is an atom, <code>run</code> behaves like <code><a
+href="refE.html#eval">eval</a></code>. Otherwise <code>any</code> is a list,
+which is evaluated in sequence. The last result is returned. If a binding
+environment offset <code>cnt</code> is given, that evaluation takes place in the
+corresponding environment, and an optional <code>lst</code> of excluded symbols
+can be supplied. See also <code><a href="refU.html#up">up</a></code>.
 
 <pre><code>
 : (run '((println (+ 1 2 3)) (println 'OK)))

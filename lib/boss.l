@@ -1,16 +1,16 @@
-# 01jul10abu
+# 04oct11abu
 # (c) Software Lab. Alexander Burger
 
-# "tmp+" "tmp-"
+# "boss" *Boss
 
 (unless (info (tmp "+"))
-   (call 'mkfifo (setq "tmp+" (tmp "+")))
-   (call 'mkfifo (setq "tmp-" (tmp "-"))) )
-(hear (open "tmp+"))
+   (call 'mkfifo (setq "boss" (tmp "+")))
+   (call 'mkfifo (setq *Boss (tmp "-"))) )
+(hear (open "boss"))
 
 # (boss 'sym ['any ..])
 (de boss @
-   (out "tmp+" (pr (rest))) )
+   (out "boss" (pr (rest))) )
 
 (de reply Exe  #> any
-   (out "tmp-" (pr (eval Exe))) )
+   (out *Boss (pr (eval Exe))) )

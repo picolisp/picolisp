@@ -1,4 +1,4 @@
-# 20sep11abu
+# 27oct11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -92,7 +92,7 @@
    lea Z (E VI)  # Skip padding and 'pico' cell
    do
       ld X (E TAIL)  # Get name
-      ld Y "pico-24"  # From initial symbol namespace
+      ld Y Pico  # From initial symbol namespace
       call internEXY_FE  # Store to internals
       ld E Z
       cnt (Z TAIL)  # Short name?
@@ -116,10 +116,10 @@
    cc tcgetattr(0 OrgTermio)  # Save terminal I/O
    not B
    ld (Tio) B  # and flag
-   sub S SIGSET_T  # Create signal mask structure
+   sub S (%% SIGSET_T)  # Create signal mask structure
    cc sigfillset(S)  # Set all signals to unblocked
    cc sigprocmask(SIG_UNBLOCK S 0)
-   add S SIGSET_T  # Drop mask structure
+   add S (%% SIGSET_T)  # Drop mask structure
    ld E sig  # Install standard signal handler
    ld C SIGHUP
    call iSignalCE  # for SIGHUP
@@ -190,12 +190,12 @@
 
 # Install interrupting signal
 (code 'iSignalCE)
-   sub S (* 2 SIGACTION)  # 'sigaction' and 'oldact'
+   sub S (%% (* 2 SIGACTION))  # 'sigaction' and 'oldact'
    ld (S SA_HANDLER) E  # Function pointer
    cc sigemptyset(&(S SA_MASK))
    ld (S SA_FLAGS) 0
    cc sigaction(C S &(S SIGACTION))  # Install handler
-   add S (* 2 SIGACTION)
+   add S (%% (* 2 SIGACTION))
    ret
 
 # Allocate memory
@@ -400,11 +400,11 @@
    begin  # Ignore signal number
    ld C OrgTermio  # Set original terminal I/O
    call tcSetC
-   sub S SIGSET_T  # Create mask structure
+   sub S (%% SIGSET_T)  # Create mask structure
    cc sigemptyset(S)  # Init to empty signal set
    cc sigaddset(S SIGTSTP)  # Add stop signal
    cc sigprocmask(SIG_UNBLOCK S 0)  # Remove blocked signals
-   add S SIGSET_T  # Drop mask structure
+   add S (%% SIGSET_T)  # Drop mask structure
    cc signal(SIGTSTP SIG_DFL)
    cc raise(SIGTSTP)
    cc signal(SIGTSTP sigTermStop)
@@ -655,12 +655,15 @@
          atom E  # 'lst'?
          if z  # Yes
             do
-               ld A (E)  # Already a pair?
-               atom A
-               if nz  # No
-                  call cons_A  # Cons symbol and its value
-                  ld (A) (E)
-                  ld (A CDR) ((E))
+               call cons_A  # Prepare new cell
+               ld C (E)  # Next item already a pair?
+               atom C
+               if z  # Yes
+                  ld (A) (C)  # Copy it
+                  ld (A CDR) (C CDR)
+               else
+                  ld (A) C  # Cons symbol and its value
+                  ld (A CDR) (C)
                end
                call consA_C  # Cons to result
                ld (C) A
@@ -2752,7 +2755,7 @@
    call evSymE_E  # Evaluate to a symbol
    call pathStringE_SZ  # Write to stack buffer
    ld E S  # path name pointer
-   sub S STAT  # 'stat' structure
+   sub S (%% STAT)  # 'stat' structure
    cc stat(E S)  # Get status
    ld E Nil  # Preload return value
    nul4  # 'stat' OK?

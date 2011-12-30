@@ -1,4 +1,4 @@
-# 08sep11abu
+# 26nov11abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -157,6 +157,7 @@
                   (_htHead)
                   (cond
                      (*MPartLim (_htMultipart))
+                     ((=0 *ContLen))
                      ((if *ContLen (ht:Read @) (line))
                         (for L (split @ '&)
                            (when (cdr (setq L (split L "=")))

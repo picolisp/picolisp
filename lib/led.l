@@ -1,4 +1,4 @@
-# 27jul11abu
+# 29dec11abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -384,14 +384,12 @@
    (default "tabFun"
       '((S)
          (conc
-            (filter '((X) (pre? S (sym X))) (all))
+            (filter '((X) (pre? S X)) (all))
             (let P (rot (split (chop S) "/"))
                (setq
                   S (pack (car P))
                   P (and (cdr P) (pack (glue "/" @) "/")) )
-               (extract
-                  '((X)
-                     (and (pre? S X) (pack P X)) )
+               (extract '((X) (and (pre? S X) (pack P X)))
                   (dir P T) ) ) ) ) )
    (setq "LPos" 1  "HPos" 0)
    (_getLine "Line1" (or "skipFun" delim?))

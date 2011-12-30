@@ -1,4 +1,4 @@
-/* 26jul11abu
+/* 20oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,14 +10,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <signal.h>
-#include <netdb.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -111,23 +108,22 @@ static void sslWrite(SSL *ssl, void *p, int cnt) {
       exit(1);
 }
 
-static int gateSocket(void) {
-   int sd;
+static int gatePort(unsigned short port) {
+   int sd, n;
+   struct sockaddr_in6 addr;
 
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+   if ((sd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
       exit(1);
-   return sd;
-}
-
-static int gatePort(int port) {
-   int n, sd;
-   struct sockaddr_in addr;
-
+   n = 0;
+   if (setsockopt(sd, IPPROTO_IPV6, IPV6_V6ONLY, &n, sizeof(n)) < 0)
+      exit(1);
    memset(&addr, 0, sizeof(addr));
-   addr.sin_family = AF_INET;
-   addr.sin_addr.s_addr = htonl(INADDR_ANY);
-   addr.sin_port = htons((unsigned short)port);
-   n = 1,  setsockopt(sd = gateSocket(), SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n));
+   addr.sin6_family = AF_INET6;
+   addr.sin6_addr = in6addr_any;
+   n = 1;
+   if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n)) < 0)
+      exit(1);
+   addr.sin6_port = htons(port);
    if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
       exit(1);
    if (listen(sd,5) < 0)
@@ -137,13 +133,14 @@ static int gatePort(int port) {
 
 static int gateConnect(unsigned short port) {
    int sd;
-   struct sockaddr_in addr;
+   struct sockaddr_in6 addr;
 
+   if ((sd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
+      exit(1);
    memset(&addr, 0, sizeof(addr));
-   addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-   sd = gateSocket();
-   addr.sin_family = AF_INET;
-   addr.sin_port = htons(port);
+   addr.sin6_family = AF_INET6;
+   addr.sin6_addr = in6addr_loopback;
+   addr.sin6_port = htons(port);
    return connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0? -1 : sd;
 }
 
@@ -161,7 +158,8 @@ static void doSigUsr1(int n __attribute__((unused))) {
 
 int main(int ac, char *av[]) {
    int cnt = ac>4? ac-3 : 1, ports[cnt], n, sd, cli, srv;
-   struct sockaddr_in addr;
+   struct sockaddr_in6 addr;
+   char s[INET6_ADDRSTRLEN];
    char *gate;
    SSL_CTX *ctx;
    SSL *ssl;
@@ -276,7 +274,8 @@ int main(int ac, char *av[]) {
             wrBytes(srv, q, p - q);
             if (pre(p-10, "HTTP/1."))
                Http1 = *(p-3) - '0';
-            wrBytes(srv, buf2, sprintf(buf2, gate, inet_ntoa(addr.sin_addr)));
+            inet_ntop(AF_INET6, &addr.sin6_addr, s, INET6_ADDRSTRLEN);
+            wrBytes(srv, buf2, sprintf(buf2, gate, s));
             wrBytes(srv, p, buf + n - p);
 
             signal(SIGALRM, doSigAlarm);

@@ -1,5 +1,7 @@
-# 20sep11abu
+# 11nov11abu
 # (c) Software Lab. Alexander Burger
+
+(setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
 
 ############ lib.l ############
 
@@ -205,8 +207,8 @@
                (cons (car L) (recurse (cdr L))) ) ) ) ) )
 
 (de object ("Sym" "Val" . @)
-   (def "Sym" "Val")
    (putl "Sym")
+   (def "Sym" "Val")
    (while (args)
       (put "Sym" (next) (next)) )
    "Sym" )
@@ -1304,21 +1306,23 @@
 
 # Browsing
 (de doc (Sym Browser)
-   (let (L (chop Sym)  C (car L))
-      (and
-         (member C '("*" "+"))
-         (cadr L)
-         (setq C @) )
-      (cond
-         ((>= "Z" C "A"))
-         ((>= "z" C "a") (setq C (uppc C)))
-         (T (setq C "_")) )
-      (call (or Browser (sys "BROWSER") 'w3m)
-         (pack
-            "file:"
-            (and (= `(char '/) (char (path "@"))) "//")
-            (path "@doc/ref")
-            C ".html#" Sym ) ) ) )
+   (call (or Browser (sys "BROWSER") 'w3m)
+      (pack
+         "file:"
+         (and (= `(char '/) (char (path "@"))) "//")
+         (path "@doc/ref")
+         (if Sym
+            (let (L (chop Sym)  C (car L))
+               (and
+                  (member C '("*" "+"))
+                  (cadr L)
+                  (setq C @) )
+               (cond
+                  ((>= "Z" C "A"))
+                  ((>= "z" C "a") (setq C (uppc C)))
+                  (T (setq C "_")) )
+               (pack C ".html#" Sym) )
+            ".html" ) ) ) )
 
 (de more ("M" "Fun")
    (let *Dbg NIL

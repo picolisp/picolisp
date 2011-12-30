@@ -1,4 +1,4 @@
-.\" 15apr11abu
+.\" 05nov11abu
 .\"
 .TH PICOLISP 1 "" "" "User Commands"
 .SH NAME
@@ -51,7 +51,7 @@ this context are
 and then immediately exit the interpreter would be:
 .P
 .RS
-pil -version -bye
+$ pil -version -bye
 .RE
 .P
 Any other argument (not starting with a hyphen) should be the name of a file to
@@ -70,10 +70,34 @@ mode is switched on at interpreter startup, before evaluating any of the command
 line arguments. A minimal interactive session is started with:
 .P
 .RS
-pil +
+$ pil +
 .RE
 .P
-The interpreter can be terminated by typing Ctrl-D or (bye).
+Here you can access the reference manual
+.P
+.RS
+: (doc)
+.RE
+.P
+and the online documentation for most functions,
+.P
+.RS
+: (doc 'vi)
+.RE
+.P
+or directly inspect their sources:
+.P
+.RS
+: (vi 'doc)
+.RE
+.P
+The interpreter can be terminated with
+.P
+.RS
+: (bye)
+.RE
+.P
+or by typing Ctrl-D.
 .SH FILES
 Runtime files are maintained in the ~/.pil directory:
 .IP ~/.pil/tmp/<pid>/

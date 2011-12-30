@@ -89,9 +89,8 @@ href="ref.html#dbase">Database</a></code>.
 <dd>Prefix class for maintaining depenencies between <code><a
 href="refR.html#+relation">+relation</a></code>s. Expects a list of (symbolic)
 attributes that depend on this relation. Whenever this relations is cleared
-(receives a value of <code>NIL</code>, or the whole entity is deleted with
-<code>lose&gt;</code>), the dependent relations will also be cleared, triggering
-all required side-effects. See also <code><a
+(receives a value of <code>NIL</code>), the dependent relations will also be
+cleared, triggering all required side-effects. See also <code><a
 href="ref.html#dbase">Database</a></code>.
 
 <p>In the following example, the index entry for the item pointing to the
@@ -729,18 +728,21 @@ OK OK OK OK -> OK
 OK done -> done
 </code></pre>
 
-<dt><a name="doc"><code>(doc 'sym1 ['sym2])</code></a>
+<dt><a name="doc"><code>(doc ['sym1] ['sym2])</code></a>
 <dd>Opens a browser, and tries to display the reference documentation for
 <code>sym1</code>. <code>sym2</code> may be the name of a browser. If not given,
 the value of the environment variable <code>BROWSER</code>, or the
-<code>w3m</code> browser is tried. See also <code><a
-href="ref.html#fun">Function Reference</a></code> and <code><a
+<code>w3m</code> browser is tried. If <code>sym1</code> is <code>NIL</code>, the
+<a href="ref.html">PicoLisp Reference</a> manual is opened. See also <a
+href="ref.html#fun">Function Reference</a> and <code><a
 href="refV.html#vi">vi</a></code>.
 
 <pre><code>
 : (doc '+)  # Function reference
 -> T
 : (doc '+relation)  # Class reference
+-> T
+: (doc)  # Reference manual
 -> T
 :  (doc 'vi "firefox")  # Use alternative browser
 -> T

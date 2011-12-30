@@ -37,6 +37,21 @@ NIL 5286
 -> T
 </code></pre>
 
+<dt><a name="*Prompt"><code>*Prompt</code></a>
+<dd>Global variable holding a (possibly empty) <code>prg</code> body, which is
+executed - and the result <code><a href="refP.html#prin">prin</a></code>ted -
+every time before a prompt is output to the console in the
+"read-eval-print-loop" (REPL).
+
+<pre><code>
+: (de *Prompt (pack "[" (stamp) "]"))
+# *Prompt redefined
+-> *Prompt
+[2011-10-11 16:50:05]: (+ 1 2 3)
+-> 6
+[2011-10-11 16:50:11]:
+</code></pre>
+
 <dt><a name="pack"><code>(pack 'any ..) -> sym</code></a>
 <dd>Returns a transient symbol whose name is concatenated from all arguments
 <code>any</code>. A <code>NIL</code> arguments contributes nothing to the result
@@ -177,7 +192,7 @@ interpreter startup. Optionally, the name may be preceded by a "<code>+</code>"
 character (as used by <code><a href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>). This mechanism is used internally by all
 I/O functions. See also <a href="ref.html#invoc">Invocation</a>, <code><a
-href="refB.html#basename">basename</a></code>. and <code><a
+href="refB.html#basename">basename</a></code> and <code><a
 href="refD.html#dirname">dirname</a></code>.
 
 <pre><code>

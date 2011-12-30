@@ -46,16 +46,15 @@ href="ref.html#external">external symbols</a></code>.
 : (setq *Ext  # Define extension functions
    (mapcar
       '((@Host @Ext)
-         (let Sock NIL
-            (cons @Ext
-               (curry (@Host @Ext Sock) (Obj)
-                  (when (or Sock (setq Sock (connect @Host 4040)))
-                     (ext @Ext
-                        (out Sock (pr (cons 'qsym Obj)))
-                        (prog1 (in Sock (rd))
-                           (unless @
-                              (close Sock)
-                              (off Sock) ) ) ) ) ) ) ) )
+         (cons @Ext
+            (curry (@Host @Ext (Sock)) (Obj)
+               (when (or Sock (setq Sock (connect @Host 4040)))
+                  (ext @Ext
+                     (out Sock (pr (cons 'qsym Obj)))
+                     (prog1 (in Sock (rd))
+                        (unless @
+                           (close Sock)
+                           (off Sock) ) ) ) ) ) ) )
       '("10.10.12.1" "10.10.12.2" "10.10.12.3" "10.10.12.4")
       (20 40 60 80) ) )
 
@@ -133,7 +132,7 @@ to skip in the input stream. Otherwise, if one or more <code>sym</code>
 arguments are given, the echo process stops as soon as one of the symbol's names
 is encountered in the input stream. In this case the name will be read and
 returned, but not written. Returns non-<code>NIL</code> if the operation was
-successfully completed.
+successfully completed. See also <code><a href="refF.html#from">from</a></code>.
 
 <pre><code>
 : (in "x.l" (echo))  # Display file on console
@@ -164,8 +163,9 @@ the changes should be persistent.
 href="ref_.html#!">!</a></code> breakpoints at arbitrary code locations, or
 doing other temporary changes to the code for debugging purposes.
 
-<p>See also <code><a href="refU.html#update">update</a></code> and <code><a
-href="refS.html#show">show</a></code>.
+<p>See also <code><a href="refU.html#update">update</a></code>, <code><a
+href="refS.html#show">show</a></code> and <code><a
+href="refV.html#vi">vi</a></code>.
 
 <pre><code>
 : (edit (db 'nr '+Item 1))  # Edit a database symbol

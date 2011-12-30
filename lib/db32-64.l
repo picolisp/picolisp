@@ -1,18 +1,21 @@
-# 21jul11abu
+# 10nov11abu
 # (c) Software Lab. Alexander Burger
 
-## 1. On the 32-bit system, in single-user mode:
-##    : (load "lib/db32-64.l")
-##    : (export64 *Pool *Dbs *Blob)
+## 1. On the 32-bit system:
+##    $ pil app/main.l @lib/db32-64.l
+##    : (export64 "db/app/" *Dbs *Blob)
+##    : (bye)
 ##
 ## 2. Transfer the resulting file "~/.pil/db64.tgz" to the 64-bit system,
 ##    and unpack it in the application's runtime directory
 ##
-## 3. On the 64-bit system, in single-user mode:
-##    : (load "lib/db32-64.l")
+## 3. On the 64-bit system:
+##    $ pil app/main.l @lib/too.l @lib/db32-64.l
+##    : (pool "db/app/" *Dbs)
 ##    : (import32)
+##    : (bye)
 
-# 64-bit DB export: (export64 "db/app/" *Dbs *Blob) -> "db64.tgz"
+# 64-bit DB export -> "~/.pil/db64.tgz"
 (de export64 (Pool Dbs Blob)
    (if Blob
       (call 'tar "cfz" (tmp "db32.tgz") Pool Blob)

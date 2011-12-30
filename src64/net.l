@@ -1,4 +1,4 @@
-# 24aug11abu
+# 20oct11abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -18,26 +18,31 @@
       ld E (Y)
       eval
    end
-   cc socket(AF_INET Z 0)  # Create socket
+   cc socket(AF_INET6 Z 0)  # Create socket
    nul4  # OK?
    js ipSocketErrX  # No
    ld C A  # Keep socket in C
    call closeOnExecAX
+   ld A 0  # Socket option "off"
+   st4 (Buf)  # Store into 'optval'
+   cc setsockopt(C IPPROTO_IPV6 IPV6_V6ONLY Buf 4)  # "Not only IPv6" option
+   nul4  # OK?
+   js ipV6onlyErrX  # No
    ld B 0  # Clear socket structure
-   mset (Addr) SOCKADDR_IN
-   ld A AF_INET
-   st2 (Addr SIN_FAMILY)
-   cc htonl(INADDR_ANY)
-   st4 (Addr SIN_ADDR.S_ADDR)
+   mset (Addr) SOCKADDR_IN6
+   ld A AF_INET6
+   st2 (Addr SIN6_FAMILY)
+   ld B 0  # Clear sin6_addr
+   mset (Addr SIN6_ADDR) 16  # "::" (16 null-bytes)
    cnt E  # Single port-argument?
    if nz  # Yes
       shr E 4  # Port zero?
       if nz  # No
-         ld A 1  # Socket option value
+         ld A 1  # Socket option "on"
          st4 (Buf)  # Store into 'optval'
          cc setsockopt(C SOL_SOCKET SO_REUSEADDR Buf 4)  # "Reuse socket" option
          nul4  # OK?
-         js ipSetsockoptErrX  # No
+         js ipReuseaddrErrX  # No
       end
       push 0  # <S> No range limit
    else
@@ -51,8 +56,8 @@
    end
    do
       cc htons(E)  # Convert port to network order
-      st2 (Addr SIN_PORT)  # Store as port
-      cc bind(C Addr SOCKADDR_IN)  # Try to bind socket
+      st2 (Addr SIN6_PORT)  # Store as port
+      cc bind(C Addr SOCKADDR_IN6)  # Try to bind socket
       nul4  # OK?
    while s  # No
       inc E  # Next port in range
@@ -78,7 +83,7 @@
    eval
    cmp E Nil  # Any?
    if ne  # Yes
-      ld A SOCKADDR_IN  # Structure size
+      ld A SOCKADDR_IN6  # Structure size
       st4 (Buf)  # Store into 'namelen'
       cc getsockname(Z Addr Buf)  # Get socket name
       nul4  # OK?
@@ -87,7 +92,7 @@
          jmp ipGetsocknameErrX
       end
       call needVarEX  # Need variable
-      ld2 (Addr SIN_PORT)  # Get port
+      ld2 (Addr SIN6_PORT)  # Get port
       cc ntohs(A)  # Convert to host byte order
       shl A 4  # Make short number
       or A CNT
@@ -104,21 +109,22 @@
 (code 'tcpAcceptA_FE)
    ld E A  # Save socket in E
    call nonblockingA_A  # Set socket to non-blocking
-   push A  # Save old socket status flags
-   ld A SOCKADDR_IN  # Structure size
-   st4 (Buf)  # Store into 'addrlen'
+   push A  # <S> Old socket status flags
    ld C 200  # Maximally 20 seconds
    do
+      ld A SOCKADDR_IN6  # Structure size
+      st4 (Buf)  # Store into 'addrlen'
       cc accept(E Addr Buf)  # Accept connection
       nul4  # OK?
       if ns  # Yes
          xchg A (S)  # Save new socket, retrieve flags
          cc fcntl(E F_SETFL A)  # Restore socket status flags
-         ld4 (Addr SIN_ADDR.S_ADDR)  # Get address
-         cc inet_ntoa(A)  # Convert to IPv4 dotted-decimal string
-         ld E A
+         sub S (%% INET6_ADDRSTRLEN)  # Allocate name buffer
+         cc inet_ntop(AF_INET6 &(Addr SIN6_ADDR) S INET6_ADDRSTRLEN)
+         ld E S
          call mkStrE_E  # Make transient symbol
          ld (Adr) E  # Store in '*Adr'
+         add S (%% INET6_ADDRSTRLEN)  # Drop buffer
          ld A (S)  # Get socket
          call initInFileA_A  # Init input file
          ld A (S)
@@ -185,19 +191,36 @@
    push Z
    ld E ((E CDR))  # Eval IP address
    call evSymE_E
+   sub S I  # 'lst' buffer
    call bufStringE_SZ  # Write to stack buffer
-   cc inet_aton(S Buf)  # Convert to binary form
+   cc getaddrinfo(S 0 0 Z)  # Get address info
    ld S Z  # Drop buffer
+   pop Z  # Get 'lst' into Z
+   ld E Nil  # Preset return value
+   nul4  # Address valid?
+   if z  # Yes
+      sub S (%% NI_MAXHOST)  # <S> Hostname buffer
+      ld C Z  # Get 'lst'
+      do
+         null C  # Any?
+      while nz  # Yes
+         ld4 (C AI_ADDRLEN)
+         cc getnameinfo((C AI_ADDR) A S NI_MAXHOST 0 0 NI_NAMEREQD)
+         nul4  # OK?
+         if z  # Yes
+            ld E S
+            call mkStrE_E  # Make transient symbol
+            break T
+         end
+         ld C (C AI_NEXT)  # Try next
+      loop
+      add S (%% NI_MAXHOST)  # Drop buffer
+      cc freeaddrinfo(Z)
+   end
    pop Z
-   nul4  # Valid?
-   jz retNil  # No
-   cc gethostbyaddr(Buf IN_ADDR AF_INET)  # Get hostent
-   null A  # Any?
-   jz retNil  # No
-   ld E (A H_NAME)
-   jmp mkStrE_E  # Make transient symbol
+   ret
 
-# (connect 'any 'cnt) -> cnt | NIL
+# (connect 'any1 'any2) -> cnt | NIL
 (code 'doConnect 2)
    push X
    push Y
@@ -206,64 +229,74 @@
    ld Y (E CDR)  # Y on args
    call evSymY_E  # Eval host
    ld Y (Y CDR)  # Next arg
-   call serverEY_F  # Found server?
-   jz 80  # No: Return NIL
-   cc socket(AF_INET SOCK_STREAM 0)  # Create socket
-   nul4  # OK?
-   js ipSocketErrX  # No
-   ld Y A  # Keep socket in Y
-   call closeOnExecAX
-   cc connect(Y Addr SOCKADDR_IN)  # Try to connect
-   nul4  # OK?
-   if ns  # Yes
-      ld A Y  # Get socket
-      call initInFileA_A  # Init input file
-      ld A Y
-      call initOutFileA_A  # and output file
-      ld E Y  # Return socket
-      shl E 4  # Make short number
-      or E CNT
-   else
-      cc close(Y)  # Close socket
-80    ld E Nil  # Return NIL
+   ld C SOCK_STREAM
+   call serverCEY_FE  # Found server?
+   if z  # Yes
+      ld Z E  # Keep list in Z
+      do
+         null E  # Any?
+      while nz  # Yes
+         ld4 (E AI_SOCKTYPE)  # Create socket
+         ld C A
+         ld4 (E AI_FAMILY)
+         cc socket(A C 0)
+         nul4  # OK?
+         if ns  # Yes
+            ld Y A  # Keep socket in Y
+            ld4 (E AI_ADDRLEN)
+            cc connect(Y (E AI_ADDR) A)  # Try to connect
+            nul4  # OK?
+            if z  # Yes
+               ld A Y
+               call closeOnExecAX
+               ld A Y  # Get socket
+               call initInFileA_A  # Init input file
+               ld A Y
+               call initOutFileA_A  # and output file
+               ld E Y  # Return socket
+               shl E 4  # Make short number
+               or E CNT
+               jmp 80
+            end
+            cc close(Y)  # Close socket
+         end
+         ld E (E AI_NEXT)  # Try next
+      loop
+      ld E Nil  # Return NIL
+80    cc freeaddrinfo(Z)
    end
    pop Z
    pop Y
    pop X
    ret
 
-(code 'serverEY_F)
+(code 'serverCEY_FE)
    link
    push E  # <L I> Host
    link
-   ld B 0  # Clear socket structure
-   mset (Addr) SOCKADDR_IN
-   call evCntXY_FE  # Eval port
-   cc htons(E)  # Convert to network order
-   st2 (Addr SIN_PORT)  # Store as port
-   ld A AF_INET
-   st2 (Addr SIN_FAMILY)
+   sub S (%% ADDRINFO)  # <S> Hints
+   ld B 0  # Clear hints
+   mset (S) ADDRINFO
+   ld A AF_UNSPEC  # Accept IPv4 and IPv6
+   st4 (S AI_FAMILY)  # Store into 'ai_family'
+   ld A C  # Get type
+   st4 (S AI_SOCKTYPE)  # Store into 'ai_socktype'
+   call evSymY_E  # Eval service
+   call bufStringE_SZ  # Write to stack buffer
+   push Z  # Save pointer to hints
    ld E (L I)  # Get host
-   call bufStringE_SZ  # Write host to stack buffer
-   cc inet_aton(S &(Addr SIN_ADDR))  # Convert numbers/dots to binary address
-   nul4  # Valid?
-   if z  # No
-      cc gethostbyname(S)  # Find hostent for given hostname
-      null A  # Found?
-      jz 90  # No
-      ld E A  # Keep hostent pointer in E
-      ld4 (E H_LENGTH)  # Length of address?
-      nul4
-      jz 90  # No
-      ld4 (((E H_ADDR_LIST)))  # Take first address
-      st4 (Addr SIN_ADDR.S_ADDR)
-   end
-   clrz  # Return 'nz'
-90 ld S Z  # Drop buffer
+   call bufStringE_SZ  # Write to stack buffer
+   sub S I  # 'lst' buffer
+   cc getaddrinfo(&(S I) &(Z I) (Z) S)  # Get address info
+   pop E  # Into 'lst'
+   ld S (Z)  # Clean up
+   add S (%% ADDRINFO)
+   nul4  # Address valid -> 'z'
+   ldnz E Nil
    drop
    ret
 
-# (udp 'any1 'cnt 'any2) -> any
+# (udp 'any1 'any2 'any3) -> any
 # (udp 'cnt) -> any
 (code 'doUdp 2)
    push X
@@ -290,9 +323,11 @@
 10       ld E Nil  # Return NIL
       end
    else
-      call serverEY_F  # Found server?
-      ldz E Nil  # No
-      if nz  # Yes
+      call xSymE_E  # Host
+      ld C SOCK_DGRAM
+      call serverCEY_FE  # Found server?
+      if z  # Yes
+         ld X E  # Keep list in X
          ld Y (Y CDR)  # Next arg
          ld E (Y)  # Eval 'any2'
          eval
@@ -302,14 +337,28 @@
          ld (PutBinBZ) putUdpBZ  # Set binary print function
          ld (Extn) (ExtN)  # Set external symbol offset
          call binPrintEZ  # Print item
-         cc socket(AF_INET SOCK_DGRAM 0)  # Create socket
-         nul4  # OK?
-         js ipSocketErrX  # No
-         ld C A  # Keep socket in C
-         sub Z S  # Data length
-         cc sendto(C S Z 0 Addr SOCKADDR_IN)  # Transmit message
-         cc close(C)  # Close socket
-         ld E Y  # Get return value
+         ld E X  # Get list
+         do
+            null E  # Any?
+         while nz  # Yes
+            ld4 (E AI_SOCKTYPE)  # Create socket
+            ld C A
+            ld4 (E AI_FAMILY)
+            cc socket(A C 0)
+            nul4  # OK?
+            if ns  # Yes
+               ld C A  # Keep socket in C
+               sub Z S  # Data length
+               ld4 (E AI_ADDRLEN)
+               cc sendto(C S Z 0 (E AI_ADDR) A)  # Transmit message
+               cc close(C)  # Close socket
+               ld E Y  # Get return value
+               jmp 80
+            end
+            ld E (E AI_NEXT)  # Try next
+         loop
+         ld E Nil  # Return NIL
+80       cc freeaddrinfo(X)
       end
    end
    add S UDPMAX  # Drop buffer

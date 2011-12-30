@@ -535,16 +535,21 @@ and <code><a href="refW.html#when">when</a></code>.
 -> 2
 </code></pre>
 
-<dt><a name="connect"><code>(connect 'any 'cnt) -> cnt | NIL</code></a>
+<dt><a name="connect"><code>(connect 'any1 'any2) -> cnt | NIL</code></a>
 <dd>Tries to establish a TCP/IP connection to a server listening at host
-<code>any</code>, port <code>cnt</code>. <code>any</code> may be either a
-hostname or a standard internet address in numbers-and-dots notation. Returns a
-socket descriptor <code>cnt</code>, or <code>NIL</code> if the connection cannot
-be established. See also <code><a href="refL.html#listen">listen</a></code>.
+<code>any1</code>, port <code>any2</code>. <code>any1</code> may be either a
+hostname or a standard internet address in numbers-and-dots/colons notation
+(IPv4/IPv6). <code>any2</code> may be either a port number or a service name.
+Returns a socket descriptor <code>cnt</code>, or <code>NIL</code> if the
+connection cannot be established. See also <code><a
+href="refL.html#listen">listen</a></code> and <code><a
+href="refU.html#udp">udp</a></code>.
 
 <pre><code>
 : (connect "localhost" 4444)
 -> 3
+: (connect "some.host.org" "http")
+-> 4
 </code></pre>
 
 <dt><a name="cons"><code>(cons 'any ['any ..]) -> lst</code></a>

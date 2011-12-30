@@ -1,0 +1,15 @@
+# Bash completion for pil (picolisp front-end)
+# Alexander Burger <abu@software-lab.de>
+
+have pil &&
+_pil()
+{
+    local cur
+
+    _get_comp_words_by_ref cur
+    COMPREPLY=($(${COMP_WORDS[0]} @lib/complete.l "$cur" -bye +))
+    return 0
+} &&
+complete -F _pil pil
+
+# ex: ts=4 sw=4 et filetype=sh

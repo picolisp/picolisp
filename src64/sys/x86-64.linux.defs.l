@@ -1,4 +1,4 @@
-# 21feb11abu
+# 19oct11abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -67,7 +67,7 @@
 (equ TMS_STIME 8)
 
 # termios
-(equ TERMIOS (+ 60 4))  # Terminal I/O structure (+ Padding)
+(equ TERMIOS 60)  # Terminal I/O structure
 (equ C_IFLAG 0)
 (equ C_LFLAG 12)
 (equ C_CC 17)
@@ -122,24 +122,29 @@
 (equ D_NAME 19)
 
 # Sockets
-(equ HOSTENT 32)
-(equ H_NAME 0)
-(equ H_LENGTH 20)
-(equ H_ADDR_LIST 24)
-
-(equ IN_ADDR 4)
-(equ S_ADDR 0)
-
-(equ SOCKADDR_IN 16)
-(equ SIN_ADDR 4)
-(equ SIN_ADDR.S_ADDR 4)
-(equ SIN_PORT 2)
-(equ SIN_FAMILY 0)
-(equ AF_INET 2)
 (equ SOCK_STREAM 1)
 (equ SOCK_DGRAM 2)
-(equ INADDR_ANY 0)
+(equ AF_UNSPEC 0)
+(equ AF_INET6 10)
 (equ SOL_SOCKET 1)
 (equ SO_REUSEADDR 2)
+(equ IPPROTO_IPV6 41)
+(equ IPV6_V6ONLY 26)
+(equ INET6_ADDRSTRLEN 46)
+
+(equ NI_MAXHOST 1025)
+(equ NI_NAMEREQD 8)
+
+(equ SOCKADDR_IN6 28)
+(equ SIN6_FAMILY 0)
+(equ SIN6_PORT 2)
+(equ SIN6_ADDR 8)
+
+(equ ADDRINFO 48)
+(equ AI_FAMILY 4)
+(equ AI_SOCKTYPE 8)
+(equ AI_ADDRLEN 16)
+(equ AI_ADDR 24)
+(equ AI_NEXT 40)
 
 # vi:et:ts=3:sw=3

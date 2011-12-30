@@ -93,13 +93,14 @@ href="refU.html#unbug">unbug</a></code>.
 -> T
 </code></pre>
 
-<dt><a name="udp"><code>(udp 'any1 'cnt 'any2) -> any</code></a>
+<dt><a name="udp"><code>(udp 'any1 'any2 'any3) -> any</code></a>
 <dt><code>(udp 'cnt) -> any</code>
 <dd>Simple unidirectional sending/receiving of UDP packets. In the first form,
-<code>any2</code> is sent to a UDP server listening at host <code>any1</code>,
-port <code>cnt</code>. In the second form, one item is received from a UDP
+<code>any3</code> is sent to a UDP server listening at host <code>any1</code>,
+port <code>any2</code>. In the second form, one item is received from a UDP
 socket <code>cnt</code>, established with <code><a
 href="refP.html#port">port</a></code>. See also <code><a
+href="refL.html#listen">listen</a></code> and <code><a
 href="refC.html#connect">connect</a></code>.
 
 <pre><code>

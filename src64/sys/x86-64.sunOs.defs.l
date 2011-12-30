@@ -24,7 +24,7 @@
 (equ FD_CLOEXEC 1)
 
 # stdio
-(equ BUFSIZ 8192)
+(equ BUFSIZ 1024)
 (equ PIPE_BUF 5120)
 
 (equ stdin  "$__iob")
@@ -55,7 +55,7 @@
 (equ F_SETLK 6)
 (equ F_SETLKW 7)
 (equ F_SETOWN 24)
-(equ O_NONBLOCK 0)
+(equ O_NONBLOCK 128)
 (equ O_ASYNC 0)
 
 # stat
@@ -72,7 +72,7 @@
 (equ TMS_STIME 8)
 
 # termios
-(equ TERMIOS 36)  # Terminal I/O structure (+ Padding)
+(equ TERMIOS 36)  # Terminal I/O structure
 (equ C_IFLAG 0)
 (equ C_LFLAG 12)
 (equ C_CC 16)
@@ -127,24 +127,29 @@
 (equ D_NAME 18)
 
 # Sockets
-(equ HOSTENT 32)
-(equ H_NAME 0)
-(equ H_LENGTH 20)
-(equ H_ADDR_LIST 24)
-
-(equ IN_ADDR 4)
-(equ S_ADDR 0)
-
-(equ SOCKADDR_IN 16)
-(equ SIN_ADDR 4)
-(equ SIN_ADDR.S_ADDR 4)
-(equ SIN_PORT 2)
-(equ SIN_FAMILY 0)
-(equ AF_INET 2)
 (equ SOCK_STREAM 2)
 (equ SOCK_DGRAM 1)
-(equ INADDR_ANY 0)
+(equ AF_UNSPEC 0)
+(equ AF_INET6 26)
 (equ SOL_SOCKET 65535)
 (equ SO_REUSEADDR 4)
+(equ IPPROTO_IPV6 41)
+(equ IPV6_V6ONLY 39)
+(equ INET6_ADDRSTRLEN 46)
+
+(equ NI_MAXHOST 1025)
+(equ NI_NAMEREQD 4)
+
+(equ SOCKADDR_IN6 32)
+(equ SIN6_FAMILY 0)
+(equ SIN6_PORT 2)
+(equ SIN6_ADDR 8)
+
+(equ ADDRINFO 48)
+(equ AI_FAMILY 4)
+(equ AI_SOCKTYPE 8)
+(equ AI_ADDRLEN 16)
+(equ AI_ADDR 32)
+(equ AI_NEXT 40)
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-/* 09jul11abu
+/* 11oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -385,31 +385,32 @@ void initSymbols(void) {
    mkExt(val(DB) = DbVal = consStr(DbTail = box('1')));
    Extern['1'] = cons(DbVal, Nil);
 
-   Solo  = initSym(Zero, "*Solo");
-   PPid  = initSym(Nil, "*PPid");
-   Pid   = initSym(boxCnt(getpid()), "*Pid");
-   At    = initSym(Nil, "@");
-   At2   = initSym(Nil, "@@");
-   At3   = initSym(Nil, "@@@");
-   This  = initSym(Nil, "This");
-   Dbg   = initSym(Nil, "*Dbg");
-   Zap   = initSym(Nil, "*Zap");
-   Ext   = initSym(Nil, "*Ext");
-   Scl   = initSym(Zero, "*Scl");
-   Class = initSym(Nil, "*Class");
-   Run   = initSym(Nil, "*Run");
-   Hup   = initSym(Nil, "*Hup");
-   Sig1  = initSym(Nil, "*Sig1");
-   Sig2  = initSym(Nil, "*Sig2");
-   Up    = initSym(Nil, "^");
-   Err   = initSym(Nil, "*Err");
-   Msg   = initSym(Nil, "*Msg");
-   Uni   = initSym(Nil, "*Uni");
-   Led   = initSym(Nil, "*Led");
-   Tsm   = initSym(Nil, "*Tsm");
-   Adr   = initSym(Nil, "*Adr");
-   Fork  = initSym(Nil, "*Fork");
-   Bye   = initSym(Nil, "*Bye");  // Last unremovable symbol
+   Solo   = initSym(Zero, "*Solo");
+   PPid   = initSym(Nil, "*PPid");
+   Pid    = initSym(boxCnt(getpid()), "*Pid");
+   At     = initSym(Nil, "@");
+   At2    = initSym(Nil, "@@");
+   At3    = initSym(Nil, "@@@");
+   This   = initSym(Nil, "This");
+   Prompt = initSym(Nil, "*Prompt");
+   Dbg    = initSym(Nil, "*Dbg");
+   Zap    = initSym(Nil, "*Zap");
+   Ext    = initSym(Nil, "*Ext");
+   Scl    = initSym(Zero, "*Scl");
+   Class  = initSym(Nil, "*Class");
+   Run    = initSym(Nil, "*Run");
+   Hup    = initSym(Nil, "*Hup");
+   Sig1   = initSym(Nil, "*Sig1");
+   Sig2   = initSym(Nil, "*Sig2");
+   Up     = initSym(Nil, "^");
+   Err    = initSym(Nil, "*Err");
+   Msg    = initSym(Nil, "*Msg");
+   Uni    = initSym(Nil, "*Uni");
+   Led    = initSym(Nil, "*Led");
+   Tsm    = initSym(Nil, "*Tsm");
+   Adr    = initSym(Nil, "*Adr");
+   Fork   = initSym(Nil, "*Fork");
+   Bye    = initSym(Nil, "*Bye");  // Last unremovable symbol
 
    for (i = 0; i < (int)(sizeof(Symbols)/sizeof(symInit)); ++i)
       initSym(box(num(Symbols[i].code)), Symbols[i].name);

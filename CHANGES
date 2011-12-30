@@ -1,3 +1,13 @@
+* 30dec11 picoLisp-3.0.9
+   Bash completion
+   Changed GUI '+Hint' system
+   Calculated message passing (64-bit)
+   Improved "tags" file handling
+   IPv6 support
+   '*Prompt' global variable
+   'local' symbols function
+   'open' optional 'flg' argument
+
 * 30sep11 picoLisp-3.0.8
    'load' preserves current namespace
    "src64/tags" for 'vi' source access

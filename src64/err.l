@@ -1,4 +1,4 @@
-# 29sep11abu
+# 19oct11abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -11,7 +11,7 @@
    ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
    push (PutB)  # Save 'put'
    ld (PutB) putStdoutB  # Set new
-   call printE  # Print argument
+   call printE_E  # Print argument
    call newline  # and a newline
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
@@ -31,6 +31,9 @@
 # Y message format
 # Z message parameter
 (code 'errEXYZ)
+   link
+   push E  # <L I> Save reason
+   link
    sub S (+ 240 IV)  # <S> Message buffer, <S 240> outFrame
    cc sprintf(S Y Z)  # Build message
    null X  # Error context?
@@ -39,8 +42,7 @@
    ld (Up) A  # Save it
    nul (S)  # Message empty?
    if nz  # No
-      push E  # Save reason
-      lea E (S I)  # Make transient symbol
+      ld E S  # Make transient symbol
       call mkStrE_E
       ld (Msg) E  # Store in '*Msg'
       ld C (Catch)  # Search catch frames
@@ -73,7 +75,6 @@
          end
          ld C (C)  # Next frame
       loop
-      pop E  # Retrieve reason
    end
    ld (Chr) 0  # Init globals
    ld (ExtN) 0
@@ -108,13 +109,12 @@
    if nz  # Yes
       ld C ErrTok  # Print error token
       call outStringC
-      push E  # Save reason
       ld E X  # Get context
       call printE  # Print context
       call newline
-      pop E  # Retrieve reason
    end
-   null E  # Reason?
+   ld E (L I)  # Get reason
+   null E  # any?
    if nz  # Yes
       call printE  # Print reason
       ld C Dashes  # Print " -- "
@@ -659,9 +659,14 @@
    ld Y IpGetsocknameErr
    jmp errnoEXY
 
-(code 'ipSetsockoptErrX)
+(code 'ipV6onlyErrX)
    ld E 0
-   ld Y IpSetsockoptErr
+   ld Y IpV6onlyErr
+   jmp errnoEXY
+
+(code 'ipReuseaddrErrX)
+   ld E 0
+   ld Y IpReuseaddrErr
    jmp errnoEXY
 
 (code 'ipBindErrX)

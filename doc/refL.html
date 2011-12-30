@@ -438,6 +438,24 @@ href="ref.html#transient">transient</a></code> symbol with the same name as
 -> NIL
 </code></pre>
 
+<dt><a name="local"><code>(local lst) -> sym</code></a>
+<dd>Wrapper function for <code><a href="refZ.html#zap">zap</a></code>. Typically
+used to create namespace-local symbols. <code>lst</code> should be a list of
+symbols. See also <code><a href="refP.html#pico">pico</a></code>, <code><a
+href="refS.html#symbols">symbols</a></code>, <code><a
+href="refI.html#import">import</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<pre><code>
+(symbols 'myLib 'pico)
+
+(local bar foo)
+(de foo (A)  # 'foo' is local to 'myLib'
+   ...
+(de bar (B)  # 'bar' is local to 'myLib'
+   ...
+</code></pre>
+
 <dt><a name="locale"><code>(locale 'sym1 'sym2 ['sym3])</code></a>
 <dd>Sets the current locale to that given by the country file <code>sym1</code>
 and the language file <code>sym2</code> (both located in the "loc/" directory),

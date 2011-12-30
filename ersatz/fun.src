@@ -1,4 +1,4 @@
-# 22jul11abu
+# 09dec11abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -27,7 +27,7 @@ env (i x y)
       do {
          if ((x = ex.Car.eval()) instanceof Cell) {
             do
-               y = new Cell(x.Car instanceof Cell? x.Car : new Cell(x.Car, x.Car.Car), y);
+               y = new Cell(x.Car instanceof Cell? new Cell(x.Car.Car, x.Car.Cdr) : new Cell(x.Car, x.Car.Car), y);
             while ((x = x.Cdr) instanceof Cell);
          }
          else if (x != Nil) {
@@ -73,59 +73,10 @@ quit (str)
    str = evString(ex = ex.Cdr);
    return err(null, (ex = ex.Cdr) instanceof Cell? ex.Car.eval() : null, str);
 
-# (public 'obj 'any ['any ..]) -> obj
-# (public 'cls 'any ['any ..]) -> obj
-public (x y z s o)
-   y = (x = ex.Cdr).Car.eval();
-   z = (x = x.Cdr).Car.eval();
-   try {
-      if ((s = (Symbol)y).Obj != null)
-         o = s.Obj.getClass().getField(z.name()).get(s.Obj);
-      else {
-         java.lang.Class cls = java.lang.Class.forName(s.Name);
-         o = cls.getField(z.name()).get(cls);
-      }
-      while ((x = x.Cdr) instanceof Cell)
-         o = o.getClass().getField(x.Car.eval().name()).get(o);
-      return new Symbol(o);
-   }
-   catch (Exception e) {return err(ex, null, e.toString());}
-
-# (interface 'cls|lst 'sym 'fun ..) -> obj
-interface (i x y)
-   y = (x = ex.Cdr).Car.eval();
-   Class[] c = new Class[y instanceof Cell? (int)y.length() : 1];
-   try {
-      if (y instanceof Cell)
-         for (i = 0; i < c.length; ++i, y = y.Cdr)
-            c[i] = java.lang.Class.forName(y.Car.name());
-      else
-         c[0] = java.lang.Class.forName(y.name());
-   }
-   catch (Exception e) {err(ex, null, e.toString());}
-   final HashMap<String,Any> act = new HashMap<String,Any>();
-   while ((x = x.Cdr) instanceof Cell) {
-      y = x.Car.eval();
-      act.put(y.name(), (x = x.Cdr).Car.eval());
-   }
-   InvocationHandler h = new InvocationHandler() {
-      public Object invoke(Object o, Method m, Object[] arg) {
-         Any w;
-         if ((w = act.get(m.getName())) == null)
-            err(null, mkStr(m.getName()), "Can't invoke");
-         Any[] v = new Any[arg.length];
-         v[0] = new Symbol(o);
-         for (int i = 0; i < arg.length; ++i)
-            v[i] = new Symbol(arg[i]);
-         return w.apply(null, false, v, v.length);
-      }
-   };
-   return new Symbol(java.lang.reflect.Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), c, h));
-
+# (java 'cls 'T ['any ..]) -> obj
+# (java 'cls 'msg ['any ..]) -> obj
+# (java 'obj 'msg ['any ..]) -> obj
 # (java 'obj ['cnt]) -> any
-# (java 'obj 'msg 'any ..) -> obj
-# (java 'cls 'msg 'any ..) -> obj
-# (java 'cls 'T 'any ..) -> obj
 java (num i j k x y z s v o)
    y = (x = ex.Cdr).Car.eval();
    if ((z = (x = x.Cdr).Car.eval()) == Nil || z instanceof Number) {
@@ -245,6 +196,55 @@ java (num i j k x y z s v o)
       return o == null? Nil : new Symbol(o);
    }
    catch (Exception e) {return err(ex, null, e.toString());}
+
+# (public 'obj 'any ['any ..]) -> obj
+# (public 'cls 'any ['any ..]) -> obj
+public (x y z s o)
+   y = (x = ex.Cdr).Car.eval();
+   z = (x = x.Cdr).Car.eval();
+   try {
+      if ((s = (Symbol)y).Obj != null)
+         o = s.Obj.getClass().getField(z.name()).get(s.Obj);
+      else {
+         java.lang.Class cls = java.lang.Class.forName(s.Name);
+         o = cls.getField(z.name()).get(cls);
+      }
+      while ((x = x.Cdr) instanceof Cell)
+         o = o.getClass().getField(x.Car.eval().name()).get(o);
+      return new Symbol(o);
+   }
+   catch (Exception e) {return err(ex, null, e.toString());}
+
+# (interface 'cls|lst 'sym 'fun ..) -> obj
+interface (i x y)
+   y = (x = ex.Cdr).Car.eval();
+   Class[] c = new Class[y instanceof Cell? (int)y.length() : 1];
+   try {
+      if (y instanceof Cell)
+         for (i = 0; i < c.length; ++i, y = y.Cdr)
+            c[i] = java.lang.Class.forName(y.Car.name());
+      else
+         c[0] = java.lang.Class.forName(y.name());
+   }
+   catch (Exception e) {err(ex, null, e.toString());}
+   final HashMap<String,Any> act = new HashMap<String,Any>();
+   while ((x = x.Cdr) instanceof Cell) {
+      y = x.Car.eval();
+      act.put(y.name(), (x = x.Cdr).Car.eval());
+   }
+   InvocationHandler h = new InvocationHandler() {
+      public Object invoke(Object o, Method m, Object[] arg) {
+         Any w;
+         if ((w = act.get(m.getName())) == null)
+            err(null, mkStr(m.getName()), "Can't invoke");
+         Any[] v = new Any[arg.length];
+         v[0] = new Symbol(o);
+         for (int i = 0; i < arg.length; ++i)
+            v[i] = new Symbol(arg[i]);
+         return w.apply(null, false, v, v.length);
+      }
+   };
+   return new Symbol(java.lang.reflect.Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), c, h));
 
 # (byte: 'num|sym) -> obj
 byte: (x)

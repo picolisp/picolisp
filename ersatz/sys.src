@@ -1,4 +1,4 @@
-// 27jul11abu
+// 17oct11abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -30,6 +30,7 @@ public class PicoLisp {
    final static Symbol At2 = mkSymbol(Nil, "@@", Intern);
    final static Symbol At3 = mkSymbol(Nil, "@@@", Intern);
    final static Symbol This = mkSymbol(Nil, "This", Intern);
+   final static Symbol Prompt = mkSymbol(Nil, "*Prompt", Intern);
    final static Symbol Dbg = mkSymbol(Nil, "*Dbg", Intern);
    final static Symbol Scl = mkSymbol(Zero, "*Scl", Intern);
    final static Symbol Class = mkSymbol(Nil, "*Class", Intern);
@@ -467,7 +468,7 @@ public class PicoLisp {
             y = InFile.read('\0');
          else {
             if (pr != '\0'  &&  InFile.Chr == 0) {
-               OutFile.Wr.print(pr);
+               OutFile.Wr.print(Prompt.Car.run().name() + pr);
                OutFile.space();
                OutFile.Wr.flush();
             }

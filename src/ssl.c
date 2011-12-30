@@ -1,4 +1,4 @@
-/* 20jul09abu
+/* 22oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,12 +10,9 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
-#include <netdb.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -48,33 +45,28 @@ static void sslChk(int n) {
    }
 }
 
-static int sslConnect(SSL *ssl, char *host, int port) {
-   struct sockaddr_in addr;
-   struct hostent *p;
+static int sslConnect(SSL *ssl, char *node, char *service) {
+   struct addrinfo hints, *lst, *p;
    int sd;
 
-   memset(&addr, 0, sizeof(addr));
-   if ((long)(addr.sin_addr.s_addr = inet_addr(host)) == -1) {
-      if (!(p = gethostbyname(host))  ||  p->h_length == 0)
-         return -1;
-      addr.sin_addr.s_addr = ((struct in_addr*)p->h_addr_list[0])->s_addr;
+   memset(&hints, 0, sizeof(hints));
+   hints.ai_family = AF_UNSPEC;
+   hints.ai_socktype = SOCK_STREAM;
+   if (getaddrinfo(node, service, &hints, &lst) == 0) {
+      for (p = lst; p; p = p->ai_next) {
+         if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
+            if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
+               SSL_set_fd(ssl, sd);
+               if (SSL_connect(ssl) >= 0) {
+                  freeaddrinfo(lst);
+                  return sd;
+               }
+            }
+            close(sd);
+         }
+      }
+      freeaddrinfo(lst);
    }
-
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-      errmsg("No socket");
-      return -1;
-   }
-   addr.sin_family = AF_INET;
-   addr.sin_port = htons((unsigned short)port);
-   if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-      close(sd);
-      return -1;
-   }
-
-   SSL_set_fd(ssl,sd);
-   if (SSL_connect(ssl) >= 0)
-      return sd;
-   close(sd);
    return -1;
 }
 
@@ -150,7 +142,7 @@ int main(int ac, char *av[]) {
    ssl = SSL_new(ctx);
 
    if (ac <= 6) {
-      if (sslConnect(ssl, av[1], atoi(av[2])) < 0) {
+      if (sslConnect(ssl, av[1], av[2]) < 0) {
          errmsg("Can't connect");
          return 1;
       }
@@ -192,7 +184,7 @@ int main(int ac, char *av[]) {
                giveup("Can't lock");
             if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
                giveup("Can't access");
-            lenLen = sprintf(len, "%lld\n", Size);
+            lenLen = sprintf(len, "%ld\n", Size);
             if ((Data = malloc(Size)) == NULL)
                giveup("Can't alloc");
             if (read(fd, Data, Size) != Size)
@@ -201,7 +193,7 @@ int main(int ac, char *av[]) {
                errmsg("Can't truncate");
             close(fd);
             for (;;) {
-               if ((sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0) {
+               if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&                   // key
                            (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
@@ -223,7 +215,7 @@ int main(int ac, char *av[]) {
             if (p->d_name[0] != '.') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
                if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
-                        (sd = sslConnect(ssl, av[1], atoi(av[2]))) >= 0 ) {
+                        (sd = sslConnect(ssl, av[1], av[2])) >= 0 ) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                         (!*av[4] || sslFile(ssl,av[4]))  &&          // key
                         (bin || SSL_write(ssl, buf, n) == n)  &&     // path

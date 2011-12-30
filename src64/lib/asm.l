@@ -1,9 +1,9 @@
-# 23sep11abu
+# 27dec11abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
 
-# *FPic *Section *Label *Srcs *Tags *Program *Statement
+# *FPic *Section *Label *Tags *Map *Program *Statement
 # *Instructions *IfStack *DoStack
 # "*Mode" "*Modes"
 
@@ -40,21 +40,25 @@
    (gt jncz . jcz)
    (ge jnc . jc) )
 
-(de build ("File" "Tags" . "Prg")
-   (off *Section *Srcs *Tags *IfStack *DoStack)
+(de build ("File" "Map" . "Prg")
+   (off *Section *Tags *Map *IfStack *DoStack)
    (out "File"
       (prinl "/* " (datSym (date)) " */")
       (run "Prg") )
-   (when "Tags"
+   (when "Map"
       (out "tags"
-         (for Lbl (idx '*Srcs)
+         (for Lbl (idx '*Tags)
             (let S (; Lbl src)
                (prinl
-                  Lbl "^I"
-                  (pack (car S) (cadr S)) "^I"
+                  Lbl
+                  "^I"
+                  (pack
+                     (unless (= "./" (car S)) (car S))
+                     (cadr S) )
+                  "^I"
                   (cddr S) ) ) ) )
-      (out "Tags"
-         (for Sym (idx '*Tags)
+      (out "Map"
+         (for Sym (idx '*Map)
             (and
                (sym? (val Sym))
                (; Sym 0 tag)
@@ -66,8 +70,8 @@
 (de fpic ()
    (on *FPic) )
 
-(de idxSrcs (Lbl Src)
-   (idx '*Srcs (def Lbl 'src Src) T) )
+(de idxTags (Lbl Src)
+   (idx '*Tags (def Lbl 'src Src) T) )
 
 # Sections
 (de section (Fun @Sym)
@@ -85,7 +89,7 @@
             (quit "Register" Lbl) )
          (when Lbl
             (let Src (file)
-               (idxSrcs Lbl Src)
+               (idxTags Lbl Src)
                (def Lbl 'tag (cdr Src)) )
             (label (setq *Label Lbl) T) )
          (setq *Program
@@ -95,7 +99,7 @@
                      (cond
                         ((== ': Atom)  # Label
                            (let Lbl (read)
-                              (idxSrcs Lbl (file))
+                              (idxTags Lbl (file))
                               (link (cons Atom Lbl)) ) )
                         ((== '? Atom)  # Conditional
                            (unless (eval (read))
@@ -232,16 +236,19 @@
             (T X) ) )
       ((asoq (car X) *Registers)
          (cons (car X) (operand (cadr X))) )
-      ((memq (car X) '(+ - * */ / % >> & | pack short char hex oct))
+      ((memq (car X) '(+ - * */ / % >> & | %% pack short char hex oct))
          (apply (car X) (mapcar operand (cdr X))) )
       (T (cons (car X) (operand (cadr X)))) ) )
 
 # Constants
+(de %% (N)
+   (>> -3 (>> 3 (+ N 7))) )
+
 (de short (N)
    (| 2 (>> -4 N)) )
 
 (de equ Args
-   (idxSrcs (car Args) (file))
+   (idxTags (car Args) (file))
    (let Val (run (cdr Args) 1)
       (def (car Args) 'equ Val)
       (def (car Args) Val) ) )
@@ -422,7 +429,6 @@
       (cmp4 (source) "*Mode")
       (cmpn (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (cnt (source) "*Mode")
-      (dbg)
       (dec (destination) "*Mode")
       (div (source) "*Mode")
       (drop)
@@ -518,7 +524,7 @@
    (prinl Lbl ':) )
 
 (asm :: (Src Lbl)
-   (idxSrcs Lbl Src)
+   (idxTags Lbl Src)
    (label Lbl T) )
 
 (asm word (N)
@@ -546,8 +552,8 @@
    (initSym Src Lbl Name Val Val) )
 
 (de initSym (Src Lbl Name Sym Val)
-   (and Lbl (idxSrcs Lbl Src))
-   (idx '*Tags (def Name Sym) T)
+   (and Lbl (idxTags Lbl Src))
+   (idx '*Map (def Name Sym) T)
    (setq Name
       (let (N 2  Lst (chop Name)  C)
          (make

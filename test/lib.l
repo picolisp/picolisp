@@ -1,4 +1,4 @@
-# 10jun11abu
+# 08nov11abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -183,7 +183,8 @@
 (off "Obj")
 (test '"Obj"
    (object '"Obj" '("+A" "+B" "+C")  'a 1 'b 2 'c 3) )
-(test '((3 . c) (2 . b) (1 . a)) (getl '"Obj"))
+(test '((3 . c) (2 . b) (1 . a) (@X . *Dbg))
+   (getl '"Obj") )
 
 
 ### extend var var: ###

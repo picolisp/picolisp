@@ -1,4 +1,4 @@
-# 29sep11abu
+# 17oct11abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -4106,12 +4106,15 @@
          ld C 0  # No terminator
          call readC_E  # Read expression
       else
-         ld A (L -I)
-         or B B  # Prompt?
+         null (L -I)  # Prompt?
          if nz  # Yes
             null (Chr)
             if z
-               call (PutB)  # Output prompt
+               ld E (Prompt)  # Output prompt prefix
+               call runE_E  # Execute
+               call prinE_E
+               ld A (L -I)  # Output prompt
+               call (PutB)
                call space
                call flushAll
             end
@@ -4331,7 +4334,7 @@
    pop X
    ret
 
-# (open 'sym) -> cnt | NIL
+# (open 'any ['flg]) -> cnt | NIL
 (code 'doOpen 2)
    push X
    push Z
@@ -4339,8 +4342,13 @@
    ld E ((E CDR))  # Get arg
    call evSymE_E  # Evaluate to a symbol
    call pathStringE_SZ  # Write to stack buffer
+   ld E (((X CDR) CDR))  # Get flg
+   eval
+   cmp E Nil  # Read-only?
+   ldnz E O_RDONLY  # Yes
+   ldz E (| O_CREAT O_RDWR)  # No
    do
-      cc open(S (| O_CREAT O_RDWR) (oct "0666"))  # Try to open
+      cc open(S E (oct "0666"))  # Try to open
       nul4  # OK?
    while s  # No
       call errno_A
@@ -4749,9 +4757,12 @@
 
 # Print one expression
 (code 'printE_E)
-   push E  # Save expression
+   link
+   push E  # <L I> Save expression
+   link
    call printE  # Print it
-   pop E  # Restore
+   ld E (L I)  # Restore
+   drop
    ret
 
 (code 'printE 0)
@@ -4968,9 +4979,12 @@
 
 # Print string representation
 (code 'prinE_E 0)
-   push E  # Save expression
+   link
+   push E  # <L I> Save expression
+   link
    call prinE  # Print it
-   pop E  # Restore
+   ld E (L I)  # Restore
+   drop
    ret
 
 (code 'prinE 0)

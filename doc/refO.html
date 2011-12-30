@@ -176,13 +176,15 @@ href="refO.html#one">one</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="open"><code>(open 'any) -> cnt | NIL</code></a>
-<dd>Opens the file with the name <code>any</code> in read/write mode, and
-returns a file descriptor <code>cnt</code> (or <code>NIL</code> on error). A
-leading "<code>@</code>" character in <code>any</code> is substituted with the
+<dt><a name="open"><code>(open 'any ['flg]) -> cnt | NIL</code></a>
+<dd>Opens the file with the name <code>any</code> in read/write mode (or
+read-only if <code>flg</code> is non-<code>NIL</code>), and returns a file
+descriptor <code>cnt</code> (or <code>NIL</code> on error). A leading
+"<code>@</code>" character in <code>any</code> is substituted with the
 <u>PicoLisp Home Directory</u>, as it was remembered during interpreter startup.
-If the file does not exist, it is created. The file descriptor can be used in
-subsequent calls to <code><a href="refI.html#in">in</a></code> and <code><a
+If <code>flg</code> is <code>NIL</code> and the file does not exist, it is
+created. The file descriptor can be used in subsequent calls to <code><a
+href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>. See also <code><a
 href="refC.html#close">close</a></code> and <code><a
 href="refP.html#poll">poll</a></code>.

@@ -1,4 +1,4 @@
-/* 18aug11abu
+/* 18oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2044,7 +2044,7 @@ any load(any ex, int pr, any x) {
          data(c1) = read1(0);
       else {
          if (pr && !Chr)
-            Env.put(pr), space(), flushAll();
+            prin(run(val(Prompt))), Env.put(pr), space(), flushAll();
          data(c1) = read1(isatty(STDIN_FILENO)? '\n' : 0);
          if (Chr == '\n')
             Chr = 0;
@@ -2171,14 +2171,15 @@ any doPipe(any ex) {
    return x;
 }
 
-// (open 'any) -> cnt | NIL
+// (open 'any ['flg]) -> cnt | NIL
 any doOpen(any ex) {
    any x = evSym(cdr(ex));
    char nm[pathSize(x)];
    int fd;
 
    pathString(x, nm);
-   while ((fd = open(nm, O_CREAT|O_RDWR, 0666)) < 0) {
+   x = caddr(ex),  x = EVAL(x);
+   while ((fd = open(nm, isNil(x)? O_CREAT|O_RDWR : O_RDONLY, 0666)) < 0) {
       if (errno != EINTR)
          return Nil;
       if (*Signal)

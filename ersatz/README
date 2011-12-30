@@ -1,4 +1,4 @@
-16may11abu
+07dec11abu
 (c) Software Lab. Alexander Burger
 
 
@@ -11,6 +11,9 @@ a 1.6 Java Runtime Environment.
 It should be the last resort when there is no other way to run a "real"
 PicoLisp. Also, it may be used to bootstrap the 64-bit version, which requires a
 running PicoLisp to build from the sources.
+
+Unfortunately, ErsatzLisp lacks everything which makes up "true" PicoLisp:
+Speed, small memory footprint, and simple internal structures.
 
 Performance is rather poor. It is 5 to 10 times slower, allocates a huge amount
 of memory at startup (600 MB vs. 3 MB), and needs 2.5 to 4 times the space for

@@ -1,4 +1,4 @@
-# 20sep11abu
+# 11oct11abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -3622,7 +3622,7 @@
                      call space
                      ld E ((L III))  # car(tp1)
                      call uniFillE_E  # Fill with values
-                     call printE  # and print
+                     call printE_E  # and print
                      call newline
                      break T
                   end

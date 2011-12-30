@@ -1,4 +1,4 @@
-# 21sep11abu
+# 08nov11abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -236,6 +236,9 @@
             (loc S (car X))
             (loc S (cdr X)) ) ) ) )
 
+(de local Lst
+   (mapc zap Lst) )
+
 (de import Lst
    (for Sym Lst
       (unless (== Sym (intern Sym))
@@ -251,8 +254,8 @@
                (cons (car L) (recurse (cdr L))) ) ) ) ) )
 
 (de object ("Sym" "Val" . @)
-   (def "Sym" "Val")
    (putl "Sym")
+   (def "Sym" "Val")
    (while (args)
       (put "Sym" (next) (next)) )
    "Sym" )

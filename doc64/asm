@@ -1,4 +1,4 @@
-# 25aug11abu
+# 27dec11abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -190,7 +190,6 @@
       initData          # Init runtime system
       initCode
       initMain
-      dbg               # Debug breakpoint
 
 ========================================================================
 

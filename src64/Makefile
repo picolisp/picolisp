@@ -1,4 +1,4 @@
-# 06sep11abu
+# 01nov11abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -14,18 +14,13 @@ else
 		UNAME = SunOS
 		MACHINE = x86_64
 	else
-		ifneq ($(filter x86-64.openBsd, $(MAKECMDGOALS)),)
-			UNAME = OpenBSD
-			MACHINE = x86_64
-		else
-			ifneq ($(filter ppc64.linux, $(MAKECMDGOALS)),)
-				UNAME = Linux
-				MACHINE = ppc64
-			else
-				UNAME = $(shell uname)
-				MACHINE = $(shell uname -m)
-			endif
-		endif
+      ifneq ($(filter ppc64.linux, $(MAKECMDGOALS)),)
+         UNAME = Linux
+         MACHINE = ppc64
+      else
+         UNAME = $(shell uname)
+         MACHINE = $(shell uname -m)
+      endif
 	endif
 endif
 
@@ -59,18 +54,6 @@ ifeq ($(UNAME), SunOS)
 	LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
 	LD-SHARED = -m64 -shared
 	STRIP = strip
-else
-ifeq ($(UNAME), OpenBSD)
-	OS = OpenBSD
-	SYS = openBsd
-	ARCH = x86-64
-	MKASM-BASE =
-	MKASM-LIB = -fpic
-	AS = as
-	LD-MAIN = -m64 -rdynamic -lc -lm
-	LD-SHARED = -m64 -shared
-	STRIP = strip
-endif
 endif
 endif
 
@@ -83,14 +66,13 @@ all: picolisp
 
 x86-64.linux: $(sFiles)
 x86-64.sunOs: $(sFiles)
-x86-64.openBsd: $(sFiles)
 ppc64.linux: $(sFiles)
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
 
 $(bin)/picolisp: $(ARCH).$(SYS).base.o
 	mkdir -p $(bin) $(lib)
-	gcc -o $(bin)/picolisp $(ARCH).$(SYS).base.o $(LD-MAIN)
+	gcc -o $(bin)/picolisp $(ARCH).$(SYS).base.o -Wl,--no-as-needed $(LD-MAIN)
 	$(STRIP) $(bin)/picolisp
 
 $(lib)/ext: $(ARCH).$(SYS).ext.o
@@ -107,7 +89,7 @@ $(lib)/ht: $(ARCH).$(SYS).ht.o
 
 # Explicit builds for cross-assembly
 $(ARCH).$(SYS).base.s: lib/asm.l arch/$(ARCH).l $(baseFiles) sys/$(ARCH).$(SYS).code.l
-	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/tags $(baseFiles) sys/$(ARCH).$(SYS).code.l $(MKASM-BASE)
+	./mkAsm $(ARCH) $(SYS) $(OS) base $(lib)/map $(baseFiles) sys/$(ARCH).$(SYS).code.l $(MKASM-BASE)
 
 $(ARCH).$(SYS).ext.s: lib/asm.l arch/$(ARCH).l ext.l $(ARCH).$(SYS).base.s
 	./mkAsm $(ARCH) $(SYS) $(OS) ext "" $(MKASM-LIB) ext.l

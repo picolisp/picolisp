@@ -1,4 +1,4 @@
-/* 12nov09abu
+/* 20oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -10,8 +10,6 @@
 #include <errno.h>
 
 #include <netdb.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include <X11/Xlib.h>
@@ -364,10 +362,30 @@ static void zLine(long pix, long v, long h, long h2,
    }
 }
 
+int z3dConnect(char *node, char *service) {
+   struct addrinfo hints, *lst, *p;
+   int sd;
+
+   memset(&hints, 0, sizeof(hints));
+   hints.ai_family = AF_UNSPEC;
+   hints.ai_socktype = SOCK_STREAM;
+   if (getaddrinfo(node, service, &hints, &lst) == 0) {
+      for (p = lst; p; p = p->ai_next) {
+         if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
+            if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
+               freeaddrinfo(lst);
+               return sd;
+            }
+            close(sd);
+         }
+      }
+      freeaddrinfo(lst);
+   }
+   return -1;
+}
+
 /*** Main entry point ***/
 int main(int ac, char *av[]) {
-   struct sockaddr_in addr;
-   struct hostent *hp;
    XPixmapFormatValues *pmFormat;
    long hor, sky, gnd, pix, v;
    int n, i, x0, y0, z0, x1, y1, z1, x2, y2, z2;
@@ -380,18 +398,8 @@ int main(int ac, char *av[]) {
       giveup("Use: <host> <port>");
 
    /* Open Connection */
-   memset(&addr, 0, sizeof(addr));
-   if ((long)(addr.sin_addr.s_addr = inet_addr(av[1])) == -1) {
-      if (!(hp = gethostbyname(av[1]))  ||  hp->h_length == 0)
-         giveup("Can't get host");
-      addr.sin_addr.s_addr = ((struct in_addr*)hp->h_addr_list[0])->s_addr;
-   }
-   if ((Socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      giveup("Can't create socket");
-   addr.sin_family = AF_INET;
-   addr.sin_port = htons(atol(av[2]));
-   if (connect(Socket, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-      giveup("Can't connect");
+   if ((Socket = z3dConnect(av[1], av[2])) < 0)
+      giveup("Can't connect to server");
 
    /* Open Display */
    if ((Disp = XOpenDisplay(NULL)) == NULL)

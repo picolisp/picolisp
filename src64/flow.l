@@ -1,4 +1,4 @@
-# 29sep11abu
+# 08nov11abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -1087,6 +1087,9 @@
    push X
    push Y
    push Z
+   link
+   push C  # <L II> Message symbol
+   link
    ld X E
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'obj'
@@ -1095,36 +1098,27 @@
    jnz symErrEX
    sym E
    jz symErrEX
-   link
-   push E  # <L I> 'obj'
+   tuck E  # <L I> 'obj'
    link
    sym (E TAIL)  # External symbol?
    if nz  # Yes
       call dbFetchEX  # Fetch it
    end
    push (Y CDR)  # Save args
-   ld Y (X)  # Get 'msg'
-   do
-      num Y  # Need symbol
-      jnz msgErrYX
-      sym Y
-      jz msgErrYX
-      cnt (Y)  # Value numeric?
-      if nz  # Yes
-         ld Z 0  # No classes
-         call methodEY_FCYZ  # Found?
-         jne msgErrYX  # No
-         ld A (L I)  # Get 'obj'
-         pop X  # and args
-         call evMethodACXYZ_E
-         drop
-         pop Z
-         pop Y
-         pop X
-         ret
-      end
-      ld Y (Y)  # Get value
-   loop
+   ld Y (L II)  # Get message
+   num Y  # Need symbol
+   jnz msgErrYX
+   ld Z 0  # No classes
+   call methodEY_FCYZ  # Found?
+   jne msgErrYX  # No
+   ld A (L I)  # Get 'obj'
+   pop X  # and args
+   call evMethodACXYZ_E
+   drop
+   pop Z
+   pop Y
+   pop X
+   ret
 
 # (send 'msg 'obj ['any ..]) -> any
 (code 'doSend 2)

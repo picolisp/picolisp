@@ -1,4 +1,4 @@
-# 08sep11abu
+# 19dec11abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -6,7 +6,7 @@
 
 (allow (path "@img/") T)
 (push1 '*JS (allow (path "@lib/form.js")))
-(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" "!jsHint"))
+(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" *JsHint "!jsHint"))
 
 (one "*Cnt")
 (off "*Lst" "*Post2" "*Cho")
@@ -466,7 +466,7 @@
             (<span> *Style "@") ) ) ) )
 
 
-(class +Hint +ChoButton)
+(class +Choice +ChoButton)
 # ttl hint
 
 (dm T (Ttl Exe)
@@ -486,6 +486,13 @@
          (cancelButton) ) ) )
 
 
+(class +Tok)
+
+(dm T @
+   (=: tok T)
+   (pass extra) )
+
+
 (class +Coy)
 
 (dm T @
@@ -493,56 +500,91 @@
    (pass extra) )
 
 
-(class +Hint0)
-# coy
+(class +hint)
+# tok coy
 
 (dm show> ("Var")
-   (<style>
+   (<js>
       (list
+         '("autocomplete" . "off")
          '("onfocus" . "doHint(this)")
          (cons
-            "onkeypress"
-            (pack "return hintKey(this,event" (and (: coy) ",true") ")")) )
+            "onkeyup"
+            (pack
+               "return hintKey(this,event"
+               (if2 (: tok) (: coy) ",true,true" ",true" ",false,true")
+               ")" ) ) )
       (extra "Var") ) )
 
-(de jsHint (Ix)
+(de jsHint (I)
    (httpHead "text/plain; charset=utf-8")
    (ht:Out *Chunked
-      (let? Lst (get "*Lst" (- "*Cnt" (format *Get)))
-         (let? L
-            (try 'hint>
-               (get
-                  (if (gt0 (format *Form))
-                     (get Lst @)
-                     (get Lst 1 (+ (length (car Lst)) (format *Form)) 1) )
-                  'gui
-                  (format Ix) ) )
-            (prin
-               (ht:Fmt
-                  (if (atom (car L))
-                     (car L)
-                     (caar L) ) ) )
-            (for X (cdr L)
-               (prin '&
-                  (ht:Fmt (if (atom X) X (car X))) ) ) ) ) ) )
+      (let? L
+         (if (sym? I)
+            ((; I hint) *JsHint)
+            (let? Lst (get "*Lst" (- "*Cnt" (format *Get)))
+               (pair
+                  (hint>
+                     (get
+                        (if (gt0 (format *Form))
+                           (get Lst @)
+                           (get Lst 1 (+ (length (car Lst)) (format *Form)) 1) )
+                        'gui
+                        I )
+                     *JsHint ) ) ) )
+         (prin
+            (ht:Fmt
+               (if (atom (car L))
+                  (car L)
+                  (caar L) ) ) )
+         (for X (cdr L)
+            (prin '&
+               (ht:Fmt (if (atom X) X (car X))) ) ) ) ) )
 
 
-(class +Hint1 +Hint0)
+(class +Hint +hint)
+# hint
+
+(dm T (Fun . @)
+   (=: hint Fun)
+   (pass extra) )
+
+(dm hint> (Str)
+   ((: hint) (extra Str)) )
+
+(de dbHint (Str Var Cls Hook)
+   (make
+      (for
+         (Q
+            (goal
+               (cons
+                  (list 'db Var Cls Hook Str '@@) ) )
+            (prove Q) )
+         (let V (get (asoq '@@ @) -1 Var)
+            (unless (member V (made))
+               (link V) ) )
+         (T (nth (made) 24)) ) ) )
+
+
+(class +Hint1 +hint)
 # hint
 
 (dm T (Exe . @)
    (=: hint Exe)
    (pass extra) )
 
-(dm hint> ()
-   (eval (: hint)) )
-
-
-(class +Hint2 +Hint0)
-
-(dm hint> ()
-   (with (field -1)
+(dm hint> (Str)
+   (setq Str (extra Str))
+   (extract '((S) (pre? Str S))
       (eval (: hint)) ) )
+
+
+(class +Hint2 +hint)
+
+(dm hint> (Str)
+   (setq Str (extra Str))
+   (extract '((X) (pre? Str (if (atom X) X (car X))))
+      (with (field -1) (eval (: hint))) ) )
 
 
 (class +Txt)
@@ -653,7 +695,7 @@
    (pass super (pack "<" Str ">")) )
 
 (dm show> ("Var")
-   (<style>
+   (<js>
       (let V (eval (: cue))
          (list
             (cons "onclick" (pack "if (this.value=='" V "') this.value=''"))
@@ -717,6 +759,9 @@
 (dm val> ()
    (uppc (extra)) )
 
+(dm hint> (Str)
+   (extra (uppc Str)) )
+
 
 (class +Lowc)
 
@@ -725,6 +770,9 @@
 
 (dm val> ()
    (lowc (extra)) )
+
+(dm hint> (Str)
+   (extra (lowc Str)) )
 
 
 # Field enable/disable
@@ -914,6 +962,9 @@
 
 (dm val> ())
 
+(dm hint> (Str)
+   Str )
+
 (dm init> ()
    (upd> This) )
 
@@ -1007,7 +1058,7 @@
    (pass extra) )
 
 (dm show> ("Var")
-   (<style>
+   (<js>
       (quote
          ("ondragenter" . "doDrag(event)")
          ("ondragover" . "doDrag(event)")
@@ -1901,9 +1952,9 @@
       (let? Obj (eval (: erObj))
          (protect
             (when (put!> Obj (: erVar) (bool Val))
-               (and *Jnl (blob+ Obj (: erVar)))
                (out (blob Obj (: erVar))
-                  (prin (=: org Val)) ) ) ) ) )
+                  (prin (=: org Val)) )
+               (blob+ Obj (: erVar)) ) ) ) )
    (super Val Dn) )
 
 (dm upd> ()
@@ -1967,7 +2018,7 @@
       (T (extra "Var")) ) )
 
 
-(class +Obj +obj)
+(class +Obj +hint +obj)
 # objVar objTyp objHook
 
 # ([T|msg] (var . typ) [hook] [T] ..)
@@ -1980,12 +2031,16 @@
    (pass extra
       (if (nT (next))
          (arg)
-         (cons NIL (hint> This)) ) ) )
+         (cons NIL
+            (if (: objHook)
+               (collect (: objVar) (last (: objTyp)) (eval @) NIL T (: objVar))
+               (collect (: objVar) (last (: objTyp)) NIL T (: objVar)) ) ) ) ) )
 
-(dm hint> ()
-   (if (: objHook)
-      (collect (: objVar) (last (: objTyp)) (eval @) NIL T (: objVar))
-      (collect (: objVar) (last (: objTyp)) NIL T (: objVar)) ) )
+(dm hint> (Str)
+   (dbHint (extra Str)
+      (: objVar)
+      (last (: objTyp))
+      (: objHook) ) )
 
 (dm txt> (Obj)
    (if (ext? Obj)

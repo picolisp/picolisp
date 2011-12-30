@@ -1,23 +1,30 @@
-# 17jan11abu
+# 01nov11abu
 # (c) Software Lab. Alexander Burger
+
+# Prompt
+(when (== 64 64)
+   (de *Prompt
+      (unless (== (symbols) 'pico) (symbols)) ) )
 
 # Browsing
 (de doc (Sym Browser)
-   (let (L (chop Sym)  C (car L))
-      (and
-         (member C '("*" "+"))
-         (cadr L)
-         (setq C @) )
-      (cond
-         ((>= "Z" C "A"))
-         ((>= "z" C "a") (setq C (uppc C)))
-         (T (setq C "_")) )
-      (call (or Browser (sys "BROWSER") 'w3m)
-         (pack
-            "file:"
-            (and (= `(char '/) (char (path "@"))) "//")
-            (path "@doc/ref")
-            C ".html#" Sym ) ) ) )
+   (call (or Browser (sys "BROWSER") 'w3m)
+      (pack
+         "file:"
+         (and (= `(char '/) (char (path "@"))) "//")
+         (path "@doc/ref")
+         (if Sym
+            (let (L (chop Sym)  C (car L))
+               (and
+                  (member C '("*" "+"))
+                  (cadr L)
+                  (setq C @) )
+               (cond
+                  ((>= "Z" C "A"))
+                  ((>= "z" C "a") (setq C (uppc C)))
+                  (T (setq C "_")) )
+               (pack C ".html#" Sym) )
+            ".html" ) ) ) )
 
 (de more ("M" "Fun")
    (let *Dbg NIL
@@ -145,7 +152,7 @@
 # Source code
 (off "*Vi")
 
-(in "@lib/tags"
+(in "@lib/map"
    (while (read)
       (let Sym @
          (if (get Sym '*Dbg)
@@ -162,7 +169,20 @@
                (get C '*Dbg -1 "X")
                (get "X" '*Dbg 1) ) )
          "*Vi" )
+      (out (tmp "tags")
+         (let D (pack (pwd) "/")
+            (for This (sort (all))
+               (let? P (path (: *Dbg 1 -1))
+                  (prinl
+                     This
+                     "^I"
+                     (unless (= `(char "/") (char P)) D)
+                     P
+                     "^I"
+                     (: *Dbg 1 1) ) ) ) ) )
       (call 'vim
+         (pack "+set tags=" (tmp "tags") ",./tags")
+         "+set isk=33-34,36-38,42-90,92,94-95,97-125"
          (pack "+" (car "*Vi"))
          (path (cdr "*Vi")) )
       "X" ) )

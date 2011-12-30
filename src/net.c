@@ -1,14 +1,11 @@
-/* 08oct09abu
+/* 20oct11abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
 
 #include <netdb.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
 
 static void ipErr(any ex, char *s) {
    err(ex, NULL, "IP %s error: %s", s, strerror(errno));
@@ -17,25 +14,28 @@ static void ipErr(any ex, char *s) {
 // (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
 any doPort(any ex) {
    any x, y;
-   int type, n, sd;
+   int type, sd, n;
    unsigned short port;
-   struct sockaddr_in addr;
+   struct sockaddr_in6 addr;
 
    x = cdr(ex);
    type = SOCK_STREAM;
    if ((y = EVAL(car(x))) == T)
       type = SOCK_DGRAM,  x = cdr(x),  y = EVAL(car(x));
-   if ((sd = socket(AF_INET, type, 0)) < 0)
+   if ((sd = socket(AF_INET6, type, 0)) < 0)
       ipErr(ex, "socket");
    closeOnExec(ex, sd);
+   n = 0;
+   if (setsockopt(sd, IPPROTO_IPV6, IPV6_V6ONLY, &n, sizeof(n)) < 0)
+      ipErr(ex, "IPV6_V6ONLY");
    memset(&addr, 0, sizeof(addr));
-   addr.sin_family = AF_INET;
-   addr.sin_addr.s_addr = htonl(INADDR_ANY);
+   addr.sin6_family = AF_INET6;
+   addr.sin6_addr = in6addr_any;
    if (isNum(y)) {
       if ((port = (unsigned short)xCnt(ex,y)) != 0) {
          n = 1;
          if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(n)) < 0)
-            ipErr(ex, "setsockopt");
+            ipErr(ex, "SO_REUSEADDR");
       }
    }
    else if (isCell(y))
@@ -43,7 +43,7 @@ any doPort(any ex) {
    else
       argError(ex,y);
    for (;;) {
-      addr.sin_port = htons(port);
+      addr.sin6_port = htons(port);
       if (bind(sd, (struct sockaddr*)&addr, sizeof(addr)) >= 0)
          break;
       if (!isCell(y)  ||  ++port > xCnt(ex,cdr(y)))
@@ -57,21 +57,23 @@ any doPort(any ex) {
          close(sd),  ipErr(ex, "getsockname");
       NeedVar(ex,y);
       CheckVar(ex,y);
-      val(y) = boxCnt(ntohs(addr.sin_port));
+      val(y) = boxCnt(ntohs(addr.sin6_port));
    }
    return boxCnt(sd);
 }
 
 static any tcpAccept(int sd) {
    int i, f, sd2;
-   struct sockaddr_in addr;
+   char s[INET6_ADDRSTRLEN];
+   struct sockaddr_in6 addr;
 
    f = nonblocking(sd);
    i = 200; do {
       socklen_t len = sizeof(addr);
       if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
          fcntl(sd, F_SETFL, f);
-         val(Adr) = mkStr(inet_ntoa(addr.sin_addr));
+         inet_ntop(AF_INET6, &addr.sin6_addr, s, INET6_ADDRSTRLEN);
+         val(Adr) = mkStr(s);
          initInFile(sd2,NULL), initOutFile(sd2);
          return boxCnt(sd2);
       }
@@ -105,55 +107,60 @@ any doListen(any ex) {
 
 // (host 'any) -> sym
 any doHost(any x) {
-   struct in_addr in;
-   struct hostent *p;
-
    x = evSym(cdr(x));
    {
+      struct addrinfo *lst, *p;
+      char host[NI_MAXHOST];
       char nm[bufSize(x)];
 
       bufString(x, nm);
-      if (inet_aton(nm, &in) && (p = gethostbyaddr((char*)&in, sizeof(in), AF_INET)))
-         return mkStr(p->h_name);
-      return Nil;
+      if (getaddrinfo(nm, NULL, NULL, &lst))
+         return Nil;
+      x = Nil;
+      for (p = lst; p; p = p->ai_next) {
+         if (getnameinfo(p->ai_addr, p->ai_addrlen, host, NI_MAXHOST, NULL, 0, NI_NAMEREQD) == 0 && host[0]) {
+            x = mkStr(host);
+            break;
+         }
+      }
+      freeaddrinfo(lst);
+      return x;
    }
 }
 
-static bool server(any host, unsigned short port, struct sockaddr_in *addr) {
-   struct hostent *p;
-   char nm[bufSize(host)];
+static struct addrinfo *server(int type, any node, any service) {
+   struct addrinfo hints, *lst;
+   char nd[bufSize(node)], sv[bufSize(service)];
 
-   memset(addr, 0, sizeof(struct sockaddr_in));
-   addr->sin_port = htons(port);
-   addr->sin_family = AF_INET;
-   bufString(host, nm);
-   if (!inet_aton(nm, &addr->sin_addr)) {
-      if (!(p = gethostbyname(nm))  ||  p->h_length == 0)
-         return NO;
-      addr->sin_addr.s_addr = ((struct in_addr*)p->h_addr_list[0])->s_addr;
-   }
-   return YES;
+   memset(&hints, 0, sizeof(hints));
+   hints.ai_family = AF_UNSPEC;
+   hints.ai_socktype = type;
+   bufString(node, nd),  bufString(service, sv);
+   return getaddrinfo(nd, sv, &hints, &lst)? NULL : lst;
 }
 
-// (connect 'any 'cnt) -> cnt | NIL
+// (connect 'any1 'any2) -> cnt | NIL
 any doConnect(any ex) {
-   int sd, port;
+   struct addrinfo *lst, *p;
+   any port;
+   int sd;
    cell c1;
-   struct sockaddr_in addr;
 
    Push(c1, evSym(cdr(ex)));
-   port = evCnt(ex, cddr(ex));
-   if (!server(Pop(c1), (unsigned short)port, &addr))
-      return Nil;
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      ipErr(ex, "socket");
-   closeOnExec(ex, sd);
-   if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-      close(sd);
-      return Nil;
+   port = evSym(cddr(ex));
+   for (p = lst = server(SOCK_STREAM, Pop(c1), port); p; p = p->ai_next) {
+      if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
+         if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
+            closeOnExec(ex, sd);
+            initInFile(sd,NULL), initOutFile(sd);
+            freeaddrinfo(lst);
+            return boxCnt(sd);
+         }
+         close(sd);
+      }
    }
-   initInFile(sd,NULL), initOutFile(sd);
-   return boxCnt(sd);
+   freeaddrinfo(lst);
+   return Nil;
 }
 
 /*** UDP send/receive ***/
@@ -172,13 +179,13 @@ static int getUdp(void) {
    return *UdpPtr++;
 }
 
-// (udp 'any1 'cnt 'any2) -> any
+// (udp 'any1 'any2 'any3) -> any
 // (udp 'cnt) -> any
 any doUdp(any ex) {
-   any x;
-   int sd;
+   any x, y;
    cell c1;
-   struct sockaddr_in addr;
+   struct addrinfo *lst, *p;
+   int sd;
    byte buf[UDPMAX];
 
    x = cdr(ex),  data(c1) = EVAL(car(x));
@@ -189,16 +196,21 @@ any doUdp(any ex) {
       return binRead(ExtN) ?: Nil;
    }
    Save(c1);
-   if (!server(xSym(data(c1)), (unsigned short)evCnt(ex,x), &addr))
-      x = Nil;
-   else {
+   data(c1) = xSym(data(c1));
+   y = evSym(x);
+   drop(c1);
+   if (lst = server(SOCK_DGRAM, data(c1), y)) {
       x = cdr(x),  x = EVAL(car(x));
       putBin = putUdp,  UdpPtr = UdpBuf = buf,  binPrint(ExtN, x);
-      if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-         ipErr(ex, "socket");
-      sendto(sd, buf, UdpPtr-buf, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
-      close(sd);
+      for (p = lst; p; p = p->ai_next) {
+         if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
+            sendto(sd, buf, UdpPtr-buf, 0, p->ai_addr, p->ai_addrlen);
+            close(sd);
+            freeaddrinfo(lst);
+            return x;
+         }
+      }
+      freeaddrinfo(lst);
    }
-   drop(c1);
-   return x;
+   return Nil;
 }

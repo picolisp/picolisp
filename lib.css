@@ -1,4 +1,4 @@
-/* 28may11abu
+/* 24nov11abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -18,7 +18,7 @@
 
 .em3 {width: 3em;}
 .em5 {width: 5em;}
-.em7 {width: 7em;} 
+.em7 {width: 7em;}
 .em10 {width: 10em;}
 .em15 {width: 15em;}
 .em20 {width: 20em;}
@@ -53,6 +53,10 @@ caption {
    text-align: left;
    margin-top: 2ex;
    background-color: #D0D0D0;
+}
+
+td {
+   white-space:nowrap;
 }
 
 a {
@@ -202,4 +206,19 @@ a:hover {
    padding: 1ex;
    margin: 1ex 5em 1ex 1em;
    border: dashed thin;
+}
+
+/* Hints */
+.hint {
+   font-size: small;
+   background-color: #707070;
+}
+
+.hints {
+   font-size: small;
+   color: black;
+   padding-left: 3px;
+   padding-top: 3px;
+   border: 1px solid;
+   background-color: white;
 }

@@ -1,4 +1,4 @@
-# 08nov11abu
+# 07apr12abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -265,14 +265,18 @@
 
 # Class variables
 (de var X
-   (put *Class (car X) (cdr X)) )
+   (if (pair (car X))
+      (put (cdar X) (caar X) (cdr X))
+      (put *Class (car X) (cdr X)) ) )
 
 (de var: X
    (apply meta X This) )
 
 ### Math ###
-(de scl (N)
-   (setq *Scl N) )
+(de scl ("N" . "Prg")
+   (if "Prg"
+      (let *Scl "N" (run "Prg"))
+      (setq *Scl "N") ) )
 
 (de sqrt (N F)
    (cond

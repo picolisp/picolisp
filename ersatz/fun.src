@@ -1,4 +1,4 @@
-# 09dec11abu
+# 28jan12abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -237,11 +237,15 @@ interface (i x y)
          Any w;
          if ((w = act.get(m.getName())) == null)
             err(null, mkStr(m.getName()), "Can't invoke");
-         Any[] v = new Any[arg.length];
-         v[0] = new Symbol(o);
-         for (int i = 0; i < arg.length; ++i)
-            v[i] = new Symbol(arg[i]);
-         return w.apply(null, false, v, v.length);
+         if (arg == null)
+            return w.apply(null, false, null, 0);
+         else {
+            Any[] v = new Any[arg.length];
+            v[0] = new Symbol(o);
+            for (int i = 0; i < arg.length; ++i)
+               v[i] = new Symbol(arg[i]);
+            return w.apply(null, false, v, v.length);
+         }
       }
    };
    return new Symbol(java.lang.reflect.Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), c, h));

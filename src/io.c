@@ -1,4 +1,4 @@
-/* 18oct11abu
+/* 11mar12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -3416,10 +3416,14 @@ any doCommit(any ex) {
                putBin = putBlock;
                binPrint(extn, val(y = car(x)));
                for (y = tail1(y);  isCell(y);  y = cdr(y)) {
-                  if (isCell(car(y)))
-                     binPrint(extn, cdar(y)), binPrint(extn, caar(y));
-                  else
-                     binPrint(extn, car(y)), binPrint(extn, T);
+                  if (isCell(car(y))) {
+                     if (!isNil(cdar(y)))
+                        binPrint(extn, cdar(y)), binPrint(extn, caar(y));
+                  }
+                  else {
+                     if (!isNil(car(y)))
+                        binPrint(extn, car(y)), binPrint(extn, T);
+                  }
                }
                putBlock(NIX);
                setAdr(Block[0] & TAGMASK, Block);  // Clear Link

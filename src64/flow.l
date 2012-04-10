@@ -1,4 +1,4 @@
-# 08nov11abu
+# 12mar12abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -496,11 +496,14 @@
       tuck E  # <L I> Third arg
       link
       ld E (L III)  # First symbol
+      ld C (L II)  # Second arg
       sym (E TAIL)  # External symbol?
       if nz  # Yes
-         call dbTouchEX  # Touch it
+         cmp C Nil  # Volatile property?
+         if ne  # No
+            call dbTouchEX  # Touch it
+         end
       end
-      ld C (L II)  # Second arg
       call getEC_E  # Current property value
       cmp E Nil  # NIL?
       if ne  # NO

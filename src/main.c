@@ -1,4 +1,4 @@
-/* 27oct11abu
+/* 18mar12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -204,18 +204,14 @@ any doAlarm(any x) {
    return boxCnt(n);
 }
 
-// (sigio ['cnt [. prg]]) -> cnt | prg
+// (sigio 'cnt . prg) -> cnt
 any doSigio(any ex) {
-   any x;
-   int fd;
+   any x = EVAL(cadr(ex));
+   int fd = (int)xCnt(ex,x);
 
-   if (!isCell(x = cdr(ex)))
-      return Sigio;
-   x = EVAL(car(x)),  fd = (int)xCnt(ex,x);
-   if (isCell(Sigio = cddr(ex))) {
-      fcntl(fd, F_SETOWN, unBox(val(Pid)));
-      fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK|O_ASYNC);
-   }
+   Sigio = cddr(ex);
+   fcntl(fd, F_SETOWN, unBox(val(Pid)));
+   fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK|O_ASYNC);
    return x;
 }
 

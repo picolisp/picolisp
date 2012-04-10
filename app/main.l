@@ -1,7 +1,7 @@
-# 14may11abu
+# 27jan12abu
 # (c) Software Lab. Alexander Burger
 
-(allowed ("app/" "@img/")
+(allowed ("app/")
    "!start" "!stop" "@lib.css" "!psh" )
 
 (load "@lib/http.l" "@lib/xhtml.l" "@lib/form.l" "@lib/ps.l" "@lib/adm.l")

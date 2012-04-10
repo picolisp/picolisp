@@ -242,9 +242,17 @@ to store the number's binary representation.
          Number
          |
          V
-      +-----+-----+     +-----+-----+     +-----+-----+
-      |'DIG'|  ---+---> |'DIG'|  ---+---> |'DIG'|  /  |
-      +-----+-----+     +-----+-----+     +-----+-----+
+      +-----+-----+
+      | DIG |  |  |
+      +-----+--+--+
+               |
+               V
+            +-----+-----+
+            | DIG |  |  |
+            +-----+--+--+
+                     |
+                     V
+                    ...
 </code></pre>
 
 <p>The first cell holds the least significant digit. The least significant bit
@@ -441,8 +449,26 @@ specified at creation time.
 <h4><a name="lst">Lists</a></h4>
 
 <p>A list is a sequence of one or more cells, holding numbers, symbols, or
-lists. Lists are used in PicoLisp to emulate composite data structures like
-arrays, trees, stacks or queues.
+lists.
+
+<pre><code>
+      |
+      V
+      +-----+-----+
+      | any |  |  |
+      +-----+--+--+
+               |
+               V
+               +-----+-----+
+               | any |  |  |
+               +-----+--+--+
+                        |
+                        V
+                        ...
+</code></pre>
+
+<p>Lists are used in PicoLisp to emulate composite data structures like arrays,
+trees, stacks or queues.
 
 <p>In contrast to lists, numbers and symbols are collectively called "Atoms".
 

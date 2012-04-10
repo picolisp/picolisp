@@ -1,4 +1,4 @@
-# 29apr11abu
+# 08apr12abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -120,20 +120,6 @@
          (prinst ".int" (cdr @)) )
       (prinst "bl" "callRel")
       (prinst ".int" (pack Sym "-.")) ) )
-
-# Optimize
-(de asmNoCC Args
-   (let Sym (intern (pack (car Args) "-"))
-      (put (car Args) 'noCC Sym)
-      (def Sym 'asm (cdr Args)) ) )
-
-(de useCC Lst
-   (for Sym Lst
-      (put Sym 'useCC T) ) )
-
-(de chgCC Lst
-   (for Sym Lst
-      (put Sym 'chgCC T) ) )
 
 # Addressing modes
 (de checkOp (Fun)
@@ -1055,7 +1041,7 @@
 (asm fval ()
    (prinst "lfs" 1 "0(14)") )
 
-(asm fix ()
+(asm fnum ()
    (prinst "srdi" 0 15 4)  # Normalize scale (ignore sign)
    (prinst "std" 0 "-8(1)")
    (prinst "lfd" 0 "-8(1)")  # Get scale in f13
@@ -1568,42 +1554,9 @@
    (prinst "add" 18 4 3) )
 
 ### Optimizer ###
-(useCC
-   ldc ldnc ldz ldnz
-   addc subc rcl rcr
-   jz jeq jnz jne js jns jsz jnsz jc jlt jnc jge jcz jle jncz jgt )
-
-(chgCC
-   movn mset movm save load
-   add sub inc dec not neg and or xor off test shl shr rol ror
-   mul div zxt setz clrz
-   cmp cmp4 cmpn slen memb null nul4 nul cnt big num sym atom
-   call cc return
-   eval eval+ eval/ret exec prog )
-
-
 # Replace the the next 'cnt' elements with 'lst'
 (de optimize (Lst)  #> (cnt . lst)
    (when (noCC L)
       (cons 1 (cons (cons @ (cdar L)))) ) )
-
-(de noCC (Lst)
-   (with (caar Lst)
-      (and
-         (: noCC)
-         (loop
-            (NIL (setq Lst (cdr Lst)))
-            (T (get Lst 1 1 'useCC))
-            (T (get Lst 1 1 'chgCC) T)
-            (T (= '(push T NIL) (car Lst)))
-            (T (= '(pop T NIL) (car Lst)) T)
-            (T (== 'ret (caar Lst))
-               (use (@A @B @Z)
-                  (not (match '(@A "_" @B "F" @Z) (chop *Label))) ) )
-            (T
-               (and
-                  (== 'jmp (caar Lst))
-                  (not (setq Lst (member (cons ': (cadar Lst)) *Program))) ) ) )
-         (: noCC) ) ) )
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 29sep11abu
+# 22mar12abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -671,13 +671,18 @@
    ret
 
 (code 'firstByteA_B 0)
-   call nameA_A  # Get name
-   cnt A  # Short?
-   if nz  # Yes
-      shr A 4  # Normalize
-   else
-      ld A (A DIG)  # Get first digit
+   sym A  # External symbol?
+   if z  # No
+      call nameA_A  # Get name
+      cnt A  # Short?
+      if nz  # Yes
+         shr A 4  # Normalize
+      else
+         ld A (A DIG)  # Get first digit
+      end
+      ret
    end
+   ld A 0
    ret
 
 (code 'firstCharE_A 0)
@@ -686,9 +691,12 @@
    if ne  # No
       push X
       ld X (E TAIL)
-      call nameX_X  # Get name
-      ld C 0
-      call symCharCX_FACX  # Get first character
+      sym X  # External symbol?
+      if z  # No
+         call nameX_X  # Get name
+         ld C 0
+         call symCharCX_FACX  # Get first character
+      end
       pop X
    end
    ret
@@ -2855,15 +2863,18 @@
    ld E (Y)  # Eval 'any'
    eval
    ld A (L II)  # Get symbol
+   ld C (L I)  # Get key
    sym (A TAIL)  # External symbol?
    if nz  # Yes
-      push E  # Save 'any'
-      ld E A  # Get symbol
-      call dbTouchEX  # Touch it
-      ld A E
-      pop E
+      cmp C Nil  # Volatile property?
+      if ne  # No
+         push E  # Save 'any'
+         ld E A  # Get symbol
+         call dbTouchEX  # Touch it
+         ld A E
+         pop E
+      end
    end
-   ld C (L I)  # Get key
    cmp C ZERO  # Key is zero?
    if eq  # Yes
       call checkVarAX  # Check variable
@@ -3011,7 +3022,10 @@
    jz symErrEX
    sym (E TAIL)  # External symbol?
    if nz  # Yes
-      call dbTouchEX  # Touch it
+      cmp C Nil  # Volatile property?
+      if ne  # No
+         call dbTouchEX  # Touch it
+      end
    end
    push C  # Save key
    push E  # Save symbol
@@ -3398,38 +3412,41 @@
       if nz  # Yes
          cmp E Nil  # NIL?
          if ne  # No
-            ld E (E TAIL)
-            call nameE_E  # Get name
-            link
-            push E  # <L II> Name
-            push ZERO  # <L I> Result
-            ld X S
-            link
-            push 4  # <S I> Build name
-            push X  # <S> Pack status
-            ld X (L II) # Get name
-            ld C 0  # Index
-            do
-               call symCharCX_FACX  # Next char?
-            while nz
-               ld E C  # Save C
-               call caseDataA_AC  # Get case info
-               and A (hex "FFFF")
-               shr A 6  # Make index
-               off A 1
-               ld2 (A CaseLower)  # Get lower case entry
-               add A C  # plus character
-               and A (hex "FFFF")
-               ld C (S I)  # Swap status
-               xchg X (S)
-               call charSymACX_CX  # Pack char
-               xchg X (S)  # Swap status
-               ld (S I) C
-               ld C E  # Restore C
-            loop
-            ld X (L I)  # Get result
-            call consSymX_E  # Make transient symbol
-            drop
+            sym (E TAIL)  # External symbol?
+            if z  # No
+               ld E (E TAIL)
+               call nameE_E  # Get name
+               link
+               push E  # <L II> Name
+               push ZERO  # <L I> Result
+               ld X S
+               link
+               push 4  # <S I> Build name
+               push X  # <S> Pack status
+               ld X (L II) # Get name
+               ld C 0  # Index
+               do
+                  call symCharCX_FACX  # Next char?
+               while nz
+                  ld E C  # Save C
+                  call caseDataA_AC  # Get case info
+                  and A (hex "FFFF")
+                  shr A 6  # Make index
+                  off A 1
+                  ld2 (A CaseLower)  # Get lower case entry
+                  add A C  # plus character
+                  and A (hex "FFFF")
+                  ld C (S I)  # Swap status
+                  xchg X (S)
+                  call charSymACX_CX  # Pack char
+                  xchg X (S)  # Swap status
+                  ld (S I) C
+                  ld C E  # Restore C
+               loop
+               ld X (L I)  # Get result
+               call consSymX_E  # Make transient symbol
+               drop
+            end
          end
       end
    end
@@ -3447,38 +3464,41 @@
       if nz  # Yes
          cmp E Nil  # NIL?
          if ne  # No
-            ld E (E TAIL)
-            call nameE_E  # Get name
-            link
-            push E  # <L II> Name
-            push ZERO  # <L I> Result
-            ld X S
-            link
-            push 4  # <S I> Build name
-            push X  # <S> Pack status
-            ld X (L II) # Get name
-            ld C 0  # Index
-            do
-               call symCharCX_FACX  # Next char?
-            while nz
-               ld E C  # Save C
-               call caseDataA_AC  # Get case info
-               and A (hex "FFFF")
-               shr A 6  # Make index
-               off A 1
-               ld2 (A CaseUpper)  # Get upper case entry
-               add A C  # plus character
-               and A (hex "FFFF")
-               ld C (S I)  # Swap status
-               xchg X (S)
-               call charSymACX_CX  # Pack char
-               xchg X (S)  # Swap status
-               ld (S I) C
-               ld C E  # Restore C
-            loop
-            ld X (L I)  # Get result
-            call consSymX_E  # Make transient symbol
-            drop
+            sym (E TAIL)  # External symbol?
+            if z  # No
+               ld E (E TAIL)
+               call nameE_E  # Get name
+               link
+               push E  # <L II> Name
+               push ZERO  # <L I> Result
+               ld X S
+               link
+               push 4  # <S I> Build name
+               push X  # <S> Pack status
+               ld X (L II) # Get name
+               ld C 0  # Index
+               do
+                  call symCharCX_FACX  # Next char?
+               while nz
+                  ld E C  # Save C
+                  call caseDataA_AC  # Get case info
+                  and A (hex "FFFF")
+                  shr A 6  # Make index
+                  off A 1
+                  ld2 (A CaseUpper)  # Get upper case entry
+                  add A C  # plus character
+                  and A (hex "FFFF")
+                  ld C (S I)  # Swap status
+                  xchg X (S)
+                  call charSymACX_CX  # Pack char
+                  xchg X (S)  # Swap status
+                  ld (S I) C
+                  ld C E  # Restore C
+               loop
+               ld X (L I)  # Get result
+               call consSymX_E  # Make transient symbol
+               drop
+            end
          end
       end
    end
@@ -3499,54 +3519,61 @@
       if nz  # Yes
          cmp E Nil  # NIL?
          if ne
-            ld E (E TAIL)
-            call nameE_E  # Get name
-            link
-            push E  # <L II> Name
-            push ZERO  # <L I> Result
-            link
-            ld Y (Y CDR)  # Next arg?
-            atom Y
-            if nz  # No
-               push 24  # <S II> Default 'cnt' 24
-            else
-               call evCntXY_FE  # Eval 'cnt'
-               push E  # <S II> 'cnt'
-            end
-            push 4  # <S I> Build name
-            lea X (L I)
-            push X  # <S> Pack status
-            ld X (L II) # Get name
-            ld C 0  # Index
-            do
-               call symCharCX_FACX  # Next char?
-            while nz
-               ld E C  # Save C
-               call isLetterOrDigitA_F  # Letter or digit?
-               if nz  # Yes
-                  sub (S II) 1  # Decrement 'cnt'
-                  break s
-                  call caseDataA_AC  # Get case info
-                  and A (hex "FFFF")
-                  shr A 6  # Make index
-                  off A 1
-                  ld2 (A CaseLower)  # Get lower case entry
-                  add A C  # plus character
-                  and A (hex "FFFF")
-                  ld C (S I)  # Swap status
-                  xchg X (S)
-                  call charSymACX_CX  # Pack char
-                  xchg X (S)  # Swap status
-                  ld (S I) C
+            sym (E TAIL)  # External symbol?
+            if z  # No
+               ld E (E TAIL)
+               call nameE_E  # Get name
+               link
+               push E  # <L II> Name
+               push ZERO  # <L I> Result
+               link
+               ld Y (Y CDR)  # Next arg?
+               atom Y
+               if nz  # No
+                  push 24  # <S II> Default 'cnt' 24
+               else
+                  call evCntXY_FE  # Eval 'cnt'
+                  push E  # <S II> 'cnt'
                end
-               ld C E  # Restore C
-            loop
-            ld X (L I)  # Get result
-            call consSymX_E  # Make transient symbol
-            drop
+               push 4  # <S I> Build name
+               lea X (L I)
+               push X  # <S> Pack status
+               ld X (L II) # Get name
+               ld C 0  # Index
+               do
+                  call symCharCX_FACX  # Next char?
+               while nz
+                  ld E C  # Save C
+                  call isLetterOrDigitA_F  # Letter or digit?
+                  if nz  # Yes
+                     call caseDataA_AC  # Get case info
+                     and A (hex "FFFF")
+                     shr A 6  # Make index
+                     off A 1
+                     ld2 (A CaseLower)  # Get lower case entry
+                     add A C  # plus character
+                     and A (hex "FFFF")
+                     ld C (S I)  # Swap status
+                     xchg X (S)
+                     call charSymACX_CX  # Pack char
+                     xchg X (S)  # Swap status
+                     ld (S I) C
+                     dec (S II)  # Decrement 'cnt'
+                     break z
+                  end
+                  ld C E  # Restore C
+               loop
+               ld X (L I)  # Get result
+               call consSymX_E  # Make transient symbol
+               drop
+               pop Y
+               pop X
+               ret
+            end
          end
       end
    end
+   ld E Nil
    pop Y
    pop X
    ret

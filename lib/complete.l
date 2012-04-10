@@ -1,4 +1,4 @@
-# 30dec11abu
+# 03apr12abu
 # (c) Software Lab. Alexander Burger
 
 (if (opt)
@@ -12,13 +12,16 @@
                   (and
                      (pre? "Str" "Sym")
                      (getd "Sym")
-                     (prinl "Pre" "Sym") ) ) ) )
+                     (prinl "Pre" "Sym" (and (= "-" "Pre") " ")) ) ) ) )
          (let ("Path" (rot (split "Lst" "/"))  "Str" (pack (car "Path")))
             (setq "Path" (and (cdr "Path") (pack (glue "/" @) "/")))
             (for "Sym" (dir "Path" T)
-               (and
-                  (pre? "Str" "Sym")
-                  (prinl "Path" "Sym") ) ) ) ) )
+               (when (pre? "Str" "Sym")
+                  (prinl "Path"
+                     (replace (chop "Sym") " " "\\ ")
+                     (if (=T (car (info (pack "Path" "Sym"))))
+                        "/"
+                        " " ) ) ) ) ) ) )
    (prinl '+) )
 
 # vi:et:ts=3:sw=3

@@ -375,8 +375,8 @@ href="refD.html#dm">dm</a> and <a href="refV.html#var">var</a>.
 (rel adr (+Joint) prs (+Address))         # Address
 
 (class +Address +Entity)
-(rel Cit (+Need +Hook +Link) (+City))     # City
-(rel str (+List +Ref +String) Cit)        # Street
+(rel cit (+Need +Hook +Link) (+City))     # City
+(rel str (+List +Ref +String) cit)        # Street
 (rel prs (+List +Joint) adr (+Person))    # Inhabitants
 
 (class +City +Entity)
@@ -469,8 +469,10 @@ href="refR.html#replace">replace</a></code>.
 
 <dt><a name="repeat"><code>(repeat) -> lst</code></a>
 <dd>Makes the current <a href="ref.html#pilog">Pilog</a> definition "tail
-recursive", by closing the previously defined clauses in the T property to a
-circular list. See also <code><a href="refB.html#be">be</a></code>.
+recursive", by closing the previously defined rules in the definition's T
+property to a circular list. See also <code><a
+href="refR.html#repeat/0">repeat/0</a></code> and <code><a
+href="refB.html#be">be</a></code>.
 
 <pre><code>
 (be a (1))     # Define three facts
@@ -494,13 +496,13 @@ backtracking. See also <code><a href="refR.html#repeat">repeat</a></code> and
 <code><a href="refT.html#true/0">true/0</a></code>.
 
 <pre><code>
-: (be int (@N)       # Generate unlimited supply of integers
-   (@ zero *N)
+: (be integer (@I)   # Generate unlimited supply of integers
+   (@C box 0)        # Init to zero
    (repeat)          # Repeat from here
-   (@N inc '*N) )
--> int
+   (@I inc (-> @C)) )
+-> integer
 
-:  (? (int @X))
+: (? (integer @X))
  @X=1
  @X=2
  @X=3

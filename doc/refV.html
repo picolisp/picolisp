@@ -47,10 +47,13 @@ href="refS.html#select/3">select/3</a></code>.
 </code></pre>
 
 <dt><a name="var"><code>(var sym . any) -> any</code></a>
+<dt><code>(var (sym . cls) . any) -> any</code>
 <dd>Defines a class variable <code>sym</code> with the initial value
-<code>any</code> for the current class (in <code><a
-href="refC.html#*Class">*Class</a></code>). See also <code><a
-href="ref.html#oop">OO Concepts</a></code> and <code><a
+<code>any</code> for the current class, implicitly given by the value of the
+global variable <code><a href="refC.html#*Class">*Class</a></code>, or - in the
+second form - for the explicitly given class cls. See also <a
+href="ref.html#oop">OO Concepts</a>, <code><a
+href="refR.html#rel">rel</a></code> and <code><a
 href="refV.html#var:">var:</a></code>.
 
 <pre><code>

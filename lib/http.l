@@ -1,4 +1,4 @@
-# 26nov11abu
+# 21mar12abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -43,7 +43,6 @@
    (in (list 'file "--brief" "--mime" File)
       (line T) ) )
 
-
 ### HTTP-Client ###
 (de client (Host Port How . Prg)
    (let? Sock (connect Host Port)
@@ -76,7 +75,6 @@
       (load "@dbg.l")
       (off *Err)
       (quit) ) )
-
 
 ### HTTP-Server ###
 (de server (P H)
@@ -210,7 +208,7 @@
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (try 'html> (extern (ht:Pack @X))) )
+                        (apply try L 'html> (extern (ht:Pack @X))) )
                      ((disallowed)
                         (notAllowed *Url)
                         (http404) )
@@ -240,7 +238,10 @@
    (use (L @X @Y Pil)
       (setq *Http1 (format (car @H))  *Chunked (gt0 *Http1)  Pil)
       (if (index "~" @U)
-         (setq *ConId (pack (head @ @U))  @U (cdr (nth @U @)))
+         (setq
+            *ConId (head @ @U)
+            @U (cdr (nth @U @))
+            *ConId (pack (if (member "/" *ConId) (cdr @) *ConId)) )
          (off *ConId) )
       (while (setq L (line))
          (cond
@@ -294,7 +295,7 @@
             ((match '(@N ~(chop "; filename=") . @V) @X)
                (match '("\"" @N "\"") @N)
                (match '("\"" @V "\"") @V)
-               (if (_htSet @N (pack (stem @V '/ "\\")))
+               (if (_htSet @N (pack (stem @V "/" "\\")))
                   (let F (tmp @)
                      (unless (out F (echo (pack "^M^J" *MPartLim)))
                         (call 'rm "-f" F) ) )
@@ -448,6 +449,7 @@
 (de http404 ()
    (httpStat 404 "Not Found") )
 
+### Debug ###
 `*Dbg
 (noLint 'http '"O")
 

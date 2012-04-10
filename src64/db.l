@@ -1,4 +1,4 @@
-# 24aug11abu
+# 27mar12abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -549,7 +549,10 @@
       call getAdrZ_A  # Get 'next'
       pop C  # Get block index
       cmp C A  # Less than 'next'?
-      jge retnz  # No
+      if ge  # No
+         clrz  # 'nz'
+         jmp 90
+      end
       ld E C  # Block index
       shl E ((DbFile) II)  # Shift
       ld C BLK  # Read link field
@@ -557,7 +560,7 @@
       ld B (Z)  # Get tag byte
       and B BLKTAG  # Block tag
       cmp B 1  # One?
-      pop Z
+90    pop Z
       pop E
    else
       atom (Ext)  # Extended databases?
@@ -1704,15 +1707,21 @@
                   while z  # Yes
                      atom (Y)  # Flag?
                      if z  # No
-                        ld E ((Y) CDR)  # Print key
-                        call binPrintEZ
-                        ld E ((Y))  # Print value
-                        call binPrintEZ
+                        ld E ((Y) CDR)  # Get key
+                        cmp E Nil  # Volatile property?
+                        if ne  # No
+                           call binPrintEZ  # Print key
+                           ld E ((Y))  # Print value
+                           call binPrintEZ
+                        end
                      else
-                        ld E (Y)  # Print key
-                        call binPrintEZ
-                        ld E TSym  # Print 'T'
-                        call binPrintEZ
+                        ld E (Y)  # Get key
+                        cmp E Nil  # Volatile property?
+                        if ne  # No
+                           call binPrintEZ  # Print key
+                           ld E TSym  # Print 'T'
+                           call binPrintEZ
+                        end
                      end
                      ld Y (Y CDR)
                   loop

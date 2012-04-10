@@ -285,7 +285,7 @@ href="refP.html#put!">put!</a></code> and <code><a
 href="refI.html#inc!">inc!</a></code>.
 
 <pre><code>
-: (new! (+Item)   # Create a new item
+: (new! '(+Item)  # Create a new item
    'nr 2                      # Item number
    'nm "Spare Part"           # Description
    'sup (db 'nr '+CuSu 2)     # Supplier

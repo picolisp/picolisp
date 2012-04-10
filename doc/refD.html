@@ -528,8 +528,9 @@ and file name (if any) are stored in the <code>*Dbg</code> property of
 <dt><a name="default"><code>(default var 'any ..) -> any</code></a>
 <dd>Stores new values <code>any</code> in the <code>var</code> arguments only if
 their current values are <code>NIL</code>. Otherwise, their values are left
-unchanged. <code>default</code> is used typically in functions to initialize
-optional arguments.
+unchanged. In any case, the last <code>var</code>'s value is returned.
+<code>default</code> is used typically in functions to initialize optional
+arguments.
 
 <pre><code>
 : (de foo (A B)               # Function with two optional arguments

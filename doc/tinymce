@@ -11,7 +11,7 @@ Using the TinyMCE Javascript/HTML WYSIWYG editor in PicoLisp applications
 
 3. In your application, 'allow' the tinymce installation directory:
 
-   (allowed ("myApp/" "img/" "tinymce/")
+   (allowed ("myApp/" "tinymce/")
       ... )
 
 4. On each page where you want to use tinymce in textareas, insert two calls to

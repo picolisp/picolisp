@@ -1,4 +1,4 @@
-/* 20oct11abu
+/* 20mar12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -42,47 +42,6 @@ static inline bool pre(char *p, char *s) {
    return YES;
 }
 
-static char *ses(char *buf, int port, int *len) {
-   int np;
-   char *p, *q;
-
-   if (Http1 == 0)
-      return buf;
-   if (pre(buf, "GET /")) {
-      np = (int)strtol(buf+5, &q, 10);
-      if (q == buf+5 || *q != '/' || np < 1024 || np > 65535)
-         return buf;
-      p = q++ - 4;
-      do
-         if (*q < '0' || *q > '9')
-            return buf;
-      while (*++q != '~');
-      if (np == port) {
-         p[0] = 'G',  p[1] = 'E',  p[2] = 'T',  p[3] = ' ';
-         *len -= p - buf;
-         return p;
-      }
-      return NULL;
-   }
-   if (pre(buf, "POST /")) {
-      np = (int)strtol(buf+6, &q, 10);
-      if (q == buf+6 || *q != '/' || np < 1024 || np > 65535)
-         return buf;
-      p = q++ - 5;
-      do
-         if (*q < '0' || *q > '9')
-            return buf;
-      while (*++q != '~');
-      if (np == port) {
-         p[0] = 'P',  p[1] = 'O',  p[2] = 'S',  p[3] = 'T',  p[4] = ' ';
-         *len -= p - buf;
-         return p;
-      }
-      return NULL;
-   }
-   return buf;
-}
-
 static int slow(SSL *ssl, int fd, char *p, int cnt) {
    int n;
 
@@ -90,6 +49,25 @@ static int slow(SSL *ssl, int fd, char *p, int cnt) {
       if (errno != EINTR)
          return 0;
    return n;
+}
+
+static int rdLine(SSL *ssl, int fd, char *p, int cnt) {
+   int n, len;
+
+   for (len = 0;;) {
+      if ((n = ssl? SSL_read(ssl, p, cnt) : read(fd, p, cnt)) <= 0) {
+         if (!n || errno != EINTR)
+            return 0;
+      }
+      else {
+         len += n;
+         if (memchr(p, '\n', n))
+            return len;
+         p += n;
+         if ((cnt -= n) == 0)
+            return 0;
+      }
+   }
 }
 
 static void wrBytes(int fd, char *p, int cnt) {
@@ -207,10 +185,8 @@ int main(int ac, char *av[]) {
                SSL_set_fd(ssl, cli);
                if (SSL_accept(ssl) < 0)
                   return 1;
-               n = SSL_read(ssl, buf, sizeof(buf));
             }
-            else
-               n = read(cli, buf, sizeof(buf));
+            n = rdLine(ssl, cli, buf, sizeof(buf));
             alarm(0);
             if (n < 6)
                return 1;
@@ -285,9 +261,9 @@ int main(int ac, char *av[]) {
                   alarm(420);
                   n = slow(ssl, cli, buf, sizeof(buf));
                   alarm(0);
-                  if (!n || !(p = ses(buf, port, &n)))
+                  if (!n)
                      break;
-                  wrBytes(srv, p, n);
+                  wrBytes(srv, buf, n);
                }
                shutdown(cli, SHUT_RD);
                shutdown(srv, SHUT_WR);

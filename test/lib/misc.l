@@ -1,4 +1,4 @@
-# 11jul11abu
+# 27jan12abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -91,18 +91,18 @@
 
 
 ### *Allow allowed allow ###
-(allowed ("app/" "img/")
+(allowed ("app/")
    "start" "stop" "lib.css" "psh" )
 (allow "myFoo")
 (allow "myDir/" T)
 
-(test '(("psh" ("lib.css" NIL "myFoo") "start" NIL "stop") "app/" "img/" "myDir/")
+(test '(("psh" ("lib.css" NIL "myFoo") "start" NIL "stop") "app/" "myDir/")
    *Allow )
 
 (test '("lib.css" "myFoo" "psh" "start" "stop")
    (idx *Allow) )
 
-(test '("app/" "img/" "myDir/")
+(test '("app/" "myDir/")
    (cdr *Allow) )
 
 

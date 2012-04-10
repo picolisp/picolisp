@@ -1,4 +1,4 @@
-# 27oct11abu
+# 08apr12abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -483,31 +483,22 @@
    pop X
    ret
 
-# (sigio ['cnt [. prg]]) -> cnt | prg
+# (sigio 'cnt . prg) -> cnt
 (code 'doSigio 2)
    push X
    push Y
    ld X E
    ld Y (E CDR)  # Y on args
-   atom Y  # Any?
-   if nz  # No
-      ld E (Sigio)  # Return current handler
-   else
-      call evCntXY_FE  # Get fd
-      ld Y (Y CDR)  # Handler 'prg'
-      ld (Sigio) Y  # Save in 'Sigio'
-      atom Y  # Any?
-      if z  # Yes
-         ld A (Pid)  # Get process ID
-         shr A 4  # Normalize
-         cc fcntl(E F_SETOWN A)  # Receive SIGIO events
-         cc fcntl(E F_GETFL 0)  # Get file status flags
-         or A (| O_NONBLOCK O_ASYNC)
-         cc fcntl(E F_SETFL A)  # Set file status flags
-      end
-      shl E 4  # Return fd
-      or E CNT
-   end
+   call evCntXY_FE  # Get fd
+   ld (Sigio) (Y CDR)  # Set handler
+   ld A (Pid)  # Get process ID
+   shr A 4  # Normalize
+   cc fcntl(E F_SETOWN A)  # Receive SIGIO events
+   cc fcntl(E F_GETFL 0)  # Get file status flags
+   or A (| O_NONBLOCK O_ASYNC)
+   cc fcntl(E F_SETFL A)  # Set file status flags
+   shl E 4  # Return fd
+   or E CNT
    pop Y
    pop X
    ret
@@ -1684,7 +1675,7 @@
                add C 4  # Size of float
             end
          end
-         fix  # Get fixpoint number or flg
+         fnum  # Get fixpoint number or flg
       else
          cmp E ISym  # 'I'?
          if eq  # Yes

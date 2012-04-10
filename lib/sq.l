@@ -1,4 +1,4 @@
-# 24dec09abu
+# 22mar12abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook|T] [var val ..])
@@ -51,6 +51,7 @@
                                  ((pair Val) 'range)
                                  ((or (num? Val) (ext? Val)) 'same)
                                  ((=T Val) 'bool)
+                                 ((isa '(+Fold +Idx) (get Cls Var)) 'part)
                                  ((isa '+Fold (get Cls Var)) 'fold)
                                  ((isa '+Sn (get Cls Var)) 'tolr)
                                  (T 'head) )

@@ -1,4 +1,4 @@
-# 06apr10abu
+# 01apr12abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -7,7 +7,6 @@
    (show This)
    (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)
       (println "X" (val "X")) )
-   (and (get *Top 'focus) (println 'focus (get @ 'ix)))
    (for "X" (env)
       (unless (== (car "X") (cdr "X"))
          (println (car "X") (cdr "X")) ) )

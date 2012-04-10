@@ -1,4 +1,4 @@
-/* 25sep11abu
+/* 11mar12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -229,7 +229,8 @@ any doDef(any ex) {
    }
    else {
       x = cdr(x),  Push(c3, EVAL(car(x)));
-      Touch(ex,data(c1));
+      if (!isNil(data(c2)))
+         Touch(ex,data(c1));
       if (!isNil(y = get(data(c1), data(c2)))  &&  !equal(data(c3), y))
          redefMsg(data(c1), data(c2));
       put(data(c1), data(c2), data(c3));

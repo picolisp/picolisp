@@ -1,4 +1,4 @@
-# 26aug11abu
+# 06apr12abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -1696,7 +1696,7 @@
    loop
    cmp B (char "+")  # Plus sign?
    jz 10  # Yes
-   cmp B (char "-")  # Plus sign?
+   cmp B (char "-")  # Minus sign?
    if eq  # Yes
       or (L -II) 1  # Set Sign
 10    call symByteCX_FACX  # Next byte

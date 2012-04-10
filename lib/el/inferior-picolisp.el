@@ -1,7 +1,8 @@
 ;;;;;; inferior-picolisp: Picolisp repl in a buffer.
-;;;;;; Version: 1.0
+;;;;;; Version: 1.1
 
 ;;; Copyright (c) 2009, Guillermo R. Palavecino
+;;; 2012, Thorsten Jolitz (tj)
 
 ;; This file is NOT part of GNU emacs.
 
@@ -39,6 +40,10 @@
     (define-key m "\C-x\C-e" 'picolisp-send-last-sexp)
     (define-key m "\C-c\C-l" 'picolisp-load-file)
     m ) )
+
+;; added by tj 2012-03-11
+(defvar picolisp-local-program-name "./pil @lib/too.l +")
+(defvar picolisp-process-number 0)
 
 (defvar picolisp-program-name "/usr/bin/picolisp"
   "The name of the program used to run Picolisp." )
@@ -132,6 +137,40 @@ Defaults to a regexp ignoring all inputs of 0, 1, or 2 letters."
     (let ((end (point)))
       (backward-sexp)
       (buffer-substring (point) end) ) ) )
+
+
+;; added by tj 2012-03-11
+;;;###autoload
+(defun run-picolisp-new-local (cmd)
+  "Run a new inferior Picolisp process for a locally installed
+PicoLisp, input and output via buffer `*picolisp<N>*'. Works only
+as intended, when called from inside a picolisp directory, e.g.
+from a dired buffer showing the top-level directory of a local
+picolisp installation. Otherwise, calls a global picolisp
+installation instead (with `picolisp-program-name', see function
+`picolisp-interactively-start-process'). If there is a process
+already running in `*picolisp<N>*', create a new process in
+buffer `*picolisp<N+1>*'. With argument, allows you to edit the
+command line (default is value of `picolisp-local-program-name').
+Runs the hook `inferior-picolisp-mode-hook' \(after the
+`comint-mode-hook' is run). \(Type \\[describe-mode] in the
+process buffer for a list of commands.)"
+
+  (interactive (list (if current-prefix-arg
+                         (read-string "Run Picolisp: " picolisp-local-program-name)
+                         picolisp-local-program-name) ) )
+  (setq picolisp-process-number (1+ picolisp-process-number))
+  (setq pl-proc-buf (concat
+                     "picolisp<"
+                     (number-to-string picolisp-process-number)
+                     ">"))
+  (let ((cmdlist (split-string cmd)))
+    (set-buffer
+     (apply 'make-comint pl-proc-buf (car cmdlist)
+                         nil (cdr cmdlist)))
+      (inferior-picolisp-mode) ) 
+  (pop-to-buffer (concat "*" pl-proc-buf "*")) ) 
+
 
 ;;;###autoload
 (defun run-picolisp (cmd)

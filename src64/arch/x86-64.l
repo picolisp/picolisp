@@ -1,4 +1,4 @@
-# 27apr11abu
+# 08apr12abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -585,7 +585,7 @@
 (asm fval ()
    (prinst "movss" "(%rdx)" "%xmm0") )
 
-(asm fix ()
+(asm fnum ()
    (prinst "shr" "$4" "%rbx")                # Normalize scale
    (prinst "jc" "1f")                        # Jump if negative
    (prinst "cvtsi2sd" "%rbx" "%xmm7")        # Mulitply double with scale

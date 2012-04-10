@@ -1,4 +1,4 @@
-30sep11abu
+10jan12abu
 (c) Software Lab. Alexander Burger
 
 
@@ -40,12 +40,12 @@ installation, and invoke them explicitly as desired.
 
 3. Compile the PicoLisp interpreter
 
-      $ (cd src; make picolisp)
+      $ (cd src; make)
 
    or - if you have an x86-64 system (under Linux or SunOS), or a ppc64 system
    (under Linux) - build the 64-bit version
 
-      $ (cd src64; make picolisp)
+      $ (cd src64; make)
 
    In both cases the executable bin/picolisp will be created.
 

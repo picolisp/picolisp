@@ -1,4 +1,4 @@
-/* 24nov11abu
+/* 14mar12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -13,6 +13,7 @@
 .red {color: red;}
 .green {color: green;}
 .blue {color: blue;}
+.yellow {color: yellow;}
 .bold {font-weight: bold;}
 .mono {font-family: monospace;}
 
@@ -24,7 +25,9 @@
 .em20 {width: 20em;}
 .em25 {width: 25em;}
 .em30 {width: 30em;}
+.em40 {width: 40em;}
 .em50 {width: 50em;}
+.em60 {width: 60em;}
 .em70 {width: 70em;}
 
 /* Defaults */
@@ -56,7 +59,7 @@ caption {
 }
 
 td {
-   white-space:nowrap;
+   white-space: nowrap;
 }
 
 a {

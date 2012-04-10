@@ -1,4 +1,4 @@
-# 11oct11abu
+# 22mar12abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -2791,14 +2791,17 @@
    end
    push X
    ld X (E TAIL)
-   call nameX_X  # Get name
-   ld C 0
    ld E ZERO  # Counter
-   do
-      call symCharCX_FACX  # Next char
-   while nz
-      add E (hex "10")  # Increment counter
-   loop
+   sym X  # External symbol?
+   if z  # No
+      call nameX_X  # Get name
+      ld C 0
+      do
+         call symCharCX_FACX  # Next char
+      while nz
+         add E (hex "10")  # Increment counter
+      loop
+   end
    pop X
    ret
 

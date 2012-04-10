@@ -1,3 +1,16 @@
+* 10apr12 picoLisp-3.1.0
+   Generalized 'scl'
+   Pilog 'for/[2-4]' predicate
+   Bug in 'isLifeE_F' (64-bit)
+   Bug in 'firstByteA_B' (64-bit)
+   'httpGate' session bug
+   Simplified 'sigio'
+   Volatile 'NIL' property
+   Bug in 'fold' (64-bit)
+   Bug in 'db' for partial '+Aux' access
+   Bug in 'interface' (Ersatz)
+   'locale' optional arguments
+
 * 30dec11 picoLisp-3.0.9
    Bash completion
    Changed GUI '+Hint' system

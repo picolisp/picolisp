@@ -1,4 +1,4 @@
-# 07mar11abu
+# 07feb12abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -7,7 +7,7 @@ lib = ../lib
 
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
-CFLAGS := -c -O2 -m32 -pipe \
+CFLAGS = -c -O2 -m32 -pipe \
 	-falign-functions -fomit-frame-pointer -fno-strict-aliasing \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \

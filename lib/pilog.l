@@ -1,4 +1,4 @@
-# 20jul11abu
+# 31mar12abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -151,6 +151,23 @@
    (member "@B" "@A") )
 
 (be show (@X) (@ show (-> @X)))
+
+(be for (@N @End) (for @N 1 @End 1))
+(be for (@N @Beg @End) (for @N @Beg @End 1))
+(be for (@N @Beg @End @Step) (equal @N @Beg))
+(be for (@N @Beg @End @Step) (@I box (-> @Beg)) (_for @N @I @End @Step))
+
+(be _for (@N @I @End @Step)
+   (@ if (>= (-> @End) (val (-> @I)))
+      (> (inc (-> @I) (-> @Step)) (-> @End))
+      (> (-> @End) (dec (-> @I) (-> @Step))) )
+   T
+   (fail) )
+
+(be _for (@N @I @End @Step)
+   (@N val (-> @I)) )
+
+(repeat)
 
 ### DB ###
 (de initQuery (Var Cls Hook Val)
@@ -555,6 +572,7 @@
 
 (repeat)
 
+### Debug ###
 `*Dbg
 (load "@lib/sq.l")
 

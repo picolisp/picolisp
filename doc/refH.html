@@ -31,9 +31,9 @@ database in the referred object. See also <code><a
 href="ref.html#dbase">Database</a></code>.
 
 <pre><code>
-(rel Sup (+Hook +Link) (+Sup))   # Supplier
-(rel nr (+Key +Number) Sup)      # Item number, unique per supplier
-(rel dsc (+Ref +String) Sup)     # Item description, indexed per supplier
+(rel sup (+Hook +Link) (+Sup))   # Supplier
+(rel nr (+Key +Number) sup)      # Item number, unique per supplier
+(rel dsc (+Ref +String) sup)     # Item description, indexed per supplier
 </code></pre>
 
 <dt><a name="hash"><code>(hash 'any) -> cnt</code></a>

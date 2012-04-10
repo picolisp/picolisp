@@ -1,4 +1,4 @@
-# 08mar10abu
+# 05jan12abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
@@ -13,7 +13,7 @@
             (prin " - ")
             (gui '(+Var +NumField) '*InvTill 10) )
          ,"Description" NIL (gui '(+Var +TextField) '*InvNm 30)
-         ,"Supplier" (gui '(+ChoButton) '(choCuSu (field 1)))
+         ,"Supplier" (choCuSu 0)
          (gui '(+Var +Obj +TextField) '*InvSup '(nm +CuSu) 30) )
       (--)
       (gui '(+ShowButton) NIL

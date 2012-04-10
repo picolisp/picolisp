@@ -1,4 +1,4 @@
-# 28nov11abu
+# 02jan12abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -91,7 +91,6 @@
 
 (de nonblank (Str)
    (or Str `(pack (char 160) (char 160))) )
-
 
 ### XHTML output ###
 (de html (Upd Ttl Css Attr . Prg)
@@ -363,7 +362,6 @@
                (<href> (eval (car L) 1) (urlMT *Url *Menu N *ID)) ) ) ) )
    (htPrin (get Lst *Tab -1) 2) )
 
-
 ### DB Linkage ###
 (de mkUrl (Lst)
    (pack (pop 'Lst) '?
@@ -514,7 +512,6 @@
          (T ("Print" "X")) )
       (prin "</li>") )
    (prinl "</ul>") )
-
 
 ### HTML form ###
 (de <post> (Attr Url . Prg)

@@ -1,4 +1,4 @@
-# 09sep11abu
+# 18mar12abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -18,15 +18,12 @@
 
 ### sigio ###
 (unless (member *OS '("SunOS" "OpenBSD"))
-   (off "SigVal")
    (sigio (setq "SigSock" (port T 0 "SigPort"))
       (setq "SigVal" (udp "SigSock")) )
-   (test '((setq "SigVal" (udp "SigSock"))) (sigio))
    (udp "localhost" "SigPort" '(a b c))
    (wait 200)
    (test '(a b c) "SigVal")
-   (sigio "SigSock")
-   (test NIL (sigio)) )
+   (close "SigSock") )
 
 
 ### protect ###

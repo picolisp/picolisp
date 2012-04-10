@@ -48,7 +48,7 @@ prefix strings. See also <code><a href="refA.html#allow">allow</a></code>,
 href="refP.html#pre?">pre?</a></code>.
 
 <pre><code>
-: (allowed ("app/" "img/")  # Initialize
+: (allowed ("app/")  # Initialize
    "!start" "!stop" "lib.css" "!psh" )
 -> NIL
 : (allow "!myFoo")  # additional item
@@ -57,12 +57,12 @@ href="refP.html#pre?">pre?</a></code>.
 -> "myDir/"
 
 : *Allow
--> (("!start" ("!psh" ("!myFoo")) "!stop" NIL "lib.css") "app/" "img/" "myDir/")
+-> (("!start" ("!psh" ("!myFoo")) "!stop" NIL "lib.css") "app/" "myDir/")
 
 : (idx *Allow)  # items
 -> ("!myFoo" "!psh" "!start" "!stop" "lib.css")
 : (cdr *Allow)  # prefixes
--> ("app/" "img/" "myDir/")
+-> ("app/" "myDir/")
 </code></pre>
 
 <dt><a name="+Alt"><code>+Alt</code></a>
@@ -242,7 +242,7 @@ href="refA.html#allowed">allowed</a></code>.
 
 <pre><code>
 : *Allow
--> (("!start" ("!psh") "!stop" NIL "lib.css") "app/" "img/")
+-> (("!start" ("!psh") "!stop" NIL "lib.css") "app/")
 : (allow "!myFoo")  # additionally allowed item
 -> "!myFoo"
 : (allow "myDir/" T)  # additionally allowed prefix
@@ -258,7 +258,7 @@ should specify the initially allowed items. See also <code><a
 href="refA.html#allow">allow</a></code>.
 
 <pre><code>
-: (allowed ("app/" "img/")  # allowed prefixes
+: (allowed ("app/")  # allowed prefixes
    "!start" "!stop" "lib.css" "!psh" )  # allowed items
 -> NIL
 </code></pre>

@@ -1,4 +1,4 @@
-# 27dec11abu
+# 08apr12abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -213,7 +213,6 @@
                               '((C) (== (car P) (cadr C)))
                               (cdr *Conditions) ) )
                         (cadr (pop '*Program)) ) ) ) ) ) ) ) )
-
 
 # Print instruction
 (de prinst (Name . @)
@@ -437,7 +436,7 @@
       (eval+)
       (eval/ret)
       (exec (reg (read)))
-      (fix)
+      (fnum)
       (fval)
       (hx2 (read))
       (inc (destination) "*Mode")
@@ -582,6 +581,55 @@
    (while Name
       (prinst ".byte" (glue ", " (cut 8 'Name))) ) )
 
+
+# Condition code optimizations
+(de asmNoCC Args
+   (let Sym (intern (pack (car Args) "-"))
+      (put (car Args) 'noCC Sym)
+      (def Sym 'asm (cdr Args)) ) )
+
+(de useCC Lst
+   (for Sym Lst
+      (put Sym 'useCC T) ) )
+
+(de chgCC Lst
+   (for Sym Lst
+      (put Sym 'chgCC T) ) )
+
+(useCC
+   ldc ldnc ldz ldnz
+   addc subc rcl rcr
+   jz jeq jnz jne js jns jsz jnsz jc jlt jnc jge jcz jle jncz jgt )
+
+(chgCC
+   movn mset movm save load
+   add sub inc dec not neg and or xor off test shl shr rol ror
+   mul div zxt setz clrz
+   cmp cmp4 cmpn slen memb null nul4 nul cnt big num sym atom
+   call cc return
+   eval eval+ eval/ret exec prog )
+
+(de noCC (Lst)
+   (with (caar Lst)
+      (and
+         (: noCC)
+         (loop
+            (NIL (setq Lst (cdr Lst)))
+            (T (get Lst 1 1 'useCC))
+            (T (get Lst 1 1 'chgCC) T)
+            (T (= '(push T NIL) (car Lst)))
+            (T (= '(pop T NIL) (car Lst)) T)
+            (T (== 'ret (caar Lst))
+               (use (@A @B @Z)
+                  (not (match '(@A "_" @B "F" @Z) (chop *Label))) ) )
+            (T
+               (and
+                  (== 'jmp (caar Lst))
+                  (not (setq Lst (member (cons ': (cadar Lst)) *Program))) ) ) )
+         (: noCC) ) ) )
+
+
+# Warning message
 (de warn (Msg)
    (out 2
       (printsp *Label *Statement)

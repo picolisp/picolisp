@@ -1,4 +1,4 @@
-# 15jul10abu
+# 07jan12abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -16,7 +16,7 @@
       ((=0 N) '(NIL))
       ((not Lst))
       (T
-         (append
+         (conc
             (mapcar
                '((X) (cons (car Lst) X))
                (subsets (dec N) (cdr Lst)) )

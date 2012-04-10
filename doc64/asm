@@ -1,4 +1,4 @@
-# 27dec11abu
+# 08apr12abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -166,7 +166,7 @@
       cc adr reg        # C-Call to 'adr' with end of stacked args in 'reg'
       dval              # Set up double value pointed to by 'C'
       fval              # Set up float value pointed to by 'C'
-      fix               # Convert double with scale 'E' to fixnum in 'E'
+      fnum              # Convert double with scale 'E' to fixnum in 'E'
 
       ret               # Return
       begin             # Called from foreign function

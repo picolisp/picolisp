@@ -1,4 +1,4 @@
-/* 11mar12abu
+/* 02oct12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1171,7 +1171,7 @@ any doAt(any ex) {
    any x;
 
    x = cdr(ex),  x = EVAL(car(x));
-   NeedCell(ex,x);
+   NeedPair(ex,x);
    if (isNil(cdr(x)))
       return Nil;
    NeedCnt(ex,car(x));
@@ -1287,12 +1287,14 @@ any doFor(any x) {
    y = cdr(y),  cond = car(y),  y = cdr(y);
    Push(c1,Nil);
    body = x = cdr(x);
-   while (!isNil(a = EVAL(cond))) {
-      val(At) = a;
+   for (;;) {
       if (f.cnt == 2) {
          val(f.bnd[1].sym) = bigCopy(val(f.bnd[1].sym));
          digAdd(val(f.bnd[1].sym), 2);
       }
+      if (isNil(a = EVAL(cond)))
+         break;
+      val(At) = a;
       do {
          if (!isNum(data(c1) = car(x))) {
             if (isSym(data(c1)))

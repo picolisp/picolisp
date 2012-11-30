@@ -222,7 +222,7 @@ the three base types and the symbol variations:
                      |
             +--------+--------+
             |        |        |
-         Number    Symbol    List
+         Number    Symbol    Pair
                      |
                      |
    +--------+--------+--------+
@@ -297,11 +297,11 @@ from the cell's start address. Therefore, the bit pattern of a symbol will be:
 
 <p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero.
 
-<p>A property is a key-value pair, represented as a cell in the symbol's tail.
-This is called a "property list". The property list may be terminated by a
+<p>A property is a key-value pair, represented by a cons pair in the symbol's
+tail. This is called a "property list". The property list may be terminated by a
 number representing the symbol's name. In the following example, a symbol with
-the name <code>"abc"</code> has three properties: A KEY/VAL cell, a cell with
-only a KEY, and another KEY/VAL cell.
+the name <code>"abc"</code> has three properties: A KEY/VAL pair, a cell with
+only a KEY, and another KEY/VAL pair.
 
 <pre><code>
             Symbol
@@ -324,9 +324,9 @@ only a KEY, and another KEY/VAL cell.
 </code></pre>
 
 <p>Each property in a symbol's tail is either a symbol (like the single KEY
-above, then it represents the boolean value <code>T</code>), or a cell with the
-property key in its CDR and the property value in its CAR. In both cases, the
-key should be a symbol, because searches in the property list are performed
+above, then it represents the boolean value <code>T</code>), or a cons pair with
+the property key in its CDR and the property value in its CAR. In both cases,
+the key should be a symbol, because searches in the property list are performed
 using pointer comparisons.
 
 <p>The name of a symbol is stored as a number at the end of the tail. It
@@ -448,8 +448,8 @@ specified at creation time.
 <p><hr>
 <h4><a name="lst">Lists</a></h4>
 
-<p>A list is a sequence of one or more cells, holding numbers, symbols, or
-lists.
+<p>A list is a sequence of one or more cells (cons pairs), holding numbers,
+symbols, or cons pairs.
 
 <pre><code>
       |
@@ -600,8 +600,8 @@ $ pil myProject.l -main
 </code></pre>
 
 <p>For interactive development it is recommended to enable debugging mode, to
-get the vi-style command line editor, single-stepping, tracing and other
-debugging utilities.
+get the vi-style line editor, single-stepping, tracing and other debugging
+utilities.
 
 <pre><code>
 $ pil myProject.l -main +
@@ -624,6 +624,22 @@ the path to "lib.l" as called by 'pil' or 'dbg') is remembered internally as the
 <i>PicoLisp Home Directory</i>. This path is later automatically substituted for
 any leading "<code>@</code>" character in file name arguments to I/O functions
 (see <code><a href="refP.html#path">path</a></code>).
+
+<p>Instead of the default vi-style line editor, an emacs-style editor can be
+used. It can be switched on permanently by calling the function
+<code>(em)</code> (i.e. without arguments), or by passing <code>-em</code> on
+the command line:
+
+<pre><code>
+$ pil -em +
+:
+</code></pre>
+
+<p>A single call is enough, because the style will be remembered in a file
+"~/.pil/editor", and used in all subsequent PicoLisp sessions.
+
+<p>To switch back to 'vi' style, call <code>(vi)</code>, use the
+<code>-vi</code> command line option, or simply remove "~/.pil/editor".
 
 
 <p><hr>
@@ -795,6 +811,17 @@ backslash. Control characters can be written with a preceding hat
 -> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
 </code></pre>
 
+<p>A backslash '<code>\</code>' in a transient symbol name at the end of a line
+discards the newline, and continues the name in the next line. In that case, all
+leading spaces and tabs in that line are discarded, to allow proper source code
+indentation.
+
+<p><pre><code>
+: "abc\
+   def"
+-> "abcdef"
+</code></pre>
+
 <p>The index for transient symbols is cleared automatically before and after
 <code><a href="refL.html#load">load</a></code>ing a source file, or it can be
 reset explicitly with the <code><a href="ref_.html#====">====</a></code>
@@ -878,7 +905,7 @@ href="refR.html#read">read</a></code>ing an expression, and are not seen by the
 <code>eval</code> in the main loop.
 
 <p>The most prominent read-macro in Lisp is the single quote character
-<code>'</code>, which expands to a call of the <code><a
+"<code>'</code>", which expands to a call of the <code><a
 href="refQ.html#quote">quote</a></code> function. Note that the single quote
 character is also printed instead of the full function name.
 
@@ -901,8 +928,8 @@ unique list of references to data which do normally not follow the rules of
 pointer equality. If the value of <code>*Uni</code> is <code>T</code>, the
 comma read macro mechanism is disabled.
 
-<p>A single backquote character <code>`</code> will cause the reader to evaluate
-the following expression, and return the result.
+<p>A single backquote character "<code>`</code>" will cause the reader to
+evaluate the following expression, and return the result.
 
 <pre><code>
 : '(a `(+ 1 2 3) z)
@@ -1222,6 +1249,13 @@ environment is executed
 <p>In the current implementation, not more than 64 coroutines can exist at the
 same time. Reentrant coroutines are not supported, a coroutine cannot resume
 itself directly or indirectly.
+
+<p>Before using coroutines, make sure you have sufficient stack space, e.g. by
+calling
+
+<pre><code>
+$ ulimit -s unlimited
+</code></pre>
 
 
 <p><hr>
@@ -1819,7 +1853,7 @@ abbreviations:
 <li><code>dat</code> - Date: Days, starting first of March of the year 0 A.D.
 <li><code>tim</code> - Time: Seconds since midnight
 <li><code>obj</code> - Object/Class: A symbol with methods and/or classes
-<li><code>var</code> - Variable: Either a symbol or a cell
+<li><code>var</code> - Variable: Either a symbol or a cons pair
 <li><code>exe</code> - Executable: A list as executable expression (<code>eval</code>)
 <li><code>prg</code> - Prog-Body: A list of executable expressions (<code>run</code>)
 <li><code>fun</code> - Function: Either a number (code-pointer), a symbol (message) or a list (lambda)
@@ -1831,6 +1865,9 @@ abbreviations:
 <li><code>tree</code> - Database index tree specification
 <li><code>hook</code> - Database hook object
 </ul>
+
+<p>Arguments evaluated by the function (depending on the context) are quoted
+(prefixed with the single quote character "<code>'</code>").
 
 <p>
 <a href="refA.html">A</a>
@@ -2374,6 +2411,7 @@ abbreviations:
    <a href="refN.html#+Need">+Need</a>
    <a href="refM.html#+Mis">+Mis</a>
    <a href="refA.html#+Alt">+Alt</a>
+   <a href="refE.html#+Entity">+Entity</a>
    <a href="refB.html#blob">blob</a>
    <a href="refD.html#dbSync">dbSync</a>
    <a href="refN.html#new!">new!</a>
@@ -2492,6 +2530,7 @@ abbreviations:
    <a href="refU.html#unbug">unbug</a>
    <a href="refU.html#u">u</a>
    <a href="refV.html#vi">vi</a>
+   <a href="refE.html#em">em</a>
    <a href="refL.html#ld">ld</a>
    <a href="refT.html#trace">trace</a>
    <a href="refU.html#untrace">untrace</a>
@@ -2520,6 +2559,7 @@ abbreviations:
    <a href="refS.html#stack">stack</a>
    <a href="refA.html#adr">adr</a>
    <a href="refE.html#env">env</a>
+   <a href="refT.html#trail">trail</a>
    <a href="refU.html#up">up</a>
    <a href="refD.html#date">date</a>
    <a href="refT.html#time">time</a>
@@ -2569,6 +2609,7 @@ abbreviations:
 <dd><code>
    <a href="#nilSym">NIL</a>
    <a href="refP.html#pico">pico</a>
+   <a href="refC.html#*CPU">*CPU</a>
    <a href="refO.html#*OS">*OS</a>
    <a href="refD.html#*DB">*DB</a>
    <a href="refT.html#T">T</a>

@@ -11,6 +11,17 @@
 
 <dl>
 
+<dt><a name="*CPU"><code>*CPU</code></a>
+<dd>(64-bit version only) A global variable holding the target CPU
+(architecture). Possible values include <code>"x86-64"</code>,
+<code>"ppc64"</code> or <code>"emu"</code>. See also <code><a
+href="refO.html#*OS">*OS</a></code>.
+
+<pre><code>
+: *CPU
+-> "x86-64"
+</code></pre>
+
 <dt><a name="*Class"><code>*Class</code></a>
 <dd>A global variable holding the current class. See also <code><a
 href="ref.html#oop">OO Concepts</a></code>, <code><a
@@ -87,9 +98,9 @@ term can be proven.
 </code></pre>
 
 <dt><a name="can"><code>(can 'msg) -> lst</code></a>
-<dd>Returns a list of all classes that accept the message <code>msg</code>. See
-also <code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
-href="refC.html#class">class</a></code>, <code><a
+<dd>(Debug mode only) Returns a list of all classes that accept the message
+<code>msg</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
+<code><a href="refC.html#class">class</a></code>, <code><a
 href="refD.html#dep">dep</a></code>, <code><a
 href="refW.html#what">what</a></code> and <code><a
 href="refW.html#who">who</a></code>.
@@ -175,6 +186,7 @@ href="refQ.html#quit">quit</a></code> and
 <dt><a name="cd"><code>(cd 'any) -> sym</code></a>
 <dd>Changes the current directory to <code>any</code>. The old directory is
 returned on success, otherwise <code>NIL</code>. See also <code><a
+href="refC.html#chdir">chdir</a></code>, <code><a
 href="refD.html#dir">dir</a></code> and <code><a
 href="refP.html#pwd">pwd</a></code>.
 

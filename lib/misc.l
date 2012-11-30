@@ -1,4 +1,4 @@
-# 28jan12abu
+# 11nov12abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -196,6 +196,20 @@
                (recurse "Lst" (dec "N"))
                (recurse (cdr "L") (- "Len" "N")) ) ) ) ) )
 
+(de depth (Idx)  #> (max . average)
+   (let (C 0  D 0  N 0)
+      (cons
+         (recur (Idx N)
+            (ifn Idx
+               0
+               (inc 'C)
+               (inc 'D (inc 'N))
+               (inc
+                  (max
+                     (recurse (cadr Idx) N)
+                     (recurse (cddr Idx) N) ) ) ) )
+         (or (=0 C) (*/ D C)) ) ) )
+
 ### Allow ###
 (de allowed Lst
    (setq *Allow (cons NIL (car Lst)))
@@ -205,8 +219,7 @@
    (nond
       (*Allow)
       (Flg (idx *Allow X T))
-      ((member X (cdr *Allow))
-         (conc *Allow (cons X)) ) )
+      ((member X (cdr *Allow)) (queue '*Allow X)) )
    X )
 
 ### Telephone ###

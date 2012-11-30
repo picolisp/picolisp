@@ -142,15 +142,15 @@ successfully completed. See also <code><a href="refF.html#from">from</a></code>.
 </code></pre>
 
 <dt><a name="edit"><code>(edit 'sym ..) -> NIL</code></a>
-<dd>Edits the value and property list of the argument symbol(s) by calling the
-<code>vim</code> editor on a temporary file with these data. When closing the
-editor, the modified data are read and stored into the symbol(s). During the
-edit session, individual symbols are separated by the pattern
-<code>(********)</code>. These separators should not be modified. When moving
-the cursor to the beginning of a symbol (no matter if internal, transient or
-external), and hitting '<code>K</code>', that symbol is added to the currently
-edited symbols. Hitting '<code>Q</code>' will go back one step and return to the
-previously edited list of symbols.
+<dd>(Debug mode only) Edits the value and property list of the argument
+symbol(s) by calling the <code>vim</code> editor on a temporary file with these
+data. When closing the editor, the modified data are read and stored into the
+symbol(s). During the edit session, individual symbols are separated by the
+pattern <code>(********)</code>. These separators should not be modified. When
+moving the cursor to the beginning of a symbol (no matter if internal, transient
+or external), and hitting '<code>K</code>', that symbol is added to the
+currently edited symbols. Hitting '<code>Q</code>' will go back one step and
+return to the previously edited list of symbols.
 
 <p><code>edit</code> is especially useful for browsing through the database
 (with '<code>K</code>' and '<code>Q</code>'), inspecting external symbols, but
@@ -164,8 +164,9 @@ href="ref_.html#!">!</a></code> breakpoints at arbitrary code locations, or
 doing other temporary changes to the code for debugging purposes.
 
 <p>See also <code><a href="refU.html#update">update</a></code>, <code><a
-href="refS.html#show">show</a></code> and <code><a
-href="refV.html#vi">vi</a></code>.
+href="refS.html#show">show</a></code>, <code><a
+href="refV.html#vi">vi</a></code> and <code><a
+href="refE.html#em">em</a></code>.
 
 <pre><code>
 : (edit (db 'nr '+Item 1))  # Edit a database symbol
@@ -205,12 +206,36 @@ href="refV.html#vi">vi</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="em"><code>(em 'sym) -> sym</code></a>
+<dt><code>(em 'sym 'cls) -> sym</code>
+<dt><code>(em '(sym . cls)) -> sym</code>
+<dt><code>(em) -> NIL</code>
+<dd>(Debug mode only) Opens the "emacs" editor on the function or method
+definition of <code>sym</code>. A call to <code><a
+href="refL.html#ld">ld</a></code> thereafter will <code><a
+href="refL.html#load">load</a></code> the modified file. A call without
+arguments permanently switches the REPL line editor and the <code><a
+href="refE.html#edit">edit</a></code> function to "emacs" mode. See also
+<code><a href="refD.html#doc">doc</a></code>, <code><a
+href="refE.html#edit">edit</a></code>, <code><a
+href="refV.html#vi">vi</a></code>, <code><a
+href="refD.html#*Dbg">*Dbg</a></code>, <code><a
+href="refD.html#debug">debug</a></code> and <code><a
+href="refP.html#pp">pp</a></code>.
+
+<pre><code>
+: (em 'url> '+CuSu)  # Edit the method's source code, then exit from 'emacs'
+-> T
+</code></pre>
+
 <dt><a name="env"><code>(env ['lst] | ['sym 'val] ..) -> lst</code></a>
 <dd>Return a list of symbol-value pairs of all dynamically bound symbols if
 called without arguments, or of the symbols or symbol-value pairs in
 <code>lst</code>, or the explicitly given <code>sym</code>-<code>val</code>
-arguments. See also <code><a href="refB.html#bind">bind</a></code> and <code><a
-href="refJ.html#job">job</a></code>.
+arguments. See also <code><a href="refB.html#bind">bind</a></code>, <code><a
+href="refJ.html#job">job</a></code>, <code><a
+href="refT.html#trail">trail</a></code> and <code><a
+href="refU.html#up">up</a></code>.
 
 <pre><code>
 : (env)

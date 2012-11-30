@@ -106,10 +106,11 @@ or this position is deleted from the order:
 </code></pre>
 
 <dt><a name="d"><code>(d) -> T</code></a>
-<dd>Inserts <code><a href="ref_.html#!">!</a></code> breakpoints into all
-subexpressions of the current breakpoint. Typically used when single-stepping a
-function or method with <code><a href="refD.html#debug">debug</a></code>. See
-also <code><a href="refU.html#u">u</a></code> and <code><a
+<dd>(Debug mode only) Inserts <code><a href="ref_.html#!">!</a></code>
+breakpoints into all subexpressions of the current breakpoint. Typically used
+when single-stepping a function or method with <code><a
+href="refD.html#debug">debug</a></code>. See also <code><a
+href="refU.html#u">u</a></code> and <code><a
 href="refU.html#unbug">unbug</a></code>.
 
 <pre><code>
@@ -126,6 +127,7 @@ class obtained by <code><a href="refG.html#get">get</a></code>ing
 <code>sym2</code> from <code><a href="refC.html#*Class">*Class</a></code> (or
 <code>cls</code> if given) (third form). Built-in functions (C-function pointer)
 are automatically converted to Lisp expressions. See also <code><a
+href="refT.html#trace">trace</a></code>, <code><a
 href="refE.html#expr">expr</a></code>, <code><a
 href="refP.html#patch">patch</a></code> and <code><a
 href="refR.html#redef">redef</a></code>.
@@ -384,18 +386,18 @@ href="refP.html#pool">pool</a></code>.
 
 <pre><code>
 (dbs
-   (1 +Role +User +Sal)                         # (1 . 128)
-   (2 +CuSu)                                    # (2 . 256)
-   (1 +Item +Ord)                               # (3 . 128)
-   (0 +Pos)                                     # (4 . 64)
-   (2 (+Role nm) (+User nm) (+Sal nm))          # (5 . 256)
-   (4 (+CuSu nr plz tel mob))                   # (6 . 1024)
-   (4 (+CuSu nm))                               # (7 . 1024)
-   (4 (+CuSu ort))                              # (8 . 1024)
-   (4 (+Item nr sup pr))                        # (9 . 1024)
-   (4 (+Item nm))                               # (10 . 1024)
-   (4 (+Ord nr dat cus))                        # (11 . 1024)
-   (4 (+Pos itm)) )                             # (12 . 1024)
+   (3 +Role +User +Sal)                         # 512 Prevalent objects
+   (0 +Pos)                                     # A:64 Tiny objects
+   (1 +Item +Ord)                               # B:128 Small objects
+   (2 +CuSu)                                    # C:256 Normal objects
+   (2 (+Role nm) (+User nm) (+Sal nm))          # D:256 Small indexes
+   (4 (+CuSu nr plz tel mob))                   # E:1024 Normal indexes
+   (4 (+CuSu nm))                               # F:1024
+   (4 (+CuSu ort))                              # G:1024
+   (4 (+Item nr sup pr))                        # H:1024
+   (4 (+Item nm))                               # I:1024
+   (4 (+Ord nr dat cus))                        # J:1024
+   (4 (+Pos itm)) )                             # K:1024
 
 : *Dbs
 -> (1 2 1 0 2 4 4 4 4 4 4 4)
@@ -441,13 +443,13 @@ href="refU.html#undef">undef</a></code>.
 <dt><a name="debug"><code>(debug 'sym) -> T</code></a>
 <dt><code>(debug 'sym 'cls) -> T</code>
 <dt><code>(debug '(sym . cls)) -> T</code>
-<dd>Inserts a <code><a href="ref_.html#!">!</a></code> breakpoint function call
-at the beginning and all top-level expressions of the function or method body of
-<code>sym</code>, to allow a stepwise execution. Typing <code>(<a
-href="refD.html#d">d</a>)</code> at a breakpoint will also debug the current
-subexpression, and <code>(<a href="refE.html#e">e</a>)</code> will evaluate the
-current subexpression. The current subexpression is stored in the global
-variable <code><a href="ref_.html#^">^</a></code>. See also <code><a
+<dd>(Debug mode only) Inserts a <code><a href="ref_.html#!">!</a></code>
+breakpoint function call at the beginning and all top-level expressions of the
+function or method body of <code>sym</code>, to allow a stepwise execution.
+Typing <code>(<a href="refD.html#d">d</a>)</code> at a breakpoint will also
+debug the current subexpression, and <code>(<a href="refE.html#e">e</a>)</code>
+will evaluate the current subexpression. The current subexpression is stored in
+the global variable <code><a href="ref_.html#^">^</a></code>. See also <code><a
 href="refU.html#unbug">unbug</a></code>, <code><a
 href="refD.html#*Dbg">*Dbg</a></code>, <code><a
 href="refT.html#trace">trace</a></code> and <code><a
@@ -487,9 +489,9 @@ href="refL.html#lint">lint</a></code>.
 <dd>The first form returns the value of <code>num</code> decremented by 1. The
 second form decrements the <code>VAL</code> of <code>var</code> by 1, or by
 <code>num</code>. If the first argument is <code>NIL</code>, it is returned
-immediately. <code>(dec 'num)</code> is equivalent to <code>(- 'num 1)</code>
-and <code>(dec 'var)</code> is equivalent to <code>(set 'var (- var 1))</code>.
-See also <code><a href="refI.html#inc">inc</a></code> and <code><a
+immediately. <code>(dec Num)</code> is equivalent to <code>(- Num 1)</code> and
+<code>(dec 'Var)</code> is equivalent to <code>(set 'Var (- Var 1))</code>. See
+also <code><a href="refI.html#inc">inc</a></code> and <code><a
 href="ref_.html#-">-</a></code>.
 
 <pre><code>
@@ -605,8 +607,8 @@ href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 </code></pre>
 
 <dt><a name="dep"><code>(dep 'cls) -> cls</code></a>
-<dd>Displays the "dependencies" of <code>cls</code>, i.e. the tree of
-superclasses and the tree of subclasses. See also <code><a
+<dd>(Debug mode only) Displays the "dependencies" of <code>cls</code>, i.e. the
+tree of superclasses and the tree of subclasses. See also <code><a
 href="ref.html#oop">OO Concepts</a></code>, <code><a
 href="refC.html#class">class</a></code> and <code><a
 href="refC.html#can">can</a></code>.
@@ -730,13 +732,13 @@ OK done -> done
 </code></pre>
 
 <dt><a name="doc"><code>(doc ['sym1] ['sym2])</code></a>
-<dd>Opens a browser, and tries to display the reference documentation for
-<code>sym1</code>. <code>sym2</code> may be the name of a browser. If not given,
-the value of the environment variable <code>BROWSER</code>, or the
-<code>w3m</code> browser is tried. If <code>sym1</code> is <code>NIL</code>, the
-<a href="ref.html">PicoLisp Reference</a> manual is opened. See also <a
-href="ref.html#fun">Function Reference</a> and <code><a
-href="refV.html#vi">vi</a></code>.
+<dd>(Debug mode only) Opens a browser, and tries to display the reference
+documentation for <code>sym1</code>. <code>sym2</code> may be the name of a
+browser. If not given, the value of the environment variable
+<code>BROWSER</code>, or the <code>w3m</code> browser is tried. If
+<code>sym1</code> is <code>NIL</code>, the <a href="ref.html">PicoLisp
+Reference</a> manual is opened. See also <a href="ref.html#fun">Function
+Reference</a> and <code><a href="refV.html#vi">vi</a></code>.
 
 <pre><code>
 : (doc '+)  # Function reference

@@ -128,7 +128,7 @@ NIL
 -> T
 </code></pre>
 
-<dt><a name="native"><code>(native 'cnt1|sym1 'cnt2|sym2 'sym|lst 'any ..) -> any</code></a>
+<dt><a name="native"><code>(native 'cnt1|sym1 'cnt2|sym2 'any 'any ..) -> any</code></a>
 <dd>(64-bit version only) Calls a native C function. The first argument should
 specify a shared object library, either <code>"@"</code> (the current main
 program), <code>sym1</code> (a library path name), or <code>cnt1</code> (a
@@ -136,11 +136,13 @@ library handle obtained by a previous call). The second argument should be a
 symbol name <code>sym2</code>, or a function pointer <code>cnt2</code> obtained
 by a previous call). Practically, the first two arguments will be always passed
 as transient symbols, which will get the library handle and function pointer
-assigned as values to be cached and used in subsequent calls. The third
-<code>sym|lst</code> argument is a return value specification, while all
-following arguments are the arguments to the native function.
+assigned as values to be cached and used in subsequent calls. The third argument
+<code>any</code> is a result specification, while all following arguments are
+the arguments to the native function. The functionality is described in detail
+in <a href="native.html">Native C Calls</a>.
 
-<p>The return value specification may either be one of the atoms
+<p><a name="natResult">The result specification</a> may either be one of the
+atoms
 
 <pre><code>
    NIL   void
@@ -165,18 +167,18 @@ structures, e.g.
 <p>Arguments can be
 <ul>
 <li>integers (up to 64-bit) or pointers, passed as numbers
+<li>strings, passed as symbols
 <li>fixpoint numbers, passed as cons pairs consisting of a the value and the
-   scale. If the scale is positive, the number is passed as a
-   <code>double</code>, otherwise as a <code>float</code>.
-<li>strings, passed as symbols, or
+   scale (if the scale is positive, the number is passed as a
+   <code>double</code>, otherwise as a <code>float</code>)
 <li>structures, passed as lists with
    <ul>
    <li>a variable in the CAR (to recieve the returned structure data, ignored
       when the CAR is <code>NIL</code>)
-   <li>a cons pair for the size and value specification in the CADR (see above),
-      and
-   <li>an optional sequence of initialization items in the CDDR, where each
-      may be
+   <li>a cons pair for the size and result specification in the CADR (see
+      above), and
+   <li>an optional sequence of <a name="natItem">initialization items</a> in the
+      CDDR, where each may be
       <ul>
       <li>a positive number, stored as an unsigned byte value
       <li>a negative number, whose absolute value is stored as an unsigned
@@ -185,6 +187,12 @@ structures, e.g.
          a field of '<code>cnt</code>' bytes
       <li>a pair <code>(sym . cnt)</code> where '<code>sym</code>' is stored as
          a null-terminated string in a field of '<code>cnt</code>' bytes
+      <li>a list <code>(1.0 num ...)</code> where the '<code>num</code>'
+         elements (scaled fixpoint numbers) are stored as a sequence of double
+         precision floating point numbers
+      <li>a list <code>(-1.0 num ...)</code> where the '<code>num</code>'
+         elements (scaled fixpoint numbers) are stored as a sequence of single
+         precision floating point numbers
       </ul>
       If the last CDR of the initialization sequence is a number, it is used
       as a fill-byte value for the remaining space in the structure.
@@ -196,6 +204,20 @@ structures, and frees that memory when done.
 
 <p>The number of fixpoint arguments is limited to six. For NaN or negative
 infinity <code>NIL</code>, and for positive infinity <code>T</code> is returned.
+
+<p>The C function may in turn call a function
+
+<pre><code>
+   long lisp(char*, long, long, long, long, long);
+</code></pre>
+
+<p>which accepts a symbol name as the first argument, and up to 5 numbers.
+<code>lisp()</code> calls that symbol with the five numbers, and expects a
+numeric return value. "Numbers" in this context are 64-bit scalars, and may not
+only represent integers, but also pointers or other encoded data. See also
+<code><a href="refS.html#struct">struct</a></code>, <code><a
+href="refL.html#lisp">lisp</a></code> and <code><a
+href="refE.html#errno">errno</a></code>.
 
 <pre><code>
 : (native "@" "getenv" 'S "TERM")  # Same as (sys "TERM")
@@ -213,20 +235,10 @@ This is 123.456
    (native "@" "time" NIL '(Tim (8 B . 8)))  # time_t 8   # Get time_t structure
    (native "@" "localtime" '(I . 9) (cons NIL (8) Tim)) ) # Read local time
 -> (32 18 13 31 11 109 4 364 0)  # 13:18:32, Dec. 31st, 2009
+
+: (native "libcrypto.so" "SHA1" '(B . 20) "abcd" 4 0)
+-> (129 254 139 254 135 87 108 62 203 34 66 111 142 87 132 115 130 145 122 207)
 </code></pre>
-
-<p>The C function may in turn call a function
-
-<pre><code>
-   long lisp(char*, long, long, long, long, long);
-</code></pre>
-
-<p>which accepts a symbol name as the first argument, and up to 5 numbers.
-<code>lisp()</code> calls that symbol with the five numbers, and expects a
-numeric return value. "Numbers" in this context are 64-bit scalars, and may not
-only represent integers, but also pointers or other encoded data. See also
-<code><a href="refE.html#errno">errno</a></code> and <code><a
-href="refL.html#lisp">lisp</a></code>.
 
 <dt><a name="need"><code>(need 'cnt ['lst ['any]]) -> lst</code></a>
 <dt><code>(need 'cnt ['num|sym]) -> lst</code>
@@ -337,11 +349,12 @@ href="refN.html#not/1">not/1</a></code>.
 
 <dt><a name="noLint"><code>(noLint 'sym)</code></a>
 <dt><code>(noLint 'sym|(sym . cls) 'sym2)</code>
-<dd>Excludes the check for a function definition of <code>sym</code> (in the
-first form), or for variable binding and usage of <code>sym2</code> in the
-function definition, file contents or method body of <code>sym</code> (second
-form), during calls to <code><a href="refL.html#lint">lint</a></code>. See also
-<code><a href="refL.html#lintAll">lintAll</a></code>.
+<dd>(Debug mode only) Excludes the check for a function definition of
+<code>sym</code> (in the first form), or for variable binding and usage of
+<code>sym2</code> in the function definition, file contents or method body of
+<code>sym</code> (second form), during calls to <code><a
+href="refL.html#lint">lint</a></code>. See also <code><a
+href="refL.html#lintAll">lintAll</a></code>.
 
 <pre><code>
 : (de foo ()

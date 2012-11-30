@@ -1,4 +1,4 @@
-# 14feb12abu
+# 21oct12abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -55,7 +55,7 @@
                (let? A (: aux)
                   (while (and (args) (== (pop 'A) (arg 1)))
                      (next)
-                     (conc Key (cons (next))) )
+                     (queue 'Key (next)) )
                   (and (: ub) (setq Key (ubZval Key))) )
                (let Q (init Tree Key (append Key T))
                   (loop
@@ -91,6 +91,8 @@
                (iter Tree
                   '((X) (and (isa Cls X) (link (pass get X))))
                   X1 X2 )
+               (when (isa '+Fold This)
+                  (setq X1 (fold X1)  X2 (or (=T X2) (fold X2))) )
                (if (>= X2 X1)
                   (if (pair X1)
                      (setq X2 (append X2 T))
@@ -645,9 +647,8 @@
    (with *Class
       (for A (car Lst)
          (if (asoq A (: Aux))
-            (conc @ (cons Var))
-            (=: Aux
-               (conc (: Aux) (cons (list A Var))) ) ) ) )
+            (queue '@ Var)
+            (queue (:: Aux) (list A Var)) ) ) )
    (extra Var (cdr Lst)) )
 
 (de relAux (Obj Var Old Lst)

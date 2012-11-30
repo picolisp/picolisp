@@ -1,4 +1,4 @@
-// 17oct11abu
+// 09nov12abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -14,8 +14,8 @@ import java.lang.reflect.*;
 public class PicoLisp {
    final static Console Term = System.console();
    final static StringBuffer Line = new StringBuffer();
-   final static HashMap<String,Symbol> Intern = new HashMap<String,Symbol>();
-   final static HashMap<String,Symbol> Transient = new HashMap<String,Symbol>();
+   final static Namespace Pico = new Namespace();
+   final static Namespace Transient = new Namespace();
    final static byte MonLen[] = new byte[] {31,31,28,31,30,31,30,31,31,30,31,30,31};
    final static byte Version[] = new byte[] {<VERSION>};
 
@@ -24,26 +24,27 @@ public class PicoLisp {
    final static Number Two = new Number(2);
 
    final static NilSym Nil = new NilSym();
-   final static Symbol T = mkSymbol(null, "T", Intern);
-   final static Symbol Pid = mkSymbol(new Number(System.getProperty("PID")), "*Pid", Intern);
-   final static Symbol At = mkSymbol(Nil, "@", Intern);
-   final static Symbol At2 = mkSymbol(Nil, "@@", Intern);
-   final static Symbol At3 = mkSymbol(Nil, "@@@", Intern);
-   final static Symbol This = mkSymbol(Nil, "This", Intern);
-   final static Symbol Prompt = mkSymbol(Nil, "*Prompt", Intern);
-   final static Symbol Dbg = mkSymbol(Nil, "*Dbg", Intern);
-   final static Symbol Scl = mkSymbol(Zero, "*Scl", Intern);
-   final static Symbol Class = mkSymbol(Nil, "*Class", Intern);
-   final static Symbol Run = mkSymbol(Nil, "*Run", Intern);
-   final static Symbol Up = mkSymbol(Nil, "^", Intern);
-   final static Symbol Err = mkSymbol(Nil, "*Err", Intern);
-   final static Symbol Msg = mkSymbol(Nil, "*Msg", Intern);
-   final static Symbol Uni = mkSymbol(Nil, "*Uni", Intern);
-   final static Symbol Adr = mkSymbol(Nil, "*Adr", Intern);
-   final static Symbol Bye = mkSymbol(Nil, "*Bye", Intern);
+   final static Symbol pico = mkSymbol(new Symbol(Pico), "pico", Pico);
+   final static Symbol T = mkSymbol(null, "T", Pico);
+   final static Symbol Pid = mkSymbol(new Number(System.getProperty("PID")), "*Pid", Pico);
+   final static Symbol At = mkSymbol(Nil, "@", Pico);
+   final static Symbol At2 = mkSymbol(Nil, "@@", Pico);
+   final static Symbol At3 = mkSymbol(Nil, "@@@", Pico);
+   final static Symbol This = mkSymbol(Nil, "This", Pico);
+   final static Symbol Prompt = mkSymbol(Nil, "*Prompt", Pico);
+   final static Symbol Dbg = mkSymbol(Nil, "*Dbg", Pico);
+   final static Symbol Scl = mkSymbol(Zero, "*Scl", Pico);
+   final static Symbol Class = mkSymbol(Nil, "*Class", Pico);
+   final static Symbol Run = mkSymbol(Nil, "*Run", Pico);
+   final static Symbol Up = mkSymbol(Nil, "^", Pico);
+   final static Symbol Err = mkSymbol(Nil, "*Err", Pico);
+   final static Symbol Msg = mkSymbol(Nil, "*Msg", Pico);
+   final static Symbol Uni = mkSymbol(Nil, "*Uni", Pico);
+   final static Symbol Adr = mkSymbol(Nil, "*Adr", Pico);
+   final static Symbol Bye = mkSymbol(Nil, "*Bye", Pico);
 
-   final static Symbol Quote = mkSymbol(Zero, "quote", Intern);
-   final static Symbol Meth = mkSymbol(One, "meth", Intern);
+   final static Symbol Quote = mkSymbol(Zero, "quote", Pico);
+   final static Symbol Meth = mkSymbol(One, "meth", Pico);
 
    final static String Delim = " \t\n\r\"'(),[]`~{}";
 
@@ -395,6 +396,7 @@ public class PicoLisp {
          load(null, '?', Nil);
       }
       unwind(null);
+      Env.Intern = pico;
       Env.Args = null;
       Env.Next = 0;
       Env.Task = Env.Make = Env.Yoke = null;
@@ -449,6 +451,7 @@ public class PicoLisp {
    final static Any execError(Any x) {return err(null, x, "Can't execute");}
    final static Any protError(Any x) {return err(null, x, "Protected symbol");}
    final static Any symError(Any x) {return err(null, x, "Symbol expected");}
+   final static Any symNsError(Any ex, Any x) {return err(ex, x, "Bad symbol namespace");}
    final static Any  argError(Any ex, Any x) {return err(ex, x, "Bad argument");}
    final static Any cntError(Any ex, Any x) {return err(ex, x, "Small number expected");}
    final static void needVar(Any ex, Any x) {if (x instanceof Number) err(ex, x, "Variable expected");}
@@ -459,12 +462,13 @@ public class PicoLisp {
    final static Any load(Any ex, char pr, Any x) {
       if (x instanceof Symbol && firstChar(x) == '-')
          return ((Symbol)x).parse(true,null).eval();
+      Symbol ns = Env.Intern;
       Env.pushInFile(x.rdOpen(ex));
       Transient.clear();
       x = Nil;
       for (;;) {
          Any y;
-         if (InFile.Name != null)
+         if (InFile != StdIn)
             y = InFile.read('\0');
          else {
             if (pr != '\0'  &&  InFile.Chr == 0) {
@@ -477,11 +481,12 @@ public class PicoLisp {
                InFile.Chr = 0;
          }
          if (y == Nil) {
+            Env.Intern = ns;
             Env.popInFiles();
             Transient.clear();
             return x;
          }
-         if (InFile.Name != null || InFile.Chr != 0 || pr == '\0')
+         if (InFile != StdIn || InFile.Chr != 0 || pr == '\0')
             x = y.eval();
          else {
             Any at = At.Car;
@@ -580,7 +585,7 @@ public class PicoLisp {
    final static Any mkStr(StringBuilder sb) {return mkStr(sb.toString());}
    final static Symbol mkSymbol(Any val) {return new Symbol(val, null);}
 
-   final static Symbol mkSymbol(Any val, String nm, HashMap<String,Symbol> table) {
+   final static Symbol mkSymbol(Any val, String nm, Namespace table) {
       Symbol sym;
       if ((sym = table.get(nm)) == null) {
          sym = new Symbol(val, nm);
@@ -595,13 +600,6 @@ public class PicoLisp {
       if (s.indexOf('.') <= 0)
          return new Number(s);
       return new Number((new BigDecimal(s)).setScale(scl, RoundingMode.HALF_UP).unscaledValue());
-   }
-
-   final static Any strToAtom(String s) {
-      if (s.equals("NIL"))
-         return Nil;
-      try {return strToNum(s, ((Number)Scl.Car).Cnt);}
-      catch (NumberFormatException e) {return mkSymbol(Nil, s, Intern);}
    }
 
    final static Any format(Any z, int scl, Any x) {
@@ -638,7 +636,7 @@ public class PicoLisp {
       return res;
    }
 
-   final static Any all(HashMap<String,Symbol> table) {
+   final static Any all(Namespace table) {
       Any x = Nil;
       for (Iterator<Symbol> it = table.values().iterator(); it.hasNext();)
          x = new Cell(it.next(), x);
@@ -1446,15 +1444,31 @@ public class PicoLisp {
       }
 
       final Any rdAtom(int c) {
+         Namespace table = Env.intern();
          StringBuilder sb = new StringBuilder();
          sb.append((char)c);
-         while (Chr > 0 && Delim.indexOf(Chr) < 0) {
-            if (Chr == '\\')
-               get();
-            sb.append((char)Chr);
+         while (Chr > 0) {
+            if (Chr == '~') {
+               Symbol s = mkSymbol(null, sb.toString(), table);
+               if (!(((Symbol)s.Car).Obj instanceof Namespace))
+                  symNsError(null, s);
+               table = (Namespace)((Symbol)s.Car).Obj;
+               sb = new StringBuilder();
+            }
+            else {
+               if (Delim.indexOf(Chr) >= 0)
+                  break;
+               if (Chr == '\\')
+                  get();
+               sb.append((char)Chr);
+            }
             get();
          }
-         return strToAtom(sb.toString());
+         String s = sb.toString();
+         if (s.equals("NIL"))
+            return Nil;
+         try {return strToNum(s, ((Number)Scl.Car).Cnt);}
+         catch (NumberFormatException e) {return mkSymbol(Nil, s, table);}
       }
 
       final Any rdList() {
@@ -1597,19 +1611,19 @@ public class PicoLisp {
             }
             if (!testEsc())
                return Nil;
-            StringBuilder sb = new StringBuilder();
-            sb.append((char)Chr);
+            Any y = x = new Cell(mkChar(Chr), Nil);
             while (get() != '"' && testEsc())
-               sb.append((char)Chr);
+               y = y.Cdr = new Cell(mkChar(Chr), Nil);
             get();
-            return mkStr(sb);
+            return x;
          }
          if (Chr >= '0' && Chr <= '9') {
             StringBuilder sb = new StringBuilder();
             sb.append((char)Chr);
             while (get() >= '0' && Chr <= '9' || Chr == '.')
                sb.append((char)Chr);
-            return strToAtom(sb.toString());
+            try {return strToNum(sb.toString(), ((Number)Scl.Car).Cnt);}
+            catch (NumberFormatException e) {}
          }
          String s = x.name();
          if (Chr >= 'A' && Chr <= 'Z' || Chr == '\\' || Chr >= 'a' && Chr <= 'z' || s.indexOf(Chr) >= 0) {
@@ -1623,7 +1637,7 @@ public class PicoLisp {
                sb.append((char)Chr);
             }
             s = sb.toString();
-            return s.equals("NIL")? Nil : mkSymbol(Nil, s, Intern);
+            return s.equals("NIL")? Nil : mkSymbol(Nil, s, Env.intern());
          }
          c = (char)Chr;
          get();
@@ -1690,20 +1704,26 @@ public class PicoLisp {
    final static class Env {
       int Next, ArgC, Trace;
       Bind Bind;
+      Symbol Intern;
       Any Arg, Args[], Cls, Key, Task, Make, Yoke;
       InFrame InFrames;
       OutFrame OutFrames;
 
-      Env() {}
+      Env() {Intern = pico;}
 
       Env(Env env) {
          Next = env.Next;  ArgC = env.ArgC;  Trace = env.Trace;
          Bind = env.Bind;
+         Intern = env.Intern;
          Arg = env.Arg;  Args = env.Args;
          Cls = env.Cls;  Key = env.Key;
          Task = env.Task;
          Make = env.Make;  Yoke = env.Yoke;
          InFrames = env.InFrames;  OutFrames = env.OutFrames;
+      }
+
+      final Namespace intern() {
+         return (Namespace)((Symbol)Intern.Car).Obj;
       }
 
       final void pushInFile(InFrame in) {
@@ -1716,8 +1736,7 @@ public class PicoLisp {
             InFile.close();
             if (InFrames.Pid > 1) {
                try {
-                  if (Pids[InFrames.Pid].waitFor() != 0)
-                     err(null, null, "Pipe read close error");
+                  Pids[InFrames.Pid].waitFor();
                   Pids[InFrames.Pid] = null;
                }
                catch (InterruptedException e) {}  //#! sighandler()
@@ -1736,8 +1755,7 @@ public class PicoLisp {
             OutFile.close();
             if (OutFrames.Pid > 1) {
                try {
-                  if (Pids[OutFrames.Pid].waitFor() != 0)
-                     err(null, null, "Pipe write close error");
+                  Pids[OutFrames.Pid].waitFor();
                   Pids[OutFrames.Pid] = null;
                }
                catch (InterruptedException e) {}  //#! sighandler()
@@ -1776,6 +1794,8 @@ public class PicoLisp {
          err(ex, tag, "Tag not found");
       }
    }
+
+   final static class Namespace extends HashMap<String,Symbol> {}
 
    static abstract class Any {
       Any Car, Cdr;
@@ -2400,7 +2420,7 @@ public class PicoLisp {
             return '$' + s;
 
          }
-         if (Intern.get(Name) == this) {
+         if (Env.intern().get(Name) == this) {
             if (Name.equals("."))
                return "\\.";
             StringBuilder sb = new StringBuilder();

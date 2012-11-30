@@ -1,4 +1,4 @@
-# 28jul11abu
+# 12nov12abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -39,7 +39,7 @@
                      (prinl) ) ) ) )
          (call 'vim
             "+set isk=33-34,36-38,42-90,92,94-95,97-125"
-            "+map K yw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
+            "+map K yiw:call setline(line(\"$\"), \"(\" . line(\".\") . \" \" . @@ . \")\")^MZZ"
             "+map Q GC(0)^[ZZ"
             (pack "+" "N")
             "*F" )

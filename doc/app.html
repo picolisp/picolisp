@@ -17,8 +17,8 @@ in PicoLisp.
 
 <p>It concentrates on the XHTML/CSS GUI-Framework (as opposed to the previous
 Java-AWT, Java-Swing and Plain-HTML frameworks), which is easier to use, more
-flexible in layout design, and does not depend on plug-ins, JavaScript or
-cookies.
+flexible in layout design, and does not depend on plug-ins, JavaScript, cookies
+or CSS.
 
 <p>A plain HTTP/HTML GUI has various advantages: It runs on any browser, and can
 be fully driven by scripts ("@lib/scrape.l").
@@ -156,7 +156,7 @@ browser to view the effects)
 <p>Open a second terminal window, and start a PicoLisp application server
 
 <pre><code>
-$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' +
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l  --server 8080 project.l  +
 </code></pre>
 
 <p>No prompt appears. The server just sits, and waits for connections. You can
@@ -776,7 +776,7 @@ your browser and then look at the terminal window where you started the
 application server, you'll notice a colon, the PicoLisp prompt
 
 <pre><code>
-$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' +
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l  --server 8080 project.l  +
 :
 </code></pre>
 
@@ -804,7 +804,7 @@ no other browser requests arrive within a default timeout period of 5 minutes.
 without the '+' flag, and with <code>-wait</code>
 
 <pre><code>
-$ pil @lib/http.l @lib/xhtml.l @lib/form.l -'server 8080 "project.l"' -wait
+$ pil @lib/http.l @lib/xhtml.l @lib/form.l  --server 8080 project.l  -wait
 </code></pre>
 
 <p>In that way, no command line prompt appears when a client connects.
@@ -2025,7 +2025,7 @@ used explicitly. Instead, components are directly linked to internal Lisp data
 structures, which are usually either variables or database objects.
 
 <p>The <code>+Var</code> prefix class takes a variable (described as the
-<code>var</code> data type - either a symbol or a cell - in the <a
+<code>var</code> data type - either a symbol or a cons pair - in the <a
 href="ref.html#fun">Function Reference</a>). In the following example, we
 initialize a global variable with the value "abc", and let a
 <code>+TextField</code> operate on it. The "Print" button can be used to display
@@ -2046,10 +2046,10 @@ its current value.
 ########################################################################
 </code></pre>
 
-<p><code>+E/R</code> takes an entity/relation specification. This is a cell,
-with a relation in its CAR (e.g. <code>nm</code>, for an object's name), and an
-expression in its CDR (typically <code>(: home obj)</code>, the object stored in
-the <code>obj</code> property of the current form).
+<p><code>+E/R</code> takes an entity/relation specification. This is a cons
+pair, with a relation in its CAR (e.g. <code>nm</code>, for an object's name),
+and an expression in its CDR (typically <code>(: home obj)</code>, the object
+stored in the <code>obj</code> property of the current form).
 
 <p>For an isolated, simple example, we create a temporary database, and access
 the <code>nr</code> and <code>nm</code> properties of an object stored in a

@@ -1,4 +1,4 @@
-# 18mar12abu
+# 17nov12abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -53,6 +53,14 @@
       (env 'X 7 '(A B (C . 3)) 'Y 8) ) )
 
 
+### trail ###
+(when trail
+   (let
+      (F '((A B) (G (inc A) (dec B)))
+         G '((X Y) (trail T)) )
+      (test '(@X (F 3 4) A 3 B 4 (G (inc A) (dec B)) X 4 Y 3)
+         (F 3 4) ) ) )
+
 ### up ###
 (test 1
    (let N 1
@@ -83,8 +91,8 @@
 
 
 ### cd ###
-(chdir "/tmp"
-   (test "/tmp" (pwd)) )
+(chdir "/"
+   (test "/" (pwd)) )
 
 
 ### info ###

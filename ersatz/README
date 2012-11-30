@@ -1,4 +1,4 @@
-07dec11abu
+12jul12abu
 (c) Software Lab. Alexander Burger
 
 
@@ -22,7 +22,7 @@ often sacrificed in favor of simpler or more modular structures.
 
 There is no support for
 
-- raw console inpt ('key') and line editing
+- raw console input ('key') and line editing
 - child processes ('fork')
 - interprocess communication ('tell', 'hear', 'ipc', 'udp' etc.)
 - databases (external symbols)
@@ -36,8 +36,8 @@ Ersatz PicoLisp can be started - analog to 'pil' - as
 
    $ ersatz/pil
 
-This includes slighly simplfied versions of the standard libraries as loaded by
-the "real" 'pil' (without database, but with Pilog and XML support).
+This includes slightly simplified versions of the standard libraries as loaded
+by the "real" 'pil' (without database, but with Pilog and XML support).
 
 To start it in debug mode, use
 

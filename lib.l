@@ -1,4 +1,4 @@
-# 07apr12abu
+# 20nov12abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -314,7 +314,7 @@
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless while until do case state for
-   with catch finally co ! setq default push job use let let?
+   with catch finally co ! setq default push bind job use let let?
    prog1 later recur redef =: in out ctl tab new )
 (de *PP1 let let? for redef)
 (de *PP2 setq default)
@@ -456,7 +456,10 @@
 
 ### Debug ###
 `*Dbg
-(load "@lib/debug.l" "@lib/led.l" "@lib/edit.l" "@lib/lint.l")
+(if (info (pil "editor"))
+   (load (pil "editor"))
+   (load "@lib/led.l" "@lib/edit.l") )
+(load "@lib/debug.l" "@lib/lint.l")
 (noLint 'later (loc "@Prg" later))
 
 # vi:et:ts=3:sw=3

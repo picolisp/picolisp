@@ -1,4 +1,4 @@
-/* 11mar12abu
+/* 22nov12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -183,8 +183,11 @@ bool wrBytes(int fd, byte *p, int cnt) {
       else {
          if (errno == EBADF || errno == EPIPE || errno == ECONNRESET)
             return NO;
-         if (errno != EINTR)
+         if (errno != EINTR) {
+            if (fd == STDERR_FILENO)
+               bye(2);
             writeErr("bytes");
+         }
          if (*Signal)
             sighandler(NULL);
       }
@@ -1224,8 +1227,7 @@ static any read0(bool top) {
       if (x = findHash(y, h = Transient + ihash(y)))
          return x;
       x = consStr(y);
-      if (Env.get == getStdin)
-         *h = cons(x,*h);
+      *h = cons(x,*h);
       return x;
    }
    if (Chr == '{') {
@@ -1287,11 +1289,11 @@ any token(any x, int c) {
       }
       if (!testEsc())
          return Nil;
-      i = 0,  Push(c1, y = box(Chr));
+      Push(c1, y =  cons(mkChar(Chr), Nil));
       while (Env.get(), Chr != '"' && testEsc())
-         byteSym(Chr, &i, &y);
+         y = cdr(y) = cons(mkChar(Chr), Nil);
       Env.get();
-      return consStr(Pop(c1));
+      return Pop(c1);
    }
    if (Chr >= '0' && Chr <= '9') {
       i = 0,  Push(c1, y = box(Chr));

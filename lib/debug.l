@@ -1,8 +1,8 @@
-# 01nov11abu
+# 29nov12tj
 # (c) Software Lab. Alexander Burger
 
 # Prompt
-(when (== 64 64)
+(when symbols
    (de *Prompt
       (unless (== (symbols) 'pico) (symbols)) ) )
 
@@ -40,20 +40,6 @@
          (T (line) T)
          ("Fun" (pop '"M")) ) ) )
 
-(de depth (Idx)  #> (max . average)
-   (let (C 0  D 0  N 0)
-      (cons
-         (recur (Idx N)
-            (ifn Idx
-               0
-               (inc 'C)
-               (inc 'D (inc 'N))
-               (inc
-                  (max
-                     (recurse (cadr Idx) N)
-                     (recurse (cddr Idx) N) ) ) ) )
-         (or (=0 C) (*/ D C)) ) ) )
-
 (de what (S)
    (let *Dbg NIL
       (setq S (chop S))
@@ -71,7 +57,7 @@
       (push '"Who" "Y")
       (ifn (= `(char "+") (char "Y"))
          (and (pair (val "Y")) ("nest" @) (link "Y"))
-         (for "Z" (val "Y")
+         (for "Z" (pair (val "Y"))
             (if (atom "Z")
                (and ("match" "Z") (link "Y"))
                (when ("nest" (cdr "Z"))
@@ -150,7 +136,7 @@
          (dep2 (+ 3 N) "X") ) ) )
 
 # Source code
-(off "*Vi")
+(off "*Ed")
 
 (in "@lib/map"
    (while (read)
@@ -159,36 +145,93 @@
             (set @ (read))
             (put Sym '*Dbg (cons (read))) ) ) ) )
 
-(de vi ("X" C)
-   (when (pair "X")
-      (setq C (cdr "X")  "X" (car "X")) )
-   (when
-      (if "X"
-         (setq "*Vi"
+(de _ed ("Ed" . "Prg")
+   (ifn "X"
+      (eval
+         (out (pil "editor")
+            (println (cons 'load "Ed")) ) )
+      (when (pair "X")
+         (setq C (cdr "X")  "X" (car "X")) )
+      (when
+         (setq "*Ed"
             (if C
                (get C '*Dbg -1 "X")
                (get "X" '*Dbg 1) ) )
-         "*Vi" )
-      (out (tmp "tags")
-         (let D (pack (pwd) "/")
-            (for This (sort (all))
-               (let? P (path (: *Dbg 1 -1))
-                  (prinl
-                     This
-                     "^I"
-                     (unless (= `(char "/") (char P)) D)
-                     P
-                     "^I"
-                     (: *Dbg 1 1) ) ) ) ) )
-      (call 'vim
+         (out (tmp "tags")
+            (let D (pack (pwd) "/")
+               (for Lst
+                  (group  # (file (line . sym) (line . sym) ..)
+                     (extract
+                        '((This)
+                           (when (: *Dbg)
+                              (cons (path (cdar @)) (caar @) This) ) )
+                        (all) ) )
+                  (let Tags
+                     (in (car Lst)
+                        (let (Line 1  Ofs 0)
+                           (mapcar
+                              '((X)
+                                 (do (- (car X) Line)
+                                    (inc 'Ofs (inc (size (line T)))) )
+                                 (pack
+                                    `(pack "^J" (char 127))
+                                    (cdr X)
+                                    (char 1)
+                                    (setq Line (car X))
+                                    ","
+                                    Ofs ) )
+                              (sort (cdr Lst)) ) ) )
+                     (prinl
+                        "^L^J"
+                        (unless (= `(char "/") (char (car Lst))) D)
+                        (car Lst)
+                        ","
+                        (sum size Tags)
+                        Tags ) ) ) ) )
+         (run "Prg") ) )
+   "X" )
+
+(de vi ("X" C)
+   (_ed
+      '("@lib/led.l" "@lib/edit.l")
+      (call "vim"
          (pack "+set tags=" (tmp "tags") ",./tags")
          "+set isk=33-34,36-38,42-90,92,94-95,97-125"
-         (pack "+" (car "*Vi"))
-         (path (cdr "*Vi")) )
-      "X" ) )
+         (pack "+" (car "*Ed"))
+         (path (cdr "*Ed")) ) ) )
+
+# Emacs interface (Thorsten Jolitz)
+# Note:
+#   As 'tags-table-list' is set here, do not also set `tags-file-name'
+#   make sure, tsm.el and picolisp.el are loaded (in that order) and put
+#   the edited .l file in picolisp mode (M-x picolisp-mode)
+(de em ("X" C)
+   (_ed
+      '("@lib/eled.l" "@lib/eedit.l")
+      (call "emacsclient"
+         "-a" NIL
+         "-e"
+         (pack
+            "(let ((tmp-tags \"" (tmp "tags") "\")"
+            "(src-tags (expand-file-name \"" (path "@src64/tags")
+            "\")))"
+            "(setq tags-table-list "
+            "(append `(,tmp-tags) `(,src-tags) tags-table-list))"
+            "(mapc (lambda (F)"
+            "(unless (file-exists-p (expand-file-name F))"
+            "(setq tags-table-list (delete F tags-table-list))))"
+            "tags-table-list)"
+            "(delete-dups tags-table-list)"
+            "(setq tags-table-list (delete \"\" tags-table-list))"
+            "(setq tags-file-name nil)"
+            " )" ) )
+      (call "emacsclient"
+         "-c"
+         (pack "+" (car "*Ed"))
+         (path (cdr "*Ed")) ) ) )
 
 (de ld ()
-   (and "*Vi" (load (cdr "*Vi"))) )
+   (and "*Ed" (load (cdr "*Ed"))) )
 
 # Single-Stepping
 (de _dbg (Lst)

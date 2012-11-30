@@ -1,13 +1,17 @@
-# 12jun11abu
+# 09nov12abu
 # 27jul10jk
 # (c) Software Lab. Alexander Burger
 
 ### OpenGL library interface ###
 (load "@lib/math.l")
 
-(default
-   *GluLib "/usr/lib/libGLU.so"
-   *GlutLib "/usr/lib/libglut.so" )
+(if (= *OS "Darwin")
+   (default
+      *GluLib "OpenGL.framework/OpenGL"
+      *GlutLib "GLUT.framework/GLUT" )
+   (default
+      *GluLib "libGLU.so"
+      *GlutLib "libglut.so" ) )
 
 # Pre-consed fixpoint arguments
 (setq

@@ -1,4 +1,4 @@
-# 07jan12abu
+# 19apr12abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -52,8 +52,8 @@
 (de game ("Flg" "Cnt" "Moves" "Move" "Cost")
    (let ("Alpha" '(1000000)  "Beta" -1000000)
       (recur ("Flg" "Cnt" "Alpha" "Beta")
-         (if (=0 (dec '"Cnt"))
-            (let? "Lst" ("Moves" "Flg")
+         (let? "Lst" ("Moves" "Flg")
+            (if (=0 (dec '"Cnt"))
                (loop
                   ("Move" (caar "Lst"))
                   (setq "*Val" (list ("Cost" "Flg") (car "Lst")))
@@ -62,16 +62,16 @@
                      (cons "Beta" (car "Lst") (cdr "Alpha")) )
                   (when (> (car "Alpha") (car "*Val"))
                      (setq "Alpha" "*Val") )
-                  (NIL (setq "Lst" (cdr "Lst")) "Alpha") ) )
-            (let? "Lst"
-               (sort
-                  (mapcar
-                     '(("Mov")
-                        (prog2
-                           ("Move" (car "Mov"))
-                           (cons ("Cost" "Flg") "Mov")
-                           ("Move" (cdr "Mov")) ) )
-                     ("Moves" "Flg") ) )
+                  (NIL (setq "Lst" (cdr "Lst")) "Alpha") )
+               (setq "Lst"
+                  (sort
+                     (mapcar
+                        '(("Mov")
+                           (prog2
+                              ("Move" (car "Mov"))
+                              (cons ("Cost" "Flg") "Mov")
+                              ("Move" (cdr "Mov")) ) )
+                        "Lst" ) ) )
                (loop
                   ("Move" (cadar "Lst"))
                   (setq "*Val"

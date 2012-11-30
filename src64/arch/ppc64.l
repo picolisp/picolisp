@@ -1,4 +1,4 @@
-# 08apr12abu
+# 02nov12abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -89,16 +89,6 @@
                      (- (arg) @)
                      0 ) )
                (T 4) ) ) ) ) )
-
-(de prSym (File)
-   (out File
-      (println (sort *DataLabels))
-      (println (sort *CodeLabels)) ) )
-
-(de rdSym (File)
-   (in File
-      (balance '*DataIndex (read))
-      (balance '*CodeIndex (read)) ) )
 
 (de dataOffset (Sym)
    (if (lup *DataIndex Sym)
@@ -366,16 +356,22 @@
          (memory2 "std" (cadr RegRef) (cddr RegRef)) ) ) )
 
 ### Instruction set ###
+(de alignSection (Align)
+   (if (== *Section 'text)
+      (prinst ".balign" 8)
+      (prinst ".balign" 16)
+      (or (=0 Align) (prinst ".space" Align)) ) )
+
 (asm nop ()
    (prinst "nop") )
 
 (asm align (N)
-   (prinst ".balign"
-      (if (and (== *Section 'text) (= N 16)) 8 N) ) )
+   (prinst ".balign" N) )
 
 (asm skip (N)
-   (when (== 'data *Section)
-      (or (=0 N) (prinst ".space" N)) ) )
+   (if (== 'data *Section)
+      (or (=0 N) (prinst ".space" N))
+      (do (/ N 2) (prinst "nop")) ) )
 
 (asm ld (Dst D Src S)
    (cond
@@ -803,12 +799,6 @@
          (prinst "subc." 0 (caddr A) (car A)) ) )
    (prinst "subfme" 31 21) )  # Set inverted carry
 
-(asm cmp4 (Src S)
-   (let R (tmpReg)
-      (memory Src S R "lwz")
-      (prinst "subc." 0 3 R) )
-   (prinst "subfme" 31 21) )  # Set inverted carry
-
 (asm cmpn (Dst D Src S Cnt C)
    (memory Dst D 4)
    (memory Src S 5)
@@ -828,11 +818,11 @@
    (unless C (prinst "mr" Cnt 5)) )
 
 (asm null (Src S)
-   (prinst "li" 31 -2)  # Clear carry
+   ##? (prinst "li" 31 -2)  # Clear carry
    (prinst "cmpdi" (srcReg Src S) 0) )
 
 (asm nul4 ()
-   (prinst "li" 31 -2)  # Clear carry
+   ##? (prinst "li" 31 -2)  # Clear carry
    (prinst "sldi" 3 3 32)
    (prinst "sradi." 3 3 32) )
 
@@ -841,7 +831,7 @@
    (memory Dst D (srcByteReg Src S) "stb") )
 
 (asm nul (Src S)
-   (prinst "li" 31 -2)  # Clear carry
+   ##? (prinst "li" 31 -2)  # Clear carry
    (prinst "cmpdi" (srcByteReg Src S) 0) )
 
 # Types
@@ -1035,13 +1025,17 @@
       (("bne" + "cr1" ".+12") ("beq" + ".+8") ("b" NIL @Lbl))
       (("bne" + "cr1" ".+8") ("bnectr" NIL)) ) )
 
-(asm dval ()
+(asm ret ()
+   (prinst "blr") )
+
+# Floating point
+(asm ldd ()
    (prinst "lfd" 1 "0(14)") )
 
-(asm fval ()
+(asm ldf ()
    (prinst "lfs" 1 "0(14)") )
 
-(asm fnum ()
+(asm fixnum ()
    (prinst "srdi" 0 15 4)  # Normalize scale (ignore sign)
    (prinst "std" 0 "-8(1)")
    (prinst "lfd" 0 "-8(1)")  # Get scale in f13
@@ -1072,6 +1066,16 @@
    (prinst "ori" 15 15 2)
    (prinl "4:") )
 
+(asm float ()
+   #{!}# )
+
+(asm std ()
+   (prinst "stfd" 1 "0(14)") )
+
+(asm stf ()
+   (prinst "stfs" 1 "0(14)") )
+
+# C-Calls
 (asm cc (Adr A Arg M)
    (let Reg (3 4 5 6 7 8 9 10)  # Support only max. 8 parameters
       (if (lst? Arg)
@@ -1100,21 +1104,20 @@
                      (off Lea) ) )
                Arg
                M ) )
-         (let Lim 27
-            (prinst "mr" Lim Arg)
-            (prinst "ld" 11 "flt1@got(2)")
-            (for R Reg
-               (prinst "cmpd" Lim 1)
-               (prinst "beq-" "2f")
-               (prinst "ld" 0 "0(1)")
-               (prinst "cmpdi" 0 0)  # Float?
-               (prinst "beq-" "1f")  # No
-               (prinst "mtctr" 11)  # Else call float conversion
-               (prinst "bctrl")
-               (prinl "1:")
-               (prinst "ld" R "8(1)")  # Get value
-               (prinst "addi" 1 1 16) )
-            (prinl "2:") ) ) )
+         (prinst "mr" 27 1)            # 27 on arguments
+         (prinst "ld" 11 "flt1@got(2)")
+         (for R Reg
+            (prinst "cmpd" Arg 27)
+            (prinst "beq-" "2f")
+            (prinst "ld" 0 "0(27)")
+            (prinst "cmpdi" 0 0)       # Float?
+            (prinst "beq-" "1f")       # No
+            (prinst "mtctr" 11)        # Else call float conversion
+            (prinst "bctrl")
+            (prinl "1:")
+            (prinst "ld" R "8(27)")    # Get value
+            (prinst "addi" 27 27 16) )
+         (prinl "2:") ) )
    (nond
       (A  # Absolute
          (unless (= Adr "exit")
@@ -1144,8 +1147,7 @@
       (gt0 (- (length Arg) 8))
       (prinst "addi" 1 1 (* @ 8)) ) )
 
-(asm ret ()
-   (prinst "blr") )
+(asm func ())
 
 (asm begin ()
    (prinst ".quad" ".+24" ".TOC.@tocbase" 0)
@@ -1429,7 +1431,7 @@
             (prinst "sldi" @tmp @rhat 32)      # b*rhat + un0
             (prinst "add" @tmp @tmp @un0)
             (prinst "mulld" 0 @q0 @vn0)
-            (prinst "cmpld" 0 @tmp)            # q0 * vn0 > b*rhat + un1?
+            (prinst "cmpld" 0 @tmp)            # q0 * vn0 > b*rhat + un0?
             (prinst "ble+" "div8")             # No
             (prinl "div7:")
             (prinst "subi" @q0 @q0 1)          # Else decrement 'q0'
@@ -1450,28 +1452,28 @@
             (prinst "li" @u1 -1)
             (prinst "blr") ) )
       (prinl)
-      (let R 28  # 'cc' uses 27 for 'Lim'
+      (let R 28  # 'cc' uses 27 as argument pointer
          (for F 8
             (label (pack "flt" F))
             (unless (= 8 F)
                (prinst "addi" 11 11 (pack "flt" (inc F) "-flt" F)) )
             (prinst "srdi" 0 0 4)  # Scale (ignore sign)
-            (prinst "std" 0 "0(1)")
-            (prinst "ld" R "8(1)")  # Value
+            (prinst "std" 0 "0(27)")
+            (prinst "ld" R "8(27)")  # Value
             (prinst "andi." 0 R "0x02")  # Short?
             (prinst "beq-" "2f")  # No
-            (prinst "lfd" 0 "0(1)")  # Get scale in f13
+            (prinst "lfd" 0 "0(27)")  # Get scale in f13
             (prinst "fcfid" 13 0)
             (prinst "andi." 0 R "0x08")  # Value negative?
             (prinst "srdi" R R 4)  # Scale value
             (prinst "beq-" "1f")
             (prinst "neg" R R)  # Negate
             (prinl "1:")
-            (prinst "std" R "8(1)")  # Get value
-            (prinst "lfd" 0 "8(1)")
+            (prinst "std" R "8(27)")  # Get value
+            (prinst "lfd" 0 "8(27)")
             (prinst "fcfid" F 0)
             (prinst "fdiv" F F 13)  # Divide by scale
-            (prinst "stfd" F "8(1)")
+            (prinst "stfd" F "8(27)")
             (prinst "blr")
             (prinl "2:")  # T or NIL
             (prinst "cmpd" 25 R)  # Nil?
@@ -1479,8 +1481,8 @@
             (prinst "bne-" ".+8")
             (prinst "li" R (hex "FFF"))  # -inf
             (prinst "rotrdi" R R 12)
-            (prinst "std" R "8(1)")  # Get value
-            (prinst "lfd" 0 "8(1)")
+            (prinst "std" R "8(27)")  # Get value
+            (prinst "lfd" 0 "8(27)")
             (prinst "blr") ) )
       (prinl)
       (label "begin")
@@ -1553,10 +1555,26 @@
    (prinst "sldi" 3 3 3)
    (prinst "add" 18 4 3) )
 
+(asm initLib ())
+
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'
 (de optimize (Lst)  #> (cnt . lst)
    (when (noCC L)
       (cons 1 (cons (cons @ (cdar L)))) ) )
+
+### Decoration ###
+(de prolog (File)
+   (when *FPic
+      (in "ppc64.symtab"
+         (balance '*DataIndex (read))
+         (balance '*CodeIndex (read)) ) ) )
+
+(de epilog (File)
+   (unless *FPic
+      (out "ppc64.symtab"
+         (println (sort *DataLabels))
+         (println (sort *CodeLabels)) ) ) )
+
 
 # vi:et:ts=3:sw=3

@@ -1,33 +1,8 @@
-/* 22jul11abu
+/* 18may12abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
-
-static char *HtOK[] = {
-   "<b>",      "</b>",
-   "<i>",      "</i>",
-   "<u>",      "</u>",
-   "<p>",      "</p>",
-   "<pre>",    "</pre>",
-   "<div ",    "</div>",
-   "<br>", "<hr>", NULL
-};
-
-static bool findHtOK(char *s) {
-   char **p, *q, *t;
-
-   for (p = HtOK; *p; ++p)
-      for (q = *p,  t = s;;) {
-         if (*q != *t)
-            break;
-         if (*++q == '\0')
-            return YES;
-         if (*++t == '\0')
-            break;
-      }
-   return NO;
-}
 
 // (ht:Prin 'sym ..) -> sym
 any Prin(any x) {
@@ -38,43 +13,37 @@ any Prin(any x) {
          prin(y);
       else {
          int c;
-         char *p, *q, nm[bufSize(y)];
+         char *p, nm[bufSize(y)];
 
          bufString(y, nm);
          for (p = nm; *p;) {
-            if (findHtOK(p) && (q = strchr(p,'>')))
-               do
-                  Env.put(*p++);
-               while (p <= q);
-            else {
-               switch (*(byte*)p) {
-               case '<':
-                  outString("&lt;");
-                  break;
-               case '>':
-                  outString("&gt;");
-                  break;
-               case '&':
-                  outString("&amp;");
-                  break;
-               case '"':
-                  outString("&quot;");
-                  break;
-               case 0xFF:
-                  Env.put(0xEF);
-                  Env.put(0xBF);
-                  Env.put(0xBF);
-                  break;
-               default:
-                  Env.put(c = *p);
-                  if ((c & 0x80) != 0) {
+            switch (*(byte*)p) {
+            case '<':
+               outString("&lt;");
+               break;
+            case '>':
+               outString("&gt;");
+               break;
+            case '&':
+               outString("&amp;");
+               break;
+            case '"':
+               outString("&quot;");
+               break;
+            case 0xFF:
+               Env.put(0xEF);
+               Env.put(0xBF);
+               Env.put(0xBF);
+               break;
+            default:
+               Env.put(c = *p);
+               if ((c & 0x80) != 0) {
+                  Env.put(*++p);
+                  if ((c & 0x20) != 0)
                      Env.put(*++p);
-                     if ((c & 0x20) != 0)
-                        Env.put(*++p);
-                  }
                }
-               ++p;
             }
+            ++p;
          }
       }
    }

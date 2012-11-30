@@ -1,4 +1,4 @@
-# 27mar12abu
+# 04nov12abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -299,7 +299,7 @@
 (code 'tryLockCE_FA)
    do
       ld A F_WRLCK  # Write lock
-      st2 (Flock)  # 'l_type'
+      st2 (Flock L_TYPE)  # 'l_type'
       ld (Flock L_START) C  # Start position ('l_whence' is SEEK_SET)
       ld (Flock L_LEN) E  # Length
       cc fcntl(((DbFile)) F_SETLK Flock)  # Try to lock
@@ -335,7 +335,7 @@
          cmp A EINTR  # Interrupted?
          jne lockErr  # No
       loop
-      ld2 (Flock)  # Get 'l_type'
+      ld2 (Flock L_TYPE)  # Get 'l_type'
       cmp B F_UNLCK  # Locked by another process?
    until ne  # Yes
    ld4 (Flock L_PID)  # Return PID

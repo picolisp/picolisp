@@ -1,6 +1,7 @@
-# 11jul11abu
+# 31oct12abu
 # (c) Software Lab. Alexander Burger
 
+(scl 6)
 (load "@lib/math.l")
 
 ### pow ###

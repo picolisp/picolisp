@@ -1,8 +1,8 @@
-# 29jan09abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 ### ht:Prin ###
-(test "1&lt;2&gt;3&amp;äöü<i>ÄÖÜß"
+(test "1&lt;2&gt;3&amp;äöü&lt;i&gt;ÄÖÜß"
    (pipe (ht:Prin "1<2>3&äöü<i>ÄÖÜß") (line T)) )
 
 

@@ -80,8 +80,8 @@ href="refA.html#align">align</a></code>.
 </code></pre>
 
 <dt><a name="pair"><code>(pair 'any) -> any</code></a>
-<dd>Returns <code>any</code> when the argument a cons pair cell. See also
-<code><a href="refA.html#atom">atom</a></code>.
+<dd>Returns <code>any</code> when the argument a cons pair. See also <code><a
+href="refA.html#atom">atom</a></code>.
 
 <pre><code>
 : (pair NIL)
@@ -116,7 +116,8 @@ href="refT.html#tolr/3">tolr/3</a></code>.
       ((nr +Item @Nr) (nm +Item @Nm))
       (range @Nr @Item nr)
       (part @Nm @Item nm) ) )
- @Nr=(1 . 5) @Nm="part" @Item={3-1}                                              @Nr=(1 . 5) @Nm="part" @Item={3-2}
+ @Nr=(1 . 5) @Nm="part" @Item={3-1}
+ @Nr=(1 . 5) @Nm="part" @Item={3-2}
 -> NIL
 </code></pre>
 
@@ -636,9 +637,9 @@ href="refM.html#memq">memq</a></code>.
 </code></pre>
 
 <dt><a name="proc"><code>(proc 'sym ..) -> T</code></a>
-<dd>Shows a list of processes with command names given by the <code>sym</code>
-arguments, using the system <code>ps</code> utility. See also <code><a
-href="refH.html#hd">hd</a></code>.
+<dd>(Debug mode only) Shows a list of processes with command names given by the
+<code>sym</code> arguments, using the system <code>ps</code> utility. See also
+<code><a href="refH.html#hd">hd</a></code>.
 
 <pre><code>
 : (proc 'pil)
@@ -689,8 +690,8 @@ href="refP.html#prog1">prog1</a></code>.
 <dd>Fetches a property for a property key <code>sym</code> from a symbol. That
 symbol is <code>sym1</code> (if no other arguments are given), or a symbol found
 by applying the <code><a href="refG.html#get">get</a></code> algorithm to
-<code>sym1|lst</code> and the following arguments. The property (the cell, not
-just its value) is returned, suitable for direct (destructive) manipulations
+<code>sym1|lst</code> and the following arguments. The property (the cons pair,
+not just its value) is returned, suitable for direct (destructive) manipulations
 with functions expecting a <code>var</code> argument. See also <code><a
 href="ref_.html#::">::</a></code>.
 
@@ -803,12 +804,13 @@ href="refQ.html#queue">queue</a></code>.
 -> (4 3 2 1)
 </code></pre>
 
-<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) -> any</code></a>
-<dd>Stores a new value <code>any</code> for a property key <code>sym</code> (or
-in the value cell for zero) in a symbol. That symbol is <code>sym1</code> (if no
-other arguments are given), or a symbol found by applying the <code><a
-href="refG.html#get">get</a></code> algorithm to <code>sym1|lst</code> and the
-following arguments. See also <code><a href="ref_.html#=:">=:</a></code>.
+<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) ->
+any</code></a> <dd>Stores a new value <code>any</code> for a property key
+<code>sym</code> (or in the symbol value for zero) in a symbol. That symbol is
+<code>sym1</code> (if no other arguments are given), or a symbol found by
+applying the <code><a href="refG.html#get">get</a></code> algorithm to
+<code>sym1|lst</code> and the following arguments. See also <code><a
+href="ref_.html#=:">=:</a></code>.
 
 <pre><code>
 : (put 'X 'a 1)

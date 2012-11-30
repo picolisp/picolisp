@@ -1,4 +1,4 @@
-# 08apr12abu
+# 25nov12abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -216,8 +216,10 @@
 # Allocate cell heap
 (code 'heapAlloc 0)  # AEX
    ld A 0  # NULL pointer
-   ld E (+ HEAP I)  # Heap allocation size
+   ld E (+ HEAP I II)  # Heap size + link + space
    call allocAE_A
+   add A 15  # Align to cell boundary
+   off B 15
    ld E A  # Heap pointer
    ld (A HEAP) (Heaps)  # Set heap link
    ld (Heaps) A
@@ -605,6 +607,11 @@
    if nz  # No
       push Y
       ld Y (EnvBind)  # Bindings
+      null Y  # Any?
+      if nz  # Yes
+         null (Break)  # In breakpoint?
+         ldnz Y ((Y) I)  # Yes: Skip frame
+      end
       do
          null Y  # Bindings?
       while nz  # Yes
@@ -687,11 +694,77 @@
    pop X
    ret
 
-# (up [cnt] sym ['val]) -> any
-(code 'doUp 2)
+# (trail ['flg]) -> lst
+(code 'doTrail 2)
    push X
    push Y
    push Z
+   ld E ((E CDR))  # Evaluate arg
+   eval
+   ld Z E  # Keep 'flg' in Z
+   ld X (EnvBind)  # Bindings
+   null X  # Any?
+   if nz  # Yes
+      null (Break)  # In breakpoint?
+      ldnz X ((X) I)  # Yes: Skip frame
+   end
+   ld E Nil  # Result
+   do
+      null X  # Bindings?
+   while nz  # Yes
+      ld C (X)  # End of bindings
+      null (X -I)  # Env swap zero?
+      if z  # Yes
+         add X I  # X on bindings
+         do
+            ld Y (X)  # Next symbol
+            add X II  # Next entry
+            cmp Y At  # Lambda frame?
+            if eq  # Yes
+               cmp X C  # Last entry?
+               if eq  # Yes
+                  call cons_A  # Cons 'exe'
+                  ld (A) (C II)  # Cons 'exe'
+                  ld (A CDR) E
+                  ld E A
+                  break T
+               end
+            end
+            cmp Z Nil  # 'flg'?
+            if ne  # Yes
+               call cons_A  # Cons value
+               ld (A) (Y)
+               ld (A CDR) E
+               call consA_E  # Cons symbol
+               ld (E) Y
+               ld (E CDR) A
+               ld (Y) (X -I)  # Set old value
+            end
+            cmp X C  # More?
+         until eq  # No
+      end
+      ld X (C I)  # Bind link
+   loop
+   ld X E  # Restore values
+   do
+      atom X  # More?
+   while z  # Yes
+      ld Y (X)  # Next entry
+      ld X (X CDR)
+      atom Y # Symbol?
+      if nz  # Yes
+         ld (Y) (X)  # Set old value
+         ld X (X CDR)
+      end
+   loop
+   pop Z
+   pop Y
+   pop X
+   ret
+
+# (up [cnt] sym ['val]) -> any
+(code 'doUp 2)
+   push X
    ld C 1  # Count
    ld E (E CDR)  # First arg
    ld X (E)  # Get 'sym'
@@ -702,8 +775,42 @@
       ld E (E CDR)  # Skip arg
       ld X (E)  # 'sym'
    end
+   cmp X Nil  # NIL?
+   if eq  # Yes
+      ld X (EnvBind)  # Bindings
+      null X  # Any?
+      if nz  # Yes
+         null (Break)  # In breakpoint?
+         ldnz X ((X) I)  # Yes: Skip frame
+      end
+      do
+         null X  # Bindings?
+      while nz  # Yes
+         ld A (X)  # End of bindings in A
+         cmp (A -II) At  # Lambda frame?
+         if eq  # Yes
+            dec C  # Done?
+            if z  # Yes
+               ld E (A II)  # Return 'exe'
+               pop X
+               ret
+            end
+         end
+         ld X (A I)  # Bind link
+      loop
+      ld E Nil  # Return NIL
+      pop X
+      ret
+   end
+   push Y
+   push Z
    ld E (E CDR)  # Last arg
    ld Y (EnvBind)  # Bindings
+   null Y  # Any?
+   if nz  # Yes
+      null (Break)  # In breakpoint?
+      ldnz Y ((Y) I)  # Yes: Skip frame
+   end
    ld Z X  # Value pointer
    do
       null Y  # Bindings?
@@ -931,7 +1038,7 @@
       cmp E Nil
       jeq 30  # [<sym> NIL]
       atom E
-      jz 10  # [<sym> <cell>]
+      jz 10  # [<sym> <pair>]
       cmp E TSym
       jeq 10  # [<sym> T]
       push X  # [<sym> <sym>]
@@ -1007,9 +1114,9 @@
       loop
    end
    atom E
-   if nz  # [<cell> <sym>]
+   if nz  # [<pair> <sym>]
       cmp E TSym
-      if eq  # [<cell> T]
+      if eq  # [<pair> T]
          or B B  # nz
          setc  # lt
          ret
@@ -1017,7 +1124,7 @@
       clrc  # gt
       ret
    end
-   push X  # [<cell> <cell>]
+   push X  # [<pair> <pair>]
    push Y
    ld X A  # Keep originals
    ld Y E
@@ -1045,10 +1152,10 @@
       if nz  # Yes
          cmp E TSym
          if ne
-            clrc  # gt [<cell> <atom>]
+            clrc  # gt [<pair> <atom>]
             break T
          end
-         or B B  # nz [<cell> T]
+         or B B  # nz [<pair> T]
          setc  # lt
          break T
       end
@@ -1107,6 +1214,7 @@
    ld X (E CDR)  # Get CDR
    ld Y (C)  # Parameter list in Y
    ld Z (C CDR)  # Body in Z
+   push E  # Save 'exe'
    push (EnvBind)  # Build bind frame
    link
    push (At)  # Bind At
@@ -1146,6 +1254,7 @@
       until eq  # No
       pop L  # Restore link
       pop (EnvBind)  # Restore bind link
+      add S I  # Drop 'exe'
       pop Z
       pop Y
       pop X
@@ -1180,6 +1289,7 @@
       until eq  # No
       pop L  # Restore link
       pop (EnvBind)  # Restore bind link
+      add S I  # Drop 'exe'
       pop Z
       pop Y
       pop X
@@ -1236,6 +1346,7 @@
    until eq  # No
    pop L  # Restore link
    pop (EnvBind)  # Restore bind link
+   add S I  # Drop 'exe'
    pop Z
    pop Y
    pop X
@@ -1351,6 +1462,7 @@
       cc dlsym(A Y)  # Find dynamic symbol
       null A  # OK?
       if nz  # Yes
+         initLib
          ? *AlignedCode
             or A CNT  # Make short number
          =
@@ -1372,7 +1484,7 @@
    or E CNT
    ret
 
-# (native 'cnt1|sym1 'cnt2|sym2 'sym|lst 'any ..) -> any
+# (native 'cnt1|sym1 'cnt2|sym2 'any 'any ..) -> any
 (code 'doNative 2)
    push X
    push Y
@@ -1459,6 +1571,8 @@
    loop
    ld X S  # X on last argument
    link
+   push (Link)  # Save Link
+   ld (Link) L
    lea Y (Z -II)  # Limit
    do
       cmp X Y  # More args?
@@ -1499,7 +1613,7 @@
             if nz  # Yes
                push (E)  # Pass number or flag
                push C  # as fixpoint value
-            else
+            else  # Structure
                ld E C  # Ignore variable
                ld C ((E))  # Get buffer size
                shr C 4  # Normalize
@@ -1525,83 +1639,8 @@
                   atom E  # Fill structure?
                while z  # Yes
                   ld A (E)  # Next value
-                  atom A  # Byte or unsigned?
-                  if nz  # Yes
-                     shr A 4  # Byte?
-                     if nc  # Yes
-                        ld (Z) B  # Store byte in buffer
-                        inc Z  # Increment buffer pointer
-                        dec C  # Buffer full?
-                     else
-                        st4 (Z)  # Store unsigned in buffer
-                        add Z 4  # Size of unsigned
-                        sub C 4  # Buffer full?
-                     end
-                  else
-                     push C
-                     push X
-                     push Y
-                     ld Y Z  # Y on buffer
-                     ld C (A CDR)  # Get length
-                     shr C 4  # Normalize
-                     add Z C  # Size of buffer
-                     push C  # Save it
-                     ld A (A)  # 'num' or 'sym'
-                     num A  # (num . cnt)?
-                     if nz  # Yes
-                        cnt A  # Short?
-                        if nz  # Yes
-                           shr A 4  # Normalize
-                           if c  # Sign?
-                              neg A  # Yes
-                           end
-                        else
-                           test A SIGN  # Sign?
-                           if z  # No
-                              ld A (A DIG)
-                           else
-                              ld A (A (- DIG SIGN))
-                              neg A  # Negate
-                           end
-                        end
-                        ? *LittleEndian
-                           do
-                              ld (Y) B  # Store byte
-                              inc Y  # Increment pointer
-                              shr A 8
-                              dec C  # Done?
-                           until z  # Yes
-                        =
-                        ? (not *LittleEndian)
-                           ld Y Z
-                           do
-                              dec Y  # Decrement pointer
-                              ld (Y) B  # Store byte
-                              shr A 8
-                              dec C  # Done?
-                           until z  # Yes
-                        =
-                     else
-                        sym A  # (sym . cnt)?
-                        if nz  # Yes
-                           ld X (A TAIL)  # Get name
-                           call nameX_X
-                           ld C 0
-                           do
-                              call symByteCX_FACX  # Next byte
-                           while nz
-                              ld (Y) B  # Store it
-                              inc Y  # Increment pointer
-                           loop
-                           set (Y) 0  # Null byte
-                        end
-                     end
-                     pop A  # 'cnt'
-                     pop Y
-                     pop X
-                     pop C
-                     sub C A  # Buffer full?
-                  end
+                  call natBufACZ_CZ  # Store in buffer
+                  null C  # Buffer full?
                until z  # Yes
                pop Z
             end
@@ -1609,22 +1648,13 @@
       end
       add X I  # Next arg
    loop
-   ld X S  # Start of args in X
-   off S 15  # Align stack to cell boundary
-   ld A S  # Keep end of duplicated args in A
-   ld C L  # Top of args
-   sub C X  # Bytes
-   sub S C  # Space for args
-   movm (S) (X) (L)  # Duplicate args
+   lea X (L -I)  # Top of arguments
    ld Y (Z)  # Get function pointer
-   cc (Y) A  # Call C-function
-   ld S X  # Drop duplicated args
+   cc (Y) X  # Call C-function
+   ld (Link) (L -I)  # Restore Link
    ld E (Z -II)  # Get result specification
    ld C 0  # No pointer yet
-   push (Link)  # Save L
-   ld (Link) L
    call natRetACE_CE  # Extract return value
-   pop (Link)
    ld (Z -II) E  # Save result
    lea Y (Z -III)  # Clean up allocated C args
    do
@@ -1659,6 +1689,105 @@
    pop X
    ret
 
+(code 'natBufACZ_CZ 0)
+   atom A  # Byte or unsigned?
+   if nz  # Yes
+      shr A 4  # Byte?
+      if nc  # Yes
+         ld (Z) B  # Store byte in buffer
+         inc Z  # Increment buffer pointer
+         dec C  # Decrement size
+         ret
+      end
+      st4 (Z)  # Store unsigned in buffer
+      add Z 4  # Size of unsigned
+      sub C 4  # Decrement size
+      ret
+   end
+   # (num|sym . cnt) or ([-]1.0 . lst)
+   push X
+   ld X (A CDR)  # 'cnt' or 'lst'
+   ld A (A)  # 'num', 'sym' or [-]1.0
+   cnt X  # 'cnt'?
+   if nz  # Yes
+      push Y
+      ld Y Z  # Y on buffer
+      shr X 4  # Normalize length
+      add Z X  # Field width
+      sub C X  # New buffer size
+      num A  # (num . cnt)?
+      if nz  # Yes
+         cnt A  # Short?
+         if nz  # Yes
+            shr A 4  # Normalize
+            if c  # Sign?
+               neg A  # Yes
+            end
+         else
+            test A SIGN  # Sign?
+            if z  # No
+               ld A (A DIG)
+            else
+               ld A (A (- DIG SIGN))
+               neg A  # Negate
+            end
+         end
+         ? *LittleEndian
+            do
+               ld (Y) B  # Store byte
+               inc Y  # Increment pointer
+               shr A 8
+               dec X  # Done?
+            until z  # Yes
+         =
+         ? (not *LittleEndian)
+            ld Y Z
+            do
+               dec Y  # Decrement pointer
+               ld (Y) B  # Store byte
+               shr A 8
+               dec X  # Done?
+            until z  # Yes
+         =
+      else
+         sym A  # (sym . cnt)?
+         if nz  # Yes
+            push C
+            ld X (A TAIL)  # Get name
+            call nameX_X
+            ld C 0
+            do
+               call symByteCX_FACX  # Next byte
+            while nz
+               ld (Y) B  # Store it
+               inc Y  # Increment pointer
+            loop
+            set (Y) 0  # Null byte
+            pop C
+         end
+      end
+      pop Y
+   else  # ([-]1.0 . lst)
+      do
+         atom X  # More fixpoint numbers?
+      while z  # Yes
+         float  # Convert to floating point
+         test A SIGN  # Scale negative?
+         if z  # No
+            std  # Store double value
+            add Z 8  # Size of double
+            sub C 8  # Decrement buffer size
+         else
+            stf  # Store float value
+            add Z 4  # Size of float
+            sub C 4  # Decrement buffer size
+         end
+         ld X (X CDR)
+      loop
+   end
+   pop X
+   ret
+
 (code 'natRetACE_CE 0)
    cmp E Nil  # NIL?
    if ne
@@ -1668,14 +1797,14 @@
          if nz  # Yes
             test E SIGN  # Negative?
             if z  # No
-               dval  # Get double value
+               ldd  # Get double value
                add C 8  # Size of double
             else
-               fval  # Get float value
+               ldf  # Get float value
                add C 4  # Size of float
             end
          end
-         fnum  # Get fixpoint number or flg
+         fixnum  # Get fixpoint number or flg
       else
          cmp E ISym  # 'I'?
          if eq  # Yes
@@ -1805,6 +1934,50 @@
          end
       end
    end
+   ret
+
+# (struct 'num 'any 'any ..) -> any
+(code 'doStruct 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval native value (pointer or scalar)
+   eval
+   num E  # Number?
+   jz numErrEX  # No
+   cnt E  # Short?
+   if nz  # Yes
+      shr E 4  # Normalize
+      ld Z E  # Native value in Z
+   else
+      ld Z (E DIG)  # Native value in Z
+   end
+   ld Y (Y CDR)  # Next arg
+   ld E (Y)
+   eval  # Eval 'any'
+   link
+   push E  # <L I> Result specification
+   link
+   push Z  # Save native value
+   do
+      ld Y (Y CDR)  # Arguments?
+      atom Y
+   while z  # Yes
+      ld E (Y)  # Eval next struct element
+      eval
+      ld A E  # in A (unused C)
+      call natBufACZ_CZ  # Store in buffer
+   loop
+   pop A  # Get native value
+   ld C 0  # No pointer yet
+   ld E (L I)  # Result specification
+   call natRetACE_CE  # Extract return value
+   drop
+   pop Z
+   pop Y
+   pop X
    ret
 
 (code 'fetchCharC_AC 0)
@@ -2001,6 +2174,7 @@
          pop A
          ld (A I) E  # Store in slot
          pop E  # Get function pointer
+         func
          pop Y
          pop X
          test E (hex "F000000000000000")  # Fit in short number?
@@ -2100,7 +2274,7 @@
       cmp C E  # Circular?
       jeq retnz  # Yes
       ld A (C)  # Next item
-      atom A  # Cell?
+      atom A  # Pair?
       if z  # Yes
          num (A)  # CAR a number?
          if nz  # Yes
@@ -2763,7 +2937,9 @@
       ld (X) E  # Set date
       pop (X CDR)  # and time
       call consX_E  # New cell
-      call s_isdirS_F  # Directory?
+      ld4 (S ST_MODE)  # Get 'st_mode' from 'stat'
+      and A S_IFMT
+      cmp A S_IFDIR  # Directory?
       if eq  # Yes
          ld (E) TSym  # CAR is T
       else
@@ -2859,6 +3035,7 @@
       cc readdir(Z)  # Find first directory entry
       null A  # OK?
       if z  # No
+         cc closedir(Z)  # Close directory
 10       ld E Nil  # Return NIL
          pop Z
          pop X

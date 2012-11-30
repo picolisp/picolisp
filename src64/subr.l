@@ -1,4 +1,4 @@
-# 22mar12abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -729,8 +729,8 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'lst'
    eval
-   atom E  # Need cell
-   jnz cellErrEX
+   atom E  # Need pair
+   jnz pairErrEX
    link
    push E  # <L I> Safe
    link
@@ -852,7 +852,7 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'lst'
    eval
-   atom E  # Cell?
+   atom E  # Pair?
    if z  # Yes
       link
       push E  # <L I> Safe
@@ -1077,7 +1077,7 @@
    ld E (E)  # Eval it
    eval
    do
-      atom E  # Cell?
+      atom E  # Pair?
       jnz retT  # Yes
       cmp (E) Nil  # Found NIL?
       jz retNil  # Yes
@@ -1119,7 +1119,7 @@
       ld Y (Y CDR)
       ld E (Y)  # Eval 'lst2'
       eval
-      atom E  # Cell?
+      atom E  # Pair?
       if nz  # No
          ld E ((EnvYoke))  # Retrieve new 'lst1'
          do
@@ -1683,7 +1683,7 @@
    link
    ld A Nil  # Result
    do
-      atom E  # Cells?
+      atom E  # More cells?
    while z  # Yes
       call consA_C  # Cons next CAR
       ld (C) (E)
@@ -1703,7 +1703,7 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval 'lst'
    eval
-   atom E  # Cell?
+   atom E  # Pair?
    if z  # Yes
       ld Y (Y CDR)
       atom Y  # Second arg?
@@ -2930,7 +2930,7 @@
    push E  # Save list
    do
       add C (hex "10")  # Increment count
-      atom (E)  # Is CAR a cell?
+      atom (E)  # Is CAR a pair?
       if z  # Yes
          push E
          ld E (E)  # Count CAR

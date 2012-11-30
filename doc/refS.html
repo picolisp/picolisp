@@ -252,8 +252,8 @@ href="refP.html#pick">pick</a></code>.
 </code></pre>
 
 <dt><a name="select"><code>(select [var ..] cls [hook|T] [var val ..]) -> obj | NIL</code></a>
-<dd>Interactive database function, loosely modelled after the SQL
-'<code>SELECT</code>' command. A (limited) front-end to the Pilog <code><a
+<dd>(Debug mode only) Interactive database function, loosely modelled after the
+SQL '<code>SELECT</code>' command. A (limited) front-end to the Pilog <code><a
 href="refS.html#select/3">select/3</a></code> predicate. When called with only a
 <code>cls</code> argument, <code>select</code> steps through all objects of that
 class, and <code><a href="refS.html#show">show</a></code>s their complete
@@ -325,7 +325,7 @@ href="refR.html#remote/2">remote/2</a></code>.
 : (?
    @Nr (2 . 5)          # Select all items with numbers between 2 and 5
    @Sup "Active"        # and suppliers matching "Active"
-   (select (@Item)                                  # Bind results to '@Item"
+   (select (@Item)                                  # Bind results to '@Item'
       ((nr +Item @Nr) (nm +CuSu @Sup (sup +Item)))  # Generator clauses
       (range @Nr @Item nr)                          # Filter clauses
       (part @Sup @Item sup nm) ) )
@@ -759,6 +759,24 @@ href="refS.html#sym">sym</a></code>.
 -> (a "*" 3 "+" b "*" 4)
 </code></pre>
 
+<dt><a name="str?"><code>(str? 'any) -> sym | NIL</code></a>
+<dd>Returns the argument <code>any</code> when it is a transient symbol
+(string), otherwise <code>NIL</code>. See also <code><a
+href="refS.html#sym?">sym?</a></code>, <code><a
+href="refB.html#box?">box?</a></code> and <code><a
+href="refE.html#ext?">ext?</a></code>.
+
+<pre><code>
+: (str? 123)
+-> NIL
+: (str? '{ABC})
+-> NIL
+: (str? 'abc)
+-> NIL
+: (str? "abc")
+-> "abc"
+</code></pre>
+
 <dt><a name="strDat"><code>(strDat 'sym) -> dat</code></a>
 <dd>Converts a string <code>sym</code> in the date format of the current
 <code><a href="refL.html#locale">locale</a></code> to a <code><a
@@ -792,22 +810,50 @@ href="refD.html#datStr">datStr</a></code>.
 -> (a b c)
 </code></pre>
 
-<dt><a name="str?"><code>(str? 'any) -> sym | NIL</code></a>
-<dd>Returns the argument <code>any</code> when it is a transient symbol
-(string), otherwise <code>NIL</code>. See also <code><a
-href="refS.html#sym?">sym?</a></code>, <code><a
-href="refB.html#box?">box?</a></code> and <code><a
-href="refE.html#ext?">ext?</a></code>.
+<dt><a name="struct"><code>(struct 'num 'any 'any ..) -> any</code></a>
+<dd>Creates or extracts data structures, suitable to be passed to or returned
+from <code><a href="refN.html#native">native</a></code> C functions. The first
+<code>num</code> argument should be a native value, either a scalar, or a
+pointer obtained by calling functions like <code>malloc()</code>. The second
+argument <code>any</code> is a <a href="refN.html#natResult">result
+specification</a>, while all following <a
+href="refN.html#natItem">initialization items</a> are stored in the structure
+pointed to by the first argument. See also <a href="native.html">Native C
+Calls</a>.
 
 <pre><code>
-: (str? 123)
+: (scl 2)
+-> 2
+
+## /* We assume the following C structure */
+## typedef struct value {
+##    int x, y;
+##    double a, b, c;
+##    long z;
+##    char nm[4];
+## } value;
+
+# Allocate structure
+: (setq P (native "@" "malloc" 'N 44))
+-> 9204032
+
+# Store two integers, three doubles, one long, and four characters
+: (struct P 'N -7 -4 (1.0 0.11 0.22 0.33) (7 . 8) 65 66 67 0)
+-> 9204032
+
+# Extract the structure
+: (struct P '((I . 2) (1.0 . 3) N (C . 4)))
+-> ((7 4) (11 22 33) 7 ("A" "B" "C" NIL))
+
+# Do both in a single call (allowing conversions of data types)
+: (struct P
+   '((I . 2) (1.0 . 3) N (C . 4))
+   -7 -4 (1.0 0.11 0.22 0.33) (7 . 8) 65 66 67 0 )
+-> ((7 4) (11 22 33) 7 ("A" "B" "C" NIL))
+
+# De-allocate structure
+: (native "@" "free" NIL P)
 -> NIL
-: (str? '{ABC})
--> NIL
-: (str? 'abc)
--> NIL
-: (str? "abc")
--> "abc"
 </code></pre>
 
 <dt><a name="sub?"><code>(sub? 'any1 'any2) -> any2 | NIL</code></a>
@@ -850,6 +896,8 @@ to <code>fun</code>. Returns the sum of all numeric values returned from
 -> 3
 : (sum val '(A B C))
 -> 6
+: (sum * (3 4 5) (5 6 7))        # Vector dot product
+-> 74
 : (sum                           # Total size of symbol list values
    '((X)
       (and (pair (val X)) (size @)) )
@@ -921,26 +969,25 @@ href="refI.html#intern">intern</a></code>.
 <pre><code>
 : (symbols 'myLib 'pico)
 -> pico
-: (de foo (X)
-   (bar (inx X)) )
+myLib: (de foo (X)
+   (bar (inc X)) )
 -> foo
-
-: (symbols 'pico)
+myLib: (symbols 'pico)
 -> myLib
 : (pp 'foo)
 (de foo . NIL)
 -> foo
 : (pp 'myLib~foo)
 (de "foo" (X)
-   ("bar" ("inx" X)) )
+   ("bar" (inc X)) )
 -> "foo"
-
 : (symbols 'myLib)
 -> pico
-: (pp 'foo)
+myLib: (pp 'foo)
 (de foo (X)
-   (bar (inx X)) )
+   (bar (inc X)) )
 -> foo
+myLib:
 </code></pre>
 
 <dt><a name="sync"><code>(sync) -> flg</code></a>

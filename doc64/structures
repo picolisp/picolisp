@@ -1,4 +1,4 @@
-# 09mar11abu
+# 13nov12abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -7,7 +7,7 @@
    cnt   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxS010
    big   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxS100
    sym   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1000
-   cell  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
+   pair  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 
 
          Bignum
@@ -28,7 +28,7 @@
                   +-----+-----+
 
 
-      Cell
+      Pair
       |
       V
       +-----+-----+
@@ -128,6 +128,7 @@
 
       Bind frame:
                         ^
+              [exe]     |
                Bind     |
          +---> LINK ----+
          |     val1
@@ -141,6 +142,7 @@
 
       VarArgs frame:
                         ^
+              [exe]     |
                Bind     |
          +---> LINK ----+
          |     val1

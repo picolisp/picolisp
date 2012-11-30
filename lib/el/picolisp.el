@@ -1,22 +1,29 @@
 ;;;;;; picolisp-mode: Major mode to edit picoLisp.
-;;;;;; Version: 1.2
+;;;;;; Version: 1.3
 
 ;;; Copyright (c) 2009, Guillermo R. Palavecino
+;;; Copyright (c) 2011, 2012 Thorsten Jolitz
 
 ;; This file is NOT part of GNU emacs.
 
 ;;;; Credits:
 ;; It's based on GNU emacs' lisp-mode and scheme-mode.
 ;; Some bits were taken from paredit.el
+;; Two functions were copied from Xah Lee (http://xahlee.org/)
 ;;
 ;;;; Contact:
-;; For comments, bug reports, questions, etc, you can contact me via IRC
-;; to the user named grpala (or armadillo) on irc.freenode.net in the
-;; #picolisp channel or via email to the author's nickname at gmail.com
-;;
+;; For comments, bug reports, questions, etc, you can contact the
+;; first author via IRC to the user named grpala (or armadillo) on
+;; irc.freenode.net in the #picolisp channel or via email to the
+;; author's nickname at gmail.com 
+;; 
+;; Or contact the second author and curent maintainer via email: 
+;; t <lastname in lowercase letters> AT gmail DOT com
+;; 
 ;;;; License:
 ;; This work is released under the GPL 2 or (at your option) any later
 ;; version.
+
 
 (require 'lisp-mode)
 
@@ -87,6 +94,7 @@
 
 (defvar picolisp-mode-abbrev-table nil)
 (define-abbrev-table 'picolisp-mode-abbrev-table ())
+
 
 (defun picolisp-mode-variables ()
   (set-syntax-table picolisp-mode-syntax-table)
@@ -163,6 +171,14 @@
 (defvar picolisp-mode-map
   (let ((map (make-sparse-keymap "Picolisp")))
     (set-keymap-parent map lisp-mode-shared-map)
+
+    ;; more convenient than "C-ck"
+    (define-key map "\C-c\C-v" 'picolisp-edit-K)
+    ;; more convenient than "C-cq"
+    (define-key map "\C-c\C-c" 'picolisp-edit-Q) 
+    ;; not necesary: picolisp-edit-Q exits on last undo
+    ;; (define-key map "\C-q" '(save-buffers-kill-terminal 1))
+
     (define-key map [menu-bar picolisp] (cons "Picolisp" map))
     (define-key map [run-picolisp] '("Run Inferior Picolisp" . run-picolisp))
     (define-key map [uncomment-region]
@@ -224,6 +240,7 @@ See `run-hooks'."
   :type 'hook
   :group 'picolisp )
 
+
 (defconst picolisp-font-lock-keywords-1
   (eval-when-compile
     (list
@@ -264,6 +281,7 @@ See `run-hooks'."
               "\\>" )
       '(1 font-lock-preprocessor-face) ) ) )
   "Subdued expressions to highlight in Picolisp modes." )
+
 
 (defconst picolisp-font-lock-keywords-2
   (append picolisp-font-lock-keywords-1
@@ -376,6 +394,8 @@ See `run-hooks'."
        (if (eq (char-after) ?\() 2 0) ) )
 
 
+;; Indentation functions
+
 ;; Copied from lisp-indent-line,
 ;; because Picolisp doesn't care about how many comment chars you use.
 (defun picolisp-indent-line (&optional whole-exp)
@@ -475,6 +495,7 @@ rigidly along with this one."
 	(goto-char (car (cdr state)))
 	(+ 1 (current-column)) ) ) )
 
+
 ;;; This is to space closing parens when they close a previous line.
 (defun picolisp-parensep ()
   (save-excursion
@@ -514,6 +535,9 @@ rigidly along with this one."
             (backward-char)
             (when picolisp-parsep
               (insert " ") ) ) ) ) ) )
+
+
+;; Parser functions
   
 (defun picolisp-current-parse-state ()
   "Return parse state of point from beginning of defun."
@@ -555,6 +579,178 @@ Assumes that `picolisp-in-string-p' is false, so that it need not handle
 
 (add-to-list 'auto-mode-alist '("\\.l$" . picolisp-mode))
 
+
+;; The following two functions implement the K and Q (macro)
+;; functionality used in Vi while editing a buffer opened from the
+;; PicoLisp command-line with the 'edit' function.
+
+(defun picolisp-edit-K ()
+  "Write symbol at point with line number in last line of edit-buffer.
+
+If the symbol is a transient symbol, write it with double-quotes,
+otherwise as unquoted word. The output-format is: 
+
+\(<line-number> <symbol>\)
+ e.g.
+\(50  edit\)
+\(56 \"edit\"\)
+
+when point is on the edit or \(transient\) \"edit\" symbol in the
+PicoLisp sourcefile edit.l and `picolisp-edit-K' is called (the
+line-numbers may be different in your version of edit.l).
+
+Recognition of transient symbols works by getting the
+text-property 'face' at point and checking if it is equal to
+'font-lock-string-face'. Thus, this function works correctly only
+if the edit-buffer is in an Emacs major-mode that fontifies
+strings with 'font-lock-string-face' \(like `picolisp-mode'
+does\)."
+
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (widen)
+      (unless (mark 'FORCE)
+        (forward-word)
+        (forward-word -1)
+        (mark-word))
+      (let* ((thing (thing-at-point 'word))  
+             (unit (get-selection-or-unit 'word))
+             (line (line-number-at-pos))
+             (transient-p
+              (string-equal (get-text-property (point) 'face)
+                            "font-lock-string-face"))
+             (k-list nil))
+        (setq k-list (list line
+                           (if transient-p
+                               (elt unit 0)
+                             (make-symbol (elt unit 0)))))
+        (message "K-list: %S transient: %S" k-list transient-p)
+        (goto-char (max-char))
+        (newline)
+        (insert (format "%S" k-list))
+        (save-buffers-kill-terminal 1)))))
+
+
+(defun picolisp-edit-Q ()
+  "Write '(0)' in last line of PicoLisp edit-buffer."
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (max-char))
+      (newline)
+      (insert "(0)")
+      (save-buffers-kill-terminal 1))))
+
+
+;; The following two functions have been written by Xah Lee and copied
+;; from: http://ergoemacs.org/emacs/elisp_get-selection-or-unit.html
+
+(defun get-selection-or-unit (unit)
+  "Return the string and boundary of text selection or UNIT under cursor.
+
+If `region-active-p' is true, then the region is the unit.  Else,
+it depends on the UNIT. See `unit-at-cursor' for detail about
+UNIT.
+
+Returns a vector [text a b], where text is the string and a and b
+are its boundary.
+
+Example usage:
+ (setq bds (get-selection-or-unit 'line))
+ (setq inputstr (elt bds 0) p1 (elt bds 1) p2 (elt bds 2)  )"
+  (interactive)
+
+  (let ((p1 (region-beginning)) (p2 (region-end)))
+    (if (region-active-p)
+        (vector (buffer-substring-no-properties p1 p2) p1 p2 )
+      (unit-at-cursor unit) ) ) )
+
+;; This function get-selection-or-unit gets you the text selection if
+;; there's one. If not, it calls unit-at-cursor. unit-at-cursor
+
+(defun unit-at-cursor (unit)
+  "Return the string and boundary of UNIT under cursor.
+
+Returns a vector [text a b], where text is the string and a and b are its boundary.
+
+UNIT can be:
+• 'word — sequence of 0 to 9, A to Z, a to z, and hyphen.
+• 'glyphs — sequence of visible glyphs. Useful for file name, URL, …, that doesn't have spaces in it.
+• 'line — delimited by “\\n”.
+• 'block — delimited by “\\n\\n” or beginning/end of buffer.
+• 'buffer — whole buffer. (respects `narrow-to-region')
+• a vector [beginRegex endRegex] — The elements are regex strings used to determine the beginning/end of boundary chars. They are passed to `skip-chars-backward' and `skip-chars-forward'. For example, if you want paren as delimiter, use [\"^(\" \"^)\"]
+
+Example usage:
+    (setq bds (unit-at-cursor 'line))
+    (setq myText (elt bds 0) p1 (elt bds 1) p2 (elt bds 2)  )
+
+This function is similar to `thing-at-point' and `bounds-of-thing-at-point'.
+The main differences are:
+• this function returns the text and the 2 boundaries as a vector in one shot.
+• 'line always returns the line without end of line character, avoiding inconsistency when the line is at end of buffer.
+• 'word does not depend on syntax table.
+• 'block does not depend on syntax table."
+  (let (p1 p2)
+    (save-excursion
+      (cond
+       ( (eq unit 'word)
+         (let ((wordcharset "-A-Za-zÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ"))
+           (skip-chars-backward wordcharset)
+           (setq p1 (point))
+           (skip-chars-forward wordcharset)
+           (setq p2 (point)))
+         )
+
+       ( (eq unit 'glyphs)
+         (progn
+           (skip-chars-backward "[:graph:]")
+           (setq p1 (point))
+           (skip-chars-forward "[:graph:]")
+           (setq p2 (point)))
+         )
+
+       ( (eq unit 'buffer)
+         (progn
+           (setq p1 (point-min))
+           (setq p2 (point-max))
+           )
+         )
+
+       ((eq unit 'line)
+        (progn
+          (setq p1 (line-beginning-position))
+          (setq p2 (line-end-position))))
+       ((eq unit 'block)
+        (progn
+          (if (re-search-backward "\n\n" nil t)
+              (progn (forward-char 2)
+                     (setq p1 (point) ) )
+            (setq p1 (line-beginning-position) )
+            )
+
+          (if (re-search-forward "\n\n" nil t)
+              (progn (backward-char)
+                     (setq p2 (point) ))
+            (setq p2 (line-end-position) ) ) ))
+
+       ((vectorp unit)
+        (let (p0)
+          (setq p0 (point))
+          (skip-chars-backward (elt unit 0))
+          (setq p1 (point))
+          (goto-char p0)
+          (skip-chars-forward (elt unit 1))
+          (setq p2 (point))))
+       ) )
+
+    (vector (buffer-substring-no-properties p1 p2) p1 p2 )
+    ) )
+
+
+;; tsm-mode
 (require 'tsm)
 
 (ignore-errors

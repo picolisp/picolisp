@@ -1,4 +1,4 @@
-# 20oct11abu
+# 13nov12abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -140,6 +140,7 @@
 
    # Protected symbols
    initSym pico      "pico"      Pico
+   initSym CPU       "*CPU"      TgCPU
    initSym OS        "*OS"       TgOS
    initSym DB        "*DB"       Db1
    initFun Meth      "meth"      doMeth
@@ -188,10 +189,12 @@
    initFun NIL       "stack"     doStack
    initFun NIL       "adr"       doAdr
    initFun NIL       "env"       doEnv
+   initFun NIL       "trail"     doTrail
    initFun NIL       "up"        doUp
    initFun NIL       "quit"      doQuit
    initFun NIL       "errno"     doErrno
    initFun NIL       "native"    doNative
+   initFun NIL       "struct"    doStruct
    initFun NIL       "lisp"      doLisp
    initFun NIL       "args"      doArgs
    initFun NIL       "next"      doNext
@@ -556,7 +559,8 @@
 : SymTabEnd
 
 # Transient symbols
-   initSym TgOS      `*TargetOS  TgOS
+   initSym TgCPU     `*Architecture TgCPU
+   initSym TgOS      `*TargetOS     TgOS
 
 # Database root symbol '{1}'
    word DB1  # Name
@@ -1190,7 +1194,7 @@
 : CntErr asciz "Small number expected"
 : SymErr asciz "Symbol expected"
 : ExtErr asciz "External symbol expected"
-: CellErr asciz "Cell expected"
+: PairErr asciz "Cons pair expected"
 : AtomErr asciz "Atom expected"
 : LstErr asciz "List expected"
 : VarErr asciz "Variable expected"

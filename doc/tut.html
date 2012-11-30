@@ -67,6 +67,10 @@ just jump anywhere you are interested in.
 
 <p><ul>
 <li><a href="#ledit">Command Line Editing</a>
+   <ul>
+   <li><a href="#vi-style">'vi'-style</a>
+   <li><a href="#em-style">'emacs'-style</a>
+   </ul>
 <li><a href="#brw">Browsing</a>
 <li><a href="#fun">Defining Functions</a>
 <li><a href="#dbg">Debugging</a>
@@ -89,10 +93,15 @@ just jump anywhere you are interested in.
 console in interactive mode), evaluates it, and prints the result to the current
 output channel. This is called a "read-eval-print-loop" (REPL).
 
-<h3>VI-like editing</h3>
+<h3><a name="vi-style">'vi'-style</a></h3>
+
+<p>This is the default line editor, as it needs less system resources and works
+also on dumb terminals. It is similar to -- though simpler than -- the 'vi' edit
+modes of the 'korn' and 'bash' shells. For an analog 'emacs' style editor,
+please see <a href="#em-style">below</a>.
 
 <p>It is very helpful - though not absolutely necessary - when you know how to
-use the <code>vi</code> editor.
+use the <code>vi</code> text editor.
 
 <p>To alleviate the task of manual line input, a command line editor is provided
 which is similar to (though much simpler than) the <code>readline</code> feature
@@ -221,6 +230,25 @@ path names in the file system) matching the partial input are shown in sequence.
 
 </ul>
 
+<h3><a name="em-style">'emacs'-style</a></h3>
+
+<p>You can switch the command line editor to an 'emacs' style, if you call the
+function <code>(em)</code> (i.e. without arguments). A single call is enough.
+Alternatively, you could invoke PicoLisp at least once with the <code>-em</code>
+command line option
+
+<pre><code>
+$ pil -em +
+:
+</code></pre>
+
+<p>The style will be remembered in a file "~/.pil/editor", and used in all
+subsequent PicoLisp sessions.
+
+<p>To switch back to 'vi' style, call <code>(vi)</code>, use the
+<code>-vi</code> command line option, or simply remove "~/.pil/editor".
+
+
 <h3>Conclusion</h3>
 
 <p>Please take some time to experiment and to get used to command line editing.
@@ -250,14 +278,14 @@ to know:
 
 <p>The most commonly used tool is probably the <code><a
 href="refS.html#show">show</a></code> function. It takes a symbolic argument,
-and shows the symbol's name (if any), followed by its value cell, and then the
+and shows the symbol's name (if any), followed by its value, and then the
 contents of the property list on the following lines (assignment of such things
 to a symbol can be done with <code><a href="refS.html#set">set</a></code>,
 <code><a href="refS.html#setq">setq</a></code>, and <code><a
 href="refP.html#put">put</a></code>).
 
 <pre><code>
-: (setq A '(This is the value))  # Set the value cell of 'A'
+: (setq A '(This is the value))  # Set the value of 'A'
 -> (This is the value)
 : (put 'A 'key1 'val1)           # Store property 'key1'
 -> val1
@@ -1374,13 +1402,13 @@ consideration in the head of the programmer than a physical reality.
 <li>A Class
    <ul>
    <li>Has a name (interned symbol)
-   <li>Has method definitions and superclass(es) in the value cell
+   <li>Has method definitions and superclass(es) in the value
    <li>May have class variables (attributes) in the property list
    </ul>
 <li>An Object
    <ul>
    <li>Has no name (anonymous symbol) or is an external symbol
-   <li>Has class(es) (and optionally method definitions) in the value cell
+   <li>Has class(es) (and optionally method definitions) in the value
    <li>Has instance variables (attributes) in the property list
    </ul>
 </ol>
@@ -1390,11 +1418,11 @@ usually are internal symbols. By convention, their names start with a
 '<code>+</code>'. Sometimes it makes sense, however, to create named objects (as
 global singletons, for example), or even anonymous classes.
 
-<p>Both classes and objects have a list in their value cell, consisting of
-method definitions (often empty for objects) and (super)class(es). And both
-classes and objects have local data in their property lists (often empty for
-classes). This implies, that any given object (as an instance of a class) may
-have private (object-local) methods defined.
+<p>Both classes and objects have a list in their value, consisting of method
+definitions (often empty for objects) and (super)class(es). And both classes and
+objects have local data in their property lists (often empty for classes). This
+implies, that any given object (as an instance of a class) may have private
+(object-local) methods defined.
 
 <p>It is rather difficult to contrive a simple OOP example. We constructed a
 hierarchy of geometric shapes, with a base class <code>+Shape</code> and two
@@ -1521,8 +1549,8 @@ $134432824 (+Rectangle)                   # Show the rectangle
 </code></pre>
 
 <p>We see that the symbol <code>$134432824</code> has a list of classes
-'<code>(+Rectangle)</code>' in its value cell, and the coordinates, width and
-height in is property list.
+'<code>(+Rectangle)</code>' in its value, and the coordinates, width and height
+in its property list.
 
 <p>Sending messages to that object
 
@@ -1664,8 +1692,8 @@ symbolic atoms (called "<a href="ref.html#external">External Symbols</a>"), that
 happen to be read from pool file(s) when accessed, and written back
 automatically when modified.
 
-<p>In all other aspects they are normal symbols. They have a value cell, a
-property list and a name.
+<p>In all other aspects they are normal symbols. They have a value, a property
+list and a name.
 
 <p>The name cannot be directly controlled by the programmer, as it is assigned
 when the symbol is created. It is an encoded index of the symbol's location in
@@ -1694,8 +1722,7 @@ programmer.
 {1} NIL                 # Value of '{1}' is NIL, property list empty
 </code></pre>
 
-<p>Now let's put something into the value cell and property list of
-<code>{1}</code>.
+<p>Now let's put something into the value and property list of <code>{1}</code>.
 
 <pre><code>
 : (set *DB "Hello world")  # Set value of '{1}' to a transient symbol (string)
@@ -2061,7 +2088,7 @@ minimal example for a plain HTML-GUI in <code><a
 href="hello.l">@doc/hello.l</a></code>. Start the application server as:
 
 <pre><code>
-$ pil @lib/http.l -'server 8080 "@doc/hello.l"' -wait
+$ pil @lib/http.l  --server 8080 @doc/hello.l  -wait
 </code></pre>
 
 <p>Now point your browser to the address '<code><a
@@ -2531,9 +2558,9 @@ previous examples:
 
 <p>However, an easier and less error-prone prone way - especially when more than
 one property has to be changed - is using <code><a
-href="refU.html#update">update</a></code>. It presents the value cell (the list
-of classes) and then each property on its own line, allowing the user to change
-it with the <a href="#ledit">command line editor</a>.
+href="refU.html#update">update</a></code>. It presents the value (the list of
+classes) and then each property on its own line, allowing the user to change it
+with the <a href="#ledit">command line editor</a>.
 
 <p>Just hitting ENTER will leave that property unchanged. To modify it, you'll
 typically hit ESC to get into command mode, and move the cursor to the point of

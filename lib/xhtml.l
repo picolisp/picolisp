@@ -1,4 +1,4 @@
-# 02jan12abu
+# 24jul12abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -291,6 +291,16 @@
                                     (ht:Prin (eval (pop 'Lst) 1))
                                     (eval (pop 'Lst) 1) ) ) ) ) ) ) ) ) ) ) )
    (prinl) )
+
+(de <trident> Lst
+   (<table> '(width . "100%") NIL NIL
+      (<tr> NIL
+         (<td> '((width . "33%") (align . left))
+            (eval (car Lst) 1) )
+         (<td> '((width . "34%") (align . center))
+            (eval (cadr Lst) 1) )
+         (<td> '((width . "33%") (align . right))
+            (eval (caddr Lst) 1) ) ) ) )
 
 (de <spread> Lst
    (<table> '(width . "100%") NIL '((norm) (align))

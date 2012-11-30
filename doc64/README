@@ -1,4 +1,4 @@
-26sep11abu
+06nov12abu
 (c) Software Lab. Alexander Burger
 
 
@@ -33,6 +33,9 @@ The CPU registers and instruction set of the PicoLisp processor are described in
 Currently, x86-64/Linux, x86-64/SunOS and ppc64/Linux are supported. The
 platform dependent files are in the "src64/arch/" for the target architecture,
 and in "src64/sys/" for the target operating system.
+
+In addition, an emulator which "assembles" to C code can be built. It is much
+slower than the native code, but otherwise completely compatible.
 
 
       Reasons for the Use of Assembly Language

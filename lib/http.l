@@ -1,4 +1,4 @@
-# 21mar12abu
+# 09nov12abu
 # (c) Software Lab. Alexander Burger
 
 # *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -20,18 +20,18 @@
    (`(chop "gif") "image/gif" 3600)
    (`(chop "tif") "image/tiff" 3600)
    (`(chop "tiff") "image/tiff" 3600)
-   (`(chop "bmp") "image/bmp" 3600)
-   (`(chop "png") "image/png" 3600)
+   (`(chop "bmp") "image/bmp" 86400)
+   (`(chop "png") "image/png" 86400)
    (`(chop "jpg") "image/jpeg" 3600)
    (`(chop "jpeg") "image/jpeg" 3600)
    (`(chop "txt") "text/octet-stream" 1 T)
    (`(chop "csv") "text/csv; charset=utf-8" 1 T)
    (`(chop "css") "text/css" 3600)
-   (`(chop "js") "application/x-javascript" 3600)
+   (`(chop "js") "application/x-javascript" 86400)
    (`(chop "ps") "application/postscript" 1)
    (`(chop "pdf") "application/pdf" 1)
    (`(chop "zip") "application/zip" 1)
-   (`(chop "jar") "application/java-archive" 3600) )
+   (`(chop "jar") "application/java-archive" 86400) )
 
 (de mime (S . @)
    (let L (chop S)
@@ -77,6 +77,9 @@
       (quit) ) )
 
 ### HTTP-Server ###
+(de -server ()
+   (server (format (opt)) (opt)) )
+
 (de server (P H)
    (setq
       *Port P

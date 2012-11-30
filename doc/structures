@@ -3,7 +3,7 @@
 
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx010 Number
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxx100 Symbol
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000 Cell
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000 Pair
 
 
          Number
@@ -23,7 +23,7 @@
                   | DIG |  /  |
                   +-----+-----+
 
-      Cell
+      Pair
       |
       V
       +-----+-----+

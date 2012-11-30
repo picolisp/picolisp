@@ -12,9 +12,9 @@
 <dl>
 
 <dt><a name="*Led"><code>*Led</code></a>
-<dd>A global variable holding a (possibly empty) <code>prg</code> body that
-implements a "Line editor". When non-<code>NIL</code>, it should return a single
-symbol (string) upon execution.
+<dd>(Debug mode only) A global variable holding a (possibly empty)
+<code>prg</code> body that implements a "Line editor". When
+non-<code>NIL</code>, it should return a single symbol (string) upon execution.
 
 <pre><code>
 : (de *Led "(bye)")
@@ -70,8 +70,9 @@ href="refP.html#pipe">pipe</a></code>'ed child process. The return value of
 </code></pre>
 
 <dt><a name="ld"><code>(ld) -> any</code></a>
-<dd><code><a href="refL.html#load">load</a></code>s the last file edited with
-<code><a href="refV.html#vi">vi</a></code>.
+<dd>(Debug mode only) <code><a href="refL.html#load">load</a></code>s the last
+file edited with <code><a href="refV.html#vi">vi</a></code> or <code><a
+href="refE.html#em">em</a></code>.
 
 <pre><code>
 : (vi 'main)
@@ -115,7 +116,7 @@ href="refS.html#step">step</a></code>.
 <dt><a name="length"><code>(length 'any) -> cnt | T</code></a>
 <dd>Returns the "length" of <code>any</code>. For numbers this is the number of
 decimal digits in the value (plus 1 for negative values), for symbols it is the
-number of characters in the name, and for lists it is the number of elements (or
+number of characters in the name, and for lists it is the number of cells (or
 <code>T</code> for circular lists). See also <code><a
 href="refS.html#size">size</a></code>.
 
@@ -258,12 +259,13 @@ href="refM.html#made">made</a></code>.
 <dt><a name="lint"><code>(lint 'sym) -> lst</code></a>
 <dt><code>(lint 'sym 'cls) -> lst</code>
 <dt><code>(lint '(sym . cls)) -> lst</code>
-<dd>Checks the function definition or file contents (in the first form), or the
-method body of sym (second and third form), for possible pitfalls. Returns an
-association list of diagnoses, where <code>var</code> indicates improper
-variables, <code>dup</code> duplicate parameters, <code>def</code> an undefined
-function, <code>bnd</code> an unbound variable, and <code>use</code> unused
-variables. See also <code><a href="refN.html#noLint">noLint</a></code>, <code><a
+<dd>(Debug mode only) Checks the function definition or file contents (in the
+first form), or the method body of sym (second and third form), for possible
+pitfalls. Returns an association list of diagnoses, where <code>var</code>
+indicates improper variables, <code>dup</code> duplicate parameters,
+<code>def</code> an undefined function, <code>bnd</code> an unbound variable,
+and <code>use</code> unused variables. See also <code><a
+href="refN.html#noLint">noLint</a></code>, <code><a
 href="refL.html#lintAll">lintAll</a></code>, <code><a
 href="refD.html#debug">debug</a></code>, <code><a
 href="refT.html#trace">trace</a></code> and <code><a
@@ -279,10 +281,10 @@ href="refD.html#*Dbg">*Dbg</a></code>.
 </code></pre>
 
 <dt><a name="lintAll"><code>(lintAll ['sym ..]) -> lst</code></a>
-<dd>Applies <code><a href="refL.html#lint">lint</a></code> to <code><a
-href="refA.html#all">all</a></code> internal symbols - and optionally to all
-files <code>sym</code> - and returns a list of diagnoses. See also <code><a
-href="refN.html#noLint">noLint</a></code>.
+<dd>(Debug mode only) Applies <code><a href="refL.html#lint">lint</a></code> to
+<code><a href="refA.html#all">all</a></code> internal symbols - and optionally
+to all files <code>sym</code> - and returns a list of diagnoses. See also
+<code><a href="refN.html#noLint">noLint</a></code>.
 
 <pre><code>
 : (more (lintAll "file1.l" "file2.l"))
@@ -297,7 +299,8 @@ the corresponding entry is freed. Maximally 24 callback functions can be
 installed that way. 'fun' should be a function of maximally five numbers, and
 should return a number. "Numbers" in this context are 64-bit scalars, and may
 not only represent integers, but also pointers or other encoded data. See also
-<code><a href="refN.html#native">native</a></code>.
+<code><a href="refN.html#native">native</a></code> and <code><a
+href="refS.html#struct">struct</a></code>.
 
 <pre><code>
 (load "lib/native.l")
@@ -346,7 +349,7 @@ queries. See also <code><a href="refM.html#map/3">map/3</a></code>.
 
 <dt><a name="lst?"><code>(lst? 'any) -> flg</code></a>
 <dd>Returns <code>T</code> when the argument <code>any</code> is a (possibly
-empty) list (<code>NIL</code> or a cons pair cell). See also <code><a
+empty) list (<code>NIL</code> or a cons pair). See also <code><a
 href="refP.html#pair">pair</a></code>.
 
 <pre><code>
@@ -438,7 +441,7 @@ href="ref.html#transient">transient</a></code> symbol with the same name as
 -> NIL
 </code></pre>
 
-<dt><a name="local"><code>(local lst) -> sym</code></a>
+<dt><a name="local"><code>(local . lst) -> sym</code></a>
 <dd>Wrapper function for <code><a href="refZ.html#zap">zap</a></code>. Typically
 used to create namespace-local symbols. <code>lst</code> should be a list of
 symbols. See also <code><a href="refP.html#pico">pico</a></code>, <code><a
@@ -447,12 +450,14 @@ href="refI.html#import">import</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
 <pre><code>
-(symbols 'myLib 'pico)
+: (symbols 'myLib 'pico)
+-> pico
+myLib: (local bar foo)
+-> "foo"
 
-(local bar foo)
-(de foo (A)  # 'foo' is local to 'myLib'
+myLib: (de foo (A)  # 'foo' is local to 'myLib'
    ...
-(de bar (B)  # 'bar' is local to 'myLib'
+myLib: (de bar (B)  # 'bar' is local to 'myLib'
    ...
 </code></pre>
 
@@ -563,11 +568,11 @@ and <code><a href="refN.html#n0">n0</a></code>.
 
 <dt><a name="lup"><code>(lup 'lst 'any) -> lst</code></a>
 <dt><code>(lup 'lst 'any 'any2) -> lst</code>
-<dd>Looks up <code>any</code> in the CAR-elements of cells stored in the index
-tree <code>lst</code>, as built-up by <code><a
-href="refI.html#idx">idx</a></code>. In the first form, the first found cell is
-returned, in the second form a list of all cells whose CAR is in the range
-<code>any</code> .. <code>any2</code>. See also <code><a
+<dd>Looks up <code>any</code> in the CAR-elements of cons pairs stored in the
+index tree <code>lst</code>, as built-up by <code><a
+href="refI.html#idx">idx</a></code>. In the first form, the first found cons
+pair is returned, in the second form a list of all pairs whose CAR is in the
+range <code>any</code> .. <code>any2</code>. See also <code><a
 href="refA.html#assoc">assoc</a></code>.
 
 <pre><code>

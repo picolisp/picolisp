@@ -1,4 +1,4 @@
-# 22mar12abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -957,7 +957,7 @@
       ld Y (Y CDR)  # Second arg?
       atom Y  # Any?
       if nz  # No
-         atom (E)  # Value must be a cell
+         atom (E)  # Value must be a pair
          jnz symNsErrEX
       else
          call checkVarEX
@@ -972,7 +972,7 @@
          sym E
          jz symErrEX
          ld C (E)  # Get source
-         atom C  # Must be a cell
+         atom C  # Must be a pair
          jnz symNsErrEX
          ld X (C)  # Source short names
          call cons_Y  # Create namespace cell
@@ -1197,10 +1197,13 @@
    if nz  # Yes
       call dbZapE  # Mark as "deleted"
    else
-      cmp E Nil  # Between 'NIL' and '*Bye'?
-      if ge
-         cmp E Bye
-         jle protErrEX  # Yes
+      cmp (EnvIntern) pico  # Inside 'pico'?
+      if eq  # Yes
+         cmp E Nil  # Between 'NIL' and '*Bye'?
+         if ge
+            cmp E Bye
+            jle protErrEX  # Yes
+         end
       end
       push Y
       ld X (E TAIL)
@@ -2629,7 +2632,7 @@
    ret
 
 (code 'getnECX_E 0)
-   num E  # Need symbol or cell
+   num E  # Need symbol or pair
    jnz argErrEX
    atom E  # List?
    if z  # Yes
@@ -3302,7 +3305,7 @@
    link
    push E  # <L I> 'obj|typ'
    link
-   num E  # Need symbol or cell
+   num E  # Need symbol or pair
    jnz argErrEX
    sym E  # Symbol?
    if nz  # Yes

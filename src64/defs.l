@@ -1,4 +1,4 @@
-# 05jun10abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
@@ -34,7 +34,7 @@
 (equ CNT 2)    # Count tag
 (equ BIG 4)    # Rest of a bignum + bignum tag
 (equ DIG -4)   # First digit of a big number
-(equ CDR 8)    # CDR part of a list cell
+(equ CDR 8)    # CDR part of a cons pair
 (equ SIGN 8)   # Sign bit of a number
 (equ SYM 8)    # Symbol tag
 (equ TAIL -8)  # Tail of a symbol

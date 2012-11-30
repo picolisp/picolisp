@@ -255,9 +255,9 @@ href="ref_.html#;">;</a></code>, <code><a href="ref_.html#=:">=:</a></code> and
 from a symbol. That symbol is <code>This</code> (if no other arguments are
 given), or a symbol found by applying the <code><a
 href="refG.html#get">get</a></code> algorithm to <code>This</code> and the
-following arguments. The property (the cell, not just its value) is returned,
-suitable for direct (destructive) manipulations with functions expecting a
-<code>var</code> argument. Used typically in methods or <code><a
+following arguments. The property (the cons pair, not just its value) is
+returned, suitable for direct (destructive) manipulations with functions
+expecting a <code>var</code> argument. Used typically in methods or <code><a
 href="refW.html#with">with</a></code> bodies. See also <code><a
 href="ref_.html#=:">=:</a></code>, <code><a
 href="refP.html#prop">prop</a></code> and <code><a
@@ -360,7 +360,7 @@ href="refG.html#gt0">gt0</a></code>.
 
 <dt><a name="=:"><code>(=: sym|0 [sym1|cnt .. sym2|0] 'any)</code></a>
 <dd>Stores a new value <code>any</code> for a property key <code>sym</code> or
-<code>sym2</code> (or in the value cell for zero) in a symbol. That symbol is
+<code>sym2</code> (or in the symbol value for zero) in a symbol. That symbol is
 <code>This</code> (if no other arguments are given), or a symbol found by
 applying the <code><a href="refG.html#get">get</a></code> algorithm to
 <code>This</code> and the following arguments. Used typically in methods or

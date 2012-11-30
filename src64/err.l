@@ -1,4 +1,4 @@
-# 19oct11abu
+# 13oct12abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -31,11 +31,17 @@
 # Y message format
 # Z message parameter
 (code 'errEXYZ)
-   link
-   push E  # <L I> Save reason
-   link
-   sub S (+ 240 IV)  # <S> Message buffer, <S 240> outFrame
-   cc sprintf(S Y Z)  # Build message
+   null E  # Reason?
+   if nz  # Yes
+      link
+      push E  # Save reason
+      link
+   else
+      push E  # Push reason
+      sub S I  # and dummy
+   end
+   sub S (+ 240 IV)  # <S> Message, <S 240> outFrame, <S (+ 240 V)> reason
+   cc snprintf(S 240 Y Z)  # Build message
    null X  # Error context?
    ld A Nil
    ldnz A X  # Yes
@@ -113,7 +119,7 @@
       call printE  # Print context
       call newline
    end
-   ld E (L I)  # Get reason
+   ld E (S (+ 240 V))  # Get reason
    null E  # any?
    if nz  # Yes
       call printE  # Print reason
@@ -435,10 +441,10 @@
    ld Y ExtErr
    jmp errEXYZ
 
-(code 'cellErrAX)
+(code 'pairErrAX)
    ld E A
-(code 'cellErrEX)
-   ld Y CellErr
+(code 'pairErrEX)
+   ld Y PairErr
    jmp errEXYZ
 
 (code 'atomErrAX)

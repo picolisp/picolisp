@@ -1,4 +1,4 @@
-10jan12abu
+06nov12abu
 (c) Software Lab. Alexander Burger
 
 
@@ -47,7 +47,16 @@ installation, and invoke them explicitly as desired.
 
       $ (cd src64; make)
 
-   In both cases the executable bin/picolisp will be created.
+   To use the 64-bit version also on systems which are not natively supported,
+   you can build the emulator
+
+      $ (cd src64; make emu)
+
+   Note that the emulator's execution speed is 10 to 20 times slower than the
+   native versions.
+
+   In all three cases (32-bits, 64-bits, or emulator), the executable
+   bin/picolisp will be created.
 
 
    To build the 64-bit version the first time (bootstrapping), you have the
@@ -155,8 +164,9 @@ instead of './dbg' or './pil +'.
       -------------
 
 For further information, please look at "doc/index.html". There you find the
-PicoLisp Reference Manual (doc/ref.html), the PicoLisp tutorials (doc/tut.html
-and doc/app.html), and the frequently asked questions (doc/faq.html).
+PicoLisp Reference Manual ("doc/ref.html"), the PicoLisp tutorials
+("doc/tut.html", "doc/app.html", "doc/select.html" and "doc/native.html"), and
+the frequently asked questions ("doc/faq.html").
 
 For details about the 64-bit version, refer to "doc64/README", "doc64/asm" and
 "doc64/structures".

@@ -154,7 +154,7 @@ OK
 -> OK
 </code></pre>
 
-<dt><a name="import"><code>(import lst) -> NIL</code></a>
+<dt><a name="import"><code>(import . lst) -> NIL</code></a>
 <dd>Wrapper function for <code><a href="refI.html#intern">intern</a></code>.
 Typically used to import symbols from other namespaces, as created by <code><a
 href="refS.html#symbols">symbols</a></code>. <code>lst</code> should be a list
@@ -198,9 +198,9 @@ href="refC.html#ctl">ctl</a></code>.
 <dd>The first form returns the value of <code>num</code> incremented by 1. The
 second form increments the <code>VAL</code> of <code>var</code> by 1, or by
 <code>num</code>. If the first argument is <code>NIL</code>, it is returned
-immediately. <code>(inc 'num)</code> is equivalent to <code>(+ 'num 1)</code>
-and <code>(inc 'var)</code> is equivalent to <code>(set 'var (+ var 1))</code>.
-See also <code><a href="refD.html#dec">dec</a></code> and <code><a
+immediately. <code>(inc Num)</code> is equivalent to <code>(+ Num 1)</code> and
+<code>(inc 'Var)</code> is equivalent to <code>(set 'Var (+ Var 1))</code>. See
+also <code><a href="refD.html#dec">dec</a></code> and <code><a
 href="ref_.html#+">+</a></code>.
 
 <pre><code>

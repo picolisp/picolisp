@@ -1,4 +1,4 @@
-15jul11abu
+24apr12abu
 (c) Software Lab. Alexander Burger
 
 
@@ -75,7 +75,7 @@ Your positions are marked with 'T', the computer's with '0'.
 
 
 
-The 'chess' game is minimalistic (444 lines of code). Nevertheless, it plays
+The 'chess' game is minimalistic (447 lines of code). Nevertheless, it plays
 some slow - though correct - chess. Start it as:
 
 $ pil games/chess.l -main +
@@ -115,6 +115,10 @@ for the "from" and "to" positions:
 Castling may be entered by just specifying the king's move:
 
 : (go e1 g1)
+
+To promote a pawn to some piece other than a queen, you can specify a class:
+
+: (go h7 h8 +Knight)
 
 To undo one or several moves, enter
 

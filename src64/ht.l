@@ -1,27 +1,10 @@
-# 29sep11abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
    initData
 
 ### Hypertext I/O functions ###
-(data 'HtOK)
-align 8  asciz "<b>"
-align 8  asciz "</b>"
-align 8  asciz "<i>"
-align 8  asciz "</i>"
-align 8  asciz "<u>"
-align 8  asciz "</u>"
-align 8  asciz "<p>"
-align 8  asciz "</p>"
-align 8  asciz "<pre>"
-align 8  asciz "</pre>"
-align 8  asciz "<div "
-align 8  asciz "</div>"
-align 8  asciz "<br>"
-align 8  asciz "<hr>"
-: HtOkEnd
-
 : HtLt asciz "&lt;"
 : HtGt asciz "&gt;"
 : HtAmp asciz "&amp;"
@@ -34,39 +17,6 @@ align 8  asciz "<hr>"
 (code 'HtCode)
    initCode
 
-(code 'findHtOkY_FE 0)
-   push X
-   ld X HtOK
-   do
-      push X
-      push Y
-      do
-         ld B (X)  # Compare bytes
-         cmp B (Y)  # Equal?
-      while eq  # Yes
-         inc X  # End of HtOk string?
-         nul (X)
-         if z  # Yes: Found
-            slen C Y  # Length of the remaining string
-            ld B (char ">")  # Is there a closing tag?
-            memb Y C
-            ldz E Y  # Yes: Return pointer to next char in E
-            pop Y
-            pop X
-            pop X
-            ret  # 'z' or 'nz'
-         end
-         inc Y  # End of data?
-         nul (Y)
-      until z  # Yes
-      pop Y
-      pop X
-      add X 8  # Try next
-      cmp X HtOkEnd  # Done?
-   until gt  # Yes
-   pop X
-   ret  # 'nz'
-
 # (ht:Prin 'sym ..) -> sym
 (code 'Prin 2)
    push X
@@ -78,7 +28,7 @@ align 8  asciz "<hr>"
       eval
       num E  # Number?
       jnz 20  # Yes
-      atom E  # Cell?
+      atom E  # Pair?
       jz 20  # Yes
       sym (E TAIL)  # External symbol?
       if nz  # Yes
@@ -90,66 +40,56 @@ align 8  asciz "<hr>"
          do
             nul (Y)  # Null byte?
          while nz  # No
-            call findHtOkY_FE  # Preserved pattern?
-            if z  # Yes
-               do
-                  ld B (Y)  # Output partial string
-                  call (PutB)
-                  inc Y  # till end pointer in E
-                  cmp Y E
-               until eq
+            ld B (Y)  # Next byte
+            cmp B (char "<")  # Escape special characters
+            if eq
+               ld C HtLt  # "&lt;"
+               call outStringC
             else
-               ld B (Y)  # Next byte
-               cmp B (char "<")  # Escape special characters
+               cmp B (char ">")
                if eq
-                  ld C HtLt  # "&lt;"
+                  ld C HtGt  # "&gt;"
                   call outStringC
                else
-                  cmp B (char ">")
+                  cmp B (char "&")
                   if eq
-                     ld C HtGt  # "&gt;"
+                     ld C HtAmp  # "&amp;"
                      call outStringC
                   else
-                     cmp B (char "&")
+                     cmp B (char "\"")
                      if eq
-                        ld C HtAmp  # "&amp;"
+                        ld C HtQuot  # "&quot;"
                         call outStringC
                      else
-                        cmp B (char "\"")
+                        cmp B (hex "FF")
                         if eq
-                           ld C HtQuot  # "&quot;"
-                           call outStringC
+                           ld B (hex "EF")
+                           call (PutB)
+                           ld B (hex "BF")
+                           call (PutB)
+                           ld B (hex "BF")
+                           call (PutB)
                         else
-                           cmp B (hex "FF")
-                           if eq
-                              ld B (hex "EF")
+                           ld C A  # Save char
+                           call (PutB)  # Output it
+                           test C (hex "80")  # Double byte?
+                           if nz  # Yes
+                              inc Y  # Next
+                              ld B (Y)  # Output second byte
                               call (PutB)
-                              ld B (hex "BF")
-                              call (PutB)
-                              ld B (hex "BF")
-                              call (PutB)
-                           else
-                              ld C A  # Save char
-                              call (PutB)  # Output it
-                              test C (hex "80")  # Double byte?
+                              test C (hex "20")  # Triple byte?
                               if nz  # Yes
                                  inc Y  # Next
-                                 ld B (Y)  # Output second byte
+                                 ld B (Y)  # Output third byte
                                  call (PutB)
-                                 test C (hex "20")  # Triple byte?
-                                 if nz  # Yes
-                                    inc Y  # Next
-                                    ld B (Y)  # Output third byte
-                                    call (PutB)
-                                 end
                               end
                            end
                         end
                      end
                   end
                end
-               inc Y  # Increment string pointer
             end
+            inc Y  # Increment string pointer
          loop
          ld S Z  # Drop buffer
          pop E

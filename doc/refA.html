@@ -23,10 +23,10 @@ href="refA.html#accept">accept</a></code>.
 
 <dt><a name="adr"><code>(adr 'var) -> num</code></a>
 <dt><code>(adr 'num) -> var</code>
-<dd>Converts, in the first form, a variable <code>var</code> (a symbol or a
-cell) into <code>num</code> (actually an encoded pointer). A symbol will result
-in a negative number, and a cell in a positive number. The second form converts
-a pointer back into the original <code>var</code>.
+<dd>Converts, in the first form, a variable <code>var</code> (a symbol or a cons
+pair) into <code>num</code> (actually an encoded pointer). A symbol will result
+in a negative number, and a cons pair in a positive number. The second form
+converts a pointer back into the original <code>var</code>.
 
 <pre><code>
 : (setq X (box 7))
@@ -493,7 +493,7 @@ href="refR.html#retract">retract</a></code>.
 -> a
 
 : (asserta '(a (1)))    # Insert new fact in front
--> (((1)) ((2)) ((3)))
+-> ((1))
 
 : (? (a @N))            # Query
  @N=1
@@ -534,7 +534,7 @@ href="refR.html#retract">retract</a></code>.
 -> a
 
 : (assertz '(a (3)))    # Append new fact at the end
--> (((1)) ((2)) ((3)))
+-> ((3))
 
 : (? (a @N))            # Query
  @N=1

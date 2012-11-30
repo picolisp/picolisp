@@ -29,7 +29,8 @@ href="refB.html#*Bye">*Bye</a></code>.
 <dd>A global variable which may hold a cons pair of two strings with escape
 sequences, to switch on and off an alternative transient symbol markup. If set,
 <code><a href="refP.html#print">print</a></code> will output these sequences to
-the console instead of the standard double quote markup characters.
+the console instead of the standard double quote markup characters. An easy way
+to switch on transient symbol markup is loading "@lib/tsm.l".
 
 <pre><code>
 : (de *Tsm "^[[4m" . "^[[24m")   # vt100 escape sequences for underline
@@ -452,12 +453,12 @@ modified.
 <dt><a name="trace"><code>(trace 'sym) -> sym</code></a>
 <dt><code>(trace 'sym 'cls) -> sym</code>
 <dt><code>(trace '(sym . cls)) -> sym</code>
-<dd>Inserts a <code><a href="ref_.html#$">$</a></code> trace function call at
-the beginning of the function or method body of <code>sym</code>, so that trace
-information will be printed before and after execution. Built-in functions
-(C-function pointer) are automatically converted to Lisp expressions (see
-<code><a href="refE.html#expr">expr</a></code>). See also <code><a
-href="refD.html#*Dbg">*Dbg</a></code>, <code><a
+<dd>(Debug mode only) Inserts a <code><a href="ref_.html#$">$</a></code> trace
+function call at the beginning of the function or method body of
+<code>sym</code>, so that trace information will be printed before and after
+execution. Built-in functions (C-function pointer) are automatically converted
+to Lisp expressions (see <code><a href="refE.html#expr">expr</a></code>). See
+also <code><a href="refD.html#*Dbg">*Dbg</a></code>, <code><a
 href="refT.html#traceAll">traceAll</a></code> and <code><a
 href="refU.html#untrace">untrace</a></code>, <code><a
 href="refD.html#debug">debug</a></code> and <code><a
@@ -473,7 +474,7 @@ href="refL.html#lint">lint</a></code>.
 </code></pre>
 
 <dt><a name="traceAll"><code>(traceAll ['lst]) -> sym</code></a>
-<dd>Traces all Lisp level functions by inserting a <code><a
+<dd>(Debug mode only) Traces all Lisp level functions by inserting a <code><a
 href="ref_.html#$">$</a></code> function call at the beginning. <code>lst</code>
 may contain symbols which are to be excluded from that process. In addition, all
 symbols in the global variable <code>*NoTrace</code> are excluded. See also
@@ -484,6 +485,40 @@ href="refD.html#*Dbg">*Dbg</a></code>.
 <pre><code>
 : (traceAll)      # Trace all Lisp level functions
 -> balance
+</code></pre>
+
+<dt><a name="trail"><code>(trail ['flg]) -> lst</code></a>
+<dd>(64-bit version only) Returns a stack backtrace for the current point of
+program execution, The list elements are either expressions (denoting function
+or method calls), or symbols followed by their corresponding values. If
+<code>flg</code> is <code>NIL</code>, the symbol and their values are omitted,
+and only the expressions are returned. See also <code><a
+href="refU.html#up">up</a></code> and <code><a
+href="refE.html#env">env</a></code>.
+
+<pre><code>
+: (de f (A B)
+   (g (inc A) (dec B)) )
+-> f
+: (de g (X Y)
+   (trail T) )
+-> g
+: (f 3 4)
+-> ((f 3 4) A 3 B 4 (g (inc A) (dec B)) X 4 Y 3)
+
+: (for (L (f 3 4)  L)  # Pretty-print trail
+   (if (pair (car L))
+      (println (pop 'L))
+      (space 3)
+      (println (pop 'L) (pop 'L)) ) )
+
+   L NIL
+(f 3 4)
+   A 3
+   B 4
+(g (inc A) (dec B))
+   X 4
+   Y 3
 </code></pre>
 
 <dt><a name="tree"><code>(tree 'var 'cls ['hook]) -> tree</code></a>

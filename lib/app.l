@@ -1,8 +1,9 @@
-# 01apr12abu
+# 16nov12abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
 (de *Err
+   (and trail (println (trail T)))
    (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
    (show This)
    (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)

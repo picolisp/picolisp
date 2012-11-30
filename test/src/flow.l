@@ -1,4 +1,4 @@
-# 11jul11abu
+# 14jul12abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -417,7 +417,7 @@
 
 
 ### co yield ###
-(when (== 64 64)
+(when co
    (test (1 2 3 (1 2 3))
       (make
          (do 4

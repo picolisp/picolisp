@@ -1,4 +1,4 @@
-# 16jul11abu
+# 24apr12abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -502,13 +502,16 @@
          (cdr (asoq (caar M) (cdr M)))
          (pick cdr (cdar M)) ) ) )
 
-(de yourMove (From To)
+(de yourMove (From To Cls)
    (when
       (find
-         '((Lst)
+         '((Mov)
             (and
-               (== (caar Lst) (get From 'piece))
-               (== To (pick cdr (cdar Lst))) ) )
+               (== (caar Mov) (get From 'piece))
+               (== To (pick cdr (cdar Mov)))
+               (or
+                  (not Cls)
+                  (isa Cls (car (last (car Mov)))) ) ) )
          (moves *You) )
       (prog1 (car (push '*Undo @))
          (off *Redo)
@@ -550,7 +553,7 @@
          ((not Args) (xchg '*Me '*You) (myMove))
          ((== '- (car Args)) (and *Undo (undo)))
          ((== '+ (car Args)) (and *Redo (redo)))
-         ((yourMove (car Args) (cadr Args)) (display T) (myMove)) ) ) )
+         ((apply yourMove Args) (display T) (myMove)) ) ) )
 
 # Print position to file
 (de ppos (File)

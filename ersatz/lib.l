@@ -1,4 +1,4 @@
-# 07apr12abu
+# 11nov12abu
 # (c) Software Lab. Alexander Burger
 
 (setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
@@ -197,6 +197,14 @@
             (loc S (car X))
             (loc S (cdr X)) ) ) ) )
 
+(de local Lst
+   (mapc zap Lst) )
+
+(de import Lst
+   (for Sym Lst
+      (unless (== Sym (intern Sym))
+         (quit "Import conflict" Sym) ) ) )
+
 ### OOP ###
 (de class Lst
    (let L (val (setq *Class (car Lst)))
@@ -267,7 +275,7 @@
 ### Pretty Printing ###
 (de *PP
    T NIL if ifn when unless while until do case state for
-   with catch finally ! setq default push job use let let?
+   with catch finally ! setq default push bind job use let let?
    prog1 recur redef =: in out tab new )
 (de *PP1 let let? for redef)
 (de *PP2 setq default)
@@ -557,6 +565,20 @@
                (recurse "Lst" (dec "N"))
                (recurse (cdr "L") (- "Len" "N")) ) ) ) ) )
 
+(de depth (Idx)  #> (max . average)
+   (let (C 0  D 0  N 0)
+      (cons
+         (recur (Idx N)
+            (ifn Idx
+               0
+               (inc 'C)
+               (inc 'D (inc 'N))
+               (inc
+                  (max
+                     (recurse (cadr Idx) N)
+                     (recurse (cddr Idx) N) ) ) ) )
+         (or (=0 C) (*/ D C)) ) ) )
+
 ### Allow ###
 (de allowed Lst
    (setq *Allow (cons NIL (car Lst)))
@@ -566,8 +588,7 @@
    (nond
       (*Allow)
       (Flg (idx *Allow X T))
-      ((member X (cdr *Allow))
-         (conc *Allow (cons X)) ) )
+      ((member X (cdr *Allow)) (queue '*Allow X)) )
    X )
 
 ### Telephone ###
@@ -764,7 +785,7 @@
 (de clause (CL)
    (with (car CL)
       (if (== *Rule This)
-         (=: T (conc (: T) (cons (cdr CL))))
+         (queue (:: T) (cdr CL))
          (=: T (cons (cdr CL)))
          (setq *Rule This) )
       This ) )
@@ -773,12 +794,10 @@
    (conc (get *Rule T) (get *Rule T)) )
 
 (de asserta (CL)
-   (with (car CL)
-      (=: T (cons (cdr CL) (: T))) ) )
+   (push (prop CL 1 T) (cdr CL)) )
 
 (de assertz (CL)
-   (with (car CL)
-      (=: T (conc (: T) (cons (cdr CL)))) ) )
+   (queue (prop CL 1 T) (cdr CL)) )
 
 (de retract (X)
    (if (sym? X)
@@ -1309,6 +1328,10 @@
 
 ############ lib/debug.l ############
 
+# Prompt
+(de *Prompt
+   (unless (== (symbols) 'pico) (symbols)) )
+
 # Browsing
 (de doc (Sym Browser)
    (call (or Browser (sys "BROWSER") 'w3m)
@@ -1343,20 +1366,6 @@
          (T (line) T)
          ("Fun" (pop '"M")) ) ) )
 
-(de depth (Idx)  #> (max . average)
-   (let (C 0  D 0  N 0)
-      (cons
-         (recur (Idx N)
-            (ifn Idx
-               0
-               (inc 'C)
-               (inc 'D (inc 'N))
-               (inc
-                  (max
-                     (recurse (cadr Idx) N)
-                     (recurse (cddr Idx) N) ) ) ) )
-         (or (=0 C) (*/ D C)) ) ) )
-
 (de what (S)
    (let *Dbg NIL
       (setq S (chop S))
@@ -1374,7 +1383,7 @@
       (push '"Who" "Y")
       (ifn (= `(char "+") (char "Y"))
          (and (pair (val "Y")) ("nest" @) (link "Y"))
-         (for "Z" (val "Y")
+         (for "Z" (pair (val "Y"))
             (if (atom "Z")
                (and ("match" "Z") (link "Y"))
                (when ("nest" (cdr "Z"))

@@ -1,4 +1,4 @@
-# 07feb12abu
+# 05nov12abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -47,7 +47,7 @@ ifeq ($(shell uname), Darwin)
 	PICOLISP-FLAGS = -m32
 	LIB-FLAGS = -lc -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -dynamiclib -undefined dynamic_lookup
-	STRIP = :
+	STRIP = strip -x
 else
 ifeq ($(shell uname -o), Cygwin)
 	OS = Cygwin

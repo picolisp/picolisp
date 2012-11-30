@@ -1,4 +1,4 @@
-/* 25jan11abu
+/* 07jun12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -238,7 +238,7 @@ any doCon(any ex) {
    cell c1;
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
-   NeedCell(ex,data(c1));
+   NeedPair(ex,data(c1));
    x = cdr(x),  x = cdr(data(c1)) = EVAL(car(x));
    drop(c1);
    return x;

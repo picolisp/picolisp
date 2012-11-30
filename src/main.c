@@ -1,4 +1,4 @@
-/* 18mar12abu
+/* 15nov12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -277,7 +277,7 @@ any doEnv(any x) {
 
    Push(c1, Nil);
    if (!isCell(x = cdr(x))) {
-      for (p = Env.bind;  p;  p = p->link) {
+      for (p = Break? Env.bind->link : Env.bind;  p;  p = p->link) {
          if (p->i == 0) {
             for (i = p->cnt;  --i >= 0;) {
                for (x = data(c1); ; x = cdr(x)) {
@@ -326,7 +326,7 @@ any doUp(any x) {
       cnt = 1;
    else
       cnt = (int)unBox(y),  x = cdr(x),  y = car(x);
-   for (p = Env.bind, val = &val(y);  p;  p = p->link) {
+   for (p = Break? Env.bind->link : Env.bind, val = &val(y);  p;  p = p->link) {
       if (p->i <= 0) {
          for (i = 0;  i < p->cnt;  ++i)
             if (p->bnd[i].sym == y) {
@@ -501,11 +501,14 @@ void err(any ex, any x, char *fmt, ...) {
    va_list ap;
    char msg[240];
    outFrame f;
+   cell c1;
 
    va_start(ap,fmt);
    vsnprintf(msg, sizeof(msg), fmt, ap);
    va_end(ap);
    val(Up) = ex ?: Nil;
+   if (x)
+      Push(c1, x);
    if (msg[0]) {
       any y;
       catchFrame *p;
@@ -572,7 +575,7 @@ void numError(any ex, any x) {err(ex, x, "Number expected");}
 void cntError(any ex, any x) {err(ex, x, "Small number expected");}
 void symError(any ex, any x) {err(ex, x, "Symbol expected");}
 void extError(any ex, any x) {err(ex, x, "External symbol expected");}
-void cellError(any ex, any x) {err(ex, x, "Cell expected");}
+void pairError(any ex, any x) {err(ex, x, "Cons pair expected");}
 void atomError(any ex, any x) {err(ex, x, "Atom expected");}
 void lstError(any ex, any x) {err(ex, x, "List expected");}
 void varError(any ex, any x) {err(ex, x, "Variable expected");}
@@ -1204,7 +1207,7 @@ static void init(int ac, char *av[]) {
    AV = av;
    heapAlloc();
    initSymbols();
-   if (strcmp(av[ac-2], "+") == 0)
+   if (ac >= 2 && strcmp(av[ac-2], "+") == 0)
       val(Dbg) = T,  av[ac-2] = NULL;
    if (av[0] && *av[0] != '-' && (p = strrchr(av[0], '/')) && !(p == av[0]+1 && *av[0] == '.')) {
       Home = malloc(p - av[0] + 2);

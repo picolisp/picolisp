@@ -1,4 +1,4 @@
-/* 11oct11abu
+/* 07jun12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -224,7 +224,7 @@ typedef struct catchFrame {
 #define NeedCnt(ex,x)   if (!isNum(x) || isNum(cdr(numCell(x)))) cntError(ex,x)
 #define NeedSym(ex,x)   if (!isSym(x)) symError(ex,x)
 #define NeedExt(ex,x)   if (!isSym(x) || !isExt(x)) extError(ex,x)
-#define NeedCell(ex,x)  if (!isCell(x)) cellError(ex,x)
+#define NeedPair(ex,x)  if (!isCell(x)) pairError(ex,x)
 #define NeedAtom(ex,x)  if (isCell(x)) atomError(ex,x)
 #define NeedLst(ex,x)   if (!isCell(x) && !isNil(x)) lstError(ex,x)
 #define NeedVar(ex,x)   if (isNum(x)) varError(ex,x)
@@ -279,7 +279,7 @@ int bufSize(any);
 void bufString(any,char*);
 void bye(int) __attribute__ ((noreturn));
 void byteSym(int,int*,any*);
-void cellError(any,any) __attribute__ ((noreturn));
+void pairError(any,any) __attribute__ ((noreturn));
 void charSym(int,int*,any*);
 any circ(any);
 void closeInFile(int);

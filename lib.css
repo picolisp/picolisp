@@ -1,10 +1,12 @@
-/* 14mar12abu
+/* 18nov12abu
+ * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
 
 /* Lib */
 .left {float: left;}
 .right {float: right;}
+.nofloat {float: none;}
 .clr {clear: both;}
 .norm {text-align: left;}
 .align {text-align: right;}
@@ -33,7 +35,7 @@
 /* Defaults */
 body {
    font-family: Arial, Helvetica, sans-serif;
-   background-color: #F0F0F0;
+   background-color: #f0f0f0;
    font-size: small;
    margin: 0;
 }
@@ -55,7 +57,7 @@ caption {
    padding: 0 1em;
    text-align: left;
    margin-top: 2ex;
-   background-color: #D0D0D0;
+   background-color: #d0d0d0;
 }
 
 td {
@@ -67,8 +69,9 @@ a {
 }
 
 .step a {
-   background-color: #D0D0D0;
-   padding: 2px;
+   border-radius: 6px;
+   background-color: #d0d0d0;
+   padding: 2px 3px;
 }
 
 a:hover {
@@ -83,7 +86,7 @@ a:hover {
    width: 18em;
    height: 100%;
    padding: 1ex 0;
-   background-color: #D0D0D0;
+   background-color: #d0d0d0;
 }
 
 #menu ul {
@@ -94,12 +97,12 @@ a:hover {
 
 #menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
    list-style-position: inside;
-	list-style-type: circle;
+   list-style-type: circle;
    padding: 0 0 0 2em;
 }
 
 #menu .act1, .act2, .act3, .act4 {
-	list-style-type: disc;
+   list-style-type: disc;
 }
 
 #menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
@@ -120,7 +123,8 @@ a:hover {
 }
 
 .tab td {
-   padding: 1ex 1em;
+   padding: 3px 1em;
+   border-radius: 6px 6px 0 0;
 }
 
 .tab .top {
@@ -131,7 +135,7 @@ a:hover {
 }
 
 .tab .sub {
-   background-color: #D0D0D0;
+   background-color: #d0d0d0;
    border-bottom: 1px solid;
 }
 
@@ -150,11 +154,11 @@ a:hover {
 }
 
 .chart td {
-   background-color: #E0E0E0;
+   background-color: #e0e0e0;
 }
 
 .chart td.T {
-   background-color: #D0D0D0;
+   background-color: #d0d0d0;
 }
 
 .chart td.nil {
@@ -168,11 +172,36 @@ a:hover {
 /* Buttons */
 .submit {
    font-weight: bold;
-   background-color: #D0D0D0;
+   background-color: #eee;
+   background-image: -moz-linear-gradient(top, #eee, #ccc);
+   background-image: -o-linear-gradient(top, #eee, #ccc);
+   background-image: -webkit-linear-gradient(top, #eee, #ccc);
+   background-image: linear-gradient(top, #eee, #ccc);
+   border: 1px solid #707070;
+   border-radius: 3px;
+   box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+}
+
+.submit:hover {
+   background-image: -moz-linear-gradient(top, #fafafa, #ddd);
+   background-image: -o-linear-gradient(top, #fafafa, #ddd);
+   background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
+   background-image: linear-gradient(top, #fafafa, #ddd);
+}
+
+.submit[disabled='disabled'] {
+   background-image: -moz-linear-gradient(top, #eee, #ccc);
+   background-image: -o-linear-gradient(top, #eee, #ccc);
+   background-image: -webkit-linear-gradient(top, #eee, #ccc);
+   background-image: linear-gradient(top, #eee, #ccc);
 }
 
 .edit {
-   background-color: #66FF66;
+   background-color: #66ff66;
+   background-image: -moz-linear-gradient(top, #8f8, #6f6);
+   background-image: -o-linear-gradient(top, #8f8, #6f6);
+   background-image: -webkit-linear-gradient(top, #8f8, #6f6);
+   background-image: linear-gradient(top, #8f8, #6f6);
 }
 
 /* Errors */
@@ -197,7 +226,8 @@ a:hover {
    padding: 1ex;
    margin: 1ex 0 1ex 5em;
    background-color: yellow;
-   border: dashed thin;
+   border: 1px solid #888;
+   border-radius: 6px;
 }
 
 .alert input {
@@ -208,13 +238,14 @@ a:hover {
 .dialog {
    padding: 1ex;
    margin: 1ex 5em 1ex 1em;
-   border: dashed thin;
+   border: 1px solid #888;
+   border-radius: 6px;
 }
 
 /* Hints */
 .hint {
    font-size: small;
-   background-color: #707070;
+   background-color: #777;
 }
 
 .hints {

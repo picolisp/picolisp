@@ -330,45 +330,59 @@ href="refT.html#tolr/3">tolr/3</a></code>.
 <dt><a name="for"><code>(for sym 'num ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code></a>
 <dt><code>(for sym|(sym2 . sym) 'lst ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
 <dt><code>(for (sym|(sym2 . sym) 'any1 'any2 [. prg]) ['any | (NIL 'any . prg) | (T 'any . prg) ..]) -> any</code>
-<dd>Conditional loop with local variable(s) and multiple conditional exits: In
-the first form, the value of <code>sym</code> is saved, <code>sym</code> is
+<dd>Conditional loop with local variable(s) and multiple conditional exits:<br>
+In the first form, the value of <code>sym</code> is saved, <code>sym</code> is
 bound to <code>1</code>, and the body is executed with increasing values up to
-(and including) <code>num</code>. In the second form, the value of
-<code>sym</code> is saved, <code>sym</code> is subsequently bound to the
-elements of <code>lst</code>, and the body is executed each time. In the third
-form, the value of <code>sym</code> is saved, and <code>sym</code> is bound to
-<code>any1</code>. If <code>sym2</code> is given, it is treated as a counter
-variable, first bound to 1 and then incremented for each execution of the body.
-While the condition <code>any2</code> evaluates to non-<code>NIL</code>, the
-body is repeatedly executed and, if <code>prg</code> is given, <code>sym</code>
-is re-bound to the result of its evaluation. If a clause has <code>NIL</code> or
-<code>T</code> as its CAR, the clause's second element is evaluated as a
-condition and - if the result is <code>NIL</code> or non-<code>NIL</code>,
-respectively - the <code>prg</code> is executed and the result returned. If the
-body is never executed, <code>NIL</code> is returned. See also <code><a
-href="refD.html#do">do</a></code> and <code><a
+(and including) <code>num</code>.<br>
+
+In the second form, the value of <code>sym</code> is saved, <code>sym</code> is
+subsequently bound to the elements of <code>lst</code>, and the body is executed
+each time.<br>
+
+In the third form, the value of <code>sym</code> is saved, and <code>sym</code>
+is bound to <code>any1</code>. If <code>sym2</code> is given, it is treated as a
+counter variable, first bound to 1 and then incremented for each execution of
+the body. While the condition <code>any2</code> evaluates to
+non-<code>NIL</code>, the body is repeatedly executed and, if <code>prg</code>
+is given, <code>sym</code> is re-bound to the result of its evaluation.<br>
+
+If a clause has <code>NIL</code> or <code>T</code> as its CAR, the clause's
+second element is evaluated as a condition and - if the result is
+<code>NIL</code> or non-<code>NIL</code>, respectively - the <code>prg</code> is
+executed and the result returned. If the body is never executed,
+<code>NIL</code> is returned.<br>
+
+See also <code><a href="refD.html#do">do</a></code> and <code><a
 href="refL.html#loop">loop</a></code>.
 
 <pre><code>
-: (for (N 1 (>= 8 N) (inc N)) (printsp N))
-1 2 3 4 5 6 7 8 -> 8
-: (for (L (1 2 3 4 5 6 7 8) L) (printsp (pop 'L)))
-1 2 3 4 5 6 7 8 -> 8
+# First form:
+: (for N 5 (printsp N))
+1 2 3 4 5 -> 5
+: (for N 5 (printsp N) (NIL (< N 3) (printsp 'enough)))
+1 2 3 enough -> enough
+: (for N 5 (T (> N 3) (printsp 'enough)) (printsp N))
+1 2 3 enough -> enough
+
+# Second form:
 : (for X (1 a 2 b) (printsp X))
 1 a 2 b -> b
+: (for (I . X) '(a b c) (println I X))
+1 a
+2 b
+3 c
+-> c
+
+# Third form:
+: (for (L (1 2 3 4 5) L) (printsp (pop 'L)))
+1 2 3 4 5 -> 5
+: (for (N 1 (>= 5 N) (inc N)) (printsp N))
+1 2 3 4 5 -> 5
 : (for ((I . L) '(a b c d e f) L (cddr L)) (println I L))
 1 (a b c d e f)
 2 (c d e f)
 3 (e f)
 -> (e f)
-: (for (I . X) '(a b c d e f) (println I X))
-1 a
-2 b
-3 c
-4 d
-5 e
-6 f
--> f
 </code></pre>
 
 <dt><a name="for/2"><code>for/2</code></a>

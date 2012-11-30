@@ -1,4 +1,4 @@
-# 28jan12abu
+# 15nov12abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -8,7 +8,7 @@
 env (i x y)
    y = Nil;
    if (!((ex = ex.Cdr) instanceof Cell)) {
-      for (Bind p = Env.Bind;  p != null;  p = p.Link) {
+      for (Bind p = Break? Env.Bind.Link : Env.Bind;  p != null;  p = p.Link) {
          if (p.Eswp == 0) {
             for (i = p.Cnt; --i > 0; --i) {
                for (x = y; ; x = x.Cdr) {
@@ -50,7 +50,7 @@ up (i j k x)
    }
    j = 0;
    Bind q = null;
-   for (Bind p = Env.Bind;  p != null;  p = p.Link) {
+   for (Bind p = Break? Env.Bind.Link : Env.Bind;  p != null;  p = p.Link) {
       for (i = 0;  i < p.Cnt; i += 2) {
          if (p.Data[i+1] == x) {
             if (--k == 0) {
@@ -1468,10 +1468,12 @@ for (i w x y z bnd)
       bnd.Data[1].Car = (y = y.Cdr).Car.eval();
       z = y.Cdr;
    for2:
-      for (y = Nil; (w = z.Car.eval()) != Nil;) {
-         At.Car = w;
+      for (y = Nil;;) {
          if (bnd.Cnt == 4)
             bnd.Data[3].Car = ((Number)bnd.Data[3].Car).add(One);
+         if ((w = z.Car.eval()) == Nil)
+            break;
+         At.Car = w;
          x = ex.Cdr;
          do {
             if (!((y = x.Car) instanceof Cell))
@@ -1640,7 +1642,7 @@ name (x y s)
    y = (x = ex.Cdr).Car.eval();
    if (!((x = x.Cdr) instanceof Cell))
       return mkStr(y.name());
-   if ((s = ((Symbol)y)).Name != null && Intern.get(s.Name) == s)
+   if ((s = ((Symbol)y)).Name != null && Env.intern().get(s.Name) == s)
       err(ex, s, "Can't rename");
    if (Transient.get(((Symbol)y).Name) == y)
       Transient.remove(((Symbol)y).Name);
@@ -1667,16 +1669,36 @@ getd (x)
 
 # (all ['T]) -> lst
 all ()
-   return all(ex.Cdr.Car.eval() == Nil? Intern : Transient);
+   return all(ex.Cdr.Car.eval() == Nil? Env.intern() : Transient);
+
+# (symbols) -> sym
+# (symbols 'sym1) -> sym2
+# (symbols 'sym1 'sym2) -> sym3
+symbols (s t)
+   if (ex.Cdr instanceof Cell) {
+      s = (Symbol)ex.Cdr.Car.eval();
+      if (ex.Cdr.Cdr instanceof Cell) {
+         t = (Symbol)ex.Cdr.Cdr.Car.eval();
+         if (!(t.Car instanceof Symbol) || !(((Symbol)t.Car).Obj instanceof Namespace))
+            symNsError(ex, t);
+         s.Car = new Symbol(((Namespace)(((Symbol)t.Car).Obj)).clone());
+      }
+      else if (!(s.Car instanceof Symbol) || !(((Symbol)s.Car).Obj instanceof Namespace))
+         symNsError(ex, s);
+      t = Env.Intern;
+      Env.Intern = s;
+      return t;
+   }
+   return Env.Intern;
 
 # (intern 'sym) -> sym
 intern (s t str)
    s = (Symbol)ex.Cdr.Car.eval();
    if ((str = s.name()).length() == 0 || str.equals("NIL"))
       return Nil;
-   if ((t = Intern.get(str)) != null)
+   if ((t = Env.intern().get(str)) != null)
       return t;
-   Intern.put(str, s);
+   Env.intern().put(str, s);
    return s;
 
 # (==== ['sym ..]) -> NIL
@@ -1694,7 +1716,7 @@ box? (x)
 
 # (str? 'any) -> sym | NIL
 str? (x)
-   return ((x = ex.Cdr.Car.eval()) instanceof Symbol) && Intern.get(x.name()) != x? x : Nil;
+   return ((x = ex.Cdr.Car.eval()) instanceof Symbol) && Env.intern().get(x.name()) != x? x : Nil;
 
 # (ext? 'any) -> sym | NIL
 ext? T
@@ -1703,8 +1725,8 @@ ext? T
 # (zap 'sym) -> sym
 zap (s)
    s = (Symbol)ex.Cdr.Car.eval();
-   if (Intern.get(s.Name) == s)
-      Intern.remove(s.Name);
+   if (Env.intern().get(s.Name) == s)
+      Env.intern().remove(s.Name);
    return s;
 
 # (chop 'any) -> lst
@@ -2458,8 +2480,10 @@ delq (w x y z)
 replace (i j w x y z v)
    if (!((y = (x = ex.Cdr).Car.eval()) instanceof Cell))
       return y;
-   for (v = new Any[6], i = 0;  (x = x.Cdr) instanceof Cell;  ++i)
+   for (v = new Any[6], i = 0;  (x = x.Cdr) instanceof Cell;  ++i) {
       v = append(v, i, x.Car.eval());
+      v = append(v, ++i, (x = x.Cdr).Car.eval());
+   }
    for (x = y.Car, j = 0;  j < i;  j += 2)
       if (x.equal(v[j])) {
          x = v[j+1];

@@ -1,4 +1,4 @@
-# 27jan12abu
+# 04nov12abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -209,8 +209,8 @@
 
 ### chdir ###
 (let P (pwd)
-   (chdir "/tmp"
-      (test "/tmp" (pwd)) )
+   (chdir "/"
+      (test "/" (pwd)) )
    (test P *PWD) )
 
 

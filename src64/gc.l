@@ -1,4 +1,4 @@
-# 29sep11abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -454,7 +454,7 @@
    pop X
    ret
 
-### Build cons cells ###
+### Build cons pair ###
 (code 'cons_A 0)
    ld A (Avail)  # Get avail list
    null A  # Empty?

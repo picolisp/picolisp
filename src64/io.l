@@ -1,4 +1,4 @@
-# 17oct11abu
+# 22nov12abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -13,7 +13,7 @@
 
 # Lock/unlock file
 (code 'unLockFileAC)
-   st2 (Flock)  # 'l_type'
+   st2 (Flock L_TYPE)  # 'l_type'
    ld (Flock L_START) 0  # Start position ('l_whence' is SEEK_SET)
    shr A 16  # Get length
    ld (Flock L_LEN) A  # Length
@@ -26,7 +26,7 @@
 (code 'rdLockFileC)
    ld A F_RDLCK  # Read lock, length 0
 (code 'lockFileAC)
-   st2 (Flock)  # 'l_type'
+   st2 (Flock L_TYPE)  # 'l_type'
    ld (Flock L_START) 0  # Start position ('l_whence' is SEEK_SET)
    shr A 16  # Get length
    ld (Flock L_LEN) A  # Length
@@ -223,7 +223,8 @@
       if z  # Closed
          dec (C I)  # 'ix' = 'cnt' = -1
          dec (C II)
-         ret  # z
+         setz  # Return 'z'
+         ret
       end
       call errno_A
       cmp A EAGAIN  # No data available?
@@ -330,7 +331,12 @@
          cmp A ECONNRESET  # Connection reset by peer?
          jeq retnz  # Return 'nz'
          cmp A EINTR  # Interrupted?
-         jne wrBytesErr  # No
+         if ne  # No
+            cmp C 2  # stderr?
+            jne wrBytesErr  # No
+            ld E 2  # Exit error code
+            jmp byeE
+         end
          null (Signal)  # Signal?
          if nz  # Yes
             call sighandler0
@@ -1185,6 +1191,7 @@
             ld (Z) B  # Store "+"
             inc Z
             call symByteCX_FACX  # Second byte
+            jz 90
          end
          cmp B (char "@")  # Home path?
          if ne  # No
@@ -1234,7 +1241,7 @@
          end
       end
    end
-   set (Z) 0  # Null byte
+90 set (Z) 0  # Null byte
    add Z 8  # Round up
    off Z 7
    pop X
@@ -2131,22 +2138,21 @@
          ld X (L I)  # Get name so far
          call findSymX_E  # Find or create symbol
          ld X 0  # Clear error context
-         atom (E)  # Value must be a cell
+         atom (E)  # Value must be a pair
          jnz symNsErrEX
          ld (EnvIntern) E  # Switch symbol namespace
          ld C 4  # Build new name
          lea X (L I)  # Safe
          ld (X) ZERO
-         call (Get_A)  # Get next char
-         continue T
+      else
+         memb Delim "(DelimEnd-Delim)"  # Delimiter?
+         break eq   # Yes
+         cmp B (char "\\")  # Backslash?
+         if eq  # Yes
+            call (Get_A)  # Get next char
+         end
+         call byteSymBCX_CX  # Pack char
       end
-      memb Delim "(DelimEnd-Delim)"  # Delimiter?
-      break eq   # Yes
-      cmp B (char "\\")  # Backslash?
-      if eq  # Yes
-         call (Get_A)  # Get next char
-      end
-      call byteSymBCX_CX  # Pack char
       call (Get_A)  # Get next
    loop
    ld X (L I)  # Get name
@@ -2538,13 +2544,14 @@
       end
       call testEscA_F
       jnc retNil
+      call mkCharA_A  # Make single character
+      call consA_X  # Cons it
+      ld (X) A
+      ld (X CDR) Nil  # with NIL
       link
-      push ZERO  # <L I> Result
-      ld C 4  # Build name
-      ld X S
+      push X  # <L I> Result
       link
       do
-         call byteSymBCX_CX  # Pack char
          call (Get_A)  # Get next
          cmp B (char "\"")  # Done?
          if eq  # Yes
@@ -2552,10 +2559,17 @@
             break T
          end
          call testEscA_F
-      until nc
-      ld X (L I)  # Get name
+      while c
+         call mkCharA_A  # Make char
+         call consA_C  # Cons it
+         ld (C) A
+         ld (C CDR) Nil  # with NIL
+         ld (X CDR) C  # Append to result
+         ld X C
+      loop
+      ld E (L I)  # Get result
       drop
-      jmp consSymX_E  # Make transient symbol
+      ret
    end
    cmp B (char "0")  # Digit?
    if ge
@@ -4155,10 +4169,7 @@
       end
       ld (L I) E  # Save result
    loop
-   null ((InFile) VI)  # File?
-   if nz  # Yes
-      ld (EnvIntern) (L III)  # Restore namespace
-   end
+   ld (EnvIntern) (L III)  # Restore namespace
    call popInFiles
    ld E Nil  # Close transient scope
    call doHide

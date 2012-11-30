@@ -1,4 +1,4 @@
-# 12may11abu
+# 11nov12abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/http.l" "@lib/xhtml.l" "@lib/form.l" "@lib/ps.l")
@@ -104,13 +104,13 @@
                (gui '(+ClassField) '(: home obj) '(("Male" +Man) ("Female" +Woman))) )
             (<grid> 5
                "Occupation" (gui '(+E/R +TextField) '(job : home obj) 20)
-               "Father" (gui '(+ChoButton) '(choPerson (field 1)))
+               "Father" (choPerson 0)
                (gui '(+E/R +Obj +TextField) '(pa : home obj) '(nm +Man) 30)
                "born" (gui '(+E/R +DateField) '(dat : home obj) 10)
-               "Mother" (gui '(+ChoButton) '(choPerson (field 1)))
+               "Mother" (choPerson 0)
                (gui '(+E/R +Obj +TextField) '(ma : home obj) '(nm +Woman) 30)
                "died" (gui '(+E/R +DateField) '(fin : home obj) 10)
-               "Partner" (gui '(+ChoButton) '(choPerson (field 1)))
+               "Partner" (choPerson 0)
                (gui '(+E/R +Obj +TextField) '(mate : home obj) '(nm +Person) 30) )
             (gui '(+E/R +Chart) '(kids : home obj) 5
                '((This) (list NIL This (: dat) (: pa) (: ma)))
@@ -119,7 +119,7 @@
                '(NIL (NIL "Children") (NIL "born") (NIL "Father") (NIL "Mother"))
                (do 4
                   (<row> NIL
-                     (gui 1 '(+ChoButton) '(choPerson (field 1)))
+                     (choPerson 1)
                      (gui 2 '(+Obj +TextField) '(nm +Person) 20)
                      (gui 3 '(+E/R +DateField) '(dat curr) 10)
                      (gui 4 '(+ObjView +TextField) '(: nm) 20)
@@ -182,7 +182,7 @@
                         (txt> (chart)) )
                      (in (tmp "Contemporaries.txt")
                         (let (Page 1  Fmt (200 120 50 50 120 120 120)  Ttl (line T))
-                           (a4L)
+                           (a4L "Contemporaries")
                            (font (7 . "Helvetica"))
                            (indent 30 10)
                            (down 12)

@@ -94,8 +94,8 @@ PicoLisp Machine</a> in the reference manual.
 <p>There is only one symbolic data type, no distinction (confusion) between
 symbols, strings, variables, special variables and identifiers.
 
-<p>Most data-manipulation functions operate on the value cells of symbols as
-well as the CARs of list cells:
+<p>Most data-manipulation functions operate on the values of symbols as well as
+the CARs of cons pairs:
 
 <pre><code>
 : (let (N 7  L (7 7 7)) (inc 'N) (inc (cdr L)) (cons N L))
@@ -167,7 +167,7 @@ explicitly passing around file descriptors.
 arbitrary data types facilitates generalized comparing and sorting.
 
 <li>Uniform handling of <code>var</code> locations (i.e. values of symbols and
-CARs of list cells).
+CARs of cons pairs).
 
 <li>The universality and usefulness of symbol properties is enforced and
 extended with implicit and explicit bindings of the symbol <code><a
@@ -557,18 +557,32 @@ where you need macros in other Lisps are directly expressible as functions in
 PicoLisp, which (as opposed to macros) can be applied, passed around, and
 debugged.
 
+<p>For example, Common Lisp's <code>DO*</code> macro, written as a function:
+
+<pre><code>
+(de do* "Args"
+   (bind (mapcar car (car "Args"))
+      (for "A" (car "Args")
+         (set (car "A") (eval (cadr "A"))) )
+      (until (eval (caadr "Args"))
+         (run (cddr "Args"))
+         (for "A" (car "Args")
+            (and (cddr "A") (set (car "A") (run @))) ) )
+      (run (cdadr "Args")) ) )
+</code></pre>
+
 
 <p><hr>
 <h2><a name="strings">Why are there no strings?</a></h2>
 
 <p>Because PicoLisp has something better: <a
 href="ref.html#transient-io">Transient symbols</a>. They look and behave like
-strings in any respect, but are nevertheless true symbols, with a value cell and
-a property list.
+strings in any respect, but are nevertheless true symbols, with a value and a
+property list.
 
-<p>This leads to interesting opportunities. The value cell, for example, can
-point to other data that represent the string's translation. This is used
-extensively for localization. When a program calls
+<p>This leads to interesting opportunities. The value, for example, can point to
+other data that represent the string's translation. This is used extensively for
+localization. When a program calls
 
 <pre><code>
    (prinl "Good morning!")

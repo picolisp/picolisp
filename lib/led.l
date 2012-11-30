@@ -1,10 +1,13 @@
-# 29dec11abu
+# 27nov12abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
 # vi-mode, just a subset:
 #  - Only single-key commands
 #  - No repeat count
+
+(mapc undef
+   '(*Led fkey revise) )
 
 (setq
    "Line"      NIL      # Holds current input line
@@ -37,20 +40,20 @@
             (and
                *Tsm
                (= "\"" (get "Line" P))
-               ("skipQ" "LPos" P "Line") )
+               (skipQ "LPos" P "Line") )
             (prin "^H") ) )
       (for (P . C) (setq "Line" L)  # Output new line
          (cond
             ((> " " C)
                (dec 'D)
                (prin "_") )
-            ((or (not *Tsm) (<> "\"" C) ("escQ" P L))
+            ((or (not *Tsm) (<> "\"" C) (escQ P L))
                (dec 'D)
                (prin C) )
             (T
                (prin
                   (and Tsm (cdr *Tsm))
-                  (unless ("skipQ" N P L)
+                  (unless (skipQ N P L)
                      (dec 'D)
                      C )
                   (and (onOff Tsm) (car *Tsm)) ) ) ) )
@@ -63,21 +66,21 @@
             (and
                *Tsm
                (= "\"" (get "Line" "LPos"))
-               ("skipQ" N "LPos" "Line") )
+               (skipQ N "LPos" "Line") )
             (prin "^H") )
          (dec '"LPos") ) )
    (flush) )
 
 # Skipped double quote
-(de "skipQ" (N P L)
+(de skipQ (N P L)
    (nor
       (>= (inc N) P (dec N))
       (= "\""  (get L (dec P)))
       (= "\"" (get L (inc P)))
-      ("escQ" P L) ) )
+      (escQ P L) ) )
 
 # Escaped double quote
-(de "escQ" ()
+(de escQ ()
    (let Esc NIL
       (for I (dec P)
          ((if (= "\\" (get L I)) onOff off) Esc) ) ) )
@@ -95,11 +98,13 @@
    (chgLine "Line" 1) )
 
 # Move right
-(de rMove ()
+(de rMove (F)
    (chgLine "Line"
-      (if (>= "LPos" (length "Line"))
-         "LPos"
-         (inc "LPos") ) ) )
+      (min
+         (inc "LPos")
+         (if F
+            (inc (length "Line"))
+            (length "Line") ) ) ) )
 
 # Move to end of line
 (de eMove ()
@@ -108,6 +113,16 @@
 # Move beyond end of line
 (de xMove ()
    (chgLine "Line" (inc (length "Line"))) )
+
+# Move up
+(de uMove ()
+   (when (< "HPos" (length "History"))
+      (setHist (inc "HPos")) ) )
+
+# Move down
+(de dMove ()
+   (unless (=0 "HPos")
+      (setHist (dec "HPos")) ) )
 
 # Move word left
 (de lWord ()
@@ -283,7 +298,7 @@
             (loop
                (NIL
                   (make
-                     (while (and (setq "C" (key 50)) (<> "C" "^["))
+                     (while (and (setq "C" (key 40)) (<> "C" "^["))
                         (link "C") ) )
                   (off "Insert")
                   (lMove) )
@@ -329,8 +344,8 @@
       ("h" (lMove))
       ("i" (doUndo) (on "Insert"))
       ("I" (doUndo) (bMove) (on "Insert"))
-      ("j" (unless (=0 "HPos") (setHist (dec "HPos"))))
-      ("k" (when (< "HPos" (length "History")) (setHist (inc "HPos"))))
+      ("j" (dMove))
+      ("k" (uMove))
       ("l" (rMove))
       ("n" (ledSearch "Line"))
       ("N" (if "Found" (setHist (pop '"Found")) (beep)))
@@ -378,6 +393,12 @@
          ((assoc Key "FKey")
             (cons (cons Key Prg) (delete @ "FKey")) )
          (T (cons (cons Key Prg) "FKey")) ) ) )
+
+(when (sys "TERM")
+   (fkey "^[[A" (uMove) (xMove))
+   (fkey "^[[B" (dMove) (xMove))
+   (fkey "^[[C" (rMove T))
+   (fkey "^[[D" (lMove)) )
 
 # Main editing functions
 (de _led ("Line1" "tabFun" "skipFun")
@@ -427,5 +448,11 @@
             (push '"History" L) )
          (and (nth "History" "HistMax") (con @))
          L ) ) )
+
+(mapc zap
+   (quote
+      chgLine skipQ escQ delim? lMove bMove rMove eMove xMove uMove dMove lWord
+      rWord lPar rPar clrEol insChar del1 delChar delWord rplChar doUndo doPaste
+      setHist ledSearch expandTab insMode cmdMode _getLine _led saveHistory ) )
 
 # vi:et:ts=3:sw=3

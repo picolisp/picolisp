@@ -1,4 +1,4 @@
-# 06apr12abu
+# 07jun12abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2928,7 +2928,7 @@
    push C  # Counter
    ld C 0
    do
-      atom E  # Cell?
+      atom E  # Pair?
    while z  # Yes
       push E  # Recurse on CAR
       ld E (E)

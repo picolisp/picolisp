@@ -1,4 +1,4 @@
-# 11jul11abu
+# 09nov12abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -14,7 +14,7 @@
 (test (1 abc (d e f))
    (pipe (prinl "(1 abc (d e f))")
       (read) ) )
-(test '(abc "=" def_ghi "(" "xyz" "+" "-" 123 ")")
+(test '(abc "=" def_ghi "(" ("x" "y" "z") "+" "-" 123 ")")
    (pipe (prinl "abc = def_ghi(\"xyz\"+-123) # Comment")
       (make
          (while (read "_" "#")

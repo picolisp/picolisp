@@ -1,4 +1,4 @@
-# 22apr11abu
+# 30sep12abu
 # (c) Software Lab. Alexander Burger
 
 # System macros
@@ -11,12 +11,6 @@
    cc __errno_location()  # Get address of 'errno'
    xchg A C
    st4 (C)  # Store new value
-   ret
-
-(code 's_isdirS_F 0)  # S_ISDIR
-   ld4 (S `(+ I ST_MODE))  # Get 'st_mode' from 'stat'
-   and A `S_IFMT
-   cmp A `S_IFDIR
    ret
 
 (code 'wifstoppedS_F 0)  # WIFSTOPPED

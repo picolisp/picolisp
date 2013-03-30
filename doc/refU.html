@@ -405,14 +405,19 @@ a free number. See also <code><a href="refG.html#genKey">genKey</a></code>.
 -> 12
 </code></pre>
 
-<dt><a name="usec"><code>(usec) -> num</code></a>
-<dd>Returns the number the microseconds since interpreter startup. See also
-<code><a href="refT.html#time">time</a></code> and <code><a
+<dt><a name="usec"><code>(usec ['flg]) -> num</code></a>
+<dd>Returns the number the microseconds. If <code>flg</code> is
+non-<code>NIL</code>, the microsecond fraction of the last call to <code><a
+href="refT.html#time">time</a></code> is returned, otherwise the number of
+microseconds since interpreter startup. See also <code><a
+href="refD.html#date">date</a></code> and <code><a
 href="refT.html#tick">tick</a></code>.
 
 <pre><code>
 : (usec)
 -> 1154702479219050
+: (list (date (date)) (time (time T)) (usec T))
+-> ((2013 1 4) (10 12 39) 483321)
 </code></pre>
 
 </dl>

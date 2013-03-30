@@ -4,7 +4,6 @@ In order to get the picolisp-mode working correctly you have to add the followin
 (load "tsm.el") ;; Picolisp TransientSymbolsMarkup (*Tsm)
 (autoload 'run-picolisp "inferior-picolisp")
 (autoload 'picolisp-mode "picolisp" "Major mode for editing Picolisp." t)
-(setq picolisp-program-name "<path-to>/picoLisp/plmod")
 
 If you have also SLIME installed, it will suck all possible lisp extensions up (greedy bastard). So in order to get the correct file-association for picolisp files you'll have to also add this:
 

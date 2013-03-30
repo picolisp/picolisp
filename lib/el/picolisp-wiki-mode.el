@@ -1,6 +1,6 @@
 ;;; picolisp-wiki-mode.el --- Emacs Major mode for PicoLisp-Wiki formatted text files
 
-;; Copyright (C) 2012 Thorsten Jolitz <tjolitz@gmail.com>
+;; Copyright (C) 2012-13 Thorsten Jolitz <tjolitz@gmail.com>
 
 ;; Author: Thorsten Jolitz <tjolitz@gmail.com>
 ;; Maintainer: Thorsten Jolitz <tjolitz@gmail.com>
@@ -162,7 +162,7 @@
 
 ;;; Constants =================================================================
 
-(defconst picolisp-wiki-mode-version "0.9"
+(defconst picolisp-wiki-mode-version "1.0"
   "Picolisp-Wiki mode version number.")
 
 ;;; Customizable variables ====================================================
@@ -359,6 +359,7 @@
 
 (defface picolisp-wiki-pre-face
   '((t (:inherit font-lock-constant-face)))
+  ;; '((t (:inherit font-lock-string-face)))
   "Face for preformatted text."
   :group 'picolisp-wiki-faces)
 
@@ -624,15 +625,15 @@ text.")
    (cons picolisp-wiki-regex-angle-uri '(2 picolisp-wiki-url-face))
    (cons picolisp-wiki-regex-uri '(2 picolisp-wiki-url-face))
    (cons picolisp-wiki-regex-email '(2 picolisp-wiki-url-face))
-   (cons picolisp-wiki-regex-left-floating-content
-         '(2 picolisp-wiki-left-floating-content-fact))
-   (cons picolisp-wiki-regex-non-floating-content
-         '(2 picolisp-wiki-non-floating-content-fact))
-   (cons picolisp-wiki-regex-right-floating-content
-         '(2 picolisp-wiki-right-floating-content-fact))
+   ;; (cons picolisp-wiki-regex-left-floating-content
+   ;;       '(2 picolisp-wiki-left-floating-content-fact))
+   ;; (cons picolisp-wiki-regex-non-floating-content
+   ;;       '(2 picolisp-wiki-non-floating-content-fact))
+   ;; (cons picolisp-wiki-regex-right-floating-content
+   ;;       '(2 picolisp-wiki-right-floating-content-fact))
    (cons picolisp-wiki-regex-email '(2 picolisp-wiki-url-face))
    ;; changed from picolisp-wiki-regex-list-item
-   (cons picolisp-wiki-regex-list-item '(2 picolisp-wiki-list-item-face))
+   ;; (cons picolisp-wiki-regex-list-item '(2 picolisp-wiki-list-item-face))
    ;; (cons picolisp-wiki-regex-list-item-text 'picolisp-wiki-list-item-face)
    (cons picolisp-wiki-regex-internal-link
          '((2 picolisp-wiki-url-face t)
@@ -1166,8 +1167,12 @@ This is an exact copy of `line-number-at-pos' for use in emacs21."
   ;; (set (make-local-variable 'paragraph-start)
   ;;      "\f\\|[ \t]*$\\|^[ \t]*[*+-] \\|^[ \t*][0-9]+\\.\\|^[ \t]*: ")
   ;; Outline mode
+  (make-local-variable 'eval)
+  (setq eval (outline-minor-mode))
   (make-local-variable 'outline-regexp)
-  (setq outline-regexp "^[ \t]*[0-9]{")
+  ;; (setq outline-regexp "^[ \t]*[0-9]{")
+  (setq outline-regexp
+        "^[ 	]*\\(1{\\|2{.\\|3{..\\|4{...\\|5{....\\|6{.....\\)")
   ;; Cause use of ellipses for invisible text.
   (add-to-invisibility-spec '(outline . t)))
 

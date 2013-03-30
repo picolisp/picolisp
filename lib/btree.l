@@ -1,4 +1,4 @@
-# 08oct09abu
+# 26dec12abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -69,10 +69,10 @@
 
 (de _put (Top)
    (let (V (val Top)  R (rank Key (cdr V)))
-      (if (and R (= Key (car R)))
-         (nil (touch Top) (con (cdr R) Val))
-         (cond
-            (R
+      (cond
+         (R
+            (if (= Key (car R))
+               (nil (touch Top) (con (cdr R) Val))
                (let X (memq R V)
                   (if (cadr R)
                      (when (_put @)
@@ -85,20 +85,20 @@
                         (cons (cons Key (cons NIL Val)) (cdr X)) )
                      (touch Base)
                      (inc Root)
-                     (_splitBt) ) ) )
-            ((car V)
-               (when (_put @)
-                  (touch Top)
-                  (set V (car @))
-                  (con V (cons (cdr @) (cdr V)))
-                  (_splitBt) ) )
-            (T
+                     (_splitBt) ) ) ) )
+         ((car V)
+            (when (_put @)
                (touch Top)
-               (con V
-                  (cons (cons Key (cons NIL Val)) (cdr V)) )
-               (touch Base)
-               (inc Root)
-               (_splitBt) ) ) ) ) )
+               (set V (car @))
+               (con V (cons (cdr @) (cdr V)))
+               (_splitBt) ) )
+         (T
+            (touch Top)
+            (con V
+               (cons (cons Key (cons NIL Val)) (cdr V)) )
+            (touch Base)
+            (inc Root)
+            (_splitBt) ) ) ) )
 
 (de _splitBt ()
    (when (and (cddddr V) (> (size Top) (cdr Dbf)))

@@ -1,4 +1,4 @@
-# 13oct12abu
+# 12jan13abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -236,28 +236,28 @@
          ld Y (C I)  # Bind link
       loop
       do
-         cmp (EnvInFrames) (X IV)  # Open input frames?
+         cmp (EnvInFrames) (X (pack III "+(EnvInFrames-Env)"))  # Open input frames?
       while ne  # Yes
          call popInFiles  # Clean up
       loop
       do
-         cmp (EnvOutFrames) (X V)  # Open output frames?
+         cmp (EnvOutFrames) (X (pack III "+(EnvOutFrames-Env)"))  # Open output frames?
       while ne  # Yes
          call popOutFiles  # Clean up
       loop
       do
-         cmp (EnvErrFrames) (X VI)  # Open error frames?
+         cmp (EnvErrFrames) (X (pack III "+(EnvErrFrames-Env)"))  # Open error frames?
       while ne  # Yes
          call popErrFiles  # Clean up
       loop
       do
-         cmp (EnvCtlFrames) (X VII)  # Open control frames?
+         cmp (EnvCtlFrames) (X (pack III "+(EnvCtlFrames-Env)"))  # Open control frames?
       while ne  # Yes
          call popCtlFiles  # Clean up
       loop
       ld Z (EnvCo7)  # Get coroutines
       do
-         cmp Z (X "EnvCo7-EnvCo")  # Skipped?
+         cmp Z (X (pack III "+(EnvCo7-Env)"))  # Skipped?
       while ne  # Yes
          ld C (Stack0)  # Find stack segment
          ld A 1

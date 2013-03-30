@@ -1,4 +1,4 @@
-# 22nov12abu
+# 06feb13abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2605,6 +2605,10 @@
    push A  # <S /III> String length
    slen (S) (S I)
    ld A Y  # Restore char
+   cmp B (char "+")  # Sign?
+   jeq 90
+   cmp B (char "-")
+   jeq 90  # Yes
    cmp B (char "a")  # Lower case letter?
    if ge
       cmp B (char "z")
@@ -2656,7 +2660,7 @@
       call findSymX_E  # Find or create symbol
       drop
    else
-      call getChar_A
+90    call getChar_A
       call mkCharA_A  # Return char
       ld E A
       call (Get_A)  # Skip it
@@ -2897,10 +2901,12 @@
          ld A C  # and microseconds
          mul 1000
          ld (L -IV) A
-         lea C (L -V)
+         lea C (L -V)  # Set timeval structure pointer
+         ? (<> *TargetOS "Linux")  # Non-Linux?
+            call msec_A  # Get milliseconds
+            ld E A  # into E
+         =
       end
-      call msec_A  # Get milliseconds
-      ld E A  # into E
       do
          cc select(Z &(S FD_SET) S 0 C)  # Wait for event or timeout
          nul4  # OK?
@@ -2916,9 +2922,23 @@
             call sighandlerX
          end
       loop
-      call msec_A  # Get milliseconds
-      sub A E  # Time difference
-      ld (L -III) A  # Save it
+      null C  # Timeval structure pointer?
+      if nz  # Yes
+         ? (= *TargetOS "Linux")  # Linux?
+            ld A (L -V)  # Seconds not slept
+            mul 1000  # Calculate milliseconds
+            ld E A
+            ld A (L -IV)  # Microseconds not slept
+            div 1000  # Calculate milliseconds
+            add A E  # Milliseconds not slept
+            sub (L -III) A  # Time difference
+         =
+         ? (<> *TargetOS "Linux")  # Else
+            call msec_A  # Get milliseconds
+            sub A E  # Time difference
+            ld (L -III) A  # Save it
+         =
+      end
       push X  # Save context again
       null (Spkr)  # Speaker open?
       if nz  # Yes
@@ -3107,7 +3127,7 @@
             ld A (C)  # and CADR
             shr A 4  # Normalize
             sub A (L -III)  # Subtract time difference
-            if nc  # Not yet timed out
+            if gt  # Not yet timed out
                shl A 4  # Make short number
                or A CNT
                ld (C) A  # Store in '*Run'

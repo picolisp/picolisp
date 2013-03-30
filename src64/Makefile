@@ -1,4 +1,4 @@
-# 05nov12abu
+# 08jan13abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -10,19 +10,24 @@ ifeq ($(MAKECMDGOALS), x86-64.linux)
 	UNAME = Linux
 	MACHINE = x86_64
 else
-	ifeq ($(MAKECMDGOALS), x86-64.sunOs)
-		UNAME = SunOS
+	ifeq ($(MAKECMDGOALS), x86-64.freeBsd)
+		UNAME = FreeBSD
 		MACHINE = x86_64
 	else
-		ifeq ($(MAKECMDGOALS), ppc64.linux)
-			UNAME = Linux
-			MACHINE = ppc64
+		ifeq ($(MAKECMDGOALS), x86-64.sunOs)
+			UNAME = SunOS
+			MACHINE = x86_64
 		else
-			UNAME = $(shell uname)
-			ifeq ($(MAKECMDGOALS), emu)
-				MACHINE = emu
+			ifeq ($(MAKECMDGOALS), ppc64.linux)
+				UNAME = Linux
+				MACHINE = ppc64
 			else
-				MACHINE = $(shell uname -m)
+				UNAME = $(shell uname)
+				ifeq ($(MAKECMDGOALS), emu)
+					MACHINE = emu
+				else
+					MACHINE = $(shell uname -m)
+				endif
 			endif
 		endif
 	endif
@@ -52,21 +57,32 @@ ifeq ($(UNAME), Linux)
 	LD-SHARED = -shared -export-dynamic
 	STRIP = strip
 else
-	ifeq ($(UNAME), SunOS)
-		OS = SunOS
-		SYS = .sunOs
+	ifeq ($(UNAME), FreeBSD)
+		OS = FreeBSD
+		SYS = .freeBsd
 		FMT = .s
 		ARCH = x86-64
-		AS = gas --64
-		LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
-		LD-SHARED = -m64 -shared
+		AS = as
+		LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm
+		LD-SHARED = -shared -rdynamic
 		STRIP = strip
 	else
-		ifeq ($(UNAME), Darwin)
-			OS = Darwin
-			LD-MAIN = -lc -lm -ldl
-			LD-SHARED = -dynamiclib -undefined dynamic_lookup
-			STRIP = strip -x
+		ifeq ($(UNAME), SunOS)
+			OS = SunOS
+			SYS = .sunOs
+			FMT = .s
+			ARCH = x86-64
+			AS = gas --64
+			LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
+			LD-SHARED = -m64 -shared
+			STRIP = strip
+		else
+			ifeq ($(UNAME), Darwin)
+				OS = Darwin
+				LD-MAIN = -lc -lm -ldl
+				LD-SHARED = -dynamiclib -undefined dynamic_lookup
+				STRIP = strip -x
+			endif
 		endif
 	endif
 endif
@@ -82,6 +98,7 @@ sFiles = \
 all: picolisp
 
 x86-64.linux: $(sFiles)
+x86-64.freeBsd: $(sFiles)
 x86-64.sunOs: $(sFiles)
 ppc64.linux: $(sFiles)
 emu: picolisp
@@ -110,20 +127,20 @@ sysdefs: sysdefs.c
 	$(CC) -o sysdefs -D_FILE_OFFSET_BITS=64 sysdefs.c
 	$(STRIP) sysdefs
 
-emu.base.o: emu.base.c
+emu.base.o: sysdefs emu.base.c
 	$(CC) -c -O -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 emu.base.c
 
 .c.o:
 	$(CC) -c -O -fpic -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 $*.c
 
 ### Translate ###
-$(ARCH)$(SYS).base$(FMT): sysdefs arch/$(ARCH).l $(baseFiles) sys/$(ARCH)$(SYS).code.l
+$(ARCH)$(SYS).base$(FMT): arch/$(ARCH).l $(baseFiles) sys/$(ARCH)$(SYS).code.l
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) base "" $(lib)/map  $(baseFiles) sys/$(ARCH)$(SYS).code.l
 
-$(ARCH)$(SYS).ext$(FMT): sysdefs arch/$(ARCH).l ext.l $(ARCH)$(SYS).base$(FMT)
+$(ARCH)$(SYS).ext$(FMT): arch/$(ARCH).l ext.l $(ARCH)$(SYS).base$(FMT)
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) ext T ""  ext.l
 
-$(ARCH)$(SYS).ht$(FMT): sysdefs arch/$(ARCH).l ht.l $(ARCH)$(SYS).base$(FMT)
+$(ARCH)$(SYS).ht$(FMT): arch/$(ARCH).l ht.l $(ARCH)$(SYS).base$(FMT)
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) ht T ""  ht.l
 
 ### Clean up ###

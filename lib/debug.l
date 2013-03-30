@@ -111,7 +111,6 @@
                (cons X "Y") ) )
          (all) ) ) )
 
-
 # Class dependencies
 (de dep ("C")
    (let *Dbg NIL
@@ -134,6 +133,18 @@
          (space N)
          (println "X")
          (dep2 (+ 3 N) "X") ) ) )
+
+# Inherited methods
+(de methods (Obj)
+   (make
+      (let Mark NIL
+         (recur (Obj)
+            (for X (val Obj)
+               (nond
+                  ((pair X) (recurse X))
+                  ((memq (car X) Mark)
+                     (link (cons (car X) Obj))
+                     (push 'Mark (car X)) ) ) ) ) ) ) )
 
 # Source code
 (off "*Ed")

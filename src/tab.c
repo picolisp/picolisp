@@ -1,4 +1,4 @@
-/* 11oct11abu
+/* 28dec12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -37,6 +37,7 @@ static symInit Symbols[] = {
    {doBreak, "!"},
    {doBy, "by"},
    {doBye, "bye"},
+   {doBytes, "bytes"},
    {doCaaaar, "caaaar"},
    {doCaaadr, "caaadr"},
    {doCaaar, "caaar"},

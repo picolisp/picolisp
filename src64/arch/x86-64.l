@@ -1,4 +1,4 @@
-# 02nov12abu
+# 05jan13abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -467,6 +467,9 @@
    (unless C (prinst "cmovzq" "%rcx" Cnt)) )
 
 (asm null (Src S)
+   (prinst "cmp" "%r12" (src Src S)) )
+
+(asm nulp (Src S)
    (prinst "cmp" "%r12" (src Src S)) )
 
 (asm nul4 ()

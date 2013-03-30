@@ -1,4 +1,4 @@
-/* 22oct11abu
+/* 04feb13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #include <openssl/pem.h>
 #include <openssl/ssl.h>

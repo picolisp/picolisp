@@ -1,4 +1,4 @@
-# 15nov12abu
+# 17mar13abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -90,6 +90,8 @@ java (num i j k x y z s v o)
          return new Number(((Integer)s.Obj).intValue());
       if (s.Obj instanceof Long)
          return new Number(((Long)s.Obj).longValue());
+      if (s.Obj instanceof Float)
+         return strToNum(Float.toString(((Float)s.Obj).floatValue()),  xInt(z));
       if (s.Obj instanceof Double)
          return strToNum(Double.toString(((Double)s.Obj).doubleValue()),  xInt(z));
       if (s.Obj instanceof BigInteger)
@@ -116,6 +118,12 @@ java (num i j k x y z s v o)
          long[] a = (long[])s.Obj;
          for (i = a.length; --i >= 0;)
             x = new Cell(new Number(a[i]), x);
+      }
+      else if (s.Obj instanceof float[]) {
+         float[] a = (float[])s.Obj;
+         j = xInt(z);
+         for (i = a.length; --i >= 0;)
+            x = new Cell(strToNum(Float.toString(a[i]), i), x);
       }
       else if (s.Obj instanceof double[]) {
          double[] a = (double[])s.Obj;
@@ -163,6 +171,10 @@ java (num i j k x y z s v o)
                arg[i] = Array.newInstance(Integer.TYPE, k);
             else if (s.Obj instanceof Long)
                arg[i] = Array.newInstance(Long.TYPE, k);
+            else if (s.Obj instanceof Float)
+               arg[i] = Array.newInstance(Float.TYPE, k);
+            else if (s.Obj instanceof Double)
+               arg[i] = Array.newInstance(Double.TYPE, k);
             else
                arg[i] = Array.newInstance(s.Obj.getClass(), k);
             for (j = 0; j < k; ++j, v[i] = v[i].Cdr)
@@ -182,6 +194,10 @@ java (num i j k x y z s v o)
             par[i] = Integer.TYPE;
          else if (s.Obj instanceof Long)
             par[i] = Long.TYPE;
+         else if (s.Obj instanceof Float)
+            par[i] = Float.TYPE;
+         else if (s.Obj instanceof Double)
+            par[i] = Double.TYPE;
          else
             par[i] = s.Obj.getClass();
       }
@@ -268,6 +284,13 @@ int: ()
 long: ()
    return new Symbol(new Long(evLong(ex.Cdr)));
 
+# (float: 'str 'cnt) -> obj
+# (float: 'num 'cnt) -> obj
+float: (x)
+   if ((x = (ex = ex.Cdr).Car.eval()) instanceof Number)
+      return new Symbol(new Float(((Number)x).toString(evInt(ex.Cdr), '.', '\0')));
+   return new Symbol(new Float(x.name()));
+
 # (double: 'str 'cnt) -> obj
 # (double: 'num 'cnt) -> obj
 double: (x)
@@ -342,9 +365,11 @@ time (i j x z)
    j = evInt(x);
    return time(i, j, x.Cdr instanceof Cell? evInt(x.Cdr) : 0);
 
-# (usec) -> num
+# (usec ['flg]) -> num
 usec ()
-   return new Number(System.nanoTime()/1000 - USec);
+   return new Number(ex.Cdr.Car.eval() == Nil?
+      System.nanoTime()/1000 - USec :
+      Cal.get(Calendar.MILLISECOND) * 1000 );
 
 # (pwd) -> sym
 pwd T
@@ -1196,7 +1221,7 @@ xor (x y)
    return y == Nil ^ x == Nil? T : Nil;
 
 # (bool 'any) -> flg
-bool ()
+bool T
    return ex.Cdr.Car.eval() == Nil? Nil : T;
 
 # (not 'any) -> flg
@@ -1673,15 +1698,18 @@ all ()
 
 # (symbols) -> sym
 # (symbols 'sym1) -> sym2
-# (symbols 'sym1 'sym2) -> sym3
-symbols (s t)
+# (symbols 'sym1 'sym ..) -> sym2
+symbols (x s t)
    if (ex.Cdr instanceof Cell) {
       s = (Symbol)ex.Cdr.Car.eval();
-      if (ex.Cdr.Cdr instanceof Cell) {
-         t = (Symbol)ex.Cdr.Cdr.Car.eval();
-         if (!(t.Car instanceof Symbol) || !(((Symbol)t.Car).Obj instanceof Namespace))
-            symNsError(ex, t);
-         s.Car = new Symbol(((Namespace)(((Symbol)t.Car).Obj)).clone());
+      if ((x = ex.Cdr.Cdr) instanceof Cell) {
+         s.Car = new Symbol(new Namespace());
+         do {
+            t = (Symbol)x.Car.eval();
+            if (!(t.Car instanceof Symbol) || !(((Symbol)t.Car).Obj instanceof Namespace))
+               symNsError(ex, t);
+            ((Namespace)(((Symbol)t.Car).Obj)).copy((Namespace)(((Symbol)s.Car).Obj));
+         } while ((x = x.Cdr) instanceof Cell);
       }
       else if (!(s.Car instanceof Symbol) || !(((Symbol)s.Car).Obj instanceof Namespace))
          symNsError(ex, s);
@@ -2124,7 +2152,7 @@ fold (i j k x str c sb)
    for (i = 0; !Character.isLetterOrDigit(c = str.charAt(i));)
       if (++i == j)
          return Nil;
-   k = (ex = ex.Cdr) instanceof Cell? evInt(ex) : 24;
+   k = (ex = ex.Cdr) instanceof Cell? evInt(ex) : 0;
    sb = new StringBuilder();
    sb.append(Character.toLowerCase(c));
    while (++i < j)
@@ -2353,12 +2381,12 @@ make (x y z)
    return z;
 
 # (made ['lst1 ['lst2]]) -> lst
-made (x)
+made (x y)
    if ((x = ex.Cdr) instanceof Cell) {
       Env.Yoke = x.Car.eval();
       x = x.Cdr;
       if (!((x = x.Car.eval()) instanceof Cell))
-         for (x = Env.Yoke; (x = x.Cdr).Cdr instanceof Cell;);
+         for (x = Env.Yoke; (y = x.Cdr) instanceof Cell; x = y);
       Env.Make = x;
    }
    return Env.Yoke;

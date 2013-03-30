@@ -1,4 +1,4 @@
-06nov12abu
+27feb13abu
 (c) Software Lab. Alexander Burger
 
 
@@ -42,8 +42,8 @@ installation, and invoke them explicitly as desired.
 
       $ (cd src; make)
 
-   or - if you have an x86-64 system (under Linux or SunOS), or a ppc64 system
-   (under Linux) - build the 64-bit version
+   or - if you have an x86-64 system (under Linux, FreeBSD or SunOS), or a ppc64
+   system (under Linux) - build the 64-bit version
 
       $ (cd src64; make)
 
@@ -68,6 +68,7 @@ installation, and invoke them explicitly as desired.
    - Otherwise, download one of the pre-generated "*.s" file packages
 
      - http://software-lab.de/x86-64.linux.tgz
+     - http://software-lab.de/x86-64.freeBsd.tgz
      - http://software-lab.de/x86-64.sunOs.tgz
      - http://software-lab.de/ppc64.linux.tgz
 
@@ -138,16 +139,6 @@ or
 
    $ /home/app/pil  # Invoking a local installation from some other directory
 
-
-A shortcut for debug mode is the 'dbg' script:
-
-   $ ./dbg
-   :
-
-It is available only for local installaions, and is eqivalent to
-
-   $ ./pil +
-
 Note that 'pil' can also serve as a template for your own stand-alone scripts.
 
 
@@ -157,7 +148,7 @@ runtime system), use
    $ ersatz/pil +
    :
 
-instead of './dbg' or './pil +'.
+instead of './pil +'.
 
 
       Documentation
@@ -174,7 +165,7 @@ For details about the 64-bit version, refer to "doc64/README", "doc64/asm" and
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including
 tests, demo databases and servers, games (chess, minesweeper), 3D animation
-(flight simulator), and more.
+(flight simulator, 32-bit version only), and more.
 
 Any feedback is welcome!
 Hope you enjoy :-)

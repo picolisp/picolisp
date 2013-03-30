@@ -1,4 +1,4 @@
-# 05jan12abu
+# 21jan13abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
@@ -13,7 +13,10 @@
             '(may Password)
             '(pw : home obj)
             '((V) (and V "****"))
-            '((V) (if (= V "****") (: home obj pw) V))
+            '((V)
+               (if (= V "****")
+                  (: home obj pw)
+                  (passwd V (: home obj pw)) ) )
             30 )
          ,"Role"
          (gui '(+Able +E/R +Obj +TextField)

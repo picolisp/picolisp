@@ -26,11 +26,11 @@
 
    "HistMax"   1000     # History limit
 
-   "History"            # History of input lines
+   *History             # History of input lines
    (in (pack "+" (pil "history"))
       (ctl NIL
          (make (until (eof) (link (line T)))) ) )
-   "Hist0" "History" )
+   "Hist0"     *History )
 
 
 # Switch Crtl-C off
@@ -49,7 +49,7 @@
 #    (call 'stty "intr" "^A")
 
 (raw T)
-(call 'stty "intr" "^R")  # ^R as replacement for ^C 
+(call 'stty "intr" "^R")  # ^R as replacement for ^C
 
 # Basic editing routine
 (de chgLine (L N)
@@ -135,7 +135,7 @@
 
 # Move up
 (de uMove ()
-   (when (< "HPos" (length "History"))
+   (when (< "HPos" (length *History))
       (setHist (inc "HPos")) ) )
 
 # Move down
@@ -227,7 +227,7 @@
                ("(" (inc 'N))
                (")" (dec 'N)) ) ) )
       (chgLine L (max 1 (min "LPos" (length L)))) ) )
-   
+
 # Delete a word (F: with trailing blank)
 (de delWord (F)
    (let L "Line"
@@ -287,12 +287,12 @@
    (chgLine
       (if (=0 (setq "HPos" N))
          "Line1"
-         (chop (get "History" "HPos")) )
+         (chop (get *History "HPos")) )
       1 ) )
 
 # Searching
 (de ledSearch (L)
-   (let (H (nth "History" (inc "HPos")) S (find '((X) (match "Item" (chop X))) H))
+   (let (H (nth *History (inc "HPos")) S (find '((X) (match "Item" (chop X))) H))
       (chgLine
          (ifn S
             (prog (beep) L)
@@ -442,7 +442,7 @@
                               (case @
                                  # unbug
                                  ("d" (prin "(unbug) ")
-                                    (unbug (any (line T))) (quit) ) ) ) ) ) ) ) 
+                                    (unbug (any (line T))) (quit) ) ) ) ) ) ) )
 
          # 'C-x' (Ctrl-x) keymap
          ("^x" (and (key 500)
@@ -502,11 +502,11 @@
                     # info
                     ("i" (prin "(info) ")
                        (let Info (info (any (line T)))
-                          (printsp 
+                          (printsp
                              (car Info)
                              (stamp (cadr Info) (cddr Info)) ) )
                           (prinl) (quit) )
-                    # doc 
+                    # doc
                     ("f" (prin "(doc) ")
                        (doc (line T)) (quit) )
                     # show
@@ -598,7 +598,7 @@
 ## ("i" (doUndo) (on "Insert"))
 ## ("I" (doUndo) (bMove) (on "Insert"))
 ## ("j" (unless (=0 "HPos") (setHist (dec "HPos"))))
-## ("k" (when (< "HPos" (length "History")) (setHist (inc "HPos"))))
+## ("k" (when (< "HPos" (length *History)) (setHist (inc "HPos"))))
 ## ("l" (rMove T))
 ## ("n" (ledSearch "Line"))
 ## ("N" (if "Found" (setHist (pop '"Found")) (beep)))
@@ -676,12 +676,12 @@
 (de saveHistory ()
    (in (pack "+" (pil "history"))
       (ctl T
-         (let (Old (make (until (eof) (link (line T)))) New "History" N "HistMax")
+         (let (Old (make (until (eof) (link (line T)))) New *History N "HistMax")
             (out (pil "history")
                (while (and New (n== New "Hist0"))
                   (prinl (pop 'New))
                   (dec 'N) )
-               (setq "Hist0" "History")
+               (setq "Hist0" *History)
                (do N
                   (NIL Old)
                   (prinl (pop 'Old)) ) ) ) ) ) )
@@ -696,9 +696,9 @@
          (or
             (>= 3 (length "Line"))
             (sp? (car "Line"))
-            (= L (car "History"))
-            (push '"History" L) )
-         (and (nth "History" "HistMax") (con @))
+            (= L (car *History))
+            (push '*History L) )
+         (and (nth *History "HistMax") (con @))
          L ) ) )
 
 (mapc zap

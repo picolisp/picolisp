@@ -51,13 +51,15 @@ arrows),</li>
 to make <code>&quot;</code> appear).</li>
 </ul>
 
-<p>If you prefer to use Emacs, please use the picolisp-mode bundled in
-"@lib/el".
+<p>If you prefer to use Emacs, please use the picolisp-mode bundled in the "el/"
+directory (that is "@lib/el" for a local installation, or some system dependent
+directory for a global installation).
 
 <p>If you feel that you absolutely have to use an IDE, <code>rlwrap</code> or
-another input front-end, please remove the entry "@lib/led.l" from "lib.l" and
-"dbg.l". Note that in this case, however, you will not have the TAB symbol
-completion feature available during command line editing.
+another input front-end, please create an empty "~/.pil/editor" file. This
+effectively disables the command line editor. Note that in this case, however,
+you will not have the TAB symbol completion feature available during command
+line editing.
 
 <h3>Table of content</h3>
 
@@ -1315,7 +1317,7 @@ file names with that pathname. Thus, to run the above example in some other
 place, simply write:
 
 <pre><code>
-$ /home/foo/picolisp/dbg @app/file1.l -main @app/file2.l
+$ /home/foo/picolisp/pil @app/file1.l -main @app/file2.l +
 </code></pre>
 
 <p>that is, supply a full path name to the initial command (here 'p'), or put it

@@ -1,8 +1,7 @@
 ;;;;;; inferior-picolisp: Picolisp repl in a buffer.
-;;;;;; Version: 1.1
+;;;;;; Version: 1.2
 
-;;; Copyright (c) 2009, Guillermo R. Palavecino
-;;; 2012, Thorsten Jolitz (tj)
+;;; Copyright (c) 2009, 2012, 2013, Guillermo R. Palavecino, Thorsten Jolitz
 
 ;; This file is NOT part of GNU emacs.
 
@@ -29,6 +28,9 @@
 ;;; INFERIOR PICOLISP MODE STUFF
 ;;;============================================================================
 
+(defconst inferior-picolisp-version "1.2"
+  "Verion-number of library")
+
 (defcustom inferior-picolisp-mode-hook nil
   "*Hook for customizing inferior-picolisp mode."
   :type 'hook
@@ -41,11 +43,10 @@
     (define-key m "\C-c\C-l" 'picolisp-load-file)
     m ) )
 
-;; added by tj 2012-03-11
-(defvar picolisp-local-program-name "./pil @lib/too.l +")
+(defvar picolisp-local-program-name "./pil +")
 (defvar picolisp-process-number 0)
 
-(defvar picolisp-program-name "/usr/bin/picolisp"
+(defvar picolisp-program-name "pil +"
   "The name of the program used to run Picolisp." )
 
 ;; Install the process communication commands in the picolisp-mode keymap.
@@ -130,7 +131,6 @@ Defaults to a regexp ignoring all inputs of 0, 1, or 2 letters."
   "Don't save anything matching `inferior-picolisp-filter-regexp'."
   (not (string-match inferior-picolisp-filter-regexp str)) )
 
-
 (defun picolisp-get-old-input ()
   "Snarf the sexp ending at point."
   (save-excursion
@@ -138,8 +138,33 @@ Defaults to a regexp ignoring all inputs of 0, 1, or 2 letters."
       (backward-sexp)
       (buffer-substring (point) end) ) ) )
 
+(defun picolisp-disable-line-editor ()
+  "Disable inbuild PicoLisp line-editor.
+Not needed when PicoLisp is run as Emacs subprocess."
+  (let ((pil-tmp-dir (expand-file-name "~/.pil/")))
+  (and (member
+        "editor" (directory-files pil-tmp-dir ))
+      (rename-file
+       (expand-file-name "editor" pil-tmp-dir)
+       (expand-file-name "editor-orig" pil-tmp-dir)))
+    (with-current-buffer
+     (find-file-noselect
+     (expand-file-name "editor" pil-tmp-dir))
+     (save-buffer)
+     (kill-buffer))))
 
-;; added by tj 2012-03-11
+(defun picolisp-reset-line-editor ()
+  "Reset inbuild PicoLisp line-editor to original state."
+  (let ((pil-tmp-dir (expand-file-name "~/.pil/")))
+    (if (member "editor-orig" (directory-files pil-tmp-dir))
+        (rename-file
+         (expand-file-name "editor-orig" pil-tmp-dir)
+         (expand-file-name "editor" pil-tmp-dir)
+         'OK-IF-ALREADY-EXISTS)
+      (delete-file
+       (expand-file-name "editor" pil-tmp-dir)))))
+
+
 ;;;###autoload
 (defun run-picolisp-new-local (cmd)
   "Run a new inferior Picolisp process for a locally installed
@@ -165,9 +190,11 @@ process buffer for a list of commands.)"
                      (number-to-string picolisp-process-number)
                      ">"))
   (let ((cmdlist (split-string cmd)))
+    (picolisp-disable-line-editor)
     (set-buffer
      (apply 'make-comint pl-proc-buf (car cmdlist)
                          nil (cdr cmdlist)))
+     (picolisp-reset-line-editor)
       (inferior-picolisp-mode) ) 
   (pop-to-buffer (concat "*" pl-proc-buf "*")) ) 
 
@@ -187,8 +214,10 @@ is run).
                          picolisp-program-name ) ) )
   (when (not (comint-check-proc "*picolisp*"))
     (let ((cmdlist (split-string cmd)))
+      (picolisp-disable-line-editor)
       (set-buffer (apply 'make-comint "picolisp" (car cmdlist)
                          nil (cdr cmdlist) ) )
+      (picolisp-reset-line-editor)
       (inferior-picolisp-mode) ) )
   (setq picolisp-program-name cmd)
   (setq picolisp-buffer "*picolisp*")

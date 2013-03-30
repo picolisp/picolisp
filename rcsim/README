@@ -1,4 +1,4 @@
-25jun11abu
+27feb13abu
 (c) Software Lab. Alexander Burger
 
 
@@ -7,6 +7,8 @@
 
 The PicoLisp RC Flight Simulator is a very simple toy simulator, allowing you to
 fly an airplane in a way similar to a radio controlled model plane.
+
+Currently, it is supported only in the 32-bit version of PicoLisp.
 
 It is all implemented within the PicoLisp system, so that no additional
 libraries like OpenGL or GL4Java are needed. It may be regarded as a proof of
@@ -30,7 +32,7 @@ once:
 
 Then start the PicoLisp server with
 
-   $ ./dbg rcsim/main.l -main -go
+   $ ./pil rcsim/main.l -main -go +
 
 and then the Z3d-Client from another X-terminal
 
@@ -44,29 +46,20 @@ simulation process and close the Z3d-Client window. As always, you can stop the
 PicoLisp servers with 'killall picolisp'.
 
 
-   The second version runs in an Applet in any Java-enabled browser.To run it
-   locally, please download and unpack the "picoJavaGUI.tgz" tarball. It
-   contains the Java applet GUI which is no longer part of the standard PicoLisp
-   release.
+The second version runs in an Applet in any Java-enabled browser.To run it
+locally, please download and unpack the "picoJavaGUI.tgz" tarball. It contains
+the Java applet GUI which is no longer part of the standard PicoLisp release.
 
-   You can start the PicoLisp server with
+You can start the PicoLisp server with
 
-      $ ./pil rcsim/applet.main.l -main -go -wait
+   $ ./pil rcsim/applet.main.l -main -go -wait
 
-   or (to get an interactive PicoLisp command line) with
+or (to get an interactive PicoLisp command line) with
 
-      $ ./pil rcsim/main.l -main -go +
+   $ ./pil rcsim/main.l -main -go +
 
-   and then point your browser to "http://localhost:8080".
-
-   If you don't have PicoLisp installed, you might want to try the online
-   version at:
-
-      http://rcsim.7fach.de
-
-   (please take care not to use a proxy for that address)
-
-   In both cases, click onto the image to set the keyboard focus.
+and then point your browser to "http://localhost:8080". Click onto the image to
+set the keyboard focus.
 
 
 The simulator runs in the background, so if it is started interactively (see

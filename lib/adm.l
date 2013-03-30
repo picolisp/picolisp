@@ -1,11 +1,43 @@
-# 26mar10abu
+# 25feb13abu
 # (c) Software Lab. Alexander Burger
 
-# *Login *Users *Perms
+# *Salt *Login *Users *Perms
+
+# crypt(3) algorithm, e.g. (16 . "$6$@1$")
+(default *Salt (2 . "@1"))
+
+(de salt ()
+   (text (cdr *Salt) (randpw (car *Salt))) )
+
+(de randpw (Len)
+   (make
+      (in "/dev/urandom"
+         (do Len
+            (link
+               (get
+                  '`(mapcar char
+                     (conc
+                        (range 46 57)
+                        (range 65 90)
+                        (range 97 122) ) )
+                  (inc (& 63 (rd 1))) ) ) ) ) ) )
+
+(de passwd (Str Salt)
+   (if (and native *Salt)
+      (native "libcrypt.so" "crypt" 'S Str (or Salt (salt)))
+      Str ) )
+
+(de auth (Nm Pw)
+   (with (db 'nm '+User Nm)
+      (and
+         (or
+            (= (: pw) Pw)
+            (= (: pw) (passwd Pw (: pw))) )
+         This ) ) )
 
 ### Login ###
 (de login (Nm Pw)
-   (ifn (setq *Login (db 'nm '+User Nm 'pw Pw))
+   (ifn (setq *Login (auth Nm Pw))
       (msg *Pid " ? " Nm)
       (msg *Pid " * " (stamp) " " Nm)
       (tell 'hi *Pid Nm *Adr)
@@ -67,5 +99,24 @@
          *Login )
       (msg *Pid " No permission: " (car Args))
       (forbidden) ) )
+
+### GUI ###
+(de loginForm "Opt"
+   (form NIL
+      (htPrin "Opt")
+      (<grid> 2
+         ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
+         ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
+      (--)
+      (gui '(+Button) '(if *Login ,"logout" ,"login")
+         '(cond
+            (*Login (logout))
+            ((login (val> (: home nm)) (val> (: home pw)))
+               (clr> (: home pw)) )
+            (T (error ,"Permission denied")) ) )
+      (when *Login
+         (<nbsp> 4)
+         (<span> "bold green"
+            (<big> (ht:Prin "'" (; *Login nm) ,"' logged in")) ) ) ) )
 
 # vi:et:ts=3:sw=3

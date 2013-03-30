@@ -1,4 +1,4 @@
-# 14jan10abu
+# 21jan13abu
 # (c) Software Lab. Alexander Burger
 
 ### Role ###
@@ -8,12 +8,12 @@
 (commit)
 
 ### User ###
-(obj ((+User) nm "admin") pw "admin" nam "Administrator" role `(db 'nm '+Role "Administration"))
-(obj ((+User) nm "ben") pw "ben" nam "Ben Affleck" role `(db 'nm '+Role "Accounting"))
-(obj ((+User) nm "jodie") pw "jodie" nam "Jodie Foster" role `(db 'nm '+Role "Accounting"))
-(obj ((+User) nm "sandy") pw "sandy" nam "Sandra Bullock" role `(db 'nm '+Role "Accounting"))
-(obj ((+User) nm "depp") pw "depp" nam "Johnny Depp" role `(db 'nm '+Role "Assistance"))
-(obj ((+User) nm "tom") pw "tom" nam "Tom Hanks" role `(db 'nm '+Role "Assistance"))
+(obj ((+User) nm "admin") pw `(passwd "admin") nam "Administrator" role `(db 'nm '+Role "Administration"))
+(obj ((+User) nm "ben") pw `(passwd "ben") nam "Ben Affleck" role `(db 'nm '+Role "Accounting"))
+(obj ((+User) nm "jodie") pw `(passwd "jodie") nam "Jodie Foster" role `(db 'nm '+Role "Accounting"))
+(obj ((+User) nm "sandy") pw `(passwd "sandy") nam "Sandra Bullock" role `(db 'nm '+Role "Accounting"))
+(obj ((+User) nm "depp") pw `(passwd "depp") nam "Johnny Depp" role `(db 'nm '+Role "Assistance"))
+(obj ((+User) nm "tom") pw `(passwd "tom") nam "Tom Hanks" role `(db 'nm '+Role "Assistance"))
 (commit)
 
 (obj ((+Sal) nm "Department") hi "Dear Sir or Madam,")

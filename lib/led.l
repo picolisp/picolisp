@@ -1,4 +1,4 @@
-# 27nov12abu
+# 16feb13abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -25,11 +25,11 @@
 
    "HistMax"   1000     # History limit
 
-   "History"            # History of input lines
+   *History             # History of input lines
    (in (pack "+" (pil "history"))
       (ctl NIL
          (make (until (eof) (link (line T)))) ) )
-   "Hist0"     "History" )
+   "Hist0"     *History )
 
 
 # Basic editing routine
@@ -116,7 +116,7 @@
 
 # Move up
 (de uMove ()
-   (when (< "HPos" (length "History"))
+   (when (< "HPos" (length *History))
       (setHist (inc "HPos")) ) )
 
 # Move down
@@ -239,12 +239,12 @@
    (chgLine
       (if (=0 (setq "HPos" N))
          "Line1"
-         (chop (get "History" "HPos")) )
+         (chop (get *History "HPos")) )
       1 ) )
 
 # Searching
 (de ledSearch (L)
-   (let (H (nth "History" (inc "HPos"))  S (find '((X) (match "Item" (chop X))) H))
+   (let (H (nth *History (inc "HPos"))  S (find '((X) (match "Item" (chop X))) H))
       (chgLine
          (ifn S
             (prog (beep) L)
@@ -302,15 +302,15 @@
                         (link "C") ) )
                   (off "Insert")
                   (lMove) )
-               (and
-                  (assoc (pack "^[" @) "FKey")
-                  (let *Dbg "*Dbg"
-                     (run (cdr @)) ) )
+               (when (assoc (pack "^[" @) "FKey")
+                  (let *Dbg "*Dbg" (run (cdr @))) )
                (NIL "C") ) )
          (T
-            (when (= "C" ")")
-               (chgLine "Line" (prog1 "LPos" (lPar) (wait 200))) )
-            (insChar "C") ) ) ) )
+            (if (assoc "C" "FKey")
+               (let *Dbg "*Dbg" (run (cdr @)))
+               (when (= "C" ")")
+                  (chgLine "Line" (prog1 "LPos" (lPar) (wait 200))) )
+               (insChar "C") ) ) ) ) )
 
 # Command mode
 (de cmdMode ("C")
@@ -424,12 +424,12 @@
 (de saveHistory ()
    (in (pack "+" (pil "history"))
       (ctl T
-         (let (Old (make (until (eof) (link (line T))))  New "History"  N "HistMax")
+         (let (Old (make (until (eof) (link (line T))))  New *History  N "HistMax")
             (out (pil "history")
                (while (and New (n== New "Hist0"))
                   (prinl (pop 'New))
                   (dec 'N) )
-               (setq "Hist0" "History")
+               (setq "Hist0" *History)
                (do N
                   (NIL Old)
                   (prinl (pop 'Old)) ) ) ) ) ) )
@@ -444,9 +444,9 @@
          (or
             (>= 3 (length "Line"))
             (sp? (car "Line"))
-            (= L (car "History"))
-            (push '"History" L) )
-         (and (nth "History" "HistMax") (con @))
+            (= L (car *History))
+            (push '*History L) )
+         (and (nth *History "HistMax") (con @))
          L ) ) )
 
 (mapc zap

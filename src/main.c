@@ -1,4 +1,4 @@
-/* 15nov12abu
+/* 04jan13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -459,7 +459,7 @@ int compare(any x, any y) {
       if (isCell(y) || y == T)
          return -1;
       if (!isNum(a = name(x)))
-         return !isNum(name(y))? 1664525*(int32_t)(long)x - 1664525*(int32_t)(long)y : -1;
+         return !isNum(name(y))? (long)x - (long)y : -1;
       if (!isNum(b = name(y)))
          return +1;
       n1 = unDig(a), n2 = unDig(b);
@@ -493,6 +493,32 @@ int compare(any x, any y) {
          return y == T? -1 : +1;
       if (x == a && y == b)
          return 0;
+   }
+}
+
+int binSize(any x) {
+   if (isNum(x)) {
+      int n = numBytes(x);
+
+      if (n < 63)
+         return n + 1;
+      return n + 2 + (n - 63) / 255;
+   }
+   else if (isNil(x))
+      return 1;
+   else if (isSym(x))
+      return binSize(name(x));
+   else {
+      any y = x;
+      int n = 2;
+
+      while (n += binSize(car(x)), !isNil(x = cdr(x))) {
+         if (x == y)
+            return n + 1;
+         if (!isCell(x))
+            return n + binSize(x);
+      }
+      return n;
    }
 }
 
@@ -914,16 +940,15 @@ any doDate(any ex) {
    any x, z;
    int y, m, d, n;
    cell c1;
-   time_t tim;
 
    if (!isCell(x = cdr(ex))) {
-      time(&tim);
-      TM = localtime(&tim);
+      gettimeofday(&Tv,NULL);
+      TM = localtime(&Tv.tv_sec);
       return mkDat(TM->tm_year+1900,  TM->tm_mon+1,  TM->tm_mday);
    }
    if ((z = EVAL(car(x))) == T) {
-      time(&tim);
-      TM = gmtime(&tim);
+      gettimeofday(&Tv,NULL);
+      TM = gmtime(&Tv.tv_sec);
       return mkDat(TM->tm_year+1900,  TM->tm_mon+1,  TM->tm_mday);
    }
    if (isNil(z))
@@ -966,12 +991,11 @@ any doTime(any ex) {
    any x, z;
    int h, m, s;
    cell c1;
-   time_t tim;
    struct tm *p;
 
    if (!isCell(x = cdr(ex))) {
-      time(&tim);
-      p = localtime(&tim);
+      gettimeofday(&Tv,NULL);
+      p = localtime(&Tv.tv_sec);
       return boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec);
    }
    if ((z = EVAL(car(x))) == T)
@@ -992,8 +1016,10 @@ any doTime(any ex) {
    return mkTime(h, m, isCell(cdr(x))? evCnt(ex, cdr(x)) : 0);
 }
 
-// (usec) -> num
-any doUsec(any ex __attribute__((unused))) {
+// (usec ['flg]) -> num
+any doUsec(any ex) {
+   if (!isNil(EVAL(cadr(ex))))
+      return boxCnt(Tv.tv_usec);
    gettimeofday(&Tv,NULL);
    return boxWord2((word2)Tv.tv_sec*1000000 + Tv.tv_usec - USec);
 }

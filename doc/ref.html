@@ -610,17 +610,11 @@ $ pil myProject.l -main +
 <p>This is - in a local installation - equivalent to
 
 <pre><code>
-$ ./dbg myProject.l -main
-</code></pre>
-
-<p>or
-
-<pre><code>
 $ ./pil myProject.l -main +
 </code></pre>
 
 <p>In any case, the directory part of the first file name supplied (normally,
-the path to "lib.l" as called by 'pil' or 'dbg') is remembered internally as the
+the path to "lib.l" as called by 'pil') is remembered internally as the
 <i>PicoLisp Home Directory</i>. This path is later automatically substituted for
 any leading "<code>@</code>" character in file name arguments to I/O functions
 (see <code><a href="refP.html#path">path</a></code>).
@@ -1898,7 +1892,7 @@ abbreviations:
 <a href="refZ.html">Z</a>
 <a href="ref_.html">Other</a>
 
-<p><dl>
+<p><span id="sortBtnHome"></span><dl>
 
 <dt>Symbol Functions
 <dd><code>
@@ -2137,6 +2131,7 @@ abbreviations:
    <a href="refG.html#group">group</a>
    <a href="refL.html#length">length</a>
    <a href="refS.html#size">size</a>
+   <a href="refB.html#bytes">bytes</a>
    <a href="refV.html#val">val</a>
    <a href="refS.html#set">set</a>
    <a href="refX.html#xchg">xchg</a>
@@ -2649,6 +2644,37 @@ abbreviations:
 
 <p>The <code>PicoLisp</code> system can be downloaded from the <a
 href="http://software-lab.de/down.html">PicoLisp Download</a> page.
+
+<script type="text/javascript">
+var sortBtn;
+
+if (document.querySelectorAll) {
+	sortBtn = document.createElement("input");
+	sortBtn.setAttribute("type", "button");
+	sortBtn.setAttribute("onclick", "sortFunWords()");
+	sortBtn.value = "Sort Words Alphabetically";
+	document.getElementById("sortBtnHome").appendChild(sortBtn);
+};
+
+function sortFunWords() {
+	var dls = document.querySelectorAll("dl"), funDl = dls[dls.length-1];
+	var cats = funDl.querySelectorAll("dd code");
+	for (var c=0; c<cats.length; c++) {
+		var aElems = cats[c].querySelectorAll("a"), aArr = [];
+		for (var i=0; i<aElems.length; i++) { aArr.push(aElems[i]); }
+		aArr.sort(function(a,b) { return (a.innerHTML < b.innerHTML) ? -1 : 1; });
+		var dd = cats[c].parentNode;
+		dd.removeChild(cats[c]);
+		var newCode = document.createElement("code");
+		dd.appendChild(newCode);
+		for (var i=0; i<aArr.length; i++) {
+			newCode.appendChild(aArr[i]);
+			newCode.appendChild(document.createTextNode(" "));
+		}
+	}
+	sortBtn.setAttribute("disabled", "disabled");
+}
+</script>
 
 </body>
 </html>

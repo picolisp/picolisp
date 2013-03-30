@@ -1,4 +1,4 @@
-/* 22nov12abu
+/* 23feb13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1301,7 +1301,7 @@ any token(any x, int c) {
          byteSym(Chr, &i, &y);
       return symToNum(Pop(c1), (int)unDig(val(Scl)) / 2, '.', 0);
    }
-   {
+   if (Chr != '+' && Chr != '-') {
       char nm[bufSize(x)];
 
       bufString(x, nm);
@@ -3226,32 +3226,6 @@ any doLock(any ex) {
    return n? boxCnt(n) : Nil;
 }
 
-static int binSize(any x) {
-   if (isNum(x)) {
-      int n = numBytes(x);
-
-      if (n < 63)
-         return n + 1;
-      return n + 2 + (n - 63) / 255;
-   }
-   else if (isNil(x))
-      return 1;
-   else if (isSym(x))
-      return binSize(name(x));
-   else {
-      any y = x;
-      int n = 2;
-
-      while (n += binSize(car(x)), !isNil(x = cdr(x))) {
-         if (x == y)
-            return n + 1;
-         if (!isCell(x))
-            return n + binSize(x);
-      }
-      return n;
-   }
-}
-
 int dbSize(any ex, any x) {
    int n;
 
@@ -3590,6 +3564,7 @@ any doDbck(any ex) {
    any x, y;
    bool flg;
    int i;
+   FILE *jnl = Jnl;
    adr next, p, cnt;
    word2 blks, syms;
    byte buf[2*BLK];
@@ -3612,6 +3587,7 @@ any doDbck(any ex) {
    blkPeek(0, buf, 2*BLK);  // Get Free, Next
    BlkLink = getAdr(buf);
    next = getAdr(buf+BLK);
+   Jnl = NULL;
    while (BlkLink) {  // Check free list
       rdBlock(BlkLink);
       if ((cnt += BLKSIZE) > next) {
@@ -3620,6 +3596,7 @@ any doDbck(any ex) {
       }
       Block[0] |= TAGMASK,  wrBlock();  // Mark free list
    }
+   Jnl = jnl;
    for (p = BLKSIZE;  p != next;  p += BLKSIZE) {  // Check all chains
       if (rdBlock(p), (Block[0] & TAGMASK) == 0) {
          cnt += BLKSIZE;
@@ -3643,6 +3620,7 @@ any doDbck(any ex) {
       }
    }
    BlkLink = getAdr(buf);  // Unmark free list
+   Jnl = NULL;
    while (BlkLink) {
       rdBlock(BlkLink);
       if (Block[0] & TAGMASK)
@@ -3658,7 +3636,7 @@ any doDbck(any ex) {
       x = Pop(c1);
    }
 done:
-   if (Jnl)
+   if (Jnl = jnl)
       fflush(Jnl),  lockFile(fileno(Jnl), F_SETLK, F_UNLCK);
    rwUnlock(1);
    --Env.protect;

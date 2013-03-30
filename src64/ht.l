@@ -1,4 +1,4 @@
-# 07jun12abu
+# 13mar13abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -165,21 +165,18 @@
                   call (PutB)
                else
                   call symByteCX_FACX  # Get first byte
-                  cmp B (char "$")  # Dollar, plus or dot?
+                  cmp B (char "$")  # Dollar, plus or minus?
                   jeq 40
                   cmp B (char "+")
                   jeq 40
                   cmp B (char "-")
-                  if eq
-40                   call putHexB  # Encode hexadecimal
-                  else
-                     call (PutB)
-                  end
+                  jne 50
+40                call putHexB  # Encode hexadecimal
                end
                do
                   call symByteCX_FACX  # Next byte
                while nz
-                  memb HtEsc HTESC  # Escape?
+50                memb HtEsc HTESC  # Escape?
                   if eq  # Yes
                      call putHexB  # Encode hexadecimal
                   else

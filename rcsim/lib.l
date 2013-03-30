@@ -1,11 +1,50 @@
-# 26aug09abu
+# 29mar13abu
 # (c) Software Lab. Alexander Burger
 
 # *Pilot *Scene *Model
 # *DT *Thr *Speed *Climb *Alt
 
-(load "simul/lib.l")
+(scl 6)  # Keep in sync with `SCL' in "src/z3d.c"
 
+# Color Constant Definitions from "/usr/lib/X11/rgb.txt"
+(de rgb (R G B . S)
+   (def S (+ B (* G 256) (* R 65536))) )
+
+(rgb   0   0   0 . Black)
+(rgb   0   0 255 . Blue)
+(rgb 165  42  42 . Brown)
+(rgb   0 100   0 . DarkGreen)
+(rgb 169 169 169 . DarkGrey)
+(rgb 190 190 190 . Grey)
+(rgb 173 216 230 . LightBlue)
+(rgb 255   0   0 . Red)
+(rgb 255 255   0 . Yellow)
+
+(rgb 255 255 255 . White)
+
+
+# Create model
+(de model (Obj Lst)
+   (let X Obj
+      (while (sym? (cadr Lst))
+         (setq X (get X (pop 'Lst))) )
+      (unless X
+         (quit "Can't attach (sub)model" (car Lst)) )
+      (prog1
+         (put X (pop 'Lst) (box))
+         (set @
+            (conc
+               (cut 3 'Lst)
+               (cons
+                  1.0 0.0 0.0  0.0 1.0 0.0  0.0 0.0 1.0
+                  (mapcar
+                     '((M)
+                        (if (and (car M) (sym? @))
+                           (model Obj M)
+                           M ) )
+                     Lst ) ) ) ) ) ) )
+
+# Simulation
 (de *DT . 0.020)
 (de *Tower . 12.0)
 
@@ -63,8 +102,10 @@
    (=: vx (=: vy (=: vz 0)))
    (=: fx (=: fy (=: fz 0)))
    (=: dx (=: dy (=: dz 0)))
-   (z3d:dx -100.0 (: body))
-   (z3d:dy -200.0 (: body))
+   (set (: body 0)
+      (- (: body 0 1) 100.0) )
+   (set (: body 0 -1)
+      (- (: body 0 2) 200.0) )
    (blade> This) )
 
 (dm dir> ()

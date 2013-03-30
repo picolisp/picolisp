@@ -1,4 +1,4 @@
-04aug11abu
+08jan13abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -94,7 +94,7 @@ the conditions of the MIT/X11 License (see "COPYING").
 
 It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),
 Cygwin/Win32 (and possibly other) systems. A native 64-bit version is available
-for x86-64/Linux, x86-64/SunOS and ppc64/Linux.
+for x86-64/Linux, x86-64/FreeBSD, x86-64/SunOS and ppc64/Linux.
 
 --------------------------------------------------------------------------------
 

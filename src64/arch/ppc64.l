@@ -1,4 +1,4 @@
-# 02nov12abu
+# 05jan13abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -819,6 +819,9 @@
 
 (asm null (Src S)
    ##? (prinst "li" 31 -2)  # Clear carry
+   (prinst "cmpdi" (srcReg Src S) 0) )
+
+(asm nulp (Src S)
    (prinst "cmpdi" (srcReg Src S) 0) )
 
 (asm nul4 ()

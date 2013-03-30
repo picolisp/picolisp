@@ -1,4 +1,4 @@
-# 09may11abu
+# 20feb13abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -40,21 +40,7 @@
          (gui '(+Button) ',"Change"
             '(let V (val> (field -1))
                (locale (car V) (cdr V) "app/loc/") ) ) )
-      (form NIL
-         (<grid> 2
-            ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
-            ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
-         (--)
-         (gui '(+Button) '(if *Login ,"logout" ,"login")
-            '(cond
-               (*Login (logout))
-               ((login (val> (: home nm)) (val> (: home pw)))
-                  (clr> (: home pw)) )
-               (T (error ,"Permission denied")) ) )
-         (when *Login
-            (<nbsp> 4)
-            (<span> "bold green"
-               (<big> (ht:Prin "'" (; *Login nm) ,"' logged in")) ) ) ) ) )
+      (loginForm) ) )
 
 (de stop ()
    (logout)

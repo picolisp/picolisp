@@ -1,4 +1,4 @@
-# 25nov12abu
+# 23mar13abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -80,7 +80,7 @@
             (pack
                "void fun"
                @
-               "(int a, int c, int e, int x, int y, int z) {begin("
+               "(long a, long c, long e, long x, long y, long z) {begin("
                @
                ", a, c, e, x, y, z);}" ) )
          (pack "(void(*)())fun" @) )
@@ -515,6 +515,10 @@
    (genCode (Src S) (list 'null Src) ((op.n Src S))
       "Carry = 0,  Result = @1;" ) )
 
+(asm nulp (Src S)
+   (genCode (Src S) (list 'nulp Src) ((op.i Src S))
+      "Result = @1;" ) )
+
 (asm nul4 ()
    (genCode NIL '(nul4) NIL
       "Carry = 0,  Result = (int32_t)A.l;" ) )
@@ -770,7 +774,7 @@
    (stat             i  p "struct stat")
    (fcntl            i  i i p)
    (pipe             i  "int")
-   (select           i  i "fd_set" "fd_set" "fd_set" 2)
+   (select           i  i "fd_set" "fd_set" "fd_set" (2 . -2))
    (open             i  p i i)
    (dup              i  i)
    (dup2             -  i i)
@@ -835,6 +839,8 @@
    (wtermsigS_A      n) )
 
 (de ccArg (P S O P2)
+   (and (pair P) (setq P (car @)))
+   (and (pair P2) (setq P2 (car @)))
    (case P
       (p (op.p S O))
       (n (op.n S O))
@@ -866,8 +872,12 @@
             (list 'glue ", " Args)
             (list 'extract
                ''((A P)
-                  (when (lt0 P)
-                     (pack " retv(" (abs @) ", " A ");") ) )
+                  (when (lt0 (fin P))
+                     (pack " retv(" (abs @) ","
+                        (if (pre? "argv(" A)
+                           (member " " (chop A))
+                           (pack " " A ")") )
+                        ";" ) ) )
                Args
                '(cdr Par) ) )
          Body ) ) )
@@ -1174,7 +1184,7 @@
             "extern int Carry;"
             "extern void mul2(uint64_t);"
             "extern void div2(uint64_t);"
-            "extern void begin(int,int,int,int,int,int,int);"
+            "extern uint64_t begin(int,long,long,long,long,long,long);"
             "extern void *argv(int,ptr);"
             "extern void retv(int,ptr);"
             NIL
@@ -1249,26 +1259,30 @@
             "   }"
             "}"
             NIL
-            "void begin(int i, int a, int c, int e, int x, int y, int z) {"
-               "   S.p -= 8,  *(uint16_t**)S.p = PC;"
-               "   S.p -= 8,  ((ptr)S.p)->l = Carry;"
-               "   S.p -= 8,  ((ptr)S.p)->n = Result;"
-               "   S.p -= 8,  *(ptr)S.p = Z,  Z.n = z;"
-               "   S.p -= 8,  *(ptr)S.p = Y,  Y.n = y;"
-               "   S.p -= 8,  *(ptr)S.p = X,  X.n = x;"
-               "   S.p -= 8,  *(ptr)S.p = E,  E.n = e;"
-               "   S.p -= 8,  *(ptr)S.p = C,  C.n = c;"
-               "   S.p -= 8,  *(ptr)S.p = A,  A.n = a;"
-               "   run(i);"
-               "   A = *(ptr)S.p,  S.p += 8;"
-               "   C = *(ptr)S.p,  S.p += 8;"
-               "   E = *(ptr)S.p,  S.p += 8;"
-               "   X = *(ptr)S.p,  S.p += 8;"
-               "   Y = *(ptr)S.p,  S.p += 8;"
-               "   Z = *(ptr)S.p,  S.p += 8;"
-               "   Result = ((ptr)S.p)->n,  S.p += 8;"
-               "   Carry = ((ptr)S.p)->l,  S.p += 8;"
-               "   PC = *(uint16_t**)S.p,  S.p += 8;"
+            "uint64_t begin(int i, long a, long c, long e, long x, long y, long z) {"
+            "   uint64_t res;"
+            NIL
+            "   S.p -= 8,  *(uint16_t**)S.p = PC;"
+            "   S.p -= 8,  ((ptr)S.p)->l = Carry;"
+            "   S.p -= 8,  ((ptr)S.p)->n = Result;"
+            "   S.p -= 8,  *(ptr)S.p = Z,  Z.n = z;"
+            "   S.p -= 8,  *(ptr)S.p = Y,  Y.n = y;"
+            "   S.p -= 8,  *(ptr)S.p = X,  X.n = x;"
+            "   S.p -= 8,  *(ptr)S.p = E,  E.n = e;"
+            "   S.p -= 8,  *(ptr)S.p = C,  C.n = c;"
+            "   S.p -= 8,  *(ptr)S.p = A,  A.n = a;"
+            "   run(i);"
+            "   res = A.n;"
+            "   A = *(ptr)S.p,  S.p += 8;"
+            "   C = *(ptr)S.p,  S.p += 8;"
+            "   E = *(ptr)S.p,  S.p += 8;"
+            "   X = *(ptr)S.p,  S.p += 8;"
+            "   Y = *(ptr)S.p,  S.p += 8;"
+            "   Z = *(ptr)S.p,  S.p += 8;"
+            "   Result = ((ptr)S.p)->n,  S.p += 8;"
+            "   Carry = ((ptr)S.p)->l,  S.p += 8;"
+            "   PC = *(uint16_t**)S.p,  S.p += 8;"
+            "   return res;"
             "}"
             NIL
             "void *argv(int i, ptr p) {"
@@ -1390,6 +1404,10 @@
                (for I 24
                   (link (pack "fun" (absCode (pack "cbl" I)))) ) ) )
          "};" )
+      (prinl)
+      (prinl "long lisp(char *p, long a, long b, long c, long d, long e) {")
+      (prinl "   return (long)begin(" (absCode "lisp") ", (long)p, a, b, c, d, e);")
+      (prinl "}")
       (prinl) )
    (prinl
       (and *FPic "static ")

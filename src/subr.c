@@ -1,4 +1,4 @@
-/* 07jun12abu
+/* 17mar13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -434,8 +434,11 @@ any doMade(any x) {
    if (isCell(x = cdr(x))) {
       *Env.yoke = EVAL(car(x));
       if (x = cdr(x), !isCell(x = EVAL(car(x)))) {
+         any y;
+
          x = *Env.yoke;
-         while (isCell(cdr(x = cdr(x))));
+         while (isCell(y = cdr(x)))
+            x = y;
       }
       Env.make = &cdr(x);
    }
@@ -1261,6 +1264,11 @@ any doSize(any ex) {
    if (isExt(x))
       return boxCnt(dbSize(ex,x));
    return isNum(x = name(x))? boxCnt(numBytes(x)) : Zero;
+}
+
+// (bytes 'any) -> cnt
+any doBytes(any x) {
+   return boxCnt(binSize(EVAL(cadr(x))));
 }
 
 // (assoc 'any 'lst) -> lst

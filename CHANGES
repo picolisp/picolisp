@@ -1,10 +1,25 @@
+* 30mar13 picoLisp-3.1.2
+   'lisp' calls from 'native' in emulator
+   '<layout>' function
+   'fold' analog to 'lowc' / 'uppc'
+   'fold' second arg default zero
+   Removed 'dbg' startup script
+   Trim trailing spaces in "lib/form.js"
+   Bug in 'accept' on BSD
+   '+Hook2' index prefix class
+   Password hashing
+   'usec' optional 'flg' argument
+   JavaScript 'rd' in "lib/plio.js"
+   'bytes' function
+   Join multiple namespaces with 'symbols'
+
 * 30nov12 picoLisp-3.1.1
    Emacs-style editing with 'em'
    Line editor arrow-key support
    Changed from CTags to ETags format
    Backtrace with 'trail' and 'up' (64-bit)
    Changed semantics of token 'read'
-   -server function
+   '-server' function
    64-bit emulator
    '*CPU' global variable (64-bit)
    Bug in 'collect' for 'fold'ed keys

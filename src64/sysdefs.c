@@ -1,4 +1,4 @@
-/* 16oct12abu
+/* 07jan13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -23,6 +23,7 @@
 #include <sys/resource.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 static int SigNums[] = {
    SIGHUP, SIGINT, SIGUSR1, SIGUSR2, SIGPIPE, SIGALRM, SIGTERM,

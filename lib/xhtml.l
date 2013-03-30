@@ -1,4 +1,4 @@
-# 24jul12abu
+# 15mar13abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -58,8 +58,9 @@
 (de <tag> (Nm Attr . Prg)
    (tag Nm Attr 2 Prg) )
 
-(de <js> ("*JS" . "Prg")
-   (run "Prg") )
+(de <js> ("JS" . "Prg")
+   (let "*JS" (append "*JS" "JS")
+      (run "Prg") ) )
 
 (de style (X Prg)
    (let *Style
@@ -199,7 +200,13 @@
    (prinl) )
 
 (de <href> (Str Url Tar)
-   (prin "<a href=\"" (sesId Url) "\"")
+   (prin "<a href=\""
+      (sesId
+         (ifn (pre? "+" Url)
+            Url
+            (setq Tar "_blank")
+            (pack (cdr (chop Url))) ) )
+      "\"" )
    (and Tar (prin " target=\"" Tar "\""))
    (and *Style (htStyle @))
    (prin '>)
@@ -207,7 +214,13 @@
    (prin "</a>") )
 
 (de <img> (Src Alt Url DX DY)
-   (and Url (prin "<a href=\"" (sesId Url) "\">"))
+   (when Url
+      (prin "<a href=\""
+         (sesId
+            (ifn (pre? "+" Url)
+               Url
+               (pack (cdr (chop Url)) "\" target=\"_blank") ) )
+         "\">" ) )
    (prin "<img src=\"" (sesId Src) "\"")
    (when Alt
       (prin " alt=\"")
@@ -314,6 +327,35 @@
 (de <tip> ("Str" . "Prg")
    (style (cons 'title "Str") "Prg") )
 
+# Layout
+(de <layout> "Lst"
+   (let ("X" 0  "Y" 0)
+      (recur ("Lst" "Y")
+         (for "L" "Lst"
+            (let
+               ("Args" (mapcar eval (cddar "L"))
+                  "DX" (eval (caar "L"))
+                  "DY" (eval (cadar "L"))
+                  "Cls" (unless (sub? ":" (car "Args")) (pop '"Args"))
+                  "Style"
+                  (cons 'style
+                     (glue "; "
+                        (cons
+                           "position:absolute"
+                           (pack "top:" "Y" "px")
+                           (pack "left:" "X" "px")
+                           (if "DX"
+                              (pack "width:" @ "px")
+                              "min-width:100%" )
+                           (if "DY"
+                              (pack "height:" @ "px")
+                              "min-height:100%" )
+                           "Args" ) ) ) )
+               (prog1 (if "Cls" (list "Cls" "Style") "Style")
+                  (eval (cadr "L")) )
+               (let "X" (+ "X" "DX")
+                  (recurse (cddr "L") "Y") )
+               (inc '"Y" "DY") ) ) ) ) )
 
 # Menus
 (de urlMT (Url Menu Tab Id Str)
@@ -472,7 +514,6 @@
 (de <-> (Str Obj Msg Tab)
    (<$> Str Obj Msg Tab)
    (<0> Str) )
-
 
 # Interactive tree
 (de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")

@@ -1,4 +1,4 @@
-# 25jan11abu
+# 17mar13abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -93,11 +93,12 @@
       (make
          (link (for A '(x y z) (link A)))
          (link A) ) )
-   (test (0 1 x 2 y 3 z i a)
+   (test (-1 0 1 x 2 y 3 z i a)
       (make
+         (made (cons 0 (box)))
          (for (I . A) '(x y z) (link I A))
-         (test (1 x 2 y 3 z) (made))
-         (made (cons 0 (made)))
+         (test (0 1 x 2 y 3 z) (made))
+         (made (cons -1 (made)))
          (link I A) ) )
    (test (1 2 3 4 5 6 7 8 9)
       (make (chain (1 2 3)) (chain (4 5 6) (7 8 9))) )
@@ -410,6 +411,18 @@
 (test 8 (size '((1 2 3) (4 5 6))))
 (test 6 (size '((1 2 .) (4 5 .))))
 (test 3 (size (1 . (2 3 .))))
+
+
+### bytes ###
+(test 4 (bytes "abc"))
+(test 5 (bytes "äbc"))
+(test 2 (bytes 127))
+(test 3 (bytes 128))
+(test 10 (bytes (101 (102) 103)))
+(test 9 (bytes (101 102 103 .)))
+(let (L (7 "abc" (1 2 3) 'a)  F (tmp "bytes"))
+   (out F (pr L))
+   (test (bytes L) (car (info F))) )
 
 
 ### assoc ###

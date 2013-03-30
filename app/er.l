@@ -1,4 +1,4 @@
-# 21jul11abu
+# 04mar13abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -57,7 +57,7 @@
 (rel nm2 (+String))                    # Name 2
 (rel str (+String))                    # Street
 (rel plz (+Ref +String))               # Zip
-(rel ort (+Fold +Idx +String))         # City
+(rel ort (+IdxFold +String))           # City
 (rel tel (+Fold +Ref +String))         # Phone
 (rel fax (+String))                    # Fax
 (rel mob (+Fold +Ref +String))         # Mobile
@@ -78,7 +78,7 @@
 # Item
 (class +Item +Entity)
 (rel nr (+Need +Key +Number))          # Item Number
-(rel nm (+Fold +Idx +String))          # Item Description
+(rel nm (+IdxFold +String))            # Item Description
 (rel sup (+Ref +Link) NIL (+CuSu))     # Supplier
 (rel inv (+Number))                    # Inventory
 (rel pr (+Ref +Number) NIL 2)          # Price

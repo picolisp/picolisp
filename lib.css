@@ -1,4 +1,4 @@
-/* 18nov12abu
+/* 14mar13abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -84,8 +84,8 @@ a:hover {
    top: 0;
    left: 0;
    width: 18em;
-   height: 100%;
-   padding: 1ex 0;
+   min-height: 100%;
+   padding-top: 2ex;
    background-color: #d0d0d0;
 }
 

@@ -1,12 +1,40 @@
 /* 19may07abu
+ * 06dec12jk
  * (c) Software Lab. Alexander Burger
  */
 
+html {
+   background-color: #ddd;
+}
+
 body {
-   margin-left: 80px;
-   margin-right: 60px
+   margin: auto;
+   max-width: 48em;
+   border: 1px solid #bbb;
+   background-color: white;
+   padding: 2em 7% 4em 10%;
+}
+
+h5 {
+	font-size: 95%;
+	margin-bottom: 1em;
+}
+
+dt {
+	margin: 0.4em -2em 0 0;
+	font-weight: 600;
+	color: #444;
+}
+
+dd {
+	margin-top: 0.3em;
+	margin-bottom: 0.4em;
 }
 
 code {
    color: rgb(0%,40%,0%);
+}
+
+dt code {
+	word-spacing: -0.04em;
 }

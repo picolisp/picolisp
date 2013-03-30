@@ -285,12 +285,11 @@ href="refO.html#oct">oct</a></code>.
 </code></pre>
 
 <dt><a name="fold"><code>(fold 'any ['cnt]) -> sym</code></a>
-<dd>Folding to a canonical form: If <code>any</code> is not a symbol,
-<code>NIL</code> is returned. Otherwise, a new transient symbol with all digits
-and all letters of <code>any</code>, converted to lower case, is returned. If
-the <code>cnt</code> argument is given, the result is truncated to that length
-(or not truncated if <code>cnt</code> is zero). Otherwise <code>cnt</code>
-defaults to 24. See also <code><a href="refL.html#lowc">lowc</a></code>.
+<dd>Folding to a canonical form: If <code>any</code> is not a symbol, it is
+returned as it is. Otherwise, a new transient symbol with all digits and all
+letters of <code>any</code>, converted to lower case, is returned. If the
+<code>cnt</code> argument is given and non-zero, the result is truncated to that
+length. See also <code><a href="refL.html#lowc">lowc</a></code>.
 
 <pre><code>
 : (fold " 1A 2-b/3")

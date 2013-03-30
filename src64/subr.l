@@ -1,4 +1,4 @@
-# 07jun12abu
+# 28dec12abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -2739,8 +2739,7 @@
 
 # (length 'any) -> cnt | T
 (code 'doLength 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
+   ld E ((E CDR))  # Get arg
    eval  # Eval it
    num E  # Number?
    if nz  # Yes
@@ -2856,7 +2855,7 @@
                push Z
                call dbFetchEX
                ld X (E)  # Get value
-               call dbSizeX_A  # Calculate size
+               call binSizeX_A  # Calculate size
                add A (+ BLK 1)  # plus block overhead
                ld Z A  # Count in Z
                ld E (E TAIL)  # Get properties
@@ -2868,16 +2867,16 @@
                   ld E (E CDR)
                   atom X  # Flag?
                   if nz  # Yes
-                     call dbSizeX_A  # Flag's size
+                     call binSizeX_A  # Flag's size
                      add Z A  # Add to count
                      add Z 2  # Plus 2
                   else
                      push (X)  # Save value
                      ld X (X CDR)  # Get key
-                     call dbSizeX_A  # Calculate size
+                     call binSizeX_A  # Calculate size
                      add Z A  # Add to count
                      pop X  # Retrieve value
-                     call dbSizeX_A  # Calculate size
+                     call binSizeX_A  # Calculate size
                      add Z A  # Add to count
                   end
                loop
@@ -2968,6 +2967,19 @@
          ret
       end
    loop
+
+# (bytes 'any) -> cnt
+(code 'doBytes 2)
+   push X
+   ld E ((E CDR))  # Get arg
+   eval  # Eval it
+   ld X E
+   call binSizeX_A  # Calculate size
+   ld E A
+   shl E 4  # Make short number
+   or E CNT
+   pop X
+   ret
 
 # (assoc 'any 'lst) -> lst
 (code 'doAssoc 2)

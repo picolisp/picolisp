@@ -69,9 +69,10 @@ C-c":
 ** Put the edited buffer into PicoLisp Mode 
 
 The PicoLisp distribution contains a PicoLisp major mode for Emacs,
-'picolisp.el' in the 'lib/el/' folder. Make sure that you load this
-file on Emacs startup and automatically put '.l' files into
-picolisp-mode, e.g. with the following code in you .emacs:
+'picolisp.el' in the "el/" directory (that is "@lib/el" for a local
+installation, or some system dependent directory for a global installation).
+Make sure that you load this file on Emacs startup and automatically put '.l'
+files into picolisp-mode, e.g. with the following code in you .emacs:
 
 ,------------------------------------------------------------
 | (add-to-list 'load-path "~/path/to/picolisp/lib/el/")

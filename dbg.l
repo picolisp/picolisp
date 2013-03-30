@@ -1,9 +1,13 @@
-# 18jan11abu
+# 27feb13abu
 # (c) Software Lab. Alexander Burger
 
 (on *Dbg)
 
-(load "@lib/debug.l" "@lib/led.l" "@lib/edit.l" "@lib/lint.l" "@lib/sq.l")
+(if (info (pil "editor"))
+   (load (pil "editor"))
+   (load "@lib/led.l" "@lib/edit.l") )
+
+(load "@lib/debug.l" "@lib/lint.l" "@lib/sq.l")
 
 (noLint 'later (loc "@Prg" later))
 

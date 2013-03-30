@@ -1,4 +1,4 @@
-/* 07jun12abu
+/* 28dec12abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -271,6 +271,7 @@ any bigCopy(any);
 void bigSub(any,any);
 void binPrint(int,any);
 any binRead(int);
+int binSize(any);
 adr blk64(any);
 any boxChar(int,int*,any*);
 any boxWord2(word2);
@@ -434,6 +435,7 @@ any doBoxQ(any);
 any doBreak(any);
 any doBy(any);
 any doBye(any) __attribute__ ((noreturn));
+any doBytes(any);
 any doCaaaar(any);
 any doCaaadr(any);
 any doCaaar(any);

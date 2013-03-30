@@ -361,8 +361,8 @@ href="refS.html#sort">sort</a></code>.
 : (maxi                          # Symbol with largest list value
    '((X)
       (and (pair (val X)) (size @)) )
-   (what) )
--> *History
+   (all) )
+-> pico
 </code></pre>
 
 <dt><a name="member"><code>(member 'any 'lst) -> any</code></a>
@@ -461,6 +461,30 @@ href="refC.html#class">class</a></code>.
 <pre><code>
 : (method 'mis> '+Number)
 -> ((Val Obj) (and Val (not (num? Val)) "Numeric input expected"))
+</code></pre>
+
+<dt><a name="methods"><code>(methods 'sym) -> lst</code></a>
+<dd>(Debug mode only) Returns a list of method specifications for the object or
+class <code>sym</code>, as they are inherited from <code>sym</code>'s classes
+and superclasses. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
+<code><a href="refD.html#dep">dep</a></code>, <code><a
+href="refC.html#class">class</a></code> and <code><a
+href="refC.html#can">can</a></code>.
+
+<pre><code>
+: (more (methods '+Joint))
+(keep> . +Joint)
+(lose> . +Joint)
+(rel> . +Joint)
+(mis> . +Joint)
+(T . +Joint)
+(revise> . +relation)
+(print> . +relation)
+(zap> . +relation)
+(del> . +relation)
+(put> . +relation)
+(has> . +relation)
+(ele> . +relation)
 </code></pre>
 
 <dt><a name="min"><code>(min 'any ..) -> any</code></a>

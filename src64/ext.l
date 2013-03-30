@@ -1,4 +1,4 @@
-# 23apr11abu
+# 18feb13abu
 # (c) Software Lab. Alexander Burger
 
 (data 'ExtData)
@@ -129,6 +129,28 @@ bytes (
    ret
 
 
+### File Descriptor ###
+# (ext:FD 'cnt) -> fd
+(code 'FD 2)
+   push X
+   ld X E
+   ld E ((E CDR))  # Eval 'cnt'
+   eval
+   push E  # Save result
+   call xCntEX_FE
+   if ns
+      ld X E  # Keep file descriptor
+      ld A E
+      call initInFileA_A  # Init input file
+      ld A X
+      call initOutFileA_A  # and output file
+   end
+   pop E  # Get result
+   pop X
+   ret
+
+
+### Audio Data ###
 (equ BIAS 132)
 (equ CLIP (- 32767 BIAS))
 

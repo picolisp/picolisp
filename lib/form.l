@@ -1,4 +1,4 @@
-# 19oct12abu
+# 09mar13abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -6,13 +6,17 @@
 
 (allow "@img/" T)
 (push1 '*JS (allow "@lib/form.js"))
-(mapc allow '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" *JsHint "!jsHint"))
+(mapc allow
+   '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" *JsHint "!jsHint" "!tzOffs") )
 
 (one "*Cnt")
-(off "*Lst" "*Post2" "*Cho")
+(off "*Lst" "*Post2" "*Cho" "*TZO")
 
 (de *Throbber
    ("+---" "-+--" "--+-" "---+" "--+-" "-+--" .) )
+
+(de tzOffs (Min)
+   (setq "*TZO" (* Min 60)) )
 
 # Define GUI form
 (de form ("Attr" . "Prg")
@@ -277,7 +281,14 @@
    (pack
       "TimeOut"
       " "
-      (tim$ (% (+ (time) (/ (cadr (assoc -1 *Run)) 1000)) 86400)) ) )
+      (let Tim (+ (time T) (/ (cadr (assoc -1 *Run)) 1000))
+         (if "*TZO"
+            (tim$ (% (- Tim -86400 @) 86400))
+            (javascript NIL
+               (text
+                  "lisp('@1!tzOffs', \"+\" + (new Date()).getTimezoneOffset());"
+                  *SesId ) )
+            (pack (tim$ (% Tim 86400)) " UTC") ) ) ) )
 
 # Return chart property
 (de chart @
@@ -691,31 +702,30 @@
 
 
 (class +Dflt)
-# cue
+# dflt
 
 (dm T (Exe . @)
-   (=: cue Exe)
+   (=: dflt Exe)
    (pass extra) )
 
 (dm set> (Val Dn)
-   (extra (or Val (eval (: cue))) Dn) )
+   (extra (or Val (eval (: dflt))) Dn) )
 
 (dm val> ()
    (let Val (extra)
-      (unless (= Val (eval (: cue))) Val) ) )
+      (unless (= Val (eval (: dflt))) Val) ) )
 
 
-(class +Cue +Dflt)
+(class +Cue)
+# cue
 
 (dm T (Str . @)
-   (pass super (pack "<" Str ">")) )
+   (=: cue (pack "<" Str ">"))
+   (pass extra) )
 
 (dm show> ("Var")
    (<js>
-      (let V (eval (: cue))
-         (list
-            (cons "onclick" (pack "if (this.value=='" V "') this.value=''"))
-            (cons "onblur" (pack "if (this.value=='') this.value='" V "'")) ) )
+      (cons (cons "placeholder" (: cue)))
       (extra "Var") ) )
 
 
@@ -1471,19 +1481,35 @@
 
 
 (class +Img +gui)
-# img alt url
+# img alt url dx dy
 
-(dm T (Exe Alt)
-   (=: img Exe)
+(dm T (Alt Url DX DY)
    (=: alt Alt)
+   (=: url Url)
+   (=: dx DX)
+   (=: dy DY)
    (super) )
 
 (dm js> ()
-   (ht:Fmt (sesId (or (eval (: img)) "@img/no.png"))) )
+   (pack
+      (ht:Fmt (sesId (or (: img) "@img/no.png"))) '&
+      (eval (: alt)) '&
+      (and (eval (: url)) (ht:Fmt (sesId @))) ) )
 
 (dm show> ("Var")
    (showFld
-      (<img> (or (eval (: img)) "@img/no.png") (eval (: alt))) ) )
+      (<img>
+         (or (: img) "@img/no.png")
+         (eval (: alt))
+         (eval (: url))
+         (: dx)
+         (: dy) ) ) )
+
+(dm set> (Val Dn)
+   (=: img Val) )
+
+(dm val> ()
+   (: img) )
 
 
 (class +Icon)

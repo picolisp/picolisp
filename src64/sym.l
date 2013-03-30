@@ -1,4 +1,4 @@
-# 07jun12abu
+# 02mar13abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -938,24 +938,25 @@
 
 # (symbols) -> sym
 # (symbols 'sym1) -> sym2
-# (symbols 'sym1 'sym2) -> sym3
+# (symbols 'sym1 'sym ..) -> sym2
 (code 'doSymbols 2)
    push X
    push Y
+   push Z
    ld X E
-   ld Y (E CDR)  # Y on args
-   atom Y  # Any?
+   ld Z (E CDR)  # Z on args
+   atom Z  # Any?
    if nz  # No
       ld E (EnvIntern)  # Return current symbol namespace
    else
-      ld E (Y)  # Eval first
+      ld E (Z)  # Eval first
       eval
       num E  # Need symbol
       jnz symErrEX
       sym E
       jz symErrEX
-      ld Y (Y CDR)  # Second arg?
-      atom Y  # Any?
+      ld Z (Z CDR)  # Second arg
+      atom Z  # Any?
       if nz  # No
          atom (E)  # Value must be a pair
          jnz symNsErrEX
@@ -963,33 +964,41 @@
          call checkVarEX
          link
          push E  # <L III> Save new symbol namespace
-         ld E (Y)
-         eval+  # Eval source symbol namespace
-         push E  # <L II> Source
+         push Nil  # <L II> Space for value
+         push Nil  # <L I> and source
          link
-         num E  # Need symbol
-         jnz symErrEX
-         sym E
-         jz symErrEX
-         ld C (E)  # Get source
-         atom C  # Must be a pair
-         jnz symNsErrEX
-         ld X (C)  # Source short names
          call cons_Y  # Create namespace cell
          ld (Y) Nil  # Initialize
          ld (Y CDR) Nil
-         tuck Y  # <L I> New value
-         link
-         call balanceXY  # Balanced copy of short names
-         ld X (((L II)) CDR)  # Source long names
-         call balanceXY  # Balanced copy of long names
-         ld C (L I)  # Get value
+         ld (L II) Y  # New value
+         do
+            ld E (Z)
+            eval  # Eval next source symbol namespace
+            ld (L I) E  # Save source
+            num E  # Need symbol
+            jnz symErrEX
+            sym E
+            jz symErrEX
+            ld C (E)  # Get source value
+            atom C  # Must be a pair
+            jnz symNsErrEX
+            push X
+            ld X (C)  # Source short names
+            call balanceXY  # Balanced copy of short names
+            ld X (((L I)) CDR)  # Source long names
+            call balanceXY  # Balanced copy of long names
+            pop X
+            ld Z (Z CDR)  # Next arg
+            atom Z  # Any?
+         until nz  # No
+         ld C (L II)  # Get value
          ld E (L III)  # And new symbol namespace
          call redefineCE  # Redefine
          drop
       end
       xchg (EnvIntern) E  # Set new symbol namespace, return old
    end
+   pop Z
    pop Y
    pop X
    ret
@@ -3533,7 +3542,7 @@
                ld Y (Y CDR)  # Next arg?
                atom Y
                if nz  # No
-                  push 24  # <S II> Default 'cnt' 24
+                  push 0  # <S II> Default 'cnt' zero
                else
                   call evCntXY_FE  # Eval 'cnt'
                   push E  # <S II> 'cnt'
@@ -3569,14 +3578,10 @@
                ld X (L I)  # Get result
                call consSymX_E  # Make transient symbol
                drop
-               pop Y
-               pop X
-               ret
             end
          end
       end
    end
-   ld E Nil
    pop Y
    pop X
    ret

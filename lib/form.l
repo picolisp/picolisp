@@ -1,4 +1,4 @@
-# 09mar13abu
+# 28may13abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -7,7 +7,9 @@
 (allow "@img/" T)
 (push1 '*JS (allow "@lib/form.js"))
 (mapc allow
-   '(*Gui *Get *Got *Form *Evt *Drop "!jsForm" *JsHint "!jsHint" "!tzOffs") )
+   (quote
+      *Gui *Get *Got *Form "!jsForm" *Evt *Drop
+      *JsHint "!jsHint" *JsArgs "!tzOffs" ) )
 
 (one "*Cnt")
 (off "*Lst" "*Post2" "*Cho" "*TZO")
@@ -208,10 +210,12 @@
 (de postGui ()
    (if "*Post2"
       (off *Gui "*Post2")
-      (let *Btn NIL
+      (let ("Fun" NIL *Btn NIL)
          (for G *Gui
-            (and (lt0 (car G)) (setq *Btn (cdr G)))
-            (con (assoc (car G) (val *PRG)) (cdr G)) )
+            (if (=0 (car G))
+               (setq "Fun" (cdr G))
+               (and (lt0 (car G)) (setq *Btn (cdr G)))
+               (con (assoc (car G) (val *PRG)) (cdr G)) ) )
          (off *Gui)
          (job (: env)
             (for This (: gui)
@@ -234,6 +238,16 @@
                         (=: able (off *Lock))
                         (sync)
                         (tell) ) )
+                  (when "Fun"
+                     (when (and *Allow (not (idx *Allow "Fun")))
+                        (notAllowed "Fun")
+                        (throw "stop") )
+                     (apply (intern "Fun")
+                        (mapcar
+                           '((X)
+                              ((if (= "+" (car (setq X (chop (cdr X))))) format pack)
+                                 (cdr X) ) )
+                           *JsArgs ) ) )
                   (for This (: gui)
                      (nond
                         ((: id) (setq "*Chart" This))
@@ -285,9 +299,7 @@
          (if "*TZO"
             (tim$ (% (- Tim -86400 @) 86400))
             (javascript NIL
-               (text
-                  "lisp('@1!tzOffs', \"+\" + (new Date()).getTimezoneOffset());"
-                  *SesId ) )
+               "lisp(null, 'tzOffs', (new Date()).getTimezoneOffset());" )
             (pack (tim$ (% Tim 86400)) " UTC") ) ) ) )
 
 # Return chart property
@@ -1079,6 +1091,18 @@
 
 (dm act> ()
    (and (able) (eval (: act))) )
+
+
+(class +OnClick)
+# onclick
+
+(dm T (Exe . @)
+   (=: onclick Exe)
+   (pass extra) )
+
+(dm show> ("Var")
+   (<js> (list (cons 'onclick (eval (: onclick))))
+      (extra "Var") ) )
 
 
 (class +Drop)
@@ -2250,9 +2274,8 @@
             (if (pair "Cho")
                (eval @)
                (choDlg NIL "Cho" (list "Var" "Cls")) ) ) )
-      (<h3> NIL "Entity")
       (form NIL
-         (<h2> NIL (idObj "Lst"))
+         (<h3> NIL "Entity" ": " (idObj "Lst"))
          (panel "Able" (pack "Entity" " '@1'") "Del"
             (or
                (pair "Cho")

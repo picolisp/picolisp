@@ -27,7 +27,8 @@ href="refF.html#fold">fold</a></code>ed indexes to <code><a
 href="refS.html#+String">+String</a></code> relations. Typically used in
 combination with the <code><a href="refR.html#+Ref">+Ref</a></code> or <code><a
 href="refI.html#+Idx">+Idx</a></code> prefix classes. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+href="refI.html#+IdxFold">+IdxFold</a></code> and <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel nm (+Fold +Idx +String))   # Item Description
@@ -101,11 +102,12 @@ href="refL.html#load">load</a></code>.
 </code></pre>
 
 <dt><a name="fill"><code>(fill 'any ['sym|lst]) -> any</code></a>
-<dd>Fills a pattern <code>any</code>, by substituting <code>sym</code>, or all
-symbols in <code>lst</code>, or - if no second argument is given - each pattern
-symbol in <code>any</code> (see <code><a href="refP.html#pat?">pat?</a></code>),
-with its current value. <code>@</code> itself is not considered a pattern symbol
-here. In any case, expressions following the symbol <code>^</code> should
+<dd>Non-destructively fills a pattern <code>any</code>, by substituting
+<code>sym</code>, or all symbols in <code>lst</code>, or - if no second argument
+is given - each pattern symbol in <code>any</code> (see <code><a
+href="refP.html#pat?">pat?</a></code>), with its current value. <code>@</code>
+itself is not considered a pattern symbol here. Unmodified subexpressions are
+shared. In any case, expressions following the symbol <code>^</code> should
 evaluate to lists which are then (destructively) spliced into the result. See
 also <code><a href="refM.html#match">match</a></code>.
 

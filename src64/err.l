@@ -1,4 +1,4 @@
-# 12jan13abu
+# 25may13abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -164,8 +164,12 @@
    ld (EnvTrace) 0
    ld L 0  # Init link register
    ld S (Stack0)  # stack pointer
-   ld (StkLimit) 0  # Clear stack limit
-   ld (Stacks) 0  # Free all stack segments
+   null (Stacks)  # Coroutines?
+   if nz  # Yes
+      lea A (S 4096)  # Set stack limit
+      sub A (StkSize)
+      ld (StkLimit) A
+   end
    jmp restart  # Restart interpreter
 
 (code 'unwindC_Z 0)
@@ -259,17 +263,16 @@
       do
          cmp Z (X (pack III "+(EnvCo7-Env)"))  # Skipped?
       while ne  # Yes
-         ld C (Stack0)  # Find stack segment
-         ld A 1
+         ld C (Stack1)  # Find stack segment
          do
-            sub C (StkSize)  # Next segment
             cmp C (Z II)  # Found 'seg'?
          while ne  # No
-            add A A
+            sub C (StkSize)  # Next segment
          loop
-         xor (Stacks) A  # Clear in segment bitmask
-         if z  # Last coroutine?
-            ld (StkLimit) 0  # Yes: Clear stack limit
+         ld (C -I) 0  # Mark segment as unused
+         dec (Stacks)  # Last coroutine?
+         if z  # Yes
+            ld (StkLimit) 0  # Clear stack limit
          end
          ld Z (Z)  # Next coroutine
       loop
@@ -322,6 +325,25 @@
       null (EnvCtlFrames)  # Open control frames?
    while nz  # Yes
       call popCtlFiles  # Clean up
+   loop
+   ld X (Stack1)  # Search through stack segments
+   ld C (Stacks)  # Segment count
+   do
+      null C  # Any?
+   while nz  # Yes
+      null (X -I)  # In use?
+      if nz  # Yes
+         null (X -II)  # Active?
+         if z  # Yes
+            ld (X -I) 0  # Mark segment as unused
+            dec (Stacks)  # Last coroutine?
+            if z  # Yes
+               ld (StkLimit) 0  # Clear stack limit
+            end
+         end
+         dec C  # Decrement count
+      end
+      sub X (StkSize)  # Next segment
    loop
    ret
 

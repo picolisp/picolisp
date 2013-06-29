@@ -1,4 +1,4 @@
-# 03mar13abu
+# 30may13abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -827,6 +827,26 @@
 (dm T (Var Lst)
    (extra Var (cdr Lst))
    (=: cls (car Lst)) )
+
+
+(class +Swap)
+# dbf
+
+(dm has> (Val X)
+   (or (extra Val X) (extra Val (val X))) )
+
+(dm put> (Obj Old New)
+   (prog1
+      (or
+         (ext? (get Obj (: var)))
+         (new (or (: dbf 1) 1)) )
+      (set @ (extra Obj (val Old) New)) ) )
+
+(dm del> (Obj Old Val)
+   (ifn (ext? (get Obj (: var)))
+      (extra Obj Old Val)
+      (set @ (extra Obj (val Old) Val))
+      @ ) )
 
 
 ### Entities ###

@@ -1,4 +1,4 @@
-# 06feb13abu
+# 23jun13abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -85,6 +85,9 @@
    or A CNT
    ld (Pid) A
    ld (Stack0) S  # Save top level stack pointer
+   ld A S  # Stack top in A
+   sub A (* 4 STACK)  # Decrement by main segment size
+   ld (Stack1) A  # Set coroutine stack base
    ld (StkLimit) 0  # Initially without stack limit
    ld L 0  # Init link register
    call heapAlloc  # Allocate initial heap
@@ -326,6 +329,7 @@
                                  ld E 0  # Exit OK
                                  jmp byeE
                               end
+                              break T
                            end
                         end
                      end
@@ -555,7 +559,11 @@
       if z  # No
          ld E (E)  # Eval 'cnt'
          call evCntEX_FE
-         shl E 20  # [MB]
+         shl E 22  # Main stack segment size [times 4 MB]
+         ld A (Stack0)  # Get stack top
+         sub A E  # Decrement by main segment size
+         ld (Stack1) A  # New coroutine stack base
+         shr E 2  # [to MB]
          ld (StkSize) E  # Set new stack size
          shr E 16  # Make short number [MB]
          or E CNT
@@ -566,19 +574,21 @@
    ld E (StkSize)  # Return current stack size
    shr E 16  # Make short number [MB]
    or E CNT
-   ld X (Stack0)  # Collect coroutines
+   ld X (Stack1)  # Collect coroutines
    ld C (Stacks)  # Segment bitmask
    do
-      sub X (StkSize)  # Next segment
-      shr C 1  # In use?
-      if c  # Yes
+      null C  # Any?
+   while nz  # Yes
+      null (X -I)  # In use?
+      if nz  # Yes
          call consE_A  # Cons 'tag'
          ld (A) (X -I)
          ld (A CDR) E
          ld E A
-         continue T
+         dec C  # Decrement count
       end
-   until z
+      sub X (StkSize)  # Next segment
+   loop
    pop X
    ret
 
@@ -839,6 +849,35 @@
    end
    pop Z
    pop Y
+   pop X
+   ret
+
+# (sys 'any ['any]) -> sym
+(code 'doSys 2)
+   push X
+   push Z
+   ld X (E CDR)  # X on args
+   call evSymX_E  # Evaluate first symbol
+   call bufStringE_SZ  # Write to stack buffer
+   ld X (X CDR)  # Next arg?
+   atom X
+   if nz  # No
+      cc getenv(S)  # Get value from system
+      ld E A
+      call mkStrE_E  # Make transient symbol
+   else
+      push Z
+      call evSymX_E  # Evaluate second symbol
+      lea X (S I)  # Keep pointer to first buffer
+      call bufStringE_SZ  # Write to stack buffer
+      cc setenv(X S 1)  # Set system value
+      nul4  # OK?
+      ldnz E Nil  # No
+      ld S Z  # Drop buffer
+      pop Z
+   end
+   ld S Z  # Drop buffer
+   pop Z
    pop X
    ret
 
@@ -1666,8 +1705,8 @@
    loop
    ld X S  # X on last argument
    link
-   push (Link)  # Save Link
-   ld (Link) L
+   push (CLink)  # Save Link
+   ld (CLink) L
    lea Y (Z -II)  # Limit
    do
       cmp X Y  # More args?
@@ -1746,7 +1785,7 @@
    lea X (L -I)  # Top of arguments
    ld Y (Z)  # Get function pointer
    cc (Y) X  # Call C-function
-   ld (Link) (L -I)  # Restore Link
+   ld (CLink) (L -I)  # Restore Link
    ld E (Z -II)  # Get result specification
    ld C 0  # No pointer yet
    call natRetACE_CE  # Extract return value
@@ -2112,7 +2151,7 @@
 
 : cbl
    push L  # Save C frame pointer
-   ld L (Link)  # Restore link register
+   ld L (CLink)  # Restore link register
    link  # Apply args
    push (Z I)  # 'fun'
    xchg A E  # First arg
@@ -2288,7 +2327,7 @@
 (code 'lisp 0)
    begin  # Function name in A, arguments in C, E, X, Y and Z
    push L  # Save C frame pointer
-   ld L (Link)  # Restore link register
+   ld L (CLink)  # Restore link register
    link  # Apply args
    push ZERO  # Space for 'fun'
    xchg C E  # First arg
@@ -3013,17 +3052,26 @@
    pop X
    ret
 
-# (info 'any) -> (cnt|T dat . tim)
+# (info 'any ['flg]) -> (cnt|T dat . tim)
 (code 'doInfo 2)
    push X
    push Y
    push Z
-   ld E ((E CDR))  # Get arg
+   ld X (E CDR)  # Args
+   ld E (X)  # Get 'any'
    call evSymE_E  # Evaluate to a symbol
    call pathStringE_SZ  # Write to stack buffer
-   ld E S  # path name pointer
+   ld Y S  # path name pointer
    sub S (%% STAT)  # 'stat' structure
-   cc stat(E S)  # Get status
+   ld X (X CDR)  # Eval 'flg'
+   ld E (X)
+   eval
+   cmp E Nil  # NIL?
+   if eq  # Yes
+      cc stat(Y S)  # Get status
+   else
+      cc lstat(Y S)  # or link status
+   end
    ld E Nil  # Preload return value
    nul4  # 'stat' OK?
    if ns

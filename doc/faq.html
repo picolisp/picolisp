@@ -697,16 +697,32 @@ microcode levels) are s-expressions: The machine language is <i>Lisp</i>.
 <p><hr>
 <h2><a name="segfault">I get a segfault if I ...</a></h2>
 
+<p>It is easy to produce a segfault in PicoLisp. Just set a symbol to a value
+which is not a function, and call it:
+
+<pre><code>
+: (setq foo 1)
+-> 1
+: (foo)
+Segmentation fault
+</code></pre>
+
+There is another <a href="ref.html#codePointer">example</a> in the <a
+href="ref.html#ev">Evaluation</a> section of the reference manual.
+
 <p>PicoLisp is a pragmatic language. It doesn't check at runtime for all
 possible error conditions which won't occur during normal usage. Such errors are
 usually detected quickly at the first test run, and checking for them after that
 would just produce runtime overhead.
 
-<p>Catching the segfault signals is also not a good idea, because the Lisp heap
-is most probably be damanged afterwards.
+<p>Catching the segmentation violation and bus fault signals is also not a good
+idea, because the Lisp heap is most probably be damaged afterwards, possibly
+creating further havoc if execution continues.
 
-<p>It is recommended, though, to inspect the code periodically with <code><a
-href="refL.html#lint">lint</a></code>.
+<p>It is recommended to inspect the code periodically with <code><a
+href="refL.html#lint">lint</a></code>. It will detect many potential errors.
+And, most of these errors are avoided by following the PicoLisp <a
+href="ref.html#conv">naming conventions</a>.
 
 
 <p><hr>

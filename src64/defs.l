@@ -1,10 +1,10 @@
-# 07jun12abu
+# 19may13abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
 (equ HEAP (* 1024 1024))      # Heap size in bytes
 (equ CELLS (/ HEAP 16))       # Number of cells in a single heap (65536)
-(equ STACK (* 4 1024 1024))   # Default stack segment size
+(equ STACK (* 1024 1024))     # Default coroutine stack segment size (1 MB)
 (equ ZERO (short 0))          # Short number '0'
 (equ ONE (short 1))           # Short number '1'
 (equ TOP (hex "10000"))       # Character top

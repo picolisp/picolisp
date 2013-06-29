@@ -1,9 +1,9 @@
-# 15mar13abu
+# 17jun13abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
 
-(mapc allow '(*Menu *Tab *ID))
+(mapc allow '(*JS *Menu *Tab *ID))
 (setq *Menu 0  *Tab 1)
 (off "*JS")
 
@@ -106,6 +106,7 @@
       (when Css
          (if (atom Css) ("css" Css) (mapc "css" Css)) )
       (mapc javascript *JS)
+      (and *SesId (javascript NIL "SesId = '" @ "';"))
       (prinl "</head>")
       (tag 'body Attr 2 Prg)
       (prinl "</html>") ) )
@@ -344,14 +345,14 @@
                            "position:absolute"
                            (pack "top:" "Y" "px")
                            (pack "left:" "X" "px")
-                           (if "DX"
-                              (pack "width:" @ "px")
-                              "min-width:100%" )
-                           (if "DY"
-                              (pack "height:" @ "px")
-                              "min-height:100%" )
+                           (cond
+                              ((=0 "DX") "min-width:100%")
+                              ("DX" (pack "width:" @ "px")) )
+                           (cond
+                              ((=0 "DY") "min-height:100%")
+                              ("DY" (pack "height:" @ "px")) )
                            "Args" ) ) ) )
-               (prog1 (if "Cls" (list "Cls" "Style") "Style")
+               (prog1 (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
                   (eval (cadr "L")) )
                (let "X" (+ "X" "DX")
                   (recurse (cddr "L") "Y") )
@@ -571,6 +572,7 @@
       (sesId Url)
       (and *JS "\" onkeydown=\"return formKey(event)\" onkeypress=\"return formKey(event)\" onsubmit=\"return doPost(this)")
       "\" method=\"post\">" )
+   (prin "<noscript><input type=\"hidden\" name=\"*JS\" value=\"\"/></noscript>")
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )
 

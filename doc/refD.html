@@ -12,13 +12,13 @@
 <dl>
 
 <dt><a name="*DB"><code>*DB</code></a>
-<dd>A global constant holding the external symbol <code>{1}</code>, the <code><a
-href="ref.html#dbase">database</a></code> root. All transient symbols in a
-database can be reached from that root. Except during debugging, any explicit
-literal access to symbols in the database should be avoided, because otherwise a
-memory leak might occur (The garbage collector temporarily sets <code>*DB</code>
-to <code>NIL</code> and restores its value after collection, thus disposing of
-all external symbols not currently used in the program).
+<dd>A global constant holding the external symbol <code>{1}</code>, the <a
+href="ref.html#dbase">database</a> root. All transient symbols in a database can
+be reached from that root. Except during debugging, any explicit literal access
+to symbols in the database should be avoided, because otherwise a memory leak
+might occur (The garbage collector temporarily sets <code>*DB</code> to
+<code>NIL</code> and restores its value after collection, thus disposing of all
+external symbols not currently used in the program).
 
 <pre><code>
 : (show *DB)
@@ -78,8 +78,8 @@ and <code><a href="refD.html#dbs+">dbs+</a></code>.
 <dt><a name="+Date"><code>+Date</code></a>
 <dd>Class for calender dates (as calculated by <code><a
 href="refD.html#date">date</a></code>), a subclass of <code><a
-href="refN.html#+Number">+Number</a></code>. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+href="refN.html#+Number">+Number</a></code>. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel dat (+Ref +Date))  # Indexed date
@@ -90,8 +90,8 @@ href="ref.html#dbase">Database</a></code>.
 href="refR.html#+relation">+relation</a></code>s. Expects a list of (symbolic)
 attributes that depend on this relation. Whenever this relations is cleared
 (receives a value of <code>NIL</code>), the dependent relations will also be
-cleared, triggering all required side-effects. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+cleared, triggering all required side-effects. See also <a
+href="ref.html#dbase">Database</a>.
 
 <p>In the following example, the index entry for the item pointing to the
 position (and, therefore, to the order) is cleared in case the order is deleted,
@@ -344,7 +344,7 @@ href="refD.html#*DB">*DB</a></code>, and then calling <code><a
 href="refS.html#sync">sync</a></code> to synchronize with possible changes from
 other processes. When all desired modifications to external symbols are done,
 <code>(<a href="refC.html#commit">commit</a> 'upd)</code> should be called. See
-also <code><a href="ref.html#dbase">Database</a></code>.
+also <a href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (let? Obj (rd)             # Get object?
@@ -608,8 +608,8 @@ href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 
 <dt><a name="dep"><code>(dep 'cls) -> cls</code></a>
 <dd>(Debug mode only) Displays the "dependencies" of <code>cls</code>, i.e. the
-tree of superclasses and the tree of subclasses. See also <code><a
-href="ref.html#oop">OO Concepts</a></code>, <code><a
+tree of superclasses and the tree of subclasses. See also <a
+href="ref.html#oop">OO Concepts</a>, <code><a
 href="refM.html#methods">methods</a></code>, <code><a
 href="refC.html#class">class</a></code> and <code><a
 href="refC.html#can">can</a></code>.
@@ -698,8 +698,8 @@ symbol specifying another class <code>cls2</code> is given, the method from that
 class is used (explicit inheritance). When the value of the global variable <a
 href="refD.html#*Dbg">*Dbg</a> is non-<code>NIL</code>, the current line number
 and file name (if any) are stored in the <code>*Dbg</code> property of
-<code>sym</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
-<code><a href="refD.html#de">de</a></code>, <code><a
+<code>sym</code>. See also <a href="ref.html#oop">OO Concepts</a>, <code><a
+href="refD.html#de">de</a></code>, <code><a
 href="refU.html#undef">undef</a></code>, <a href="refC.html#class">class</a>, <a
 href="refR.html#rel">rel</a>, <a href="refV.html#var">var</a>, <a
 href="refM.html#method">method</a>, <a href="refS.html#send">send</a> and <a

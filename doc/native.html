@@ -14,7 +14,7 @@
 
 <p>This document describes how to call C functions in shared object files
 (libraries) from PicoLisp, using the built-in <code><a
-href="refN.html#native">native</a></code> function -- possibly with the help of
+href="refN.html#native">native</a></code> function - possibly with the help of
 the <code><a href="refS.html#struct">struct</a></code> and <code><a
 href="refL.html#lisp">lisp</a></code> functions. It applies only to the 64-bit
 version of PicoLisp.
@@ -153,8 +153,8 @@ function pointer. See the man page of <code>dlsym(3)</code> for further details.
 <p>In most cases a program will call more than one function from a given
 library. If we keep the code within the same transient scope (i.e. in the same
 source file, and not separated by the <code><a
-href="ref_.html#====">====</a></code> function), each library will be opened --
-and each function searched -- only once.
+href="ref_.html#====">====</a></code> function), each library will be opened -
+and each function searched - only once.
 
 <pre><code>
 (native "lib.so" "fun1")
@@ -436,7 +436,7 @@ returned list
 <p>Note that the allocated structure memory is released <i>after</i> the return
 value is extracted. This allows a C function to return the argument structure
 pointer, perhaps after modifying the data in-place, and receive the new
-structure as the return value -- instead of (or even in addition to) to the
+structure as the return value - instead of (or even in addition to) to the
 direct return via the argument reference.
 
 
@@ -627,8 +627,8 @@ prints a floating point number in scientific notation:
 </code></pre>
 
 <p>As we know that the format string <code>"%e^J"</code> will be converted from
-a Lisp symbol to a C string with <code>strdup</code> -- and then thrown away --
-on each call to <code>prf</code>, we might as well perform a little optimization
+a Lisp symbol to a C string with <code>strdup</code> - and then thrown away - on
+each call to <code>prf</code>, we might as well perform a little optimization
 and delegate this conversion to the program load time:
 
 <pre><code>
@@ -658,7 +658,7 @@ further conversion or memory management.
 <h2><a name="callbacks">Callbacks</a></h2>
 
 <p>Sometimes it is necessary to do the reverse: Call Lisp code from C code. This
-can be done in two ways -- with certain limitations.
+can be done in two ways - with certain limitations.
 
 
 <h4><a name="byName">Call by Name</a></h4>

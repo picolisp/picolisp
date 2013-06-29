@@ -27,13 +27,22 @@ href="refS.html#*Sig1">*Sig[12]</a></code>.
 <dd>Prefix class for <code><a href="refR.html#+relation">+relation</a></code>s,
 typically <code><a href="refL.html#+Link">+Link</a></code> or <code><a
 href="refJ.html#+Joint">+Joint</a></code>. In essence, this maintains an local
-database in the referred object. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+database in the referred object. See also <a href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel sup (+Hook +Link) (+Sup))   # Supplier
 (rel nr (+Key +Number) sup)      # Item number, unique per supplier
 (rel dsc (+Ref +String) sup)     # Item description, indexed per supplier
+</code></pre>
+
+<dt><a name="+Hook2"><code>+Hook2</code></a>
+<dd>Prefix class for <code><a href="refI.html#+index">+index</a></code>
+relations. It maintains both a normal (global) index, and an object-local index
+in the corresponding <code><a href="refH.html#+Hook">+Hook</a></code> object.
+See also <a href="ref.html#dbase">Database</a>.
+
+<pre><code>
+(rel nm (+Hook2 +IdxFold +String) 3 shop)       # Global and shop-local index
 </code></pre>
 
 <dt><a name="hash"><code>(hash 'any) -> cnt</code></a>

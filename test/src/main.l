@@ -1,4 +1,4 @@
-# 17nov12abu
+# 06may13abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -69,6 +69,11 @@
    (let N 1
       ((quote (N) (up N 7)) 2)
       N ) )
+
+
+### sys ###
+(test "PicoLisp" (sys "TEST" "PicoLisp"))
+(test "PicoLisp" (sys "TEST"))
 
 
 ### args next arg rest ####

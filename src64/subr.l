@@ -1,4 +1,4 @@
-# 28dec12abu
+# 31mar13abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -784,11 +784,11 @@
    ld X (E CDR)  # Args
    ld E (X)  # Eval first
    eval
+   ld Y E  # Keep in Y
    link
    push E  # <L I> Safe
    link
    do
-      ld Y E  # Keep in Y
       ld X (X CDR)  # Next arg?
       atom X
    while z  # Yes
@@ -797,6 +797,7 @@
       atom Y  # Result list?
       if nz  # No
          ld (L I) E  # Init result
+         ld Y E  # Keep in Y
       else
          do
             atom (Y CDR)  # Find end of result list

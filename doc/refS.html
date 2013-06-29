@@ -72,7 +72,7 @@ argument. See also <code><a href="refZ.html#*Zap">*Zap</a></code>.
 algorithm, for tolerant name searches, to <code><a
 href="refS.html#+String">+String</a></code> relations. Typically used in
 combination with the <code><a href="refI.html#+Idx">+Idx</a></code> prefix
-class. See also <code><a href="ref.html#dbase">Database</a></code>.
+class. See also <a href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel nm (+Sn +Idx +String))  # Name
@@ -81,19 +81,33 @@ class. See also <code><a href="ref.html#dbase">Database</a></code>.
 <dt><a name="+String"><code>+String</code></a>
 <dd>Class for string (transient symbol) relations, a subclass of <code><a
 href="refS.html#+Symbol">+Symbol</a></code>. Accepts an optional argument for
-the string length (currently not used). See also <code><a
-href="ref.html#dbase">Database</a></code>.
+the string length (currently not used). See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel nm (+Sn +Idx +String))  # Name, indexed by soundex and substrings
+</code></pre>
+
+<dt><a name="+Swap"><code>+Swap</code></a>
+<dd>Prefix class for <code><a href="refR.html#+relation">+relation</a></code>s
+where the data are to be stored in the value of a separate external symbol
+instead of the relation's object. Typically used for data which are relatively
+large and/or rarely accessed. Doesn't work with bidirectional relations
+(<code><a href="refJ.html#+Joint">+Joint</a></code> or <code><a
+href="refI.html#+index">+index</a></code>). See also <a
+href="ref.html#dbase">Database</a>.
+
+<pre><code>
+(rel pw (+Swap +String))               # Password
+(rel nr (+Swap +List +Number))         # List of bignums
 </code></pre>
 
 <dt><a name="+Symbol"><code>+Symbol</code></a>
 <dd>Class for symbolic relations, a subclass of <code><a
 href="refR.html#+relation">+relation</a></code>. Objects of that class typically
 maintain internal symbols, as opposed to the more often-used <code><a
-href="refS.html#+String">+String</a></code> for transient symbols. See also
-<code><a href="ref.html#dbase">Database</a></code>.
+href="refS.html#+String">+String</a></code> for transient symbols. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel perm (+List +Symbol))  # Permission list
@@ -197,7 +211,9 @@ href="refP.html#pass">pass</a></code>ed as variable arguments. They can be
 accessed with <code><a href="refN.html#next">next</a></code>, <code><a
 href="refA.html#arg">arg</a></code>, <code><a
 href="refA.html#args">args</a></code> and <code><a
-href="refR.html#rest">rest</a></code>.
+href="refR.html#rest">rest</a></code>. With that, the syntax in the script is
+the same as that in the body of a function with variable arguments (see <a
+href="ref.html#lambda">lambda expression</a>s, "when the CAR is the symbol @").
 
 <pre><code>
 $ cat x
@@ -264,9 +280,8 @@ values (this is analog to 'SELECT * from CLS where VAR = VAL'). If between the
 are supplied, only these attribute (instead of the full <code>show</code>) are
 printed. These attribute specifications may also be lists, then the <code><a
 href="refG.html#get">get</a></code> algorithm will be used to retrieve related
-data. See also <code><a href="refU.html#update">update</a></code>, <code><a
-href="ref.html#dbase">Database</a></code> and <a
-href="ref.html#pilog">Pilog</a>.
+data. See also <code><a href="refU.html#update">update</a></code>, <a
+href="ref.html#dbase">Database</a> and <a href="ref.html#pilog">Pilog</a>.
 
 <pre><code>
 : (select +Item)                       # Show all items
@@ -338,8 +353,8 @@ href="refR.html#remote/2">remote/2</a></code>.
 <dd>Sends the message <code>msg</code> to the object <code>obj</code>,
 optionally with arguments <code>any</code>. If the message cannot be located in
 <code>obj</code>, its classes and superclasses, an error <code>"Bad
-message"</code> is issued. See also <code><a href="ref.html#oop">OO
-Concepts</a></code>, <code><a href="refT.html#try">try</a></code>, <code><a
+message"</code> is issued. See also <a href="ref.html#oop">OO Concepts</a>,
+<code><a href="refT.html#try">try</a></code>, <code><a
 href="refM.html#method">method</a></code>, <code><a
 href="refM.html#meth">meth</a></code>, <code><a
 href="refS.html#super">super</a></code> and <code><a
@@ -601,32 +616,28 @@ href="refS.html#stem">stem</a></code>.
 </code></pre>
 
 <dt><a name="stack"><code>(stack ['cnt]) -> cnt | (.. sym . cnt)</code></a>
-<dd>(64-bit version only) Maintains the stack segment size for coroutines. If
-called without a <code>cnt</code> argument, or if already one or more <a
-href="ref.html#coroutines">coroutines</a> are running, the current size in
-megabytes is returned. Otherwise, the stack segment size is set to the new value
-(default 4 MB). If there are running coroutines, their tags will be <code><a
-href="refC.html#cons">cons</a></code>ed in front of the size. See also <code><a
-href="refH.html#heap">heap</a></code>.
+<dd>(64-bit version only) Maintains the stack segment size for <a
+href="ref.html#coroutines">coroutines</a> (the main stack segment is limited -
+while at least one coroutine is running - to four times that size). If called
+without a <code>cnt</code> argument, or if already one or more coroutines are
+running, the current size in megabytes is returned. Otherwise, the stack segment
+size is set to the new value (default 1 MB). The main segment's size is always
+four times the size of coroutine segments. If there are running coroutines,
+their tags will be <code><a href="refC.html#cons">cons</a></code>ed in front of
+the size. See also <code><a href="refH.html#heap">heap</a></code>.
 
 <pre><code>
-: (stack)         # Get current stack segment size
+$ ulimit -s unlimited  &&  pil +  # Guarantee stack space
+: (stack)      # Current size
+-> 1
+: (stack 4)    # Set to 4 MB
 -> 4
-: (stack 10)      # Set to 10 MB
--> 10
-: (let N 0 (recur (N) (recurse (inc N))))
-!? (recurse (inc N))
-Stack overflow
-? N
--> 109181
-?
-
-: (co "routine" (yield 7))  # Create two coroutines
--> 7
-: (co "routine2" (yield 8))
--> 8
+: (co 'inc (let N 0 (loop (yield (inc 'N)))))  # Create two coroutines
+-> 1
+: (co 'dec (let N 0 (loop (yield (dec 'N)))))
+-> -1
 : (stack)
--> ("routine2" "routine" . 4)
+-> (dec inc . 4)
 </code></pre>
 
 <dt><a name="stamp"><code>(stamp ['dat 'tim]|['T]) -> sym</code></a>
@@ -909,8 +920,8 @@ to <code>fun</code>. Returns the sum of all numeric values returned from
 <dt><a name="super"><code>(super ['any ..]) -> any</code></a>
 <dd>Can only be used inside methods. Sends the current message to the current
 object <code>This</code>, this time starting the search for a method at the
-superclass(es) of the class where the current method was found. See also
-<code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
+superclass(es) of the class where the current method was found. See also <a
+href="ref.html#oop">OO Concepts</a>, <code><a
 href="refE.html#extra">extra</a></code>, <code><a
 href="refM.html#method">method</a></code>, <code><a
 href="refM.html#meth">meth</a></code>, <code><a

@@ -1,4 +1,4 @@
-# 14jul12abu
+# 06may13abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -427,11 +427,6 @@
                      (yield (link 1))
                      (yield (link 2))
                      (yield (link 3)) ) ) ) ) ) ) )
-
-
-### sys ###
-(test "PicoLisp" (sys "TEST" "PicoLisp"))
-(test "PicoLisp" (sys "TEST"))
 
 
 ### call ###

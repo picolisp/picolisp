@@ -38,8 +38,8 @@ $
 <dd>Prefix class for maintaining non-unique indexes to <code><a
 href="refR.html#+relation">+relation</a></code>s, a subclass of <code><a
 href="refI.html#+index">+index</a></code>. Accepts an optional argument for a
-<code><a href="refH.html#+Hook">+Hook</a></code> attribute. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+<code><a href="refH.html#+Hook">+Hook</a></code> attribute. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel tel (+Fold +Ref +String))  # Phone number with folded, non-unique index
@@ -51,8 +51,8 @@ href="refR.html#+relation">+relation</a></code>s. Can only be used as a prefix
 class to <code><a href="refK.html#+Key">+Key</a></code> or <code><a
 href="refR.html#+Ref">+Ref</a></code>. It maintains an index in the current
 (sub)class, in addition to that in one of the superclasses, to allow
-(sub)class-specific queries. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+(sub)class-specific queries. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (class +Ord +Entity)             # Order class
@@ -77,11 +77,13 @@ href="refL.html#+Link">+Link</a></code>, <code><a
 href="refJ.html#+Joint">+Joint</a></code> and <code><a
 href="refB.html#+Blob">+Blob</a></code>, and the prefix classes <code><a
 href="refH.html#+Hook">+Hook</a></code>, <code><a
+href="refH.html#+Hook2">+Hook2</a></code>, <code><a
 href="refI.html#+index">+index</a></code>, <code><a
 href="refK.html#+Key">+Key</a></code>, <code><a
 href="refR.html#+Ref">+Ref</a></code>, <code><a
 href="refR.html#+Ref2">+Ref2</a></code>, <code><a
 href="refI.html#+Idx">+Idx</a></code>, <code><a
+href="refI.html#+IdxFold">+IdxFold</a></code>, <code><a
 href="refS.html#+Sn">+Sn</a></code>, <code><a
 href="refF.html#+Fold">+Fold</a></code>, <code><a
 href="refA.html#+Aux">+Aux</a></code>, <code><a
@@ -90,8 +92,8 @@ href="refD.html#+Dep">+Dep</a></code>, <code><a
 href="refL.html#+List">+List</a></code>, <code><a
 href="refN.html#+Need">+Need</a></code>, <code><a
 href="refM.html#+Mis">+Mis</a></code> and <code><a
-href="refA.html#+Alt">+Alt</a></code>. See also <code><a
-href="ref.html#dbase">Database</a></code> and <code><a
+href="refA.html#+Alt">+Alt</a></code>. See also <a
+href="ref.html#dbase">Database</a> and <code><a
 href="refE.html#+Entity">+Entity</a></code>.
 
 <p><a name="relationMesssages">Messages</a> to relation objects include
@@ -367,9 +369,11 @@ After 2
 <dd>Defines a relation for <code>var</code> in the current class <code><a
 href="refC.html#*Class">*Class</a></code>, using <code>lst</code> as the list of
 classes for that relation, and possibly additional arguments <code>any</code>
-for its initialization. See also <a href="ref.html#dbase">Database</a>, <a
-href="refC.html#class">class</a>, <a href="refE.html#extend">extend</a>, <a
-href="refD.html#dm">dm</a> and <a href="refV.html#var">var</a>.
+for its initialization. See also <a href="ref.html#dbase">Database</a>, <code><a
+href="refC.html#class">class</a></code>, <code><a
+href="refE.html#extend">extend</a></code>, <code><a
+href="refD.html#dm">dm</a></code> and <code><a
+href="refV.html#var">var</a></code>.
 
 <pre><code>
 (class +Person +Entity)

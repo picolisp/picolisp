@@ -19,19 +19,32 @@ minimally indexed substring length (defaults to 3), and a <code><a
 href="refH.html#+Hook">+Hook</a></code> attribute. Often used in combination
 with the <code><a href="refS.html#+Sn">+Sn</a></code> soundex index, or the
 <code><a href="refF.html#+Fold">+Fold</a></code> index prefix classes. See also
-<code><a href="ref.html#dbase">Database</a></code>.
+<a href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel nm (+Sn +Idx +String))  # Name
+</code></pre>
+
+<dt><a name="+IdxFold"><code>+IdxFold</code></a>
+<dd>Prefix class for maintaining non-unique indexes to subsequent substrings of
+the <code><a href="refF.html#fold">fold</a></code>ed individual words of
+<code><a href="refS.html#+String">+String</a></code> relations. Accepts optional
+arguments for the minimally indexed substring length (defaults to 3), and a
+<code><a href="refH.html#+Hook">+Hook</a></code> attribute. See also <code><a
+href="refI.html#+Idx">+Idx</a></code> and <a href="ref.html#dbase">Database</a>.
+
+<pre><code>
+(rel nm (+IdxFold +String))            # Item Description
 </code></pre>
 
 <dt><a name="+index"><code>+index</code></a>
 <dd>Abstract base class of all database B-Tree index relations (prefix classes
 for <code><a href="refR.html#+relation">+relation</a></code>s). The class
 hierarchy includes <code><a href="refK.html#+Key">+Key</a></code>, <code><a
-href="refR.html#+Ref">+Ref</a></code> and <code><a
-href="refI.html#+Idx">+Idx</a></code>. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+href="refR.html#+Ref">+Ref</a></code>, <code><a
+href="refI.html#+Idx">+Idx</a></code> and <code><a
+href="refI.html#+IdxFold">+IdxFold</a></code>. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (isa '+index Rel)  # Check for an index relation
@@ -250,10 +263,12 @@ href="refO.html#offset">offset</a></code>.
 -> 3
 </code></pre>
 
-<dt><a name="info"><code>(info 'any) -> (cnt|T dat . tim)</code></a>
+<dt><a name="info"><code>(info 'any ['flg]) -> (cnt|T dat . tim)</code></a>
 <dd>Returns information about a file with the name <code>any</code>: The current
 size <code>cnt</code> in bytes, and the modification date and time (UTC). For
-directories, <code>T</code> is returned instead of the a size. See also <code><a
+directories, <code>T</code> is returned instead of the size. If <code>flg</code>
+is non-<code>NIL</code> and <code>any</code> is the name of a symbolic link,
+then the link itself is used, not the file that it refers to. See also <code><a
 href="refD.html#dir">dir</a></code>, <code><a
 href="refD.html#date">date</a></code>, <code><a
 href="refT.html#time">time</a></code> and <code><a
@@ -335,8 +350,8 @@ href="refL.html#load">load</a></code>.
 
 <dt><a name="isa"><code>(isa 'cls|typ 'obj) -> obj | NIL</code></a>
 <dd>Returns <code>obj</code> when it is an object that inherits from
-<code>cls</code> or <code>type</code>. See also <code><a href="ref.html#oop">OO
-Concepts</a></code>, <code><a href="refC.html#class">class</a></code>, <code><a
+<code>cls</code> or <code>type</code>. See also <a href="ref.html#oop">OO
+Concepts</a>, <code><a href="refC.html#class">class</a></code>, <code><a
 href="refT.html#type">type</a></code>, <code><a
 href="refN.html#new">new</a></code> and <code><a
 href="refO.html#object">object</a></code>.

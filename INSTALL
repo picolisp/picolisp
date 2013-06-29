@@ -1,4 +1,4 @@
-27feb13abu
+26apr13abu
 (c) Software Lab. Alexander Burger
 
 
@@ -91,13 +91,18 @@ installation, and invoke them explicitly as desired.
 The recommended way for a global installation is to use a picolisp package from
 the OS distribution.
 
-If that is not available, you can (as root) create four symbolic links from
-/usr/lib, /usr/share and /usr/bin to a local installation directory
+If that is not available, you can (as root) create symbolic links from /usr/lib
+and /usr/bin to a local installation directory:
 
    # ln -s /<installdir> /usr/lib/picolisp
+   # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin
+   # ln -s /usr/lib/picolisp/bin/pil /usr/bin
+
+For additional access to the man pages and some examples:
+
+   # ln -s /<installdir>/man/man1/picolisp.1 /usr/share/man/man1
+   # ln -s /<installdir>/man/man1/pil.1 /usr/share/man/man1
    # ln -s /<installdir> /usr/share/picolisp
-   # ln -s /usr/lib/picolisp/bin/picolisp /usr/bin/picolisp
-   # ln -s /usr/lib/picolisp/bin/pil /usr/bin/pil
 
 
       Invocation
@@ -164,8 +169,7 @@ For details about the 64-bit version, refer to "doc64/README", "doc64/asm" and
 
 As always, the most accurate and complete documentation is the source code ;-)
 Included in the distribution are many utilities and pet projects, including
-tests, demo databases and servers, games (chess, minesweeper), 3D animation
-(flight simulator, 32-bit version only), and more.
+tests, demo databases and servers, games (chess, minesweeper), and more.
 
 Any feedback is welcome!
 Hope you enjoy :-)

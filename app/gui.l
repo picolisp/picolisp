@@ -1,28 +1,31 @@
-# 20feb13abu
+# 02jun13abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
 (de menu (Ttl . Prg)
    (action
       (html 0 Ttl *Css NIL
-         (<div> '(id . menu)
-            (expires)
-            (<menu>
-               (,"Home" "!start")
-               (,"logout" (and *Login "!stop"))
-               (NIL (<hr>))
-               (T ,"Data"
-                  (,"Orders" (and (may Order) "app/ord.l"))
-                  (,"Items" (and (may Item) "app/item.l"))
-                  (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
-                  (,"Salutations" (and (may Customer) "app/sal.l")) )
-               (T ,"Report"
-                  (,"Inventory" (and (may Report) "app/inventory.l"))
-                  (,"Sales" (and (may Report) "app/sales.l")) )
-               (T ,"System"
-                  (,"Role Administration" (and (may RoleAdmin) "app/role.l"))
-                  (,"User Administration" (and (may UserAdmin) "app/user.l")) ) ) )
-         (<div> '(id . main) (run Prg 1)) ) ) )
+         (<layout>
+            ((180 0 'menu)
+               (<div> @
+                  (expires)
+                  (<menu>
+                     (,"Home" "!start")
+                     (,"logout" (and *Login "!stop"))
+                     (NIL (<hr>))
+                     (T ,"Data"
+                        (,"Orders" (and (may Order) "app/ord.l"))
+                        (,"Items" (and (may Item) "app/item.l"))
+                        (,"Customers/Suppliers" (and (may Customer) "app/cusu.l"))
+                        (,"Salutations" (and (may Customer) "app/sal.l")) )
+                     (T ,"Report"
+                        (,"Inventory" (and (may Report) "app/inventory.l"))
+                        (,"Sales" (and (may Report) "app/sales.l")) )
+                     (T ,"System"
+                        (,"Role Administration" (and (may RoleAdmin) "app/role.l"))
+                        (,"User Administration" (and (may UserAdmin) "app/user.l")) ) ) )
+               ((NIL NIL 'main)
+                  (<div> @ (run Prg 1)) ) ) ) ) ) )
 
 (de start ()
    (setq *Url "!start")

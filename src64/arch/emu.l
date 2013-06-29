@@ -1,4 +1,4 @@
-# 23mar13abu
+# 23jun13abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -8,8 +8,8 @@
       ("B" (off *LittleEndian))
       (T (quit "Bad endianess")) )
    (case (read)
-      (32 (on *Bits32) (off *Bits64))
-      (64 (on *Bits64) (off *Bits32))
+      (32 (off *Bits64))
+      (64 (on *Bits64))
       (T (quit "Bad wordsize")) ) )
 
 (off *AlignedCode)
@@ -772,6 +772,7 @@
    (waitpid          i  i "int" i)
    (free             -  p)
    (stat             i  p "struct stat")
+   (lstat            i  p "struct stat")
    (fcntl            i  i i p)
    (pipe             i  "int")
    (select           i  i "fd_set" "fd_set" "fd_set" (2 . -2))
@@ -950,7 +951,7 @@
                   M ) ) )
          (case (car Par)
             (- (_genCC "@1(@2);@3"))
-            (p (_genCC "A.p = (uint8_t*)@1(@2);@3"))
+            (p (_genCC "A.n = (uint64_t)(uintptr_t)(uint8_t*)@1(@2);@3"))
             (n (_genCC "A.n = (uint64_t)@1(@2);@3"))
             (i (_genCC "A.n = (uint64_t)(uint32_t)@1(@2);@3"))
             (T (quit "Unknown C function" Adr)) ) )
@@ -1520,20 +1521,18 @@
          (quote
             NIL
             "int main(int ac, char *av[]) {"
-            "   int i, stk = STACK;"
+            "   int i;"
             NIL
             "   Y.p = malloc((ac + 1) * sizeof(op));"
-            "   i = 0; do {"
+            "   i = 0; do"
             "      ((ptr)Y.p)[i].n = (uint64_t)(unsigned long)av[i];"
-            "      if (strtol(av[i], (char**)&S.p, 10) < 0 && *S.p == '\\0')"
-            "         stk = atoi(av[i]+1) * 1024 * 1024;"
-            "   } while (++i < ac);"
+            "   while (++i < ac);"
             "   ((ptr)Y.p)[i].n = 0;"
             "   X.p = ((ptr)Y.p)->p,  Y.p += 8;"
             "   Z.p = Y.p + (ac - 2) * sizeof(op);"
-            "   if ((Stack = malloc(stk)) == NULL)"
+            "   if ((Stack = malloc(STACK)) == NULL)"
             "      emuStkErr();"
-            "   S.p = Stack + stk;" ) )
+            "   S.p = Stack + STACK;" ) )
       (prinl (pack "   run(" (absCode "main") ");"))
       (prinl "   return 0;")
       (prinl "}") )

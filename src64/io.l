@@ -1,4 +1,4 @@
-# 06feb13abu
+# 12jun13abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -139,7 +139,7 @@
    ret
 
 # Close input file
-(code 'closeInFileA)
+(code 'closeInFileA 0)
    shl A 3  # Vector index
    cmp A (InFDs)  # 'fd' < 'InFDs'?
    if lt  # Yes
@@ -161,7 +161,7 @@
    ret
 
 # Close output file
-(code 'closeOutFileA)
+(code 'closeOutFileA 0)
    shl A 3  # Vector index
    cmp A (OutFDs)  # 'fd' < 'OutFDs'?
    if lt  # Yes
@@ -175,9 +175,28 @@
             ld (OutFile) 0  # Clear it
          end
          ld (A) 0  # Clear slot
-         cc free(X)  # And inFile
+         cc free(X)  # And outFile
       end
       pop X
+   end
+   ret
+
+# Wait for pipe process if necessary
+(code 'waitFileC 0)
+   cmp (C II) 1  # 'pid' > 1?
+   if gt  # Yes
+      do
+         cc waitpid((C II) 0 0)  # Wait for pipe process
+         nul4  # OK?
+      while s  # No
+         call errno_A
+         cmp A EINTR  # Interrupted?
+         jne closeErrX
+         null (Signal)  # Signal?
+         if nz  # Yes
+            call sighandler0
+         end
+      loop
    end
    ret
 
@@ -1874,21 +1893,7 @@
       cc close((C I))  # Close 'fd'
       ld A (C I)  # Close input file
       call closeInFileA
-      cmp (C II) 1  # 'pid' > 1?
-      if gt  # Yes
-         do
-            cc waitpid((C II) 0 0)  # Wait for pipe process
-            nul4  # OK?
-         while s  # No
-            call errno_A
-            cmp A EINTR  # Interrupted?
-            jne closeErrX
-            null (Signal)  # Signal?
-            if nz  # Yes
-               call sighandler0
-            end
-         loop
-      end
+      call waitFileC  # Wait for pipe process if necessary
    else
       ld A (InFile)  # Current InFile?
       null A
@@ -1927,21 +1932,7 @@
       cc close((C I))  # Close 'fd'
       ld A (C I)  # Close input file
       call closeOutFileA
-      cmp (C II) 1  # 'pid' > 1?
-      if gt  # Yes
-         do
-            cc waitpid((C II) 0 0)  # Wait for pipe process
-            nul4  # OK?
-         while s  # No
-            call errno_A
-            cmp A EINTR  # Interrupted?
-            jne closeErrX
-            null (Signal)  # Signal?
-            if nz  # Yes
-               call sighandler0
-            end
-         loop
-      end
+      call waitFileC  # Wait for pipe process if necessary
    end
    ld (PutB) (C III)  # Retrieve 'put'
    ld C (C)  # Get link

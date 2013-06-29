@@ -1,4 +1,4 @@
-/* 18may10abu
+/* 13may13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -213,4 +213,24 @@ any Base64(any x) {
    c = unDig(y) / 2;
    Env.put(Chr64[(d & 15) << 2 | c >> 6]),  Env.put(Chr64[c & 63]);
    return T;
+}
+
+/*** Password hashing ***/
+// (Ext:Crypt 'key 'salt) -> str
+any Crypt(any x) {
+   any y;
+
+   y = evSym(x = cdr(x));
+   {
+      char key[bufSize(y)];
+
+      bufString(y, key);
+      y = evSym(cdr(x));
+      {
+         char salt[bufSize(y)];
+
+         bufString(y, salt);
+         return mkStr(crypt(key, salt));
+      }
+   }
 }

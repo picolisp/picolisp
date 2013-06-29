@@ -1,4 +1,4 @@
-# 05nov12abu
+# 02jun13abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -19,6 +19,7 @@ ifeq ($(shell uname), Linux)
 	PICOLISP-FLAGS = -m32 -rdynamic
 	LIB-FLAGS = -lc -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	LCRYPT = -lcrypt
 	STRIP = strip
 else
 ifeq ($(shell uname), OpenBSD)
@@ -26,6 +27,7 @@ ifeq ($(shell uname), OpenBSD)
 	PICOLISP-FLAGS = -m32 -rdynamic -Wl,-E
 	LIB-FLAGS = -lc -lm
 	DYNAMIC-LIB-FLAGS = -Wl,-E -Wl,-shared
+	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), FreeBSD)
@@ -33,6 +35,7 @@ ifeq ($(shell uname), FreeBSD)
 	PICOLISP-FLAGS = -m32 -rdynamic
 	LIB-FLAGS = -lc -lm
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), NetBSD)
@@ -40,6 +43,7 @@ ifeq ($(shell uname), NetBSD)
 	PICOLISP-FLAGS = -m32 -rdynamic
 	LIB-FLAGS = -lc -lm
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), Darwin)
@@ -47,6 +51,7 @@ ifeq ($(shell uname), Darwin)
 	PICOLISP-FLAGS = -m32
 	LIB-FLAGS = -lc -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -dynamiclib -undefined dynamic_lookup
+	LCRYPT = -lcrypto
 	STRIP = strip -x
 else
 ifeq ($(shell uname -o), Cygwin)
@@ -54,6 +59,7 @@ ifeq ($(shell uname -o), Cygwin)
 	DYNAMIC-LIB-FLAGS = -shared
 	PICOLISP-FLAGS =
 	DLL-DEFS = $(bin)/picolisp.dll
+	LCRYPT = -lcrypt
 	STRIP = strip
 	exe = .exe
 	dll = .dll
@@ -65,18 +71,17 @@ endif
 endif
 
 
-picolisp: $(bin)/picolisp $(lib)/ext$(dll) $(lib)/ht$(dll) $(lib)/z3d$(dll)
+picolisp: $(bin)/picolisp $(lib)/ext$(dll) $(lib)/ht$(dll)
 tools: $(bin)/lat1 $(bin)/utf2 $(bin)/balance
 gate: $(bin)/ssl $(bin)/httpGate
-x11: $(bin)/z3dClient
 
-all: picolisp tools gate x11
+all: picolisp tools gate
 
 .c.o:
 	gcc $(CFLAGS) -D_OS='"$(OS)"' $*.c
 
 
-$(picoFiles:.c=.o) ext.o ht.o z3d.o: pico.h
+$(picoFiles:.c=.o) ext.o ht.o: pico.h
 main.o: vers.h
 
 
@@ -102,16 +107,12 @@ endif
 
 
 $(lib)/ext$(dll): ext.o
-	gcc -o $(lib)/ext$(dll) $(DYNAMIC-LIB-FLAGS) ext.o $(DLL-DEFS)
+	gcc -o $(lib)/ext$(dll) $(DYNAMIC-LIB-FLAGS) ext.o $(DLL-DEFS) $(LCRYPT)
 	$(STRIP) $(lib)/ext$(dll)
 
 $(lib)/ht$(dll): ht.o
 	gcc -o $(lib)/ht$(dll) $(DYNAMIC-LIB-FLAGS) ht.o $(DLL-DEFS)
 	$(STRIP) $(lib)/ht$(dll)
-
-$(lib)/z3d$(dll): z3d.o
-	gcc -o $(lib)/z3d$(dll)  $(DYNAMIC-LIB-FLAGS) z3d.o $(DLL-DEFS)
-	$(STRIP) $(lib)/z3d$(dll)
 
 
 $(bin)/lat1: lat1.c
@@ -133,10 +134,6 @@ $(bin)/ssl: ssl.c
 $(bin)/httpGate: httpGate.c
 	gcc -o $(bin)/httpGate$(exe) httpGate.c -lssl -lcrypto
 	$(STRIP) $(bin)/httpGate$(exe)
-
-$(bin)/z3dClient: z3dClient.c
-	gcc -o $(bin)/z3dClient$(exe) z3dClient.c  -L/usr/X11R6/lib -lXext -lX11
-	$(STRIP) $(bin)/z3dClient$(exe)
 
 
 # Clean up

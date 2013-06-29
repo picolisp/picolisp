@@ -1,4 +1,4 @@
-/* 14mar13abu
+/* 20jun13abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -79,33 +79,28 @@ a:hover {
 }
 
 /* Navigation */
-#menu {
-   position: absolute;
-   top: 0;
-   left: 0;
-   width: 18em;
-   min-height: 100%;
+.menu {
    padding-top: 2ex;
    background-color: #d0d0d0;
 }
 
-#menu ul {
+.menu ul {
    list-style: none;
    padding: 0;
    margin: 0;
 }
 
-#menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
+.menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
    list-style-position: inside;
    list-style-type: circle;
    padding: 0 0 0 2em;
 }
 
-#menu .act1, .act2, .act3, .act4 {
+.menu .act1, .act2, .act3, .act4 {
    list-style-type: disc;
 }
 
-#menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
+.menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
    list-style-position: inside;
    padding: 0 0 0 1em;
 }
@@ -140,11 +135,8 @@ a:hover {
 }
 
 /* Main area */
-#main {
-   position: absolute;
-   top: 0;
-   left: 19em;
-   padding: 1ex 0;
+.main {
+   padding: 1ex 0 0 2ex;
 }
 
 /* Charts */
@@ -163,6 +155,10 @@ a:hover {
 
 .chart td.nil {
    background-color: white;
+}
+
+.chart td.body {
+   background-color: #f0f0f0;
 }
 
 .btn {

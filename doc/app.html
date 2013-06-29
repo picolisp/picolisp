@@ -263,12 +263,12 @@ href="refA.html#allow">allow</a></code> functions
 
 <pre><code>
 (allowed ("app/")
-   "!start" "@lib.css" "customer.l" "article.l" )
+   "!start" "!stop" "@lib.css" "!psh" )
 </code></pre>
 
-<p>This is usually called in the beginning of an application, and allows access
-to the directory "@img/", to the function 'start', and to the files "@lib.css",
-"customer.l" and "article.l".
+<p>This is usually called at the beginning of an application, and allows access
+to the directory "app/", to the functions 'start', 'stop' and 'psh', and to the
+file "@lib.css".
 
 <p>Later in the program, <code>*Allow</code> may be dynamically extended with
 <code>allow</code>

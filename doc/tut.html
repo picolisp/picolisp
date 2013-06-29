@@ -98,7 +98,7 @@ output channel. This is called a "read-eval-print-loop" (REPL).
 <h3><a name="vi-style">'vi'-style</a></h3>
 
 <p>This is the default line editor, as it needs less system resources and works
-also on dumb terminals. It is similar to -- though simpler than -- the 'vi' edit
+also on dumb terminals. It is similar to - though simpler than - the 'vi' edit
 modes of the 'korn' and 'bash' shells. For an analog 'emacs' style editor,
 please see <a href="#em-style">below</a>.
 
@@ -223,6 +223,9 @@ special meaning:
 <li>BACKSPACE (<code>Ctrl-H</code>) and DEL erase the character to the left
 
 <li><code>Ctrl-V</code> inserts the next key literally
+
+<li><code>Ctrl-E</code> lets you <code><a href="refE.html#edit">edit</a></code>
+the history
 
 <li>TAB performs symbol and/or path completion: When a symbol (or path) name is
 entered partially and TAB is pressed subsequently, all internal symbols (and/or
@@ -1349,11 +1352,12 @@ site, and prints it to standard output:
 (use (@Date @Name @Size)
    (when
       (match
-         '(@Date " " "-" " " @Name " " "(" @Size ")")
+         '(@Date ~(chop " - &lt;a href=\"") @Name "\"" "&gt;"
+             @Name ~(chop "&lt;/a&gt; (") @Size )
          (client "software-lab.de" 80 "down.html"
             (from "Release Archive")
-            (from ".tgz">")
-            (till "") ) )
+            (from "&lt;li&gt;")
+            (till ",") ) )
       (prinl @Name)
       (prinl @Date " -- " @Size) ) )
 

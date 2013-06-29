@@ -1,4 +1,4 @@
-# 04mar13abu
+# 30may13abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -151,7 +151,7 @@
 
 # Database sizes
 (dbs
-   (3 +Role +User +Sal)                         # 512 Prevalent objects
+   (3 +Role +User +Sal (+User pw))              # 512 Prevalent objects
    (0 +Pos)                                     # A:64 Tiny objects
    (1 +Item +Ord)                               # B:128 Small objects
    (2 +CuSu)                                    # C:256 Normal objects

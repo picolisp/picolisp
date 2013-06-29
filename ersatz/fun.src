@@ -1,4 +1,4 @@
-# 17mar13abu
+# 06may13abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -67,6 +67,10 @@ up (i j k x)
       else
          q.Data[j] = ex.Car.eval();
    return q == null? x.Car : q.Data[j];
+
+# (sys 'any) -> sym
+sys ()
+   return mkStr(System.getenv(evString(ex.Cdr)));
 
 # (quit ['any ['any]])
 quit (str)
@@ -1615,10 +1619,6 @@ $ (i x)
    StdErr.print(x);
    StdErr.newline();
    return x;
-
-# (sys 'any) -> sym
-sys ()
-   return mkStr(System.getenv(evString(ex.Cdr)));
 
 # (call 'any ..) -> flg
 call (i j x)

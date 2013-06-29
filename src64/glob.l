@@ -1,4 +1,4 @@
-# 12jan13abu
+# 28may13abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -13,11 +13,10 @@
                word  0
 
 : Stack0       word  0           # Initial stack pointer
-: Stacks       word  0           # Stack segment bitmask
-: StkSize      word  STACK       # Stack segment size
-: StkLimit     word  0           # Stack limit: StackN-StkSize+4096
-: Link         word  0           # Saved link register
-: Catch        word  0           # Catch frames
+: Stack1       word  0           # Coroutine stack base
+: Stacks       word  0           # Coroutine stack segment count
+: StkSize      word  STACK       # Coroutine stack segment size
+: StkLimit     word  0           # Stack limit: StackN-Size+4096
 : Termio       word  0           # Raw mode terminal I/O
 : Tv           word  0           # 'timeval' structure
                word  0
@@ -193,6 +192,7 @@
    initFun NIL       "env"       doEnv
    initFun NIL       "trail"     doTrail
    initFun NIL       "up"        doUp
+   initFun NIL       "sys"       doSys
    initFun NIL       "quit"      doQuit
    initFun NIL       "errno"     doErrno
    initFun NIL       "native"    doNative
@@ -299,7 +299,6 @@
    initFun NIL       "!"         doBreak
    initFun NIL       "e"         doE
    initFun NIL       "$"         doTrace
-   initFun NIL       "sys"       doSys
    initFun NIL       "call"      doCall
    initFun NIL       "tick"      doTick
    initFun NIL       "ipid"      doIpid
@@ -593,6 +592,7 @@
 :: Get_A       word  0           # Character input function
 :: InFile      word  0           # Input file
 :: OutFile     word  0           # Output file
+: Catch        word  0           # Catch frames
 : Env  # <Catch III> environment
 : EnvBind      word  0           # <III> Bind frames (first item in Env)
 : EnvInFrames  word  0           # Input frames
@@ -607,6 +607,7 @@
 : EnvApply     word  0           # Apply frames
 : EnvMake      word  0           # 'make' env
 : EnvYoke      word  0
+: CLink        word  0           # Saved C link register
 : EnvParseX    word  0           # Parser status
 : EnvParseC    word  0
 : EnvParseEOF  word  -1

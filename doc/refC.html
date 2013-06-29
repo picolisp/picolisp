@@ -23,8 +23,8 @@ href="refO.html#*OS">*OS</a></code>.
 </code></pre>
 
 <dt><a name="*Class"><code>*Class</code></a>
-<dd>A global variable holding the current class. See also <code><a
-href="ref.html#oop">OO Concepts</a></code>, <code><a
+<dd>A global variable holding the current class. See also <a
+href="ref.html#oop">OO Concepts</a>, <code><a
 href="refC.html#class">class</a></code>, <code><a
 href="refE.html#extend">extend</a></code>, <code><a
 href="refD.html#dm">dm</a></code> and <code><a
@@ -99,8 +99,8 @@ term can be proven.
 
 <dt><a name="can"><code>(can 'msg) -> lst</code></a>
 <dd>(Debug mode only) Returns a list of all classes that accept the message
-<code>msg</code>. See also <code><a href="ref.html#oop">OO Concepts</a></code>,
-<code><a href="refC.html#class">class</a></code>, <code><a
+<code>msg</code>. See also <a href="ref.html#oop">OO Concepts</a>, <code><a
+href="refC.html#class">class</a></code>, <code><a
 href="refD.html#dep">dep</a></code>, <code><a
 href="refW.html#what">what</a></code> and <code><a
 href="refW.html#who">who</a></code>.
@@ -609,9 +609,8 @@ tag is initialized and started. <code>prg</code> will be executed until it
 either terminates normally, or until <code><a
 href="refY.html#yield">yield</a></code> is called. In the latter case
 <code>co</code> returns, or transfers control to some other, already running,
-coroutine. Trying to start more than 64 coroutines will result in a stack
-overflow error. Also, a coroutine cannot resume itself directly or indirectly.
-See also <code><a href="refS.html#stack">stack</a></code>, <code><a
+coroutine. A coroutine cannot resume itself directly or indirectly. See also
+<code><a href="refS.html#stack">stack</a></code>, <code><a
 href="refC.html#catch">catch</a></code> and <code><a
 href="refT.html#throw">throw</a></code>.
 

@@ -46,8 +46,8 @@ to switch on transient symbol markup is loading "@lib/tsm.l".
 <dt><a name="+Time"><code>+Time</code></a>
 <dd>Class for clock time values (as calculated by <code><a
 href="refT.html#time">time</a></code>), a subclass of <code><a
-href="refN.html#+Number">+Number</a></code>. See also <code><a
-href="ref.html#dbase">Database</a></code>.
+href="refN.html#+Number">+Number</a></code>. See also <a
+href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (rel tim (+Time))  # Time of the day
@@ -266,33 +266,6 @@ href="refG.html#glue">glue</a></code>.
 -> "a@bc.de"
 </code></pre>
 
-<dt><a name="tim$"><code>(tim$ 'tim ['flg]) -> sym</code></a>
-<dd>Formats a <code><a href="refT.html#time">time</a></code> <code>tim</code>.
-If <code>flg</code> is <code>NIL</code>, the format is HH:MM, otherwise it is
-HH:MM:SS. See also <code><a href="ref_.html#$tim">$tim</a></code> and <code><a
-href="refD.html#dat$">dat$</a></code>.
-
-<pre><code>
-: (tim$ (time))
--> "10:57"
-: (tim$ (time) T)
--> "10:57:56"
-</code></pre>
-
-<dt><a name="timeout"><code>(timeout ['num])</code></a>
-<dd>Sets or refreshes a timeout value in the <code><a
-href="refR.html#*Run">*Run</a></code> global, so that the current process
-executes <code><a href="refB.html#bye">bye</a></code> after the given period. If
-called without arguments, the timeout is removed. See also <code><a
-href="refT.html#task">task</a></code>.
-
-<pre><code>
-: (timeout 3600000)           # Timeout after one hour
--> (-1 3600000 (bye))
-: *Run                        # Look after a few seconds
--> ((-1 3574516 (bye)))
-</code></pre>
-
 <dt><a name="throw"><code>(throw 'sym 'any)</code></a>
 <dd>Non-local jump into a previous <code><a
 href="refC.html#catch">catch</a></code> environment with the jump label
@@ -354,6 +327,19 @@ abc:def
 -> "abc"
 </code></pre>
 
+<dt><a name="tim$"><code>(tim$ 'tim ['flg]) -> sym</code></a>
+<dd>Formats a <code><a href="refT.html#time">time</a></code> <code>tim</code>.
+If <code>flg</code> is <code>NIL</code>, the format is HH:MM, otherwise it is
+HH:MM:SS. See also <code><a href="ref_.html#$tim">$tim</a></code> and <code><a
+href="refD.html#dat$">dat$</a></code>.
+
+<pre><code>
+: (tim$ (time))
+-> "10:57"
+: (tim$ (time) T)
+-> "10:57:56"
+</code></pre>
+
 <dt><a name="time"><code>(time ['T]) -> tim</code></a>
 <dt><code>(time 'tim) -> (h m s)</code>
 <dt><code>(time 'h 'm ['s]) -> tim | NIL</code>
@@ -380,6 +366,20 @@ href="ref_.html#$tim">$tim</a></code>.
 -> (8 58 54)
 : (time 25 30)                   # Illegal time
 -> NIL
+</code></pre>
+
+<dt><a name="timeout"><code>(timeout ['num])</code></a>
+<dd>Sets or refreshes a timeout value in the <code><a
+href="refR.html#*Run">*Run</a></code> global, so that the current process
+executes <code><a href="refB.html#bye">bye</a></code> after the given period. If
+called without arguments, the timeout is removed. See also <code><a
+href="refT.html#task">task</a></code>.
+
+<pre><code>
+: (timeout 3600000)           # Timeout after one hour
+-> (-1 3600000 (bye))
+: *Run                        # Look after a few seconds
+-> ((-1 3574516 (bye)))
 </code></pre>
 
 <dt><a name="tmp"><code>(tmp ['any ..]) -> sym</code></a>
@@ -570,8 +570,8 @@ href="refR.html#repeat/0">repeat/0</a></code>.
 <dd>Tries to send the message <code>msg</code> to the object <code>obj</code>,
 optionally with arguments <code>any</code>. If <code>obj</code> is not an
 object, or if the message cannot be located in <code>obj</code>, in its classes
-or superclasses, <code>NIL</code> is returned. See also <code><a
-href="ref.html#oop">OO Concepts</a></code>, <code><a
+or superclasses, <code>NIL</code> is returned. See also <a
+href="ref.html#oop">OO Concepts</a>, <code><a
 href="refS.html#send">send</a></code>, <code><a
 href="refM.html#method">method</a></code>, <code><a
 href="refM.html#meth">meth</a></code>, <code><a
@@ -587,7 +587,7 @@ href="refE.html#extra">extra</a></code>.
 
 <dt><a name="type"><code>(type 'any) -> lst</code></a>
 <dd>Return the type (list of classes) of the object <code>sym</code>. See also
-<code><a href="ref.html#oop">OO Concepts</a></code>, <code><a
+<a href="ref.html#oop">OO Concepts</a>, <code><a
 href="refI.html#isa">isa</a></code>, <code><a
 href="refC.html#class">class</a></code>, <code><a
 href="refN.html#new">new</a></code> and <code><a

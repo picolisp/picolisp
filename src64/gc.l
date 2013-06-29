@@ -1,4 +1,4 @@
-# 07jun12abu
+# 25may13abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -129,23 +129,22 @@
       call markE
       ld Y (Y)  # Next frame
    loop
-   ld Y (Stack0)  # Search through stack segments
-   ld C (Stacks)  # Segment bitmask
+   ld Y (Stack1)  # Search through stack segments
+   ld C (Stacks)  # Segment count
    do
-      sub Y (StkSize)  # Next segment
-      shr C 1  # In use?
-      if c  # Yes
-         push C
+      null C  # Any?
+   while nz  # Yes
+      null (Y -I)  # In use?
+      if nz  # Yes
+         push C  # Save count
          null (Y -II)  # Active?
          if z  # Yes
             ld E (Y -I)  # Mark 'tag'
             call markE
          else
-            push Y
+            push Y  # <S>
             ld Y ((Y -II))  # Else get saved L
             do
-               null Y  # End of stack?
-            while ne  # No
                ld Z (Y)  # Keep end of frame in Z
                do
                   add Y I  # End of frame?
@@ -155,13 +154,28 @@
                   call markE  # Mark it
                loop
                ld Y (Y)  # Next frame
+               null Y  # End of stack?
+            until eq  # Yes
+            ld Y ((S) (pack -II "-(EnvMid-Catch)"))  # Saved catch frames
+            do
+               null Y  # Any?
+            while ne  # Yes
+               ld E (Y I)  # Mark 'tag'
+               null E  # Any?
+               if ne
+                  call markE  # Yes
+               end
+               ld E (Y II)  # Mark 'fin'
+               call markE
+               ld Y (Y)  # Next frame
             loop
             pop Y
          end
          pop C
-         continue T
+         dec C  # Decrement count
       end
-   until z
+      sub Y (StkSize)  # Next segment
+   loop
    # Mark externals
    ld Y Extern
    ld Z 0  # Clear TOS
@@ -317,18 +331,19 @@
       loop
    loop
 50 ### Clean up ###
-   ld Y (Stack0)  # Search through stack segments
-   ld C (Stacks)  # Segment bitmask
-   ld A 1
+   ld Y (Stack1)  # Search through stack segments
+   ld C (Stacks)  # Segment count
    do
-      sub Y (StkSize)  # Next segment
-      shr C 1  # In use?
-      if c  # Yes
+      null C  # Any?
+   while nz  # Yes
+      null (Y -I)  # In use?
+      if nz  # Yes
          test ((Y -I)) 1  # 'tag' symbol gone?
          if nz  # Yes
-            xor (Stacks) A  # Clear in segment bitmask
-            if z  # Last coroutine?
-               ld (StkLimit) 0  # Yes: Clear stack limit
+            ld (Y -I) 0  # Mark segment as unused
+            dec (Stacks)  # Last coroutine?
+            if z  # Yes
+               ld (StkLimit) 0  # Clear stack limit
             end
          else
             null (Y -II)  # Active?
@@ -348,10 +363,9 @@
                loop
             end
          end
-         jmp 60
+         dec C  # Decrement count
       end
-   while nz
-60    add A A
+      sub Y (StkSize)  # Next segment
    loop
    ld Y (EnvApply)  # Apply stack
    do

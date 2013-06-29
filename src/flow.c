@@ -1,4 +1,4 @@
-/* 02oct12abu
+/* 06may13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1480,27 +1480,6 @@ any doTrace(any x) {
    newline();
    Env.put = putSave,  OutFile = oSave;
    return Pop(c1);
-}
-
-// (sys 'any ['any]) -> sym
-any doSys(any x) {
-   any y;
-
-   y = evSym(x = cdr(x));
-   {
-      char nm[bufSize(y)];
-
-      bufString(y,nm);
-      if (!isCell(x = cdr(x)))
-         return mkStr(getenv(nm));
-      y = evSym(x);
-      {
-         char val[bufSize(y)];
-
-         bufString(y,val);
-         return setenv(nm,val,1)? Nil : y;
-      }
-   }
 }
 
 // (call 'any ..) -> flg

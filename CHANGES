@@ -1,3 +1,15 @@
+* 29jun13 picoLisp-3.1.3
+   'snapshot' in "lib/too.l"
+   'info' optional 'flg' argument
+   '+Swap' relation prefix class
+   Allow unlimited number of coroutines
+   Default coroutine stack segment size 1 MB
+   JavaScript canvas library
+   '+OnClick' GUI prefix class
+   Flight Simulator in "misc/rcsim.l" (64-bit)
+   Removed z3d/rcsim flight simulator (32-bit)
+   Bug in 'conc' (64-bit)
+
 * 30mar13 picoLisp-3.1.2
    'lisp' calls from 'native' in emulator
    '<layout>' function
@@ -26,7 +38,7 @@
    File descriptor leak in 'dir' (64-bit)
    Namespace support also in Ersatz PicoLisp
    JavaScript 'lisp' calls
-   '+DbHint' gui prefix class
+   '+DbHint' GUI prefix class
    Stack alignments (64-bit)
    Native 'struct' function (64-bit)
    double/float in 'native' structures (64-bit)

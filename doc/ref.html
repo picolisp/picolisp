@@ -1094,8 +1094,8 @@ a list, that list is evaluated to obtain an executable function.
 </code></pre>
 
 <p>Here, the <code>intern</code> function returns the symbol <code>car</code>
-whose VAL is used then. It is also legal, though quite dangerous, to use the
-code-pointer directly:
+whose VAL is used then. It is also legal, though quite dangerous, to use the <a
+name="codePointer">code-pointer</a> directly:
 
 <pre><code>
 : *
@@ -1240,9 +1240,8 @@ environment is executed
 
 </ul>
 
-<p>In the current implementation, not more than 64 coroutines can exist at the
-same time. Reentrant coroutines are not supported, a coroutine cannot resume
-itself directly or indirectly.
+<p>Reentrant coroutines are not supported: A coroutine cannot resume itself
+directly or indirectly.
 
 <p>Before using coroutines, make sure you have sufficient stack space, e.g. by
 calling
@@ -1250,6 +1249,10 @@ calling
 <pre><code>
 $ ulimit -s unlimited
 </code></pre>
+
+<p>Without that, the stack limit in Linux is typically 8 MB. This gives only
+room - with a default coroutine <a href="refS.html#stack">stack</a> segment size
+of 1 MB - for the main segment (4 MB) plus four coroutines.
 
 
 <p><hr>
@@ -1599,7 +1602,7 @@ include
    <dt><code><a href="refH.html#+Hook">+Hook</a></code>
    <dd>A reference to an entity holding object-local index trees
    <dt><code><a href="refJ.html#+Joint">+Joint</a></code>
-   <dd>A bi-directional reference to some other entity
+   <dd>A bidirectional reference to some other entity
    </dl>
 <li>Container prefix classes like
    <dl>
@@ -2220,7 +2223,6 @@ abbreviations:
    <a href="ref_.html#!">!</a>
    <a href="refE.html#e">e</a>
    <a href="ref_.html#$">$</a>
-   <a href="refS.html#sys">sys</a>
    <a href="refC.html#call">call</a>
    <a href="refT.html#tick">tick</a>
    <a href="refI.html#ipid">ipid</a>
@@ -2392,6 +2394,7 @@ abbreviations:
    <a href="refJ.html#+Joint">+Joint</a>
    <a href="refB.html#+Blob">+Blob</a>
    <a href="refH.html#+Hook">+Hook</a>
+   <a href="refH.html#+Hook2">+Hook2</a>
    <a href="refI.html#+index">+index</a>
    <a href="refK.html#+Key">+Key</a>
    <a href="refR.html#+Ref">+Ref</a>
@@ -2399,6 +2402,7 @@ abbreviations:
    <a href="refI.html#+Idx">+Idx</a>
    <a href="refS.html#+Sn">+Sn</a>
    <a href="refF.html#+Fold">+Fold</a>
+   <a href="refI.html#+IdxFold">+IdxFold</a>
    <a href="refA.html#+Aux">+Aux</a>
    <a href="refU.html#+UB">+UB</a>
    <a href="refD.html#+Dep">+Dep</a>
@@ -2406,6 +2410,7 @@ abbreviations:
    <a href="refN.html#+Need">+Need</a>
    <a href="refM.html#+Mis">+Mis</a>
    <a href="refA.html#+Alt">+Alt</a>
+   <a href="refS.html#+Swap">+Swap</a>
    <a href="refE.html#+Entity">+Entity</a>
    <a href="refB.html#blob">blob</a>
    <a href="refD.html#dbSync">dbSync</a>
@@ -2556,6 +2561,7 @@ abbreviations:
    <a href="refE.html#env">env</a>
    <a href="refT.html#trail">trail</a>
    <a href="refU.html#up">up</a>
+   <a href="refS.html#sys">sys</a>
    <a href="refD.html#date">date</a>
    <a href="refT.html#time">time</a>
    <a href="refU.html#usec">usec</a>

@@ -1,4 +1,4 @@
-# 21may10abu
+# 31jul13abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -40,7 +40,7 @@
                      (push '"*Bnd" "X") ) ) ) ) )
       ((num? (car "X")))
       (T
-         (case (car "X")
+         (casq (car "X")
             ((: ::))
             (; (lint1 (cadr "X")))
             (quote
@@ -110,7 +110,7 @@
                            (lintVar (cdar "Y"))
                            (mapc lint1 (cddr "Y"))
                            (lintLoop (cddr "X")) ) ) ) ) )
-            ((case state)
+            ((case casq state)
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
                   (mapc lint1 (cdr "X")) ) )

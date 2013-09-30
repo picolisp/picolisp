@@ -1,4 +1,4 @@
-/* 17mar13abu
+/* 22jul13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1577,16 +1577,16 @@ any doProve(any x) {
          data(tp1) = cdr(x);
       }
       else if (isNum(caar(x))) {
-         data(e) = EVAL(cdar(x));
+         data(e) = prog(cdar(x));
          for (i = unDig(caar(x)), x = data(nl);  (i -= 2) > 0;)
             x = cdr(x);
          data(nl) = cons(car(x), data(nl));
          data(tp2) = cons(cdr(data(tp1)), data(tp2));
          data(tp1) = data(e);
       }
-      else if (isSym(caar(x)) && firstByte(caar(x)) == '@') {
-         if (!isNil(data(e) = EVAL(cdar(x)))  &&
-                     unify(car(data(nl)), caar(x), car(data(nl)), data(e)) )
+      else if (caar(x) == Up) {
+         if (!isNil(data(e) = prog(cddar(x)))  &&
+                     unify(car(data(nl)), cadar(x), car(data(nl)), data(e)) )
             data(tp1) = cdr(x);
          else {
             data(env) = caar(data(q)),  car(data(q)) = cdar(data(q));
@@ -1615,7 +1615,7 @@ any doProve(any x) {
    return isCell(data(e))? data(e) : isCell(data(env))? T : Nil;
 }
 
-// (-> sym [num]) -> any
+// (-> any [num]) -> any
 any doArrow(any x) {
    int i;
    any y;

@@ -1,4 +1,4 @@
-# 30may13abu
+# 26sep13abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -100,18 +100,11 @@
                   (if (pair X1)
                      (setq X1 (append X1 T))
                      (setq X1 (cons X1 T)  X2 (cons X2)) ) )
-               (if (isa '+Idx This)
-                  (iter Tree
-                     '((X)
-                        (and
-                           (isa Cls X)
-                           (not (memq (setq X (pass get X)) (made)))
-                           (link X) ) )
-                     X1 X2 T )
-                  (iter Tree
-                     '((X)
-                        (and (isa Cls X) (link (pass get X))) )
-                     X1 X2 ) ) ) ) ) ) )
+               (iter Tree
+                  '((X)
+                     (and (isa Cls X) (link (pass get X))) )
+                  X1 X2
+                  (or (isa '+Idx This) (isa '+IdxFold This)) ) ) ) ) ) )
 
 
 (de genKey (Var Cls Hook Min Max)
@@ -735,6 +728,18 @@
             Lst ) )
       (cons Res X) ) )
 
+(dm has> (Val X)
+   (and Val
+      (or
+         (extra Val X)
+         (extra
+            (let (N (inc (length (: aux)))  M 1  V 0)
+               (until (=0 Val)
+                  (and (bit? 1 Val) (inc 'V M))
+                  (setq M (>> -1 M)  Val (>> N Val)) )
+               V )
+            X ) ) ) )
+
 
 ### Relation prefix classes ###
 (class +Dep)
@@ -1076,46 +1081,36 @@
 
 (dm set> (Val)
    (unless (= Val (val This))
-      (let L
-         (extract
-            '((X)
-               (pop 'X)
-               (and
-                  (meta Val X)
-                  (n== @ (meta (val This) X))
-                  X ) )
-            (getl This) )
-         (for Var L
-            (let V (get This Var)
-               (rel> (meta This Var) This V
-                  (put> (meta This Var) This V NIL) ) ) )
+      (let Lst (make (maps '((X) (link (fin X))) This))
+         (for Var Lst
+            (let? Rel (meta This Var)
+               (unless (== Rel (meta Val Var))
+                  (let V (get This Var)
+                     (rel> Rel This V (put> Rel This V NIL)) ) ) ) )
          (xchg This 'Val)
-         (for Var L
-            (rel> (meta This Var) This NIL
-               (put> (meta This Var) This NIL (get This Var)) ) ) )
+         (for Var Lst
+            (let? Rel (meta This Var)
+               (unless (== Rel (meta Val Var))
+                  (rel> Rel This NIL
+                     (put> Rel This NIL (get This Var)) ) ) ) ) )
       (upd> This (val This) Val) )
    (val This) )
 
 (dm set!> (Val)
    (unless (= Val (val This))
       (dbSync)
-      (let L
-         (extract
-            '((X)
-               (pop 'X)
-               (and
-                  (meta Val X)
-                  (n== @ (meta (val This) X))
-                  X ) )
-            (getl This) )
-         (for Var L
-            (let V (get This Var)
-               (rel> (meta This Var) This V
-                  (put> (meta This Var) This V NIL) ) ) )
+      (let Lst (make (maps '((X) (link (fin X))) This))
+         (for Var Lst
+            (let? Rel (meta This Var)
+               (unless (== Rel (meta Val Var))
+                  (let V (get This Var)
+                     (rel> Rel This V (put> Rel This V NIL)) ) ) ) )
          (xchg This 'Val)
-         (for Var L
-            (rel> (meta This Var) This NIL
-               (put> (meta This Var) This NIL (get This Var)) ) ) )
+         (for Var Lst
+            (let? Rel (meta This Var)
+               (unless (== Rel (meta Val Var))
+                  (rel> Rel This NIL
+                     (put> Rel This NIL (get This Var)) ) ) ) ) )
       (upd> This (val This) Val)
       (commit 'upd) )
    (val This) )

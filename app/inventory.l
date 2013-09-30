@@ -1,4 +1,4 @@
-# 05jan12abu
+# 15sep13abu
 # (c) Software Lab. Alexander Burger
 
 (must "Inventory" Report)
@@ -38,7 +38,7 @@
                         (select (@Item)
                            ((nr +Item @Rng) (nm +Item @Nm) (sup +Item @Sup))
                            (range @Rng @Item nr)
-                           (tolr @Nm @Item nm)
+                           (part @Nm @Item nm)
                            (same @Sup @Item sup) ) )
                      (with @Item
                         (<row> (alternating)

@@ -1,4 +1,4 @@
-# 04mar13abu
+# 29sep13abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook|T] [var val ..])
@@ -43,6 +43,7 @@
                                  (link (pop 'L) Cls)
                                  (and Hook (link Hook))
                                  (link (if L (pop 'L) '(NIL . T))) ) ) ) ) )
+                  (link (list 'isa Cls '@@))
                   (while Lst
                      (let (Var (pop 'Lst)  Val (if Lst (pop 'Lst) '(NIL . T)))
                         (link
@@ -51,10 +52,11 @@
                                  ((pair Val) 'range)
                                  ((or (num? Val) (ext? Val)) 'same)
                                  ((=T Val) 'bool)
+                                 ((isa '+Sn (get Cls Var)) 'tolr)
                                  ((isa '(+IdxFold) (get Cls Var)) 'part)
                                  ((isa '(+Fold +Idx) (get Cls Var)) 'part)
                                  ((isa '+Fold (get Cls Var)) 'fold)
-                                 ((isa '+Sn (get Cls Var)) 'tolr)
+                                 ((isa '+Idx (get Cls Var)) 'hold)
                                  (T 'head) )
                               Val '@@ Var ) ) ) ) ) ) )
          (use Obj

@@ -1,4 +1,4 @@
-# 19apr12abu
+# 06aug13abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -87,8 +87,8 @@
 
 
 ### Grids ###
-(de grid (DX DY)
-   (prog1
+(de grid (DX DY FX FY)
+   (let Grid
       (make
          (for X DX
             (link
@@ -100,17 +100,22 @@
                               (box)
                               (intern (pack (char (+ X 96)) Y)) )
                            (cons (cons) (cons)) ) ) ) ) ) ) )
-      (let (Lst @  West)
-         (while Lst
-            (let (East (cadr Lst)  South)
-               (for (L (car Lst) (pop 'L))
-                  (with @
-                     (and (pop 'West) (set (: 0 1) @))  # west
-                     (and (pop 'East) (con (: 0 1) @))  # east
-                     (and South (set (: 0 -1) @))       # south
-                     (and (car L) (con (: 0 -1) @))     # north
-                     (setq South This) ) ) )
-            (setq West (pop 'Lst)) ) ) ) )
+      (let West (and FX (last Grid))
+         (for (Lst Grid  Lst)
+            (let
+               (Col (pop 'Lst)
+                  East (or (car Lst) (and FX (car Grid)))
+                  South (and FY (last Col)) )
+               (for (L Col  L)
+                  (with (pop 'L)
+                     (set (: 0 1) (pop 'West))  # west
+                     (con (: 0 1) (pop 'East))  # east
+                     (set (: 0 -1) South)       # south
+                     (con (: 0 -1)              # north
+                        (or (car L) (and FY (car Col))) )
+                     (setq South This) ) )
+               (setq West Col) ) ) )
+      Grid ) )
 
 (de west (This)
    (: 0 1 1) )

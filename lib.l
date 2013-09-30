@@ -1,4 +1,4 @@
-# 20nov12abu
+# 19aug13abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -278,23 +278,6 @@
       (let *Scl "N" (run "Prg"))
       (setq *Scl "N") ) )
 
-(de sqrt (N F)
-   (cond
-      ((lt0 N) (quit "Bad argument" N))
-      (N
-         (let (A 1  B 0)
-            (while (>= N A)
-               (setq A (>> -2 A)) )
-            (loop
-               (if (> (inc 'B A) N)
-                  (dec 'B A)
-                  (dec 'N B)
-                  (inc 'B A) )
-               (setq B (>> 1 B)  A (>> 2 A))
-               (T (=0 A)) )
-            (and F (> N B) (inc 'B))
-            B ) ) ) )
-
 # (Knuth Vol.2, p.442)
 (de ** (X N)  # N th power of X
    (let Y 1
@@ -313,7 +296,7 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless while until do case state for
+   T NIL if ifn when unless while until do case casq state for
    with catch finally co ! setq default push bind job use let let?
    prog1 later recur redef =: in out ctl tab new )
 (de *PP1 let let? for redef)

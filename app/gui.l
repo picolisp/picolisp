@@ -1,4 +1,4 @@
-# 02jun13abu
+# 31aug13abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -10,7 +10,7 @@
                (<div> @
                   (expires)
                   (<menu>
-                     (,"Home" "!start")
+                     (,"Home" "!work")
                      (,"logout" (and *Login "!stop"))
                      (NIL (<hr>))
                      (T ,"Data"
@@ -27,8 +27,8 @@
                ((NIL NIL 'main)
                   (<div> @ (run Prg 1)) ) ) ) ) ) )
 
-(de start ()
-   (setq *Url "!start")
+(de work ()
+   (setq *Url "!work")
    (and (app) (setq *Menu 3))
    (menu "PicoLisp App"
       (<h2> NIL "PicoLisp App")
@@ -47,7 +47,7 @@
 
 (de stop ()
    (logout)
-   (start) )
+   (work) )
 
 # Search dialogs
 (de choCuSu (Dst)

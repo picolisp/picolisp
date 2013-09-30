@@ -1,4 +1,4 @@
-/* 28dec12abu
+/* 28aug13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -55,6 +55,7 @@ static symInit Symbols[] = {
    {doCall, "call"},
    {doCar, "car"},
    {doCase, "case"},
+   {doCasq, "casq"},
    {doCatch, "catch"},
    {doCdaaar, "cdaaar"},
    {doCdaadr, "cdaadr"},
@@ -307,6 +308,7 @@ static symInit Symbols[] = {
    {doSpace, "space"},
    {doSplit, "split"},
    {doSpQ, "sp?"},
+   {doSqrt, "sqrt"},
    {doState, "state"},
    {doStem, "stem"},
    {doStr, "str"},
@@ -316,6 +318,7 @@ static symInit Symbols[] = {
    {doSubQ, "sub?"},
    {doSum, "sum"},
    {doSuper, "super"},
+   {doSwap, "swap"},
    {doSym, "sym"},
    {doSymQ, "sym?"},
    {doSync, "sync"},

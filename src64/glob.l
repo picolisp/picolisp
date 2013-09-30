@@ -1,4 +1,4 @@
-# 28may13abu
+# 28aug13abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -284,6 +284,7 @@
    initFun NIL       "cond"      doCond
    initFun NIL       "nond"      doNond
    initFun NIL       "case"      doCase
+   initFun NIL       "casq"      doCasq
    initFun NIL       "state"     doState
    initFun NIL       "while"     doWhile
    initFun NIL       "until"     doUntil
@@ -332,6 +333,7 @@
    initFun NIL       "val"       doVal
    initFun NIL       "set"       doSet
    initFun NIL       "setq"      doSetq
+   initFun NIL       "swap"      doSwap
    initFun NIL       "xchg"      doXchg
    initFun NIL       "on"        doOn
    initFun NIL       "off"       doOff
@@ -490,6 +492,7 @@
    initFun NIL       "&"         doBitAnd
    initFun NIL       "|"         doBitOr
    initFun NIL       "x|"        doBitXor
+   initFun NIL       "sqrt"      doSqrt
    initFun NIL       "seed"      doSeed
    initFun NIL       "hash"      doHash
    initFun NIL       "rand"      doRand

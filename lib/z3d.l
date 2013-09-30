@@ -1,10 +1,10 @@
-# 13apr13abu
+# 03sep13abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/native.l")
 
 ### Z-Buffer 3D library ###
-(gcc "rcsim" '("-L/usr/X11R6/lib" "-lXext" "-lX11")
+(gcc "z3d" '("-L/usr/X11R6/lib" "-lXext" "-lX11")
    (z3dX (M X) z3dX NIL M (cons X 1.0))
    (z3dY (M Y) z3dY NIL M (cons Y 1.0))
    (z3dZ (M Z) z3dZ NIL M (cons Z 1.0))

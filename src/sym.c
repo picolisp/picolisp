@@ -1,4 +1,4 @@
-/* 02mar13abu
+/* 30aug13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -554,6 +554,22 @@ any doSetq(any ex) {
       val(y) = EVAL(car(x));
    } while (isCell(x = cdr(x)));
    return val(y);
+}
+
+// (swap 'var 'any) -> any
+any doSwap(any ex) {
+   any x, y;
+   cell c1;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
+   y = val(data(c1));
+   x = cdr(x),  val(data(c1)) = EVAL(car(x));
+   drop(c1);
+   return y;
 }
 
 // (xchg 'var 'var ..) -> any

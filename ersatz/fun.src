@@ -1,4 +1,4 @@
-# 06may13abu
+# 28aug13abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -58,6 +58,7 @@ up (i j k x)
                   return p.Data[i] = ex.Car.eval();
                return p.Data[i];
             }
+            q = p;
          }
       }
    }
@@ -501,7 +502,7 @@ maps (i j k w x y s v)
    return x;
 
 # (map 'fun 'lst ..) -> lst
-map (i j w x y v)
+map (i j w x v)
    w = (x = ex.Cdr).Car.eval();
    if ((x = x.Cdr) instanceof Cell) {
       v = new Any[6];
@@ -509,7 +510,7 @@ map (i j w x y v)
       do
          v = append(v, i++, x.Car.eval());
       while ((x = x.Cdr) instanceof Cell);
-      while ((y = v[0]) instanceof Cell) {
+      while (v[0] instanceof Cell) {
          x = w.apply(ex, false, v, i);
          for (j = i; --j >= 0;)
             v[j] = v[j].Cdr;
@@ -518,7 +519,7 @@ map (i j w x y v)
    return x;
 
 # (mapc 'fun 'lst ..) -> any
-mapc (i j w x y v)
+mapc (i j w x v)
    w = (x = ex.Cdr).Car.eval();
    if ((x = x.Cdr) instanceof Cell) {
       v = new Any[6];
@@ -526,7 +527,7 @@ mapc (i j w x y v)
       do
          v = append(v, i++, x.Car.eval());
       while ((x = x.Cdr) instanceof Cell);
-      while ((y = v[0]) instanceof Cell) {
+      while (v[0] instanceof Cell) {
          x = w.apply(ex, true, v, i);
          for (j = i; --j >= 0;)
             v[j] = v[j].Cdr;
@@ -1339,6 +1340,22 @@ case (x y)
    }
    return Nil;
 
+# (casq 'any (any1 . prg1) (any2 . prg2) ..) -> any
+casq (x y)
+   At.Car = (ex = ex.Cdr).Car.eval();
+   while ((ex = ex.Cdr) instanceof Cell) {
+      x = ex.Car;  y = x.Car;
+      if (y == T  ||  y == At.Car)
+         return x.Cdr.prog();
+      if (y instanceof Cell) {
+         do
+            if (y.Car == At.Car)
+               return x.Cdr.prog();
+         while ((y = y.Cdr) instanceof Cell);
+      }
+   }
+   return Nil;
+
 # (state 'var (sym|lst exe [. prg]) ..) -> any
 state (w x y z)
    z = (x = ex.Cdr).Car.eval();
@@ -1621,7 +1638,7 @@ $ (i x)
    return x;
 
 # (call 'any ..) -> flg
-call (i j x)
+call (x)
    ArrayList<String> cmd = new ArrayList<String>();
    for (x = ex.Cdr; x instanceof Cell; x = x.Cdr)
       cmd.add(x.Car.eval().name());
@@ -1845,6 +1862,13 @@ setq (x y)
       y.Car = (x = x.Cdr).Car.eval();
    } while ((x = x.Cdr) instanceof Cell);
    return y.Car;
+
+# (swap 'var 'any) -> any
+swap (x y)
+   needVar(ex, x = ex.Cdr.Car.eval());
+   y = x.Car;
+   x.Car = ex.Cdr.Cdr.Car.eval();
+   return y;
 
 # (xchg 'var 'var ..) -> any
 xchg (w x y z)
@@ -2112,7 +2136,7 @@ wipe (x y)
    return x;
 
 # (meta 'obj|typ 'sym ['sym2|cnt ..]) -> any
-meta (x y)
+meta (x)
    if ((x = (ex = ex.Cdr).Car.eval()) instanceof Symbol)
       x = x.Car;
    for (x = meta(x, (ex = ex.Cdr).Car.eval()); (ex = ex.Cdr) instanceof Cell;)
@@ -2710,7 +2734,7 @@ n== (x y)
    return Nil;
 
 # (=0 'any) -> 0 | NIL
-=0 (x)
+=0 ()
    return ex.Cdr.Car.eval().equal(Zero)? Zero : Nil;
 
 # (=T 'any) -> flg
@@ -2826,7 +2850,7 @@ mmeq (x y z)
    x = (ex = ex.Cdr).Car.eval();
    for (y = (ex = ex.Cdr).Car.eval(); x instanceof Cell; x = x.Cdr)
       if ((z = memq(x.Car, y)) != null)
-         return x;
+         return z;
    return Nil;
 
 # (sect 'lst 'lst) -> lst
@@ -2998,15 +3022,15 @@ prove (i x y)
          tp1 = x.Cdr;
       }
       else if (x.Car.Car instanceof Number) {
-         e = x.Car.Cdr.eval();
+         e = x.Car.Cdr.prog();
          for (i = ((Number)x.Car.Car).Cnt, x = Pnl;  --i > 0;)
             x = x.Cdr;
          Pnl = new Cell(x.Car, Pnl);
          tp2 = new Cell(tp1.Cdr, tp2);
          tp1 = e;
       }
-      else if (x.Car.Car instanceof Symbol && firstChar(x.Car.Car) == '@') {
-         if ((e = x.Car.Cdr.eval()) != Nil  && unify((Number)Pnl.Car, x.Car.Car, (Number)Pnl.Car, e))
+      else if (x.Car.Car == Up) {
+         if ((e = x.Car.Cdr.Cdr.prog()) != Nil  && unify((Number)Pnl.Car, x.Car.Cdr.Car, (Number)Pnl.Car, e))
             tp1 = x.Cdr;
          else {
             Penv = y.Car.Car;  y.Car = y.Car.Cdr;
@@ -3034,7 +3058,7 @@ prove (i x y)
    Penv = envSave;  Pnl = nlSave;
    return x;
 
-# (-> sym [num]) -> any
+# (-> any [num]) -> any
 -> (i x)
    if (!(ex.Cdr.Cdr.Car instanceof Number))
       return lookup((Number)Pnl.Car, ex.Cdr.Car);
@@ -3315,8 +3339,8 @@ char (x)
    return x == T? mkChar(0x10000) : new Number(firstChar(x));
 
 # (skip ['any]) -> sym
-skip (c)
-   return InFile.skip(firstChar(ex.Cdr.Car.eval())) < 0? Nil : mkChar(InFile.Chr);
+skip ()
+   return InFile.skipc(firstChar(ex.Cdr.Car.eval())) < 0? Nil : mkChar(InFile.Chr);
 
 # (eol) -> flg
 eol ()
@@ -3382,7 +3406,7 @@ till (x y str sb)
    return mkStr(sb);
 
 # (line 'flg) -> lst|sym
-line (i x y z sb)
+line (x y sb)
    if (InFile.Chr == 0)
       InFile.get();
    if (InFile.eol())
@@ -3563,15 +3587,15 @@ echo (i j k n x y v)
    return T;
 
 # (prin 'any ..) -> any
-prin (x y)
-   for (y = Nil; (ex = ex.Cdr) instanceof Cell; OutFile.Wr.print((y = ex.Car.eval()).name()));
-   return y;
+prin (x)
+   for (x = Nil; (ex = ex.Cdr) instanceof Cell; OutFile.Wr.print((x = ex.Car.eval()).name()));
+   return x;
 
 # (prinl 'any ..) -> any
-prinl (x y)
-   for (y = Nil; (ex = ex.Cdr) instanceof Cell; OutFile.Wr.print((y = ex.Car.eval()).name()));
+prinl (x)
+   for (x = Nil; (ex = ex.Cdr) instanceof Cell; OutFile.Wr.print((x = ex.Car.eval()).name()));
    OutFile.newline();
-   return y;
+   return x;
 
 # (space ['cnt]) -> cnt
 space (i x)
@@ -3645,7 +3669,7 @@ listen (i j x y)
    }
 
 # (connect 'any 'cnt) -> cnt | NIL
-connect (i)
+connect ()
    try {
       SocketChannel chan = SocketChannel.open();
       if (chan.connect(new InetSocketAddress(evString(ex.Cdr), evInt(ex.Cdr.Cdr))))

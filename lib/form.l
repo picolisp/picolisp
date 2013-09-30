@@ -1,4 +1,4 @@
-# 28may13abu
+# 19sep13abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1084,10 +1084,12 @@
 (dm show> ("Var")
    (<style> (cons 'id (pack "i" *Form '- (: id)))
       (if (able)
-         (let Str (eval (: lbl))
-            ((if (: img) <image> <submit>) Str "Var" NIL (: js)) )
-         (let Str (or (eval (: alt)) (eval (: lbl)))
-            ((if (: img) <image> <submit>) Str "Var" T (: js)) ) ) ) )
+         ((if (: img) <image> <submit>)
+            (eval (: lbl))
+            "Var" NIL (: js) )
+         ((if (: img) <image> <submit>)
+            (or (eval (: alt)) (eval (: lbl)))
+            "Var" T (: js) ) ) ) )
 
 (dm act> ()
    (and (able) (eval (: act))) )
@@ -1448,7 +1450,7 @@
 (dm val> ()
    (let S (super)
       (format
-         (if (sub? *Sep0 S) S (pack S *Sep0))
+         (or (sub? *Sep0 S) (pack S *Sep0))
          (: scl)
          *Sep0
          *Sep3 ) ) )
@@ -1613,7 +1615,7 @@
 
 (dm T @
    (pass super
-      '((S) (if (sub? "://" S) S (pack "http://" S))) ) )
+      '((S) (or (sub? "://" S) (pack "http://" S))) ) )
 
 
 (class +MailField +Url +TextField)
@@ -1851,7 +1853,7 @@
 
 (de choTtl (Ttl Var Cls Hook)
    (with (or (get Cls Var) (meta Cls Var))
-      (if (isa '+Idx This)
+      (if (or (isa '+Idx This) (isa '+IdxFold This))
          Ttl
          (pack (count (tree (: var) (: cls) Hook)) " " Ttl) ) ) )
 
@@ -2260,9 +2262,11 @@
             ((=T Able) Del)
             ((=T Del) Able)
             ((and Able Del) (list 'and Able Del)) )
-         (list 'text Txt (list ': 'home 'obj Var)) )
+         (let X (list ': 'home 'obj (fin Var))
+            (list 'text Txt
+               (if (pair Var) (list (car Var) X) X) ) ) )
       (choButton Dlg)
-      (stepBtn Var Cls Hook Msg) )
+      (stepBtn (fin Var) Cls Hook Msg) )
    (--) )
 
 # Standard ID form
@@ -2273,13 +2277,13 @@
          (form 'dialog
             (if (pair "Cho")
                (eval @)
-               (choDlg NIL "Cho" (list "Var" "Cls")) ) ) )
+               (choDlg NIL "Cho" (list (fin "Var") "Cls")) ) ) )
       (form NIL
          (<h3> NIL "Entity" ": " (idObj "Lst"))
          (panel "Able" (pack "Entity" " '@1'") "Del"
             (or
                (pair "Cho")
-               (list 'choDlg NIL (lit "Cho") (lit (list "Var" "Cls"))) )
+               (list 'choDlg NIL (lit "Cho") (lit (list (fin "Var") "Cls"))) )
             "Var" "Cls" )
          (run "Prg") ) ) )
 

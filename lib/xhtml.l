@@ -1,4 +1,4 @@
-# 17jun13abu
+# 07aug13abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -104,7 +104,13 @@
       (and Ttl (<tag> 'title NIL Ttl) (prinl))
       (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
       (when Css
-         (if (atom Css) ("css" Css) (mapc "css" Css)) )
+         (if (atom Css)
+            ("css" Css)
+            (mapc "css" Css)
+            (when (fin Css)
+               (prinl "<style type=\"text/css\">")
+               (prinl @)
+               (prinl "</style>") ) ) )
       (mapc javascript *JS)
       (and *SesId (javascript NIL "SesId = '" @ "';"))
       (prinl "</head>")

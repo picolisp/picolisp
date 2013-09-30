@@ -1,4 +1,4 @@
-# 02mar13abu
+# 28aug13abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1668,6 +1668,33 @@
    pop X
    ret
 
+# (swap 'var 'any) -> any
+(code 'doSwap 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval first
+   eval
+   call needVarEX  # Need variable
+   sym E  # Symbol?
+   if nz  # Yes
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         call dbTouchEX  # Touch it
+      end
+   end
+   link
+   push E  # <L I> 'var'
+   link
+   ld E ((Y CDR))  # Eval next arg
+   eval
+   xchg E ((L I))  # Swap value
+   drop
+   pop Y
+   pop X
+   ret
+
 # (xchg 'var 'var ..) -> any
 (code 'doXchg 2)
    push X
@@ -2069,9 +2096,8 @@
    link
    push E  # <L I> 'var'
    link
-   ld Y (Y CDR)  # Next arg
-   ld E (Y)
-   eval  # Eval next arg
+   ld E ((Y CDR))  # Eval next arg
+   eval
    call consE_C  # Build cell
    ld (C) E
    ld (C CDR) Nil

@@ -1,4 +1,4 @@
-# 28feb11abu
+# 31jul13abu
 # (c) Software Lab. Alexander Burger
 
 # *ScrHost *ScrPort *ScrGate *Title *Expect *Found
@@ -25,7 +25,7 @@
             "<span id=\""
             "<div class=\"error\">"
             *Expect )
-         (case @
+         (casq @
             ("303 See Other"
                (when (from "Location: http://")
                   (let L (split (line) ':)

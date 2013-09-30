@@ -1,4 +1,4 @@
-# 10nov04abu
+# 19jul13abu
 # (c) Software Lab. Alexander Burger
 
 # Lisp
@@ -18,7 +18,7 @@
 (be move (0 @ @ @) T)
 
 (be move (@N @A @B @C)
-   (@M - (-> @N) 1)
+   (^ @M (dec (-> @N)))
    (move @M @A @C @B)
-   (@ println 'Move 'disk 'from 'the (-> @A) 'to 'the (-> @B) 'pole)
+   (^ @ (println 'Move 'disk 'from 'the (-> @A) 'to 'the (-> @B) 'pole))
    (move @M @C @B @A) )

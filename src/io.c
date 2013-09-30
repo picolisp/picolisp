@@ -1,4 +1,4 @@
-/* 23feb13abu
+/* 12sep13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -996,10 +996,10 @@ int getChar(void) {
 }
 
 /* Skip White Space and Comments */
-static int skip(int c) {
+static int skipc(int c) {
+   if (Chr < 0)
+      return Chr;
    for (;;) {
-      if (Chr < 0)
-         return Chr;
       while (Chr <= ' ') {
          Env.get();
          if (Chr < 0)
@@ -1008,23 +1008,47 @@ static int skip(int c) {
       if (Chr != c)
          return Chr;
       Env.get();
-      if (c != '#' || Chr != '{') {
-         while (Chr != '\n') {
-            if (Chr < 0)
-               return Chr;
-            Env.get();
-         }
+      while (Chr != '\n') {
+         if (Chr < 0)
+            return Chr;
+         Env.get();
       }
-      else {
-         for (;;) {  // #{block-comment}# from Kriangkrai Soatthiyanont
-            Env.get();
-            if (Chr < 0)
-               return Chr;
-            if (Chr == '}' && (Env.get(), Chr == '#'))
-               break;
-         }
+   }
+}
+
+static void comment(void) {
+   Env.get();
+   if (Chr != '{') {
+      while (Chr != '\n') {
+         if (Chr < 0)
+            return;
+         Env.get();
+      }
+   }
+   else {
+      for (;;) {  // #{block-comment}# from Kriangkrai Soatthiyanont
+         Env.get();
+         if (Chr < 0)
+            return;
+         if (Chr == '}' && (Env.get(), Chr == '#'))
+            break;
       }
       Env.get();
+   }
+}
+
+static int skip(void) {
+   for (;;) {
+      if (Chr < 0)
+         return Chr;
+      while (Chr <= ' ') {
+         Env.get();
+         if (Chr < 0)
+            return Chr;
+      }
+      if (Chr != '#')
+         return Chr;
+      comment();
    }
 }
 
@@ -1110,7 +1134,7 @@ static any rdList(void) {
 
    Env.get();
    for (;;) {
-      if (skip('#') == ')') {
+      if (skip() == ')') {
          Env.get();
          return Nil;
       }
@@ -1130,7 +1154,7 @@ static any rdList(void) {
       drop(c1);
    }
    for (;;) {
-      if (skip('#') == ')') {
+      if (skip() == ')') {
          Env.get();
          break;
       }
@@ -1139,8 +1163,8 @@ static any rdList(void) {
       if (Chr == '.') {
          Env.get();
          if (strchr(Delim, Chr)) {
-            cdr(x) = skip('#')==')' || Chr==']'? data(c1) : read0(NO);
-            if (skip('#') == ')')
+            cdr(x) = skip()==')' || Chr==']'? data(c1) : read0(NO);
+            if (skip() == ')')
                Env.get();
             else if (Chr != ']')
                err(NULL, x, "Bad dotted pair");
@@ -1167,7 +1191,7 @@ static any read0(bool top) {
    any x, y, *h;
    cell c1;
 
-   if (skip('#') < 0) {
+   if (skip() < 0) {
       if (top)
          return Nil;
       eofErr();
@@ -1189,11 +1213,11 @@ static any read0(bool top) {
    }
    if (Chr == '\'') {
       Env.get();
-      return cons(Quote, read0(NO));
+      return cons(Quote, read0(top));
    }
    if (Chr == ',') {
       Env.get();
-      x = read0(NO);
+      x = read0(top);
       if (val(Uni) != T) {
          Push(c1, x);
          if (isCell(y = idx(Uni, data(c1), 1)))
@@ -1204,7 +1228,7 @@ static any read0(bool top) {
    }
    if (Chr == '`') {
       Env.get();
-      Push(c1, read0(NO));
+      Push(c1, read0(top));
       x = EVAL(data(c1));
       drop(c1);
       return x;
@@ -1259,16 +1283,11 @@ static any read0(bool top) {
 }
 
 any read1(int end) {
-   any x;
-
    if (!Chr)
       Env.get();
    if (Chr == end)
       return Nil;
-   x = read0(YES);
-   while (Chr > 0  &&  strchr(" \t)]", Chr))
-      Env.get();
-   return x;
+   return read0(YES);
 }
 
 /* Read one token */
@@ -1279,7 +1298,7 @@ any token(any x, int c) {
 
    if (!Chr)
       Env.get();
-   if (skip(c) < 0)
+   if (skipc(c) < 0)
       return NULL;
    if (Chr == '"') {
       Env.get();
@@ -1722,7 +1741,7 @@ any doChar(any ex) {
 // (skip ['any]) -> sym
 any doSkip(any x) {
    x = evSym(cdr(x));
-   return skip(symChar(name(x)))<0? Nil : mkChar(Chr);
+   return skipc(symChar(name(x)))<0? Nil : mkChar(Chr);
 }
 
 // (eol) -> flg
@@ -2048,8 +2067,19 @@ any load(any ex, int pr, any x) {
          if (pr && !Chr)
             prin(run(val(Prompt))), Env.put(pr), space(), flushAll();
          data(c1) = read1(isatty(STDIN_FILENO)? '\n' : 0);
-         if (Chr == '\n')
-            Chr = 0;
+         while (Chr > 0) {
+            if (Chr == '\n') {
+               Chr = 0;
+               break;
+            }
+            if (Chr == '#')
+               comment();
+            else {
+               if (Chr > ' ')
+                  break;
+               Env.get();
+            }
+         }
       }
       if (isNil(data(c1))) {
          popInFiles();
@@ -2386,6 +2416,8 @@ void print1(any x) {
          if (unDig(y) == '.')
             Env.put('\\'),  Env.put('.');
          else {
+            if (c == '#')
+               Env.put('\\');
             do {
                if (c == '\\' || strchr(Delim, c))
                   Env.put('\\');

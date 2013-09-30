@@ -82,11 +82,7 @@ term can be proven.
    (call @P @X @Y)                        # Call the given predicate
    (mapcar @P @L @M) )
 -> mapcar
-:  (? (mapcar change (you are a computer) @Z))
--> NIL
-:  (? (mapcar change (you are a computer) @Z) T)
--> NIL
-:  (? (mapcar permute ((a b c) (d e f)) @X))
+: (? (mapcar permute ((a b c) (d e f)) @X))
  @X=((a b c) (d e f))
  @X=((a b c) (d f e))
  @X=((a b c) (e d f))
@@ -154,11 +150,32 @@ elements <code>anyN</code> of each clause. If one of them is a list,
 <code>T</code> is a catch-all for any value. If a comparison succeeds,
 <code>prgN</code> is executed, and the result returned. Otherwise
 <code>NIL</code> is returned. See also <code><a
-href="refS.html#state">state</a></code>.
+href="refC.html#casq">casq</a></code> and <code><a
+href="refS.html#state">state</a></code> .
 
 <pre><code>
 : (case (char 66) ("A" (+ 1 2 3)) (("B" "C") "Bambi") ("D" (* 1 2 3)))
 -> "Bambi"
+: (case 'b (a 1) ("b" 2) (b 3) (c 4))
+-> 2
+</code></pre>
+
+<dt><a name="casq"><code>(casq 'any (any1 . prg1) (any2 . prg2) ..) -> any</code></a>
+<dd>Multi-way branch: <code>any</code> is evaluated and compared to the CAR
+elements <code>anyN</code> of each clause. <code><a
+href="ref_.html#==">==</a></code> is used for comparison (pointer equality). If
+one of them is a list, <code>any</code> is in turn compared to all elements of
+that list. <code>T</code> is a catch-all for any value. If a comparison
+succeeds, <code>prgN</code> is executed, and the result returned. Otherwise
+<code>NIL</code> is returned. See also <code><a
+href="refC.html#case">case</a></code> and <code><a
+href="refS.html#state">state</a></code>.
+
+<pre><code>
+: (casq 'b (a 1) ("b" 2) (b 3) (c 4))
+-> 3
+: (casq 'b (a 1) ("b" 2) ((a b c) 3) (c 4))
+-> 3
 </code></pre>
 
 <dt><a name="catch"><code>(catch 'any . prg) -> any</code></a>

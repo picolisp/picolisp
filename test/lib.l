@@ -1,4 +1,4 @@
-# 07apr12abu
+# 05jul13abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -88,12 +88,12 @@
 
 ### scl ###
 (scl 0)
-(test 123 (any "123.45")))
+(test 123 (any "123.45"))
 (scl 1)
 (test (1235) (scl 1 (str "123.45")))
-(test 1235 (any "123.45")))
+(test 1235 (any "123.45"))
 (scl 3)
-(test 123450 (any "123.45")))
+(test 123450 (any "123.45"))
 
 
 ### script ###

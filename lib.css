@@ -1,36 +1,38 @@
-/* 20jun13abu
+/* 07aug13abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
 
 /* Lib */
-.left {float: left;}
-.right {float: right;}
-.nofloat {float: none;}
-.clr {clear: both;}
-.norm {text-align: left;}
-.align {text-align: right;}
-.center {text-align: center;}
-.black {color: black;}
-.red {color: red;}
-.green {color: green;}
-.blue {color: blue;}
-.yellow {color: yellow;}
-.bold {font-weight: bold;}
-.mono {font-family: monospace;}
+.left {float: left}
+.right {float: right}
+.nofloat {float: none}
+.clr {clear: both}
+.norm {text-align: left}
+.align {text-align: right}
+.center {text-align: center}
+.black {color: black}
+.red {color: red}
+.green {color: green}
+.blue {color: blue}
+.yellow {color: yellow}
+.bold {font-weight: bold}
+.mono {font-family: monospace}
 
-.em3 {width: 3em;}
-.em5 {width: 5em;}
-.em7 {width: 7em;}
-.em10 {width: 10em;}
-.em15 {width: 15em;}
-.em20 {width: 20em;}
-.em25 {width: 25em;}
-.em30 {width: 30em;}
-.em40 {width: 40em;}
-.em50 {width: 50em;}
-.em60 {width: 60em;}
-.em70 {width: 70em;}
+.em1 {width: 1em}
+.em2 {width: 2em}
+.em3 {width: 3em}
+.em5 {width: 5em}
+.em7 {width: 7em}
+.em10 {width: 10em}
+.em15 {width: 15em}
+.em20 {width: 20em}
+.em25 {width: 25em}
+.em30 {width: 30em}
+.em40 {width: 40em}
+.em50 {width: 50em}
+.em60 {width: 60em}
+.em70 {width: 70em}
 
 /* Defaults */
 body {
@@ -149,15 +151,15 @@ a:hover {
    background-color: #e0e0e0;
 }
 
-.chart td.T {
+.chart td.T, th.T {
    background-color: #d0d0d0;
 }
 
-.chart td.nil {
+.chart td.nil, th.nil {
    background-color: white;
 }
 
-.chart td.body {
+.chart td.body, th.body {
    background-color: #f0f0f0;
 }
 

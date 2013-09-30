@@ -1,4 +1,4 @@
-# 07jun12abu
+# 21aug13abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2918,6 +2918,137 @@
       loop
       ld E (L I)  # Result
 10    drop
+   end
+   pop Y
+   pop X
+   ret
+
+# (sqrt 'num ['flg|num]) -> num
+(code 'doSqrt 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)
+   eval  # Eval first arg
+   cmp E Nil
+   if ne  # Non-NIL
+      num E  # Number?
+      jz numErrEX  # No
+      test E SIGN  # Negative?
+      jnz argErrEX  # Yes
+      link
+      push E  #  <L II/V> First arg
+      link
+      ld E ((Y CDR))  # Second arg
+      eval  # flg|num
+      tuck E  # <L I/IV> Second arg
+      link
+      ld A (L II)  # First arg in A
+      num E  # Second arg numeric?
+      if nz  # Yes
+         call muluAE_A  # Multiply with scale
+      end
+      cnt A  # Short?
+      if nz  # Yes
+         shr A 4  # Normalize
+         ld C (hex "400000000000000")  # Mask
+         ld E 0  # Result
+         do
+            add E C  # result += mask
+            cmp E A  # > number?
+            if gt  # Yes
+               sub E C  # Undo
+            else
+               sub A E  # Subtract result
+               add E C  # Add mask to result
+            end
+            shr E 1  # Shift result
+            shr C 2  # Shift mask
+         until z
+         cmp (L I) Nil  # Second arg?
+         if ne  # Yes
+            cmp A E  # Round?
+            if gt  # Yes
+               inc E  # Increment result
+            end
+         end
+         shl E 4  # Make short number
+         or E CNT
+      else
+         tuck A  # <L III> Number
+         push A  # <L II> Mask
+         push ZERO  # <L I> Result
+         link
+         ld C 0  # Init mask
+         ld E ONE
+         call consNumCE_C
+         ld (L II) C  # Save
+         ld E (A DIG)  # Copy number
+         call boxNumE_E
+         ld (L III) E  # Save
+         do
+            ld A (A BIG)  # Next cell
+            cnt A  # Last one?
+         while z  # No
+            call boxNum_C  # Copy next digit
+            ld (C DIG) (A DIG)
+            ld (E BIG) C
+            ld E C
+            call boxNum_X  # Extend mask
+            ld (X DIG) 0
+            ld (X BIG) (L II)
+            ld (L II) X  # Save
+         loop
+         ld (E BIG) A  # Copy trailing short
+         ld A (L II)  # Mask
+         do
+            ld E (L III)  # Number
+            call cmpuAE_F  # Mask <= number?
+         while le  # Yes
+            call twiceA_A  # Times 4
+            call twiceA_A
+         loop
+         do
+            ld A (L I)  # result += mask
+            ld E (L II)
+            call adduAE_A
+            ld (L I) A
+            ld E (L III)  # > number?
+            call cmpuAE_F
+            if gt  # Yes
+               ld E (L II)  # Undo
+               call subuAE_A
+            else
+               ld A (L III)  # Subtract result
+               ld E (L I)
+               call subuAE_A
+               ld (L III) A
+               ld A (L I)  # Add mask to result
+               ld E (L II)
+               call adduAE_A
+            end
+            call halfA_A  # Shift result
+            ld (L I) A
+            ld A (L II)  # Shift mask twice
+            call halfA_A
+            call halfA_A
+            ld (L II) A
+            cmp A ZERO  # Zero?
+         until eq  # Yes
+         ld E (L I)  # Get result
+         cmp (L IV) Nil  # Second arg?
+         if ne  # Yes
+            ld A (L III)  # Get number
+            call cmpuAE_F  # Round?
+            if gt  # Yes
+               ld A ONE  # Increment result
+               call adduAE_A
+               ld E A
+            end
+         end
+      end
+      drop
    end
    pop Y
    pop X

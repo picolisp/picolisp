@@ -1,4 +1,4 @@
-// 31jan13abu
+// 12sep13abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
-import java.nio.channels.spi.*;
 import java.lang.reflect.*;
 
 /* Ersatz PicoLisp Interpreter (Poor Man's PicoLisp) */
@@ -477,8 +476,19 @@ public class PicoLisp {
                OutFile.Wr.flush();
             }
             y = InFile.read('\n');
-            if (InFile.Chr == '\n')
-               InFile.Chr = 0;
+            while (InFile.Chr > 0) {
+               if (InFile.Chr == '\n') {
+                  InFile.Chr = 0;
+                  break;
+               }
+               if (InFile.Chr == '#')
+                  InFile.comment();
+               else {
+                  if (InFile.Chr > ' ')
+                     break;
+                  InFile.get();
+               }
+            }
          }
          if (y == Nil) {
             Env.Intern = ns;
@@ -851,7 +861,7 @@ public class PicoLisp {
    }
 
    final static Any idx(Any var, Any key, int flg) {
-      Any x, y, z, p, tree, tos;
+      Any x, y, z, p;
       boolean ad;
       int i;
       if (key == null)
@@ -1202,6 +1212,8 @@ public class PicoLisp {
          x = ex.Cdr.prog();
          Env.Args = args;
          Env.Arg = arg;
+         Env.ArgC = argc;
+         Env.Next = next;
       }
       for (i = bnd.Cnt; (i -= 2) >= 0;)
          bnd.Data[i+1].Car = bnd.Data[i];
@@ -1387,10 +1399,10 @@ public class PicoLisp {
          return false;
       }
 
-      final int skip(int c) {
+      final int skipc(int c) {
+         if (Chr < 0)
+            return Chr;
          for (;;) {
-            if (Chr < 0)
-               return Chr;
             while (Chr <= ' ') {
                get();
                if (Chr < 0)
@@ -1399,23 +1411,47 @@ public class PicoLisp {
             if (Chr != c)
                return Chr;
             get();
-            if (c != '#' || Chr != '{') {
-               while (Chr != '\n') {
-                  if (Chr < 0)
-                     return Chr;
-                  get();
-               }
+            while (Chr != '\n') {
+               if (Chr < 0)
+                  return Chr;
+               get();
             }
-            else {
-               for (;;) {
-                  get();
-                  if (Chr < 0)
-                     return Chr;
-                  if (Chr == '}' && (get() == '#'))
-                     break;
-               }
+         }
+      }
+
+      final void comment() {
+         get();
+         if (Chr != '{') {
+            while (Chr != '\n') {
+               if (Chr < 0)
+                  return;
+               get();
+            }
+         }
+         else {
+            for (;;) {
+               get();
+               if (Chr < 0)
+                  return;
+               if (Chr == '}' && (get() == '#'))
+                  break;
             }
             get();
+         }
+      }
+
+      final int skip() {
+         for (;;) {
+            if (Chr < 0)
+               return Chr;
+            while (Chr <= ' ') {
+               get();
+               if (Chr < 0)
+                  return Chr;
+            }
+            if (Chr != '#')
+               return Chr;
+            comment();
          }
       }
 
@@ -1475,7 +1511,7 @@ public class PicoLisp {
          Any x, res;
          get();
          for (;;) {
-            if (skip('#') == ')') {
+            if (skip() == ')') {
                get();
                return Nil;
             }
@@ -1493,7 +1529,7 @@ public class PicoLisp {
             }
          }
          for (;;) {
-            if (skip('#') == ')') {
+            if (skip() == ')') {
                get();
                break;
             }
@@ -1502,8 +1538,8 @@ public class PicoLisp {
             if (Chr == '.') {
                get();
                if (Delim.indexOf(Chr) >= 0) {
-                  x.Cdr = skip('#')==')' || Chr==']'? res : read0(false);
-                  if (skip('#') == ')')
+                  x.Cdr = skip()==')' || Chr==']'? res : read0(false);
+                  if (skip() == ')')
                      get();
                   else if (Chr != ']')
                      err(null, x, "Bad dotted pair");
@@ -1525,7 +1561,7 @@ public class PicoLisp {
 
       final Any read0(boolean top) {
          Any x, y;
-         if (skip('#') < 0) {
+         if (skip() < 0) {
             if (top)
                return Nil;
             eofErr();
@@ -1547,18 +1583,18 @@ public class PicoLisp {
          }
          if (Chr == '\'') {
             get();
-            return new Cell(Quote, read0(false));
+            return new Cell(Quote, read0(top));
          }
          if (Chr == ',') {
             get();
-            x = read0(false);
+            x = read0(top);
             if (Uni.Car != T)
                x = (y = idx(Uni, x, 1)) instanceof Cell? y.Car : x;
             return x;
          }
          if (Chr == '`') {
             get();
-            return read0(false).eval();
+            return read0(top).eval();
          }
          if (Chr == '"') {
             get();
@@ -1592,16 +1628,13 @@ public class PicoLisp {
             get();
          if (Chr == end)
             return Nil;
-         Any x = read0(true);
-         while (Chr != 0  &&  " \t)]".indexOf(Chr) >= 0)
-            get();
-         return x;
+         return read0(true);
       }
 
       final Any token(Any x, char c) {
          if (Chr == 0)
             get();
-         if (skip(c) < 0)
+         if (skipc(c) < 0)
             return null;
          if (Chr == '"') {
             get();
@@ -2343,6 +2376,8 @@ public class PicoLisp {
                   x = z.Cdr.prog();
                   Env.Args = args;
                   Env.Arg = arg;
+                  Env.ArgC = argc;
+                  Env.Next = next;
                }
                for (i = bnd.Cnt; (i -= 2) >= 0;)
                   bnd.Data[i+1].Car = bnd.Data[i];
@@ -2434,6 +2469,8 @@ public class PicoLisp {
             if (Name.equals("."))
                return "\\.";
             StringBuilder sb = new StringBuilder();
+            if (Name.charAt(0) == '#')
+               sb.append('\\');
             for (int i = 0; i < Name.length(); ++i) {
                char c = Name.charAt(i);
                if (c == '\\' || Delim.indexOf(c) >= 0)
@@ -2609,6 +2646,8 @@ public class PicoLisp {
             x = Cdr.prog();
             Env.Args = args;
             Env.Arg = arg;
+            Env.ArgC = argc;
+            Env.Next = next;
          }
          for (i = bnd.Cnt; (i -= 2) >= 0;)
             bnd.Data[i+1].Car = bnd.Data[i];
@@ -2653,6 +2692,8 @@ public class PicoLisp {
             x = Cdr.prog();
             Env.Args = args;
             Env.Arg = arg;
+            Env.ArgC = argc;
+            Env.Next = next;
          }
          for (i = bnd.Cnt; (i -= 2) >= 0;)
             bnd.Data[i+1].Car = bnd.Data[i];

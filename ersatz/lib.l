@@ -1,4 +1,4 @@
-# 04mar13abu
+# 20aug13abu
 # (c) Software Lab. Alexander Burger
 
 (setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
@@ -243,18 +243,19 @@
    (cond
       ((lt0 N) (quit "Bad argument" N))
       (N
-         (let (A 1  B 0)
-            (while (>= N A)
-               (setq A (>> -2 A)) )
+         (and (num? F) (setq N (* N @)))
+         (let (M 1  R 0)
+            (while (>= N M)
+               (setq M (>> -2 M)) )
             (loop
-               (if (> (inc 'B A) N)
-                  (dec 'B A)
-                  (dec 'N B)
-                  (inc 'B A) )
-               (setq B (>> 1 B)  A (>> 2 A))
-               (T (=0 A)) )
-            (and F (> N B) (inc 'B))
-            B ) ) ) )
+               (if (> (inc 'R M) N)
+                  (dec 'R M)
+                  (dec 'N R)
+                  (inc 'R M) )
+               (setq R (>> 1 R)  M (>> 2 M))
+               (T (=0 M)) )
+            (and F (> N R) (inc 'R))
+            R ) ) ) )
 
 # (Knuth Vol.2, p.442)
 (de ** (X N)  # N th power of X
@@ -274,7 +275,7 @@
 
 ### Pretty Printing ###
 (de *PP
-   T NIL if ifn when unless while until do case state for
+   T NIL if ifn when unless while until do case casq state for
    with catch finally ! setq default push bind job use let let?
    prog1 recur redef =: in out tab new )
 (de *PP1 let let? for redef)
@@ -875,19 +876,19 @@
 
 (be true)
 
-(be not @P (1 -> @P) T (fail))
+(be not @P (1 (-> @P)) T (fail))
 (be not @P)
 
 (be call @P
-   (2 cons (-> @P)) )
+   (2 (cons (-> @P))) )
 
-(be or @L (@C box (-> @L)) (_or @C))
+(be or @L (^ @C (box (-> @L))) (_or @C))
 
-(be _or (@C) (3 pop (-> @C)))
-(be _or (@C) (@ not (val (-> @C))) T (fail))
+(be _or (@C) (3 (pop (-> @C))))
+(be _or (@C) (^ @ (not (val (-> @C)))) T (fail))
 (repeat)
 
-(be nil (@X) (@ not (-> @X)))
+(be nil (@X) (^ @ (not (-> @X))))
 
 (be equal (@X @X))
 
@@ -910,55 +911,76 @@
    (permute @D @Y) )
 
 (be uniq (@B @X)
-   (@ not (idx (-> @B) (-> @X) T)) )
+   (^ @ (not (idx (-> @B) (-> @X) T))) )
 
-(be asserta (@C) (@ asserta (-> @C)))
+(be asserta (@C) (^ @ (asserta (-> @C))))
 
-(be assertz (@C) (@ assertz (-> @C)))
+(be assertz (@C) (^ @ (assertz (-> @C))))
 
 (be retract (@C)
-   (2 cons (-> @C))
-   (@ retract (list (car (-> @C)) (cdr (-> @C)))) )
+   (2 (cons (-> @C)))
+   (^ @ (retract (list (car (-> @C)) (cdr (-> @C))))) )
 
 (be clause ("@H" "@B")
-   ("@A" get (-> "@H") T)
+   (^ "@A" (get (-> "@H") T))
    (member "@B" "@A") )
 
-(be show (@X) (@ show (-> @X)))
+(be show (@X) (^ @ (show (-> @X))))
 
+(be for (@N @End) (for @N 1 @End 1))
+(be for (@N @Beg @End) (for @N @Beg @End 1))
+(be for (@N @Beg @End @Step) (equal @N @Beg))
+(be for (@N @Beg @End @Step)
+   (^ @I (box (-> @Beg)))
+   (_for @N @I @End @Step) )
+
+(be _for (@N @I @End @Step)
+   (^ @
+      (if (>= (-> @End) (val (-> @I)))
+         (> (inc (-> @I) (-> @Step)) (-> @End))
+         (> (-> @End) (dec (-> @I) (-> @Step))) ) )
+   T
+   (fail) )
+
+(be _for (@N @I @End @Step)
+   (^ @N (val (-> @I))) )
+
+(repeat)
 
 (be val (@V . @L)
-   (@V apply get (-> @L))
+   (^ @V (apply get (-> @L)))
    T )
 
 (be lst (@V . @L)
-   (@Lst box (apply get (-> @L)))
+   (^ @Lst (box (apply get (-> @L))))
    (_lst @V @Lst) )
 
-(be _lst (@Val @Lst) (@ not (val (-> @Lst))) T (fail))
-(be _lst (@Val @Lst) (@Val pop (-> @Lst)))
+(be _lst (@Val @Lst) (^ @ (not (val (-> @Lst)))) T (fail))
+(be _lst (@Val @Lst) (^ @Val (pop (-> @Lst))))
 (repeat)
 
 (be map (@V . @L)
-   (@Lst box (apply get (-> @L)))
+   (^ @Lst (box (apply get (-> @L))))
    (_map @V @Lst) )
 
-(be _map (@Val @Lst) (@ not (val (-> @Lst))) T (fail))
-(be _map (@Val @Lst) (@Val prog1 (val (-> @Lst)) (pop (-> @Lst))))
+(be _map (@Val @Lst) (^ @ (not (val (-> @Lst)))) T (fail))
+(be _map (@Val @Lst) (^ @Val (prog1 (val (-> @Lst)) (pop (-> @Lst)))))
 (repeat)
 
 
 (be isa (@Typ . @L)
-   (@ or
-      (not (-> @Typ))
-      (isa (-> @Typ) (apply get (-> @L))) ) )
+   (^ @
+      (or
+         (not (-> @Typ))
+         (isa (-> @Typ) (apply get (-> @L))) ) ) )
 
 (be same (@V . @L)
-   (@ let V (-> @V)
-      (or
-         (not V)
-         (let L (-> @L)
-            ("same" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let V (-> @V)
+         (or
+            (not V)
+            (let L (-> @L)
+               ("same" (car L) (cdr L)) ) ) ) ) )
 
 (de "same" (X L)
    (cond
@@ -975,16 +997,18 @@
       (T ("same" (apply get (car L) X) (cdr L))) ) )
 
 (be bool (@F . @L)
-   (@ or
-      (not (-> @F))
-      (apply get (-> @L)) ) )
+   (^ @
+      (or
+         (not (-> @F))
+         (apply get (-> @L)) ) ) )
 
 (be range (@N . @L)
-   (@ let N (-> @N)
-      (or
-         (not N)
-         (let L (-> @L)
-            ("range" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let N (-> @N)
+         (or
+            (not N)
+            (let L (-> @L)
+               ("range" (car L) (cdr L)) ) ) ) ) )
 
 (de "range" (X L)
    (cond
@@ -1008,11 +1032,12 @@
       (T ("range" (apply get (car L) X) (cdr L))) ) )
 
 (be head (@S . @L)
-   (@ let S (-> @S)
-      (or
-         (not S)
-         (let L (-> @L)
-            ("head" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let S (-> @S)
+         (or
+            (not S)
+            (let L (-> @L)
+               ("head" (car L) (cdr L)) ) ) ) ) )
 
 (de "head" (X L)
    (cond
@@ -1029,11 +1054,12 @@
       (T ("head" (apply get (car L) X) (cdr L))) ) )
 
 (be fold (@S . @L)
-   (@ let S (-> @S)
-      (or
-         (not S)
-         (let L (-> @L)
-            ("fold" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let S (-> @S)
+         (or
+            (not S)
+            (let L (-> @L)
+               ("fold" (car L) (cdr L)) ) ) ) ) )
 
 (de "fold" (X L)
    (cond
@@ -1051,11 +1077,12 @@
       (T ("fold" (apply get (car L) X) (cdr L))) ) )
 
 (be part (@S . @L)
-   (@ let S (-> @S)
-      (or
-         (not S)
-         (let L (-> @L)
-            ("part" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let S (-> @S)
+         (or
+            (not S)
+            (let L (-> @L)
+               ("part" (car L) (cdr L)) ) ) ) ) )
 
 (de "part" (X L)
    (cond
@@ -1073,11 +1100,12 @@
       (T ("part" (apply get (car L) X) (cdr L))) ) )
 
 (be tolr (@S . @L)
-   (@ let S (-> @S)
-      (or
-         (not S)
-         (let L (-> @L)
-            ("tolr" (car L) (cdr L)) ) ) ) )
+   (^ @
+      (let S (-> @S)
+         (or
+            (not S)
+            (let L (-> @L)
+               ("tolr" (car L) (cdr L)) ) ) ) ) )
 
 (de "tolr" (X L)
    (cond
@@ -1099,16 +1127,17 @@
 
 
 (be _remote ((@Obj . @))
-   (@ not (val (-> @Sockets 2)))
+   (^ @ (not (val (-> @Sockets 2))))
    T
    (fail) )
 
 (be _remote ((@Obj . @))
-   (@Obj let (Box (-> @Sockets 2)  Lst (val Box))
-      (rot Lst)
-      (loop
-         (T ((cdar Lst)) @)
-         (NIL (set Box (setq Lst (cdr Lst)))) ) ) )
+   (^ @Obj
+      (let (Box (-> @Sockets 2)  Lst (val Box))
+         (rot Lst)
+         (loop
+            (T ((cdar Lst)) @)
+            (NIL (set Box (setq Lst (cdr Lst)))) ) ) ) )
 
 (repeat)
 
@@ -1266,7 +1295,7 @@
 
 (de xmlrpcValue (Lst)
    (let X (caddr Lst)
-      (case (car Lst)
+      (casq (car Lst)
          (string X)
          ((i4 int) (format X))
          (boolean (= "1" X))
@@ -1491,8 +1520,8 @@
 
 (de dbg (Lst)
    (when (pair Lst)
-      (case (pop 'Lst)
-         ((case state)
+      (casq (pop 'Lst)
+         ((case casq state)
             (_dbg Lst)
             (for L (cdr Lst)
                (map _dbg (cdr L)) ) )
@@ -1683,7 +1712,7 @@
                      (push '"*Bnd" "X") ) ) ) ) )
       ((num? (car "X")))
       (T
-         (case (car "X")
+         (casq (car "X")
             ((: ::))
             (; (lint1 (cadr "X")))
             (quote
@@ -1753,7 +1782,7 @@
                            (lintVar (cdar "Y"))
                            (mapc lint1 (cddr "Y"))
                            (lintLoop (cddr "X")) ) ) ) ) )
-            ((case state)
+            ((case casq state)
                (lint1 (cadr "X"))
                (for "X" (cddr "X")
                   (mapc lint1 (cdr "X")) ) )

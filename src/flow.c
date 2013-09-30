@@ -1,4 +1,4 @@
-/* 06may13abu
+/* 31jul13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1025,6 +1025,25 @@ any doCase(any x) {
       if (isCell(z)) {
          do
             if (equal(val(At), car(z)))
+               return prog(cdr(y));
+         while (isCell(z = cdr(z)));
+      }
+   }
+   return Nil;
+}
+
+// (casq 'any (any1 . prg1) (any2 . prg2) ..) -> any
+any doCasq(any x) {
+   any y, z;
+
+   x = cdr(x),  val(At) = EVAL(car(x));
+   while (isCell(x = cdr(x))) {
+      y = car(x),  z = car(y);
+      if (z == T  ||  z == val(At))
+         return prog(cdr(y));
+      if (isCell(z)) {
+         do
+            if (car(z) == val(At))
                return prog(cdr(y));
          while (isCell(z = cdr(z)));
       }

@@ -1,47 +1,45 @@
-# 25jun13abu
+# 26sep13abu
 # (c) Software Lab. Alexander Burger
 
 ### Local Backup ###
-(de snapshot (Dst Max . @)
-   (let I -1
-      (while (info (pack Dst "." (inc 'I))))
-      (while (>= (dec 'I) Max)
-         (call 'rm "-r" (pack Dst "." I)) )
-      (while (ge0 I)
-         (call 'mv (pack Dst "." I) (pack Dst "." (inc I)))
-         (dec 'I) ) )
-   (call 'mkdir (pack Dst ".0"))
-   (while (args)
-      (let
-         (Lst (filter bool (split (chop (next)) '/))
-            Src (car Lst)
-            Old (pack Dst ".1/" Src)
-            New (pack Dst ".0/" Src) )
-         (recur (Lst Src Old New)
-            (ifn (cdr Lst)
-               (recur (Src Old New)
-                  (cond
-                     ((=T (car (info Src T)))  # Directory
-                        (call 'mkdir "-p" New)
-                        (for F (dir Src T)
-                           (unless (member F '("." ".."))
-                              (recurse
-                                 (pack Src '/ F)
-                                 (pack Old '/ F)
-                                 (pack New '/ F) ) ) )
-                        (call 'touch "-r" Src New) )
-                     ((= (info Src T) (info Old T))  # Same
-                        `(if (== 64 64)
-                           '(native "@" "link" 'I Old New)
-                           '(call 'ln Old New) ) )
-                     (T (call 'cp "-a" Src New)) ) )  # Changed or new
-               (call 'mkdir "-p" New)
-               (recurse
-                  (cdr Lst)
-                  (pack Src '/ (cadr Lst))
-                  (pack Old '/ (cadr Lst))
-                  (pack New '/ (cadr Lst)) )
-               (call 'touch "-r" Src New) ) ) ) ) )
+(de snapshot (Dst . @)
+   (for (L (flip (sort (mapcar format (dir Dst))))  L)
+      (let N (pop 'L)
+         (call 'mv (pack Dst '/ N) (pack Dst '/ (inc N)))
+         (when (> (car L) (*/ N 9 10))
+            (call 'rm "-rf" (pack Dst '/ (pop 'L))) ) ) )
+   (when (call 'mkdir (pack Dst "/1"))
+      (while (args)
+         (let
+            (Lst (filter bool (split (chop (next)) '/))
+               Src (car Lst)
+               Old (pack Dst "/2/" Src)
+               New (pack Dst "/1/" Src) )
+            (recur (Lst Src Old New)
+               (ifn (cdr Lst)
+                  (recur (Src Old New)
+                     (cond
+                        ((=T (car (info Src T)))  # Directory
+                           (call 'mkdir "-p" New)
+                           (for F (dir Src T)
+                              (unless (member F '("." ".."))
+                                 (recurse
+                                    (pack Src '/ F)
+                                    (pack Old '/ F)
+                                    (pack New '/ F) ) ) )
+                           (call 'touch "-r" Src New) )
+                        ((= (info Src T) (info Old T))  # Same
+                           `(if (== 64 64)
+                              '(native "@" "link" 'I Old New)
+                              '(call 'ln Old New) ) )
+                        (T (call 'cp "-a" Src New)) ) )  # Changed or new
+                  (call 'mkdir "-p" New)
+                  (recurse
+                     (cdr Lst)
+                     (pack Src '/ (cadr Lst))
+                     (pack Old '/ (cadr Lst))
+                     (pack New '/ (cadr Lst)) )
+                  (call 'touch "-r" Src New) ) ) ) ) ) )
 
 ### DB Garbage Collection ###
 (de dbgc ()
@@ -200,23 +198,28 @@
                         (let
                            (Tree (tree X (: cls) (get Obj (: hook)))
                               Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
-                           (if (isa '+List This)
-                              (when
-                                 (find
-                                    '((Y)
-                                       (and
-                                          (or
-                                             (not (isa '+Fold This))
-                                             (setq V (fold V)) )
-                                          (<> Obj (fetch Tree (cons Y Aux))) ) )
-                                    V )
-                                 (link X) )
-                              (and
-                                 (or
-                                    (not (isa '+Fold This))
-                                    (setq V (fold V)) )
-                                 (<> Obj (fetch Tree (cons V Aux)))
-                                 (link X) ) ) ) )
+                           (cond
+                              ((isa '+UB This)
+                                 (unless (= Obj (fetch Tree (ubZval (cons V Aux) Obj)))
+                                    (link X) ) )
+                              ((isa '+List This)
+                                 (when
+                                    (find
+                                       '((Y)
+                                          (and
+                                             (or
+                                                (not (isa '+Fold This))
+                                                (setq V (fold V)) )
+                                             (<> Obj (fetch Tree (cons Y Aux))) ) )
+                                       V )
+                                    (link X) ) )
+                              (T
+                                 (and
+                                    (or
+                                       (not (isa '+Fold This))
+                                       (setq V (fold V)) )
+                                    (<> Obj (fetch Tree (cons V Aux)))
+                                    (link X) ) ) ) ) )
                      (T
                         (for (N . B) (: bag)
                            (cond

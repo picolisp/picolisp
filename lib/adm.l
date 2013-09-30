@@ -1,4 +1,4 @@
-# 30may13abu
+# 13aug13abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -22,9 +22,9 @@
                (get
                   '`(mapcar char
                      (conc
-                        (range 46 57)
-                        (range 65 90)
-                        (range 97 122) ) )
+                        (range (char ".") (char "9"))
+                        (range (char "A") (char "Z"))
+                        (range (char "a") (char "z")) ) )
                   (inc (& 63 (rd 1))) ) ) ) ) ) )
 
 (de auth (Nm Pw)

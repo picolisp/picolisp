@@ -1,4 +1,4 @@
-# 13jun13abu
+# 31jul13abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -2005,6 +2005,46 @@
    pop X
    ret
 
+# (casq 'any (any1 . prg1) (any2 . prg2) ..) -> any
+(code 'doCasq 2)
+   push X
+   ld X (E CDR)  # Arguments in X
+   ld E (X)  # Eval argument item
+   eval
+   ld (At) E
+   do
+      ld X (X CDR)  # Next clause
+      atom X  # Any?
+   while z  # Yes
+      ld C ((X))  # Item(s) in C
+      cmp C TSym  # Catch-all?
+      jeq 10  # Yes
+      cmp C E  # Equal to argument item?
+      if eq  # Yes
+10       ld X ((X) CDR)  # Run body
+         prog X
+         pop X
+         ret
+      end
+      atom C  # List of items?
+      if z  # Yes
+         do
+            cmp (C) E  # Argument item member?
+            if eq  # Yes
+               ld X ((X) CDR)  # Run body
+               prog X
+               pop X
+               ret
+            end
+            ld C (C CDR)  # End of list?
+            atom C
+         until nz  # Yes
+      end
+   loop
+   ld E Nil  # Return NIL
+   pop X
+   ret
+
 # (state 'var (sym|lst exe [. prg]) ..) -> any
 (code 'doState 2)
    push X
@@ -2548,7 +2588,8 @@
 (code 'doCo 2)
    push X
    ld X (E CDR)  # Get tag
-   call evSymX_E  # Evaluate to a symbol
+   ld E (X)  # Eval 'sym'
+   eval
    atom (X CDR)  # 'prg'?
    if z  # Yes
       push Y
@@ -2754,9 +2795,6 @@
    push Y
    push Z
    ld X E
-   ld Z (EnvCo7)  # Get main
-   null Z  # Any?
-   jz yieldErrX  # No
    ld Y (E CDR)
    ld E (Y)  # Eval 'any'
    eval
@@ -2787,6 +2825,21 @@
    end
    ld E (L I)  # Get result
    drop
+   ld Z (EnvCo7)  # Get main
+   null Z  # Any?
+   if z  # No
+      null Y  # Target coroutine?
+      jz yieldErrX  # No
+      push L  # Else resume with argument
+      sub S "EnvMid-EnvCo"  # Space for env
+      push Y  # Save 'seg'
+      push (StkLimit)  # and 'lim'
+      push Z  # Link (NULL)
+      ld (EnvCo7) S  # Close coroutine frame
+      ld Z S  # Point Z to main frame
+      save (EnvCo) (EnvMid) (Z III)  # Save environment
+      jmp resumeCoroutine  # Resume
+   end
    null L  # Stack?
    if nz  # Yes
       ld C (Z (pack III "+(EnvMid-EnvCo)"))  # Main routine's link

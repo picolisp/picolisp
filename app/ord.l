@@ -1,4 +1,4 @@
-# 05jan12abu
+# 17jul13abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -28,7 +28,7 @@
                ((caddr L)
                   (new! '(+Pos) 'itm (caddr L)) ) ) ) )
       (<table> NIL NIL
-         '((align) (btn) (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total"))
+         '(("align em2") (btn) (NIL ,"Item") (NIL ,"Price") (NIL ,"Quantity") (NIL ,"Total"))
          (do 8
             (<row> NIL
                (gui 1 '(+NumField))

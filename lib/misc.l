@@ -1,4 +1,4 @@
-# 11nov12abu
+# 27sep13abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -227,7 +227,7 @@
    (cond
       ((not S))
       ((and *CtryCode (pre? (pack *CtryCode " ") S))
-         (pack 0 (cdddr (chop S))) )
+         (pack 0 (cdr (member " " (chop S)))) )
       (T (pack "+" S)) ) )
 
 (de expTel (S)

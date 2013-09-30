@@ -1,4 +1,4 @@
-/* 28dec12abu
+/* 28aug13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -453,6 +453,7 @@ any doCadr(any);
 any doCall(any);
 any doCar(any);
 any doCase(any);
+any doCasq(any);
 any doCatch(any);
 any doCdaaar(any);
 any doCdaadr(any);
@@ -707,6 +708,7 @@ any doSort(any);
 any doSpace(any);
 any doSplit(any);
 any doSpQ(any);
+any doSqrt(any);
 any doState(any);
 any doStem(any);
 any doStr(any);
@@ -716,6 +718,7 @@ any doSub(any);
 any doSubQ(any);
 any doSum(any);
 any doSuper(any);
+any doSwap(any);
 any doSym(any);
 any doSymQ(any);
 any doSync(any);

@@ -23,6 +23,11 @@ href="refS.html#scl">scl</a></code>.
 -> 3
 : (str "123.45")
 -> (123450)
+
+: 123.4567
+-> 123457
+: 12.3456
+-> 12346
 </code></pre>
 
 <dt><a name="*Sig1"><code>*Sig1</code></a>
@@ -600,9 +605,12 @@ href="refS.html#stem">stem</a></code>.
 -> ("The" "quick" "brown" "fox")
 </code></pre>
 
-<dt><a name="sqrt"><code>(sqrt 'num ['flg]) -> num</code></a>
+<dt><a name="sqrt"><code>(sqrt 'num ['flg|num]) -> num</code></a>
 <dd>Returns the square root of the <code>num</code> argument. If
 <code>flg</code> is given and non-<code>NIL</code>, the result will be rounded.
+If in addition to that <code>flg</code> is a number, the first argument will be
+multiplied with it before doing the square root calculation. See also <code><a
+href="ref_.html#*/">*/</a></code>.
 
 <pre><code>
 : (sqrt 64)
@@ -613,6 +621,11 @@ href="refS.html#stem">stem</a></code>.
 -> 32
 : (sqrt 10000000000000000000000000000000000000000)
 -> 100000000000000000000
+
+: (scl 6)
+-> 6
+: (sqrt 2.0 1.0)
+-> 1414214
 </code></pre>
 
 <dt><a name="stack"><code>(stack ['cnt]) -> cnt | (.. sym . cnt)</code></a>
@@ -934,6 +947,22 @@ href="refT.html#try">try</a></code>.
    ... )             # other things
 </code></pre>
 
+<dt><a name="swap"><code>(swap 'var 'any) -> any</code></a>
+<dd>Set the value of <code>var</code> to <code>any</code>, and return the
+previous value. See also <code><a href="refX.html#xchg">xchg</a></code> and
+<code><a href="refS.html#set">set</a></code>.
+
+<pre><code>
+: (setq A 7  L (1 2 3))
+-> (1 2 3)
+: (swap (cdr L) (swap 'A 'xyz))
+-> 2
+: A
+-> xyz
+: L
+-> (1 7 3)
+</code></pre>
+
 <dt><a name="sym"><code>(sym 'any) -> sym</code></a>
 <dd>Generate the printed representation of <code>any</code> into the name of a
 new symbol <code>sym</code>. This is the reverse operation of <code><a
@@ -977,8 +1006,9 @@ the previous namespace <code>sym2</code>. If in the third form more than one
 namespaces are not interned into <code>sym2</code>. See also <code><a
 href="refP.html#pico">pico</a></code>, <code><a
 href="refL.html#local">local</a></code>, <code><a
-href="refI.html#import">import</a></code> and <code><a
-href="refI.html#intern">intern</a></code>.
+href="refI.html#import">import</a></code>, <code><a
+href="refI.html#intern">intern</a></code> and <code><a
+href="refL.html#load">load</a></code>.
 
 <pre><code>
 : (symbols 'myLib 'pico)

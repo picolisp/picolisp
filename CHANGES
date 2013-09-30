@@ -1,3 +1,15 @@
+* 30sep13 picoLisp-3.1.4
+   Bug in bignum 'rd' (64-bit)
+   'swap' function
+   Optimized 'sqrt'
+   Changed 'canvas' to '<canvas>'
+   Pass delay-argument to 'drawCanvas'
+   'grid' wrap flags
+   'ssl' timeout
+   'casq' flow function
+   Pilog Lisp call syntax with '^'
+   'read' preserves trailing white space
+
 * 29jun13 picoLisp-3.1.3
    'snapshot' in "lib/too.l"
    'info' optional 'flg' argument

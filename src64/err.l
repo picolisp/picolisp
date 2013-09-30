@@ -1,4 +1,4 @@
-# 25may13abu
+# 05jul13abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -157,6 +157,7 @@
    ld (EnvProtect) 0  # Reset environments
    ld (EnvIntern) pico
    ld (EnvTask) Nil
+   ld (EnvCo7) 0
    ld (EnvArgs) 0
    ld (EnvNext) 0
    ld (EnvMake) 0

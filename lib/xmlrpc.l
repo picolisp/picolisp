@@ -1,4 +1,4 @@
-# 13apr11abu
+# 31jul13abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
@@ -40,7 +40,7 @@
 
 (de xmlrpcValue (Lst)
    (let X (caddr Lst)
-      (case (car Lst)
+      (casq (car Lst)
          (string X)
          ((i4 int) (format X))
          (boolean (= "1" X))

@@ -1,4 +1,4 @@
-# 11nov12abu
+# 19jul13abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/http.l" "@lib/xhtml.l" "@lib/form.l" "@lib/ps.l")
@@ -152,8 +152,8 @@
                         @Fin (or (: home obj fin) (+ (: home obj dat) 36525))
                         (db dat +Person (@Beg . @Fin) @@)
                         (different @@ @Obj)
-                        (@ >= (get (-> @@) 'fin) (-> @Dat))
-                        (@ <= (get (-> @@) 'dat) (-> @Fin)) ) )
+                        (^ @ (>= (get (-> @@) 'fin) (-> @Dat)))
+                        (^ @ (<= (get (-> @@) 'dat) (-> @Fin))) ) )
                   7
                   '((This)
                      (list This (: job) (: dat) (: fin) (: pa) (: ma) (: mate)) ) )

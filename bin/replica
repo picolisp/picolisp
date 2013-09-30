@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 06may11abu
+# 03aug13abu
 # Use: bin/replica <port> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
 #    : bin/ssl <host> 443 '<port>/!replica' <keyFile> <journal> <blob/app/> 60
 
@@ -19,11 +19,11 @@
          (when (= (line T) *SSLKey)
             (let? X (line T)
                (if (format X)
-                  (when (out (tmp 'replica) (echo @))    # Journal
+                  (when (abort 420 (out (tmp 'replica) (echo @)))  # Journal
                      (prin (peek))
                      (flush)
                      (journal (tmp 'replica)) )
-                  (let Blob (pack *Blob X)               # Blob
+                  (let Blob (pack *Blob X)                         # Blob
                      (call 'mkdir "-p" (dirname Blob))
                      (out Blob (echo)) ) ) ) ) ) ) )
 

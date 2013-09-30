@@ -186,7 +186,7 @@ returns the new environment or <code>NIL</code> if not successful. See also
 href="ref_.html#->">-&gt</a></code>.
 
 <pre><code>
-: (? (@A unify '(@B @C)))
+: (? (^ @A (unify '(@B @C))))
  @A=(((NIL . @C) 0 . @C) ((NIL . @B) 0 . @B) T)
 </code></pre>
 

@@ -1,4 +1,4 @@
-# 09nov12abu
+# 26sep13abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -11,6 +11,12 @@
 (test (1 3) (~(1 . 2) 3))
 (test (1 2 3 4) (1 ~(2 3) 4))
 (test (1 2 4) (1 ~(2 . 3) 4))
+(test (1 2 3) [1 2 3])
+(test (1 2 3) (1 2 3]
+(test (1 2 3) (1 2 3)]
+(test (1 (2 3)) (1 (2 3]
+(test (quote 1 (2 (3))) '(1 (2 (3]
+(test (quote 1 (2 (3))) '[1 (2 (3])
 (test (1 abc (d e f))
    (pipe (prinl "(1 abc (d e f))")
       (read) ) )
@@ -215,6 +221,14 @@
             (until (== "EOF" (setq X (rd "EOF")))
                (link X) ) ) ) ) )
 
+(let N 1
+   (do 200
+      (test N
+         (pipe (pr N) (rd)) )
+      (test (- N)
+         (pipe (pr (- N)) (rd)) )
+      (setq N (* 2 N))
+      (wait 10) ) )
 
 ### wr ###
 (test 3
@@ -223,5 +237,11 @@
 (test (hex "010203")
    (in (tmp "wr")
       (rd 3) ) )
+
+(for I 100
+   (let (L (need I "01")  N (hex (pack L)))
+      (test N
+         (pipe (apply wr (mapcar format L)) (rd I)) )
+      (wait 10) ) )
 
 # vi:et:ts=3:sw=3

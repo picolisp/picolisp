@@ -1,4 +1,4 @@
-# 25may13abu
+# 16jul13abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -375,15 +375,13 @@
    (use "C"
       (chgLine "L" (inc (length "L")))
       (on "Insert")
-      (until
-         (member
-            (setq "C" (let *Dbg "*Dbg" (key)))
-            '("^J" "^M") )
+      (until (member (setq "C" (let *Dbg "*Dbg" (key))) '("^J" "^M"))
          (case "C"
             (NIL (bye))
             ("^D" (prinl) (bye))
             ("^X" (prin (cdr *Tsm)) (prinl) (quit)) )
-         ((if "Insert" insMode cmdMode) "C") ) ) )
+         ((if "Insert" insMode cmdMode) "C") )
+      (eMove) ) )
 
 # Function keys
 (de fkey (Key . Prg)

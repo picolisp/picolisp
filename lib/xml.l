@@ -1,4 +1,4 @@
-# 13apr11abu
+# 25sep13abu
 # 21jan09 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
@@ -187,15 +187,15 @@
 # Access functions
 (de body (Lst . @)
    (while (and (setq Lst (cddr Lst)) (args))
-      (setq Lst (assoc (next) Lst)) )
+      (setq Lst (asoq (next) Lst)) )
    Lst )
 
 (de attr (Lst Key . @)
    (while (args)
       (setq
-         Lst (assoc Key (cddr Lst))
+         Lst (asoq Key (cddr Lst))
          Key (next) ) )
-   (cdr (assoc Key (cadr Lst))) )
+   (cdr (asoq Key (cadr Lst))) )
 
 # <xml> output
 (de "xmlL" Lst

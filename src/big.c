@@ -1,4 +1,4 @@
-/* 08sep11abu
+/* 20aug13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -436,7 +436,7 @@ any symToNum(any s, int scl, int sep, int ign) {
          return NULL;
       }
       if (c >= 5)
-         digAdd(data(c2), 1+1);
+         digAdd(data(c2), 2);
       while (c = symByte(NULL)) {
          if ((c -= '0') > 9) {
             drop(c1);
@@ -1115,6 +1115,49 @@ any doBitXor(any ex) {
    }
    zapZero(data(c1));
    return Pop(c1);
+}
+
+// (sqrt 'num ['flg|num]) -> num
+any doSqrt(any ex) {
+   any x, y, z;
+   cell c1, c2, c3, c4, c5;
+
+   x = cdr(ex);
+   if (isNil(x = EVAL(car(x))))
+      return Nil;
+   NeedNum(ex,x);
+   if (isNeg(x))
+      argError(ex, x);
+   Push(c1, x);  // num
+   y = cddr(ex);
+   Push(c2, y = EVAL(car(y)));  // flg|num
+   if (isNum(y))
+      x = data(c1) = bigMul(x, y);
+   Push(c3, y = box(unDig(x)));  // Number copy
+   Push(c4, z = box(2));  // Mask
+   while (isNum(x = cdr(numCell(x)))) {
+      y = cdr(numCell(y)) = box(unDig(x));
+      data(c4) = consNum(0, data(c4));
+   }
+   while (unDig(y) >= unDig(z))
+      if (!setDig(z, unDig(z) << 2)) {
+         z = cdr(numCell(z)) = box(2);
+         break;
+      }
+   Push(c5, box(0));  // Result
+   do {
+      bigAdd(data(c5),data(c4));
+      if (bigCmp(data(c5),data(c3)) > 0)
+         bigSub(data(c5),data(c4));
+      else
+         bigSub(data(c3),data(c5)),  bigAdd(data(c5),data(c4));
+      digDiv2(data(c5));
+      digDiv2(data(c4)),  digDiv2(data(c4));
+   } while (!IsZero(data(c4)));
+   if (!isNil(data(c2)) && bigCmp(data(c3),data(c5)) > 0)
+      digAdd(data(c5), 2);
+   drop(c1);
+   return data(c5);
 }
 
 /* Random numbers */

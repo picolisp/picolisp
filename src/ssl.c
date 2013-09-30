@@ -1,4 +1,4 @@
-/* 04feb13abu
+/* 03aug13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -173,6 +173,7 @@ int main(int ac, char *av[]) {
    signal(SIGINT, doSigTerm);
    signal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
+   signal(SIGALRM, SIG_IGN);
    for (;;) {
       if (*File && (fd = open(File, O_RDWR)) >= 0) {
          if (fstat(fd,&st) < 0  ||  st.st_size == 0)
@@ -196,15 +197,18 @@ int main(int ac, char *av[]) {
             close(fd);
             for (;;) {
                if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
+                  alarm(420);
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&                   // key
                            (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
                            SSL_write(ssl, Data, Size) == Size  &&                // data
                            SSL_write(ssl, bin? "\0" : "T", 1) == 1  &&           // ack
                            SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
+                     alarm(0);
                      sslClose(ssl,sd);
                      break;
                   }
+                  alarm(0);
                   sslClose(ssl,sd);
                }
                sleep(sec);

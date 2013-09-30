@@ -1,4 +1,4 @@
-# 06may13abu
+# 31jul13abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -274,8 +274,16 @@
 ### case ###
 (test 1 (case 'a (a 1) ((b c) 2) (T 3)))
 (test 2 (case 'b (a 1) ((b c) 2) (T 3)))
+(test 2 (case '"b" (a 1) ((b c) 2) (T 3)))
 (test 2 (case 'c (a 1) ((b c) 2) (T 3)))
+(test 2 (case "c" (a 1) ((b c) 2) (T 3)))
 (test 3 (case 'd (a 1) ((b c) 2) (T 3)))
+
+(test 3 (casq 'a ("a" 1) (("b" "c") 2) (T 3)))
+(test 3 (casq 'b ("a" 1) (("b" "c") 2) (T 3)))
+(test 2 (casq '"b" ("a" 1) (("b" "c") 2) (T 3)))
+(test 2 (casq '"c" ("a" 1) (("b" "c") 2) (T 3)))
+(test 3 (casq 'b (a 1) ("b" 2) ((a b c) 3) (c 4)))
 
 
 ### state ###
@@ -396,7 +404,7 @@
    (catch '("No such file")
       (in "doesntExist" (foo)) ) )
 (test 6
-   (case
+   (casq
       (catch '("No such file" "Undefined" "expected")
          (+ 1 2 3) )
       ("No such file" (shouldNotComeHere))

@@ -1,4 +1,4 @@
-# 17nov10abu
+# 25sep13abu
 # (c) Software Lab. Alexander Burger
 
 # Check or write header
@@ -102,14 +102,14 @@
 # Access functions
 (de body (Lst . @)
    (while (and (setq Lst (cddr Lst)) (args))
-      (setq Lst (assoc (next) Lst)) )
+      (setq Lst (asoq (next) Lst)) )
    Lst )
 
 (de attr (Lst Key . @)
    (while (args)
       (setq
-         Lst (assoc Key (cddr Lst))
+         Lst (asoq Key (cddr Lst))
          Key (next) ) )
-   (cdr (assoc Key (cadr Lst))) )
+   (cdr (asoq Key (cadr Lst))) )
 
 # vi:et:ts=3:sw=3

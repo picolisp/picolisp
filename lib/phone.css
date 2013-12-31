@@ -1,0 +1,38 @@
+/* 08dec13abu
+ * (c) Software Lab. Alexander Burger
+ */
+
+.rel10 {width: 10%}
+.rel20 {width: 20%}
+.rel40 {width: 40%}
+.rel50 {width: 50%}
+.rel60 {width: 60%}
+.rel80 {width: 80%}
+.rel100 {width: 100%}
+
+body {
+   font-size: larger;
+}
+
+caption {
+   margin: 0;
+}
+
+#expires {
+   font-size: smaller;
+}
+
+/* Form header */
+.fh {
+   margin: 2px 6px;
+}
+
+/* Main area */
+.main {
+   padding: 0;
+}
+
+/* Charts */
+.chart {
+   font-size: smaller;
+}

@@ -1,4 +1,4 @@
-/* 03aug13abu
+/* 29oct13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -118,7 +118,6 @@ static void doSigTerm(int n __attribute__((unused))) {
 int main(int ac, char *av[]) {
    SSL_CTX *ctx;
    SSL *ssl;
-   bool bin;
    int n, sec, getLen, lenLen, fd, sd;
    DIR *dp;
    struct dirent *p;
@@ -130,10 +129,7 @@ int main(int ac, char *av[]) {
       giveup("host port url [[key] file] | host port url key file dir sec");
    if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
       giveup("Names too long");
-   if (strchr(av[3],'/'))
-      bin = NO,  getLen = sprintf(get, Get, av[3], av[1], av[2]);
-   else
-      bin = YES,  getLen = sprintf(get, "@%s ", av[3]);
+   getLen = sprintf(get, Get, av[3], av[1], av[2]);
 
    SSL_library_init();
    SSL_load_error_strings();
@@ -199,10 +195,10 @@ int main(int ac, char *av[]) {
                if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                   alarm(420);
                   if (SSL_write(ssl, get, getLen) == getLen  &&
-                           (!*av[4] || sslFile(ssl,av[4]))  &&                   // key
-                           (bin || SSL_write(ssl, len, lenLen) == lenLen)  &&    // length
-                           SSL_write(ssl, Data, Size) == Size  &&                // data
-                           SSL_write(ssl, bin? "\0" : "T", 1) == 1  &&           // ack
+                           (!*av[4] || sslFile(ssl,av[4]))  &&       // key
+                           SSL_write(ssl, len, lenLen) == lenLen  && // length
+                           SSL_write(ssl, Data, Size) == Size  &&    // data
+                           SSL_write(ssl, "T", 1) == 1  &&           // ack
                            SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
                      alarm(0);
                      sslClose(ssl,sd);
@@ -223,10 +219,10 @@ int main(int ac, char *av[]) {
                if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
                         (sd = sslConnect(ssl, av[1], av[2])) >= 0 ) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
-                        (!*av[4] || sslFile(ssl,av[4]))  &&          // key
-                        (bin || SSL_write(ssl, buf, n) == n)  &&     // path
-                        (bin || SSL_write(ssl, "\n", 1) == 1)  &&    // nl
-                        sslFile(ssl, nm) )                           // file
+                        (!*av[4] || sslFile(ssl,av[4]))  &&       // key
+                        SSL_write(ssl, buf, n) == n  &&           // path
+                        SSL_write(ssl, "\n", 1) == 1  &&          // nl
+                        sslFile(ssl, nm) )                        // file
                      unlink(nm);
                   sslClose(ssl,sd);
                }

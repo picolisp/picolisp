@@ -1,4 +1,4 @@
-# 26sep13abu
+# 27oct13abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -3184,7 +3184,9 @@
       ld C (L -I)  # File descriptor
       null C  # Positive?
    while ns  # Yes
+      push X
       call rdSetRdyCL_F  # Ready?
+      pop X
    until nz  # Yes
    ld (At) (L II)  # Restore '@'
    ld A (L -II)  # Return milliseconds

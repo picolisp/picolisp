@@ -1,4 +1,4 @@
-# 27sep13abu
+# 02nov13abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow *Tmp
@@ -227,7 +227,9 @@
    (cond
       ((not S))
       ((and *CtryCode (pre? (pack *CtryCode " ") S))
-         (pack 0 (cdr (member " " (chop S)))) )
+         (pack
+            (unless (= 1 *CtryCode) 0)
+            (cdr (member " " (chop S))) ) )
       (T (pack "+" S)) ) )
 
 (de expTel (S)
@@ -244,10 +246,11 @@
                         (link (if F '- " ")) ) ) ) ) ) ) )
    (cond
       ((= "+" (car S)) (pack (cdr S)))
-      ((head '("0" "0") S)
-         (pack (cddr S)) )
+      ((head '("0" "0") S) (pack (cddr S)))
       ((and *CtryCode (= "0" (car S)))
-         (pack *CtryCode " " (cdr S)) ) ) )
+         (pack *CtryCode " " (cdr S)) )
+      ((= 1 *CtryCode)
+         (pack (and S (<> "1" (car S)) "1 ") S) ) ) )
 
 ### Date ###
 # ISO date

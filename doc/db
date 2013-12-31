@@ -13,6 +13,7 @@
 
    B-Tree node:
       (less (key more . value) (key more . value) ..)
+      (less ((key . value) more) ((key . value) more) ..)
 
    Per node
       <Link> BEG EXTERN <6> .. NIX

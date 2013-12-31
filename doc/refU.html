@@ -32,7 +32,8 @@ href="refL.html#locale">locale</a></code>.
 <dt><a name="+UB"><code>+UB</code></a>
 <dd>Prefix class for <code><a href="refA.html#+Aux">+Aux</a></code> to maintain
 an UB-Tree index instead of the direct values. This allows efficient range
-access to multidimensional data. Only numeric keys are supported. See also <a
+access to multidimensional data. Only positive numeric keys are supported. See
+also <code><a href="refU.html#ubIter">ubIter</a></code> and <a
 href="ref.html#dbase">Database</a>.
 
 <pre><code>
@@ -42,43 +43,33 @@ href="ref.html#dbase">Database</a>.
 (rel z (+Number))
 
 : (scan (tree 'x '+Pos))
-...
-(664594005183881683 . {B}) {B}
-(899018453307525604 . {C}) {C}  # UBKEY of (516516 690628 706223)
-(943014863198293414 . {2}) {2}
-(988682500781514058 . {A}) {A}
-(994667870851824704 . {8}) {8}
-(1016631364991047263 . {:}) {:}
+(288362200753438306 . {13}) {13}
+(348187139486943716 . {16}) {16}
+(605261596962573238 . {11}) {11}
+(638523558602802506 . {7}) {7}   # UBKEY of (453062 450921 613956)
+(654697989157410399 . {12}) {12}
 ...
 
-: (show '{C})
-{C} (+Pos)
-   z 706223
-   y 690628
-   x 516516
--> {C}
+: (show '{7})
+{7} (+Pos)
+   x 453062
+   y 450921
+   z 613956
+-> {7}
 
 # Discrete queries work the same way as without the +UB prefix
-: (db 'x '+Pos 516516 'y 690628 'z 706223)
--> {C}
-: (aux 'x '+Pos 516516 690628 706223)
--> {C}
-: (? (db x +Pos (516516 690628 706223) @Pos))
- @Pos={C}
+: (db 'x '+Pos 453062 'y 450921 'z 613956)
+-> {7}
+: (aux 'x '+Pos 453062 450921 613956)
+-> {7}
+: (? (db x +Pos (453062 450921 613956) @Pos))
+ @Pos={7}
 -> NIL
 
-# Efficient range queries are are possible now
-: (?
-   @X (416511 . 616519)
-   @Y (590621 . 890629)
-   @Z (606221 . 906229)
-   (select (@@)
-      ((x +Pos (@X @Y @Z)))   # Range query
-      (range @X @@ x)         # Filter
-      (range @Y @@ y)
-      (range @Z @@ z) ) )
- @X=(416511 . 616519) @Y=(590621 . 890629) @Z=(606221 . 906229) @@={C}
- @X=(416511 . 616519) @Y=(590621 . 890629) @Z=(606221 . 906229) @@={8}
+# Range queries work efficiently with 'collect'. Note that though also Pilog
+queries can handle UB-trees, they may do so sub-optimally for certain ranges.
+: (collect 'x '+Pos (200000 200000 200000) (899999 899999 899999))
+-> ({7} {14} {17} {15})
 </code></pre>
 
 <dt><a name="u"><code>(u) -> T</code></a>
@@ -92,6 +83,35 @@ href="refU.html#unbug">unbug</a></code>.
 <pre><code>
 ! (u)                         # Unbug subexpression(s) at breakpoint
 -> T
+</code></pre>
+
+<dt><a name="ubIter"><code>(ubIter 'tree 'dim 'fun 'lst1 'lst2)</code></a>
+<dd>Efficiently iterates through a database <code><a
+href="refU.html#+UB">+UB</a></code> tree, by applying <code>fun</code> to all
+values. <code>dim</code> is the number of the key dimensions, <code>lst1</code>
+and <code>lst2</code> specify a range of keys. <code><a
+href="refC.html#collect">collect</a></code> uses <code>ubIter</code> internally
+for UB-tree queries. See also <code><a href="refI.html#iter">iter</a></code>.
+
+<pre><code>
+: (ubIter (tree 'x '+Pos) 3 show (200000 200000 200000) (899999 899999 899999))
+{7} (+Pos)
+   z 613956
+   y 450921
+   x 453062
+{14} (+Pos)
+   z 771372
+   y 262217
+   x 862358
+{17} (+Pos)
+   z 676836
+   y 529576
+   x 398229
+{15} (+Pos)
+   z 889332
+   y 691799
+   x 265381
+-> NIL
 </code></pre>
 
 <dt><a name="udp"><code>(udp 'any1 'any2 'any3) -> any</code></a>

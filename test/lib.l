@@ -1,4 +1,4 @@
-# 05jul13abu
+# 30oct13abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -94,6 +94,24 @@
 (test 1235 (any "123.45"))
 (scl 3)
 (test 123450 (any "123.45"))
+
+
+### ** ###
+(test 32768 (** 2 15))
+(test 1 (** 123 0))
+(test 0 (** 3 -1))
+
+
+### accu ###
+(off Sum)
+
+(test '(a . 1) (accu 'Sum 'a 1))
+(test 6 (accu 'Sum 'a 5))
+(test (22 . 100) (accu 'Sum 22 100))
+(test '((22 . 100) (a . 6)) Sum)
+
+(test '((b . 2) (a . 3))
+   (let L NIL (accu 'L 'a 2) (accu 'L 'b 2) (accu 'L 'a 1) L) )
 
 
 ### script ###

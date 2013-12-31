@@ -1,4 +1,4 @@
-# 20aug13abu
+# 29nov13abu
 # (c) Software Lab. Alexander Burger
 
 (setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
@@ -259,13 +259,15 @@
 
 # (Knuth Vol.2, p.442)
 (de ** (X N)  # N th power of X
-   (let Y 1
-      (loop
-         (when (bit? 1 N)
-            (setq Y (* Y X)) )
-         (T (=0 (setq N (>> 1 N)))
-            Y )
-         (setq X (* X X)) ) ) )
+   (if (ge0 N)
+      (let Y 1
+         (loop
+            (when (bit? 1 N)
+               (setq Y (* Y X)) )
+            (T (=0 (setq N (>> 1 N)))
+               Y )
+            (setq X (* X X)) ) )
+      0 ) )
 
 (de accu (Var Key Val)
    (when Val
@@ -294,6 +296,8 @@
       (let Z X
          (prin "(")
          (cond
+            ((and (pair (car X)) (> (size @) 12))
+               (pretty (pop 'X) (- -3 N)) )
             ((memq (print (pop 'X)) *PP)
                (cond
                   ((memq (car Z) *PP1)

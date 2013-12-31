@@ -1,4 +1,4 @@
-# 28aug13abu
+# 05nov13abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
@@ -53,15 +53,14 @@
       "<canvas id=\"" Id
       "\" width=\"" DX
       "\" height=\"" DY
-      "\"" )
+      "\" onclick=\"drawCanvas(this.id, -128, event.layerX-this.offsetLeft, event.layerY-this.offsetTop)\"" )
    (dfltCss "canvas")
    (prinl ">" Alt "</canvas>" ) )
 
-(de jsDraw (Id Dly)
+(de jsDraw (Id Dly X Y)
    (http1 "application/octet-stream" 0)
-   (let Lst (drawCanvas Id Dly)
-      (prinl "Content-Length: " (bytes Lst) "^M")
-      (prinl "^M")
+   (let Lst (drawCanvas Id Dly X Y)
+      (prinl "Content-Length: " (bytes Lst) "^M^J^M")
       (pr Lst) ) )
 
 # vi:et:ts=3:sw=3

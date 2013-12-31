@@ -1,4 +1,4 @@
-# 23feb13abu
+# 11dec13abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1799,8 +1799,10 @@
    ld E TSym  # Return T
    ret
 
-# (rollback) -> T
+# (rollback) -> flg
 (code 'doRollback 2)
+   null (DBs)  # DB open?
+   jz retNil  # No
    push X
    push Y
    ld X Extern  # Iterate external symbol tree

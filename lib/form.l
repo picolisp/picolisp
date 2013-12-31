@@ -1,4 +1,4 @@
-# 19sep13abu
+# 14dec13abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -9,16 +9,17 @@
 (mapc allow
    (quote
       *Gui *Get *Got *Form "!jsForm" *Evt *Drop
-      *JsHint "!jsHint" *JsArgs "!tzOffs" ) )
+      *JsHint "!jsHint" jsUp jsDn *JsArgs "!tzOffs" ) )
 
 (one "*Cnt")
-(off "*Lst" "*Post2" "*Cho" "*TZO")
+(off "*Lst" "*Post2" "*Chart" "*Cho" "*TZO")
 
 (de *Throbber
    ("+---" "-+--" "--+-" "---+" "--+-" "-+--" .) )
 
 (de tzOffs (Min)
-   (setq "*TZO" (* Min 60)) )
+   (setq "*TZO" (* Min 60))
+   (respond) )
 
 # Define GUI form
 (de form ("Attr" . "Prg")
@@ -49,7 +50,6 @@
             (<hidden> '*Form *Form)
             (<hidden> '*Evt (: evt))
             (zero "*Ix")
-            (off "*Chart")
             (if *PRG
                (let gui
                   '(()
@@ -104,6 +104,7 @@
                               (show> This (cons '*Gui (: id))) ) )
                         This ) )
                   (htPrin "Prg") ) ) )
+         (off "*Chart")
          (--)
          (eval (: show)) ) ) )
 
@@ -113,7 +114,7 @@
 
 # Handle form actions
 (de action "Prg"
-   (off "*Foc")
+   (off "*Chart" "*Foc")
    (or *PRG "*Post2" (off "*Err"))
    (catch "stop"
       (nond
@@ -293,20 +294,28 @@
 
 (span expires
    (pack
-      "TimeOut"
-      " "
+      `(char 8230)  # Ellipsis
       (let Tim (+ (time T) (/ (cadr (assoc -1 *Run)) 1000))
          (if "*TZO"
             (tim$ (% (- Tim -86400 @) 86400))
             (javascript NIL
-               "lisp(null, 'tzOffs', (new Date()).getTimezoneOffset());" )
+               "lisp(null, 'tzOffs', (new Date()).getTimezoneOffset())" )
             (pack (tim$ (% Tim 86400)) " UTC") ) ) ) )
 
 # Return chart property
 (de chart @
    (pass get "*Chart") )
 
-# Table highlighting
+# Table extensions
+(patch (cdr <table>)
+   'Attr
+   '(if "*Chart"
+      (list
+         '("ontouchstart" . "return tblTouch(event)")
+         '("ontouchmove" . "return tblMove(this,event)")
+         Attr )
+      Attr ) )
+
 (daemon '<table>
    (on "rowF") )
 
@@ -581,17 +590,21 @@
 (dm hint> (Str)
    ((: hint) (extra Str)) )
 
-(de queryHint (Var CL)
+(de queryHint (Var CL Str)
    (make
       (for (Q (goal CL) (prove Q))
-         (let V (get (asoq '@@ @) -1 Var)
+         (for V
+            (fish
+               '((S) (and (atom S) (sub? (fold Str) (fold S))))
+               (get (asoq '@@ @) -1 Var) )
             (unless (member V (made))
                (link V) ) )
          (T (nth (made) 24)) ) ) )
 
 (de dbHint (Str Var Cls Hook)
    (queryHint Var
-      (cons (list 'db Var Cls Hook Str '@@)) ) )
+      (cons (list 'db Var Cls Hook Str '@@))
+      Str ) )
 
 
 (class +DbHint +Hint)
@@ -1123,12 +1136,13 @@
       (extra "Var") ) )
 
 (dm act> ()
-   (=: drop
-      (and
-         (or *Drop (val> (eval (: "drop"))))
-         (tmp @) ) )
-   (extra)
-   (off *Drop) )
+   (when (able)
+      (=: drop
+         (and
+            (or *Drop (val> (eval (: "drop"))))
+            (tmp @) ) )
+      (extra)
+      (off *Drop) ) )
 
 
 (class +JS)
@@ -1162,6 +1176,9 @@
       (or Lbl ">")
       (list 'scroll> (lit "*Chart") Exe) ) )
 
+(de jsDn ()
+   (when (> (length (; "*Chart" data)) (; "*Chart" ofs))
+      (scroll> "*Chart" 1) ) )
 
 (class +UpButton +Tiny +Rid +JS +Able +Button)
 
@@ -1170,6 +1187,10 @@
       '(> (chart 'ofs) 1)
       (or Lbl "<")
       (list 'scroll> (lit "*Chart") (list '- Exe)) ) )
+
+(de jsUp ()
+   (when (> (; "*Chart" ofs) 1)
+      (scroll> "*Chart" -1) ) )
 
 (class +GoButton +Tiny +Rid +JS +Able +Button)
 
@@ -1375,7 +1396,7 @@
 # split
 
 (dm T (Lst . @)
-   (=: split Lst)
+   (=: split (or Lst '(" " "^I" "^J")))
    (pass super) )
 
 (dm set> (Val Dn)
@@ -2184,7 +2205,7 @@
 
 # DB query chart
 (class +QueryChart +Chart)
-# iniR iniq query
+# iniR iniQ query
 
 # (iniR iniQ cols [put [get]])
 (dm T (R Q . @)
@@ -2262,9 +2283,10 @@
             ((=T Able) Del)
             ((=T Del) Able)
             ((and Able Del) (list 'and Able Del)) )
-         (let X (list ': 'home 'obj (fin Var))
-            (list 'text Txt
-               (if (pair Var) (list (car Var) X) X) ) ) )
+         (list 'text Txt
+            (if (pair Var)
+               (list 'with '(: home obj) (car Var))
+               (list ': 'home 'obj Var) ) ) )
       (choButton Dlg)
       (stepBtn (fin Var) Cls Hook Msg) )
    (--) )

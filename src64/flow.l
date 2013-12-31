@@ -1,4 +1,4 @@
-# 31jul13abu
+# 14nov13abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -501,7 +501,9 @@
       if nz  # Yes
          cmp C Nil  # Volatile property?
          if ne  # No
-            call dbTouchEX  # Touch it
+            call dbTouchEX  # Touch symbol
+         else
+            call dbFetchEX  # else fetch
          end
       end
       call getEC_E  # Current property value

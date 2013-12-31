@@ -368,7 +368,8 @@ and indented way.
 : (pp 'pretty)
 (de pretty (X N . @)
    (setq N (abs (space (or N 0))))
-   (while (args) (printsp (next)))
+   (while (args)
+      (printsp (next)) )
    (if (or (atom X) (>= 12 (size X)))
       (print X)
       (while (== 'quote (car X))
@@ -377,6 +378,8 @@ and indented way.
       (let Z X
          (prin "(")
          (cond
+            ((and (pair (car X)) (> (size @) 12))
+               (pretty (pop 'X) (- -3 N)) )
             ((memq (print (pop 'X)) *PP)
                (cond
                   ((memq (car Z) *PP1)
@@ -386,10 +389,7 @@ and indented way.
                            (print (pop 'X)) )
                         (space)
                         (print (pop 'X))
-                        (when
-                           (or
-                              (atom (car X))
-                              (>= 12 (size (car X))) )
+                        (when (or (atom (car X)) (>= 12 (size (car X))))
                            (space)
                            (print (pop 'X)) ) ) )
                   ((memq (car Z) *PP2)

@@ -1,4 +1,4 @@
-# 25may13abu
+# 17oct13abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -411,7 +411,7 @@
    else  # Zero: Try to free heaps
       ld E Heaps  # Heap list link pointer in E
       do
-         ld A (Avail)  # Keep avail list
+         ld A X  # Keep avail list
          ld C CELLS  # Counter
          lea Z (Y (- HEAP II))  # Z on last cell in chunk
          do
@@ -429,13 +429,14 @@
             lea E (Y HEAP)  # Point to link of next heap
             ld Y (E)  # Next heap
          else
-            ld (Avail) A  # Reset avail list
+            ld X A  # Reset avail list
             ld Y (Y HEAP)  # Next heap
             cc free((E))  # Free empty heap
             ld (E) Y  # Store next heap in list link
          end
          null Y  # Next heap?
       until z  # No
+      ld (Avail) X  # Set new Avail
    end
    pop Z
    pop Y
@@ -445,26 +446,35 @@
    pop A
    ret
 
-# (gc ['cnt]) -> cnt | NIL
+# (gc ['cnt [cnt2]]) -> cnt | NIL
 (code 'doGc 2)
    push X
+   push Y
    ld X E
-   ld E (E CDR)  # Get arg
-   ld E (E)
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval first
    eval  # Eval
    cmp E Nil  # Nil?
    if eq  # Yes
       call gc  # Collect with default
    else
-      ld X E  # Save return value in X
+      push E  # Save return value
       call xCntEX_FE  # Else get number of megabytes
       shl E 16  # Multiply with CELLS
-      ld C (GcCount)  # Save default
+      ld (GcCount) E  # Set gc count
+      call gc  # Collect
+      ld Y (Y CDR)  # Next arg?
+      atom Y
+      if nz  # No
+         ld E CELLS  # Standard default
+      else
+         call evCntXY_FE  # New default
+         shl E 16  # Multiply with CELLS
+      end
       ld (GcCount) E  # Set new value
-      call gc  # Collect with given count
-      ld (GcCount) C  # Restore default
-      ld E X
+      pop E
    end
+   pop Y
    pop X
    ret
 

@@ -1,4 +1,4 @@
-# 26sep13abu
+# 14dec13abu
 # (c) Software Lab. Alexander Burger
 
 ### Local Backup ###
@@ -209,7 +209,7 @@
                                           (and
                                              (or
                                                 (not (isa '+Fold This))
-                                                (setq V (fold V)) )
+                                                (setq Y (fold Y)) )
                                              (<> Obj (fetch Tree (cons Y Aux))) ) )
                                        V )
                                     (link X) ) )

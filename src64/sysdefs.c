@@ -1,4 +1,4 @@
-/* 07jan13abu
+/* 18nov13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -62,35 +62,35 @@ int main(void) {
 
    comment("errno");
    equ("ENOENT", ENOENT);
-   equ ("EINTR", EINTR);
-   equ ("EBADF", EBADF);
-   equ ("EAGAIN", EAGAIN);
-   equ ("EACCES", EACCES);
-   equ ("EPIPE", EPIPE);
-   equ ("ECONNRESET", ECONNRESET);
+   equ("EINTR", EINTR);
+   equ("EBADF", EBADF);
+   equ("EAGAIN", EAGAIN);
+   equ("EACCES", EACCES);
+   equ("EPIPE", EPIPE);
+   equ("ECONNRESET", ECONNRESET);
 
    comment("open/fcntl");
-   equ ("O_RDONLY", O_RDONLY);
-   equ ("O_WRONLY", O_WRONLY);
-   equ ("O_RDWR", O_RDWR);
-   equ ("O_CREAT", O_CREAT);
-   equ ("O_EXCL", O_EXCL);
-   equ ("O_TRUNC", O_TRUNC);
-   equ ("O_APPEND", O_APPEND);
-   equ ("F_GETFD", F_GETFD);
-   equ ("F_SETFD", F_SETFD);
-   equ ("FD_CLOEXEC", FD_CLOEXEC);
+   equ("O_RDONLY", O_RDONLY);
+   equ("O_WRONLY", O_WRONLY);
+   equ("O_RDWR", O_RDWR);
+   equ("O_CREAT", O_CREAT);
+   equ("O_EXCL", O_EXCL);
+   equ("O_TRUNC", O_TRUNC);
+   equ("O_APPEND", O_APPEND);
+   equ("F_GETFD", F_GETFD);
+   equ("F_SETFD", F_SETFD);
+   equ("FD_CLOEXEC", FD_CLOEXEC);
 
-   comment ("stdio");
+   comment("stdio");
    equ("BUFSIZ", BUFSIZ);
    equ("PIPE_BUF", PIPE_BUF);
    equ("MAXPATHLEN", 0);  // getcwd(NULL,0)
 
-   comment ("dlfcn");
+   comment("dlfcn");
    equ("RTLD_LAZY", RTLD_LAZY);
    equ("RTLD_GLOBAL", RTLD_GLOBAL);
 
-   comment ("fcntl");
+   comment("fcntl");
    equ("FLOCK", sizeof(fl));
    equ("L_TYPE", (char*)&fl.l_type - (char*)&fl);
    equ("L_WHENCE", (char*)&fl.l_whence - (char*)&fl);
@@ -111,7 +111,7 @@ int main(void) {
    equ("O_NONBLOCK", O_NONBLOCK);
    equ("O_ASYNC", O_ASYNC);
 
-   comment ("stat");
+   comment("stat");
    equ("STAT", sizeof(st));
    equ("ST_MODE", (char*)&st.st_mode - (char*)&st);
    equ("ST_SIZE", (char*)&st.st_size - (char*)&st);
@@ -119,12 +119,12 @@ int main(void) {
    equ("S_IFMT", S_IFMT);
    equ("S_IFDIR", S_IFDIR);
 
-   comment ("times");
+   comment("times");
    equ("TMS", sizeof(tim));
    equ("TMS_UTIME", (char*)&tim.tms_utime - (char*)&tim);
    equ("TMS_STIME", (char*)&tim.tms_stime - (char*)&tim);
 
-   comment ("termios");
+   comment("termios");
    equ("TERMIOS", sizeof(term));
    equ("C_IFLAG", (char*)&term.c_iflag - (char*)&term);
    equ("C_LFLAG", (char*)&term.c_lflag - (char*)&term);
@@ -134,7 +134,7 @@ int main(void) {
    equ("VTIME", VTIME);
    equ("TCSADRAIN", TCSADRAIN);
 
-   comment ("signal");
+   comment("signal");
    equ("SIGACTION", sizeof(act));
    equ("SIGSET_T", sizeof(sigset_t));
    equ("SA_HANDLER", (char*)&act.sa_handler - (char*)&act);
@@ -152,14 +152,14 @@ int main(void) {
    }
    equ("SIGNALS", n + 1);  // Highest used signal number plus 1
 
-   comment ("wait");
+   comment("wait");
    equ("WNOHANG", WNOHANG);
    equ("WUNTRACED", WUNTRACED);
 
-   comment ("select");
+   comment("select");
    equ("FD_SET", sizeof(rdSet));
 
-   comment ("time");
+   comment("time");
    equ("TM_SEC", (char*)&tm.tm_sec - (char*)&tm);
    equ("TM_MIN", (char*)&tm.tm_min - (char*)&tm);
    equ("TM_HOUR", (char*)&tm.tm_hour - (char*)&tm);
@@ -167,10 +167,10 @@ int main(void) {
    equ("TM_MON", (char*)&tm.tm_mon - (char*)&tm);
    equ("TM_YEAR", (char*)&tm.tm_year - (char*)&tm);
 
-   comment ("dir");
+   comment("dir");
    equ("D_NAME", (char*)&dir.d_name - (char*)&dir);
 
-   comment ("Sockets");
+   comment("Sockets");
    equ("SOCK_STREAM", SOCK_STREAM);
    equ("SOCK_DGRAM", SOCK_DGRAM);
    equ("AF_UNSPEC", AF_UNSPEC);

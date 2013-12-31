@@ -1,4 +1,4 @@
-# 13aug13abu
+# 26dec13abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -27,16 +27,16 @@
                         (range (char "a") (char "z")) ) )
                   (inc (& 63 (rd 1))) ) ) ) ) ) )
 
-(de auth (Nm Pw)
-   (with (db 'nm '+User Nm)
+(de auth (Nm Pw Cls)
+   (with (db 'nm (or Cls '+User) Nm)
       (and
          (: pw 0)
          (= @ (passwd Pw @))
          This ) ) )
 
 ### Login ###
-(de login (Nm Pw)
-   (ifn (setq *Login (auth Nm Pw))
+(de login (Nm Pw Cls)
+   (ifn (setq *Login (auth Nm Pw Cls))
       (msg *Pid " ? " Nm)
       (msg *Pid " * " (stamp) " " Nm)
       (tell 'hi *Pid Nm *Adr)
@@ -54,10 +54,10 @@
       (timeout (setq *Timeout `(* 300 1000))) ) )
 
 (de hi (Pid Nm Adr)
-   (if (and (= Nm (get *Login 'nm)) (= Adr *Adr))
+   (if (and Nm (= Nm (; *Login nm)) (= Adr *Adr))
       (bye)
       (hi2 Pid Nm)
-      (tell 'hi2 *Pid (get *Login 'nm)) ) )
+      (tell 'hi2 *Pid (; *Login nm)) ) )
 
 (de hi2 (Pid Nm)
    (if2 Nm (lup *Users Pid)
@@ -89,12 +89,12 @@
       (def (pop 'Lst) (pop 'Lst)) ) )
 
 (de may Args
-   (mmeq Args (get *Login 'role 'perm)) )
+   (mmeq Args (; *Login role perm)) )
 
 (de must Args
    (unless
       (if (cdr Args)
-         (mmeq @ (get *Login 'role 'perm))
+         (mmeq @ (; *Login role perm))
          *Login )
       (msg *Pid " No permission: " (car Args))
       (forbidden) ) )
@@ -116,6 +116,6 @@
       (when *Login
          (<nbsp> 4)
          (<span> "bold green"
-            (<big> (ht:Prin "'" (; *Login nm) ,"' logged in")) ) ) ) )
+            (ht:Prin "'" (; *Login nm) ,"' logged in") ) ) ) )
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 28aug13abu
+# 14nov13abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -2904,14 +2904,16 @@
    ld C (L I)  # Get key
    sym (A TAIL)  # External symbol?
    if nz  # Yes
+      push E  # Save 'any'
+      ld E A  # Get symbol
       cmp C Nil  # Volatile property?
       if ne  # No
-         push E  # Save 'any'
-         ld E A  # Get symbol
          call dbTouchEX  # Touch it
-         ld A E
-         pop E
+      else
+         call dbFetchEX  # else fetch
       end
+      ld A E
+      pop E
    end
    cmp C ZERO  # Key is zero?
    if eq  # Yes
@@ -2990,11 +2992,16 @@
    jz symErrEX
    cmp E Nil  # Can't be NIL
    jeq protErrEX
+   ld C (L I)  # Get key
    sym (E TAIL)  # External symbol?
    if nz  # Yes
-      call dbTouchEX  # Touch it
+      cmp C Nil  # Volatile property?
+      if ne  # No
+         call dbTouchEX  # Touch symbol
+      else
+         call dbFetchEX  # else fetch
+      end
    end
-   ld C (L I)  # Get key
    call propEC_E
    drop
    pop Y
@@ -3037,14 +3044,14 @@
    ld X E
    ld Y (E CDR)  # Y on args
    ld E (This)  # Get value of This
-   sym (E TAIL)  # External symbol?
-   if nz  # Yes
-      call dbFetchEX  # Fetch it
-   end
    ld C (Y)  # sym1|cnt
    ld Y (Y CDR)  # Args
    atom (Y CDR)  # More than one?
    if z  # Yes
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         call dbFetchEX  # Fetch it
+      end
       call getEC_E
       do
          ld C (Y)  # sym2|cnt
@@ -3062,7 +3069,9 @@
    if nz  # Yes
       cmp C Nil  # Volatile property?
       if ne  # No
-         call dbTouchEX  # Touch it
+         call dbTouchEX  # Touch symbol
+      else
+         call dbFetchEX  # else fetch
       end
    end
    push C  # Save key
@@ -3113,13 +3122,13 @@
    ld X E
    ld Y (E CDR)  # Y on args
    ld E (This)  # Get value of This
-   sym (E TAIL)  # External symbol?
-   if nz  # Yes
-      call dbFetchEX  # Fetch it
-   end
    ld C (Y)  # Next key
    atom (Y CDR)  # More than one arg?
    if z  # Yes
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         call dbFetchEX  # Fetch it
+      end
       call getEC_E
       do
          ld Y (Y CDR)
@@ -3137,7 +3146,12 @@
    jeq protErrEX
    sym (E TAIL)  # External symbol?
    if nz  # Yes
-      call dbTouchEX  # Touch it
+      cmp C Nil  # Volatile property?
+      if ne  # No
+         call dbTouchEX  # Touch symbol
+      else
+         call dbFetchEX  # else fetch
+      end
    end
    call propEC_E
    pop Y
@@ -3284,7 +3298,7 @@
    pop X
    ret
 
-# (wipe 'sym|lst) -> sym
+# (wipe 'sym|lst) -> sym|lst
 (code 'doWipe 2)
    ld E ((E CDR))  # Get arg
    eval  # Eval it

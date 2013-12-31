@@ -1,4 +1,4 @@
-/* 12sep13abu
+/* 11dec13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -3505,11 +3505,13 @@ any doCommit(any ex) {
    return T;
 }
 
-// (rollback) -> T
+// (rollback) -> flg
 any doRollback(any x) {
    int i;
    any y, z;
 
+   if (!Files)
+      return Nil;
    for (i = 0; i < EHASH; ++i) {
       for (x = Extern[i];  isCell(x);  x = cdr(x)) {
          val(y = car(x)) = Nil;

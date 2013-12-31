@@ -116,11 +116,17 @@ href="refP.html#path">path</a></code>.
 <dt><a name="be"><code>(be sym . any) -> sym</code></a>
 <dd>Declares a <a href="ref.html#pilog">Pilog</a> fact or rule for the
 <code>sym</code> argument, by concatenating the <code>any</code> argument to the
-<code>T</code> property of <code>sym</code>. See also <code><a
-href="refC.html#clause">clause</a></code>, <code><a
+<code>T</code> property of <code>sym</code>. Groups of declarations are
+collected for a given <code>sym</code>. When <code>sym</code> changes, i.e. when
+it differs from the one in the previous declaration, the current group is
+considered to be complete and a new group is started. Later <code>be</code>
+declarations for a previously completed symbol will reset its rules, to allow
+repeated re<code><a href="refL.html#load">load</a></code>ing of source files.
+See also <code><a href="refC.html#clause">clause</a></code>, <code><a
 href="refA.html#asserta">asserta</a></code>, <code><a
 href="refA.html#assertz">assertz</a></code>, <code><a
 href="refR.html#retract">retract</a></code>, <code><a
+href="refR.html#rules">rules</a></code>, <code><a
 href="refG.html#goal">goal</a></code> and <code><a
 href="refP.html#prove">prove</a></code>.
 
@@ -129,8 +135,15 @@ href="refP.html#prove">prove</a></code>.
 -> likes
 : (be likes (John @X) (likes @X wine) (likes @X food))
 -> likes
+
 : (get 'likes T)
 -> (((John Mary)) ((John @X) (likes @X wine) (likes @X food)))
+
+: (rules 'likes)
+1 (be likes (John Mary))
+2 (be likes (John @X) (likes @X wine) (likes @X food))
+-> likes
+
 : (? (likes John @X))
  @X=Mary
 -> NIL
@@ -138,6 +151,7 @@ href="refP.html#prove">prove</a></code>.
 
 <dt><a name="beep"><code>(beep) -> any</code></a>
 <dd>Send the bell character to the console. See also <code><a
+href="refS.html#space">space</a></code>, <code><a
 href="refP.html#prin">prin</a></code> and <code><a
 href="refC.html#char">char</a></code>.
 
@@ -320,7 +334,7 @@ to <code>fun1</code>. Each result of <code>fun1</code> is CONSed with its
 corresponding argument form the original <code>lst</code>, and collected into a
 list which is passed to <code>fun2</code>. For the list returned from
 <code>fun2</code>, the CAR elements returned by <code>fun1</code> are
-(destructively) removed from each element.
+(destructively) removed from each element ("decorate-apply-undecorate" idiom).
 
 <pre><code>
 : (let (A 1 B 2 C 3) (by val sort '(C A B)))

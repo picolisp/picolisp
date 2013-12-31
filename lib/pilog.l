@@ -1,4 +1,4 @@
-# 23sep13abu
+# 05dec13abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -175,6 +175,8 @@
    (let (Tree (tree Var Cls Hook)  Rel (get Cls Var))
       (when (find '((B) (isa '+index B)) (get Rel 'bag))
          (setq Rel @) )
+      (when (isa '+Fold Rel)
+         (setq Val (fold Val)) )
       (cond
          ((pair Val)
             (cond
@@ -186,8 +188,8 @@
                         (init Tree Val (append Val T)) )
                      ((; Rel ub)
                         (init Tree
-                           (ubZval (mapcar car Val))
-                           (ubZval (mapcar cdr Val) T) ) )
+                           (ubZval (car Val))
+                           (ubZval (cdr Val) T) ) )
                      ((>= (cdr Val) (car Val))
                         (init Tree (car Val) (append (cdr Val) T)) )
                      (T (init Tree (append (car Val) T) (cdr Val))) ) )
@@ -229,13 +231,9 @@
    (^ @Q
       (box
          (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
-            (cond
-               ((: hook)
-                  (initQuery (: var) (: cls) (-> @X) '(NIL . T)) )
-               ((isa '+Fold This)
-                  (initQuery (: var) (: cls) NIL (fold (-> @X))) )
-               (T
-                  (initQuery (: var) (: cls) NIL (-> @X)) ) ) ) ) )
+            (if (: hook)
+               (initQuery (: var) (: cls) (-> @X) '(NIL . T))
+               (initQuery (: var) (: cls) NIL (-> @X)) ) ) ) )
    (_db @Obj) )
 
 # (db var cls hook val obj)
@@ -243,10 +241,7 @@
    (^ @Q
       (box
          (with (or (get (-> @Cls) (-> @Var)) (meta (-> @Cls) (-> @Var)))
-            (initQuery (: var) (: cls) (-> @Hook)
-               (if (isa '+Fold This)
-                  (fold (-> @Val))
-                  (-> @Val) ) ) ) ) )
+            (initQuery (: var) (: cls) (-> @Hook) (-> @Val)) ) ) )
    (_db @Obj) )
 
 (be _db (@Obj)
@@ -318,11 +313,25 @@
          (not (-> @F))
          (bool (apply get (-> @L))) ) ) )
 
-(be range (@N . @L)
+(be ub (@A @R . @L)
    (^ @
-      (let N (-> @N)
+      (let R (-> @R)
          (or
-            (not N)
+            (not R)
+            (let X (apply get (-> @L))
+               (not
+                  (find
+                     '((K V1 V2)
+                        (not (>= V2 (get X K) V1)) )
+                     (-> @A)
+                     (car R)
+                     (cdr R) ) ) ) ) ) ) )
+
+(be range (@R . @L)
+   (^ @
+      (let R (-> @R)
+         (or
+            (not R)
             (let L (-> @L)
                ("range" (car L) (cdr L)) ) ) ) ) )
 
@@ -331,13 +340,13 @@
       ((not L)
          (if (atom X)
             (or
-               (<= (car N) X (cdr N))
-               (>= (car N) X (cdr N)) )
+               (<= (car R) X (cdr R))
+               (>= (car R) X (cdr R)) )
             (find
                '((Y)
                   (or
-                     (<= (car N) Y (cdr N))
-                     (>= (car N) Y (cdr N)) ) )
+                     (<= (car R) Y (cdr R))
+                     (>= (car R) Y (cdr R)) ) )
                X ) ) )
       ((atom X)
          ("range" (get X (car L)) (cdr L)) )
@@ -497,14 +506,11 @@
 
 (de "initSel" ()
    (with (treeRel Var Cls)
-      (cond
-         ((isa '+Fold This)
-            (initQuery Var (: cls) Hook (fold Val)) )
-         ((isa '+Sn This)
-            (conc
-               (initQuery Var (: cls) Hook Val)
-               (initQuery Var (: cls) Hook (ext:Snx Val)) ) )
-         (T (initQuery Var (: cls) Hook Val)) ) ) )
+      (if (isa '+Sn This)
+         (conc
+            (initQuery Var (: cls) Hook Val)
+            (initQuery Var (: cls) Hook (ext:Snx Val)) )
+         (initQuery Var (: cls) Hook Val) ) ) )
 
 (de _gen (Lst Q)
    (cond

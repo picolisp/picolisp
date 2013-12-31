@@ -1,4 +1,4 @@
-/* 30aug13abu
+/* 15nov13abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1133,8 +1133,8 @@ any doPut(any ex) {
       val(data(c1)) = x = data(c3);
    }
    else {
-      if (!isNil(data(c2)))
-         Touch(ex,data(c1));
+      if (isExt(data(c1)))
+         db(ex, data(c1), !isNil(data(c2))? 2 : 1);
       put(data(c1), data(c2), x = data(c3));
    }
    drop(c1);
@@ -1182,7 +1182,8 @@ any doProp(any ex) {
    }
    NeedSym(ex,data(c1));
    CheckNil(ex,data(c1));
-   Touch(ex,data(c1));
+   if (isExt(data(c1)))
+      db(ex, data(c1), !isNil(data(c2))? 2 : 1);
    return prop(Pop(c1), data(c2));
 }
 
@@ -1213,8 +1214,8 @@ any doSetCol(any ex) {
    cell c1;
 
    x = cdr(ex),  y = val(This);
-   Fetch(ex,y);
    if (z = car(x),  isCell(cdr(x = cdr(x)))) {
+      Fetch(ex,y);
       y = isNum(z) && !unDig(z)? val(y) : get(y,z);
       while (z = car(x),  isCell(cdr(x = cdr(x)))) {
          if (isCell(y))
@@ -1234,8 +1235,8 @@ any doSetCol(any ex) {
       val(y) = x = data(c1);
    }
    else {
-      if (!isNil(z))
-         Touch(ex,y);
+      if (isExt(y))
+         db(ex, y, !isNil(z)? 2 : 1);
       put(y, z, x = data(c1));
    }
    drop(c1);
@@ -1266,8 +1267,8 @@ any doPropCol(any ex) {
    any x, y;
 
    x = cdr(ex),  y = val(This);
-   Fetch(ex,y);
    if (isCell(cdr(x))) {
+      Fetch(ex,y);
       y = isNum(car(x)) && !unDig(car(x))? val(y) : get(y, car(x));
       while (isCell(cdr(x = cdr(x)))) {
          if (isCell(y))
@@ -1281,7 +1282,8 @@ any doPropCol(any ex) {
    }
    NeedSym(ex,y);
    CheckNil(ex,y);
-   Touch(ex,y);
+   if (isExt(y))
+      db(ex, y, !isNil(car(x))? 2 : 1);
    return prop(y, car(x));
 }
 
@@ -1366,7 +1368,7 @@ static void wipe(any x) {
    }
 }
 
-// (wipe 'sym|lst) -> sym
+// (wipe 'sym|lst) -> sym|lst
 any doWipe(any x) {
    any y;
 

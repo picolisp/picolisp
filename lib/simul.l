@@ -1,4 +1,4 @@
-# 06aug13abu
+# 11dec13abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -94,12 +94,12 @@
             (link
                (make
                   (for Y DY
-                     (link
-                        (def
+                     (set
+                        (link
                            (if (> DX 26)
                               (box)
-                              (intern (pack (char (+ X 96)) Y)) )
-                           (cons (cons) (cons)) ) ) ) ) ) ) )
+                              (intern (pack (char (+ X 96)) Y)) ) )
+                        (cons (cons) (cons)) ) ) ) ) ) )
       (let West (and FX (last Grid))
          (for (Lst Grid  Lst)
             (let

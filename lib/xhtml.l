@@ -1,4 +1,4 @@
-# 07aug13abu
+# 05dec13abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -97,11 +97,12 @@
 (de html (Upd Ttl Css Attr . Prg)
    (httpHead NIL Upd)
    (ht:Out *Chunked
-      ## (xml? T)
       (prinl "<!DOCTYPE html>")
       (prinl "<html lang=\"" (or *Lang "en") "\">")
       (prinl "<head>")
-      (and Ttl (<tag> 'title NIL Ttl) (prinl))
+      (prinl "<meta name=\"viewport\" content=\"width=device-width\"/>")
+      (and (fin Ttl) (<tag> 'title NIL @) (prinl))
+      (mapc prinl Ttl)
       (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
       (when Css
          (if (atom Css)
@@ -111,8 +112,8 @@
                (prinl "<style type=\"text/css\">")
                (prinl @)
                (prinl "</style>") ) ) )
+      (and *SesId (javascript NIL "SesId=\"" @ "\""))
       (mapc javascript *JS)
-      (and *SesId (javascript NIL "SesId = '" @ "';"))
       (prinl "</head>")
       (tag 'body Attr 2 Prg)
       (prinl "</html>") ) )
@@ -349,14 +350,16 @@
                      (glue "; "
                         (cons
                            "position:absolute"
-                           (pack "top:" "Y" "px")
-                           (pack "left:" "X" "px")
+                           (pack "top:" (abs "Y") (if (ge0 "Y") "px" "%"))
+                           (pack "left:" (abs "X") (if (ge0 "X") "px" "%"))
                            (cond
                               ((=0 "DX") "min-width:100%")
-                              ("DX" (pack "width:" @ "px")) )
+                              ("DX"
+                                 (pack "width:" (abs @) (if (ge0 "DX") "px" "%")) ) )
                            (cond
                               ((=0 "DY") "min-height:100%")
-                              ("DY" (pack "height:" @ "px")) )
+                              ("DY"
+                                 (pack "height:" (abs @ ) (if (ge0 "DY")"px" "%")) ) )
                            "Args" ) ) ) )
                (prog1 (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
                   (eval (cadr "L")) )
@@ -405,6 +408,30 @@
                               (urlMT *Url (x| M *Menu) *Tab *ID) ) )
                         (setq M (>> -1 M))
                         (recurse (cddr L) (inc N) (inc E)) ) ) ) ) ) ) ) )
+
+(de <bar> Lst
+   (use U
+      (<ul> NIL
+         (for (I . M) Lst
+            (if (= I *Menu)
+               (<li> "top"
+                  (<href>
+                     (eval (car M) 1)
+                     (urlMT *Url 0 *Tab *ID) )
+                  (<ul> NIL
+                     (for L (cdr M)
+                        (if (setq U (eval (cadr L) 1))
+                           (<li> (if (= U *Url) "act" "cmd")
+                              (<href> (eval (car L) 1)
+                                 (urlMT U 0 (if (= U *Url) *Tab 1)
+                                    (eval (caddr L))
+                                    (eval (cadddr L)) ) ) )
+                           (<li> "cmd"
+                              (ht:Prin (eval (car L) 1)) ) ) ) ) )
+               (<li> "sub"
+                  (<href>
+                     (eval (car M) 1)
+                     (urlMT *Url I *Tab *ID) ) ) ) ) ) ) )
 
 # Update link
 (de updLink ()
@@ -717,7 +744,7 @@
    (ht:Prin S)
    (prin "\"")
    (when *JS
-      (prin " onmousedown=\"inBtn(1)\" onblur=\"inBtn(0)\"")
+      (prin " onmousedown=\"inBtn(this,1)\" onblur=\"inBtn(this,0)\"")
       (and JS (prin " onclick=\"return doBtn(this)\""))
       (htJs) )
    (dfltCss "submit")
@@ -729,7 +756,7 @@
    (and "Var" (space) (htmlVar "Var"))
    (prin " src=\"" (sesId Src) "\"")
    (when *JS
-      (prin " onmousedown=\"inBtn(1)\" onblur=\"inBtn(0)\"")
+      (prin " onmousedown=\"inBtn(this,1)\" onblur=\"inBtn(this,0)\"")
       (and JS (prin " onclick=\"return doBtn(this)\""))
       (htJs) )
    (dfltCss "image")

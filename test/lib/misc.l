@@ -1,26 +1,10 @@
-# 04nov12abu
+# 30oct13abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
 (locale "DE" "de")
 (test "Ja" (val ,"Yes"))
 (locale)
-
-
-### ** ###
-(test 32768 (** 2 15))
-
-
-### accu ###
-(off Sum)
-
-(test '(a . 1) (accu 'Sum 'a 1))
-(test 6 (accu 'Sum 'a 5))
-(test (22 . 100) (accu 'Sum 22 100))
-(test '((22 . 100) (a . 6)) Sum)
-
-(test '((b . 2) (a . 3))
-   (let L NIL (accu 'L 'a 2) (accu 'L 'b 2) (accu 'L 'a 1) L) )
 
 
 ### align ###

@@ -1,10 +1,10 @@
-# 06may11abu
+# 24mar14abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/http.l" "@lib/xhtml.l")
 
 (de subDirs (Dir)
-   (cache '*DirCache (or (pack (flip (chop Dir))) ".")
+   (cache '*DirCache Dir
       (extract
          '((F)
             (when (=T (car (info (setq F (pack Dir F)))))

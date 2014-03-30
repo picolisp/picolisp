@@ -1,4 +1,4 @@
-# 14nov13abu
+# 25feb14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -3233,6 +3233,9 @@
          or A A
          ld E TSym  # Return 'flg'
          ldnz E Nil
+         shl A 4  # Make short number
+         or A CNT
+         ld (At2) A  # Exit status in '@@'
          add S I  # Drop expression
          pop Z
          pop X

@@ -1,4 +1,4 @@
-# 19oct11abu
+# 17feb14abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -69,8 +69,12 @@
 # termios
 (equ TERMIOS 60)  # Terminal I/O structure
 (equ C_IFLAG 0)
+(equ C_OFLAG 4)
+(equ C_CFLAG 8)
 (equ C_LFLAG 12)
 (equ C_CC 17)
+(equ OPOST 1)
+(equ ONLCR 4)
 (equ ISIG 1)
 (equ VMIN 6)
 (equ VTIME 5)

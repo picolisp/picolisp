@@ -37,6 +37,10 @@
 "Delete" "Slett"
 "Delete @1?" "Slett @1?"
 "Data not found" "Data ble ikke funnet"
+"Undo" "Angre"
+"Undo: '@1'" "Angre: '@1'"
+"Redo" "Utfør likevel"
+"Redo: '@1'" "Utfør likevel: '@1'"
 
 # General
 "login" "logg inn"

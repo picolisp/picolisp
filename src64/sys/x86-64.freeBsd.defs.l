@@ -1,4 +1,4 @@
-# 07jan13abu
+# 17feb14abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -72,8 +72,12 @@
 # termios
 (equ TERMIOS 44)
 (equ C_IFLAG 0)
+(equ C_OFLAG 4)
+(equ C_CFLAG 8)
 (equ C_LFLAG 12)
 (equ C_CC 16)
+(equ OPOST 1)
+(equ ONLCR 4)
 (equ ISIG 128)
 (equ VMIN 16)
 (equ VTIME 17)

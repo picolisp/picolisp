@@ -1,4 +1,4 @@
-# 14dec13abu
+# 19mar14abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -172,13 +172,13 @@
                         (= (cdr "*Stat") (get "*Lst" (- "*Cnt" *Get))) )
                      (ht:Out *Chunked
                         (when (: auto)
-                           (prin "i" *Form '- (: auto 1 id) ': (: auto -1))
+                           (prin "i" *Form "-" (: auto 1 id) ":" (: auto -1))
                            (=: auto) )
                         (for S *Spans
-                           (prin '& (car S) '& (run (cdr S))) )
+                           (prin "&" (car S) "&" (run (cdr S))) )
                         (for This (: gui)
                            (if (: id)
-                              (prin '& "i" *Form '- @ '& (js> This))
+                              (prin "&i" *Form "-" @ "&" (js> This))
                               (setq "*Chart" This) ) ) )
                      (setq "*Post2" (cons *Get *Form *PRG))
                      (ht:Out *Chunked (prin T)) ) ) )
@@ -190,7 +190,7 @@
                ((disallowed)
                   (notAllowed *Url)
                   (http404) )
-               ((= '! (car Url))
+               ((= "!" (car Url))
                   ((intern (pack (cdr Url)))) )
                ((tail '("." "l") Url)
                   (load *Url) ) ) ) ) ) )
@@ -269,21 +269,21 @@
 (de url (Url . @)
    (when Url
       (off *PRG)
-      (redirect (baseHRef) *SesId Url '?
+      (redirect (baseHRef) *SesId Url "?"
          (pack
             (make
                (loop
                   (and
                      (sym? (next))
                      (= `(char '*) (char (arg)))
-                     (link (arg) '=)
+                     (link (arg) "=")
                      (next) )
                   (link (ht:Fmt (arg)))
                   (NIL (args))
-                  (link '&) ) ) ) )
+                  (link "&") ) ) ) )
       (throw "stop") ) )
 
-# Actve <span> elements
+# Active <span> elements
 (de span Args
    (def (car Args)
       (list NIL
@@ -498,7 +498,7 @@
 (dm show> ("Var")
    (if (: act)
       (super "Var")
-      (<style> (cons 'id (pack "i" *Form '- (: id)))
+      (<style> (cons 'id (pack "i" *Form "-" (: id)))
          (if (try (: msg) (: obj) 1)
             (<tip> "-->" (<href> "@" (mkUrl @)))
             (<span> *Style "@") ) ) ) )
@@ -576,7 +576,7 @@
                   (car L)
                   (caar L) ) ) )
          (for X (cdr L)
-            (prin '&
+            (prin "&"
                (ht:Fmt (if (atom X) X (car X))) ) ) ) ) )
 
 
@@ -943,7 +943,7 @@
       (eval (: clk))
       (javascript NIL
          "window.setTimeout(\"document.getElementById(\\\""
-         "i" *Form '- (: id)
+         "i" *Form "-" (: id)
          "\\\").click()\","
          @
          ")" ) ) )
@@ -957,8 +957,9 @@
       (on "*Foc")
       (javascript NIL
          "window.setTimeout(\"document.getElementById(\\\""
-         "i" *Form '- (: id)
+         "i" *Form "-" (: id)
          "\\\").focus()\",420)" ) ) )
+
 
 ### Styles ###
 (class +Style)
@@ -994,12 +995,13 @@
 (dm js> ()
    (pack (extra) "&#" (and (lt0 (val> This)) "red")) )
 
+
 ### Form field classes ###
 (de showFld "Prg"
    (when (: lbl)
       (ht:Prin (eval @))
       (<nbsp>) )
-   (style (cons 'id (pack "i" *Form '- (: id))) "Prg") )
+   (style (cons 'id (pack "i" *Form "-" (: id))) "Prg") )
 
 
 (class +gui)
@@ -1095,7 +1097,7 @@
          (pack (if (: img) (sesId Str) Str) "&=") ) ) )
 
 (dm show> ("Var")
-   (<style> (cons 'id (pack "i" *Form '- (: id)))
+   (<style> (cons 'id (pack "i" *Form "-" (: id)))
       (if (able)
          ((if (: img) <image> <submit>)
             (eval (: lbl))
@@ -1237,7 +1239,8 @@
          (ask (if (: del) (eval @) ,"Delete row?")
             (with (: home btn)
                (=: home del T)
-               (_delRow (: exe)) ) ) ) ) )
+               (_delRow (: exe)) ) ) ) )
+   (=: chg T) )
 
 (de _delRow (Exe)
    (eval Exe)
@@ -1258,7 +1261,8 @@
                (cut (row -2) 'L)
                (cons (cadr L))
                (cons (car L))
-               (cddr L) ) ) ) ) )
+               (cddr L) ) ) ) )
+   (=: chg T) )
 
 
 (class +ClrButton +JS +Tip +Button)
@@ -1378,7 +1382,7 @@
                   "Var"
                   (not (able)) ) ) )
          (T
-            (<style> (cons 'id (pack "i" *Form '- (: id)))
+            (<style> (cons 'id (pack "i" *Form "-" (: id)))
                (<span> *Style
                   (if (str> This) (ht:Prin @) (<nbsp>)) ) ) ) ) ) )
 
@@ -1539,8 +1543,8 @@
 
 (dm js> ()
    (pack
-      (ht:Fmt (sesId (or (: img) "@img/no.png"))) '&
-      (eval (: alt)) '&
+      (ht:Fmt (sesId (or (: img) "@img/no.png"))) "&"
+      (eval (: alt)) "&"
       (and (eval (: url)) (ht:Fmt (sesId @))) ) )
 
 (dm show> ("Var")
@@ -1569,7 +1573,7 @@
 
 (dm js> ()
    (pack (extra) "&*"
-      (ht:Fmt (sesId (eval (: icon)))) '&
+      (ht:Fmt (sesId (eval (: icon)))) "&"
       (and (eval (: url)) (ht:Fmt (sesId @))) ) )
 
 (dm show> ("Var")
@@ -1612,8 +1616,8 @@
 
 (dm js> ()
    (if2 (or (: dx) (: lst)) (txt> This (val> This))
-      (pack (extra) "&*" (ht:Fmt (sesId "@img/go.png")) '& (ht:Fmt (sesId ((: url) @))))
-      (pack (extra) "&*" (ht:Fmt (sesId "@img/no.png")) '&)
+      (pack (extra) "&*" (ht:Fmt (sesId "@img/go.png")) "&" (ht:Fmt (sesId ((: url) @))))
+      (pack (extra) "&*" (ht:Fmt (sesId "@img/no.png")) "&")
       (pack @ "&+" (ht:Fmt (sesId ((: url) @))))
       (extra) ) )
 
@@ -1623,12 +1627,12 @@
          (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
          (extra "Var")
          (prin "</td><td title=\"-->\">")
-         (if (val> This)
-            (<img> "@img/go.png" 'url ((: url) (txt> This @)))
+         (if (txt> This (val> This))
+            (<img> "@img/go.png" 'url ((: url) @))
             (<img> "@img/no.png") )
          (prinl "</td></table>") )
-      ((val> This)
-         (showFld (<href> @ ((: url) (txt> This @)))) )
+      ((txt> This (val> This))
+         (showFld (<href> @ ((: url) @))) )
       (T (extra "Var")) ) )
 
 
@@ -1645,7 +1649,10 @@
    (pass super '((S) (pack "mailto:" S))) )
 
 
-(class +TelField +TextField)
+(class +TelField +Url +TextField)
+
+(dm T @
+   (pass super '((S) (pack "tel:" S))) )
 
 (dm txt> (Val)
    (telStr Val) )
@@ -1686,6 +1693,7 @@
 
 (dm set> (Val Dn)
    (=: str Val) )
+
 
 ### GUI charts ###
 (class +Chart)
@@ -1816,6 +1824,7 @@
 (dm T (N)
    (super N list car) )
 
+
 ### DB GUI ###
 (de newUrl @
    (prog1 (pass new!)
@@ -1827,7 +1836,7 @@
 (de choDlg (Dst Ttl Rel . @)
    (let
       (Hook (and (meta (cdr Rel) (car Rel) 'hook) (next))
-         Fld (or (next) '((+TextField) 40))
+         Fld (or (next) (list '(+DbHint +TextField) Rel 40))
          Gui
          (if (next)
             (list '(+ObjView +TextField) @)
@@ -1900,7 +1909,6 @@
 # save
 
 (dm T (Exe)
-   (=: save Exe)
    (super
       '(nor (: home able) (lock (: home obj)))
       '(if (: home able)
@@ -1913,7 +1921,10 @@
             (unless (pair "*Err")
                (rollback)
                (off *Lock) ) )
-         (tryLock (: home obj)) ) ) )
+         (tryLock (: home obj)) ) )
+   (when (=: save Exe)
+      (for This (: home gui)
+         (and (isa '+Edit This) (=: save Exe)) ) ) )
 
 (de tryLock (Obj)
    (if (lock Obj)
@@ -2094,8 +2105,8 @@
    (if (=T (: msg))
       (extra)
       (if2 (or (: dx) (: lst)) (try (: msg) (: obj) 1)
-         (pack (extra) "&*" (ht:Fmt (sesId "@img/go.png")) '& (ht:Fmt (sesId (mkUrl @))))
-         (pack (extra) "&*" (ht:Fmt (sesId "@img/no.png")) '&)
+         (pack (extra) "&*" (ht:Fmt (sesId "@img/go.png")) "&" (ht:Fmt (sesId (mkUrl @))))
+         (pack (extra) "&*" (ht:Fmt (sesId "@img/no.png")) "&")
          (pack (ht:Fmt (nonblank (str> This))) "&+" (ht:Fmt (sesId (mkUrl @))))
          (extra) ) ) )
 
@@ -2308,6 +2319,58 @@
                (list 'choDlg NIL (lit "Cho") (lit (list (fin "Var") "Cls"))) )
             "Var" "Cls" )
          (run "Prg") ) ) )
+
+
+### Undo / Redo ###
+(de change ("Msg" "Env" . "X")
+   (set> (: home undo)
+      (cons
+         (cons "Msg" "Env" "X")
+         (val> (: home undo)) ) )
+   (set> (: home redo))
+   (bind "Env" (run (cdr "X"))) )
+
+
+(class +todoButton +Able +Tip +Button)
+# todo
+
+(dm T (Tip Lbl Exe)
+   (super '(val> This)
+      (list 'and '(val> This) (list 'text Tip '(caar @)))
+      Lbl
+      Exe ) )
+
+(dm set> (Val Dn)
+   (=: todo Val) )
+
+(dm val> ()
+   (: todo) )
+
+
+(class +UndoButton +todoButton)
+
+(dm T ()
+   (super ,"Undo: '@1'" ,"Undo"
+      '(let U (val> This)
+         (set> (: home redo)
+            (cons (car U) (val> (: home redo))) )
+         (set> This (cdr U))
+         (bind (cadar U)
+            (eval (caddar U)) ) ) )
+   (=: home undo This) )
+
+
+(class +RedoButton +todoButton)
+
+(dm T ()
+   (super ,"Redo: '@1'" ,"Redo"
+      '(let R (val> This)
+         (set> (: home undo)
+            (cons (car R) (val> (: home undo))) )
+         (set> This (cdr R))
+         (bind (cadar R)
+            (run (cdddar R)) ) ) )
+   (=: home redo This) )
 
 ### Debug ###
 `*Dbg

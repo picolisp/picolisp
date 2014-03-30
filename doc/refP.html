@@ -270,7 +270,7 @@ href="refI.html#intern">intern</a></code>.
 : (symbols)
 -> pico
 : (cdr pico)
--> (rollback (*NoTrace (ledSearch (expandTab (********)) *CtryCode ...
+-> (rollback (*NoTrace (*CtryCode (+IdxFold) genStrKey) basename ...
 </code></pre>
 
 <dt><a name="pil"><code>(pil ['any ..]) -> sym</code></a>
@@ -641,7 +641,9 @@ href="refM.html#memq">memq</a></code>.
 <dt><a name="proc"><code>(proc 'sym ..) -> T</code></a>
 <dd>(Debug mode only) Shows a list of processes with command names given by the
 <code>sym</code> arguments, using the system <code>ps</code> utility. See also
-<code><a href="refH.html#hd">hd</a></code>.
+<code><a href="refK.html#kids">kids</a></code>, <code><a
+href="refK.html#kill">kill</a></code> and <code><a
+href="refH.html#hd">hd</a></code>.
 
 <pre><code>
 : (proc 'pil)
@@ -875,7 +877,7 @@ href="refC.html#cd">cd</a></code>.
 
 <pre><code>
 : (pwd)
--> "/home/app/"
+-> "/home/app"
 </code></pre>
 
 </dl>

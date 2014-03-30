@@ -1,3 +1,20 @@
+* 30mar14 picoLisp-3.1.6
+   'fully' map function
+   'ping' keepalive function
+   'less' function
+   'bt' backtrace printing (64-bit)
+   Bug in 'dbf' for +Bag
+   'call' exit status code in '@@'
+   Undo / Redo buttons
+   PostScript 'psAlign' function
+   Bug in PostScript 'rect'
+   'kids' function
+   'httpGate' names and auto-starts
+   Perfect Forward Secrecy
+   '*Cipher' global variable
+   Canvas mouse events
+   Canvas pre-rendering
+
 * 31dec13 picoLisp-3.1.5
    Phone GUI support
    'prune' LRU scheme

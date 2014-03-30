@@ -327,6 +327,39 @@ href="refE.html#ext?">ext?</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="bt"><code>(bt ['flg]) -> flg</code></a>
+<dd>(Debug mode 64-bit version only) Formatted stack backtrace printing (see
+<code><a href="refT.html#trail">trail</a></code>) for the current point of
+program execution. For each bind frame, the function call (reduced with <code><a
+href="refL.html#less">less</a></code>) is <code><a
+href="refP.html#pretty">pretty</a></code>-printed, followed by indented
+variable-value-pairs. If <code>flg</code> is <code>NIL</code>, <code>bt</code>
+then waits for console input, and terminates when a non-empty line is entered
+(like <code><a href="refM.html#more">more</a></code>). See also <code><a
+href="refU.html#up">up</a></code> and <code><a
+href="refE.html#env">env</a></code>.
+
+<pre><code>
+: (de f (A B)
+   (g (inc A) (dec B)) )
+-> f
+: (de g (C D)
+   (/ C D) )
+-> g
+
+: (f 2 1)
+!? (/ C D)
+Div/0
+? (bt)
+(f 2 ..)
+   A 2
+   B 1
+(g (inc A) ..)
+   C 3
+   D 0
+-> T
+</code></pre>
+
 <dt><a name="by"><code>(by 'fun1 'fun2 'lst ..) -> lst</code></a>
 <dd>Applies <code>fun1</code> to each element of <code>lst</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed

@@ -1,4 +1,4 @@
-# 31aug13abu
+# 06feb14abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -47,7 +47,6 @@
       (load "app/init.l") ) )
 
 (de go ()
-   (pw 12)
    (task (port 4040)  # Set up query server in the background
       (let? Sock (accept @)
          (unless (fork)  # Child process
@@ -61,6 +60,7 @@
          (close Sock) ) )
    (forked)
    (rollback)
-   (server 8080 "!work") )
+   (retire 20)
+   (server (or (format (sys "PORT")) 8080) "!work") )
 
 # vi:et:ts=3:sw=3

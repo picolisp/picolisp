@@ -74,8 +74,12 @@
 # termios
 (equ TERMIOS 36)  # Terminal I/O structure
 (equ C_IFLAG 0)
+(equ C_OFLAG 4)
+(equ C_CFLAG 8)
 (equ C_LFLAG 12)
 (equ C_CC 16)
+(equ OPOST 1)
+(equ ONLCR 4)
 (equ ISIG 1)
 (equ VMIN 4)
 (equ VTIME 5)

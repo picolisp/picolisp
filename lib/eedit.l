@@ -123,7 +123,7 @@ only one symbol is left exits the 'edit' buffer.
                                  (prin "  # " (datStr "X")) ) )
                            (prinl) ) )
                      (prinl)
-                     (println '(********))
+                     (println '(=======))
                      (prinl) ) ) ) )
          (call 'emacsclient
             "-a" ""
@@ -134,7 +134,7 @@ only one symbol is left exits the 'edit' buffer.
          (in "*F"
             (while (and (setq "*X" (read)) (atom "*X"))
                (def "*X" (read))
-               (until (= '(********) (setq "*K" (read)))
+               (until (= '(=======) (setq "*K" (read)))
                   (def "*X" "*K" (read)) ) ) )
          (====)
          (NIL "*X" (throw))

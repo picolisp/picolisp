@@ -1,4 +1,4 @@
-# 21aug13abu
+# 18feb14abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -117,11 +117,9 @@
    end
    push A  # Save bignum
    do
-      test (E DIG) 1  # Shift bit?
-      if nz  # Yes
-         setc
-      end
+      shr (E DIG) 1  # Shift bit
       rcr C 1  # Rotate right with carry
+      shl (E DIG) 1
       ld (A DIG) C  # Store digit
       ld C (E BIG)  # More cells?
       cnt C
@@ -279,11 +277,9 @@
    push C  # <L I> Result
    link
    do
-      test (E DIG) 1  # Shift bit?
-      if nz  # Yes
-         setc
-      end
+      shr (E DIG) 1  # Shift bit
       rcr (C DIG) 1  # Rotate right with carry
+      shl (E DIG) 1
       cnt (E BIG)  # More cells?
    while z  # Yes
       call boxNum_A  # Build next digit

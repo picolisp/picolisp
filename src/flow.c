@@ -1,4 +1,4 @@
-/* 15nov13abu
+/* 25feb14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1537,8 +1537,10 @@ any doCall(any ex) {
       }
       if (Termio)
          tcsetpgrp(0,getpgrp());
-      if (!WIFSTOPPED(res))
+      if (!WIFSTOPPED(res)) {
+         val(At2) = box(res+res);
          return res == 0? T : Nil;
+      }
       load(NULL, '+', Nil);
       if (Termio)
          tcsetpgrp(0,pid);

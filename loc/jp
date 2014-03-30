@@ -1,4 +1,4 @@
-# 22dec08abu
+# 16feb14abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -37,6 +37,10 @@
 "Delete" "消去"
 "Delete @1?" "@1を消しますか？"
 "Data not found" "データが見つかりません"
+"Undo" "元に戻す"
+"Undo: '@1'" "元に戻す: '@1'"
+"Redo" "やり直す"
+"Redo: '@1'" "やり直す: '@1'"
 
 # General
 "login" "ログイン"

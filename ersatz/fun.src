@@ -1,4 +1,4 @@
-# 28aug13abu
+# 25mar14abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -8,7 +8,7 @@
 env (i x y)
    y = Nil;
    if (!((ex = ex.Cdr) instanceof Cell)) {
-      for (Bind p = Break? Env.Bind.Link : Env.Bind;  p != null;  p = p.Link) {
+      for (Bind p = Env.Bind;  p != null;  p = p.Link) {
          if (p.Eswp == 0) {
             for (i = p.Cnt; --i > 0; --i) {
                for (x = y; ; x = x.Cdr) {
@@ -50,7 +50,7 @@ up (i j k x)
    }
    j = 0;
    Bind q = null;
-   for (Bind p = Break? Env.Bind.Link : Env.Bind;  p != null;  p = p.Link) {
+   for (Bind p = Env.Bind;  p != null;  p = p.Link) {
       for (i = 0;  i < p.Cnt; i += 2) {
          if (p.Data[i+1] == x) {
             if (--k == 0) {
@@ -701,8 +701,10 @@ seek (i j w x v)
          v = append(v, i++, x.Car.eval());
       while ((x = x.Cdr) instanceof Cell);
       while (v[0] instanceof Cell) {
-         if (w.apply(ex, false, v, i) != Nil)
+         if ((x = w.apply(ex, false, v, i)) != Nil) {
+            At2.Car = x;
             return v[0];
+         }
          for (j = i; --j >= 0;)
             v[j] = v[j].Cdr;
       }
@@ -719,8 +721,10 @@ find (i j w x v)
          v = append(v, i++, x.Car.eval());
       while ((x = x.Cdr) instanceof Cell);
       while (v[0] instanceof Cell) {
-         if (w.apply(ex, true, v, i) != Nil)
+         if ((x = w.apply(ex, true, v, i)) != Nil) {
+            At2.Car = x;
             return v[0].Car;
+         }
          for (j = i; --j >= 0;)
             v[j] = v[j].Cdr;
       }
@@ -744,6 +748,24 @@ pick (i j w x v)
       }
    }
    return Nil;
+
+# (fully 'fun 'lst ..) -> flg
+fully (i j w x v)
+   w = (x = ex.Cdr).Car.eval();
+   if ((x = x.Cdr) instanceof Cell) {
+      v = new Any[6];
+      i = 0;
+      do
+         v = append(v, i++, x.Car.eval());
+      while ((x = x.Cdr) instanceof Cell);
+      while (v[0] instanceof Cell) {
+         if (w.apply(ex, true, v, i) == Nil)
+            return Nil;
+         for (j = i; --j >= 0;)
+            v[j] = v[j].Cdr;
+      }
+   }
+   return T;
 
 # (cnt 'fun 'lst ..) -> cnt
 cnt (i j n w x v)
@@ -802,6 +824,7 @@ maxi (i j w x y z v)
             v[j] = v[j].Cdr;
       }
    }
+   At2.Car = y;
    return z;
 
 # (mini 'fun 'lst ..) -> any
@@ -824,6 +847,7 @@ mini (i j w x y z v)
             v[j] = v[j].Cdr;
       }
    }
+   At2.Car = y;
    return z;
 
 # (fish 'fun 'any) -> lst
@@ -1638,7 +1662,7 @@ $ (i x)
    return x;
 
 # (call 'any ..) -> flg
-call (x)
+call (i x)
    ArrayList<String> cmd = new ArrayList<String>();
    for (x = ex.Cdr; x instanceof Cell; x = x.Cdr)
       cmd.add(x.Car.eval().name());
@@ -1650,10 +1674,12 @@ call (x)
       String line;
       while ((line = in.readLine()) != null)
          System.out.println(line);
-      return p.waitFor() == 0? T : Nil;
+      At2.Car = new Number(i = p.waitFor());
+      return i == 0? T : Nil;
    }
    catch (IOException e) {System.err.println(cmd.get(0) + ": Can't exec");}
    catch (InterruptedException e) {}  //#! sighandler()
+   At2.Car = new Number(127);
    return Nil;
 
 # (ipid) -> pid | NIL

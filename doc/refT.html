@@ -216,7 +216,8 @@ process. <code>tell</code> is also used internally by <code><a
 href="refC.html#commit">commit</a></code> to notify about database changes. When
 called without arguments, no message is actually sent, and the parent process
 may grant <code><a href="refS.html#sync">sync</a></code> to the next waiting
-process. See also <code><a href="refH.html#hear">hear</a></code>.
+process. See also <code><a href="refK.html#kids">kids</a></code> and <code><a
+href="refH.html#hear">hear</a></code>.
 
 <pre><code>
 : (call 'ps "x")                          # Show processes
@@ -489,10 +490,11 @@ href="refD.html#*Dbg">*Dbg</a></code>.
 
 <dt><a name="trail"><code>(trail ['flg]) -> lst</code></a>
 <dd>(64-bit version only) Returns a stack backtrace for the current point of
-program execution, The list elements are either expressions (denoting function
-or method calls), or symbols followed by their corresponding values. If
+program execution. The list elements are either list expressions (denoting
+function or method calls), or symbols followed by their corresponding values. If
 <code>flg</code> is <code>NIL</code>, the symbols and their values are omitted,
 and only the expressions are returned. See also <code><a
+href="refB.html#bt">bt</a></code>, <code><a
 href="refU.html#up">up</a></code> and <code><a
 href="refE.html#env">env</a></code>.
 
@@ -505,20 +507,6 @@ href="refE.html#env">env</a></code>.
 -> g
 : (f 3 4)
 -> ((f 3 4) A 3 B 4 (g (inc A) (dec B)) X 4 Y 3)
-
-: (for (L (f 3 4)  L)  # Pretty-print trail
-   (if (pair (car L))
-      (println (pop 'L))
-      (space 3)
-      (println (pop 'L) (pop 'L)) ) )
-
-   L NIL
-(f 3 4)
-   A 3
-   B 4
-(g (inc A) (dec B))
-   X 4
-   Y 3
 </code></pre>
 
 <dt><a name="tree"><code>(tree 'var 'cls ['hook]) -> tree</code></a>

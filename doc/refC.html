@@ -38,37 +38,41 @@ href="refR.html#rel">rel</a></code>.
 -> +Test
 </code></pre>
 
-<dt><a name="cache"><code>(cache 'var 'sym . prg) -> any</code></a>
-<dd>Speeds up some calculations, by holding previously calculated results in an
-<code><a href="refI.html#idx">idx</a></code> tree structure. Such an
-optimization is sometimes called "memoization". <code>sym</code> must be a
-transient symbol representing a unique key for the argument(s) to the
-calculation. See also <code><a href="refH.html#hash">hash</a></code>.
+<dt><a name="cache"><code>(cache 'var 'any . prg) -> any</code></a>
+<dd>Speeds up some calculations by maintaining a tree of previously calculated
+results in an <code><a href="refI.html#idx">idx</a></code> structure
+("memoization") in <code>var</code>. A <code><a
+href="refH.html#hash">hash</a></code> of the argument <code>any</code> is used
+internally to build the index key.
 
 <pre><code>
 : (de fibonacci (N)
-   (cache '(NIL) (pack (char (hash N)) N)
-      (if (> 2 N)
+   (cache '(NIL) N
+      (if (>= 2 N)
          1
-         (+
-            (fibonacci (dec N))
-            (fibonacci (- N 2)) ) ) ) )
+         (+ (fibonacci (dec N)) (fibonacci (- N 2))) ) ) )
 -> fibonacci
+
 : (fibonacci 22)
--> 28657
+-> 17711
+
 : (fibonacci 10000)
--> 5443837311356528133873426099375038013538 ...  # (2090 digits)
+-> 3364476487643178326662161200510754331030 ...  # (2090 digits)
 </code></pre>
 
 <dt><a name="call"><code>(call 'any ..) -> flg</code></a>
 <dd>Calls an external system command. The <code>any</code> arguments specify the
 command and its arguments. Returns <code>T</code> if the command was executed
-successfully.
+successfully. The (system dependent) exit status code of the child process is
+stored in the global variable <code><a href="ref_.html#@@">@@</a></code>.
 
 <pre><code>
 : (when (call 'test "-r" "file.l")  # Test if file exists and is readable
    (load "file.l")  # Load it
    (call 'rm "file.l") )  # Remove it
+
+: (cons (call "sh" "-c" "kill -SEGV $$") @@ (hex @@))
+-> (NIL 11 . "B")
 </code></pre>
 
 <dt><a name="call/1"><code>call/1</code></a>

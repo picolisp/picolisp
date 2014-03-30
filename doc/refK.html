@@ -38,6 +38,31 @@ href="refW.html#wait">wait</a></code>.
 -> "a"            # 'a' pressed
 </code></pre>
 
+<dt><a name="kids"><code>(kids) -> lst</code></a>
+<dd>Returns a list of process IDs of all running child processes. See also
+<code><a href="refF.html#fork">fork</a></code>, <code><a
+href="refP.html#pipe">pipe</a></code>, <code><a
+href="refT.html#tell">tell</a></code>, <code><a
+href="refP.html#proc">proc</a></code> and <code><a
+href="refK.html#kill">kill</a></code>.
+
+<pre><code>
+: (unless (fork) (wait 60000) (bye))
+-> NIL
+: (unless (fork) (wait 60000) (bye))
+-> NIL
+
+: (proc 'pil)
+  PID  PPID  STARTED  SIZE %CPU WCHAN  CMD
+ 2205 22853 19:45:24  1336  0.1 -      /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil +
+ 2266  2205 19:45:30  1336  0.0 -        /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil +
+ 2300  2205 19:45:33  1336  0.0 -        /usr/bin/picolisp /usr/lib/picolisp/lib.l /usr/bin/pil +
+-> T
+
+: (kids)
+-> (2300 2266)
+</code></pre>
+
 <dt><a name="kill"><code>(kill 'pid ['cnt]) -> flg</code></a>
 <dd>Sends a signal with the signal number <code>cnt</code> (or SIGTERM if
 <code>cnt</code> is not given) to the process with the ID <code>pid</code>.

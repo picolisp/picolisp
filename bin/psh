@@ -1,13 +1,15 @@
 #!bin/picolisp lib.l
-# 06may11abu
+# 03feb14abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/misc.l" "@lib/http.l")
 
 (raw T)
-(let *Dbg NIL
-   (client "localhost" (format (opt))
-      (pack "!psh?" (pw) "&" (in '("tty") (line T)))
+(let (Arg (opt)  Port (format Arg)  *Dbg)
+   (client "localhost" (or Port 80)
+      (pack
+         (unless Port (pack Arg "/"))
+         "!psh?" (pw) "&" (in '("tty") (line T)) )
       (ctty (read))
       (line)
       (line) ) )

@@ -1,16 +1,20 @@
 #!bin/picolisp lib.l
-# 03dec13abu
-# Use: bin/replica <port> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
-#    : bin/ssl <host> 443 '<port>/!replica' <keyFile> <journal> <blob/app/> 60
+# 07feb14abu
+# Use: bin/replica <port|num> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
+#    : bin/ssl <host> 443 '<port|name>/!replica' <keyFile> <journal> <blob/app/> 60
 
 (load "@lib/misc.l" "@lib/http.l")
 
 (allow "!replica")
 
-(argv *Port *KeyFile *Journal *Pool *Blob . *Dbs)
+(argv *Arg1 *KeyFile *Journal *Pool *Blob . *Dbs)
+
+(unless (info *KeyFile)
+   (bye) )
 
 (setq
-   *Port (format *Port)
+   *Arg1 (format *Arg1)
+   *Port (or (format (sys "PORT")) *Arg1)
    *SSLKey (in *KeyFile (line T)) )
 
 (de replica ()
@@ -28,4 +32,6 @@
                      (out Blob (echo)) ) ) ) ) ) ) )
 
 (pool *Pool (mapcar format *Dbs) *Journal)
+
+(retire *Arg1)
 (server *Port)

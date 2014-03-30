@@ -1,4 +1,4 @@
-# 28aug13abu
+# 25mar14abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -185,6 +185,7 @@
    initFun NIL       "raw"       doRaw
    initFun NIL       "alarm"     doAlarm
    initFun NIL       "sigio"     doSigio
+   initFun NIL       "kids"      doKids
    initFun NIL       "protect"   doProtect
    initFun NIL       "heap"      doHeap
    initFun NIL       "stack"     doStack
@@ -234,6 +235,7 @@
    initFun NIL       "seek"      doSeek
    initFun NIL       "find"      doFind
    initFun NIL       "pick"      doPick
+   initFun NIL       "fully"     doFully
    initFun NIL       "cnt"       doCnt
    initFun NIL       "sum"       doSum
    initFun NIL       "maxi"      doMaxi

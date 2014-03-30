@@ -1,8 +1,14 @@
-# 10feb11abu
+# 27feb14abu
 # (c) Software Lab. Alexander Burger
 
 # "*Glyph" "*PgX" "*PgY"
 # "*DX" "*DY" "*Pos" "*Fonts" "*Size" "*Font" "*Pag" "*Lim" "*FF" "*UL"
+
+(de *A4-DX . 595)
+(de *A4-DY . 842)
+
+(de *A5-DX . 420)
+(de *A5-DY . 595)
 
 (once
    (balance '"*Glyph"
@@ -21,10 +27,9 @@
    (val (car (idx '"*Glyph" C))) )
 
 (de pdf (Nm . Prg)
-   (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
+   (let Ps (tmp Nm ".ps")
       (out Ps (run Prg 1))
-      (_pdf)
-      Pdf ) )
+      (ps2pdf Ps (tmp Nm ".pdf")) ) )
 
 (de psOut (How Nm . Prg)
    (ifn Nm
@@ -32,20 +37,21 @@
       (let (Ps (tmp Nm ".ps")  Pdf (tmp Nm ".pdf"))
          (out Ps (run Prg 1))
          (cond
-            ((not How) (_pdf) (url Pdf "PDF"))
-            ((=0 How) (_pdf) (url Pdf))
-            ((=T How) (_pdf) (httpEcho Pdf "application/pdf" 1))
-            ((fun? How) (How Ps) (_pdf))
-            (T (call 'lpr (pack "-P" How) Ps) (_pdf)) )
+            ((not How) (url (ps2pdf Ps Pdf) "PDF"))
+            ((=0 How) (url (ps2pdf Ps Pdf)))
+            ((=T How) (httpEcho (ps2pdf Ps Pdf) "application/pdf" 1))
+            ((fun? How) (How Ps) (ps2pdf Ps Pdf))
+            (T (call "lpr" (pack "-P" How) Ps) (ps2pdf Ps Pdf)) )
          Pdf ) ) )
 
-(de _pdf ()
+(de ps2pdf (Ps Pdf)
    (if (= *OS "Darwin")
-      (call 'pstopdf Ps)
-      (call 'ps2pdf
+      (call "pstopdf" Ps)
+      (call "ps2pdf"
          (pack "-dDEVICEWIDTHPOINTS=" "*PgX")
          (pack "-dDEVICEHEIGHTPOINTS=" "*PgY")
-         Ps Pdf ) ) )
+         Ps Pdf ) )
+   Pdf )
 
 (de psHead (DX DY Ttl)
    (prinl "%!PS-Adobe-2.0")
@@ -60,16 +66,16 @@
    (setq "*Size" 12) )
 
 (de a4 (Ttl)
-   (psHead 595 842 Ttl) )
+   (psHead *A4-DX *A4-DY Ttl) )
 
 (de a4L (Ttl)
-   (psHead 842 595 Ttl) )
+   (psHead *A4-DY *A4-DX Ttl) )
 
 (de a5 (Ttl)
-   (psHead 420 595 Ttl) )
+   (psHead *A5-DX *A5-DY Ttl) )
 
 (de a5L (Ttl)
-   (psHead 595 420 Ttl) )
+   (psHead *A5-DY *A5-DX Ttl) )
 
 (de _font ()
    (prinl "/" "*Font" " findfont  " "*Size" " scalefont  setfont") )
@@ -129,7 +135,12 @@
    (prinl (if F "fill" "stroke")) )
 
 (de rect (X1 Y1 X2 Y2 F)
-   (poly F X1 Y1  X2 Y1  X2 Y2  X1 Y2  X1 Y1) )
+   (poly F
+      (pack X1 " currentlinewidth 2 div sub") Y1
+      X2 Y1
+      X2 Y2
+      X1 Y2
+      X1 Y1 ) )
 
 (de arc (X Y R F A B)
    (prinl
@@ -184,8 +195,7 @@
    (fmtPs "L")
    (ifn "H"
       (prin " 0")
-      (prin " dup glyphArrayWidth " "*DX" " exch sub")
-      (and (=0 "H") (prin " 2 div")) )
+      (prin " dup glyphArrayWidth " "*DX" " exch sub" (and (=0 "H") " 2 div")) )
    (prin
       " "
       (-
@@ -225,6 +235,48 @@
    (when "*UL"
       (prinl "currentpoint " "*UL" " sub")
       (prinl "gsave  newpath 4 -2 roll moveto lineto stroke grestore") ) )
+
+(de psAlign ("Lst" "H" "V")
+   ("?ff")
+   (prinl 0)
+   (when "H"
+      (for X "Lst"
+         (cond
+            ((atom X)
+               (fmtPs (chop X))
+               (prinl " glyphArrayWidth add") )
+            ((== 'F (car X))
+               (ifn (cdr X)
+                  (prinl "exch setfont")
+                  (prinl "currentfont exch")
+                  (font @) ) ) ) )
+      (prinl "*DX" " exch sub" (and (=0 "H") " 2 div")) )
+   (prin
+      (-
+         "*PgY"
+         (cond
+            ((not "V")
+               (inc '"*Pos" "*Size") )
+            ((=0 "V")
+               (setq "*Pos" (+ (/ "*Size" 4) (/ "*DY" 2))) )
+            (T (setq "*Pos" "*DY")) ) ) )
+   (prinl " moveto")
+   (for X "Lst"
+      (if (atom X)
+         (ps+ X)
+         (casq (pop 'X)
+            (F
+               (ifn X
+                  (prinl "setfont")
+                  (prinl "currentfont")
+                  (font X) ) )
+            (C
+               (ifn X
+                  (prinl "setrgbcolor")
+                  (prinl "currentrgbcolor")
+                  (color (car X) (cadr X) (caddr X)) ) )
+            (U (setq "*UL" X))
+            (H (hline (car X) (cadr X) (caddr X))) ) ) ) )
 
 (de pos (N)
    (if N (+ N "*Pos") "*Pos") )

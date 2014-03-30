@@ -134,6 +134,18 @@ href="refB.html#bytes">bytes</a></code>.
 -> T
 </code></pre>
 
+<dt><a name="less"><code>(less 'any) -> any</code></a>
+<dd>(Debug mode only) Returns a reduced form of <code>any</code>, where for each
+list and its sub-lists only the first two elements, possibly followed by
+<code>..</code>, are retained.
+
+<pre><code>
+: (less '(a b c d))
+-> (a b ..)
+: (less '((a b c) ((d e f) g h) i j))
+-> ((a b ..) ((d e ..) g ..) ..)
+</code></pre>
+
 <dt><a name="let"><code>(let sym 'any . prg) -> any</code></a>
 <dt><code>(let (sym 'any ..) . prg) -> any</code>
 <dd>Defines local variables. The value of the symbol <code>sym</code> - or the

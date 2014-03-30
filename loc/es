@@ -37,6 +37,10 @@
 "Delete" "Borrar"
 "Delete @1?" "¿Borrar @1?"
 "Data not found" "No se encontraron datos"
+"Undo" "Deshacer"
+"Undo: '@1'" "Deshacer: '@1'"
+"Redo" "Rehacer"
+"Redo: '@1'" "Rehacer: '@1'"
 
 # General
 "login" "Ingresar al Sistema"

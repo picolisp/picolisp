@@ -1,4 +1,4 @@
-# 05nov13abu
+# 20feb14abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
@@ -24,14 +24,17 @@
       (csStroke)
       (csFill)
       (csClip)
+      (csDef Key DX DY Lst)
+      (csDraw Key X Y)
       (csDrawDots DX DY Lst)
-      (csDrawImage Img DX DY)
+      (csDrawImage Img X Y Lst DX DY)
       (csTranslate X Y)
       (csRotate A)
       (csScale X Y)
       (csSave)
       (csRestore)
       ### Variables ###
+      (csCursor Lst)
       (csFillStyle V)
       (csStrokeStyle V)
       (csGlobalAlpha V)
@@ -53,13 +56,21 @@
       "<canvas id=\"" Id
       "\" width=\"" DX
       "\" height=\"" DY
-      "\" onclick=\"drawCanvas(this.id, -128, event.layerX-this.offsetLeft, event.layerY-this.offsetTop)\"" )
+      "\" onmousedown=\"csMouseDn(this, event)"
+      "\" onmousemove=\"csMouseMv(this, event)"
+      "\" onmouseout=\"csMouseOut(this)"
+      "\" onmouseup=\"csMouseUp(this)\"" )
    (dfltCss "canvas")
    (prinl ">" Alt "</canvas>" ) )
 
-(de jsDraw (Id Dly X Y)
+# Draw   (drawCanvas Id Dly)
+# Click  (drawCanvas Id Dly 1 X Y)
+# Double (drawCanvas Id Dly 2 X Y)
+# Start  (drawCanvas Id Dly 0 X Y X2 Y2)
+# Move   (drawCanvas Id Dly -1 X Y X2 Y2)
+(de jsDraw (Id Dly F X Y X2 Y2)
    (http1 "application/octet-stream" 0)
-   (let Lst (drawCanvas Id Dly X Y)
+   (let Lst (drawCanvas Id Dly F X Y X2 Y2)
       (prinl "Content-Length: " (bytes Lst) "^M^J^M")
       (pr Lst) ) )
 

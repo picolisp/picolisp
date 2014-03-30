@@ -190,12 +190,14 @@ Done!
 
 <dt><a name="find"><code>(find 'fun 'lst ..) -> any</code></a>
 <dd>Applies <code>fun</code> to successive elements of <code>lst</code> until
-non-<code>NIL</code> is returned. Returns that element, or <code>NIL</code> if
-<code>fun</code> did not return non-<code>NIL</code> for any element of
-<code>lst</code>. When additional <code>lst</code> arguments are given, their
-elements are also passed to <code>fun</code>. See also <code><a
-href="refS.html#seek">seek</a></code>, <code><a
-href="refP.html#pick">pick</a></code> and <code><a
+non-<code>NIL</code> is returned. Returns that element (and stores the
+non-<code>NIL</code> value in the global variable <code><a
+href="ref_.html#@@">@@</a></code>), or <code>NIL</code> if <code>fun</code> did
+not return non-<code>NIL</code> for any element of <code>lst</code>. When
+additional <code>lst</code> arguments are given, their elements are also passed
+to <code>fun</code>. See also <code><a href="refS.html#seek">seek</a></code>,
+<code><a href="refP.html#pick">pick</a></code>, <code><a
+href="refF.html#fully">fully</a></code> and <code><a
 href="refF.html#filter">filter</a></code>.
 
 <pre><code>
@@ -420,7 +422,8 @@ href="refR.html#range">range</a></code>.
 child's process ID <code>pid</code> in the parent. In the child, the
 <code>VAL</code> of the global variable <code><a
 href="refF.html#*Fork">*Fork</a></code> (should be a <code>prg</code>) is
-executed. See also <code><a href="refP.html#pipe">pipe</a></code> and <code><a
+executed. See also <code><a href="refK.html#kids">kids</a></code>, <code><a
+href="refP.html#pipe">pipe</a></code> and <code><a
 href="refT.html#tell">tell</a></code>.
 
 <pre><code>
@@ -529,7 +532,8 @@ test val='abc'
 <dt><a name="full"><code>(full 'any) -> bool</code></a>
 <dd>Returns <code>NIL</code> if <code>any</code> is a non-empty list with at
 least one <code>NIL</code> element, otherwise <code>T</code>. <code>(full
-X)</code> is equivalent to <code>(not (memq NIL X))</code>.
+X)</code> is equivalent to <code>(not (memq NIL X))</code>. See also <code><a
+href="refF.html#fully">fully</a></code>.
 
 <pre><code>
 : (full (1 2 3))
@@ -538,6 +542,22 @@ X)</code> is equivalent to <code>(not (memq NIL X))</code>.
 -> NIL
 : (full 123)
 -> T
+</code></pre>
+
+<dt><a name="fully"><code>(fully 'fun 'lst ..) -> flg</code></a>
+<dd>Applies <code>fun</code> to successive elements of <code>lst</code>, and
+returns <code>NIL</code> immediately if one of the results is <code>NIL</code>.
+Otherwise, <code>T</code> is returned. When additional <code>lst</code>
+arguments are given, their elements are also passed to <code>fun</code>.
+<code>(fully foo Lst)</code> is equivalent to <code>(not (find '((X) (not (foo
+X))) Lst))</code>. See also <code><a href="refF.html#find">find</a></code> and
+<code><a href="refF.html#full">full</a></code>.
+
+<pre><code>
+: (fully gt0 (1 2 3))
+-> T
+: (fully gt0 (1 -2 3))
+-> NIL
 </code></pre>
 
 <dt><a name="fun?"><code>(fun? 'any) -> any</code></a>

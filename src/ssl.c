@@ -1,4 +1,4 @@
-/* 29oct13abu
+/* 28jan14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,6 +24,8 @@ typedef enum {NO,YES} bool;
 
 static char *File, *Dir, *Data;
 static off_t Size;
+
+static char Ciphers[] = "ECDHE-RSA-RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH";
 
 static char Get[] =
    "GET /%s HTTP/1.0\r\n"
@@ -137,6 +139,7 @@ int main(int ac, char *av[]) {
       ERR_print_errors_fp(stderr);
       giveup("SSL init");
    }
+   SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
 
    if (ac <= 6) {

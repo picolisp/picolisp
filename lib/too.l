@@ -1,9 +1,9 @@
-# 14dec13abu
+# 17mar14abu
 # (c) Software Lab. Alexander Burger
 
 ### Local Backup ###
 (de snapshot (Dst . @)
-   (for (L (flip (sort (mapcar format (dir Dst))))  L)
+   (for (L (flip (sort (extract format (dir Dst))))  L)
       (let N (pop 'L)
          (call 'mv (pack Dst '/ N) (pack Dst '/ (inc N)))
          (when (> (car L) (*/ N 9 10))
@@ -156,105 +156,24 @@
    (and (dangling) (println 'dangling @))  # Show dangling index references
    T )
 
+# Check Index References
 (de dangling ()
    (make
       (dbMap
          '((This)
             (and
+               (isa '+Entity This)
                (not (: T))
                (dangle This)
                (link @) ) ) ) ) )
 
-# Check Index References
 (de dangle (Obj)
    (and
       (make
          (for X (getl Obj)
             (let V (or (atom X) (pop 'X))
-               (with (meta Obj X)
-                  (cond
-                     ((isa '+Joint This)
-                        (if (isa '+List This)
-                           (when
-                              (find
-                                 '((Y)
-                                    (if (atom (setq Y (get Y (: slot))))
-                                       (n== Obj Y)
-                                       (not (memq Obj Y)) ) )
-                                 V )
-                              (link X) )
-                           (let Y (get V (: slot))
-                              (if (atom Y)
-                                 (unless (== Obj Y) (link X))
-                                 (unless (memq Obj Y) (link X)) ) ) ) )
-                     ((isa '+Key This)
-                        (and
-                           (<> Obj
-                              (fetch
-                                 (tree X (: cls) (get Obj (: hook)))
-                                 V ) )
-                           (link X) ) )
-                     ((isa '+Ref This)
-                        (let
-                           (Tree (tree X (: cls) (get Obj (: hook)))
-                              Aux (conc (mapcar '((S) (get Obj S)) (: aux)) Obj) )
-                           (cond
-                              ((isa '+UB This)
-                                 (unless (= Obj (fetch Tree (ubZval (cons V Aux) Obj)))
-                                    (link X) ) )
-                              ((isa '+List This)
-                                 (when
-                                    (find
-                                       '((Y)
-                                          (and
-                                             (or
-                                                (not (isa '+Fold This))
-                                                (setq Y (fold Y)) )
-                                             (<> Obj (fetch Tree (cons Y Aux))) ) )
-                                       V )
-                                    (link X) ) )
-                              (T
-                                 (and
-                                    (or
-                                       (not (isa '+Fold This))
-                                       (setq V (fold V)) )
-                                    (<> Obj (fetch Tree (cons V Aux)))
-                                    (link X) ) ) ) ) )
-                     (T
-                        (for (N . B) (: bag)
-                           (cond
-                              ((isa '+Key B)
-                                 (with B
-                                    (when
-                                       (find
-                                          '((L)
-                                             (let? Val (get L N)
-                                                (<> Obj
-                                                   (fetch
-                                                      (tree (: var) (: cls)
-                                                         (get
-                                                            (if (sym? (: hook)) Obj L)
-                                                            (: hook) ) )
-                                                      Val ) ) ) )
-                                             V )
-                                          (link X) ) ) )
-                              ((isa '+Ref B)
-                                 (with B
-                                    (when
-                                       (find
-                                          '((L)
-                                             (let? Val (get L N)
-                                                (when (isa '+Fold This)
-                                                   (setq Val (fold Val)) )
-                                                (<> Obj
-                                                   (fetch
-                                                      (tree (: var) (: cls)
-                                                         (get
-                                                            (if (sym? (: hook)) Obj L)
-                                                            (: hook) ) )
-                                                      (cons Val Obj) ) ) ) )
-                                             V )
-                                          (link X) ) ) ) ) ) ) ) ) ) ) )
+               (unless (rel?> Obj X V)
+                  (link X) ) ) ) )
       (cons Obj @) ) )
 
 ### Rebuild tree ###
@@ -307,9 +226,15 @@
                (pair Rel)
                (or
                   (isa '+index (car Rel))
-                  (find '((B) (isa '+index B)) (; Rel 1 bag)) )
-               (unless (; Rel 1 dbf)
-                  (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) ) )
+                  (isa '+Swap (car Rel))
+                  (find
+                     '((B)
+                        (or
+                           (isa '+index B)
+                           (isa '+Swap B) ) )
+                     (; Rel 1 bag) ) )
+               (not (; @ dbf))
+               (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) )
 
 (de dbfMigrate (Pool Dbs)
    (let
@@ -403,7 +328,18 @@
             (commit) ) )
       '((Base Root Var Cls Hook)
          (if Var
-            (dbfRelocTree Base Root (tree Var Cls Hook) (get Cls Var 'dbf))
+            (dbfRelocTree Base Root
+               (tree Var Cls Hook)
+               (or
+                  (get Cls Var 'dbf)
+                  (and
+                     (find
+                        '((B)
+                           (or
+                              (isa '+index B)
+                              (isa '+Swap B) ) )
+                        (get Cls Var 'bag) )
+                     (get @ 'dbf) ) ) )
             (dbfRelocTree Base Root Base) ) ) )
    (dbgc) )
 
@@ -468,13 +404,13 @@
                            (out (tmp B)
                               (in (blob Obj X) (echo)) ) )
                         (T (print X T)) ) ) )
-                  Obj )
+               Obj )
             (prinl " )")
             Obj ) ) ) )
 
 (de _dmp (Obj Flg)
-   (cond
-      ((pair Obj)
+   (nond
+      ((atom Obj)
          (prin "(")
          (_dmp (pop 'Obj) T)
          (while (pair Obj)
@@ -485,6 +421,10 @@
             (_dmp Obj T) )
          (prin ")") )
       ((ext? Obj)
+         (print Obj) )
+      ((type Obj)
+         (print (val Obj)) )
+      (NIL
          (when Flg
             (prin "`(obj ") )
          (prin "(")
@@ -511,8 +451,7 @@
                Obj ) )
          (when Flg
             (prin ")") )
-         (prin ")") )
-      (T (print Obj)) ) )
+         (prin ")") ) ) )
 
 ### Debug ###
 `*Dbg

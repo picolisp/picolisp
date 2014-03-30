@@ -1,4 +1,4 @@
-# 12nov12abu
+# 10mar14abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -35,7 +35,7 @@
                                  (prin "  # " (datStr "X")) ) )
                            (prinl) ) )
                      (prinl)
-                     (println '(********))
+                     (println '(=======))
                      (prinl) ) ) ) )
          (call 'vim
             "+set isk=33-34,36-38,42-90,92,94-95,97-125"
@@ -47,7 +47,7 @@
          (in "*F"
             (while (and (setq "*X" (read)) (atom "*X"))
                (def "*X" (read))
-               (until (= '(********) (setq "*K" (read)))
+               (until (= '(=======) (setq "*K" (read)))
                   (def "*X" "*K" (read)) ) ) )
          (====)
          (NIL "*X" (throw))

@@ -1,4 +1,4 @@
-# 23jun13abu
+# 10mar14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -430,6 +430,8 @@
          movn (C) (OrgTermio) TERMIOS  # Copy original termio structure
          ld A 0  # Clear c_iflag
          st4 (C C_IFLAG)
+         ld A (+ OPOST ONLCR)  # Set ONLCR in c_oflag
+         st4 (C C_OFLAG)
          ld A ISIG  # ISIG in c_lflag
          st4 (C C_LFLAG)
          set (C (+ C_CC VMIN)) 1
@@ -506,6 +508,30 @@
    shl E 4  # Return fd
    or E CNT
    pop Y
+   pop X
+   ret
+
+# (kids) -> lst
+(code 'doKids 2)
+   push X
+   ld E Nil  # Result
+   ld X (Child)  # Iterate children
+   ld C (Children)  # Count
+   do
+      sub C VI  # More?
+   while ge  # Yes
+      null (X)  # 'pid'?
+      if nz  # Yes
+         call consE_A  # Cons result
+         ld (A CDR) E
+         ld E (X)  # with short number
+         shl E 4
+         or E CNT
+         ld (A) E
+         ld E A
+      end
+      add X VI  # Increment by sizeof(child)
+   loop
    pop X
    ret
 
@@ -617,13 +643,8 @@
    if nz  # No
       push Y
       ld Y (EnvBind)  # Bindings
-      null Y  # Any?
-      if nz  # Yes
-         null (Break)  # In breakpoint?
-         ldnz Y ((Y) I)  # Yes: Skip frame
-      end
       do
-         null Y  # Bindings?
+         null Y  # Any?
       while nz  # Yes
          ld C (Y)  # End of bindings
          null (Y -I)  # Env swap zero?
@@ -713,11 +734,6 @@
    eval
    ld Z E  # Keep 'flg' in Z
    ld X (EnvBind)  # Bindings
-   null X  # Any?
-   if nz  # Yes
-      null (Break)  # In breakpoint?
-      ldnz X ((X) I)  # Yes: Skip frame
-   end
    ld E Nil  # Result
    do
       null X  # Bindings?
@@ -788,13 +804,8 @@
    cmp X Nil  # NIL?
    if eq  # Yes
       ld X (EnvBind)  # Bindings
-      null X  # Any?
-      if nz  # Yes
-         null (Break)  # In breakpoint?
-         ldnz X ((X) I)  # Yes: Skip frame
-      end
       do
-         null X  # Bindings?
+         null X  # Any?
       while nz  # Yes
          ld A (X)  # End of bindings in A
          cmp (A -II) At  # Lambda frame?
@@ -816,11 +827,6 @@
    push Z
    ld E (E CDR)  # Last arg
    ld Y (EnvBind)  # Bindings
-   null Y  # Any?
-   if nz  # Yes
-      null (Break)  # In breakpoint?
-      ldnz Y ((Y) I)  # Yes: Skip frame
-   end
    ld Z X  # Value pointer
    do
       null Y  # Bindings?

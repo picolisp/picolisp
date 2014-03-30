@@ -1,9 +1,15 @@
-# 16nov12abu
+# 13mar14abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
 (de *Err
-   (and trail (println (trail T)))
+   ~(as trail
+      (for (L (trail T)  L)
+         (if (pair (car L))
+            (println (pop 'L))
+            (space 3)
+            (println (pop 'L) (pop 'L)) ) )
+      (println '=======) )
    (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
    (show This)
    (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)
@@ -28,7 +34,7 @@
 
 # Extend 'app' function
 (conc (last app)
-   '((msg *Pid " + " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)) )
+   '((msg *Pid " + " (stamp) " [" *Adr " " (host *Adr) (and *Cipher (pack " / " @)) "] " *Agent)) )
 
 # Bye message
 (push1 '*Bye '(and *SesId (msg *Pid " - " (stamp))))

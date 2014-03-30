@@ -1,4 +1,4 @@
-# 06may13abu
+# 19feb14abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -25,6 +25,13 @@
    (test '(a b c) "SigVal")
    (close "SigSock") )
 
+
+### kids ###
+(test
+   (make
+      (do 7
+         (link (or (fork) (wait 2000) (bye))) ) )
+   (flip (kids)) )
 
 ### protect ###
 (test NIL (pipe (prog (kill *Pid) (pr 7)) (rd)))

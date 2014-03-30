@@ -1,4 +1,4 @@
-# 05dec13abu
+# 26mar14abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -319,13 +319,12 @@
          (or
             (not R)
             (let X (apply get (-> @L))
-               (not
-                  (find
-                     '((K V1 V2)
-                        (not (>= V2 (get X K) V1)) )
-                     (-> @A)
-                     (car R)
-                     (cdr R) ) ) ) ) ) ) )
+               (fully
+                  '((K V1 V2)
+                     (>= V2 (get X K) V1) )
+                  (-> @A)
+                  (car R)
+                  (cdr R) ) ) ) ) ) )
 
 (be range (@R . @L)
    (^ @

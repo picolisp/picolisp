@@ -1,4 +1,4 @@
-/* 18nov13abu
+/* 17feb14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -127,8 +127,12 @@ int main(void) {
    comment("termios");
    equ("TERMIOS", sizeof(term));
    equ("C_IFLAG", (char*)&term.c_iflag - (char*)&term);
+   equ("C_OFLAG", (char*)&term.c_oflag - (char*)&term);
+   equ("C_CFLAG", (char*)&term.c_cflag - (char*)&term);
    equ("C_LFLAG", (char*)&term.c_lflag - (char*)&term);
    equ("C_CC", (char*)&term.c_cc - (char*)&term);
+   equ("OPOST", OPOST);
+   equ("ONLCR", ONLCR);
    equ("ISIG", ISIG);
    equ("VMIN", VMIN);
    equ("VTIME", VTIME);

@@ -47,13 +47,18 @@
 "logout" "logg ut"
 "' logged in" "' er innlogget"
 "Name" "Navn"
+"Login Name" "Innloggingsnavn"
+"Full Name" "Fullt navn"
 "Password" "Passord"
 "Permission denied" "Ingen adgangsrett"
 "Permissions" "Adgangsrettigheter"
 "Role" "Rolle"
+"Role Administration" "Rolle-administrasjon"
 "Roles" "Roller"
 "User" "Bruker"
+"User Administration" "Bruker-administrasjon"
 "Users" "Brukere"
+"Phone" "Telefon"
 
 # Tooltips
 "Open submenu" "Åpne undermeny"

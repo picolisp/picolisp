@@ -47,13 +47,18 @@
 "logout" "Выйти"
 "' logged in" "' вошел"
 "Name" "Имя"
+"Login Name" "Имя регистрации"
+"Full Name" "Полное имя"
 "Password" "Пароль"
 "Permission denied" "Доступ запрещен"
 "Permissions" "Разрешения"
 "Role" "Роль"
+"Role Administration" "Управление ролями"
 "Roles" "Роли"
 "User" "Пользователь"
+"User Administration" "Управление пользователями"
 "Users" "Пользователи"
+"Phone" "Телефон"
 
 # Tooltips
 "Open submenu" "Открыть подменю"

@@ -1,4 +1,4 @@
-# 06feb14abu
+# 09may14abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -37,6 +37,7 @@
    ("Deutsch (CH)" "CH" . "ch")
    ("Norsk" "NO" . "no")
    ("Русский" "RU" . "ru")
+   ("Svenska" "SE" . "se")
    ("日本語" "JP" . "jp") )
 
 # Entry point

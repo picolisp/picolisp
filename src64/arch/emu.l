@@ -1,4 +1,4 @@
-# 23jun13abu
+# 27jun14abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -621,7 +621,7 @@
             ((baseCode Adr)
                (genCode (Adr Opc Test) (list Opc Adr) ((baseCode Adr) Test)
                   "if (@2)"
-                  "   PC = Code + @1;") )
+                  "   PC = Code + @1;" ) )
             (*FPic
                (genCode (Adr Opc Test) (list Opc Adr) ((absCode Adr) Test)
                   "if (@2)"
@@ -629,7 +629,7 @@
             (T
                (genCode (Adr Opc Test) (list Opc Adr) ((absCode Adr) Test)
                   "if (@2)"
-                  "   PC = Code + @1;") ) ) )
+                  "   PC = Code + @1;" ) ) ) )
       ((=T A)  # Indexed: Ignore SUBR
          (genCode (Adr Opc Test) (list Opc Adr) (Adr Test)
             "if (@2)"
@@ -1057,7 +1057,7 @@
          "   E = *(ptr)@2.p;"
          "   if (!(E.b[0] & 14)) {"
          "      S.p -= 8,  *(uint16_t**)S.p = PC;"
-         "      S.p -= 8,  *(uint16_t**)S.p = Code + 1;"  # <exec>
+         "      S.p -= 8,  *(uint16_t**)S.p = Code + @3;"  # <execN>
          "      PC = Code + @1;"
          "         break;"
          "   }"
@@ -1351,7 +1351,6 @@
                      ((pre? ".+" X)
                         (let N (+ (cadr D) (format (cddr (chop X))))
                            (for ((J . L) (cddr D)  (> I J)  (cdr L))
-                              (NIL (> I J))  # Temporary (03oct12abu)
                               (inc 'N (if (num? (car L)) 1 8)) )
                            (prin
                               " {.p = (uint8_t*)"

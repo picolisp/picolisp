@@ -1,4 +1,4 @@
-# 19mar14abu
+# 25jun14abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -27,7 +27,8 @@
    (let "App"
       (if *PRG
          (get "*Lst" (- "*Cnt" *Get) *Form)
-         (prog1 (setq *Top (new NIL NIL  'able T  'evt 0))
+         (prog1
+            (setq *Top (new NIL NIL 'able T 'evt 0))
             (queue (nth "*Lst" (- "*Cnt" *Get)) *Top) ) )
       (let "Lst" (get "*Lst" (- "*Cnt" *Get) 1)
          (for ("F" . "L") "Lst"
@@ -997,11 +998,12 @@
 
 
 ### Form field classes ###
-(de showFld "Prg"
+(de showFld Prg
    (when (: lbl)
       (ht:Prin (eval @))
       (<nbsp>) )
-   (style (cons 'id (pack "i" *Form "-" (: id))) "Prg") )
+   (let *Style (style (cons 'id (pack "i" *Form "-" (: id))) *Style)
+      (run Prg 1 '(*Style)) ) )
 
 
 (class +gui)
@@ -1228,11 +1230,11 @@
 
 # Delete row
 (class +DelRowButton +Tiny +JS +Able +Tip +Button)
-# del exe
+# exe del
 
-(dm T (Txt Exe)
-   (=: del Txt)
+(dm T (Exe Txt)
    (=: exe Exe)
+   (=: del Txt)
    (super '(nth (: chart 1 data) (row)) ,"Delete row" "x"
       '(if (or (: home del) (not (curr)))
          (_delRow (: exe))
@@ -1249,18 +1251,21 @@
 
 # Move row up
 (class +BubbleButton +Tiny +JS +Able +Tip +Button)
+# exe
 
-(dm T ()
+(dm T (Exe)
+   (=: exe Exe)
    (super
       '(> (: chart 2) 1)
       ,"Shift row up"
       "\^"
       '(let L (val> (: chart 1))
+         (eval (: exe))
          (set> (: chart 1)
             (conc
                (cut (row -2) 'L)
-               (cons (cadr L))
-               (cons (car L))
+               (and (cadr L) (cons @))
+               (and (car L) (cons @))
                (cddr L) ) ) ) )
    (=: chg T) )
 
@@ -1733,7 +1738,8 @@
                      ((: get)
                         (mapcar 'val> (car G))
                         (car D)
-                        (car G) ) ) )
+                        (car G)
+                        I ) ) )
                (mapc 'set>
                   (car G)
                   ((: put) (car D) I)
@@ -1827,7 +1833,8 @@
 
 ### DB GUI ###
 (de newUrl @
-   (prog1 (pass new!)
+   (prog1
+      (pass new!)
       (lock (setq *Lock @))
       (apply url (url> @ 1)) ) )
 
@@ -1881,11 +1888,16 @@
                         Val ) ) ) )
             (cancelButton) ) ) ) )
 
-(de choTtl (Ttl Var Cls Hook)
-   (with (or (get Cls Var) (meta Cls Var))
-      (if (or (isa '+Idx This) (isa '+IdxFold This))
-         Ttl
-         (pack (count (tree (: var) (: cls) Hook)) " " Ttl) ) ) )
+(de choTtl (Ttl X . @)
+   (pack
+      (if (next)
+         (with (or (get @ X) (meta @ X))
+            (if (or (isa '+Idx This) (isa '+IdxFold This))
+               (get *DB (: cls) 0)
+               (count (tree (: var) (: cls) (next))) ) )
+         (get *DB X 0) )
+      " "
+      Ttl ) )
 
 (de cho ()
    (if (: diaform) 16 8) )
@@ -2374,6 +2386,12 @@
 
 ### Debug ###
 `*Dbg
+
+(allow "!console")
+(de console @
+   (msg (cons 'console (rest)))
+   (respond) )
+
 (noLint 'gui)
 (noLint 'choDlg 'gui)
 (noLint 'jsForm 'action)

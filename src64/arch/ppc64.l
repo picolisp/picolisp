@@ -1,4 +1,4 @@
-# 05jan13abu
+# 02jun14abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -294,21 +294,25 @@
             (prinst "mr" Tmp 25)
             Tmp ) )
       (T
-         (prog1 (or Tmp (tmpReg))
+         (prog1
+            (or Tmp (tmpReg))
             (memory Src S @ 0) ) ) ) )
 
 (de srcByteReg (Src S)  #> reg
    (cond
       ((not S)
-         (prog1 (tmpReg)
+         (prog1
+            (tmpReg)
             (prinst "extrdi" @ (abs Src) 8 56) ) )
       ((n0 S)
-         (prog1 (tmpReg)
+         (prog1
+            (tmpReg)
             (memory Src S @ "lbz") ) )
       ((= "0" Src) 20)
       ((= "1" Src) 21)
       (T
-         (prog1 (tmpReg)
+         (prog1
+            (tmpReg)
             (prinst "li" @
                (if (pre? "~" Src)
                   (x| `(hex "FF") (format (cdr (chop Src))))

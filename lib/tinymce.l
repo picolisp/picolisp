@@ -1,38 +1,36 @@
-# 20mar14abu
+# 07may14abu
 # (c) Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
 (allow "tinymce/" T)
 
 (de <tinymce> ()
-   (javascript "tinymce/tiny_mce.js" "
-      tinyMCE.init({
-         mode : 'textareas',
-         theme : 'advanced',
-         plugins : 'safari',
-         theme_advanced_buttons1 : 'forecolor,bold,italic,underline,strikethrough,hr,|,undo,redo,removeformat',
-         theme_advanced_buttons2 : '',
-         theme_advanced_buttons3 : '',
-         theme_advanced_toolbar_location : 'top',
-         theme_advanced_toolbar_align : 'left',
-         entity_encoding : 'raw',
-         language : '" (or *Lang "en") "',
-         setup : function(ed) {
-            ed.onInit.add(function(ed) {
+   (javascript "tinymce/tinymce.min.js" "
+      tinymce.init({
+         selector: 'textarea',
+         plugins: 'textcolor hr directionality paste',
+         toolbar: 'forecolor bold italic underline strikethrough | hr | removeformat',
+         menubar: false,
+         statusbar: false,
+         toolbar_items_size: 'small',
+         language: '" (or *Lang "en") "',
+         entity_encoding: 'raw',
+         setup: function(ed) {
+            ed.on('init', function(e) {
                var fld = ed.getElement();
                fld.pilSetValue = function(val) {
                   ed.setContent(val);
                }
                fld.pilDisable = function(flg) {
-                  ed.execCommand('contentReadOnly', false, flg);
-                  var ct = ed.controlManager.get('toolbar1').controls;
-                  for (var i in ct)
-                     ct[i].setDisabled(flg);
+                  ed.getBody().setAttribute('contenteditable', !flg);
                }
                fld.pilDisable(fld.disabled);
             } )
-         }
-      } )" ) )
+            ed.on('change', function(e) {
+               ed.getElement().value = ed.getContent();
+               fldChg(ed.getElement());
+            } )
+         } } )" ) )
 
 # Parse HTML text
 (de htmlText (Size Font Text)
@@ -129,16 +127,16 @@
 
 NIL ####### README #######
 
-Using the TinyMCE Javascript/HTML WYSIWYG editor in PicoLisp applications
+Using the TinyMCE 4.x Javascript/HTML WYSIWYG editor in PicoLisp applications
 
-1. Install the 'tinymce' package
+1. Get 'tinymce'
 
-   $ apt-get install tinymce
+   $ (cd /some/path; unzip tinymce_4.0.21.zip)
 
 2. In the application's runtime directory, create a link to the tinymce
    installation, e.g.:
 
-   $ ln -s /usr/share/tinymce/www tinymce
+   $ ln -s /some/path/tinymce/js/tinymce tinymce
 
 3. Load "@lib/tinymce.l" at startup
 

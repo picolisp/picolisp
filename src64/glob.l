@@ -1,4 +1,4 @@
-# 25mar14abu
+# 04jun14abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -146,7 +146,7 @@
    initSym DB        "*DB"       Db1
    initFun Meth      "meth"      doMeth
    initFun Quote     "quote"     doQuote
-   initSym TSym      "T"         TSym
+   initSym TSym      "T"         TSym  # Last protected symbol
 
    # System globals
    initSym ISym      "I"         Nil
@@ -162,7 +162,6 @@
    initSym At3       "@@@"       Nil
    initSym This      "This"      Nil
    initSym Prompt    "*Prompt"   Nil
-   initSym Dbg       "*Dbg"      Nil
    initSym Zap       "*Zap"      Nil
    initSym Ext       "*Ext"      Nil
    initSym Scl       "*Scl"      ZERO
@@ -180,6 +179,7 @@
    initSym Adr       "*Adr"      Nil
    initSym Fork      "*Fork"     Nil
    initSym Bye       "*Bye"      Nil
+   initSym Dbg       "*Dbg"      Nil  # Last un-'zap'pable symbol
 
    # System functions
    initFun NIL       "raw"       doRaw

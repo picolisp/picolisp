@@ -1,4 +1,4 @@
-# 17mar14abu
+# 06apr14abu
 # (c) Software Lab. Alexander Burger
 
 ### Local Backup ###
@@ -154,6 +154,7 @@
                NIL T T ) ) ) )
    (and *Dbs (dbfCheck))  # Check DB file assignments
    (and (dangling) (println 'dangling @))  # Show dangling index references
+   (and (badECnt) (println 'badECnt @))  # Show entity count mismatches
    T )
 
 # Check Index References
@@ -175,6 +176,38 @@
                (unless (rel?> Obj X V)
                   (link X) ) ) ) )
       (cons Obj @) ) )
+
+# Entity Counts
+(de badECnt ()
+   (let Cnt NIL
+      (for (F . @) *Dbs
+         (for (This (seq F) This (seq This))
+            (and
+               (isa '+Entity This)
+               (not (: T))
+               (for Cls (type This)
+                  (recur (Cls)
+                     (or
+                        (== '+Entity Cls)
+                        (for C (type Cls)
+                           (T (recurse C)
+                              (and (get *DB Cls) (accu 'Cnt Cls 1)) ) ) ) ) ) ) ) )
+      (filter
+         '((X)
+            (<> (cdr X) (get *DB (car X) 0)) )
+         Cnt ) ) )
+
+(de fixECnt ()
+   (for X (getl *DB)
+      (and (pair X) (set (car X) 0)) )
+   (commit)
+   (for (F . @) *Dbs
+      (for (This (seq F) This (seq This))
+         (and
+            (isa '+Entity This)
+            (not (: T))
+            (incECnt This) ) ) )
+   (commit) )
 
 ### Rebuild tree ###
 (de rebuild (X Var Cls Hook)

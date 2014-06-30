@@ -1,11 +1,11 @@
-# 18mar14abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
 (de menu (Ttl . Prg)
    (action
       (html 0 Ttl *Css NIL
-         (<ping> 2)
+         (<ping> 7)
          (<layout>
             ((180 0 'menu)
                (<div> @
@@ -23,8 +23,8 @@
                         (,"Inventory" (and (may Report) "app/inventory.l"))
                         (,"Sales" (and (may Report) "app/sales.l")) )
                      (T ,"System"
-                        (,"Role Administration" (and (may RoleAdmin) "app/role.l"))
-                        (,"User Administration" (and (may UserAdmin) "app/user.l")) ) ) )
+                        (,"Role Administration" (and (may RoleAdmin) "@lib/role.l"))
+                        (,"User Administration" (and (may UserAdmin) "@lib/user.l")) ) ) )
                ((NIL NIL 'main)
                   (<div> @ (run Prg 1)) ) ) ) ) ) )
 

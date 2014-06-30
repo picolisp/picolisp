@@ -1,4 +1,4 @@
-# 08jan13abu
+# 21may14abu
 # (c) Software Lab. Alexander Burger
 
 .SILENT:
@@ -134,13 +134,13 @@ emu.base.o: sysdefs emu.base.c
 	$(CC) -c -O -fpic -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 $*.c
 
 ### Translate ###
-$(ARCH)$(SYS).base$(FMT): arch/$(ARCH).l $(baseFiles) sys/$(ARCH)$(SYS).code.l
+$(ARCH)$(SYS).base$(FMT): arch/$(ARCH).l defs.l $(baseFiles) sys/$(ARCH)$(SYS).code.l
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) base "" $(lib)/map  $(baseFiles) sys/$(ARCH)$(SYS).code.l
 
-$(ARCH)$(SYS).ext$(FMT): arch/$(ARCH).l ext.l $(ARCH)$(SYS).base$(FMT)
+$(ARCH)$(SYS).ext$(FMT): arch/$(ARCH).l defs.l ext.l $(ARCH)$(SYS).base$(FMT)
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) ext T ""  ext.l
 
-$(ARCH)$(SYS).ht$(FMT): arch/$(ARCH).l ht.l $(ARCH)$(SYS).base$(FMT)
+$(ARCH)$(SYS).ht$(FMT): arch/$(ARCH).l defs.l ht.l $(ARCH)$(SYS).base$(FMT)
 	./mkAsm $(ARCH) "$(SYS)" $(FMT) $(OS) ht T ""  ht.l
 
 ### Clean up ###

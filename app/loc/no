@@ -20,10 +20,9 @@
 "Dear Sir or Madam," "Kjære frue/herre,"
 "Description" "Beskrivelse"
 
-"eMail" "e-post"
+"EMail" "e-post"
 
 "Fax" "Fax"
-"Full Name" "Fullt navn"
 
 "Greeting" "Hilsen"
 
@@ -35,12 +34,9 @@
 "Item" "Artikkel"
 "Items" "Artikler"
 
-"Login Name" "Innloggingsnavn"
-
 "Memo" "Merknad"
 "Mobile" "Mobil"
 
-"Name" "Navn"
 "Name 2" "Navn 2"
 "No customer" "Kunde mangler"
 "No customer name" "Kundenavn mangler"
@@ -57,7 +53,6 @@
 
 "Page @1" "Side @1"
 "PDF-Print" "PDF-utskrift"
-"Phone" "Telefon"
 "Picture" "Bilde"
 "Position without item" "Posisjon uten artikkel"
 "Position without price" "Posisjon uten pris"
@@ -67,7 +62,6 @@
 "Quantity" "Antall"
 
 "Report" "Rapport"
-"Role Administration" "Rolle-administrasjon"
 
 "Sales" "Salg"
 "Salutation" "Titulering"
@@ -81,6 +75,5 @@
 
 "Uninstall" "Av-installer"
 "Uninstall Picture?" "Av-installere bilde?"
-"User Administration" "Bruker-administrasjon"
 
 "Zip" "Postnr."

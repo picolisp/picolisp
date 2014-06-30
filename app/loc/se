@@ -1,0 +1,79 @@
+# 8may14mtsd
+# Mattias Sundblad, mattias.sun@gmail.com  
+
+"(@1 Positions)" "(@1 Positioner)"
+
+"Address" "Adress"
+
+"Can't print order" "Kan inte skriva ut beställning"
+"Change" "Ändra"
+"City" "Ort"
+"Contact" "Kontakt"
+"Continued on page @1" "Fortsätter på sidan @1"
+"Country" "Land"
+"Customer" "Kund"
+"Customer/Supplier" "Kund/Leverantör"
+"Customers/Suppliers" "Kunder/Leverantörer"
+
+"Data" "Data"
+"Date" "Datum"
+"Dear Sir or Madam," "Kära herr/ fru"
+"Description" "Beskrivning"
+
+"EMail" "E-post"
+
+"Fax" "Fax"
+
+"Greeting" "Hälsning "
+
+"Home" "Startsida"
+
+"Incomplete customer address" "Ofullständig adress till kund"
+"Install" "Installera"
+"Inventory" "Lagersaldo"
+"Item" "Artikel"
+"Items" "Artiklar"
+
+"Memo" "Notering"
+"Mobile" "Mobil"
+
+"Name 2" "Namn 2"
+"No customer" "Kund saknas"
+"No customer name" "Kundens namn saknas"
+"No customer number" "Kundnummer saknas"
+"No item description" "Artikelbeskrivning saknas"
+"No item number" "Artikelnummer saknas"
+"No order date" "Orderdatum saknas"
+"No order number" "Ordernummer saknas"
+"No positions" "Inga positioner"
+"Number" "Nummer"
+
+"Order" "Beställning"
+"Orders" "Beställningar"
+
+"Page @1" "Sida @1"
+"PDF-Print" "PDF-utskrift"
+"Picture" "Bild"
+"Position without item" "Position saknar artikel"
+"Position without price" "Position saknar pris"
+"Position without quantity" "Position saknar antal"
+"Price" "Pris"
+
+"Quantity" "Antal"
+
+"Report" "Rapporter"
+
+"Sales" "Beställningar"
+"Salutation" "Titel"
+"Salutations" "Titlar"
+"Sex" "Kön"
+"Street" "Gatuadress"
+"Supplier" "Leverantör"
+"System" "System"
+
+"Total" "Total"
+
+"Uninstall" "Ta bort"
+"Uninstall Picture?" "Ta bort bild?"
+
+"Zip" "Postnr."

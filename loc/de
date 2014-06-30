@@ -1,4 +1,4 @@
-# 16feb14abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -47,13 +47,18 @@
 "logout" "abmelden"
 "' logged in" "' ist angemeldet"
 "Name" "Name"
+"Login Name" "Login-Name"
+"Full Name" "Vollständiger Name"
 "Password" "Passwort"
 "Permission denied" "Keine Berechtigung"
 "Permissions" "Berechtigungen"
 "Role" "Rolle"
+"Role Administration" "Rollenverwaltung"
 "Roles" "Rollen"
 "User" "Benutzer"
+"User Administration" "Benutzerverwaltung"
 "Users" "Benutzer"
+"Phone" "Telefon"
 
 # Tooltips
 "Open submenu" "Untermenü öffnen"

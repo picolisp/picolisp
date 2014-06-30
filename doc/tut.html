@@ -366,53 +366,14 @@ and indented way.
 
 <pre><code>
 : (pp 'pretty)
-(de pretty (X N . @)
+(de pretty (X N)
    (setq N (abs (space (or N 0))))
-   (while (args)
-      (printsp (next)) )
-   (if (or (atom X) (>= 12 (size X)))
-      (print X)
-      (while (== 'quote (car X))
-         (prin "'")
-         (pop 'X) )
-      (let Z X
-         (prin "(")
-         (cond
-            ((and (pair (car X)) (> (size @) 12))
-               (pretty (pop 'X) (- -3 N)) )
-            ((memq (print (pop 'X)) *PP)
-               (cond
-                  ((memq (car Z) *PP1)
-                     (if (and (pair (car X)) (pair (cdar X)))
-                        (when (>= 12 (size (car X)))
-                           (space)
-                           (print (pop 'X)) )
-                        (space)
-                        (print (pop 'X))
-                        (when (or (atom (car X)) (>= 12 (size (car X))))
-                           (space)
-                           (print (pop 'X)) ) ) )
-                  ((memq (car Z) *PP2)
-                     (inc 'N 3)
-                     (loop
-                        (prinl)
-                        (pretty (cadr X) N (car X))
-                        (NIL (setq X (cddr X)) (space)) ) )
-                  ((or (atom (car X)) (>= 12 (size (car X))))
-                     (space)
-                     (print (pop 'X)) ) ) )
-            ((and (memq (car Z) *PP3) (>= 12 (size (head 2 X))))
-               (space)
-               (print (pop 'X) (pop 'X)) ) )
-         (when X
-            (loop
-               (T (== Z X) (prin " ."))
-               (T (atom X) (prin " . ") (print X))
-               (prinl)
-               (pretty (pop 'X) (+ 3 N))
-               (NIL X) )
-            (space) )
-         (prin ")") ) ) )
+   (while (and (pair X) (== 'quote (car X)))
+      (prin "'")
+      (pop 'X) )
+   (cond
+      ...
+      (T (prtty0 X N)) ) )
 -> pretty
 </code></pre>
 
@@ -510,7 +471,7 @@ the <code><a href="refR.html#+relation">+relation</a></code> class.
             (flush) )
          (T (line)) ) ) )
 
-(de pretty (X N . @)
+(de pretty (X N)
    ...
 </code></pre>
 

@@ -419,7 +419,8 @@ href="refD.html#db/3">db/3</a></code>.
                (when (or Sock (setq Sock (connect @Host 4040)))
                   (ext @Ext
                      (out Sock (pr (cons 'qsym Obj)))
-                     (prog1 (in Sock (rd))
+                     (prog1
+                        (in Sock (rd))
                         (unless @
                            (close Sock)
                            (off Sock) ) ) ) ) ) ) )

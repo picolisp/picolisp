@@ -1,4 +1,4 @@
-# 17oct13abu
+# 01may14abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -271,14 +271,16 @@
             end
             atom (A)  # Left branch?
             if nz  # No
-               or (Y CDR) 1  # Set mark bit again
+               or (Y CDR) 1  # Set mark bits again
                ld Y (A CDR)  # Use right branch
+               or (A CDR) 1
                jmp 40  # Already traversed
             end
             atom (A CDR)  # Right branch?
             if nz  # No
-               or (Y CDR) 1  # Set mark bit again
+               or (Y CDR) 1  # Set mark bits again
                ld Y (A)  # Use left branch
+               or (A CDR) 1
                jmp 20
             end
             ld A (A CDR)  # A on right branch
@@ -454,6 +456,8 @@
    ld Y (E CDR)  # Y on args
    ld E (Y)  # Eval first
    eval  # Eval
+   ld (At) Nil  # Clear '@'
+   ld (At2) Nil  # and '@@'
    cmp E Nil  # Nil?
    if eq  # Yes
       call gc  # Collect with default

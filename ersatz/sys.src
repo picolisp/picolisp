@@ -1,4 +1,4 @@
-// 12sep13abu
+// 25jun14abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -456,6 +456,7 @@ public class PicoLisp {
    final static void needVar(Any ex, Any x) {if (x instanceof Number) err(ex, x, "Variable expected");}
 
    final static void badFd(Any ex, Any x) {err(ex, x, "Bad FD");}
+   final static void makeError(Any ex) {err(ex, null, "Not making");}
    final static void closeErr(IOException e) {err(null, null, e.toString());}
 
    final static Any load(Any ex, char pr, Any x) {
@@ -830,7 +831,13 @@ public class PicoLisp {
    final static Any sort(Any ex, Any lst, Any foo) {
       Any x = lst, l = Nil, r = Nil, c = Nil;
       do {
-         int i = foo == Nil? lst.Car.compare(x.Car) : foo.apply(ex, false, new Any[] {x.Car, lst.Car}, 2) == Nil? -1 : 1;
+         int i;
+         if (foo == Nil)
+            i = lst.Car.compare(x.Car);
+         else if (lst.Car.equal(x.Car))
+            i = 0;
+         else
+            i = foo.apply(ex, false, new Any[] {x.Car, lst.Car}, 2) == Nil? -1 : 1;
          if (i > 0)
             l = new Cell(x.Car, l);
          else if (i < 0)

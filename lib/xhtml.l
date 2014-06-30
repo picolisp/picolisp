@@ -1,4 +1,4 @@
-# 18mar14abu
+# 02jun14abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -62,33 +62,34 @@
    (let "*JS" (append "*JS" "JS")
       (run "Prg") ) )
 
-(de style (X Prg)
-   (let *Style
-      (nond
-         (X *Style)
-         (*Style X)
-         ((pair X)
-            (cond
-               ((atom *Style) (pack *Style " " X))
-               ((and (atom (car *Style)) (atom (cdr *Style)))
-                  (list X *Style) )
-               ((find atom *Style)
-                  (replace *Style @ (pack @ " " X)) )
-               (T (cons X *Style)) ) )
-         ((or (pair (car X)) (pair (cdr X)))
-            (cond
-               ((atom *Style) (list *Style X))
-               ((and (atom (car *Style)) (atom (cdr *Style)))
-                  (if (= (car X) (car *Style))
-                     X
-                     (list *Style X) ) )
-               (T
-                  (cons X (delete (assoc (car X) *Style) *Style)) ) ) )
-         (NIL X) )
-      (run Prg 2 '(*Style)) ) )
+(de style (X S)
+   (nond
+      (X S)
+      (S X)
+      ((pair X)
+         (cond
+            ((atom S) (pack S " " X))
+            ((and (atom (car S)) (atom (cdr S)))
+               (list X S) )
+            ((find atom S)
+               (replace S @ (pack @ " " X)) )
+            (T (cons X S)) ) )
+      ((or (pair (car X)) (pair (cdr X)))
+         (cond
+            ((atom S) (list S X))
+            ((and (atom (car S)) (atom (cdr S)))
+               (if (= (car X) (car S))
+                  X
+                  (list S X) ) )
+            (T
+               (cons X (delete (assoc (car X) S) S)) ) ) )
+      (NIL
+         (for Y X
+            (setq S (style Y S)) ) ) ) )
 
 (de <style> ("X" . "Prg")
-   (style "X" "Prg") )
+   (let *Style (style "X" *Style)
+      (run "Prg") ) )
 
 (de nonblank (Str)
    (or Str `(pack (char 160) (char 160))) )
@@ -268,25 +269,21 @@
          (htPrin Prg 2) ) )
    (prinl) )
 
-(de <row> (Cls . Prg)
+(de <row> (Attr . Prg)
    (tag 'tr NIL 1
       (quote
          (let (L Prg  H (up "Head"))
             (while L
-               (let (X (pop 'L)  C (pack Cls (and Cls (caar H) " ") (caar H))  N 1)
+               (let (X (pop 'L)  A (car (pop 'H))  N 1)
                   (while (== '- (car L))
                      (inc 'N)
                      (pop 'L)
                      (pop 'H) )
-                  (setq C
-                     (if2 C (> N 1)
-                        (list C (cons "colspan" N))
-                        C
-                        (cons "colspan" N) ) )
                   (tag 'td
-                     (if (== 'align (car (pop 'H)))
-                        (list '(align . right) C)
-                        C )
+                     (style Attr
+                        (style
+                           (and (> N 1) (cons "colspan" N))
+                           (if (== 'align A) '(align (align . right)) A) ) )
                      1
                      (quote
                         (if (atom X)
@@ -351,7 +348,8 @@
    (<span> (cons 'title "Str") "Txt") )
 
 (de <tip> ("Str" . "Prg")
-   (style (cons 'title "Str") "Prg") )
+   (let *Style (style (cons 'title "Str") *Style)
+      (run "Prg") ) )
 
 # Layout
 (de <layout> "Lst"
@@ -379,7 +377,8 @@
                               ("DY"
                                  (pack "height:" (abs @ ) (if (ge0 "DY")"px" "%")) ) )
                            "Args" ) ) ) )
-               (prog1 (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
+               (prog1
+                  (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
                   (eval (cadr "L")) )
                (let "X" (+ "X" "DX")
                   (recurse (cddr "L") "Y") )
@@ -554,7 +553,8 @@
          (prinl "^M") ) ) )
 
 (de <%> @
-   (prog1 (pass pack)
+   (prog1
+      (pass pack)
       (ht:Prin @)
       (prinl "<br/>")
       (<0> @) ) )

@@ -1,4 +1,4 @@
-# 05jan13abu
+# 02jun14abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -269,14 +269,17 @@
       ((reg X) (off "*Mode") @)                 # Register
       ((atom X) (on "*Mode") X)                 # Direct
       ((or (num? (cdr X)) (; (cdr X) equ))
-         (prog1 (cons ("source" (car X) F) @)
+         (prog1
+            (cons ("source" (car X) F) @)
             (setq "*Mode" (cons "*Mode" 0)) ) )
       ((cdr X)
          (and (reg (cdr X)) (quit "Bad source" X))
-         (prog1 (cons ("source" (car X) F) @)
+         (prog1
+            (cons ("source" (car X) F) @)
             (setq "*Mode" (cons "*Mode" T)) ) )
       (T
-         (prog1 (cons ("source" (car X) F))
+         (prog1
+            (cons ("source" (car X) F))
             (setq "*Mode" (cons "*Mode")) ) ) ) )
 
 (de source (F)
@@ -288,7 +291,8 @@
       (if (lst? Arg)
          (mapcar
             '((X)
-               (prog1 ("source" X)
+               (prog1
+                  ("source" X)
                   (queue '"*Modes" "*Mode") ) )
             Arg )
          ("source" Arg) ) ) )
@@ -303,14 +307,17 @@
          (on "*Mode")
          X )
       ((or (num? (cdr X)) (; (cdr X) equ))
-         (prog1 (cons ("destination" (car X) T) @)
+         (prog1
+            (cons ("destination" (car X) T) @)
             (setq "*Mode" (cons "*Mode" 0)) ) )
       ((cdr X)
          (and (reg (cdr X)) (quit "Bad destination" X))
-         (prog1 (cons ("destination" (car X) T) (cdr X))
+         (prog1
+            (cons ("destination" (car X) T) (cdr X))
             (setq "*Mode" (cons "*Mode" T)) ) )
       (T
-         (prog1 (cons ("destination" (car X) T))
+         (prog1
+            (cons ("destination" (car X) T))
             (setq "*Mode" (cons "*Mode")) ) ) ) )
 
 (de destination ()
@@ -320,7 +327,8 @@
    (off "*Modes")
    (mapcar
       '((X)
-         (prog1 ("destination" X)
+         (prog1
+            ("destination" X)
             (queue '"*Modes" "*Mode") ) )
       (read) ) )
 

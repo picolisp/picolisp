@@ -1,4 +1,4 @@
-# 31jul13abu
+# 19may14abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -243,8 +243,8 @@
       (make
          (for "X" (all)
             (cond
-               ((= `(char "+") (char "X"))
-                  (for "Y" (val "X")
+               ((and (= `(char "+") (char "X")) (pair (val "X")))
+                  (for "Y" @
                      (and
                         (pair "Y")
                         (fun? (cdr "Y"))

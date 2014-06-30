@@ -1,4 +1,4 @@
-/* 20feb14abu
+/* 19jun14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -46,7 +46,7 @@ static char Head_410[] =
 
 static void giveup(char *msg) {
    fprintf(stderr, "httpGate: %s\n", msg);
-   exit(2);
+   exit(1);
 }
 
 static int readNames(char *nm) {
@@ -230,7 +230,7 @@ static int gateConnect(int port, name *np) {
                freopen(np->log, "a", stdout);
             dup2(STDOUT_FILENO, STDERR_FILENO);
             execve(np->av[0], np->av, np->ev);
-            giveup("Can't start server");
+            exit(1);
          }
       }
       if (pid > 0) {

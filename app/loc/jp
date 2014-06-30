@@ -1,4 +1,4 @@
-# 09may08abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(ポジション数：@1)"
@@ -20,10 +20,9 @@
 "Dear Sir or Madam," "拝啓,"
 "Description" "仕様"
 
-"eMail" "eメール"
+"EMail" "eメール"
 
 "Fax" "Fax"
-"Full Name" "フルネーム"
 
 "Greeting" "手紙の書きだし"
 
@@ -35,12 +34,9 @@
 "Item" "商品"
 "Items" "商品"
 
-"Login Name" "ログイン名"
-
 "Memo" "メモ"
 "Mobile" "携帯電話"
 
-"Name" "名前"
 "Name 2" "名前 2"
 "No customer" "カスタマーなし"
 "No customer name" "カスタマー名なし"
@@ -57,7 +53,6 @@
 
 "Page @1" "@1 ページ"
 "PDF-Print" "PDF印刷"
-"Phone" "電話番号"
 "Picture" "写真"
 "Position without item" "ポジションに商品がない"
 "Position without price" "ポジションに価格がない"
@@ -67,7 +62,6 @@
 "Quantity" "数量"
 
 "Report" "レポート"
-"Role Administration" "役割管理"
 
 "Sales" "セールス"
 "Salutation" "敬称"
@@ -81,6 +75,5 @@
 
 "Uninstall" "アンインストール"
 "Uninstall Picture?" "写真をアンインストールしますか？"
-"User Administration" "ユーザー管理"
 
 "Zip" "郵便番号"

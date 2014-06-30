@@ -1,5 +1,5 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 15jul11abu
+# 04may14abu
 # (c) Software Lab. Alexander Burger
 
 (load "/usr/share/picolisp/games/chess.l")
@@ -19,6 +19,7 @@
 (in NIL
    (loop
       (case (read)
+         (xboard)
          (protover
             (read)
             (reply "feature" "myname=\"PicoLisp Chess\"")
@@ -30,10 +31,11 @@
             (setup (format (sys "XCHESS_DEPTH"))) )
          (level (line T))
          (sd (setup (read)))
+         (post)
          (black (off *Me) (on *You))
          (white (on *Me) (off *You))
          (usermove
-            (let (L (line)  From (pack (head 2 L))  To (pack (head 2 (cddr L)))  F (get L 5))
+            (let (L (clip (line))  From (pack (head 2 L))  To (pack (head 2 (cddr L)))  F (get L 5))
                (if (and (yourMove (intern From) (intern To)) (or (not F) (= "q" F)))
                   (xmove)
                   (reply "Illegal move:" (pack L)) ) ) )
@@ -43,6 +45,7 @@
          (result (line T))
          (random)
          (hard)
+         (force)
          (quit (bye))
          (T (reply "Error (unknown command):" @)) ) ) )
 

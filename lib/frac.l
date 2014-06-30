@@ -1,4 +1,4 @@
-# 26may11abu
+# 18may14abu
 # (c) Software Lab. Alexander Burger
 
 (de gcd (A B)
@@ -11,9 +11,9 @@
    (*/ A B (gcd A B)) )
 
 (de frac (N D)
+   (and (=0 D) (quit "frac/0" N))
    (if (=0 N)
       (cons 0 1)
-      (and (=0 D) (quit "frac/0" N))
       (let G (gcd N D)
          (if (gt0 N)
             (cons (/ N G) (/ D G))

@@ -1,4 +1,4 @@
-# 13mar14abu
+# 02jun14abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -44,11 +44,12 @@
    (if (atom X)
       X
       (cons
-         (less (car X))
-         (when (cdr X)
+         (less (pop 'X))
+         (if (atom X)
+            X
             (cons
-               (less (cadr X))
-               (and (cddr X) '(..)) ) ) ) ) )
+               (less (pop 'X))
+               (and X '(..)) ) ) ) ) )
 
 (de what (S)
    (let *Dbg NIL
@@ -418,7 +419,8 @@
 # Benchmarking
 (de bench Prg
    (let U (usec)
-      (prog1 (run Prg 1)
+      (prog1
+         (run Prg 1)
          (out 2
             (prinl
                (format (*/ (- (usec) U) 1000) 3)

@@ -1,4 +1,4 @@
-/* 12oct10abu
+/* 01may14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -101,8 +101,9 @@ static void gc(long c) {
 
 // (gc ['cnt]) -> cnt | NIL
 any doGc(any x) {
-   x = cdr(x);
-   gc(isNum(x = EVAL(car(x)))? CELLS*unBox(x) : CELLS);
+   x = cdr(x),  x = EVAL(car(x));
+   val(At) = val(At2) = Nil;
+   gc(isNum(x)? CELLS*unBox(x) : CELLS);
    return x;
 }
 

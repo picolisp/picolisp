@@ -1,4 +1,4 @@
-# 28mar14abu
+# 15jun14abu
 # (c) Software Lab. Alexander Burger
 
 (setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
@@ -277,68 +277,149 @@
          (push Var (cons Key Val)) ) ) )
 
 ### Pretty Printing ###
-(de *PP
-   T NIL if ifn when unless while until do case casq state for
-   with catch finally ! setq default push bind job use let let?
-   prog1 recur redef =: in out tab new )
-(de *PP1 let let? for redef)
-(de *PP2 setq default)
-(de *PP3 if2)
-
-(de pretty (X N . @)
+(de pretty (X N)
    (setq N (abs (space (or N 0))))
-   (while (args)
-      (printsp (next)) )
-   (if (or (atom X) (>= 12 (size X)))
-      (print X)
-      (while (== 'quote (car X))
-         (prin "'")
-         (pop 'X) )
-      (let Z X
-         (prin "(")
-         (cond
-            ((and (pair (car X)) (> (size @) 12))
-               (pretty (pop 'X) (- -3 N)) )
-            ((memq (print (pop 'X)) *PP)
-               (cond
-                  ((memq (car Z) *PP1)
-                     (if (and (pair (car X)) (pair (cdar X)))
-                        (when (>= 12 (size (car X)))
-                           (space)
-                           (print (pop 'X)) )
-                        (space)
-                        (print (pop 'X))
-                        (when (or (atom (car X)) (>= 12 (size (car X))))
-                           (space)
-                           (print (pop 'X)) ) ) )
-                  ((memq (car Z) *PP2)
-                     (inc 'N 3)
-                     (loop
-                        (prinl)
-                        (pretty (cadr X) N (car X))
-                        (NIL (setq X (cddr X)) (space)) ) )
-                  ((or (atom (car X)) (>= 12 (size (car X))))
-                     (space)
-                     (print (pop 'X)) ) ) )
-            ((and (memq (car Z) *PP3) (>= 12 (size (head 2 X))))
-               (space)
-               (print (pop 'X) (pop 'X)) ) )
-         (when X
-            (loop
-               (T (== Z X) (prin " ."))
-               (T (atom X) (prin " . ") (print X))
-               (prinl)
-               (pretty (pop 'X) (+ 3 N))
-               (NIL X) )
-            (space) )
-         (prin ")") ) ) )
+   (while (and (pair X) (== 'quote (car X)))
+      (prin "'")
+      (pop 'X) )
+   (cond
+      ((atom X) (print X))
+      ((memq (car X) '(let let?))
+         (_pretty
+            (cond
+               ((atom (car X))
+                  (spPrt (pop 'X))
+                  (prtty? (pop 'X) N) )
+               ((>= 12 (size (car X)))
+                  (prin " (")
+                  (let Z (pop 'X)
+                     (prtty2 Z NIL Z) )
+                  (prin ")") )
+               (T
+                  (nlPrt N)
+                  (prin "(")
+                  (let Z (pop 'X)
+                     (prtty2 Z (+ N 3) Z) )
+                  (prin " )") ) )
+            (prtty1 X N Z) ) )
+      ((== 'for (car X))
+         (_pretty
+            (cond
+               ((or (atom (car X)) (atom (cdar X)))
+                  (spPrt (pop 'X))
+                  (prtty? (pop 'X) N) )
+               ((>= 12 (size (car X)))
+                  (spPrt (pop 'X)) )
+               (T
+                  (nlPrt N)
+                  (prtty0 (pop 'X) (+ 3 N)) ) )
+            (prtty1 X N Z) ) )
+      ((== 'if2 (car X))
+         (_pretty
+            (when (>= 12 (size (head 2 X)))
+               (spPrt (pop 'X))
+               (spPrt (pop 'X)) )
+            (prtty1 X N Z) ) )
+      ((memq (car X) '(while until do state finally co))
+         (prtty3 X N) )
+      ((>= 12 (size X))
+         (ifn (memq (car X) '(set setq default))
+            (print X)
+            (prin "(")
+            (let Z X
+               (printsp (pop 'X))
+               (prtty2 X NIL Z) )
+            (prin ")") ) )
+      ((memq (car X) '(=: use later recur tab new))
+         (_pretty
+            (space)
+            (print (pop 'X))
+            (prtty1 X N Z) ) )
+      ((memq (car X) '(set setq default))
+         (_pretty
+            (if (cdddr X)
+               (prog
+                  (nlPrt N)
+                  (prtty2 X N Z) )
+               (spPrt (pop 'X))
+               (nlPrt1 (pop 'X) N) ) ) )
+      ((memq (car X) '(T NIL ! if ifn when unless case casq with catch push bind job in out ctl))
+         (prtty3 X N) )
+      (T (prtty0 X N)) ) )
+
+(de _pretty "Prg"
+   (prin "(")
+   (let Z X
+      (print (pop 'X))
+      (run "Prg") )
+   (prin " )") )
+
+(de prtty0 (X N)
+   (prin "(")
+   (let Z X
+      (pretty (pop 'X) (- -3 N))
+      (prtty1 X N Z) )
+   (prin " )") )
+
+(de prtty1 (X N Z)
+   (loop
+      (NIL X)
+      (T (== Z X) (prin " ."))
+      (T (atom X) (prin " . ") (print X))
+      (nlPrt1 (pop 'X) N) ) )
+
+(de prtty2 (X N Z)
+   (loop
+      (print (pop 'X))
+      (NIL X)
+      (T (== Z X) (prin " ."))
+      (T (atom X) (prin " . ") (print X))
+      (if N
+         (prtty? (pop 'X) N)
+         (space)
+         (print (pop 'X)) )
+      (NIL X)
+      (T (== Z X) (prin " ."))
+      (T (atom X) (prin " . ") (print X))
+      (if N
+         (nlPrt N)
+         (space 2) ) ) )
+
+(de prtty3 (X N)
+   (prin "(")
+   (let Z X
+      (print (pop 'X))
+      (when (or (atom (car X)) (>= 12 (size (car X))))
+         (spPrt (pop 'X)) )
+      (when X
+         (prtty1 X N Z)
+         (space) ) )
+   (prin ")") )
+
+(de prtty? (X N)
+   (ifn (or (atom X) (>= 12 (size X)))
+      (nlPrt1 X N)
+      (spPrt X) ) )
+
+(de spPrt (X)
+   (space)
+   (print X) )
+
+(de nlPrt (N)
+   (prinl)
+   (space (+ 3 N)) )
+
+(de nlPrt1 (X N)
+   (prinl)
+   (pretty X (+ 3 N)) )
 
 (de pp ("X" C)
    (let *Dbg NIL
       (and (pair "X") (setq C (cdr "X")))
       (prin "(")
       (printsp (if C 'dm 'de))
-      (prog1 (printsp "X")
+      (prog1
+         (printsp "X")
          (setq "X"
             (if C
                (method (if (pair "X") (car "X") "X") C)
@@ -1672,7 +1753,8 @@
 # Benchmarking
 (de bench Prg
    (let U (usec)
-      (prog1 (run Prg 1)
+      (prog1
+         (run Prg 1)
          (out 2
             (prinl
                (format (*/ (- (usec) U) 1000) 3)
@@ -1920,8 +2002,8 @@
       (make
          (for "X" (all)
             (cond
-               ((= `(char "+") (char "X"))
-                  (for "Y" (val "X")
+               ((and (= `(char "+") (char "X")) (pair (val "X")))
+                  (for "Y" @
                      (and
                         (pair "Y")
                         (fun? (cdr "Y"))
@@ -1931,5 +2013,8 @@
                   (link (cons "X" @)) ) ) )
          (while (args)
             (and (lint (next)) (link (cons (arg) @))) ) ) ) )
+
+(noLint 'pretty 'Z)
+(noLint '_pretty 'Z)
 
 # vi:et:ts=3:sw=3

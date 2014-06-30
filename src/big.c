@@ -1,4 +1,4 @@
-/* 20aug13abu
+/* 15jun14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1000,6 +1000,8 @@ any doBitQ(any ex) {
 
    x = cdr(ex),  Push(c1, EVAL(car(x)));
    NeedNum(ex,data(c1));
+   if (isNeg(data(c1)))
+      data(c1) = consNum(unDig(data(c1)) & ~1, cdr(numCell(data(c1))));
    while (isCell(x = cdr(x))) {
       if (isNil(z = EVAL(car(x)))) {
          drop(c1);
@@ -1007,14 +1009,18 @@ any doBitQ(any ex) {
       }
       NeedNum(ex,z);
       y = data(c1);
+      if ((unDig(y) & unDig(z) & ~1) != unDig(y)) {
+         drop(c1);
+         return Nil;
+      }
       for (;;) {
-         if ((unDig(y) & unDig(z)) != unDig(y)) {
-            drop(c1);
-            return Nil;
-         }
          if (!isNum(y = cdr(numCell(y))))
             break;
          if (!isNum(z = cdr(numCell(z)))) {
+            drop(c1);
+            return Nil;
+         }
+         if ((unDig(y) & unDig(z)) != unDig(y)) {
             drop(c1);
             return Nil;
          }
@@ -1033,6 +1039,7 @@ any doBitAnd(any ex) {
       return Nil;
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
+   pos(data(c1));
    while (isCell(x = cdr(x))) {
       if (isNil(z = EVAL(car(x)))) {
          drop(c1);
@@ -1040,14 +1047,15 @@ any doBitAnd(any ex) {
       }
       NeedNum(ex,z);
       y = data(c1);
+      setDig(y, unDig(y) & unDig(z) & ~1);
       for (;;) {
-         setDig(y, unDig(y) & unDig(z));
          if (!isNum(z = cdr(numCell(z)))) {
             cdr(numCell(y)) = Nil;
             break;
          }
          if (!isNum(y = cdr(numCell(y))))
             break;
+         setDig(y, unDig(y) & unDig(z));
       }
    }
    zapZero(data(c1));
@@ -1064,6 +1072,7 @@ any doBitOr(any ex) {
       return Nil;
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
+   pos(data(c1));
    while (isCell(x = cdr(x))) {
       if (isNil(data(c2) = EVAL(car(x)))) {
          drop(c1);
@@ -1072,13 +1081,14 @@ any doBitOr(any ex) {
       NeedNum(ex,data(c2));
       y = data(c1);
       Save(c2);
+      setDig(y, unDig(y) | unDig(data(c2)) & ~1);
       for (;;) {
-         setDig(y, unDig(y) | unDig(data(c2)));
          if (!isNum(data(c2) = cdr(numCell(data(c2)))))
             break;
          if (!isNum(cdr(numCell(y))))
             cdr(numCell(y)) = box(0);
          y = cdr(numCell(y));
+         setDig(y, unDig(y) | unDig(data(c2)));
       }
       drop(c2);
    }
@@ -1095,6 +1105,7 @@ any doBitXor(any ex) {
       return Nil;
    NeedNum(ex,data(c1));
    Push(c1, bigCopy(data(c1)));
+   pos(data(c1));
    while (isCell(x = cdr(x))) {
       if (isNil(data(c2) = EVAL(car(x)))) {
          drop(c1);
@@ -1103,13 +1114,14 @@ any doBitXor(any ex) {
       NeedNum(ex,data(c2));
       y = data(c1);
       Save(c2);
+      setDig(y, unDig(y) ^ unDig(data(c2)) & ~1);
       for (;;) {
-         setDig(y, unDig(y) ^ unDig(data(c2)));
          if (!isNum(data(c2) = cdr(numCell(data(c2)))))
             break;
          if (!isNum(cdr(numCell(y))))
             cdr(numCell(y)) = box(0);
          y = cdr(numCell(y));
+         setDig(y, unDig(y) ^ unDig(data(c2)));
       }
       drop(c2);
    }

@@ -20,10 +20,9 @@
 "Dear Sir or Madam," "Уважаемый(ая)"
 "Description" "Описание"
 
-"eMail" "емейл"
+"EMail" "емейл"
 
 "Fax" "Факс"
-"Full Name" "Полное имя"
 
 "Greeting" "Приветствие"
 
@@ -35,12 +34,9 @@
 "Item" "Товар"
 "Items" "Товары"
 
-"Login Name" "Имя регистрации"
-
 "Memo" "Мемо"
 "Mobile" "Мобильный"
 
-"Name" "Имя"
 "Name 2" "Имя 2"
 "No customer" "Нет покупателя"
 "No customer name" "Нет имени покупателя"
@@ -57,7 +53,6 @@
 
 "Page @1" "Страница @1"
 "PDF-Print" "Печать PDF"
-"Phone" "Телефон"
 "Picture" "Картинка"
 "Position without item" "Позиция без товара"
 "Position without price" "Позиция без цены"
@@ -67,7 +62,6 @@
 "Quantity" "Количество"
 
 "Report" "Отчет"
-"Role Administration" "Управление ролями"
 
 "Sales" "Продажи"
 "Salutation" "Приветствие"
@@ -81,6 +75,5 @@
 
 "Uninstall" "Удалить"
 "Uninstall Picture?" "Удалить картинку?"
-"User Administration" "Управление пользователями"
 
 "Zip" "Индекс"

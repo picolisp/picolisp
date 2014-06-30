@@ -20,10 +20,9 @@
 "Dear Sir or Madam," "Estimado/a Sr/a,"
 "Description" "Descripción"
 
-"eMail" "eMail"
+"EMail" "EMail"
 
 "Fax" "Fax"
-"Full Name" "Nombre Completo"
 
 "Greeting" "Saludos"
 
@@ -35,12 +34,9 @@
 "Item" "Artículo"
 "Items" "Artículos"
 
-"Login Name" "Nombre de usuario"
-
 "Memo" "Memo"
 "Mobile" "Móbil"
 
-"Name" "Nombre"
 "Name 2" "Segundo nombre"
 "No customer" "No cliente"
 "No customer name" "Nombre de cliente indefinido"
@@ -57,7 +53,6 @@
 
 "Page @1" "Página @1"
 "PDF-Print" "Imprimir-PDF"
-"Phone" "Teléfono"
 "Picture" "Foto"
 "Position without item" "Posición sin artículo"
 "Position without price" "Posición sin precio"
@@ -67,7 +62,6 @@
 "Quantity" "Cantidad"
 
 "Report" "Reporte"
-"Role Administration" "Administración de roles"
 
 "Sales" "Ventas"
 "Salutation" "Saludo"
@@ -81,6 +75,5 @@
 
 "Uninstall" "Desinstalar"
 "Uninstall Picture?" "Desinstalar foto?"
-"User Administration" "Administración de usuarios"
 
 "Zip" "Código Postal"

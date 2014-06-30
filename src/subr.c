@@ -1,4 +1,4 @@
-/* 22jul13abu
+/* 13may14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -392,7 +392,7 @@ any doRange(any ex) {
          }
          if (bigCompare(data(c2), data(c1)) > 0)
             break;
-         x = cdr(x) = cons(data(c1),Nil);
+         x = cdr(x) = cons(data(c1), Nil);
       }
    }
    drop(c1);

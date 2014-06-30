@@ -1,4 +1,4 @@
-# 16feb14abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -47,13 +47,18 @@
 "logout" "ログアウト"
 "' logged in" "' ログインしました"
 "Name" "名前"
+"Login Name" "ログイン名"
+"Full Name" "フルネーム"
 "Password" "パスワード"
 "Permission denied" "認証できません"
 "Permissions" "許可"
 "Role" "役割"
+"Role Administration" "役割管理"
 "Roles" "役割"
 "User" "ユーザー"
+"User Administration" "ユーザー管理"
 "Users" "ユーザー"
+"Phone" "電話番号"
 
 # Tooltips
 "Open submenu" "サブメニューを開く"

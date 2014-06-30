@@ -1,4 +1,4 @@
-# 09may08abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 "(@1 Positions)" "(@1 Positionen)"
@@ -20,10 +20,9 @@
 "Dear Sir or Madam," "Sehr geehrte Damen und Herren,"
 "Description" "Bezeichnung"
 
-"eMail" "eMail"
+"EMail" "EMail"
 
 "Fax" "Fax"
-"Full Name" "Vollständiger Name"
 
 "Greeting" "Gruß"
 
@@ -35,12 +34,9 @@
 "Item" "Artikel"
 "Items" "Artikel"
 
-"Login Name" "Login-Name"
-
 "Memo" "Memo"
 "Mobile" "Mobil"
 
-"Name" "Name"
 "Name 2" "Name 2"
 "No customer" "Kunde fehlt"
 "No customer name" "Kundenname fehlt"
@@ -57,7 +53,6 @@
 
 "Page @1" "Seite @1"
 "PDF-Print" "PDF-Druck"
-"Phone" "Telefon"
 "Picture" "Bild"
 "Position without item" "Position ohne Artikel"
 "Position without price" "Position ohne Preis"
@@ -67,7 +62,6 @@
 "Quantity" "Menge"
 
 "Report" "Auswertung"
-"Role Administration" "Rollenverwaltung"
 
 "Sales" "Verkauf"
 "Salutation" "Anrede"
@@ -81,6 +75,5 @@
 
 "Uninstall" "De-installieren"
 "Uninstall Picture?" "Bild de-installieren?"
-"User Administration" "Benutzerverwaltung"
 
 "Zip" "PLZ"

@@ -1,4 +1,4 @@
-# 14nov13abu
+# 04jun14abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1208,9 +1208,9 @@
    else
       cmp (EnvIntern) pico  # Inside 'pico'?
       if eq  # Yes
-         cmp E Nil  # Between 'NIL' and '*Bye'?
+         cmp E Nil  # Between 'NIL' and '*Dbg'?
          if ge
-            cmp E Bye
+            cmp E Dbg
             jle protErrEX  # Yes
          end
       end

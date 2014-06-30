@@ -1,4 +1,4 @@
-# 30may13abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -20,21 +20,6 @@
 #  +-*---*-+          +-*---*-+        +-*---*-+           +--------+
 #    |   |              |   |            |   |
 #   hi   sex           nr  dat          pr   cnt
-
-(extend +Role)
-
-(dm url> (Tab)
-   (and (may RoleAdmin) (list "app/role.l" '*ID This)) )
-
-
-(extend +User)
-(rel nam (+String))                    # Full Name
-(rel tel (+String))                    # Phone
-(rel em (+String))                     # EMail
-
-(dm url> (Tab)
-   (and (may UserAdmin) (list "app/user.l" '*ID This)) )
-
 
 # Salutation
 (class +Sal +Entity)

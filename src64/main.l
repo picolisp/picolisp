@@ -1,4 +1,4 @@
-# 10mar14abu
+# 10jun14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -226,12 +226,12 @@
    ld E A  # Heap pointer
    ld (A HEAP) (Heaps)  # Set heap link
    ld (Heaps) A
-   add A (- HEAP 16)  # A on last cell in chunk
+   add A (- HEAP II)  # A on last cell in chunk
    ld X (Avail)  # Initialize free list
    do
       ld (A) X  # Link avail
       ld X A
-      sub A 16
+      sub A II
       cmp A E  # Done?
    until lt  # Yes
    ld (Avail) X  # Set new Avail
@@ -560,16 +560,15 @@
       until z  # Yes
       ret
    end
-   ld A 0  # Init count
+   ld E 0  # Init count
    ld C (Avail)  # Get avail list
    do
       null C  # Any?
    while nz  # Yes
-      inc A  # Increment count
+      inc E  # Increment count
       ld C (C)  # Follow link
    loop
-   div CELLS  # (C is zero)
-   ld E A
+   shr E (- 20 4)  # Divide by CELLS (1M/16), clear tags
    shl E 4  # Make short number
    or E CNT
    ret

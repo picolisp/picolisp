@@ -1,4 +1,4 @@
-# 25mar14abu
+# 25jun14abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -455,6 +455,7 @@ version (i x)
 ############ gc ############
 # (gc) -> NIL
 gc T
+   At.Car = At2.Car = Nil;
    System.gc();
    return Nil;
 
@@ -2432,6 +2433,8 @@ make (x y z)
 
 # (made ['lst1 ['lst2]]) -> lst
 made (x y)
+   if (Env.Make == null)
+      makeError(ex);
    if ((x = ex.Cdr) instanceof Cell) {
       Env.Yoke = x.Car.eval();
       x = x.Cdr;
@@ -2443,6 +2446,8 @@ made (x y)
 
 # (chain 'lst ..) -> lst
 chain (x y)
+   if (Env.Make == null)
+      makeError(ex);
    ex = ex.Cdr;
    do {
       x = ex.Car.eval();
@@ -2457,6 +2462,8 @@ chain (x y)
 
 # (link 'any ..) -> any
 link (x)
+   if (Env.Make == null)
+      makeError(ex);
    ex = ex.Cdr;
    do {
       x = ex.Car.eval();
@@ -2469,6 +2476,8 @@ link (x)
 
 # (yoke 'any ..) -> any
 yoke (x)
+   if (Env.Make == null)
+      makeError(ex);
    ex = ex.Cdr;
    do {
       x = ex.Car.eval();
@@ -3215,7 +3224,9 @@ dec (x y)
    i = evInt(ex = ex.Cdr);
    if ((x = ex.Cdr.Car.eval()) == Nil)
       return Nil;
-   return ((Number)x).shift(i);
+   if (x.compare(Zero) >= 0)
+      return ((Number)x).shift(i);
+   return (((Number)x).neg()).shift(i).neg();
 
 # (lt0 'any) -> num | NIL
 lt0 (x)
@@ -3239,9 +3250,9 @@ abs ()
 
 # (bit? 'num ..) -> num | NIL
 bit? (num x)
-   num = (Number)(ex = ex.Cdr).Car.eval();
+   num = ((Number)(ex = ex.Cdr).Car.eval()).abs();
    while ((ex = ex.Cdr) instanceof Cell)
-      if ((x = ex.Car.eval()) == Nil || !num.tst((Number)x))
+      if ((x = ex.Car.eval()) == Nil || !num.tst(((Number)x).abs()))
          return Nil;
    return num;
 
@@ -3249,7 +3260,7 @@ bit? (num x)
 & (num x)
    if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
       return Nil;
-   for (num = (Number)x; ex.Cdr instanceof Cell; num = num.and((Number)x))
+   for (num = ((Number)x).abs(); ex.Cdr instanceof Cell; num = num.and(((Number)x).abs()))
       if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
          return Nil;
    return num;
@@ -3258,7 +3269,7 @@ bit? (num x)
 | (num x)
    if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
       return Nil;
-   for (num = (Number)x; ex.Cdr instanceof Cell; num = num.or((Number)x))
+   for (num = ((Number)x).abs(); ex.Cdr instanceof Cell; num = num.or(((Number)x).abs()))
       if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
          return Nil;
    return num;
@@ -3267,7 +3278,7 @@ bit? (num x)
 x| (num x)
    if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
       return Nil;
-   for (num = (Number)x; ex.Cdr instanceof Cell; num = num.xor((Number)x))
+   for (num = ((Number)x).abs(); ex.Cdr instanceof Cell; num = num.xor(((Number)x).abs()))
       if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
          return Nil;
    return num;
@@ -3293,7 +3304,7 @@ hash (i j n)
 rand (x)
    Seed = Seed * 6364136223846793005L + 1;
    if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
-      return new Number(Seed);
+      return new Number((int)Seed);
    if (x == T)
       return (Seed & 0x100000000L) == 0? Nil : T;
    return new Number(((Number)x).Cnt + (int)(Seed >>> 33) % (evInt(ex.Cdr) + 1 - ((Number)x).Cnt));

@@ -1,4 +1,4 @@
-# 26mar14abu
+# 02jun14abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -596,7 +596,8 @@
 (be remote ("@Lst" . "@CL")
    (^ @Sockets
       (box
-         (prog1 (cdr (-> "@Lst"))
+         (prog1
+            (cdr (-> "@Lst"))
             (for X @  # (out . in)
                ((car X)
                   (cons 'rqry (car (-> "@Lst")) (-> "@CL")) ) ) ) ) )

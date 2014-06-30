@@ -1,4 +1,4 @@
-# 26dec13abu
+# 06may14abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -73,6 +73,11 @@
 (rel perm (+List +Symbol))             # Permission list
 (rel usr (+List +Joint) role (+User))  # Associated users
 
+(allow "@lib/role.l")
+
+(dm url> (Tab)
+   (and (may RoleAdmin) (list "@lib/role.l" '*ID This)) )
+
 
 ### User ###
 (class +User +Entity)
@@ -80,6 +85,14 @@
 (rel nm (+Need +Key +String))          # User name
 (rel pw (+Swap +String))               # Password
 (rel role (+Joint) usr (+Role))        # User role
+(rel nam (+String))                    # Full Name
+(rel tel (+String))                    # Phone
+(rel em (+String))                     # EMail
+
+(allow "@lib/user.l")
+
+(dm url> (Tab)
+   (and (may UserAdmin) (list "@lib/user.l" '*ID This)) )
 
 
 ### Permission management ###

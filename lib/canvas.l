@@ -1,4 +1,4 @@
-# 20feb14abu
+# 17apr14abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
@@ -42,7 +42,8 @@
       (csLineCap V)
       (csLineJoin V)
       (csMiterLimit V)
-      (csGlobalCompositeOperation V) )
+      (csGlobalCompositeOperation V)
+      (csPost) )
    (def (car L)
       (list
          (cdr L)

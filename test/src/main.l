@@ -1,4 +1,4 @@
-# 19feb14abu
+# 20may14abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -17,7 +17,7 @@
 
 
 ### sigio ###
-(unless (member *OS '("SunOS" "OpenBSD"))
+(unless (member *OS '("SunOS" "OpenBSD" "Cygwin"))
    (sigio (setq "SigSock" (port T 0 "SigPort"))
       (setq "SigVal" (udp "SigSock")) )
    (udp "localhost" "SigPort" '(a b c))

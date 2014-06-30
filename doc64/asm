@@ -1,4 +1,4 @@
-# 05jan13abu
+# 10apr14abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -128,9 +128,9 @@
       zxt               # Zero-extend 'B' to 'A' [...]
 
       setz              # Set Zero flag [z__]
-      clrz              # Clear Zero flag [z..]
+      clrz              # Clear Zero flag [_..]
       setc              # Set Carry flag [--c]
-      clrc              # Clear Carry flag [--c]
+      clrc              # Clear Carry flag [--_]
 
    Comparisons:
       cmp dst src       # Compare 'dst' with 'src' [zsc]

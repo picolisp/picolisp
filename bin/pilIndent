@@ -1,0 +1,34 @@
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
+# 30nov13abu
+
+(let Lst
+   (mapcar
+      '((L)
+         (let N 0
+            (while (and L (sp? (car L)))
+               (inc 'N)
+               (pop 'L) )
+            (cons N L) ) )
+      (trim (split (in NIL (till)) "^J")) )
+   (let (N (caar Lst)  Sup N  Str)
+      (for L Lst
+         (set L N)
+         (while (setq L (cdr L))
+            (case (car L)
+               ("\\" (pop 'L))
+               ("\"" (onOff Str))
+               ("#" (or Str (off L)))
+               ("(" (or Str (inc 'N 3)))
+               (")" (or Str (dec 'N 3)))
+               ("["
+                  (unless Str
+                     (push 'Sup N)
+                     (inc 'N 3) ) )
+               ("]" (or Str (setq N (pop 'Sup)))) ) ) ) )
+   (for L Lst
+      (space (pop 'L))
+      (prinl L) ) )
+
+(bye)
+
+# vi:et:ts=3:sw=3

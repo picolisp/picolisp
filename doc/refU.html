@@ -222,21 +222,22 @@ href="refG.html#group">group</a></code>.
 </code></pre>
 
 <dt><a name="uniq/2"><code>uniq/2</code></a>
-<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
-argument is not yet stored in the second argument's index structure. <code><a
+<dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the second
+argument is not yet stored in the first argument's index structure. <code><a
 href="refI.html#idx">idx</a></code> is used internally storing for the values
 and checking for uniqueness. See also <code><a
 href="refM.html#member/2">member/2</a></code>.
 
 <pre><code>
-: (? (uniq a @Z))       # Remember 'a'
- @Z=NIL                 # Succeeded
-
-: (? (uniq b @Z))       # Remember 'b'
- @Z=NIL                 # Succeeded
-
-: (? (uniq a @Z))       # Remembered 'a'?
--> NIL                  # Yes: Not unique
+: (let U NIL
+   (? (lst @X (a b c b c d)) (uniq U @X)) )
+ @X=a
+ @X=b
+ @X=c
+ @X=d
+-> NIL
+: (solve '((^ @B (box)) (lst @X (a b c b c d)) (uniq @B @X)) @X)
+-> (a b c d)
 </code></pre>
 
 <dt><a name="unless"><code>(unless 'any . prg) -> any</code></a>
@@ -425,7 +426,7 @@ a free number. See also <code><a href="refG.html#genKey">genKey</a></code>.
 </code></pre>
 
 <dt><a name="usec"><code>(usec ['flg]) -> num</code></a>
-<dd>Returns the number the microseconds. If <code>flg</code> is
+<dd>Returns a number of microseconds. If <code>flg</code> is
 non-<code>NIL</code>, the microsecond fraction of the last call to <code><a
 href="refT.html#time">time</a></code> is returned, otherwise the number of
 microseconds since interpreter startup. See also <code><a

@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 20may11abu
+# 17jul14abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
@@ -23,19 +23,23 @@
                (off
                   *Name *Subject *Date *MessageID *InReplyTo *MimeVersion
                   *ContentType *ContentTransferEncoding *ContentDisposition *UserAgent )
-               (while (split (line) " ")
-                  (setq *Line (glue " " (cdr @)))
-                  (case (pack (car @))
-                     ("From:" (setq *Name *Line))
-                     ("Subject:" (setq *Subject *Line))
-                     ("Date:" (setq *Date *Line))
-                     ("Message-ID:" (setq *MessageID *Line))
-                     ("In-Reply-To:" (setq *InReplyTo *Line))
-                     ("MIME-Version:" (setq *MimeVersion *Line))
-                     ("Content-Type:" (setq *ContentType *Line))
-                     ("Content-Transfer-Encoding:" (setq *ContentTransferEncoding *Line))
-                     ("Content-Disposition:" (setq *ContentDisposition *Line))
-                     ("User-Agent:" (setq *UserAgent *Line)) ) )
+               (while (trim (split (line) " "))
+                  (let L @
+                     (while (= ";" (last (last L)))
+                        (char)  # Skip TAB
+                        (conc L (trim (split (line) " "))) )
+                     (setq *Line (glue " " (cdr L)))
+                     (case (pack (car L))
+                        ("From:" (setq *Name *Line))
+                        ("Subject:" (setq *Subject *Line))
+                        ("Date:" (setq *Date *Line))
+                        ("Message-ID:" (setq *MessageID *Line))
+                        ("In-Reply-To:" (setq *InReplyTo *Line))
+                        ("MIME-Version:" (setq *MimeVersion *Line))
+                        ("Content-Type:" (setq *ContentType *Line))
+                        ("Content-Transfer-Encoding:" (setq *ContentTransferEncoding *Line))
+                        ("Content-Disposition:" (setq *ContentDisposition *Line))
+                        ("User-Agent:" (setq *UserAgent *Line)) ) ) )
                (if (nor (member *From *Mailings) (= "subscribe" (lowc *Subject)))
                   (out "/dev/null" (echo "^JFrom ") (msg *From " discarded"))
                   (unless (setq *Sock (connect *SmtpHost *SmtpPort))

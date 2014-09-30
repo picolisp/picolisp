@@ -68,8 +68,9 @@ href="faq.html">Frequently Asked Questions (FAQ)</a>.
       <li><a href="#macro-io">Read-Macros</a>
       </ul>
    <li><a href="#ev">Evaluation</a>
-   <li><a href="#int">Interrupt</a>
+   <li><a href="#libs">Shared Libraries</a>
    <li><a href="#coroutines">Coroutines</a>
+   <li><a href="#int">Interrupt</a>
    <li><a href="#errors">Error Handling</a>
    <li><a href="#atres">@ Result</a>
    <li><a href="#cmp">Comparing</a>
@@ -1201,6 +1202,55 @@ function, these extra arguments will be ignored. Missing arguments default to
 
 
 <p><hr>
+<h3><a name="libs">Shared Libraries</a></h3>
+
+<p>Analogous to built-in functions (which are written in assembly (64-bit
+version) or C (32-bit version) in the interpreter kernel), PicoLisp functions
+may also be defined in shared object files (called "DLLs" on some systems). The
+coding style, register usage, argument passing etc. follow the same rules as for
+normal built-in functions.
+
+<p>Note that this has nothing to do with external (e.g. third-party) library
+functions called with <a href="refN.html#native">native</a>.
+
+<p>When the interpreter encounters a symbol supposed to be called as a function,
+without a function definition, but with a name of the form
+"<code>lib:sym</code>", then - instead of throwing an "undefined"-error - it
+tries to locate a shared object file with the name <code>lib</code> and a
+function <code>sym</code>, and stores a pointer to this code in the symbol's
+value. From that point, this symbol <code>lib:sym</code> keeps that function
+definition, and is undistinguishable from built-in functions. Future calls to
+this function do not require another library search.
+
+<p>A consequence of this lookup mechanism, however, is the fact that such
+symbols cannot be used directly in a function-passing context (i.e.
+"<code>apply</code>" them) like
+
+<pre><code>
+(apply + (1 2 3))
+(mapcar inc (1 2 3))
+</code></pre>
+
+<p>These calls work because <code>+</code> and <code>inc</code> already have a
+(function) value at this point. Applying a shared library function like
+
+<pre><code>
+(mapcar ext:Base64 (1 2 3))
+</code></pre>
+
+<p>works <i>only</i> if <code>ext:Base64</code> was either called before (and
+thus automatically received a function definition), or was fetched explicitly
+with <code>(getd 'ext:Base64)</code>.
+
+<p>Therefore, it is recommended to always apply such functions by passing the
+symbol itself and not just the value:
+
+<pre><code>
+(mapcar 'ext:Base64 (1 2 3))
+</code></pre>
+
+
+<p><hr>
 <h3><a name="coroutines">Coroutines</a></h3>
 
 <p>Coroutines are independent execution contexts. They may have multiple entry
@@ -1243,16 +1293,14 @@ environment is executed
 <p>Reentrant coroutines are not supported: A coroutine cannot resume itself
 directly or indirectly.
 
-<p>Before using coroutines, make sure you have sufficient stack space, e.g. by
-calling
+<p>Before using many coroutines, make sure you have sufficient stack space, e.g.
+by calling
 
 <pre><code>
 $ ulimit -s unlimited
 </code></pre>
 
-<p>Without that, the stack limit in Linux is typically 8 MB. This gives only
-room - with a default coroutine <a href="refS.html#stack">stack</a> segment size
-of 1 MB - for the main segment (4 MB) plus four coroutines.
+<p>Without that, the stack limit in Linux is typically 8 MB.
 
 
 <p><hr>
@@ -1758,11 +1806,13 @@ functionalities, like:
 
 <p><ul>
 <li>Transient symbols are enclosed in double quotes (see <a
-href="#transient-io">Transient Symbols</a>) <li>External symbols are enclosed in
-braces (see <a href="#external-io">External Symbols</a>) <li>Pattern-Wildcards
-start with an at-mark "<code>@</code>" (see <a href="refM.html#match">match</a>
-and <a href="refF.html#fill">fill</a>) <li>Symbols referring to a shared library
-contain a colon "<code>lib:sym</code>" </ul>
+href="#transient-io">Transient Symbols</a>)
+<li>External symbols are enclosed in braces (see <a href="#external-io">External
+Symbols</a>)
+<li>Pattern-Wildcards start with an at-mark "<code>@</code>" (see <a
+href="refM.html#match">match</a> and <a href="refF.html#fill">fill</a>)
+<li>Symbols referring to a shared library contain a colon "<code>lib:sym</code>"
+</ul>
 
 <p>With that, the last of the above conventions (local functions start with an
 underscore) is not really necessary, because true local scope can be enforced
@@ -1845,7 +1895,7 @@ abbreviations:
 <p>Other (derived) data types
 
 <p><ul>
-<li><code>any</code> - Anything: Any primary data type
+<li><code>any</code> - Anything: Any data type
 <li><code>flg</code> - Flag: Boolean value (<code>NIL</code> or non-<code>NIL</code>)
 <li><code>cnt</code> - A count or a small number
 <li><code>dat</code> - Date: Days, starting first of March of the year 0 A.D.
@@ -2329,6 +2379,7 @@ abbreviations:
    <a href="refR.html#rc">rc</a>
    <a href="refA.html#acquire">acquire</a>
    <a href="refR.html#release">release</a>
+   <a href="refT.html#tmp">tmp</a>
    <a href="refP.html#pretty">pretty</a>
    <a href="refP.html#pp">pp</a>
    <a href="refS.html#show">show</a>

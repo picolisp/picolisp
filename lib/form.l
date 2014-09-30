@@ -1,4 +1,4 @@
-# 25jun14abu
+# 04sep14abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -197,17 +197,20 @@
                   (load *Url) ) ) ) ) ) )
 
 (de postForm ()
-   (let? Lst (get "*Lst" (- "*Cnt" (setq *Get (format *Get))))
-      (setq
-         *Form (format *Form)
-         *Evt (format *Evt)
-         *PRG
-         (cond
-            ((and (= *Get (car "*Post2")) (= *Form (cadr "*Post2")))
-               (cddr "*Post2") )
-            ((off "*Post2"))
-            ((gt0 *Form) (get Lst *Form))
-            (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) ) ) )
+   (when (num? (format *Get))
+      (let? Lst (get "*Lst" (- "*Cnt" (setq *Get @)))
+         (setq
+            *Form (format *Form)
+            *Evt (format *Evt)
+            *PRG
+            (cond
+               ((and
+                     (= *Get (car "*Post2"))
+                     (= *Form (cadr "*Post2")) )
+                  (cddr "*Post2") )
+               ((off "*Post2"))
+               ((gt0 *Form) (get Lst *Form))
+               (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) ) ) ) )
 
 (de postGui ()
    (if "*Post2"

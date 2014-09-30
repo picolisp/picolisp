@@ -1,4 +1,4 @@
-# 27oct13abu
+# 11sep14abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -1046,7 +1046,7 @@
 
 (code 'tellBegZ_Z 0)
    ld (TellBuf) Z  # Set global buffer
-   add Z 4  # 4 bytes space (PID and count)
+   add Z 8  # 8 bytes space (PID and count)
    set (Z) BEG  # Begin a list
    inc Z
    ret
@@ -1057,13 +1057,13 @@
    set (Z) END  # Close list
    inc Z
    ld X (TellBuf)  # Get buffer
-   st2 (X)  # Store PID
+   st4 (X)  # Store PID
    push A  # <S I> PID
    ld E Z  # Calculate total size
    sub E X
    ld A E  # Size in A
-   sub A 4  # without PID and count
-   st2 (X 2)  # Store in buffer count
+   sub A 8  # without PID and count
+   st4 (X 4)  # Store in buffer count
    push A  # <S> Size
    ld C (Tell)  # File descriptor
    null C  # Any?
@@ -1087,7 +1087,7 @@
          cmp A (Y)  # Same as 'pid'?
          if eq  # Yes
 10          ld C (S)  # Get size
-            lea X ((TellBuf) 4)  # and data
+            lea X ((TellBuf) 8)  # and data
             call wrChildCXY  # Write to child
          end
       end
@@ -1104,7 +1104,7 @@
    if nz  # Yes
       push 0  # Send zero
       ld X S  # Get buffer
-      ld E 4  # Size (PID and count)
+      ld E 8  # Size (PID and count)
       call wrBytesCEX_F  # Write buffer to pipe
       if nz  # Not successful
          cc close(C)  # Close 'Tell'
@@ -2969,7 +2969,7 @@
                call rdSetCL_F  # Ready?
                if nz  # Yes
                   ld C (Y I)  # Get 'hear' fd again
-                  ld E 4  # Size of PID and count
+                  ld E 8  # Size of PID and count
                   ld X Buf  # Buffer pointer
                   call rdBytesNbCEX_F  # Read count?
                   if ge  # Yes
@@ -2977,7 +2977,7 @@
                         call clsChildY  # Close child
                         jmp 20  # Continue
                      end
-                     ld4 (Buf)  # PID and size?
+                     ld A (Buf)  # PID and size?
                      null A
                      if z  # No
                         cmp (Y) (Talking)  # Currently active?
@@ -2988,7 +2988,7 @@
                         sub S PIPE_BUF  # <S I> Pipe buffer
                         push Y  # <S> Outer child index
                         ld C (Y I)  # Get 'hear' fd again
-                        ld2 (Buf 2)  # Get size
+                        ld4 (Buf 4)  # Get size
                         ld E A
                         lea X (S I)  # Buffer pointer
                         call rdBytesCEX_F  # Read data?
@@ -3000,12 +3000,12 @@
                               if ne  # No
                                  null (Y)  # 'pid'?
                                  if nz  # Yes
-                                    ld2 (Buf)  # Get PID
+                                    ld4 (Buf)  # Get PID
                                     null A  # Any?
                                     jz 15  # Yes
                                     cmp A (Y)  # Same as 'pid'?
                                     if eq  # Yes
-15                                     ld2 (Buf 2)  # Get size
+15                                     ld4 (Buf 4)  # Get size
                                        ld C A
                                        lea X (S I)  # and data
                                        call wrChildCXY  # Write to child
@@ -4256,8 +4256,7 @@
    push X
    push Y
    ld X E  # Expression in X
-   ld E (E CDR)
-   ld E (E)  # Eval 'any'
+   ld E ((E CDR))  # Eval 'any'
    eval
    sub S IV  # InFrame
    ld Y S
@@ -4276,8 +4275,7 @@
    push X
    push Y
    ld X E  # Expression in X
-   ld E (E CDR)
-   ld E (E)  # Eval 'any'
+   ld E ((E CDR))  # Eval 'any'
    eval
    sub S IV  # OutFrame
    ld Y S
@@ -4296,8 +4294,7 @@
    push X
    push Y
    ld X E  # Expression in X
-   ld E (E CDR)
-   ld E (E)  # Eval 'any'
+   ld E ((E CDR))  # Eval 'any'
    eval
    sub S II  # ErrFrame
    ld Y S
@@ -4316,8 +4313,7 @@
    push X
    push Y
    ld X E  # Expression in X
-   ld E (E CDR)
-   ld E (E)  # Eval 'any'
+   ld E ((E CDR))  # Eval 'any'
    eval
    sub S II  # CtlFrame
    ld Y S
@@ -4903,7 +4899,7 @@
          atom (Tsm)  # Transient symbol markup?
          if z  # Yes
             cmp (PutB) putStdoutB  # to stdout?
-            if eq  # No
+            if eq  # Yes
                ld Y ((OutFile) II)  # and 'tty'? -> Y
             end
          end

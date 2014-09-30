@@ -1,4 +1,4 @@
-# 02jun13abu
+# 14sep14abu
 # 27feb08rdo
 # (c) Software Lab. Alexander Burger
 
@@ -7,8 +7,8 @@ lib = ../lib
 
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
 
-CFLAGS = -c -O2 -m32 -pipe \
-	-falign-functions -fomit-frame-pointer -fno-strict-aliasing \
+CFLAGS = -c -O2 -pipe \
+	-falign-functions=32 -fomit-frame-pointer -fno-strict-aliasing \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
 	-Wuninitialized -Wstrict-prototypes \
 	-D_GNU_SOURCE  -D_FILE_OFFSET_BITS=64
@@ -16,46 +16,70 @@ CFLAGS = -c -O2 -m32 -pipe \
 
 ifeq ($(shell uname), Linux)
 	OS = Linux
+	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32 -rdynamic
-	LIB-FLAGS = -lc -lm -ldl
+	LIB-FLAGS = -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	LCRYPT = -lcrypt
 	STRIP = strip
 else
 ifeq ($(shell uname), OpenBSD)
 	OS = OpenBSD
+	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32 -rdynamic -Wl,-E
-	LIB-FLAGS = -lc -lm
+	LIB-FLAGS = -lm
 	DYNAMIC-LIB-FLAGS = -Wl,-E -Wl,-shared
 	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), FreeBSD)
 	OS = FreeBSD
+	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32 -rdynamic
-	LIB-FLAGS = -lc -lm
+	LIB-FLAGS = -lm
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
-	LCRYPT = -lcrypto
+	LCRYPT = -lcrypt
 	STRIP = strip
 else
 ifeq ($(shell uname), NetBSD)
 	OS = NetBSD
+	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32 -rdynamic
-	LIB-FLAGS = -lc -lm
+	LIB-FLAGS = -lm
 	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
 	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), Darwin)
 	OS = Darwin
+	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32
 	LIB-FLAGS = -lc -lm -ldl
 	DYNAMIC-LIB-FLAGS = -m32 -dynamiclib -undefined dynamic_lookup
 	LCRYPT = -lcrypto
 	STRIP = strip -x
 else
+ifeq ($(shell uname), SunOS)
+	OS = SunOS
+	CFLAGS += -m32
+	PICOLISP-FLAGS =
+	LIB-FLAGS = -lm -lnsl -lsocket
+	DYNAMIC-LIB-FLAGS = -G
+	LCRYPT = -lcrypt
+	STRIP = strip
+else
+ifeq ($(shell uname), AIX)
+	OS = AIX
+	CFLAGS += -maix32
+	PICOLISP-FLAGS = -maix32 -Wl,-brtl -Wl,-bexpall
+	LIB-FLAGS = -lm
+	DYNAMIC-LIB-FLAGS = -maix32 -Wl,-G -shared -lm
+	LCRYPT = -lcrypt
+	STRIP = strip
+else
 ifeq ($(shell uname -o), Cygwin)
 	OS = Cygwin
+	CFLAGS += -m32
 	DYNAMIC-LIB-FLAGS = -shared
 	PICOLISP-FLAGS =
 	DLL-DEFS = $(bin)/picolisp.dll
@@ -63,6 +87,8 @@ ifeq ($(shell uname -o), Cygwin)
 	STRIP = strip
 	exe = .exe
 	dll = .dll
+endif
+endif
 endif
 endif
 endif

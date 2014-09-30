@@ -1,4 +1,4 @@
-/* 11dec13abu
+/* 07aug14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -459,7 +459,7 @@ static void putTell(int c) {
 
 static void tellBeg(ptr *pb, ptr *pp, ptr buf) {
    *pb = PipeBuf,  *pp = PipePtr;
-   PipePtr = (PipeBuf = buf) + sizeof(int);
+   PipePtr = (PipeBuf = buf) + 2*sizeof(int);
    *PipePtr++ = BEG;
 }
 
@@ -469,19 +469,21 @@ static void tellEnd(ptr *pb, ptr *pp, int pid) {
    int i, n;
 
    *PipePtr++ = END;
-   *(int*)PipeBuf = (n = PipePtr - PipeBuf - sizeof(int)) | pid << 16;
-   if (Tell && !wrBytes(Tell, PipeBuf, n+sizeof(int)))
+   n = PipePtr - PipeBuf - 2*sizeof(int);
+   *(int*)PipeBuf = pid;
+   *((int*)PipeBuf + 1) = n;
+   if (Tell && !wrBytes(Tell, PipeBuf, n + 2*sizeof(int)))
       close(Tell),  Tell = 0;
    for (i = 0; i < Children; ++i)
       if (Child[i].pid && (!pid || pid == Child[i].pid))
-         wrChild(i, PipeBuf+sizeof(int), n);
+         wrChild(i, PipeBuf + 2*sizeof(int), n);
    PipePtr = *pp,  PipeBuf = *pb;
 }
 
 static void unsync(void) {
-   int n = 0;
+   int pn[2] = {0, 0};
 
-   if (Tell && !wrBytes(Tell, (byte*)&n, sizeof(int)))
+   if (Tell && !wrBytes(Tell, (byte*)pn, 2*sizeof(int)))
       close(Tell),  Tell = 0;
    Sync = NO;
 }
@@ -1487,30 +1489,27 @@ long waitFd(any ex, int fd, long ms) {
          for (i = 0; i < Children; ++i) {
             if (Child[i].pid) {
                if (FD_ISSET(Child[i].hear, &rdSet)) {
-                  if ((m = rdBytes(Child[i].hear, (byte*)&n, sizeof(int), YES)) >= 0) {
+                  int pn[2];
+
+                  if ((m = rdBytes(Child[i].hear, (byte*)pn, 2*sizeof(int), YES)) >= 0) {
                      byte buf[PIPE_BUF - sizeof(int)];
 
                      if (m == 0) {
                         clsChild(i);
                         continue;
                      }
-                     if (n == 0) {
+                     if (pn[0] == 0 && pn[1] == 0) {
                         if (Child[i].pid == Talking)
                            Talking = 0;
                      }
+                     else if (rdBytes(Child[i].hear, buf, pn[1], NO)) {
+                        for (j = 0; j < Children; ++j)
+                           if (j != i && Child[j].pid && (!pn[0] || pn[0] == Child[j].pid))
+                              wrChild(j, buf, pn[1]);
+                     }
                      else {
-                        pid_t pid = n >> 16;
-
-                        n &= 0xFFFF;
-                        if (rdBytes(Child[i].hear, buf, n, NO)) {
-                           for (j = 0; j < Children; ++j)
-                              if (j != i && Child[j].pid && (!pid || pid == Child[j].pid))
-                                 wrChild(j, buf, n);
-                        }
-                        else {
-                           clsChild(i);
-                           continue;
-                        }
+                        clsChild(i);
+                        continue;
                      }
                   }
                }

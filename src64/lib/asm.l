@@ -1,4 +1,4 @@
-# 02jun14abu
+# 01sep14abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -521,6 +521,7 @@
       (st4 (destination) "*Mode")
       (std)
       (stf)
+      (stop)
       (sub (destination) "*Mode" (source) "*Mode")
       (subc (destination) "*Mode" (source) "*Mode")
       (sym (source) "*Mode")

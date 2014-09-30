@@ -1,4 +1,4 @@
-# 25feb14abu
+# 07sep14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -148,8 +148,7 @@
 
 # (lit 'any) -> any
 (code 'doLit 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)  # Eval it
+   ld E ((E CDR))  # Eval arg
    eval
    num E  # Number?
    if z  # No
@@ -3515,9 +3514,8 @@
 # (bye 'cnt|NIL)
 (code 'doBye 2)
    ld X E
-   ld E (E CDR)
-   ld E (E)
-   eval  # Get exit code
+   ld E ((E CDR))  # Eval exit code
+   eval
    cmp E Nil
    if eq
       ld E 0  # Zero if NIL
@@ -3539,6 +3537,6 @@
    call flushAll  # Flush all output channels
 (code 'finishE)
    call setCooked  # Set terminal to cooked mode
-   cc exit(E)
+   stop  # Exit
 
 # vi:et:ts=3:sw=3

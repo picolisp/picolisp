@@ -1,4 +1,4 @@
-# 18feb14abu
+# 07sep14abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -926,9 +926,9 @@
    # A is big
    cnt E  # E short?
    if nz  # Yes
-      cmp E ZERO  # Multiply with zero?
-      jeq ret  # Yes: Return zero
       xchg A E  # Exchange args
+      cmp A ZERO  # Multiply with zero?
+      jeq ret  # Yes: Return zero
       shr A 4  # Normalize
       jmp 10
    end
@@ -2676,9 +2676,8 @@
 
 # (lt0 'any) -> num | NIL
 (code 'doLt0 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    num E  # Number?
    jz retNil
    test E SIGN  # Negative?
@@ -2687,9 +2686,8 @@
 
 # (le0 'any) -> num | NIL
 (code 'doLe0 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    num E  # Number?
    jz retNil
    cmp E ZERO  # Zero?
@@ -2701,9 +2699,8 @@
 
 # (ge0 'any) -> num | NIL
 (code 'doGe0 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    num E  # Number?
    jz retNil
    test E SIGN  # Positive?
@@ -2712,9 +2709,8 @@
 
 # (gt0 'any) -> num | NIL
 (code 'doGt0 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    num E  # Number?
    jz retNil
    cmp E ZERO  # Zero?
@@ -2727,9 +2723,8 @@
 (code 'doAbs 2)
    push X
    ld X E
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    cmp E Nil  # Any?
    if nz  # Yes
       num E  # Number?
@@ -3086,9 +3081,8 @@
 
 # (seed 'any) -> cnt
 (code 'doSeed 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    call initSeedE_E  # Initialize 'Seed'
    ld A 6364136223846793005  # Multiplier
    mul E  # times 'Seed'
@@ -3102,9 +3096,8 @@
 # (hash 'any) -> cnt
 (code 'doHash 2)
    push X
-   ld E (E CDR)  # Get arg
-   ld E (E)
-   eval  # Eval it
+   ld E ((E CDR))  # Eval arg
+   eval
    call initSeedE_E  # Initialize
    ld X E  # Value in X
    ld C 64  # Counter

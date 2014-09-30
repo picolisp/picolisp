@@ -1,4 +1,4 @@
-# 02jun14abu
+# 27aug14abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -134,7 +134,9 @@
    (permute @D @Y) )
 
 (be uniq (@B @X)
-   (^ @ (not (idx (-> @B) (-> @X) T))) )
+   (^ @
+      (let X (-> @X)
+         (not (idx (-> @B) (cons (hash X) X) T)) ) ) )
 
 (be asserta (@C) (^ @ (asserta (-> @C))))
 

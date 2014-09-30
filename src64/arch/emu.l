@@ -1,4 +1,4 @@
-# 27jun14abu
+# 11aug14abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -1026,15 +1026,19 @@
 
 (asm eval+ ()
    (genCode NIL '(eval+) ((absCode "evListE_E"))
-      "if (!(E.b[0] & 6))"
-      "   if (E.b[0] & 8)"
-      "      E = *(ptr)E.p;"
-      "   else {"
-      "      S.p -= 8,  ((ptr)S.p)->n = L.n,  L.p = S.p;"
-      "      S.p -= 8,  *(uint16_t**)S.p = PC;"
-      "      S.p -= 8,  *(uint16_t**)S.p = Code + 0;"  # <eval+>
-      "      PC = Code + @1;"
-      "   }" ) )
+      "if ((E.b[0] & 6))"                       # Number?
+      "   ++PC;"                                # Yes: Skip
+      "else if (E.b[0] & 8) {"                  # Symbol?
+      "   E = *(ptr)E.p;"                       # Yes: Get value
+      "   ++PC;"                                # and skip
+      "}"
+      "else {"                                  # Else 'link'
+      "   S.p -= 8,  ((ptr)S.p)->n = L.n,  L.p = S.p;"
+      "   S.p -= 8,  *(uint16_t**)S.p = PC;"
+      "   PC = Code + @1;"                      # Evaluate list
+      "}" )
+   (genCode NIL '(<eval+>) NIL
+      "L.p = ((ptr)S.p)->p,  S.p += 8;" ) )     # pop L
 
 (asm eval/ret ()
    (genCode NIL '(eval/ret) ((absCode "evListE_E"))
@@ -1047,46 +1051,30 @@
       "   PC = Code + @1;" ) )
 
 (asm exec (Reg)
-   (let Ofs (case Reg (X 1) (Y 2) (Z 3))
-      (unless *FPic
-         (con
-            (cdddr (caar (tail (inc Ofs) *AsmCode)))
-            (cons (text "goto exec@1;" Reg)) ) )
-      (genCode (Reg Ofs) (list 'exec Reg) ((absCode "evListE_E") Reg Ofs)
-         "do {"
-         "   E = *(ptr)@2.p;"
-         "   if (!(E.b[0] & 14)) {"
-         "      S.p -= 8,  *(uint16_t**)S.p = PC;"
-         "      S.p -= 8,  *(uint16_t**)S.p = Code + @3;"  # <execN>
-         "      PC = Code + @1;"
-         "         break;"
-         "   }"
-         "exec@2:"
-         "   @2.p = ((ptr)(@2.p + 8))->p;"
-         "} while (!(@2.b[0] & 14));" ) ) )
+   (genCode (Reg) (list 'exec Reg) ((absCode "evListE_E") Reg)
+      "E = *(ptr)@2.p;"                         # ld E (R)
+      "@2.p = ((ptr)(@2.p + 8))->p;"            # ld R (R CDR)
+      "if (!(@2.b[0] & 14))"                    # atom R
+      "   --PC;"                                # No: Loop
+      "if (!(E.b[0] & 14)) {"                   # eval
+      "   S.p -= 8,  *(uint16_t**)S.p = PC;"
+      "   PC = Code + @1;"
+      "}" ) )
 
 (asm prog (Reg)
-   (let Ofs (case Reg (X 4) (Y 5) (Z 6))
-      (unless *FPic
-         (con
-            (cdddr (caar (tail (inc Ofs) *AsmCode)))
-            (cons (text "goto prog@1;" Reg)) ) )
-      (genCode (Reg Ofs) (list 'prog Reg) ((absCode "evListE_E") Reg Ofs)
-         "do {"
-         "   E = *(ptr)@2.p;"
-         "   if (!(E.b[0] & 6)) {"
-         "      if (E.b[0] & 8)"
-         "         E = *(ptr)E.p;"
-         "      else {"
-         "         S.p -= 8,  *(uint16_t**)S.p = PC;"
-         "         S.p -= 8,  *(uint16_t**)S.p = Code + @3;"  # <progN>
-         "         PC = Code + @1;"
-         "         break;"
-         "      }"
-         "   }"
-         "prog@2:"
-         "   @2.p = ((ptr)(@2.p + 8))->p;"
-         "} while (!(@2.b[0] & 14));" ) ) )
+   (genCode (Reg) (list 'prog Reg) ((absCode "evListE_E") Reg)
+      "E = *(ptr)@2.p;"                         # ld E (R)
+      "@2.p = ((ptr)(@2.p + 8))->p;"            # ld R (R CDR)
+      "if (!(@2.b[0] & 14))"                    # atom R
+      "   --PC;"                                # No: Loop
+      "if (!(E.b[0] & 6)) {"                    # eval
+      "   if (E.b[0] & 8)"
+      "      E = *(ptr)E.p;"
+      "   else {"
+      "      S.p -= 8,  *(uint16_t**)S.p = PC;"
+      "      PC = Code + @1;"
+      "   }"
+      "}" ) )
 
 # System
 (asm initData ())
@@ -1098,6 +1086,10 @@
 (asm initLib ()
    (genCode NIL '(initLib) NIL
       "A.n = (uint64_t)(unsigned long)*(uint8_t**)A.p;" ) )
+
+(asm stop ()
+   (genCode NIL '(stop) NIL
+      "exit((int)E.n);" ) )
 
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'
@@ -1111,22 +1103,7 @@
             *BaseData (read)
             *BaseCode (read)
             *BaseOpcodes (make (while (read) (chain @)))
-            *OpOffs (length *BaseOpcodes) ) )
-      (genCode NIL '(<eval+>) NIL            # Code + 0
-         "PC = *(uint16_t**)S.p,  S.p += 8;"
-         "L.p = ((ptr)S.p)->p,  S.p += 8;" )
-      (genCode NIL '(<execX>) NIL            # Code + 1
-         "PC = *(uint16_t**)S.p,  S.p += 8;" )
-      (genCode NIL '(<execY>) NIL            # Code + 2
-         "PC = *(uint16_t**)S.p,  S.p += 8;" )
-      (genCode NIL '(<execZ>) NIL            # Code + 3
-         "PC = *(uint16_t**)S.p,  S.p += 8;" )
-      (genCode NIL '(<progX>) NIL            # Code + 4
-         "PC = *(uint16_t**)S.p,  S.p += 8;" )
-      (genCode NIL '(<progY>) NIL            # Code + 5
-         "PC = *(uint16_t**)S.p,  S.p += 8;" )
-      (genCode NIL '(<progZ>) NIL            # Code + 6
-         "PC = *(uint16_t**)S.p,  S.p += 8;" ) )
+            *OpOffs (length *BaseOpcodes) ) ) )
    (mapc prinl
       (quote
          NIL
@@ -1462,7 +1439,7 @@
             "   PC = Code + i;"
             "   for (;;) {"
             "      switch (*PC++) {"
-            "      case 0: // nop"
+            "      case 0:  // nop"
             "         break;" ) ) )
    (for (C . L) *AsmOpcodes
       (prinl

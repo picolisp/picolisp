@@ -11,6 +11,13 @@
 
 <dl>
 
+<dt><a name="*ObjIdx"><code>*ObjIdx</code></a>
+<dd>Holds an <code><a href="refI.html#idx">idx</a></code> tree of objects
+created by <code><a href="refO.html#obj">obj</a></code>.
+
+<pre><code>
+</code></pre>
+
 <dt><a name="*Once"><code>*Once</code></a>
 <dd>Holds an <code><a href="refI.html#idx">idx</a></code> tree of already
 <code><a href="refL.html#load">load</a></code>ed source locations (as returned
@@ -32,11 +39,15 @@ include <code>"Linux"</code>, <code>"FreeBSD"</code>, <code>"Darwin"</code> or
 -> "Linux"
 </code></pre>
 
-<dt><a name="obj"><code>(obj (typ var [hook] val ..) var2 val2 ..) -> obj</code></a>
-<dd>Finds or creates a database object (using <code><a
-href="refR.html#request">request</a></code>) corresponding to <code>(typ var
-[hook] val ..)</code>, and initializes additional properties using the
-<code>varN</code> and <code>valN</code> arguments.
+<dt><a name="obj"><code>(obj (typ var [hook] val ..) [var1 val1 ..]) -> obj</code></a>
+<dt><code>(obj typ any [var1 val1 ..]) -> obj</code>
+<dd>Finds or creates a database object, and initializes additional properties
+using the <code>varN</code> and <code>valN</code> arguments. In the first form,
+a <code><a href="refR.html#request">request</a></code> for <code>(typ var [hook]
+val ..)</code> is called, while the second form uses <code><a
+href="refC.html#cache">cache</a></code> to maintain objects without unique
+<code><a href="refK.html#+Key">+Key</a></code>s by indexing <code><a
+href="refO.html#*ObjIdx">*ObjIdx</a></code> with the <code>any</code> argument.
 
 <pre><code>
 : (obj ((+Item) nr 2) nm "Spare Part" sup `(db 'nr '+CuSu 2) inv 100 pr 1250)

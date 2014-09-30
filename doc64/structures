@@ -1,4 +1,4 @@
-# 11jun13abu
+# 04sep14abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -250,7 +250,7 @@
 
       outFile:
          -->   fd       # File descriptor
-         <I>   ix       # Read index
+         <I>   ix       # Write index
          <II>  tty      # TTY flag
          <III> buf      # Buffer [BUFSIZ]
 

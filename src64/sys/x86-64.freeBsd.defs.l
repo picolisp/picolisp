@@ -1,4 +1,4 @@
-# 17feb14abu
+# 11sep14abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -25,7 +25,7 @@
 # stdio
 (equ BUFSIZ 1024)
 (equ PIPE_BUF 512)
-(equ MAXPATHLEN 0)
+(equ GETCWDLEN 0)
 (equ stdin  "$__stdinp")
 (equ stdout "$__stdoutp")
 (equ stderr "$__stderrp")

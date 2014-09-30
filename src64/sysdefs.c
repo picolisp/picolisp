@@ -1,4 +1,4 @@
-/* 17feb14abu
+/* 11sep14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -84,7 +84,7 @@ int main(void) {
    comment("stdio");
    equ("BUFSIZ", BUFSIZ);
    equ("PIPE_BUF", PIPE_BUF);
-   equ("MAXPATHLEN", 0);  // getcwd(NULL,0)
+   equ("GETCWDLEN", 0);  // getcwd(NULL, GETCWDLEN)
 
    comment("dlfcn");
    equ("RTLD_LAZY", RTLD_LAZY);

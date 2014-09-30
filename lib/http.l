@@ -1,4 +1,4 @@
-# 03mar14abu
+# 25jul14abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -424,19 +424,23 @@
       Url
       (pack *SesId Url) ) )
 
-(de httpStat (N Str . @)
-   (prinl "HTTP/1." *Http1 " " N " " Str "^M")
-   (prinl "Server: PicoLisp^M")
-   (while (args)
-      (prinl (next) "^M") )
-   (prinl "Content-Type: text/html^M")
-   (httpCookies)
-   (prinl "Content-Length: " (+ 68 (length N) (* 2 (length Str))) "^M")
-   (prinl "^M")
-   (prinl "<HTML>")
-   (prinl "<HEAD><TITLE>" N " " Str "</TITLE></HEAD>")
-   (prinl "<BODY><H1>" Str "</H1></BODY>")
-   (prinl "</HTML>") )
+(de httpStat (N X . @)
+   (let B (fin X)
+      (if (pair X)
+         (setq X (car X))
+         (setq B (pack "<H1>" B "</H1>")) )
+      (prinl "HTTP/1." *Http1 " " N " " X "^M")
+      (prinl "Server: PicoLisp^M")
+      (while (args)
+         (prinl (next) "^M") )
+      (prinl "Content-Type: text/html^M")
+      (httpCookies)
+      (prinl "Content-Length: " (+ 59 (length N) (length X) (length B)) "^M")
+      (prinl "^M")
+      (prinl "<HTML>")
+      (prinl "<HEAD><TITLE>" N " " X "</TITLE></HEAD>")
+      (prinl "<BODY>" B "</BODY>")
+      (prinl "</HTML>") ) )
 
 (de noContent ()
    (httpStat 204 "No Content") )

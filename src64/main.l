@@ -1,4 +1,4 @@
-# 10jun14abu
+# 21sep14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -584,20 +584,20 @@
       if z  # No
          ld E (E)  # Eval 'cnt'
          call evCntEX_FE
-         shl E 22  # Main stack segment size [times 4 MB]
+         shl E 12  # Main stack segment size [times 4 kB]
          ld A (Stack0)  # Get stack top
          sub A E  # Decrement by main segment size
          ld (Stack1) A  # New coroutine stack base
-         shr E 2  # [to MB]
+         shr E 2  # [to bytes]
          ld (StkSize) E  # Set new stack size
-         shr E 16  # Make short number [MB]
+         shr E 6  # Make short number [kB]
          or E CNT
          pop X
          ret
       end
    end
    ld E (StkSize)  # Return current stack size
-   shr E 16  # Make short number [MB]
+   shr E 6  # Make short number [kB]
    or E CNT
    ld X (Stack1)  # Collect coroutines
    ld C (Stacks)  # Segment bitmask
@@ -2986,7 +2986,7 @@
 
 # (pwd) -> sym
 (code 'doPwd 2)
-   cc getcwd(0 MAXPATHLEN)  # Get current working directory
+   cc getcwd(0 GETCWDLEN)  # Get current working directory
    null A  # OK?
    jz retNil  # No
    push A  # Save buffer pointer
@@ -3002,7 +3002,7 @@
    call evSymE_E  # Evaluate to a symbol
    call pathStringE_SZ  # Write to stack buffer
    ld E Nil  # Preload return value
-   cc getcwd(0 MAXPATHLEN)  # Get current working directory
+   cc getcwd(0 GETCWDLEN)  # Get current working directory
    null A  # OK?
    if nz  # Yes
       push A  # Save buffer pointer
@@ -3046,7 +3046,16 @@
             cc freopen(S _w_ (stderr))  # Re-open standard error
             null A  # OK?
             if nz  # Yes
-               ld (((OutFiles) I) II) 1  # (stdout) OutFiles[1]->tty
+               ld A ((InFiles))  # InFiles[0] (stdin)
+               ld (A I) 0  # Clear 'ix'
+               ld (A II) 0  # Clear 'cnt'
+               ld (A III) 0  # Clear 'next'
+               cc tcgetattr(0 OrgTermio)  # Save terminal I/O
+               not B
+               ld (Tio) B  # and flag
+               ld A ((OutFiles) I)  # OutFiles[1] (stdout)
+               ld (A II) 1  # Set 'tty'
+               ld (A I) 0  # Clear 'ix'
                ld E TSym  # Return T
             end
          end

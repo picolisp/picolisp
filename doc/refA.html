@@ -277,7 +277,8 @@ abc  # User input
 <dt><a name="any"><code>(any 'sym) -> any</code></a>
 <dd>Parses <code>any</code> from the name of <code>sym</code>. This is the
 reverse operation of <code><a href="refS.html#sym">sym</a></code>. See also
-<code><a href="refS.html#str">str</a></code>.
+<code><a href="refS.html#str">str</a></code>, <code>(any 'sym)</code> is
+equivalent to <code>(car (str 'sym))</code>.
 
 <pre><code>
 : (any "(a b # Comment^Jc d)")

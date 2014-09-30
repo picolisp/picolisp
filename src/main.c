@@ -1,4 +1,4 @@
-/* 10mar14abu
+/* 15sep14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -7,6 +7,13 @@
 
 #ifdef __CYGWIN__
 #define O_ASYNC FASYNC
+#endif
+
+#if defined (__SVR4) || defined (_AIX)
+#define O_ASYNC 0
+#define GETCWDLEN 1024
+#else
+#define GETCWDLEN 0
 #endif
 
 /* Globals */
@@ -612,6 +619,8 @@ void err(any ex, any x, char *fmt, ...) {
    Env.task = Nil;
    Env.make = Env.yoke = NULL;
    Env.parser = NULL;
+   Env.put = putStdout;
+   Env.get = getStdin;
    longjmp(ErrRst, +1);
 }
 
@@ -1061,7 +1070,7 @@ any doUsec(any ex) {
 any doPwd(any x) {
    char *p;
 
-   if ((p = getcwd(NULL,0)) == NULL)
+   if ((p = getcwd(NULL, GETCWDLEN)) == NULL)
       return Nil;
    x = mkStr(p);
    free(p);
@@ -1075,9 +1084,9 @@ any doCd(any x) {
       char *p, path[pathSize(x)];
 
       pathString(x, path);
-      if ((p = getcwd(NULL,0)) == NULL  ||  path[0] && chdir(path) < 0)
+      if ((p = getcwd(NULL, GETCWDLEN)) == NULL)
          return Nil;
-      x = mkStr(p);
+      x = path[0] && chdir(path) < 0? Nil : mkStr(p);
       free(p);
       return x;
    }
@@ -1098,7 +1107,10 @@ any doCtty(any ex) {
          bufString(x, tty);
          if (!freopen(tty,"r",stdin) || !freopen(tty,"w",stdout) || !freopen(tty,"w",stderr))
             return Nil;
+         InFiles[STDIN_FILENO]->ix = InFiles[STDIN_FILENO]->cnt = InFiles[STDIN_FILENO]->next = 0;
+         Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
          OutFiles[STDOUT_FILENO]->tty = YES;
+         OutFiles[STDOUT_FILENO]->ix = 0;
       }
    }
    return T;

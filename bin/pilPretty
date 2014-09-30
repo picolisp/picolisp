@@ -1,0 +1,14 @@
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
+# 07aug14abu
+
+(let N 0
+   (in NIL
+      (do (dec (format (opt)))
+         (inc
+            'N
+            (if (sub? (prin (char)) "([") 3 1) ) )
+      (pretty (read) (- N))
+      (prin (till)) ) )
+(bye)
+
+# vi:et:ts=3:sw=3

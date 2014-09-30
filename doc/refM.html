@@ -249,9 +249,11 @@ href="refF.html#filter">filter</a></code>.
 <dt><a name="maps"><code>(maps 'fun 'sym ['lst ..]) -> any</code></a>
 <dd>Applies <code>fun</code> to all properties of <code>sym</code>. When
 additional <code>lst</code> arguments are given, their elements are also passed
-to <code>fun</code>. Returns the result of the last application. See also
-<code><a href="refP.html#putl">putl</a></code> and <code><a
-href="refG.html#getl">getl</a></code>.
+to <code>fun</code>. Returns the result of the last application. Note that
+'maps' should only be used when the property list is not modified by
+<code>fun</code>. Otherwise it is better to use a loop over the result of
+<code><a href="refG.html#getl">getl</a></code>. See also <code><a
+href="refP.html#putl">putl</a></code>.
 
 <pre><code>
 : (put 'X 'a 1)

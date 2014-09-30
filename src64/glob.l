@@ -1,4 +1,4 @@
-# 04jun14abu
+# 08sep14abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -16,7 +16,7 @@
 : Stack1       word  0           # Coroutine stack base
 : Stacks       word  0           # Coroutine stack segment count
 : StkSize      word  STACK       # Coroutine stack segment size
-: StkLimit     word  0           # Stack limit: StackN-Size+4096
+:: StkLimit    word  0           # Stack limit: StackN-Size+4096
 : Termio       word  0           # Raw mode terminal I/O
 : Tv           word  0           # 'timeval' structure
                word  0
@@ -27,8 +27,8 @@
 : InFiles      word  0           # Input files
 : OutFDs       word  0           # Scaled number of output files
 : OutFiles     word  0           # Output files
-: PutBinBZ     word  0           # Binary output function
-: GetBinZ_FB   word  0           # Binary input function
+:: PutBinBZ    word  0           # Binary output function
+:: GetBinZ_FB  word  0           # Binary input function
 : Seed         word  0           # Random seed low
                word  0           # Random seed high
 : TickU        word  0           # Ticks in user time
@@ -61,11 +61,11 @@
 : Signal       skip  (* I SIGNALS)
 
 # Database
-: DBs          word  0           # Scaled number of DB files
-: DbFile       word  0           # DB file
-: DbFiles      word  0           # DB files
-: DbBlock      word  0           # Block buffer
-: MaxBlkSize   word  0           # Maximum block size
+:: DBs         word  0           # Scaled number of DB files
+:: DbFile      word  0           # DB file
+:: DbFiles     word  0           # DB files
+:: MaxBlkSize  word  0           # Maximum block size
+:: DbBlock     word  0           # Block buffer
 : BlkIndex     word  0           # Block index
 : BlkLink      word  0           # Next block
 : DbJnl        word  0           # Journal file

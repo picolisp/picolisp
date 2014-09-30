@@ -31,7 +31,7 @@
 (equ stdout "$__iob+128")
 (equ stderr "$__iob+256")
 
-(equ MAXPATHLEN 1024)
+(equ GETCWDLEN 1024)
 
 # dlfcn
 (equ RTLD_LAZY 1)

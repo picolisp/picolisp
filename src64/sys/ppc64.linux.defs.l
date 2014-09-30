@@ -1,4 +1,4 @@
-# 17feb14abu
+# 11sep14abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -26,7 +26,7 @@
 (equ BUFSIZ 8192)
 (equ PIPE_BUF 4096)
 
-(equ MAXPATHLEN 4096)
+(equ GETCWDLEN 4096)
 
 # dlfcn
 (equ RTLD_LAZY 1)

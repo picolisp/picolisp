@@ -1,4 +1,4 @@
-# 25jun14abu
+# 30aug14abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -2977,13 +2977,13 @@ rank (w x y z)
    z = Nil;
    if (x.Cdr.Car.eval() == Nil)
       for (; y instanceof Cell; y = y.Cdr) {
-         if ((x = y.Car) instanceof Cell && x.Car.compare(w) > 0)
+         if (y.Car.Car.compare(w) > 0)
             break;
          z = y;
       }
    else
       for (; y instanceof Cell; y = y.Cdr) {
-         if ((x = y.Car) instanceof Cell && w.compare(x.Car) > 0)
+         if (w.compare(y.Car.Car) > 0)
             break;
          z = y;
       }

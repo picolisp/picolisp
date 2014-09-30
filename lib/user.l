@@ -1,4 +1,4 @@
-# 30may13abu
+# 21jul14abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
@@ -8,14 +8,8 @@
       (<grid> 2
          ,"Login Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"User" 30)
          ,"Password"
-         (gui '(+Able +E/R +Fmt +TextField)
+         (gui '(+Able +PasswdField)
             '(or (may Password) (== *Login (: home obj)))
-            '(pw : home obj)
-            '((V) (and V "****"))
-            '((V)
-               (if (= V "****")
-                  (: home obj pw 0)
-                  (passwd V (: home obj pw 0)) ) )
             30 )
          ,"Role"
          (gui '(+Able +E/R +Obj +TextField)

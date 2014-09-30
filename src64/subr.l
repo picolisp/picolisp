@@ -1,4 +1,4 @@
-# 22jul13abu
+# 07sep14abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1074,8 +1074,7 @@
 
 # (full 'any) -> bool
 (code 'doFull 2)
-   ld E (E CDR)  # Get arg
-   ld E (E)  # Eval it
+   ld E ((E CDR))  # Eval arg
    eval
    do
       atom E  # Pair?
@@ -3049,7 +3048,6 @@
 (code 'doRank 2)
    push X
    push Y
-   push Z
    ld X (E CDR)  # Args
    ld E (X)  # Eval first
    eval
@@ -3062,77 +3060,35 @@
    link
    ld E ((X CDR))  # Eval 'flg'
    eval
-   ld X (L I)  # Get 'lst' in X
-   atom X  # Empty?
+   ld X Nil  # Preload result
+   ld Y (L I)  # Get 'lst' in Y
+   atom Y  # Empty?
    if z  # No
-      ld Z 0  # Calculate length in Z
-      ld Y X
-      do
-         inc Z  # Increment length
-         ld Y (Y CDR)  # Next cell?
-         atom Y
-      until nz  # No
-      ld A ((X))  # First CAAR
       cmp E Nil  # 'flg'?
       if eq  # No
-         ld E (L II)  # Compare CAAR with 'any'
-         call compareAE_F
-         jgt 10  # Return NIL if too big
          do
-            ld C Z  # Length
-            shr C 1  # One?
-         while nz  # No
-            ld Y X  # Offset Y
-            do
-               ld Y (Y CDR)
-               dec C
-            until z
             ld A ((Y))  # Compare CAAR
             ld E (L II)  # with 'any'
             call compareAE_F  # Greater?
-            if gt  # Search left half
-               ld Y X  # Move right pointer back
-               shr Z 1  # Half length
-            else  # Search right half
-               ld X Y  # Move left pointer to offset
-               ld C Z
-               shr C 1  # Set length to remainder
-               sub Z C
-            end
-         loop
+            break gt  # Yes
+            ld X Y  # Result so far
+            ld Y (Y CDR)
+            atom Y  # More?
+         until nz  # No
       else
-         ld E (L II)  # Compare CAAR with 'any'
-         call compareAE_F
-         jlt 10  # Return NIL if too small
          do
-            ld C Z  # Length
-            shr C 1  # One?
-         while nz  # No
-            ld Y X  # Offset Y
-            do
-               ld Y (Y CDR)
-               dec C
-            until z
             ld A ((Y))  # Compare CAAR
             ld E (L II)  # with 'any'
-            call compareAE_F  # Smaller?
-            if lt  # Search left half
-               ld Y X  # Move right pointer back
-               shr Z 1  # Half length
-            else  # Search right half
-               ld X Y  # Move left pointer to offset
-               ld C Z
-               shr C 1  # Set length to remainder
-               sub Z C
-            end
-         loop
+            call compareAE_F  # Less?
+            break lt  # Yes
+            ld X Y  # Result so far
+            ld Y (Y CDR)
+            atom Y  # More?
+         until nz  # No
       end
-      ld E (X)  # Return CAR
-   else
-10    ld E Nil
    end
+   ld E (X)  # Return CAR
    drop
-   pop Z
    pop Y
    pop X
    ret

@@ -1,4 +1,4 @@
-# 19may14abu
+# 18sep14abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -64,6 +64,8 @@
                         (lintVar (pop '"Y"))
                         (pop '"Y") )
                      (mapc lint1 "Y") ) ) )
+            (macro
+               (lint2 (cdr "X")) )
             (let?
                (use "*L"
                   (lintVar (cadr "X"))

@@ -1,4 +1,4 @@
-# 11dec13abu
+# 08sep14abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1630,7 +1630,7 @@
                      end
                      ld Y (Y CDR)
                   loop
-                  ld A NIX
+                  ld B NIX
                   call putBlockBZ  # Output NIX
                   ld Z (DbBlock)  # Block buffer in Z again
                   ld B (Z)  # Lowest byte of link field

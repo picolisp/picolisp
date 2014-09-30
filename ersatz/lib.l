@@ -1,4 +1,4 @@
-# 15jun14abu
+# 18sep14abu
 # (c) Software Lab. Alexander Burger
 
 (setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
@@ -175,7 +175,8 @@
 (de uniq (Lst)
    (let R NIL
       (filter
-         '((X) (not (idx 'R X T)))
+         '((X)
+            (not (idx 'R (cons (hash X) X) T)) )
          Lst ) ) )
 
 (de group (Lst)
@@ -284,6 +285,11 @@
       (pop 'X) )
    (cond
       ((atom X) (print X))
+      ((memq (car X) '(de dm))
+         (_pretty
+            (spPrt (pop 'X))
+            (spPrt (pop 'X))
+            (prtty1 X N Z) ) )
       ((memq (car X) '(let let?))
          (_pretty
             (cond
@@ -330,7 +336,7 @@
                (printsp (pop 'X))
                (prtty2 X NIL Z) )
             (prin ")") ) )
-      ((memq (car X) '(=: use later recur tab new))
+      ((memq (car X) '(=: use recur tab new))
          (_pretty
             (space)
             (print (pop 'X))
@@ -415,36 +421,15 @@
 
 (de pp ("X" C)
    (let *Dbg NIL
-      (and (pair "X") (setq C (cdr "X")))
-      (prin "(")
-      (printsp (if C 'dm 'de))
-      (prog1
-         (printsp "X")
-         (setq "X"
-            (if C
-               (method (if (pair "X") (car "X") "X") C)
-               (val "X") ) )
-         (cond
-            ((atom "X") (prin ". ") (print "X"))
-            ((atom (cdr "X"))
-               (ifn (cdr "X")
-                  (print (car "X"))
-                  (print (car "X"))
-                  (prin " . ")
-                  (print @) ) )
-            (T
-               (let Z "X"
-                  (print (pop '"X"))
-                  (loop
-                     (T (== Z "X") (prin " ."))
-                     (NIL "X")
-                     (T (atom "X")
-                        (prin " . ")
-                        (print "X") )
-                     (prinl)
-                     (pretty (pop '"X") 3) )
-                  (space) ) ) )
-         (prinl ")") ) ) )
+      (pretty
+         (if (or C (pair "X"))
+            (cons 'dm "X"
+               (if (pair "X")
+                  (method (car "X") (cdr "X"))
+                  (method "X" C) ) )
+            (cons 'de "X" (val "X")) ) )
+      (prinl)
+      "X" ) )
 
 (de show ("X" . @)
    (let *Dbg NIL
@@ -997,7 +982,9 @@
    (permute @D @Y) )
 
 (be uniq (@B @X)
-   (^ @ (not (idx (-> @B) (-> @X) T))) )
+   (^ @
+      (let X (-> @X)
+         (not (idx (-> @B) (cons (hash X) X) T)) ) ) )
 
 (be asserta (@C) (^ @ (asserta (-> @C))))
 
@@ -1541,6 +1528,11 @@
          (not "*Prg")
          (let *Dbg (up 2 *Dbg) (run "*Prg")) ) ) )
 
+(de has ("X")
+   (let *Dbg NIL
+      (filter
+         '(("S") (= "X" (val "S")))
+         (all) ) ) )
 
 (de can (X)
    (let *Dbg NIL
@@ -1823,6 +1815,8 @@
                         (lintVar (pop '"Y"))
                         (pop '"Y") )
                      (mapc lint1 "Y") ) ) )
+            (macro
+               (lint2 (cdr "X")) )
             (let?
                (use "*L"
                   (lintVar (cadr "X"))

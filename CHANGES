@@ -1,3 +1,13 @@
+* 30sep14 picoLisp-3.1.8
+   'stack' size unit MB -> kB
+   'has' debug function
+   Bug in bignum '*' (64-bit)
+   'stop' instruction (64-bit)
+   Added 'vim' plugin and syntax files
+   Handling 32-bit PIDs in 'tell'
+   Improved 'ctty' initialization
+   'httpGate' auto-start race condition
+
 * 30jun14 picoLisp-3.1.7
    'pretty' print enhancements
    Generalized 'style' propagation

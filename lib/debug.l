@@ -1,4 +1,4 @@
-# 02jun14abu
+# 20aug14abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -109,6 +109,12 @@
       (or
          (not "*Prg")
          (let *Dbg (up 2 *Dbg) (run "*Prg")) ) ) )
+
+(de has ("X")
+   (let *Dbg NIL
+      (filter
+         '(("S") (= "X" (val "S")))
+         (all) ) ) )
 
 (de can (X)
    (let *Dbg NIL
@@ -432,10 +438,17 @@
 (de bt (Flg)
    (let *Dbg NIL
       (for (L (trail T)  L)
-         (if (pair (car L))
-            (pretty (less (pop 'L)))
-            (space 3)
-            (print (pop 'L) (less (pop 'L))) )
+         (let X (pop 'L)
+            (if (pair X)
+               (pretty
+                  (cons
+                     (or
+                        (and (sym? (car X)) (car X))
+                        (less (has (car X)))
+                        (car X) )
+                     (less (cdr X)) ) )
+               (space 3)
+               (print X (less (pop 'L))) ) )
          (prinl)
          (T (== '^ (car L)))
          (NIL

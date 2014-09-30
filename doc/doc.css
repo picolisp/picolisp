@@ -1,4 +1,4 @@
-/* 19may07abu
+/* 15jul14abu
  * 06dec12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -9,7 +9,7 @@ html {
 
 body {
    margin: auto;
-   max-width: 48em;
+   max-width: 50em;
    border: 1px solid #bbb;
    background-color: white;
    padding: 2em 7% 4em 10%;

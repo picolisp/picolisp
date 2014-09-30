@@ -1,13 +1,14 @@
-# 06apr14abu
+# 27sep14abu
 # (c) Software Lab. Alexander Burger
 
 ### Local Backup ###
 (de snapshot (Dst . @)
-   (for (L (flip (sort (extract format (dir Dst))))  L)
-      (let N (pop 'L)
-         (call 'mv (pack Dst '/ N) (pack Dst '/ (inc N)))
-         (when (> (car L) (*/ N 9 10))
-            (call 'rm "-rf" (pack Dst '/ (pop 'L))) ) ) )
+   (when (info (pack Dst "/1"))
+      (for (L (flip (sort (extract format (dir Dst))))  L)
+         (let N (pop 'L)
+            (call 'mv (pack Dst '/ N) (pack Dst '/ (inc N)))
+            (when (> (car L) (*/ N 9 10))
+               (call 'rm "-rf" (pack Dst '/ (pop 'L))) ) ) ) )
    (when (call 'mkdir (pack Dst "/1"))
       (while (args)
          (let
@@ -417,74 +418,79 @@
       (commit) ) )
 
 ### Dump Objects ###
-(de dump CL
-   (let B 0
-      (for ("Q" (goal CL) (asoq '@@ (prove "Q")))
-         (let (Obj (cdr @)  Lst)
-            (prin "(obj ")
-            (_dmp Obj)
-            (maps
-               '((X)
-                  (unless (or (member X Lst) (= `(char "+") (char (fin X))))
-                     (prinl)
-                     (space 3)
-                     (cond
-                        ((pair X)
-                           (printsp (cdr X))
-                           (_dmp (car X) T) )
-                        ((isa '+Blob (meta Obj X))
-                           (prin X " `(tmp " (inc 'B) ")")
-                           (out (tmp B)
-                              (in (blob Obj X) (echo)) ) )
-                        (T (print X T)) ) ) )
-               Obj )
-            (prinl " )")
-            Obj ) ) ) )
+(zero *DumpBlob)
 
-(de _dmp (Obj Flg)
-   (nond
-      ((atom Obj)
+(dm (dumpKey> . +Entity) ()
+   (unless (: T)
+      (pick
+         '((X)
+            (and
+               (isa '+Key (meta This (fin X)))
+               (cons (fin X) X) ) )
+         (getl This) ) ) )
+
+(dm (dumpType> . +Entity) ()
+   (type This) )
+
+(dm (dumpValue> . +Entity) (X)
+   X )
+
+(de dump "CL"
+   (let "C" (cons 0 10000)
+      (for ("Q" (goal "CL") (asoq '@@ (prove "Q")))
+         (let (Obj (cdr @)  K (fin (dumpExt Obj)))
+            (for X (getl Obj)
+               (unless (or (= K (fin X)) (= `(char "+") (char (fin X))))
+                  (let? Y (dumpValue> Obj X)
+                     (cond
+                        ((pair Y)
+                           (prinl)
+                           (space 3)
+                           (if (atom (cdr Y))
+                              (printsp (cdr Y))
+                              (printsp (cadr Y))
+                              (prin "`") )
+                           (dumpVal (car Y)) )
+                        ((isa '+Blob (meta Obj X))
+                           (let F (blob Obj X)
+                              (ifn (info F)
+                                 (msg F " no blob")
+                                 (prinl)
+                                 (space 3)
+                                 (prin Y " `(tmp " (inc '*DumpBlob) ")")
+                                 (call 'cp "-a" F (tmp *DumpBlob)) ) ) )
+                        (T
+                           (prinl)
+                           (space 3)
+                           (print Y T) ) ) ) ) )
+            (prinl " )") )
+         (at "C" (println '(commit))) )
+      (println '(commit)) ) )
+
+(de dumpExt (Obj)
+   (prin "(obj ")
+   (let K (dumpKey> Obj)
+      (ifn (cadr K)
+         (print (dumpType> Obj) (id Obj T))
          (prin "(")
-         (_dmp (pop 'Obj) T)
-         (while (pair Obj)
-            (space)
-            (_dmp (pop 'Obj) T) )
-         (when Obj
-            (prin " . ")
-            (_dmp Obj T) )
+         (printsp (dumpType> Obj) (car K))
+         (dumpVal @)
          (prin ")") )
-      ((ext? Obj)
-         (print Obj) )
-      ((type Obj)
-         (print (val Obj)) )
-      (NIL
-         (when Flg
-            (prin "`(obj ") )
+      K ) )
+
+(de dumpVal (X)
+   (nond
+      ((atom X)
          (prin "(")
-         (catch NIL
-            (maps
-               '((X)
-                  (with (and (pair X) (meta Obj (cdr X)))
-                     (when (isa '+Key This)
-                        (or Flg (push 'Lst X))
-                        (printsp (type Obj) (: var))
-                        (_dmp (car X) T)
-                        (throw) ) ) )
-               Obj )
-            (print (type Obj))
-            (maps
-               '((X)
-                  (with (and (pair X) (meta Obj (cdr X)))
-                     (when (isa '+Ref This)
-                        (space)
-                        (or Flg (push 'Lst X))
-                        (print (: var))
-                        (space)
-                        (_dmp (car X) T) ) ) )
-               Obj ) )
-         (when Flg
-            (prin ")") )
-         (prin ")") ) ) )
+         (dumpVal (pop 'X))
+         (while (pair X)
+            (space)
+            (dumpVal (pop 'X)) )
+         (when X (prin " . ") (dumpVal X))
+         (prin ")") )
+      ((ext? X) (print X))
+      ((type X) (print (val X)))
+      (NIL (prin "`") (dumpExt X) (prin ")")) ) )
 
 ### Debug ###
 `*Dbg

@@ -1,4 +1,4 @@
-# 23nov13abu
+# 26aug14abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -38,7 +38,7 @@
             (or
                (ext? (cdr Tree))
                (get *DB (cdr Tree))
-               (put *DB (cdr Tree) (new T)) )
+               (put *DB (cdr Tree) (new T 0)) )
             (or
                (get (cddr Tree) (cadr Tree))
                (put (cddr Tree) (cadr Tree) (new T)) ) )

@@ -40,6 +40,8 @@ function searchKeyup(searchField) {
 			var sUrl;
 			if (sWord == "NIL") {
 				sUrl = "ref.html#nilSym";
+			} else if (sWord.match(/^c[ad]{2,4}r$/)) {
+				sUrl = "refC.html#cXr";
 			} else if (sWord.match(/^[a-zA-Z_]/)) {
 				sUrl = "ref" + sWord.substring(0, 1).toUpperCase() + ".html#" + sWord;
 			} else if (sWord.match(/^\*[a-zA-Z_]/)) {

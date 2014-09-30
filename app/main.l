@@ -1,4 +1,4 @@
-# 09may14abu
+# 31jul14abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -47,19 +47,20 @@
    (unless (seq *DB)
       (load "app/init.l") ) )
 
-(de go ()
-   (task (port 4040)  # Set up query server in the background
-      (let? Sock (accept @)
-         (unless (fork)  # Child process
-            (in Sock
-               (while (rd)
-                  (sync)
-                  (tell)
-                  (out Sock
-                     (pr (eval @)) ) ) )
-            (bye) )
-         (close Sock) ) )
-   (forked)
+(de go (Rpc)
+   (when Rpc
+      (task (port @)  # Set up query server in the background
+         (let? Sock (accept @)
+            (unless (fork)  # Child process
+               (in Sock
+                  (while (rd)
+                     (sync)
+                     (tell)
+                     (out Sock
+                        (pr (eval @)) ) ) )
+               (bye) )
+            (close Sock) ) )
+      (forked) )
    (rollback)
    (retire 20)
    (server (or (format (sys "PORT")) 8080) "!work") )

@@ -1,4 +1,4 @@
-# 02jun14abu
+# 11aug14abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -1563,6 +1563,10 @@
    (prinst "add" 18 4 3) )
 
 (asm initLib ())
+
+(asm stop ()
+   (prinst "mr" 3 15)
+   (prinst "b" "exit") )
 
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'

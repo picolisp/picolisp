@@ -1,4 +1,4 @@
-# 02jun14abu
+# 25aug14abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1346,14 +1346,24 @@
             (or
                (pass db Var (: cls))
                (if (: hook)
-                  (pass new Dbf Typ (: hook) (next) Var)
+                  (pass new Dbf Typ @ (next) Var)
                   (pass new Dbf Typ Var) ) ) ) ) ) )
 
 # Create or update object
+# *ObjIdx
+
 (de obj Lst
-   (let Obj (apply request (pop 'Lst))
+   (let Obj
+      (let L (pop 'Lst)
+         (if (pair (car L))
+            (apply request L)
+            (cache '*ObjIdx (pop 'Lst)
+               (new (or (meta L 'Dbf 1) 1) L) ) ) )
       (while Lst
-         (put> Obj (pop 'Lst) (pop 'Lst)) )
+         (let (K (pop 'Lst)  V (pop 'Lst))
+            (if (=T K)
+               (lose> Obj)
+               (put> Obj K V) ) ) )
       Obj ) )
 
 # vi:et:ts=3:sw=3

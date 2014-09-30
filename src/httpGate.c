@@ -1,4 +1,4 @@
-/* 19jun14abu
+/* 12aug14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -70,7 +70,7 @@ static int readNames(char *nm) {
          p = np->ev[0] = malloc(5 + strlen(np->key) + 1);
          strcpy(p, "NAME="), strcpy(p+5, np->key);
          np->port = atoi(ps = strtok(NULL, delim));
-         if (!(pw = getpwnam(strtok(NULL, delim)))) {
+         if (!(pw = getpwnam(strtok(NULL, delim))) || pw->pw_uid == 0 || pw->pw_gid == 0) {
             free(np);
             continue;
          }
@@ -96,7 +96,7 @@ static int readNames(char *nm) {
          }
          np->av[cnt] = NULL;
          p = np->key;
-         if (p[0] == '@'  &&  p[1] == '\0')
+         if (!Names  ||  p[0] == '@' && p[1] == '\0')
             port = np->port;
          for (t = &Names;  *t;  t = strcasecmp(p, (*t)->key) >= 0? &(*t)->more : &(*t)->less);
          *t = np;
@@ -110,8 +110,11 @@ static name *findName(char *p, char *q) {
    name *np;
    int n, c;
 
-   if (p == q)
+   if (p == q) {
+      if (Names && !Names->more && !Names->less)
+         return Names;
       p = "@";
+   }
    c = *q,  *q = '\0';
    for (np = Names;  np;  np = n > 0? np->more : np->less)
       if ((n = strcasecmp(p, np->key)) == 0) {
@@ -221,8 +224,32 @@ static int gateConnect(int port, name *np) {
    if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) >= 0)
       return sd;
    if (np) {
+      int fd;
       pid_t pid;
 
+      if (np->log) {
+         struct flock fl;
+         char log[strlen(np->dir) + 1 + strlen(np->log) + 1];
+
+         if (np->log[0] == '/')
+            strcat(log, np->log);
+         else
+            sprintf(log, "%s/%s", np->dir, np->log);
+         if ((fd = open(log, O_RDWR)) >= 0) {
+            fl.l_type = F_WRLCK;
+            fl.l_whence = SEEK_SET;
+            fl.l_start = 0;
+            fl.l_len = 0;
+            if (fcntl(fd, F_SETLK, &fl) < 0) {
+               if (errno != EACCES  &&  errno != EAGAIN  ||
+                           fcntl(fd, F_SETLKW, &fl) < 0  ||
+                           connect(sd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+                  return -1;
+               close(fd);
+               return sd;
+            }
+         }
+      }
       if ((pid = fork()) == 0) {
          if (setgid(np->gid) == 0 && setuid(np->uid) == 0 && chdir(np->dir) == 0) {
             setpgid(0,0);
@@ -238,8 +265,11 @@ static int gateConnect(int port, name *np) {
          int i = 200;
          do {
             usleep(100000);  // 100 ms
-            if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) >= 0)
+            if (connect(sd, (struct sockaddr*)&addr, sizeof(addr)) >= 0) {
+               if (np->log  &&  fd >= 0)
+                  close(fd);
                return sd;
+            }
          } while (--i);
       }
    }
@@ -332,8 +362,8 @@ int main(int ac, char *av[]) {
 
             np = NULL;
             port = (int)strtol(p, &q, 10);
-            if (q == p  ||  *q != ' ' && *q != '/') {
-               if ((q = strpbrk(p, " /")) && (np = findName(p, q)))
+            if (q == p  ||  *q != ' ' && *q != '/' && *q != '?') {
+               if ((q = strpbrk(p, " /?")) && (np = findName(p, q)))
                   port = np->port;
                else
                   port = ports[0],  q = p;

@@ -1,4 +1,4 @@
-# 10apr14abu
+# 01sep14abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -195,6 +195,7 @@
       initCode          # Init runtime code
       initMain          # Command in X, arguments in Y, last pointer in Z
       initLib           # Library function pointer in A
+      stop              # Stop (system-dependent)
 
 ========================================================================
 

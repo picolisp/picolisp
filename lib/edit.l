@@ -1,4 +1,4 @@
-# 10mar14abu
+# 13sep14abu
 # (c) Software Lab. Alexander Burger
 
 # "*F" "*Lst" "*X" "*K"
@@ -64,3 +64,5 @@
          (push '"Lst" "X")
          ("loc" (car "X") "Lst")
          ("loc" (cdr "X") "Lst") ) ) )
+
+# vi:et:ts=3:sw=3

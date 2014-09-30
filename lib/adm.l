@@ -1,4 +1,4 @@
-# 06may14abu
+# 21jul14abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -130,5 +130,16 @@
          (<nbsp> 4)
          (<span> "bold green"
             (ht:Prin "'" (; *Login nm) ,"' logged in") ) ) ) )
+
+(class +PasswdField +E/R +Fmt +TextField)
+
+(dm T @
+   (pass super
+      '(pw : home obj)
+      '((V) (and V "****"))
+      '((V)
+         (if (= V "****")
+            (: home obj pw 0)
+            (passwd V (: home obj pw 0)) ) ) ) )
 
 # vi:et:ts=3:sw=3

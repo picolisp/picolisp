@@ -1,4 +1,4 @@
-/* 06feb13abu
+/* 15sep14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -28,8 +28,10 @@ any doPort(any ex) {
       ipErr(ex, "socket");
    closeOnExec(ex, sd);
    n = 0;
+#ifndef __OpenBSD__
    if (setsockopt(sd, IPPROTO_IPV6, IPV6_V6ONLY, &n, sizeof(n)) < 0)
       ipErr(ex, "IPV6_V6ONLY");
+#endif
    memset(&addr, 0, sizeof(addr));
    addr.sin6_family = AF_INET6;
    addr.sin6_addr = in6addr_any;
@@ -70,7 +72,7 @@ static any tcpAccept(int sd) {
    struct sockaddr_in6 addr;
 
    f = nonblocking(sd);
-   i = 200; do {
+   i = 200; do {  // 20 s
       socklen_t len = sizeof(addr);
       if ((sd2 = accept(sd, (struct sockaddr*)&addr, &len)) >= 0) {
          fcntl(sd, F_SETFL, f);
@@ -83,7 +85,7 @@ static any tcpAccept(int sd) {
          return boxCnt(sd2);
       }
       usleep(100000);  // 100 ms
-   } while (errno == EAGAIN  &&  --i >= 0);
+   } while (errno == EAGAIN  &&  --i);
    fcntl(sd, F_SETFL, f);
    return NULL;
 }

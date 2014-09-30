@@ -1,4 +1,4 @@
-# 05jul13abu
+# 06sep14abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -171,6 +171,8 @@
       sub A (StkSize)
       ld (StkLimit) A
    end
+   ld (PutB) putStdoutB
+   ld (Get_A) getStdin_A
    jmp restart  # Restart interpreter
 
 (code 'unwindC_Z 0)

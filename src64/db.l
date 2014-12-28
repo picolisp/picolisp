@@ -1,4 +1,4 @@
-# 08sep14abu
+# 16dec14abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1299,6 +1299,7 @@
       ld Z (Ext)  # Extended databases?
       atom Z
       jnz dbfErrX  # No
+      inc A  # File is zero-based
       ld C ((Z))  # First offset
       shr C 4  # Normalize
       cmp A C  # First offset too big?
@@ -1802,7 +1803,10 @@
 # (rollback) -> flg
 (code 'doRollback 2)
    null (DBs)  # DB open?
-   jz retNil  # No
+   if z  # No
+      atom (Ext)  # or extended?
+      jnz retNil  # No
+   end
    push X
    push Y
    ld X Extern  # Iterate external symbol tree
@@ -1868,8 +1872,11 @@
    if z  # Yes
       ld (Y) Nil  # Clear zap list
    end
-   ld A 0  # Length
-   call rwUnlockDbA  # Unlock all
+   null (DBs)  # DB open?
+   if nz  # Yes
+      ld A 0  # Length
+      call rwUnlockDbA  # Unlock all
+   end
    call unsync  # Release sync
    pop Y
    pop X

@@ -1,4 +1,4 @@
-# 21jul14abu
+# 12oct14abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -115,7 +115,9 @@
 ### GUI ###
 (de loginForm "Opt"
    (form NIL
-      (htPrin "Opt")
+      (when "Opt"
+         (eval (car "Opt"))
+         (----) )
       (<grid> 2
          ,"Name" (gui 'nm '(+Focus +Able +TextField) '(not *Login) 20)
          ,"Password" (gui 'pw '(+Able +PwField) '(not *Login) 20) )
@@ -129,7 +131,10 @@
       (when *Login
          (<nbsp> 4)
          (<span> "bold green"
-            (ht:Prin "'" (; *Login nm) ,"' logged in") ) ) ) )
+            (ht:Prin "'" (; *Login nm) ,"' logged in") ) )
+      (when "Opt"
+         (----)
+         (htPrin (cdr "Opt")) ) ) )
 
 (class +PasswdField +E/R +Fmt +TextField)
 

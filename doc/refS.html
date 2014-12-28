@@ -887,15 +887,22 @@ Calls</a>.
 <dt><a name="sub?"><code>(sub? 'any1 'any2) -> any2 | NIL</code></a>
 <dd>Returns <code>any2</code> when the string representation of
 <code>any1</code> is a substring of the string representation of
-<code>any2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>.
+<code>any2</code>. See also <code><a href="refP.html#pre?">pre?</a></code>,
+<code><a href="refO.html#offset">offset</a></code> and <code><a
+href="refI.html#index">index</a></code>.
 
 <pre><code>
-: (sub? "def" "abcdef")
--> "abcdef"
-: (sub? "abb" "abcdef")
+: (sub? "def" "abcdefg")
+-> "abcdefg"
+: (sub? "abb" "abcdefg")
 -> NIL
-: (sub? NIL "abcdef")
--> "abcdef"
+: (sub? NIL "abcdefg")
+-> "abcdefg"
+
+: (sub? "def" '(a b c d e f g))
+-> "abcdefg"
+: (sub? '(d e f) "abcdefg")
+-> "abcdefg"
 </code></pre>
 
 <dt><a name="subr"><code>(subr 'sym) -> num</code></a>

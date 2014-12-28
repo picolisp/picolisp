@@ -1,4 +1,4 @@
-# 11sep14abu
+# 15dec14abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -594,7 +594,8 @@
                cmp E END  # Circular list?
                ldz E (L I)  # Yes: Get first cell
                ld (X CDR) E  # Store in last cell
-               break T  # 'nc' (E > END)
+               clrc  # 'nc'
+               break T
             end
          end
          call consE_C  # Append next cell

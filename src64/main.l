@@ -1,4 +1,4 @@
-# 21sep14abu
+# 20dec14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -193,12 +193,12 @@
 
 # Install interrupting signal
 (code 'iSignalCE)
-   sub S (%% (* 2 SIGACTION))  # 'sigaction' and 'oldact'
+   sub S (%% SIGACTION)  # 'sigaction' and 'oldact'
    ld (S SA_HANDLER) E  # Function pointer
    cc sigemptyset(&(S SA_MASK))
    ld (S SA_FLAGS) 0
-   cc sigaction(C S &(S SIGACTION))  # Install handler
-   add S (%% (* 2 SIGACTION))
+   cc sigaction(C S 0)  # Install handler
+   add S (%% SIGACTION)
    ret
 
 # Allocate memory
@@ -748,8 +748,8 @@
             if eq  # Yes
                cmp X C  # Last entry?
                if eq  # Yes
-                  call cons_A  # Cons 'exe'
-                  ld (A) (C II)  # Cons 'exe'
+                  call consE_A  # Cons 'exe'
+                  ld (A) (C II)
                   ld (A CDR) E
                   ld E A
                   break T
@@ -757,7 +757,7 @@
             end
             cmp Z Nil  # 'flg'?
             if ne  # Yes
-               call cons_A  # Cons value
+               call consE_A  # Cons value
                ld (A) (Y)
                ld (A CDR) E
                call consA_E  # Cons symbol
@@ -1221,6 +1221,7 @@
    end
    big X  # Big number?
    if nz  # Yes
+      off X SIGN  # Make positive
       ld A 9  # Count 8 significant bytes plus 1
       do
          ld C (X DIG)  # Keep digit
@@ -1438,11 +1439,11 @@
    link  # Close bind frame
    ld Y L  # Y on frame
    push 0  # Init env swap
-   push (EnvNext)   # Save current 'next'
-   push (EnvArgs)  # and varArgs base
+   push (EnvArgs)  # Save varArgs base
    atom X  # Any args?
    if nz  # No
       ld (EnvArgs) 0
+      push (EnvNext)   # Save current 'next'
       ld (EnvNext) 0
    else
       link  # Build varArgs frame
@@ -1454,8 +1455,9 @@
          atom X  # More args?
       until nz  # No
       ld (EnvArgs) S  # Set new varArgs base
-      ld (EnvNext) L  # Set new 'next'
       link  # Close varArgs frame
+      push (EnvNext)   # Save current 'next'
+      ld (EnvNext) (L)  # Set new 'next'
    end
    ld (EnvBind) Y  # Close bind frame
    ld C (Y)  # End of bindings in C
@@ -1470,12 +1472,12 @@
       cmp Y C  # End?
    until eq  # Yes
    prog Z  # Run body
+   pop (EnvNext)   # Restore 'next'
    null (EnvArgs)  # VarArgs?
    if nz  # Yes
       drop  # Drop varArgs
    end
    pop (EnvArgs)  # Restore varArgs base
-   pop (EnvNext)   # and 'next'
    add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
@@ -2670,6 +2672,8 @@
    ld Z A
 # Date function
 (code 'dateXYZ_E 0)
+   null Z  # Year <= 0?
+   jsz retNil
    null Y  # Month <= 0?
    jsz retNil
    cmp Y 12  # Month > 12?
@@ -2774,6 +2778,7 @@
                atom Y
                if nz  # No
                   call xCntEX_FE  # Get date
+                  js noTime2
                   ld A E  # 100 * n
                   mul 100
                   sub A 20  # minus 20
@@ -2891,11 +2896,15 @@
             if z  # Yes
                ld A (E)  # Extract hour
                call xCntAX_FA
+               js noTime
                mul 3600
                ld Y A
                ld E (E CDR)
                ld A (E)  # minute
                call xCntAX_FA
+               js noTime
+               cmp A 59
+               jgt noTime
                mul 60
                add Y A
                ld E (E CDR)  # and second
@@ -2904,6 +2913,9 @@
                if z  # Yes
                   ld E (E)
                   call xCntEX_FE
+                  js noTime
+                  cmp E 60
+                  jgt noTime
                   add E Y  # add minutes and hours
                end
                shl E 4  # Make short number
@@ -2913,6 +2925,7 @@
                atom Y
                if nz  # No
                   call xCntEX_FE  # Get time in total seconds
+                  js noTime
                   ld A E
                   ld C 0
                   div 60  # Seconds in C
@@ -2941,10 +2954,14 @@
                   ld (E CDR) X
                else
                   call xCntEX_FE  # Extract hour
+                  js noTime
                   ld A E
                   mul 3600
                   push A  # Save hour
                   call evCntXY_FE  # Eval minute
+                  js noTime2
+                  cmp E 59
+                  jgt noTime2
                   ld A E
                   mul 60
                   add (S) A  # Add to hour
@@ -2952,6 +2969,9 @@
                   atom Y  # Any?
                   if z  # Yes
                      call evCntXY_FE
+                     js noTime2
+                     cmp E 60
+                     jgt noTime2
                      add (S) E
                   end
                   pop E  # Get result
@@ -2962,6 +2982,13 @@
          end
       end
    end
+   pop Y
+   pop X
+   ret
+: noTime2
+   add S I  # Drop partial result
+: noTime
+   ld E Nil  # Can't convert time
    pop Y
    pop X
    ret

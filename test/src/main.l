@@ -1,4 +1,4 @@
-# 15sep14abu
+# 20dec14abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -90,6 +90,9 @@
 
 (test (7 7 NIL NIL)
    ((quote @ (list (next) (arg) (next) (arg))) 7) )
+
+(test (2)
+   ((quote @ ((quote @) (next)) (rest)) 1 2) )
 
 
 ### usec ###

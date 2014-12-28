@@ -1,4 +1,4 @@
-# 02jun14abu
+# 17dec14abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -344,11 +344,11 @@
          (eval (car Lst) 1)
          (run (cdr Lst) 1) ) ) )
 
-(de tip ("Str" "Txt")
-   (<span> (cons 'title "Str") "Txt") )
+(de tip ("X" "Txt")
+   (<span> (cons 'title (glue "^J" "X")) "Txt") )
 
-(de <tip> ("Str" . "Prg")
-   (let *Style (style (cons 'title "Str") *Style)
+(de <tip> ("X" . "Prg")
+   (let *Style (style (cons 'title (glue "^J" "X")) *Style)
       (run "Prg") ) )
 
 # Layout

@@ -521,17 +521,23 @@ abc
 <dt><a name="pre?"><code>(pre? 'any1 'any2) -> any2 | NIL</code></a>
 <dd>Returns <code>any2</code> when the string representation of
 <code>any1</code> is a prefix of the string representation of <code>any2</code>.
-See also <code><a href="refS.html#sub?">sub?</a></code>.
+See also <code><a href="refS.html#sub?">sub?</a></code> and <code><a
+href="refH.html#head">head</a></code>.
 
 <pre><code>
-: (pre? "abc" "abcdef")
+: (pre? "abc" "abcdefg")
 -> "abcdef"
-: (pre? "def" "abcdef")
+: (pre? "def" "abcdefg")
 -> NIL
 : (pre? (+ 3 4) "7fach")
 -> "7fach"
-: (pre? NIL "abcdef")
--> "abcdef"
+: (pre? NIL "abcdefg")
+-> "abcdefg"
+
+: (pre? "abc" '(a b c d e f g))
+-> "abcdefg"
+: (pre? '(a b c) "abcdefg")
+-> "abcdefg"
 </code></pre>
 
 <dt><a name="pretty"><code>(pretty 'any 'cnt)</code></a>
@@ -639,9 +645,9 @@ href="refM.html#memq">memq</a></code>.
 </code></pre>
 
 <dt><a name="proc"><code>(proc 'sym ..) -> T</code></a>
-<dd>(Debug mode only) Shows a list of processes with command names given by the
-<code>sym</code> arguments, using the system <code>ps</code> utility. See also
-<code><a href="refK.html#kids">kids</a></code>, <code><a
+<dd>(Debug mode on Linux only) Shows a list of processes with command names
+given by the <code>sym</code> arguments, using the system <code>ps</code>
+utility. See also <code><a href="refK.html#kids">kids</a></code>, <code><a
 href="refK.html#kill">kill</a></code> and <code><a
 href="refH.html#hd">hd</a></code>.
 

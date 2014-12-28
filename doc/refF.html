@@ -422,7 +422,8 @@ href="refR.html#range">range</a></code>.
 child's process ID <code>pid</code> in the parent. In the child, the
 <code>VAL</code> of the global variable <code><a
 href="refF.html#*Fork">*Fork</a></code> (should be a <code>prg</code>) is
-executed. See also <code><a href="refK.html#kids">kids</a></code>, <code><a
+executed. See also <code><a href="refE.html#exec">exec</a></code>, <code><a
+href="refK.html#kids">kids</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
 href="refT.html#tell">tell</a></code>.
 
@@ -571,9 +572,7 @@ href="refG.html#getd">getd</a></code>.
 <pre><code>
 : (fun? 1000000000)              # Might be a code pointer
 -> 1000000000
-: (fun? 100000000000000)         # Too big for a code pointer
--> NIL
-: (fun? 1000000001)              # Cannot be a code pointer (odd)
+: (fun? 10000000000000000000)    # Too big for a code pointer
 -> NIL
 : (fun? '((A B) (* A B)))        # Lambda expression
 -> (A B)

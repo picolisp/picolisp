@@ -1,4 +1,4 @@
-/* 10sep14abu
+/* 14nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -297,11 +297,13 @@ any doRot(any ex) {
 
    x = cdr(ex),  Push(c1, y = EVAL(car(x)));
    if (isCell(y)) {
-      n = isCell(x = cdr(x))? (int)evCnt(ex,x) : 0;
-      x = car(y);
-      while (--n  &&  isCell(y = cdr(y))  &&  y != data(c1))
-         z = car(y),  car(y) = x,  x = z;
-      car(data(c1)) = x;
+      n = 0;
+      if (!isCell(x = cdr(x)) || (n = (int)evCnt(ex,x))) {
+         x = car(y);
+         while (--n  &&  isCell(y = cdr(y))  &&  y != data(c1))
+            z = car(y),  car(y) = x,  x = z;
+         car(data(c1)) = x;
+      }
    }
    return Pop(c1);
 }

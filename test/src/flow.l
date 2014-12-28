@@ -1,4 +1,4 @@
-# 31jul13abu
+# 08dec14abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -436,6 +436,12 @@
                      (yield (link 2))
                      (yield (link 3)) ) ) ) ) ) ) )
 
+
+### exec ###
+(test
+   (123 abc)
+   (pipe (exec 'echo 123 "abc")
+      (list (read) (read)) ) )
 
 ### call ###
 (test T (call 'test "-d" (path "@test")))

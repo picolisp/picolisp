@@ -1,4 +1,4 @@
-# 07sep14abu
+# 08nov14abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -3066,14 +3066,23 @@
          ld E (E TAIL)
          call nameE_E  # Get name
       end
-      do
-         cnt E  # Short?
-      while z  # No
-         add C (E DIG)  # Add next digit
-         ld E (E BIG)
-      loop
-      shr E 3  # Keep sign
-      add C E  # Add final short
+      cnt E  # Short?
+      if nz  # Yes
+         shr E 3  # Keep sign
+      else
+         test E SIGN  # E positive?
+         if nz  # Yes
+            inc C  # Add 1
+            off E SIGN  # Make positive
+         end
+         do
+            add C (E DIG)  # Add next digit
+            ld E (E BIG)
+            cnt E  # Done?
+         until nz  # Yes
+         shr E 4  # Final short
+      end
+      add C E  # Add
    end
    ld E C  # Return counter
    pop C

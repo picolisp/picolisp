@@ -1,4 +1,4 @@
-/* 12aug14abu
+/* 05nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -36,7 +36,7 @@ typedef struct name {
 
 static int Http1;
 static name *Names;
-static char Ciphers[] = "ECDHE-RSA-RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH";
+static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
 static char Head_410[] =
    "HTTP/1.0 410 Gone\r\n"
@@ -288,6 +288,15 @@ static void doSigUsr1(int n __attribute__((unused))) {
    alarm(420);
 }
 
+static void iSignal(int n, void (*foo)(int)) {
+   struct sigaction act;
+
+   act.sa_handler = foo;
+   sigemptyset(&act.sa_mask);
+   act.sa_flags = 0;
+   sigaction(n, &act, NULL);
+}
+
 int main(int ac, char *av[]) {
    int cnt = ac>4? ac-3 : 1, ports[cnt], n, sd, cli, srv;
    struct sockaddr_in6 addr;
@@ -297,7 +306,7 @@ int main(int ac, char *av[]) {
    SSL *ssl;
 
    if (ac < 3)
-      giveup("port dflt [pem [alt ..]]");
+      giveup("port dflt [pem [deny ..]]");
 
    sd = gatePort(atoi(av[1]));  // e.g. 80 or 443
    ports[0] = (int)strtol(p = av[2], &q, 10);  // e.g. 8080
@@ -308,13 +317,20 @@ int main(int ac, char *av[]) {
    else {
       SSL_library_init();
       SSL_load_error_strings();
+      if (p = strchr(av[3], ','))
+         *p++ = '\0';
+      else
+         p = av[3];
       if (!(ctx = SSL_CTX_new(SSLv23_server_method())) ||
-            !SSL_CTX_use_certificate_file(ctx, av[3], SSL_FILETYPE_PEM) ||
-               !SSL_CTX_use_PrivateKey_file(ctx, av[3], SSL_FILETYPE_PEM) ||
-                           !SSL_CTX_check_private_key(ctx) || !setDH(ctx) ) {
+         !SSL_CTX_use_PrivateKey_file(ctx, av[3], SSL_FILETYPE_PEM) ||
+            !SSL_CTX_use_certificate_chain_file(ctx, p) ||
+               !SSL_CTX_check_private_key(ctx) || !setDH(ctx) ) {
          ERR_print_errors_fp(stderr);
          giveup("SSL init");
       }
+      SSL_CTX_set_options(ctx,
+         SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_ALL |
+         SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_NO_COMPRESSION );
       ssl = SSL_new(ctx),  gate = "X-Pil: *Gate=https\r\nX-Pil: *Adr=%s\r\n";
    }
    for (n = 1; n < cnt; ++n)
@@ -368,15 +384,15 @@ int main(int ac, char *av[]) {
                else
                   port = ports[0],  q = p;
             }
-            else if (port < cnt) {
-               if (port < 0 || (port = ports[port]) < 0)
+            else if (port < 1024) {
+               if (np = findName(p, q))
+                  port = np->port;
+               else
                   return 1;
             }
-            else if (port < 1024)
-               return 1;
             else
                for (i = 1; i < cnt; ++i)
-                  if (port == -ports[i])
+                  if (port == ports[i])
                      return 1;
 
             if ((srv = gateConnect(port, np)) < 0) {
@@ -418,8 +434,8 @@ int main(int ac, char *av[]) {
                wrBytes(srv, buf2, sprintf(buf2, "X-Pil: *Cipher=%s\r\n", SSL_get_cipher(ssl)));
             wrBytes(srv, p, buf + n - p);
 
-            signal(SIGALRM, doSigAlarm);
-            signal(SIGUSR1, doSigUsr1);
+            iSignal(SIGALRM, doSigAlarm);
+            iSignal(SIGUSR1, doSigUsr1);
             if (Buddy = fork()) {
                for (;;) {
                   alarm(420);

@@ -212,11 +212,12 @@ members (i.e. all children of the current process, and all other children of the
 parent process, see <code><a href="refF.html#fork">fork</a></code>) for
 automatic execution. When the <code>cnt</code> argument is given and non-zero,
 it should be the PID of such a process, and the list will be sent only to that
-process. <code>tell</code> is also used internally by <code><a
+process. When called without arguments, no message is actually sent, and the
+parent process may grant <code><a href="refS.html#sync">sync</a></code> to the
+next waiting process. <code>tell</code> is also used internally by <code><a
 href="refC.html#commit">commit</a></code> to notify about database changes. When
-called without arguments, no message is actually sent, and the parent process
-may grant <code><a href="refS.html#sync">sync</a></code> to the next waiting
-process. See also <code><a href="refK.html#kids">kids</a></code> and <code><a
+called explicitly, the size of the message is limited to the POSIX constant
+PIPE_BUF. See also <code><a href="refK.html#kids">kids</a></code> and <code><a
 href="refH.html#hear">hear</a></code>.
 
 <pre><code>
@@ -365,7 +366,7 @@ href="ref_.html#$tim">$tim</a></code>.
 -> 32334
 : (time 32334)                   # Now
 -> (8 58 54)
-: (time 25 30)                   # Illegal time
+: (time 12 70)                   # Illegal time
 -> NIL
 </code></pre>
 
@@ -410,7 +411,8 @@ href="refB.html#*Bye">*Bye</a></code> .
 
 <dt><a name="tolr/3"><code>tolr/3</code></a>
 <dd><a href="ref.html#pilog">Pilog</a> predicate that succeeds if the first
-argument is either a <i>substring</i> or a <code><a
+argument, after <code><a href="refF.html#fold">fold</a></code>ing it to a
+canonical form, is either a <i>substring</i> or a <code><a
 href="refS.html#+Sn">+Sn</a></code> <i>soundex</i> match of the result of
 applying the <code><a href="refG.html#get">get</a></code> algorithm to the
 following arguments. Typically used as filter predicate in <code><a

@@ -1,4 +1,4 @@
-# 11dec13abu
+# 16oct14abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -27,11 +27,10 @@
 
 (de samples (Cnt Lst)
    (make
-      (until (=0 Cnt)
-         (when (>= Cnt (rand 1 (length Lst)))
+      (for (N (length Lst) (n0 Cnt) (pop 'Lst) (dec N))
+         (when (>= Cnt (rand 1 N))
             (link (car Lst))
-            (dec 'Cnt) )
-         (pop 'Lst) ) ) )
+            (dec 'Cnt) ) ) ) )
 
 
 # Genetic Algorithm

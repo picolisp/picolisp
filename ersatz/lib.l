@@ -1,7 +1,9 @@
-# 18sep14abu
+# 10dec14abu
 # (c) Software Lab. Alexander Burger
 
-(setq *OS (java (java "java.lang.System" "getProperty" "os.name")))
+(setq
+   *CPU "JVM"
+   *OS (java (java "java.lang.System" "getProperty" "os.name")) )
 
 ############ lib.l ############
 

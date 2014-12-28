@@ -1,4 +1,4 @@
-/* 19feb14abu
+/* 23dec14abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -239,6 +239,14 @@ a:hover {
    background-image: -o-linear-gradient(top, #8f8, #6f6);
    background-image: -webkit-linear-gradient(top, #8f8, #6f6);
    background-image: linear-gradient(top, #8f8, #6f6);
+}
+
+.edit:hover {
+   background-color: #88ff88;
+   background-image: -moz-linear-gradient(top, #cfc, #afa);
+   background-image: -o-linear-gradient(top, #cfc, #afa);
+   background-image: -webkit-linear-gradient(top, #cfc, #afa);
+   background-image: linear-gradient(top, #cfc, #afa);
 }
 
 /* Errors */

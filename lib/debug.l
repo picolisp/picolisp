@@ -1,4 +1,4 @@
-# 20aug14abu
+# 15nov14abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -417,10 +417,11 @@
                   (trace "X") ) ) ) ) ) )
 
 # Process Listing
-(de proc @
-   (apply call
-      (make (while (args) (link "-C" (next))))
-      'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) )
+(when (= *OS "Linux")
+   (de proc @
+      (apply call
+         (make (while (args) (link "-C" (next))))
+         'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) ) )
 
 # Benchmarking
 (de bench Prg
@@ -436,26 +437,31 @@
 
 # Backtrace
 (de bt (Flg)
-   (let *Dbg NIL
-      (for (L (trail T)  L)
-         (let X (pop 'L)
-            (if (pair X)
-               (pretty
-                  (cons
-                     (or
-                        (and (sym? (car X)) (car X))
-                        (less (has (car X)))
-                        (car X) )
-                     (less (cdr X)) ) )
-               (space 3)
-               (print X (less (pop 'L))) ) )
-         (prinl)
+   (let (S NIL  *Dbg)
+      (for (L (trail T) L)
+         (if (pair (car L))
+            (push 'S (cons (pop 'L)))
+            (conc
+               (car (default S (cons (cons))))
+               (cons (cons (pop 'L) (pop 'L))) ) )
          (T (== '^ (car L)))
-         (NIL
-            (or
-               Flg
-               (atom (car L))
-               (nor (== 'bt (caar L)) (line)) )
-            T ) ) ) )
+         (T
+            (and
+               (pair (car L))
+               (== 'bt (caar L)) ) ) )
+      (for L S
+         (let? X (pop 'L)
+            (pretty
+               (cons
+                  (or
+                     (and (sym? (car X)) (car X))
+                     (less (has (car X)))
+                     (car X) )
+                  (less (cdr X)) ) ) )
+         (prinl)
+         (while L
+            (space 3)
+            (println (caar L) (less (cdr (pop 'L)))) )
+         (T (and (not Flg) (line)) T) ) ) )
 
 # vi:et:ts=3:sw=3

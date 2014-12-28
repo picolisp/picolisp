@@ -1,4 +1,4 @@
-# 25jul14abu
+# 20nov14abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -100,13 +100,13 @@
       (when (accept *Sock)
          (task @ (http @)) ) ) )
 
-(de retire (Min)
+(de retire (Min . Prg)
    (when (sys "PORT")
-      (task -60000 60000  X (cons Min Min)
+      (task -60000 60000  X (cons Min Min Prg)
          (cond
-            (*Adr (off *Adr) (set X (cdr X)))
-            ((kids) (set X (cdr X)))
-            ((=0 (dec X)) (bye)) ) )
+            (*Adr (off *Adr) (set X (cadr X)))
+            ((kids) (set X (cadr X)))
+            ((=0 (dec X)) (run (cddr X)) (bye)) ) )
       (forked) ) )
 
 (de baseHRef (Port . @)

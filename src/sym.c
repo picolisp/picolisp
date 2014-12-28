@@ -1,4 +1,4 @@
-/* 15nov13abu
+/* 16nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1348,9 +1348,11 @@ any doGetl(any ex) {
    return data(c2);
 }
 
-static void wipe(any x) {
+static void wipe(any ex, any x) {
    any y, z;
 
+   NeedSym(ex,x);
+   CheckVar(ex,x);
    for (y = tail1(x); isCell(y); y = cdr(y));
    if (!isNum(y)) {
       val(x) = Nil;
@@ -1369,16 +1371,16 @@ static void wipe(any x) {
 }
 
 // (wipe 'sym|lst) -> sym|lst
-any doWipe(any x) {
-   any y;
+any doWipe(any ex) {
+   any x, y;
 
-   x = cdr(x);
+   x = cdr(ex);
    if (!isNil(x = EVAL(car(x))))
       if (!isCell(x))
-         wipe(x);
+         wipe(ex, x);
       else {
          y = x; do
-            wipe(car(y));
+            wipe(ex, car(y));
          while (isCell(y = cdr(y)));
       }
    return x;

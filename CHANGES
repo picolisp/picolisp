@@ -1,3 +1,11 @@
+* 28dec14 picoLisp-3.1.9
+   'purge' backup function
+   'exec' flow function
+   Reversed 'bt' output
+   'ssl' peer certificate verification
+   'httpGate' and 'ssl' TLS-only
+   Bug in 'caaaar'
+
 * 30sep14 picoLisp-3.1.8
    'stack' size unit MB -> kB
    'has' debug function

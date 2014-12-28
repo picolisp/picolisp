@@ -340,6 +340,20 @@ and <code><a href="refU.html#up">up</a></code>.
 -> 7
 : (eval X)
 -> 7
+
+: (de f (A)
+   (list
+      (eval 'A)
+      (eval 'A 1)
+      (eval 'A 2) ) )
+-> f
+: (de g (A)
+   (f (inc A)) )
+-> g
+: (one A)
+-> 1
+: (g (inc A))
+-> (3 2 1)
 </code></pre>
 
 <dt><a name="expDat"><code>(expDat 'sym) -> dat</code></a>
@@ -377,6 +391,24 @@ href="refE.html#expTel">expTel</a></code>.
 -> 733133
 : (expDat "31.5.7")
 -> 733133
+</code></pre>
+
+<dt><a name="exec"><code>(exec 'any ..)</code></a>
+<dd>Executes an external system command. The <code>any</code> arguments specify
+the command and its arguments. Does not return to the caller; the current
+process is replaced with a new process image. See also <code><a
+href="refF.html#fork">fork</a></code> and <code><a
+href="refC.html#call">call</a></code>.
+
+<pre><code>
+: (pipe (exec 'echo 123 "abc")
+   (list (read) (read)) )
+-> (123 abc)
+
+(unless (fork)
+   (exec "@bin/ssl"  # Start replication process
+      "10.11.12.13" 443
+      "app/!replica" "key/app" "fifo/app" "db/app/blob/" 20 ) )
 </code></pre>
 
 <dt><a name="expTel"><code>(expTel 'sym) -> sym</code></a>

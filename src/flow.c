@@ -1,4 +1,4 @@
-/* 25feb14abu
+/* 08dec14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1499,6 +1499,25 @@ any doTrace(any x) {
    newline();
    Env.put = putSave,  OutFile = oSave;
    return Pop(c1);
+}
+
+// (exec 'any ..)
+any doExec(any x) {
+   any y;
+   int i, ac = length(x = cdr(x));
+   char *av[ac+1];
+
+   if (ac) {
+      av[0] = alloc(NULL, pathSize(y = evSym(x))),  pathString(y, av[0]);
+      for (i = 1; isCell(x = cdr(x)); ++i)
+         av[i] = alloc(NULL, bufSize(y = evSym(x))),  bufString(y, av[i]);
+      av[ac] = NULL;
+      flushAll();
+      setpgid(0,0);
+      execvp(av[0], av);
+      execError(av[0]);
+   }
+   return Nil;
 }
 
 // (call 'any ..) -> flg

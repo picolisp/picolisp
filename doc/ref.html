@@ -1629,7 +1629,7 @@ href="refR.html#rel">rel</a></code> function. Predefined relation classes
 include
 
 <p><ul>
-<li>Primitive types like
+<li>Scalar relations like
    <dl>
    <dt><code><a href="refS.html#+Symbol">+Symbol</a></code>
    <dd>Symbolic data
@@ -1643,6 +1643,8 @@ include
    <dd>Time-of-the-day values, represented by a number
    <dt><code><a href="refB.html#+Blob">+Blob</a></code>
    <dd>"Binary large objects" stored in separate files
+   <dt><code><a href="refB.html#+Bool">+Bool</a></code>
+   <dd><code>T</code> or <code>NIL</code>
    </dl>
 <li>Object-to-object relations
    <dl>
@@ -1668,13 +1670,12 @@ include
    <dd>A unique index with other primitives or entities as key
    <dt><code><a href="refI.html#+Idx">+Idx</a></code>
    <dd>A full-text index, typically for strings
+   <dt><code><a href="refF.html#+Fold">+Fold</a></code>
+   <dd>A folded text index
+   <dt><code><a href="refI.html#+IdxFold">+IdxFold</a></code>
+   <dd>Folded substring index
    <dt><code><a href="refS.html#+Sn">+Sn</a></code>
    <dd>Tolerant index, using a modified Soundex-Algorithm
-   </dl>
-<li>Booleans
-   <dl>
-   <dt><code><a href="refB.html#+Bool">+Bool</a></code>
-   <dd><code>T</code> or <code>NIL</code>
    </dl>
 <li>And a catch-all class
    <dl>
@@ -1902,7 +1903,7 @@ abbreviations:
 <li><code>tim</code> - Time: Seconds since midnight
 <li><code>obj</code> - Object/Class: A symbol with methods and/or classes
 <li><code>var</code> - Variable: Either a symbol or a cons pair
-<li><code>exe</code> - Executable: A list as executable expression (<code>eval</code>)
+<li><code>exe</code> - Executable: An executable expression (<code>eval</code>)
 <li><code>prg</code> - Prog-Body: A list of executable expressions (<code>run</code>)
 <li><code>fun</code> - Function: Either a number (code-pointer), a symbol (message) or a list (lambda)
 <li><code>msg</code> - Message: A symbol sent to an object (to invoke a method)
@@ -2133,7 +2134,21 @@ abbreviations:
    <a href="refC.html#cdadr">cdadr</a>
    <a href="refC.html#cddar">cddar</a>
    <a href="refC.html#cdddr">cdddr</a>
+   <a href="refC.html#caaaar">caaaar</a>
+   <a href="refC.html#caaadr">caaadr</a>
+   <a href="refC.html#caadar">caadar</a>
+   <a href="refC.html#caaddr">caaddr</a>
+   <a href="refC.html#cadaar">cadaar</a>
+   <a href="refC.html#cadadr">cadadr</a>
+   <a href="refC.html#caddar">caddar</a>
    <a href="refC.html#cadddr">cadddr</a>
+   <a href="refC.html#cdaaar">cdaaar</a>
+   <a href="refC.html#cdaadr">cdaadr</a>
+   <a href="refC.html#cdadar">cdadar</a>
+   <a href="refC.html#cdaddr">cdaddr</a>
+   <a href="refC.html#cddaar">cddaar</a>
+   <a href="refC.html#cddadr">cddadr</a>
+   <a href="refC.html#cdddar">cdddar</a>
    <a href="refC.html#cddddr">cddddr</a>
    <a href="refN.html#nth">nth</a>
    <a href="refC.html#con">con</a>
@@ -2594,6 +2609,7 @@ abbreviations:
    <a href="refP.html#proc">proc</a>
    <a href="refH.html#hd">hd</a>
    <a href="refB.html#bench">bench</a>
+   <a href="refB.html#bt">bt</a>
    <a href="refE.html#edit">edit</a>
    <a href="refL.html#lint">lint</a>
    <a href="refL.html#lintAll">lintAll</a>
@@ -2649,6 +2665,9 @@ abbreviations:
    <a href="refD.html#dirname">dirname</a>
    <a href="refE.html#errno">errno</a>
    <a href="refN.html#native">native</a>
+   <a href="refS.html#struct">struct</a>
+   <a href="refL.html#lisp">lisp</a>
+   <a href="refE.html#exec">exec</a>
    <a href="refC.html#call">call</a>
    <a href="refT.html#tick">tick</a>
    <a href="refK.html#kill">kill</a>

@@ -1,4 +1,4 @@
-# 11sep14abu
+# 12nov14abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -77,7 +77,7 @@
 (equ C_LFLAG 12)
 (equ C_CC 16)
 (equ OPOST 1)
-(equ ONLCR 4)
+(equ ONLCR 2)
 (equ ISIG 128)
 (equ VMIN 16)
 (equ VTIME 17)

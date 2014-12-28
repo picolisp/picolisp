@@ -1,4 +1,4 @@
-# 07sep14abu
+# 20dec14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -739,11 +739,11 @@
    link  # Close bind frame
    ld Y L  # Y on frame
    push 0  # Init env swap
-   push (EnvNext)   # Save current 'next'
-   push (EnvArgs)  # and varArgs base
+   push (EnvArgs)  # Save varArgs base
    atom X  # Any args?
    if nz  # No
       ld (EnvArgs) 0
+      push (EnvNext)   # Save current 'next'
       ld (EnvNext) 0
    else
       link  # Build varArgs frame
@@ -755,8 +755,9 @@
          atom X  # More args?
       until nz  # No
       ld (EnvArgs) S  # Set new varArgs base
-      ld (EnvNext) L  # Set new 'next'
       link  # Close varArgs frame
+      push (EnvNext)   # Save current 'next'
+      ld (EnvNext) (L)  # Set new 'next'
    end
    ld (EnvBind) Y  # Close bind frame
    xchg (EnvCls) ((Y) IV)  # 'cls'
@@ -773,12 +774,12 @@
       cmp Y C  # End?
    until eq  # Yes
    prog Z  # Run body
+   pop (EnvNext)   # Restore 'next'
    null (EnvArgs)  # VarArgs?
    if nz  # Yes
       drop  # Drop varArgs
    end
    pop (EnvArgs)  # Restore varArgs base
-   pop (EnvNext)   # and 'next'
    add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
@@ -3160,12 +3161,9 @@
    pop E
    ret
 
-# (call 'any ..) -> flg
-(code 'doCall 2)
-   push X
-   push Z
+(code 'execArgsE_SXZ)  # Y
+   pop Y  # Get return address
    ld X (E CDR)  # X on args
-   push E  # Save expression
    push 0  # End-of-buffers marker
    call evSymX_E  # Pathname
    call pathStringE_SZ  # Write to stack buffer
@@ -3187,8 +3185,24 @@
       ld X (X)  # Follow chain
       null (X)  # Done?
    until z  # Yes
-   ld X (X I)  # Retrieve expression
    call flushAll  # Flush all output channels
+   jmp (Y)  # Return
+
+# (exec 'any ..)
+(code 'doExec 2)
+   call execArgsE_SXZ  # Prepare arguments
+   cc setpgid(0 0)  # Set process group
+   cc execvp((S) S)  # Execute program
+   jmp execErrS  # Error if failed
+
+# (call 'any ..) -> flg
+(code 'doCall 2)
+   push X
+   push Y
+   push Z
+   push E  # Save expression
+   call execArgsE_SXZ  # Prepare arguments
+   ld X (X I)  # Retrieve expression
    cc fork()  # Fork child process
    nul4  # In child?
    if z  # Yes
@@ -3237,6 +3251,7 @@
          ld (At2) A  # Exit status in '@@'
          add S I  # Drop expression
          pop Z
+         pop Y
          pop X
          ret
       end

@@ -14,8 +14,9 @@
 <dt><a name="*CPU"><code>*CPU</code></a>
 <dd>(64-bit version only) A global variable holding the target CPU
 (architecture). Possible values include <code>"x86-64"</code>,
-<code>"ppc64"</code> or <code>"emu"</code>. See also <code><a
-href="refO.html#*OS">*OS</a></code>.
+<code>"ppc64"</code>, <code>"emu"</code> or <code>"JVM"</code>. See also
+<code><a href="refO.html#*OS">*OS</a></code> and <code><a
+href="refV.html#version">version</a></code>.
 
 <pre><code>
 : *CPU
@@ -64,7 +65,8 @@ internally to build the index key.
 <dd>Calls an external system command. The <code>any</code> arguments specify the
 command and its arguments. Returns <code>T</code> if the command was executed
 successfully. The (system dependent) exit status code of the child process is
-stored in the global variable <code><a href="ref_.html#@@">@@</a></code>.
+stored in the global variable <code><a href="ref_.html#@@">@@</a></code>. See
+also <code><a href="refE.html#exec">exec</a></code>.
 
 <pre><code>
 : (when (call 'test "-r" "file.l")  # Test if file exists and is readable
@@ -136,7 +138,36 @@ href="refC.html#cXr">c..r</a></code>.
 -> 1
 </code></pre>
 
-<dt><a name="cXr"><code>(c[ad]*ar 'var) -> any</code></a>
+<dt>
+<a name="caar"></a>
+<a name="cadr"></a>
+<a name="cdar"></a>
+<a name="cddr"></a>
+<a name="caaar"></a>
+<a name="caadr"></a>
+<a name="cadar"></a>
+<a name="caddr"></a>
+<a name="cdaar"></a>
+<a name="cdadr"></a>
+<a name="cddar"></a>
+<a name="cdddr"></a>
+<a name="caaaar"></a>
+<a name="caaadr"></a>
+<a name="caadar"></a>
+<a name="caaddr"></a>
+<a name="cadaar"></a>
+<a name="cadadr"></a>
+<a name="caddar"></a>
+<a name="cadddr"></a>
+<a name="cdaaar"></a>
+<a name="cdaadr"></a>
+<a name="cdadar"></a>
+<a name="cdaddr"></a>
+<a name="cddaar"></a>
+<a name="cddadr"></a>
+<a name="cdddar"></a>
+<a name="cddddr"></a>
+<a name="cXr"><code>(c[ad]*ar 'var) -> any</code></a>
 <dt><code>(c[ad]*dr 'lst) -> any</code>
 <dd>List access shortcuts. Combinations of the <code><a
 href="refC.html#car">car</a></code> and <code><a
@@ -717,7 +748,7 @@ href="refJ.html#job">job</a></code> environment.
 -> multiplier
 : (multiplier 7)
 -> ((N) (* 7 N))
-: ((multiplier 7) 3))
+: ((multiplier 7) 3)
 -> 21
 
 : (def 'fiboCounter

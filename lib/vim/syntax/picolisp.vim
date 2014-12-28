@@ -29,8 +29,10 @@ syn keyword PicoLispOperator not == n== = <> =0 =T n0 nT < <= > >= match + - * /
 syn keyword PicoLispFuncs new sym str char name sp? pat? fun? all intern extern qsym loc box? str? ext? touch zap length size format chop pack glue pad align center 
 syn keyword PicoLispFuncs text wrap pre? sub? low? upp? lowc uppc fold val getd set setq def de dm recur undef redef daemon patch xchg on off onOff zero one default 
 syn keyword PicoLispFuncs expr subr let let? use accu push push1 pop cut del queue fifo idx lup cache locale dirname put get prop ; =: : :: putl getl wipe ; meta atom 
-syn keyword PicoLispFuncs pair lst? num? sym? flg? sp? pat? fun? box? str? ext? bool sqrt seed rand max min length size accu format pad oct hex fmt64 money car cdr caar 
-syn keyword PicoLispFuncs cadr cdar cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr cadddr cddddr nth con cons conc circ rot list need full make made chain link yoke
+syn keyword PicoLispFuncs pair lst? num? sym? flg? sp? pat? fun? box? str? ext? bool sqrt seed rand max min length size accu format pad oct hex fmt64 money
+syn keyword PicoLispFuncs car cdr caar cadr cdar cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr cadddr cddddr 
+syn keyword PicoLispFuncs caaaar caaadr caadar caaddr cadaar cadadr caddar cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar
+syn keyword PicoLispFuncs nth con cons conc circ rot list need full make made chain link yoke
 syn keyword PicoLispFuncs copy mix append delete delq replace insert remove place strip split reverse flip trim clip head tail stem fin last member memq mmeq sect diff 
 syn keyword PicoLispFuncs index offset assoc asoq rank sort uniq group length size val set xchg push push1 pop cut queue fifo idx balance get fill apply range load args 
 syn keyword PicoLispFuncs next arg rest pass quote as pid lit eval run macro curry def de dm recur recurse undef box new type isa method meth send try super extra with 
@@ -42,7 +44,7 @@ syn keyword PicoLispFuncs here prEval mail *Class class dm rel var var: new type
 syn keyword PicoLispFuncs begin commit rollback mark free dbck rel dbs dbs+ db: fmt64 tree root fetch store count leaf minKey maxKey genKey useKey init step scan iter prune 
 syn keyword PicoLispFuncs zapTree chkTree db aux collect goal prove -> unify ? cmd argv opt gc raw alarm protect heap env up date time usec stamp dat$ $dat datSym datStr 
 syn keyword PicoLispFuncs strDat expDat day week ultimo tim$ $tim telStr expTel locale allowed allow pwd cd chdir ctty dir dirname call tick kill quit task fork pipe 
-syn keyword PicoLispFuncs timeout mail test bye  
+syn keyword PicoLispFuncs timeout mail test bye
 syn keyword PicoLispDebug lit test $ ! trace traceAll debug pretty pp show loc debug vi em ld lint noLint lintAll fmt64
 
 hi default link PicoLispComment Comment

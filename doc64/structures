@@ -1,4 +1,4 @@
-# 04sep14abu
+# 19dec14abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -152,13 +152,13 @@
          |     symN
          +---- LINK <---+  <-- Bind
                eswp     |
-               Next     |
                Args     |
          +---> LINK ----+  <-- Next
          |     arg1
          |     ...
          |     argN        <-- Args
          +---- LINK  <-- L
+               Next
 
 
       Apply args:

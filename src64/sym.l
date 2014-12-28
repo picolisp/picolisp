@@ -1,4 +1,4 @@
-# 04jun14abu
+# 16nov14abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -3300,28 +3300,32 @@
 
 # (wipe 'sym|lst) -> sym|lst
 (code 'doWipe 2)
+   push X
+   ld X E
    ld E ((E CDR))  # Get arg
    eval  # Eval it
    cmp E Nil  # NIL?
    if ne  # No
       atom E  # List?
       if nz  # No
-         call wipeE  # Wipe it
+         call wipeEX  # Wipe it
       else
          push E  # Save
          ld C E  # Get list
          do
             ld E (C)  # Next symbol
-            call wipeE  # Wipe it
+            call wipeEX  # Wipe it
             ld C (C CDR)
             atom C  # More?
          until nz  # No
          pop E
       end
    end
+   pop X
    ret
 
-(code 'wipeE 0)
+(code 'wipeEX 0)
+   call needSymEX  # Need variable
    ld A (E TAIL)  # Get tail
    sym A  # Extern?
    if z  # No

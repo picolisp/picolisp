@@ -1,4 +1,4 @@
-# 25aug14abu
+# 29nov14abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -617,66 +617,68 @@
    (=: min (or (car Lst) 3))
    (super Var (cdr Lst)) )
 
-(de idxRel (Obj Old Olds New News Hook)
+(de idxRel (Obj Old Old2 Olds New New2 News Hook)
    (let
       (Tree (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
          Aux (mapcar '((S) (get Obj S)) (: aux))
          Aux2 (append Aux (cons Obj)) )
       (setq Aux (conc Aux Obj))
-      (when Old
-         (store Tree (cons Old Aux) NIL (: dbf))
-         (for S Olds
-            (while (nth S (: min))
-               (store Tree (cons (pack S) Aux2) NIL (: dbf))
-               (pop 'S) ) ) )
-      (when (and New (not (get Obj T)))
-         (store Tree (cons New Aux) Obj (: dbf))
+      (and Old (store Tree (cons @ Aux) NIL (: dbf)))
+      (and Old2 (store Tree (cons @ Aux) NIL (: dbf)))
+      (for S Olds
+         (while (nth S (: min))
+            (store Tree (cons (pack S) Aux2) NIL (: dbf))
+            (pop 'S) ) )
+      (unless (get Obj T)
+         (and New (store Tree (cons @ Aux) Obj (: dbf)))
+         (and New2 (store Tree (cons @ Aux) Obj (: dbf)))
          (for S News
             (while (nth S (: min))
                (store Tree (cons (pack S) Aux2) Obj (: dbf))
                (pop 'S) ) ) ) ) )
 
-(de idxRel? (Obj Val Vals Hook)
+(de idxRel? (Obj Val Val2 Vals Hook)
    (let
       (Tree (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
          Aux (mapcar '((S) (get Obj S)) (: aux))
          Aux2 (append Aux (cons Obj)) )
       (setq Aux (conc Aux Obj))
-      (nor
-         (n== Obj (fetch Tree (cons Val Aux)))
-         (find
+      (and
+         (== Obj (fetch Tree (cons Val Aux)))
+         (or (not Val2) (== Obj (fetch Tree (cons Val2 Aux))))
+         (fully
             '((S)
                (loop
-                  (NIL (nth S (: min)))
-                  (NIL (== Obj (fetch Tree (cons (pack S) Aux2))) T)
-                  (nil (pop 'S)) ) )
+                  (NIL (nth S (: min)) T)
+                  (NIL (== Obj (fetch Tree (cons (pack S) Aux2))))
+                  (pop 'S) ) )
             Vals ) ) ) )
 
 (dm rel> (Obj Old New Hook)
    (idxRel Obj
-      Old (split (cdr (chop Old)) " " "^J")
-      New (split (cdr (chop New)) " " "^J")
+      Old NIL (split (cdr (chop Old)) " " "^J")
+      New NIL (split (cdr (chop New)) " " "^J")
       Hook )
    (extra Obj Old New Hook) )
 
 (dm rel?> (Obj Val Hook)
    (and
       (idxRel? Obj
-         Val (split (cdr (chop Val)) " " "^J")
+         Val NIL (split (cdr (chop Val)) " " "^J")
          Hook )
       (extra Obj Val Hook) ) )
 
 (dm lose> (Obj Val Hook)
    (idxRel Obj
-      Val (split (cdr (chop Val)) " " "^J")
-      NIL NIL
+      Val NIL (split (cdr (chop Val)) " " "^J")
+      NIL NIL NIL
       Hook )
    (extra Obj Val Hook) )
 
 (dm keep> (Obj Val Hook)
    (idxRel Obj
-      NIL NIL
-      Val (split (cdr (chop Val)) " " "^J")
+      NIL NIL NIL
+      Val NIL (split (cdr (chop Val)) " " "^J")
       Hook )
    (extra Obj Val Hook) )
 
@@ -686,33 +688,40 @@
 
 (dm rel> (Obj Old New Hook)
    (let Tree (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
-      (when Old
-         (store Tree (cons (ext:Snx Old) Obj T) NIL (: dbf)) )
+      (and Old
+         (ext:Snx Old)
+         (store Tree (cons @ Obj T) NIL (: dbf)) )
       (and New
          (not (get Obj T))
-         (store Tree (cons (ext:Snx New) Obj T) Obj (: dbf)) ) )
+         (ext:Snx New)
+         (store Tree (cons @ Obj T) Obj (: dbf)) ) )
    (extra Obj Old New Hook) )
 
 (dm rel?> (Obj Val Hook)
    (and
-      (== Obj
-         (fetch
-            (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
-            (cons (ext:Snx Val) Obj T) ) )
+      (let S (ext:Snx Val)
+         (or
+            (not S)
+            (== Obj
+               (fetch
+                  (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
+                  (cons S Obj T) ) ) ) )
       (extra Obj Val Hook) ) )
 
 (dm lose> (Obj Val Hook)
-   (store
-      (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
-      (cons (ext:Snx Val) Obj T)
-      NIL (: dbf) )
+   (let? S (ext:Snx Val)
+      (store
+         (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
+         (cons S Obj T)
+         NIL (: dbf) ) )
    (extra Obj Val Hook) )
 
 (dm keep> (Obj Val Hook)
-   (store
-      (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
-      (cons (ext:Snx Val) Obj T)
-      Obj (: dbf) )
+   (let? S (ext:Snx Val)
+      (store
+         (tree (: var) (: cls) (or Hook (and (: hook) (get Obj @))))
+         (cons S Obj T)
+         Obj (: dbf) ) )
    (extra Obj Val Hook) )
 
 
@@ -746,10 +755,10 @@
 
 (dm rel> (Obj Old New Hook)
    (idxRel Obj
-      (fold Old)
+      Old (fold Old)
       (extract '((L) (extract fold L))
          (split (cdr (chop Old)) " " "^J") )
-      (fold New)
+      New (fold New)
       (extract '((L) (extract fold L))
          (split (cdr (chop New)) " " "^J") )
       Hook )
@@ -757,26 +766,28 @@
 
 (dm rel?> (Obj Val Hook)
    (and
-      (idxRel? Obj
-         (fold Val)
-         (extract '((L) (extract fold L))
-            (split (cdr (chop Val)) " " "^J") )
-         Hook )
+      (let V (fold Val)
+         (or (not V)
+            (idxRel? Obj
+               Val V
+               (extract '((L) (extract fold L))
+                  (split (cdr (chop Val)) " " "^J") )
+               Hook ) ) )
       (extra Obj Val Hook) ) )
 
 (dm lose> (Obj Val Hook)
    (idxRel Obj
-      (fold Val)
+      Val (fold Val)
       (extract '((L) (extract fold L))
          (split (cdr (chop Val)) " " "^J") )
-      NIL NIL
+      NIL NIL NIL
       Hook )
    (extra Obj Val Hook) )
 
 (dm keep> (Obj Val Hook)
    (idxRel Obj
-      NIL NIL
-      (fold Val)
+      NIL NIL NIL
+      Val (fold Val)
       (extract '((L) (extract fold L))
          (split (cdr (chop Val)) " " "^J") )
       Hook )

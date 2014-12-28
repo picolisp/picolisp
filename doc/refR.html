@@ -303,14 +303,14 @@ symbol <code>recurse</code> is bound to the function definition
    (when (lt0 N)
       (quit "Bad fibonacci" N) )
    (recur (N)
-      (if (> 2 N)
+      (if (>= 2 N)
          1
          (+
             (recurse (dec N))
             (recurse (- N 2)) ) ) ) )
 -> fibonacci
 : (fibonacci 22)
--> 28657
+-> 17711
 : (fibonacci -7)
 -7 -- Bad fibonacci
 </code></pre>
@@ -718,6 +718,18 @@ can be supplied. See also <code><a href="refU.html#up">up</a></code>.
 6
 OK
 -> OK
+
+: (de f Prg
+   (let A 12
+      (println (cons 'Prg Prg) (cons 'A A))
+      (run Prg 1) ) )
+-> f
+: (let (Prg 77  A 99)
+   (f
+      (println (cons 'Prg Prg) (cons 'A A)) ) )
+(Prg (println (cons 'Prg Prg) (cons 'A A))) (A . 12)
+(Prg . 77) (A . 99)
+-> (A . 99)
 </code></pre>
 
 </dl>

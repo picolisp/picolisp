@@ -1,4 +1,4 @@
-/* 15sep14abu
+/* 14nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -155,18 +155,20 @@ any doConnect(any ex) {
 
    Push(c1, evSym(cdr(ex)));
    port = evSym(cddr(ex));
-   for (p = lst = server(SOCK_STREAM, Pop(c1), port); p; p = p->ai_next) {
-      if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
-         if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
-            closeOnExec(ex, sd);
-            initInFile(sd,NULL), initOutFile(sd);
-            freeaddrinfo(lst);
-            return boxCnt(sd);
+   if (lst = server(SOCK_STREAM, Pop(c1), port)) {
+      for (p = lst; p; p = p->ai_next) {
+         if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
+            if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
+               closeOnExec(ex, sd);
+               initInFile(sd,NULL), initOutFile(sd);
+               freeaddrinfo(lst);
+               return boxCnt(sd);
+            }
+            close(sd);
          }
-         close(sd);
       }
+      freeaddrinfo(lst);
    }
-   freeaddrinfo(lst);
    return Nil;
 }
 

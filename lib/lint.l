@@ -1,4 +1,4 @@
-# 18sep14abu
+# 20nov14abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -62,7 +62,7 @@
                         (pop '"Y") )
                      (while (and (car "Y") (sym? @))
                         (lintVar (pop '"Y"))
-                        (pop '"Y") )
+                        (lint1 (pop '"Y")) )
                      (mapc lint1 "Y") ) ) )
             (macro
                (lint2 (cdr "X")) )

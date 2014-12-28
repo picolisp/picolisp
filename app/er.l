@@ -1,4 +1,4 @@
-# 06may14abu
+# 14oct14abu
 # (c) Software Lab. Alexander Burger
 
 ### Entity/Relations ###
@@ -38,7 +38,7 @@
 (class +CuSu +Entity)
 (rel nr (+Need +Key +Number))          # Customer/Supplier Number
 (rel sal (+Link) (+Sal))               # Salutation
-(rel nm (+Sn +Idx +String))            # Name
+(rel nm (+Sn +IdxFold +String))        # Name
 (rel nm2 (+String))                    # Name 2
 (rel str (+String))                    # Street
 (rel plz (+Ref +String))               # Zip

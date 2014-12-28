@@ -1,5 +1,20 @@
-# 27sep14abu
+# 18dec14abu
 # (c) Software Lab. Alexander Burger
+
+(de admin "Prg"
+   (out 2
+      (prinl *Pid " + Admin " (stamp))
+      (loop
+         (tell 'bye 2)
+         (NIL (lock))
+         (wait 200) )
+      (for (F . @) (or *Dbs (2))
+         (when (dbck F)
+            (quit "DB Check" (cons F @)) ) )
+      (when (dbgc)
+         (println 'dbgc @) )
+      (run "Prg")
+      (prinl *Pid " - Admin " (stamp)) ) )
 
 ### Local Backup ###
 (de snapshot (Dst . @)
@@ -41,6 +56,11 @@
                      (pack Old '/ (cadr Lst))
                      (pack New '/ (cadr Lst)) )
                   (call 'touch "-r" Src New) ) ) ) ) ) )
+
+(de purge (Dst N)
+   (for D (dir Dst)
+      (when (>= (format D) N)
+         (call 'rm "-rf" (pack Dst '/ D)) ) ) )
 
 ### DB Garbage Collection ###
 (de dbgc ()
@@ -133,7 +153,9 @@
 
 ### DB Check ###
 (de dbCheck ()
-   (and (lock) (quit 'lock @))  # Lock whole database
+   (while (lock)  # Lock whole database
+      (tell 'bye 2)
+      (wait 200) )
    (for (F . N) (or *Dbs (2))  # Low-level integrity check
       (unless (pair (println F N (dbck F T)))
          (quit 'dbck @) ) )
@@ -181,7 +203,7 @@
 # Entity Counts
 (de badECnt ()
    (let Cnt NIL
-      (for (F . @) *Dbs
+      (for (F . @) (or *Dbs (2))
          (for (This (seq F) This (seq This))
             (and
                (isa '+Entity This)
@@ -235,7 +257,7 @@
             (for Obj X
                (re-index Obj Var Hook) ) )
          (NIL
-            (for (Obj X Obj (seq Obj))
+            (for (Obj (seq X) Obj (seq Obj))
                (and (isa Cls Obj) (re-index Obj Var Hook)) ) ) )
       (commit) ) )
 

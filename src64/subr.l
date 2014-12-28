@@ -1,4 +1,4 @@
-# 07sep14abu
+# 14nov14abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -273,6 +273,9 @@
    ld X E
    ld E ((E CDR))  # Get arg
    eval
+   num E  # Need variable
+   jnz varErrEX
+   ld E (E)  # Take CAR
    num E  # Need variable
    jnz varErrEX
    ld E (E)  # Take CAR
@@ -855,30 +858,43 @@
    eval
    atom E  # Pair?
    if z  # Yes
-      link
-      push E  # <L I> Safe
-      link
       ld Y (Y CDR)
       atom Y  # Second arg?
-      ldnz E 0  # Yes
-      if z  # No
+      if nz  # No
+         ld Y E  # Get 'lst' in Y
+         ld X (Y)  # Keep CAR
+         do
+            ld Y (Y CDR)  # Next cell?
+            atom Y
+         while z  # Yes
+            cmp Y E  # Circular?
+         while ne  # No
+            xchg X (Y)  # Swap
+         loop
+         ld (E) X  # Store new CAR
+      else
+         link
+         push E  # <L I> 'lst'
+         link
          call evCntXY_FE  # Eval 'cnt'
+         if nz
+            ld Y (L I)  # Retrieve 'lst'
+            ld X (Y)  # Keep CAR
+            do
+               dec E  # Decrement count
+            while nz
+               ld Y (Y CDR)  # Next cell?
+               atom Y
+            while z  # Yes
+               cmp Y (L I)  # Circular?
+            while ne  # No
+               xchg X (Y)  # Swap
+            loop
+            ld ((L I)) X  # Store new CAR
+         end
+         ld E (L I)
+         drop
       end
-      ld Y (L I)  # Retrieve 'lst'
-      ld X (Y)  # Keep CAR
-      do
-         dec E  # Decrement count
-      while nz
-         ld Y (Y CDR)  # Next cell?
-         atom Y
-      while z  # Yes
-         cmp Y (L I)  # Circular?
-      while ne  # No
-         xchg X (Y)  # Swap
-      loop
-      ld ((L I)) X  # Store new CAR
-      ld E (L I)
-      drop
    end
    pop Y
    pop X
@@ -2822,6 +2838,7 @@
             add C (hex "10")  # Increment count
          loop
       else  # Big number
+         off E SIGN  # Make positive
          ld C (hex "82")  # Count '8' significant bytes
          do
             ld A (E DIG)  # Keep digit

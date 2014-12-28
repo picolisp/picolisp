@@ -1,4 +1,4 @@
-/* 19jun14abu
+/* 09nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,9 +24,9 @@ typedef enum {NO,YES} bool;
 
 static char *File, *Dir, *Data;
 static off_t Size;
-static bool Hot;
+static bool Safe, Hot;
 
-static char Ciphers[] = "ECDHE-RSA-RC4-SHA:RC4:HIGH:!MD5:!aNULL:!EDH";
+static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
 static char Get[] =
    "GET /%s HTTP/1.0\r\n"
@@ -51,9 +51,18 @@ static int sslConnect(SSL *ssl, char *node, char *service) {
          if ((sd = socket(p->ai_family, p->ai_socktype, 0)) >= 0) {
             if (connect(sd, p->ai_addr, p->ai_addrlen) == 0) {
                SSL_set_fd(ssl, sd);
-               if (SSL_connect(ssl) >= 0) {
+               if (SSL_connect(ssl) == 1) {
+                  X509 *cert;
+
                   freeaddrinfo(lst);
-                  return sd;
+                  if (Safe)
+                     return sd;
+                  if (cert = SSL_get_peer_certificate(ssl)) {
+                     X509_free(cert);
+                     if (SSL_get_verify_result(ssl) == X509_V_OK)
+                        return sd;
+                  }
+                  return -1;
                }
             }
             close(sd);
@@ -124,15 +133,23 @@ static void doSigTerm(int n __attribute__((unused))) {
    exit(0);
 }
 
+static void iSignal(int n, void (*foo)(int)) {
+   struct sigaction act;
+
+   act.sa_handler = foo;
+   sigemptyset(&act.sa_mask);
+   act.sa_flags = 0;
+   sigaction(n, &act, NULL);
+}
+
 // ssl host port url
-// ssl host port url file
-// ssl host port url key file
-// ssl host port url key file dir sec
+// ssl host port url [key] file
+// ssl host port url key file dir sec [min]
 int main(int ac, char *av[]) {
    bool dbg;
    SSL_CTX *ctx;
    SSL *ssl;
-   int n, sec, getLen, lenLen, fd, sd;
+   int n, sec, lim, to, getLen, lenLen, fd, sd;
    DIR *dp;
    struct dirent *p;
    struct stat st;
@@ -140,18 +157,22 @@ int main(int ac, char *av[]) {
 
    if (dbg = strcmp(av[ac-1], "+") == 0)
       --ac;
-   if (!(ac >= 4 && ac <= 6  ||  ac == 8))
-      giveup("host port url [[key] file] | host port url key file dir sec");
+   if (!(ac >= 4 && ac <= 6  ||  ac >= 8 && ac <= 9))
+      giveup("host port url [[key] file] | host port url key file dir sec [min]");
+   if (*av[2] == '-')
+      ++av[2],  Safe = YES;
    if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
       giveup("Names too long");
    getLen = sprintf(get, Get, av[3], av[1], av[2]);
 
    SSL_library_init();
    SSL_load_error_strings();
-   if (!(ctx = SSL_CTX_new(SSLv23_client_method()))) {
+   if (!(ctx = SSL_CTX_new(SSLv23_client_method())) || !SSL_CTX_set_default_verify_paths(ctx)) {
       ERR_print_errors_fp(stderr);
       giveup("SSL init");
    }
+   SSL_CTX_set_options(ctx,
+      SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
    SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
 
@@ -187,15 +208,18 @@ int main(int ac, char *av[]) {
    File = av[5];
    Dir = av[6];
    sec = atoi(av[7]);
-   signal(SIGINT, doSigTerm);
-   signal(SIGTERM, doSigTerm);
+   iSignal(SIGINT, doSigTerm);
+   iSignal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
-   signal(SIGALRM, SIG_IGN);
+   lim = 0;
+   if (ac > 8)
+      to = lim = 60 * atoi(av[8]);
    for (;;) {
       if (*File && (fd = open(File, O_RDWR)) >= 0) {
          if (fstat(fd,&st) < 0  ||  st.st_size == 0)
             close(fd);
          else {
+            to = lim;
             lockFile(fd);
             if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
                giveup("Can't access");
@@ -210,7 +234,6 @@ int main(int ac, char *av[]) {
             close(fd);
             for (;;) {
                if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
-                  alarm(420);
                   if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&       // key
                            SSL_write(ssl, len, lenLen) == lenLen  && // length
@@ -218,11 +241,9 @@ int main(int ac, char *av[]) {
                            SSL_write(ssl, "T", 1) == 1  &&           // ack
                            SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
                      Hot = NO;
-                     alarm(0);
                      sslClose(ssl,sd);
                      break;
                   }
-                  alarm(0);
                   sslClose(ssl,sd);
                }
                if (dbg)
@@ -236,15 +257,17 @@ int main(int ac, char *av[]) {
          while (p = readdir(dp)) {
             if (p->d_name[0] != '.') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
-               if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&
-                        (sd = sslConnect(ssl, av[1], av[2])) >= 0 ) {
-                  if (SSL_write(ssl, get, getLen) == getLen  &&
-                        (!*av[4] || sslFile(ssl,av[4]))  &&       // key
-                        SSL_write(ssl, buf, n) == n  &&           // path
-                        SSL_write(ssl, "\n", 1) == 1  &&          // nl
-                        sslFile(ssl, nm) )                        // file
-                     unlink(nm);
-                  sslClose(ssl,sd);
+               if ((n = readlink(nm, buf, sizeof(buf))) > 0) {
+                  to = lim;
+                  if ((sd = sslConnect(ssl, av[1], av[2])) >= 0 ) {
+                     if (SSL_write(ssl, get, getLen) == getLen  &&
+                           (!*av[4] || sslFile(ssl,av[4]))  &&       // key
+                           SSL_write(ssl, buf, n) == n  &&           // path
+                           SSL_write(ssl, "\n", 1) == 1  &&          // nl
+                           sslFile(ssl, nm) )                        // file
+                        unlink(nm);
+                     sslClose(ssl,sd);
+                  }
                }
                if (dbg)
                   ERR_print_errors_fp(stderr);
@@ -252,6 +275,8 @@ int main(int ac, char *av[]) {
          }
          closedir(dp);
       }
+      if (lim && (to -= sec) < 0)
+         exit(0);
       sleep(sec);
    }
 }

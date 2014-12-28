@@ -1,4 +1,4 @@
-# 31jul14abu
+# 07oct14abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -12,7 +12,8 @@
 
 (setq
    *Css "@lib.css"
-   *Blob "blob/app/"
+   *Pool "db/app/"
+   *Blob "db/app/blob/"
    *Salt (16 . "$6$@1$") )
 
 (load "app/er.l" "app/lib.l" "app/gui.l")
@@ -43,7 +44,7 @@
 # Entry point
 (de main ()
    (call 'mkdir "-p" "db/app/" *Blob)
-   (pool "db/app/" *Dbs)
+   (pool *Pool *Dbs)
    (unless (seq *DB)
       (load "app/init.l") ) )
 

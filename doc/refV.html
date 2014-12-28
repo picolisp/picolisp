@@ -82,6 +82,12 @@ href="refM.html#meta">meta</a></code>, <code><a href="ref_.html#:">:</a></code>,
 href="ref_.html#::">::</a></code>.
 
 <pre><code>
+: (class +A)
+-> +A
+: (var a . 1)
+-> 1
+: (var b . 2)
+-> 2
 : (object 'O '(+A) 'a 9 'b 8)
 -> O
 : (with 'O (list (: a) (: b) (var: a) (var: b)))
@@ -92,7 +98,9 @@ href="ref_.html#::">::</a></code>.
 <dd>Prints the current version as a string of dot-separated numbers, and returns
 the current version as a list of numbers. The JVM- and C-versions print an
 additional "JVM" or "C", respectively, separated by a space. When
-<code>flg</code> is non-NIL, printing is suppressed.
+<code>flg</code> is non-NIL, printing is suppressed. See also <code><a
+href="refC.html#*CPU">*CPU</a></code> and <code><a
+href="refO.html#*OS">*OS</a></code>.
 
 <pre><code>
 $ pil -version

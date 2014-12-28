@@ -1,4 +1,4 @@
-// 25jun14abu
+// 09dec14abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -135,7 +135,7 @@ public class PicoLisp {
       return null;  /* Brain-dead Java */
    }
 
-   final static Constructor javaConstructor(Any ex, Class cls, Class[] par)  throws NoSuchMethodException {
+   final static Constructor javaConstructor(Class cls, Class[] par) throws NoSuchMethodException {
    looking:
       for (Constructor m : cls.getConstructors()) {
          Class<?>[] types = m.getParameterTypes();
@@ -149,7 +149,7 @@ public class PicoLisp {
       throw new NoSuchMethodException();
    }
 
-   final static Method javaMethod(Any ex, Class cls, String nm, Class[] par)  throws NoSuchMethodException {
+   final static Method javaMethod(Class cls, String nm, Class[] par) throws NoSuchMethodException {
    looking:
       for (Method m : cls.getMethods()) {
          if (m.getName().equals(nm)) {
@@ -250,7 +250,7 @@ public class PicoLisp {
    final static Any date(int y, int m, int d) {
       int n;
 
-      if (m<1 || m>12 || d<1 || d>MonLen[m] && (m!=2 || d!=29 || y%4!=0 || y%100==0 && y%400!=0))
+      if (y<0 || m<1 || m>12 || d<1 || d>MonLen[m] && (m!=2 || d!=29 || y%4!=0 || y%100==0 && y%400!=0))
          return Nil;
       n = (12*y + m - 3) / 12;
       return new Number((4404*y+367*m-1094)/12 - 2*n + n/4 - n/100 + n/400 + d);
@@ -277,7 +277,7 @@ public class PicoLisp {
    }
 
    final static Any time(int h, int m, int s) {
-      if (h < 0 || h > 23  ||  m < 0 || m > 59  ||  s < 0 || s > 60)
+      if (h < 0  ||  m < 0 || m > 59  ||  s < 0 || s > 60)
          return Nil;
       return new Number(h * 3600 + m * 60 + s);
    }

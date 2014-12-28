@@ -1,4 +1,4 @@
-# 08sep14abu
+# 08dec14abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -302,6 +302,7 @@
    initFun NIL       "!"         doBreak
    initFun NIL       "e"         doE
    initFun NIL       "$"         doTrace
+   initFun NIL       "exec"      doExec
    initFun NIL       "call"      doCall
    initFun NIL       "tick"      doTick
    initFun NIL       "ipid"      doIpid

@@ -1,4 +1,4 @@
-/* 25mar14abu
+/* 08dec14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -516,6 +516,7 @@ any doEqT(any);
 any doEqual(any);
 any doErr(any);
 any doEval(any);
+any doExec(any);
 any doExt(any);
 any doExtern(any);
 any doExtQ(any);

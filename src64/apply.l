@@ -1,4 +1,4 @@
-# 25mar14abu
+# 20dec14abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -140,11 +140,11 @@
          link
          ld (EnvBind) L  # Close bind frame
          push 0  # Init env swap
-         push (EnvNext)   # Save current 'next'
-         push (EnvArgs)  # and varArgs base
+         push (EnvArgs)  # Save varArgs base
          cmp Y Z  # Any args?
          if eq  # No
             ld (EnvArgs) 0
+            push (EnvNext)   # Save current 'next'
             ld (EnvNext) 0
          else
             link  # Build varArgs frame
@@ -156,17 +156,18 @@
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
-            ld (EnvNext) L  # Set new 'next'
             link  # Close varArgs frame
+            push (EnvNext)   # Save current 'next'
+            ld (EnvNext) (L)  # Set new 'next'
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
+         pop (EnvNext)   # Restore 'next'
          null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
          pop (EnvArgs)  # Restore varArgs base
-         pop (EnvNext)   # and 'next'
          add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
@@ -306,11 +307,11 @@
          link
          ld (EnvBind) L  # Close bind frame
          push 0  # Init env swap
-         push (EnvNext)   # Save current 'next'
-         push (EnvArgs)  # and varArgs base
+         push (EnvArgs)  # Save varArgs base
          cmp Y Z  # Any args?
          if eq  # No
             ld (EnvArgs) 0
+            push (EnvNext)   # Save current 'next'
             ld (EnvNext) 0
          else
             link  # Build varArgs frame
@@ -322,17 +323,18 @@
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
-            ld (EnvNext) L  # Set new 'next'
             link  # Close varArgs frame
+            push (EnvNext)   # Save current 'next'
+            ld (EnvNext) (L)  # Set new 'next'
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
+         pop (EnvNext)   # Restore 'next'
          null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
          pop (EnvArgs)  # Restore varArgs base
-         pop (EnvNext)   # and 'next'
          add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
@@ -494,11 +496,11 @@
          link
          ld (EnvBind) L  # Close bind frame
          push 0  # Init env swap
-         push (EnvNext)   # Save current 'next'
-         push (EnvArgs)  # and varArgs base
+         push (EnvArgs)  # Save varArgs base
          cmp Y Z  # Any args?
          if eq  # No
             ld (EnvArgs) 0
+            push (EnvNext)   # Save current 'next'
             ld (EnvNext) 0
          else
             link  # Build varArgs frame
@@ -510,17 +512,18 @@
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
-            ld (EnvNext) L  # Set new 'next'
             link  # Close varArgs frame
+            push (EnvNext)   # Save current 'next'
+            ld (EnvNext) (L)  # Set new 'next'
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
+         pop (EnvNext)   # Restore 'next'
          null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
          pop (EnvArgs)  # Restore varArgs base
-         pop (EnvNext)   # and 'next'
          add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols
@@ -660,11 +663,11 @@
          link
          ld (EnvBind) L  # Close bind frame
          push 0  # Init env swap
-         push (EnvNext)   # Save current 'next'
-         push (EnvArgs)  # and varArgs base
+         push (EnvArgs)  # Save varArgs base
          cmp Y Z  # Any args?
          if eq  # No
             ld (EnvArgs) 0
+            push (EnvNext)   # Save current 'next'
             ld (EnvNext) 0
          else
             link  # Build varArgs frame
@@ -676,17 +679,18 @@
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
-            ld (EnvNext) L  # Set new 'next'
             link  # Close varArgs frame
+            push (EnvNext)   # Save current 'next'
+            ld (EnvNext) (L)  # Set new 'next'
          end
          ld Z (C CDR)  # Body in Z
          prog Z  # Run body
+         pop (EnvNext)   # Restore 'next'
          null (EnvArgs)  # VarArgs?
          if nz  # Yes
             drop  # Drop varArgs
          end
          pop (EnvArgs)  # Restore varArgs base
-         pop (EnvNext)   # and 'next'
          add S I  # Drop env swap
          pop L  # Get link
          do  # Unbind symbols

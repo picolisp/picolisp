@@ -1,4 +1,4 @@
-# 04sep14abu
+# 22dec14abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -107,7 +107,10 @@
                   (htPrin "Prg") ) ) )
          (off "*Chart")
          (--)
-         (eval (: show)) ) ) )
+         (and
+            (: show)
+            (info @)
+            (in (: show) (echo)) ) ) ) )
 
 # Disable form
 (de disable (Flg)
@@ -273,6 +276,7 @@
 (de url (Url . @)
    (when Url
       (off *PRG)
+      (timeout `(* 3600 1000))
       (redirect (baseHRef) *SesId Url "?"
          (pack
             (make
@@ -924,7 +928,7 @@
    (<tip> (eval (: tip)) (extra "Var")) )
 
 (dm js> ()
-   (pack (extra) "&?" (ht:Fmt (eval (: tip)))) )
+   (pack (extra) "&?" (ht:Fmt (glue "^J" (eval (: tip))))) )
 
 
 (class +Tiny)
@@ -1288,9 +1292,10 @@
 (class +ShowButton +Button)
 
 (dm T (Flg Exe)
-   (super ,"Show"
-      (list '=: 'home 'show (lit Exe)) )
-   (and Flg (=: home show Exe)) )
+   (let F (tmp (basename *Url) "=")
+      (super ,"Show" (list 'out F Exe))
+      (=: home show F)
+      (and Flg (out F (eval Exe))) ) )
 
 
 (class +Checkbox +field)
@@ -2301,9 +2306,10 @@
          ((== *Lock (: obj)) T)
          (*Lock (rollback) (off *Lock)) ) ) )
 
-(de panel (Able Txt Del Dlg Var Cls Hook Msg Exe)
+(de panel (Able Txt Del Dlg Var Cls Hook Msg Exe . Prg)
    (<spread>
       (editButton Able Exe)
+      (run Prg 1)
       (delButton
          (cond
             ((=T Able) Del)

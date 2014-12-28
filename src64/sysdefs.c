@@ -1,4 +1,4 @@
-/* 11sep14abu
+/* 12nov14abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -24,6 +24,10 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+#ifndef O_ASYNC
+#define O_ASYNC 0
+#endif
 
 static int SigNums[] = {
    SIGHUP, SIGINT, SIGUSR1, SIGUSR2, SIGPIPE, SIGALRM, SIGTERM,

@@ -1,4 +1,4 @@
-# 29nov14abu
+# 14jan15abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -624,14 +624,14 @@
          Aux2 (append Aux (cons Obj)) )
       (setq Aux (conc Aux Obj))
       (and Old (store Tree (cons @ Aux) NIL (: dbf)))
-      (and Old2 (store Tree (cons @ Aux) NIL (: dbf)))
+      (and Old2 (store Tree (cons @ Aux2) NIL (: dbf)))
       (for S Olds
          (while (nth S (: min))
             (store Tree (cons (pack S) Aux2) NIL (: dbf))
             (pop 'S) ) )
       (unless (get Obj T)
          (and New (store Tree (cons @ Aux) Obj (: dbf)))
-         (and New2 (store Tree (cons @ Aux) Obj (: dbf)))
+         (and New2 (store Tree (cons @ Aux2) Obj (: dbf)))
          (for S News
             (while (nth S (: min))
                (store Tree (cons (pack S) Aux2) Obj (: dbf))
@@ -645,7 +645,7 @@
       (setq Aux (conc Aux Obj))
       (and
          (== Obj (fetch Tree (cons Val Aux)))
-         (or (not Val2) (== Obj (fetch Tree (cons Val2 Aux))))
+         (or (not Val2) (== Obj (fetch Tree (cons Val2 Aux2))))
          (fully
             '((S)
                (loop
@@ -747,7 +747,7 @@
 
 
 # (+IdxFold +relation) [cnt [hook]]
-(class +IdxFold +Fold +Ref)
+(class +IdxFold +Ref)
 
 (dm T (Var Lst)
    (=: min (or (car Lst) 3))

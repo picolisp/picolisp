@@ -177,11 +177,12 @@ browser. You should see an empty page with a single line of text.
 framework ("@lib/form.l", it will be needed later for <a
 href="#forms">interactive forms</a>).
 
-<p>Then the <code>server</code> function is called with a port number and a
-default URL. It will listen on that port for incoming HTTP requests in an
-endless loop. Whenever a GET request arrives on port 8080, the file "project.l"
-will be <code><a href="refL.html#load">(load)</a></code>ed, causing the
-evaluation (= execution) of all its Lisp expressions.
+<p>Then the <code>-server</code> function is called (a front-end to
+<code>server</code>) with a port number and a default URL. It will listen on
+that port for incoming HTTP requests in an endless loop. Whenever a GET request
+arrives on port 8080, the file "project.l" will be <code><a
+href="refL.html#load">(load)</a></code>ed, causing the evaluation (= execution)
+of all its Lisp expressions.
 
 <p>During that execution, all data written to the current output channel is sent
 directly to to the browser. The code in "project.l" is responsible to produce

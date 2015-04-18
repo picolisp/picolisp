@@ -134,6 +134,7 @@
 (equ SOCK_STREAM 2)
 (equ SOCK_DGRAM 1)
 (equ AF_UNSPEC 0)
+(equ AF_UNIX 1)
 (equ AF_INET6 26)
 (equ SOL_SOCKET 65535)
 (equ SO_REUSEADDR 4)

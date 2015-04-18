@@ -1,4 +1,4 @@
-# 07jun12abu
+# 13feb15abu
 # (c) Software Lab. Alexander Burger
 
 ### ht:Prin ###
@@ -12,14 +12,16 @@
 
 
 ### ht:Pack ###
-(test "A+B C"
+(test "A+B%20C"
    (ht:Pack '("A" "+" "B" "%" "2" "0" "C")) )
+(test "A+B C"
+   (ht:Pack '("A" "+" "B" "%" "2" "0" "C") T) )
 (test "a b>c"
-   (ht:Pack '("a" "%" "2" "0" "b" "&" "g" "t" ";" "c")) )
+   (ht:Pack '("a" "%" "2" "0" "b" "&" "g" "t" ";" "c") T) )
 (test "a€z"
    (ht:Pack '("a" "&" "#" "8" "3" "6" "4" ";" "z")) )
 (test "äöü"
-   (ht:Pack '("%" "C" "3" "%" "A" "4" "%" "C" "3" "%" "B" "6" "%" "C" "3" "%" "B" "C")) )
+   (ht:Pack '("%" "C" "3" "%" "A" "4" "%" "C" "3" "%" "B" "6" "%" "C" "3" "%" "B" "C") T) )
 
 
 ### ht:Read ###

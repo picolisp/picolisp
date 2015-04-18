@@ -1,4 +1,4 @@
-# 20nov14abu
+# 03jan15abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -75,11 +75,12 @@
                   (if (atom (cadr "X"))
                      (lintVar (cadr "X"))
                      (for (L (cadr "X") L (cddr L))
-                        (lintDup (car L)
-                           (extract '((X F) (and F X))
-                              (cddr L)
-                              '(T NIL .) ) )
-                        (lintVar (car L))
+                        (if (pair (car L))
+                           (mapc lintVar
+                              (fish
+                                 '((X) (and X (atom X)))
+                                 (car L) ) )
+                           (lintVar (car L)) )
                         (lint1 (cadr L)) ) )
                   (mapc lint1 (cddr "X")) ) )
             (use

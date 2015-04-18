@@ -1,4 +1,4 @@
-# 13mar14abu
+# 14mar15abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -12,8 +12,9 @@
       (println '=======) )
    (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
    (show This)
-   (for "X" '(*Gate *Agent *Host *Port *PRG *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)
+   (for "X" '(*Agent *Host *Port *Url *SesId *ConId *Tab *Gui *Btn *Get *ID)
       (println "X" (val "X")) )
+   (println '*PRG *PRG (val *PRG))
    (for "X" (env)
       (unless (== (car "X") (cdr "X"))
          (println (car "X") (cdr "X")) ) )

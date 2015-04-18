@@ -1,4 +1,4 @@
-# 11sep14abu
+# 29jan15abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -129,6 +129,7 @@
 (equ SOCK_STREAM 1)
 (equ SOCK_DGRAM 2)
 (equ AF_UNSPEC 0)
+(equ AF_UNIX 1)
 (equ AF_INET6 10)
 (equ SOL_SOCKET 1)
 (equ SO_REUSEADDR 2)

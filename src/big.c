@@ -1,4 +1,4 @@
-/* 15jun14abu
+/* 25feb15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1212,7 +1212,7 @@ any doHash(any ex) {
 // (rand ['cnt1 'cnt2] | ['T]) -> cnt | flg
 any doRand(any ex) {
    any x;
-   long n;
+   long n, m;
 
    x = cdr(ex);
    Seed = Seed * 6364136223846793005LL + 1;
@@ -1221,5 +1221,7 @@ any doRand(any ex) {
    if (x == T)
       return hi(Seed) & 1 ? T : Nil;
    n = xCnt(ex,x);
-   return boxCnt(n + hi(Seed) % (evCnt(ex, cddr(ex)) + 1 - n));
+   if (m = evCnt(ex, cddr(ex)) + 1 - n)
+      n += hi(Seed) % m;
+   return boxCnt(n);
 }

@@ -1,4 +1,4 @@
-# 01dec14abu
+# 21jan15abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -177,7 +177,7 @@
    (let (Tree (tree Var Cls Hook)  Rel (get Cls Var))
       (when (find '((B) (isa '+index B)) (get Rel 'bag))
          (setq Rel @) )
-      (when (isa '+Fold Rel)
+      (when (or (isa '+Fold Rel) (isa '+IdxFold Rel))
          (setq Val (fold Val)) )
       (cond
          ((pair Val)

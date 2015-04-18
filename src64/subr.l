@@ -1,4 +1,4 @@
-# 14nov14abu
+# 21feb15abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -3017,6 +3017,41 @@
          if z  # No
             ld A (L I)  # Retrieve 'any'
             ld E ((X))  # and CAAR
+            call equalAE_F  # Found?
+            break eq  # Yes
+         end
+         ld X (X CDR)  # Next
+      else
+         ld E Nil  # Return NIL
+         drop
+         pop X
+         ret
+      end
+   loop
+   ld E (X)  # Return CAR
+   drop
+   pop X
+   ret
+
+# (rassoc 'any 'lst) -> lst
+(code 'doRassoc 2)
+   push X
+   ld X (E CDR)  # Args
+   ld E (X)  # Eval 'any'
+   eval
+   link
+   push E  # <L I> 'any'
+   link
+   ld E ((X CDR))  # Eval 'lst'
+   eval
+   ld X E  # into X
+   do  # rassoc
+      atom X  # Done?
+      if z  # No
+         atom (X)  # CAR atomic?
+         if z  # No
+            ld A (L I)  # Retrieve 'any'
+            ld E ((X) CDR)  # and CDAR
             call equalAE_F  # Found?
             break eq  # Yes
          end

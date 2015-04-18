@@ -1,4 +1,4 @@
-# 18dec14abu
+# 12mar15abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -11,9 +11,9 @@
       (for (F . @) (or *Dbs (2))
          (when (dbck F)
             (quit "DB Check" (cons F @)) ) )
+      (run "Prg")
       (when (dbgc)
          (println 'dbgc @) )
-      (run "Prg")
       (prinl *Pid " - Admin " (stamp)) ) )
 
 ### Local Backup ###
@@ -513,6 +513,23 @@
       ((ext? X) (print X))
       ((type X) (print (val X)))
       (NIL (prin "`") (dumpExt X) (prin ")")) ) )
+
+# Dump/load data and blobs
+(de dumpDB ("Name" . "Prg")
+   (out (pack "Name" ".l") (run "Prg"))
+   (when (dir (tmp))
+      (out (pack "Name" ".tgz")
+         (chdir (tmp)
+            (in (append '("tar" "cfz" "-") (filter format @))
+               (echo) ) ) ) ) )
+
+(de loadDB ("Name")
+   (let Tgz (pack "Name" ".tgz")
+      (when (and (info Tgz) (n0 (car @)))
+         (in Tgz
+            (chdir (tmp)
+               (out '("tar" "xfz" "-") (echo)) ) ) ) )
+   (load (pack "Name" ".l") ) )
 
 ### Debug ###
 `*Dbg

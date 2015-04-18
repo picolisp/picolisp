@@ -1,4 +1,4 @@
-/* 14nov14abu
+/* 21feb15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1282,6 +1282,19 @@ any doAssoc(any x) {
    x = cdr(x),  y = EVAL(car(x));
    for (x = Pop(c1);  isCell(y);  y = cdr(y))
       if (isCell(car(y)) && equal(x,caar(y)))
+         return car(y);
+   return Nil;
+}
+
+// (rassoc 'any 'lst) -> lst
+any doRassoc(any x) {
+   any y;
+   cell c1;
+
+   x = cdr(x),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  y = EVAL(car(x));
+   for (x = Pop(c1);  isCell(y);  y = cdr(y))
+      if (isCell(car(y)) && equal(x,cdar(y)))
          return car(y);
    return Nil;
 }

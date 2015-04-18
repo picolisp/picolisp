@@ -1,4 +1,4 @@
-# 08nov14abu
+# 02apr15abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -3140,6 +3140,7 @@
    ld (Seed) D  # Save
    ld E (Y)
    eval  # Eval first arg
+   ld A (Seed)  # Random low word
    cmp E Nil  # Any?
    if eq  # No
       shr A (- 32 3)  # Get higher 32 bits
@@ -3152,7 +3153,6 @@
    end
    cmp E TSym  # Boolean
    if eq
-      ld A (Seed)
       rcl A 1  # Highest bit?
       if nc  # No
          ld E Nil  # Return NIL
@@ -3167,12 +3167,14 @@
    call evCntXY_FE  # Get cnt2
    inc E  # Seed % (cnt2 + 1 - cnt1) + cnt1
    sub E (S)
-   ld D (Seed)  # Get 'Seed'
-   shl C 32  # Get middle 64 bits
-   shr A 32
-   or A C
-   ld C 0
-   div E  # Modulus in C
+   if nz  # Skip if zero
+      ld D (Seed)  # Get 'Seed'
+      shl C 32  # Get middle 64 bits
+      shr A 32
+      or A C
+      ld C 0
+      div E  # Modulus in C
+   end
    pop E  # + cnt1
    add E C
    pop Y

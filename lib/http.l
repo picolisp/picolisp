@@ -1,4 +1,4 @@
-# 20nov14abu
+# 17apr15abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -16,6 +16,7 @@
 
 (de *Mimes
    (`(chop "html") "text/html; charset=utf-8")
+   (`(chop "svg") "image/svg+xml; charset=utf-8")
    (`(chop "au") "audio/basic" 3600)
    (`(chop "wav") "audio/x-wav" 3600)
    (`(chop "mp3") "audio/x-mpeg" 3600)
@@ -41,8 +42,8 @@
          (con @ (rest))
          (push '*Mimes (cons L (rest))) ) ) )
 
-(de mimetype (File)
-   (in (list 'file "--brief" "--mime" File)
+(de mimetype (File Typ)
+   (in (list 'file "-b" (if Typ "--mime-type" "--mime") File)
       (line T) ) )
 
 ### HTTP-Client ###
@@ -175,7 +176,7 @@
                      ((cond (*ContL (line)) (*ContLen (ht:Read @)))
                         (for L (split @ '&)
                            (when (setq L (split L "="))
-                              (let? S (_htSet (car L) (ht:Pack (cadr L)))
+                              (let? S (_htSet (car L) (ht:Pack (cadr L) T))
                                  (and
                                     (cddr L)
                                     (format (car @))
@@ -214,19 +215,19 @@
                               (cons (pack (car A))) )
                            (T (cons (htArg (car A)))) ) )
                      (split (cadr L) "&") ) )
-               (unless (setq *Url (ht:Pack @U))
+               (unless (setq *Url (ht:Pack @U T))
                   (setq  *Url (car *Home)  @U (cdr *Home)) )
                (out S
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") @U)
                         (and *SesId (timeout *Timeout))
-                        (apply try L 'html> (extern (ht:Pack @X))) )
+                        (apply try L 'html> (extern (ht:Pack @X T))) )
                      ((disallowed)
                         (notAllowed *Url)
                         (http404) )
                      ((= '! (car @U))
                         (and *SesId (timeout *Timeout))
-                        (apply (val (intern (ht:Pack (cdr @U)))) L) )
+                        (apply (val (intern (ht:Pack (cdr @U) T))) L) )
                      ((tail '("." "l") @U)
                         (and *SesId (timeout *Timeout))
                         (apply script L *Url) )
@@ -270,7 +271,7 @@
                   *MPartLim (append '(- -) @X)
                   *MPartEnd (append *MPartLim '(- -)) ) )
             ((match '(~(chop "X-Pil: ") @X "=" . @Y) L)
-               (_htSet @X (ht:Pack @Y)) ) ) )
+               (_htSet @X (ht:Pack @Y T)) ) ) )
       (unless *Gate
          (and (member ":" *Host) (con (prior @ *Host))) ) ) )
 
@@ -308,7 +309,7 @@
                (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) )
 
 (de _htSet (L Val)
-   (let "Var" (intern (ht:Pack (car (setq L (split L ":")))))
+   (let "Var" (intern (ht:Pack (car (setq L (split L ":"))) T))
       (cond
          ((and *Allow (not (idx *Allow "Var")))
             (notAllowed "Var")
@@ -339,11 +340,11 @@
 
 (de htArg (Lst)
    (case (car Lst)
-      ("$" (intern (ht:Pack (cdr Lst))))
+      ("$" (intern (ht:Pack (cdr Lst) T)))
       ("+" (format (cdr Lst)))
-      ("-" (extern (ht:Pack (cdr Lst))))
+      ("-" (extern (ht:Pack (cdr Lst) T)))
       ("_" (mapcar htArg (split (cdr Lst) "_")))
-      (T (ht:Pack Lst)) ) )
+      (T (ht:Pack Lst T)) ) )
 
 # Http Transfer Header
 (de http1 (Typ Upd File Att)

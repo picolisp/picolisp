@@ -81,7 +81,9 @@ href="refA.html#align">align</a></code>.
 
 <dt><a name="pair"><code>(pair 'any) -> any</code></a>
 <dd>Returns <code>any</code> when the argument is a cons pair. See also <code><a
-href="refA.html#atom">atom</a></code> and <code><a
+href="refA.html#atom">atom</a></code>, <code><a
+href="refN.html#num?">num?</a></code>, <code><a
+href="refS.html#sym?">sym?</a></code> and <code><a
 href="refL.html#lst?">lst?</a></code>.
 
 <pre><code>
@@ -306,24 +308,38 @@ NIL - (a b c)
 <dd>Executes <code>exe</code> in a <code><a
 href="refF.html#fork">fork</a></code>'ed child process (which terminates
 thereafter). In the first form, <code>pipe</code> just returns a file descriptor
-to read from the standard output of that process. In the second form, it opens
-the standard output of that process as input channel during the execution of
-<code>prg</code>. The current input channel will be saved and restored
-appropriately. See also <code><a href="refL.html#later">later</a></code>,
-<code><a href="refI.html#ipid">ipid</a></code>, <code><a
+to write to the standard input and read from the standard output of that
+process. In the second form, it opens the standard output of that process as
+input channel during the execution of <code>prg</code>. The current input
+channel will be saved and restored appropriately. See also <code><a
+href="refL.html#later">later</a></code>, <code><a
+href="refI.html#ipid">ipid</a></code>, <code><a
 href="refI.html#in">in</a></code> and <code><a
 href="refO.html#out">out</a></code>.
 
 <pre><code>
 : (pipe                                # equivalent to 'any'
-   (prinl "(a b # Comment^Jc d)")         # (child process)
-   (read) )                               # (parent process)
+   (prinl "(a b # Comment^Jc d)")         # Child
+   (read) )                               # Parent
 -> (a b c d)
+
 : (pipe                                # pipe through an external program
-   (out '(tr "[a-z]" "[A-Z]")             # (child process)
+   (out '(tr "[a-z]" "[A-Z]")             # Child
       (prinl "abc def ghi") )
-   (line T) )                             # (parent process)
+   (line T) )                             # Parent
 -> "ABC DEF GHI"
+
+: (setq P
+     (pipe
+        (in NIL                           # Child: Read stdin
+           (while (line T)
+              (prinl (uppc @))            # and write to stdout
+              (flush) ) ) ) )
+-> 3
+:  (out P (prinl "abc def"))              # Parent: Send line to child
+-> "abc def"
+:  (in P (line))                          # Parent: Read reply
+-> ("A" "B" "C" " " "D" "E" "F")
 </code></pre>
 
 <dt><a name="place"><code>(place 'cnt 'lst 'any) -> lst</code></a>
@@ -775,6 +791,7 @@ also <code><a href="refL.html#lieu">lieu</a></code>.
 <dd>Implements a stack using a list in <code>var</code>. The <code>any</code>
 arguments are cons'ed in front of the value list. See also <code><a
 href="refP.html#push1">push1</a></code>, <code><a
+href="refP.html#push1q">push1q</a></code>, <code><a
 href="refP.html#pop">pop</a></code>, <code><a
 href="refQ.html#queue">queue</a></code> and <code><a
 href="refF.html#fifo">fifo</a></code>.
@@ -803,6 +820,7 @@ href="refF.html#fifo">fifo</a></code>.
 is cons'ed in front of the value list only if it is not already a <code><a
 href="refM.html#member">member</a></code> of that list. See also <code><a
 href="refP.html#push">push</a></code>, <code><a
+href="refP.html#push1q">push1q</a></code>, <code><a
 href="refP.html#pop">pop</a></code> and <code><a
 href="refQ.html#queue">queue</a></code>.
 
@@ -815,6 +833,26 @@ href="refQ.html#queue">queue</a></code>.
 -> 4
 : S
 -> (4 3 2 1)
+</code></pre>
+
+<dt><a name="push1q"><code>(push1q 'var 'any ..) -> any</code></a>
+<dd>Maintains a unique list in <code>var</code>. Each <code>any</code> argument
+is cons'ed in front of the value list only if it is not already <code><a
+href="refM.html#memq">memq</a></code> of that list (pointer equality). See also
+<code><a href="refP.html#push">push</a></code>, <code><a
+href="refP.html#push1">push1</a></code>, <code><a
+href="refP.html#pop">pop</a></code> and <code><a
+href="refQ.html#queue">queue</a></code>.
+
+<pre><code>
+: (push1q 'S 'a (1) 'b (2) 'c)
+-> c
+: S
+-> (c (2) b (1) a)
+: (push1q 'S 'b (1) 'd)       # (1) is not pointer equal to the previous one
+-> d
+: S
+->  (d (1) c (2) b (1) a)     # (1) is twice in the list
 </code></pre>
 
 <dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) ->
@@ -837,7 +875,7 @@ href="ref_.html#=:">=:</a></code>.
 -> (A B C)
 : (setq B 'D)
 -> D
-: (put L 2 0 'p 5)  # Store '5' under the 'p' propery of the value of 'B'
+: (put L 2 0 'p 5)  # Store '5' under the 'p' property of the value of 'B'
 -> 5
 : (getl 'D)
 -> ((5 . p))

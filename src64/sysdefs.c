@@ -1,4 +1,4 @@
-/* 12nov14abu
+/* 29jan15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -182,6 +182,7 @@ int main(void) {
    equ("SOCK_STREAM", SOCK_STREAM);
    equ("SOCK_DGRAM", SOCK_DGRAM);
    equ("AF_UNSPEC", AF_UNSPEC);
+   equ("AF_UNIX", AF_UNIX);
    equ("AF_INET6", AF_INET6);
    equ("SOL_SOCKET", SOL_SOCKET);
    equ("SO_REUSEADDR", SO_REUSEADDR);

@@ -1,8 +1,19 @@
-# 17apr14abu
+# 04apr15abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
 (push1 '*JS (allow "@lib/plio.js") (allow "@lib/canvas.js"))
+
+# Draw   (drawCanvas Id Dly)
+# Click  (drawCanvas Id Dly 1 X Y)
+# Double (drawCanvas Id Dly 2 X Y)
+# Start  (drawCanvas Id Dly 0 X Y X2 Y2)
+# Move   (drawCanvas Id Dly -1 X Y X2 Y2)
+(de jsDraw (Id Dly F X Y X2 Y2)
+   (http1 "application/octet-stream" 0)
+   (let Lst (drawCanvas Id Dly F X Y X2 Y2)
+      (prinl "Content-Length: " (bytes Lst) "^M^J^M")
+      (pr Lst) ) )
 
 # Canvas Commands
 (for (Opc . L)
@@ -63,16 +74,5 @@
       "\" onmouseup=\"csMouseUp(this)\"" )
    (dfltCss "canvas")
    (prinl ">" Alt "</canvas>" ) )
-
-# Draw   (drawCanvas Id Dly)
-# Click  (drawCanvas Id Dly 1 X Y)
-# Double (drawCanvas Id Dly 2 X Y)
-# Start  (drawCanvas Id Dly 0 X Y X2 Y2)
-# Move   (drawCanvas Id Dly -1 X Y X2 Y2)
-(de jsDraw (Id Dly F X Y X2 Y2)
-   (http1 "application/octet-stream" 0)
-   (let Lst (drawCanvas Id Dly F X Y X2 Y2)
-      (prinl "Content-Length: " (bytes Lst) "^M^J^M")
-      (pr Lst) ) )
 
 # vi:et:ts=3:sw=3

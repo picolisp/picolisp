@@ -1,4 +1,4 @@
-# 10dec14abu
+# 03apr15abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -351,7 +351,7 @@
                   (prtty2 X N Z) )
                (spPrt (pop 'X))
                (nlPrt1 (pop 'X) N) ) ) )
-      ((memq (car X) '(T NIL ! if ifn when unless case casq with catch push bind job in out ctl))
+      ((memq (car X) '(T NIL ! if ifn when unless case casq with catch push bind job in out))
          (prtty3 X N) )
       (T (prtty0 X N)) ) )
 
@@ -651,7 +651,7 @@
                   (max
                      (recurse (cadr Idx) N)
                      (recurse (cddr Idx) N) ) ) ) )
-         (or (=0 C) (*/ D C)) ) ) )
+         (or (=0 (setq @@ C)) (*/ D C)) ) ) )
 
 ### Allow ###
 (de allowed Lst
@@ -1742,7 +1742,7 @@
 (de proc @
    (apply call
       (make (while (args) (link "-C" (next))))
-      'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) )
+      'ps "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) )
 
 # Benchmarking
 (de bench Prg

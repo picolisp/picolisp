@@ -1,0 +1,7 @@
+#!/bin/bash
+# 05feb15abu
+# (cd java; ./mkJar [-g])
+
+javac -O  ${1:--g:none}  *.java
+jar cf reflector.jar Reflector.class Reflector\$1.class InOut.class Symbol.class
+rm *.class

@@ -1,4 +1,4 @@
-# 01may14abu
+# 07apr15abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -50,15 +50,17 @@
       ld (A CDR) C  # Store up pointer
    loop
 
-# Reserve cells
-(code 'needC 0)
+# Reserve 3 cells
+(code 'need3 0)
    ld A (Avail)  # Get avail list
-   do
-      null A  # Enough free cells?
-      jeq gc  # No: Collect garbage
-      ld A (A)
-      dec C
-   until z
+   null A  # Enough free cells?
+   jeq gc  # No: Collect garbage
+   ld A (A)
+   null A  # Enough free cells?
+   jeq gc  # No: Collect garbage
+   ld A (A)
+   null A  # Enough free cells?
+   jeq gc  # No: Collect garbage
    ret
 
 # Garbage collector
@@ -177,7 +179,7 @@
       sub Y (StkSize)  # Next segment
    loop
    # Mark externals
-   ld Y Extern
+   ld Y (Extern)
    ld Z 0  # Clear TOS
    do
       do
@@ -247,7 +249,7 @@
       ld (A) Nil  # Clear
       ld (A TAIL) DB1  # Set to "not loaded"
    end
-   ld Y Extern  # Clean up
+   ld Y (Extern)  # Clean up
    ld Z 0  # Clear TOS
 20 do
       do
@@ -262,6 +264,7 @@
       do
          test ((Y)) 1  # External symbol marked?
          if nz  # No: Remove it
+            dec (ExtCnt)  # Decrement count
             ld A (Y CDR)  # Get subtrees
             atom A  # Any?
             if nz  # No
@@ -332,7 +335,8 @@
          loop
       loop
    loop
-50 ### Clean up ###
+50 ld (Extern) Y  # Set new root node
+   ### Clean up ###
    ld Y (Stack1)  # Search through stack segments
    ld C (Stacks)  # Segment count
    do

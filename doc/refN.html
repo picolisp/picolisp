@@ -89,8 +89,8 @@ href="refI.html#intern">intern</a></code>.
 -> "abc"
 : (name "abc")
 -> "abc"
-: (name '{abc})
--> "abc"
+: (name '{A17})
+-> "A17"
 : (name (new))
 -> NIL
 : (de foo (Lst) (car Lst))  # 'foo' calls 'car'
@@ -173,7 +173,7 @@ structures, e.g.
    <code>double</code>, otherwise as a <code>float</code>)
 <li>structures, passed as lists with
    <ul>
-   <li>a variable in the CAR (to recieve the returned structure data, ignored
+   <li>a variable in the CAR (to receive the returned structure data, ignored
       when the CAR is <code>NIL</code>)
    <li>a cons pair for the size and result specification in the CADR (see
       above), and
@@ -440,7 +440,10 @@ the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
 
 <dt><a name="num?"><code>(num? 'any) -> num | NIL</code></a>
 <dd>Returns <code>any</code> when the argument <code>any</code> is a number,
-otherwise <code>NIL</code>.
+otherwise <code>NIL</code>. See also <code><a
+href="refS.html#sym?">sym?</a></code>, <code><a
+href="refA.html#atom">atom</a></code> and <code><a
+href="refP.html#pair">pair</a></code>.
 
 <pre><code>
 : (num? 123)

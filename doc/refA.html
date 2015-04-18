@@ -428,6 +428,7 @@ href="refQ.html#quote">quote</a></code>.
 match is found. <code><a href="ref_.html#==">==</a></code> is used for
 comparison (pointer equality). See also <code><a
 href="refA.html#assoc">assoc</a></code>, <code><a
+href="refP.html#push1q">push1q</a></code>, <code><a
 href="refD.html#delq">delq</a></code>, <code><a
 href="refM.html#memq">memq</a></code>, <code><a
 href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
@@ -560,10 +561,11 @@ href="refR.html#retract/1">retract/1</a></code>.
 -> a
 </code></pre>
 
-<dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a> <dd>Searches an
-association list. Returns the first element from <code>lst</code> with its CAR
-equal to <code>any</code>, or <code>NIL</code> if no match is found. See also
-<code><a href="refA.html#asoq">asoq</a></code>.
+<dt><a name="assoc"><code>(assoc 'any 'lst) -> lst</code></a>
+<dd>Searches an association list. Returns the first element from
+<code>lst</code> with its CAR equal to <code>any</code>, or <code>NIL</code> if
+no match is found. See also <code><a href="refA.html#asoq">asoq</a></code> and
+<code><a href="refR.html#rassoc">rassoc</a></code>.
 
 <pre><code>
 : (assoc "b" '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
@@ -587,9 +589,11 @@ is returned immediately.
 ...!...!...!..-> NIL
 </code></pre>
 
-<dt><a name="atom"><code>(atom 'any) -> flg</code></a>
-<dd>Returns <code>T</code> when the argument <code>any</code> is an atom (a
-number or a symbol). See also <code><a href="refP.html#pair">pair</a></code>.
+<dt><a name="atom"><code>(atom 'any) -> flg</code></a> <dd>Returns
+<code>T</code> when the argument <code>any</code> is an atom (a number or a
+symbol). See also <code><a href="refN.html#num?">num?</a></code>, <code><a
+href="refS.html#sym?">sym?</a></code> and <code><a
+href="refP.html#pair">pair</a></code>.
 
 <pre><code>
 : (atom 123)
@@ -602,13 +606,13 @@ number or a symbol). See also <code><a href="refP.html#pair">pair</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="aux"><code>(aux 'var 'cls ['hook] 'any ..) -> sym</code></a>
+<dt><a name="aux"><code>(aux 'sym 'cls ['hook] 'any ..) -> sym</code></a>
 <dd>Returns a database object of class <code>cls</code>, where the value for
-<code>var</code> corresponds to <code>any</code> and the following arguments.
-<code>var</code>, <code>cls</code> and <code>hook</code> should specify a
+<code>sym</code> corresponds to <code>any</code> and the following arguments.
+<code>sym</code>, <code>cls</code> and <code>hook</code> should specify a
 <code><a href="refT.html#tree">tree</a></code> for <code>cls</code> or one of
 its superclasses, for a relation with auxiliary keys. For multi-key accesses,
-<code>aux</code> is simlar to - but faster than - <code>db</code>, because it
+<code>aux</code> is similar to - but faster than - <code>db</code>, because it
 can use a single tree access. See also <code><a
 href="refD.html#db">db</a></code>, <code><a
 href="refC.html#collect">collect</a></code>, <code><a

@@ -1,4 +1,4 @@
-# 24mar14abu
+# 25mar15abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
@@ -7,6 +7,11 @@
       1
       (+ (fibo (dec N)) (fibo (- N 2))) ) )
 
+# Non-recursive
+(de fib (N)
+   (let (A 0  B 1)
+      (do N
+         (prog1 B (setq B (+ A B) A @)) ) ) )
 
 # Parallelized version
 (de fibo+ (D N)  # Uses 2**D processes

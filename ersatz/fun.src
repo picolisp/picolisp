@@ -1,4 +1,4 @@
-# 11dec14abu
+# 25feb15abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -1978,6 +1978,15 @@ push1 (x y z)
    while (x.Cdr instanceof Cell);
    return z;
 
+# (push1q 'var 'any ..) -> any
+push1q (x y z)
+   needVar(ex, y = (x = ex.Cdr).Car.eval());
+   do
+      if (memq(z = (x = x.Cdr).Car.eval(), y.Car) == null)
+         y.Car = new Cell(z, y.Car);
+   while (x.Cdr instanceof Cell);
+   return z;
+
 # (pop 'var) -> any
 pop (x y)
    needVar(ex, x = ex.Cdr.Car.eval());
@@ -2965,6 +2974,15 @@ assoc (x y z)
          return z;
    return Nil;
 
+# (rassoc 'any 'lst) -> lst
+rassoc (x y z)
+   y = (x = ex.Cdr).Car.eval();
+   x = x.Cdr.Car.eval();
+   for (; x instanceof Cell; x = x.Cdr)
+      if ((z = x.Car) instanceof Cell && y.equal(z.Cdr))
+         return z;
+   return Nil;
+
 # (asoq 'any 'lst) -> lst
 asoq (x y z)
    y = (x = ex.Cdr).Car.eval();
@@ -3305,13 +3323,15 @@ hash (i j n)
    return new Number(j + 1);
 
 # (rand ['cnt1 'cnt2] | ['T]) -> cnt | flg
-rand (x)
+rand (x n)
    Seed = Seed * 6364136223846793005L + 1;
    if ((x = (ex = ex.Cdr).Car.eval()) == Nil)
       return new Number((int)Seed);
    if (x == T)
       return (Seed & 0x100000000L) == 0? Nil : T;
-   return new Number(((Number)x).Cnt + (int)(Seed >>> 33) % (evInt(ex.Cdr) + 1 - ((Number)x).Cnt));
+   if ((n = evInt(ex.Cdr) + 1 - ((Number)x).Cnt) != 0)
+      n = (int)(Seed >>> 33) % n;
+   return new Number(((Number)x).Cnt + n);
 
 ############ io ############
 # (path 'any) -> sym

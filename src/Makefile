@@ -1,11 +1,14 @@
-# 14sep14abu
-# 27feb08rdo
+# 31mar15abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
 lib = ../lib
 
 picoFiles = main.c gc.c apply.c flow.c sym.c subr.c big.c io.c net.c tab.c
+
+CC = gcc
+# CCLD is the cc (compiler frontend) to use for the link step.
+CCLD = gcc
 
 CFLAGS = -c -O2 -pipe \
 	-falign-functions=32 -fomit-frame-pointer -fno-strict-aliasing \
@@ -34,6 +37,8 @@ ifeq ($(shell uname), OpenBSD)
 else
 ifeq ($(shell uname), FreeBSD)
 	OS = FreeBSD
+	CC = gcc
+	CCLD = clang
 	CFLAGS += -m32
 	PICOLISP-FLAGS = -m32 -rdynamic
 	LIB-FLAGS = -lm
@@ -77,6 +82,15 @@ ifeq ($(shell uname), AIX)
 	LCRYPT = -lcrypt
 	STRIP = strip
 else
+ifeq ($(shell uname), HP-UX)
+	OS = HP-UX
+	CFLAGS +=
+	PICOLISP-FLAGS = -m32 -rdynamic
+	LIB-FLAGS = -lm -ldl
+	DYNAMIC-LIB-FLAGS = -m32 -shared
+	LCRYPT =
+	STRIP = strip
+else
 ifeq ($(shell uname -o), Cygwin)
 	OS = Cygwin
 	CFLAGS += -m32
@@ -95,6 +109,7 @@ endif
 endif
 endif
 endif
+endif
 
 
 picolisp: $(bin)/picolisp $(lib)/ext$(dll) $(lib)/ht$(dll)
@@ -104,7 +119,7 @@ gate: $(bin)/ssl $(bin)/httpGate
 all: picolisp tools gate
 
 .c.o:
-	gcc $(CFLAGS) -D_OS='"$(OS)"' $*.c
+	$(CC) $(CFLAGS) -D_OS='"$(OS)"' $*.c
 
 
 $(picoFiles:.c=.o) ext.o ht.o: pico.h
@@ -114,51 +129,51 @@ main.o: vers.h
 ifeq ($(OS), Cygwin)
 
 $(bin)/picolisp$(dll): $(picoFiles:.c=.o)
-	gcc -o $(bin)/picolisp$(dll) $(DYNAMIC-LIB-FLAGS) $(picoFiles:.c=.o)
+	$(CCLD) -o $(bin)/picolisp$(dll) $(DYNAMIC-LIB-FLAGS) $(picoFiles:.c=.o)
 	$(STRIP) $(bin)/picolisp$(dll)
 
 $(bin)/picolisp: $(picoFiles:.c=.o) $(bin)/picolisp$(dll) start.o
 	mkdir -p $(bin) $(lib)
-	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) start.o -L$(bin) -l$(bin)/picolisp
+	$(CCLD) -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) start.o -L$(bin) -l$(bin)/picolisp
 	$(STRIP) $(bin)/picolisp$(exe)
 
 else
 
 $(bin)/picolisp: $(picoFiles:.c=.o)
 	mkdir -p $(bin) $(lib)
-	gcc -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) $(picoFiles:.c=.o) $(LIB-FLAGS)
+	$(CCLD) -o $(bin)/picolisp$(exe) $(PICOLISP-FLAGS) $(picoFiles:.c=.o) $(LIB-FLAGS)
 	$(STRIP) $(bin)/picolisp$(exe)
 
 endif
 
 
 $(lib)/ext$(dll): ext.o
-	gcc -o $(lib)/ext$(dll) $(DYNAMIC-LIB-FLAGS) ext.o $(DLL-DEFS) $(LCRYPT)
+	$(CCLD) -o $(lib)/ext$(dll) $(DYNAMIC-LIB-FLAGS) ext.o $(DLL-DEFS) $(LCRYPT)
 	$(STRIP) $(lib)/ext$(dll)
 
 $(lib)/ht$(dll): ht.o
-	gcc -o $(lib)/ht$(dll) $(DYNAMIC-LIB-FLAGS) ht.o $(DLL-DEFS)
+	$(CCLD) -o $(lib)/ht$(dll) $(DYNAMIC-LIB-FLAGS) ht.o $(DLL-DEFS)
 	$(STRIP) $(lib)/ht$(dll)
 
 
 $(bin)/lat1: lat1.c
-	gcc -o $(bin)/lat1$(exe) lat1.c
+	$(CC) -o $(bin)/lat1$(exe) lat1.c
 	$(STRIP) $(bin)/lat1$(exe)
 
 $(bin)/utf2: utf2.c
-	gcc -o $(bin)/utf2$(exe) utf2.c
+	$(CC) -o $(bin)/utf2$(exe) utf2.c
 	$(STRIP) $(bin)/utf2$(exe)
 
 $(bin)/balance: balance.c
-	gcc -o $(bin)/balance$(exe) balance.c
+	$(CC) -o $(bin)/balance$(exe) balance.c
 	$(STRIP) $(bin)/balance$(exe)
 
 $(bin)/ssl: ssl.c
-	gcc -o $(bin)/ssl$(exe) ssl.c -lssl -lcrypto
+	$(CC) -o $(bin)/ssl$(exe) ssl.c -lssl -lcrypto
 	$(STRIP) $(bin)/ssl$(exe)
 
 $(bin)/httpGate: httpGate.c
-	gcc -o $(bin)/httpGate$(exe) httpGate.c -lssl -lcrypto
+	$(CC) -o $(bin)/httpGate$(exe) httpGate.c -lssl -lcrypto
 	$(STRIP) $(bin)/httpGate$(exe)
 
 

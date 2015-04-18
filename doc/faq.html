@@ -35,7 +35,7 @@
 <li><a href="#macros">Do you have macros?</a>
 <li><a href="#strings">Why are there no strings?</a>
 <li><a href="#arrays">What about arrays?</a>
-<li><a href="#floats">How to do floating point arithmetics?</a>
+<li><a href="#floats">How to do floating point arithmetic?</a>
 <li><a href="#bind">What happens when I locally bind a symbol which has a function definition?</a>
 <li><a href="#hardware">Would it make sense to build PicoLisp in hardware?</a>
 <li><a href="#segfault">I get a segfault if I ...</a>
@@ -56,10 +56,9 @@ are the case-insensitivity and complexity of current Lisp systems.
 <h2><a name="who">Who can use PicoLisp?</a></h2>
 
 <p>PicoLisp is for programmers who want to control their programming
-environment, at all levels, from the application domain down to the bare metal.
-Who want use a transparent and simple - yet universal - programming model, and
-want to know exactly what is going on. This is an aspect influenced by
-<code>Forth</code>.
+environment, at all levels, from the application domain down to the bare metal,
+who want to use a transparent and simple - yet universal - programming model,
+and who want to know exactly what is going on.
 
 <p>It does <i>not</i> pretend to be easy to learn. There are already plenty of
 languages that do so. It is not for people who don't care what's under the hood,
@@ -187,7 +186,7 @@ of <code>(let ((A 1) (B 2) C 3) ..)</code> you write <code>(let (A 1 B 2 C 3)
 ..)</code>, or just <code>(let A 1 ..)</code> if there is only a single
 variable.
 
-<li>The use of the hash (<code>#</code>) as a comment character is more adequate
+<li>The use of the hash (<code>#</code>) as a comment character is more appropriate
 today, and allows a clean hash-bang (<code>#!</code>) syntax for stand-alone
 scripts.
 
@@ -255,7 +254,7 @@ constraints.
 
 
 <p><hr>
-<h2><a name="interpreted">What means "interpreted"?</a></h2>
+<h2><a name="interpreted">What does "interpreted" mean?</a></h2>
 
 <p>It means to directly execute Lisp data as program code. No transformation to
 another representation of the code (e.g. compilation), and no structural
@@ -264,7 +263,7 @@ modifications of these data, takes place.
 <p>Lisp data are the "real" things, like numbers, symbols and lists, which can
 be directly handled by the system. They are <i>not</i> the textual
 representation of these structures (which is outside the Lisp realm and taken
-care of the <code><a href="refR.html#read">read</a></code>ing and <code><a
+care of by the <code><a href="refR.html#read">read</a></code>ing and <code><a
 href="refP.html#print">print</a></code>ing interfaces).
 
 <p>The following example builds a function and immediately calls it with two
@@ -321,7 +320,7 @@ POSIX systems. The first versions were even fully portable between DOS, SCO-Unix
 and Macintosh systems. But today we have Linux. Linux itself is very portable,
 and you can get access to a Linux system almost everywhere. So why bother?
 
-<p>The GUI is completely platform independent (Browser), and in the times of
+<p>The GUI is completely platform independent (Browser), and in the age of the
 Internet an application <u>server</u> does not really need to be portable.
 
 
@@ -633,7 +632,7 @@ on. Lists can be made circular. And lists don't cause memory fragmentation.
 
 
 <p><hr>
-<h2><a name="floats">How to do floating point arithmetics?</a></h2>
+<h2><a name="floats">How to do floating point arithmetic?</a></h2>
 
 <p>PicoLisp does not support real floating point numbers. You can do all kinds
 of floating point calculations by calling existing library functions via
@@ -649,12 +648,11 @@ and range, and require an extra data type. It is hard to understand what really
 goes on (How many digits of precision do we have today? Are perhaps 10-byte
 floats used for intermediate results? How does rounding behave?).
 
-<p>For fixpoint support, the system must handle just integer arithmetics, I/O
-and string conversions. The rest is under programmer's control and
-responsibility (the essence of PicoLisp).
+<p>For fixpoint support, the system must handle just integer arithmetic, I/O and
+string conversions. The rest is under programmer's control and responsibility
+(the essence of PicoLisp).
 
-<p>Carefully scaled fixpoint calculations can do anything floating points can
-do.
+<p>Carefully scaled fixpoint calculations can do anything floating point can do.
 
 
 <p><hr>

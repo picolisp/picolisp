@@ -1,4 +1,4 @@
-# 13may14abu
+# 21feb15abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -434,6 +434,15 @@
    (assoc 999 '((999 1 2 3) ("b" . 7) ("ok" "Hello"))) )
 (test NIL
    (assoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello"))) )
+
+
+### rassoc ###
+(test '("b" . 7)
+   (rassoc 7 '((999 1 2 3) ("b" . 7) ("ok" "Hello"))) )
+(test (999 1 2 3)
+   (rassoc (1 2 3) '((999 1 2 3) ("b" . 7) ("ok" "Hello"))) )
+(test NIL
+   (rassoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello"))) )
 
 
 ### asoq ###

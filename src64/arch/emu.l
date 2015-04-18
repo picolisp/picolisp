@@ -1,4 +1,4 @@
-# 11aug14abu
+# 30jan15abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -775,6 +775,7 @@
    (lstat            i  p "struct stat")
    (fcntl            i  i i p)
    (pipe             i  "int")
+   (socketpair       i  i i i "int")
    (select           i  i "fd_set" "fd_set" "fd_set" (2 . -2))
    (open             i  p i i)
    (dup              i  i)

@@ -63,7 +63,7 @@ href="ref.html#dbase">Database</a>.
 </code></pre>
 
 <dt><a name="+relation"><code>+relation</code></a>
-<dd>Abstract base class of all database releations. Relation objects are usually
+<dd>Abstract base class of all database relations. Relation objects are usually
 defined with <code><a href="refR.html#rel">rel</a></code>. The class hierarchy
 includes the classes <code><a href="refA.html#+Any">+Any</a></code>, <code><a
 href="refB.html#+Bag">+Bag</a></code>, <code><a
@@ -102,7 +102,7 @@ href="refE.html#+Entity">+Entity</a></code>.
 mis> (Val Obj)       # Return error if mismatching type or value
 has> (Val X)         # Check if the value is present
 put> (Obj Old New)   # Put new value
-rel> (Obj Old New)   # Maintain relational strutures
+rel> (Obj Old New)   # Maintain relational structures
 lose> (Obj Val)      # Delete relational structures
 keep> (Obj Val)      # Restore deleted relational structures
 zap> (Obj Val)       # Clean up relational structures
@@ -189,6 +189,22 @@ href="ref.html#cmp">Comparing</a>.
 -> (1000 . c)
 : (rank 50 '((1000 . a) (100 . b) (1 . c)) T)
 -> (100 . b)
+</code></pre>
+
+<dt><a name="rassoc"><code>(rassoc 'any 'lst) -> lst</code></a>
+<dd>Reverse <code><a href="refA.html#assoc">assoc</a></code>. Returns the first
+element from <code>lst</code> with its CDR equal to <code>any</code>, or
+<code>NIL</code> if no match is found. See also <code><a
+href="refA.html#assoc">assoc</a></code> and <code><a
+href="refA.html#asoq">asoq</a></code>.
+
+<pre><code>
+: (rassoc 7 '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> ("b" . 7)
+: (rassoc (1 2 3) '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> (999 1 2 3)
+: (rassoc 'u '((999 1 2 3) ("b" . 7) ("ok" "Hello")))
+-> NIL
 </code></pre>
 
 <dt><a name="raw"><code>(raw ['flg]) -> flg</code></a>
@@ -365,8 +381,8 @@ After 2
 
 </code></pre>
 
-<dt><a name="rel"><code>(rel var lst [any ..]) -> any</code></a>
-<dd>Defines a relation for <code>var</code> in the current class <code><a
+<dt><a name="rel"><code>(rel sym lst [any ..]) -> any</code></a>
+<dd>Defines a relation for <code>sym</code> in the current class <code><a
 href="refC.html#*Class">*Class</a></code>, using <code>lst</code> as the list of
 classes for that relation, and possibly additional arguments <code>any</code>
 for its initialization. See also <a href="ref.html#dbase">Database</a>, <code><a
@@ -537,7 +553,7 @@ href="refP.html#place">place</a></code>.
 -> (B A A B)
 </code></pre>
 
-<dt><a name="request"><code>(request 'typ 'var ['hook] 'val ..) -> obj</code></a>
+<dt><a name="request"><code>(request 'typ 'sym ['hook] 'val ..) -> obj</code></a>
 <dd>Returns a database object. If a matching object cannot be found (using
 <code><a href="refD.html#db">db</a></code>), a new object of the given type is
 created (using <code><a href="refN.html#new">new</a></code>). See also <code><a

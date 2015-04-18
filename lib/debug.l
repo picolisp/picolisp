@@ -1,4 +1,4 @@
-# 15nov14abu
+# 03apr15abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -421,7 +421,7 @@
    (de proc @
       (apply call
          (make (while (args) (link "-C" (next))))
-         'ps "-H" "-o" "pid,ppid,start,size,pcpu,wchan,cmd" ) ) )
+         'ps "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) ) )
 
 # Benchmarking
 (de bench Prg

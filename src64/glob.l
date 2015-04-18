@@ -1,4 +1,4 @@
-# 08dec14abu
+# 10apr15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -346,6 +346,7 @@
    initFun NIL       "default"   doDefault
    initFun NIL       "push"      doPush
    initFun NIL       "push1"     doPush1
+   initFun NIL       "push1q"    doPush1q
    initFun NIL       "pop"       doPop
    initFun NIL       "cut"       doCut
    initFun NIL       "del"       doDel
@@ -466,6 +467,7 @@
    initFun NIL       "size"      doSize
    initFun NIL       "bytes"     doBytes
    initFun NIL       "assoc"     doAssoc
+   initFun NIL       "rassoc"    doRassoc
    initFun NIL       "asoq"      doAsoq
    initFun NIL       "rank"      doRank
    initFun NIL       "match"     doMatch
@@ -574,9 +576,6 @@
    word DB1  # Name
 : Db1
    word Nil  # Value
-:: Extern  # External symbol tree root node
-   word  Db1
-   word  Nil
 
 : GcSymEnd
 
@@ -590,6 +589,10 @@
    word .+8
    word (short `(cadddr *Version))
    word Nil
+
+: ExtCnt       word  1           # External symbol count
+: ExtSkip      word  0           # External tree skip
+:: Extern      word  0           # External symbol tree
 
 # Structures
 : EnvCo  # Coroutine environment

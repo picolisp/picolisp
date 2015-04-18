@@ -1154,19 +1154,19 @@ body.
 </code></pre>
 
 <pre><code>
-: (de foo X                         # CAR is a single symbol
-   X )                              # Return the argument
--> foo
-: (foo (+ 1 2) (+ 3 4) (+ 5 6))
--> ((+ 1 2) (+ 3 4) (+ 5 6))        # the whole unevaluated list is returned
-</code></pre>
-
-<pre><code>
 : (de foo @                         # CAR is the symbol '@'
    (list (next) (next) (next)) )    # Return the first three arguments
 -> foo
 : (foo (+ 1 2) (+ 3 4) (+ 5 6))
 -> (3 7 11)                         # all arguments are evaluated
+</code></pre>
+
+<pre><code>
+: (de foo X                         # CAR is a single symbol
+   X )                              # Return the argument
+-> foo
+: (foo (+ 1 2) (+ 3 4) (+ 5 6))
+-> ((+ 1 2) (+ 3 4) (+ 5 6))        # the whole unevaluated list is returned
 </code></pre>
 
 <p>Note that these forms can also be combined. For example, to evaluate only the
@@ -1263,7 +1263,7 @@ functions, and (re)invoked as needed. In this regard coroutines are similar to
 "continuations" in other languages.
 
 <p>When the tag goes out of scope while it is not actively running, the
-coroutine will be garabage collected. In cases where this is desired, using a <a
+coroutine will be garbage collected. In cases where this is desired, using a <a
 href="#transient">transient</a> symbol for the tag is recommended.
 
 <p>A coroutine is created by calling <code><a href="refC.html#co">co</a></code>.
@@ -1743,8 +1743,9 @@ successful bindings), and the application level functions <code><a
 href="refP.html#pilog">pilog</a></code> and <code><a
 href="refS.html#solve">solve</a></code>.
 
-<li>When the CAR of a Pilog clause is a Pilog variable, the CDR is executed as a
-Lisp expression and the result unified with that variable.
+<li>When the CAR of a Pilog clause is the symbol <code>^</code>, then the CDDR
+is executed as a Lisp <code>prg</code> body and the result unified with the
+CADR.
 
 <li>Within such a Lisp expression in a Pilog clause, the current bindings of
 Pilog variables can be accessed with the <code><a
@@ -2003,6 +2004,7 @@ abbreviations:
    <a href="refR.html#redef">redef</a>
    <a href="refD.html#daemon">daemon</a>
    <a href="refP.html#patch">patch</a>
+   <a href="refS.html#swap">swap</a>
    <a href="refX.html#xchg">xchg</a>
    <a href="refO.html#on">on</a>
    <a href="refO.html#off">off</a>
@@ -2018,6 +2020,7 @@ abbreviations:
    <a href="refA.html#accu">accu</a>
    <a href="refP.html#push">push</a>
    <a href="refP.html#push1">push1</a>
+   <a href="refP.html#push1q">push1q</a>
    <a href="refP.html#pop">pop</a>
    <a href="refC.html#cut">cut</a>
    <a href="refD.html#del">del</a>
@@ -2194,6 +2197,7 @@ abbreviations:
    <a href="refO.html#offset">offset</a>
    <a href="refP.html#prior">prior</a>
    <a href="refA.html#assoc">assoc</a>
+   <a href="refR.html#rassoc">rassoc</a>
    <a href="refA.html#asoq">asoq</a>
    <a href="refR.html#rank">rank</a>
    <a href="refS.html#sort">sort</a>
@@ -2207,6 +2211,7 @@ abbreviations:
    <a href="refX.html#xchg">xchg</a>
    <a href="refP.html#push">push</a>
    <a href="refP.html#push1">push1</a>
+   <a href="refP.html#push1q">push1q</a>
    <a href="refP.html#pop">pop</a>
    <a href="refC.html#cut">cut</a>
    <a href="refQ.html#queue">queue</a>
@@ -2450,6 +2455,7 @@ abbreviations:
    <a href="refA.html#aux">aux</a>
    <a href="refC.html#collect">collect</a>
    <a href="refG.html#genKey">genKey</a>
+   <a href="refG.html#genStrKey">genStrKey</a>
    <a href="refU.html#useKey">useKey</a>
    <a href="refR.html#+relation">+relation</a>
    <a href="refA.html#+Any">+Any</a>
@@ -2564,6 +2570,9 @@ abbreviations:
    <a href="refR.html#retract/1">retract/1</a>
    <a href="refC.html#clause/2">clause/2</a>
    <a href="refS.html#show/1">show/1</a>
+   <a href="refF.html#for/2">for/2</a>
+   <a href="refF.html#for/3">for/3</a>
+   <a href="refF.html#for/4">for/4</a>
    <a href="refD.html#db/3">db/3</a>
    <a href="refD.html#db/4">db/4</a>
    <a href="refD.html#db/5">db/5</a>

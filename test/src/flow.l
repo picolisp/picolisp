@@ -1,4 +1,4 @@
-# 08dec14abu
+# 02jan15abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -163,6 +163,16 @@
       (test 2 N) )
    (test 1 N) )
 
+(when (== 64 64)
+   (test (1 2 (3) 4)
+      (let (A 1  (B . C) (2 3)  D 4)
+         (list A B C D) ) )
+   (test (1 (2 3) 4 (7 8 9))
+      (let (((A . B) (C) . D) '((1 2 3) (4 5 6) 7 8 9))
+         (list A B C D) ) )
+   (test '(A 1 D 8)
+      (let (((A . NIL) NIL NIL D) '((1 2 3) (4 5 6) 7 8 9))
+         (trail T) ) ) )
 
 ### and ###
 (test 7 (and T 123 7))

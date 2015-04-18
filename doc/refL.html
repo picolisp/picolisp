@@ -136,7 +136,7 @@ href="refB.html#bytes">bytes</a></code>.
 
 <dt><a name="less"><code>(less 'any) -> any</code></a>
 <dd>(Debug mode only) Returns a reduced form of <code>any</code>, where for each
-list and its sub-lists only the first two elements, possibly followed by
+list and its sublists only the first two elements, possibly followed by
 <code>..</code>, are retained.
 
 <pre><code>
@@ -147,15 +147,18 @@ list and its sub-lists only the first two elements, possibly followed by
 </code></pre>
 
 <dt><a name="let"><code>(let sym 'any . prg) -> any</code></a>
-<dt><code>(let (sym 'any ..) . prg) -> any</code>
+<dt><code>(let (sym|lst 'any ..) . prg) -> any</code>
 <dd>Defines local variables. The value of the symbol <code>sym</code> - or the
 values of the symbols <code>sym</code> in the list of the second form - are
-saved and the symbols are bound to the evaluated <code>any</code> arguments.
-<code>prg</code> is executed, then the symbols are restored to their original
-values. The result of <code>prg</code> is returned. It is an error condition to
-pass <code>NIL</code> as a <code>sym</code> argument. See also <code><a
-href="refL.html#let?">let?</a></code>, <code><a
-href="refB.html#bind">bind</a></code>, <code><a
+saved and the symbols are bound to the evaluated <code>any</code> arguments. The
+64-bit version also accepts <code>lst</code> arguments in the second form; they
+may consist only of symbols and sublists, and match the <code>any</code>
+argument (destructuring bind). <code>prg</code> is executed, then the symbols
+are restored to their original values. The result of <code>prg</code> is
+returned. It is an error condition to pass <code>NIL</code> as a
+<code>sym</code> argument. In destructuring patterns, <code>NIL</code> denotes a
+"don't care" position. See also <code><a href="refL.html#let?">let?</a></code>,
+<code><a href="refB.html#bind">bind</a></code>, <code><a
 href="refR.html#recur">recur</a></code>, <code><a
 href="refW.html#with">with</a></code>, <code><a
 href="refF.html#for">for</a></code>, <code><a
@@ -175,13 +178,26 @@ Hello world
 -> 123
 : Y
 -> 456
+
+# 64-bit version
+: (let (A 1  (B . C) (2 3)  D 4)
+   (list A B C D) )
+-> (1 2 (3) 4)
+
+: (let (((A . B) (C) . D) '((1 2 3) (4 5 6) 7 8 9))
+   (list A B C D) )
+-> (1 (2 3) 4 (7 8 9))
+
+: (let (((A . NIL) NIL NIL D) '((1 2 3) (4 5 6) 7 8 9))
+   (trail T) )
+-> (A 1 D 8)
 </code></pre>
 
 <dt><a name="let?"><code>(let? sym 'any . prg) -> any</code></a>
 <dd>Conditional local variable binding and execution: If <code>any</code>
-evalutes to <code>NIL</code>, <code>NIL</code> is returned. Otherwise, the value
-of the symbol <code>sym</code> is saved and <code>sym</code> is bound to the
-evaluated <code>any</code> argument. <code>prg</code> is executed, then
+evaluates to <code>NIL</code>, <code>NIL</code> is returned. Otherwise, the
+value of the symbol <code>sym</code> is saved and <code>sym</code> is bound to
+the evaluated <code>any</code> argument. <code>prg</code> is executed, then
 <code>sym</code> is restored to its original value. The result of
 <code>prg</code> is returned. It is an error condition to pass <code>NIL</code>
 as the <code>sym</code> argument. <code>(let? sym 'any ..)</code> is equivalent

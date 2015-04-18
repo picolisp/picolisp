@@ -1,4 +1,4 @@
-# 22dec14abu
+# 14apr15abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -190,7 +190,7 @@
          (use @X
             (cond
                ((match '("-" @X "." "h" "t" "m" "l") Url)
-                  (try 'html> (extern (ht:Pack @X))) )
+                  (try 'html> (extern (ht:Pack @X T))) )
                ((disallowed)
                   (notAllowed *Url)
                   (http404) )
@@ -202,18 +202,20 @@
 (de postForm ()
    (when (num? (format *Get))
       (let? Lst (get "*Lst" (- "*Cnt" (setq *Get @)))
-         (setq
-            *Form (format *Form)
-            *Evt (format *Evt)
-            *PRG
-            (cond
-               ((and
-                     (= *Get (car "*Post2"))
-                     (= *Form (cadr "*Post2")) )
-                  (cddr "*Post2") )
-               ((off "*Post2"))
-               ((gt0 *Form) (get Lst *Form))
-               (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) ) ) ) )
+         (and
+            (setq *Form (format *Form))
+            (setq *Evt (format *Evt))
+            (setq *PRG
+               (cond
+                  ((and
+                        (= *Get (car "*Post2"))
+                        (= *Form (cadr "*Post2")) )
+                     (cddr "*Post2") )
+                  ((off "*Post2"))
+                  ((gt0 *Form) (get Lst *Form))
+                  (T (get Lst 1 (+ (length (car Lst)) *Form) 1)) ) )
+            (val *PRG)
+            *PRG ) ) ) )
 
 (de postGui ()
    (if "*Post2"
@@ -232,12 +234,13 @@
                   ((chk> This) (error @))
                   ((or (: rid) (: home able))
                      (set> This (val> This) T) ) ) )
-            (for This (: gui)
-               (cond
-                  ((: id))
-                  ((chk> (setq "*Chart" This)) (error @))
-                  ((or (: rid) (: home able))
-                     (set> This (val> This)) ) ) )
+            (unless "*Err"
+               (for This (: gui)
+                  (cond
+                     ((: id))
+                     ((chk> (setq "*Chart" This)) (error @))
+                     ((or (: rid) (: home able))
+                        (set> This (val> This)) ) ) ) )
             (if (pair "*Err")
                (and *Lock (with (caar "*Err") (tryLock *Lock)))
                (finally
@@ -707,9 +710,9 @@
 
 (dm val> ()
    (let Val (extra)
-      (if (= (: old) Val)
-         Val
-         ((: new) Val) ) ) )
+      (if (and (<> (: old) Val) (able))
+         ((: new) Val)
+         Val ) ) )
 
 
 (class +Upd)
@@ -1263,7 +1266,7 @@
 (dm T (Exe)
    (=: exe Exe)
    (super
-      '(> (: chart 2) 1)
+      '(>= (length (: chart 1 data)) (row) 2)
       ,"Shift row up"
       "\^"
       '(let L (val> (: chart 1))
@@ -1438,6 +1441,14 @@
 (dm show> ("Var")
    (showFld
       (<upload> (: dx) "Var" (not (able))) ) )
+
+
+# Color picker
+(class +RgbPicker +field)
+
+(dm show> ("Var")
+   (showFld
+      (<rgb> "Var" (not (able))) ) )
 
 
 # Symbol fields
@@ -1847,7 +1858,7 @@
       (apply url (url> @ 1)) ) )
 
 
-# (choDlg Dst Ttl Rel [Hook] [((+XyzField) ..) Exe Able [Rel2 [Hook2]]])
+# (choDlg Dst Ttl Rel [Hook] [((+XyzField) ..) Exe Able])
 (de choDlg (Dst Ttl Rel . @)
    (let
       (Hook (and (meta (cdr Rel) (car Rel) 'hook) (next))
@@ -1857,11 +1868,6 @@
             (list '(+ObjView +TextField) @)
             (list (list '+ObjView (last (car Fld))) (list ': (car Rel))) )
          Able (if (args) (next) T) )
-      (nond
-         ((next)
-            (setq Ttl (list Ttl (car Rel) (last Rel) Hook)) )
-         ((=T (arg))
-            (setq Ttl (list Ttl (car (arg)) (cadr (arg)) (next))) ) )
       (diaform '(Dst Ttl Rel Hook Fld Gui Able)
          (apply gui
             (cons
@@ -1874,7 +1880,7 @@
                (list
                   (list 'db (car Rel) (last Rel) Hook (val> (: home gui 1)) '@@) ) )
             2 '((Obj) (list Obj Obj)) )
-         (<table> 'chart (if (atom Ttl) Ttl (apply choTtl Ttl)) '((btn) NIL)
+         (<table> 'chart (choTtl Ttl (last Rel)) '((btn) NIL)
             (do (cho)
                (<row> (alternating)
                   (gui 1 '(+DstButton) Dst)
@@ -1900,10 +1906,8 @@
    (pack
       (if (next)
          (with (or (get @ X) (meta @ X))
-            (if (or (isa '+Idx This) (isa '+IdxFold This))
-               (get *DB (: cls) 0)
-               (count (tree (: var) (: cls) (next))) ) )
-         (get *DB X 0) )
+            (count (tree (: var) (: cls) (next))) )
+         (or (get *DB X 0) 0) )
       " "
       Ttl ) )
 

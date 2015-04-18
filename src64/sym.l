@@ -1,4 +1,4 @@
-# 16nov14abu
+# 10apr15abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -264,90 +264,116 @@
 
 # X name
 (code 'externX_E 0)  # C
-   ld C 3  # Reserve three cells
-   call needC
-   push X  # <S> Save name
-   ld A 6364136223846793005  # Randomize
-   mul X
-   ld E A  # Key in E
-   ld X Extern  # X on external symbol tree root node
+   push Y
+   call need3  # Reserve 3 cells
+   ld Y (Extern)  # Y on external symbol tree
+   ld C 0  # Level counter
    do
-      ld A ((X) TAIL)  # Next symbol
-      call nameA_A  # Get name
+      inc C  # Next level
+      ld E (Y)  # Next symbol
+      ld A (E TAIL)  # Get name
+      call nameA_A
       and A (hex "3FFFFFFFFFFFFFF7")  # Mask status and extern bits
-      mul 6364136223846793005  # Randomize
-      cmp A E  # Equal to key?
-      if eq  # Yes
-         add S I  # Drop name
-         ld E (X)  # Found symbol
-         ret
-      end
+      cmp A X  # Equal to key?
+   while ne  # No
       if lt  # Symbol is smaller
-         atom (X CDR)  # Already has link?
-         if nz  # No
-            call cons_E  # New symbol
-            pop (E)  # Retrieve name
-            or (E) SYM  # Set 'extern' tag
-            or E SYM  # Make symbol
-            ld (E) Nil  # Init to 'NIL'
-            call consE_A  # Cons into a new node
-            ld (A) E
-            ld (A CDR) Nil
-            call consA_C  # Cons into a new link
-            ld (C) Nil
-            ld (C CDR) A
-            ld (X CDR) C
-            ret
+         ld E (Y CDR)  # Get link cell
+         atom E  # Already has link?
+         if z  # Yes
+            ld Y (E CDR)  # Right node?
+            atom Y
+            continue z  # Yes
+         else
+            call cons_E  # New link cell
+            ld (Y CDR) E
+            ld (E) Nil
          end
-         ld X (X CDR)
-         atom (X CDR)  # CDR of link?
-         ldz X (X CDR)  # Yes: Get CDR of link in X
-         if nz  # No
-            call cons_E  # New symbol
-            pop (E)  # Retrieve name
-            or (E) SYM  # Set 'extern' tag
-            or E SYM  # Make symbol
-            ld (E) Nil  # Init to 'NIL'
-            call consE_A  # Cons into a new node
-            ld (A) E
-            ld (A CDR) Nil
-            ld (X CDR) A  # Store in CDR of link
-            ret
-         end
+         call cons_A  # New right node
+         ld (E CDR) A
       else  # Symbol is greater
-         atom (X CDR)  # Already has link?
-         if nz  # No
-            call cons_E  # New symbol
-            pop (E)  # Retrieve name
-            or (E) SYM  # Set 'extern' tag
-            or E SYM  # Make symbol
-            ld (E) Nil  # Init to 'NIL'
-            call consE_A  # Cons into a new node
-            ld (A) E
-            ld (A CDR) Nil
-            call consA_C  # Cons into a new link
-            ld (C) A
-            ld (C CDR) Nil
-            ld (X CDR) C
-            ret
+         ld E (Y CDR)  # Get link cell
+         atom E  # Already has link?
+         if z  # Yes
+            ld Y (E)  # Left node?
+            atom Y
+            continue z  # Yes
+         else
+            call cons_E  # New link cell
+            ld (Y CDR) E
+            ld (E CDR) Nil
          end
-         ld X (X CDR)
-         atom (X)  # CAR of link?
-         ldz X (X)  # Yes: Get CAR of link in X
-         if nz  # No
-            call cons_E  # New symbol
-            pop (E)  # Retrieve name
-            or (E) SYM  # Set 'extern' tag
-            or E SYM  # Make symbol
-            ld (E) Nil  # Init to 'NIL'
-            call consE_A  # Cons into a new node
-            ld (A) E
-            ld (A CDR) Nil
-            ld (X) A  # Store in CAR of link
-            ret
-         end
+         call cons_A  # New left node
+         ld (E) A
       end
+      inc (ExtCnt)  # Increment count
+      call cons_E  # New symbol
+      ld (E) X  # Set name
+      or (E) SYM  # Set 'extern' tag
+      or E SYM  # Make symbol
+      ld (A) E  # Store in node
+      ld (A CDR) Nil
+      ld (E) Nil  # Init to 'NIL'
+      break T
    loop
+   ld A 1  # 2 ** (C/2)
+   shr C 1
+   shl A C
+   cmp A (ExtCnt)  # Tree too deep?
+   if gt  # Yes
+      ld Y (Extern)  # Y on external symbol tree again
+      ld A (ExtSkip)  # Levels to skip
+      inc A  # Increment
+      cmp A C  # Beyond half depth?
+      if gt  # Yes
+         ld (ExtSkip) 0  # Don't skip
+      else
+         ld C A  # Skip
+         ld (ExtSkip) A  # Save new value
+         do
+            ld A ((Y) TAIL)  # Get name
+            ld Y (Y CDR)  # Get link cell
+            call nameA_A
+            and A (hex "3FFFFFFFFFFFFFF7")  # Mask status and extern bits
+            cmp A X  # Compare name with key
+            ldc Y (Y CDR)  # Go left if symbol is smaller
+            ldnc Y (Y)  # else go right
+            dec C  # Done?
+         until z  # Yes
+      end
+      do
+         ld A ((Y) TAIL)  # Get name
+         call nameA_A
+         and A (hex "3FFFFFFFFFFFFFF7")  # Mask status and extern bits
+         cmp A X  # Equal to key?
+      while ne  # No
+         ld C (Y CDR)  # Get link cell
+         if lt  # Symbol is smaller
+            ld A (C CDR)  # A on right node
+            atom (A CDR)  # Right link?
+            break nz  # No
+            xchg (A) (Y)  # Pivot left
+            ld A (A CDR)  # A also on the link
+            ld Y (A CDR)  # Rotate pointers
+            ld (A CDR) (A)
+            ld (A) (C)
+            ld (C) (C CDR)
+            ld (C CDR) Y
+         else  # Symbol is greater
+            ld A (C)  # A on left node
+            atom (A CDR)  # Left link?
+            break nz  # No
+            xchg (A) (Y)  # Pivot right
+            ld A (A CDR)  # A also on the link
+            ld Y (A)  # Rotate pointers
+            ld (A) (A CDR)
+            ld (A CDR) (C CDR)
+            ld (C CDR) (C)
+            ld (C) Y
+         end
+      loop
+   end
+   pop Y
+   ret
 
 ### Unintern a symbol ###
 # E symbol
@@ -446,7 +472,7 @@
          do
             ld X (Y CDR)  # More left branches?
             atom (X)
-         while nz  # Yes
+         while z  # Yes
             ld A Y  # Go down left
             ld Y (X)
          loop
@@ -798,7 +824,7 @@
          ldnz E (((EnvIntern)) I)
       else
          cmp (E) TSym  # Transient trees?
-         ldnz E Extern  # No: External symbols
+         ldnz E (Extern)  # No: External symbols
          if eq  # Yes
             cmp (E CDR) Nil  # Short names?
             ldz E (Transient)  # Yes
@@ -820,7 +846,7 @@
             ld X (Transient)
          else
             ld E Nil
-            ld X Extern  # External symbols
+            ld X (Extern)  # External symbols
          end
       end
       call consTreeXE_E
@@ -1930,6 +1956,50 @@
    pop X
    ret
 
+# (push1q 'var 'any ..) -> any
+(code 'doPush1q 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval first
+   eval
+   call needVarEX  # Need variable
+   sym E  # Symbol?
+   if nz  # Yes
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         call dbTouchEX  # Touch it
+      end
+   end
+   link
+   push E  # <L I> 'var'
+   link
+   ld Y (Y CDR)  # Second arg
+   do
+      ld E (Y)
+      eval  # Eval next arg
+      ld C ((L I))  # Value of 'var'
+      do  # 'memq'
+         atom C  # List?
+      while z  # Yes
+         cmp E (C)  # Member?
+         jeq 10  # Yes
+         ld C (C CDR)
+      loop
+      call consE_A  # Cons into value
+      ld (A) E
+      ld C (L I)  # 'var'
+      ld (A CDR) (C)
+      ld (C) A
+10    ld Y (Y CDR)  # Next arg
+      atom Y  # Any?
+   until nz  # No
+   drop
+   pop Y
+   pop X
+   ret
+
 # (pop 'var) -> any
 (code 'doPop 2)
    push X
@@ -2282,7 +2352,7 @@
                ld (C CDR) A
                ld (X CDR) C
                ld E Nil  # Return NIL
-               break T
+               ret
             end
             ld X A
             atom (X CDR)  # CDR of link?
@@ -2293,7 +2363,7 @@
                ld (A CDR) Nil
                ld (X CDR) A  # Store in CDR of link
                ld E Nil  # Return NIL
-               break T
+               ret
             end
          else  # Smaller
             atom A  # Already has link?
@@ -2306,7 +2376,7 @@
                ld (C CDR) Nil
                ld (X CDR) C
                ld E Nil  # Return NIL
-               break T
+               ret
             end
             ld X A
             atom (X)  # CAR of link?
@@ -2317,7 +2387,7 @@
                ld (A CDR) Nil
                ld (X) A  # Store in CAR of link
                ld E Nil  # Return NIL
-               break T
+               ret
             end
          end
       loop

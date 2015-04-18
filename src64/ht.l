@@ -1,4 +1,4 @@
-# 13mar13abu
+# 13feb15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -294,15 +294,20 @@
    ldnz X E  # Restore X when no match
    ret  # 'z' if match
 
-# (ht:Pack 'lst) -> sym
+# (ht:Pack 'lst ['flg']) -> sym
 (code 'Pack 2)
    push X
-   ld E ((E CDR))  # Eval arg
+   push Y
+   ld X (E CDR)  # Args
+   ld E (X)  # Eval 'lst'
    eval
    link
-   push E  # Save
+   push E  # <L I> 'lst'
    link
-   ld X E  # List in X
+   ld E ((X CDR))  # Eval 'flg'
+   eval
+   ld Y E  # in Y
+   ld X (L I)  # List in X
    call begString  # Start string
    do
       atom X  # More items?
@@ -313,11 +318,14 @@
       cmp B (char "%")  # Hex-escaped?
       if eq  # Yes
          ld X (X CDR)  # Skip "%"
-         call getHexX_A  # Get upper nibble
-         shl A 4
-         ld C A  # into C
-         call getHexX_A  # Get lower nibble
-         or A C  # Combine
+         cmp Y Nil  # 'flg'?
+         if ne  # No
+            call getHexX_A  # Get upper nibble
+            shl A 4
+            ld C A  # into C
+            call getHexX_A  # Get lower nibble
+            or A C  # Combine
+         end
          call (PutB)  # Output
       else
          ld X (X CDR)  # Next symbol
@@ -378,6 +386,7 @@
    loop
    call endString_E  # Retrieve result
    drop
+   pop Y
    pop X
    ret
 

@@ -1,0 +1,247 @@
+####### 3.1.9.17 #######
+17apr15
+   Slightly generalized 'mimetype' function
+      lib/http.l
+
+15apr15
+   Added "image/svg+xml" mime type
+      lib/http.l
+
+14apr15
+   Sanity checks in 'postForm'
+      lib/form.l
+
+13apr15
+   Keep 'Extern' symbol trees sorted by external symbol names, so that 'commit'
+   can write symbols sequentially. Instead of randomizing the keys, a "Lazy
+   Binary Tree" (abu) is used.
+      src64/glob.l
+      src64/main.l
+      src64/gc.l
+      src64/sym.l
+      src64/db.l
+
+####### 3.1.9.16 #######
+12apr15
+   Slightly simplified 'choDlg'
+      lib/form.l
+
+04apr15
+   Minor rearrangements
+      lib/canvas.l
+      lib/canvas.js
+
+03apr15
+   Bug in 'uninternEXY' for long names (found by Alexander Williams)
+      src64/sym.l
+      pilMCU/src/sym.l
+
+####### 3.1.9.15 #######
+03apr15
+   Replaced 'wchan' with 'time' (accumulated CPU time) in 'proc'
+      lib/debug.l
+      ersatz/lib.l
+
+02apr15
+   Minor bug in 'rand' argument handling: (rand (= 3 4)) was not treated as
+   (rand NIL) or (rand)
+      src64/big.l
+
+####### 3.1.9.14 #######
+01apr15
+   'gcc' -> 'gcc48' for FreeBSD
+      src/Makefile
+
+31mar15
+   Some changes in FAQ by Rick Hanson
+      doc/faq.html
+
+29mar15
+   Slightly optimized 'externX_E'
+      src64/sym.l
+
+27mar15
+   'depth' stores the total number of nodes in '@@'
+      lib/misc.l
+
+####### 3.1.9.13 #######
+23mar15
+   Generalized Makefile (with fix for pil32 on FreeBSD) by Rick Hanson and
+   Mihail Pechkin
+      src/Makefile
+
+####### 3.1.9.12 #######
+12mar15
+   Add filter to 'dumpDB'
+      lib/too.l
+   Bug in (read "_")
+      src64/io.l
+      pilMCU/src/io.l
+      src/io.c
+
+11mar15
+   Dump/load data and blobs with 'dumpDB' and 'loadDB'
+      lib/too.l
+
+####### 3.1.9.11 #######
+05mar15
+   Use window.location.replace() instead of window.location.reload()
+      lib/xhtml.l
+
+25feb15
+   Catch div/0 in 'rand'
+      src64/big.l
+      pilMCU/src/big.l
+      src/big.c
+      mini/src/math.c
+      ersatz/fun.src
+
+####### 3.1.9.10 #######
+21feb15
+   'rassoc' function
+      src64/subr.l
+      src64/glob.l
+      pilMCU/src/subr.l
+      pilMCU/src/glob.l
+      src/subr.c
+      src/tab.c
+      src/pico.h
+      mini/src/subr.c
+      mini/src/init.s
+      ersatz/fun.src
+      doc/ref.html
+      doc/refR.html
+      test/src/subr.l
+
+####### 3.1.9.9 #######
+16feb15
+   TinyMCE 'htmlText' more flexible tag handling
+   Added TinyMCE 'colorpicker'
+      lib/tinymce.l
+
+15feb15
+   Added sub-/superscript to 'psAlign'
+   Protect "*Size" and "*Font" globals in 'psAlign'
+      lib/ps.l
+
+13feb15
+   Additional 'flg' argument for 'ht:Pack' to handle percent in URLs
+      src64/ht.l
+      src/ht.c
+      lib/http.l
+      lib/form.l
+      test/src/ht.l
+
+####### 3.1.9.8 #######
+12feb15
+   Slightly extended able check for '+BubbleButton'
+      lib/form.l
+   TinyMCE switch on 'nowrap'
+      lib/tinymce.l
+
+11feb15
+    'able' check in '+Chg'
+      lib/form.l
+
+10feb15
+   '<rgb>' tag and '+RgbField'
+      lib/xhtml.l
+      lib/form.l
+
+####### 3.1.9.7 #######
+05feb15
+   No special target for "java/mkJar"
+      java/mkJar
+
+04feb15
+   TinyCME force_br_newlines works now
+   TinyCME min_height 12
+      lib/tinymce.l
+
+03feb15
+   Prune 'jre'
+      java/lib.l
+
+02feb15
+   Java Interoperability
+      java/lib.l
+      java/mkJar
+      java/Reflector.java
+      java/InOut.java
+      java/test.l
+
+####### 3.1.9.6 #######
+30jan15
+   'pipe' bidirectional, using socketpair()
+      src64/io.l
+      src64/arch/emu.l
+      src/io.c
+      src/net.c
+      src/pico.h
+
+####### 3.1.9.5 #######
+29jan15
+   Default SIGPIPE handling in 'pipe'
+      src64/io.l
+      src/io.c
+
+28jan15
+   Inhibit chart action upon field error
+      lib/form.l
+
+27jan15
+   'tr' unit test for 'pipe'
+      test/src/io.l
+
+26jan15
+   'push1q' function
+      src64/sym.l
+      src64/glob.l
+      pilMCU/src/sym.l
+      pilMCU/src/glob.l
+      src/sym.c
+      src/tab.c
+      src/pico.h
+      mini/src/sym.c
+      mini/src/init.s
+      ersatz/fun.src
+      doc/ref.html
+      test/src/sym.l
+
+####### 3.1.9.4 #######
+23jan15
+   'dbgc' at the end of 'admin' maintenance
+      lib/too.l
+
+21jan15
+   One more fix for "'+IdxFold' not subclass of '+Fold'"
+      lib/pilog.l
+
+####### 3.1.9.3 #######
+14jan15
+   '+IdxFold' not subclass of '+Fold'
+      lib/db.l
+
+####### 3.1.9.2 #######
+12jan15
+   'visibilitychange' event handling lib/form.js -> lib/xhtml.l, when (=0 Upd)
+      lib/form.js
+      lib/xhtml.l
+
+03jan15
+   Make 'lint' aware of destructuring 'let'
+      lib/lint.l
+
+02jan15
+   Use NIL instead of '@' for "don't care in destructuring 'let'
+      src64/flow.l
+      pilMCU/src/flow.l
+
+01jan15
+   Destructuring 'let' (64-bit)
+      src64/flow.l
+      pilMCU/src/flow.l
+
+####### 3.1.9.1 #######
+
+# vi:et:ts=3:sw=3

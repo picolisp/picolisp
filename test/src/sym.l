@@ -1,4 +1,4 @@
-# 14nov14abu
+# 26jan15abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -221,6 +221,11 @@
    (test (1 2) (cut 2 'L))
    (test (3) L) )
 
+### push1q ###
+(let L NIL
+   (test (2) (push1q 'L 'a (1) 'b (2)))
+   (test (1) (push1q 'L 'b (1)))
+   (test '((1) (2) b (1) a) L) )
 
 ### del ###
 (let (L '((a b c) (d e f))  S (new))

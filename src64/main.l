@@ -1,4 +1,4 @@
-# 20dec14abu
+# 30mar15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -106,6 +106,10 @@
       end
       cmp E SymTabEnd
    until gt
+   call cons_A  # Create external symbol tree root node
+   ld (A) Db1  # '{1}'
+   ld (A CDR) Nil
+   ld (Extern) A
    ld (Get_A) getStdin_A
    ld A 0  # Standard input
    call initInFileA_A  # Create input file

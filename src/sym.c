@@ -1,4 +1,4 @@
-/* 16nov14abu
+/* 26jan15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -702,6 +702,26 @@ any doPush1(any ex) {
       val(data(c1)) = cons(data(c2), val(data(c1)));
    while (isCell(x = cdr(x)))
       if (!member(data(c2) = EVAL(car(x)), val(data(c1))))
+         val(data(c1)) = cons(data(c2), val(data(c1)));
+   drop(c1);
+   return data(c2);
+}
+
+// (push1q 'var 'any ..) -> any
+any doPush1q(any ex) {
+   any x;
+   cell c1, c2;
+
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   NeedVar(ex,data(c1));
+   CheckVar(ex,data(c1));
+   if (isSym(data(c1)))
+      Touch(ex,data(c1));
+   x = cdr(x),  Push(c2, EVAL(car(x)));
+   if (!memq(data(c2), val(data(c1))))
+      val(data(c1)) = cons(data(c2), val(data(c1)));
+   while (isCell(x = cdr(x)))
+      if (!memq(data(c2) = EVAL(car(x)), val(data(c1))))
          val(data(c1)) = cons(data(c2), val(data(c1)));
    drop(c1);
    return data(c2);

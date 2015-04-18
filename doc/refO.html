@@ -40,11 +40,11 @@ and <code><a href="refV.html#version">version</a></code>.
 -> "Linux"
 </code></pre>
 
-<dt><a name="obj"><code>(obj (typ var [hook] val ..) [var1 val1 ..]) -> obj</code></a>
+<dt><a name="obj"><code>(obj (typ sym [hook] val ..) [var1 val1 ..]) -> obj</code></a>
 <dt><code>(obj typ any [var1 val1 ..]) -> obj</code>
 <dd>Finds or creates a database object, and initializes additional properties
 using the <code>varN</code> and <code>valN</code> arguments. In the first form,
-a <code><a href="refR.html#request">request</a></code> for <code>(typ var [hook]
+a <code><a href="refR.html#request">request</a></code> for <code>(typ sym [hook]
 val ..)</code> is called, while the second form uses <code><a
 href="refC.html#cache">cache</a></code> to maintain objects without unique
 <code><a href="refK.html#+Key">+Key</a></code>s by indexing <code><a
@@ -265,7 +265,7 @@ href="refN.html#not/1">not/1</a></code>.
 <code>prg</code>. The current output channel will be saved and restored
 appropriately. If the argument is <code>NIL</code>, standard output is used. If
 the argument is a symbol, it is used as a file name (opened in "append" mode if
-the first character is "<code>+</code>"). If it is a positve number, it is used
+the first character is "<code>+</code>"). If it is a positive number, it is used
 as the descriptor of an open file. If it is a negative number, the saved output
 channel such many levels above the current one is used. Otherwise (if it is a
 list), it is taken as a command with arguments, and a pipe is opened for output.

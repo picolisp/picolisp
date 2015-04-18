@@ -1,3 +1,13 @@
+* 18apr15 picoLisp-3.1.10
+   'commit' writes sequentially
+   Bug in 'zap' (64-bit)
+   Bug in (read "_")
+   'rassoc' function
+   Java Interoperability
+   'pipe' bidirectional
+   'push1q' function
+   Destructuring 'let' (64-bit)
+
 * 28dec14 picoLisp-3.1.9
    'purge' backup function
    'exec' flow function

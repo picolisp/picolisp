@@ -1,4 +1,4 @@
-# 16jul13abu
+# 26mar15abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -35,7 +35,7 @@
 # Basic editing routine
 (de chgLine (L N)
    (let (D (length "Line")  Tsm)
-      (for (P (dec "LPos") (>= P 1) (dec P))  # To start of old line
+      (for (P (dec "LPos") (gt0 P) (dec P))  # To start of old line
          (unless
             (and
                *Tsm
@@ -291,8 +291,9 @@
       (off "Complete")
       (case "C"
          (("^H" "^?")
-            (when (> "LPos" 1)
-               (chgLine (remove (dec "LPos") "Line") (dec "LPos")) ) )
+            (if (> "LPos" 1)
+               (chgLine (remove (dec "LPos") "Line") (dec "LPos"))
+               (beep) ) )
          ("^V" (insChar (key)))
          ("^E" (and edit (edit '*History)))
          ("^["

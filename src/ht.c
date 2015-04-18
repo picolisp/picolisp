@@ -1,4 +1,4 @@
-/* 18may12abu
+/* 13feb15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -160,17 +160,19 @@ static int getUnicode(any *p) {
    return 0;
 }
 
-// (ht:Pack 'lst) -> sym
-any Pack(any x) {
+// (ht:Pack 'lst ['flg']) -> sym
+any Pack(any ex) {
    int c;
+   any x, u;
    cell c1;
 
-   x = EVAL(cadr(x));
+   x = cdr(ex),  Push(c1, EVAL(car(x)));
+   x = cdr(x),  u = EVAL(car(x));
+   x = data(c1);
    begString();
-   Push(c1,x);
    while (isCell(x)) {
       if ((c = firstByte(car(x))) == '%')
-         x = cdr(x),  Env.put(getHex(&x));
+         x = cdr(x),  Env.put(isNil(u)? '%' : getHex(&x));
       else if (c != '&')
          outName(car(x)), x = cdr(x);
       else if (head("lt;", x = cdr(x)))
@@ -188,7 +190,9 @@ any Pack(any x) {
       else
          Env.put('&');
    }
-   return endString();
+   x = endString();
+   drop(c1);
+   return x;
 }
 
 /*** Read content length bytes */

@@ -1,4 +1,4 @@
-# 16dec14abu
+# 30mar15abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1433,16 +1433,16 @@
       until z  # Yes
       push X
       push Y
-      ld X Extern  # Iterate external symbol tree
+      ld X (Extern)  # Iterate external symbol tree
       ld Y 0  # Clear TOS
       do
          do
             ld A (X CDR)  # Get subtrees
-            atom (A CDR)  # Right subtree?
+            atom (A)  # Left subtree?
          while z  # Yes
-            ld C X  # Go right
-            ld X (A CDR)  # Invert tree
-            ld (A CDR) Y  # TOS
+            ld C X  # Go left
+            ld X (A)  # Invert tree
+            ld (A) Y  # TOS
             ld Y C
          loop
          do
@@ -1473,12 +1473,12 @@
                end
                pop Y
             end
-            ld A (X CDR)  # Left subtree?
-            atom (A)
+            ld A (X CDR)  # Right subtree?
+            atom (A CDR)
             if z  # Yes
-               ld C X  # Go left
-               ld X (A)  # Invert tree
-               ld (A) Y  # TOS
+               ld C X  # Go right
+               ld X (A CDR)  # Invert tree
+               ld (A CDR) Y  # TOS
                or C SYM  # First visit
                ld Y C
                break T
@@ -1490,15 +1490,15 @@
                sym A  # Second visit?
                if z  # Yes
                   ld C (A CDR)  # Nodes
-                  ld Y (C CDR)  # TOS on up link
-                  ld (C CDR) X
+                  ld Y (C)  # TOS on up link
+                  ld (C) X
                   ld X A
                   break T
                end
                off A SYM  # Set second visit
                ld C (A CDR)  # Nodes
-               ld Y (C)
-               ld (C) X
+               ld Y (C CDR)
+               ld (C CDR) X
                ld X A
             loop
          loop
@@ -1560,16 +1560,16 @@
    end
    push X
    push Y
-   ld X Extern  # Iterate external symbol tree
+   ld X (Extern)  # Iterate external symbol tree
    ld Y 0  # Clear TOS
    do
       do
          ld A (X CDR)  # Get subtrees
-         atom (A CDR)  # Right subtree?
+         atom (A)  # Left subtree?
       while z  # Yes
-         ld C X  # Go right
-         ld X (A CDR)  # Invert tree
-         ld (A CDR) Y  # TOS
+         ld C X  # Go left
+         ld X (A)  # Invert tree
+         ld (A) Y  # TOS
          ld Y C
       loop
       do
@@ -1694,12 +1694,12 @@
             end
             pop Y
          end
-         ld A (X CDR)  # Left subtree?
-         atom (A)
+         ld A (X CDR)  # Right subtree?
+         atom (A CDR)
          if z  # Yes
-            ld C X  # Go left
-            ld X (A)  # Invert tree
-            ld (A) Y  # TOS
+            ld C X  # Go right
+            ld X (A CDR)  # Invert tree
+            ld (A CDR) Y  # TOS
             or C SYM  # First visit
             ld Y C
             break T
@@ -1711,15 +1711,15 @@
             sym A  # Second visit?
             if z  # Yes
                ld C (A CDR)  # Nodes
-               ld Y (C CDR)  # TOS on up link
-               ld (C CDR) X
+               ld Y (C)  # TOS on up link
+               ld (C) X
                ld X A
                break T
             end
             off A SYM  # Set second visit
             ld C (A CDR)  # Nodes
-            ld Y (C)
-            ld (C) X
+            ld Y (C CDR)
+            ld (C CDR) X
             ld X A
          loop
       loop
@@ -1809,7 +1809,7 @@
    end
    push X
    push Y
-   ld X Extern  # Iterate external symbol tree
+   ld X (Extern)  # Iterate external symbol tree
    ld Y 0  # Clear TOS
    do
       do

@@ -1,4 +1,4 @@
-# 12sep14abu
+# 27mar15abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -208,7 +208,7 @@
                   (max
                      (recurse (cadr Idx) N)
                      (recurse (cddr Idx) N) ) ) ) )
-         (or (=0 C) (*/ D C)) ) ) )
+         (or (=0 (setq @@ C)) (*/ D C)) ) ) )
 
 ### Allow ###
 (de allowed Lst

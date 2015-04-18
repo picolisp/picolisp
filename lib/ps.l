@@ -1,4 +1,4 @@
-# 27feb14abu
+# 15feb15abu
 # (c) Software Lab. Alexander Burger
 
 # "*Glyph" "*PgX" "*PgY"
@@ -240,16 +240,17 @@
    ("?ff")
    (prinl 0)
    (when "H"
-      (for X "Lst"
-         (cond
-            ((atom X)
-               (fmtPs (chop X))
-               (prinl " glyphArrayWidth add") )
-            ((== 'F (car X))
-               (ifn (cdr X)
-                  (prinl "exch setfont")
-                  (prinl "currentfont exch")
-                  (font @) ) ) ) )
+      (use ("*Size" "*Font")
+         (for X "Lst"
+            (cond
+               ((atom X)
+                  (fmtPs (chop X))
+                  (prinl " glyphArrayWidth add") )
+               ((== 'F (car X))
+                  (ifn (cdr X)
+                     (prinl "exch setfont")
+                     (prinl "currentfont exch")
+                     (font @) ) ) ) ) )
       (prinl "*DX" " exch sub" (and (=0 "H") " 2 div")) )
    (prin
       (-
@@ -261,22 +262,24 @@
                (setq "*Pos" (+ (/ "*Size" 4) (/ "*DY" 2))) )
             (T (setq "*Pos" "*DY")) ) ) )
    (prinl " moveto")
-   (for X "Lst"
-      (if (atom X)
-         (ps+ X)
-         (casq (pop 'X)
-            (F
-               (ifn X
-                  (prinl "setfont")
-                  (prinl "currentfont")
-                  (font X) ) )
-            (C
-               (ifn X
-                  (prinl "setrgbcolor")
-                  (prinl "currentrgbcolor")
-                  (color (car X) (cadr X) (caddr X)) ) )
-            (U (setq "*UL" X))
-            (H (hline (car X) (cadr X) (caddr X))) ) ) ) )
+   (use ("*Size" "*Font")
+      (for X "Lst"
+         (if (atom X)
+            (ps+ X)
+            (casq (pop 'X)
+               (F
+                  (ifn X
+                     (prinl "setfont")
+                     (prinl "currentfont")
+                     (font X) ) )
+               (C
+                  (ifn X
+                     (prinl "setrgbcolor")
+                     (prinl "currentrgbcolor")
+                     (color (car X) (cadr X) (caddr X)) ) )
+               (U (setq "*UL" X))
+               (S (prinl "currentpoint " X " add moveto"))
+               (H (hline (car X) (cadr X) (caddr X))) ) ) ) ) )
 
 (de pos (N)
    (if N (+ N "*Pos") "*Pos") )

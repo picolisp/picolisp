@@ -38,7 +38,7 @@ href="ref.html#dbase">Database</a>.
 
 <dt><a name="fail"><code>(fail) -> lst</code></a>
 <dd>Constructs an empty <a href="ref.html#pilog">Pilog</a> query, i.e. a query
-that will aways fail. See also <code><a href="refG.html#goal">goal</a></code>.
+that will always fail. See also <code><a href="refG.html#goal">goal</a></code>.
 
 <pre><code>
 (dm clr> ()                # Clear query chart in search dialogs
@@ -459,9 +459,13 @@ only be called immediately after <code><a href="refT.html#task">task</a></code>.
 <dd>Converts a number <code>num</code> to a string, or a string
 <code>sym|lst</code> to a number. In both cases, optionally a precision
 <code>cnt</code>, a decimal-separator <code>sym1</code> and a
-thousands-separator <code>sym2</code> can be supplied. Returns <code>NIL</code>
-if the conversion is unsuccessful. See also <a
-href="ref.html#num-io">Numbers</a> and <code><a
+thousands-separator <code>sym2</code> can be supplied. Returns
+<code>NIL</code> if the conversion is unsuccessful. See also <a
+href="ref.html#num-io">Numbers</a>, <code><a
+href="refP.html#pad">pad</a></code>, <code><a
+href="refH.html#hex">hex</a></code>, <code><a
+href="refO.html#oct">oct</a></code>, <code><a
+href="refH.html#bin">bin</a></code> and <code><a
 href="refR.html#round">round</a></code>.
 
 <pre><code>

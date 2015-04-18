@@ -1,4 +1,4 @@
-# 15dec14abu
+# 12mar15abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2559,6 +2559,7 @@
       end
       call testEscA_F
       jnc retNil
+      call getChar_A  # Get next character
       call mkCharA_A  # Make single character
       call consA_X  # Cons it
       ld (X) A
@@ -2575,6 +2576,7 @@
          end
          call testEscA_F
       while c
+         call getChar_A  # Get next character
          call mkCharA_A  # Make char
          call consA_C  # Cons it
          ld (C) A
@@ -4336,34 +4338,43 @@
    ld X E  # Expression in X
    sub S IV  # In/OutFrame
    ld Y S
-   push A  # Create 'pipe' structure
-   cc pipe(S)  # Open pipe
+   sub S I  # Create 'pipe' structure
+   atom ((X CDR) CDR)  # 'prg'?
+   if z  # Yes
+      cc pipe(S)  # Open pipe
+   else
+      cc socketpair(AF_UNIX SOCK_STREAM 0 S)  # Open socket pair
+   end
    nul4  # OK?
    jnz pipeErrX
    ld4 (S)  # Get pfd[0]
    call closeOnExecAX
    ld4 (S 4)  # Get pfd[1]
+   cmp A 2  # OK?
+   jlt pipeErrX
    call closeOnExecAX
    call forkLispX_FE  # Fork child process
    if c  # In child
+      ld4 (S)  # Close read pipe
+      call closeAX
       atom ((X CDR) CDR)  # 'prg'?
       if z  # Yes
          cc setpgid(0 0)  # Set process group
+      else
+         ld4 (S 4)  # Get write pipe
+         cc dup2(A 0)  # Dup to STDIN_FILENO
       end
-      ld4 (S)  # Close read pipe
-      call closeAX
       ld4 (S 4)  # Get write pipe
-      cmp A 1  # STDOUT_FILENO?
-      if ne  # No
-         cc dup2(A 1)  # Dup to STDOUT_FILENO
-         ld4 (S 4)  # Close write pipe
-         call closeAX
-      end
-      ld E Nil  # Standard output
-      call wrOpenEXY
+      cc dup2(A 1)  # Dup to STDOUT_FILENO
+      ld4 (S 4)  # Close write pipe
+      call closeAX
+      cc signal(SIGPIPE SIG_DFL)  # Default SIGPIPE
+      ld (Y I) 1  # fd = stdout
+      ld (Y II) 0  # pid = 0
       call pushOutFilesY
       ld ((OutFile) II) 0  # Clear 'tty'
       ld (Run) Nil  # Switch off all tasks
+      ld (Led) Nil  # and line editor
       ld E ((X CDR))  # Get 'exe'
       eval  # Evaluate it
       ld E 0  # Exit OK
@@ -4373,21 +4384,23 @@
    ld4 (S 4)  # Close write pipe
    call closeAX
    ld4 (S)  # Get read pipe
+   ld (Y I) A  # Save 'fd'
    call initInFileA_A
-   ld E (A)  # Get file descriptor
    ld X ((X CDR) CDR)  # Get 'prg'
    atom X  # Any?
    if nz  # No
+      ld4 (S)  # Get file descriptor
+      call initOutFileA_A
+      ld E (A)  # Get file descriptor
       shl E 4  # In parent
-      or E CNT  # Return PID
+      or E CNT  # Return 'fd'
    else
-      ld (Y I) E  # Save 'fd'
       cc setpgid((Y II) 0)  # Set process group
       call pushInFilesY
       prog X
       call popInFiles
    end
-   add S (+ 8 IV)  # Drop 'pipe' structure and In/OutFrame
+   add S (+ I IV)  # Drop 'pipe' structure and In/OutFrame
    pop Y
    pop X
    ret

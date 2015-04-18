@@ -1,4 +1,4 @@
-# 17dec14abu
+# 05mar15abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -115,6 +115,9 @@
                (prinl "</style>") ) ) )
       (and *SesId (javascript NIL "SesId=\"" @ "\""))
       (mapc javascript *JS)
+      (when (=0 Upd)
+         (javascript NIL
+            "document.addEventListener('visibilitychange', function() {if (!document.hidden) window.location.replace(location.href)})" ) )
       (prinl "</head>")
       (tag 'body Attr 2 Prg)
       (prinl "</html>") ) )
@@ -707,6 +710,19 @@
       (prin " onchange=\"return fldChg(this)\"")
       (htJs) )
    (dfltCss "upload")
+   (and Flg (prin " disabled=\"disabled\""))
+   (prinl "/>") )
+
+(de <rgb> ("Var" Flg)
+   (prin "<input type=\"color\" ")
+   (htmlVar "Var")
+   (prin " value=\"")
+   (ht:Prin (htmlVal "Var"))
+   (prin "\"")
+   (when *JS
+      (prin " onchange=\"return fldChg(this)\"")
+      (htJs) )
+   (dfltCss "rgb")
    (and Flg (prin " disabled=\"disabled\""))
    (prinl "/>") )
 

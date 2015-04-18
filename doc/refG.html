@@ -50,7 +50,7 @@ and <code><a href="refN.html#n0">n0</a></code>.
 -> 0
 </code></pre>
 
-<dt><a name="genKey"><code>(genKey 'var 'cls ['hook ['num1 ['num2]]]) -> num</code></a>
+<dt><a name="genKey"><code>(genKey 'sym 'cls ['hook ['num1 ['num2]]]) -> num</code></a>
 <dd>Generates a key for a database tree. If a minimal key <code>num1</code>
 and/or a maximal key <code>num2</code> is given, the next free number in that
 range is returned. Otherwise, the current maximal key plus one is returned. See
@@ -65,7 +65,7 @@ href="refM.html#maxKey">maxKey</a></code>.
 -> 9
 </code></pre>
 
-<dt><a name="genStrKey"><code>(genStrKey 'sym 'var 'cls ['hook]) -> sym</code></a>
+<dt><a name="genStrKey"><code>(genStrKey 'sym 'sym 'cls ['hook]) -> sym</code></a>
 <dd>Generates a unique string for a database tree, by prepending as many "# "
 sequences as necessary. See also <code><a
 href="refG.html#genKey">genKey</a></code>.
@@ -119,6 +119,13 @@ href="refF.html#fun?">fun?</a></code>.
 -> ((File . @) (load File))
 : (getd 1)
 -> NIL
+
+: ht:Fmt             # Initially undefined
+-> NIL
+: (getd 'ht:Fmt)     # Check shared library
+-> 8790207171188
+: ht:Fmt             # Now defined
+-> 8790207171188
 </code></pre>
 
 <dt><a name="getl"><code>(getl 'sym1|lst1 ['sym2|cnt ..]) -> lst</code></a>

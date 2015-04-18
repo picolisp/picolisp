@@ -1,4 +1,4 @@
-# 20dec14abu
+# 02jan15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -1476,18 +1476,51 @@
    pop X
    ret
 
+(code 'setDestructAE 0)
+   do
+      atom E  # List data?
+      if nz  # No
+         ld E Nil  # Default to NIL
+      end
+      atom (A)  # Structure symbol in CAR?
+      if nz  # Yes
+         cmp (A) Nil  # Skip NIL
+         if ne
+            ld ((A)) (E)  # Set new value
+         end
+      else
+         push A  # Recurse left
+         push E
+         ld A (A)
+         ld E (E)
+         call setDestructAE  # Recurse
+         pop E
+         pop A
+      end
+      ld E (E CDR)  # Traverse
+      atom (A CDR)  # Right?
+      if nz  # No
+         cmp (A CDR) Nil  # Dotted structure symbol?
+         if ne  # Yes
+            ld ((A CDR)) E  # Set new value
+         end
+         ret
+      end
+      ld A (A CDR)  # Traverse right
+   loop
+
 # (let sym 'any . prg) -> any
-# (let (sym 'any ..) . prg) -> any
+# (let (sym|lst 'any ..) . prg) -> any
 (code 'doLet 2)
    push X
    push Y
    ld X (E CDR)  # Args
    ld Y (X)  # First arg
    ld X (X CDR)
-   push (EnvBind)  # Build bind frame
-   link
    sym Y  # Single symbol?
    if nz  # Yes
+      push (EnvBind)  # Build bind frame
+      link
       push (Y)  # Save old value
       push Y  # and 'sym'
       link
@@ -1508,17 +1541,80 @@
       pop X
       ret
    end
+   push Z
+   push (EnvBind)  # Build bind frame
+   link
    do
-      ld A (Y)  # Next sym
-      push (A)  # Save old value
-      push A  # and sym
-      link
-      ld (EnvBind) L  # Close bind frame
-      push 0  # Init env swap
-      ld E ((Y CDR))  # Eval 'any'
-      eval
-      ld ((Y)) E  # Set new value
-      ld Y ((Y CDR) CDR)  # More symbols?
+      ld A (Y)  # Next item
+      sym A  # Single symbol?
+      if nz  # Yes
+         push (A)  # Save old value
+         push A  # and sym
+         link
+         ld (EnvBind) L  # Close bind frame
+         push 0  # Init env swap
+         ld E ((Y CDR))  # Eval 'any'
+         eval
+         ld ((Y)) E  # Set new value
+      else  # 'lst'
+         ld Z 0  # Clear TOS
+         do
+            do
+               atom (A)  # Left?
+            while z  # Yes
+               ld C A  # Go left
+               ld A (A)  # Invert tree
+               ld (C) Z  # TOS
+               ld Z C
+            loop
+            cmp (A) Nil  # Skip NIL
+            if ne
+               push ((A))  # Save old value
+               push (A)  # and sym
+            end
+            do
+               atom (A CDR)  # Right?
+               if nz  # No
+                  cmp (A CDR) Nil  # Dotted structure symbol?
+                  if ne  # Yes
+                     push ((A CDR))  # Save old value
+                     push (A CDR)  # and sym
+                  end
+               else
+                  ld C A  # Go right
+                  ld A (A CDR)  # Invert tree
+                  ld (C CDR) Z  # TOS
+                  or C SYM  # First visit
+                  ld Z C
+                  break T
+               end
+               do
+                  ld C Z  # TOS
+                  null C  # Empty?
+                  jeq 10  # Done
+                  sym C  # Second visit?
+                  if z  # Yes
+                     ld Z (C)  # TOS on up link
+                     ld (C) A
+                     ld A C
+                     break T
+                  end
+                  off C SYM  # Set second visit
+                  ld Z (C CDR)
+                  ld (C CDR) A
+                  ld A C
+               loop
+            loop
+         loop
+10       link
+         ld (EnvBind) L  # Close bind frame
+         push 0  # Init env swap
+         ld E ((Y CDR))  # Eval 'any'
+         eval
+         ld A (Y)  # Get 'lst' again
+         call setDestructAE  # Set new values
+      end
+      ld Y ((Y CDR) CDR)  # More items?
       atom Y
    while z  # Yes
       pop A  # Drop env swap
@@ -1534,6 +1630,7 @@
    until eq  # No
    pop L  # Restore link
    pop (EnvBind)  # Restore bind link
+   pop Z
    pop Y
    pop X
    ret

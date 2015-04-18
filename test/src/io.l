@@ -1,4 +1,4 @@
-# 26sep13abu
+# 27jan15abu
 # (c) Software Lab. Alexander Burger
 
 ### path ###
@@ -138,6 +138,10 @@
 
 ### pipe ###
 (test 123 (pipe (println 123) (read)))
+(test "ABC DEF GHI"
+   (pipe
+      (out '(tr "[a-z]" "[A-Z]") (prinl "abc def ghi"))
+      (line T) ) )
 
 
 ### open close ###

@@ -1,4 +1,4 @@
-/* 08dec14abu
+/* 21feb15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,6 +27,10 @@
 #ifndef NOWAIT
 #include <sys/wait.h> // tcc doen't like it
 #endif
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #ifndef __CYGWIN__
 #define MAIN main
@@ -674,6 +678,7 @@ any doProtect(any);
 any doProve(any);
 any doPush(any);
 any doPush1(any);
+any doPush1q(any);
 any doPut(any);
 any doPutl(any);
 any doPwd(any);
@@ -683,6 +688,7 @@ any doQuote(any);
 any doRand(any);
 any doRange(any);
 any doRank(any);
+any doRassoc(any);
 any doRaw(any);
 any doRd(any);
 any doRead(any);

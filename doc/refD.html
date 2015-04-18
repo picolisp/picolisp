@@ -86,7 +86,7 @@ href="ref.html#dbase">Database</a>.
 </code></pre>
 
 <dt><a name="+Dep"><code>+Dep</code></a>
-<dd>Prefix class for maintaining depenencies between <code><a
+<dd>Prefix class for maintaining dependencies between <code><a
 href="refR.html#+relation">+relation</a></code>s. Expects a list of (symbolic)
 attributes that depend on this relation. Whenever this relations is cleared
 (receives a value of <code>NIL</code>), the dependent relations will also be
@@ -123,7 +123,7 @@ href="refU.html#unbug">unbug</a></code>.
 <dt><code>(daemon '(sym sym2 [. cls]) . prg) -> fun</code>
 <dd>Inserts <code>prg</code> in the beginning of the function (first form), the
 method body of <code>sym</code> in <code>cls</code> (second form) or in the
-class obtained by <code><a href="refG.html#get">get</a></code>ing
+class obtained by <code><a href="refG.html#get">get</a></code>ting
 <code>sym2</code> from <code><a href="refC.html#*Class">*Class</a></code> (or
 <code>cls</code> if given) (third form). Built-in functions (C-function pointer)
 are automatically converted to Lisp expressions. See also <code><a
@@ -257,11 +257,11 @@ href="refS.html#strDat">strDat</a></code>.
 -> "Fr"
 </code></pre>
 
-<dt><a name="db"><code>(db 'var 'cls ['hook] 'any ['var 'any ..]) -> sym | NIL</code></a>
+<dt><a name="db"><code>(db 'sym 'cls ['hook] 'any ['sym 'any ..]) -> sym | NIL</code></a>
 <dd>Returns a database object of class <code>cls</code>, where the values for
-the <code>var</code> arguments correspond to the <code>any</code> arguments. If
+the <code>sym</code> arguments correspond to the <code>any</code> arguments. If
 a matching object cannot be found, <code>NIL</code> is returned.
-<code>var</code>, <code>cls</code> and <code>hook</code> should specify a
+<code>sym</code>, <code>cls</code> and <code>hook</code> should specify a
 <code><a href="refT.html#tree">tree</a></code> for <code>cls</code> or one of
 its superclasses. See also <code><a href="refA.html#aux">aux</a></code>,
 <code><a href="refC.html#collect">collect</a></code>, <code><a
@@ -362,7 +362,7 @@ if <code>flg</code> is non-<code>NIL</code>) if everything seems correct.
 Otherwise, a string indicating an error is returned. As a side effect, possibly
 unused blocks (as there might be when a <code><a
 href="refR.html#rollback">rollback</a></code> is done before <code><a
-href="refC.html#commit">commit</a></code>ing newly allocated (<code><a
+href="refC.html#commit">commit</a></code>ting newly allocated (<code><a
 href="refN.html#new">new</a></code>) external symbols) are appended to the free
 list.
 
@@ -597,6 +597,7 @@ contained more than once in <code>lst</code>, only the first occurrence is
 deleted. <code><a href="ref_.html#==">==</a></code> is used for comparison
 (pointer equality). See also <code><a href="refD.html#delete">delete</a></code>,
 <code><a href="refA.html#asoq">asoq</a></code>, <code><a
+href="refP.html#push1q">push1q</a></code>, <code><a
 href="refM.html#memq">memq</a></code>, <code><a
 href="refM.html#mmeq">mmeq</a></code> and <a href="ref.html#cmp">Comparing</a>.
 
@@ -630,7 +631,8 @@ href="refC.html#can">can</a></code>.
 <dt><a name="depth"><code>(depth 'lst) -> (cnt1 . cnt2)</code></a>
 <dd>Returns the maximal (<code>cnt1</code>) and the average (<code>cnt2</code>)
 "depth" of a tree structure as maintained by <code><a
-href="refI.html#idx">idx</a></code>. See also <code><a
+href="refI.html#idx">idx</a></code>. The total number of nodes is stored in the
+global variable <code><a href="ref_.html#@@">@@</a></code>. See also <code><a
 href="refL.html#length">length</a></code> and <code><a
 href="refS.html#size">size</a></code>.
 
@@ -643,6 +645,11 @@ href="refS.html#size">size</a></code>.
 -> (1 NIL 2 NIL 3 NIL 4 NIL 5 NIL 6 NIL 7)   # Only right branches
 : (depth X)
 -> (7 . 4)                                   # Depth is 7, average 4
+
+: (balance 'X (1 2 3 4 5 6 7))               # Build a balanced tree
+-> NIL
+: (depth X)
+-> (3 . 2)                                   # Depth is 3, average 2
 </code></pre>
 
 <dt><a name="diff"><code>(diff 'lst 'lst) -> lst</code></a>
@@ -694,7 +701,7 @@ href="refP.html#path">path</a></code>.
 implicitly given by the value of the global variable <code><a
 href="refC.html#*Class">*Class</a></code>, or - in the second form - for the
 explicitly given class <code>cls</code>. In the third form, the class object is
-obtained by <code><a href="refG.html#get">get</a></code>ing <code>sym2</code>
+obtained by <code><a href="refG.html#get">get</a></code>ting <code>sym2</code>
 from <code><a href="refC.html#*Class">*Class</a></code> (or <code>cls</code> if
 given). If the method for that class existed and was changed in the process, a
 "redefined" message is issued. If - instead of a method <code>fun</code> - a

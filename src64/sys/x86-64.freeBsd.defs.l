@@ -1,4 +1,4 @@
-# 12nov14abu
+# 29jan15abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -130,6 +130,7 @@
 (equ SOCK_STREAM 1)
 (equ SOCK_DGRAM 2)
 (equ AF_UNSPEC 0)
+(equ AF_UNIX 1)
 (equ AF_INET6 28)
 (equ SOL_SOCKET 65535)
 (equ SO_REUSEADDR 4)

@@ -1,4 +1,4 @@
-# 01sep14abu
+# 18jun15abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -82,7 +82,12 @@
                (prinl Sym " (" (cdr @) " . \"@src64/" (car @) "\")") ) ) ) ) )
 
 (de asm Args
+   (when (=T (car Args))
+      (put (car (setq Args (cdr Args))) 'asm NIL) )
    (def (car Args) 'asm (cdr Args)) )
+
+(asm asm (Val)
+   (prinl "   " Val) )
 
 (de idxTags (Lbl Src)
    (when Src
@@ -421,6 +426,7 @@
    (quote
       (add (destination) "*Mode" (source) "*Mode")
       (addc (destination) "*Mode" (source) "*Mode")
+      (asm (read))
       (align (operand (read)))
       (and (destination) "*Mode" (source) "*Mode")
       (ascii (operand (read)))

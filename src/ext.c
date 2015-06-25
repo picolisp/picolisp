@@ -1,4 +1,4 @@
-/* 13may13abu
+/* 27apr15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -185,15 +185,50 @@ any Ulaw(any ex) {
 
 
 /*** Base64 Encoding ***/
-static unsigned char Chr64[] =
+static char Chr64[] =
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+// (ext:Base64) -> num|NIL
 // (ext:Base64 'num1|NIL ['num2|NIL ['num3|NIL]]) -> flg
 any Base64(any x) {
-   int c, d;
    any y;
+   int c, d;
+   char *p;
+   static int i, n;
 
-   x = cdr(x);
+   if (!isCell(x = cdr(x))) {
+      if (!Chr)
+         Env.get();
+      if (!(p = strchr(Chr64, Chr))) {
+         if (Chr == '=') {
+            Env.get();
+            if (i == 1)
+               Env.get();
+         }
+         i = 0;
+         return Nil;
+      }
+      c = p - Chr64;
+      Env.get();
+      switch (i) {
+      case 0:
+         if (!(p = strchr(Chr64, Chr))) {
+            i = 0;
+            return Nil;
+         }
+         n = p - Chr64;
+         Env.get();
+         ++i;
+         return boxCnt(c << 2 | n >> 4);
+      case 1:
+         d = (n & 15) << 4 | c >> 2;
+         n = c;
+         ++i;
+         return boxCnt(d);
+      }
+      i = 0;
+      return boxCnt((n & 3) << 6 | c);
+   }
    if (isNil(y = EVAL(car(x))))
       return Nil;
    c = unDig(y) / 2;

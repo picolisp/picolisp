@@ -1,4 +1,4 @@
-# 21feb15abu
+# 24may15abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -243,6 +243,11 @@
 
 ### =0 ###
 (test 0 (=0 (- 6 3 2 1)))
+(test NIL (=0 'a))
+
+
+### =1 ###
+(test 1 (=1 (- 6 3 2)))
 (test NIL (=0 'a))
 
 

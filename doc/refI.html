@@ -204,6 +204,10 @@ href="refC.html#ctl">ctl</a></code>.
 <pre><code>
 : (in "a" (list (read) (read) (read)))  # Read three items from file "a"
 -> (123 (a b c) def)
+
+: (in '(file "-b" "--mime" "bin/picolisp")  # Get the mime type
+   (line T) )
+-> "application/x-executable; charset=binary"
 </code></pre>
 
 <dt><a name="inc"><code>(inc 'num) -> num<br>

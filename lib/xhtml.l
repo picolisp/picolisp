@@ -1,4 +1,4 @@
-# 05mar15abu
+# 24apr15abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -749,9 +749,11 @@
    (prin ">")
    (for "X" Lst
       (let "V" (if (atom "X") "X" (car "X"))
+         (prin "<option")
+         (when (pair "X")
+            (and (pair (cdr "X")) (htStyle (car @)))
+            (and (fin "X") (prin " title=\"" @ "\"")) )
          (prin
-            "<option"
-            (and (pair "X") (pack " title=\"" (cdr "X") "\""))
             (cond
                ((= "V" (htmlVal "Var")) " selected=\"selected\"")
                (Flg " disabled=\"disabled\"") )

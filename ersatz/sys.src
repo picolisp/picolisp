@@ -1,4 +1,4 @@
-// 09dec14abu
+// 27may15abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -730,6 +730,8 @@ public class PicoLisp {
 
    final static Any circ(Any x) {
       HashSet<Any> mark = new HashSet<Any>();
+      if (!(x instanceof Cell))
+         return null;
       for (;;) {
          mark.add(x);
          if (!((x = x.Cdr) instanceof Cell))
@@ -783,9 +785,9 @@ public class PicoLisp {
          return Nil;
       if (x instanceof Number)
          return ((Number)x).Big == null && ((Number)x).Cnt <= MaxFun? x : Nil;
-      for (y = x.Cdr; y instanceof Cell; y = y.Cdr) {
-         if (y == x)
-            return Nil;
+      if (circ(y = x.Cdr) != null)
+         return Nil;
+      while (y instanceof Cell) {
          if (y.Car instanceof Cell) {
             if (y.Car.Car instanceof Number) {
                if (y.Cdr instanceof Cell)
@@ -796,14 +798,19 @@ public class PicoLisp {
          }
          else if (y.Cdr != Nil)
             return Nil;
+         y = y.Cdr;
       }
       if (y != Nil)
          return Nil;
       if ((x = x.Car) == Nil)
          return T;
-      for (y = x; y instanceof Cell;)
-         if (y.Car instanceof Number || y.Car instanceof Cell || y.Car == Nil || y.Car == T || x == (y = y.Cdr))
+      if (circ(y = x) != null)
+         return Nil;
+      while (y instanceof Cell) {
+         if (y.Car instanceof Number || y.Car instanceof Cell || y.Car == Nil || y.Car == T)
             return Nil;
+         y = y.Cdr;
+      }
       return y instanceof Number || y == T? Nil : x;
    }
 
@@ -1478,8 +1485,28 @@ public class PicoLisp {
             }
             if (Chr != '\\')
                return true;
-            if (get() != '\n')
+            if (get() != '\n') {
+               switch (Chr) {
+               case 'n': Chr = '\n'; break;
+               case 'r': Chr = '\r'; break;
+               case 't': Chr = '\t'; break;
+               default:
+                  if ('0' <= Chr && Chr <= '9') {
+                     int c = Chr - '0';
+
+                     for (;;) {
+                        get();
+                        if (Chr == '\\')
+                           break;
+                        if (Chr < '0' || '9' < Chr)
+                           badInput();
+                        c = c * 10 + Chr - '0';
+                     }
+                     Chr = c;
+                  }
+               }
                return true;
+            }
             do
                get();
             while (Chr == ' ' || Chr == '\t');

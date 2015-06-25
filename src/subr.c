@@ -1,4 +1,4 @@
-/* 21feb15abu
+/* 24may15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -931,6 +931,12 @@ any doNEqual(any x) {
 any doEq0(any x) {
    x = cdr(x);
    return isNum(x = EVAL(car(x))) && IsZero(x)? x : Nil;
+}
+
+// (=1 'any) -> 1 | NIL
+any doEq1(any x) {
+   x = cdr(x);
+   return isNum(x = EVAL(car(x))) && (unDig(x)==2 && !isNum(cdr(numCell(x))))? x : Nil;
 }
 
 // (=T 'any) -> flg

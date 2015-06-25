@@ -515,6 +515,17 @@ href="refW.html#wr">wr</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="prBase64"><code>(prBase64 'cnt)</code></a>
+<dd>Multiline base64 printing. Echoes bytes from the current input channel to
+the current output channel in Base64 format. A newline is inserted after every
+<code>cnt</code> byte-triples (character-quadruples). See also <code><a
+href="refE.html#echo">echo</a></code> <code><a
+href="ref_.html#mail">mail</a></code>.
+
+<pre><code>
+: (in "image.png" (prBase64 18))  # Print 72 columns
+</code></pre>
+
 <dt><a name="prEval"><code>(prEval 'prg ['cnt]) -> any</code></a>
 <dd>Executes <code>prg</code>, similar to <code><a
 href="refR.html#run">run</a></code>, by evaluating all expressions in

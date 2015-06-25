@@ -1,4 +1,4 @@
-/* 08dec14abu
+/* 26may15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1513,7 +1513,6 @@ any doExec(any x) {
          av[i] = alloc(NULL, bufSize(y = evSym(x))),  bufString(y, av[i]);
       av[ac] = NULL;
       flushAll();
-      setpgid(0,0);
       execvp(av[0], av);
       execError(av[0]);
    }

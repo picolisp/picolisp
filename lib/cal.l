@@ -1,4 +1,4 @@
-# 01dec10abu
+# 23jun15abu
 # (c) Software Lab. Alexander Burger
 
 # Easter date algorithm from J.M. Oudin (1940)
@@ -32,10 +32,10 @@
             (date Year 12 25) )
          ("2. Weihnachtstag"
             (date Year 12 26) )
-         (Rosenmontag
-            (- (easter Year) 48) )
-         (Aschermittwoch
-            (- (easter Year) 46) )
+         #{(Rosenmontag
+            (- (easter Year) 48) )}#
+         #{(Aschermittwoch
+            (- (easter Year) 46) )}#
          (Karfreitag
             (- (easter Year) 2) )
          ((Ostern Ostersonntag)
@@ -48,8 +48,8 @@
             (+ (easter Year) 49) )
          (Pfingstsmontag
             (+ (easter Year) 50) )
-         (Fronleichnam
-            (+ (easter Year) 60) ) )
+         #{(Fronleichnam
+            (+ (easter Year) 60) )}# )
       (let L (date X)
          (cdr
             (or

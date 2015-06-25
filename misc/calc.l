@@ -1,4 +1,4 @@
-# 14may11abu
+# 23may15abu
 # (c) Software Lab. Alexander Burger
 
 # *Init *Accu *Stack
@@ -15,7 +15,7 @@
    (let (Fun (caar *Stack)  Val (cddr (pop '*Stack)))
       (setq *Accu
          (if (and (== '/ Fun) (=0 *Accu))
-            (alert "Div / 0")
+            (note "Div / 0")
             (Fun Val *Accu) ) ) ) )
 
 (de operand (Fun Prio)

@@ -1,4 +1,4 @@
-/* 21feb15abu
+/* 24may15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -516,6 +516,7 @@ any doEof(any);
 any doEol(any);
 any doEq(any);
 any doEq0(any);
+any doEq1(any);
 any doEqT(any);
 any doEqual(any);
 any doErr(any);

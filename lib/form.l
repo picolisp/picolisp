@@ -1,4 +1,4 @@
-# 14apr15abu
+# 17jun15abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1386,9 +1386,14 @@
                (L
                   (mapcar
                      '(("X")
-                        (if (atom "X")
-                           (val "X")
-                           (cons (val (car "X")) (val (cdr "X"))) ) )
+                        (cond
+                           ((atom "X") (eval "X"))
+                           ((pair (cdr "X"))
+                              (cons
+                                 (val (car "X"))
+                                 (cadr "X")
+                                 (val (cdr @)) ) )
+                           (T (cons (val (car "X")) (val (cdr "X")))) ) )
                      @ )
                   S (str> This) )
                (<select>
@@ -1991,7 +1996,8 @@
 
 # Delete object in form
 (de delButton (Able @Txt)
-   (gui '(+Force +Rid +Able +Tip +Button) T Able
+   (gui '(+Force +Rid +Able +Tip +Button) T
+      (list 'and '(or (: home able) (: home obj T)) Able)
       '(if (: home obj T)
          ,"Mark this object as \"not deleted\""
          ,"Mark this object as \"deleted\"" )
@@ -2000,7 +2006,9 @@
          '(nond
             ((: home obj T)
                (ask (text ,"Delete @1?" @Txt)
-                  (lose!> (: home top 1 obj)) ) )
+                  (lose!> (: home top 1 obj))
+                  (rollback)
+                  (off *Lock) ) )
             ((keep?> (: home obj))
                (ask (text ,"Restore @1?" @Txt)
                   (keep!> (: home top 1 obj)) ) )
@@ -2164,8 +2172,8 @@
       (if (nT (next))
          (arg)
          (cons NIL
-            (if (: objHook)
-               (collect (: objVar) (last (: objTyp)) (eval @) NIL T (: objVar))
+            (if (meta (: objTyp) (: objVar) 'hook)
+               (collect (: objVar) (last (: objTyp)) (eval (: objHook)) NIL T (: objVar))
                (collect (: objVar) (last (: objTyp)) NIL T (: objVar)) ) ) ) ) )
 
 (dm hint> (Str)
@@ -2194,8 +2202,8 @@
             (: obj) )
          ((: objTyp)
             (=: obj
-               (if (: objHook)
-                  (db (: objVar) (last (: objTyp)) (eval @) Val)
+               (if (meta (: objTyp) (: objVar) 'hook)
+                  (db (: objVar) (last (: objTyp)) (eval (: objHook)) Val)
                   (db (: objVar) (last (: objTyp)) Val) ) ) )
          (T Val) ) ) )
 
@@ -2300,7 +2308,9 @@
    (with (if *PRG (: obj) (=: obj *ID))
       (and (: T) (prin "["))
       (for "X" (if (=T (car "Lst")) (cdr "Lst") "Lst")
-         (ht:Prin (eval "X")) )
+         (if (pair (setq "X" (eval "X")))
+            (<$> (cdr "X") (car "X"))
+            (ht:Prin "X") ) )
       (and (: T) (prin "]")) )
    (=: able
       (cond

@@ -1,4 +1,4 @@
-/* 26mar15abu
+/* 27may15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -388,6 +388,8 @@ any doSys(any x) {
 any circ(any x) {
    any y = x;
 
+   if (!isCell(x))
+      return NULL;
    for (;;) {
       *(word*)&car(y) |= 1;
       if (!isCell(y = cdr(y))) {
@@ -777,9 +779,9 @@ any funq(any x) {
       return Nil;
    if (isNum(x))
       return (unDig(x)&3) || isNum(cdr(numCell(x)))? Nil : x;
-   for (y = cdr(x); isCell(y); y = cdr(y)) {
-      if (y == x)
-         return Nil;
+   if (circ(y = cdr(x)))
+      return Nil;
+   while (isCell(y)) {
       if (isCell(car(y))) {
          if (isNum(caar(y))) {
             if (isCell(cdr(y)))
@@ -790,14 +792,19 @@ any funq(any x) {
       }
       else if (!isNil(cdr(y)))
          return Nil;
+      y = cdr(y);
    }
    if (!isNil(y))
       return Nil;
    if (isNil(x = car(x)))
       return T;
-   for (y = x; isCell(y);)
-      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y)==T || x==(y=cdr(y)))
+   if (circ(y = x))
+      return Nil;
+   while (isCell(y)) {
+      if (isNum(car(y)) || isCell(car(y)) || isNil(car(y)) || car(y) == T)
          return Nil;
+      y = cdr(y);
+   }
    return isNum(y) || y==T? Nil : x;
 }
 

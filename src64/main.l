@@ -1,4 +1,4 @@
-# 30mar15abu
+# 27may15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -890,34 +890,37 @@
    pop X
    ret
 
-(code 'circE_YF)
-   ld Y E  # Keep list in Y
+(code 'circE_EF)
+   atom E  # Atom?
+   jnz 10  # Yes
+   ld A E  # List in A
    do
-      or (E) 1  # Mark
-      ld E (E CDR)  # Normal list?
-      atom E
+      or (A) 1  # Mark
+      ld A (A CDR)  # Normal list?
+      atom A
       if nz  # Yes
+         ld A E  # List in A again
          do
-            off (Y) 1  # Unmark
-            ld Y (Y CDR)
-            atom Y  # Done?
+            off (A) 1  # Unmark
+            ld A (A CDR)
+            atom A  # Done?
          until nz  # Yes
-         ret  # 'nz' - No circularity found
+10       ret  # 'nz' - No circularity found
       end
-      test (E) 1  # Detected circularity?
+      test (A) 1  # Detected circularity?
       if nz  # Yes
          do
-            cmp Y E  # Skip non-circular part
+            cmp E A  # Skip non-circular part
          while ne
-            off (Y) 1  # Unmark
-            ld Y (Y CDR)
+            off (E) 1  # Unmark
+            ld E (E CDR)
          loop
          do
-            off (Y) 1  # Unmark circular part
-            ld Y (Y CDR)
-            cmp Y E  # Done?
+            off (A) 1  # Unmark circular part
+            ld A (A CDR)
+            cmp A E  # Done?
          until eq  # Yes
-         ret  # 'z' - Circularity in Y
+         ret  # 'eq' - Circularity in E
       end
    loop
 
@@ -1060,13 +1063,13 @@
    jeq ret  # Yes
    cmp A Nil
    if eq  # [NIL E]
-10    or B B  # nz
+10    clrz  # nz
 20    setc  # lt
       ret
    end
    cmp A TSym
    if eq  # [T E]
-30    or B B  # nz
+30    clrz  # nz
 40    clrc  # gt
       ret
    end
@@ -1109,7 +1112,7 @@
       call nameE_E  # Get E's name in E
       cmp E ZERO  # Any?
       if eq  # No
-50       or B B  # nz
+50       clrz  # nz
 60       clrc  # gt
 70       pop X
          ret
@@ -1119,6 +1122,7 @@
          if nz
             ld A X  # Short
             shr A 4  # Normalize
+            and A (hex "3FFFFFFFFFFFFFF")  # Mask status bits
             ld X 0
          else
             ld A (X DIG)  # Get next digit
@@ -1128,6 +1132,7 @@
          if nz
             ld C E  # Short
             shr C 4  # Normalize
+            and C (hex "3FFFFFFFFFFFFFF")  # Mask status bits
             ld E 0
          else
             ld C (E DIG)  # Get next digit
@@ -1165,7 +1170,7 @@
    if nz  # [<pair> <sym>]
       cmp E TSym
       if eq  # [<pair> T]
-         or B B  # nz
+         clrz  # nz
          setc  # lt
          ret
       end
@@ -1203,7 +1208,7 @@
             clrc  # gt [<pair> <atom>]
             break T
          end
-         or B B  # nz [<pair> T]
+         clrz  # nz [<pair> T]
          setc  # lt
          break T
       end
@@ -2412,12 +2417,12 @@
    jnz ret  # No
    sym E  # Symbol?
    jnz ret  # Yes
+   call circE_EF  # Circular?
+   jeq retnz  # Yes
    ld C (E CDR)  # Check function body
    do
       atom C  # More?
    while z  # Yes
-      cmp C E  # Circular?
-      jeq retnz  # Yes
       ld A (C)  # Next item
       atom A  # Pair?
       if z  # Yes
@@ -2443,6 +2448,8 @@
    cmp E Nil  # Any?
    ldz E TSym  # No: Return T
    if ne  # Yes
+      call circE_EF  # Circular?
+      jeq retnz  # Yes
       ld C E
       do
          atom C  # Atomic parameter?
@@ -2457,8 +2464,6 @@
          cmp A TSym  # T?
          jeq retnz  # Yes
          ld C (C CDR)  # Rest
-         cmp C E  # Circular?
-         jeq retnz  # Yes
       loop
       cmp C TSym  # T?
       jeq retnz  # Yes

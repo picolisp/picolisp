@@ -1,3 +1,15 @@
+* XXmmm15 picoLisp-3.1.12
+
+* 22jun15 picoLisp-3.1.11
+   SVG Printing in "lib/svg.l"
+   '=1' function
+   Bug in comparing external symbols (64-bit)
+   Accept \n, \r, \t and \ddd\ in strings
+   'till' instead of 'match' in "lib/http.l"
+   'prBase64' multiline Base64 printing
+   Input mode for 'ext:Base64'
+   JSON subset in "lib/json.l"
+
 * 18apr15 picoLisp-3.1.10
    'commit' writes sequentially
    Bug in 'zap' (64-bit)

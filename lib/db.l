@@ -1,4 +1,4 @@
-# 14jan15abu
+# 19may15abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1288,7 +1288,7 @@
                   (pair X)
                   (isa '+Hook (meta This (cdr X))) ) )
             sort
-            (getl This ) )
+            (getl This) )
          (if (atom X)
             (ifn (meta This X)
                (put Obj X T)

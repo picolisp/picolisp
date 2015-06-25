@@ -282,6 +282,8 @@ href="refL.html#load">load</a></code>.
 <pre><code>
 : (out "a" (println 123 '(a b c) 'def))  # Write one line to file "a"
 -> def
+: (out '(lpr) (prinl "Hello"))  # Send line to line printer
+-> "Hello"
 </code></pre>
 
 </dl>

@@ -1,4 +1,4 @@
-# 18feb13abu
+# 27apr15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'ExtData)
@@ -195,30 +195,90 @@ bytes (
 
 
 ### Base64 Encoding ###
-(data 'Chr64)
-ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+(data 'Chr64 0)
+            ascii "A"
+: Chr64i    ascii "BCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+: Stat64    word 0  # State
+: Next64    word 0  # Next value
 
+# (ext:Base64) -> num|NIL
 # (ext:Base64 'num1|NIL ['num2|NIL ['num3|NIL]]) -> flg
 (code 'Base64 2)
+   ld E (E CDR)  # E on args
+   atom E  # Any?
+   if nz  # No
+      ld A (Chr)  # Look ahead char?
+      null A
+      if z  # No
+         call (Get_A)  # Get next
+      end
+      ld C Chr64
+      memb C 64  # Legal character?
+      if ne  # No
+         cmp B (char "=")  # Filler?
+         if eq  # Yes
+            call (Get_A)  # Skip '='
+            cmp (Stat64) 1  # State 1?
+            if eq  # Yes
+               call (Get_A)  # Skip '='
+            end
+         end
+20       ld (Stat64) 0  # Clear state
+         ld E Nil  # Return NIL
+         ret
+      end
+      sub C Chr64i  # Numeric value in C
+      call (Get_A)  # Fetch next input byte
+      null (Stat64)  # Initial state?
+      if z  # Yes
+         ld A (Chr)  # Get next character
+         ld E Chr64
+         memb E 64  # Legal?
+         jne 20  # No
+         sub E Chr64i  # Numeric value in E
+         ld (Next64) E  # Save E for next step
+         call (Get_A)  # Fetch next input byte
+         inc (Stat64)  # Increment state
+         shl C (+ 2 4)  # Shift left 2 (upper six bits) and make short number
+         and E (hex "30")  # Lower two bits
+      else
+         ld E (Next64)  # Load from last step
+         cmp (Stat64) 1  # Second?
+         if eq  # Yes
+            inc (Stat64)  # Increment state
+            ld (Next64) C  # Save C for next step
+            and E 15  # Lower 4 bits from last
+            shl E (+ 4 4)  # into upper 4 bits
+            and C (hex "3C")  # lower 4 bits
+            shl C (- 4 2)
+         else
+            ld (Stat64) 0  # Clear state
+            and E 3  # Lower 2 bits from last
+            shl E (+ 6 4)  # into upper 2 bits
+            shl C 4  # Lower 6 bits
+         end
+      end
+      or E C
+      or E CNT  # Return short number
+      ret
+   end
    push X
-   push Y
-   push Z
-   ld X E
-   ld Y (E CDR)  # Y on args
-   ld E (Y)  # Eval first 'num|NIL'
+   ld X E  # X on args
+   ld E (X)  # Eval first 'num|NIL'
    eval
    cmp E Nil  # NIL?
    if ne  # No
+      push Y
       shr E 4  # Normalize first arg
-      ld Z E  # Keep in Z
+      ld Y E  # Keep in Y
       shr E 2  # Upper 6 bits
       call chr64E  # Output encoded
-      ld Y (Y CDR)  # Next arg
-      ld E (Y)
+      ld X (X CDR)  # Next arg
+      ld E (X)
       eval  # Eval second arg
       cmp E Nil  # NIL?
       if eq  # Yes
-         ld E Z  # Get first arg
+         ld E Y  # Get first arg
          and E 3  # Mask
          shl E 4  # Shift to upper position
          call chr64E  # Output encoded
@@ -229,19 +289,19 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
          ld E Nil  # Return NIL
       else
          shr E 4  # Normalize second arg
-         and Z 3  # Mask first arg
-         shl Z 4  # Shift to upper position
+         and Y 3  # Mask first arg
+         shl Y 4  # Shift to upper position
          ld A E  # Get second arg
          shr A 4  # Normalize
-         or A Z  # Combine
-         ld Z E  # Keep second arg in Z
+         or A Y  # Combine
+         ld Y E  # Keep second arg in Y
          call chr64A  # Output encoded
-         ld Y (Y CDR)  # Next arg
-         ld E (Y)
+         ld X (X CDR)  # Next arg
+         ld E (X)
          eval  # Eval third arg
          cmp E Nil  # NIL?
          if eq  # Yes
-            ld A Z  # Get second
+            ld A Y  # Get second
             and A 15  # Lowest four bits
             shl A 2  # Shift
             call chr64A  # Output encoded
@@ -252,18 +312,17 @@ ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
             shr E 4  # Normalize third arg
             ld A E
             shr A 6  # Upper bits
-            and Z 15  # Lowest four bits of second arg
-            shl Z 2  # Shift
-            or A Z  # Combine
+            and Y 15  # Lowest four bits of second arg
+            shl Y 2  # Shift
+            or A Y  # Combine
             call chr64A  # Output encoded
             and E 63  # Last arg
             call chr64E  # Output encoded
             ld E TSym  # Return T
          end
       end
+      pop Y
    end
-   pop Z
-   pop Y
    pop X
    ret
 

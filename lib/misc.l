@@ -1,4 +1,4 @@
-# 27mar15abu
+# 30apr15abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -407,6 +407,14 @@
    (line)
    (echo S) )
 
+# Multiline Base64
+(de prBase64 (N)
+   (while
+      (do N
+         (NIL (ext:Base64 (rd 1) (rd 1) (rd 1)))
+         T )
+      (prinl) ) )
+
 # Send mail
 (de mail (Host Port From To Sub Att . Prg)
    (let? S (connect Host Port)
@@ -449,12 +457,7 @@
                            "\"^M" )
                         (prinl "Content-Transfer-Encoding: base64^M")
                         (prinl "^M")
-                        (in (car Att)
-                           (while
-                              (do 15
-                                 (NIL (ext:Base64 (rd 1) (rd 1) (rd 1)))
-                                 T )
-                              (prinl) ) )
+                        (in (car Att) (prBase64 18))
                         (prinl)
                         (prinl "^M")
                         (NIL (setq Att (cdddr Att))) )

@@ -1,4 +1,4 @@
-/* 12mar15abu
+/* 01jun15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -437,7 +437,7 @@ void binPrint(int extn, any x) {
          do
             binPrint(extn, car(x));
          while (y != (x = cdr(x)));
-         putBin(DOT),  putBin(END);
+         putBin(DOT);
       }
       putBin(END);
    }
@@ -1069,10 +1069,29 @@ static bool testEsc(void) {
             Chr &= 0x1F;
          return YES;
       }
-      if (Chr != '\\')
+      if (Chr != '\\') {
+         Chr = getChar();
          return YES;
-      if (Env.get(), Chr != '\n')
+      }
+      if (Env.get(), Chr != '\n') {
+         switch (Chr) {
+         case 'n': Chr = '\n'; break;
+         case 'r': Chr = '\r'; break;
+         case 't': Chr = '\t'; break;
+         default:
+            if ('0' <= Chr && Chr <= '9') {
+               int c = Chr - '0';
+
+               while (Env.get(), Chr != '\\') {
+                  if (Chr < '0' || '9' < Chr)
+                     badInput();
+                  c = c * 10 + Chr - '0';
+               }
+               Chr = c;
+            }
+         }
          return YES;
+      }
       do
          Env.get();
       while (Chr == ' '  ||  Chr == '\t');
@@ -1243,11 +1262,11 @@ static any read0(bool top) {
       }
       if (!testEsc())
          eofErr();
-      i = 0,  Push(c1, y = box(Chr));
+      i = 0,  Push(c1, y = boxChar(Chr, &i, &y));
       while (Env.get(), Chr != '"') {
          if (!testEsc())
             eofErr();
-         byteSym(Chr, &i, &y);
+         charSym(Chr, &i, &y);
       }
       y = Pop(c1),  Env.get();
       if (x = findHash(y, h = Transient + ihash(y)))
@@ -1310,9 +1329,9 @@ any token(any x, int c) {
       }
       if (!testEsc())
          return Nil;
-      Push(c1, y =  cons(mkChar(getChar()), Nil));
+      Push(c1, y =  cons(mkChar(Chr), Nil));
       while (Env.get(), Chr != '"' && testEsc())
-         y = cdr(y) = cons(mkChar(getChar()), Nil);
+         y = cdr(y) = cons(mkChar(Chr), Nil);
       Env.get();
       return Pop(c1);
    }
@@ -2706,7 +2725,7 @@ static void dbErr(char *s) {err(NULL, NULL, "DB %s: %s", s, strerror(errno));}
 static void jnlErr(any ex) {err(ex, NULL, "Bad Journal");}
 static void fsyncErr(any ex, char *s) {err(ex, NULL, "%s fsync error: %s", s, strerror(errno));}
 static void truncErr(any ex) {err(ex, NULL, "Log truncate error: %s", strerror(errno));}
-static void ignLog(void) {fprintf(stderr, "Discarding incomplete transaction.\n");}
+static void ignLog(void) {fprintf(stderr, "Discarding incomplete transaction\n");}
 
 any new64(adr n, any x) {
    int c, i;

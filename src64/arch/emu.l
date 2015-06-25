@@ -1,4 +1,4 @@
-# 30jan15abu
+# 25apr15abu
 # (c) Software Lab. Alexander Burger
 
 # Byte order
@@ -504,12 +504,18 @@
       "@1 = (uint64_t)strlen(@2);" ) )
 
 (asm memb (Src S Cnt C)
-   (if S
-      (genCode (Src S Cnt C) (list 'memb Src Cnt) ((op.a Src S) (op.i Cnt C))
-         "Result = !(uint64_t)(unsigned long)memchr(@1, (int)A.b[0], @2);" )
-      (genCode (Src S Cnt C) (list 'memb Src Cnt) ((op.a Src S) (op.i Cnt C) Cnt)
-         "if (!(Result = !(tmp.p = (uint8_t*)memchr(@1, (int)A.b[0], @2))))"
-         "   @3.n -= tmp.p - @1 + 1,  @1 = tmp.p + 1;" ) ) )
+   (cond
+      (S
+         (genCode (Src S Cnt C) (list 'memb Src Cnt) ((op.a Src S) (op.i Cnt C))
+            "Result = !(uint64_t)(unsigned long)memchr(@1, (int)A.b[0], @2);" ) )
+      (C
+         (genCode (Src S Cnt C) (list 'memb Src Cnt) ((op.a Src S) (op.i Cnt C) Cnt)
+            "if (!(Result = !(tmp.p = (uint8_t*)memchr(@1, (int)A.b[0], @2))))"
+            "   @1 = tmp.p + 1;" ) )
+      (T
+         (genCode (Src S Cnt C) (list 'memb Src Cnt) ((op.a Src S) (op.i Cnt C) Cnt)
+            "if (!(Result = !(tmp.p = (uint8_t*)memchr(@1, (int)A.b[0], @2))))"
+            "   @3.n -= tmp.p - @1 + 1,  @1 = tmp.p + 1;" ) ) ) )
 
 (asm null (Src S)
    (genCode (Src S) (list 'null Src) ((op.n Src S))
@@ -1329,6 +1335,7 @@
                      ((pre? ".+" X)
                         (let N (+ (cadr D) (format (cddr (chop X))))
                            (for ((J . L) (cddr D)  (> I J)  (cdr L))
+                              (NIL (> I J))  # Temporary (only for 3.1.1 and older)
                               (inc 'N (if (num? (car L)) 1 8)) )
                            (prin
                               " {.p = (uint8_t*)"

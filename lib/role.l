@@ -1,4 +1,4 @@
-# 05jan12abu
+# 06may15abu
 # (c) Software Lab. Alexander Burger
 
 (must "Role Administration" RoleAdmin)
@@ -6,16 +6,15 @@
 (menu ,"Role Administration"
    (idForm ,"Role" ,"Roles" 'nm '+Role T '(may Delete) '((: nm))
       (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Role" 30 ,"Name")
+      (gui '(+E/R +Fmt +Chart) '(perm : home obj)
+         '((Val) (mapcar '((S) (list (memq S Val))) *Perms))
+         '((Lst) (filter '((S L) (and (car L) S)) *Perms Lst))
+         1 )
       (<table> NIL NIL NIL
-         (gui '(+E/R +Fmt +Chart)
-            '(perm : home obj)
-            '((Val) (mapcar '((S) (list S (memq S Val))) *Perms))
-            '((Lst) (extract '((L P) (and (cadr L) P)) Lst *Perms))
-            2 )
-         (do (length *Perms)
+         (for This *Perms
             (<row> NIL
-               (gui 1 '(+Set +TextField) '((Sym) (val (val Sym))))
-               (gui 2 '(+Checkbox)) ) ) )
+               (ht:Prin (: 0 0))
+               (gui 1 '(+Checkbox)) ) ) )
       (gui '(+/R +Chart) '(usr : home obj) 1 list)
       (<table> 'chart ,"User" NIL
          (do 8

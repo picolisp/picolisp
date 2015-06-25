@@ -1,4 +1,4 @@
-# 21feb15abu
+# 27may15abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -2193,6 +2193,14 @@
    jne retNil  # No
    ret
 
+# (=1 'any) -> 1 | NIL
+(code 'doEq1 2)
+   ld E ((E CDR))  # Get arg
+   eval  # Eval it
+   cmp E ONE  # One?
+   jne retNil  # No
+   ret
+
 # (=T 'any) -> flg
 (code 'doEqT 2)
    ld E ((E CDR))  # Get arg
@@ -2418,13 +2426,8 @@
 (code 'doCircQ 2)
    ld E ((E CDR))  # Get arg
    eval  # Eval it
-   atom E  # Atom?
-   jnz retNil  # Yes
-   push Y
-   call circE_YF  # Circular?
-   ldz E Y  # Yes
-   ldnz E Nil
-   pop Y
+   call circE_EF  # Circular?
+   ldnz E Nil  # No
    ret
 
 # (lst? 'any) -> flg

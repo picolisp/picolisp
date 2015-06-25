@@ -1,4 +1,4 @@
-# 10apr15abu
+# 24may15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -439,6 +439,7 @@
    initFun NIL       "="         doEqual
    initFun NIL       "<>"        doNEqual
    initFun NIL       "=0"        doEq0
+   initFun NIL       "=1"        doEq1
    initFun NIL       "=T"        doEqT
    initFun NIL       "n0"        doNEq0
    initFun NIL       "nT"        doNEqT
@@ -1191,8 +1192,8 @@
 : DelimEnd
 : Arrow asciz "-> "
 # db.l
-: RolbLog asciz "Last transaction not completed: Rollback\n"
-: IgnLog asciz "Discarding incomplete transaction.\n"
+: RolbLog asciz "Last transaction not completed: Rollback\\n"
+: IgnLog asciz "Discarding incomplete transaction\\n"
 : CircFree asciz "Circular free list"
 : BadChain asciz "Bad chain"
 : BadCount asciz "Bad count"

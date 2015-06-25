@@ -1,4 +1,4 @@
-/* 21feb15abu
+/* 24may15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -114,6 +114,7 @@ static symInit Symbols[] = {
    {doEol, "eol"},
    {doEq, "=="},
    {doEq0, "=0"},
+   {doEq1, "=1"},
    {doEqT, "=T"},
    {doEqual, "="},
    {doErr, "err"},

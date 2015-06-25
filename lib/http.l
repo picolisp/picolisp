@@ -1,4 +1,4 @@
-# 17apr15abu
+# 02may15abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -155,18 +155,13 @@
 
 # Handle HTTP-Transaction
 (de http (S)
-   (use (*Post L @U @H @X)
+   (use (*Post U L @X)
       (off *Post *Port% *ContL *ContLen *Cookies "*Cookies" "*HtSet")
       (catch 'http
          (in S
-            (cond
-               ((not (setq L (line)))
-                  (task (close S))
-                  (off S)
-                  (throw 'http) )
-               ((match '("G" "E" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
-                  (_htHead) )
-               ((match '("P" "O" "S" "T" " " "/" @U " " "H" "T" "T" "P" "/" "1" "." @H) L)
+            (case (till " " T)
+               ("GET" (_htHead))
+               ("POST"
                   (on *Post)
                   (off *MPartLim *MPartEnd)
                   (_htHead)
@@ -184,28 +179,15 @@
                                        (call 'rm "-f" (tmp S)) ) ) ) ) ) )
                      (T (throw 'http)) ) )
                (T
-                  (out S
-                     (if
-                        (and
-                           (match '(@U " " @ " " "H" "T" "T" "P" . @) L)
-                           (member @U
-                              (quote
-                                 ("O" "P" "T" "I" "O" "N" "S")
-                                 ("H" "E" "A" "D")
-                                 ("P" "U" "T")
-                                 ("D" "E" "L" "E" "T" "E")
-                                 ("T" "R" "A" "C" "E")
-                                 ("C" "O" "N" "N" "E" "C" "T") ) ) )
-                        (httpStat 501 "Method Not Implemented" "Allow: GET, POST")
-                        (httpStat 400 "Bad Request") ) )
+                  (and @ (out S (httpStat 400 "Bad Request")))
                   (task (close S))
                   (off S)
                   (throw 'http) ) )
             (if (or (<> *ConId *SesId) (and *SesAdr (<> @ *Adr)))
                (prog (task (close S)) (off S))
                (setq
-                  L (split @U "?")
-                  @U (car L)
+                  L (split U "?")
+                  U (car L)
                   L (mapcan
                      '((A)
                         (cond
@@ -215,98 +197,116 @@
                               (cons (pack (car A))) )
                            (T (cons (htArg (car A)))) ) )
                      (split (cadr L) "&") ) )
-               (unless (setq *Url (ht:Pack @U T))
-                  (setq  *Url (car *Home)  @U (cdr *Home)) )
+               (unless (setq *Url (ht:Pack U T))
+                  (setq  *Url (car *Home)  U (cdr *Home)) )
                (out S
                   (cond
-                     ((match '("-" @X "." "h" "t" "m" "l") @U)
+                     ((match '("-" @X "." "h" "t" "m" "l") U)
                         (and *SesId (timeout *Timeout))
                         (apply try L 'html> (extern (ht:Pack @X T))) )
                      ((disallowed)
                         (notAllowed *Url)
                         (http404) )
-                     ((= '! (car @U))
+                     ((= "!" (car U))
                         (and *SesId (timeout *Timeout))
-                        (apply (val (intern (ht:Pack (cdr @U) T))) L) )
-                     ((tail '("." "l") @U)
+                        (apply (val (intern (ht:Pack (cdr U) T))) L) )
+                     ((tail '("." "l") U)
                         (and *SesId (timeout *Timeout))
                         (apply script L *Url) )
                      ((=T (car (info *Url)))
                         (if (info (setq *Url (pack *Url "/default")))
                            (apply script L *Url)
                            (http404) ) )
-                     ((assoc (stem @U ".") *Mimes)
+                     ((assoc (stem U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
       (and S (=0 *Http1) (task (close S))) ) )
 
 (de _htHead ()
-   (use (L @X @Y)
-      (setq *Http1 (format (car @H))  *Chunked (gt0 *Http1))
-      (if (index "~" @U)
-         (setq
-            *ConId (head @ @U)
-            @U (cdr (nth @U @))
-            *ConId (pack (if (member "/" *ConId) (cdr @) *ConId)) )
-         (off *ConId) )
-      (while (setq L (line))
-         (cond
-            ((match '(~(chop "Host: ") . @X) L)
-               (setq *Host @X) )
-            ((match '(~(chop "Referer: ") . @X) L)
-               (setq *Referer @X) )
-            ((match '(~(chop "Cookie: ") . @X) L)
-               (setq *Cookies
-                  (mapcar
-                     '((L)
-                        (setq L (split L "="))
-                        (cons (htArg (clip (car L))) (htArg (cadr L))) )
-                     (split @X ";") ) ) )
-            ((match '(~(chop "User-Agent: ") . @X) L)
-               (setq *Agent @X) )
-            ((match '(~(chop "Content-@ength: ") . @X) L)
-               (setq *ContLen (format @X)) )
-            ((match '(~(chop "Content-@ype: multipart/form-data; boundary=") . @X) L)
+   (unless
+      (and
+         (char)
+         (= "/" (char))
+         (prog (setq U (till " ")) (char))
+         (= "HTTP/1" (till "." T))
+         (char)
+         (setq *Http1 (format (line T))) )
+      (task (close S))
+      (off S)
+      (throw 'http) )
+   (setq *Chunked (gt0 *Http1))
+   (if (index "~" U)
+      (setq
+         *ConId (head @ U)
+         U (cdr (nth U @))
+         *ConId (pack (if (member "/" *ConId) (cdr @) *ConId)) )
+      (off *ConId) )
+   (while
+      (case (till " ^M^J" T)
+         ("Host:" (setq *Host (cdr (line))))
+         ("Referer:" (setq *Referer (cdr (line))))
+         ("Cookie:"
+            (setq *Cookies
+               (mapcar
+                  '((L)
+                     (setq L (split L "="))
+                     (cons (htArg (clip (car L))) (htArg (cadr L))) )
+                  (split (cdr (line)) ";") ) ) )
+         ("User-Agent:" (setq *Agent (cdr (line))))
+         (("Content-Length:" "Content-length:")
+            (setq *ContLen (format (cdr (line)))) )
+         (("Content-Type:" "Content-type:")
+            (if (= " multipart/form-data; boundary" (till "=" T))
                (setq
-                  *MPartLim (append '(- -) @X)
-                  *MPartEnd (append *MPartLim '(- -)) ) )
-            ((match '(~(chop "X-Pil: ") @X "=" . @Y) L)
-               (_htSet @X (ht:Pack @Y T)) ) ) )
-      (unless *Gate
-         (and (member ":" *Host) (con (prior @ *Host))) ) ) )
+                  *MPartLim (append '(- -) (cdr (line)))
+                  *MPartEnd (append *MPartLim '(- -)) )
+               (line) ) )
+         ("X-Pil:"
+            (char)
+            (when (till "=")
+               (_htSet @ (ht:Pack (cdr (line)) T))
+               T ) )
+         (T (line T)) ) )
+   (unless *Gate
+      (and (member ":" *Host) (con (prior @ *Host))) ) )
 
 # rfc1867 multipart/form-data
 (de _htMultipart ()
-   (use (L @X @N @V)
-      (setq L (line))
-      (while (= *MPartLim L)
-         (unless (match '(~(chop "Content-Disposition: form-data; name=") . @X) (line))
-            (throw 'http) )
-         (while (line))
-         (cond
-            ((not (member ";" @X))
-               (match '("\"" @X "\"") @X)
-               (_htSet @X
-                  (pack
-                     (make
-                        (until
-                           (or
-                              (= *MPartLim (setq L (line)))
-                              (= *MPartEnd L) )
-                           (when (eof)
-                              (throw 'http) )
-                           (when (made)
-                              (link "^J") )
-                           (link (trim L)) ) ) ) ) )
-            ((match '(@N ~(chop "; filename=") . @V) @X)
-               (match '("\"" @N "\"") @N)
-               (match '("\"" @V "\"") @V)
-               (if (_htSet @N (pack (stem @V "/" "\\")))
-                  (let F (tmp @)
-                     (unless (out F (echo (pack "^M^J" *MPartLim)))
-                        (call 'rm "-f" F) ) )
-                  (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
-               (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) )
+   (use Var
+      (let L (line)
+         (while (= *MPartLim L)
+            (unless (= "Content-Disposition: form-data; name=" (till "\"" T))
+               (line)
+               (throw 'http) )
+            (char)
+            (setq Var (till "\""))
+            (char)
+            (nond
+               ((line)
+                  (while (line))
+                  (_htSet Var
+                     (pack
+                        (make
+                           (until
+                              (or
+                                 (= *MPartLim (setq L (line)))
+                                 (= *MPartEnd L) )
+                              (when (eof)
+                                 (throw 'http) )
+                              (when (made)
+                                 (link "^J") )
+                              (link (trim L)) ) ) ) ) )
+               ((head '`(chop "; filename=") (setq L @))
+                  (while (line)) )
+               (NIL
+                  (while (line))
+                  (setq L (cdr (rot (nth L 13))))
+                  (if (_htSet Var (pack (stem L "/" "\\")))
+                     (let F (tmp @)
+                        (unless (out F (echo (pack "^M^J" *MPartLim)))
+                           (call 'rm "-f" F) ) )
+                     (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
+                  (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) ) )
 
 (de _htSet (L Val)
    (let "Var" (intern (ht:Pack (car (setq L (split L ":"))) T))

@@ -169,13 +169,13 @@ in the Lisp terminology. These words can represent either a numeric value
 structures are built out of cells.
 
 <p>The type information of higher level data is contained in the pointers to
-these data. Assuming the implementation on a byte-addressed physical machine,
-and a pointer size of typically 4 bytes, each cell has a size of 8 bytes.
-Therefore, the pointer to a cell must point to an 8-byte boundary, and its
-bit-representation will look like:
+these data. Assuming the implementation on a byte-addressed physical machine
+and a pointer size of typically 8 bytes, each cell has a size of 16 bytes.
+Therefore, the pointer to a cell must point to a 16-byte boundary (a number
+which is a multiple of 16), and its bit-representation will look like:
 
 <pre><code>
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx000
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 </code></pre>
 
 <p>(the '<code>x</code>' means "don't care"). For the individual data types, the
@@ -219,28 +219,38 @@ cannot consist of any other types than these three.
 the three base types and the symbol variations:
 
 <pre><code>
-                    cell
-                     |
-            +--------+--------+
-            |        |        |
-         Number    Symbol    Pair
-                     |
-                     |
-   +--------+--------+--------+
-   |        |        |        |
-  NIL   Internal Transient External
+                       cell
+                        |
+            +-----------+-----------+
+            |           |           |
+         Number       Symbol       Pair
+                        |
+                        |
+   +--------+-----------+-----------+
+   |        |           |           |
+  NIL   Internal    Transient    External
 </code></pre>
 
 
 <p><hr>
 <h4><a name="number">Numbers</a></h4>
 
-<p>A number can represent a signed integral value of arbitrary size. The CARs of
-one or more cells hold the number's "digits" (each in the machine's word size),
-to store the number's binary representation.
+<p>A number can represent a signed integral value of arbitrary size. Internally,
+numeric values of up to 60 bits are stored in "short" numbers,
 
 <pre><code>
-         Number
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxS010
+</code></pre>
+
+i.e. the value is directly represented in the pointer, and doesn't take any heap
+space.
+
+<p>Numbers larger than that are "big" numbers, stored in heap cells. The CARs of
+one or more cells hold the number's "digits" (64 bits each), with the least
+significant digit first, while the CDRs point to the remaining digits.
+
+<pre><code>
+         Bignum
          |
          V
       +-----+-----+
@@ -253,20 +263,22 @@ to store the number's binary representation.
             +-----+--+--+
                      |
                      V
-                    ...
+                  +-----+-----+
+                  | DIG | CNT |
+                  +-----+-----+
 </code></pre>
 
-<p>The first cell holds the least significant digit. The least significant bit
-of that digit represents the sign.
+The CDR of the final cell holds the remaining bits in a short number.
 
-<p>The pointer to a number points into the middle of the CAR, with an offset of
-2 from the cell's start address. Therefore, the bit pattern of a number will be:
+<p>The pointer to a big number points into the middle of the CAR, with an offset
+of 4 from the cell's start address, and the sign bit in bit(3):
 
 <pre><code>
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx010
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxS100
 </code></pre>
 
-<p>Thus, a number is recognized by the interpreter when bit(1) is non-zero.
+<p>Thus, a number is recognized by the interpreter when either bit(1) is
+non-zero (a short number) or bit(2) is non-zero (a big number).
 
 
 <p><hr>
@@ -289,34 +301,35 @@ a symbol consists of a single cell, and has no name or properties:
 <p>That is, the symbol's tail is empty (points to <code>NIL</code>, as indicated
 by the '<code>/</code>' character).
 
-<p>The pointer to a symbol points to the CDR of the cell, with an offset of 4
-from the cell's start address. Therefore, the bit pattern of a symbol will be:
+<p>The pointer to a symbol points to the CDR of the cell, with an offset of 8
+bytes from the cell's start address. Therefore, the bit pattern of a symbol will
+be:
 
 <pre><code>
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxx100
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1000
 </code></pre>
 
-<p>Thus, a symbol is recognized by the interpreter when bit(2) is non-zero.
+<p>Thus, a symbol is recognized by the interpreter when bit(3) is non-zero.
 
 <p>A property is a key-value pair, represented by a cons pair in the symbol's
 tail. This is called a "property list". The property list may be terminated by a
-number representing the symbol's name. In the following example, a symbol with
-the name <code>"abc"</code> has three properties: A KEY/VAL pair, a cell with
-only a KEY, and another KEY/VAL pair.
+number (short or big) representing the symbol's name. In the following example,
+a symbol with the name <code>"abcdefghijklmno"</code> has three properties: A
+KEY/VAL pair, a cell with only a KEY, and another KEY/VAL pair.
 
 <pre><code>
             Symbol
             |
             V
-      +-----+-----+
-      |  |  | VAL |
-      +--+--+-----+
-         | tail
-         |
-         V                                                      name
-         +-----+-----+     +-----+-----+     +-----+-----+     +-----+-----+
-         |  |  |  ---+---> | KEY |  ---+---> |  |  |  ---+---> |'cba'|  /  |
-         +--+--+-----+     +-----+-----+     +--+--+-----+     +-----+-----+
+      +-----+-----+                                +----------+---------+
+      |  |  | VAL |                                |'hgfedcba'|'onmlkji'|
+      +--+--+-----+                                +----------+---------+
+         | tail                                       ^
+         |                                            |
+         V                                            | name
+         +-----+-----+     +-----+-----+     +-----+--+--+
+         |  |  |  ---+---> | KEY |  ---+---> |  |  |  |  |
+         +--+--+-----+     +-----+-----+     +--+--+-----+
             |                                   |
             V                                   V
             +-----+-----+                       +-----+-----+
@@ -332,8 +345,9 @@ using pointer comparisons.
 
 <p>The name of a symbol is stored as a number at the end of the tail. It
 contains the characters of the name in UTF-8 encoding, using between one and
-three 8-bit-bytes per character. The first byte of the first character is stored
-in the lowest 8 bits of the number.
+seven bytes in a short number, or eight bytes in a bignum cell. The first byte
+of the first character, for example, is stored in the lowest 8 bits of the
+number.
 
 <p>All symbols have the above structure, but depending on scope and
 accessibility there are actually four types of symbols: <code><a
@@ -364,7 +378,7 @@ system. It is used
             |
             V
       +-----+-----+-----+-----+
-      |  /  |  /  |  /  |  /  |
+      |'LIN'|  /  |  /  |  /  |
       +-----+--+--+-----+-----+
 </code></pre>
 
@@ -794,10 +808,10 @@ This may cause unexpected behavior:
 </code></pre>
 
 <p>The name of a transient symbol can contain any character except the
-null-byte. A double quote character can be escaped with a backslash
-'<code>\</code>', and a backslash itself has to be escaped with another
-backslash. Control characters can be written with a preceding hat
-'<code>^</code>' character.
+null-byte. Control characters can be written with a preceding hat
+'<code>^</code>' character. A hat or a double quote character can be escaped
+with a backslash '<code>\</code>', and a backslash itself has to be escaped with
+another backslash.
 
 <p><pre><code>
 : "We^Ird\\Str\"ing"
@@ -806,15 +820,35 @@ backslash. Control characters can be written with a preceding hat
 -> ("W" "e" "^I" "r" "d" "\\" "S" "t" "r" "\"" "i" "n" "g")
 </code></pre>
 
-<p>A backslash '<code>\</code>' in a transient symbol name at the end of a line
-discards the newline, and continues the name in the next line. In that case, all
-leading spaces and tabs in that line are discarded, to allow proper source code
+<p>The combination of a backslash followed by 'n', 'r' or 't' is replaced with
+newline ("^J"), return ("^M") or TAB ("^I"), respectively.
+
+<p><pre><code>
+: "abc\tdef\r"
+-> "abc^Idef^M"
+</code></pre>
+
+<p>A decimal number between two backslashes can be used to specify any unicode
+character directly.
+
+<p><pre><code>
+: "äöü\8364\xyz"
+-> "äöü€xyz"
+</code></pre>
+
+<p>A backslash in a transient symbol name at the end of a line discards the
+newline, and continues the name in the next line. In that case, all leading
+spaces and tabs in that line are discarded, to allow proper source code
 indentation.
 
 <p><pre><code>
 : "abc\
    def"
 -> "abcdef"
+: "x \
+   y \
+   z"
+-> "x y z"
 </code></pre>
 
 <p>The index for transient symbols is cleared automatically before and after
@@ -1235,7 +1269,7 @@ symbols cannot be used directly in a function-passing context (i.e.
 (function) value at this point. Applying a shared library function like
 
 <pre><code>
-(mapcar ext:Base64 (1 2 3))
+(apply ext:Base64 (1 2 3))
 </code></pre>
 
 <p>works <i>only</i> if <code>ext:Base64</code> was either called before (and
@@ -1246,7 +1280,7 @@ with <code>(getd 'ext:Base64)</code>.
 symbol itself and not just the value:
 
 <pre><code>
-(mapcar 'ext:Base64 (1 2 3))
+(apply 'ext:Base64 (1 2 3))
 </code></pre>
 
 
@@ -1300,7 +1334,7 @@ by calling
 $ ulimit -s unlimited
 </code></pre>
 
-<p>Without that, the stack limit in Linux is typically 8 MB.
+<p>Without that, the stack limit in Linux is typically 8 MiB.
 
 
 <p><hr>
@@ -2070,6 +2104,7 @@ abbreviations:
    <a href="ref_.html#=">=</a>
    <a href="ref_.html#<>"><&gt</a>
    <a href="ref_.html#=0">=0</a>
+   <a href="ref_.html#=1">=1</a>
    <a href="ref_.html#=T">=T</a>
    <a href="refN.html#n0">n0</a>
    <a href="refN.html#nT">nT</a>

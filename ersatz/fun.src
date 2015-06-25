@@ -1,4 +1,4 @@
-# 25feb15abu
+# 24may15abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -2785,6 +2785,10 @@ n== (x y)
 =0 ()
    return ex.Cdr.Car.eval().equal(Zero)? Zero : Nil;
 
+# (=1 'any) -> 1 | NIL
+=1 ()
+   return ex.Cdr.Car.eval().equal(One)? One : Nil;
+
 # (=T 'any) -> flg
 =T ()
    return T == ex.Cdr.Car.eval()? T : Nil;
@@ -3306,9 +3310,8 @@ x| (num x)
    return num;
 
 # (seed 'any) -> cnt
-seed (n)
-   n = initSeed(ex.Cdr.Car.eval()) * 6364136223846793005L;
-   return new Number(Seed = n);
+seed ()
+   return new Number((int)((Seed = initSeed(ex.Cdr.Car.eval()) * 6364136223846793005L) >>> 32));
 
 # (hash 'any) -> cnt
 hash (i j n)
@@ -3330,7 +3333,7 @@ rand (x n)
    if (x == T)
       return (Seed & 0x100000000L) == 0? Nil : T;
    if ((n = evInt(ex.Cdr) + 1 - ((Number)x).Cnt) != 0)
-      n = (int)(Seed >>> 33) % n;
+      n = (Seed >>> 32) % n;
    return new Number(((Number)x).Cnt + n);
 
 ############ io ############

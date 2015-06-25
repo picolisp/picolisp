@@ -22,8 +22,8 @@
 "Bad date format" "Ogiltigt datumformat"
 "Bad time format" "Ogiltigt tidsformat"
 "Bad phone number format" "Ogiltigt telefonnummerformat"
-"male" "man"
-"female" "kvinna"
+"male" "Man"
+"female" "Kvinna"
 "New" "Ny"
 "Edit" "Redigera"
 "Save" "Spara"
@@ -43,8 +43,8 @@
 "Redo: '@1'" "Upprepa: '@1'"
 
 # General
-"login" "logga in"
-"logout" "logga ut"
+"login" "Logga in"
+"logout" "Logga ut"
 "' logged in" "' är inloggad"
 "Name" "Namn"
 "Login Name" "Användarnamn"

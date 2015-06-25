@@ -1,4 +1,4 @@
-# 12mar15abu
+# 21may15abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -446,9 +446,10 @@
    (unless (: T)
       (pick
          '((X)
-            (and
-               (isa '+Key (meta This (fin X)))
-               (cons (fin X) X) ) )
+            (when (isa '+Key (meta This (fin X)))
+               (if (meta This (fin X) 'hook)
+                  (cons (fin X) (get This @) X)
+                  (cons (fin X) X) ) ) )
          (getl This) ) ) )
 
 (dm (dumpType> . +Entity) ()
@@ -492,11 +493,14 @@
 (de dumpExt (Obj)
    (prin "(obj ")
    (let K (dumpKey> Obj)
-      (ifn (cadr K)
+      (ifn (last K)
          (print (dumpType> Obj) (id Obj T))
          (prin "(")
          (printsp (dumpType> Obj) (car K))
-         (dumpVal @)
+         (dumpVal (cadr K))
+         (when (pair (cddr K))
+            (space)
+            (dumpVal (car @)) )
          (prin ")") )
       K ) )
 

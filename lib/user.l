@@ -1,10 +1,10 @@
-# 21jul14abu
+# 05may15abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin)
 
 (menu ,"User Administration"
-   (idForm ,"User" ,"Users" 'nm '+User T '(may Delete) '((: nm))
+   (idForm ,"User" '(choUser) 'nm '+User T '(may Delete) '((: nm))
       (<grid> 2
          ,"Login Name" (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"User" 30)
          ,"Password"

@@ -350,13 +350,25 @@ non-decreasing order. See also <a href="ref.html#cmp">Comparing</a>.
 See also <code><a href="refN.html#n0">n0</a></code>, <code><a
 href="refL.html#lt0">lt0</a></code>, <code><a
 href="refL.html#le0">le0</a></code>, <code><a
-href="refG.html#ge0">ge0</a></code> and <code><a
-href="refG.html#gt0">gt0</a></code>.
+href="refG.html#ge0">ge0</a></code>, <code><a
+href="refG.html#gt0">ge0</a></code> and <code><a
+href="ref_.html#=1">=1</a></code>.
 
 <pre><code>
 : (=0 (- 6 3 2 1))
 -> 0
 : (=0 'a)
+-> NIL
+</code></pre>
+
+<dt><a name="=1"><code>(=1 'any) -> 1 | NIL</code></a>
+<dd>Returns <code>1</code> when <code>any</code> is a number with value one.
+See also <code><a href="ref_.html#=0">=0</a></code>.
+
+<pre><code>
+: (=1 (- 6 3 2))
+-> 1
+: (=1 'a)
 -> NIL
 </code></pre>
 

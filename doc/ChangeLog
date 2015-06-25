@@ -1,3 +1,174 @@
+####### 3.1.11.1 #######
+   Forgotten file
+      lib/svg.l
+
+####### 3.1.10.9 #######
+18jun15
+   Optional 'T' argument to 'asm' function
+      src64/lib/asm.l
+   
+17jun15
+   Slightly extended 'idObj' formatting
+      lib/form.l
+
+13jun15
+   Generic 'asm' directive
+      src64/lib/asm.l
+
+####### 3.1.10.8 #######
+09jun15
+   Enable "Delete" button only in enabled form
+      lib/form.l
+
+01jun15
+   Bug in binary print of partial circular lists
+      src64/io.l
+      pilMCU/src/io.l
+      src/io.c
+
+27may15
+   Clean up circular checks (64-bit)
+   Check for circularity in 'funqE_FE' + 'funq'
+      src64/main.l
+      src64/subr.l
+      src64/io.l
+      pilMCU/src/main.l
+      pilMCU/src/subr.l
+      pilMCU/src/io.l
+      ersatz/sys.src
+      src/main.c
+      mini/src/main.c
+      mini/src/sym.c
+      doc/refC.html
+
+####### 3.1.10.7 #######
+26may15
+   Remove setpgid() from 'doExec'
+      src64/flow.l
+      src/flow.c
+   SVG Printing
+      lib/svg.l
+      app/main.l
+      app/ord.l
+      app/lib.l
+
+24may15
+   '=1' function
+      src64/subr.l
+      src64/glob.l
+      pilMCU/src/subr.l
+      pilMCU/src/glob.l
+      src/subr.c
+      src/tab.c
+      src/pico.h
+      mini/src/subr.c
+      mini/src/init.s
+      ersatz/fun.src
+      doc/ref.html
+      doc/ref_.html
+      test/src/subr.l
+
+####### 3.1.10.6 #######
+23may15
+   Need 'note' instead of 'alert'
+      misc/calc.l
+
+21may15
+   Check meta 'hook' in '+Obj' prefix
+      lib/form.l
+   Fix 'dump' for keys with hooks
+      lib/too.l
+
+19may15
+   Bug in 'compareAE_F' for external symbols
+      src64/main.l
+      pilMCU/src/main.l
+
+####### 3.1.10.5 #######
+18may15
+   Update reference to describe the 64-bit structures
+      doc/ref.html
+
+06may15
+   Slightly simplified
+      lib/role.l
+
+05may15
+   Imported 'choUser'
+      lib/adm.l
+      lib/user.l
+
+03may15
+   Accept \ddd\ in strings
+      src64/io.l
+      pilMCU/src/io.l
+      src/io.c
+      ersatz/sys.src
+      doc/ref.html
+
+02may15
+   Changed HTTP parsing to use 'till' instead of 'match'
+      lib/http.l
+
+####### 3.1.10.4 #######
+01may15
+   Reference entry for 'prBase64'
+      doc/refP.html
+   More examples for 'in' and 'out'
+      doc/refI.html
+      doc/refO.html
+
+30apr15
+   Accept \n, \r and \t in strings
+      src64/io.l
+      pilMCU/src/io.l
+      src/io.c
+      ersatz/sys.src
+      doc/ref.html
+
+####### 3.1.10.3 #######
+30apr15
+   'prBase64' multiline Base64 printing
+      lib/misc.l
+   Catch "undefined" arguments in Canvas drawing
+      lib/canvas.js
+
+28apr15
+   Changes to 'seed' and 'rand' in Ersatz suggested by Christophe Gragnic
+      ersatz/fun.src
+
+####### 3.1.10.2 #######
+26apr15
+   Added library for a subset of JSON
+      lib/json.l
+   Fix 'memq' instruction in 'emu'
+      src64/arch/emu.l
+   Support also input (parse) mode for 'ext:Base64'
+      src64/ext.l
+      src/ext.c
+      test/src/ext.l
+
+24apr15
+   Additional "user:passwd" argument to 'xmlrpc'
+      lib/xmlrpc.l
+
+####### 3.1.10.1 #######
+24apr15
+   Optional styles in <select> input elements
+      lib/xhtml.l
+      lib/form.l
+
+23apr15
+   Clear background in 'csDraw' and 'csDrawImage'
+      lib/canvas.js
+
+22apr15
+   Changed demo logo 7fach.gif -> 7fachLogo.png
+
+21apr15
+   Temporary fix for 3.1.1 and older
+      src64/arch/emu.l
+
 ####### 3.1.9.17 #######
 17apr15
    Slightly generalized 'mimetype' function

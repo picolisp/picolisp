@@ -1,4 +1,4 @@
-# 02jan15abu
+# 26may15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -3288,7 +3288,6 @@
 # (exec 'any ..)
 (code 'doExec 2)
    call execArgsE_SXZ  # Prepare arguments
-   cc setpgid(0 0)  # Set process group
    cc execvp((S) S)  # Execute program
    jmp execErrS  # Error if failed
 

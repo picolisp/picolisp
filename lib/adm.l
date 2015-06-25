@@ -1,4 +1,4 @@
-# 12oct14abu
+# 05may15abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -113,6 +113,9 @@
       (forbidden) ) )
 
 ### GUI ###
+(de choUser (Dst)
+   (choDlg Dst ,"Users" '(nm +User)) )
+
 (de loginForm "Opt"
    (form NIL
       (when "Opt"

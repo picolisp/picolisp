@@ -1,8 +1,8 @@
-# 31jul13abu
+# 30apr15abu
 # (c) Software Lab. Alexander Burger
 
-# (xmlrpc "localhost" 8080 "foo.bar" 'int 41 'string "abc" ..)
-(de xmlrpc (Host Port Meth . @)
+# (xmlrpc "localhost" 8080 "user:passwd" "foo.bar" 'int 41 'string "abc" ..)
+(de xmlrpc (Host Port Auth Meth . @)
    (let? Sock (connect Host Port)
       (let Xml (tmp 'xmlrpc)
          (out Xml
@@ -20,6 +20,10 @@
             (out Sock
                (prinl "POST /RPC2 HTTP/1.0^M")
                (prinl "Host: " Host "^M")
+               (let? L (mapcar char (chop Auth))
+                  (prin "Authorization: Basic ")  # 7-bit ASCII
+                  (while (ext:Base64 (pop 'L) (pop 'L) (pop 'L)))
+                  (prinl "^M") )
                (prinl "User-Agent: PicoLisp^M")
                (prinl "Content-Type: text/xml^M")
                (prinl "Accept-Charset: utf-8^M")
@@ -41,7 +45,8 @@
 (de xmlrpcValue (Lst)
    (let X (caddr Lst)
       (casq (car Lst)
-         (string X)
+         (string
+            (if (cdddr Lst) (apply pack (cddr Lst)) X) )
          ((i4 int) (format X))
          (boolean (= "1" X))
          (double (format X *Scl))

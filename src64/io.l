@@ -1,4 +1,4 @@
-# 12mar15abu
+# 01jun15abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -978,7 +978,7 @@
    ld B BEG  # Begin list
    call (PutBinBZ)
    ld X E  # Keep list in X
-   call circE_YF  # Circular?
+   call circE_EF  # Circular?
    if nz  # No
       do
          ld E (X)  # Next item
@@ -998,7 +998,8 @@
          end
       loop
    else
-      cmp X Y  # Fully circular?
+      ld Y E  # Non-circular part
+      cmp X E  # Fully circular?
       if eq  # Yes
          do
             ld E (X)  # Output CAR
@@ -1025,9 +1026,7 @@
             ld X (X CDR)  # Done?
             cmp X Y
          until eq  # Yes
-         ld B DOT  # Output DOT+END
-         call (PutBinBZ)
-         ld B END
+         ld B DOT  # Output DOT
          call (PutBinBZ)
       end
    end
@@ -1991,6 +1990,7 @@
 # Get full char from input channel
 (code 'getChar_A 0)
    ld A (Chr)  # Get look ahead
+: getCharA_A
    cmp B (hex "FF")  # Special "top" character?
    if ne  # No
       cmp B 128  # Single byte?
@@ -2092,7 +2092,7 @@
    loop
 90 ret
 
-(code 'testEscA_F 0)
+(code 'testEscA_AF 0)  # E
    do
       null A  # EOF?
       if s  # Yes
@@ -2110,14 +2110,61 @@
          else
             and B 31  # Control-character
          end
-10       setc  # Return YES
+         setc  # Return YES
          ret
       end
       cmp B (char "\\")  # Backslash?
-      jnz 10  # No
+      if ne  # No
+         call getCharA_A  # Get full char
+10       setc  # Return YES
+         ret
+      end
       call (Get_A)  # Skip '\'
       cmp B 10  # Newline?
-      jnz 10  # No
+      if nz  # No
+         cmp B (char "n")  # Newline?
+         if eq
+            ld B (char "^J")  # Yes
+            jmp 10
+         end
+         cmp B (char "r")  # Return?
+         if eq
+            ld B (char "^M")  # Yes
+            jmp 10
+         end
+         cmp B (char "t")  # Tab?
+         if eq
+            ld B (char "^I")  # Yes
+            jmp 10
+         end
+         cmp B (char "0")  # Decimal?
+         if ge
+            cmp B (char "9")
+            if le  # Yes
+               sub B (char "0")  # Convert
+               ld E A  # Result in E
+               push C
+               do
+                  call (Get_A)  # Next
+                  cmp B (char "\\")  # Backslash?
+               while ne  # No
+                  cmp B (char "0")  # Decimal?
+                  jlt badInputErrB  # No
+                  cmp B (char "9")
+                  jgt badInputErrB  # No
+                  sub B (char "0")  # Convert
+                  xchg A E  # Multiply result
+                  mul 10  # with 10
+                  add A E  # add digit
+                  ld E A  # into result
+               loop
+               pop C
+               ld A E  # Get result
+            end
+            setc
+         end
+         ret  # Return YES
+      end
       do
          call (Get_A)  # Skip white space
          cmp B 32
@@ -2451,7 +2498,7 @@
          ld E Nil  # Return NIL
          jmp 99
       end
-      call testEscA_F
+      call testEscA_AF
       jnc eofErr
       link
       push ZERO  # <L I> Result
@@ -2459,11 +2506,11 @@
       ld X S
       link
       do
-         call byteSymBCX_CX  # Pack char
+         call charSymACX_CX  # Pack char
          call (Get_A)  # Get next
          cmp B (char "\"")  # Done?
       while ne
-         call testEscA_F
+         call testEscA_AF
          jnc eofErr
       loop
       call (Get_A)  # Skip '"'
@@ -2557,9 +2604,8 @@
          ld E Nil  # Return NIL
          ret
       end
-      call testEscA_F
+      call testEscA_AF  # Get next character
       jnc retNil
-      call getChar_A  # Get next character
       call mkCharA_A  # Make single character
       call consA_X  # Cons it
       ld (X) A
@@ -2574,9 +2620,8 @@
             call (Get_A)  # Skip '"'
             break T
          end
-         call testEscA_F
+         call testEscA_AF  # Get next character
       while c
-         call getChar_A  # Get next character
          call mkCharA_A  # Make char
          call consA_C  # Cons it
          ld (C) A
@@ -3510,7 +3555,7 @@
       end
       null A  # EOF?
       if ns  # No
-         call getChar_A
+         call getCharA_A
          call mkCharA_A  # Make char
          ld E A
          call (Get_A)  # Get next
@@ -3707,9 +3752,9 @@
          else
             link
             push ZERO  # <L I> Result
+            ld C 4  # Build name
             ld X S
             link
-            ld C 4  # Build name
             do
                call getChar_A  # Get next character
                call charSymACX_CX  # Insert
@@ -3770,9 +3815,9 @@
       if nz  # No
          link
          push ZERO  # <L I> Result
+         ld C 4  # Build name
          ld X S
          link
-         ld C 4  # Build name
          do
             call getChar_A  # Get next character
             call charSymACX_CX  # Insert
@@ -3855,7 +3900,7 @@
                call (Get_A)  # Get next
                call eolA_F  # End of line?
                jeq 20  # Yes
-               call getChar_A  # Get next character
+               call getCharA_A  # Get next character
                call mkCharA_A
                call consA_C  # Build next cell
                ld (C) A
@@ -3869,7 +3914,7 @@
             call (Get_A)  # Get next
             call eolA_F  # End of line?
             jeq 20  # Yes
-            call getChar_A  # Get next character
+            call getCharA_A  # Get next character
             call mkCharA_A
             call consA_X  # Build new sublist
             ld (X) A
@@ -3885,7 +3930,7 @@
          call (Get_A)  # Get next
          call eolA_F  # End of line?
       while ne  # No
-         call getChar_A  # Get next character
+         call getCharA_A  # Get next character
          call mkCharA_A
          call consA_C  # Build next cell
          ld (C) A
@@ -4990,7 +5035,7 @@
    ld B (char "(")  # Open paren
    call (PutB)
    ld X E  # Keep list in X
-   call circE_YF  # Circular?
+   call circE_EF  # Circular?
    if nz  # No
       do
          ld E (X)  # Print CAR
@@ -5011,7 +5056,8 @@
          call space  # Print space
       loop
    else
-      cmp X Y  # Fully circular?
+      ld Y E  # Non-circular part
+      cmp X E  # Fully circular?
       if eq  # Yes
          do
             ld E (X)  # Print CAR

@@ -1,4 +1,196 @@
+####### 15.11.0 #######
+24nov15
+   Version Numbering: Switch to YY.MM[.nn] style
+      {src64,pilos/src}/version.l
+      {src64,pilos/src}/glob.l
+      src/main.c
+      ersatz/fun.src
+      doc/refV.html
+
+####### 3.1.11.14 #######
+20nov15
+   Changed "bin/replica" to non-forking server
+      bin/replica
+
+16nov15
+   Fine-tuned and optimized 64-bit version for ARMv8 (arm64)
+      README
+      INSTALL
+      doc64/README
+      doc/refC.html
+      src64/Makefile
+      src64/lib/asm.l
+      src64/arch/arm64.l
+
+####### 3.1.11.13 #######
+11nov15
+   'catch' and 'throw' flow control instructions
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/*.l
+      {src64,pilos/src}/flow.l
+
+####### 3.1.11.12 #######
+06nov15
+   Omit message-body in 'noContent'
+      lib/http.l
+   '+ObjVal' GUI prefix class
+      lib/form.l
+
+31oct15
+   64-bit version for ARMv8 (arm64)
+      src64/arch/arm64.l
+
+30oct15
+   Condition code instructions: Separate borrow [b] from carry [c]
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/*.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/big.l
+      {src64,pilos/src}/db.l
+
+26oct15
+   Condition code instructions: Removed 'ldc' and 'ldnc'
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/*.l
+      {src64,pilos/src}/db.l
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/sym.l
+      src64/ext.l
+
+20oct15
+   Removed 'movm' instruction
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/*.l
+      {src64,pilos/src}/io.l
+
+####### 3.1.11.11 #######
+12oct15
+   Simplified unit test setup
+      lib/test.l
+      test/src/net.l
+
+12oct15
+   Switched ppc64 version to ppc64le (little endian)
+      src64/Makefile
+      src64/arch/ppc64.l
+      src64/sys/ppc64.linux.defs.l
+
+10oct15
+   Changed asm syntax 'push/pop F' to 'push/pop zsc' and 'push/pop x'
+      src64/arch/x86-64.l
+      src64/arch/ppc64.l
+      src64/arch/emu.l
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/big.l
+      {src64,pilos/src}/err.l
+
+04oct15
+   Condition code instructions: New extension bit [x] in addition to carry [c]
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/x86-64.l
+      src64/arch/ppc64.l
+      src64/arch/emu.l
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/gc.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/big.l
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/db.l
+      src64/net.l
+      src64/err.l
+      src64/ext.l
+      src64/ht.l
+
+####### 3.1.11.10 #######
+03oct15
+   Check for FD overflow in 'waitFdCEX_A'
+      src64/glob.l
+      src64/io.l
+
+####### 3.1.11.9 #######
+29sep15
+   Minor ref and comment fixex
+      doc/refI.html
+      {src64,pilos/src}/flow.l
+      src/flow.c
+      mini/src/flow.c
+      ersatz/fun.src
+
+16sep15
+   'cache' without 'prg' argument returns internal 'var'
+      lib.l
+      ersatz/lib.l
+      pilos/init/lib.l
+      test/lib.l
+      test/src/sym.l
+
+####### 3.1.11.8 #######
+06sep15
+   Minor reference details for 'eval' and 'run'
+      doc/refE.html
+      doc/refR.html
+
+03sep15
+   '+Chg' prefix crashes without JS
+      lib/form.l
+
+####### 3.1.11.7 #######
+02sep15
+   Minor cosmetics
+      lib/heartbeat.l
+      bin/watchdog
+
+   Use (lock) to be on the safe side
+      bin/replica
+
+01sep15
+   Extensions and additions by Oscar Roca
+      lib/openGl.l
+
+####### 3.1.11.6 #######
+26aug15
+   Omit keyfile lock. Not needed, because only a single 'ssl' process feeds it
+      bin/replica
+
+####### 3.1.11.5 #######
+04aug15
+   Removed '<tree>' function
+      lib/xhtml.l
+
+####### 3.1.11.4 #######
+18jul15
+   Synchronize exernal changes in '+E/R' prefix class
+      lib/form.l
+
+####### 3.1.11.3 #######
+13jul15
+   Added all-uppercase rule to the naming conventions
+      doc/ref.html
+
+08jul15
+   Revert 'ssl' to alarm()
+      src/ssl.c
+
+####### 3.1.11.2 #######
+06jul15
+   Check for empty date in 'day'
+      lib/misc.l
+      ersatz/lib.l
+      doc/tut.html
+
+02jul15
+   Slightly improve 'scrape' for 'href' with nested 'img'
+      lib/scrape.l
+
 ####### 3.1.11.1 #######
+25jun15
    Forgotten file
       lib/svg.l
 
@@ -6,7 +198,7 @@
 18jun15
    Optional 'T' argument to 'asm' function
       src64/lib/asm.l
-   
+
 17jun15
    Slightly extended 'idObj' formatting
       lib/form.l

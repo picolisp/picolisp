@@ -1,4 +1,4 @@
-# 29jan15abu
+# 12oct15abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -34,7 +34,7 @@
 
 # fcntl
 (equ FLOCK 32)    # File lock structure
-(equ L_TYPE 0)  # 2
+(equ L_TYPE 0)    # 2
 (equ L_WHENCE 2)  # 2
 (equ L_START 8)
 (equ L_LEN 16)

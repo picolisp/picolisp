@@ -1,4 +1,4 @@
-# 26jan15abu
+# 16sep15abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -30,6 +30,13 @@
 (test NIL (fun? (1 2 3 4)))
 (test NIL (fun? '((A 2 B) (* A B))))
 (test T (fun? '(NIL (* 3 4))))
+
+
+### getd ###
+(test car (getd 'car))
+(test '((File . @) (load File))
+   (getd 'script) )
+(test NIL (getd 1))
 
 
 ### all ###

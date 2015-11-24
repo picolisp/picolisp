@@ -1,4 +1,5 @@
-# 09nov12abu
+# 01sep15abu
+# 01sep15or
 # 27jul10jk
 # (c) Software Lab. Alexander Burger
 
@@ -38,6 +39,19 @@
 
 ### /usr/include/GL/gl.h ###
 ### Constant Definitions ###
+# Data types
+(def 'GL_BYTE           (hex "1400"))
+(def 'GL_UNSIGNED_BYTE  (hex "1401"))
+(def 'GL_SHORT          (hex "1402"))
+(def 'GL_UNSIGNED_SHORT (hex "1403"))
+(def 'GL_INT            (hex "1404"))
+(def 'GL_UNSIGNED_INT   (hex "1405"))
+(def 'GL_FLOAT          (hex "1406"))
+(def 'GL_2_BYTES        (hex "1407"))
+(def 'GL_3_BYTES        (hex "1408"))
+(def 'GL_4_BYTES        (hex "1409"))
+(def 'GL_DOUBLE         (hex "140A"))
+
 # Primitives
 (def 'GL_POINTS         (hex "0000"))
 (def 'GL_LINES          (hex "0001"))
@@ -123,10 +137,37 @@
 # Pixel Mode / Transfer
 
 # Texture mapping
+(def 'GL_BGR                           (hex "80E0"))
+(def 'GL_BGRA                          (hex "80E1"))
+(def 'GL_RGB                           (hex "1907"))
+(def 'GL_RGBA                          (hex "1908"))
+(def 'GL_PROGRAM_POINT_SIZE            (hex "8642"))
+
+(def 'GL_TEXTURE_1D                    (hex "0DE0"))
+(def 'GL_TEXTURE_2D                    (hex "0DE1"))
+(def 'GL_TEXTURE_3D                    (hex "806F"))
+(def 'GL_TEXTURE_1D_ARRAY              (hex "8C18"))
+(def 'GL_TEXTURE_2D_ARRAY              (hex "8C1A"))
+(def 'GL_TEXTURE_RECTANGLE             (hex "84F5"))
+(def 'GL_TEXTURE_CUBE_MAP              (hex "8513"))
+(def 'GL_TEXTURE_CUBE_MAP_ARRAY        (hex "9009"))
+(def 'GL_TEXTURE_BUFFER                (hex "8C2A"))
+(def 'GL_TEXTURE_2D_MULTISAMPLE        (hex "9100"))
+(def 'GL_TEXTURE_2D_MULTISAMPLE_ARRAY  (hex "9102"))
+(def 'GL_TEXTURE_MAG_FILTER            (hex "2800"))
+(def 'GL_TEXTURE_MIN_FILTER            (hex "2801"))
+(def 'GL_NEAREST                       (hex "2600"))
+(def 'GL_NEAREST_MIPMAP_NEAREST        (hex "2700"))
+(def 'GL_NEAREST_MIPMAP_LINEAR         (hex "2702"))
+(def 'GL_LINEAR                        (hex "2601"))
+(def 'GL_LINEAR_MIPAP_NEAREST          (hex "2701"))
+(def 'GL_LINEAR_MIPAP_LINEAR           (hex "2703"))
 
 # Utility
 
 # Errors
+(de glGetError ()
+   (hex (native `*GlutLib "glGetError" 'N)) )
 
 # glPush/PopAttrib bits
 (def 'GL_CURRENT_BIT          (hex "00000001"))
@@ -217,6 +258,8 @@
    (native `*GlutLib "glTranslatef" NIL "Flt1" "Flt2" "Flt3") )
 
 # Display Lists
+(def 'GL_COMPILE              (hex "1300"))
+(def 'GL_COMPILE_AND_EXECUTE  (hex "1301"))
 
 # Drawing Functions
 (de glBegin (Mode)
@@ -271,6 +314,53 @@
 # Stenciling
 
 # Texture mapping
+(de glBindTexture (Target Texture)
+   (native `*GlutLib "glBindTexture" Target Texture) )
+
+(de glIsTexture (Texture)
+   (native `*GlutLib "glIsTexture" 'N Texture) )
+
+#{ not working
+(de glGenTextures (N Textures)
+   (native `*GlutLib "glGenTextures" NIL N (list (cons (* 8 N) (cons 'N N)))) )
+
+(de glGenTextures (N Textures)
+   (eval (list 'setq Textures (tmpglgentex N))) )
+}#
+
+(de glTexCoord2f (X Y)
+   (set "Flt1" X "Flt2" Y)
+   (native `*GlutLib "glTexCoord2f" NIL "Flt1" "Flt2") )
+
+(de glTexImage2D (Target Level InternalFormat Width Height Border Format Type Data)
+   (native `*GlutLib "glTexImage2D"
+      Target Level InternalFormat
+      Width Height Border
+      Format Type Data ) )
+
+(de glBlendEquation (Mode)
+   (native `*GlutLib "glBlendEquation" NIL Mode) )
+
+(de glPointSize (Size)
+   (set "Flt1" Size)
+   (native `*GlutLib "glPointSize" NIL "Flt1") )
+
+(de glTexParameterf (Target Pname Param)
+   (native `*GlutLib "glTexParameterf" NIL Target Pname Param) )
+
+(de glIsTexture (Texture)
+   (native `*GlutLib "glIsTexture" 'N Texture) )
+
+(de glTexStorage2D (Target levels internalformat Width Height)
+   (native `*GlutLib "glTexStorage2D" NIL
+      Target levels
+      internalformat Width Height) )
+
+(de glTexSubImage2D (Target Level xoffset yoffset Width Height Format Type pixels)
+   (native `*GlutLib "glTexSubImage2D"
+      Target Level xoffset
+      yoffset Width Height
+      Format Type pixels ) )
 
 # Evaluators
 
@@ -281,26 +371,24 @@
 
 
 ### /usr/include/GL/glu.h ###
-
 (de gluPerspective (Fovy Aspect ZNear ZFar)
    (set "Dbl1" Fovy  "Dbl2" Aspect  "Dbl3" ZNear  "Dbl4" ZFar)
    (native `*GluLib "gluPerspective" NIL "Dbl1" "Dbl2" "Dbl3" "Dbl4") )
 
-
 ### /usr/include/GL/freeglut_std.h ###
 # Special key codes
-(def 'GLUT_KEY_F1    1)
-(def 'GLUT_KEY_F2    2)
-(def 'GLUT_KEY_F3    3)
-(def 'GLUT_KEY_F4    4)
-(def 'GLUT_KEY_F5    5)
-(def 'GLUT_KEY_F6    6)
-(def 'GLUT_KEY_F7    7)
-(def 'GLUT_KEY_F8    8)
-(def 'GLUT_KEY_F9    9)
-(def 'GLUT_KEY_F10   10)
-(def 'GLUT_KEY_F11   11)
-(def 'GLUT_KEY_F12   12)
+(def 'GLUT_KEY_F1          1)
+(def 'GLUT_KEY_F2          2)
+(def 'GLUT_KEY_F3          3)
+(def 'GLUT_KEY_F4          4)
+(def 'GLUT_KEY_F5          5)
+(def 'GLUT_KEY_F6          6)
+(def 'GLUT_KEY_F7          7)
+(def 'GLUT_KEY_F8          8)
+(def 'GLUT_KEY_F9          9)
+(def 'GLUT_KEY_F10         10)
+(def 'GLUT_KEY_F11         11)
+(def 'GLUT_KEY_F12         12)
 (def 'GLUT_KEY_LEFT        100)
 (def 'GLUT_KEY_UP          101)
 (def 'GLUT_KEY_RIGHT       102)
@@ -329,6 +417,28 @@
 (def 'GLUT_MULTISAMPLE  (hex "0080"))
 (def 'GLUT_STEREO       (hex "0100"))
 (def 'GLUT_LUMINANCE    (hex "0200"))
+
+# Display Lists
+(de glListBase (Base)
+   (native `*GlutLib "glListBase" NIL Base) )
+
+(de glGenLists (Range)
+   (native `*GlutLib "glGenLists" 'N Range) )
+
+(de glCallList (Lst)
+   (native `*GlutLib "glCallList" NIL Lst) )
+
+(de glCallLists (N Type Lists)
+   (native `*GlutLib "glCallLists" NIL N Type Lists) )
+
+(de glNewList (Lst Mode)
+   (native `*GlutLib "glNewList" NIL Lst Mode) )
+
+(de glEndList ()
+   (native `*GlutLib "glEndList" NIL) )
+
+(de glDeleteLists (Lst Range)
+   (native `*GlutLib "glDeleteLists" NIL Lst Range) )
 
 ### Native functions ###
 # Initialization functions
@@ -396,6 +506,16 @@
 (de motionFunc (Fun)
    (native `*GlutLib "glutMotionFunc" NIL (lisp 'motionFunc Fun)) )
 
+(de keyboardUp (Fun)
+   (native `*GlutLib "glutKeyboardUpFunc" NIL (lisp 'keyboardUp Fun)) )
+
+(de specialUp (Fun)
+   (native `*GlutLib "glutSpecialUpFunc" NIL (lisp 'specialUp Fun)) )
+
+# 1 shift, 2 ctrl, 4 alt
+(de glutGetModifiers ()
+   (native `*GlutLib "glutGetModifiers" 'I) )
+
 # State setting and retrieval functions
 
 # Font stuff
@@ -428,5 +548,14 @@
 # Misc keyboard and joystick functions
 
 # Misc functions
+(de glScalef (X Y Z)
+   (set "Flt1" X "Flt2" Y "Flt3" Z) )
+
+(de glRasterPos2f (X Y)
+   (set "Flt1" X  "Flt2" Y)
+   (native `*GlutLib "glRasterPos2f" NIL "Flt1" "Flt2") )
+
+(de glRasterPos2i (X Y)
+   (native `*GlutLib "glRasterPos2i" NIL X Y) )
 
 # vi:et:ts=3:sw=3

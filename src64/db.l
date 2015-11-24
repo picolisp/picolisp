@@ -1,4 +1,4 @@
-# 30mar15abu
+# 17nov15abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -55,10 +55,10 @@
    ld B (Buf)
    shl A 6  # 'dbFile' index
    cmp A (DBs)  # Local file?
-   jge retc  # No
+   jge retEq  # No: 'z'
    add A (DbFiles)  # Get DB file
    ld (DbFile) A  # Set current
-   ret  # 'nc'
+   ret  # 'nz'
 
 # Build external symbol name
 (code 'extNmCE_X 0)
@@ -313,7 +313,7 @@
             cmp (Solo) TSym  # Already locked whole DB?
             if ne  # No
                ld (Solo) Nil  # Clear solo mode
-               setz
+               eq
             end
          end
          ret  # 'z'
@@ -527,7 +527,7 @@
    call fileObjE_AC  # Get file and ID
    pop E  # Restore symbol
    shl C 6  # Block index?
-   jz retnz  # No
+   jz retGt  # No
    shl A 6  # 'dbFile' index
    cmp A (DBs)  # Local file?
    if lt  # Yes
@@ -535,10 +535,10 @@
       ld (DbFile) A  # Set current
       ld A (E TAIL)  # Get tail
       call nameA_A  # Get name
-      shl A 1  # Dirty?
-      jc retz  # Yes
-      shl A 1  # Loaded?
-      jc Retz  # Yes
+      add A A  # Dirty?
+      jc retEq  # Yes
+      add A A  # Loaded?
+      jc RetEq  # Yes
       push E
       push Z
       push C  # Save block index
@@ -550,7 +550,7 @@
       pop C  # Get block index
       cmp C A  # Less than 'next'?
       if ge  # No
-         clrz  # 'nz'
+         gt  # 'nz'
          jmp 90
       end
       ld E C  # Block index
@@ -598,7 +598,7 @@
    if eq  # Yes
       ld A (BlkLink)  # Next block?
       null A
-      jz ret  # No: Return 0
+      jz ret  # No: Return 'z'
       push C
       push E
       call rdBlockIndexAZ_Z  # Read block
@@ -606,7 +606,7 @@
       pop C
    end
    ld B (Z)  # Next byte
-   add Z 1  # (nc)
+   add Z 1  # 'nz'
    ret
 
 (code 'putBlockBZ 0)
@@ -874,7 +874,7 @@
                         cmp A (hex "FFFF")  # End marker?
                      while ne  # No
                         call dbfBuf_AF  # Read file number from 'Buf' to 'DbFile'
-                        jc jnlErrX  # No local file
+                        jz jnlErrX  # No local file
                         cc fread(Buf BLK 1 (DbLog))  # Read object ID
                         cmp A 1  # OK?
                         jne jnlErrX  # No
@@ -895,7 +895,7 @@
                      break T
                   end
                   call dbfBuf_AF  # Read file number from 'Buf' into 'DbFile'
-                  jc 40  # No local file
+                  jz 40  # No local file
                   cc fread(Buf BLK 1 (DbLog))  # Read object ID
                   cmp A 1  # OK?
                   jne 40  # No
@@ -994,7 +994,7 @@
          cmp A 1  # OK?
          jne jnlErrX  # No
          call dbfBuf_AF  # Read file number from 'Buf' to 'DbFile'
-         jc dbfErrX  # No local file
+         jz dbfErrX  # No local file
          cmp C BLKSIZE  # Whole block?
          ldz C (A III)  # Yes: Take file's block size
          cc fread(Buf BLK 1 E)  # Read object ID
@@ -1168,14 +1168,18 @@
    do
       num A  # Found name?
       if nz  # Yes
-         shl A 1  # Dirty?
+         add A A  # Dirty?
          if nc  # No
-            shl A 1  # Loaded?
-            ldnc E Nil  # No
+            add A A  # Loaded?
+            if nc  # No
+               ld E Nil  # No
+            end
             ret
          end
-         shl A 1  # Deleted?
-         ldc E Nil  # Yes
+         add A A  # Deleted?
+         if c  # Yes
+            ld E Nil
+         end
          ret
       end
       ld A (A CDR)  # Skip property
@@ -1225,12 +1229,12 @@
    ld A (E TAIL)  # Get tail
    num A  # Any properties?
    jz Ret  # Yes
-   rcl A 1  # Dirty?
-   jc ret  # Yes
-   rcl A 1  # Loaded?
-   jc ret  # Yes
-   setc  # Set "loaded"
-   rcr A 1
+   rxl A 1  # Dirty?
+   jx ret  # Yes
+   rxl A 1  # Loaded?
+   jx ret  # Yes
+   setx  # Set "loaded"
+   rxr A 1
    shr A 1
    push C
 : dbAEX
@@ -1361,20 +1365,20 @@
          num A  # Find name
       until nz
    end
-   rcl A 1  # Already dirty?
-   if nc  # No
-      rcl A 1  # Loaded?
-      if c  # Yes
+   rxl A 1  # Already dirty?
+   if nx  # No
+      rxl A 1  # Loaded?
+      if x  # Yes
          shr A 1
-         setc  # Set "dirty"
-         rcr A 1
+         setx  # Set "dirty"
+         rxr A 1
          ld (C) A  # in status/name
          pop C
          ret
       end
       shr A 1
-      setc  # Set "dirty"
-      rcr A 1
+      setx  # Set "dirty"
+      rxr A 1
       jmp dbAEX
    end
    pop C
@@ -1392,10 +1396,10 @@
       or A SYM  # Set 'extern' tag
    end
    shl A 2  # Set "deleted"
-   setc
-   rcr A 1
-   setc
-   rcr A 1
+   setx
+   rxr A 1
+   setx
+   rxr A 1
    ld (E TAIL) A  # Set empty tail
    ld (E) Nil  # Clear value
    ret
@@ -1448,10 +1452,10 @@
          do
             ld A ((X) TAIL)  # Get external symbol's tail
             call nameA_A  # Get name
-            rcl A 1  # Dirty or deleted?
-            if c  # Yes
+            rxl A 1  # Dirty or deleted?
+            if x  # Yes
                push Y
-               rcr A 1
+               rxr A 1
                ld Y A  # Name in Y
                call dbFileBlkY_AC  # Get file and block index
                cmp A (DBs)  # Local file?
@@ -1466,8 +1470,8 @@
                   loop
                   ld C (DbFile)
                   set (C (+ IV 1)) 1  # Set dirty flag
-                  rcl Y 2  # Deleted?
-                  if nc  # No
+                  rxl Y 2  # Deleted?
+                  if nx  # No
                      inc (C VII)  # Increment 'fluse'
                   end
                end
@@ -1519,7 +1523,7 @@
                null (BlkLink)  # More blocks?
             while nz  # Yes
                sub (S) 1  # Decrement count
-            while nc
+            while nb
                call rdBlockLinkZ_Z  # Read next block
             loop
             add S I  # Drop count
@@ -1584,13 +1588,13 @@
                num A  # Find name
             until nz
          end
-         rcl A 1  # Dirty?
-         if c  # Yes
+         rxl A 1  # Dirty?
+         if x  # Yes
             push Y
-            rcl A 1  # Deleted?
-            if nc  # No
-               setc  # Set "loaded"
-               rcr A 1
+            rxl A 1  # Deleted?
+            if nx  # No
+               setx  # Set "loaded"
+               rxr A 1
                shr A 1
                ld (C) A  # in status/name
                ld Y A  # Name in Y

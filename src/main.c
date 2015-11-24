@@ -1,4 +1,4 @@
-/* 27may15abu
+/* 24nov15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1257,15 +1257,15 @@ any doVersion(any x) {
 
    x = cdr(x);
    if (isNil(EVAL(car(x)))) {
-      for (i = 0; i < 4; ++i) {
+      for (i = 0; i < 3; ++i) {
          outWord((word)Version[i]);
-         Env.put(i == 3? ' ' : '.');
+         Env.put(i == 2? ' ' : '.');
       }
       Env.put('C');
       newline();
    }
    Push(c1, Nil);
-   i = 4;
+   i = 3;
    do
       data(c1) = cons(box(Version[--i] * 2), data(c1));
    while (i);

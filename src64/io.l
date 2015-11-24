@@ -1,4 +1,4 @@
-# 01jun15abu
+# 11nov15abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -213,10 +213,7 @@
       end
       call errno_A
       cmp A EINTR  # Interrupted?
-      if ne  # No
-         setz  # Return 'z'
-         ret
-      end
+      jne retEq  # No: 'z'
       null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
@@ -242,19 +239,18 @@
       if z  # Closed
          dec (C I)  # 'ix' = 'cnt' = -1
          dec (C II)
-         setz  # Return 'z'
+         eq  # Return 'z'
          ret
       end
       call errno_A
       cmp A EAGAIN  # No data available?
       if eq  # Yes
-         clrz  # Return 'lt'
-         setc
+         lt
          ret
       end
       cmp A EINTR  # Interrupted?
       if ne  # No
-         setz  # Return 'z'
+         eq  # Return 'z'
          ret
       end
       null (Signal)  # Signal?
@@ -272,7 +268,7 @@
          jz Ret  # EOF
          call errno_A
          cmp A EINTR  # Interrupted?
-         jne Retz  # No: Return 'z'
+         jne RetEq  # No: Return 'z'
          null (Signal)  # Signal?
          if nz  # Yes
             call sighandler0
@@ -297,10 +293,7 @@
       if nsz  # Yes
          do
             sub E A  # Decrement count
-            if z  #  Got all
-               null A  # Return 'gt' (A is non-zero)
-               ret
-            end
+            jz RetGt  # Return 'gt' if done
             add X A  # Increment buffer pointer
             do
                cc read(C X E)  # Read into buffer
@@ -309,7 +302,7 @@
                jz Ret  # EOF
                call errno_A
                cmp A EINTR  # Interrupted?
-               jne Retz  # No: Return 'z'
+               jne RetEq  # No: Return 'z'
                null (Signal)  # Signal?
                if nz  # Yes
                   call sighandler0
@@ -321,12 +314,11 @@
       call errno_A
       cmp A EAGAIN  # No data available?
       if eq  # Yes
-         clrz  # Return 'lt'
-         setc
+         lt
          ret
       end
       cmp A EINTR  # Interrupted?
-      jne Retz  # No: Return 'z'
+      jne RetEq  # No: Return 'z'
       null (Signal)  # Signal?
       if nz  # Yes
          call sighandler0
@@ -344,11 +336,11 @@
       else
          call errno_A
          cmp A EBADF  # Bad file number?
-         jeq retnz  # Return 'nz'
+         jeq retGt  # Return 'nz'
          cmp A EPIPE  # Broken pipe?
-         jeq retnz  # Return 'nz'
+         jeq retGt  # Return 'nz'
          cmp A ECONNRESET  # Connection reset by peer?
-         jeq retnz  # Return 'nz'
+         jeq retGt  # Return 'nz'
          cmp A EINTR  # Interrupted?
          if ne  # No
             cmp C 2  # stderr?
@@ -453,7 +445,7 @@
    null Z  # Open?
    if nz  # Yes
       call getBinaryZ_FB  # Get byte
-      if nc
+      if nz
          zxt
          pop Z
          ret
@@ -474,15 +466,15 @@
    cmp A (Z II)  # Equals 'cnt'?
    if eq  # Yes
       null A  # Closed?
-      js retc  # Yes
+      js retEq  # Yes 'z'
       call slowZ_F  # Read into buffer
-      jz retc  # EOF (c)
+      jz ret  # EOF (z)
       ld A 0  # 'ix'
    end
    inc (Z I)  # Increment 'ix'
-   add A Z  # Fetch byte (nc)
+   add A Z  # Fetch byte
    ld B (A VII)  # from buffer
-   ret  # nc
+   ret  # 'nz'
 
 # Add next byte to a number
 (code 'byteNumBCX_CX 0)
@@ -558,7 +550,7 @@
 # Read binary expression
 (code 'binReadZ_FE)
    call (GetBinZ_FB)  # Tag byte?
-   jc ret  # No
+   jz ret  # No
    nul B  # NIX?
    jz retNil  # Return NIL
    zxt
@@ -566,9 +558,9 @@
    if z  # No
       ld E A
       cmp B BEG  # Begin a list?
-      jne retnc  # No: Return DOT or END (also in B)
+      jne retEq  # No: Return DOT or END (also in B)
       call binReadZ_FE  # Else read list
-      jc ret
+      jlt ret
       push X
       call consE_X  # First cell
       ld (X) E
@@ -578,7 +570,7 @@
       link
       do
          call binReadZ_FE  # Next item
-         jc 10  # EOF
+         jlt 10  # EOF
          cmp E END  # Any?
       while ne  # Yes
          cmp E DOT  # Dotted pair?
@@ -586,15 +578,15 @@
             cmp B DOT  # Only if B is also DOT (to distinguish from Zero)
             if eq  # Yes
                call binReadZ_FE  # Get CDR
-               if c  # EOF
+               if lt  # EOF
 10                drop
                   pop X
-                  ret  # Return 'c'
+                  ret  # Return 'lt'
                end
                cmp E END  # Circular list?
                ldz E (L I)  # Yes: Get first cell
                ld (X CDR) E  # Store in last cell
-               clrc  # 'nc'
+               eq  # 'ge'
                break T
             end
          end
@@ -605,7 +597,7 @@
          ld X C
       loop
       ld E (L I)  # Return list
-      drop  # Return 'nc'
+      drop  # Return 'ge'
       pop X
       ret
    end
@@ -624,22 +616,22 @@
          do
             do
                call (GetBinZ_FB)  # Next byte?
-               jc 90  # No
+               jz 90  # No
                call byteNumBCX_CX
                dec E  # Decrement count
             until z
             call (GetBinZ_FB)  # Next count?
-            jc 90  # No
+            jz 90  # No
             zxt
             ld E A
             cmp B 255  # Another chunk?
          until ne  # No
-         or B B  # Empty?
+         nul B  # Empty?
          jz 20  # Yes
       end
       do
          call (GetBinZ_FB)  # Next byte?
-         jc 90  # No
+         jz 90  # No
          call byteNumBCX_CX  # (B is zero (not DOT) if Zero)
          dec E  # Decrement count
       until z
@@ -662,22 +654,22 @@
          do
             do
                call (GetBinZ_FB)  # Next byte?
-               jc 90  # No
+               jz 90  # No
                call byteSymBCX_CX
                dec E  # Decrement count
             until z
             call (GetBinZ_FB)  # Next count?
-            jc 90  # No
+            jz 90  # No
             zxt
             ld E A
             cmp B 255  # Another chunk?
          until ne  # No
-         or B B  # Empty?
+         nul B  # Empty?
          jz 30  # Yes
       end
       do
          call (GetBinZ_FB)  # Next byte?
-         jc 90  # No
+         jz 90  # No
          call byteSymBCX_CX
          dec E  # Decrement count
       until z
@@ -715,7 +707,7 @@
          end
       end
    end
-   clrc
+   eq  # 'ge'
 90 drop
    pop X
    ret
@@ -733,8 +725,8 @@
          shr E 4  # Normalize
       end
       shr Y 1  # Get overflow bit
-      rcl E 1  # Shift into digit
-      rcl Y 1  # Keep new overflow bit
+      rxl E 1  # Shift into digit
+      rxl Y 1  # Keep new overflow bit
       ld C 8  # Init count
    end
    ld A E  # Output next byte
@@ -794,7 +786,7 @@
          add A 8  # Increment count by 8
       loop
       shr E 4  # Normalize short
-      shl C 1  # Get most significant bit of last digit
+      add C C  # Get most significant bit of last digit
       addc E E  # Any significant bits in short number?
       if nz  # Yes
          do
@@ -1145,8 +1137,8 @@
    end
    ld A C  # Get byte
    shr C 8  # Shift out
-   or B B  # Return B
-   zxt
+   zxt  # Return B
+   null A
    ret
 
 (code 'symCharCX_FACX 0)  # Return next char from symbol name
@@ -1179,12 +1171,12 @@
       ret
    end
    ld A TOP  # Return special "top" character
-   or A A
+   gt
    ret
 
 (code 'bufStringE_SZ 0)
    ld Z S  # 8-byte-buffer
-   push (Z)  # Save return address
+   push (Z)  # Save return entry
    push X  # and X
    cmp E Nil  # Empty?
    if ne  # No
@@ -1201,7 +1193,7 @@
             sub S 8  # Extend buffer
             cmp S (StkLimit)  # Stack check
             jlt stkErr
-            movm (S) (S 8) (Z)
+            save (S 8) (Z) (S)
             sub Z 8  # Reset buffer pointer
          end
       loop
@@ -1214,7 +1206,7 @@
 
 (code 'pathStringE_SZ 0)
    ld Z S  # 8-byte-buffer
-   push (Z)  # Save return address
+   push (Z)  # Save return entry
    push X  # and X
    cmp E Nil  # Empty?
    if ne  # No
@@ -1238,7 +1230,7 @@
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
-                  movm (S) (S 8) (Z)
+                  save (S 8) (Z) (S)
                   sub Z 8  # Reset buffer pointer
                end
                call symByteCX_FACX  # Next byte?
@@ -1255,7 +1247,7 @@
                   test Z 7  # Buffer full?
                   if z  # Yes
                      sub S 8  # Extend buffer
-                     movm (S) (S 8) (Z)
+                     save (S 8) (Z) (S)
                      sub Z 8  # Reset buffer pointer
                   end
                   inc E
@@ -1271,7 +1263,7 @@
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
-                  movm (S) (S 8) (Z)
+                  save (S 8) (Z) (S)
                   sub Z 8  # Reset buffer pointer
                end
             loop
@@ -1408,7 +1400,7 @@
          ld (Y II) 0  # pid = 0
          ld A E  # Get fd
          shr A 4  # Normalize
-         if c  # Negative
+         if x  # Negative
             ld C (EnvInFrames)  # Fetch from input frames
             do
                ld C (C)  # Next frame
@@ -1549,7 +1541,7 @@
          ld (Y II) 0  # pid = 0
          ld A E  # Get fd
          shr A 4  # Normalize
-         if c  # Negative
+         if x  # Negative
             ld C (EnvOutFrames)  # Fetch from output frames
             do
                ld C (C)  # Next frame
@@ -2096,7 +2088,7 @@
    do
       null A  # EOF?
       if s  # Yes
-         clrc  # Return NO
+         eq  # Return NO
          ret
       end
       cmp B (char "\^")  # Caret?
@@ -2110,13 +2102,13 @@
          else
             and B 31  # Control-character
          end
-         setc  # Return YES
+         lt  # Return YES
          ret
       end
       cmp B (char "\\")  # Backslash?
       if ne  # No
          call getCharA_A  # Get full char
-10       setc  # Return YES
+10       lt  # Return YES
          ret
       end
       call (Get_A)  # Skip '\'
@@ -2161,7 +2153,7 @@
                pop C
                ld A E  # Get result
             end
-            setc
+            lt
          end
          ret  # Return YES
       end
@@ -2198,7 +2190,7 @@
             if z  # No
                shl E 4  # Make symbol pointer
                or E SYM
-               setz
+               eq
                ret
             end
          loop
@@ -2246,7 +2238,7 @@
    ld (Sep3) 0  # Thousand separator
    ld (Sep0) (char ".")  # Decimal separator
    call symToNumXA_FE  # Legal number?
-   if nc  # No
+   if ge  # No
       ld X (L I)  # Get name
       call anonymousX_FE  # Anonymous symbol?
       if ne  # No
@@ -2499,7 +2491,7 @@
          jmp 99
       end
       call testEscA_AF
-      jnc eofErr
+      jge eofErr
       link
       push ZERO  # <L I> Result
       ld C 4  # Build name
@@ -2511,7 +2503,7 @@
          cmp B (char "\"")  # Done?
       while ne
          call testEscA_AF
-         jnc eofErr
+         jge eofErr
       loop
       call (Get_A)  # Skip '"'
       ld X (L I)  # Get name
@@ -2605,7 +2597,7 @@
          ret
       end
       call testEscA_AF  # Get next character
-      jnc retNil
+      jge retNil
       call mkCharA_A  # Make single character
       call consA_X  # Cons it
       ld (X) A
@@ -2621,7 +2613,7 @@
             break T
          end
          call testEscA_AF  # Get next character
-      while c
+      while lt
          call mkCharA_A  # Make char
          call consA_C  # Cons it
          ld (C) A
@@ -2781,7 +2773,7 @@
    null A  # Any?
    jz ret  # No
    cmp (A I) (A II)  # Data in buffer ('ix' < 'cnt')?
-   ret  # Yes: Return 'c'
+   ret  # Yes: Return 'lt'
 
 (code 'fdSetCL_X 0)
    ld X C  # Get fd
@@ -2796,18 +2788,29 @@
    ret
 
 (code 'fdRdSetCZL 0)  # X
+   cmp C (* 8 FD_SET)  # FD to high?
+   jge fdTooHigh
    cmp Z C  # Maintain maximum
-   ldc Z C
+   if lt
+      ld Z C
+   end
    call fdSetCL_X
    or (X (- (+ V FD_SET))) B  # FD_SET in RdSet
    ret
 
 (code 'fdWrSetCZL 0)  # X
+   cmp C (* 8 FD_SET)  # FD to high?
+   jge fdTooHigh
    cmp Z C  # Maintain maximum
-   ldc Z C
+   if lt
+      ld Z C
+   end
    call fdSetCL_X
    or (X (- (+ V FD_SET FD_SET))) B  # FD_SET in WrSet
    ret
+: fdTooHigh
+   ld X FdTooHigh
+   jmp giveupX
 
 (code 'rdSetCL_F 0)  # X
    call fdSetCL_X
@@ -2835,8 +2838,8 @@
       pop C
       if nz  # Yes
          call slowNbC_FA  # Try non-blocking read
-         jge retnz
-         setz
+         jge retGt
+         eq
       end
    end
    ret
@@ -2855,7 +2858,7 @@
    sub S (+ II FD_SET FD_SET)  # <L -IV> Microseconds
                                # <L -V> Seconds
                                # <L - (V + FD_SET)> RdSet
-                               # <L - (V + FD_SET - FD_SET)> WrSet
+                               # <L - (V + FD_SET + FD_SET)> WrSet
    cmp S (StkLimit)  # Stack check
    jlt stkErrX
    do
@@ -2867,7 +2870,7 @@
       null C  # Positive?
       if ns  # Yes
          call inReadyC_F  # Ready?
-         if c  # Yes
+         if lt  # Yes
             ld (L -III) 0  # Timeout = 0
          else
             call fdRdSetCZL
@@ -2890,7 +2893,7 @@
          loop
          ld C (E)  # Get fd or timeout value
          shr C 4  # Negative?
-         if c  # Yes
+         if x  # Yes
             ld A ((E CDR))  # Get CADR
             shr A 4  # Normalize
             cmp A (L -III)  # Less than current timeout?
@@ -2901,7 +2904,7 @@
             cmp C (L -I)  # Different from argument-fd?
             if ne  # Yes
                call inReadyC_F  # Ready?
-               if c  # Yes
+               if lt  # Yes
                   ld (L -III) 0  # Timeout = 0
                else
                   call fdRdSetCZL
@@ -3146,7 +3149,7 @@
             call rdSetRdyCL_F  # Ready?
             if nz  # Yes
                call rdHear_FE  # Read expression?
-               if nc  # Yes
+               if ge  # Yes
                   cmp E TSym  # Read 'T'?
                   if eq  # Yes
                      set (Sync) 1  # Set sync flag
@@ -3184,7 +3187,7 @@
          loop
          ld C (E)  # Get fd or timeout value
          shr C 4  # Negative?
-         if c  # Yes
+         if x  # Yes
             ld C (E CDR)  # Get CDR
             ld A (C)  # and CADR
             shr A 4  # Normalize
@@ -3219,7 +3222,7 @@
          call sighandlerX
       end
       ld A (L -II)  # Milliseconds
-      or A A
+      null A
       if nsz  # Greater zero
          sub A (L -III)  # Subtract time difference
          if s  # < 0
@@ -3332,7 +3335,7 @@
    jz cntErrEX  # No
    ld C E  # Get fd
    shr C 4  # Normalize
-   jc badFdErrEX  # Negative
+   jx badFdErrEX  # Negative
    ld A C  # Keep 'fd' in C
    shl A 3  # Vector index
    cmp A (InFDs)  # 'fd' >= 'InFDs'?
@@ -3781,14 +3784,14 @@
 
 (code 'eolA_F 0)
    null A  # EOF?
-   js retz  # Yes
+   js retEq  # Yes
    cmp A 10  # Linefeed?
    if ne  # No
       cmp A 13  # Return?
       jne Ret  # No
       call (Get_A)  # Get next
       cmp A 10  # Linefeed?
-      jnz retz
+      jnz retEq
    end
    ld (Chr) 0  # Clear look ahead
    ret  # 'z'
@@ -4009,7 +4012,7 @@
    ld (EnvParseEOF) E
    ld (Get_A) getParse_A  # Set 'get' status
    ld (Chr) 0
-   or B B  # Skip?
+   nul B  # Skip?
    if nz  # Yes
       call getParse_A  # Skip first char
    end
@@ -4251,7 +4254,7 @@
          null (Chr)  # Line?
          jnz 10  # Yes
          ld A (L -I)
-         or B B  # Prompt?
+         nul B  # Prompt?
          jz 10  # No
          call flushAll
          ld (L II) (At)  # Save '@'
@@ -4399,7 +4402,7 @@
    jlt pipeErrX
    call closeOnExecAX
    call forkLispX_FE  # Fork child process
-   if c  # In child
+   if lt  # In child
       ld4 (S)  # Close read pipe
       call closeAX
       atom ((X CDR) CDR)  # 'prg'?
@@ -4639,7 +4642,9 @@
                      ld X Z
                   else
                      cmp (X IV) (Z IV)  # Smaller than index?
-                     ldc X Z  # Yes
+                     if lt  # Yes
+                        ld X Z
+                     end
                   end
                   break T
                end
@@ -4681,7 +4686,9 @@
                         ld X C
                      else
                         cmp (X IV) (C IV)  # Smaller than index?
-                        ldc X C  # Yes
+                        if lt  # Yes
+                           ld X C
+                        end
                      end
                   end
                   ld C (C)  # Next in chain
@@ -4792,7 +4799,7 @@
 # Output decimal number
 (code 'outNumE)
    shr E 4  # Normalize
-   if c  # Sign
+   if x  # Sign
       ld B (char "-")  # Output sign
       call (PutB)
    end
@@ -4842,14 +4849,12 @@
    add B (char "@")  # Make ASCII letter
    jmp (PutB)
 
-(code 'outStringS)  # C
-   lea C (S I)  # Buffer above return address
 (code 'outStringC)
    do
       ld B (C)  # Next char
       inc C
-      or B B  # Null?
-   while ne  # No
+      nul B  # Null?
+   while nz  # No
       call (PutB)
    loop
    ret
@@ -5300,16 +5305,18 @@
          ld (GetBinZ_FB) getBinaryZ_FB  # Set binary read function
          ld (Extn) (ExtN)  # Set external symbol offset
          call binReadZ_FE  # Read item?
-         ldc E (L I)  # No: Return EOF
+         if lt  # No: Return EOF
+            ld E (L I)
+         end
       else
          shr E 4  # Normalize
          jz 90  # Zero
-         if c  # Little endian
+         if x  # Little endian
             lea X (L I)  # X on result
             ld C 3  # Build signed number
             do
                call getBinaryZ_FB  # Enough bytes?
-               jc 90  # No
+               jz 90  # No
                call byteNumBCX_CX  # Add next byte to number
                dec E  # Done?
             until z  # Yes
@@ -5322,7 +5329,7 @@
             ld X E  # Count in X
             do
                call getBinaryZ_FB  # Enough bytes?
-               jc 90  # No
+               jz 90  # No
                zxt
                push A  # Save byte
                ld A (L I)  # Multiply number by 256

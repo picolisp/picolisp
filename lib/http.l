@@ -1,4 +1,4 @@
-# 02may15abu
+# 06nov15abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -444,7 +444,8 @@
       (prinl "</HTML>") ) )
 
 (de noContent ()
-   (httpStat 204 "No Content") )
+   (prinl "HTTP/1.0 204 No Content^M")
+   (prinl "^M") )
 
 (de redirect @
    (httpStat 303 "See Other" (pass pack "Location: ")) )

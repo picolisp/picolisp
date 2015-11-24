@@ -1,4 +1,4 @@
-# 02apr15abu
+# 12nov15abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -49,8 +49,8 @@
    if nz  # Yes
       xor A 3  # Prepare tag bit
       shl A 1  # Shift left
-      jnc Ret  # Done
-      rcr A 1  # Else normalize
+      jnx Ret  # Done
+      rxr A 1  # Else normalize
       shr A 3
       jmp boxNumA_A  # Return bignum
    end
@@ -59,19 +59,19 @@
    ld C (A DIG)  # Lowest digit
    shl C 1  # Shift left
    do
-      push F  # Save carry
+      push x  # Save x-bit
       ld (A DIG) C  # Store digit
       ld E (A BIG)  # Next cell
       cnt E  # End of bignum?
    while z  # No
       ld A E
       ld C (A DIG)  # Next digit
-      pop F
-      rcl C 1  # Rotate left
+      pop x
+      rxl C 1  # Rotate left
    loop
    shr E 4  # Normalize
-   pop F
-   rcl E 1  # Rotate left
+   pop x
+   rxl E 1  # Rotate left
    test E (hex "F000000000000000")  # Fit in short number?
    if z  # Yes
       shl E 4  # Make short number
@@ -98,9 +98,9 @@
    if nz  # No
       shr E 5  # Normalize and shift right
       if nz  # Non-empty
-         rcr C 1  # Rotate right
+         rxr C 1  # Rotate right
       else
-         rcr C 1  # Rotate right
+         rxr C 1  # Rotate right
          test C (hex "F000000000000000")  # Fit in short number?
          if z  # Yes
             shl C 4  # Return short number
@@ -118,7 +118,7 @@
    push A  # Save bignum
    do
       shr (E DIG) 1  # Shift bit
-      rcr C 1  # Rotate right with carry
+      rxr C 1  # Rotate right with x-bit
       shl (E DIG) 1
       ld (A DIG) C  # Store digit
       ld C (E BIG)  # More cells?
@@ -130,12 +130,12 @@
    loop
    shr C 5  # Normalize and shift right
    if nz  # Non-empty
-      rcr (E DIG) 1  # Shift previous digit
+      rxr (E DIG) 1  # Shift previous digit
       shl C 4  # Make short number
       or C CNT
    else
       ld C (E DIG)  # Shift previous digit
-      rcr C 1
+      rxr C 1
       test C (hex "F000000000000000")  # Fit in short number?
       if z  # Yes
          shl C 4  # Make short number
@@ -201,8 +201,8 @@
    if nz  # Yes
       xor A 3  # Prepare tag bit
       shl A 1  # Shift left
-      jnc Ret  # Done
-      rcr A 1  # Else normalize
+      jnx Ret  # Done
+      rxr A 1  # Else normalize
       shr A 3
       jmp boxNumA_A  # Return bignum
    end
@@ -212,7 +212,7 @@
    push E  # <L I> Result
    link
    shl (E DIG) 1  # Shift left
-   push F  # Save carry
+   push x  # Save x-bit
    do
       ld A (A BIG)  # Next cell
       cnt A  # End of bignum?
@@ -220,15 +220,15 @@
       call boxNum_C  # Build next cell
       ld (E BIG) C
       ld E (A DIG)  # Next digit
-      pop F
-      rcl E 1  # Rotate left
-      push F  # Save carry
+      pop x
+      rxl E 1  # Rotate left
+      push x  # Save x-bit
       ld (C DIG) E
       ld E C
    loop
    shr A 4  # Normalize
-   pop F
-   rcl A 1  # Rotate left
+   pop x
+   rxl A 1  # Rotate left
    test A (hex "F000000000000000")  # Fit in short number?
    if z  # Yes
       shl A 4  # Make short number
@@ -256,9 +256,9 @@
       ld C (A DIG)  # Lowest digit
       shr E 5  # Normalize and shift right
       if nz  # Non-empty
-         rcr C 1  # Rotate right
+         rxr C 1  # Rotate right
       else
-         rcr C 1  # Rotate right
+         rxr C 1  # Rotate right
          test C (hex "F000000000000000")  # Fit in short number?
          if z  # Yes
             shl C 4  # Return short number
@@ -278,7 +278,7 @@
    link
    do
       shr (E DIG) 1  # Shift bit
-      rcr (C DIG) 1  # Rotate right with carry
+      rxr (C DIG) 1  # Rotate right with x-bit
       shl (E DIG) 1
       cnt (E BIG)  # More cells?
    while z  # Yes
@@ -292,14 +292,14 @@
    shr A 5  # Normalize and shift right
    if nz  # Non-empty
       ld E (E DIG)  # Shift previous digit
-      rcr E 1
+      rxr E 1
       shl A 4  # Make short number
       or A CNT
       call consNumEA_E  # Last cell
       ld (C BIG) E  # Store in the cell
    else
       ld E (E DIG)  # Shift previous digit
-      rcr E 1
+      rxr E 1
       test E (hex "F000000000000000")  # Fit in short number?
       if z  # Yes
          shl E 4  # Make short number
@@ -541,7 +541,8 @@
       off E CNT  # Else clear tag
       add A E  # Add short numbers
       jnc Ret  # Done
-      rcr A 1  # Get top bit
+      addc A 0  # Get top bit
+      ror A 1
       shr A 3  # Normalize
       jmp boxNumA_A  # Return bignum
    end
@@ -564,7 +565,8 @@
             if nc  # No further carry
                ld (A BIG) E  # Append it
             else  # Again carry
-               rcr E 1  # Get top bit
+               addc E 0  # Get top bit
+               ror E 1
                shr E 3  # Normalize
                call boxNum_C  # New cell
                ld (C DIG) E
@@ -596,7 +598,7 @@
    link
    ld C (A DIG)  # Add first digits
    add C (E DIG)
-   push F  # Save carry
+   push zsc  # Save carry
    call boxNum_X  # Make bignum
    ld (X DIG) C
    ld (L I) X  # Init result
@@ -609,13 +611,14 @@
          jz 20  # No: Jump
          shr A 4  # Normalize A
          shr E 4  # Normalize E
-         pop F
+         pop zsc
          addc A E  # Add final shorts with carry
          shl A 4
-         if nc
+         if nx
             or A CNT  # Make short number
          else  # Again carry
-            rcr A 1  # Get top bit
+            addc A 0  # Get top bit
+            ror A 1
             shr A 3  # Normalize
             call boxNumA_A  # Make bignum
          end
@@ -629,7 +632,7 @@
       if nz  # Yes
          xchg A E  # Exchange args
 20       shr A 4  # Normalize A
-         pop F
+         pop zsc
          addc A (E DIG)  # Add next digit with carry
          do
             ld E (E BIG)
@@ -650,7 +653,8 @@
                if nc  # No further carry
                   ld (X BIG) E  # Append it
                else  # Again carry
-                  rcr E 1  # Get top bit
+                  addc E 0  # Get top bit
+                  ror E 1
                   shr E 3  # Normalize
                   call boxNum_C  # New cell
                   ld (C DIG) E
@@ -666,9 +670,9 @@
          loop
       end
       ld C (A DIG)  # Add digits
-      pop F
+      pop zsc
       addc C (E DIG)
-      push F
+      push zsc
       call consNumCE_C  # New bignum cell
       ld (X BIG) C  # Concat to result
       ld X C
@@ -682,7 +686,7 @@
       if nz  # Yes
          off E CNT  # Clear tag
          sub A E  # Subtract short numbers
-         jnc Ret  # Done
+         jnb Ret  # Done
          xor A -16  # 2-complement
          add A (hex "18")
          ret
@@ -702,7 +706,7 @@
       ld C (A DIG)
       sub C E  # Subtract from first digit
       ld E (A BIG)  # Tail in E
-      if nc  # No borrow
+      if nb  # No borrow
          cmp E ZERO  # Leading zero?
          jne consNumCE_A  # No: Cons new cell
          test C (hex "F000000000000000")  # Fit in short number?
@@ -720,7 +724,7 @@
          cnt E  # Short number?
          if nz  # Yes
             sub E (hex "10")  # Subtract borrow
-            if c  # Again borrow: Must be the first pass
+            if b  # Again borrow: Must be the first pass
                ld A C  # C still has lowest digit
                neg A  # Negate
                shl A 4
@@ -736,7 +740,7 @@
          ld C (E DIG)  # Next digit
          ld E (E BIG)
          sub C 1  # Subtract borrow
-         if nc  # None
+         if nb  # None
             call consNumCE_E  # New last cell
             ld (A BIG) E  # Append it
             ld A (L I)  # Return bignum
@@ -755,7 +759,7 @@
    link
    ld C (A DIG)  # Subtract first digits
    sub C (E DIG)
-   push F  # Save borrow
+   push zsc  # Save borrow
    ld A (A BIG)  # Get tail
    call consNumCA_C  # First bignum cell
    ld (L I) C  # Init result
@@ -770,9 +774,9 @@
          while z  # No
             ld C (A DIG)  # Subtract final digit with borrow
             ld A (A BIG)  # Next cell
-            pop F
-            subc C E  # Borrow again?
-            if nc  # No
+            pop zsc
+            subb C E  # Borrow again?
+            if nb  # No
                call consNumCA_C  # Final new bignum tail
                ld (X BIG) C  # Concat to result
 20             ld A (L I)  # Return bignum
@@ -780,7 +784,7 @@
                pop X
                jmp zapZeroA_A  # Remove leading zeroes
             end
-            push F  # Save borrow
+            push zsc  # Save borrow
             call consNumCA_C  # New bignum tail
             ld (X BIG) C  # Concat to result
             ld X C  # Keep last cell
@@ -793,9 +797,9 @@
       if nz  # Yes
          shr A 4  # Normalize A
          do
-            pop F
-            subc A (E DIG)  # Subtract next digit with borrow
-            push F
+            pop zsc
+            subb A (E DIG)  # Subtract next digit with borrow
+            push zsc
             call boxNum_C  # New bignum tail
             ld (C DIG) A
             ld (X BIG) C  # Concat to result
@@ -808,21 +812,21 @@
          break T
       end
       ld C (A DIG)  # Subtract digits
-      pop F
-      subc C (E DIG)
-      push F  # Save borrow
+      pop zsc
+      subb C (E DIG)
+      push zsc  # Save borrow
       ld A (A BIG)
       call consNumCA_C  # New bignum cell
       ld (X BIG) C  # Concat to result
    loop
-   pop F
-   subc A E  # Subtract final shorts with borrow
-   push F  # Save borrow
+   pop zsc
+   subb A E  # Subtract final shorts with borrow
+   push zsc  # Save borrow
    shl A 4
    or A CNT  # Make short number
    ld (X BIG) A
-   pop F  # Borrow?
-   jnc 20  # No
+   pop zsc  # Borrow?
+   jnb 20  # No
    ld A (L I)  # Get result
    ld E A  # 2-complement
    do
@@ -1178,7 +1182,7 @@
       ld E A  # Save 'q' in E
       mul (L -IV)  # 'q' * 'v1'
       sub Y A  # Subtract from 'r'
-      subc Z C
+      subb Z C
       do
          null Z  # 'r' <= MAX?
       while z  # Yes
@@ -1211,7 +1215,7 @@
          mul (Y DIG)  # 't' in D
          sub (Z DIG) E  # Subtract borrow
          ld E 0
-         rcl E 1  # New borrow
+         addc E E  # New borrow
          sub (Z DIG) A  # Subtract lo(t)
          addc E C  # Adjust borrow plus hi(t)
       loop
@@ -1219,23 +1223,23 @@
       if nz  # Yes
          ld Z (Z BIG)  # Next 'x'
          sub (Z DIG) E  # Subtract borrow
-         if c
+         if b
             dec (S)  # Decrement 'q'
             null (L -I)  # 'm' ?
             if nz  # Yes
                ld Y (L I)  # Get 'v'
                add (X DIG) (Y DIG)  # 'x' += 'v'
-               push F  # Save carry
+               push zsc  # Save carry
                do
                   ld X (X BIG)  # More?
                   ld Y (Y BIG)
                   cnt Y
                while z  # Yes
-                  pop F  # Get carry
+                  pop zsc  # Get carry
                   addc (X DIG) (Y DIG)  # Add digits
-                  push F
+                  push zsc
                loop
-               pop F  # Final carry
+               pop zsc  # Final carry
                addc (X DIG) 0
             end
          end
@@ -1399,7 +1403,7 @@
       ld E A  # Save 'q' in E
       mul (L -IV)  # 'q' * 'v1'
       sub Y A  # Subtract from 'r'
-      subc Z C
+      subb Z C
       do
          null Z  # 'r' <= MAX?
       while z  # Yes
@@ -1432,7 +1436,7 @@
          mul (Y DIG)  # 't' in D
          sub (Z DIG) E  # Subtract borrow
          ld E 0
-         rcl E 1  # New borrow
+         addc E E  # New borrow
          sub (Z DIG) A  # Subtract lo(t)
          addc E C  # Adjust borrow plus hi(t)
       loop
@@ -1440,21 +1444,21 @@
       if nz  # Yes
          ld Z (Z BIG)  # Next 'x'
          sub (Z DIG) E  # Subtract borrow
-         if c
+         if b
             dec (S)  # Decrement 'q'
             ld Y (L I)  # Get 'v'
             add (X DIG) (Y DIG)  # 'x' += 'v'
-            push F  # Save carry
+            push zsc  # Save carry
             do
                ld X (X BIG)  # More?
                ld Y (Y BIG)
                cnt Y
             while z  # Yes
-               pop F  # Get carry
+               pop zsc  # Get carry
                addc (X DIG) (Y DIG)  # Add digits
-               push F
+               push zsc
             loop
-            pop F  # Final carry
+            pop zsc  # Final carry
             addc (X DIG) 0
          end
       end
@@ -1565,14 +1569,13 @@
    if z  # Yes
       test E SIGN  # E also positive?
       jz cmpuAE_F  # Yes [A E]
-      clrc  # gt [A -E]
+      gt  # [A -E]
       ret
    end
    # A negative
    test E SIGN  # E positive?
    if z  # Yes
-      or B B  # nz [-A E]
-      setc  # lt
+      lt  # nz [-A E]
       ret
    end
    xchg A E  # [-A -E]
@@ -1588,14 +1591,13 @@
          cmp A E  # F
          ret
       end
-      or B B  # nz (E is big)
-      setc  # lt
+      lt  # nz (E is big)
       ret
    end
    # A is big
    cnt E  # E short?
    if nz  # Yes
-      clrc  # gt (E is short)
+      gt  # (E is short)
       ret
    end
    # Both are big
@@ -1626,7 +1628,7 @@
             ld E Y
             ld Y C
          loop
-         push F
+         push zsc
          break T
       end
       cnt C  # End of A?
@@ -1635,16 +1637,15 @@
          if nz  # Yes
             cmp C (E BIG)  # F
          else
-            or B B  # nz (E is bigger)
-            setc  # lt
+            lt  # nz (E is bigger)
          end
-         push F
+         push zsc
          break T
       end
       cnt (E BIG)  # End of E?
       if nz  # Yes
-         clrc  # gt
-         push F
+         gt
+         push zsc
          break T
       end
       ld (A BIG) X  # Reverse A
@@ -1667,7 +1668,7 @@
       ld E Y
       ld Y C
    loop
-   pop F  # Return flags
+   pop zsc  # Return flags
    pop Y
    pop X
    ret
@@ -1768,7 +1769,7 @@
    if nz  # Yes
       do
          sub (L -I) 1  # Decrement Scale
-      while nc  # >= 0
+      while nb  # >= 0
          ld A (L I)  # Multiply number by 10
          call tenfoldA_A
          ld (L I) A  # Save
@@ -1782,7 +1783,7 @@
          xor E SIGN  # Negate
       end
    end
-   setc  # Return YES
+   lt  # Return YES
 99 drop
    ret
 
@@ -2153,7 +2154,7 @@
       end
       pop A  # Get scale
       call symToNumXA_FE  # Convert to number
-      if nc  # Failed
+      if ge  # Failed
          ld E Nil
       end
    end
@@ -3153,7 +3154,7 @@
    end
    cmp E TSym  # Boolean
    if eq
-      rcl A 1  # Highest bit?
+      add A A  # Highest bit?
       if nc  # No
          ld E Nil  # Return NIL
       end  # else return T

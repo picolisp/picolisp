@@ -1,4 +1,4 @@
-# 27may15abu
+# 12nov15abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -959,7 +959,7 @@
    end
    link
    ld E (L II)  # Get 'lst'
-   or X X  # 'cnt'?
+   null X  # 'cnt'?
    if nz  # Yes
       if ns  # > 0
          ld Y E  # 'lst' in Y
@@ -1296,8 +1296,9 @@
             eval
          else
             shr C 4  # Normalize
-            if le  # Negative
-               ld E Nil
+            jz 20
+            if x  # Zero or negative
+20             ld E Nil
             else
                do
                   dec C  # nth
@@ -1323,8 +1324,9 @@
                eval  # Eval next arg
             else
                shr E 4  # Normalize
-               if le  # Negative
-                  ld E Nil
+               jz 30
+               if x  # Zero or negative
+30                ld E Nil
                else
                   ld C (L II)  # Get list
                   do
@@ -2851,7 +2853,7 @@
             add C (hex "80")  # Increment count by '8'
          loop
          shr E 4  # Normalize short
-         shl A 1  # Get most significant bit of last digit
+         add A A  # Get most significant bit of last digit
          addc E E  # Any significant bits in short number?
          if nz  # Yes
             do
@@ -3216,7 +3218,7 @@
                   ld (A) (E)
                   ld (A CDR) Nil
                   ld ((C)) A  # Set value
-                  jmp retz
+                  jmp retEq
                end
                push C  # Save pattern
                push E  # and Data
@@ -3244,7 +3246,7 @@
                   ld (A) (E)
                   ld (A CDR) (X)
                   ld (X) A  # Set value
-                  jmp retz
+                  jmp retEq
                end
             end
          end
@@ -3288,11 +3290,11 @@
    sym E  # Data symbolic?
    if nz  # Yes
       cmp E (E)  # Auto-quoting?
-      jeq retnz  # Yes
+      jeq retGt  # Yes
       cmp X Nil  # 'sym|lst'?
       if eq  # No
          cmp E At  # '@'?
-         jeq retnz  # Return 'nz'
+         jeq retGt  # Return 'nz'
          ld A (E TAIL)
          call firstByteA_B  # starting with "@"?
          cmp B (char "@")
@@ -3333,7 +3335,7 @@
       if nz  # No
          pop E  # Recurse on rest
          call fillE_FE
-         setz  # Set modified
+         eq  # Set modified
          ret
       end
       pop C  # Get pattern
@@ -3351,7 +3353,7 @@
       ld (C CDR) E  # Set rest
       ld E (L I)  # Get result
       drop
-      setz  # Modified
+      eq  # Modified
       ret
    end
    call fillE_FE  # Modified?
@@ -3367,7 +3369,7 @@
       ld (A CDR) E
       ld E A
       drop
-      setz  # Modified
+      eq  # Modified
       ret
    end
    ld E ((S) CDR)  # Recurse on CDR
@@ -3378,7 +3380,7 @@
       ld (A) (C)  # Unmodified CAR
       ld (A CDR) E  # Modified CDR
       ld E A
-      setz  # Modified
+      eq  # Modified
       ret
    end
    pop E  # Return 'nz'
@@ -3478,7 +3480,7 @@
                ld (A CDR) (X)
                ld (X) A  # Store in environment
             end
-            setz
+            eq
             ret
          end
       end
@@ -3508,7 +3510,7 @@
                ld (A CDR) (X)
                ld (X) A  # Store in environment
             end
-            setz
+            eq
             ret
          end
       end
@@ -4136,7 +4138,7 @@
    call applyXYZ_E  # Apply
    cmp E Nil  # Check result
    if ne
-      setc  # Set carry if "less"
+      lt  # Return "less"
    end
    pop Z
    pop Y

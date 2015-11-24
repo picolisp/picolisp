@@ -1,4 +1,4 @@
-# 27apr15abu
+# 26oct15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'ExtData)
@@ -102,7 +102,7 @@ bytes (
             jge 60  # Yes
             ld B (A SnxTab)  # Character entry?
             zxt
-            or A A
+            null A
             if z  # No
 60             ld (S) 0  # Clear last character
             else
@@ -164,11 +164,13 @@ bytes (
    jz cntErrEX  # No
    ld X 0  # No sign
    shr E 4  # Normalize
-   if c  # Negative?
+   if x  # Negative?
       ld X (hex "80")  # Set sign
    end
    cmp E (+ CLIP 1)  # Clip the value
-   ldnc E CLIP
+   if ge
+      ld E CLIP
+   end
    add E BIAS  # Increment by BIAS
    ld A E  # Double value
    add A A  # in 'tmp'

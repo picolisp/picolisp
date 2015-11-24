@@ -1,17 +1,18 @@
-# 10jun11abu
+# 12oct15abu
 # (c) Software Lab. Alexander Burger
 
 ### port listen connect ###
 (test '(a b c)
    (let P (port 0 "ListenPort")
-      (if (fork)
-         (prog1
-            (in (listen P) (rd))
-            (close P) )
+      (unless (fork)
          (close P)
-         (wait 400)
-         (and (connect "localhost" "ListenPort") (out @ (pr '(a b c))))
-         (bye) ) ) )
+         (until (connect "localhost" "ListenPort")
+            (wait 80) )
+         (out @ (pr '(a b c)))
+         (bye) )
+      (prog1
+         (in (listen P) (rd))
+         (close P) ) ) )
 
 
 ### udp ###

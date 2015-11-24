@@ -1,4 +1,4 @@
-# 29mar15abu
+# 11nov15abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -30,7 +30,7 @@
 
 
       +-------------------------------+
-      |  [z]ero    [s]ign    [c]arry  |         [F]lags
+      |  [z]ero  [s]ign  [x,b,c]arry  |         [F]lags
       +-------------------------------+
 
 ========================================================================
@@ -84,25 +84,22 @@
       ld dst src        # Load 'dst' from 'src' [---]
       ld2 src           # Load 'A' from two bytes 'src' (unsigned) [---]
       ld4 src           # Load 'A' from four bytes 'src' (unsigned) [---]
-      ldc reg src       # Load if Carry 'reg' from 'src' [---]
-      ldnc reg src      # Load if not Carry 'reg' from 'src' [---]
-      ldz reg src       # Load if Zero 'reg' from 'src' [---]
-      ldnz reg src      # Load if not Zero 'reg' from 'src' [---]
+      ldz dst src       # Load if Zero 'dst' from 'src' [---]
+      ldnz dst src      # Load if not Zero 'dst' from 'src' [---]
       lea dst src       # Load 'dst' with effective address of 'src' [---]
       st2 dst           # Store two bytes from 'A' into 'dst' [---]
       st4 dst           # Store four bytes from 'A' into 'dst' [---]
       xchg dst dst      # Exchange 'dst's [---]
-      movn dst src cnt  # Move 'cnt' bytes from 'src' to 'dst' (non-overlapping)
+      movn dst src cnt  # Move 'cnt' bytes from 'src' to 'dst' (non-overlapping or src < dst)
       mset dst cnt      # Set 'cnt' bytes of memory to B
-      movm dst src end  # Move memory 'src'..'end' to 'dst' (aligned)
-      save src end dst  # Save 'src'..'end' to 'dst' (aligned, non-overlapping)
+      save src end dst  # Save 'src'..'end' to 'dst' (aligned, non-overlapping or src < dst)
       load dst end src  # Load 'dst'..'end' from 'src' (aligned, non-overlapping)
 
    Arithmetics:
       add dst src       # Add 'src' to 'dst' [zsc]
       addc dst src      # Add 'src' to 'dst' with Carry [zsc]
-      sub dst src       # Subtract 'src' from 'dst' [zsc]
-      subc dst src      # Subtract 'src' from 'dst' with Carry [zsc]
+      sub dst src       # Subtract 'src' from 'dst' [zsb]
+      subb dst src      # Subtract 'src' from 'dst' with Borrow [zsb]
 
       inc dst           # Increment 'dst' [zs.]
       dec dst           # Decrement 'dst' [zs.]
@@ -115,22 +112,22 @@
       off dst src       # Clear 'src' bits in 'dst' [zs.]
       test dst src      # Bit-test 'dst' with 'src' [zs.]
 
-      shl dst src       # Shift 'dst' left into Carry by 'src' bits [zsc]
-      shr dst src       # Shift 'dst' right into Carry by 'src' bits [zsc]
+      shl dst src       # Shift 'dst' left into x-bit by 'src' bits [zsx]
+      shr dst src       # Shift 'dst' right into x-bit by 'src' bits [zsx]
       rol dst src       # Rotate 'dst' left by 'src' bits [...]
       ror dst src       # Rotate 'dst' right by 'src' bits [...]
-      rcl dst src       # Rotate 'dst' with Carry left by 'src' bits [zsc]
-      rcr dst src       # Rotate 'dst' with Carry right by 'src' bits [zsc]
+      rxl dst src       # Rotate 'dst' with x-bit left by 'src' bits [zsx]
+      rxr dst src       # Rotate 'dst' with x-bit right by 'src' bits [zsx]
 
       mul src           # Multiplication of 'A' and 'src' into 'D' [...]
       div src           # Division of 'D' by 'src' into 'A', 'C' [...]
 
       zxt               # Zero-extend 'B' to 'A' [...]
-
-      setz              # Set Zero flag [z__]
-      clrz              # Clear Zero flag [_..]
-      setc              # Set Carry flag [--c]
-      clrc              # Clear Carry flag [--_]
+      eq                # Set Zero and clear Borrow [z._]
+      gt                # Clear Zero and Borrow [_._]
+      lt                # Clear Zero and set Borrow [_.b]
+      setx              # Set x-bit [--x]
+      clrx              # Clear x-bit [--_]
 
    Comparisons:
       cmp dst src       # Compare 'dst' with 'src' [zsc]
@@ -143,7 +140,7 @@
 
    Byte addressing:
       set dst src       # Set 'dst' byte to 'src' [---]
-      nul src           # Compare byte 'src' with 0 [zs_]
+      nul src           # Compare byte 'src' with 0 [z..]
 
    Types:
       cnt src           # Non-'z' if small number [z..]
@@ -152,18 +149,7 @@
       sym src           # Non-'z' if symbol [z..]
       atom src          # Non-'z' if atom [z..]
 
-   Flow Control:
-      jmp adr           # Jump to 'adr' [---]
-      jz adr            # Jump to 'adr' if Zero [---]
-      jnz adr           # Jump to 'adr' if not Zero [---]
-      js adr            # Jump to 'adr' if Sign [---]
-      jns adr           # Jump to 'adr' if not Sign [---]
-      jc adr            # Jump to 'adr' if Carry [---]
-      jnc adr           # Jump to 'adr' if not Carry [---]
-
-      call adr          # Call 'adr'
-      cc adr(src ..)    # C-Call to 'adr' with 'src' arguments
-      cc adr reg        # C-Call to 'adr' with top of stacked args in 'reg'
+   Floating point:
       ldd               # Load double value pointed to by 'C'
       ldf               # Load float value pointed to by 'C'
       fixnum            # Convert double with scale 'E' to fixnum in 'E'
@@ -171,7 +157,27 @@
       std               # Store double value at address 'Z'
       stf               # Store float value at address 'Z'
 
+   Flow control:
+      jmp adr           # Jump to 'adr' [---]
+      jz adr            # Jump to 'adr' if Zero [---]
+      jnz adr           # Jump to 'adr' if not Zero [---]
+      js adr            # Jump to 'adr' if Sign [---]
+      jns adr           # Jump to 'adr' if not Sign [---]
+      jc adr            # Jump to 'adr' if Carry set [---]
+      jnc adr           # Jump to 'adr' if Carry not set [---]
+      jb adr            # Jump to 'adr' if Borrow set [---]
+      jnb adr           # Jump to 'adr' if Borrow not set [---]
+      jx adr            # Jump to 'adr' if x-bit set [---]
+      jnx adr           # Jump to 'adr' if x-bit not set [---]
+      jump reg          # Returning jump [---]
+
+      call adr          # Call 'adr'
+      cc adr(src ..)    # C-Call to 'adr' with 'src' arguments
+      cc adr reg        # C-Call to 'adr' with top of stacked args in 'reg'
+
       ret               # Return [---]
+      catch             # Prepare non-local jump [---]
+      throw             # Resolve non-local jump [---]
       func              # Convert 'E' to function pointer
       begin             # Called from foreign function
       return            # Return to foreign function

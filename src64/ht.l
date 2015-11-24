@@ -1,4 +1,4 @@
-# 13feb15abu
+# 11nov15abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -273,11 +273,11 @@
       ld X (X CDR)  # Skip ";"
       ld A C  # Get value
       null A  # Any?
-      jnz Ret  # Yes
+      jnz 90  # Yes
    end
    ld X E  # Restore X
-   setz  # 'z'
-   ret
+   eq  # 'z'
+90 ret
 
 (code 'headCX_FX 0)  # E
    ld E X  # Save X
@@ -486,7 +486,7 @@ skip CHUNK  # <Y III> Chunk buffer
       cmp B (char "9")
       if le
          sub B 48  # Yes
-         ret  # 'nc'
+         ret  # 'ge'
       end
    end
    and B (hex "DF")  # Force upper case
@@ -495,12 +495,12 @@ skip CHUNK  # <Y III> Chunk buffer
       cmp B (char "F")
       if le
          sub B 55  # Yes
-         ret  # 'nc'
+         ret  # 'ge'
       end
    end
    ld A 0
    sub A 1  # -1
-   ret  # 'c'
+   ret  # 'lt'
 
 (code 'chunkSize 0)
    push X

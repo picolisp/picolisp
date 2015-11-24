@@ -1,4 +1,4 @@
-# 03apr15abu
+# 16sep15abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -110,6 +110,7 @@
 (de cache ("Var" X . Prg)
    (let K (cons (char (hash X)) X)
       (nond
+         (Prg (caar (idx "Var" K)))
          ((setq "Var" (caar (idx "Var" K T)))
             (set (car K) (run Prg 1)) )
          ((n== "Var" (val "Var"))
@@ -773,9 +774,10 @@
 
 # Day of the week
 (de day (Dat Lst)
-   (get
-      (or Lst *DayFmt)
-      (inc (% (inc Dat) 7)) ) )
+   (when Dat
+      (get
+         (or Lst *DayFmt)
+         (inc (% (inc Dat) 7)) ) ) )
 
 # Week of the year
 (de week (Dat)

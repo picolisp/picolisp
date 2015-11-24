@@ -1,16 +1,16 @@
-# 11jul11abu
+# 10nov15abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
 # Local usage:
-# ./pil lib/test.l $(/bin/pwd) -bye +
+# ./pil lib/test.l -bye +
 
 # Global usage:
-# pil @lib/test.l $(/bin/pwd) -bye +
+# pil @lib/test.l -bye +
 
 (setq
    *CMD (cmd)
-   *PWD (opt) )
+   *PWD (in '(pwd) (line T)) )
 
 (test T (pool (tmp "db")))
 

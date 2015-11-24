@@ -13,10 +13,10 @@
 
 <dt><a name="*CPU"><code>*CPU</code></a>
 <dd>(64-bit version only) A global variable holding the target CPU
-(architecture). Possible values include <code>"x86-64"</code>,
-<code>"ppc64"</code>, <code>"emu"</code> or <code>"JVM"</code>. See also
-<code><a href="refO.html#*OS">*OS</a></code> and <code><a
-href="refV.html#version">version</a></code>.
+(architecture). Possible values include <code>"arm64"</code>,
+<code>"x86-64"</code>, <code>"ppc64"</code>, <code>"emu"</code> or
+<code>"JVM"</code>. See also <code><a href="refO.html#*OS">*OS</a></code> and
+<code><a href="refV.html#version">version</a></code>.
 
 <pre><code>
 : *CPU
@@ -39,12 +39,14 @@ href="refR.html#rel">rel</a></code>.
 -> +Test
 </code></pre>
 
-<dt><a name="cache"><code>(cache 'var 'any . prg) -> any</code></a>
+<dt><a name="cache"><code>(cache 'var 'any [. prg]) -> any</code></a>
 <dd>Speeds up some calculations by maintaining a tree of previously calculated
 results in an <code><a href="refI.html#idx">idx</a></code> structure
 ("memoization") in <code>var</code>. A <code><a
 href="refH.html#hash">hash</a></code> of the argument <code>any</code> is used
-internally to build the index key.
+internally to build the index key. If no <code>prg</code> is given, the internal
+<code>var</code> holding a previously stored value is returned (note that
+<code>var</code> may have a name which is not human-readable).
 
 <pre><code>
 : (de fibonacci (N)
@@ -59,6 +61,17 @@ internally to build the index key.
 
 : (fibonacci 10000)
 -> 3364476487643178326662161200510754331030 ...  # (2090 digits)
+</code></pre>
+
+<pre><code>
+: (off C)
+-> NIL
+: (cache 'C 1234 (* 3 4))
+-> 12
+: (inc (cache 'C 1234))
+-> 13
+: (val (cache 'C 1234))
+-> 13
 </code></pre>
 
 <dt><a name="call"><code>(call 'any ..) -> flg</code></a>

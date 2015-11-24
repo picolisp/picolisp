@@ -1,4 +1,4 @@
-# 21sep14abu
+# 29oct15abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
@@ -21,14 +21,14 @@
 (equ VIII 64)
 (equ IX 72)
 
-(equ -I . -8)
-(equ -II . -16)
-(equ -III . -24)
-(equ -IV . -32)
-(equ -V . -40)
-(equ -VI . -48)
-(equ -VII . -56)
-(equ -VIII . -64)
+(equ -I -8)
+(equ -II -16)
+(equ -III -24)
+(equ -IV -32)
+(equ -V -40)
+(equ -VI -48)
+(equ -VII -56)
+(equ -VIII -64)
 
 # Cell offsets
 (equ CNT 2)    # Count tag

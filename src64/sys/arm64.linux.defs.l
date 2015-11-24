@@ -1,4 +1,4 @@
-# 12oct15abu
+# 29oct15abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -23,8 +23,13 @@
 (equ FD_CLOEXEC 1)
 
 # stdio
-(equ BUFSIZ 8192)
+(equ BUFSIZ 1024)
 (equ PIPE_BUF 4096)
+
+(push '*Globals '__sF)
+(equ stdin  '__sF)
+(equ stdout '(& (__sF 152)))
+(equ stderr '(& (__sF 304)))
 
 (equ GETCWDLEN 0)
 
@@ -46,16 +51,16 @@
 (equ F_UNLCK 2)
 (equ F_GETFL 3)
 (equ F_SETFL 4)
-(equ F_GETLK 12)
-(equ F_SETLK 13)
-(equ F_SETLKW 14)
+(equ F_GETLK 5)
+(equ F_SETLK 6)
+(equ F_SETLKW 7)
 (equ F_SETOWN 8)
 (equ O_NONBLOCK 2048)
 (equ O_ASYNC 8192)
 
 # stat
-(equ STAT 144)    # File status structure
-(equ ST_MODE 24)  # 4
+(equ STAT 128)    # File status structure
+(equ ST_MODE 16)  # 4
 (equ ST_SIZE 48)
 (equ ST_MTIME 88)
 (equ S_IFMT 61440)
@@ -67,25 +72,25 @@
 (equ TMS_STIME 8)
 
 # termios
-(equ TERMIOS 60)  # Terminal I/O structure
+(equ TERMIOS 36)  # Terminal I/O structure
 (equ C_IFLAG 0)
 (equ C_OFLAG 4)
 (equ C_CFLAG 8)
 (equ C_LFLAG 12)
 (equ C_CC 17)
 (equ OPOST 1)
-(equ ONLCR 2)
-(equ ISIG 128)
-(equ VMIN 5)
-(equ VTIME 7)
+(equ ONLCR 4)
+(equ ISIG 1)
+(equ VMIN 6)
+(equ VTIME 5)
 (equ TCSADRAIN 1)
 
 # signal
-(equ SIGACTION 152)  # Sigaction structure
-(equ SIGSET_T 128)
-(equ SA_HANDLER 0)
-(equ SA_MASK 8)
-(equ SA_FLAGS 136)
+(equ SIGACTION 32)  # Sigaction structure
+(equ SIGSET_T 8)
+(equ SA_HANDLER 8)
+(equ SA_MASK 16)
+(equ SA_FLAGS 0)
 
 (equ SIG_DFL 0)
 (equ SIG_IGN 1)
@@ -138,7 +143,7 @@
 (equ INET6_ADDRSTRLEN 46)
 
 (equ NI_MAXHOST 1025)
-(equ NI_NAMEREQD 8)
+(equ NI_NAMEREQD 4)
 
 (equ SOCKADDR_IN6 28)
 (equ SIN6_FAMILY 0)
@@ -149,7 +154,7 @@
 (equ AI_FAMILY 4)
 (equ AI_SOCKTYPE 8)
 (equ AI_ADDRLEN 16)
-(equ AI_ADDR 24)
+(equ AI_ADDR 32)
 (equ AI_NEXT 40)
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-/* 26may15abu
+/* 29sep15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -916,7 +916,7 @@ any doProg2(any x) {
    return Pop(c1);
 }
 
-// (if 'any1 'any2 . prg) -> any
+// (if 'any1 any2 . prg) -> any
 any doIf(any x) {
    any a;
 
@@ -928,7 +928,7 @@ any doIf(any x) {
    return EVAL(car(x));
 }
 
-// (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
+// (if2 'any1 'any2 any3 any4 any5 . prg) -> any
 any doIf2(any x) {
    any a;
 
@@ -952,7 +952,7 @@ any doIf2(any x) {
    return EVAL(car(x));
 }
 
-// (ifn 'any1 'any2 . prg) -> any
+// (ifn 'any1 any2 . prg) -> any
 any doIfn(any x) {
    any a;
 

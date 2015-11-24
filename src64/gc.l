@@ -1,4 +1,4 @@
-# 07apr15abu
+# 04oct15abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -207,7 +207,7 @@
                   num A  # Find name
                until nz
             end
-            rcl A 1  # Dirty or deleted?
+            add A A  # Dirty or deleted?
             if c  # Yes
                call markE  # Mark external symbol
             end

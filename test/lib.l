@@ -1,4 +1,4 @@
-# 30oct13abu
+# 16sep15abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -56,11 +56,13 @@
    (let (A 1 @X 7) (curry (A @X) (N) (+ A @X N))) )
 
 
-### getd ###
-(test car (getd 'car))
-(test '((File . @) (load File))
-   (getd 'script) )
-(test NIL (getd 1))
+### cache ###
+(let C NIL
+   (test 0 (cache 'C 1234 0))
+   (test 7 (cache 'C 4321 7))
+   (test 7 (cache 'C 4321 8))
+   (inc (cache 'C 4321))
+   (test 8 (val (cache 'C 4321))) )
 
 
 ### expr subr undef ###

@@ -1748,9 +1748,9 @@ in Pilog:
 have conditions, and usually contain variables.
 
 <p>A variable in Pilog is any symbol starting with an at-mark character
-("<code>@</code>"). The symbol <code>@</code> itself can be used as an anonymous
-variable: It will match during unification, but will not be bound to the matched
-values.
+("<code>@</code>"), i.e. a <code><a href="refP.html#pat?">pat?</a></code>
+symbol. The symbol <code>@</code> itself can be used as an anonymous variable:
+It will match during unification, but will not be bound to the matched values.
 
 <p>The <i>cut</i> operator of Prolog (usually written as an exclamation mark
 (<code>!</code>)) is the symbol <code>T</code> in Pilog.
@@ -1802,6 +1802,7 @@ the head of the programmer. Here are the most commonly used ones:
 
 <p><ul>
 <li>Global variables start with an asterisk "<code>*</code>"
+<li>Global constants may be written all-uppercase
 <li>Functions and other global symbols start with a lower case letter
 <li>Locally bound symbols start with an upper case letter
 <li>Local functions start with an underscore "<code>_</code>"
@@ -1813,9 +1814,6 @@ the head of the programmer. Here are the most commonly used ones:
 <li>Methods end with a right arrow "<code>></code>"
 <li>Class variables may be indicated by an upper case letter
 </ul>
-
-<p>For historical reasons, the global constant symbols <code>T</code> and
-<code>NIL</code> do not obey these rules, and are written in upper case.
 
 <p>For example, a local variable could easily overshadow a function definition:
 

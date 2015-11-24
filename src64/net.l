@@ -1,4 +1,4 @@
-# 04feb13abu
+# 30oct15abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -141,7 +141,7 @@
       dec C  # Done?
    until z  # Yes
    cc fcntl(E F_SETFL pop)  # Restore socket status flags
-   setz  # Return 'z'
+   eq  # Return 'z'
    ret
 
 # (accept 'cnt) -> cnt | NIL
@@ -322,7 +322,7 @@
       ld (GetBinZ_FB) getUdpZ_FB  # Set binary read function
       ld (Extn) (ExtN)  # Set external symbol offset
       call binReadZ_FE  # Read item?
-      if c  # No
+      if lt  # No
 10       ld E Nil  # Return NIL
       end
    else
@@ -372,9 +372,9 @@
 
 (code 'getUdpZ_FB 0)
    cmp Z (BufEnd)  # End of buffer data?
-   jeq retc  # Yes: Return 'c'
+   jeq retLt  # Yes: Return 'lt'
    ld B (Z)  # Next byte
-   add Z 1  # (nc)
+   add Z 1  # (gt)
    ret
 
 (code 'putUdpBZ 0)

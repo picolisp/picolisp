@@ -1,4 +1,4 @@
-# 27may15abu
+# 02nov15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -7,17 +7,14 @@
 ### Global return labels ###
 (code 'Ret 0)
    ret
-(code 'Retc 0)
-   setc
+(code 'RetEq 0)
+   eq
    ret
-(code 'Retnc 0)
-   clrc
+(code 'RetGt 0)
+   gt
    ret
-(code 'Retz 0)
-   setz
-   ret
-(code 'Retnz 0)
-   clrz
+(code 'RetLt 0)
+   lt
    ret
 (code 'RetNil 0)
    ld E Nil
@@ -193,7 +190,7 @@
 
 (code 'execErrS)
    cc fprintf((stderr) ExecErr (S))
-   cc exit(127)
+   stop
 
 # Install interrupting signal
 (code 'iSignalCE)
@@ -209,13 +206,13 @@
 (code 'allocC_A 0)
    cc malloc(C)  # Allocate memory of size C
    null A  # OK?
-   jz NoMemory  # No
+   jz noMemory  # No
    ret
 (code 'allocAE_A 0)
    cc realloc(A E)  # Reallocate pointer in A to size E
    null A  # OK?
    jnz Ret  # Return
-: NoMemory
+: noMemory
    ld X AllocErr  # No memory
    jmp giveupX
 
@@ -933,11 +930,11 @@
    big A  # A big?
    if nz  # Yes
       big E  # E also big?
-      jz Retnz  # No: 'ne'
+      jz RetGt  # No: 'ne'
       test A SIGN  # A negative?
       if nz  # Yes
          test E SIGN  # E also negative?
-         jz Retnz  # No: 'ne'
+         jz RetGt  # No: 'ne'
          off A SIGN  # Make both positive
          off E SIGN
       end
@@ -957,17 +954,17 @@
    sym A  # A symbolic?
    if nz  # Yes
       num E  # E also symbolic?
-      jnz Retnz
+      jnz RetGt
       sym E
-      jz Retnz  # No: 'ne'
+      jz RetGt  # No: 'ne'
       ld A (A TAIL)
       call nameA_A  # Get name of A
       cmp A ZERO  # Any?
-      jeq retnz  # No: 'ne'
+      jeq retGt  # No: 'ne'
       ld E (E TAIL)
       call nameE_E  # Get name of E
       cmp E ZERO  # Any?
-      jeq retnz  # No: 'ne'
+      jeq retGt  # No: 'ne'
       jmp equalAE_F
    end
    atom E  # E atomic?
@@ -1027,33 +1024,33 @@
             end
             cmp Y E
             if eq
-               clrz  # Result "No"
+               gt  # Result "No"
                break T
             end
             off (X) 1  # Unmark
             ld X (X CDR)
             ld Y (Y CDR)
          loop
-         push F  # Save result
+         push zsc  # Save result
          do
             off (X) 1  # Unmark circular part
             ld X (X CDR)
             cmp X A
          until eq
-         pop F  # Get result
+         pop zsc  # Get result
          pop Y
          pop X
          ret
       end
    loop
-   push F  # Save result
+   push zsc  # Save result
    do
       cmp X A  # Skip non-circular part
    while ne
       off (X) 1  # Unmark
       ld X (X CDR)
    loop
-   pop F  # Get result
+   pop zsc  # Get result
    pop Y
    pop X
    ret
@@ -1062,15 +1059,13 @@
    cmp A E  # Pointer-equal?
    jeq ret  # Yes
    cmp A Nil
-   if eq  # [NIL E]
-10    clrz  # nz
-20    setc  # lt
+   if eq
+10    lt  # [NIL E]
       ret
    end
    cmp A TSym
    if eq  # [T E]
-30    clrz  # nz
-40    clrc  # gt
+20    gt
       ret
    end
    num A  # Number?
@@ -1078,16 +1073,16 @@
       num E  # Both?
       jnz cmpNumAE_F  # [<num> <num>]
       cmp E Nil
-      jeq 30  # [<num> NIL]
-      setc  # lt
+      jeq 20  # [<num> NIL]
+      lt  # [<num> <sym|pair>]
       ret
    end
    sym A
    if nz  # [<sym> ..]
       num E
-      jnz 40  # [<sym> <num>]
+      jnz 20  # [<sym> <num>]
       cmp E Nil
-      jeq 30  # [<sym> NIL]
+      jeq 20  # [<sym> NIL]
       atom E
       jz 10  # [<sym> <pair>]
       cmp E TSym
@@ -1103,7 +1098,7 @@
          if eq  # No
             cmp A E  # Compare symbol addresses
          else
-            setc  # lt
+            lt
          end
          pop X
          ret
@@ -1112,9 +1107,8 @@
       call nameE_E  # Get E's name in E
       cmp E ZERO  # Any?
       if eq  # No
-50       clrz  # nz
-60       clrc  # gt
-70       pop X
+30       gt
+40       pop X
          ret
       end
       do
@@ -1140,41 +1134,40 @@
          end
          do
             cmp B C  # Bytes equal?
-            jne 70  # No: lt or gt
+            jne 40  # No: lt or gt
             shr A 8  # Next byte in A?
             if z  # No
                shr C 8  # Next byte in C?
                if nz  # Yes
-                  setc  # lt
+                  lt
                   pop X
                   ret
                end
                null X  # X done?
                if z  # Yes
                   null E  # E also done?
-                  jz 70  # Yes: eq
-                  setc  # lt
+                  jz 40  # Yes: eq
+                  lt
                   pop X
                   ret
                end
                null E  # E done?
-               jz 50  # Yes: gt
+               jz 30  # Yes: gt
                break T
             end
             shr C 8  # Next byte in C?
-            jz 50  # No: gt
+            jz 30  # No: gt
          loop
       loop
    end
    atom E
    if nz  # [<pair> <sym>]
       cmp E TSym
-      if eq  # [<pair> T]
-         clrz  # nz
-         setc  # lt
+      if eq
+         lt  # [<pair> T]
          ret
       end
-      clrc  # gt
+      gt
       ret
    end
    push X  # [<pair> <pair>]
@@ -1205,11 +1198,10 @@
       if nz  # Yes
          cmp E TSym
          if ne
-            clrc  # gt [<pair> <atom>]
+            gt  # [<pair> <atom>]
             break T
          end
-         clrz  # nz [<pair> T]
-         setc  # lt
+         lt  # [<pair> T]
          break T
       end
       cmp A X  # Circular list?
@@ -1240,7 +1232,7 @@
          add A 8  # Increment count by 8
       loop
       shr X 4  # Normalize short
-      shl C 1  # Get most significant bit of last digit
+      add C C  # Get most significant bit of last digit
       addc X X  # Any significant bits in short number?
       jmp 40
    end
@@ -1285,7 +1277,7 @@
                sub A 64  # Size-63
                ld C 0  # Divide by 255
                div 255
-               setc  # Plus 1
+               lt  # Plus 1
                addc A X  # Plus size+1
             end
          end
@@ -1329,7 +1321,7 @@
       jeq ret  # Return list
       ld Y (Y CDR)  # Next item
       cmp C Y  # Hit head?
-      jeq retnz  # Yes
+      jeq retGt  # Yes
    loop
    ld A X
    ld E Y
@@ -1567,7 +1559,7 @@
    ld Y S  # Search for colon and slash
    do
       ld B (Y)  # Next byte
-      or B B  # End of string?
+      nul B  # End of string?
       jz 90  # Yes
       cmp B (char ":")  # Colon?
    while ne  # No
@@ -1733,7 +1725,7 @@
          cnt E  # Short?
          if nz  # Yes
             shr E 4  # Normalize
-            if c  # Sign?
+            if x  # Sign?
                neg E  # Yes
             end
          else
@@ -1843,7 +1835,7 @@
    atom A  # Byte or unsigned?
    if nz  # Yes
       shr A 4  # Byte?
-      if nc  # Yes
+      if nx  # Yes
          ld (Z) B  # Store byte in buffer
          inc Z  # Increment buffer pointer
          dec C  # Decrement size
@@ -1870,7 +1862,7 @@
          cnt A  # Short?
          if nz  # Yes
             shr A 4  # Normalize
-            if c  # Sign?
+            if x  # Sign?
                neg A  # Yes
             end
          else
@@ -2133,7 +2125,7 @@
 (code 'fetchCharC_AC 0)
    ld B (C)  # Fetch first byte
    zxt
-   or B B  # Any?
+   null A  # Any?
    if nz  # Yes
       inc C
       cmp B 128  # Single byte?
@@ -2191,7 +2183,7 @@
    call applyXYZ_E  # Apply
    ld A E  # Return value
    shr A 4  # Normalize
-   if c  # Sign?
+   if x  # Sign?
       neg A  # Yes
    end
    drop
@@ -2379,7 +2371,7 @@
    call applyXYZ_E  # Apply
    ld A E  # Return value
    shr A 4  # Normalize
-   if c  # Sign?
+   if x  # Sign?
       neg A  # Yes
    end
    drop
@@ -2412,13 +2404,13 @@
 
 (code 'funqE_FE 0)
    cnt E  # Short number?
-   jnz retz  # Yes
+   jnz retEq  # Yes
    big E  # Big number?
    jnz ret  # No
    sym E  # Symbol?
    jnz ret  # Yes
    call circE_EF  # Circular?
-   jeq retnz  # Yes
+   jeq retGt  # Yes
    ld C (E CDR)  # Check function body
    do
       atom C  # More?
@@ -2429,12 +2421,12 @@
          num (A)  # CAR a number?
          if nz  # Yes
             atom (C CDR)  # Must be the last
-            jz retnz
+            jz retGt
          else
             cmp (A) Nil  # CAR is NIL?
-            jeq retnz  # Yes
+            jeq retGt  # Yes
             cmp (A) TSym  # CAR is T?
-            jeq retnz  # Yes
+            jeq retGt  # Yes
          end
       else
          cmp (C CDR) Nil  # Atomic item must be the last
@@ -2449,7 +2441,7 @@
    ldz E TSym  # No: Return T
    if ne  # Yes
       call circE_EF  # Circular?
-      jeq retnz  # Yes
+      jeq retGt  # Yes
       ld C E
       do
          atom C  # Atomic parameter?
@@ -2458,15 +2450,15 @@
          num A  # Number?
          jnz ret  # Yes
          atom A  # List?
-         jz retnz  # Yes
+         jz retGt  # Yes
          cmp A Nil  # NIL?
-         jeq retnz  # Yes
+         jeq retGt  # Yes
          cmp A TSym  # T?
-         jeq retnz  # Yes
+         jeq retGt  # Yes
          ld C (C CDR)  # Rest
       loop
       cmp C TSym  # T?
-      jeq retnz  # Yes
+      jeq retGt  # Yes
       num C  # Number?
       jnz ret  # Yes
    end
@@ -2508,7 +2500,7 @@
    cnt E  #  # Short number?
    jz cntErrEX  # No
    shr E 4  # Normalize
-   if c  # Sign?
+   if x  # Sign?
       neg E  # Yes
    end
    ret  # 'z' if null, 's' if negative
@@ -2517,7 +2509,7 @@
    cnt C  #  # Short number?
    jz cntErrCX  # No
    shr C 4  # Normalize
-   if c  # Sign?
+   if x  # Sign?
       neg C  # Yes
    end
    ret  # 'z' if null, 's' if negative
@@ -2526,7 +2518,7 @@
    cnt A  #  # Short number?
    jz cntErrAX  # No
    shr A 4  # Normalize
-   if c  # Sign?
+   if x  # Sign?
       neg A  # Yes
    end
    ret  # 'z' if null, 's' if negative
@@ -2564,7 +2556,7 @@
    ret
 
 (code 'begString 0)
-   pop A  # Get return address
+   pop A  # Get return entry
    link
    push ZERO  # <L I> Result
    ld (StrC) 4  # Build name
@@ -2572,10 +2564,10 @@
    link
    push (PutB)  # Save 'put'
    ld (PutB) putStringB  # Set new
-   jmp (A)  # Return
+   jump A  # Return
 
 (code 'endString_E 0)
-   pop A  # Get return address
+   pop A  # Get return entry
    pop (PutB)  # Restore 'put'
    ld E Nil  # Preload NIL
    cmp (L I) ZERO  # Name?
@@ -2586,7 +2578,7 @@
       ld (E) E  # Set value to itself
    end
    drop
-   jmp (A)  # Return
+   jump A  # Return
 
 ? (<> *TargetOS "Linux")
    (code 'msec_A)

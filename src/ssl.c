@@ -1,4 +1,4 @@
-/* 09nov14abu
+/* 08jul15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -149,7 +149,7 @@ int main(int ac, char *av[]) {
    bool dbg;
    SSL_CTX *ctx;
    SSL *ssl;
-   int n, sec, lim, to, getLen, lenLen, fd, sd;
+   int n, sec, lim, getLen, lenLen, fd, sd;
    DIR *dp;
    struct dirent *p;
    struct stat st;
@@ -212,14 +212,16 @@ int main(int ac, char *av[]) {
    iSignal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
    lim = 0;
-   if (ac > 8)
-      to = lim = 60 * atoi(av[8]);
+   if (ac > 8) {
+      iSignal(SIGALRM, doSigTerm);
+      alarm(lim = 60 * atoi(av[8]));
+   }
    for (;;) {
       if (*File && (fd = open(File, O_RDWR)) >= 0) {
          if (fstat(fd,&st) < 0  ||  st.st_size == 0)
             close(fd);
          else {
-            to = lim;
+            alarm(lim);
             lockFile(fd);
             if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
                giveup("Can't access");
@@ -258,8 +260,8 @@ int main(int ac, char *av[]) {
             if (p->d_name[0] != '.') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
                if ((n = readlink(nm, buf, sizeof(buf))) > 0) {
-                  to = lim;
-                  if ((sd = sslConnect(ssl, av[1], av[2])) >= 0 ) {
+                  alarm(lim);
+                  if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                      if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&       // key
                            SSL_write(ssl, buf, n) == n  &&           // path
@@ -268,15 +270,13 @@ int main(int ac, char *av[]) {
                         unlink(nm);
                      sslClose(ssl,sd);
                   }
+                  if (dbg)
+                     ERR_print_errors_fp(stderr);
                }
-               if (dbg)
-                  ERR_print_errors_fp(stderr);
             }
          }
          closedir(dp);
       }
-      if (lim && (to -= sec) < 0)
-         exit(0);
       sleep(sec);
    }
 }

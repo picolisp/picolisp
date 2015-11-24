@@ -68,6 +68,7 @@ href="ref.html#external">external symbols</a></code>.
             (in Sock
                (while (rd)                # Handle requests
                   (sync)
+                  (tell)
                   (out Sock
                      (pr (eval @)) ) ) )
             (bye) )                       # Exit child process
@@ -323,7 +324,7 @@ variable. See also <code><a href="refN.html#native">native</a></code>.
 
 <dt><a name="eval"><code>(eval 'any ['cnt ['lst]]) -> any</code></a>
 <dd>Evaluates <code>any</code>. Note that because of the standard argument
-evaluation, <code>any</code> is actually evaluated twice. If a binding
+evaluation, <code>any</code> is actually evaluated twice. If a lambda-binding
 environment offset <code>cnt</code> is given, the second evaluation takes place
 in the corresponding environment, and an optional <code>lst</code> of excluded
 symbols can be supplied. See also <code><a href="refR.html#run">run</a></code>

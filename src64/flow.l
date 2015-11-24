@@ -1,4 +1,4 @@
-# 26may15abu
+# 17nov15abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -210,7 +210,7 @@
          ld A (Y)  # End of bindings in A
          inc (L -II)  # Increment 'n'
          sub (Y -I) (L -I)  # Decrement 'eswp' by 'cnt'
-         if c  # First pass
+         if b  # First pass
             add Y I
             do
                ld X (Y)  # Next symbol
@@ -341,7 +341,7 @@
          ld A (Y)  # End of bindings in A
          inc (L -II)  # Increment 'n'
          sub (Y -I) (L -I)  # Decrement 'eswp' by 'cnt'
-         if c  # First pass
+         if b  # First pass
             add Y I
             do
                ld X (Y)  # Next symbol
@@ -870,9 +870,9 @@
          call newIdEX_X  # Allocate new external name
          call externX_E  # Intern external symbol
          ld A (E TAIL)  # Get name again
-         shl A 1
-         setc  # Set "dirty"
-         rcr A 1
+         add A A
+         setx  # Set "dirty"
+         rxr A 1
          ld (E TAIL) A  # Set name
       end
       link
@@ -1047,14 +1047,14 @@
             atom X  # Any?
             jnz ret  # Return NO
             cmp A X  # Circular?
-            jeq retnz  # Return NO
+            jeq retGt  # Return NO
             atom (X)  # Next item a list?
-            jz retnz  # Return NO
+            jz retGt  # Return NO
          loop
       end
       ld X (X CDR)  # Next item
       cmp A X  # Circular?
-      jeq retnz  # Yes
+      jeq retGt  # Yes
    loop
 
 # (method 'msg 'obj) -> fun
@@ -1310,7 +1310,7 @@
 10       do
             ld X (X CDR)  # Locate method in extra classes
             atom X  # Any?
-         while z  # No: Return 'gt'
+            jnz retGt  # No: Return 'gt'
             ld E (X)  # Superclass
             ld Z X  # 'cls'
             call methodEY_FCYZ  # Found?
@@ -1327,7 +1327,7 @@
       jgt 10  # Else try extra classes
       ld X (X CDR)  # Try next in 'cls' list
    loop
-   setc  # Return 'lt'
+   lt
    ret
 
 # (with 'sym . prg) -> any
@@ -1900,7 +1900,7 @@
    pop X
    ret
 
-# (if 'any1 'any2 . prg) -> any
+# (if 'any1 any2 . prg) -> any
 (code 'doIf 2)
    ld E (E CDR)
    push (E CDR)  # Push rest
@@ -1919,7 +1919,7 @@
    pop X
    ret
 
-# (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
+# (if2 'any1 'any2 any3 any4 any5 . prg) -> any
 (code 'doIf2 2)
    ld E (E CDR)
    push (E CDR)  # Push rest
@@ -1960,7 +1960,7 @@
    pop X
    eval/ret
 
-# (ifn 'any1 'any2 . prg) -> any
+# (ifn 'any1 any2 . prg) -> any
 (code 'doIfn 2)
    ld E (E CDR)
    push (E CDR)  # Push body
@@ -2290,7 +2290,8 @@
       cnt E  # Short number?
       jz loopX  # No: Non-NIL 'flg'
       shr E 4  # Normalize
-      if gt  # Greater zero
+      if nz
+         jx 10  # Greater zero
          push E  # <S> Count
          do
             ld Y X  # Loop body
@@ -2300,7 +2301,7 @@
          until z
          add S I  # Drop count
       else
-         ld E Nil  # Return NIL if zero
+10       ld E Nil  # Return NIL if zero
       end
    end
    pop Z
@@ -2572,7 +2573,7 @@
                if eq  # Yes
                   ld Y (Z CDR)  # Run sub-body
                   prog Y
-                  setz  # Return 'z'
+                  eq  # Return 'z'
                   ret
                end
                ld (At) E
@@ -2588,7 +2589,7 @@
                      ld (At) E
                      ld Y (Z CDR)  # Run sub-body
                      prog Y
-                     setz  # Return 'z'
+                     eq  # Return 'z'
                      ret
                   end
                else
@@ -2604,6 +2605,7 @@
 
 # (catch 'any . prg) -> any
 (code 'doCatch 2)
+   catch
    push X
    push Y
    push Z
@@ -2626,7 +2628,7 @@
    pop Z
    pop Y
    pop X
-   ret
+   throw
 
 # (throw 'sym 'any)
 (code 'doThrow 2)
@@ -2685,6 +2687,7 @@
 
 # (co 'sym [. prg]) -> any
 (code 'doCo 2)
+   catch
    push X
    ld X (E CDR)  # Get tag
    ld E (X)  # Eval 'sym'
@@ -2796,7 +2799,7 @@
                pop Z
                pop Y
                pop X
-               ret
+               throw
             end
             dec C  # Decrement count
          end
@@ -2852,7 +2855,7 @@
       pop Z
       pop Y
       pop X
-      ret
+      throw
    end
    ld X (Stack1)  # Search through stack segments
    ld C (Stacks)  # Segment count
@@ -2878,7 +2881,7 @@
                ld E TSym  # Return T
             end
             pop X
-            ret
+            throw
          end
          dec C  # Decrement count
       end
@@ -2886,10 +2889,11 @@
    loop
    ld E Nil  # Return NIL
    pop X
-   ret
+   throw
 
 # (yield 'any ['sym]) -> any
 (code 'doYield 2)
+   catch
    push X
    push Y
    push Z
@@ -3038,7 +3042,7 @@
       pop Z
       pop Y
       pop X
-      ret
+      throw
    end
    ld (Z II) Y  # Set new 'seg'
    jmp resumeCoroutine  # Resume
@@ -3259,7 +3263,7 @@
    ret
 
 (code 'execArgsE_SXZ)  # Y
-   pop Y  # Get return address
+   pop Y  # Get return entry
    ld X (E CDR)  # X on args
    push 0  # End-of-buffers marker
    call evSymX_E  # Pathname
@@ -3283,7 +3287,7 @@
       null (X)  # Done?
    until z  # Yes
    call flushAll  # Flush all output channels
-   jmp (Y)  # Return
+   jump Y  # Return
 
 # (exec 'any ..)
 (code 'doExec 2)
@@ -3339,7 +3343,7 @@
       call wifstoppedS_F  # WIFSTOPPED(S)?
       if ne  # No
          ld4 (S)  # Result?
-         or A A
+         null A
          ld E TSym  # Return 'flg'
          ldnz E Nil
          shl A 4  # Make short number
@@ -3453,7 +3457,7 @@
    push X
    ld X E  # Get expression
    call forkLispX_FE  # Fork child process
-   if c
+   if lt
       ld E Nil  # In child
    else
       shl E 4  # In parent
@@ -3582,7 +3586,7 @@
       call execE
       ld (Fork) Nil  # Clear '*Fork'
       add S II  # Drop 'hear' and 'tell' pipes
-      setc  # Return "in child"
+      lt  # Return "in child"
       ret
    end
    cmp C (Children)  # Children table full?
@@ -3619,7 +3623,7 @@
    ld (C IV) 0  # buffer count
    ld (C V) 0  # No buffer yet
    add S II  # Drop 'hear' and 'tell' pipes
-   clrc  # Return "in parent"
+   eq  # Return "in parent"
    ret
 
 # (bye 'cnt|NIL)

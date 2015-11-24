@@ -1,4 +1,4 @@
-# 30apr15abu
+# 06jul15abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -333,9 +333,10 @@
 
 # Day of the week
 (de day (Dat Lst)
-   (get
-      (or Lst *DayFmt)
-      (inc (% (inc Dat) 7)) ) )
+   (when Dat
+      (get
+         (or Lst *DayFmt)
+         (inc (% (inc Dat) 7)) ) ) )
 
 # Week of the year
 (de week (Dat)

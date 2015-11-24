@@ -1,4 +1,4 @@
-# 10apr15abu
+# 30oct15abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -16,7 +16,7 @@
       if z  # Yes
          big X  # X also on last digit?
          if nz  # No
-            setc  # A is smaller
+            lt  # A is smaller
             pop X
             ret
          end
@@ -26,7 +26,7 @@
       end
       cnt X  # A not on last digit. X on last digit?
    until nz  # Yes
-   clrc  # A is greater
+   gt  # A is greater
    pop X
    ret
 
@@ -45,9 +45,11 @@
          call nameA_A  # Get name
          cmp A X  # Equal?
       while ne  # No
-         ld Y (Y CDR)
-         ldc Y (Y CDR)  # Symbol is smaller
-         ldnc Y (Y)  # Symbol is greater
+         if lt
+            ld Y ((Y CDR) CDR)  # Symbol is smaller
+         else
+            ld Y ((Y CDR))  # Symbol is greater
+         end
       loop
       cmp E (Y)  # Same Symbol?
       ret  # Return YES or NO
@@ -61,9 +63,11 @@
       call nameA_A  # Get name
       call cmpLongAX_F  # Equal?
    while ne  # No
-      ld Y (Y CDR)
-      ldc Y (Y CDR)  # Symbol is smaller
-      ldnc Y (Y)  # Symbol is greater
+      if lt
+         ld Y ((Y CDR) CDR)  # Symbol is smaller
+      else
+         ld Y ((Y CDR))  # Symbol is greater
+      end
    loop
    cmp E (Y)  # Same Symbol?
    ret   # Return YES or NO
@@ -86,7 +90,7 @@
          ld (X) E
          ld (X CDR) Nil
          ld (Y) X  # Store in first tree
-         setc  # Return new symbol
+         lt  # Return new symbol
          ret
       end
       do
@@ -111,7 +115,7 @@
                ld (X) Nil
                ld (X CDR) A
                ld (C CDR) X
-               setc  # Return new symbol
+               lt  # Return new symbol
                ret
             end
             ld C (C CDR)
@@ -126,7 +130,7 @@
                ld (A) E
                ld (A CDR) Nil
                ld (C CDR) A  # Store in CDR of link
-               setc  # Return new symbol
+               lt  # Return new symbol
                ret
             end
          else  # Symbol is greater
@@ -143,7 +147,7 @@
                ld (X) A
                ld (X CDR) Nil
                ld (C CDR) X
-               setc  # Return new symbol
+               lt  # Return new symbol
                ret
             end
             ld C (C CDR)
@@ -158,7 +162,7 @@
                ld (A) E
                ld (A CDR) Nil
                ld (C) A  # Store in CAR of link
-               setc  # Return new symbol
+               lt  # Return new symbol
                ret
             end
          end
@@ -176,7 +180,7 @@
       ld (X) E
       ld (X CDR) Nil
       ld (Y CDR) X  # Store in second tree
-      setc  # Return new symbol
+      lt  # Return new symbol
       ret
    end
    do
@@ -201,7 +205,7 @@
             ld (X) Nil
             ld (X CDR) A
             ld (C CDR) X
-            setc  # Return new symbol
+            lt  # Return new symbol
             ret
          end
          ld C (C CDR)
@@ -216,7 +220,7 @@
             ld (A) E
             ld (A CDR) Nil
             ld (C CDR) A  # Store in CDR of link
-            setc  # Return new symbol
+            lt  # Return new symbol
             ret
          end
       else  # Symbol is greater
@@ -233,7 +237,7 @@
             ld (X) A
             ld (X CDR) Nil
             ld (C CDR) X
-            setc  # Return new symbol
+            lt  # Return new symbol
             ret
          end
          ld C (C CDR)
@@ -248,7 +252,7 @@
             ld (A) E
             ld (A CDR) Nil
             ld (C) A  # Store in CAR of link
-            setc  # Return new symbol
+            lt  # Return new symbol
             ret
          end
       end
@@ -258,7 +262,7 @@
    ld E 0  # No symbol yet
    ld Y ((EnvIntern))
    call internEXY_FE  # New internal symbol?
-   jnc Ret  # No
+   jge Ret  # No
    ld (E) Nil  # Init to 'NIL'
    ret
 
@@ -335,8 +339,11 @@
             call nameA_A
             and A (hex "3FFFFFFFFFFFFFF7")  # Mask status and extern bits
             cmp A X  # Compare name with key
-            ldc Y (Y CDR)  # Go left if symbol is smaller
-            ldnc Y (Y)  # else go right
+            if lt
+               ld Y (Y CDR)  # Go left if symbol is smaller
+            else
+               ld Y (Y)  # else go right
+            end
             dec C  # Done?
          until z  # Yes
       end
@@ -731,7 +738,7 @@
    num E  # Symbol?
    jnz ret  # No
    sym E
-   jz retnz  # No
+   jz retGt  # No
    cmp E Nil  # NIL?
    jeq ret  # Yes
    sym (E TAIL)  # External symbol?
@@ -1510,7 +1517,7 @@
       xchg C E  # Second string
       xchg X Y
       call symByteCX_FACX  # Next byte?
-      jz retnz  # No
+      jz retGt  # No
       cmp (Buf) B  # Equal?
       jne ret  # No
       xchg C E  # First string
@@ -1527,7 +1534,7 @@
    ld E (E TAIL)  # Second symbol
    call nameE_E  # Get name
    cmp E ZERO  # Any?
-   jeq retnz  # No
+   jeq retGt  # No
    push X
    push Y
    push Z
@@ -1546,7 +1553,7 @@
       if z  # Yes
          cmp Z ZERO  # Second done?
          if eq  # Yes
-            clrz  # 'nz'
+            gt  # 'nz'
             break T
          end
          cnt Z  # Short?
@@ -2318,9 +2325,11 @@
       call compareAE_F  # Found?
       ld E X
    while ne  # No
-      ld X (X CDR)
-      ldc X (X)  # Smaller
-      ldnc X (X CDR)  # Greater
+      if lt
+         ld X ((X CDR))  # Smaller
+      else
+         ld X ((X CDR) CDR)  # Greater
+      end
    loop
    ret
 
@@ -2491,9 +2500,11 @@
                      pop X
                      ret
                   end
-                  ld X (X CDR)
-                  ldc X (X)  # Smaller
-                  ldnc X (X CDR)  # Greater
+                  if lt
+                     ld X ((X CDR))  # Smaller
+                  else
+                     ld X ((X CDR) CDR)  # Greater
+                  end
                end
             end
             atom X  # Reached leaf?
@@ -2744,7 +2755,7 @@
       num C  # Numeric key?
       if nz  # Yes
          shr C 4  # Positive?
-         if nc  # Yes
+         if nx  # Yes
             jz retNil  # Return NIL if zero
             do
                dec C  # nth
@@ -3406,9 +3417,9 @@
    end
    call nameA_A  # Get name
    shl A 1  # Dirty?
-   if nc  # No
+   if nx  # No
       shl A 1  # Loaded?
-      if c  # Yes
+      if x  # Yes
          ror A 2  # Set "not loaded"
          ld (E) Nil  # Clear value
          or A SYM  # Set 'extern' tag
@@ -3493,7 +3504,7 @@
    ld2 (A CaseBlocks)  # Get blocks entry
    add A C  # Add character
    and A (hex "FFFF")  # Limit to 16 bits
-   shl A 1  # Adjust index
+   add A A  # Adjust index
    ld2 (A CaseData)  # Get case data
    ret
 

@@ -1,32 +1,35 @@
-# 21may14abu
+# 16nov15abu
 # (c) Software Lab. Alexander Burger
-
-.SILENT:
 
 bin = ../bin
 lib = ../lib
 
-ifeq ($(MAKECMDGOALS), x86-64.linux)
+ifeq ($(MAKECMDGOALS), arm64.linux)
 	UNAME = Linux
-	MACHINE = x86_64
+	MACHINE = arm64
 else
-	ifeq ($(MAKECMDGOALS), x86-64.freeBsd)
-		UNAME = FreeBSD
+	ifeq ($(MAKECMDGOALS), x86-64.linux)
+		UNAME = Linux
 		MACHINE = x86_64
 	else
-		ifeq ($(MAKECMDGOALS), x86-64.sunOs)
-			UNAME = SunOS
-			MACHINE = x86_64
+		ifeq ($(MAKECMDGOALS), ppc64.linux)
+			UNAME = Linux
+			MACHINE = ppc64le
 		else
-			ifeq ($(MAKECMDGOALS), ppc64.linux)
-				UNAME = Linux
-				MACHINE = ppc64
+			ifeq ($(MAKECMDGOALS), x86-64.freeBsd)
+				UNAME = FreeBSD
+				MACHINE = x86_64
 			else
-				UNAME = $(shell uname)
-				ifeq ($(MAKECMDGOALS), emu)
-					MACHINE = emu
+				ifeq ($(MAKECMDGOALS), x86-64.sunOs)
+					UNAME = SunOS
+					MACHINE = x86_64
 				else
-					MACHINE = $(shell uname -m)
+					UNAME = $(shell uname)
+					ifeq ($(MAKECMDGOALS), emu)
+						MACHINE = emu
+					else
+						MACHINE = $(shell uname -m)
+					endif
 				endif
 			endif
 		endif
@@ -40,17 +43,24 @@ STRIP = :
 
 ifeq ($(UNAME), Linux)
 	OS = Linux
-	ifeq ($(MACHINE), x86_64)
+	ifeq ($(MACHINE), arm64)
 		SYS = .linux
 		FMT = .s
-		ARCH = x86-64
+		ARCH = arm64
 		AS = as
 	else
-		ifeq ($(MACHINE), ppc64)
+		ifeq ($(MACHINE), x86_64)
 			SYS = .linux
 			FMT = .s
-			ARCH = ppc64
-			AS = as -mppc64 -a64
+			ARCH = x86-64
+			AS = as
+		else
+			ifeq ($(MACHINE), ppc64le)
+				SYS = .linux
+				FMT = .s
+				ARCH = ppc64
+				AS = as -mppc64 -a64 -mlittle
+			endif
 		endif
 	endif
 	LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm -ldl
@@ -76,13 +86,6 @@ else
 			LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
 			LD-SHARED = -m64 -shared
 			STRIP = strip
-		else
-			ifeq ($(UNAME), Darwin)
-				OS = Darwin
-				LD-MAIN = -lc -lm -ldl
-				LD-SHARED = -dynamiclib -undefined dynamic_lookup
-				STRIP = strip -x
-			endif
 		endif
 	endif
 endif
@@ -97,10 +100,11 @@ sFiles = \
 
 all: picolisp
 
+arm64.linux: $(sFiles)
 x86-64.linux: $(sFiles)
+ppc64.linux: $(sFiles)
 x86-64.freeBsd: $(sFiles)
 x86-64.sunOs: $(sFiles)
-ppc64.linux: $(sFiles)
 emu: picolisp
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht

@@ -1,8 +1,8 @@
-# 11aug14abu
+# 13nov15abu
 # (c) Software Lab. Alexander Burger
 
-# Byte order
-(off *LittleEndian)
+# Architecture
+(on *LittleEndian)
 (on *AlignedCode)
 
 # Register assignments
@@ -11,13 +11,14 @@
    (B . -3) (D 3 . 14)
    (X . 16) (Y . 17) (Z . 18)
    (L . 19) (S . 1)
-   (F . T) )
+   (zscx . zscx) (zsc . zscx) (x . x) )
 
 (de *TempRegs
-   27 28 29 30 )
+   (27 28 29 30 .) )
 
 # TOC: 2
 # C arguments: 3 - 10
+# C calls: 12
 # NULL: 20
 # ONE: 21
 # Data: 22
@@ -29,7 +30,7 @@
 
 # Temporary register
 (de tmpReg @
-   (let R (pop '(`(apply circ *TempRegs)))
+   (let R (pop *TempRegs)
       (if (find lt0 (rest))
          (- R)
          R ) ) )
@@ -50,9 +51,9 @@
          (prinst ".quad" ".TOC.@tocbase") ) )
    (label Lbl Flg)
    (when (and *FPic Flg (== *Section 'text) (n0 *CodePos) (upp? Lbl))
-      (prinst "mfctr" 11)
-      (prinst "subi" 11 11 2)
-      (prinst "ld" 24 "-8(11)") ) )
+      (prinst "mfctr" 12)
+      (prinst "subi" 12 12 2)
+      (prinst "ld" 24 "-8(12)") ) )
 
 (de asciiLen (Str)
    (- (size (pack (replace (chop Str) "\\"))) 2) )  # Don't count double quotes
@@ -271,7 +272,7 @@
          (pack @ "+" (car Ref))
          (car Ref) ) ) )
 
-(de srcReg (Src S Tmp)  #> reg
+(de srcReg (Src S Tmp)  #> register
    (cond
       ((not S)
          (ifn Tmp
@@ -298,7 +299,7 @@
             (or Tmp (tmpReg))
             (memory Src S @ 0) ) ) ) )
 
-(de srcByteReg (Src S)  #> reg
+(de srcByteReg (Src S)  #> register
    (cond
       ((not S)
          (prog1
@@ -361,7 +362,7 @@
 
 ### Instruction set ###
 (de alignSection (Align)
-   (if (== *Section 'text)
+   (if (== 'text *Section)
       (prinst ".balign" 8)
       (prinst ".balign" 16)
       (or (=0 Align) (prinst ".space" Align)) ) )
@@ -377,6 +378,7 @@
       (or (=0 N) (prinst ".space" N))
       (do (/ N 2) (prinst "nop")) ) )
 
+# Move data
 (asm ld (Dst D Src S)
    (cond
       ((not D)
@@ -402,18 +404,6 @@
 
 (asm ld4 (Src S)
    (memory Src S 3 "lwz") )
-
-(asm ldc (Dst D Src S)
-   (prinst "cmpdi" "cr1" 31 -2)
-   (prinst "beq-" "cr1" "1f")
-   (memory Src S Dst 0)
-   (prinl "1:") )
-
-(asm ldnc (Dst D Src S)
-   (prinst "cmpdi" "cr1" 31 -2)
-   (prinst "bne-" "cr1" "1f")
-   (memory Src S Dst 0)
-   (prinl "1:") )
 
 (asm ldz (Dst D Src S)
    (prinst "bne-" "1f")
@@ -463,12 +453,6 @@
    (memory Dst D 4)
    (memory Cnt C 5 0)
    (codeCall "mset") )
-
-(asm movm (Dst D Src S End E)
-   (memory Dst D 6)
-   (memory Src S 4)
-   (memory End E 5)
-   (codeCall "save") )
 
 (asm save (Src S End E Dst D)
    (memory Src S 4)
@@ -560,7 +544,7 @@
          (prinst "subc" 3 3 (srcReg Src S)) )
       (prinst "subfze" 14 14) ) )
 
-(asm subc (Dst D Src S)
+(asm subb (Dst D Src S)
    (prinst "xori" 0 31 1)  # Get inverted carry
    (prinst "sradi" 0 0 1)
    (ifn (= (3 . 14) Dst)
@@ -571,7 +555,7 @@
       (prinst "subfze." 14 14) )
    (prinst "subfme" 31 21) )  # Set inverted carry
 
-(asmNoCC subc (Dst D Src S)
+(asmNoCC subb (Dst D Src S)
    (prinst "xori" 0 31 1)  # Get inverted carry
    (prinst "sradi" 0 0 1)
    (ifn (= (3 . 14) Dst)
@@ -740,7 +724,7 @@
          (regDst A) )
       (quit "Non-immediate 'ror' not available") ) )
 
-(asm rcl (Dst D Src S)
+(asm rxl (Dst D Src S)
    (if (=0 S)
       (let A (dstReg Dst D)
          (prinst "sradi" 0 31 1)  # Get carry
@@ -748,18 +732,18 @@
             (prinst "adde." (cadr A) (cadr A) (cadr A)) )
          (regDst A)
          (prinst "subfze" 31 21) )  # Set carry
-      (quit "Non-immediate 'rcl' not available") ) )
+      (quit "Non-immediate 'rxl' not available") ) )
 
-(asmNoCC rcl (Dst D Src S)
+(asmNoCC rxl (Dst D Src S)
    (if (=0 S)
       (let A (dstReg Dst D)
          (prinst "sradi" 0 31 1)  # Get carry
          (do (format Src)
             (prinst "adde" (cadr A) (cadr A) (cadr A)) )
          (regDst A) )
-      (quit "Non-immediate 'rcl' not available") ) )
+      (quit "Non-immediate 'rxl' not available") ) )
 
-(asm rcr (Dst D Src S)
+(asm rxr (Dst D Src S)
    (if (=0 S)
       (let A (dstReg Dst D)
          (do (setq Src (format Src))
@@ -768,7 +752,7 @@
             (prinst "insrdi" (cadr A) 31 1 0)
             (prinst "insrdi" 31 0 1 63) )
          (regDst A) )
-      (quit "Non-immediate 'rcr' not available") ) )
+      (quit "Non-immediate 'rxr' not available") ) )
 
 (asm mul (Src S)
    (let R (srcReg Src S)
@@ -782,16 +766,22 @@
 (asm zxt ()  # 8 bit -> 64 bit
    (prinst "andi." 3 3 255) )  # 'and' doesn't exist
 
-(asm setz ()
+(asm eq ()
+   (prinst "li" 31 -2)  # Clear carry
    (prinst "addic." 0 20 0) )  # Add zero to null
 
-(asm clrz ()
+(asm gt ()  #! (prinst "cmpd" 20 1)  # Compare zero to stack pointer
+   (prinst "li" 31 -2)  # Clear carry
    (prinst "cmpdi" 1 0) )  # Compare stack pointer to zero
 
-(asm setc ()
+(asm lt ()  #! (prinst "cmpdi" 1 0)  # Compare stack pointer to zero
+   (prinst "li" 31 -1)  # Set carry
+   (prinst "cmpdi" 1 0) )  # Compare stack pointer to zero
+
+(asm setx ()
    (prinst "li" 31 -1) )
 
-(asm clrc ()
+(asm clrx ()
    (prinst "li" 31 -2) )
 
 # Comparisons
@@ -822,14 +812,14 @@
    (unless C (prinst "mr" Cnt 5)) )
 
 (asm null (Src S)
-   ##? (prinst "li" 31 -2)  # Clear carry
+   (prinst "li" 31 -2)  # Clear carry
    (prinst "cmpdi" (srcReg Src S) 0) )
 
 (asm nulp (Src S)
    (prinst "cmpdi" (srcReg Src S) 0) )
 
 (asm nul4 ()
-   ##? (prinst "li" 31 -2)  # Clear carry
+   (prinst "li" 31 -2)  # Clear carry
    (prinst "sldi" 3 3 32)
    (prinst "sradi." 3 3 32) )
 
@@ -838,7 +828,7 @@
    (memory Dst D (srcByteReg Src S) "stb") )
 
 (asm nul (Src S)
-   ##? (prinst "li" 31 -2)  # Clear carry
+   (prinst "li" 31 -2)  # Clear carry
    (prinst "cmpdi" (srcByteReg Src S) 0) )
 
 # Types
@@ -857,7 +847,7 @@
 (asm atom (Src S)
    (prinst "andi." 0 (srcReg Src S) "0x0E") )
 
-# Flow Control
+# Flow control
 (asm call (Adr A)
    (nond
       (A  # Absolute
@@ -866,8 +856,8 @@
          (prinst "mtctr" Adr)
          (prinst "bl" "callCtr") )
       (NIL  # Indirect
-         (prinst "ld" 11 (pack (dataOffset Adr) "(22)"))
-         (prinst "mtctr" 11)
+         (prinst "ld" 12 (pack (dataOffset Adr) "(22)"))
+         (prinst "mtctr" 12)
          (prinst "bl" "callCtr") ) ) )
 
 (de _jmp Args
@@ -878,12 +868,12 @@
                ((lup *CodeIndex Adr)
                   (let Ofs (cdr @)
                      (if (>= 32767 Ofs)
-                        (prinst "addi" 11 23 Ofs)
-                        (prinst "lis" 11 (>> 16 Ofs))
+                        (prinst "addi" 12 23 Ofs)
+                        (prinst "lis" 12 (>> 16 Ofs))
                         (unless (=0 (setq Ofs (& 65535 Ofs)))
-                           (prinst "ori" 11 11 Ofs) )
-                        (prinst "add" 11 11 23) )
-                     (prinst "mtctr" 11)
+                           (prinst "ori" 12 12 Ofs) )
+                        (prinst "add" 12 12 23) )
+                     (prinst "mtctr" 12)
                      (for E (caddr Args)
                         (apply prinst (cons (pack (pop 'E) (pop 'E)) E)) ) ) )
                ((not (cadr Args))
@@ -917,8 +907,8 @@
          (for E (fill (caddr Args))
             (apply prinst (cons (pack (pop 'E) (pop 'E)) E)) ) )
       (NIL  # Indirect
-         (prinst "ld" 11 (pack (dataOffset Adr) "(22)"))
-         (prinst "mtctr" 11)
+         (prinst "ld" 12 (pack (dataOffset Adr) "(22)"))
+         (prinst "mtctr" 12)
          (for E (caddr Args)
             (apply prinst (cons (pack (pop 'E) (pop 'E)) E)) ) ) ) )
 
@@ -927,6 +917,10 @@
       (("b" NIL @Lbl))
       NIL
       (("bctr" NIL)) ) )
+
+(asm jump (Reg)
+   (prinst "mtctr" Reg)
+   (prinst "bctr") )
 
 (asm jz (Adr A)
    (_jmp
@@ -983,6 +977,20 @@
       (("beq" + "cr1" ".+8") ("b" NIL @Lbl))
       (("bnectr" - "cr1")) ) )
 
+(asm jb (Adr A)
+   (prinst "cmpdi" "cr1" 31 -2)
+   (_jmp
+      (("bne" - "cr1" @Lbl))
+      (("beq" + "cr1" ".+8") ("b" NIL @Lbl))
+      (("bnectr" - "cr1")) ) )
+
+(asm jx (Adr A)
+   (prinst "cmpdi" "cr1" 31 -2)
+   (_jmp
+      (("bne" - "cr1" @Lbl))
+      (("beq" + "cr1" ".+8") ("b" NIL @Lbl))
+      (("bnectr" - "cr1")) ) )
+
 (asm jlt (Adr A)
    (prinst "cmpdi" "cr1" 31 -2)
    (_jmp
@@ -997,6 +1005,20 @@
       (("bne" + "cr1" ".+8") ("b" NIL @Lbl))
       (("beqctr" - "cr1")) ) )
 
+(asm jnb (Adr A)
+   (prinst "cmpdi" "cr1" 31 -2)
+   (_jmp
+      (("beq" - "cr1" @Lbl))
+      (("bne" + "cr1" ".+8") ("b" NIL @Lbl))
+      (("beqctr" - "cr1")) ) )
+
+(asm jnx (Adr A)
+   (prinst "cmpdi" "cr1" 31 -2)
+   (_jmp
+      (("beq" - "cr1" @Lbl))
+      (("bne" + "cr1" ".+8") ("b" NIL @Lbl))
+      (("beqctr" - "cr1")) ) )
+
 (asm jge (Adr A)
    (prinst "cmpdi" "cr1" 31 -2)
    (_jmp
@@ -1004,26 +1026,12 @@
       (("bne" + "cr1" ".+8") ("b" NIL @Lbl))
       (("beqctr" - "cr1")) ) )
 
-(asm jcz (Adr A)
-   (prinst "cmpdi" "cr1" 31 -2)
-   (_jmp
-      (("bne" - "cr1" @Lbl) ("beq" - @Lbl))
-      (("beq" - "cr1" ".+12") ("bne" + ".+8") ("b" NIL @Lbl))
-      (("bnectr" - "cr1") ("beqctr" -) ) ) )
-
 (asm jle (Adr A)
    (prinst "cmpdi" "cr1" 31 -2)
    (_jmp
       (("bne" - "cr1" @Lbl) ("beq" - @Lbl))
       (("beq" - "cr1" ".+12") ("bne" + ".+8") ("b" NIL @Lbl))
       (("bnectr" - "cr1") ("beqctr" -) ) ) )
-
-(asm jncz (Adr A)
-   (prinst "cmpdi" "cr1" 31 -2)
-   (_jmp
-      (("bne" + "cr1" ".+8") ("bne" - @Lbl))
-      (("bne" + "cr1" ".+12") ("beq" + ".+8") ("b" NIL @Lbl))
-      (("bne" + "cr1" ".+8") ("bnectr" -)) ) )
 
 (asm jgt (Adr A)
    (prinst "cmpdi" "cr1" 31 -2)
@@ -1033,6 +1041,11 @@
       (("bne" + "cr1" ".+8") ("bnectr" NIL)) ) )
 
 (asm ret ()
+   (prinst "blr") )
+
+(asm catch ())
+
+(asm throw ()
    (prinst "blr") )
 
 # Floating point
@@ -1074,13 +1087,39 @@
    (prinl "4:") )
 
 (asm float ()
-   #{!}# )
+   (prinst "mr" 0 3)             # Get scale in A
+   (prinst "srdi" 0 0 4)         # Normalize (ignore sign)
+   (prinst "std" 0 "-8(1)")
+   (prinst "ld" 27 "0(16)")      # Value
+   (prinst "andi." 0 27 "0x02")  # Short?
+   (prinst "beq-" "2f")          # No
+   (prinst "lfd" 0 "-8(1)")      # Get scale in f13
+   (prinst "fcfid" 13 0)
+   (prinst "andi." 0 27 "0x08")  # Value negative?
+   (prinst "srdi" 27 27 4)       # Scale value
+   (prinst "beq-" "1f")
+   (prinst "neg" 27 27)          # Negate
+   (prinl "1:")
+   (prinst "std" 27 "-8(1)")     # Get value
+   (prinst "lfd" 0 "-8(1)")
+   (prinst "fcfid" 1 0)          # in f1
+   (prinst "fdiv" 1 1 13)        # Divide by scale
+   (prinst "b" "3f")
+   (prinl "2:")                  # T or NIL
+   (prinst "cmpd" 25 27)         # Nil?
+   (prinst "li" 27 (hex "7FF"))  # inf
+   (prinst "bne-" ".+8")
+   (prinst "li" 27 (hex "FFF"))  # -inf
+   (prinst "rotrdi" 27 27 12)
+   (prinst "std" 27 "-8(1)")     # Get value
+   (prinst "lfd" 1 "-8(1)")
+   (prinl "3:") )
 
 (asm std ()
-   (prinst "stfd" 1 "0(14)") )
+   (prinst "stfd" 1 "0(18)") )
 
 (asm stf ()
-   (prinst "stfs" 1 "0(14)") )
+   (prinst "stfs" 1 "0(18)") )
 
 # C-Calls
 (asm cc (Adr A Arg M)
@@ -1088,7 +1127,7 @@
       (if (lst? Arg)
          (let (Lea NIL  Tmp NIL)
             (when (fish '((X) (= 3 X)) (cdr Arg))
-               (prinst "mr" (setq Tmp 11) 3) )
+               (prinst "mr" (setq Tmp 12) 3) )
             (mapc
                '((Src S)
                   (if (== '& Src)
@@ -1112,14 +1151,14 @@
                Arg
                M ) )
          (prinst "mr" 27 1)            # 27 on arguments
-         (prinst "ld" 11 "flt1@got(2)")
+         (prinst "ld" 12 "flt1@got(2)")
          (for R Reg
             (prinst "cmpd" Arg 27)
             (prinst "beq-" "2f")
             (prinst "ld" 0 "0(27)")
             (prinst "cmpdi" 0 0)       # Float?
             (prinst "beq-" "1f")       # No
-            (prinst "mtctr" 11)        # Else call float conversion
+            (prinst "mtctr" 12)        # Else call float conversion
             (prinst "bctrl")
             (prinl "1:")
             (prinst "ld" R "8(27)")    # Get value
@@ -1127,25 +1166,21 @@
          (prinl "2:") ) )
    (nond
       (A  # Absolute
-         (unless (= Adr "exit")
-            (prinst "mflr" 27)
-            (prinst "stdu" 1 "-112(1)") )
+         (prinst "mflr" 27)
+         (prinst "stdu" 1 "-112(1)")
          (prinst "bl" Adr)
          (prinst "nop")
-         (unless (= Adr "exit")
-            (prinst "addi" 1 1 112)
-            (prinst "mtlr" 27) ) )
+         (prinst "addi" 1 1 112)
+         (prinst "mtlr" 27) )
       ((=T A)  # Indexed
          (prinst "mflr" 0)
          (prinst "stdu" 1 "-120(1)")
          (prinst "std" 0 "112(1)")
-         (prinst "std" 2 "40(1)")
-         (prinst "ld" 0 (pack "0(" Adr ")"))
-         (prinst "ld" 11 (pack "16(" Adr ")"))
-         (prinst "ld" 2 (pack "8(" Adr ")"))
-         (prinst "mtctr" 0)
+         (prinst "std" 2 "24(1)")
+         (prinst "mr" 12 Adr)
+         (prinst "mtctr" Adr)
          (prinst "bctrl")
-         (prinst "ld" 2 "40(1)")
+         (prinst "ld" 2 "24(1)")
          (prinst "ld" 0 "112(1)")
          (prinst "addi" 1 1 120)
          (prinst "mtlr" 0) ) )
@@ -1157,7 +1192,8 @@
 (asm func ())
 
 (asm begin ()
-   (prinst ".quad" ".+24" ".TOC.@tocbase" 0)
+   (prinst "addis" 2 12 (pack ".TOC.-" *Label "@ha"))
+   (prinst "addi" 2 2 (pack ".TOC.-" *Label "@l"))
    (prinst "mflr" 0)
    (prinst "bl" "begin") )
 
@@ -1166,12 +1202,14 @@
 
 # Stack Manipulations
 (asm push (Src S)
-   (ifn (=T Src)
-      (prinst "stdu" (srcReg Src S) "-8(1)")
-      (let R (tmpReg)
-         (prinst "mfocrf" R 128)  # Get CR[0]
-         (prinst "insrdi" R 31 1 63)  # Carry into LSB
-         (prinst "stdu" R "-8(1)") ) ) )
+   (casq Src
+      (zscx
+         (let R (tmpReg)
+            (prinst "mfocrf" R 128)  # Get CR[0]
+            (prinst "insrdi" R 31 1 63)  # Carry into LSB
+            (prinst "stdu" R "-8(1)") ) )
+      (x (prinst "stdu" 31 "-8(1)"))
+      (T (prinst "stdu" (srcReg Src S) "-8(1)")) ) )
 
 (asm pop (Dst D)
    (cond
@@ -1179,11 +1217,13 @@
          (let R (tmpReg)
             (prinst "ld" R "0(1)")
             (memory Dst D R T) ) )
-      ((=T Dst)
+      ((== 'zscx Dst)
          (let R (tmpReg)
             (prinst "ld" R "0(1)")
             (prinst "insrdi" 31 R 1 63)  # Set carry from LSB
             (prinst "mtocrf" 128 R) ) )  # Set CR[0] (LT, GT, EQ, SO)
+      ((== 'x Dst)
+         (prinst "ld" 31 "0(1)") )
       (T (prinst "ld" Dst "0(1)")) )
    (prinst "addi" 1 1 8) )
 
@@ -1269,11 +1309,11 @@
 
 (asm initCode ()
    (unless *FPic
-      (prinst "mflr" 11)         # Get return address
-      (prinst "lwa" 0 "0(11)")   # Target offset
+      (prinst "mflr" 12)         # Get return address
+      (prinst "lwa" 0 "0(12)")   # Target offset
       (prinst "add" 0 0 23)      # Code-relative
       (prinst "mtlr" 0)          # Set target address
-      (prinst "addi" 0 11 4)     # Update return address
+      (prinst "addi" 0 12 4)     # Update return address
       (prinst "stdu" 0 "-8(1)")  # Save it
       (prinst "blrl")            # Call target
       (prinst "ld" 0 "0(1)")     # Pop return address
@@ -1282,11 +1322,11 @@
       (prinst "bctr")
       (prinl) )
    (label "callRel")
-   (prinst "mflr" 11)          # Get return address
-   (prinst "lwa" 0 "0(11)")    # Target offset
-   (prinst "add" 0 0 11)       # PC-relative
+   (prinst "mflr" 12)          # Get return address
+   (prinst "lwa" 0 "0(12)")    # Target offset
+   (prinst "add" 0 0 12)       # PC-relative
    (prinst "mtlr" 0)           # Set target address
-   (prinst "addi" 0 11 4)      # Update return address
+   (prinst "addi" 0 12 4)      # Update return address
    (prinst "stdu" 0 "-8(1)")   # Save it
    (prinst "blrl")             # Call target
    (prinst "ld" 0 "0(1)")      # Pop return address
@@ -1295,8 +1335,8 @@
    (prinst "bctr")
    (prinl)
    (label "callCtr")
-   (prinst "mflr" 11)          # Get return address
-   (prinst "stdu" 11 "-8(1)")  # Save it
+   (prinst "mflr" 12)          # Get return address
+   (prinst "stdu" 12 "-8(1)")  # Save it
    (prinst "bctrl")            # Call target
    (prinst "ld" 0 "0(1)")      # Pop return address
    (prinst "addi" 1 1 8)
@@ -1463,7 +1503,7 @@
          (for F 8
             (label (pack "flt" F))
             (unless (= 8 F)
-               (prinst "addi" 11 11 (pack "flt" (inc F) "-flt" F)) )
+               (prinst "addi" 12 12 (pack "flt" (inc F) "-flt" F)) )
             (prinst "srdi" 0 0 4)  # Scale (ignore sign)
             (prinst "std" 0 "0(27)")
             (prinst "ld" R "8(27)")  # Value
@@ -1550,7 +1590,8 @@
       (prinst "blr") ) )
 
 (asm initMain ()
-   (prinst ".quad" ".+24" ".TOC.@tocbase" 0)
+   (prinst "addis" 2 12 ".TOC.-main@ha")
+   (prinst "addi" 2 2 ".TOC.-main@l")
    (prinst "li" 20 0)                 # Init NULL register
    (prinst "li" 21 1)                 # Init ONE register
    (prinst "ld" 22 "Data@got(2)")     # Globals bases
@@ -1566,13 +1607,14 @@
 
 (asm stop ()
    (prinst "mr" 3 15)
-   (prinst "b" "exit") )
+   (prinst "bl" "exit")
+   (prinst "nop") )
 
 ### Optimizer ###
 # Replace the the next 'cnt' elements with 'lst'
 (de optimize (Lst)  #> (cnt . lst)
-   (when (noCC L)
-      (cons 1 (cons (cons @ (cdar L)))) ) )
+   (when (noCC Lst)
+      (cons 1 (cons (cons @ (cdar Lst)))) ) )
 
 ### Decoration ###
 (de prolog (File)
@@ -1586,6 +1628,5 @@
       (out "ppc64.symtab"
          (println (sort *DataLabels))
          (println (sort *CodeLabels)) ) ) )
-
 
 # vi:et:ts=3:sw=3

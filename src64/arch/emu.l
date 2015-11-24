@@ -1,7 +1,7 @@
-# 25apr15abu
+# 11nov15abu
 # (c) Software Lab. Alexander Burger
 
-# Byte order
+# Architecture
 (in '("./sysdefs")
    (case (read)
       ("L" (on *LittleEndian))
@@ -20,7 +20,7 @@
    (B . "A.b[0]") (D "A" . "C")
    (X . "X") (Y . "Y") (Z . "Z")
    (L . "L") (S . "S")
-   (F . T) )
+   (zscx . zscx) (zsc . zscx) (x . x) )
 
 # Emulator specific
 (off *AsmData *AsmCode *AsmOpcodes *Labels *SysFun)
@@ -282,16 +282,6 @@
    (genCode (Src S) (list 'ld4 Src) ((op.a Src S))
       "A.n = (uint64_t)*(uint32_t*)@1;" ) )
 
-(asm ldc (Dst D Src S)
-   (genCode (Dst D Src S) (list 'ldc Dst Src) ((op.n Dst D) (op.n Src S))
-      "if (Carry)"
-      "   @1 = @2;" ) )
-
-(asm ldnc (Dst D Src S)
-   (genCode (Dst D Src S) (list 'ldnc Dst Src) ((op.n Dst D) (op.n Src S))
-      "if (!Carry)"
-      "   @1 = @2;" ) )
-
 (asm ldz (Dst D Src S)
    (genCode (Dst D Src S) (list 'ldz Dst Src) ((op.n Dst D) (op.n Src S))
       "if (!Result)"
@@ -320,23 +310,19 @@
 
 (asm movn (Dst D Src S Cnt C)
    (genCode (Dst D Src S Cnt C) (list 'movn Dst Src Cnt) ((op.a Dst D) (op.a Src S) (op.i Cnt C))
-      "memcpy(@1, @2, @3);" ) )
+      "memmove(@1, @2, @3);" ) )
 
 (asm mset (Dst D Cnt C)
    (genCode (Dst D Cnt C) (list 'mset Dst Cnt) ((op.a Dst D) (op.i Cnt C))
       "memset(@1, (int)A.b[0], @2);" ) )
 
-(asm movm (Dst D Src S End E)
-   (genCode (Dst D Src S End E) (list 'movm Dst Src End) ((op.a Dst D) (op.a Src S) (op.a End E))
-      "memmove(@1, @2, @3 - @2);" ) )
-
 (asm save (Src S End E Dst D)
    (genCode (Dst D Src S End E) (list 'save Dst Src End) ((op.a Dst D) (op.a Src S) (op.a End E))
-      "memcpy(@1, @2, @3 - @2);" ) )
+      "memmove(@1, @2, @3 - @2);" ) )
 
 (asm load (Dst D End E Src S)
    (genCode (Dst D Src S End E) (list 'load Dst Src End) ((op.a Dst D) (op.a Src S) (op.a End E))
-      "memcpy(@1, @2, @3 - @1);" ) )
+      "memmove(@1, @2, @3 - @1);" ) )
 
 # Arithmetics
 (asm add (Dst D Src S)
@@ -346,7 +332,7 @@
             "@1 += @2;" ) )
       ((or D (atom Dst))
          (genCode (Dst D Src S) (list 'add Dst Src) ((op.n Dst D) (op.n Src S))
-            "Carry = (Result = @1 += @2) < @2;" ) )
+            "Carry = (Result = @1 += (tmp.n = @2)) < tmp.n;" ) )
       (T
          (genCode (Src S) (list 'add 'D Src) ((op.n Src S))
             "Carry = (A.n += @1) < @1 && ++C.n == 0;"
@@ -373,10 +359,10 @@
       (genCode (Dst D Src S) (list 'sub Dst Src) ((op.n Dst D) (op.n Src S))
          "@1 -= @2;" )
       (genCode (Dst D Src S) (list 'sub Dst Src) ((op.n Dst D) (op.n Src S))
-         "Carry = (Result = @1 -= @2) > MAX64 - @2;" ) ) )
+         "Carry = (Result = @1 -= (tmp.n = @2)) > MAX64 - tmp.n;" ) ) )
 
-(asm subc (Dst D Src S)
-   (genCode (Dst D Src S) (list 'subc Dst Src) ((op.n Dst D) (op.n Src S))
+(asm subb (Dst D Src S)
+   (genCode (Dst D Src S) (list 'subb Dst Src) ((op.n Dst D) (op.n Src S))
       "if ((tmp.n = @1 - Carry) > MAX64 - Carry)"
       "   Result = @1 = MAX64 - @2;"
       "else"
@@ -442,13 +428,13 @@
       (genCode (Dst D Src S) (list 'ror Dst Src) ((op.n Dst D) (op.i Src S))
          "i = @2,  @1 = @1 >> i | @1 << (64 - i);" ) ) )
 
-(asm rcl (Dst D Src S)
-   (genCode (Dst D Src S) (list 'rcl Dst Src) ((op.n Dst D) (op.i Src S))
+(asm rxl (Dst D Src S)
+   (genCode (Dst D Src S) (list 'rxl Dst Src) ((op.n Dst D) (op.i Src S))
       "@1 = @1 << @2 | @1 >> (64 - @2);"
       "i = @1 & 1,  @1 = @1 & ~1 | Carry,  Carry = i;" ) )
 
-(asm rcr (Dst D Src S)
-   (genCode (Dst D Src S) (list 'rcr Dst Src) ((op.n Dst D) (op.i Src S))
+(asm rxr (Dst D Src S)
+   (genCode (Dst D Src S) (list 'rxr Dst Src) ((op.n Dst D) (op.i Src S))
       "i = @1 & 1,  @1 = @1 & ~1 | Carry,  Carry = i;"
       "@1 = @1 >> @2 | @1 << (64 - @2);" ) )
 
@@ -464,20 +450,24 @@
    (genCode NIL '(zxt) NIL
       "A.n &= 0xFF;" ) )
 
-(asm setz ()
-   (genCode NIL '(setz) NIL
+(asm eq ()
+   (genCode NIL '(eq) NIL
       "Carry = 0,  Result = 0;" ) )
 
-(asm clrz ()
-   (genCode NIL '(clrz) NIL
-      "Result = 1;" ) )
+(asm gt ()
+   (genCode NIL '(gt) NIL
+      "Carry = 0,  Result = 1;" ) )
 
-(asm setc ()
-   (genCode NIL '(setc) NIL
+(asm lt ()
+   (genCode NIL '(lt) NIL
+      "Carry = 1,  Result = 1;" ) )
+
+(asm setx ()
+   (genCode NIL '(setx) NIL
       "Carry = 1;" ) )
 
-(asm clrc ()
-   (genCode NIL '(clrc) NIL
+(asm clrx ()
+   (genCode NIL '(clrx) NIL
       "Carry = 0;" ) )
 
 # Comparisons
@@ -559,7 +549,7 @@
    (genCode (Src S) (list 'atom Src) ((op.b Src S))
       "Result = @1 & 14;" ) )
 
-# Flow Control
+# Flow control
 (de localAddr (Adr)
    (or
       (pre? "." Adr)  # Local label ".1"
@@ -616,6 +606,10 @@
          (genCode (Adr A) (list 'jmp (list Adr)) ((op.p Adr A))
             "PC = *(uint16_t**)@1;" ) ) ) )
 
+(asm jump (Reg)
+   (genCode (Reg) (list 'jump Reg) (Reg)
+      "PC = (uint16_t*)@1.p;" ) )
+
 (de _jmp (Opc Test)
    (nond
       (A  # Absolute
@@ -649,13 +643,13 @@
    (_jmp "jz" "!Result") )
 
 (asm jeq (Adr A)
-   (_jmp "jz" "!Result") )
+   (_jmp "jeq" "!Result") )
 
 (asm jnz (Adr A)
    (_jmp "jnz" "Result") )
 
 (asm jne (Adr A)
-   (_jmp "jnz" "Result") )
+   (_jmp "jne" "Result") )
 
 (asm js (Adr A)
    (_jmp "js" "(int64_t)Result < 0") )
@@ -672,30 +666,41 @@
 (asm jc (Adr A)
    (_jmp "jc" "Carry") )
 
+(asm jb (Adr A)
+   (_jmp "jb" "Carry") )
+
+(asm jx (Adr A)
+   (_jmp "jx" "Carry") )
+
 (asm jlt (Adr A)
-   (_jmp "jc" "Carry") )
+   (_jmp "jlt" "Carry") )
 
 (asm jnc (Adr A)
    (_jmp "jnc" "!Carry") )
 
-(asm jge (Adr A)
-   (_jmp "jnc" "!Carry") )
+(asm jnb (Adr A)
+   (_jmp "jnb" "!Carry") )
 
-(asm jcz (Adr A)
-   (_jmp "jcz" "!Result || Carry") )
+(asm jnx (Adr A)
+   (_jmp "jnx" "!Carry") )
+
+(asm jge (Adr A)
+   (_jmp "jge" "!Carry") )
 
 (asm jle (Adr A)
-   (_jmp "jcz" "!Result || Carry") )
-
-(asm jncz (Adr A)
-   (_jmp "jncz" "Result && !Carry") )
+   (_jmp "jle" "!Result || Carry") )
 
 (asm jgt (Adr A)
-   (_jmp "jncz" "Result && !Carry") )
+   (_jmp "jgt" "Result && !Carry") )
 
 (asm ret ()
    (genCode NIL '(ret) NIL
       "PC = *(uint16_t**)S.p,  S.p += 8;" ) )
+
+(asm catch ())
+
+(asm throw ()
+   ((get 'ret 'asm)) )
 
 # Floating point
 (asm ldd ()
@@ -813,7 +818,7 @@
    (bind             i  i "struct sockaddr" i)
    (listen           i  i i)
    (getsockname      i  i "struct sockaddr" "socklen_t")
-   (getaddrinfo      i  p p "struct addrinfo" "struct addrinfo")
+   (getaddrinfo      i  p p "struct addrinfo" "struct addrinfo*")
    (getnameinfo      i  "struct sockaddr" i p i p i i)
    (freeaddrinfo     -  "struct addrinfo")
    (accept           i  i "struct sockaddr" "socklen_t")
@@ -990,11 +995,14 @@
 
 # Stack Manipulations
 (asm push (Src S)
-   (cond
-      ((=T Src)
-         (genCode NIL '(push F) NIL
+   (case Src
+      (zscx
+         (genCode NIL '(push f) NIL
             "S.p -= 8,  ((ptr)S.p)->n = (Result & ~1) | (Result & 0xFFFFFFFF) << 1 | Carry;" ) )
-      ((= "S" Src)
+      (x
+         (genCode NIL '(push x) NIL
+            "S.p -= 8,  ((ptr)S.p)->n = Carry;" ) )
+      ("S"
          (genCode (Src S) '(push S) NIL
             "tmp.n = S.n,  S.p -= 8,  ((ptr)S.p)->n = tmp.n;" ) )
       (T
@@ -1002,11 +1010,16 @@
             "S.p -= 8,  ((ptr)S.p)->n = @1;" ) ) ) )
 
 (asm pop (Dst D)
-   (if (=T Dst)
-      (genCode NIL '(pop F) NIL
-         "Carry = ((ptr)S.p)->n & 1,  Result = ((ptr)S.p)->n & ~1,  S.p += 8;" )
-      (genCode (Dst D) (list 'pop Dst) ((op.n Dst D))
-         "@1 = ((ptr)S.p)->n,  S.p += 8;" ) ) )
+   (casq Dst
+      (zscx
+         (genCode NIL '(pop f) NIL
+            "Carry = ((ptr)S.p)->n & 1,  Result = ((ptr)S.p)->n & ~1,  S.p += 8;" ) )
+      (x
+         (genCode NIL '(pop x) NIL
+            "Carry = ((ptr)S.p)->n, S.p += 8;" ) )
+      (T
+         (genCode (Dst D) (list 'pop Dst) ((op.n Dst D))
+            "@1 = ((ptr)S.p)->n,  S.p += 8;" ) ) ) )
 
 (asm link ()
    (genCode NIL '(link) NIL
@@ -1124,6 +1137,7 @@
          "#include <errno.h>"
          "#include <fcntl.h>"
          "#include <dirent.h>"
+         "#include <termios.h>"
          "#include <signal.h>"
          "#include <dlfcn.h>"
          "#include <time.h>"
@@ -1132,6 +1146,9 @@
          "#include <sys/times.h>"
          "#include <sys/stat.h>"
          "#include <sys/wait.h>"
+         "#include <netdb.h>"
+         "#include <arpa/inet.h>"
+         "#include <netinet/in.h>"
          "#include <sys/socket.h>"
          NIL
          "#define MAX8 ((uint8_t)-1)"

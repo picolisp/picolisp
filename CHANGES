@@ -1,4 +1,12 @@
-* XXmmm15 picoLisp-3.1.12
+* 24nov15 picoLisp-15.11
+   Version Numbering
+   '+ObjVal' GUI prefix class
+   64-bit version for ARMv8 (arm64)
+   Simplified unit test setup
+   Switched ppc64 version to ppc64le
+   'prg' argument to 'cache' optional
+   '+Chg' prefix crashes without JS
+   Synchronize exernal changes in '+E/R'
 
 * 22jun15 picoLisp-3.1.11
    SVG Printing in "lib/svg.l"
@@ -50,7 +58,7 @@
    'ping' keepalive function
    'less' function
    'bt' backtrace printing (64-bit)
-   Bug in 'dbf' for +Bag
+   Bug in 'dbf' for '+Bag'
    'call' exit status code in '@@'
    Undo / Redo buttons
    PostScript 'psAlign' function

@@ -1,4 +1,4 @@
-# 31jul13abu
+# 02jul15abu
 # (c) Software Lab. Alexander Burger
 
 # *ScrHost *ScrPort *ScrGate *Title *Expect *Found
@@ -52,8 +52,8 @@
                (let Url (pack *ScrGate (till "\"" T))
                   (from ">")
                   (cond
-                     ((till "<")
-                        (queue '*Links (cons (ht:Pack @) Url)) )
+                     ((<> "<" (peek))
+                        (queue '*Links (cons (ht:Pack (till "<")) Url)) )
                      ((= "<img" (till " " T))
                         (from "alt=\"")
                         (queue '*Links (cons (ht:Pack (till "\"")) Url)) ) ) ) )

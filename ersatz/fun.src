@@ -1,4 +1,4 @@
-# 24may15abu
+# 24nov15abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -445,12 +445,12 @@ opt (str)
 # (version ['flg]) -> lst
 version (i x)
    if (ex.Cdr.Car.eval() == Nil) {
-      for (i = 0; i < 4; ++i)
-         OutFile.Wr.print(Version[i] + (i == 3? " " : "."));
+      for (i = 0; i < 3; ++i)
+         OutFile.Wr.print(Version[i] + (i == 2? " " : "."));
       OutFile.Wr.println("JVM");
       OutFile.Wr.flush();
    }
-   for (x = Nil, i = 4; --i >= 0;)
+   for (x = Nil, i = 3; --i >= 0;)
       x = new Cell(new Number(Version[i]), x);
    return x;
 
@@ -1290,14 +1290,14 @@ prog2 (w)
    ex.Cdr.prog();
    return w;
 
-# (if 'any1 'any2 . prg) -> any
+# (if 'any1 any2 . prg) -> any
 if (w)
    if ((w = (ex = ex.Cdr).Car.eval()) == Nil)
       return ex.Cdr.Cdr.prog();
    At.Car = w;
    return ex.Cdr.Car.eval();
 
-# (if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any
+# (if2 'any1 'any2 any3 any4 any5 . prg) -> any
 if2 (w)
    if ((w = (ex = ex.Cdr).Car.eval()) == Nil) {
       if ((w = (ex = ex.Cdr).Car.eval()) == Nil)
@@ -1311,7 +1311,7 @@ if2 (w)
    At.Car = w;
    return ex.Cdr.Car.eval();
 
-# (ifn 'any1 'any2 . prg) -> any
+# (ifn 'any1 any2 . prg) -> any
 ifn (w)
    if ((w = (ex = ex.Cdr).Car.eval()) != Nil) {
       At.Car = w;

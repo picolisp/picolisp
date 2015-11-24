@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 09mar08abu
+# 02sep15abu
 # (c) Software Lab. Alexander Burger
 # Use: bin/watchdog <host> <port> <from> <to1> <to2> ..
 
@@ -28,13 +28,16 @@
          (cond
             ((not X) (bye))
             ((num? X)
-               (del (assoc X *Watch) '*Watch) )
+               (let? W (assoc X *Watch)
+                  (when (caddr W)
+                     (msg (car W) " " (stamp) " bye") )
+                  (del W '*Watch) ) )
             ((atom X)  # bin/picolisp -"out 'fifo/beat (pr '$(tty))" -bye
                (let D (+ (* 86400 (date T)) (time T))
                   (out X
                      (for W *Watch
                         (prinl
-                           (align 5 (car W))
+                           (align 7 (car W))
                            " "
                            (- (cadr W) D)
                            " "
@@ -52,17 +55,19 @@
 
 (task -54321 54321
    (let D (+ (* 86400 (date T)) (time T))
-      (for W (filter '((X) (> D (cadr X))) *Watch)
-         (if (caddr W)
-            (prog
+      (for W *Watch
+         (cond
+            ((>= (cadr W) D))
+            ((caddr W)
                (msg (car W) " " (stamp)
                   (if (kill (car W) 15) " killed" " gone") )
                (del W '*Watch) )
-            (inc (cdr W) 3600)
-            (set (cddr W) T)
-            (let Sub (pack "Timeout " (car W) " " (cdddr W))
-               (msg (car W) " " (stamp))
-               (unless (mail *MailHost *MailPort *MailFrom *MailTo Sub)
-                  (msg (cons Sub *MailTo) " mail failed " (stamp)) ) ) ) ) ) )
+            (T
+               (inc (cdr W) 3600)
+               (set (cddr W) T)
+               (let Sub (pack "Timeout " (car W) " " (cdddr W))
+                  (msg (car W) " " (stamp))
+                  (unless (mail *MailHost *MailPort *MailFrom *MailTo Sub)
+                     (msg (cons Sub *MailTo) " mail failed " (stamp)) ) ) ) ) ) ) )
 
 (wait)

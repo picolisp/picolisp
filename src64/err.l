@@ -1,23 +1,25 @@
-# 06sep14abu
+# 02nov15abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
-(code 'dbgS)
-   xchg E (S)  # Get return address
-   xchg E (S I)  # Get argument, save return
-   push C  # Save all registers
-   push A
+(code 'dbg)
+   push zscx  # Save flags
+   push A  # Save registers
+   push C
+   push E
    push (OutFile)  # Save output channel
    ld (OutFile) ((OutFiles) II)  # Set to OutFiles[2] (stderr)
    push (PutB)  # Save 'put'
    ld (PutB) putStdoutB  # Set new
-   call printE_E  # Print argument
+   ld E (Dbg)  # Print item
+   call printE_E
    call newline  # and a newline
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
-   pop A
-   pop C
    pop E
+   pop C
+   pop A
+   pop zscx
    ret
 
 # System error number
@@ -128,7 +130,8 @@
    end
    nul (S)  # Message empty?
    if nz  # No
-      call outStringS  # Print message
+      ld C S
+      call outStringC  # Print message
       call newline
       cmp (Err) Nil  # Error handler?
       if ne  # Yes
@@ -735,17 +738,14 @@
 ### Global return labels ###
 (code 'ret 0)
    ret
-(code 'retc 0)
-   setc
+(code 'retEq 0)
+   eq
    ret
-(code 'retnc 0)
-   clrc
+(code 'retGt 0)
+   gt
    ret
-(code 'retz 0)
-   setz
-   ret
-(code 'retnz 0)
-   clrz
+(code 'retLt 0)
+   lt
    ret
 (code 'retNull 0)
    ld E 0

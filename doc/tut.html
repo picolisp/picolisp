@@ -484,9 +484,10 @@ href="refM.html#match">match</a></code>):
 
 : (more (who '(% @ 7)) pp)
 (de day (Dat Lst)
-   (get
-      (or Lst *DayFmt)
-      (inc (% (inc Dat) 7)) ) )
+   (when Dat
+      (get
+         (or Lst *DayFmt)
+         (inc (% (inc Dat) 7)) ) ) )
 
 (de _week (Dat)
    (/ (- Dat (% (inc Dat) 7)) 7) )

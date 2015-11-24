@@ -118,7 +118,7 @@ href="refM.html#member">member</a></code>.
 -> (2 A d (a b c) T)                         # '17' is deleted
 </code></pre>
 
-<dt><a name="if"><code>(if 'any1 'any2 . prg) -> any</code></a>
+<dt><a name="if"><code>(if 'any1 any2 . prg) -> any</code></a>
 <dd>Conditional execution: If the condition <code>any1</code> evaluates to
 non-<code>NIL</code>, <code>any2</code> is evaluated and returned. Otherwise,
 <code>prg</code> is executed and the result returned. See also <code><a
@@ -135,7 +135,7 @@ Bad
 -> Bad
 </code></pre>
 
-<dt><a name="if2"><code>(if2 'any1 'any2 'any3 'any4 'any5 . prg) -> any</code></a>
+<dt><a name="if2"><code>(if2 'any1 'any2 any3 any4 any5 . prg) -> any</code></a>
 <dd>Four-way conditional execution for two conditions: If both conditions
 <code>any1</code> and <code>any2</code> evaluate to non-<code>NIL</code>,
 <code>any3</code> is evaluated and returned. Otherwise, <code>any4</code> or
@@ -156,7 +156,7 @@ the result returned. See also <code><a href="refI.html#if">if</a></code> and
 -> none
 </code></pre>
 
-<dt><a name="ifn"><code>(ifn 'any1 'any2 . prg) -> any</code></a>
+<dt><a name="ifn"><code>(ifn 'any1 any2 . prg) -> any</code></a>
 <dd>Conditional execution ("If not"): If the condition <code>any1</code>
 evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
 Otherwise, <code>prg</code> is executed and the result returned.

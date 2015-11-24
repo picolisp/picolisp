@@ -1,4 +1,4 @@
-# 24apr15abu
+# 04aug15abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -586,55 +586,6 @@
          (<0> (glue " " L)) )
       (<$> Str Obj Msg Tab)
       (<0> Str) ) )
-
-# Interactive tree
-(de <tree> ("Url" "Path" "Tree" "Able?" "Excl?" "Expand" "Print")
-   (default "Print" 'ht:Prin)
-   (let ("Pos" "Tree"  "F" (pop '"Path")  "A" 0)
-      (when "Path"
-         (loop
-            (and "F"
-               (not (cdr "Path"))
-               (map
-                  '((L)
-                     (when (pair (car L)) (set L (caar L))) )
-                  "Pos" ) )
-            (T (atom (car (setq "Pos" (nth "Pos" (abs (pop '"Path")))))))
-            (NIL "Path")
-            (setq "Pos" (cdar "Pos")) )
-         (set "Pos"
-            (if (atom (car "Pos"))
-               (cons (car "Pos") ("Expand" (car "Pos")))
-               (caar "Pos") ) ) )
-      (setq "Pos" (car "Pos"))
-      ("tree" "Tree")
-      "Tree" ) )
-
-(de "tree" ("Tree" "Lst")
-   (prinl "<ul>")
-   (for ("N" . "X") "Tree"
-      (prin "<li><a id=\"T" (inc '"A") "\"></a>")
-      (cond
-         ((pair "X")
-            (let "L" (append "Lst" (cons "N"))
-               (<href> (if (== "X" "Pos") "<+>" "[+]")
-                  (pack "Url"
-                     "?" (ht:Fmt (cons NIL "L"))
-                     "#T" (max 1 (- "A" 12)) ) )
-               (space)
-               ("Print" (car "X"))
-               (and (cdr "X") ("tree" @ "L")) ) )
-         (("Able?" "X")
-            (let "L" (append "Lst" (cons (- "N")))
-               (<href> (if (== "X" "Pos") "< >" "[ ]")
-                  (pack "Url"
-                     "?" (ht:Fmt (cons ("Excl?" "X") "L"))
-                     "#T" (max 1 (- "A" 12)) ) )
-               (space)
-               ("Print" "X") ) )
-         (T ("Print" "X")) )
-      (prin "</li>") )
-   (prinl "</ul>") )
 
 ### HTML form ###
 (de <post> (Attr Url . Prg)

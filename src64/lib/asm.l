@@ -1,4 +1,4 @@
-# 18jun15abu
+# 16nov15abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -16,10 +16,10 @@
    jns
    jsz
    jnsz
-   jc jlt
-   jnc jge
-   jcz jle
-   jncz jgt )
+   jc jb jx jlt
+   jnc jnb jnx jge
+   jle
+   jgt )
 
 (de *Conditions
    (T jmp . jmp)
@@ -30,15 +30,17 @@
    (sz jsz . jnsz)
    (nsz jnsz . jsz)
    (c jc . jnc)
+   (b jb . jnb)
+   (x jx . jnx)
    (nc jnc . jc)
-   (cz jcz . jncz)
-   (ncz jncz . jcz)
-   (eq jz . jnz)
-   (ne jnz . jz)
-   (lt jc . jnc)
-   (le jcz . jncz)
-   (gt jncz . jcz)
-   (ge jnc . jc) )
+   (nb jnb . jb)
+   (nx jnx . jx)
+   (eq jeq . jne)
+   (ne jne . jeq)
+   (lt jlt . jge)
+   (le jle . jgt)
+   (gt jgt . jle)
+   (ge jge . jlt) )
 
 (de build ("File" "Map" . "Prg")
    (off *Section *Tags *Map *IfStack *DoStack)
@@ -100,7 +102,7 @@
          (newSection '@Sym)
          (and Align (alignSection @))
          (when Lbl
-            (and (reg Lbl) (quit "Register" Lbl))
+            (and (register Lbl) (quit "Register" Lbl))
             (let Src (file)
                (idxTags Lbl Src)
                (def Lbl 'tag (cdr Src)) )
@@ -136,9 +138,10 @@
                      (setq L (nth L (inc (car @))))
                      (chain (cdr @)) ) ) ) )
          (for *Statement *Program
-            (if (== ': (car *Statement))
-               (label (cdr *Statement))
-               (apply (; (car *Statement) asm) (cdr *Statement)) ) ) ) ) )
+            (cond
+               ((== ': (car *Statement)) (label (cdr *Statement)))
+               ((; (car *Statement) asm) (apply @ (cdr *Statement)))
+               (T (quit "Instruction not implemented" (car *Statement))) ) ) ) ) )
 
 # (data 'lbl)
 # (data 'lbl 0)
@@ -195,7 +198,7 @@
    (setq *Program  # Remove unreachable statements
       (make
          (while *Program
-            (when (memq (car (link (pop '*Program))) '(jmp ret eval/ret))
+            (when (memq (car (link (pop '*Program))) '(jmp jump ret throw return eval/ret))
                (while (and *Program (n== ': (caar *Program)))
                   (pop '*Program) ) ) ) ) )
    (setq *Program  # Remove zero jumps
@@ -228,7 +231,7 @@
                         (cadr (pop '*Program)) ) ) ) ) ) ) ) )
 
 # Registers
-(de reg (X)
+(de register (X)
    (cdr (asoq X *Registers)) )
 
 # Operand evaluation
@@ -271,14 +274,14 @@
       ((num? X)                                 # Immediate
          (zero "*Mode")
          (pack (and F "~") X) )
-      ((reg X) (off "*Mode") @)                 # Register
+      ((register X) (off "*Mode") @)            # Register
       ((atom X) (on "*Mode") X)                 # Direct
       ((or (num? (cdr X)) (; (cdr X) equ))
          (prog1
             (cons ("source" (car X) F) @)
             (setq "*Mode" (cons "*Mode" 0)) ) )
       ((cdr X)
-         (and (reg (cdr X)) (quit "Bad source" X))
+         (and (register (cdr X)) (quit "Bad source" X))
          (prog1
             (cons ("source" (car X) F) @)
             (setq "*Mode" (cons "*Mode" T)) ) )
@@ -294,11 +297,18 @@
    (off "*Modes")
    (let Arg (read)
       (if (lst? Arg)
-         (mapcar
+         (mapcan
             '((X)
-               (prog1
-                  ("source" X)
-                  (queue '"*Modes" "*Mode") ) )
+               (if (and (pair X) (pair (; X 1 equ)))
+                  (mapcar
+                     '((Y)
+                        (prog1
+                           ("source" Y)
+                           (queue '"*Modes" "*Mode") ) )
+                     (append @ (cdr X)) )
+                  (prog1
+                     (cons ("source" X))
+                     (queue '"*Modes" "*Mode") ) ) )
             Arg )
          ("source" Arg) ) ) )
 
@@ -306,7 +316,7 @@
    (setq X (operand X))
    (cond
       ((num? X) (quit "Bad destination" X))     # Immediate
-      ((reg X) (off "*Mode") @)                 # Register
+      ((register X) (off "*Mode") @)            # Register
       ((atom X)                                 # Direct
          (or F (quit "Bad destination" X))
          (on "*Mode")
@@ -316,7 +326,7 @@
             (cons ("destination" (car X) T) @)
             (setq "*Mode" (cons "*Mode" 0)) ) )
       ((cdr X)
-         (and (reg (cdr X)) (quit "Bad destination" X))
+         (and (register (cdr X)) (quit "Bad destination" X))
          (prog1
             (cons ("destination" (car X) T) (cdr X))
             (setq "*Mode" (cons "*Mode" T)) ) )
@@ -348,13 +358,13 @@
       (off "*Mode")
       (cond
          ((num? X) (pack *Label "_" X))            # Label
-         ((reg X) (quit "Bad address" X))          # Register
+         ((register X) (quit "Bad address" X))     # Register
          ((atom X) X)                              # Absolute
-         ((and (=T (cadr X)) (reg (car X)))        # SUBR
+         ((and (=T (cadr X)) (register (car X)))   # SUBR
             (setq "*Mode" (0))
             @ )
          ((cdr X) (quit "Bad address" X))
-         ((reg (car X)) (zero "*Mode") @)          # Register indirect
+         ((register (car X)) (zero "*Mode") @)     # Register indirect
          (T (on "*Mode") (car X)) ) ) )            # Indirect
 
 
@@ -436,23 +446,25 @@
       (big (source) "*Mode")
       (byte (operand (read)))
       (bytes (mapcar operand (read)))
-      (cc (address) "*Mode" (sources) "*Modes")
       (call (address) "*Mode")
-      (clrc)
-      (clrz)
+      (catch)
+      (cc (address) "*Mode" (sources) "*Modes")
+      (clrx)
       (cmp (destination) "*Mode" (source) "*Mode")
       (cmpn (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (cnt (source) "*Mode")
       (dec (destination) "*Mode")
       (div (source) "*Mode")
       (drop)
+      (eq)
       (eval)
       (eval+)
       (eval/ret)
-      (exec (reg (read)))
+      (exec (register (read)))
       (fixnum)
       (float)
       (func)
+      (gt)
       (hx2 (read))
       (inc (destination) "*Mode")
       (initCode)
@@ -461,38 +473,39 @@
       (initLib)
       (initMain)
       (initSym (file) (read) (read) (operand (read)))
+      (jb (address) "*Mode")
       (jc (address) "*Mode")
-      (jcz (address) "*Mode")
       (jeq (address) "*Mode")
       (jge (address) "*Mode")
       (jgt (address) "*Mode")
       (jle (address) "*Mode")
       (jlt (address) "*Mode")
       (jmp (address) "*Mode")
+      (jnb (address) "*Mode")
       (jnc (address) "*Mode")
-      (jncz (address) "*Mode")
       (jne (address) "*Mode")
       (jns (address) "*Mode")
       (jnsz (address) "*Mode")
+      (jnx (address) "*Mode")
       (jnz (address) "*Mode")
       (js (address) "*Mode")
       (jsz (address) "*Mode")
+      (jump (register (read)))
+      (jx (address) "*Mode")
       (jz (address) "*Mode")
       (:: (file) (read))
       (ld (destination) "*Mode" (source) "*Mode")
       (ld2 (source) "*Mode")
       (ld4 (source) "*Mode")
-      (ldc (destination) "*Mode" (source) "*Mode")
       (ldd)
       (ldf)
-      (ldnc (destination) "*Mode" (source) "*Mode")
       (ldnz (destination) "*Mode" (source) "*Mode")
       (ldz (destination) "*Mode" (source) "*Mode")
       (lea (destination) "*Mode" (source) "*Mode")
       (link)
       (load (destination) "*Mode" (destination) "*Mode" (source) "*Mode")
+      (lt)
       (memb (source) "*Mode" (source) "*Mode")
-      (movm (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (movn (destination) "*Mode" (source) "*Mode" (source) "*Mode")
       (mset (destination) "*Mode" (source) "*Mode")
       (mul (source) "*Mode")
@@ -507,18 +520,17 @@
       (off (destination) "*Mode" (source T) "*Mode")
       (or (destination) "*Mode" (source) "*Mode")
       (pop (destination) "*Mode")
-      (prog (reg (read)))
+      (prog (register (read)))
       (push (source) "*Mode")
-      (rcl (destination) "*Mode" (source) "*Mode")
-      (rcr (destination) "*Mode" (source) "*Mode")
       (ret)
       (return)
       (rol (destination) "*Mode" (source) "*Mode")
       (ror (destination) "*Mode" (source) "*Mode")
+      (rxl (destination) "*Mode" (source) "*Mode")
+      (rxr (destination) "*Mode" (source) "*Mode")
       (save (source) "*Mode" (source) "*Mode" (destination) "*Mode")
       (set (destination) "*Mode" (source) "*Mode")
-      (setc)
-      (setz)
+      (setx)
       (shl (destination) "*Mode" (source) "*Mode")
       (shr (destination) "*Mode" (source) "*Mode")
       (skip (operand (read)))
@@ -529,9 +541,10 @@
       (stf)
       (stop)
       (sub (destination) "*Mode" (source) "*Mode")
-      (subc (destination) "*Mode" (source) "*Mode")
+      (subb (destination) "*Mode" (source) "*Mode")
       (sym (source) "*Mode")
       (test (destination) "*Mode" (source) "*Mode")
+      (throw)
       (tuck (source) "*Mode")
       (word (operand (read)))
       (xchg (destination) "*Mode" (destination) "*Mode")
@@ -598,36 +611,48 @@
       (put Sym 'chgCC T) ) )
 
 (useCC
-   ldc ldnc ldz ldnz
-   addc subc rcl rcr
-   jz jeq jnz jne js jns jsz jnsz jc jlt jnc jge jcz jle jncz jgt )
+   ldz ldnz
+   addc subb rxl rxr
+   jz jeq jnz jne js jns jsz jnsz jc jb jx jlt jnc jnb jnx jge jle jgt )
 
 (chgCC
-   movn mset movm save load
+   movn mset save load
    add sub inc dec not neg and or xor off test shl shr rol ror
-   mul div zxt setz clrz
+   mul div zxt eq gt lt
    cmp cmpn slen memb null nul4 nul cnt big num sym atom
    call cc return
    eval eval+ eval/ret exec prog )
 
 (de noCC (Lst)
    (with (caar Lst)
-      (and
-         (: noCC)
-         (loop
-            (NIL (setq Lst (cdr Lst)))
-            (T (; Lst 1 1 useCC))
-            (T (; Lst 1 1 chgCC) T)
-            (T (= '(push T NIL) (car Lst)))
-            (T (= '(pop T NIL) (car Lst)) T)
-            (T (== 'ret (caar Lst))
-               (use (@A @B @Z)
-                  (not (match '(@A "_" @B "F" @Z) (chop *Label))) ) )
-            (T
-               (and
-                  (== 'jmp (caar Lst))
-                  (not (setq Lst (member (cons ': (cadar Lst)) *Program))) ) ) )
-         (: noCC) ) ) )
+      (and (: noCC) (not (needCC (cdr Lst))) (: noCC)) ) )
+
+(de needCC (Lst)
+   (loop
+      (T (; Lst 1 1 useCC) T)
+      (T (; Lst 1 1 chgCC))
+      (T
+         (member (car Lst)
+            '((push zscx NIL) (push zsc NIL) (push x NIL)) )
+         T )
+      (T
+         (member (car Lst)
+            '((pop zscx NIL) (pop zsc NIL) (pop x NIL)) ) )
+      (T
+         (or
+            (memq (caar Lst) '(ret throw))
+            (and
+               (== 'jmp (caar Lst))
+               (memq (cadar Lst) '(Ret ret)) ) )
+         (use (@A @B @Z)
+            (match '(@A "_" @B "F" @Z) (chop *Label)) ) )
+      (T
+         (and
+            (memq (caar Lst) *Transfers)
+            (member (cons ': (cadar Lst)) (cddr Lst))
+            (needCC (cdr @)) )
+         T )
+      (NIL (setq Lst (cdr Lst))) ) )
 
 
 # Warning message

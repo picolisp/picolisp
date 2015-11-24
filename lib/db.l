@@ -1,4 +1,4 @@
-# 19may15abu
+# 10nov15abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1068,6 +1068,10 @@
    (unless (: T) (decECnt This)) )
 
 (dm url> (Tab))
+
+(dm url2> () (url> This 2))
+(dm url3> () (url> This 3))
+(dm url4> () (url> This 4))
 
 (dm upd> (X Old))
 

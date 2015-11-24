@@ -1,4 +1,4 @@
-# 17jun15abu
+# 06nov15abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -711,7 +711,7 @@
 (dm val> ()
    (let Val (extra)
       (if (and (<> (: old) Val) (able))
-         ((: new) Val)
+         ((: new) (=: old Val))
          Val ) ) )
 
 
@@ -2033,25 +2033,23 @@
    (set> This (get (eval (: erObj)) (: erVar))) )
 
 
-# Symbol/Relation
-(class +S/R +/R)
-
-(dm set> (Val Dn)
-   (and
-      (eval (: erObj))
-      (put! @ (: erVar) Val) )
-   (extra Val Dn) )
-
-
 # Entity/Relation
 (class +E/R +/R)
+# er
 
 (dm set> (Val Dn)
+   (=: er Val)
    (and
       (not (: lock))
       (eval (: erObj))
       (put!> @ (: erVar) Val) )
    (extra Val Dn) )
+
+(dm val> ()
+   (let Val (extra)
+      (if (= Val (: er))
+         (get (eval (: erObj)) (: erVar))
+         Val ) ) )
 
 (dm chk> ()
    (or
@@ -2061,6 +2059,7 @@
          (mis> @ (: erVar) (val> This)) ) ) )
 
 
+# Subobject relation
 (class +SubE/R +E/R)
 # sub
 
@@ -2216,6 +2215,40 @@
             (not (val> This))
             (<> "-" S)
             ,"Data not found" ) ) ) )
+
+
+(class +ObjVal +obj)
+# objVar objTyp objHook
+
+# ([T|msg] (var . typ) [hook] ..)
+(dm T @
+   (super)
+   (=: objVar (car (arg)))
+   (=: objTyp (cdr (arg)))
+   (when (meta (: objTyp) (: objVar) 'hook)
+      (=: objHook (next)) )
+   (pass extra) )
+
+(dm txt> (Obj)
+   (if (ext? Obj)
+      (get Obj (: objVar))
+      Obj ) )
+
+(dm set> (Obj Dn)
+   (extra
+      (get (=: obj Obj) (: objVar))
+      Dn ) )
+
+(dm val> ()
+   (let Val (extra)
+      (nond
+         (Val
+            (and (: obj) (put!> @ (: objVar) NIL))
+            (=: obj NIL) )
+         ((: obj)
+            (=: obj (new! (: objTyp) (: objVar) Val)) )
+         (NIL (put!> @ (: objVar) Val)) ) )
+   (: obj) )
 
 
 (class +ObjView +obj)

@@ -1,7 +1,7 @@
 #!bin/picolisp lib.l
-# 28oct14abu
+# 20nov15abu
 # Use: bin/replica <port|num> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
-#    : bin/ssl <host> 443 '<port|name>/!replica' <keyFile> <journal> <blob/app/> 60
+#    : bin/ssl <host> 443 '<port|name>/!replica' <keyFile> <journal> <blob/app/> 20 [60]
 
 (load "@lib/misc.l" "@lib/http.l")
 
@@ -18,20 +18,24 @@
    *SSLKey (in *KeyFile (line T)) )
 
 (de replica ()
-   (ctl *KeyFile
-      (protect
-         (when (= (line T) *SSLKey)
-            (let? X (line T)
-               (if (format X)
-                  (when (out (tmp 'replica) (echo @))    # Journal
-                     (prin (peek))
-                     (flush)
-                     (journal (tmp 'replica)) )
-                  (let Blob (pack *Blob X)               # Blob
-                     (call 'mkdir "-p" (dirname Blob))
-                     (out Blob (echo)) ) ) ) ) ) ) )
+   (protect
+      (when (= (line T) *SSLKey)
+         (let? X (line T)
+            (if (format X)
+               (when (out (tmp 'replica) (echo @))    # Journal
+                  (prin (peek))
+                  (flush)
+                  (journal (tmp 'replica)) )
+               (let Blob (pack *Blob X)               # Blob
+                  (call 'mkdir "-p" (dirname Blob))
+                  (out Blob (echo)) ) ) ) ) ) )
 
 (pool *Pool (mapcar format *Dbs) *Journal)
 
 (retire *Arg1)
-(server *Port)
+
+# Non-forking server
+(setq *Port (port *Port))
+(loop
+   (http (setq *Sock (listen *Port)))
+   (close *Sock) )

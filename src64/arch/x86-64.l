@@ -1,7 +1,7 @@
-# 08sep14abu
+# 11nov15abu
 # (c) Software Lab. Alexander Burger
 
-# Byte order
+# Architecture
 (on *LittleEndian)
 (off *AlignedCode)
 
@@ -11,7 +11,8 @@
    (B . "%al") (D "%rax" . "%rdx")
    (X . "%r13") (Y . "%r14") (Z . "%r15")
    (L . "%rbp") (S . "%rsp")
-   (F . T) )
+   (zscx . zscx) (zsc . zscx) (x . zscx) )
+
 # NULL: %r12
 # Temporary: %r10 %r11
 # Block operations: %rcx %rsi %rdi
@@ -77,25 +78,26 @@
 
 (de src (Src S)
    (cond
-      ((=0 S) (if (= "0" Src) "%r12" (pack "$" Src)))  # Immediate
-      ((not S) Src)                                    # Register
-      ((=T S)                                          # Direct
+      ((=0 S)  # Immediate
+         (if (= "0" Src) "%r12" (pack "$" Src)) )
+      ((not S) Src)  # Register
+      ((=T S)  # Direct
          (if (and *FPic (not (pre? "(" Src)))
             (pack Src "@GOTPCREL(%rip)")
             (pack "$" Src) ) )
-      ((not (car S))
+      ((not (car S))  # Indexed
          (ifn (and *FPic (=T (cdr S)))
             (pack (cdr Src) "(" (car Src) ")")
             (prinst "add" (pack (cdr Src) "@GOTPCREL(%rip)") (car Src))
             (pack "(" (car Src) ")") ) )
-      ((=T (car S))
+      ((=T (car S))  # Indirect
          (ifn *FPic
             (if (cdr S)
                (pack (car Src) "+" (cdr Src))
                (car Src) )
             (prinst "mov" (pack (car Src) "@GOTPCREL(%rip)") "%r10")
             (pack (cdr Src) "(%r10)") ) )
-      (T
+      (T  # Combined
          (prinst "mov" (src (car Src) (car S)) "%r10")
          (ifn (and *FPic (=T (cdr S)))
             (pack (cdr Src) "(%r10)")
@@ -257,12 +259,6 @@
          (prinst "mov" "%r10" Dst) )
       (prinl "1:") ) )
 
-(asm ldc (Dst D Src S)
-   (_cmov "cmovcq" "jnc") )
-
-(asm ldnc (Dst D Src S)
-   (_cmov "cmovncq" "jc") )
-
 (asm ldz (Dst D Src S)
    (_cmov "cmovzq" "jnz") )
 
@@ -298,15 +294,6 @@
    (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
    (prinst "rep stosb") )
-
-(asm movm (Dst D Src S End E)
-   (lea Dst D "%rdi")
-   (lea Src S "%rsi")
-   (lea End E "%rcx")
-   (prinst "sub" "%rsi" "%rcx")
-   (prinst "shr" "$3" "%rcx")
-   (prinst "cld")
-   (prinst "rep movsq") )
 
 (asm save (Src S End E Dst D)
    (lea Src S "%rsi")
@@ -348,7 +335,7 @@
       (prinst "sub" Src (car Dst))
       (prinst "sbb" "%r12" (cdr Dst)) ) )
 
-(asm subc (Dst D Src S)
+(asm subb (Dst D Src S)
    (setq Dst (dst Dst D)  Src (src Src S))
    (ifn (pair Dst)
       (dstSrc "sbb" Dst Src)
@@ -402,10 +389,10 @@
 (asm ror (Dst D Src S)
    (dstShift "ror" (dst Dst D) (src Src S)) )
 
-(asm rcl (Dst D Src S)
+(asm rxl (Dst D Src S)
    (dstShift "rcl" (dst Dst D) (src Src S)) )
 
-(asm rcr (Dst D Src S)
+(asm rxr (Dst D Src S)
    (dstShift "rcr" (dst Dst D) (src Src S)) )
 
 (asm mul (Src S)
@@ -423,16 +410,19 @@
 (asm zxt ()  # 8 bit -> 64 bit
    (prinst "movzx" "%al" "%rax") )
 
-(asm setz ()
+(asm eq ()
    (prinst "or" "%r12" "%r12") )
 
-(asm clrz ()
+(asm gt ()
+   (prinst "cmp" "%r12" "%rsp") )
+
+(asm lt ()
    (prinst "cmp" "%rsp" "%r12") )
 
-(asm setc ()
+(asm setx ()
    (prinst "stc") )
 
-(asm clrc ()
+(asm clrx ()
    (prinst "clc") )
 
 # Comparisons
@@ -509,7 +499,7 @@
 (asm atom (Src S)
    (prinst "testb" "$0x0E" (lowByte (src Src S))) )
 
-# Flow Control
+# Flow control
 (asm call (Adr A)
    (nond
       (A  # Absolute
@@ -528,6 +518,9 @@
       (NIL
          (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") ) ) )
+
+(asm jump (Reg)
+   (prinst "jmp" (pack "*" Reg)) )
 
 (de _jmp (Opc Opc2)
    (ifn A
@@ -566,23 +559,29 @@
 (asm jc (Adr A)
    (_jmp "jc" "jnc") )
 
+(asm jb (Adr A)
+   (_jmp "jc" "jnc") )
+
+(asm jx (Adr A)
+   (_jmp "jc" "jnc") )
+
 (asm jlt (Adr A)
    (_jmp "jc" "jnc") )
 
 (asm jnc (Adr A)
    (_jmp "jnc" "jc") )
 
+(asm jnb (Adr A)
+   (_jmp "jnc" "jc") )
+
+(asm jnx (Adr A)
+   (_jmp "jnc" "jc") )
+
 (asm jge (Adr A)
    (_jmp "jnc" "jc") )
 
-(asm jcz (Adr A)
-   (_jmp "jbe" "ja") )
-
 (asm jle (Adr A)
    (_jmp "jbe" "ja") )
-
-(asm jncz (Adr A)
-   (_jmp "ja" "jbe") )
 
 (asm jgt (Adr A)
    (_jmp "ja" "jbe") )
@@ -594,6 +593,11 @@
          (not (memq (caar @) '`(cons ': (cdr *Transfers)))) )
       (prinst "rep") )
    (prinst "ret") )
+
+(asm catch ())
+
+(asm throw ()
+   ((get 'ret 'asm)) )
 
 # Floating point
 (asm ldd ()
@@ -748,6 +752,7 @@
          (prinst "mov" "%rsp" "%rbp")
          (prinst "mov" Arg "%rbx")
          (prinst "sub" "%rax" "%rbx")     # Size of arguments
+         (prinst "shr" "$1" "%rbx")       # Take half
          (prinst "sub" "%rbx" "%rsp")     # Allocate space
          (prinst "andb" "$~15" "%spl")    # Align stack
          (prinst "mov" "%rsp" "%rbx")     # E on stack space
@@ -820,7 +825,7 @@
          (prinst "add" "$16" "%rax")
          (prinst "mov" "%r10" "(%rbx)")
          (prinst "add" "$8" "%rbx")
-         (prinst "jmp 1b")
+         (prinst "jmp" "1b")
          (prinl "9:")
          # Maximally 6 SSE registers in varargs for dynamic calls
          (prinst "mov" "$6" "%al") ) )
@@ -843,14 +848,14 @@
 (asm push (Src S)
    (setq Src (src Src S))
    (cond
-      ((=T Src) (prinst "pushf"))
+      ((== 'zscx Src) (prinst "pushf"))
       ((pre? "%" Src) (prinst "push" Src))
       (T (prinst "pushq" Src)) ) )
 
 (asm pop (Dst D)
    (setq Dst (dst Dst D))
    (cond
-      ((=T Dst) (prinst "popf"))
+      ((== 'zscx Dst) (prinst "popf"))
       ((pre? "%" Dst) (prinst "pop" Dst))
       (T (prinst "popq" Dst)) ) )
 

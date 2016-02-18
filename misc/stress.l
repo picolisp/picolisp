@@ -1,4 +1,4 @@
-# 25may11abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 # Use: nice pil misc/stress.l -main -go -bye; rm db/test jnl db/test2
 
@@ -37,8 +37,8 @@
 
 (de main ()
    (seed (in "/dev/urandom" (rd 8)))
-   (call 'mkdir "-p" "db")
-   (call 'rm "-f" "db/test" "jnl" "db/test2")
+   (call "mkdir" "-p" "db")
+   (call "rm" "-f" "db/test" "jnl" "db/test2")
    (pool "db/test" NIL "jnl")
    (set *DB 0)
    (for K 999
@@ -63,4 +63,4 @@
    (verify)
    (pool "db/test2")
    (journal "jnl")
-   (call 'cmp "db/test" "db/test2") )
+   (call "cmp" "db/test" "db/test2") )

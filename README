@@ -1,4 +1,4 @@
-16nov15abu
+02feb16abu
 (c) Software Lab. Alexander Burger
 
                                                           Perfection is attained
@@ -92,9 +92,10 @@ internal process and database synchronization.
 PicoLisp is free software, and you are welcome to use and redistribute it under
 the conditions of the MIT/X11 License (see "COPYING").
 
-It compiles and runs on current 32-bit GNU/Linux, FreeBSD, Mac OS X (Darwin),
-Cygwin/Win32 (and possibly other) systems. A native 64-bit version is available
-for arm64/Linux, x86-64/Linux, ppc64/Linux, x86-64/FreeBSD and x86-64/SunOS.
+It compiles and runs on current 32-bit GNU/Linux, FreeBSD, NetBSD, OpenBSD,
+SunOS, HP-UX, AIX, IRIX64, Mac OS X (Darwin), Cygwin/Win32 (and possibly other)
+systems. A native 64-bit version is available for arm64/Linux, x86-64/Linux,
+ppc64/Linux, x86-64/FreeBSD and x86-64/SunOS.
 
 --------------------------------------------------------------------------------
 

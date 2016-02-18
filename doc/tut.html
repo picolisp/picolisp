@@ -45,9 +45,9 @@ href="refB.html#bye">(bye)</a></code>.
 is incompatible with <code>rlwrap</code> for example but is more powerful.
 <p><ul>
 <li><code>vi</code>-like command-line editing (typos fixes and history with ESC,
-<code>h</code>, <code>j</code>, <code>k</code> and <code>l</code> but not
-arrows),</li>
-<li>auto-formating (underlined) of double-quoted strings (don't try and struggle
+<code>h</code>, <code>j</code>, <code>k</code> and <code>l</code>, or the
+arrow keys if supported by the terminal),</li>
+<li>auto-formatting (underlined) of double-quoted strings (don't try and struggle
 to make <code>&quot;</code> appear).</li>
 </ul>
 
@@ -119,8 +119,9 @@ key, and terminating them with the ENTER key. This is the <i>Insert Mode</i>.
 <p>If you hit ESC, you get into <i>Command Mode</i>. Now you can navigate
 horizontally in the current input line, or vertically in the history of
 previously entered lines, with key commands borrowed from the <code>vi</code>
-editor (only <code>h</code>, <code>j</code>, <code>k</code> and <code>l</code>
-and not arrows). Note, however, that there is always only a single line visible.
+editor (only <code>h</code>, <code>j</code>, <code>k</code> and <code>l</code>,
+or the arrow keys if supported by the terminal). Note, however, that there is
+always only a single line visible.
 
 <p>Let's say you did some calculation
 
@@ -156,6 +157,7 @@ expression when the cursor is at a left parenthesis.
 <li><code>l</code> - Go right one character
 <li><code>h</code> - Go left one character
 <li><code>w</code> - Go right one word
+<li><code>e</code> - Go to next word end
 <li><code>b</code> - Go back (left) one word
 <li><code>0</code> - Go to the beginning of the line
 <li><code>$</code> - Go to the end of the line
@@ -226,6 +228,8 @@ special meaning:
 
 <li><code>Ctrl-E</code> lets you <code><a href="refE.html#edit">edit</a></code>
 the history
+
+<li><code>Ctrl-F</code> saves the history
 
 <li>TAB performs symbol and/or path completion: When a symbol (or path) name is
 entered partially and TAB is pressed subsequently, all internal symbols (and/or

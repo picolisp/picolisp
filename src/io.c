@@ -1,4 +1,4 @@
-/* 01jun15abu
+/* 03jan16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1595,7 +1595,7 @@ long waitFd(any ex, int fd, long ms) {
    return ms;
 }
 
-// (wait ['cnt] . prg) -> any
+// (wait 'cnt|NIL . prg) -> any
 any doWait(any ex) {
    any x, y;
    long ms;

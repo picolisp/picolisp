@@ -1,4 +1,4 @@
-# 16sep15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -159,7 +159,7 @@
 
 (de pil @
    (when (== "Pil" '"Pil")
-      (call 'mkdir "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
+      (call "mkdir" "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
    (pass pack "Pil") )
 
 (de rc (File Key . @)
@@ -189,9 +189,9 @@
 # Temporary Files
 (de tmp @
    (unless *Tmp
-      (push '*Bye '(call 'rm "-r" *Tmp))
-      (push '*Fork '(off *Tmp) '(del '(call 'rm "-r" *Tmp) '*Bye))
-      (call 'mkdir "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
+      (push '*Bye '(call "rm" "-r" *Tmp))
+      (push '*Fork '(off *Tmp) '(del '(call "rm" "-r" *Tmp) '*Bye))
+      (call "mkdir" "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
 ### List ###

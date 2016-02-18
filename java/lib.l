@@ -1,4 +1,4 @@
-# 03feb15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # *Java
@@ -25,8 +25,8 @@
          (Path (tmp ":" (path "@java/reflector.jar"))
             Rqst (tmp "rqst")
             Rply (tmp "rply") )
-         (call 'mkfifo Rqst)
-         (call 'mkfifo Rply)
+         (call "mkfifo" Rqst)
+         (call "mkfifo" Rply)
          (task (open Rqst)  R (open Rply)
             (in @
                (out R

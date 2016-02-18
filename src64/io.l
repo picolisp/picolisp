@@ -1,4 +1,4 @@
-# 11nov15abu
+# 03jan16abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -3247,7 +3247,7 @@
    pop Y
    ret
 
-# (wait ['cnt] . prg) -> any
+# (wait 'cnt|NIL . prg) -> any
 (code 'doWait 2)
    push X
    push Y

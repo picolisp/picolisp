@@ -125,7 +125,7 @@ only one symbol is left exits the 'edit' buffer.
                      (prinl)
                      (println '(=======))
                      (prinl) ) ) ) )
-         (call 'emacsclient
+         (call "emacsclient"
             "-a" ""
             "-c"
             (pack "+" "N")

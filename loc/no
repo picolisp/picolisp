@@ -1,5 +1,5 @@
-# 13jan10jk
-# Jon Kleiser, jon.kleiser@usit.uio.no
+# 05jan16abu
+# Jon Kleiser <jon.kleiser@usit.uio.no>
 
 "Language" "Språk"
 
@@ -73,6 +73,7 @@
 "Scroll down one line" "Scroll ned en linje"
 "Scroll down one page" "Scroll ned en side"
 "Go to last line" "Gå til siste linje"
+"Insert empty row" "Sett inn tom rad"
 "Delete row" "Slett rad"
 "Shift row up" "Forskyv en rad opp"
 "Clear all input fields" "Slett alle input-felter"

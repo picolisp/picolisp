@@ -1,4 +1,4 @@
-/* 24nov15abu
+/* 11feb16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -9,7 +9,7 @@
 #define O_ASYNC FASYNC
 #endif
 
-#if defined (__SVR4) || defined (_AIX) || defined (__hpux)
+#if defined (__SVR4) || defined (_AIX) || defined (__hpux) || defined (__sgi)
 #define O_ASYNC 0
 #define GETCWDLEN 1024
 #else
@@ -376,10 +376,18 @@ any doSys(any x) {
          return mkStr(getenv(nm));
       y = evSym(x);
       {
+#if defined (__sgi)
+         char *val = malloc(sizeof(nm) + bufSize(y));
+
+         sprintf(val, "%s=", nm); 
+         bufString(y, val + sizeof(nm));
+         return putenv(val)? Nil : y;
+#else
          char val[bufSize(y)];
 
          bufString(y,val);
          return setenv(nm,val,1)? Nil : y;
+#endif
       }
    }
 }
@@ -1125,7 +1133,7 @@ any doCtty(any ex) {
    return T;
 }
 
-// (info 'any ['flg]) -> (cnt|T dat . tim)
+// (info 'any ['flg]) -> (cnt|flg dat . tim)
 any doInfo(any x) {
    any y;
    cell c1;
@@ -1143,7 +1151,10 @@ any doInfo(any x) {
       p = gmtime(&st.st_mtime);
       Push(c1, boxCnt(p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec));
       data(c1) = cons(mkDat(p->tm_year+1900,  p->tm_mon+1,  p->tm_mday), data(c1));
-      data(c1) = cons(S_ISDIR(st.st_mode)? T : boxWord2((word2)st.st_size), data(c1));
+      data(c1) = cons(
+         (st.st_mode & S_IFMT) == S_IFDIR? T :
+         (st.st_mode & S_IFMT) != S_IFREG? Nil :
+         boxWord2((word2)st.st_size), data(c1) );
       return Pop(c1);
    }
 }

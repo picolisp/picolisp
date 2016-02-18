@@ -1,5 +1,6 @@
-# 11aug08
+# 05jan16abu
 # Mansur Mamkin <mmamkin@mail.ru>
+# Mike Pechkin <mike.pechkin@gmail.com>
 
 "Language" "Язык"
 
@@ -73,6 +74,7 @@
 "Scroll down one line" "Прокрутить вниз на одну строку"
 "Scroll down one page" "Прокрутить вниз на одну страницу"
 "Go to last line" "Перейти к последней строке"
+"Insert empty row" "Вставить пустую строку"
 "Delete row" "Удалить строку"
 "Shift row up" "Переместить строку вверх"
 "Clear all input fields" "Очистить все поля ввода"

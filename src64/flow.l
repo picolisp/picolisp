@@ -1,4 +1,4 @@
-# 17nov15abu
+# 03jan16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -3626,7 +3626,7 @@
    eq  # Return "in parent"
    ret
 
-# (bye 'cnt|NIL)
+# (bye ['cnt])
 (code 'doBye 2)
    ld X E
    ld E ((E CDR))  # Eval exit code

@@ -1,4 +1,4 @@
-# 06nov15abu
+# 16dec15abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -924,7 +924,8 @@
 # tip
 
 (dm T (Exe . @)
-   (=: tip Exe)
+   (unless (: tip)
+      (=: tip Exe) )
    (pass extra) )
 
 (dm show> ("Var")
@@ -1237,6 +1238,15 @@
                " / "
                Len ) ) ) ) )
 
+
+# Insert empty row
+(class +InsRowButton +Tiny +JS +Able +Tip +Button)
+
+(dm T ()
+   (super '(nth (: chart 1 data) (row)) ,"Insert empty row" "<"
+      '(set> (: chart 1)
+         (insert (row) (val> (: chart 1))) ) )
+   (=: chg T) )
 
 # Delete row
 (class +DelRowButton +Tiny +JS +Able +Tip +Button)

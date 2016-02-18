@@ -1,4 +1,178 @@
-####### 15.11.0 #######
+18feb16
+   Form-GUI documentation (Mattias Sundblad)
+      doc/toc.html
+      doc/index.html
+      doc/formdoc/*.html
+
+11feb16
+   'info' checks for regular files
+      src64/sysdefs.c
+      src64/sys/x86-64.linux.defs.l
+      src64/sys/arm64.linux.defs.l
+      src64/sys/ppc64.linux.defs.l
+      src64/sys/x86-64.freeBsd.defs.l
+      src64/sys/x86-64.sunOs.defs.l
+      src64/main.l
+      src/main.c
+      doc/refI.html
+      ersatz/fun.src
+
+07feb16
+   Bug in arm64 optimization
+      src64/arch/arm64.l
+
+04feb16
+   Default '+User' GUI more flexible
+      lib/db.l
+      lib/user.l
+
+03feb16
+   Blob handshake in replica/ssl
+      src/ssl.c
+      lib/db.l
+      bin/replica
+   Use 'htStyle' in 'ps'
+      lib/svg.l
+
+02feb16
+   Mike Pechkin added IRIX64
+      src/Makefile
+      src/main.c
+      lib/gcc.l
+      test/src/main.l
+   'protect' only handshake/journal
+      bin/replica
+
+28jan16
+   Minor typo
+      doc/native.html
+   Mike Pechkin added NetBSD, OpenBSD, SunOS, HP-UX and AIX
+      README
+      lib/gcc.l
+
+25jan16
+   Patch from Mike Pechkin for SunOS
+      lib/native.l
+
+22jan16
+   Minor ref fix
+      doc/refR.html
+      doc/refE.html
+
+13jan16
+   Change some internal symbols to transients
+      lib/boss.l
+      lib/btree.l
+      lib/conDbgc.l
+      lib/db32-64.l
+      lib/db.l
+      lib/debug.l
+      lib/edit.l
+      lib/eedit.l
+      lib/eled.l
+      lib/gcc.l
+      lib/http.l
+      lib/native.l
+      lib/tex.l
+      lib/too.l
+      lib/xhtml.l
+      ersatz/lib.l
+      cygwin/tcc.l
+      misc/stress.l
+      java/lib.l
+      app/main.l
+      test/src/main.l
+      test/src/flow.l
+   Minor ref and comment fixes
+      doc/ref_.html
+      {src64,pilos/src}/subr.l
+      src/subr.c
+      mini/src/subr.c
+      ersatz/fun.src
+
+10jan16
+   Bug in 'shruA_A' (destructive in '>>' and '*/')
+   Optimized '>>' for large shift counts
+      {src64,pilos/src}/big.l
+
+08jan16
+   Liberalized Aux check in 'initQuery'
+      lib/pilog.l
+
+07jan16
+   Added note to the threads section
+      doc/faq.html
+
+05jan16
+   '+InsRowButton' GUI prefix class localizations
+      loc/es
+      loc/no
+      loc/ru
+      loc/se
+
+04jan16
+   Added "e" command (go to end of word) to line editor
+      lib/led.l
+   Small fixes in line editor tutorial
+      doc/tut.html
+
+03jan16
+   Minor ref and comment fixes
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/flow.l
+      src/io.c
+      src/flow.c
+      doc/refB.html
+      doc/refW.html
+      ersatz/fun.src
+
+02jan16
+   Minor ref fix
+      doc/refR.html
+
+28dec15
+   Minor typo
+      doc/tut.html
+
+26dec15
+   Minor typo
+      doc/ref_.html
+
+18dec15
+   External links in '<menu>'
+      lib/xhtml.l
+
+17dec15
+   '+InsRowButton' GUI prefix class
+      lib/form.l
+      loc/de
+      loc/jp
+
+16dec15
+   Added 'pil' to index
+      doc/ref.html
+
+10dec15
+   Minor typo
+      doc/refR.html
+
+03dec15
+   Avoid duplicated REPL history after editing with ^E. Simplified.
+      lib/led.l
+      lib/eled.l
+      pilos/init/lib/dbg.l
+
+27nov15
+   Preserve default value in '+Tip'
+      lib/form.l
+   Minor comment fix
+      src/ext.c
+
+26nov15
+   Add "threads" section to FAQ
+      doc/faq.html
+
+####### 15.11 #######
 24nov15
    Version Numbering: Switch to YY.MM[.nn] style
       {src64,pilos/src}/version.l
@@ -116,7 +290,7 @@
 
 ####### 3.1.11.9 #######
 29sep15
-   Minor ref and comment fixex
+   Minor ref and comment fixes
       doc/refI.html
       {src64,pilos/src}/flow.l
       src/flow.c

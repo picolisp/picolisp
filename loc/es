@@ -1,5 +1,6 @@
-# 26aug09art
+# 05jan16abu
 # Armadillo <tc.rucho@gmail.com>
+# Manuel Cano <manutalcual@gmail.com>
 
 "Language" "Idioma"
 
@@ -59,3 +60,28 @@
 "User Administration" "Administración de usuarios"
 "Users" "Usuarios"
 "Phone" "Teléfono"
+
+# Tooltips
+"Open submenu" "Abrir submenu"
+"Close submenu" "Cerrar submenu"
+"Next object of the same type" "Siguiente objeto del mismo tipo"
+"Find or create an object of the same type" "Buscar o crear objeto del mismo tipo"
+"Choose a suitable value" "Elija un valor adecuado"
+"Adopt this value" "Seleccione este valor"
+"Go to first line" "Ir a la primera línea"
+"Scroll up one page" "Subir una página"
+"Scroll up one line" "Subir una línea"
+"Scroll down one line" "Bajar una línea"
+"Scroll down one page" "Bajar una página"
+"Go to last line" "Ir a la última línea"
+"Delete row" "Borrar línea"
+"Shift row up" "Mover línea arriba"
+"Clear all input fields" "Borrar todos los campos"
+"Release exclusive write access for this object" "Liberar acceso exclusido en escritura para este objeto"
+"Gain exclusive write access for this object" "Reclamar acceso exclusivo en escritura para este objeto"
+"Start search" "Iniciar búsqueda"
+"Create new object" "Crear nuevo objeto"
+"Create a new copy of this object" "Crear nueva copia de este objeto"
+"Mark this object as \"not deleted\"" "Marcar este objeto como \"no borrado\""
+"Mark this object as \"deleted\"" "Marcar este objeto como \"borrado\""
+"Update" "Actualizar"

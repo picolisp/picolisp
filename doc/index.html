@@ -80,7 +80,7 @@ function upperLoad(upperFrame) {
 		var anchors = upDoc.getElementsByTagName("a");
 		for (var i=0; i<anchors.length; i++) {
 			var ai = anchors[i];
-			if (ai.href.match(/\/ref\w\.html/)) {
+			if (ai.href.match(/(?:form)?[r|R]ef\w\.html/)) {
 				ai.target = "lower";
 			}
 		}

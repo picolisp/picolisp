@@ -1,4 +1,4 @@
-# 29jul11abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # Convert to PDF document
@@ -7,7 +7,7 @@
       (tmp Doc ".pdf")
       (call "/usr/bin/dvips" "-q" (pack Doc ".dvi"))
       (call "ps2pdf" (pack Doc ".ps") @)
-      (call 'rm "-f"
+      (call "rm" "-f"
          (pack Doc ".tex")
          (pack Doc ".dvi")
          (pack Doc ".ps") ) ) )
@@ -69,9 +69,9 @@
       (prinl "\\begin{document}")
       (prEval Prg 2)
       (prinl "\\end{document}") )
-   (call 'sh "-c"
+   (call "sh" "-c"
       (pack "latex -interaction=batchmode " Doc ".tex >/dev/null") )
-   (call 'rm (pack Doc ".aux") (pack Doc ".log")) )
+   (call "rm" (pack Doc ".aux") (pack Doc ".log")) )
 
 (de \\block (S . Prg)
    (prinl "\\begin{" S "}")

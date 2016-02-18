@@ -28,8 +28,7 @@
 
    *History             # History of input lines
    (in (pack "+" (pil "history"))
-      (ctl NIL
-         (make (until (eof) (link (line T)))) ) )
+      (make (until (eof) (link (line T)))) )
    "Hist0"     *History )
 
 
@@ -46,10 +45,10 @@
 #
 # or, from inside PicoLisp
 #
-#    (call 'stty "intr" "^A")
+#    (call "stty" "intr" "^A")
 
 (raw T)
-(call 'stty "intr" "^R")  # ^R as replacement for ^C
+(call "stty" "intr" "^R")  # ^R as replacement for ^C
 
 # Basic editing routine
 (de chgLine (L N)
@@ -417,7 +416,7 @@
                      ("+"
                         (prinl "[(pwd) " (pwd) "]")
                         (prin "(mkdir -p) ")
-                        (call 'mkdir (read) "-p") (quit) )
+                        (call "mkdir" (read) "-p") (quit) )
                      # call shell-command with arguments
                      (("^c" "!")
                       (prin "[cmd -args] ")
@@ -437,7 +436,7 @@
                                   (printsp (dir (pwd) T))
                                   (prinl) (quit) )
                                  # dired-style directory listing with dotfiles
-                                 ("d" (call 'ls "-al") (quit)) ) ) )
+                                 ("d" (call "ls" "-al") (quit)) ) ) )
                      ("^h" (and (key 500)
                               (case @
                                  # unbug
@@ -455,19 +454,19 @@
                      # list directory files
                      ("^d" (printsp (dir (pwd))) (prinl) (quit))
                      # dired-style directory listing (ls -l)
-                     ("d" (call 'ls "-l") (quit))
+                     ("d" (call "ls" "-l") (quit))
                      # find file (with EMACSCLIENT)
                      ("^f"
                       (prog
                         (prinl "[(pwd) " (pwd) "]")
                         (prin "(emacsclient -c) ")
-                        (call 'emacsclient "-c" (line T)) (quit) ) )
+                        (call "emacsclient" "-c" (line T)) (quit) ) )
                      # find-file (with ZILE)
                      ("f"
                       (prog
                         (prinl "[(pwd) " (pwd) "]")
                         (prin "(zile) ")
-                        (call 'zile (line T)) (quit) ) )
+                        (call "zile" (line T)) (quit) ) )
                      # return (a list with) the number of lines of file(s)
                      ("l"
                         (prinl "[(pwd) " (pwd) "]")
@@ -480,17 +479,17 @@
 
  ) ) )
                         ## (case @
-                        ##    ((call 'test "-f" X)
-                        ##     (call 'zile X) (quit) )
-                        ##    ((call 'test "-d" X)
+                        ##    ((call "test" "-f" X)
+                        ##     (call "zile" X) (quit) )
+                        ##    ((call "test" "-d" X)
                         ##     (prinl "Can't open directory") (quit) )
                         ##    (T (case @
-                        ##          ((call 'test "-d" (dirname X))
+                        ##          ((call "test" "-d" (dirname X))
                         ##           (chdir (dirname X)
                         ##              (out (basename X)
                         ##              (call -zile X) )
                         ##              (quit) ) )
-                        ##          (T (call 'mkdir (dirname X) "-p")
+                        ##          (T (call "mkdir" (dirname X) "-p")
                         ##             (chdir (dirname X)
                         ##                (out (basename X)) ) ) ) ) ) ) ) ) ) )
 
@@ -555,7 +554,7 @@
          # delete-char
          ("^d" (doUndo) (delChar))
          # clear-screen
-         ("^l" (call 'tput 'clear) (quit))
+         ("^l" (call "tput" 'clear) (quit))
          # self-insertion
          (T
             (when (= "C" ")")
@@ -674,17 +673,9 @@
       (pack "Line") ) )
 
 (de saveHistory ()
-   (in (pack "+" (pil "history"))
-      (ctl T
-         (let (Old (make (until (eof) (link (line T)))) New *History N "HistMax")
-            (out (pil "history")
-               (while (and New (n== New "Hist0"))
-                  (prinl (pop 'New))
-                  (dec 'N) )
-               (setq "Hist0" *History)
-               (do N
-                  (NIL Old)
-                  (prinl (pop 'Old)) ) ) ) ) ) )
+   (unless (= *History "Hist0")
+      (out (pil "history")
+         (mapc prinl *History) ) ) )
 
 # Enable line editing
 (de *Led

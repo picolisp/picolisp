@@ -1,4 +1,4 @@
-# 26aug14abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -164,9 +164,9 @@
          ((info Z)
             (in Z (while (rd) (zap @)))
             (if (info F)
-               (call 'mv F Z)
-               (call 'rm Z) ) )
-         ((info F) (call 'mv F Z)) ) ) )
+               (call "mv" F Z)
+               (call "rm" Z) ) )
+         ((info F) (call "mv" F Z)) ) ) )
 
 
 # Tree node count

@@ -1,4 +1,4 @@
-# 10nov11abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 ## 1. On the 32-bit system:
@@ -18,10 +18,10 @@
 # 64-bit DB export -> "~/.pil/db64.tgz"
 (de export64 (Pool Dbs Blob)
    (if Blob
-      (call 'tar "cfz" (tmp "db32.tgz") Pool Blob)
-      (call 'tar "cfz" (tmp "db32.tgz") Pool) )
+      (call "tar" "cfz" (tmp "db32.tgz") Pool Blob)
+      (call "tar" "cfz" (tmp "db32.tgz") Pool) )
    (chdir (tmp)
-      (call 'tar "xfz" "db32.tgz")
+      (call "tar" "xfz" "db32.tgz")
       (pool Pool Dbs)
       (for (F . @) (or Dbs (2))
          (for (S (seq F)  S  (seq S))
@@ -30,13 +30,13 @@
       (commit T)
       (pool)
       (for (F . @) Dbs
-         (call 'mv
+         (call "mv"
             (pack Pool F)
             (pack Pool (hax (dec F))) ) )
       (ifn Blob
-         (call 'tar "cvfz" "../../db64.tgz" Pool)
-         (call 'mv Blob ".blob/")
-         (call 'mkdir "-p" Blob)
+         (call "tar" "cvfz" "../../db64.tgz" Pool)
+         (call "mv" Blob ".blob/")
+         (call "mkdir" "-p" Blob)
          (use (@S @R Src)
             (let Pat '`(conc (chop ".blob/") '(@S "." @R))
                (in (list 'find ".blob/" "-type" "f")
@@ -63,9 +63,9 @@
                                  "."
                                  @R ) )
                            (when (dirname Dst)
-                              (call 'mkdir "-p" @) )
-                           (call 'mv Src Dst) ) ) ) ) ) )
-         (call 'tar "cvfz" "../../db64.tgz" Pool Blob) ) ) )
+                              (call "mkdir" "-p" @) )
+                           (call "mv" Src Dst) ) ) ) ) ) )
+         (call "tar" "cvfz" "../../db64.tgz" Pool Blob) ) ) )
 
 # 32-bit -> 64-bit DB import
 (de import32 ()

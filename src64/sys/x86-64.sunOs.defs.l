@@ -63,8 +63,9 @@
 (equ ST_MODE 16)  # 4
 (equ ST_SIZE 40)
 (equ ST_MTIME 64)
-(equ S_IFMT  (hex "F000"))
-(equ S_IFDIR (hex "4000"))
+(equ S_IFMT  (oct "170000"))
+(equ S_IFREG (oct "100000"))
+(equ S_IFDIR (oct "40000"))
 
 # times
 (equ TMS 32)  # 'times' structure

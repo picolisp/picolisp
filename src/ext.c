@@ -1,4 +1,4 @@
-/* 27apr15abu
+/* 27nov15abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -251,7 +251,7 @@ any Base64(any x) {
 }
 
 /*** Password hashing ***/
-// (Ext:Crypt 'key 'salt) -> str
+// (ext:Crypt 'key 'salt) -> str
 any Crypt(any x) {
    any y;
 

@@ -1,11 +1,11 @@
-# 04oct11abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # "boss" *Boss
 
 (unless (info (tmp "+"))
-   (call 'mkfifo (setq "boss" (tmp "+")))
-   (call 'mkfifo (setq *Boss (tmp "-"))) )
+   (call "mkfifo" (setq "boss" (tmp "+")))
+   (call "mkfifo" (setq *Boss (tmp "-"))) )
 (hear (open "boss"))
 
 # (boss 'sym ['any ..])

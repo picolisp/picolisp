@@ -1,4 +1,4 @@
-# 16sep15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -147,14 +147,14 @@
 
 (de pil @
    (when (== "Pil" '"Pil")
-      (call 'mkdir "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
+      (call "mkdir" "-p" (setq "Pil" `(pack (sys "HOME") "/.pil/"))) )
    (pass pack "Pil") )
 
 # Temporary Files
 (de tmp @
    (unless *Tmp
-      (push '*Bye '(call 'rm "-r" *Tmp))
-      (call 'mkdir "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
+      (push '*Bye '(call "rm" "-r" *Tmp))
+      (call "mkdir" "-p" (setq *Tmp (pil "tmp/" *Pid "/"))) )
    (pass pack *Tmp) )
 
 ### List ###
@@ -1416,7 +1416,7 @@
 
 (de javac (Cls Ext Impl . @)
    (let (J (pack "tmp/" Cls ".java")  C (pack "tmp/" Cls ".class"))
-      (call 'mkdir "-p" "tmp/")
+      (call "mkdir" "-p" "tmp/")
       (out J
          (while (args)
             (prinl "import " (next) ";") )
@@ -1440,7 +1440,7 @@
 
 # Browsing
 (de doc (Sym Browser)
-   (call (or Browser (sys "BROWSER") 'w3m)
+   (call (or Browser (sys "BROWSER") "w3m")
       (pack
          "file:"
          (and (= `(char '/) (char (path "@"))) "//")
@@ -1744,7 +1744,7 @@
 (de proc @
    (apply call
       (make (while (args) (link "-C" (next))))
-      'ps "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) )
+      "ps" "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) )
 
 # Benchmarking
 (de bench Prg

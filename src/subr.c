@@ -1,4 +1,4 @@
-/* 24may15abu
+/* 13jan16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1622,7 +1622,7 @@ any doProve(any x) {
    return isCell(data(e))? data(e) : isCell(data(env))? T : Nil;
 }
 
-// (-> any [num]) -> any
+// (-> any [cnt]) -> any
 any doArrow(any x) {
    int i;
    any y;

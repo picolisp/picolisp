@@ -1,4 +1,4 @@
-# 12nov15abu
+# 10jan16abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -277,9 +277,9 @@
    push C  # <L I> Result
    link
    do
-      shr (E DIG) 1  # Shift bit
+      ld A (E DIG)  # Shift bit
+      shr A 1
       rxr (C DIG) 1  # Rotate right with x-bit
-      shl (E DIG) 1
       cnt (E BIG)  # More cells?
    while z  # Yes
       call boxNum_A  # Build next digit
@@ -2638,37 +2638,58 @@
    if nz  # Yes
       num E  # Number?
       jz numErrEX  # No
-      ld A E  # Number in A
-      off A SIGN  # Make positive
-      and E SIGN  # Sign bit
-      push E  # <L -II> Sign bit
-      null (L -I)  # Shift count?
-      if nz  # Yes
-         if ns  # Positive
-            call shruA_A  # Non-destructive
-            ld (L I) A
-            do
-               dec (L -I)  # Shift count?
-            while nz
-               call halfA_A  # Shift right (destructive)
-               ld (L I) A
-            loop
-         else
-            call shluA_A  # Non-destructive
-            ld (L I) A
-            do
-               inc (L -I)  # Shift count?
-            while nz
-               call twiceA_A  # Shift left (destructive)
-               ld (L I) A
-            loop
-         end
-      end
-      cmp A ZERO  # Result zero?
+      cmp E ZERO  # Zero?
       if ne  # No
-         or A (L -II)  # Sign bit
+         ld A E  # Number in A
+         off A SIGN  # Make positive
+         and E SIGN  # Sign bit
+         push E  # <L -II> Sign bit
+         null (L -I)  # Shift count?
+         if nz  # Yes
+            if ns  # Positive
+               do
+                  cnt A  # A short?
+               while z  # No
+                  cmp (L -I) 64  # Large shift count?
+               while ge  # Yes
+                  ld A (A BIG)  # Discard 64 bits
+                  jz 90  # Jump if done
+                  sub (L -I) 64  # Decrement count
+               loop
+               call shruA_A  # Non-destructive
+               ld (L I) A
+               do
+                  dec (L -I)  # Shift count?
+               while nz
+                  call halfA_A  # Shift right (destructive)
+                  ld (L I) A
+               loop
+            else
+               do
+                  cmp (L -I) -64  # Large shift count?
+               while le  # Yes
+                  ld E 0  # Insert 64 zero-bits
+                  call consNumEA_A
+                  ld (L I) A
+                  add (L -I) 64  # Increment count
+                  jz 90  # Jump if done
+               loop
+               call shluA_A  # Non-destructive
+               ld (L I) A
+               do
+                  inc (L -I)  # Shift count?
+               while nz
+                  call twiceA_A  # Shift left (destructive)
+                  ld (L I) A
+               loop
+            end
+         end
+90       cmp A ZERO  # Result zero?
+         if ne  # No
+            or A (L -II)  # Sign bit
+         end
+         ld E A  # Get result
       end
-      ld E A  # Get result
    end
    drop
    pop Y

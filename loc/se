@@ -1,5 +1,5 @@
-# 08may14mtsd
-# Mattias Sundblad, mattias.sun@gmail.com
+# 05jan16abu
+# Mattias Sundblad <mattias.sun@gmail.com>
 
 "Language" "Språk"
 
@@ -73,6 +73,7 @@
 "Scroll down one line" "Gå ner en rad"
 "Scroll down one page" "Bläddra en sida bakåt"
 "Go to last line" "Gå till sista raden"
+"Insert empty row" "Infoga ny rad"
 "Delete row" "Radera raden"
 "Shift row up" "Flytta raden uppåt"
 "Clear all input fields" "Töm alla fält"

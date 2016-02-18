@@ -1,4 +1,4 @@
-# 21may15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -21,10 +21,10 @@
    (when (info (pack Dst "/1"))
       (for (L (flip (sort (extract format (dir Dst))))  L)
          (let N (pop 'L)
-            (call 'mv (pack Dst '/ N) (pack Dst '/ (inc N)))
+            (call "mv" (pack Dst '/ N) (pack Dst '/ (inc N)))
             (when (> (car L) (*/ N 9 10))
-               (call 'rm "-rf" (pack Dst '/ (pop 'L))) ) ) ) )
-   (when (call 'mkdir (pack Dst "/1"))
+               (call "rm" "-rf" (pack Dst '/ (pop 'L))) ) ) ) )
+   (when (call "mkdir" (pack Dst "/1"))
       (while (args)
          (let
             (Lst (filter bool (split (chop (next)) '/))
@@ -36,31 +36,31 @@
                   (recur (Src Old New)
                      (cond
                         ((=T (car (info Src T)))  # Directory
-                           (call 'mkdir "-p" New)
+                           (call "mkdir" "-p" New)
                            (for F (dir Src T)
                               (unless (member F '("." ".."))
                                  (recurse
                                     (pack Src '/ F)
                                     (pack Old '/ F)
                                     (pack New '/ F) ) ) )
-                           (call 'touch "-r" Src New) )
+                           (call "touch" "-r" Src New) )
                         ((= (info Src T) (info Old T))  # Same
                            `(if (== 64 64)
                               '(native "@" "link" 'I Old New)
-                              '(call 'ln Old New) ) )
-                        (T (call 'cp "-a" Src New)) ) )  # Changed or new
-                  (call 'mkdir "-p" New)
+                              '(call "ln" Old New) ) )
+                        (T (call "cp" "-a" Src New)) ) )  # Changed or new
+                  (call "mkdir" "-p" New)
                   (recurse
                      (cdr Lst)
                      (pack Src '/ (cadr Lst))
                      (pack Old '/ (cadr Lst))
                      (pack New '/ (cadr Lst)) )
-                  (call 'touch "-r" Src New) ) ) ) ) ) )
+                  (call "touch" "-r" Src New) ) ) ) ) ) )
 
 (de purge (Dst N)
    (for D (dir Dst)
       (when (>= (format D) N)
-         (call 'rm "-rf" (pack Dst '/ D)) ) ) )
+         (call "rm" "-rf" (pack Dst '/ D)) ) ) )
 
 ### DB Garbage Collection ###
 (de dbgc ()
@@ -85,7 +85,7 @@
                               (setq S (extern (pack (replace @S '/))))
                               (get S (intern (pack @R))) )
                            (inc 'Cnt)
-                           (call 'rm (pack F)) )
+                           (call "rm" (pack F)) )
                         (wipe S) ) ) ) ) ) )
       (gt0 Cnt) ) )
 
@@ -326,7 +326,7 @@
          (for (S *DB S (seq S))
             (link (cons S (val S) (getl S))) ) )
       (pool)
-      (call 'rm (pack Pool 1))
+      (call "rm" (pack Pool 1))
       (pool Pool Dbs)
       (set *DB (cadar Lst))
       (putl *DB (cddr (pop 'Lst)))
@@ -373,8 +373,8 @@
                            (=T (car (pair (val S))))
                            (link
                               (cons (pack F) (blob (cdr (val S)) @R)) ) ) ) ) ) ) )
-         (and (dirname (cdr X)) (call 'mkdir "-p" @))
-         (call 'mv (car X) (cdr X)) ) )
+         (and (dirname (cdr X)) (call "mkdir" "-p" @))
+         (call "mv" (car X) (cdr X)) ) )
    (dbMap  # Relocate
       '((Obj)
          (when (=T (car (pair (val Obj))))
@@ -481,7 +481,7 @@
                                  (prinl)
                                  (space 3)
                                  (prin Y " `(tmp " (inc '*DumpBlob) ")")
-                                 (call 'cp "-a" F (tmp *DumpBlob)) ) ) )
+                                 (call "cp" "-a" F (tmp *DumpBlob)) ) ) )
                         (T
                            (prinl)
                            (space 3)

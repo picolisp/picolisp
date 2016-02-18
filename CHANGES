@@ -1,3 +1,12 @@
+* 18feb16 picoLisp-16.2
+   Form-GUI documentation
+   'info' checks for regular files
+   Bug in arm64 optimization
+   Bug in 'shruA_A' ('>>' and '*/')
+   Line editor "e" command
+   External links in '<menu>'
+   '+InsRowButton' GUI prefix class
+
 * 24nov15 picoLisp-15.11
    Version Numbering
    '+ObjVal' GUI prefix class

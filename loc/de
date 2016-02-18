@@ -1,4 +1,4 @@
-# 06may14abu
+# 16dec15abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -73,6 +73,7 @@
 "Scroll down one line" "Eine Zeile nach unten scrollen"
 "Scroll down one page" "Eine Seite nach unten scrollen"
 "Go to last line" "Zur letzten Zeile gehen"
+"Insert empty row" "Leerzeile einfügen"
 "Delete row" "Zeile löschen"
 "Shift row up" "Zeile nach oben schieben"
 "Clear all input fields" "Alle Eingabefelder löschen"

@@ -1,4 +1,4 @@
-# 06nov15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -176,7 +176,7 @@
                                     (cddr L)
                                     (format (car @))
                                     (unless (out (tmp S) (echo @))
-                                       (call 'rm "-f" (tmp S)) ) ) ) ) ) )
+                                       (call "rm" "-f" (tmp S)) ) ) ) ) ) )
                      (T (throw 'http)) ) )
                (T
                   (and @ (out S (httpStat 400 "Bad Request")))
@@ -304,7 +304,7 @@
                   (if (_htSet Var (pack (stem L "/" "\\")))
                      (let F (tmp @)
                         (unless (out F (echo (pack "^M^J" *MPartLim)))
-                           (call 'rm "-f" F) ) )
+                           (call "rm" "-f" F) ) )
                      (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
                   (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) ) )
 

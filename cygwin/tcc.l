@@ -1,4 +1,4 @@
-# 21jan07abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # use the Tiny C Compiler http://fabrice.bellard.free.fr/tcc
@@ -6,7 +6,7 @@
    (out (tmp S ".c")
       (chdir '@ (prinl "#include <pico.h>"))
       (here "/**/") )
-   (apply call L 'tcc "-shared" "-rdynamic"
+   (apply call L "tcc" "-shared" "-rdynamic"
       (pack "-I" (dospath "/usr/include"))
       (pack "-I" (dospath (path "@/src")))
       "-falign-functions" "-fomit-frame-pointer"

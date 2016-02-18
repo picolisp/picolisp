@@ -1,4 +1,4 @@
-# 21jan15abu
+# 08jan16abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -182,9 +182,8 @@
       (cond
          ((pair Val)
             (cond
-               ((pair (cdr Val))
+               ((and (pair (cdr Val)) (; Rel aux))
                   (cond
-                     ((not (; Rel aux)) (quit "No Aux"))
                      ((atom (car Val))
                         (and (; Rel ub) (setq Val (ubZval Val)))
                         (init Tree Val (append Val T)) )

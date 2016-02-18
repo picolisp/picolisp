@@ -1,4 +1,4 @@
-# 24nov15abu
+# 11feb16abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -382,7 +382,7 @@ usec ()
 pwd T
    return mkStr(System.getProperty("user.dir"));
 
-# (info 'any) -> (cnt|T dat . tim)
+# (info 'any) -> (cnt|flg dat . tim)
 info ()
    File f = new File(path(evString(ex.Cdr)));
    if (!f.exists())
@@ -391,7 +391,7 @@ info ()
    c.setTimeInMillis(f.lastModified());
    return
       new Cell(
-         f.isDirectory()? T : new Number(f.length()),
+         f.isDirectory()? T : !f.isFile()? Nil : new Number(f.length()),
          new Cell(
             date(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DATE)),
             time(c) ) );
@@ -1702,7 +1702,7 @@ kill (i)
    Pids[i].destroy();
    return T;
 
-# (bye 'cnt|NIL)
+# (bye ['cnt])
 bye (x)
    x = ex.Cdr.Car.eval();
    return bye(x == Nil? 0 : ((Number)x).Cnt);
@@ -3119,7 +3119,7 @@ prove (i x y)
    Penv = envSave;  Pnl = nlSave;
    return x;
 
-# (-> any [num]) -> any
+# (-> any [cnt]) -> any
 -> (i x)
    if (!(ex.Cdr.Cdr.Car instanceof Number))
       return lookup((Number)Pnl.Car, ex.Cdr.Car);
@@ -3354,7 +3354,7 @@ read (x y)
       InFile.Chr = 0;
    return x;
 
-# (wait ['cnt] . prg) -> any
+# (wait 'cnt|NIL . prg) -> any
 wait (i x y)
    i = (y = (x = ex.Cdr).Car.eval()) == Nil? -1 : xInt(y);
    for (x = x.Cdr; (y = x.prog()) == Nil;)

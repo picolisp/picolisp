@@ -1,4 +1,4 @@
-/* 29sep15abu
+/* 03jan16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1686,7 +1686,7 @@ any doFork(any ex) {
    return (n = forkLisp(ex))? boxCnt(n) : Nil;
 }
 
-// (bye 'cnt|NIL)
+// (bye ['cnt])
 any doBye(any ex) {
    any x = EVAL(cadr(ex));
 

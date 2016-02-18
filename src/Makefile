@@ -1,4 +1,4 @@
-# 31mar15abu
+# 02feb16abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -91,6 +91,12 @@ ifeq ($(shell uname), HP-UX)
 	LCRYPT =
 	STRIP = strip
 else
+ifeq ($(shell uname), IRIX64)
+    OS = IRIX64
+    CFLAGS += -std=gnu99
+    DYNAMIC-LIB-FLAGS = -shared
+    STRIP = strip -f
+else
 ifeq ($(shell uname -o), Cygwin)
 	OS = Cygwin
 	CFLAGS += -m32
@@ -101,6 +107,7 @@ ifeq ($(shell uname -o), Cygwin)
 	STRIP = strip
 	exe = .exe
 	dll = .dll
+endif
 endif
 endif
 endif

@@ -1,4 +1,4 @@
-# 12nov15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -3918,13 +3918,13 @@
    end
    ret
 
-# (-> any [num]) -> any
+# (-> any [cnt]) -> any
 (code 'doArrow 2)
    push Z
    ld E (E CDR)  # E on args
    ld C ((Pnl))  # Environments
    ld A (E CDR)
-   num (A)  # 'num' arg?
+   cnt (A)  # 'cnt' arg?
    if nz  # Yes
       ld A (A)  # Get count
       shr A 4  # Normalize short

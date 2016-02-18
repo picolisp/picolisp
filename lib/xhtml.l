@@ -1,4 +1,4 @@
-# 04aug15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -399,15 +399,19 @@
                (nond
                   ((car L) (<li> NIL (htPrin (cdr L) 2)))
                   ((=T (car L))
-                     (if (setq U (eval (cadr L) E))
-                        (<li> (pack (if (= U *Url) 'act 'cmd) N)
-                           (<tip> "-->"
-                              (<href> (eval (car L) E)
-                                 (urlMT U *Menu (if (= U *Url) *Tab 1)
-                                    (eval (caddr L))
-                                    (eval (cadddr L)) ) ) ) )
-                        (<li> (pack 'cmd N)
-                           (ht:Prin (eval (car L) E)) ) ) )
+                     (nond
+                        ((setq U (eval (cadr L) E))
+                           (<li> (pack 'cmd N)
+                              (ht:Prin (eval (car L) E)) ) )
+                        ((pair U)
+                           (<li> (pack (if (= U *Url) 'act 'cmd) N)
+                              (<tip> "-->"
+                                 (<href> (eval (car L) E)
+                                    (urlMT U *Menu (if (= U *Url) *Tab 1)
+                                       (eval (caddr L))
+                                       (eval (cadddr L)) ) ) ) ) )
+                        (NIL
+                           (<href> (eval (car L) E) (car U) (cdr U)) ) ) )
                   ((bit? M *Menu)
                      (<li> (pack 'sub N)
                         (<tip> ,"Open submenu"
@@ -542,7 +546,7 @@
 (off "*CSV")
 
 (de csv ("Nm" . "Prg")
-   (call 'rm "-f" (tmp "Nm" ".csv"))
+   (call "rm" "-f" (tmp "Nm" ".csv"))
    (let "*CSV" (pack "+" (tmp "Nm" ".csv"))
       (run "Prg") )
    (<href> "CSV" (tmp "Nm" ".csv")) )

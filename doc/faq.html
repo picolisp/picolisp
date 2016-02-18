@@ -33,6 +33,7 @@
 <li><a href="#problems">Are there no problems caused by dynamic binding?</a>
 <li><a href="#closures">But with dynamic binding I cannot implement closures!</a>
 <li><a href="#macros">Do you have macros?</a>
+<li><a href="#threads">Can I run threads?</a>
 <li><a href="#strings">Why are there no strings?</a>
 <li><a href="#arrays">What about arrays?</a>
 <li><a href="#floats">How to do floating point arithmetic?</a>
@@ -569,6 +570,24 @@ debugged.
             (and (cddr "A") (set (car "A") (run @))) ) )
       (run (cdadr "Args")) ) )
 </code></pre>
+
+
+<p><hr>
+<h2><a name="threads">Can I run threads?</a></h2>
+
+<p>This is not possible. Threads share memory and other resources (as opposed to
+processes, which are better isolated from each other). Each thread has its own
+stack for private data, but PicoLisp uses dynamic binding, where the stack holds
+the <i>saved</i> values instead of the <i>current</i> values of symbols. As a
+result, each running thread would overwrite the symbol bindings of other
+threads.
+
+<p>Instead, PicoLisp uses separate processes - and interprocess communication -
+for parallel execution, or coroutines as a kind of <i>cooperative</i> threads
+running a controlled way and doing all necessary housekeeping.
+
+<p>Another advantage of separate processes over threads: They can be distributed
+across multiple machines, and therefore scale better.
 
 
 <p><hr>

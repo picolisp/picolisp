@@ -1,4 +1,4 @@
-# 29oct15abu
+# 11feb16abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -63,8 +63,9 @@
 (equ ST_MODE 16)  # 4
 (equ ST_SIZE 48)
 (equ ST_MTIME 88)
-(equ S_IFMT 61440)
-(equ S_IFDIR 16384)
+(equ S_IFMT  (oct "170000"))
+(equ S_IFREG (oct "100000"))
+(equ S_IFDIR (oct "40000"))
 
 # times
 (equ TMS 32)  # 'times' structure

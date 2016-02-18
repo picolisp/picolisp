@@ -1,4 +1,4 @@
-# 15nov10abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
@@ -62,7 +62,7 @@
                                  (setq S (extern (pack (replace @S '/))))
                                  (get S (intern (pack @R))) )
                               (inc 'Cnt)
-                              (call 'rm (pack F)) )
+                              (call "rm" (pack F)) )
                            (wipe S) ) ) ) ) ) )
          (msg Cnt " conDbgc") )
       (mark 0) ) )

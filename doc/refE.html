@@ -327,8 +327,9 @@ variable. See also <code><a href="refN.html#native">native</a></code>.
 evaluation, <code>any</code> is actually evaluated twice. If a lambda-binding
 environment offset <code>cnt</code> is given, the second evaluation takes place
 in the corresponding environment, and an optional <code>lst</code> of excluded
-symbols can be supplied. See also <code><a href="refR.html#run">run</a></code>
-and <code><a href="refU.html#up">up</a></code>.
+symbols can be supplied. <code>cnt</code> should be greater than zero. See also
+<code><a href="refR.html#run">run</a></code> and <code><a
+href="refU.html#up">up</a></code>.
 
 <pre><code>
 : (eval (list '+ 1 2 3))

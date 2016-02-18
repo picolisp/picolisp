@@ -1,4 +1,4 @@
-# 03apr15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -8,7 +8,7 @@
 
 # Browsing
 (de doc (Sym Browser)
-   (call (or Browser (sys "BROWSER") 'w3m)
+   (call (or Browser (sys "BROWSER") "w3m")
       (pack
          "file:"
          (and (= `(char '/) (char (path "@"))) "//")
@@ -421,7 +421,7 @@
    (de proc @
       (apply call
          (make (while (args) (link "-C" (next))))
-         'ps "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) ) )
+         "ps" "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) ) )
 
 # Benchmarking
 (de bench Prg

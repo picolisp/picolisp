@@ -1,4 +1,4 @@
-# 26mar15abu
+# 02feb16abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -17,7 +17,7 @@
 
 
 ### sigio ###
-(unless (member *OS '("SunOS" "OpenBSD" "Cygwin" "AIX" "HP-UX"))
+(unless (member *OS '("SunOS" "OpenBSD" "Cygwin" "AIX" "HP-UX" "IRIX64"))
    (sigio (setq "SigSock" (port T 0 "SigPort"))
       (setq "SigVal" (udp "SigSock")) )
    (udp "localhost" "SigPort" '(a b c))
@@ -124,7 +124,7 @@
 
 
 ### dir ###
-(call 'mkdir "-p" (tmp "dir"))
+(call "mkdir" "-p" (tmp "dir"))
 (out (tmp "dir/.abc"))
 (out (tmp "dir/a"))
 (out (tmp "dir/b"))

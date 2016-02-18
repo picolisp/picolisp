@@ -1,4 +1,4 @@
-# 26may15abu
+# 03feb16abu
 # (c) Software Lab. Alexander Burger
 
 # *Unit *DX *DY *Pos *Page *StrokeWidth
@@ -168,6 +168,7 @@
             "\" font-family=\"" *FontFamily
             "\" font-style=\"" *FontStyle
             "\" font-weight=\"" *FontWeight "\"" ) )
+   (and *Style (htStyle @))
    (prin ">")
    (while (args)
       (let X (next)

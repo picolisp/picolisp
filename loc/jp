@@ -1,4 +1,4 @@
-# 06may14abu
+# 17dec15abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "言語"
@@ -73,6 +73,7 @@
 "Scroll down one line" "一行下へスクロール"
 "Scroll down one page" "一ページ下へスクロール"
 "Go to last line" "最後の列にいく"
+"Insert empty row" "空の行挿入"
 "Delete row" "行を消す"
 "Shift row up" "行を上へ移す"
 "Clear all input fields" "全ての入力フィールドを消す"

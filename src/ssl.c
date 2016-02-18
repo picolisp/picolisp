@@ -1,4 +1,4 @@
-/* 08jul15abu
+/* 04feb16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -237,11 +237,11 @@ int main(int ac, char *av[]) {
             for (;;) {
                if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&
-                           (!*av[4] || sslFile(ssl,av[4]))  &&       // key
-                           SSL_write(ssl, len, lenLen) == lenLen  && // length
-                           SSL_write(ssl, Data, Size) == Size  &&    // data
-                           SSL_write(ssl, "T", 1) == 1  &&           // ack
-                           SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
+                        (!*av[4] || sslFile(ssl,av[4]))  &&       // key
+                        SSL_write(ssl, len, lenLen) == lenLen  && // length
+                        SSL_write(ssl, Data, Size) == Size  &&    // data
+                        SSL_write(ssl, "T", 1) == 1  &&           // ack
+                        SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' ) {
                      Hot = NO;
                      sslClose(ssl,sd);
                      break;
@@ -257,16 +257,20 @@ int main(int ac, char *av[]) {
       }
       if (*Dir && (dp = opendir(Dir))) {
          while (p = readdir(dp)) {
-            if (p->d_name[0] != '.') {
+            if (p->d_name[0] == '=') {
                snprintf(nm, sizeof(nm), "%s%s", Dir, p->d_name);
-               if ((n = readlink(nm, buf, sizeof(buf))) > 0) {
+               if ((n = readlink(nm, buf, sizeof(buf))) > 0  &&  stat(nm, &st) >= 0) {
+                  lenLen = sprintf(len, "%ld\n", st.st_size);
+                  buf[n++] = '\n';
                   alarm(lim);
                   if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                      if (SSL_write(ssl, get, getLen) == getLen  &&
                            (!*av[4] || sslFile(ssl,av[4]))  &&       // key
                            SSL_write(ssl, buf, n) == n  &&           // path
-                           SSL_write(ssl, "\n", 1) == 1  &&          // nl
-                           sslFile(ssl, nm) )                        // file
+                           SSL_write(ssl, len, lenLen) == lenLen  && // length
+                           sslFile(ssl, nm)  &&                      // file
+                           SSL_write(ssl, "T", 1) == 1  &&           // ack
+                           SSL_read(ssl, buf, 1) == 1  &&  buf[0] == 'T' )
                         unlink(nm);
                      sslClose(ssl,sd);
                   }

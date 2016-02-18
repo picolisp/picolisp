@@ -1,4 +1,4 @@
-/* 29jan15abu
+/* 11feb16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -121,6 +121,7 @@ int main(void) {
    equ("ST_SIZE", (char*)&st.st_size - (char*)&st);
    equ("ST_MTIME", (char*)&st.st_mtime - (char*)&st);
    equ("S_IFMT", S_IFMT);
+   equ("S_IFREG", S_IFREG);
    equ("S_IFDIR", S_IFDIR);
 
    comment("times");

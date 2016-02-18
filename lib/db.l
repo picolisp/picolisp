@@ -1,4 +1,4 @@
-# 10nov15abu
+# 04feb16abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -448,14 +448,14 @@
    (and
       New
       (dirname (blob Obj))
-      (call 'mkdir "-p" @) )
+      (call "mkdir" "-p" @) )
    (if (flg? New)
       New
       (in New (out (blob Obj (: var)) (echo)))
       T ) )
 
 (dm zap> (Obj Val)
-   (and Val (call 'rm "-f" (blob Obj (: var)))) )
+   (and Val (call "rm" "-f" (blob Obj (: var)))) )
 
 
 ### Index classes ###
@@ -1028,9 +1028,9 @@
 (de blob+ (Obj Var)
    (when *Jnl
       (chdir *Blob
-         (call 'ln "-sf"
+         (call "ln" "-sf"
             (pack (glue "/" (chop Obj)) "." Var)
-            (pack (name Obj) "." Var) ) ) ) )
+            (pack "=" (name Obj) "." Var) ) ) ) )
 
 (de incECnt (Obj)
    (for Cls (type Obj)
@@ -1072,6 +1072,8 @@
 (dm url2> () (url> This 2))
 (dm url3> () (url> This 3))
 (dm url4> () (url> This 4))
+
+(dm gui> ())
 
 (dm upd> (X Old))
 

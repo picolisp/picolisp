@@ -1,4 +1,4 @@
-# 02jan15abu
+# 13jan16abu
 # (c) Software Lab. Alexander Burger
 
 ### quote ###
@@ -454,8 +454,8 @@
       (list (read) (read)) ) )
 
 ### call ###
-(test T (call 'test "-d" (path "@test")))
-(test NIL (call 'test "-f" (path "@test")))
+(test T (call "test" "-d" (path "@test")))
+(test NIL (call "test" "-f" (path "@test")))
 
 
 ### kill ###

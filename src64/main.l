@@ -1,4 +1,4 @@
-# 02nov15abu
+# 11feb16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -3094,7 +3094,7 @@
    pop X
    ret
 
-# (info 'any ['flg]) -> (cnt|T dat . tim)
+# (info 'any ['flg]) -> (cnt|flg dat . tim)
 (code 'doInfo 2)
    push X
    push Y
@@ -3135,10 +3135,15 @@
       if eq  # Yes
          ld (E) TSym  # CAR is T
       else
-         ld A (S ST_SIZE)  # Get size
-         shl A 4  # Make short number
-         or A CNT
-         ld (E) A
+         cmp A S_IFREG  # Non-regular?
+         if ne  # Yes
+            ld (E) Nil  # CAR is NIL
+         else
+            ld A (S ST_SIZE)  # Get size
+            shl A 4  # Make short number
+            or A CNT
+            ld (E) A
+         end
       end
       ld (E CDR) X
    end

@@ -123,7 +123,7 @@ href="refS.html#seed">seed</a></code>.
 
 <dt><a name="range"><code>(range 'num1 'num2 ['num3]) -> lst</code></a>
 <dd>Produces a list of numbers in the range <code>num1</code> through
-<code>num2</code>. When <code>num3</code> is non-<code>NIL</code>), it is used
+<code>num2</code>. When <code>num3</code> is non-<code>NIL</code>, it is used
 to increment <code>num1</code> (if it is smaller than <code>num2</code>) or to
 decrement <code>num1</code> (if it is greater than <code>num2</code>). See also
 <code><a href="refN.html#need">need</a></code>.
@@ -691,7 +691,7 @@ href="refF.html#flip">flip</a></code> .
 -> (3 1 2 4 5 6)
 </code></pre>
 
-<dt><a name="round"><code>(round 'num1 'num2) -> sym</code></a>
+<dt><a name="round"><code>(round 'num1 ['num2]) -> sym</code></a>
 <dd>Formats a number <code>num1</code> with <code>num2</code> decimal places,
 according to the current scale <code><a href="refS.html#*Scl">*Scl</a></code>.
 <code>num2</code> defaults to 3. See also <a href="ref.html#num-io">Numbers</a>
@@ -727,7 +727,8 @@ href="refE.html#eval">eval</a></code>. Otherwise <code>any</code> is a list,
 which is evaluated in sequence. The last result is returned. If a lambda-binding
 environment offset <code>cnt</code> is given, that evaluation takes place in the
 corresponding environment, and an optional <code>lst</code> of excluded symbols
-can be supplied. See also <code><a href="refU.html#up">up</a></code>.
+can be supplied. <code>cnt</code> should be greater than zero. See also <code><a
+href="refU.html#up">up</a></code>.
 
 <pre><code>
 : (run '((println (+ 1 2 3)) (println 'OK)))

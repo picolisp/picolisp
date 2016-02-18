@@ -1,4 +1,4 @@
-# 26mar15abu
+# 04jan16abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -27,8 +27,7 @@
 
    *History             # History of input lines
    (in (pack "+" (pil "history"))
-      (ctl NIL
-         (make (until (eof) (link (line T)))) ) )
+      (make (until (eof) (link (line T)))) )
    "Hist0"     *History )
 
 
@@ -137,17 +136,29 @@
                   N ) ) ) ) ) )
 
 # Move word right
-(de rWord ()
+(de _right Prg
    (use (M N L)
       (setq M (length "Line"))
       (chgLine "Line"
-         (if (<= M (setq N "LPos"))
+         (if (>= (setq N "LPos") M)
             M
-            (loop
-               (T (= M (inc 'N)) M)
-               (setq L (nth "Line" (dec N)))
-               (T (and (delim? (car L)) (not (delim? (cadr L))))
-                  N ) ) ) ) ) )
+            (run Prg) ) ) ) )
+
+(de rWord ()
+   (_right
+      (loop
+         (T (= M (inc 'N)) M)
+         (setq L (nth "Line" (dec N)))
+         (T (and (delim? (car L)) (not (delim? (cadr L))))
+            N ) ) ) )
+
+(de rEnd ()
+   (_right
+      (loop
+         (T (= M (inc 'N)) M)
+         (setq L (nth "Line" N))
+         (T (and (not (delim? (car L))) (delim? (cadr L)))
+            N ) ) ) )
 
 # Match left parenthesis
 (de lPar ()
@@ -296,6 +307,7 @@
                (beep) ) )
          ("^V" (insChar (key)))
          ("^E" (and edit (edit '*History)))
+         ("^F" (saveHistory))
          ("^["
             (loop
                (NIL
@@ -339,6 +351,7 @@
       ("C" (doUndo) (clrEol) (xMove) (on "Insert"))
       ("d" (doUndo) (delWord T))
       ("D" (doUndo) (clrEol))
+      ("e" (rEnd))
       ("f"
          (ifn (setq "C" (index (key) (nth "Line" (inc "LPos"))))
             (beep)
@@ -422,17 +435,9 @@
       (pack "Line") ) )
 
 (de saveHistory ()
-   (in (pack "+" (pil "history"))
-      (ctl T
-         (let (Old (make (until (eof) (link (line T))))  New *History  N "HistMax")
-            (out (pil "history")
-               (while (and New (n== New "Hist0"))
-                  (prinl (pop 'New))
-                  (dec 'N) )
-               (setq "Hist0" *History)
-               (do N
-                  (NIL Old)
-                  (prinl (pop 'Old)) ) ) ) ) ) )
+   (unless (= *History "Hist0")
+      (out (pil "history")
+         (mapc prinl *History) ) ) )
 
 # Enable line editing
 (de *Led
@@ -452,7 +457,8 @@
 (mapc zap
    (quote
       chgLine skipQ escQ delim? lMove bMove rMove eMove xMove uMove dMove lWord
-      rWord lPar rPar clrEol insChar del1 delChar delWord rplChar doUndo doPaste
-      setHist ledSearch expandTab insMode cmdMode _getLine _led saveHistory ) )
+      _right rWord rEnd lPar rPar clrEol insChar del1 delChar delWord rplChar
+      doUndo doPaste setHist ledSearch expandTab insMode cmdMode _getLine _led
+      saveHistory ) )
 
 # vi:et:ts=3:sw=3

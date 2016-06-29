@@ -1,4 +1,4 @@
-/* 04feb16abu
+/* 13apr16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -143,7 +143,7 @@ static void iSignal(int n, void (*foo)(int)) {
 }
 
 // ssl host port url
-// ssl host port url [key] file
+// ssl host port url [key [file]]
 // ssl host port url key file dir sec [min]
 int main(int ac, char *av[]) {
    bool dbg;

@@ -1,4 +1,4 @@
-# 03feb16abu
+# 16mar16abu
 # (c) Software Lab. Alexander Burger
 
 # *Unit *DX *DY *Pos *Page *StrokeWidth
@@ -83,13 +83,11 @@
 (de <faces> (Lst)
    (prinl "<style type=\"text/css\">")
    (for L Lst
-      (prinl "@font-face {font-family: " (car L) "; src: url(data:application/x-font-ttf;base64,")
-      (in (cadr L) (prBase64 18))
-      (prin ")")
+      (prin
+         "@font-face {font-family: '" (car L)
+         "'; src: url('" (srcUrl (cadr L)) "')" )
       (for S (cddr L)
-         (prinl ", url(data:application/x-font-ttf;base64,")
-         (in S (prBase64 18))
-         (prin ")") )
+         (prin ", url('" (srcUrl S) "')") )
       (prinl "}") )
    (prinl "</style>") )
 

@@ -1,4 +1,4 @@
-// 25jan15abu
+// 28jun16abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -66,6 +66,18 @@ public class InOut {
       }
    }
 
+   private void prNum(int t, long n) throws IOException {
+      long m = n;
+      int cnt;
+
+      for (cnt = 1; (m >>>= 8) != 0; ++cnt);
+      Out.write(cnt * 4 + t);
+      do {
+         Out.write((byte)n);
+         n >>>= 8;
+      } while (--cnt != 0);
+   }
+
    public static int utfLength(String s) {
       int n = 0;
       int i = s.length();
@@ -80,9 +92,9 @@ public class InOut {
       return n;
    }
 
+   public void prSym(String s) throws IOException {print(INTERN, s);}
 
    public void print(String s) throws IOException {print(TRANSIENT, s);}
-   public void prSym(String s) throws IOException {print(INTERN, s);}
 
    public void print(int t, String s) throws IOException {
       int c, i, j;
@@ -110,16 +122,7 @@ public class InOut {
    }
 
    public void print(long n) throws IOException {
-      n = n >= 0? n * 2 : -n * 2 + 1;
-      long m = n;
-      int cnt;
-
-      for (cnt = 1; (m >>>= 8) != 0; ++cnt);
-      Out.write(cnt * 4);
-      do {
-         Out.write((byte)n);
-         n >>>= 8;
-      } while (--cnt != 0);
+      prNum(NUMBER,  n >= 0? n * 2 : -n * 2 + 1);
    }
 
    public void print(BigInteger big) throws IOException {
@@ -166,39 +169,49 @@ public class InOut {
             Out.write(NIX);
       }
       else if (x instanceof int[]) {
-         Out.write(BEG);
-         for (int i = 0;  i < ((int[])x).length;  ++i)
-            print(((int[])x)[i]);
-         Out.write(END);
+         if (((int[])x).length == 0)
+            Out.write(NIX);
+         else {
+            Out.write(BEG);
+            for (int i = 0;  i < ((int[])x).length;  ++i)
+               print(((int[])x)[i]);
+            Out.write(END);
+         }
       }
       else if (x instanceof byte[]) {
-         Out.write(BEG);
-         for (int i = 0;  i < ((byte[])x).length;  ++i)
-            print(((byte[])x)[i]);
-         Out.write(END);
+         if (((byte[])x).length == 0)
+            Out.write(NIX);
+         else {
+            Out.write(BEG);
+            for (int i = 0;  i < ((byte[])x).length;  ++i)
+               print(((byte[])x)[i]);
+            Out.write(END);
+         }
       }
       else if (x instanceof double[]) {
-         Out.write(BEG);
-         for (int i = 0;  i < ((double[])x).length;  ++i)
-            print(((double[])x)[i]);
-         Out.write(END);
+         if (((double[])x).length == 0)
+            Out.write(NIX);
+         else {
+            Out.write(BEG);
+            for (int i = 0;  i < ((double[])x).length;  ++i)
+               print(((double[])x)[i]);
+            Out.write(END);
+         }
       }
       else if (x instanceof Object[]) {
-         Out.write(BEG);
-         for (int i = 0;  i < ((Object[])x).length;  ++i)
-            print(((Object[])x)[i]);
-         Out.write(END);
+         if (((Object[])x).length == 0)
+            Out.write(NIX);
+         else {
+            Out.write(BEG);
+            for (int i = 0;  i < ((Object[])x).length;  ++i)
+               print(((Object[])x)[i]);
+            Out.write(END);
+         }
       }
       else {
          int i = x.hashCode();
          Obj.put(i, x);
-         byte[] b = new byte[5];
-         b[0] = (byte)(i & 0xFF);
-         b[1] = (byte)(i >> 8 & 0xFF);
-         b[2] = (byte)(i >> 16 & 0x0F);
-         b[3] = (byte)(i >> 16 & 0xF0);
-         b[4] = (byte)(i >> 24 & 0xFF);
-         outBytes(EXTERN, b);
+         prNum(EXTERN, (long)i & 0xFFFFF | (long)(i & 0xFFF00000) << 8);
       }
    }
 
@@ -320,9 +333,11 @@ public class InOut {
             return n;
          }
          if ((c & 3) == EXTERN) {
-            if (c != 0x17)  // Length 5 (oo oo 0o o0 oo -> ooo00ooooo)
-               throw new IOException("Wrong object");
-            return Obj.get(In.read() | In.read()<<8 | (In.read() & 0x0F)<<16 | (In.read() & 0xF0)<<16 | In.read()<<24);
+            int i = 0;
+            long n = (long)In.read();
+            while (--InCount >= 0)
+               n |= (long)In.read() << (i += 8);
+            return Obj.get((int)n & 0xFFFFF | (int)(n >> 8 & 0xFFF00000));
          }
          String s = getStr();
          if ((c & 3) == INTERN) {

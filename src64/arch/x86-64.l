@@ -1,4 +1,4 @@
-# 11nov15abu
+# 01jun16abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -435,7 +435,7 @@
    (lea Src S "%rdi")
    (prinst "mov" (src Cnt C) "%rcx")
    (prinst "cld")
-   (prinst "repnz cmpsb") )
+   (prinst "repz cmpsb") )
 
 (asm slen (Dst D Src S)
    (setq Dst (dst Dst D))
@@ -519,8 +519,11 @@
          (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") ) ) )
 
-(asm jump (Reg)
-   (prinst "jmp" (pack "*" Reg)) )
+(asm tos (Dst D)
+   (setq Dst (dst Dst D))
+   (if (pre? "%" Dst)
+      (prinst "pop" Dst)
+      (prinst "popq" Dst) ) )
 
 (de _jmp (Opc Opc2)
    (ifn A
@@ -590,7 +593,7 @@
    (unless
       (and
          (seek '((L) (== (cadr L) *Statement)) *Program)
-         (not (memq (caar @) '`(cons ': (cdr *Transfers)))) )
+         (not (memq (caar @) '`(cons ': (cddr *Transfers)))) )
       (prinst "rep") )
    (prinst "ret") )
 

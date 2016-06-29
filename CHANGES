@@ -1,3 +1,18 @@
+* 29jun16 picoLisp-16.6
+   Bug in 'date'/'time' (64-bit)
+   Bug in 'doShift' ('>>')
+   Bug in x86-64 'cmpn' instruction
+   'flood' function
+   Bugs in arm64 bignum calculations
+   Bug in 64-bit condition code optimization
+   'msg' more polite in teminal
+   Canvas touch events
+   Skip white space in 'ext:Base64'
+   OpenBSD port
+   'detach' function
+   'docs' function
+   Catch frame bug in coroutines (64-bit)
+
 * 18feb16 picoLisp-16.2
    Form-GUI documentation
    'info' checks for regular files

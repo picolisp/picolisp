@@ -1,4 +1,4 @@
-# 11nov15abu
+# 28may16abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -169,7 +169,6 @@
       jnb adr           # Jump to 'adr' if Borrow not set [---]
       jx adr            # Jump to 'adr' if x-bit set [---]
       jnx adr           # Jump to 'adr' if x-bit not set [---]
-      jump reg          # Returning jump [---]
 
       call adr          # Call 'adr'
       cc adr(src ..)    # C-Call to 'adr' with 'src' arguments
@@ -185,6 +184,7 @@
    Stack Manipulations:
       push src          # Push 'src' [---]
       pop dst           # Pop 'dst' [---]
+      tos dst           # Get return entry [---]
       link              # Setup frame [---]
       tuck src          # Extend frame [---]
       drop              # Drop frame [---]

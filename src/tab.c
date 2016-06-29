@@ -1,4 +1,4 @@
-/* 24may15abu
+/* 16mar16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -102,6 +102,7 @@ static symInit Symbols[] = {
    {doDel, "del"},
    {doDelete, "delete"},
    {doDelq, "delq"},
+   {doDetach, "detach"},
    {doDiff, "diff"},
    {doDir, "dir"},
    {doDiv, "/"},

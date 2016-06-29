@@ -1,4 +1,4 @@
-# 11feb16abu
+# 19jun16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -969,6 +969,8 @@
    end
    atom E  # E atomic?
    jnz ret  # Yes: 'ne'
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    push X
    push Y
    ld X A  # Keep list heads
@@ -976,8 +978,6 @@
    do
       push A  # Save lists
       push E
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       ld A (A)  # Recurse on CARs
       ld E (E)
       off E 1  # Clear possible mark
@@ -1170,6 +1170,8 @@
       gt
       ret
    end
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    push X  # [<pair> <pair>]
    push Y
    ld X A  # Keep originals
@@ -1179,8 +1181,6 @@
       push E
       ld A (A)
       ld E (E)
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call compareAE_F  # Same?
       pop E
       pop A
@@ -1189,8 +1189,6 @@
       ld E (E CDR)
       atom A  # End of A?
       if nz  # Yes
-         cmp S (StkLimit)  # Stack check
-         jlt stkErr
          call compareAE_F  # Compare CDRs
          break T
       end
@@ -1347,11 +1345,11 @@
 ### Evaluation ###
 # Apply EXPR in C to CDR of E
 (code 'evExprCE_E 0)
+   cmp S (StkLimit)  # Stack check
+   jlt stkErrE
    push X
    push Y
    push Z
-   cmp S (StkLimit)  # Stack check
-   jlt stkErrE
    ld X (E CDR)  # Get CDR
    ld Y (C)  # Parameter list in Y
    ld Z (C CDR)  # Body in Z
@@ -1501,7 +1499,8 @@
    jnz ret  # Yes: Return list
    sym C  # Symbol?
    if nz  # Yes
-10    do  # C is a symbol
+: evListSym
+      do  # C is a symbol
          null (Signal)  # Signal?
          if nz  # Yes
             push E
@@ -1525,10 +1524,10 @@
          end
       loop
    end
-   push E
-   ld E C
    cmp S (StkLimit)  # Stack check
    jlt stkErr
+   push E
+   ld E C
    call evListE_E
    ld C E
    pop E
@@ -1543,7 +1542,7 @@
    if z
       call evExprCE_E  # No: Apply EXPR
    else
-      call 10
+      call evListSym
    end
    drop
    ret
@@ -2157,7 +2156,7 @@
    end
    ret
 
-: cbl
+(code 'cbl 0)
    push L  # Save C frame pointer
    ld L (CLink)  # Restore link register
    link  # Apply args
@@ -2555,8 +2554,8 @@
    pop X
    ret
 
-(code 'begString 0)
-   pop A  # Get return entry
+(code 'begString_S 0)
+   tos A  # Get return entry
    link
    push ZERO  # <L I> Result
    ld (StrC) 4  # Build name
@@ -2564,10 +2563,10 @@
    link
    push (PutB)  # Save 'put'
    ld (PutB) putStringB  # Set new
-   jump A  # Return
+   jmp (A)  # Return
 
-(code 'endString_E 0)
-   pop A  # Get return entry
+(code 'endStringS_E 0)
+   tos A  # Get return entry
    pop (PutB)  # Restore 'put'
    ld E Nil  # Preload NIL
    cmp (L I) ZERO  # Name?
@@ -2578,7 +2577,7 @@
       ld (E) E  # Set value to itself
    end
    drop
-   jump A  # Return
+   jmp (A)  # Return
 
 ? (<> *TargetOS "Linux")
    (code 'msec_A)
@@ -2779,7 +2778,10 @@
                atom Y
                if nz  # No
                   call xCntEX_FE  # Get date
-                  js noTime2
+                  if s
+                     ld E Nil  # Can't convert date
+                     jmp 90
+                  end
                   ld A E  # 100 * n
                   mul 100
                   sub A 20  # minus 20
@@ -2847,7 +2849,7 @@
          end
       end
    end
-   pop Z
+90 pop Z
    pop Y
    pop X
    ret
@@ -2897,15 +2899,15 @@
             if z  # Yes
                ld A (E)  # Extract hour
                call xCntAX_FA
-               js noTime
+               js 90
                mul 3600
                ld Y A
                ld E (E CDR)
                ld A (E)  # minute
                call xCntAX_FA
-               js noTime
+               js 90
                cmp A 59
-               jgt noTime
+               jgt 90
                mul 60
                add Y A
                ld E (E CDR)  # and second
@@ -2914,9 +2916,9 @@
                if z  # Yes
                   ld E (E)
                   call xCntEX_FE
-                  js noTime
+                  js 90
                   cmp E 60
-                  jgt noTime
+                  jgt 90
                   add E Y  # add minutes and hours
                end
                shl E 4  # Make short number
@@ -2926,7 +2928,7 @@
                atom Y
                if nz  # No
                   call xCntEX_FE  # Get time in total seconds
-                  js noTime
+                  js 90
                   ld A E
                   ld C 0
                   div 60  # Seconds in C
@@ -2955,14 +2957,14 @@
                   ld (E CDR) X
                else
                   call xCntEX_FE  # Extract hour
-                  js noTime
+                  js 90
                   ld A E
                   mul 3600
                   push A  # Save hour
                   call evCntXY_FE  # Eval minute
-                  js noTime2
+                  js 80
                   cmp E 59
-                  jgt noTime2
+                  jgt 80
                   ld A E
                   mul 60
                   add (S) A  # Add to hour
@@ -2970,9 +2972,9 @@
                   atom Y  # Any?
                   if z  # Yes
                      call evCntXY_FE
-                     js noTime2
+                     js 80
                      cmp E 60
-                     jgt noTime2
+                     jgt 80
                      add (S) E
                   end
                   pop E  # Get result
@@ -2986,10 +2988,8 @@
    pop Y
    pop X
    ret
-: noTime2
-   add S I  # Drop partial result
-: noTime
-   ld E Nil  # Can't convert time
+80 add S I  # Drop partial result
+90 ld E Nil  # Can't convert time
    pop Y
    pop X
    ret

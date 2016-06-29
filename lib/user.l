@@ -1,7 +1,7 @@
-# 04feb16abu
+# 08may16abu
 # (c) Software Lab. Alexander Burger
 
-(must "User Administration")
+(must "User Administration" UserAdmin (== *Login *ID))
 
 (menu ,"User Administration"
    (idForm ,"User" '(choUser) 'nm '+User

@@ -1,4 +1,4 @@
-# 26oct15abu
+# 01apr16abu
 # (c) Software Lab. Alexander Burger
 
 (data 'ExtData)
@@ -214,6 +214,13 @@ bytes (
       if z  # No
          call (Get_A)  # Get next
       end
+      do
+         null A  # EOF?
+      while ns  # No
+         cmp B 32  # White space?
+      while le  # Yes
+         call (Get_A)  # Get next
+      loop
       ld C Chr64
       memb C 64  # Legal character?
       if ne  # No

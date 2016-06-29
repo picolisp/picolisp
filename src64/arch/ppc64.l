@@ -1,4 +1,4 @@
-# 13nov15abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -918,9 +918,13 @@
       NIL
       (("bctr" NIL)) ) )
 
-(asm jump (Reg)
-   (prinst "mtctr" Reg)
-   (prinst "bctr") )
+(asm tos (Dst D)
+   (if D
+      (let R (tmpReg)
+         (prinst "ld" R "0(1)")
+         (memory Dst D R T) )
+      (prinst "ld" Dst "0(1)") )
+   (prinst "addi" 1 1 8) )
 
 (asm jz (Adr A)
    (_jmp

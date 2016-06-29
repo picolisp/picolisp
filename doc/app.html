@@ -6,11 +6,12 @@
 <link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
-<a href="mailto:abu@software-lab.de">abu@software-lab.de</a>
+    <a href="mailto:abu@software-lab.de">abu@software-lab.de</a><br />
+<a href="mailto:mattias.sun@gmail.com">mattias.sun@gmail.com</a>
 
 <h1>PicoLisp Application Development</h1>
 
-<p align=right>(c) Software Lab. Alexander Burger
+<p align=right>(c) Software Lab. Alexander Burger, Mattias Sundblad
 
 <p>This document presents an introduction to writing browser-based applications
 in PicoLisp.
@@ -969,9 +970,9 @@ into the "Source" field, you can copy it in upper or lower case to the
 ########################################################################
 </code></pre>
 
-<p>The <code>+Lock</code> prefix class in the "Destination" field makes that
-field read-only. The only way to get some text into that field is by using one
-of the buttons.
+<p>The <code><a href="form/refL.html#+Lock">+Lock</a></code> prefix class in the
+"Destination" field makes that field read-only. The only way to get some text
+into that field is by using one of the buttons.
 
 
 <h4><a name="switching">Switching URLs</a></h4>
@@ -1014,13 +1015,14 @@ document via the second button
 </code></pre>
 
 <p>(a text area is built when you supply two numeric arguments (columns and
-rows) to a <code>+TextField</code> class)
+rows) to a <code><a href="form/refT.html#+TextField">+TextField</a></code> class)
 
-<p>The action code of the first button creates a temporary file (i.e. a file
-named "export.txt" in the current process's temporary space), prints the value
-of the text area (this time we did not bother to give it a name, we simply refer
-to it as the form's first gui list element) into that file, and then calls the
-<code>url</code> function with the file name.
+<p>The action code of the first <a href="form/refB.html#+Button">button</a>
+creates a temporary file (i.e. a file named "export.txt" in the current
+process's temporary space), prints the value of the text area (this time we did
+not bother to give it a name, we simply refer to it as the form's first gui list
+element) into that file, and then calls the <code><a
+href="form/refU.html#url">url</a></code> function with the file name.
 
 <p>The second button uses the PostScript library "@lib/ps.l" to create a
 temporary file "foo.pdf". Here, the temporary file creation and the call to the
@@ -1031,7 +1033,8 @@ displays it.
 
 <h4><a name="dialogs">Alerts and Dialogs</a></h4>
 
-<p>Alerts and dialogs are not really what they used to be ;-)
+<p><a href="form/refA.html#alert">Alerts</a> and <a
+href="form/refD.html#dialog">dialogs</a> are not really what they used to be ;-)
 
 <p>They do not "pop up". In this framework, they are just a kind of
 simple-to-use, pre-fabricated form. They can be invoked by a button's action
@@ -1068,9 +1071,9 @@ beginning, it displays a simple form, with a locked text field, and two buttons
 ########################################################################
 </code></pre>
 
-<p>The <code>+Init</code> prefix class initializes the "My Text" field with the
-string "Initial Text". As the field is locked, you cannot modify this value
-directly.
+<p>The <code><a href="form/refI.html#+Init">+Init</a></code> prefix class
+initializes the "My Text" field with the string "Initial Text". As the field is
+locked, you cannot modify this value directly.
 
 <p>The first button brings up an alert saying "This is an alert.". You can
 dispose it by pressing "OK".
@@ -1158,12 +1161,13 @@ width of 60 characters
          (gui '(+Var +NumField) '*Accu 60)
 </code></pre>
 
-<p>The <code>+Var</code> prefix class associates this field with the global
-variable <code>*Accu</code>. All changes to the field will show up in that
-variable, and modification of that variable's value will appear in the field.
+<p>The <code><a href="form/refV.html#+Var">+Var</a></code> prefix class
+associates this field with the global variable <code>*Accu</code>. All changes
+to the field will show up in that variable, and modification of that variable's
+value will appear in the field.
 
 <p>The <a name="sqrtButton">square root operator button</a> has an
-<code>+Able</code> prefix class
+<code><a href="form/refA.html#+Able">+Able</a></code> prefix class
 
 <pre><code>
          (gui '(+Able +JS +Button) '(ge0 *Accu) (char 8730)
@@ -1189,8 +1193,8 @@ pending calculations.
 <p><hr>
 <h3><a name="charts">Charts</a></h3>
 
-<p>Charts are virtual components, maintaining the internal representation of
-two-dimensional data.
+<p><a href="form/refC.html#+Chart">Charts</a> are virtual components,
+maintaining the internal representation of two-dimensional data.
 
 <p>Typically, these data are nested lists, database selections, or some kind of
 dynamically generated tabular information. Charts make it possible to view them
@@ -1222,7 +1226,8 @@ table
 </code></pre>
 
 <p>with two columns "Text" and "Number", and four rows, each containing a
-<code>+TextField</code> and a <code>+NumField</code>.
+<code><a href="form/refT.html#+TextField">+TextField</a></code> and a <code><a
+href="form/refN.html#+NumField">+NumField</a></code>.
 
 <p>You can enter text into the first column, and numbers into the second.
 Pressing the "Save" button stores these values in the components on the server
@@ -1266,7 +1271,8 @@ way to scroll down and make space for more.
 ########################################################################
 </code></pre>
 
-<p>Note that we inserted a <code>+Chart</code> component before the GUI
+<p>Note that we inserted a <code><a
+href="form/refC.html#+Chart">+Chart</a></code> component before the GUI
 components which should be managed by the chart. The argument '2' tells the
 chart that it has to expect two columns.
 
@@ -1283,22 +1289,24 @@ the <code>val&gt;</code> message
 -> (("a" 1) ("b" 2) ("c" 3))
 </code></pre>
 
-<p>BTW, a more convenient function is <code>chart</code>
+<p>BTW, a more convenient function is <code><a
+href="form/refC.html#chart">chart</a></code>
 
 <pre><code>
 : (val> (chart))  # Retrieve the value of the current chart
 -> (("a" 1) ("b" 2) ("c" 3))
 </code></pre>
 
-<p><code>chart</code> can be used instead of the above construct when we want to
-access the "current" chart, i.e. the chart most recently processed in the
-current form.
+<p><code><a href="form/refC.html#chart">chart</a></code> can be used instead of
+the above construct when we want to access the "current" chart, i.e. the chart
+most recently processed in the current form.
 
 
 <h4><a name="scrolling">Scrolling</a></h4>
 
 <p>To enable scrolling, let's also insert two buttons. We use the pre-defined
-classes <code>+UpButton</code> and <code>+DnButton</code>
+classes <code><a href="form/refU.html#+UpButton">+UpButton</a></code> and
+<code><a href="form/refD.html#+DnButton">+DnButton</a></code>
 
 <pre><code>
 ########################################################################
@@ -1404,8 +1412,9 @@ and returns its wording in German.
             car )
 </code></pre>
 
-<p>We prefix the <code>+Chart</code> class with <code>+Init</code>, and pass it
-a list of numbers <code>(1 5 7)</code> for the initial value of the chart. Then,
+<p>We prefix the <code><a href="form/refC.html#+Chart">+Chart</a></code> class
+with <code><a href="form/refI.html#+Init">+Init</a></code>, and pass it a list
+of numbers <code>(1 5 7)</code> for the initial value of the chart. Then,
 following the '2' (the chart has two columns), we pass a 'put' function
 
 <pre><code>
@@ -1432,24 +1441,27 @@ locked) input fields).
                   (gui 2 '(+Lock +TextField) 90) ) ) )
 </code></pre>
 
-<p>is locked, because it displays the text generated by 'put', and is not
-supposed to accept any user input.
+<p>is <a href="form/refL.html#+Lock">locked</a>, because it displays the text
+generated by 'put', and is not supposed to accept any user input.
 
 <p>When you start up this form in your browser, you'll see three pre-filled
-lines with "1/eins", "5/fünf" and "7/sieben", according to the
-<code>+Init</code> argument <code>(1 5 7)</code>. Typing a number somewhere into
-the first column, and pressing ENTER or one of the buttons, will show a suitable
-text in the second column.
+lines with "1/eins", "5/fünf" and "7/sieben", according to the <code><a
+href="form/refI.html#+Init">+Init</a></code> argument <code>(1 5 7)</code>.
+Typing a number somewhere into the first column, and pressing ENTER or one of
+the buttons, will show a suitable text in the second column.
 
 
 <p><hr>
 <h2><a name="guiClasses">GUI Classes</a></h2>
 
-<p>In previous chapters we saw examples of GUI classes like
-<code>+TextField</code>, <code>+NumField</code> or <code>+Button</code>, often
-in combination with prefix classes like <code>+Lock</code>, <code>+Init</code>
-or <code>+Able</code>. Now we take a broader look at the whole hierarchy, and
-try more examples.
+<p>In previous chapters we saw examples of GUI classes like <code><a
+href="form/refT.html#+TextField">+TextField</a></code>, <code><a
+href="form/refN.html#+NumField">+NumField</a></code> or <code><a
+href="form/refB.html#+Button">+Button</a></code>, often in combination with
+prefix classes like <code><a href="form/refL.html#+Lock">+Lock</a></code>,
+<code><a href="form/refI.html#+Init">+Init</a></code> or <code><a
+href="form/refA.html#+Able">+Able</a></code>. Now we take a broader look at the
+whole hierarchy, and try more examples.
 
 <p>The abstract class <code>+gui</code> is the base of all GUI classes. A live
 view of the class hierarchy can be obtained with the <code><a
@@ -1500,9 +1512,11 @@ href="refD.html#dep">dep</a></code> ("dependencies") function:
 -> +gui
 </code></pre>
 
-<p>We see, for example, that <code>+DnButton</code> is a subclass of
-<code>+Button</code>, which in turn is a subclass of <code>+gui</code>.
-Inspecting <code>+DnButton</code> directly
+<p>We see, for example, that <code><a
+href="form/refD.html#+DnButton">+DnButton</a></code> is a subclass of <code><a
+href="form/refB.html#+Button">+Button</a></code>, which in turn is a subclass of
+<code>+gui</code>. Inspecting <code><a
+href="form/refD.html#+DnButton">+DnButton</a></code> directly
 
 <pre><code>
 : (dep '+DnButton)
@@ -1516,9 +1530,13 @@ Inspecting <code>+DnButton</code> directly
 -> +DnButton
 </code></pre>
 
-<p>shows that <code>+DnButton</code> inherits from <code>+Tiny</code>,
-<code>+Rid</code>, <code>+Able</code> and <code>+Button</code>. The actual
-definition of <code>+DnButton</code> can be found in "@lib/form.l"
+<p>shows that <code><a href="form/refD.html#+DnButton">+DnButton</a></code>
+inherits from <code><a href="form/refT.html#+Tiny">+Tiny</a></code>, <code><a
+href="form/refR.html#+Rid">+Rid</a></code>, <code><a
+href="form/refA.html#+Able">+Able</a></code> and <code><a
+href="form/refB.html#+Button">+Button</a></code>. The actual definition of
+<code><a href="form/refD.html#+DnButton">+DnButton</a></code> can be found in
+"@lib/form.l"
 
 <pre><code>
 (class +DnButton +Tiny +Rid +JS +Able +Button)
@@ -1526,7 +1544,8 @@ definition of <code>+DnButton</code> can be found in "@lib/form.l"
 </code></pre>
 
 <p>In general, "@lib/form.l" is the ultimate reference to the framework, and
-should be freely consulted.
+should be freely consulted. See also the <a href="form/form.html">form library
+reference</a>.
 
 
 <p><hr>
@@ -1549,9 +1568,11 @@ when enabled - input and modification of these data.
 
 <p>Except for checkboxes, which are implemented by the <a
 href="#checkboxes">Checkbox</a> class, all these HTML representations are
-generated by <code>+TextField</code> and its content-specific subclasses like
-<code>+NumField</code>, <code>+DateField</code> etc. Their actual appearance (as
-one of the above forms) depends on their arguments:
+generated by <code><a href="form/refT.html#+TextField">+TextField</a></code> and
+its content-specific subclasses like <code><a
+href="form/refN.html#+NumField">+NumField</a></code>, <code><a
+href="form/refD.html#+DateField">+DateField</a></code> etc. Their actual
+appearance (as one of the above forms) depends on their arguments:
 
 <p>We saw already "normal" text fields. They are created with a single numeric
 argument. This example creates an editable field with a width of 10 characters:
@@ -1589,16 +1610,18 @@ created with a label:
    (gui '(+TextField))
 </code></pre>
 
-<p>This makes mainly sense in combination with prefix classes like
-<code>+Var</code> and <code>+Obj</code>, to manage the contents of these fields,
-and achieve special behavior as HTML links or scrollable chart values.
+<p>This makes mainly sense in combination with prefix classes like <code><a
+href="form/refV.html#+Var">+Var</a></code> and <code><a
+href="form/refO.html#+Obj">+Obj</a></code>, to manage the contents of these
+fields, and achieve special behavior as HTML links or scrollable chart values.
 
 
 <h4><a name="numberFields">Numeric Input Fields</a></h4>
 
-<p>A <code>+NumField</code> returns a number from its <code>val&gt;</code>
-method, and accepts a number for its <code>set&gt;</code> method. It issues an
-error message when user input cannot be converted to a number.
+<p>A <code><a href="form/refN.html#+NumField">+NumField</a></code> returns a
+number from its <code>val&gt;</code> method, and accepts a number for its
+<code>set&gt;</code> method. It issues an error message when user input cannot
+be converted to a number.
 
 <p>Large numbers are shown with a thousands-separator, as determined by the
 current locale.
@@ -1618,8 +1641,8 @@ current locale.
 ########################################################################
 </code></pre>
 
-<p>A <code>+FixField</code> needs an additional scale factor argument, and
-accepts/returns scaled fixpoint numbers.
+<p>A <code><a href="form/refF.html#+FixField">+FixField</a></code> needs an
+additional scale factor argument, and accepts/returns scaled fixpoint numbers.
 
 <p>The decimal separator is determined by the current locale.
 
@@ -1641,8 +1664,8 @@ accepts/returns scaled fixpoint numbers.
 
 <h4><a name="timeDateFields">Time &amp; Date</a></h4>
 
-<p>A <code>+DateField</code> accepts and returns a <code><a
-href="refD.html#date">date</a></code> value.
+<p>A <code><a href="form/refD.html#+DateField">+DateField</a></code> accepts and
+returns a <code><a href="refD.html#date">date</a></code> value.
 
 <pre><code>
 ########################################################################
@@ -1675,9 +1698,10 @@ patterns like DD.MM.YYYY (DE), YYYY/MM/DD (JP), DD/MM/YYYY (UK), or MM/DD/YYYY
 <p>An error is issued when user input does not match the current locale's date
 format.
 
-<p>Independent from the locale setting, a <code>+DateField</code> tries to
-expand abbreviated input from the user. A small number is taken as that day of
-the current month, larger numbers expand to day and month, or to day, month and
+<p>Independent from the locale setting, a <code><a
+href="form/refD.html#+DateField">+DateField</a></code> tries to expand
+abbreviated input from the user. A small number is taken as that day of the
+current month, larger numbers expand to day and month, or to day, month and
 year:
 
 <ul>
@@ -1727,7 +1751,8 @@ format of the phone number string is not enforced by the GUI, but further
 processing (e.g. database searches) normally uses <code><a
 href="refF.html#fold">fold</a></code> for better reproducibility.
 
-<p>To display a phone number, <code>+TelField</code> replaces the country code
+<p>To display a phone number, <code><a
+href="form/refT.html#+TelField">+TelField</a></code> replaces the country code
 with a single zero if it is the country code of the current locale, or prepends
 it with a plus sign if it is a foreign country (see <code><a
 href="refT.html#telStr">telStr</a></code>).
@@ -1755,9 +1780,10 @@ single leading zero is replaced with the current locale's country code (see
 
 <h4><a name="checkboxes">Checkboxes</a></h4>
 
-<p>A <code>+Checkbox</code> is straightforward. User interaction is restricted
-to clicking it on and off. It accepts boolean (<code>NIL</code> or
-non-<code>NIL</code>) values, and returns <code>T</code> or <code>NIL</code>.
+<p>A <code><a href="form/refC.html#+Checkbox">+Checkbox</a></code> is
+straightforward. User interaction is restricted to clicking it on and off. It
+accepts boolean (<code>NIL</code> or non-<code>NIL</code>) values, and returns
+<code>T</code> or <code>NIL</code>.
 
 <pre><code>
 ########################################################################
@@ -1795,24 +1821,27 @@ the list of arguments to the <code>gui</code> function.
 
 <h4><a name="initPrefix">Initialization</a></h4>
 
-<p><code>+Init</code> overrides the <code>init&gt;</code> method for that
-component. The <code>init&gt;</code> message is sent to a <code>+gui</code>
-component when the page is loaded for the first time (during a GET request).
-<code>+Init</code> takes an expression for the initial value of that field.
+<p><code><a href="form/refI.html#+Init">+Init</a></code> overrides the
+<code>init&gt;</code> method for that component. The <code>init&gt;</code>
+message is sent to a <code>+gui</code> component when the page is loaded for the
+first time (during a GET request). <code><a
+href="form/refI.html#+Init">+Init</a></code> takes an expression for the initial
+value of that field.
 
 <pre><code>
    (gui '(+Init +TextField) "This is the initial text" 30)
 </code></pre>
 
-<p>Other classes which automatically give a value to a field are
-<code>+Var</code> (linking the field to a variable) and <code>+E/R</code>
-(linking the field to a database entity/relation).
+<p>Other classes which automatically give a value to a field are <code><a
+href="form/refV.html#+Var">+Var</a></code> (linking the field to a variable) and
+<code><a href="form/refE.html#+E/R">+E/R</a></code> (linking the field to a
+database entity/relation).
 
-<p><code>+Cue</code> can be used, for example in "mandatory" fields, to give a
-hint to the user about what he is supposed to enter. It will display the
-argument value, in angular brackets, if and only if the field's value is
-<code>NIL</code>, and the <code>val&gt;</code> method will return
-<code>NIL</code> despite the fact that this value is displayed.
+<p><code><a href="form/refC.html#+Cue">+Cue</a></code> can be used, for example
+in "mandatory" fields, to give a hint to the user about what he is supposed to
+enter. It will display the argument value, in angular brackets, if and only if
+the field's value is <code>NIL</code>, and the <code>val&gt;</code> method will
+return <code>NIL</code> despite the fact that this value is displayed.
 
 <p>Cause an empty field to display "&lt;Please enter some text here&gt;":
 
@@ -1826,11 +1855,12 @@ argument value, in angular brackets, if and only if the field's value is
 <p>An important feature of an interactive GUI is the context-sensitive disabling
 and enabling of individual components, or of a whole form.
 
-<p>The <code>+Able</code> prefix class takes an argument expression, and
-disables the component if this expression returns <code>NIL</code>. We saw an
-example for its usage already in the <a href="#sqrtButton">square root
-button</a> of the calculator example. Or, for illustration purposes, imagine a
-button which is supposed to be enabled only after Christmas
+<p>The <code><a href="form/refA.html#+Able">+Able</a></code> prefix class takes
+an argument expression, and disables the component if this expression returns
+<code>NIL</code>. We saw an example for its usage already in the <a
+href="#sqrtButton">square root button</a> of the calculator example. Or, for
+illustration purposes, imagine a button which is supposed to be enabled only
+after Christmas
 
 <pre><code>
    (gui '(+Able +Button)
@@ -1845,19 +1875,22 @@ button which is supposed to be enabled only after Christmas
    (gui '(+Able +PwField) '(not *Login) 10 "Password")
 </code></pre>
 
-<p>A special case is the <code>+Lock</code> prefix, which permanently and
-unconditionally disables a component. It takes no arguments
+<p>A special case is the <code><a href="form/refL.html#+Lock">+Lock</a></code>
+prefix, which permanently and unconditionally disables a component. It takes no
+arguments
 
 <pre><code>
    (gui '(+Lock +NumField) 10 "Count")
 </code></pre>
 
-<p>('10' and "Count" are for the <code>+NumField</code>), and creates a
-read-only field.
+<p>('10' and "Count" are for the <code><a
+href="form/refN.html#+NumField">+NumField</a></code>), and creates a read-only
+field.
 
-<p>The whole form can be disabled by calling <code>disable</code> with a
-non-<code>NIL</code> argument. This affects all components in this form. Staying
-with the above example, we can make the form read-only until Christmas
+<p>The whole form can be disabled by calling <code><a
+href="form/refD.html#disable">disable</a></code> with a non-<code>NIL</code>
+argument. This affects all components in this form. Staying with the above
+example, we can make the form read-only until Christmas
 
 <pre><code>
    (form NIL
@@ -1869,7 +1902,8 @@ with the above example, we can make the form read-only until Christmas
 <p>Even in a completely disabled form, however, it is often necessary to
 re-enable certain components, as they are needed for navigation, scrolling, or
 other activities which don't affect the contents of the form. This is done by
-prefixing these fields with <code>+Rid</code> (i.e. getting "rid" of the lock).
+prefixing these fields with <code><a href="form/refR.html#+Rid">+Rid</a></code>
+(i.e. getting "rid" of the lock).
 
 <pre><code>
    (form NIL
@@ -1884,43 +1918,49 @@ prefixing these fields with <code>+Rid</code> (i.e. getting "rid" of the lock).
 <h4><a name="formatPrefix">Formatting</a></h4>
 
 <p>GUI prefix classes allow a fine-grained control of how values are stored in -
-and retrieved from - components. As in predefined classes like
-<code>+NumField</code> or <code>+DateField</code>, they override the
+and retrieved from - components. As in predefined classes like <code><a
+href="form/refN.html#+NumField">+NumField</a></code> or <code><a
+href="form/refD.html#+DateField">+DateField</a></code>, they override the
 <code>set&gt;</code> and/or <code>val&gt;</code> methods.
 
-<p><code>+Set</code> takes an argument function which is called whenever that
-field is set to some value. To convert all user input to upper case
+<p><code><a href="form/refS.html#+Set">+Set</a></code> takes an argument
+function which is called whenever that field is set to some value. To convert
+all user input to upper case
 
 <pre><code>
    (gui '(+Set +TextField) uppc 30)
 </code></pre>
 
-<p><code>+Val</code> is the complement to <code>+Set</code>. It takes a function
-which is called whenever the field's value is retrieved. To return the square of
-a field's value
+<p><code><a href="form/refV.html#+Val">+Val</a></code> is the complement to
+<code><a href="form/refS.html#+Set">+Set</a></code>. It takes a function which
+is called whenever the field's value is retrieved. To return the square of a
+field's value
 
 <pre><code>
    (gui '(+Val +NumField) '((N) (* N N)) 10)
 </code></pre>
 
-<p><code>+Fmt</code> is just a combination of <code>+Set</code> and
-<code>+Val</code>, and takes two functional arguments. This example will display
-upper case characters, while returning lower case characters internally
+<p><code><a href="form/refF.html#+Fmt">+Fmt</a></code> is just a combination of
+<code><a href="form/refS.html#+Set">+Set</a></code> and <code><a
+href="form/refV.html#+Val">+Val</a></code>, and takes two functional arguments.
+This example will display upper case characters, while returning lower case
+characters internally
 
 <pre><code>
    (gui '(+Fmt +TextField) uppc lowc 30)
 </code></pre>
 
-<p><code>+Map</code> does (like <code>+Fmt</code>) a two-way translation. It
-uses a list of cons pairs for a linear lookup, where the CARs represent the
-displayed values which are internally mapped to the values in the CDRs. If a
-value is not found in this list during <code>set&gt;</code> or
-<code>val&gt;</code>, it is passed through unchanged.
+<p><code><a href="form/refM.html#+Map">+Map</a></code> does (like <code><a
+href="form/refF.html#+Fmt">+Fmt</a></code>) a two-way translation. It uses a
+list of cons pairs for a linear lookup, where the CARs represent the displayed
+values which are internally mapped to the values in the CDRs. If a value is not
+found in this list during <code>set&gt;</code> or <code>val&gt;</code>, it is
+passed through unchanged.
 
-<p>Normally, <code>+Map</code> is used in combination with the combo box
-incarnation of text fields (see <a href="#inputFields">Input Fields</a>). This
-example displays "One", "Two" and "Three" to the user, but returns a number 1, 2
-or 3 internally
+<p>Normally, <code><a href="form/refM.html#+Map">+Map</a></code> is used in
+combination with the combo box incarnation of text fields (see <a
+href="#inputFields">Input Fields</a>). This example displays "One", "Two" and
+"Three" to the user, but returns a number 1, 2 or 3 internally
 
 <pre><code>
 ########################################################################
@@ -1940,16 +1980,18 @@ or 3 internally
 
 <h4><a name="sideEffects">Side Effects</a></h4>
 
-<p>Whenever a button is pressed in the GUI, any changes caused by
-<code>action</code> in the current environment (e.g. the database or application
-state) need to be reflected in the corresponding GUI fields. For that, the
-<code>upd&gt;</code> message is sent to all components. Each component then
-takes appropriate measures (e.g. refresh from database objects, load values from
-variables, or calculate a new value) to update its value.
+<p>Whenever a button is pressed in the GUI, any changes caused by <code><a
+href="form/refA.html#action">action</a></code> in the current environment (e.g.
+the database or application state) need to be reflected in the corresponding GUI
+fields. For that, the <code>upd&gt;</code> message is sent to all components.
+Each component then takes appropriate measures (e.g. refresh from database
+objects, load values from variables, or calculate a new value) to update its
+value.
 
 <p>While the <code>upd&gt;</code> method is mainly used internally, it can be
-overridden in existing classes via the <code>+Upd</code> prefix class. Let's
-print updated values to standard error
+overridden in existing classes via the <code><a
+href="form/refU.html#+Upd">+Upd</a></code> prefix class. Let's print updated
+values to standard error
 
 <pre><code>
 ########################################################################
@@ -1975,15 +2017,19 @@ is sent to all components at appropriate times. The corresponding method should
 return <code>NIL</code> if the value is all right, or a string describing the
 error otherwise.
 
-<p>Many of the built-in classes have a <code>chk&gt;</code> method. The
-<code>+NumField</code> class checks for legal numeric input, or the
-<code>+DateField</code> for a valid calendar date.
+<p>Many of the built-in classes have a <code>chk&gt;</code> method. The <code><a
+href="form/refN.html#+NumField">+NumField</a></code> class checks for legal
+numeric input, or the <code><a
+href="form/refD.html#+DateField">+DateField</a></code> for a valid calendar
+date.
 
-<p>An on-the-fly check can be implemented with the <code>+Chk</code> prefix
-class. The following code only accepts numbers not bigger than 9: The
-<code>or</code> expression first delegates the check to the main
-<code>+NumField</code> class, and - if it does not give an error - returns an
-error string when the current value is greater than 9.
+<p>An on-the-fly check can be implemented with the <code><a
+href="form/refC.html#+Chk">+Chk</a></code> prefix class. The following code only
+accepts numbers not bigger than 9: The <code>or</code> expression first
+delegates the check to the main <code><a
+href="form/refN.html#+NumField">+NumField</a></code> class, and - if it does not
+give an error - returns an error string when the current value is greater than
+9.
 
 <pre><code>
 ########################################################################
@@ -2002,10 +2048,10 @@ error string when the current value is greater than 9.
 ########################################################################
 </code></pre>
 
-<p>A more direct kind of validation is built-in via the <code>+Limit</code>
-class. It controls the <code>maxlength</code> attribute of the generated HTML
-input field component. Thus, it is impossible to type to more characters than
-allowed into the field.
+<p>A more direct kind of validation is built-in via the <code><a
+href="form/refL.html#+Limit">+Limit</a></code> class. It controls the
+<code>maxlength</code> attribute of the generated HTML input field component.
+Thus, it is impossible to type to more characters than allowed into the field.
 
 <pre><code>
 ########################################################################
@@ -2028,12 +2074,12 @@ methods to get a value in and out of a GUI component, they are not very often
 used explicitly. Instead, components are directly linked to internal Lisp data
 structures, which are usually either variables or database objects.
 
-<p>The <code>+Var</code> prefix class takes a variable (described as the
-<code>var</code> data type - either a symbol or a cons pair - in the <a
-href="ref.html#fun">Function Reference</a>). In the following example, we
-initialize a global variable with the value "abc", and let a
-<code>+TextField</code> operate on it. The "Print" button can be used to display
-its current value.
+<p>The <code><a href="form/refV.html#+Var">+Var</a></code> prefix class takes a
+variable (described as the <code>var</code> data type - either a symbol or a
+cons pair - in the <a href="ref.html#fun">Function Reference</a>). In the
+following example, we initialize a global variable with the value "abc", and let
+a <code><a href="form/refT.html#+TextField">+TextField</a></code> operate on it.
+The "Print" button can be used to display its current value.
 
 <pre><code>
 ########################################################################
@@ -2050,10 +2096,11 @@ its current value.
 ########################################################################
 </code></pre>
 
-<p><code>+E/R</code> takes an entity/relation specification. This is a cons
-pair, with a relation in its CAR (e.g. <code>nm</code>, for an object's name),
-and an expression in its CDR (typically <code>(: home obj)</code>, the object
-stored in the <code>obj</code> property of the current form).
+<p><code><a href="form/refE.html#+E/R">+E/R</a></code> takes an entity/relation
+specification. This is a cons pair, with a relation in its CAR (e.g.
+<code>nm</code>, for an object's name), and an expression in its CDR (typically
+<code>(: home obj)</code>, the object stored in the <code>obj</code> property of
+the current form).
 
 <p>For an isolated, simple example, we create a temporary database, and access
 the <code>nr</code> and <code>nm</code> properties of an object stored in a
@@ -2086,7 +2133,7 @@ global variable <code>*Obj</code>.
 <p>Buttons are, as explained in <a href="#ctlFlow">Control Flow</a>, the only
 way (via POST requests) for an application to communicate with the server.
 
-<p>Basically, a <code>+Button</code> takes
+<p>Basically, a <code><a href="form/refB.html#+Button">+Button</a></code> takes
 
 <ul>
 <li>a label, which may be either a string or the name of an image file
@@ -2129,34 +2176,40 @@ href="#scrolling">scrolling</a> in charts or other <a href="#sideEffects">side
 effects</a>, special buttons exist which can <i>close</i> an alert or dialog in
 addition to doing their principal job.
 
-<p>Such buttons are usually subclasses of <code>+Close</code>, and most of them
-can be called easily with ready-made functions like <code>closeButton</code>,
-<code>cancelButton</code>, <code>yesButton</code> or <code>noButton</code>. We
-saw a few examples in <a href="#dialogs">Alerts and Dialogs</a>.
+<p>Such buttons are usually subclasses of <code><a
+href="form/refC.html#+Close">+Close</a></code>, and most of them can be called
+easily with ready-made functions like <code><a
+href="form/refC.html#closeButton">closeButton</a></code>, <code><a
+href="form/refC.html#cancelButton">cancelButton</a></code>, <code><a
+href="form/refY.html#yesButton">yesButton</a></code> or <code><a
+href="form/refN.html#noButton">noButton</a></code>. We saw a few examples in <a
+href="#dialogs">Alerts and Dialogs</a>.
 
 
 <h4><a name="jsButtons">Active JavaScript</a></h4>
 
-<p>When a button inherits from the <code>+JS</code> class (and JavaScript is
-enabled in the browser), that button will possibly show a much faster response
-in its action.
+<p>When a button inherits from the <code><a
+href="form/refJ.html#+JS">+JS</a></code> class (and JavaScript is enabled in the
+browser), that button will possibly show a much faster response in its action.
 
-<p>The reason is that the activation of a <code>+JS</code> button will - instead
-of doing a normal POST - first try to send only the contents of all GUI
-components via an XMLHttpRequest to the server, and receive the updated values
-in response. This avoids the flicker caused by reloading and rendering of the
-whole page, is much faster, and also does not jump to the beginning of the page
-if it is larger than the browser window. The effect is especially noticeable
-while scrolling in charts.
+<p>The reason is that the activation of a <code><a
+href="form/refJ.html#+JS">+JS</a></code> button will - instead of doing a normal
+POST - first try to send only the contents of all GUI components via an
+XMLHttpRequest to the server, and receive the updated values in response. This
+avoids the flicker caused by reloading and rendering of the whole page, is much
+faster, and also does not jump to the beginning of the page if it is larger than
+the browser window. The effect is especially noticeable while scrolling in
+charts.
 
 <p>Only if this fails, for example because an error message was issued, or a
 dialog popped up, it will fall back, and the form will be POSTed in the normal
 way.
 
-<p>Thus it makes no sense to use the <code>+JS</code> prefix for buttons that
-cause a change of the HTML code, open a dialog, or jump to another page. In such
-cases, overall performance will even be worse, because the XMLHttpRequest is
-tried first (but in vain).
+<p>Thus it makes no sense to use the <code<a
+href="form/refJ.html#+JS">+JS</a></code> prefix for buttons that cause a change
+of the HTML code, open a dialog, or jump to another page. In such cases, overall
+performance will even be worse, because the XMLHttpRequest is tried first (but
+in vain).
 
 <p>When JavaScript is disabled int the browser, the XMLHttpRequest will not be
 tried at all. The form will be fully usable, though, with identical
@@ -2180,6 +2233,12 @@ permissions are controlled via users, roles and permissions. It comes localized
 in seven languages (English, Spanish, German, Norwegian, Swedish, Russian and
 Japanese), with some initial data and two sample reports.
 
+<p>Since this reference application employs so many of the typical techniques
+used in writing PicoLisp applications, taking the time to study it is time very
+well invested. Another good way to get acquainted with the language and
+framework is to start experimenting by writing small applications of your own.
+Copying and making changes to the reference application is a very good way to
+get started with this, and I highly recommend doing so.
 
 <p><hr>
 <h3><a name="getStarted">Getting Started</a></h3>
@@ -2459,6 +2518,91 @@ Numbers</a>).
 <p>The "Memo" tab contains a single text area. It is no problem to use it for
 large pieces of text, as it gets stored in a database blob internally.
 
+<p>The general layout of <code>cusu.l</code> is quite similar to the other
+source files making up the demo application. Since this is such a typical way of
+structuring PicoLisp applications, let's have a more detailed look. The
+beginning of <code>cusu.l</code> looks like this:
+
+<pre><code>
+########################################################################
+(must "Customer/Supplier" Customer)
+
+(menu ,"Customer/Supplier"
+   (idForm ,"Customer/Supplier" '(choCuSu) 'nr '+CuSu T '(may Delete)
+      '((: nr) " -- " (: nm))
+      ....
+########################################################################
+</code></pre>
+
+<p>The first line checks whether the user has the right permissions to access
+this page. After that a call to a function called <code>(menu)</code> follows.
+This function is defined in <code>app/gui.l</code> and creates the menu and
+basic page layout used in this application. Nested within the call to
+<code>(menu)</code> is our first, direct, encounter with a form function. In
+this case it is a call to <code><a
+href="form/refI.html#idForm">(idForm)</a></code>. Let us look a little closer at
+this call.
+
+<p>The first parameter, "Customer/Supplier", is used in the form heading.
+Parameter number two is interesting. <code>'(choCuSu)</code> creates a dialog
+that makes is possible to search for an existing object to display/ edit, or
+create a new one. <code>(choCuSu)</code> is defined in <code>app/gui.l</code>
+and uses another form function, called <code><a
+href="form/refD.html#diaform">(diaform)</a></code>. An abbreviated version is
+shown below.
+
+<pre><code>
+########################################################################
+(de choCuSu (Dst)
+   (diaform '(Dst)
+      (<grid> "--.-.-."
+         # Form components
+         ... )
+      (gui 'query '(+QueryChart) (cho)
+         # Pilog query
+         9
+         '((This) (list This (: nr) This (: nm2) (: em) (: plz) (: ort) (: tel) (: mob))) )
+      (&lt;table&gt; 'chart (choTtl ,"Customers/Suppliers" 'nr '+CuSu)
+         # Table headers
+         (do (cho)
+            (<row> (alternating)
+               (gui 1 '(+DstButton) Dst)
+               ...
+               (gui 9 '(+TelField)) ) ) )
+      (<spread>
+         (scroll (cho))
+         (newButton T Dst '(+CuSu) ...)
+         (cancelButton) ) ) )
+########################################################################
+</code></pre>
+
+<p><code>(choCuSu)</code> starts off by calling <code><a
+href="form/refD.html#diaform">(diaform)</a></code>. This function is used when
+we want a form to behave in a similar way to a dialog (See <a
+href="app.html#dialogs">Alerts and Dialogs</a> for a description of how dialogs
+work in this framework). The first part of our diaform is a
+<code>(&lt;grid&gt;)</code> containing some form components.
+
+<p>The grid is followed by another gui component, this time a <code><a
+href="form/refQ.html#+QueryChart">+QueryChart</a></code>. The chart is an
+interesting, and very useful, concept. The basic idea is to separate how data is
+presented in the gui from the internal representation. See <a
+href="app.html#charts">charts</a> for more information.
+
+<p>The <code><a href="form/refQ.html#+QueryChart">+QueryChart</a></code> uses a
+<a href="tut.html#pilog">Pilog</a> query to fetch the data we wish to show from
+the database. This part is followed by a number, in this case 9, which tells the
+Chart how many columns of data to expect. The final part is a function that
+takes care of <a href="app.html#putGet">putting data</a> into the gui from the
+dataset retrieved by the Pilog query. A table is used to present the result. The
+number of columns in this table must match the number mentioned above, the one
+that tells the chart how many columns to expect.
+
+<p>What is here is a common way of structuring applications in PicoLisp. Objects
+are displayed and edited using <code><a
+href="form/refI.html#idForm">(idForm)</a></code>, which in turn use <code><a
+href="form/refD.html#diaform">(diaform)</a></code> to select or create new
+objects to view or edit.
 
 <h4><a name="item">Item</a></h4>
 

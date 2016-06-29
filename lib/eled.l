@@ -1,4 +1,4 @@
-# 29nov12tj
+# 19apr16tj
 # Authors Thorsten Jolitz, Alexander Burger
 # (c) Software Lab. Alexander Burger
 
@@ -6,7 +6,7 @@
 # emacs-mode
 
 (mapc undef
-   '(*Led fkey revise) )
+   '(*Led msg fkey revise) )
 
 (setq
    "Line"      NIL      # Holds current input line
@@ -25,6 +25,7 @@
    "Register"  NIL      # Storage for text snippets
 
    "HistMax"   1000     # History limit
+   "Revisions" NIL      # 'revise' history
 
    *History             # History of input lines
    (in (pack "+" (pil "history"))
@@ -53,7 +54,7 @@
 # Basic editing routine
 (de chgLine (L N)
    (let (D (length "Line")  Tsm)
-      (for (P (dec "LPos") (>= P 1) (dec P))  # To start of old line
+      (for (P (dec "LPos") (gt0 P) (dec P))  # To start of old line
          (unless
             (and
                *Tsm
@@ -314,15 +315,7 @@
                (let "N" (inc (length "S"))
                   (mapcar
                      '((X)
-                        (setq X
-                           (nth
-                              (mapcan
-                                 '((C)
-                                    (if (or (= "\\" C) (delim? C))
-                                       (list "\\" C)
-                                       (cons C) ) )
-                                 (chop X) )
-                              "N" ) )
+                        (setq X (nth (chop X) "N"))
                         (cons
                            (+ "LPos" (length X))
                            (append "L" X (nth "Line" "LPos")) ) )
@@ -639,6 +632,16 @@
          ((if "Insert" insMode insMode) "C") ) ) ) # only insert mode for emacs
          ## ((if "Insert" insMode cmdMode) "C") ) ) )
 
+# Polite messages
+(de msg (X . @)
+   (let (L "Line"  P "LPos")
+      (chgLine NIL 1)
+      (out 2
+         (print X)
+         (pass prinl) )
+      (chgLine L P) )
+   X )
+
 # Function keys
 (de fkey (Key . Prg)
    (setq "FKey"
@@ -659,18 +662,21 @@
                (setq
                   S (pack (car P))
                   P (and (cdr P) (pack (glue "/" @) "/")) )
-               (extract
-                  '((X)
-                     (and (pre? S X) (pack P X)) )
+               (extract '((X) (and (pre? S X) (pack P X)))
                   (dir P T) ) ) ) ) )
-   (setq "LPos" 1 "HPos" 0)
+   (zero "HPos")
    (_getLine "Line1" (or "skipFun" delim?))
    (prinl (cdr *Tsm)) )
 
 (de revise ("X" "tabFun" "skipFun")
-   (let ("*Dbg" *Dbg *Dbg NIL)
+   (let (*History "Revisions"  "*Dbg" *Dbg  *Dbg)
       (_led (chop "X") "tabFun" "skipFun")
-      (pack "Line") ) )
+      (let? L (pack "Line")
+         (unless (= L (car "Revisions"))
+            (push '"Revisions" L) )
+         (off "Line")
+         (one "LPos")
+         L ) ) )
 
 (de saveHistory ()
    (unless (= *History "Hist0")
@@ -679,7 +685,7 @@
 
 # Enable line editing
 (de *Led
-   (let ("*Dbg" *Dbg *Dbg NIL)
+   (let ("*Dbg" *Dbg  *Dbg)
       (push1 '*Bye '(saveHistory))
       (push1 '*Fork '(del '(saveHistory) '*Bye))
       (_led)
@@ -690,6 +696,8 @@
             (= L (car *History))
             (push '*History L) )
          (and (nth *History "HistMax") (con @))
+         (off "Line")
+         (one "LPos")
          L ) ) )
 
 (mapc zap

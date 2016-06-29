@@ -350,10 +350,14 @@ a A  # (This is the value)
 </code></pre>
 
 <p>Now you can modify values or properties. You should not touch the
-parenthesized asterisks, as they serve as delimiters. If you position the cursor
+parenthesized hyphens, as they serve as delimiters. If you position the cursor
 on the first character of a symbol name and type '<code>K</code>' ("Keyword
 lookup"), the editor will be restarted with that symbol added to the editor
 window. '<code>Q</code>' (for "Quit") will bring you back to the previous view.
+
+<p>And, pressing 'Q' at the first (or, top-level) view will return you to the
+REPL with any changes you made in your 'edit' session communicated back to the
+REPL session.
 
 <p><code>edit</code> is also very useful to browse in a database. You can follow
 the links between objects with '<code>K</code>', and even - e.g. for low-level
@@ -1289,8 +1293,8 @@ place, simply write:
 $ /home/foo/picolisp/pil @app/file1.l -main @app/file2.l +
 </code></pre>
 
-<p>that is, supply a full path name to the initial command (here 'p'), or put it
-into your <code>PATH</code> variable, and prefix each file which has to be
+<p>that is, supply a full path name to the initial command (here 'pil'), or put
+it into your <code>PATH</code> variable, and prefix each file which has to be
 loaded from the PicoLisp home directory with a <code>@</code> character.
 "Normal" files (not prefixed by <code>@</code>) will be opened or created
 relative to the current working directory as usual.
@@ -1826,12 +1830,12 @@ other data with the <code><a href="refR.html#rel">rel</a></code> function.
 (rel nm (+Need +Sn +Idx +String))      # Name
 </code></pre>
 
-<p>This defines the name property (<code>nm</code>) of a person. The first
+<p>This defines the name property (<code>nm</code>) of a person. The second
 argument to <code>rel</code> is always a list of relation classes (subclasses of
 <code><a href="refR.html#+relation">+relation</a></code>), optionally followed
-by further arguments, causing relation daemon objects be created and stored in
-the class definition. These daemon objects control the entity's behavior later
-at runtime.
+by further arguments, causing relation daemon objects to be created and stored
+in the class definition. These daemon objects control the entity's behavior
+later at runtime.
 
 <p>Relation daemons are a kind of <i>metadata</i>, controlling the interactions
 between entities, and maintaining database integrity. Like other classes,

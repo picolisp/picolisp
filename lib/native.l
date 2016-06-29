@@ -1,10 +1,10 @@
-# 25jan16abu
+# 23mar16abu
 # (c) Software Lab. Alexander Burger
 
 (de gcc (Nm L . Lst)
    (out (tmp Nm ".c") (here "/**/"))
    ~(case *OS
-      (("Linux" "FreeBSD")
+      (("Linux" "FreeBSD" "OpenBSD")
          (quote
             (apply call L "gcc" "-o" (tmp Nm)
                "-fPIC" "-shared" "-export-dynamic"

@@ -1,4 +1,4 @@
-# 24nov15abu
+# 16mar16abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -309,6 +309,7 @@
    initFun NIL       "opid"      doOpid
    initFun NIL       "kill"      doKill
    initFun NIL       "fork"      doFork
+   initFun NIL       "detach"    doDetach
    initFun NIL       "bye"       doBye
 
    # Symbol functions
@@ -600,9 +601,9 @@
 :: Get_A       word  0           # Character input function
 :: InFile      word  0           # Input file
 :: OutFile     word  0           # Output file
-: Catch        word  0           # Catch frames
 : Env  # <Catch III> environment
 : EnvBind      word  0           # <III> Bind frames (first item in Env)
+: Catch        word  0           # Catch frames
 : EnvInFrames  word  0           # Input frames
 : EnvOutFrames word  0           # Output frames
 : EnvErrFrames word  0           # Error frames

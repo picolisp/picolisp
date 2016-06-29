@@ -1,4 +1,4 @@
-# 30oct15abu
+# 23mar16abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -23,11 +23,13 @@
    js ipSocketErrX  # No
    ld C A  # Keep socket in C
    call closeOnExecAX
-   ld A 0  # Socket option "off"
-   st4 (Buf)  # Store into 'optval'
-   cc setsockopt(C IPPROTO_IPV6 IPV6_V6ONLY Buf 4)  # "Not only IPv6" option
-   nul4  # OK?
-   js ipV6onlyErrX  # No
+   ? (<> *TargetOS "OpenBSD")
+      ld A 0  # Socket option "off"
+      st4 (Buf)  # Store into 'optval'
+      cc setsockopt(C IPPROTO_IPV6 IPV6_V6ONLY Buf 4)  # "Not only IPv6" option
+      nul4  # OK?
+      js ipV6onlyErrX  # No
+   =
    ld B 0  # Clear socket structure
    mset (Addr) SOCKADDR_IN6
    ld A AF_INET6

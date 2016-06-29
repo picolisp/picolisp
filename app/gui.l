@@ -1,4 +1,4 @@
-# 22apr15abu
+# 08may16abu
 # (c) Software Lab. Alexander Burger
 
 ### GUI ###
@@ -24,7 +24,7 @@
                         (,"Sales" (and (may Report) "app/sales.l")) )
                      (T ,"System"
                         (,"Role Administration" (and (may RoleAdmin) "@lib/role.l"))
-                        (,"User Administration" (and (may UserAdmin) "@lib/user.l")) ) ) )
+                        (,"User Administration" (and *Login "@lib/user.l") (unless (may UserAdmin) *Login)) ) ) )
                ((NIL NIL 'main)
                   (<div> @ (run Prg 1)) ) ) ) ) ) )
 
@@ -51,6 +51,9 @@
    (work) )
 
 # Search dialogs
+(de choSal (Dst)
+   (choDlg Dst ,"Salutations" '(nm +Sal)) )
+
 (de choCuSu (Dst)
    (diaform '(Dst)
       (<grid> "--.-.-."

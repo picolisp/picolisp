@@ -11,11 +11,17 @@
 
 <dl>
     <dt><a name="+BlobField"><code>+BlobField</code></a>
-    <dd>A field that handles data stored in external files, i.e. "Blob - binary large object".
+    <dd>A field that handles data stored in external files, i.e. "Blob - binary
+    large object".
+
     <pre><code>
     (gui '(+BlobField) '(txt : home obj) 72 20)
     </code></pre>
-    The code above creates a textarea, size 72 x 20, and stores the text entered there in an external file. A corresponding, global variable, is created in main.l:
+    
+    The code above creates a textarea, size 72 x 20, and stores the text entered
+    there in an external file. A corresponding, global variable, is created in
+    main.l:
+
     <pre><code>
     (setq
        *Pool "db/wiki/"
@@ -26,8 +32,10 @@
        *WikiCss "wiki/wiki.css"
        *WikiPort 5000 )
     </code></pre>
-    Here, <code>*Blob</code> holds a path to the place where content from <code>+BlobField</code> will be stored.
-    See also <a href="formRefR.html#+/R">+/R</a>, <a href="formRefT.html#+TextField">+TextField</a>.
+    
+    Here, <code>*Blob</code> holds a path to the place where content from
+    <code>+BlobField</code> will be stored. See also <a
+    href="refR.html#+/R">+/R</a>, <a href="refT.html#+TextField">+TextField</a>.
 </dl>
 
 <dl>
@@ -39,18 +47,21 @@
         <li>An executable expression</li>
     </ul>
     For example:<br/>
+
     <pre><code>
     (gui '(+Button) "Enabled" "Disabled" '(doSomething))
     </code></pre>
-    See also <a href="formRefG.html#+gui">+gui</a> and <a href="app.html#buttons">Buttons</a>. 
+    
+    See also <a href="refG.html#+gui">+gui</a> and <a
+    href="../app.html#buttons">Buttons</a>.
 </dl>
 
 <dl>
     <dt><a name="+BubbleButton"><code>+BubbleButton</code></a>
     <dd>A button used to move a row of data upwards in a chart.
-    See also <a href="formRefC.html#chart">chart</a>, <a href="formRefT.html#+Tiny">+Tiny</a>,
-    <a href="formRefJ.html#+JS">+JS</a>, <a href="formRefA.html#+Able">+Able</a>,
-    <a href="formRefT.html#+Tip">+Tip</a> and <a href="formRefB.html#+Button">+Button</a>. 
+    See also <a href="refC.html#chart">chart</a>, <a href="refT.html#+Tiny">+Tiny</a>,
+    <a href="refJ.html#+JS">+JS</a>, <a href="refA.html#+Able">+Able</a>,
+    <a href="refT.html#+Tip">+Tip</a> and <a href="refB.html#+Button">+Button</a>. 
 </dl>
 </body>
 </html>

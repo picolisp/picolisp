@@ -43,3 +43,6 @@ Mihail Pechkin <mike.pechkin@gmail.com>
 
 # @lib/openGl.l additions
 Oscar Roca <e21777eonwe@yahoo.com>
+
+# Port of 64-bit version to OpenBSD
+Alexander Shendi <Alexander.Shendi@web.de> and Mihail Pechkin

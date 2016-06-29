@@ -1,4 +1,4 @@
-# 05may15abu
+# 08may16abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -92,7 +92,9 @@
 (allow "@lib/user.l")
 
 (dm url> (Tab)
-   (and (may UserAdmin) (list "@lib/user.l" '*ID This)) )
+   (and
+      (or (may UserAdmin) (== *Login This))
+      (list "@lib/user.l" '*ID This) ) )
 
 
 ### Permission management ###
@@ -107,7 +109,12 @@
 (de must Args
    (unless
       (if (cdr Args)
-         (mmeq @ (; *Login role perm))
+         (find
+            '((X)
+               (if (atom X)
+                  (memq X (; *Login role perm))
+                  (eval X) ) )
+            @ )
          *Login )
       (msg *Pid " No permission: " (car Args))
       (forbidden) ) )

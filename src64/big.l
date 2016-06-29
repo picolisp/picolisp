@@ -1,4 +1,4 @@
-# 10jan16abu
+# 03jun16abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -617,7 +617,7 @@
          if nx
             or A CNT  # Make short number
          else  # Again carry
-            addc A 0  # Get top bit
+            add A 1  # Get top bit
             ror A 1
             shr A 3  # Normalize
             call boxNumA_A  # Make bignum
@@ -692,7 +692,7 @@
          ret
       end
       xchg A E  # Exchange args
-      call 10  # Subtract short from big
+      call subBigShort  # Subtract short from big
       cmp A ZERO  # Zero?
       if ne  # No
          or A SIGN  # Set negative
@@ -702,7 +702,8 @@
    # A is big
    cnt E  # E short?
    if nz  # Yes
-10    shr E 4  # Normalize short
+: subBigShort
+      shr E 4  # Normalize short
       ld C (A DIG)
       sub C E  # Subtract from first digit
       ld E (A BIG)  # Tail in E
@@ -1128,7 +1129,7 @@
          inc C  # Increment 'n'
       end
       null (L -I)  # 'm' negative?
-      js divUnder  # Yes
+      js 90  # Yes
    end
    push C  # <L -II> 'n'
    ld A 0  # Append additional cell
@@ -1204,8 +1205,9 @@
       ld A E  # and 'q'
       mul (Y DIG)  # Multiply lowest digit
       sub (Z DIG) A  # Subtract from 'x'
-      addc C 0
-      ld E C  # Borrow in E
+      ld E 0  # Borrow in E
+      subb E C
+      neg E
       do
          ld Y (Y BIG)  # More in 'v'?
          cnt Y
@@ -1214,10 +1216,10 @@
          ld A (S)  # Multiply with 'q' in tmp
          mul (Y DIG)  # 't' in D
          sub (Z DIG) E  # Subtract borrow
-         ld E 0
-         addc E E  # New borrow
+         subb E E  # New borrow
          sub (Z DIG) A  # Subtract lo(t)
-         addc E C  # Adjust borrow plus hi(t)
+         subb E C  # Adjust borrow plus hi(t)
+         neg E
       loop
       null E  # Borrow?
       if nz  # Yes
@@ -1252,15 +1254,13 @@
    until lt
    ld A (L III)  # Return quotient in A
    call zapZeroA_A
-: divDone
-   drop
+80 drop  # Done
    pop Z
    pop Y
    pop X
    ret
-: divUnder  # Dividend smaller than divisor
-   ld A ZERO  # Return quotient 0
-   jmp divDone
+90 ld A ZERO  # Dividend smaller than divisor
+   jmp 80  # Return quotient 0
 
 # Remainder of two (unsigned) numbers
 (code 'remuAE_A 0)
@@ -1349,7 +1349,7 @@
          inc C  # Increment 'n'
       end
       null (L -I)  # 'm' negative?
-      js remUnder  # Yes
+      js 90  # Yes
    end
    push C  # <L -II> 'n'
    ld A 0  # Append additional cell
@@ -1425,8 +1425,9 @@
       ld A E  # and 'q'
       mul (Y DIG)  # Multiply lowest digit
       sub (Z DIG) A  # Subtract from 'x'
-      addc C 0
-      ld E C  # Borrow in E
+      ld E 0  # Borrow in E
+      subb E C
+      neg E
       do
          ld Y (Y BIG)  # More in 'v'?
          cnt Y
@@ -1435,10 +1436,10 @@
          ld A (S)  # Multiply with 'q' in tmp
          mul (Y DIG)  # 't' in D
          sub (Z DIG) E  # Subtract borrow
-         ld E 0
-         addc E E  # New borrow
+         subb E E  # New borrow
          sub (Z DIG) A  # Subtract lo(t)
-         addc E C  # Adjust borrow plus hi(t)
+         subb E C  # Adjust borrow plus hi(t)
+         neg E
       loop
       null E  # Borrow?
       if nz  # Yes
@@ -1476,16 +1477,14 @@
       call halfA_A  # Shift right (destructive)
       dec (L -III)  # Decrement 'd'
    loop
-: remDone
-   drop
+80 drop  # Done
    pop Z
    pop Y
    pop X
    ret
-: remUnder  # Dividend smaller than divisor
-   ld A (L II)  # Get remainder
+90 ld A (L II)  # Dividend smaller than divisor, get remainder
    call zapZeroA_A
-   jmp remDone
+   jmp 80
 
 # Increment a (signed) number
 (code 'incE_A 0)
@@ -2640,6 +2639,7 @@
       jz numErrEX  # No
       cmp E ZERO  # Zero?
       if ne  # No
+         ld (L I) E  # Save
          ld A E  # Number in A
          off A SIGN  # Make positive
          and E SIGN  # Sign bit

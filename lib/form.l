@@ -1,4 +1,4 @@
-# 16dec15abu
+# 27jun16abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -342,11 +342,13 @@
       (gui '(+JS +Button) "eval"
          '(let Str (val> (: home line))
             (out (pack "+" (tmp "repl"))
-               (prinl ": " Str)
-               (catch '(NIL)
-                  (let Res (in "/dev/null" (eval (any Str)))
+               (err NIL
+                  (prinl ": " Str)
+                  (catch '(NIL)
+                     (in "/dev/null"
+                        (setq @ "Result"  "Result" (eval (any Str))) )
                      (prin "-> ")
-                     (println Res) ) )
+                     (println "Result") ) )
                (when *Msg (prinl @) (off *Msg)) )
             (clr> (: home line)) ) )
       (gui '(+JS +Button) "clear"
@@ -566,29 +568,30 @@
       (extra "Var") ) )
 
 (de jsHint (I)
-   (httpHead "text/plain; charset=utf-8")
-   (ht:Out *Chunked
-      (let? L
-         (if (sym? I)
-            ((; I hint) *JsHint)
-            (let? Lst (get "*Lst" (- "*Cnt" (format *Get)))
-               (pair
-                  (hint>
-                     (get
-                        (if (gt0 (format *Form))
-                           (get Lst @)
-                           (get Lst 1 (+ (length (car Lst)) (format *Form)) 1) )
-                        'gui
-                        I )
-                     *JsHint ) ) ) )
-         (prin
-            (ht:Fmt
-               (if (atom (car L))
-                  (car L)
-                  (caar L) ) ) )
-         (for X (cdr L)
-            (prin "&"
-               (ht:Fmt (if (atom X) X (car X))) ) ) ) ) )
+   (when I
+      (httpHead "text/plain; charset=utf-8")
+      (ht:Out *Chunked
+         (let? L
+            (if (sym? I)
+               ((; I hint) *JsHint)
+               (let? Lst (get "*Lst" (- "*Cnt" (format *Get)))
+                  (pair
+                     (hint>
+                        (get
+                           (if (gt0 (format *Form))
+                              (get Lst @)
+                              (get Lst 1 (+ (length (car Lst)) (format *Form)) 1) )
+                           'gui
+                           I )
+                        *JsHint ) ) ) )
+            (prin
+               (ht:Fmt
+                  (if (atom (car L))
+                     (car L)
+                     (caar L) ) ) )
+            (for X (cdr L)
+               (prin "&"
+                  (ht:Fmt (if (atom X) X (car X))) ) ) ) ) ) )
 
 
 (class +Hint +hint)
@@ -1438,7 +1441,7 @@
    (super (glue (car (: split)) Val) Dn) )
 
 (dm val> ()
-   (extract pack
+   (mapcar pack
       (apply split (: split) (chop (super))) ) )
 
 
@@ -2454,12 +2457,14 @@
 `*Dbg
 
 (allow "!console")
-(de console @
+(de console @  # JS: lisp(null, "console", "Message");
    (msg (cons 'console (rest)))
    (respond) )
 
 (noLint 'gui)
 (noLint 'choDlg 'gui)
 (noLint 'jsForm 'action)
+
+(docs "@doc/form/")
 
 # vi:et:ts=3:sw=3

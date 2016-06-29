@@ -73,13 +73,14 @@ href="ref.html#dbase">Database</a>.
 
 <dt><a name="balance"><code>(balance 'var 'lst ['flg])</code></a>
 <dd>Builds a balanced binary <code><a href="refI.html#idx">idx</a></code> tree
-in <code>var</code>, from the sorted list in <code>lst</code>. Normally (if
-random or, in the worst case, ordered data) are inserted with <code>idx</code>,
-the tree will not be balanced. But if <code>lst</code> is properly sorted, its
-contents will be inserted in an optimally balanced way. If <code>flg</code> is
-non-<code>NIL</code>, the index tree will be augmented instead of being
-overwritten. See also <code><a href="ref.html#cmp">Comparing</a></code> and
-<code><a href="refS.html#sort">sort</a></code>.
+in <code>var</code>, from the sorted list in <code>lst</code>. Normally, if
+arbitary - or, in the worst case, ordered - data are inserted with
+<code>idx</code>, the tree will not be balanced. But if <code>lst</code> is
+properly sorted, its contents will be inserted in an optimally balanced way. If
+<code>flg</code> is non-<code>NIL</code>, the index tree will be augmented
+instead of being overwritten. See also <code><a
+href="ref.html#cmp">Comparing</a></code> and <code><a
+href="refS.html#sort">sort</a></code>.
 
 <pre><code>
 # Normal idx insert

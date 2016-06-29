@@ -1,4 +1,4 @@
-# 11nov15abu
+# 20may16abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -219,7 +219,7 @@
    lea Y (L -I)  # Y on first arg
    ld Z S  # Z on last arg
    link
-   call begString  # Start string
+   call begString_S  # Start string
    ld E (Y)
    call htFmtE  # Format first arg
    do
@@ -231,7 +231,7 @@
       ld E (Y)
       call htFmtE  # Format it
    loop
-   call endString_E  # Retrieve result
+   call endStringS_E  # Retrieve result
    drop
    pop Z
    pop Y
@@ -308,7 +308,7 @@
    eval
    ld Y E  # in Y
    ld X (L I)  # List in X
-   call begString  # Start string
+   call begString_S  # Start string
    do
       atom X  # More items?
    while z  # Yes
@@ -384,7 +384,7 @@
          end
       end
    loop
-   call endString_E  # Retrieve result
+   call endStringS_E  # Retrieve result
    drop
    pop Y
    pop X

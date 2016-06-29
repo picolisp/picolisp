@@ -1,4 +1,4 @@
-/* 24may15abu
+/* 16mar16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -504,6 +504,7 @@ any doDefault(any);
 any doDel(any);
 any doDelete(any);
 any doDelq(any);
+any doDetach(any);
 any doDiff(any);
 any doDir(any);
 any doDiv(any);

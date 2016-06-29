@@ -1,4 +1,4 @@
-# 13jan16abu
+# 22apr16abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -10,7 +10,7 @@
    "@lib/adm.l" "@lib/boss.l" )
 
 (setq
-   *Css "@lib.css"
+   *Css '("@lib.css" "app/menu.css")
    *Pool "db/app/"
    *Blob "db/app/blob/"
    *Salt (16 . "$6$@1$") )
@@ -37,7 +37,7 @@
    ("Deutsch (CH)" "CH" . "ch")
    ("Norsk" "NO" . "no")
    ("Русский" "RU" . "ru")
-   ("Svenska" "SE" . "se")
+   ("Svenska" "SE" . "sv")
    ("日本語" "JP" . "jp") )
 
 # Entry point

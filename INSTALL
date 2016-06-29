@@ -1,4 +1,4 @@
-16nov15abu
+15apr16abu
 (c) Software Lab. Alexander Burger
 
 
@@ -7,8 +7,7 @@
 
 There is no 'configure' procedure, but the PicoLisp file structure is simple
 enough to get along without it (we hope). It should compile and run on
-GNU/Linux, FreeBSD, Mac OS X (Darwin), Cygwin/Win32, and possibly other systems
-without problems.
+GNU/Linux, FreeBSD, OpenBSD, and possibly other systems without problems.
 
 PicoLisp supports two installation strategies: Local and Global.
 
@@ -43,7 +42,7 @@ installation, and invoke them explicitly as desired.
       $ (cd src; make)
 
    or - if you have an arm64, x86-64 or ppc64 system under Linux, or a x86-64
-   system under FreeBSD or SunOS - build the 64-bit version
+   system under FreeBSD, OpenBSD or SunOS - build the 64-bit version
 
       $ (cd src64; make)
 
@@ -71,6 +70,7 @@ installation, and invoke them explicitly as desired.
      - http://software-lab.de/x86-64.linux.tgz
      - http://software-lab.de/ppc64.linux.tgz
      - http://software-lab.de/x86-64.freeBsd.tgz
+     - http://software-lab.de/x86-64.openBsd.tgz
      - http://software-lab.de/x86-64.sunOs.tgz
 
    - Else, build a 32-bit version first, and use the resulting bin/picolisp to
@@ -80,6 +80,12 @@ installation, and invoke them explicitly as desired.
       $ (cd src64; make x86-64.linux)
 
    After that, the 64-bit binary can be used to rebuild itself.
+
+
+   After a 64-bit build, the runtime tools - if needed - must be built
+   separately:
+
+      $ (cd src; make tools gate)
 
 
    Note that on the BSD family of operating systems, 'gmake' must be used

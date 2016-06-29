@@ -1,4 +1,4 @@
-# 13jan16abu
+# 25jun16abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -67,17 +67,19 @@
 # Local Password
 (de pw (N)
    (if N
-      (out ".pw" (prinl (fmt64 (in "/dev/urandom" (rd N)))))
+      (out ".pw" (prinl (in "/dev/urandom" (rd N))))
       (in ".pw" (line T)) ) )
 
 # PicoLisp Shell
 (de psh (Pw Tty)
-   (off *Run)
-   (when (and (= Pw (pw)) (ctty Tty))
-      (prinl *Pid)
-      (load "@dbg.l")
-      (off *Err)
-      (quit) ) )
+   (nond
+      (Pw (println *Port) (bye))
+      ((nand (= Pw (pw)) (ctty Tty))
+         (off *Run)
+         (println *Pid)
+         (load (if *Dbg "@lib/too.l" "@dbg.l"))
+         (off *Err)
+         (quit) ) ) )
 
 ### HTTP-Server ###
 (de -server ()
@@ -242,31 +244,30 @@
          *ConId (pack (if (member "/" *ConId) (cdr @) *ConId)) )
       (off *ConId) )
    (while
-      (case (till " ^M^J" T)
-         ("Host:" (setq *Host (cdr (line))))
-         ("Referer:" (setq *Referer (cdr (line))))
-         ("Cookie:"
+      (case (lowc (till " ^M^J" T))
+         ("host:" (setq *Host (cdr (line))))
+         ("referer:" (setq *Referer (cdr (line))))
+         ("cookie:"
             (setq *Cookies
                (mapcar
                   '((L)
                      (setq L (split L "="))
                      (cons (htArg (clip (car L))) (htArg (cadr L))) )
                   (split (cdr (line)) ";") ) ) )
-         ("User-Agent:" (setq *Agent (cdr (line))))
-         (("Content-Length:" "Content-length:")
-            (setq *ContLen (format (cdr (line)))) )
-         (("Content-Type:" "Content-type:")
-            (if (= " multipart/form-data; boundary" (till "=" T))
+         ("user-agent:" (setq *Agent (cdr (line))))
+         ("content-length:" (setq *ContLen (format (cdr (line)))))
+         ("content-type:"
+            (if (= " multipart/form-data; boundary" (lowc (till "=" T)))
                (setq
                   *MPartLim (append '(- -) (cdr (line)))
                   *MPartEnd (append *MPartLim '(- -)) )
                (line) ) )
-         ("X-Pil:"
+         ("x-pil:"
             (char)
             (when (till "=")
                (_htSet @ (ht:Pack (cdr (line)) T))
                T ) )
-         (T (line T)) ) )
+         (T (if (eol) (char) (line T))) ) )
    (unless *Gate
       (and (member ":" *Host) (con (prior @ *Host))) ) )
 
@@ -275,7 +276,7 @@
    (use Var
       (let L (line)
          (while (= *MPartLim L)
-            (unless (= "Content-Disposition: form-data; name=" (till "\"" T))
+            (unless (= "content-disposition: form-data; name=" (lowc (till "\"" T)))
                (line)
                (throw 'http) )
             (char)
@@ -456,9 +457,5 @@
 
 (de http404 ()
    (httpStat 404 "Not Found") )
-
-### Debug ###
-`*Dbg
-(noLint 'http '"O")
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 04feb16abu
+# 26mar16abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -124,7 +124,7 @@
 (de genKey (Var Cls Hook Min Max)
    (if (lt0 Max)
       (let K (minKey (tree Var Cls Hook) Min Max)
-         (if (lt0 K) (dec K) (or Max -1)) )
+         (if (lt0 K) (dec K) -1) )
       (let K (maxKey (tree Var Cls Hook) Min Max)
          (if (gt0 K) (inc K) (or Min 1)) ) ) )
 
@@ -1365,6 +1365,12 @@
                (if (: hook)
                   (pass new Dbf Typ @ (next) Var)
                   (pass new Dbf Typ Var) ) ) ) ) ) )
+
+(de request! (Typ Var . @)
+   (prog2
+      (dbSync)
+      (pass request Typ Var)
+      (commit 'upd) ) )
 
 # Create or update object
 # *ObjIdx

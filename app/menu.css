@@ -1,0 +1,59 @@
+/* 22apr16abu
+ * Mansur Mamkin <mmamkin@mail.ru>
+ */
+
+body {
+   background: #ebebeb;
+}
+
+.menu {
+   background: #525e76;
+}
+
+.menu ul {
+   list-style:none;
+   margin: 0;
+   padding: 0;
+}
+
+.menu .cmd1, .act1, .cmd2, .act2, .cmd3, .act3, .cmd4, .act4 {
+   list-style: none;
+   padding: 0;
+}
+
+.menu .sub1, .top1, .sub2, .top2, .sub3, .top3, .sub4, .top4 {
+   list-style: none;
+   padding: 0;
+}
+
+.menu .top1 ul {
+   padding-left: 1em;
+}
+
+.menu .act1, .act2, .act3, .act4 {
+   background: #e89a5c;
+}
+
+.menu ul li {
+   position: relative;
+   padding: 3px 0;
+}
+
+.menu a {
+   color: #e8e8e8;
+   display: block;
+   text-decoration: none;
+   transition: background 0.5s;
+   -moz-transition: background 0.5s;
+   -webkit-transition: background 0.5s;
+   -o-transition: background 0.5s;
+   font-family: tahoma;
+   font-weight: bold;
+   font-size: 12px;
+   // text-transform: uppercase;
+}
+
+.menu a:hover {
+   background: RGBA(255,255,255,0.2);
+   color:#fff;
+}

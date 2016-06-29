@@ -11,27 +11,39 @@
 
 <dl>
     <dt><a name="+UndoButton"><code>+UndoButton</code></a>
-    <dd>An 'Undo' button. See <a href="formRefC.html#change">change</a>, <a href="formRefR.html#+RedoButton">+RedoButton</a>.
+    <dd>An 'Undo' button. See <a href="refC.html#change">change</a>, <a
+    href="refR.html#+RedoButton">+RedoButton</a>.
 </dl>
 
 <dl>
     <dt><a name="+UpField"><code>+UpField</code></a>
     <dd>A file upload field. Example:
+
     <pre><code>
     (gui '(+UpField) 30)
     </code></pre>
-    Often used together with <a href="formRefD.html#+Drop">+Drop</a>. See also <a href="formRefT.html#+TextField">+TextField</a>.
+    
+    Often used together with <a href="refD.html#+Drop">+Drop</a>. See also <a
+    href="refT.html#+TextField">+TextField</a>.
 </dl>
 
 <dl>
     <dt><a name="+UpButton"><code>+UpButton</code></a>
-    <dd>A button used scroll a chart one row up. See also <a href="formRefC.html#chart">chart</a>, <a href="formRefT.html#+Tiny">+Tiny</a>, <a href="formRefR.html#+Rid">+Rid</a>, <a href="formRefJ.html#+JS">+JS</a>, <a href="formRefA.html#+Able">+Able</a> <a href="formRefG.html#+GoButton">+GoButton</a>, <a href="formRefB.html#+Button">+Button</a> and <a href="app.html#scrolling">scrolling</a>. 
+    <dd>A button used scroll a chart one row up. See also <a
+    href="refC.html#chart">chart</a>, <a href="refT.html#+Tiny">+Tiny</a>, <a
+    href="refR.html#+Rid">+Rid</a>, <a href="refJ.html#+JS">+JS</a>, <a
+    href="refA.html#+Able">+Able</a> <a
+    href="refG.html#+GoButton">+GoButton</a>, <a
+    href="refB.html#+Button">+Button</a> and <a
+    href="../app.html#scrolling">scrolling</a>.
 </dl>
 
 <dl>
     <dt><a name="+Upd"><code>+Upd</code></a>
-    <dd>+Upd is a prefix class that can be used to override the <code>upd&gt;</code> method in existing classes.
-    The following example uses <code>+Upd</code> to print updated values to standard error:
+    <dd>+Upd is a prefix class that can be used to override the
+    <code>upd&gt;</code> method in existing classes. The following example uses
+    <code>+Upd</code> to print updated values to standard error:
+
     <pre><code>
     (app)
     (default *Number 0)
@@ -45,27 +57,38 @@
              (gui '(+JS +Button) "Increment"
                 '(inc '*Number) ) ) ) )
     </code></pre>
-    </dl>
+</dl>
 
 <dl>
     <dt><a name="+Url"><code>+Url</code></a>
-    <dd>Constructs a URL, building it up with session id and an icon. May be used as a prefix class in several, "clickable", classes but is useful by itself too. The following example makes a context clickable:
+    <dd>Constructs a URL, building it up with session id and an icon. May be
+    used as a prefix class in several, "clickable", classes but is useful by
+    itself too. The following example makes a context clickable:
+
     <pre><code>
    (gui '(+View +Url +TextField)
       '(and (port> (: home obj)) (pack "https://foo.net/" @))
       '((Url) (pack Url "/umc/adm.l?*PW=" (pw))) )
     </code></pre>
-    See also <a href="formRefH.html#+HttpField">+HttpField</a>, <a href="formRefM.html#+MailField">+MailField</a>, <a href="formRefT.html#+TelField">+TelField</a> and <a href="formRefT.html#+TextField">+TextField</a>. 
+
+    See also <a href="refH.html#+HttpField">+HttpField</a>, <a
+    href="refM.html#+MailField">+MailField</a>, <a
+    href="refT.html#+TelField">+TelField</a> and <a
+    href="refT.html#+TextField">+TextField</a>.
 </dl>
 
 <dl>
     <dt><a name="url"><code>(url URL . @)</code></a>
-    <dd>Can be called in a button action to jump to an arbitrary URL instead of the normal re-display of the current form.
+    <dd>Can be called in a button action to jump to an arbitrary URL instead of
+    the normal re-display of the current form.
+
     <pre><code>
     (gui '(+Rid +Button) "Contemporaries"
        '(url "!contemporaries" (: home obj)) )
     </code></pre>
-    See also <a href="formRefB.html#+Button">+Button</a>, <a href="formRefR.html#+Rid">+Rid</a>.
+    
+    See also <a href="refB.html#+Button">+Button</a>, <a
+    href="refR.html#+Rid">+Rid</a>.
 </dl>
 
 <dl>
@@ -74,7 +97,7 @@
   <pre><code>
   "Upper case" (gui '(+Uppc +TextField) 30)
   </code></pre>
-  See also <a href="formRefL.html#+Lowc">+Lowc</a>.
+  See also <a href="refL.html#+Lowc">+Lowc</a>.
 </dl>
 
 </body>

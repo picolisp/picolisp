@@ -15,12 +15,21 @@
     <pre><code>
     ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) ) )
     </code></pre>
-    See also <a href="formRefU.html#+Url">+Url</a>, <a href="formRefH.html#+HttpField">+HttpField</a>, <a href="formRefT.html#+TelField">+TelField</a> and <a href="formRefT.html#+TextField">+TextField</a>.
+
+    See also <a href="refU.html#+Url">+Url</a>, <a
+    href="refH.html#+HttpField">+HttpField</a>, <a
+    href="refT.html#+TelField">+TelField</a> and <a
+    href="refT.html#+TextField">+TextField</a>.
 </dl>
 
 <dl>
     <dt><a name="+Map"><code>+Map</code></a>
-    <dd><code>+Map</code> is normally used with the combo box version of the text fields. <code>+Map</code> does a two-way translation and uses a list of cons pairs for lookup. The values in the CARs are displayed in the GUI and are mapped internally to the values in the CDRs. The following code displays "One", "Two" and "Three" to the user but uses 1, 2 and 3 internally.
+    <dd><code>+Map</code> is normally used with the combo box version of the
+    text fields. <code>+Map</code> does a two-way translation and uses a list of
+    cons pairs for lookup. The values in the CARs are displayed in the GUI and
+    are mapped internally to the values in the CDRs. The following code displays
+    "One", "Two" and "Three" to the user but uses 1, 2 and 3 internally.
+
     <pre><code>
     (app)
 
@@ -33,12 +42,16 @@
              (gui '(+Button) "Print"
                 '(msg (val&gt; (field -1))) ) ) ) )
     </code></pre>
-    See also <a href="formRefF.html#+Fmt">+Fmt</a>, <a href="formRefT.html#+TextField">+TextField</a>.
+    See also <a href="refF.html#+Fmt">+Fmt</a>, <a
+    href="refT.html#+TextField">+TextField</a>.
 </dl>
 
 <dl>
     <dt><a name="+Mono"><code>+Mono</code></a>
-    <dd><code>+Mono</code> is a style prefix class and is used to display text in a monospace font. Adds the css class "mono" to the element where this prefix class is used.
+    <dd><code>+Mono</code> is a style prefix class and is used to display text
+    in a monospace font. Adds the css class "mono" to the element where this
+    prefix class is used.
+
     <pre><code>
     (gui '(+Mono +TextField) 30)
     </code></pre>

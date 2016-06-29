@@ -1,4 +1,4 @@
-/* 03jan16abu
+/* 16mar16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1684,6 +1684,19 @@ any doFork(any ex) {
    int n;
 
    return (n = forkLisp(ex))? boxCnt(n) : Nil;
+}
+
+// (detach) -> pid | NIL
+any doDetach(any x) {
+   if (!isNil(x = val(PPid))) {
+      val(PPid) = Nil;
+      close(Tell),  Tell = 0;
+      close(Hear),  closeInFile(Hear),  closeOutFile(Hear),  Hear = 0;
+      close(Mic),  Mic = 0;
+      Slot = 0;
+      setsid();
+   }
+   return x;
 }
 
 // (bye ['cnt])

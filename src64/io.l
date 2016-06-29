@@ -1,4 +1,4 @@
-# 03jan16abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -1175,11 +1175,12 @@
    ret
 
 (code 'bufStringE_SZ 0)
-   ld Z S  # 8-byte-buffer
-   push (Z)  # Save return entry
-   push X  # and X
+   tos (Buf)  # Get return entry
+   sub S 8  # 8-byte-buffer
+   ld Z S  # in Z
    cmp E Nil  # Empty?
    if ne  # No
+      ld (Buf I) X  # Save X
       ld X (E TAIL)
       call nameX_X  # Get name
       ld C 0
@@ -1190,26 +1191,27 @@
          inc Z
          test Z 7  # Buffer full?
          if z  # Yes
-            sub S 8  # Extend buffer
             cmp S (StkLimit)  # Stack check
             jlt stkErr
+            sub S 8  # Extend buffer
             save (S 8) (Z) (S)
             sub Z 8  # Reset buffer pointer
          end
       loop
+      ld X (Buf I)  # Restore
    end
    set (Z) 0  # Null byte
    add Z 8  # Round up
    off Z 7
-   pop X
-   ret
+   jmp (Buf)  # Return
 
 (code 'pathStringE_SZ 0)
-   ld Z S  # 8-byte-buffer
-   push (Z)  # Save return entry
-   push X  # and X
+   tos (Buf)  # Get return entry
+   sub S 8  # 8-byte-buffer
+   ld Z S  # in Z
    cmp E Nil  # Empty?
    if ne  # No
+      ld (Buf I) X  # Save X
       ld X (E TAIL)
       call nameX_X  # Get name
       ld C 0
@@ -1269,12 +1271,12 @@
             loop
          end
       end
+90    ld X (Buf I)  # Restore
    end
-90 set (Z) 0  # Null byte
+   set (Z) 0  # Null byte
    add Z 8  # Round up
    off Z 7
-   pop X
-   ret
+   jmp (Buf)  # Return
 
 # (path 'any) -> sym
 (code 'doPath 2)
@@ -4109,9 +4111,9 @@
    link
    push E  # Save
    link
-   call begString  # Start string
+   call begString_S  # Start string
    call printE  # Print to string
-   call endString_E  # Retrieve result
+   call endStringS_E  # Retrieve result
    drop
    ret
 
@@ -4151,7 +4153,7 @@
          link
          push E  # Save 'lst'
          link
-         call begString  # Start string
+         call begString_S  # Start string
          ld X E  # 'lst'
          do
             ld E (X)  # Get CAR
@@ -4161,7 +4163,7 @@
          while z  # Yes
             call space
          loop
-         call endString_E  # Retrieve result
+         call endStringS_E  # Retrieve result
          drop
       end
    end

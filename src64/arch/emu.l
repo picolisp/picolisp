@@ -1,4 +1,4 @@
-# 11nov15abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -606,9 +606,9 @@
          (genCode (Adr A) (list 'jmp (list Adr)) ((op.p Adr A))
             "PC = *(uint16_t**)@1;" ) ) ) )
 
-(asm jump (Reg)
-   (genCode (Reg) (list 'jump Reg) (Reg)
-      "PC = (uint16_t*)@1.p;" ) )
+(asm tos (Dst D)
+   (genCode (Dst D) (list 'pop Dst) ((op.n Dst D))
+      "@1 = ((ptr)S.p)->n,  S.p += 8;" ) )
 
 (de _jmp (Opc Test)
    (nond
@@ -774,6 +774,7 @@
    (malloc           p  i)
    (realloc          p  p i)
    (fork             i)
+   (setsid           i)
    (getpgrp          i)
    (setpgid          -  i i)
    (execvp           i  p 0)

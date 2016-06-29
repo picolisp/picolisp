@@ -1,4 +1,4 @@
-# 07feb16abu
+# 02jun16abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -37,6 +37,14 @@
 (redef label (Lbl Flg)
    (and Flg (not *FPic) (push '*Globals Lbl))
    (label Lbl Flg) )
+
+(redef code (Lbl Align)
+   (when (memq Lbl *RetLabels)
+      (prinl)
+      (alignSection Align)
+      (label (pack Lbl "TOS"))
+      (prinst "ldr" "x30" "[x28],8") )
+   (code Lbl Align) )
 
 # Debug output
 (de comment (Sym . @)
@@ -418,16 +426,11 @@
       ((== 'D Dst)
          (cond
             ((=0 S)  # Immediate
-               (prinst "adds" "x0" "x0" (pack "#" Src))
-               (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
+               (prinst "adds" "x0" "x0" (pack "#" Src)) )
             ((not S)  # Register
-               (prinst "adds" "x0" "x0" Src)
-               (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
-            (T
-               (lea Src S "x15")
-               (prinst "ldp" "x16" "x17" "[x15]")
-               (prinst "adds" "x0" "x0" "x16")
-               (prinst (if CC "adcs" "adc") "x19" "x19" "x17") ) ) )
+               (prinst "adds" "x0" "x0" Src) )
+            (T (prinst "adds" "x0" "x0" (src Src S imm12))) )
+         (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
       (T
          (setq Dst (dst Dst D))
          (let D (ldr Dst "x15")
@@ -447,16 +450,11 @@
       ((== 'D Dst)
          (cond
             ((=0 S)  # Immediate
-               (prinst "adcs" "x0" "x0" (pack "#" Src))
-               (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
+               (prinst "adcs" "x0" "x0" (pack "#" Src)) )
             ((not S)  # Register
-               (prinst "adcs" "x0" "x0" Src)
-               (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
-            (T
-               (lea Src S "x15")
-               (prinst "ldp" "x16" "x17" "[x15]")
-               (prinst "adcs" "x0" "x0" "x16")
-               (prinst (if CC "adcs" "adc") "x19" "x19" "x17") ) ) )
+               (prinst "adcs" "x0" "x0" Src) )
+            (T (prinst "adcs" "x0" "x0" (src Src S imm12))) )
+         (prinst (if CC "adcs" "adc") "x19" "x19" 'xzr) )
       (T
          (setq Dst (dst Dst D))
          (let D (ldr Dst "x15")
@@ -579,9 +577,13 @@
       ((== 'B Dst)
          (prinst "orr" "x0" "x0" (src Src S imm64 NIL "b")) )
       ((== 'B Src)
-         (mov "x15" Dst "b")
-         (prinst "orr" "x15" "x15" "x0")
-         (mov Dst "x15" "b") )
+         (if (reg? Dst)
+            (prog
+               (mov "x15" "x0" "b")
+               (prinst "orr" Dst Dst "x0") )
+            (mov "x15" Dst "b")
+            (prinst "orr" "x15" "x15" "x0")
+            (mov Dst "x15" "b") ) )
       (T
          (setq Src (src Src S imm64))
          (let D (ldr Dst "x15")
@@ -761,12 +763,10 @@
    (prinst "mul" "x0" "x0" Src) )
 
 # div
-(asm div (Src S)
+(asm TOS div (Src S)
    (comment 'div Src)
    (mov "x1" (src Src S imm16 "x1"))
-   (prinst "str" "x30" "[x28,-8]!")
-   (prinst "bl" "div")
-   (prinst "ldr" "x30" "[x28],8") )
+   (prinst "bl" "div") )
 
 # zxt
 (asm zxt ()  # 8 bit -> 64 bit
@@ -1056,9 +1056,16 @@
    (prinst "ands" 'xzr (src Src S NIL NIL "b") "#0x0E") )
 
 # Flow control
-(asm call (Adr A)
+(asm ++tos ()
+   (comment '++tos)
+   (prinst "str" "x30" "[x28,-8]!") )
+
+(asm tos-- ()
+   (comment 'tos--)
+   (prinst "ldr" "x30" "[x28],8") )
+
+(asm TOS call (Adr A)
    (comment 'call Adr)
-   (prinst "str" "x30" "[x28,-8]!")
    (nond
       (A  # Absolute
          (prinst "bl" Adr) )
@@ -1069,8 +1076,7 @@
             (prinst "blr" "x1") ) )
       (NIL  # Indirect
          (prinst "ldr" "x1" (pack "[" (src Adr A NIL NIL "x1") "]"))
-         (prinst "blr" "x1") ) )
-   (prinst "ldr" "x30" "[x28],8") )
+         (prinst "blr" "x1") ) ) )
 
 (asm jmp (Adr A)
    (comment 'jmp Adr)
@@ -1086,10 +1092,10 @@
          (prinst "ldr" "x1" (pack "[" (src Adr A NIL NIL "x1") "]"))
          (prinst "br" "x1") ) ) )
 
-(asm jump (Reg)
-   (comment 'jump Reg)
-   (prinst "str" Reg "[x28,-8]!")
-   (prinst "ret") )
+(asm tos (Dst D)
+   (comment 'tos Dst)
+   (setq Dst (dst Dst D))
+   (mov Dst "x30") )
 
 (de _jmp (Opc Opc2 Reg)
    (ifn A
@@ -1278,7 +1284,7 @@
    (prinst "str" "s0" "[x23]") )
 
 # C-Calls
-(asm cc (Adr A Arg M)
+(asm TOS cc (Adr A Arg M)
    (comment 'cc Adr Arg)
    (if (lst? Arg)
       (let (Reg '("x0" "x1" "x2" "x3" "x4" "x5" "x6" "x7")   Lea NIL  Tmp NIL)
@@ -1302,8 +1308,7 @@
                      (T (mov (car Reg) (src Src S imm16 (pop 'Reg)))) )
                   (off Lea) ) )
             Arg
-            M )
-         (prinst "str" "x30" "[x28,-8]!") )
+            M ) )
       (prinst "sub" "x20" Arg "x28")      # Size of arguments in E (x20)
       (prinst "lsr" "x20" "x20" "#1")     # Take half
       (prinst "add" "x20" "x20" "#8")     # Align
@@ -1317,7 +1322,6 @@
       (prinst "add" "x14" "x14" ":lo12:ldFlt")
       (prinst "adrp" "x15" "ldDbl")       # x15 on double loaders
       (prinst "add" "x15" "x15" ":lo12:ldDbl")
-      (prinst "str" "x30" "[x28,-8]!")
       (prinl "1:")
       (prinst "cmp" "x12" Arg)            # Done?
       (prinst "b.eq" "8f")                # Yes
@@ -1379,7 +1383,6 @@
          (prinst "bl" Adr) )
       ((=T A)  # Indexed
          (prinst "blr" Adr) ) )
-   (prinst "ldr" "x30" "[x28],8")
    (unless (lst? Arg)
       (prinst "add" 'sp 'sp "x20") ) )  # Restore stack
 
@@ -1409,6 +1412,10 @@
       (x (prinst "str" "x9" "[x28,-8]!"))
       (T (mov "[x28,-8]!" Src)) ) )
 
+(asm push/2 (Reg1 Reg2)
+   (comment 'push/2 Reg1 Reg2)
+   (prinst "stp" Reg2 Reg1 "[x28,-16]!") )
+
 (asm pop (Dst D)
    (comment 'pop Dst)
    (setq Dst (dst Dst D))
@@ -1423,9 +1430,18 @@
       (x (prinst "ldr" "x9" "[x28],8"))
       (T (mov Dst "[x28],8")) ) )
 
+(asm pop/2 (Reg1 Reg2)
+   (comment 'pop/2 Reg1 Reg2)
+   (prinst "ldp" Reg1 Reg2 "[x28],16") )
+
 (asm link ()
    (comment 'link)
    (prinst "str" "x29" "[x28,-8]!")
+   (prinst "mov" "x29" "x28") )
+
+(asm push/link (Reg)
+   (comment 'push/link)
+   (prinst "stp" "x29" Reg "[x28,-16]!")
    (prinst "mov" "x29" "x28") )
 
 (asm tuck (Src S)
@@ -1439,8 +1455,13 @@
    (prinst "ldr" "x28" "[x29]")
    (prinst "ldr" "x29" "[x28],8") )
 
+(asm drop/pop (Reg)
+   (comment 'drop/pop)
+   (prinst "ldr" "x28" "[x29]")
+   (prinst "ldp" "x29" Reg "[x28],16") )
+
 # Evaluation
-(asm eval ()
+(asm TOS eval ()
    (comment 'eval)
    (prinst "ands" 'xzr "x20" "#0x06")  # Number?
    (prinst "b.ne" "2f")                # Yes: Skip
@@ -1448,12 +1469,10 @@
    (prinst "ldr" "x20" "[x20]")        # Get value
    (prinst "b" "2f")                   # and skip
    (prinl "1:")
-   (prinst "str" "x30" "[x28,-8]!")
    (prinst "bl" 'evListE_E)            # Else evaluate list
-   (prinst "ldr" "x30" "[x28],8")
    (prinl "2:") )
 
-(asm eval+ ()
+(asm TOS eval+ ()
    (comment 'eval+)
    (prinst "ands" 'xzr "x20" "#0x06")  # Number?
    (prinst "b.ne" "2f")                # Yes: Skip
@@ -1463,9 +1482,7 @@
    (prinl "1:")
    (prinst "str" "x29" "[x28,-8]!")    # Else 'link'
    (prinst "mov" "x29" "x28")
-   (prinst "str" "x30" "[x28,-8]!")
    (prinst "bl" 'evListE_E)            # Evaluate list
-   (prinst "ldr" "x30" "[x28],8")
    (prinst "ldr" "x29" "[x28],8")
    (prinl "2:") )
 
@@ -1479,23 +1496,21 @@
    (prinl "1:")
    (prinst "ret") )
 
-(asm exec (Reg)
+(asm TOS exec (Reg)
    (comment 'exec Reg)
    (prinl "1:")                        # do
    (prinst "ldr" "x20"                 # ld E (R)
       (pack "[" Reg "]") )
    (prinst "ands" 'wzr "w20" "#0x0E")  # atom E
    (prinst "b.ne" "2f")
-   (prinst "str" "x30" "[x28,-8]!")
    (prinst "bl" 'evListE_E)            # Evaluate list
-   (prinst "ldr" "x30" "[x28],8")
    (prinl "2:")
    (prinst "ldr" Reg                   # ld R (R CDR)
       (pack "[" Reg ",8]") )
    (prinst "ands" 'xzr Reg "#0x0E")    # atom R
    (prinst "b.eq" "1b") )              # until nz
 
-(asm prog (Reg)
+(asm TOS prog (Reg)
    (comment 'prog Reg)
    (prinl "1:")                        # do
    (prinst "ldr" "x20"                 # ld E (R)
@@ -1506,9 +1521,7 @@
    (prinst "ldr" "x20" "[x20]")
    (prinst "b" "3f")
    (prinl "2:")
-   (prinst "str" "x30" "[x28,-8]!")
    (prinst "bl" 'evListE_E)
-   (prinst "ldr" "x30" "[x28],8")
    (prinl "3:")
    (prinst "ldr" Reg                   # ld R (R CDR)
       (pack "[" Reg ",8]") )
@@ -1742,7 +1755,6 @@
                      (and
                         (cdr (split (chop (get Lst 2 2)) "_"))
                         (format (last @)) ) )
-
                   (optimBranch Lst) ) )
             ((and (memq (caadr Lst) '(ldz ldnz)) (not (needCC (cddr Lst))))
                (let? L (cadr Lst)
@@ -1759,6 +1771,52 @@
                (let? L (cadr Lst)
                   (unless (and (reg? (cadr L)) (reg? (cadddr L)))
                      (optimBranch Lst) ) ) ) ) )
+      ((and
+            (== 'push (caar Lst))
+            (reg? (cadar Lst))
+            (== 'push (caadr Lst))
+            (reg? (cadadr Lst)) )
+         (list 2 (list 'push/2 (cadar Lst) (cadadr Lst))) )
+      ((and
+            (== '++tos (caar Lst))
+            (== 'push (caadr Lst))
+            (reg? (cadadr Lst)) )
+         (list 2 (list 'push/2 "x30" (cadadr Lst))) )
+      ((and
+            (== 'push (caar Lst))
+            (reg? (cadar Lst))
+            (== '++tos (caadr Lst)) )
+         (list 2 (list 'push/2 (cadar Lst) "x30")) )
+      ((and
+            (== 'push (caar Lst))
+            (reg? (cadar Lst))
+            (== 'link (caadr Lst)) )
+         (list 2 (list 'push/link (cadar Lst))) )
+      ((and
+            (== 'pop (caar Lst))
+            (reg? (cadar Lst))
+            (== 'pop (caadr Lst))
+            (reg? (cadadr Lst)) )
+         (list 2 (list 'pop/2 (cadar Lst) (cadadr Lst))) )
+      ((and
+            (== 'tos-- (caar Lst))
+            (== 'pop (caadr Lst))
+            (reg? (cadadr Lst)) )
+         (list 2 (list 'pop/2 "x30" (cadadr Lst))) )
+      ((and
+            (== 'pop (caar Lst))
+            (reg? (cadar Lst))
+            (== 'tos-- (caadr Lst)) )
+         (list 2 (list 'pop/2 (cadar Lst) "x30")) )
+      ((and
+            (== 'drop (caar Lst))
+            (== 'pop (caadr Lst))
+            (reg? (cadadr Lst)) )
+         (list 2 (list 'drop/pop (cadadr Lst))) )
+      ((and
+            (== 'drop (caar Lst))
+            (== 'tos-- (caadr Lst)) )
+         (list 2 (list 'drop/pop "x30")) )
       ((noCC Lst)
          (cons 1 (cons (cons @ (cdar Lst)))) ) ) )
 

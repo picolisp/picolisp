@@ -1,4 +1,4 @@
-// 02feb15abu
+// 25jun16abu
 // (c) Software Lab. Alexander Burger
 
 import java.io.*;
@@ -6,7 +6,7 @@ import java.util.*;
 import java.math.*;
 import java.lang.reflect.*;
 
-// java Reflector fifo/java fifo/rqst fifo/rply
+// java Reflector fifo/rqst fifo/rply
 public class Reflector {
    public static void main(String[] args) throws Exception {
       final InOut io = new InOut(System.in, System.out);
@@ -69,8 +69,8 @@ public class Reflector {
                   }
                   io.print(x);
                   break;
-               // (public 'obj 'any ['any ..]) -> obj
                // (public 'cls 'any ['any ..]) -> obj
+               // (public 'obj 'any ['any ..]) -> obj
                case 1:
                   z = lst[2];
                   if (y instanceof String) {
@@ -96,17 +96,24 @@ public class Reflector {
                   InvocationHandler h = new InvocationHandler() {
                      public Object invoke(Object o, Method m, Object[] lst) {
                         String nm = m.getName();
-                        if (nm.equals("hashCode"))
+                        switch (nm) {
+                        case "equals":
+                           return o == lst[0];
+                        case "hashCode":
                            return System.identityHashCode(o);
-                        try {
-                           rpc.print(obj);
-                           rpc.prSym(nm);
-                           rpc.print(lst);
-                           rpc.flush();
-                           return rpc.read();
+                        case "toString":
+                           return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+                        default:
+                           try {
+                              rpc.print(obj);
+                              rpc.prSym(nm);
+                              rpc.print(lst);
+                              rpc.flush();
+                              return rpc.read();
+                           }
+                           catch (Exception e) {}
+                           return null;
                         }
-                        catch (Exception e) {}
-                        return null;
                      }
                   };
                   io.print(Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), c, h));
@@ -148,7 +155,7 @@ public class Reflector {
             System.exit(0);
          }
          catch (Exception e) {
-            System.err.println("## " + e);
+            System.err.println("## " + e.getCause() == null? e : e.getCause());
             io.Out.write(InOut.NIX);
             io.flush();
             while (io.In.available() > 0)

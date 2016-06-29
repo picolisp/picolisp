@@ -413,10 +413,10 @@ its name.
 <p><hr>
 <h5><a name="transient">Transient Symbols</a></h5>
 
-<p>Transient symbols are only interned into a index structure for a certain time
-(e.g. while reading the current source file), and are released after that. That
-means, a transient symbol cannot be accessed then by its name, and there may be
-several transient symbols in the system having the same name.
+<p>Transient symbols are only interned into an index structure for a certain
+time (e.g. while reading the current source file), and are released after that.
+That means, a transient symbol cannot be accessed then by its name, and there
+may be several transient symbols in the system having the same name.
 
 <p>Transient symbols are used
 
@@ -658,7 +658,7 @@ $ pil -em +
 representation in human-readable format. All kinds of data can be written to a
 file, and restored later to their original form by reading that file.
 
-<p>In normal operation, the PicoLisp interpreter continuously executes an
+<p>In normal operation, the PicoLisp interpreter continually executes an
 infinite "read-eval-print loop". It reads one expression at a time, evaluates
 it, and prints the result to the console. Any input into the system, like data
 structures and function definitions, is done in a consistent way no matter
@@ -887,8 +887,8 @@ immediately followed (without a hyphen) the starting block in octal
 
 </ul>
 
-<p>In both cases, the database file (and possibly the hypen) are omitted for the
-first (default) file.
+<p>In both cases, the database file (and possibly the hyphen) are omitted for
+the first (default) file.
 
 <p><hr>
 <h4><a name="lst-io">Lists</a></h4>
@@ -2337,6 +2337,7 @@ abbreviations:
    <a href="refQ.html#quit">quit</a>
    <a href="refT.html#task">task</a>
    <a href="refF.html#fork">fork</a>
+   <a href="refD.html#detach">detach</a>
    <a href="refP.html#pipe">pipe</a>
    <a href="refL.html#later">later</a>
    <a href="refT.html#timeout">timeout</a>
@@ -2531,6 +2532,7 @@ abbreviations:
    <a href="refU.html#upd">upd</a>
    <a href="refR.html#rel">rel</a>
    <a href="refR.html#request">request</a>
+   <a href="refR.html#request!">request!</a>
    <a href="refO.html#obj">obj</a>
    <a href="refF.html#fmt64">fmt64</a>
    <a href="refR.html#root">root</a>
@@ -2631,6 +2633,7 @@ abbreviations:
    <a href="refS.html#show">show</a>
    <a href="refL.html#loc">loc</a>
    <a href="refD.html#*Dbg">*Dbg</a>
+   <a href="refD.html#docs">docs</a>
    <a href="refD.html#doc">doc</a>
    <a href="refM.html#more">more</a>
    <a href="refD.html#depth">depth</a>

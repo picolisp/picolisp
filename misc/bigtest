@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 25apr11abu
+# 18may16abu
 # misc/bigtest <seed>
 
 (load "@lib/misc.l")
@@ -23,15 +23,14 @@
 #        1FFFFFFC3FFFFFF8
 
 (de rnd ()
-   (let (Big (| (rand 0 7) (>> -28 (rand 0 15)) (>> -57 (rand 0 7)))  N -60)
+   (let Big (| (rand 0 7) (>> -28 (rand 0 15)) (>> -57 (rand 0 7)))
       (when (rand T)
          (setq Big (| Big `(hex "1FFFFFF0FFFFFF8"))) )
       (do (rand 0 2)
          (let Dig (| (rand 0 7) (>> -30 (rand 0 15)) (>> -61 (rand 0 7)))
             (when (rand T)
                (setq Dig (| Dig `(hex "1FFFFFFC3FFFFFF8"))) )
-            (setq Big (| Big (>> N Dig)))
-            (dec 'N 64) ) )
+            (setq Big (| Dig (>> -64 Big))) ) )
       (if (rand T) Big (- Big)) ) )
 
 
@@ -57,7 +56,7 @@
 (sys "BC_LINE_LENGTH" "200")
 
 (pipe
-   (out '("/usr/bin/bc")
+   (out '("bc")
       (do 10000000
          (setq N1 (rnd))
          (while (=0 (setq N2 (rnd))))
@@ -76,7 +75,8 @@
          (prinl N1 " / 2")
          (prinl N1 " >= " N2)
          (prinl N1 " > " N2)
-         (prinl "sqrt(" (abs N1) ")") ) )
+         (prinl "sqrt(" (abs N1) ")")
+         (at (0 . 1000) (wait 100)) ) )
    (do 100
       (do 100000
          (setq

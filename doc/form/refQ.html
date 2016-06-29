@@ -11,11 +11,12 @@
 
 <dl>
     <dt><a name="+QueryChart"><code>+QueryChart</code></a>
-    <dd>In addition to the 'standard' arguments passes to charts, the +QueryChart takes
-    two additional ones. First, the number of initial rows to fetch and
-    second a Pilog query that retrieves data.
-    Typically used in search dialogs, as the following example from the demo app supplied
-    with the PicoLisp distribution.
+    <dd>In addition to the 'standard' arguments passes to charts, the
+    +QueryChart takes two additional ones. First, the number of initial rows to
+    fetch and second a Pilog query that retrieves data. Typically used in search
+    dialogs, as the following example from the demo app supplied with the
+    PicoLisp distribution.
+
     <pre></code>
     (de choItem (Dst)
        (diaform '(Dst)
@@ -66,11 +67,11 @@
                 (cancelButton) ) ) )
 
     </code></pre>
-    The first argument to +QueryChart, <code>(cho)</code>, returns a number that 
+
+    The first argument to +QueryChart, <code>(cho)</code>, returns a number that
     decides how many rows of data should be fetched. The same call is used a
-    little later to draw the table presenting the data as well.
-    Following that argument is the Pilog query used to fetch the data we wish to
-    display.
+    little later to draw the table presenting the data as well. Following that
+    argument is the Pilog query used to fetch the data we wish to display.
 
     <pre><code>
     '(goal
@@ -88,8 +89,8 @@
     </code></pre>
 
     The Pilog query is followed by a number, in this case 6, that tells how many
-    columns are used when presenting the data. This is the normal column count, as
-    inherited from +Chart, and it matches up with the number of columns in
+    columns are used when presenting the data. This is the normal column count,
+    as inherited from +Chart, and it matches up with the number of columns in
     our table.
 
     <pre><code>
@@ -118,41 +119,48 @@
     '((This) (list This (: nr) This (: sup) (: sup ort) (: pr)))
     </code>
 
-    The 'put'- function is applied to each row and places the desired content into the GUI. 
-    Since this chart is readonly, i.e. contains no input fields, the corresponding 'get'- function
-    can be omitted. Each item in the list produced by our 'put'- function matches up with a column in
-    the table presenting the result. The first item, <code>This</code>, is used to
-    create a link to the object, in column 1 of the table:
-    <code>(gui 1 '(+DstButton) Dst)</code>
+    The 'put'- function is applied to each row and places the desired content
+    into the GUI. Since this chart is readonly, i.e. contains no input fields,
+    the corresponding 'get'- function can be omitted. Each item in the list
+    produced by our 'put'- function matches up with a column in the table
+    presenting the result. The first item, <code>This</code>, is used to create
+    a link to the object, in column 1 of the table: <code>(gui 1 '(+DstButton)
+    Dst)</code>
 
-    Item number 2, <code>(: nr)</code>, maps to the second column, showing the number of the object
-    in question: <code>(gui 2 '(+NumField))</code>
+    Item number 2, <code>(: nr)</code>, maps to the second column, showing the
+    number of the object in question: <code>(gui 2 '(+NumField))</code>
 
     The two following items, <code>This</code> and <code>(: sup)</code> each map
     to a combination of +ObjView and +TextField:
+
     <pre><code>
     (gui 3 '(+ObjView +TextField) '(: nm))
     (gui 4 '(+ObjView +TextField) '(: nm))
     </code></pre>
-    The +ObjView is used to create a link to an object, in both cases displaying the
-    <code>(: nm)</code> property of each object.
+
+    The +ObjView is used to create a link to an object, in both cases displaying
+    the <code>(: nm)</code> property of each object.
 
     Finally, the name of the town where the supplier is located and the price of
-    the item are displayed. The 'put'- function supplies these values:
-    <code>(: sup ort)</code> and <code>(: pr)</code>, which are mapped to the
-    following columns in the table:
+    the item are displayed. The 'put'- function supplies these values: <code>(:
+    sup ort)</code> and <code>(: pr)</code>, which are mapped to the following
+    columns in the table:
+
     <pre><code>
     (gui 5 '(+TextField))
     (gui 6 '(+FixField) 2)
     </code></pre>
 
-
-    See also <a href="formRefC.html#+Chart">+Chart</a>, <a href="formRefC.html#cho">cho</a>,
-    <a href="formRefG.html#gui">gui</a>, <a href="formRefD.html#+DstButton">+DstButton</a>,
-    <a href="formRefN.html#+NumField">+NumField</a>, <a href="formRefD.html#diaform">diaform</a>, 
-    <a href="formRefO.html#+ObjView">+ObjView</a>, <a href="formRefT.html#+TextField">+TextField</a>,
-    <a href="formRefF.html#+FixField">+FixField</a>,<a href="app.html#charts">charts</a>
-    and <a href="select.html">the select predicate</a>
+    See also <a href="refC.html#+Chart">+Chart</a>, <a
+    href="refC.html#cho">cho</a>, <a href="refG.html#gui">gui</a>, <a
+    href="refD.html#+DstButton">+DstButton</a>, <a
+    href="refN.html#+NumField">+NumField</a>, <a
+    href="refD.html#diaform">diaform</a>, <a
+    href="refO.html#+ObjView">+ObjView</a>, <a
+    href="refT.html#+TextField">+TextField</a>, <a
+    href="refF.html#+FixField">+FixField</a>,<a
+    href="../app.html#charts">charts</a> and <a href="../select.html">the select
+    predicate</a>
 </dl>
 
 </body>

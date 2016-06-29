@@ -1,4 +1,4 @@
-# 04apr15abu
+# 07apr16abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
@@ -69,9 +69,13 @@
       "\" width=\"" DX
       "\" height=\"" DY
       "\" onmousedown=\"csMouseDn(this, event)"
+      "\" ontouchstart=\"csTouchDn(this, event)"
       "\" onmousemove=\"csMouseMv(this, event)"
-      "\" onmouseout=\"csMouseOut(this)"
-      "\" onmouseup=\"csMouseUp(this)\"" )
+      "\" ontouchmove=\"csTouchMv(this, event)"
+      "\" onmouseup=\"csMouseUp(this)"
+      "\" ontouchend=\"csTouchEnd(this)"
+      "\" onmouseout=\"csLeave(this)"
+      "\" ontouchleave=\"csLeave(this)\"" )
    (dfltCss "canvas")
    (prinl ">" Alt "</canvas>" ) )
 

@@ -1,4 +1,4 @@
-16nov15abu
+23mar16abu
 (c) Software Lab. Alexander Burger
 
 
@@ -30,10 +30,10 @@ The CPU registers and instruction set of the PicoLisp processor are described in
 "doc64/asm", and the internal data structures of the PicoLisp machine in
 "doc64/structures".
 
-Currently, arm64/Linux, x86-64/Linux, ppc64/Linux, x86-64/FreeBSD and
-x86-64/SunOS are supported. The platform dependent files are in the
-"src64/arch/" for the target architecture, and in "src64/sys/" for the target
-operating system.
+Currently, arm64/Linux, x86-64/Linux, ppc64/Linux, x86-64/FreeBSD,
+x86-64/OpenBSD and x86-64/SunOS are supported. The platform dependent files are
+in the "src64/arch/" for the target architecture, and in "src64/sys/" for the
+target operating system.
 
 In addition, an emulator which "assembles" to C code can be built. It is much
 slower than the native code, but otherwise completely compatible.

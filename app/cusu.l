@@ -1,4 +1,4 @@
-# 05jan12abu
+# 15apr16abu
 # (c) Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
@@ -11,7 +11,7 @@
          (,"Name"
             (<grid> 3
                ,"Number" NIL (gui '(+E/R +NumField) '(nr : home obj) 10)
-               ,"Salutation" (choDlg 0 ,"Salutations" '(nm +Sal))
+               ,"Salutation" (choSal 0)
                (gui '(+E/R +Obj +TextField) '(sal : home obj) '(nm +Sal) 20)
                ,"Name" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Name" 40)
                ,"Name 2" NIL (gui '(+E/R +TextField) '(nm2 : home obj) 40) ) )

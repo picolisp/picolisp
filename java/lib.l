@@ -1,4 +1,4 @@
-# 13jan16abu
+# 27feb16abu
 # (c) Software Lab. Alexander Burger
 
 # *Java
@@ -22,7 +22,7 @@
 (de jre @
    (unless *Java
       (let
-         (Path (tmp ":" (path "@java/reflector.jar"))
+         (Path (tmp ":" (path "@java/reflector.jar") (and *Classpath ":") *Classpath)
             Rqst (tmp "rqst")
             Rply (tmp "rply") )
          (call "mkfifo" Rqst)

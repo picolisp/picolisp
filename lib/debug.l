@@ -1,4 +1,4 @@
-# 13jan16abu
+# 04jun16abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -7,24 +7,33 @@
       (unless (== (symbols) 'pico) (symbols)) ) )
 
 # Browsing
+(de docs (Dir)
+   (when (=T (car (info Dir)))
+      (let All (all)
+         (for F (dir Dir)
+            (when (match '("r" "e" "f" @ "." "h" "t" "m" "l") (chop F))
+               (let P (pack Dir F)
+                  (in P
+                     (while (from "<dt><a name=\"")
+                        (let S (till "\"")
+                           (cond
+                              ((member (pack S) All)
+                                 (put (car @) 'doc P) )
+                              ((and
+                                    (not (cddr (setq S (split S "/"))))
+                                    (format (cadr S))
+                                    (member (pack (car S)) All) )
+                                 (put (intern (glue "/" S)) 'doc P) ) ) ) ) ) ) ) ) ) ) )
+
 (de doc (Sym Browser)
    (call (or Browser (sys "BROWSER") "w3m")
       (pack
          "file:"
          (and (= `(char '/) (char (path "@"))) "//")
-         (path "@doc/ref")
-         (if Sym
-            (let (L (chop Sym)  C (car L))
-               (and
-                  (member C '("*" "+"))
-                  (cadr L)
-                  (setq C @) )
-               (cond
-                  ((>= "Z" C "A"))
-                  ((>= "z" C "a") (setq C (uppc C)))
-                  (T (setq C "_")) )
-               (pack C ".html#" Sym) )
-            ".html" ) ) ) )
+         (path
+            (if (get Sym 'doc)
+               (pack @ "#" Sym)
+               "@doc/ref.html" ) ) ) ) )
 
 (de more ("M" "Fun")
    (let *Dbg NIL

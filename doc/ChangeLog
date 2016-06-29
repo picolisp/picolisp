@@ -1,3 +1,297 @@
+####### 16.6 #######
+28jun16
+   Keep in sync with PilBox
+      java/InOut.java
+
+27jun16
+   'repl' stderr and '@' handling
+      lib/form.l
+
+25jun16
+   Remove 'fmt64' from 'pw'
+      lib/http.l
+   Add 'err' to 'prtty3' symbols
+      lib.l
+   Keep in sync with PilBox
+      java/Reflector.java
+      java/InOut.java
+
+21jun16
+   Minor comment fix
+      java/Reflector.java
+
+20jun16
+   httpGate documentation (Mattias Sundblad)
+      doc/httpGate.html
+
+19jun16
+   Bug in 'date'/'time' (64-bit)
+      {src64,pilos/src}/main.l
+
+16jun16
+   Check size and EOF
+      bin/replica
+
+12jun16
+   Lock DB for unique connection
+      bin/replica
+
+04jun16
+   Handle Pilog predicates 'xxx/N' in 'docs'
+      lib/debug.l
+
+03jun16
+   Bug in 'doShift' ('>>')
+      {src64,pilos/src}/big.l
+
+02jun16
+   arm64 register pair push/pop optimization
+      src64/arch/arm64.l
+
+01jun16
+   Bug in x86-64 'cmpn' instruction ('from' and 'echo')
+      src64/arch/x86-64.l
+
+30may16
+   Minor improvements
+      src64/lib/asm.l
+      {src64,pilos/src}/subr.l
+
+28may16
+   64-bit call/ret optimizations
+      doc64/asm
+      src64/lib/asm.l
+      src64/arch/x86-64.l
+      src64/arch/ppc64.l
+      src64/arch/arm64.l
+      src64/arch/emu.l
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/big.l
+      {src64,pilos/src}/db.l
+      {src64,pilos/src}/err.l
+      src64/ht.l
+
+22may16
+   'flood' flooding algorithm
+      lib.l
+      ersatz/lib.l
+      pilos/init/lib.l
+      doc/refF.html
+
+18may16
+   Changed random bit patterns
+      misc/bigtest
+
+13may16
+   Skip header lines without delimiting space in '_htHead'
+   Header field names case-insensitive
+      lib/http.l
+
+08may16
+   Allow +User for current user
+      lib/adm.l
+      lib/user.l
+      app/gui.l
+
+03may16
+   Clean up stack checks
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/apply.l
+      {src64,pilos/src}/io.l
+
+29apr16
+   Bug in arm64 'add D ..' instruction
+      src64/arch/arm64.l
+   Throttle CPU load
+      misc/bigtest
+   Avoid sub/carry mix for arm64
+      {src64,pilos/src}/big.l
+
+28apr16
+   Bug in 64-bit condition code optimization (ppc64, arm64)
+      src64/lib/asm.l
+
+22apr16
+   CSS by Mansur Mamkin
+      app/main.l
+      app/menu.css
+
+21apr16
+   Minor correction
+      doc/refB.html
+
+19apr16
+   Private history for 'revise'
+      lib/led.l
+      lib/eled.l
+   'msg' more polite in teminal
+      lib.l
+      lib/led.l
+      lib/eled.l
+
+15apr16
+   Explain building 'tools' and 'gate' on 64 bits
+      INSTALL
+   'choSal' search dialog
+      app/gui.l
+      app/sal.l
+      app/cusu.l
+
+13apr16
+   Comments
+      src/ssl.c
+
+11apr16
+   Close port to force unique connection
+      bin/replica
+   Upper case names in Swedish localization
+      loc/SE.l
+   Ref typo
+      doc/form/refV.html
+
+10apr16
+   Tutorial fix
+      doc/tut.html
+
+09apr16
+   '*Sep3' and language file name in Swedish localization
+      loc/SE.l
+      loc/se -> loc/sv
+      app/loc/se -> app/loc/sv
+      lib/socialshareprivacy/loc/se -> lib/socialshareprivacy/loc/sv
+      app/main.l
+
+07apr16
+   Canvas touch events
+      lib/canvas.js
+      lib/canvas.l
+
+03apr16
+   Minor ref fixes
+      doc/ref.html
+
+01apr16
+   Skip white space in 'ext:Base64'
+      src64/ext.l
+      src/ext.c
+
+29mar16
+   Check for NIL argument in 'jsHint'
+      lib/form.l
+
+28mar16
+   Check '*Dbg' in 'psh'
+      lib/http.l
+
+26mar16
+   'request!' function
+      lib/db.l
+      doc/ref.html
+      doc/refI.html
+      doc/refN.html
+      doc/refP.html
+      doc/refR.html
+      doc/refS.html
+
+25mar16
+   Minor fix in 'genKey'
+      lib/db.l
+
+21mar16
+   Bug in arm64 'or' instruction
+      src64/arch/arm64.l
+
+19mar16
+   Load "@lib/too.l" (for e.g. 'psh')
+      dbg.l
+   Fix 'noLint' handling
+      lib/http.l
+      dbg.l
+
+16mar16
+   Use 'srcUrl' in '<faces>'
+      lib/svg.l
+   'detach' function
+      src64/flow.l
+      src64/glob.l
+      src64/arch/emu.l
+      src/pico.h
+      src/flow.c
+      src/tab.c
+      doc/ref.html
+      doc/refD.html
+      doc/refF.html
+      doc/refK.html
+      doc/refT.html
+
+14mar16
+   'Http1' not needed
+      src/httpGate.c
+
+11mar16
+   'psh' port detection with 'httpGate' auto-start
+      lib/http.l
+      bin/psh
+
+01mar16
+   Changed '<faces>' from 'base64' to external links
+      lib/svg.l
+   Clear 'Key' in fldChg()
+      lib/form.js
+   Keep empty lines in '+ListTextField'
+      lib/form.l
+
+29feb16
+   Form doc fix (Mattias Sundblad)
+      doc/form/refF.html
+
+27feb16
+   Form documentation (Mattias Sundblad)
+      doc/app.html
+   Java Interoperability extensions by Craig Allen
+      java/lib.l
+      java/Reflector.java
+
+26feb16
+   Typos
+      doc/form/refS.html
+      doc/form/refO.html
+      doc/form/refL.html
+      doc/form/refH.html
+      doc/form/refF.html
+
+   'docs' function
+      lib.l
+      lib/debug.l
+      lib/form.l
+      doc/refD.html
+
+25feb16
+   Renamed files "doc/formdoc/formRefX.html" to "doc/form/refX.html"
+   Read reference links in 'doc' into 'doc' property
+      lib/debug.l
+      doc/toc.html
+
+24feb16
+   Parameterize font type in '<faces>'
+      lib/svg.l
+
+21feb16
+   Catch frame bug in coroutines (64-bit)
+      {src64,pilos/src}/glob.l
+      {src64,pilos/src}/flow.l
+
+18feb16
+   Added '.wrap' style class
+      lib.css
+
+####### 16.2 #######
 18feb16
    Form-GUI documentation (Mattias Sundblad)
       doc/toc.html

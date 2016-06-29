@@ -1,4 +1,4 @@
-# 30oct15abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1345,11 +1345,11 @@
 (code 'packECX_CX 0)
    atom E  # Atomic?
    if z  # No
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       do  # List
          push (E CDR)  # Save rest
          ld E (E)  # Recurse on CAR
-         cmp S (StkLimit)  # Stack check
-         jlt stkErr
          call packECX_CX
          pop E  # Done?
          atom E
@@ -1371,7 +1371,7 @@
          ld (L II) E  # Save
          pop X  # Restore status
          pop C
-         call 10  # Pack external symbol
+         call packExt  # Pack external symbol
          ld B (char "}")
          jmp byteSymBCX_CX  # Pack "}"
       end
@@ -1380,7 +1380,8 @@
       call fmtNum0AE_E  # Convert to symbol
       ld (L II) E  # Save
    end
-10 push C  # Save status
+: packExt
+   push C  # Save status
    push X
    ld X (E TAIL)
    call nameX_X  # Get name
@@ -3483,10 +3484,10 @@
             call getEC_E  # Propery
             cmp E Nil  # found?
             jne Ret  # No
-            push X
-            ld X ((X))  # Try in superclass(es)
             cmp S (StkLimit)  # Stack check
             jlt stkErr
+            push X
+            ld X ((X))  # Try in superclass(es)
             call metaCX_E
             pop X
             cmp E Nil  # found?

@@ -1,4 +1,4 @@
-/* 27nov15abu
+/* 01apr16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -198,6 +198,8 @@ any Base64(any x) {
 
    if (!isCell(x = cdr(x))) {
       if (!Chr)
+         Env.get();
+      while (Chr >= 0  &&  Chr <= ' ')
          Env.get();
       if (!(p = strchr(Chr64, Chr))) {
          if (Chr == '=') {

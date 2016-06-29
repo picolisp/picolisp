@@ -1,4 +1,4 @@
-# 16nov15abu
+# 30may16abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -8,7 +8,7 @@
 # "*Mode" "*Modes"
 
 (de *Transfers
-   call
+   cc call
    jmp
    jz jeq
    jnz jne
@@ -20,6 +20,13 @@
    jnc jnb jnx jge
    jle
    jgt )
+
+(de *Terminators
+   jmp ret throw return eval/ret stop )
+
+(de *RetLabels
+   Ret RetEq RetGt RetLt RetNil RetT RetE_E
+   ret retEq retGt retLt retNull retNil retT retE_E )
 
 (de *Conditions
    (T jmp . jmp)
@@ -84,8 +91,11 @@
                (prinl Sym " (" (cdr @) " . \"@src64/" (car @) "\")") ) ) ) ) )
 
 (de asm Args
-   (when (=T (car Args))
-      (put (car (setq Args (cdr Args))) 'asm NIL) )
+   (cond
+      ((=T (car Args))
+         (put (car (setq Args (cdr Args))) 'asm NIL) )
+      ((== 'TOS (car Args))
+         (put (car (setq Args (cdr Args))) 'TOS T) ) )
    (def (car Args) 'asm (cdr Args)) )
 
 (asm asm (Val)
@@ -130,6 +140,112 @@
          (when (or *IfStack *DoStack)
             (quit "Unbalanced flow") )
          (cleanUp)
+         # TOS Management
+         (or
+            (find
+               '((S) (== S (caar *Program)))
+               '(initMain tos begin) )
+            (memq *Label
+               (quote
+                  restart giveupX finishE
+                  errnoEXY errEXYZ dlErrX
+                  execErrS doExec doQuit doBye byeE ) )
+            (let
+               (Nodes (maplist prog *Program)
+                  JumpOK
+                  (extract
+                     '((X)
+                        (cond
+                           ((and
+                                 (== ': (car X))
+                                 (or
+                                    (= `(char ".") (char (cdr X)))
+                                    (format (last (split (chop (cdr X)) "_"))) ) )
+                              (cdr X) )
+                           ((and
+                                 (memq (car X) *Transfers)
+                                 (find
+                                    '((S) (sub? S (cadr X)))
+                                    '("err" "Err" "undefined" "byeE") ) )
+                              (cadr X) ) ) )
+                     *Program )
+                  Hot )
+               (let? Flood
+                  (flood
+                     Nodes
+                     '((X)
+                        (when
+                           (or
+                              (== ': (caar X))
+                              (and
+                                 (memq (caar X) *Transfers)
+                                 (not (memq (cadar X) *RetLabels)) )
+                              (get (caar X) 'TOS) )
+                           (on Hot) )
+                        (make
+                           (and
+                              (memq (caar X) (cddr *Transfers))
+                              (assoc (cons ': (cadar X)) Nodes)
+                              (link @) )
+                           (or
+                              (not (cdr X))
+                              (and
+                                 (memq (caar X) (cdddr *Transfers))
+                                 (nor
+                                    (member (cadar X) JumpOK)
+                                    (and Hot (memq (cadar X) *RetLabels)) ) )
+                              (memq (caar X) *Terminators)
+                              (and
+                                 (== (caar X) ':)
+                                 (not (member (cdar X) JumpOK)) )
+                              (and
+                                 (memq (caadr X) (cddr *Transfers))
+                                 (nor
+                                    (member (cadadr X) JumpOK)
+                                    (and Hot (memq (cadadr X) *RetLabels)) ) )
+                              (casq (caadr X)
+                                 (jmp (not (member (cadadr X) JumpOK)))
+                                 (: (not (member (cdadr X) JumpOK)))
+                                 (T (memq @ *Terminators)) )
+                              (link (cdr X)) ) ) )
+                     (mapcon
+                        '((L)
+                           (and (get (caar L) 'TOS) (list L)) )
+                        *Program ) )
+                  (setq *Program
+                     (make
+                        (and
+                           (asoq (car *Program) Flood)
+                           (n== 'catch (caar *Program))
+                           (link '(++tos)) )
+                        (map
+                           '((L)
+                              (link
+                                 (if
+                                    (and
+                                       (asoq (car L) Flood)
+                                       (memq (caar L) (cddr *Transfers))
+                                       (memq (cadar L) *RetLabels) )
+                                    (list (caar L) (pack (cadar L) "TOS"))
+                                    (car L) ) )
+                              (cond
+                                 ((and
+                                       (not (memq (caar L) *Terminators))
+                                       (not (asoq (car L) Flood))
+                                       (asoq (cadr L) Flood) )
+                                    (link '(++tos)) )
+                                 ((cdr L)
+                                    (and
+                                       (asoq (car L) Flood)
+                                       (not (asoq (cadr L) Flood))
+                                       (n== 'throw (caadr L))
+                                       (link '(tos--)) ) )
+                                 ((and
+                                       (asoq (car L) Flood)
+                                       (not (memq (caar L) *Terminators))
+                                       (link '(tos--)) ) ) ) )
+                           *Program ) ) ) ) ) )
+         # Optimization
          (setq *Program
             (make
                (for (L *Program L)
@@ -137,6 +253,7 @@
                      (link (pop 'L))
                      (setq L (nth L (inc (car @))))
                      (chain (cdr @)) ) ) ) )
+         # Code Output
          (for *Statement *Program
             (cond
                ((== ': (car *Statement)) (label (cdr *Statement)))
@@ -198,7 +315,7 @@
    (setq *Program  # Remove unreachable statements
       (make
          (while *Program
-            (when (memq (car (link (pop '*Program))) '(jmp jump ret throw return eval/ret))
+            (when (memq (car (link (pop '*Program))) *Terminators)
                (while (and *Program (n== ': (caar *Program)))
                   (pop '*Program) ) ) ) ) )
    (setq *Program  # Remove zero jumps
@@ -207,7 +324,7 @@
             (let P (pop '*Program)
                (unless
                   (and
-                     (memq (car P) (cdr *Transfers))
+                     (memq (car P) (cddr *Transfers))
                      (== ': (caar *Program))
                      (= (cadr P) (cdar *Program)) )
                   (link P) ) ) ) ) )
@@ -217,7 +334,7 @@
             (let P (pop '*Program)
                (ifn
                   (and
-                     (memq (car P) (cddr *Transfers))
+                     (memq (car P) (cdddr *Transfers))
                      (== 'jmp (caar *Program))
                      (== ': (caadr *Program))
                      (= (cadr P) (cadr (cadr *Program))) )
@@ -231,8 +348,8 @@
                         (cadr (pop '*Program)) ) ) ) ) ) ) ) )
 
 # Registers
-(de register (X)
-   (cdr (asoq X *Registers)) )
+(de register (S)
+   (get *Registers S) )
 
 # Operand evaluation
 (de operand (X)
@@ -434,6 +551,7 @@
 # Instruction set
 (balance '*Instructions
    (quote
+      (++tos)
       (add (destination) "*Mode" (source) "*Mode")
       (addc (destination) "*Mode" (source) "*Mode")
       (asm (read))
@@ -490,7 +608,6 @@
       (jnz (address) "*Mode")
       (js (address) "*Mode")
       (jsz (address) "*Mode")
-      (jump (register (read)))
       (jx (address) "*Mode")
       (jz (address) "*Mode")
       (:: (file) (read))
@@ -545,6 +662,8 @@
       (sym (source) "*Mode")
       (test (destination) "*Mode" (source) "*Mode")
       (throw)
+      (tos (destination) "*Mode")
+      (tos--)
       (tuck (source) "*Mode")
       (word (operand (read)))
       (xchg (destination) "*Mode" (destination) "*Mode")
@@ -603,12 +722,12 @@
       (def Sym 'asm (cdr Args)) ) )
 
 (de useCC Lst
-   (for Sym Lst
-      (put Sym 'useCC T) ) )
+   (for This Lst
+      (=: useCC T) ) )
 
 (de chgCC Lst
-   (for Sym Lst
-      (put Sym 'chgCC T) ) )
+   (for This Lst
+      (=: chgCC T) ) )
 
 (useCC
    ldz ldnz
@@ -647,10 +766,13 @@
          (use (@A @B @Z)
             (match '(@A "_" @B "F" @Z) (chop *Label)) ) )
       (T
-         (and
-            (memq (caar Lst) *Transfers)
-            (member (cons ': (cadar Lst)) (cddr Lst))
-            (needCC (cdr @)) )
+         (when (memq (caar Lst) *Transfers)
+            (let Lbl (cons ': (cadar Lst))
+               (cond
+                  ((member Lbl (cddr Lst))
+                     (needCC (cdr @)) )
+                  ((and (offset Lst *Program) (member Lbl (head (dec @) *Program)))
+                     (needCC (cdr @)) ) ) ) )
          T )
       (NIL (setq Lst (cdr Lst))) ) )
 

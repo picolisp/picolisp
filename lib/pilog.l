@@ -1,4 +1,4 @@
-# 08jan16abu
+# 27feb16abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -627,6 +627,9 @@
 
 ### Debug ###
 `*Dbg
+
 (load "@lib/sq.l")
+
+(docs "@doc/")
 
 # vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-/* 05nov14abu
+/* 14mar16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -34,7 +34,6 @@ typedef struct name {
    char *dir, *log, *ev[4], *av[1];
 } name;
 
-static int Http1;
 static name *Names;
 static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
@@ -417,7 +416,6 @@ int main(int ac, char *av[]) {
                return 0;
             }
 
-            Http1 = 0;
             wrBytes(srv, buf, p - buf);
             if (*q == '/')
                ++q;
@@ -426,8 +424,6 @@ int main(int ac, char *av[]) {
                if (p >= buf + n)
                   return 1;
             wrBytes(srv, q, p - q);
-            if (pre(p-10, "HTTP/1."))
-               Http1 = *(p-3) - '0';
             inet_ntop(AF_INET6, &addr.sin6_addr, s, INET6_ADDRSTRLEN);
             wrBytes(srv, buf2, sprintf(buf2, gate, s));
             if (ssl)

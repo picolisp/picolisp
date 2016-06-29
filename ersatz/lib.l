@@ -1,4 +1,4 @@
-# 13jan16abu
+# 22may16abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -49,8 +49,6 @@
          (cons "Y" (fill "Z" "P"))
          (list "Y" (cons 'job (lit (env @)) "Z"))
          (cons "Y" "Z") ) ) )
-
-(====)
 
 ### Definitions ###
 (de expr ("F")
@@ -105,8 +103,6 @@
                   (con "Lst" (run "Prg")) ) )
             (setq "Lst" (cdr "Lst")) ) ) ) )
 
-(====)
-
 (de cache ("Var" X . Prg)
    (let K (cons (char (hash X)) X)
       (nond
@@ -116,8 +112,6 @@
          ((n== "Var" (val "Var"))
             (set "Var" (run Prg 1)) )
          (NIL (val "Var")) ) ) )
-
-(====)
 
 ### I/O ###
 (de tab (Lst . @)
@@ -134,8 +128,7 @@
 (de msg (X . @)
    (out 2
       (print X)
-      (pass prinl)
-      (flush) )
+      (pass prinl) )
    X )
 
 (de script (File . @)
@@ -274,11 +267,27 @@
             (setq X (* X X)) ) )
       0 ) )
 
+# Accumulate
 (de accu (Var Key Val)
    (when Val
       (if (assoc Key (val Var))
          (con @ (+ Val (cdr @)))
          (push Var (cons Key Val)) ) ) )
+
+# Flooding Algorithm
+(de flood ("Lst" "Fun" "Init")
+   (let G (mapcar '(("X") (cons "X" ("Fun" "X"))) "Lst")
+      (for L G
+         (for X (cdr L)
+            (let A (asoq X G)
+               (unless (memq (car L) (cdr A))
+                  (con A (cons (car L) (cdr A))) ) ) ) )
+      (make
+         (recur ("Init")
+            (for X "Init"
+               (unless (memq X (made))
+                  (link X)
+                  (recurse (cdr (asoq X G))) ) ) ) ) ) )
 
 ### Pretty Printing ###
 (de pretty (X N)

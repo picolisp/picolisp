@@ -1,4 +1,4 @@
-# 17nov15abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -31,20 +31,6 @@
    ld (Z 4) B
    shr A 8
    ld (Z 5) B  # Highest byte
-   ret
-
-(code 'setAdrAS 0)
-   ld (S (+ I 2)) B  # Write block address to stack
-   shr A 8
-   ld (S (+ I 3)) B
-   shr A 8
-   ld (S (+ I 4)) B
-   shr A 8
-   ld (S (+ I 5)) B
-   shr A 8
-   ld (S (+ I 6)) B
-   shr A 8
-   ld (S (+ I 7)) B  # Highest byte
    ret
 
 # Read file number from 'Buf' into 'DbFile'
@@ -418,7 +404,17 @@
       ld (S 1) B  # and high byte
       ld A E  # Get position
       shr A ((DbFile) II)  # Un-shift for current file
-      call setAdrAS  # Set block address in buffer
+      ld (S 2) B  # Set block address in buffer
+      shr A 8
+      ld (S 3) B
+      shr A 8
+      ld (S 4) B
+      shr A 8
+      ld (S 5) B
+      shr A 8
+      ld (S 6) B
+      shr A 8
+      ld (S 7) B  # Highest byte
       cc fwrite(S (+ BLK 2) 1 (DbJnl))  # Write file number and address
       cmp A 1  # OK?
       jne wrJnlErr  # No
@@ -436,7 +432,17 @@
    shr A 8
    ld (S 1) B  # and high byte
    ld A (BlkIndex)  # Get block index in E
-   call setAdrAS  # Write into buffer
+   ld (S 2) B  # Write into buffer
+   shr A 8
+   ld (S 3) B
+   shr A 8
+   ld (S 4) B
+   shr A 8
+   ld (S 5) B
+   shr A 8
+   ld (S 6) B
+   shr A 8
+   ld (S 7) B  # Highest byte
    cc fwrite(S (+ BLK 2) 1 (DbLog))  # Write file number and address
    cmp A 1  # OK?
    jne wrLogErr  # No
@@ -1236,10 +1242,10 @@
    setx  # Set "loaded"
    rxr A 1
    shr A 1
-   push C
-: dbAEX
+(code 'dbAEX 0)
    push Y
    push Z
+   push C
    link
    push E  # <L I> Symbol
    link
@@ -1347,9 +1353,9 @@
    end
    ld E (L I)  # Restore symbol
    drop
+   pop C
    pop Z
    pop Y
-   pop C
    ret
 
 (code 'dbTouchEX 0)
@@ -1379,6 +1385,7 @@
       shr A 1
       setx  # Set "dirty"
       rxr A 1
+      pop C
       jmp dbAEX
    end
    pop C

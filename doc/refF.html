@@ -251,6 +251,25 @@ href="refR.html#rot">rot</a></code>.
 -> (3 2 1 4 5 6)
 </code></pre>
 
+<dt><a name="flood"><code>(flood 'lst1 'fun 'lst2)</code></a>
+<dd>Implements a flooding algorithm, returning a list of flooded nodes of a
+graph. <code>lst1</code> is a list of relevant nodes, <code>fun</code> a
+function accepting a node and returning a list of connected nodes, and
+<code>lst2</code> a list of seed nodes.
+
+<pre><code>
+: (setq *Graph (1 2 3 4 5))         # For simplicity, a one-dimensional "graph"
+-> (1 2 3 4 5)
+
+: (flood
+   (maplist prog *Graph)            # List of relevant cells
+   '((X)                            # Flood the three central cells (2 3 4)
+      (when (member (car X) (2 3))  # 2 -> 3 and 3 -> 4
+         (list (cdr X)) ) )
+   (list (cddr *Graph)) )           # Seed third (middle) cell
+-> ((3 4 5) (2 3 4 5) (4 5))        # -> Cells (3 ..) (2 ..) (4 ..)
+</code></pre>
+
 <dt><a name="flush"><code>(flush) -> flg</code></a>
 <dd>Flushes the current output stream by writing all buffered data. A call to
 <code>flush</code> for standard output is done automatically before a call to
@@ -423,6 +442,7 @@ child's process ID <code>pid</code> in the parent. In the child, the
 <code>VAL</code> of the global variable <code><a
 href="refF.html#*Fork">*Fork</a></code> (should be a <code>prg</code>) is
 executed. See also <code><a href="refE.html#exec">exec</a></code>, <code><a
+href="refD.html#detach">detach</a></code>, <code><a
 href="refK.html#kids">kids</a></code>, <code><a
 href="refP.html#pipe">pipe</a></code> and <code><a
 href="refT.html#tell">tell</a></code>.

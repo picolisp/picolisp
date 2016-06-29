@@ -1,4 +1,4 @@
-# 13jan16abu
+# 29may16abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1787,10 +1787,10 @@
 (code 'trimE_E 0)
    atom E  # List?
    if z  # Yes
-      push (E)  # Save CAR
-      ld E (E CDR)  # Trim CDR
       cmp S (StkLimit)  # Stack check
       jlt stkErr
+      push (E)  # Save CAR
+      ld E (E CDR)  # Trim CDR
       call trimE_E
       cmp E Nil  # All trimmed?
       if eq  # Yes
@@ -2953,10 +2953,10 @@
       add C (hex "10")  # Increment count
       atom (E)  # Is CAR a pair?
       if z  # Yes
-         push E
-         ld E (E)  # Count CAR
          cmp S (StkLimit)  # Stack check
          jlt stkErr
+         push E
+         ld E (E)  # Count CAR
          call sizeCE_C
          pop E
       end
@@ -3187,6 +3187,8 @@
          ld A C  # Check if equal
          jmp equalAE_F
       end
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       ld X (C)  # CAR of pattern
       num X
       if z
@@ -3208,8 +3210,6 @@
                push E  # and Data
                ld C (C CDR)  # Get CDRs
                ld E (E CDR)
-               cmp S (StkLimit)  # Stack check
-               jlt stkErr
                call matchCE_F  # Match?
                pop E
                pop C
@@ -3218,13 +3218,12 @@
                   ld (A) (E)
                   ld (A CDR) Nil
                   ld ((C)) A  # Set value
-                  jmp retEq
+                  eq
+                  ret
                end
                push C  # Save pattern
                push E  # and Data
                ld C (C CDR)  # CDR of pattern
-               cmp S (StkLimit)  # Stack check
-               jlt stkErr
                call matchCE_F  # Match with data?
                pop E
                pop C
@@ -3235,8 +3234,6 @@
                push C  # Save pattern
                push E  # and Data
                ld E (E CDR)  # CDR of data
-               cmp S (StkLimit)  # Stack check
-               jlt stkErr
                call matchCE_F  # Match with pattern?
                pop E
                pop C
@@ -3246,7 +3243,8 @@
                   ld (A) (E)
                   ld (A CDR) (X)
                   ld (X) A  # Set value
-                  jmp retEq
+                  eq
+                  ret
                end
             end
          end
@@ -3257,8 +3255,6 @@
       push (E CDR)
       ld C (C)  # Get CARs
       ld E (E)
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call matchCE_F  # Match?
       pop E
       pop C
@@ -3320,10 +3316,10 @@
       end
       ret  # Else 'nz'
    end
-   push E  # <S> Save
-   ld E (E)  # Recurse on CAR
    cmp S (StkLimit)  # Stack check
    jlt stkErr
+   push E  # <S> Save
+   ld E (E)  # Recurse on CAR
    cmp E Up  # Expand expression?
    if eq  # Yes
       pop E  # Get pattern
@@ -3519,6 +3515,8 @@
    if z  # No
       atom Z  # x2 atomic?
       if z  # No
+         cmp S (StkLimit)  # Stack check
+         jlt stkErr
          push ((Penv))  # Save pilog environment
          push C  # and parameters
          push E
@@ -3526,8 +3524,6 @@
          push Z
          ld Y (Y)  # car(x1)
          ld Z (Z)  # car(x2)
-         cmp S (StkLimit)  # Stack check
-         jlt stkErr
          call unifyCEYZ_F  # Match?
          pop Z
          pop Y
@@ -3536,8 +3532,6 @@
          if eq  # Yes
             ld Y (Y CDR)  # cdr(x1)
             ld Z (Z CDR)  # cdr(x2)
-            cmp S (StkLimit)  # Stack check
-            jlt stkErr
             call unifyCEYZ_F  # Match?
             if eq  # Yes
                lea S (S I)  # Drop pilog environment
@@ -3819,6 +3813,8 @@
    ret
 
 (code 'lupCE_E 0)  # Z
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    num E  # x symbolic?
    if z
       sym E
@@ -3840,8 +3836,6 @@
                      ld A ((Z) CDR)
                      ld C (A)  # n = cadar(y)
                      ld E (A CDR)  # x = cddar(y)
-                     cmp S (StkLimit)  # Stack check
-                     jlt stkErr
                      jmp lupCE_E
                   end
                end
@@ -3855,8 +3849,6 @@
       push C  # Save parameters
       push E
       ld E (E)  # lup(n, car(x))
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call lupCE_E
       pop A
       pop C
@@ -3864,8 +3856,6 @@
       push E  # Save
       link
       ld E (A CDR)  # lup(n, cdr(x))
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call lupCE_E
       call consE_A  # Cons
       ld (A) (L I)
@@ -3897,18 +3887,16 @@
          ld C (((Pnl)))  # Get Env
          jmp lupCE_E  # Look up
       end
-      push E  # Save list
-      ld E (E)  # Recurse on CAR
       cmp S (StkLimit)  # Stack check
       jlt stkErr
+      push E  # Save list
+      ld E (E)  # Recurse on CAR
       call uniFillE_E
       pop A  # Get list
       link
       push E  # Save result
       link
       ld E (A CDR)  # Recurse on CDR
-      cmp S (StkLimit)  # Stack check
-      jlt stkErr
       call uniFillE_E
       call consE_A  # Return cell
       ld (A) (L I)

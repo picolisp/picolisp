@@ -652,6 +652,21 @@ href="refS.html#size">size</a></code>.
 -> (3 . 2)                                   # Depth is 3, average 2
 </code></pre>
 
+<dt><a name="detach"><code>(detach) -> pid | NIL</code></a>
+<dd>Detach the current process from its PicoLisp parent. This causes the parent
+to "forget" this child process (freeing resources like buffers and pipes),
+effectively disabling family IPC via <code><a
+href="refT.html#tell">tell</a></code>. See also <code><a
+href="refF.html#fork">fork</a></code> and <code><a
+href="refK.html#kids">kids</a></code>.
+
+<pre><code>
+: (unless (fork)
+   (detach)
+   (runAlone)
+   (bye) )
+</code></pre>
+
 <dt><a name="diff"><code>(diff 'lst 'lst) -> lst</code></a>
 <dd>Returns the difference of the <code>lst</code> arguments. See also <code><a
 href="refS.html#sect">sect</a></code>.
@@ -680,7 +695,7 @@ non-<code>NIL</code>. See also <code><a href="refC.html#cd">cd</a></code> and
 <code><a href="refI.html#info">info</a></code>.
 
 <pre><code>
-: (filter '((F) (tail '(. c) (chop F))) (dir "src/"))
+: (filter '((F) (tail '(. c) (chop F))) (dir "@src/"))
 -> ("main.c" "subr.c" "gc.c" "io.c" "big.c" "sym.c" "tab.c" "flow.c" ..
 </code></pre>
 
@@ -750,7 +765,8 @@ browser. If not given, the value of the environment variable
 <code>BROWSER</code>, or the <code>w3m</code> browser is tried. If
 <code>sym1</code> is <code>NIL</code>, the <a href="ref.html">PicoLisp
 Reference</a> manual is opened. See also <a href="ref.html#fun">Function
-Reference</a> and <code><a href="refV.html#vi">vi</a></code>.
+Reference</a>, <code><a href="refD.html#docs">docs</a></code> and <code><a
+href="refV.html#vi">vi</a></code>.
 
 <pre><code>
 : (doc '+)  # Function reference
@@ -761,6 +777,16 @@ Reference</a> and <code><a href="refV.html#vi">vi</a></code>.
 -> T
 :  (doc 'vi "firefox")  # Use alternative browser
 -> T
+</code></pre>
+
+<dt><a name="docs"><code>(docs 'any)</code></a>
+<dd>(Debug mode only) Parses all files with names of the form "ref@.html" in the
+directory <code>any</code>, to set the <code>doc</code> property for later calls
+to <code><a href="refD.html#doc">doc</a></code>.
+
+<pre><code>
+: (docs "@doc/")
+-> NIL
 </code></pre>
 
 </dl>

@@ -1,4 +1,4 @@
-# 20dec14abu
+# 03may16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -16,13 +16,13 @@
          do
             cmp Z Y  # Any args?
          while ne  # Yes
+            cmp S (StkLimit)  # Stack check
+            jlt stkErrX
             push (Z)  # Next arg
             ld A S  # Value address
             push ZERO  # Dummy symbol's tail
             push E  # Dummy cell's CDR
             push A  # CAR
-            cmp S (StkLimit)  # Stack check
-            jlt stkErrX
             ld E S  # Set 'args' list
             add Z I
          loop
@@ -105,13 +105,13 @@
                end
                ld E Nil  # Init 'args' list
                do
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
                   push (Z)  # Next arg
                   push ZERO  # Dummy symbol's tail
                   push E  # Dummy cell's CDR
                   lea A (S II)  # Value address
                   push A  # CAR
-                  cmp S (StkLimit)  # Stack check
-                  jlt stkErrX
                   ld E S  # Set 'args' list
                   add Z I
                   cmp Z Y  # More args?
@@ -149,10 +149,10 @@
          else
             link  # Build varArgs frame
             do
-               sub Y I
-               push (Y)  # Push next argument
                cmp S (StkLimit)  # Stack check
                jlt stkErrX
+               sub Y I
+               push (Y)  # Push next argument
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -270,13 +270,13 @@
                end
                ld E Nil  # Init 'args' list
                do
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
                   push (Z)  # Next arg
                   push ZERO  # Dummy symbol's tail
                   push E  # Dummy cell's CDR
                   lea A (S II)  # Value address
                   push A  # CAR
-                  cmp S (StkLimit)  # Stack check
-                  jlt stkErrX
                   ld E S  # Set 'args' list
                   add Z I
                   cmp Z Y  # More args?
@@ -316,10 +316,10 @@
          else
             link  # Build varArgs frame
             do
-               sub Y I
-               push (Y)  # Push next argument
                cmp S (StkLimit)  # Stack check
                jlt stkErrX
+               sub Y I
+               push (Y)  # Push next argument
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -372,13 +372,13 @@
          do
             cmp Z Y  # Any args?
          while ne  # Yes
+            cmp S (StkLimit)  # Stack check
+            jlt stkErrX
             push ((Z))  # Next arg
             ld A S  # Value address
             push ZERO  # Dummy symbol's tail
             push E  # Dummy cell's CDR
             push A  # CAR
-            cmp S (StkLimit)  # Stack check
-            jlt stkErrX
             ld E S  # Set 'args' list
             add Z I
          loop
@@ -461,13 +461,13 @@
                end
                ld E Nil  # Init 'args' list
                do
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
                   push ((Z))  # Next arg
                   push ZERO  # Dummy symbol's tail
                   push E  # Dummy cell's CDR
                   lea A (S II)  # Value address
                   push A  # CAR
-                  cmp S (StkLimit)  # Stack check
-                  jlt stkErrX
                   ld E S  # Set 'args' list
                   add Z I
                   cmp Z Y  # More args?
@@ -505,10 +505,10 @@
          else
             link  # Build varArgs frame
             do
-               sub Y I
-               push ((Y))  # Push CAR of next argument
                cmp S (StkLimit)  # Stack check
                jlt stkErrX
+               sub Y I
+               push ((Y))  # Push CAR of next argument
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -626,13 +626,13 @@
                end
                ld E Nil  # Init 'args' list
                do
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErrX
                   push ((Z))  # Next arg
                   push ZERO  # Dummy symbol's tail
                   push E  # Dummy cell's CDR
                   lea A (S II)  # Value address
                   push A  # CAR
-                  cmp S (StkLimit)  # Stack check
-                  jlt stkErrX
                   ld E S  # Set 'args' list
                   add Z I
                   cmp Z Y  # More args?
@@ -672,10 +672,10 @@
          else
             link  # Build varArgs frame
             do
-               sub Y I
-               push ((Y))  # Push CAR of next argument
                cmp S (StkLimit)  # Stack check
                jlt stkErrX
+               sub Y I
+               push ((Y))  # Push CAR of next argument
                cmp Y Z   # More args?
             until eq  # No
             ld (EnvArgs) S  # Set new varArgs base
@@ -740,9 +740,9 @@
    do
       atom E  # Expand 'lst'
    while z
-      push (E)
       cmp S (StkLimit)  # Stack check
       jlt stkErrX
+      push (E)
       ld E (E CDR)
    loop
    ld Z S  # Z on last argument

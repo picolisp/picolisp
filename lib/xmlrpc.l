@@ -1,4 +1,4 @@
-# 30apr15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # (xmlrpc "localhost" 8080 "user:passwd" "foo.bar" 'int 41 'string "abc" ..)
@@ -22,7 +22,7 @@
                (prinl "Host: " Host "^M")
                (let? L (mapcar char (chop Auth))
                   (prin "Authorization: Basic ")  # 7-bit ASCII
-                  (while (ext:Base64 (pop 'L) (pop 'L) (pop 'L)))
+                  (while (ext:Base64 (++ L) (++ L) (++ L)))
                   (prinl "^M") )
                (prinl "User-Agent: PicoLisp^M")
                (prinl "Content-Type: text/xml^M")

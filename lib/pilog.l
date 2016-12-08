@@ -1,4 +1,4 @@
-# 27feb16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -35,7 +35,7 @@
          (for ((N . L) (get S T) L)
             (prin N " (be ")
             (print S)
-            (for X (pop 'L)
+            (for X (++ L)
                (space)
                (print X) )
             (prinl ")")
@@ -52,8 +52,8 @@
       (while (and "CL" (pat? (car "CL")))
          (push '"Env"
             (cons
-               (cons 0 (pop '"CL"))
-               (cons 1 (eval (pop '"CL"))) ) ) )
+               (cons 0 (++ "CL"))
+               (cons 1 (eval (++ "CL"))) ) ) )
       (cons
          (cons
             (conc (list 1 (0) NIL "CL" NIL) "Env") ) ) ) )
@@ -90,7 +90,7 @@
    (let "L"
       (make
          (while (nor (pat? (car "CL")) (lst? (car "CL")))
-            (link (pop '"CL")) ) )
+            (link (++ "CL")) ) )
       (query (goal "CL") "L") ) )
 
 ### Basic Rules ###
@@ -476,29 +476,29 @@
       (nond
          ((atom (car Lst))
             (make
-               (for (L (pop 'Lst) L)
+               (for (L (++ Lst) L)
                   (let
-                     (Var (pop 'L)
-                        Cls (pop 'L)
-                        Hook (and (get Cls Var 'hook) (pop 'L))
-                        Val (pop 'L) )
+                     (Var (++ L)
+                        Cls (++ L)
+                        Hook (and (get Cls Var 'hook) (++ L))
+                        Val (++ L) )
                      (and (or Val Flg) (chain ("initSel"))) ) ) ) )
          ((pat? (car Lst))
             (let
-               (Var (pop 'Lst)
-                  Cls (pop 'Lst)
-                  Hook (and (get Cls Var 'hook) (pop 'Lst))
-                  Val (pop 'Lst) )
+               (Var (++ Lst)
+                  Cls (++ Lst)
+                  Hook (and (get Cls Var 'hook) (++ Lst))
+                  Val (++ Lst) )
                (and (or Val Flg) ("initSel")) ) )
          (NIL
-            (let (Var (pop 'Lst) Val (pop 'Lst))
+            (let (Var (++ Lst) Val (++ Lst))
                (and
                   (or Flg (apply or Val))
-                  (cons Var (goal (pop 'Lst))) ) ) ) )
+                  (cons Var (goal (++ Lst))) ) ) ) )
       (cons
          (cons
             (for (L NIL Lst)
-               (push 'L (pop 'Lst) NIL)
+               (push 'L (++ Lst) NIL)
                 L )
             X ) ) ) )
 

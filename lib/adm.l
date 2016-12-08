@@ -1,4 +1,4 @@
-# 08may16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -101,7 +101,7 @@
 (de permission Lst
    (while Lst
       (queue '*Perms (car Lst))
-      (def (pop 'Lst) (pop 'Lst)) ) )
+      (def (++ Lst) (++ Lst)) ) )
 
 (de may Args
    (mmeq Args (; *Login role perm)) )

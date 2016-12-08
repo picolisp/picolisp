@@ -163,9 +163,15 @@ of that file (normally HTML) are sent as response to the client.
 
 <h3><a name="reload">Reloading the configuration</a></h3>
 
-<p>When the config file is modified, it cannot be reloaded while httpGate is
-running. So httpGate needs to be restarted. This is not a problem, and can be
-done also while the server is in production.
+<p>When the config file is modified, it can be reloaded by sending SIGHUP to all
+running top-level httpGate processes:
+
+<pre><code>
+   $ sudo pkill -HUP -P1 httpGate
+</code></pre>
+
+<p>Another possibility is to restart httpGate(s). This is not a problem, and can
+be done also while the server is in production.
 
 <p>Just kill the top level httpGate parent process. This is not harmful, because
 existing user sessions are handled by pairs of child processes, which continue

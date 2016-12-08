@@ -1,4 +1,4 @@
-/* 14mar16abu
+/* 29jul16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -34,7 +34,9 @@ typedef struct name {
    char *dir, *log, *ev[4], *av[1];
 } name;
 
+static bool Hup;
 static name *Names;
+static char *Config;
 static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
 static char Head_410[] =
@@ -48,7 +50,7 @@ static void giveup(char *msg) {
    exit(1);
 }
 
-static int readNames(char *nm) {
+static int readNames(void) {
    FILE *fp;
    name *np, **t;
    int port, cnt;
@@ -56,7 +58,7 @@ static int readNames(char *nm) {
    char *p, *ps, line[4096];
    static char delim[] = " \n";
 
-   if (!(fp = fopen(nm, "r")))         // Lines ordered by
+   if (!(fp = fopen(Config, "r")))     // Lines ordered by
       giveup("Can't open name file");  // bin/balance -sort
    port = 8080;
    while (p = fgets(line, 4096, fp)) {
@@ -85,7 +87,7 @@ static int readNames(char *nm) {
          cnt = 0;
          while (p = strtok(NULL, delim)) {
             if (*p == '^')
-               np->av[cnt] = "";
+               np->av[cnt] = strdup("");
             else {
                p = np->av[cnt] = strdup(p);
                while (p = strchr(p, '^'))
@@ -103,6 +105,23 @@ static int readNames(char *nm) {
    }
    fclose(fp);
    return port;
+}
+
+static void freeNames(name *np) {
+   int i;
+
+   free(np->key);
+   if (np->less)
+      freeNames(np->less);
+   if (np->more)
+      freeNames(np->more);
+   free(np->dir);
+   free(np->log);
+   for (i = 0; i < 3; ++i)
+      free(np->ev[i]);
+   for (i = 0; np->av[i]; ++i)
+      free(np->av[i]);
+   free(np);
 }
 
 static name *findName(char *p, char *q) {
@@ -287,6 +306,10 @@ static void doSigUsr1(int n __attribute__((unused))) {
    alarm(420);
 }
 
+static void doSigHup(int n __attribute__((unused))) {
+   Hup = YES;
+}
+
 static void iSignal(int n, void (*foo)(int)) {
    struct sigaction act;
 
@@ -306,11 +329,10 @@ int main(int ac, char *av[]) {
 
    if (ac < 3)
       giveup("port dflt [pem [deny ..]]");
-
    sd = gatePort(atoi(av[1]));  // e.g. 80 or 443
    ports[0] = (int)strtol(p = av[2], &q, 10);  // e.g. 8080
    if (q == p  ||  *q != '\0')
-      ports[0] = readNames(p);
+      Config = p,  ports[0] = readNames();
    if (ac == 3 || *av[3] == '\0')
       ssl = NULL,  gate = "X-Pil: *Gate=http\r\nX-Pil: *Adr=%s\r\n";
    else {
@@ -334,15 +356,21 @@ int main(int ac, char *av[]) {
    }
    for (n = 1; n < cnt; ++n)
       ports[n] = atoi(av[n+3]);
-
    signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
    if ((n = fork()) < 0)
       giveup("detach");
    if (n)
       return 0;
    setsid();
-
+   if (Config)
+      iSignal(SIGHUP, doSigHup);
    for (;;) {
+      if (Hup) {
+         Hup = NO;
+         freeNames(Names);
+         Names = NULL;
+         ports[0] = readNames();
+      }
       socklen_t len = sizeof(addr);
       if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
          if (!n) {

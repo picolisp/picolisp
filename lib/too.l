@@ -1,4 +1,4 @@
-# 27feb16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -20,10 +20,10 @@
 (de snapshot (Dst . @)
    (when (info (pack Dst "/1"))
       (for (L (flip (sort (extract format (dir Dst))))  L)
-         (let N (pop 'L)
+         (let N (++ L)
             (call "mv" (pack Dst '/ N) (pack Dst '/ (inc N)))
             (when (> (car L) (*/ N 9 10))
-               (call "rm" "-rf" (pack Dst '/ (pop 'L))) ) ) ) )
+               (call "rm" "-rf" (pack Dst '/ (++ L))) ) ) ) )
    (when (call "mkdir" (pack Dst "/1"))
       (while (args)
          (let
@@ -97,7 +97,7 @@
 
 (de markData (X)
    (while (pair X)
-      (markData (pop 'X)) )
+      (markData (++ X)) )
    (and (ext? X) (markExt X)) )
 
 ### DB Mapping ###
@@ -148,7 +148,7 @@
 
 (de dbMapV ("X")
    (while (pair "X")
-      (dbMapV (pop '"X")) )
+      (dbMapV (++ "X")) )
    (and (ext? "X") (_dbMap "X")) )
 
 ### DB Check ###
@@ -195,7 +195,7 @@
    (and
       (make
          (for X (getl Obj)
-            (let V (or (atom X) (pop 'X))
+            (let V (or (atom X) (++ X))
                (unless (rel?> Obj X V)
                   (link X) ) ) ) )
       (cons Obj @) ) )
@@ -224,7 +224,7 @@
    (for X (getl *DB)
       (and (pair X) (set (car X) 0)) )
    (commit)
-   (for (F . @) *Dbs
+   (for (F . @) (or *Dbs (2))
       (for (This (seq F) This (seq This))
          (and
             (isa '+Entity This)
@@ -280,6 +280,7 @@
          (for Rel (getl "Cls")
             (and
                (pair Rel)
+               (isa '+relation (car Rel))
                (or
                   (isa '+index (car Rel))
                   (isa '+Swap (car Rel))
@@ -329,7 +330,7 @@
       (call "rm" (pack Pool 1))
       (pool Pool Dbs)
       (set *DB (cadar Lst))
-      (putl *DB (cddr (pop 'Lst)))
+      (putl *DB (cddr (++ Lst)))
       (for L Lst
          (let New (new T)
             (set New (cadr L))
@@ -508,10 +509,10 @@
    (nond
       ((atom X)
          (prin "(")
-         (dumpVal (pop 'X))
+         (dumpVal (++ X))
          (while (pair X)
             (space)
-            (dumpVal (pop 'X)) )
+            (dumpVal (++ X)) )
          (when X (prin " . ") (dumpVal X))
          (prin ")") )
       ((ext? X) (print X))

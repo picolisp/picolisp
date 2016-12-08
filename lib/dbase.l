@@ -1,4 +1,4 @@
-# 10may11abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (de dbase (File)
@@ -41,7 +41,7 @@
             (make
                (do Cnt
                   (setq X (make (do Siz (link (char)))))
-                  (when (<> "*" (pop 'X))
+                  (when (<> "*" (++ X))
                      (link
                         (extract
                            '((F)

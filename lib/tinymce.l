@@ -1,4 +1,4 @@
-# 16apr15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
@@ -43,13 +43,13 @@
       (make
          (recur (Tag)
             (loop
-               (let? S (pop 'Lst)
+               (let? S (++ Lst)
                   (unless (= S '("^J"))
                      (link (ht:Pack S)) ) )
                (NIL Lst)
                (T (and (= "/" (caar Lst)) (= Tag (cdar Lst)))
-                  (pop 'Lst) )
-               (let S (pop 'Lst)
+                  (++ Lst) )
+               (let S (++ Lst)
                   (cond
                      ((= S '`(chop "br /"))
                         (link 0) )

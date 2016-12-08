@@ -1,4 +1,4 @@
-# 13jan16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Convert to PDF document
@@ -29,9 +29,9 @@
    (prin "\\" (or S (next)) "{")
    (loop
       (let Lst (next)
-         (texPrin (pop 'Lst))
+         (texPrin (++ Lst))
          (while Lst
-            (when (pop 'Lst)
+            (when (++ Lst)
                (prin "\\\\")
                (texPrin @) ) ) )
       (NIL (args))
@@ -64,8 +64,8 @@
       (prinl "\\documentclass[" Cls "]{" Typ "}")
       (while Use
          (if (atom (car Use))
-            (prinl "\\usepackage{" (pop 'Use) "}")
-            (prinl "\\usepackage[" (caar Use) "]{" (cdr (pop 'Use)) "}") ) )
+            (prinl "\\usepackage{" (++ Use) "}")
+            (prinl "\\usepackage[" (caar Use) "]{" (cdr (++ Use)) "}") ) )
       (prinl "\\begin{document}")
       (prEval Prg 2)
       (prinl "\\end{document}") )
@@ -133,9 +133,9 @@
 
 ### Letter Document Class ###
 (de \\letter (Lst . Prg)
-   (prin "\\begin{letter}{" (pop 'Lst))
+   (prin "\\begin{letter}{" (++ Lst))
    (while Lst
-      (when (pop 'Lst)
+      (when (++ Lst)
          (prin "\\\\" @) ) )
    (prinl "}")
    (prEval Prg 2)

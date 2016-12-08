@@ -1,4 +1,4 @@
-# 24apr12abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -400,8 +400,8 @@
 
 (de move (Lst)
    (if (atom (car Lst))
-      (inc (prop (push '*Moved (pop 'Lst)) 'cnt))
-      (dec (prop (pop '*Moved) 'cnt)) )
+      (inc (prop (push '*Moved (++ Lst)) 'cnt))
+      (dec (prop (++ *Moved) 'cnt)) )
    (for Mov Lst
       (move> (car Mov) (cdr Mov)) ) )
 
@@ -518,10 +518,10 @@
          (move @) ) ) )
 
 (de undo ()
-   (move (cdr (push '*Redo (pop '*Undo)))) )
+   (move (cdr (push '*Redo (++ *Undo)))) )
 
 (de redo ()
-   (move (car (push '*Undo (pop '*Redo)))) )
+   (move (car (push '*Undo (++ *Redo)))) )
 
 (de setup (Depth You Init)
    (setq *Depth (or Depth 5)  *You You  *Me (not You))

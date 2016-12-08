@@ -1,4 +1,4 @@
-# 27jun16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -29,6 +29,10 @@
          (get "*Lst" (- "*Cnt" *Get) *Form)
          (prog1
             (setq *Top (new NIL NIL 'able T 'evt 0))
+            ~(as *Dbg
+               (when (file)
+                  (put *Top '*Dbg
+                     (list (cons (cddr @) (pack (car @) (cadr @)))) ) ) )
             (queue (nth "*Lst" (- "*Cnt" *Get)) *Top) ) )
       (let "Lst" (get "*Lst" (- "*Cnt" *Get) 1)
          (for ("F" . "L") "Lst"
@@ -334,16 +338,18 @@
    (onOff "rowF") )
 
 # REPL form
-(de repl (Attr)
+(de repl (Attr DX DY)
+   (default DX 80  DY 25)
    (form Attr
-      (gui 'view '(+FileField) '(tmp "repl") 80 25)
+      (gui 'view '(+FileField) '(tmp "repl") DX DY)
       (--)
-      (gui 'line '(+Focus +TextField) 64 ":")
+      (gui 'line '(+Focus +TextField) (*/ DX 3 4) ":")
       (gui '(+JS +Button) "eval"
          '(let Str (val> (: home line))
             (out (pack "+" (tmp "repl"))
                (err NIL
                   (prinl ": " Str)
+                  (flush)
                   (catch '(NIL)
                      (in "/dev/null"
                         (setq @ "Result"  "Result" (eval (any Str))) )
@@ -2079,7 +2085,7 @@
 (dm T (Lst . @)
    (pass super
       (cons
-         (pop 'Lst)
+         (++ Lst)
          (append '(: home obj) (cons (car Lst))) ) )
    (=: sub Lst)
    (=: able (bool (: able))) )
@@ -2228,6 +2234,51 @@
             (not (val> This))
             (<> "-" S)
             ,"Data not found" ) ) ) )
+
+
+(class +Obj2 +Obj)
+# objVar2
+
+(dm T @
+   (=: objVar2 (next))
+   (pass super) )
+
+(dm hint> (Str)
+   (let L
+      (make
+         (for S (dbHint Str (: objVar2) (last (: objTyp)))
+            (for Obj (collect (: objVar2) (last (: objTyp)) S)
+               (link (pack (get Obj (: objVar)) " — " S)) )
+            (T (nth (made) 36)) ) )
+      (if
+         (if (meta (: objTyp) (: objVar) 'hook)
+            (db (: objVar) (last (: objTyp)) (eval (: objHook)) (format Str))
+            (db (: objVar) (last (: objTyp)) (format Str)) )
+         (cons (pack Str " — " (get @ (: objVar2))) L)         # Dash
+         L ) ) )
+
+(dm str> ()
+   (let? S (extra)
+      (let (L (split (chop S) " ")  N (format (car L)))
+         (format
+            (nond
+               (N                                              # Text
+                  (get
+                     (db (: objVar2) (last (: objTyp)) S)
+                     (: objVar) ) )
+               ((cdr L) N)                                     # Nr
+               ((= '("—") (cadr L))                            # Nr Text
+                  (get
+                     (db (: objVar2) (last (: objTyp)) S)
+                     (: objVar) ) )
+               ((<>                                            # Nr — Text
+                     (glue " " (cddr L))
+                     (get
+                        (if (meta (: objTyp) (: objVar) 'hook)
+                           (db (: objVar) (last (: objTyp)) (eval (: objHook)) N)
+                           (db (: objVar) (last (: objTyp)) N) )
+                        (: objVar2) ) )
+                  N ) ) ) ) ) )
 
 
 (class +ObjVal +obj)

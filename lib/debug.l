@@ -1,4 +1,4 @@
-# 04jun16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -38,7 +38,7 @@
 (de more ("M" "Fun")
    (let *Dbg NIL
       (if (pair "M")
-         ((default "Fun" print) (pop '"M"))
+         ((default "Fun" print) (++ "M"))
          (println (type "M"))
          (setq
             "Fun" (list '(X) (list 'pp 'X (lit "M")))
@@ -47,17 +47,17 @@
          (flush)
          (T (atom "M") (prinl))
          (T (line) T)
-         ("Fun" (pop '"M")) ) ) )
+         ("Fun" (++ "M")) ) ) )
 
 (de less (X)
    (if (atom X)
       X
       (cons
-         (less (pop 'X))
+         (less (++ X))
          (if (atom X)
             X
             (cons
-               (less (pop 'X))
+               (less (++ X))
                (and X '(..)) ) ) ) ) )
 
 (de what (S)
@@ -287,7 +287,7 @@
 
 (de dbg (Lst)
    (when (pair Lst)
-      (casq (pop 'Lst)
+      (casq (++ Lst)
          ((case casq state)
             (_dbg Lst)
             (for L (cdr Lst)
@@ -392,7 +392,7 @@
          (when (traced? "X")
             (let X (set "X" (cddr (cadr (getd "X"))))
                (and
-                  (== '@ (pop 'X))
+                  (== '@ (++ X))
                   (= 1 (length X))
                   (= 2 (length (car X)))
                   (== 'pass (caar X))
@@ -449,17 +449,17 @@
    (let (S NIL  *Dbg)
       (for (L (trail T) L)
          (if (pair (car L))
-            (push 'S (cons (pop 'L)))
+            (push 'S (cons (++ L)))
             (conc
                (car (default S (cons (cons))))
-               (cons (cons (pop 'L) (pop 'L))) ) )
+               (cons (cons (++ L) (++ L))) ) )
          (T (== '^ (car L)))
          (T
             (and
                (pair (car L))
                (== 'bt (caar L)) ) ) )
       (for L S
-         (let? X (pop 'L)
+         (let? X (++ L)
             (pretty
                (cons
                   (or
@@ -470,7 +470,7 @@
          (prinl)
          (while L
             (space 3)
-            (println (caar L) (less (cdr (pop 'L)))) )
+            (println (caar L) (less (cdr (++ L)))) )
          (T (and (not Flg) (line)) T) ) ) )
 
 # vi:et:ts=3:sw=3

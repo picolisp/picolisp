@@ -1,4 +1,4 @@
-# 15apr13abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### RC Flight Simulator for 64-bit PicoLisp ###
@@ -62,7 +62,7 @@
                      8 ) ) )
             (cddddr Lst) )
          '((0 . 8)) )
-      (put Obj (pop 'Lst)
+      (put Obj (++ Lst)
          (native "@" "malloc" 'N
             (+ `(* 8 12) (* 8 (length (cdr Lst)))) ) )   # (+ 2 CDDDR)
       'N                                                 # Return structure pointer
@@ -76,10 +76,10 @@
 (de MUL Args
    (let D 1.0
       (make
-         (link '*/ (pop 'Args) (pop 'Args))
+         (link '*/ (++ Args) (++ Args))
          (while Args
             (setq D (* D 1.0))
-            (link (pop 'Args)) )
+            (link (++ Args)) )
          (link D) ) ) )
 
 (de damp ("Var" Val)

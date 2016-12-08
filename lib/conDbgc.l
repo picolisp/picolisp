@@ -1,4 +1,4 @@
-# 13jan16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### Concurrent DB Garbage Collector ###
@@ -30,7 +30,7 @@
 
    (de markData (X)
       (while (pair X)
-         (markData (pop 'X)) )
+         (markData (++ X)) )
       (and (ext? X) (markExt X)) )
 
    (loop

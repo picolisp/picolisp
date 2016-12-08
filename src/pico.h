@@ -1,4 +1,4 @@
-/* 16mar16abu
+/* 24nov16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -555,6 +555,7 @@ any doGet(any);
 any doGetd(any);
 any doGetl(any);
 any doGlue(any);
+any doGroup(any);
 any doGt(any);
 any doGt0(any);
 any doHash(any);
@@ -572,6 +573,7 @@ any doIn(any);
 any doInc(any);
 any doIndex(any);
 any doInfo(any);
+any doInsert(any);
 any doIntern(any);
 any doIpid(any);
 any doIsa(any);
@@ -659,9 +661,11 @@ any doPatQ(any);
 any doPeek(any);
 any doPick(any);
 any doPipe(any);
+any doPlace(any);
 any doPoll(any);
 any doPool(any);
 any doPop(any);
+any doPopq(any);
 any doPort(any);
 any doPr(any);
 any doPreQ(any);
@@ -694,6 +698,7 @@ any doRassoc(any);
 any doRaw(any);
 any doRd(any);
 any doRead(any);
+any doRemove(any);
 any doRem(any);
 any doReplace(any);
 any doRest(any);

@@ -1,4 +1,4 @@
-# 29sep13abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # (select [var ..] cls [hook|T] [var val ..])
@@ -12,11 +12,11 @@
                   (and
                      (sym? (car Lst))
                      (= `(char "+") (char (car Lst))) ) )
-               (link (pop 'Lst)) ) )
-         Cls (pop 'Lst)
+               (link (++ Lst)) ) )
+         Cls (++ Lst)
          Hook (cond
-            ((ext? (car Lst)) (pop 'Lst))
-            ((=T (car Lst)) (pop 'Lst) *DB) ) )
+            ((ext? (car Lst)) (++ Lst))
+            ((=T (car Lst)) (++ Lst) *DB) ) )
       (default Lst
          (cons
             (or
@@ -40,12 +40,12 @@
                         (for (L Lst L)
                            (link
                               (make
-                                 (link (pop 'L) Cls)
+                                 (link (++ L) Cls)
                                  (and Hook (link Hook))
-                                 (link (if L (pop 'L) '(NIL . T))) ) ) ) ) )
+                                 (link (if L (++ L) '(NIL . T))) ) ) ) ) )
                   (link (list 'isa Cls '@@))
                   (while Lst
-                     (let (Var (pop 'Lst)  Val (if Lst (pop 'Lst) '(NIL . T)))
+                     (let (Var (++ Lst)  Val (if Lst (++ Lst) '(NIL . T)))
                         (link
                            (list
                               (cond
@@ -94,7 +94,7 @@
          (set!> Obj
             (any (revise (sym (val Obj)))) )
          (for X (getl Obj)
-            (_update (or (atom X) (pop 'X)) X) ) )
+            (_update (or (atom X) (++ X)) X) ) )
       Obj ) )
 
 (de _update (Val Var)

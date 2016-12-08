@@ -1,4 +1,4 @@
-# 27may16abu
+# 31jul16abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -385,24 +385,36 @@
       "Result = @1 = -@1;" ) )
 
 (asm and (Dst D Src S)
-   (genCode (Dst D Src S) (list 'and Dst Src) ((op.n Dst D) (op.n Src S))
-      "Result = @1 &= @2;" ) )
+   (if (or (= Dst "A.b[0]") (= Src "A.b[0]"))
+      (genCode (Dst D Src S) (list 'and Dst Src) ((op.b Dst D) (op.b Src S))
+         "Result = @1 &= @2;" )
+      (genCode (Dst D Src S) (list 'and Dst Src) ((op.n Dst D) (op.n Src S))
+         "Result = @1 &= @2;" ) ) )
 
 (asm or (Dst D Src S)
-   (genCode (Dst D Src S) (list 'or Dst Src) ((op.n Dst D) (op.n Src S))
-      "Result = @1 |= @2;" ) )
+   (if (or (= Dst "A.b[0]") (= Src "A.b[0]"))
+      (genCode (Dst D Src S) (list 'or Dst Src) ((op.b Dst D) (op.b Src S))
+         "Result = @1 |= @2;" )
+      (genCode (Dst D Src S) (list 'or Dst Src) ((op.n Dst D) (op.n Src S))
+         "Result = @1 |= @2;" ) ) )
 
 (asm xor (Dst D Src S)
-   (genCode (Dst D Src S) (list 'xor Dst Src) ((op.n Dst D) (op.n Src S))
-      "Result = @1 \^= @2;" ) )
+   (if (or (= Dst "A.b[0]") (= Src "A.b[0]"))
+      (genCode (Dst D Src S) (list 'xor Dst Src) ((op.b Dst D) (op.b Src S))
+         "Result = @1 \^= @2;" )
+      (genCode (Dst D Src S) (list 'xor Dst Src) ((op.n Dst D) (op.n Src S))
+         "Result = @1 \^= @2;" ) ) )
 
 (asm off (Dst D Src S)
    (genCode (Dst D Src S) (list 'off Dst (pack (cdr (chop Src)))) ((op.n Dst D) (op.n Src S))
       "Result = @1 &= @2;" ) )
 
 (asm test (Dst D Src S)
-   (genCode (Dst D Src S) (list 'test Dst Src) ((op.n Dst D) (op.n Src S))
-      "Result = @1 & @2;" ) )
+   (if (or (= Dst "A.b[0]") (= Src "A.b[0]"))
+      (genCode (Dst D Src S) (list 'test Dst Src) ((op.b Dst D) (op.b Src S))
+         "Result = @1 & @2;" )
+      (genCode (Dst D Src S) (list 'test Dst Src) ((op.n Dst D) (op.n Src S))
+         "Result = @1 & @2;" ) ) )
 
 (asm shl (Dst D Src S)
    (genCode (Dst D Src S) (list 'shl Dst Src) ((op.n Dst D) (op.n Src S))
@@ -1306,7 +1318,7 @@
             "         p[i].n = (uint64_t)(unsigned long)((uint8_t**)p)[i];"
             "}"
             NIL
-            "op Data[] = {" ) ) ) )
+            "op Data[] __attribute__((aligned(16))) = {" ) ) ) )
 
 (de prOpcode (I X)
    (prinl

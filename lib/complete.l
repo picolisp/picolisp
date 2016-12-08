@@ -1,12 +1,12 @@
-# 03apr12abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (if (opt)
    (let "Lst" (chop @)
       (if (= "-" (car "Lst"))
-         (let "Pre" (pop '"Lst")
+         (let "Pre" (++ "Lst")
             (when (member (car "Lst") '("\"" "'"))
-               (setq "Pre" (pop '"Lst")) )
+               (setq "Pre" (++ "Lst")) )
             (let "Str" (pack "Lst")
                (for "Sym" (all)
                   (and

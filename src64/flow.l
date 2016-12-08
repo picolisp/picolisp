@@ -1,4 +1,4 @@
-# 27may16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -532,9 +532,9 @@
 # (de sym . any) -> sym
 (code 'doDe 2)
    push X
-   ld X (E CDR)  # Args
-   ld E (X)  # Symbol in E
-   ld C (X CDR)  # Body in C
+   ld X E
+   ld E ((E CDR))  # Symbol in E
+   ld C ((X CDR) CDR)  # Body in C
    call needSymEX
    call redefineCE  # Redefine
    pop X
@@ -1333,8 +1333,8 @@
 # (with 'sym . prg) -> any
 (code 'doWith 2)
    push X
-   ld X (E CDR)  # Args
-   ld E (X)  # Eval first
+   ld X E
+   ld E ((E CDR))  # Eval first Arg
    eval
    cmp E Nil  # Non-NIL?
    if ne  # Yes
@@ -1350,7 +1350,7 @@
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
       ld (This) E  # Set new
-      ld X (X CDR)  # Run 'prg'
+      ld X ((X CDR) CDR)  # Run 'prg'
       prog X
       add S III  # Drop 'eswp' + link + 'This'
       pop (This)  # Restore value
@@ -1363,15 +1363,18 @@
 # (bind 'sym|lst . prg) -> any
 (code 'doBind 2)
    push X
-   ld X (E CDR)  # Args
-   ld E (X)  # Eval first
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval first
    eval
    num E  # Need sym|lst
    jnz argErrEX
-   ld X (X CDR)  # X on 'prg'
+   ld Y (Y CDR)  # Y on 'prg'
    cmp E Nil  # No bindings?
    if eq  # Yes
-      prog X  # Run 'prg'
+      prog Y  # Run 'prg'
+      pop Y
       pop X
       ret
    end
@@ -1384,13 +1387,14 @@
       link
       ld (EnvBind) L  # Close bind frame
       push 0  # Init env swap
-      prog X  # Run 'prg'
+      prog Y  # Run 'prg'
       add S I  # Drop env swap
       pop L  # Get link
       pop X  # Unbind symbol
       pop (X)  # Restore value
       pop L  # Restore link
       pop (EnvBind)  # Restore bind link
+      pop Y
       pop X
       ret
    end
@@ -1414,7 +1418,7 @@
    link
    ld (EnvBind) L  # Close bind frame
    push 0  # Init env swap
-   prog X  # Run 'prg'
+   prog Y  # Run 'prg'
    add S I  # Drop env swap
    pop L  # Get link
    do  # Unbind symbols
@@ -1424,6 +1428,7 @@
    until eq  # No
    pop L  # Restore link
    pop (EnvBind)  # Restore bind link
+   pop Y
    pop X
    ret
 
@@ -2697,10 +2702,10 @@
 (code 'doCo 2)
    catch
    push X
-   ld X (E CDR)  # Get tag
-   ld E (X)  # Eval 'sym'
+   ld X E
+   ld E ((E CDR))  # Eval 'sym' tag
    eval
-   atom (X CDR)  # 'prg'?
+   atom ((X CDR) CDR)  # 'prg'?
    if z  # Yes
       push Y
       push Z
@@ -2844,7 +2849,7 @@
       push E  # Save 'tag'
       push 0  # Mark 'stk' as active
       sub S "EnvMid-EnvCo"  # Space for 'env'
-      ld X (X CDR)
+      ld X ((X CDR) CDR)
       link
       push X  # Save 'prg'
       link

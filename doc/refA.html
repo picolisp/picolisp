@@ -26,7 +26,9 @@ href="refA.html#accept">accept</a></code>.
 <dd>Converts, in the first form, a variable <code>var</code> (a symbol or a cons
 pair) into <code>num</code> (actually an encoded pointer). A symbol will result
 in a negative number, and a cons pair in a positive number. The second form
-converts a pointer back into the original <code>var</code>.
+converts a pointer back into the original <code>var</code>. Note that this
+original <code>var</code> may be garbage collected if it is not referred from
+other data, giving unpredictable results.
 
 <pre><code>
 : (setq X (box 7))

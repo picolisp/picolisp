@@ -1,4 +1,4 @@
-# 10nov04abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *InND
@@ -85,10 +85,10 @@
    (let Siz (>> 1 (size Key))
       (make
          (while Lst
-            (let N (char (pop 'Lst))
+            (let N (char (++ Lst))
                (while (> Siz (size N))
                   (setq N (>> -16 N))
-                  (inc 'N (char (pop 'Lst))) )
+                  (inc 'N (char (++ Lst))) )
                (link (**Mod N 3 Key)) ) ) ) ) )
 
 # Decrypt a list of numbers

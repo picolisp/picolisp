@@ -1,4 +1,4 @@
-# 13jan16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -404,13 +404,13 @@
    (let
       ("Node" (cdr (root "Tree"))
          "Lst" (val "Node")
-         "Left" (pop '"Lst")
+         "Left" (++ "Lst")
          "Beg" (ubZval (copy "X1"))
          "End" (ubZval (copy "X2") T)
          "B" (car "Beg")
          "E" (car "End") )
       (recur ("Left" "Lst" "Beg" "End"  "X")
-         (while (setq "X" (pop '"Lst"))
+         (while (setq "X" (++ "Lst"))
             (cond
                ((> (car "X") "End")
                   (setq "Lst" (; "Left" 0 -1)  "Left" (; "Left" 0 1)) )

@@ -1,4 +1,4 @@
-# 13jan16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -277,11 +277,11 @@
       (quote
          (let (L Prg  H (up "Head"))
             (while L
-               (let (X (pop 'L)  A (car (pop 'H))  N 1)
+               (let (X (++ L)  A (car (++ H))  N 1)
                   (while (== '- (car L))
                      (inc 'N)
-                     (pop 'L)
-                     (pop 'H) )
+                     (++ L)
+                     (++ H) )
                   (tag 'td
                      (style Attr
                         (style
@@ -314,13 +314,13 @@
                            (let
                               (C
                                  (cond
-                                    ((pair X) (pop 'X))
-                                    ((= "." (pop 'L)) 'align) )
-                                 E (pop 'Lst) )
+                                    ((pair X) (++ X))
+                                    ((= "." (++ L)) 'align) )
+                                 E (++ Lst) )
                               (unless (== '- E)
                                  (when (== '- (car Lst))
                                     (let N 1
-                                       (for (P Lst (and P (== '- (pop 'P))))
+                                       (for (P Lst (and P (== '- (++ P))))
                                           (inc 'N) )
                                        (push 'N "colspan")
                                        (setq C (if C (list C N) N)) ) )
@@ -355,37 +355,45 @@
       (run "Prg") ) )
 
 # Layout
+(zero "LayX" "LayY")
+
 (de <layout> "Lst"
-   (let ("X" 0  "Y" 0)
-      (recur ("Lst" "Y")
-         (for "L" "Lst"
-            (let
-               ("Args" (mapcar eval (cddar "L"))
-                  "DX" (eval (caar "L"))
-                  "DY" (eval (cadar "L"))
-                  "Cls" (unless (sub? ":" (car "Args")) (pop '"Args"))
-                  "Style"
-                  (cons 'style
-                     (glue "; "
-                        (cons
-                           "position:absolute"
-                           (pack "top:" (abs "Y") (if (ge0 "Y") "px" "%"))
-                           (pack "left:" (abs "X") (if (ge0 "X") "px" "%"))
-                           (cond
-                              ((=0 "DX") "min-width:100%")
-                              ("DX"
-                                 (pack "width:" (abs @) (if (ge0 "DX") "px" "%")) ) )
-                           (cond
-                              ((=0 "DY") "min-height:100%")
-                              ("DY"
-                                 (pack "height:" (abs @ ) (if (ge0 "DY")"px" "%")) ) )
-                           "Args" ) ) ) )
-               (prog1
-                  (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
-                  (eval (cadr "L")) )
-               (let "X" (+ "X" "DX")
-                  (recurse (cddr "L") "Y") )
-               (inc '"Y" "DY") ) ) ) ) )
+   (let P (and (=T (car "Lst")) (++ "Lst"))
+      (recur ("Lst" "LayX")
+         (use "LayY"
+            (for "L" "Lst"
+               (let
+                  ("Args" (mapcar eval (cddar "L"))
+                     "DX" (eval (caar "L"))
+                     "DY" (eval (cadar "L"))
+                     "Cls" (unless (sub? ":" (car "Args")) (++ "Args"))
+                     "Style"
+                     (cons 'style
+                        (glue "; "
+                           (cons
+                              "position:absolute"
+                              (pack "top:" "LayY" (if P "%" "px"))
+                              (pack "left:" "LayX" (if P "%" "px"))
+                              (cond
+                                 ((=0 "DX") "min-width:100%")
+                                 ("DX" (pack "width:" "DX" (if P "%" "px"))) )
+                              (cond
+                                 ((=0 "DY") "min-height:100%")
+                                 ("DY" (pack "height:" "DY" (if P "%" "px"))) )
+                              "Args" ) ) ) )
+                  (prog1
+                     (if "Cls" (list "Cls" "Style") "Style")  # -> '@'
+                     (eval (cadr "L")) )
+                  (recurse (cddr "L") (+ "LayX" "DX"))
+                  (inc '"LayY" "DY") ) ) ) ) ) )
+
+(de <button> (Url Str)
+   (<div> "button"
+      (prin "<a href=\"" (sesId Url) "\"")
+      (and *Style (htStyle @))
+      (prin ">")
+      (<span> "button2" Str)
+      (prin "</a>") ) )
 
 # Menus
 (de urlMT (Url Menu Tab Id Str)
@@ -483,14 +491,14 @@
 
 ### DB Linkage ###
 (de mkUrl (Lst)
-   (pack (pop 'Lst) "?"
+   (pack (++ Lst) "?"
       (make
          (while Lst
             (and
                (sym? (car Lst))
                (= `(char '*) (char (car Lst)))
-               (link (pop 'Lst) "=") )
-            (link (ht:Fmt (pop 'Lst)))
+               (link (++ Lst) "=") )
+            (link (ht:Fmt (++ Lst)))
             (and Lst (link "&")) ) ) ) )
 
 (de <$> (Str Obj Msg Tab)

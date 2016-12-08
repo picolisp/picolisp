@@ -138,8 +138,10 @@ by a previous call). Practically, the first two arguments will be always passed
 as transient symbols, which will get the library handle and function pointer
 assigned as values to be cached and used in subsequent calls. The third argument
 <code>any</code> is a result specification, while all following arguments are
-the arguments to the native function. The functionality is described in detail
-in <a href="native.html">Native C Calls</a>.
+the arguments to the native function. If the result specification is
+<code>T</code>, the actual function call is skipped, so that only the handle and
+pointer are assigned. The functionality is described in detail in <a
+href="native.html">Native C Calls</a>.
 
 <p><a name="natResult">The result specification</a> may either be one of the
 atoms
@@ -153,6 +155,7 @@ atoms
    S     string   # String (UTF-8)
   -1.0   float    # Scaled fixpoint number
   +1.0   double   # Scaled fixpoint number
+   T              # Don't call, just assign handle and pointer
 </code></pre>
 
 <p>or nested lists of these atoms with size specifications to denote arrays and
@@ -261,6 +264,8 @@ href="refR.html#range">range</a></code>.
 -> (" " " " a b c)
 : (need 7 0)
 -> (0 0 0 0 0 0 0)
+: (need 5 (2 3) 1)
+-> (1 1 1 2 3)
 </code></pre>
 
 <dt><a name="new"><code>(new ['flg|num] ['typ ['any ..]]) -> obj</code></a>

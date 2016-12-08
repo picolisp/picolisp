@@ -1,4 +1,4 @@
-# 14mar15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Exit on error
@@ -6,9 +6,9 @@
    ~(as trail
       (for (L (trail T)  L)
          (if (pair (car L))
-            (println (pop 'L))
+            (println (++ L))
             (space 3)
-            (println (pop 'L) (pop 'L)) ) )
+            (println (++ L) (++ L)) ) )
       (println '=======) )
    (prinl *Pid " ! " (stamp) " [" *Adr " " (host *Adr) "] " *Agent)
    (show This)

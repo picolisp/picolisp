@@ -1,3 +1,323 @@
+05dec16
+   Stub for 'PIE = -no-pie' in Linux/x86_64 (enable in Debian Sid)
+      src64/Makefile
+
+04dec16
+   Example for 'need'
+      doc/refN.html
+
+02dec16
+   'T' result specification for 'native'
+      src64/main.l
+      doc/refN.html
+
+29nov16
+   Reference clarification for 'diff'
+      doc/refD.html
+
+25nov16
+   Minor fix, quote in 'delim?' not needed
+      lib/led.l
+
+24nov16
+   '++' function
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/glob.l
+      src/sym.c
+      src/tab.c
+      src/pico.h
+      mini/src/sym.c
+      mini/src/init.s
+      ersatz/fun.src
+      doc/ref.html
+      doc/ref_.html
+      doc/refP.html
+      test/src/sym.l
+      bin/pilIndent
+      games/chess.l
+      misc/trip.l
+      misc/rcsim.l
+      misc/calc.l
+      lib/xm.l
+      lib/xml.l
+      lib/conDbgc.l
+      lib/misc.l
+      mini/lib/misc.l
+      lib/app.l
+      lib/complete.l
+      lib/too.l
+      lib/form.l
+      lib/tex.l
+      lib/simul.l
+      lib/ps.l
+      lib/xmlrpc.l
+      lib/lint.l
+      lib/btree.l
+      lib/adm.l
+      lib/debug.l
+      mini/lib/debug.l
+      lib/json.l
+      lib/dbase.l
+      lib/http.l
+      lib/tinymce.l
+      lib/sq.l
+      lib/eled.l
+      lib/db32-64.l
+      lib/led.l
+      lib/rsa.l
+      lib/db.l
+      mini/lib/db.l
+      lib/scrape.l
+      lib/xhtml.l
+      lib/pilog.l
+      mini/lib/pilog.l
+      lib/svg.l
+      ersatz/lib.l
+      app/lib.l
+      lib.l
+      pilos/init/lib/misc.l
+      pilos/init/lib/dbg.l
+      pilos/init/lib/btree.l
+      pilos/init/lib/sq.l
+      pilos/init/lib/db.l
+      pilos/init/lib/pilog.l
+      pilos/init/lib.l
+   Incomplete error diagnoses in pil64 (X register)
+   'de', 'read', 'with', 'bind', 'co', 'on', 'off', 'onOff', 'zero' and 'one'
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/io.l
+
+23nov16
+   Surplus parenthesis
+      doc/tut.html
+
+16nov16
+   Added 'url5>' .. 'url9>'
+      lib/db.l
+
+06nov16
+   *Dbg info in GUI form (vi *Top)
+      lib/form.l
+
+04nov16
+   More examples for 'filter'
+      doc/refF.html
+
+03nov16
+   Terminate 'native' char arrays on null bytes
+      src64/main.l
+   Bug in 'native', needs 'consE_Y'
+      src64/main.l
+   Introduce 'consE_Y' to save E across garbage collection
+      {src64,pilos/src}/gc.l
+
+25oct16
+   Minor typo
+      doc/refG.html
+
+24oct16
+   'group' in Asm/C
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/glob.l
+      pilos/init/lib.l
+      src/pico.h
+      src/subr.c
+      src/tab.c
+      lib.l
+      test/lib.l
+      test/src/subr.l
+
+20oct16
+   'insert', 'remove' and 'place' in Asm/C
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/glob.l
+      pilos/init/lib.l
+      src/pico.h
+      src/subr.c
+      src/tab.c
+      lib.l
+      test/lib.l
+      test/src/subr.l
+
+17oct16
+   Check for '+relation' in 'dbfCheck'
+      lib/too.l
+   '+Obj2' GUI prefix class
+      lib/form.l
+
+11oct16
+   Several doc fixes by Rick Hanson
+      doc/ref.html
+
+06oct16
+   Note in 'lup' reference about empty tree
+      doc/refL.html
+
+03oct16
+   Minor tuning
+      app/item.l
+
+01oct16
+   Cleared-up description of 'sort'
+      doc/refS.html
+
+30sep16
+   Emacs lisp patches by Vasilij Schneidermann
+      lib/el/picolisp.el
+
+24sep16
+   Minor typo
+      doc/native.html
+
+13sep16
+   Remove 'zap' protection in pil64
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/glob.l
+
+10sep16
+   Add 'viewBox' to '<svg>'
+      lib/svg.l
+
+09sep16
+   Add '+Swap' link
+      doc/refR.html
+
+06sep16
+   Small optimizations (Mike Pechkin)
+      lib/db.l
+      mini/lib/db.l
+      pilos/init/lib/db.l
+   'repl' optional size parameters
+      lib/form.l
+
+05sep16
+   Viewport relative font size
+      lib/phone.css
+   Minor ref fix
+      doc/refF.html
+   'T' argument to '<layout>' for percentages
+      lib/xhtml.l
+
+04sep16
+   Mistype in '=0' ref
+      doc/ref_.html
+   Global '<layout>' state
+      lib/xhtml.l
+
+03sep16
+   Changed '<button>' syntax and style
+      lib/xhtml.l
+      lib.css
+      lib/phone.css
+   Handle '#{ .. }#' comments
+      bin/pilIndent
+
+02sep16
+   Minor generalization in "portable"
+      doc/faq.html
+
+29aug16
+   Greek localiztion (Anas Drak)
+      loc/gr
+      loc/GR.l
+      app/loc/gr
+      app/main.l
+
+26aug16
+   Bug in 'prin' of anonymous symbols
+      src/io.c
+   Minor cosmetics
+      lib/db.l
+
+18aug16
+   'flush' in 'repl'
+      lib/form.l
+
+16aug16
+   Include "@lib/boss.l" only as comment
+      app/main.l
+
+03aug16
+   Call native symlink() in 'blob+' if 64-bit
+      lib/db.l
+
+01aug16
+   Minor ref addition to 'detach'
+      doc/refD.html
+
+31jul16
+   Precise Auto-symbol check
+      {src64,pilos/src}/apply.l
+   Byte manipulating instructions in 'emu'
+      src64/arch/emu.l
+
+29jul16
+   Reload names config upon SIGHUP
+      src/httpGate.c
+      doc/httpGate.html
+
+28jul16
+   Make 'ubZval' non-destructive
+      lib/db.l
+   Note about 'adr' and garbage collection (DKordic)
+      doc/refA.html
+
+27jul16
+   Suppress columns in 'table' with (T . prg)
+      lib/svg.l
+      lib/ps.l
+   Align in 'heapAlloc' only for 'emu'
+      src64/main.l
+   Force data alignment in 'emu'
+      src64/arch/emu.l
+
+25jul16
+   Allow NIL elements in 'ubZval'
+      lib/db.l
+   Handle empty '*Dbs' in 'fixECnt'
+      lib/too.l
+
+23jul16
+   '<button>' function
+      lib/xhtml.l
+      lib/phone.css
+
+22jul16
+   Bug in arm64 'mul' instruction
+      src64/arch/arm64.l
+
+19jul16
+   Accept standard input in sslFile()
+      src/ssl.c
+
+17jul16
+   Set 'quit' reason to whole 'Prg' in 'assert' (DKordic)
+      lib.l
+      ersatz/lib.l
+      pilos/init/lib.l
+
+16jul16
+   Bug in 'text' (64-bit)
+      {src64,pilos/src}/sym.l
+      test/src/sym.l
+
+15jul16
+   Removed "/installpath/bin/" from man page
+      man/man1/picolisp.1
+
+12jul16
+   Add SVG links
+      lib/svg.l
+
+08jul16
+   Define "^D" and "^X" as 'fkey'
+      lib/led.l
+
+03jul16
+   'pool' ref example extension
+      doc/refP.html
+
 ####### 16.6 #######
 28jun16
    Keep in sync with PilBox

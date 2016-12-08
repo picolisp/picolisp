@@ -1,4 +1,4 @@
-# 02jun16abu
+# 22jul16abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -756,7 +756,7 @@
 # mul
 (asm mul (Src S)
    (comment 'mul Src)
-   (when (imm? (setq Src (src Src S imm16)))
+   (when (or (= "x19" Src) (imm? (setq Src (src Src S imm16))))
       (mov "x15" Src)
       (setq Src "x15") )
    (prinst "umulh" "x19" "x0" Src)

@@ -1,4 +1,4 @@
-# 03may16abu
+# 31jul16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -349,10 +349,13 @@
          pop (EnvCls)  # and 'cls'
          ret
       end
-      cmp A (A)  # Auto-symbol?
-      if eq  # Yes
-         call sharedLibC_FA  # Try dynamic load
-         jz undefinedCX
+      num A  # Var?
+      if z  # Yes
+         cmp A (A)  # Auto-symbol?
+         if eq  # Yes
+            call sharedLibC_FA  # Try dynamic load
+            jz undefinedCX
+         end
       end
       ld C A
    loop
@@ -705,10 +708,13 @@
          pop (EnvCls)  # and 'cls'
          ret
       end
-      cmp A (A)  # Auto-symbol?
-      if eq  # Yes
-         call sharedLibC_FA  # Try dynamic load
-         jz undefinedCX
+      num A  # Var?
+      if z  # Yes
+         cmp A (A)  # Auto-symbol?
+         if eq  # Yes
+            call sharedLibC_FA  # Try dynamic load
+            jz undefinedCX
+         end
       end
       ld C A
    loop

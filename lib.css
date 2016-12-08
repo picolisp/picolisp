@@ -1,4 +1,4 @@
-/* 18feb16abu
+/* 03sep16abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -301,4 +301,23 @@ a:hover {
    padding-top: 3px;
    border: 1px solid;
    background-color: white;
+}
+
+/* Buttons */
+.button {
+   width: 80%;
+   background-color: lightgrey;
+   border: 1px solid black;
+   border-radius: 3ex;
+   text-align: center;
+   display: table;
+   padding: 2ex;
+   margin: auto;
+}
+
+.button2 {
+   display: table-cell;
+   vertical-align: middle;
+   font-weight: bold;
+   font-size: larger;
 }

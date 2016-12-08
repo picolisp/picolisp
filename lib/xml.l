@@ -1,4 +1,4 @@
-# 25sep13abu
+# 24nov16abu
 # 21jan09 Tomas Hlavaty <kvietaag@seznam.cz>
 
 # Check or write header
@@ -26,13 +26,13 @@
       (_xml) ) )
 
 (de _xml_ (Lst)
-   (let Tag (pop 'Lst)
+   (let Tag (++ Lst)
       (when Nl
          (prinl)
          (when Pre
             (prin Pre) ) )
       (prin "<" Tag)
-      (for X (pop 'Lst)
+      (for X (++ Lst)
          (prin " " (car X) "=\"")
          (escXml (cdr X))
          (prin "\"") )
@@ -139,7 +139,7 @@
       (make
          (while L
             (ifn (match '("&" @X ";" @Z) L)
-               (link (pop 'L))
+               (link (++ L))
                (link
                   (cond
                      ((= @X '`(chop "quot")) "\"")
@@ -170,9 +170,9 @@
    (pack
       (make
          (recur (Lst)
-            (let Tag (pop 'Lst)
+            (let Tag (++ Lst)
                (link "<" Tag)
-               (for X (pop 'Lst)
+               (for X (++ Lst)
                   (link " " (car X) "=\"" (cdr X) "\"") )
                (ifn Lst
                   (link "/>")
@@ -201,18 +201,19 @@
 (de "xmlL" Lst
    (push '"Xml"
       (make
-         (link (pop 'Lst))
-         (let Att (make
-                     (while (and Lst (car Lst) (atom (car Lst)))
-                        (let K (pop 'Lst)
-                           (if (=T K)
-                              (for X (eval (pop 'Lst) 1)
-                                 (if (=T (car X))
-                                    (link (cons (cdr X) NIL))
-                                    (when (cdr X)
-                                       (link X) ) ) )
-                              (when (eval (pop 'Lst) 1)
-                                 (link (cons K @)) ) ) ) ) )
+         (link (++ Lst))
+         (let Att
+            (make
+               (while (and Lst (car Lst) (atom (car Lst)))
+                  (let K (++ Lst)
+                     (if (=T K)
+                        (for X (eval (++ Lst) 1)
+                           (if (=T (car X))
+                              (link (cons (cdr X) NIL))
+                              (when (cdr X)
+                                 (link X) ) ) )
+                        (when (eval (++ Lst) 1)
+                           (link (cons K @)) ) ) ) ) )
             (let "Xml" NIL
                (xrun Lst)
                (ifn "Xml"
@@ -222,23 +223,23 @@
                   (chain (flip "Xml")) ) ) ) ) ) )
 
 (de "xmlO" Lst
-   (let Tag (pop 'Lst)
+   (let Tag (++ Lst)
       (when "Nl"
          (prinl)
          (when "Pre"
             (prin "Pre") ) )
       (prin "<" Tag)
       (while (and Lst (car Lst) (atom (car Lst)))
-         (let K (pop 'Lst)
+         (let K (++ Lst)
             (if (=T K)
-               (for X (eval (pop 'Lst) 1)
+               (for X (eval (++ Lst) 1)
                   (if (=T (car X))
                      (prin " " (cdr X) "=\"\"")
                      (when (cdr X)
                         (prin " " (car X) "=\"")
                         (escXml (cdr X))
                         (prin "\"") ) ) )
-               (when (eval (pop 'Lst) 1)
+               (when (eval (++ Lst) 1)
                   (prin " " K "=\"")
                   (escXml @)
                   (prin "\"") ) ) ) )

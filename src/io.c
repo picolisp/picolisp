@@ -1,4 +1,4 @@
-/* 03jan16abu
+/* 26aug16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2393,7 +2393,12 @@ static void outSym(int c) {
    while (c = symByte(NULL));
 }
 
-void outName(any s) {outSym(symByte(name(s)));}
+void outName(any s) {
+   int c;
+
+   if (c = symByte(name(s)))
+      outSym(c);
+}
 
 void outNum(any x) {
    if (isNum(cdr(numCell(x)))) {

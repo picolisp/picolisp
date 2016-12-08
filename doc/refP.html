@@ -385,24 +385,34 @@ href="refD.html#*Dbs">*Dbs</a></code> and <code><a
 href="refJ.html#journal">journal</a></code>.
 
 <pre><code>
-: (pool "/dev/hda2")
--> T
-
 : *Dbs
 -> (1 2 2 4)
 : (pool "dbFile" *Dbs)
 -> T
-:
+
+# On the 64-bit version:
+abu:~/pico  ls -l dbFile*
+-rw-r--r-- 1 abu abu  256 Jul  3 08:30 dbFile@
+-rw-r--r-- 1 abu abu  256 Jul  3 08:30 dbFileA
+-rw-r--r-- 1 abu abu  256 Jul  3 08:30 dbFileB
+-rw-r--r-- 1 abu abu 1024 Jul  3 08:30 dbFileC
+
+# On the 32-bit version:
 abu:~/pico  ls -l dbFile*
 -rw-r--r-- 1 abu abu 256 2007-06-11 07:57 dbFile1
 -rw-r--r-- 1 abu abu  13 2007-06-11 07:57 dbFile2
 -rw-r--r-- 1 abu abu  13 2007-06-11 07:57 dbFile3
 -rw-r--r-- 1 abu abu  13 2007-06-11 07:57 dbFile4
+
+# DB directly on a device
+: (pool "/dev/hda2")
+-> T
 </code></pre>
 
 <dt><a name="pop"><code>(pop 'var) -> any</code></a>
 <dd>Pops the first element (CAR) from the stack in <code>var</code>. See also
 <code><a href="refP.html#push">push</a></code>, <code><a
+href="ref_.html#++">++</a></code>, <code><a
 href="refQ.html#queue">queue</a></code>, <code><a
 href="refC.html#cut">cut</a></code>, <code><a
 href="refD.html#del">del</a></code> and <code><a

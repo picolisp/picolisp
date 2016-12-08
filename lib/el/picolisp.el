@@ -147,7 +147,7 @@
 
   ;; This is just to avoid tabsize-variations fuck-up.
   (make-local-variable 'indent-tabs-mode)
-  (setq indent-tabs-mode)
+  (setq indent-tabs-mode nil)
 
   (setq dabbrev-case-fold-search t)
   (setq dabbrev-case-replace nil)
@@ -198,7 +198,7 @@ All commands in `lisp-mode-shared-map' are inherited by this map." )
 
 
 ;;;###autoload
-(defun picolisp-mode ()
+(define-derived-mode picolisp-mode prog-mode "PicoLisp"
   "Major mode for editing Picolisp code.
 Editing commands are similar to those of `lisp-mode'.
 
@@ -208,14 +208,8 @@ Blank lines separate paragraphs.  Semicolons start comments.
 \\{picolisp-mode-map}
 Entry to this mode calls the value of `picolisp-mode-hook'
 if that value is non-nil."
-  (interactive)
   (remove-text-properties (point-min) (point-max) '(display ""))
-  (kill-all-local-variables)
-  (use-local-map picolisp-mode-map)
-  (setq major-mode 'picolisp-mode)
-  (setq mode-name "Picolisp")
   (picolisp-mode-variables)
-  (run-mode-hooks 'picolisp-mode-hook)
   (defun paredit-delete-leading-whitespace ()
     (picolisp-delete-leading-whitespace) ) )
 
@@ -751,11 +745,8 @@ The main differences are:
 
 
 ;; tsm-mode
-(require 'tsm)
-
-(ignore-errors
- (when tsm-lock
-   (font-lock-add-keywords 'picolisp-mode tsm-lock)
-   (font-lock-add-keywords 'inferior-picolisp-mode tsm-lock) ) ) 
+(when (and (require 'tsm nil t) tsm-lock)
+  (font-lock-add-keywords 'picolisp-mode tsm-lock)
+  (font-lock-add-keywords 'inferior-picolisp-mode tsm-lock) )
 
 (provide 'picolisp)

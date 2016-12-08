@@ -1,4 +1,4 @@
-# 16sep15abu
+# 24oct16abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -151,31 +151,8 @@
    (test NIL (in F (rd))) )
 
 
-### insert ###
-(test '(a b 777 c d e) (insert 3 '(a b c d e) 777))
-(test (777 a b c d e) (insert 1 '(a b c d e) 777))
-(test '(a b c d e 777) (insert 9 '(a b c d e) 777))
-
-
-### remove ###
-(test '(a b d e) (remove 3 '(a b c d e)))
-(test '(b c d e) (remove 1 '(a b c d e)))
-(test '(a b c d e) (remove 9 '(a b c d e)))
-
-
-### place ###
-(test '(a b 777 d e) (place 3 '(a b c d e) 777))
-(test (777 b c d e) (place 1 '(a b c d e) 777))
-(test '(a b c d e 777) (place 9 '(a b c d e) 777))
-
-
 ### uniq ###
 (test (2 4 6 1 3 5) (uniq (2 4 6 1 2 3 4 5 6 1 3 5)))
-
-
-### group ###
-(test '((1 a b c) (2 d e f))
-   (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f))) )
 
 
 ### qsym ###

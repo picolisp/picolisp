@@ -1,4 +1,4 @@
-/* 13jan16abu
+/* 24oct16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -643,6 +643,71 @@ any doReplace(any x) {
       y = cdr(y) = cons(x, Nil);
    }
    cdr(y) = data(c1);
+   drop(c1);
+   return data(c2);
+}
+
+// (insert 'cnt 'lst 'any) -> lst
+any doInsert(any x) {
+   long n;
+   any y;
+   cell c1, c2;
+
+   n = evCnt(x, cdr(x)),  x = cddr(x);
+   Push(c1, EVAL(car(x))),  x = cdr(x);
+   if (!isCell(data(c1)) || --n <= 0) {
+      x = cons(EVAL(car(x)), data(c1));
+      drop(c1);
+      return x;
+   }
+   Push(c2, y = cons(car(data(c1)), Nil));
+   while (isCell(data(c1) = cdr(data(c1))) && --n)
+      y = cdr(y) = cons(car(data(c1)), Nil);
+   cdr(y) = cons(EVAL(car(x)), data(c1));
+   drop(c1);
+   return data(c2);
+}
+
+// (remove 'cnt 'lst) -> lst
+any doRemove(any x) {
+   long n;
+   any y;
+   cell c1, c2;
+
+   n = evCnt(x, cdr(x)),  x = cddr(x);
+   if (!isCell(data(c1) = EVAL(car(x))) || --n < 0)
+      return data(c1);
+   if (!n)
+      return cdr(data(c1));
+   Save(c1);
+   Push(c2, y = cons(car(data(c1)), Nil));
+   while (isCell(data(c1) = cdr(data(c1))) && --n)
+      y = cdr(y) = cons(car(data(c1)), Nil);
+   cdr(y) = cdr(data(c1));
+   drop(c1);
+   return data(c2);
+}
+
+// (place 'cnt 'lst 'any) -> lst
+any doPlace(any x) {
+   long n;
+   any y;
+   cell c1, c2;
+
+   n = evCnt(x, cdr(x)),  x = cddr(x);
+   data(c1) = EVAL(car(x)),  x = cdr(x);
+   if (!isCell(data(c1)))
+      return EVAL(car(x));
+   Save(c1);
+   if (--n <= 0) {
+      x = cons(EVAL(car(x)), cdr(data(c1)));
+      drop(c1);
+      return x;
+   }
+   Push(c2, y = cons(car(data(c1)), Nil));
+   while (isCell(data(c1) = cdr(data(c1))) && --n)
+      y = cdr(y) = cons(car(data(c1)), Nil);
+   cdr(y) = cons(EVAL(car(x)), cdr(data(c1)));
    drop(c1);
    return data(c2);
 }
@@ -1652,6 +1717,40 @@ static bool cmp(any ex, any foo, cell c[2]) {
    if (isNil(foo))
       return compare(car(data(c[0])), car(data(c[1]))) < 0;
    return !isNil(apply(ex, foo, YES, 2, c));
+}
+
+// (group 'lst) -> lst
+any doGroup(any x) {
+   any y, z;
+   cell c1, c2;
+
+   x = cdr(x);
+   if (!isCell(x = EVAL(car(x))))
+      return Nil;
+   Push(c1, x);
+   Push(c2, y = cons(cdar(x), Nil));
+   data(c2) = cons(cons(caar(x), cons(y,y)), Nil);
+   while (isCell(x = cdr(x))) {
+      y = cons(cdar(x), Nil);
+      for (z = data(c2);;) {
+         if (equal(caar(z), caar(x))) {
+            z = cdar(z),  car(z) = cdar(z) = y;
+            break;
+         }
+         if (!isCell(cdr(z))) {
+            cdr(z) = y;
+            cdr(z) = cons(cons(caar(x), cons(y,y)), Nil);
+            break;
+         }
+         z = cdr(z);
+      }
+   }
+   x = data(c2);
+   do
+      cdar(x) = cddar(x);
+   while (isCell(x = cdr(x)));
+   drop(c1);
+   return data(c2);
 }
 
 // (sort 'lst ['fun]) -> lst

@@ -1,4 +1,4 @@
-/* 08dec13abu
+/* 05sep16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -11,15 +11,11 @@
 .rel100 {width: 100%}
 
 body {
-   font-size: larger;
+   font-size: 3.0vw;
 }
 
 caption {
    margin: 0;
-}
-
-#expires {
-   font-size: smaller;
 }
 
 /* Form header */

@@ -1,4 +1,4 @@
-# 25may11abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (load "@lib/simul.l")
@@ -53,7 +53,7 @@
       '((Pop) (lt0 (dec 'Gen)))  # Condition
       '((X Y)  # Recombination
          (make
-            (while (prog (link (pop 'X)) X)
+            (while (prog (link (++ X)) X)
                (when (member (car X) (cdr Y))
                   (setq Y @)
                   (xchg 'X 'Y) ) ) ) )
@@ -66,7 +66,7 @@
                   (nth L (inc N2)) )
                L ) ) )
       '((L)  # Selection
-         (let A (pop 'L)
+         (let A (++ L)
             (-
                (sum
                   '((X) (get A (setq A X)))

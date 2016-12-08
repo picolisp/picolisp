@@ -1,3 +1,14 @@
+* 08dec16 picoLisp-16.12
+   'T' result specification for 'native'
+   '++' function
+   'insert', 'remove', 'place' and 'group' in Asm/C
+   '+Obj2' GUI prefix class
+   Removed 'zap' protection in pil64
+   Bug in 'prin' of anonymous symbols
+   '<button>' function
+   Bug in arm64 'mul' instruction
+   Bug in 'text' (64-bit)
+
 * 29jun16 picoLisp-16.6
    Bug in 'date'/'time' (64-bit)
    Bug in 'doShift' ('>>')

@@ -1,4 +1,4 @@
-# 16sep15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -130,6 +130,8 @@
 (test "aXYZz" (text "a@3z" 1 2 '(X Y Z)))
 (test "a@bc.de" (text "a@@bc.@1" "de"))
 (test "10.11.12" (text "@A.@B.@C" 1 2 3 4 5 6 7 8 9 10 11 12))
+(test "1 2 3 4 5 6 7 8 9 10 11 12"
+   (text "@1 @2 @3 @4 @5 @6 @7 @8 @9 @A @B @C" 1 2 3 4 5 6 7 8 9 10 11 12) )
 
 
 ### pre? ###
@@ -217,16 +219,17 @@
    (test B 2) )
 
 
-### push push1 pop cut ###
+### push push1 pop ++ cut ###
 (let L NIL
-   (test 1 (push 'L 3 2 1))
-   (test L (1 2 3))
+   (test 1 (push 'L 4 3 2 1))
+   (test L (1 2 3 4))
    (test 0 (push1 'L 0))
    (test 1 (push1 'L 1))
-   (test L (0 1 2 3))
+   (test L (0 1 2 3 4))
    (test 0 (pop 'L))
-   (test (1 2) (cut 2 'L))
-   (test (3) L) )
+   (test 1 (++ L))
+   (test (2 3) (cut 2 'L))
+   (test (4) L) )
 
 ### push1q ###
 (let L NIL

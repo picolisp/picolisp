@@ -1,4 +1,4 @@
-# 25sep13abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Check or write header
@@ -13,10 +13,10 @@
 # Generate/Parse XML data
 (de xml (Lst N)
    (if Lst
-      (let Tag (pop 'Lst)
+      (let Tag (++ Lst)
          (space (default N 0))
          (prin "<" Tag)
-         (for X (pop 'Lst)
+         (for X (++ Lst)
             (prin " " (car X) "=\"")
             (escXml (cdr X))
             (prin "\"") )
@@ -76,7 +76,7 @@
       (make
          (while L
             (ifn (match '("&" @X ";" @Z) L)
-               (link (pop 'L))
+               (link (++ L))
                (link
                   (cond
                      ((= @X '`(chop "quot")) "\"")

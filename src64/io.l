@@ -1,4 +1,4 @@
-# 27may16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2734,15 +2734,17 @@
       call readC_E  # Read item
    else
       push X
-      ld X (E CDR)  # Args
-      ld E (X)  # Eval 'sym1'
+      push Y
+      ld X E
+      ld Y (E CDR)  # Args
+      ld E (Y)  # Eval 'sym1'
       eval
       sym E  # Need symbol
       jz symErrEX
       link
       push E  # <L I> Safe
       link
-      ld E ((X CDR))  # Eval 'sym2'
+      ld E ((Y CDR))  # Eval 'sym2'
       eval
       sym E  # Need symbol
       jz symErrEX
@@ -2753,6 +2755,7 @@
       null E  # Any?
       ldz E Nil  # No
       drop
+      pop Y
       pop X
    end
    cmp (Chr) 10  # Hit linefeed?

@@ -1,4 +1,4 @@
-# 27may16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1239,14 +1239,6 @@
    if nz  # Yes
       call dbZapE  # Mark as "deleted"
    else
-      cmp (EnvIntern) pico  # Inside 'pico'?
-      if eq  # Yes
-         cmp E Nil  # Between 'NIL' and '*Dbg'?
-         if ge
-            cmp E Dbg
-            jle protErrEX  # Yes
-         end
-      end
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
@@ -1483,7 +1475,7 @@
          jeq 10  # Yes
          sub B (char "0")  # >= "1"?
          if gt  # Yes
-            cmp B 8  # > 8?
+            cmp B 9  # > 9?
             if gt
                sub B 7  # Adjust for letter
             end
@@ -1776,80 +1768,60 @@
 
 # (on var ..) -> T
 (code 'doOn 2)
-   push X
-   ld X (E CDR)
+   ld A (E CDR)
    do
-      ld E (X)  # Get next arg
-      call needVarEX  # Need variable
-      ld (E) TSym  # Set to 'T'
-      ld X (X CDR)  # More?
-      atom X
+      ld ((A)) TSym  # Set next arg to 'T'
+      ld A (A CDR)  # More?
+      atom A
    until nz  # No
    ld E TSym
-   pop X
    ret
 
 # (off var ..) -> NIL
 (code 'doOff 2)
-   push X
-   ld X (E CDR)
+   ld A (E CDR)
    do
-      ld E (X)  # Get next arg
-      call needVarEX  # Need variable
-      ld (E) Nil  # Set to 'NIL'
-      ld X (X CDR)  # More?
-      atom X
+      ld ((A)) Nil  # Set next arg to 'Nil'
+      ld A (A CDR)  # More?
+      atom A
    until nz  # No
    ld E Nil
-   pop X
    ret
 
 # (onOff var ..) -> flg
 (code 'doOnOff 2)
-   push X
-   ld X (E CDR)
+   ld A (E CDR)
    do
-      ld E (X)  # Get next arg
-      call needVarEX  # Need variable
-      cmp (E) Nil  # Value NIL?
-      ld A TSym  # Negate
-      ldnz A Nil
-      ld (E) A  # Set new value
-      ld X (X CDR)  # More?
-      atom X
+      ld C (A)  # Get next arg
+      cmp (C) Nil  # Value NIL?
+      ld E TSym  # Negate
+      ldnz E Nil
+      ld (C) E  # Set new value
+      ld A (A CDR)  # More?
+      atom A
    until nz  # No
-   ld E A  # Return last
-   pop X
-   ret
+   ret  # Return last
 
 # (zero var ..) -> 0
 (code 'doZero 2)
-   push X
-   ld X (E CDR)
+   ld A (E CDR)
    do
-      ld E (X)  # Get next arg
-      call needVarEX  # Need variable
-      ld (E) ZERO  # Set to '0'
-      ld X (X CDR)  # More?
-      atom X
+      ld ((A)) ZERO  # Set next arg to '0'
+      ld A (A CDR)  # More?
+      atom A
    until nz  # No
    ld E ZERO
-   pop X
    ret
 
 # (one var ..) -> 1
 (code 'doOne 2)
-   push X
-   ld X (E CDR)
+   ld A (E CDR)
    do
-      ld E (X)  # Get next arg
-      call needVarEX  # Need variable
-      ld (E) ONE  # Set to '1'
-      ld X (X CDR)  # More?
-      atom X
+      ld ((A)) ONE  # Set next arg to '1'
+      ld A (A CDR)  # More?
+      atom A
    until nz  # No
    ld E ONE
-   pop X
    ret
 
 # (default sym 'any ..) -> any
@@ -2030,6 +2002,17 @@
       ld E (E)  # Return CAR
    end
    pop X
+   ret
+
+# (++ var) -> any
+(code 'doPopq 2)
+   ld A ((E CDR))  # 'var' in A
+   ld E (A)  # Get value
+   atom E  # List?
+   if z  # Yes
+      ld (A) (E CDR)  # Set to CDR
+      ld E (E)  # Return CAR
+   end
    ret
 
 # (cut 'cnt 'var) -> lst

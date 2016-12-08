@@ -1,4 +1,4 @@
-/* 13apr16abu
+/* 19jul16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -82,9 +82,12 @@ static bool sslFile(SSL *ssl, char *file) {
    int fd, n;
    char buf[BUFSIZ];
 
-   if (file[0] == '-')
-      return SSL_write(ssl, file+1, strlen(file)-1) >= 0;
-   if ((fd = open(file, O_RDONLY)) < 0)
+   if (file[0] == '-') {
+      if (file[1] != '\0')
+         return SSL_write(ssl, file+1, strlen(file)-1) >= 0;
+      fd = STDIN_FILENO;
+   }
+   else if ((fd = open(file, O_RDONLY)) < 0)
       return NO;
    while ((n = read(fd, buf, sizeof(buf))) > 0)
       if (SSL_write(ssl, buf, n) < 0) {

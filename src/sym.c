@@ -1,4 +1,4 @@
-/* 26jan15abu
+/* 24nov16abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -736,6 +736,19 @@ any doPop(any ex) {
    CheckVar(ex,x);
    if (isSym(x))
       Touch(ex,x);
+   if (!isCell(y = val(x)))
+      return y;
+   val(x) = cdr(y);
+   return car(y);
+}
+
+// (++ var) -> any
+any doPopq(any ex) {
+   any x, y;
+
+   x = cadr(ex);
+   NeedVar(ex,x);
+   CheckVar(ex,x);
    if (!isCell(y = val(x)))
       return y;
    val(x) = cdr(y);

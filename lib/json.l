@@ -1,4 +1,4 @@
-# 26apr15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (de checkJson (X Item)
@@ -8,7 +8,7 @@
 (de parseJson (Str Arr)
    (let L (str Str "_")
       (recur ()
-         (case (pop 'L)
+         (case (++ L)
             ("{"
                (make
                   (for (X (recurse) (not (= "}" X)) (recurse))
@@ -28,7 +28,7 @@
                   (cond
                      ((pair X) (pack X))
                      ((and (= "-" X) (format (car L)))
-                        (- (pop 'L)) )
+                        (- (++ L)) )
                      (T X) ) ) ) ) ) ) )
 
 (de readJson (Arr)

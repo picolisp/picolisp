@@ -1,4 +1,4 @@
-# 22may16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -16,7 +16,7 @@
             (conc
                (make
                   (when (lt0 (link Key))
-                     (link (+ (eval (pop 'Prg) 1))) ) )
+                     (link (+ (eval (++ Prg) 1))) ) )
                (ifn (sym? (car Prg))
                   Prg
                   (cons
@@ -26,7 +26,7 @@
                               (make
                                  (while (atom (car Prg))
                                     (link
-                                       (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) ) )
+                                       (cons (++ Prg) (eval (++ Prg) 1)) ) ) ) )
                            Prg ) ) ) ) ) ) )
       (NIL (quit "Key conflict" Key)) ) )
 
@@ -43,7 +43,7 @@
    (run (cdr recurse)) )
 
 (de curry "Z"
-   (let ("X" (pop '"Z")  "Y" (pop '"Z")  "P" (filter pat? "X"))
+   (let ("X" (++ "Z")  "Y" (++ "Z")  "P" (filter pat? "X"))
       (if2 "P" (diff "X" "P")
          (list "Y" (cons 'job (lit (env @)) (fill "Z" "P")))
          (cons "Y" (fill "Z" "P"))
@@ -294,29 +294,29 @@
    (setq N (abs (space (or N 0))))
    (while (and (pair X) (== 'quote (car X)))
       (prin "'")
-      (pop 'X) )
+      (++ X) )
    (cond
       ((atom X) (print X))
       ((memq (car X) '(de dm))
          (_pretty
-            (spPrt (pop 'X))
-            (spPrt (pop 'X))
+            (spPrt (++ X))
+            (spPrt (++ X))
             (prtty1 X N Z) ) )
       ((memq (car X) '(let let?))
          (_pretty
             (cond
                ((atom (car X))
-                  (spPrt (pop 'X))
-                  (prtty? (pop 'X) N) )
+                  (spPrt (++ X))
+                  (prtty? (++ X) N) )
                ((>= 12 (size (car X)))
                   (prin " (")
-                  (let Z (pop 'X)
+                  (let Z (++ X)
                      (prtty2 Z NIL Z) )
                   (prin ")") )
                (T
                   (nlPrt N)
                   (prin "(")
-                  (let Z (pop 'X)
+                  (let Z (++ X)
                      (prtty2 Z (+ N 3) Z) )
                   (prin " )") ) )
             (prtty1 X N Z) ) )
@@ -324,19 +324,19 @@
          (_pretty
             (cond
                ((or (atom (car X)) (atom (cdar X)))
-                  (spPrt (pop 'X))
-                  (prtty? (pop 'X) N) )
+                  (spPrt (++ X))
+                  (prtty? (++ X) N) )
                ((>= 12 (size (car X)))
-                  (spPrt (pop 'X)) )
+                  (spPrt (++ X)) )
                (T
                   (nlPrt N)
-                  (prtty0 (pop 'X) (+ 3 N)) ) )
+                  (prtty0 (++ X) (+ 3 N)) ) )
             (prtty1 X N Z) ) )
       ((== 'if2 (car X))
          (_pretty
             (when (>= 12 (size (head 2 X)))
-               (spPrt (pop 'X))
-               (spPrt (pop 'X)) )
+               (spPrt (++ X))
+               (spPrt (++ X)) )
             (prtty1 X N Z) ) )
       ((memq (car X) '(while until do state finally co))
          (prtty3 X N) )
@@ -345,13 +345,13 @@
             (print X)
             (prin "(")
             (let Z X
-               (printsp (pop 'X))
+               (printsp (++ X))
                (prtty2 X NIL Z) )
             (prin ")") ) )
       ((memq (car X) '(=: use recur tab new))
          (_pretty
             (space)
-            (print (pop 'X))
+            (print (++ X))
             (prtty1 X N Z) ) )
       ((memq (car X) '(set setq default))
          (_pretty
@@ -359,8 +359,8 @@
                (prog
                   (nlPrt N)
                   (prtty2 X N Z) )
-               (spPrt (pop 'X))
-               (nlPrt1 (pop 'X) N) ) ) )
+               (spPrt (++ X))
+               (nlPrt1 (++ X) N) ) ) )
       ((memq (car X) '(T NIL ! if ifn when unless case casq with catch push bind job in out))
          (prtty3 X N) )
       (T (prtty0 X N)) ) )
@@ -368,14 +368,14 @@
 (de _pretty "Prg"
    (prin "(")
    (let Z X
-      (print (pop 'X))
+      (print (++ X))
       (run "Prg") )
    (prin " )") )
 
 (de prtty0 (X N)
    (prin "(")
    (let Z X
-      (pretty (pop 'X) (- -3 N))
+      (pretty (++ X) (- -3 N))
       (prtty1 X N Z) )
    (prin " )") )
 
@@ -384,18 +384,18 @@
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
-      (nlPrt1 (pop 'X) N) ) )
+      (nlPrt1 (++ X) N) ) )
 
 (de prtty2 (X N Z)
    (loop
-      (print (pop 'X))
+      (print (++ X))
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
       (if N
-         (prtty? (pop 'X) N)
+         (prtty? (++ X) N)
          (space)
-         (print (pop 'X)) )
+         (print (++ X)) )
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
@@ -406,9 +406,9 @@
 (de prtty3 (X N)
    (prin "(")
    (let Z X
-      (print (pop 'X))
+      (print (++ X))
       (when (or (atom (car X)) (>= 12 (size (car X))))
-         (spPrt (pop 'X)) )
+         (spPrt (++ X)) )
       (when X
          (prtty1 X N Z)
          (space) ) )
@@ -472,10 +472,10 @@
             (loop
                (T (atom X) (println X))
                (if (atom (car X))
-                  (println '+-- (pop 'X))
+                  (println '+-- (++ X))
                   (print '+---)
                   (view
-                     (pop 'X)
+                     (++ X)
                      (append Y (cons (if X "|   " "    "))) ) )
                (NIL X)
                (mapc prin Y)
@@ -486,10 +486,10 @@
 ### Assertions ###
 (de assert Prg
    (when *Dbg
-      (cons
-         (list 'unless
-            (if (cdr Prg) (cons 'and Prg) (car Prg))
-            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+      (let A (if (cdr Prg) (cons 'and Prg) (car Prg))
+         (cons
+            (list 'unless A
+               (list 'quit "'assert' failed" (lit A)) ) ) ) ) )
 
 ############ lib/misc.l ############
 
@@ -561,15 +561,15 @@
       (make
          (while Lst
             (if (>= (length (car Lst)) Max)
-               (link (pop 'Lst) "^J")
+               (link (++ Lst) "^J")
                (chain
                   (make
-                     (link (pop 'Lst))
+                     (link (++ Lst))
                      (loop
                         (NIL Lst)
                         (T (>= (+ (length (car Lst)) (sum length (made))) Max)
                            (link "^J") )
-                        (link " " (pop 'Lst)) ) ) ) ) ) ) ) )
+                        (link " " (++ Lst)) ) ) ) ) ) ) ) )
 
 ### Number ###
 (de pad (N Val)
@@ -595,7 +595,7 @@
                (push 'L (& 1 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq N (| (format C) (>> -1 N))) )
             (if S (- N) N) ) ) ) )
@@ -610,7 +610,7 @@
                (push 'L (& 7 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq N (| (format C) (>> -3 N))) )
             (if S (- N) N) ) ) ) )
@@ -625,7 +625,7 @@
                (push 'L (hex1 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
@@ -688,10 +688,10 @@
       (make
          (for (L (chop S) L)
             (ifn (sub? (car L) " -")
-               (link (pop 'L))
+               (link (++ L))
                (let F NIL
                   (loop
-                     (and (= '- (pop 'L)) (on F))
+                     (and (= '- (++ L)) (on F))
                      (NIL L)
                      (NIL (sub? (car L) " -")
                         (link (if F '- " ")) ) ) ) ) ) ) )
@@ -896,7 +896,7 @@
          (for ((N . L) (get S T) L)
             (prin N " (be ")
             (print S)
-            (for X (pop 'L)
+            (for X (++ L)
                (space)
                (print X) )
             (prinl ")")
@@ -913,8 +913,8 @@
       (while (and "CL" (pat? (car "CL")))
          (push '"Env"
             (cons
-               (cons 0 (pop '"CL"))
-               (cons 1 (eval (pop '"CL"))) ) ) )
+               (cons 0 (++ "CL"))
+               (cons 1 (eval (++ "CL"))) ) ) )
       (cons
          (cons
             (conc (list 1 (0) NIL "CL" NIL) "Env") ) ) ) )
@@ -951,7 +951,7 @@
    (let "L"
       (make
          (while (nor (pat? (car "CL")) (lst? (car "CL")))
-            (link (pop '"CL")) ) )
+            (link (++ "CL")) ) )
       (query (goal "CL") "L") ) )
 
 ### Basic Rules ###
@@ -1241,10 +1241,10 @@
 # Generate/Parse XML data
 (de xml (Lst N)
    (if Lst
-      (let Tag (pop 'Lst)
+      (let Tag (++ Lst)
          (space (default N 0))
          (prin "<" Tag)
-         (for X (pop 'Lst)
+         (for X (++ Lst)
             (prin " " (car X) "=\"")
             (escXml (cdr X))
             (prin "\"") )
@@ -1304,7 +1304,7 @@
       (make
          (while L
             (ifn (match '("&" @X ";" @Z) L)
-               (link (pop 'L))
+               (link (++ L))
                (link
                   (cond
                      ((= @X '`(chop "quot")) "\"")
@@ -1470,7 +1470,7 @@
 (de more ("M" "Fun")
    (let *Dbg NIL
       (if (pair "M")
-         ((default "Fun" print) (pop '"M"))
+         ((default "Fun" print) (++ "M"))
          (println (type "M"))
          (setq
             "Fun" (list '(X) (list 'pp 'X (lit "M")))
@@ -1479,7 +1479,7 @@
          (flush)
          (T (atom "M") (prinl))
          (T (line) T)
-         ("Fun" (pop '"M")) ) ) )
+         ("Fun" (++ "M")) ) ) )
 
 (de what (S)
    (let *Dbg NIL
@@ -1611,7 +1611,7 @@
 
 (de dbg (Lst)
    (when (pair Lst)
-      (casq (pop 'Lst)
+      (casq (++ Lst)
          ((case casq state)
             (_dbg Lst)
             (for L (cdr Lst)
@@ -1716,7 +1716,7 @@
          (when (traced? "X")
             (let X (set "X" (cddr (cadr (getd "X"))))
                (and
-                  (== '@ (pop 'X))
+                  (== '@ (++ X))
                   (= 1 (length X))
                   (= 2 (length (car X)))
                   (== 'pass (caar X))
@@ -1823,10 +1823,10 @@
                (let "Y" (cddr "X")
                   (use "*L"
                      (while (num? (car "Y"))
-                        (pop '"Y") )
+                        (++ "Y") )
                      (while (and (car "Y") (sym? @))
-                        (lintVar (pop '"Y"))
-                        (pop '"Y") )
+                        (lintVar (++ "Y"))
+                        (++ "Y") )
                      (mapc lint1 "Y") ) ) )
             (macro
                (lint2 (cdr "X")) )
@@ -1911,10 +1911,10 @@
                         (mapc lint1 (cdr "X"))
                         (when (local? (car "X"))
                            (lint2 (val (car "X"))) )
-                        (let "Y" (car (getd (pop '"X")))
+                        (let "Y" (car (getd (++ "X")))
                            (while (and (pair "X") (pair "Y"))
-                              (lint1 (pop '"X"))
-                              (pop '"Y") )
+                              (lint1 (++ "X"))
+                              (++ "Y") )
                            (if (or (== '@ "Y") (= "Prg" "Y") (= "*Prg" "Y"))
                               (mapc lint1 "X")
                               (lint2 "X") ) ) ) )
@@ -1971,7 +1971,7 @@
    (let "A" (and (pair "Lst") (car "Lst"))
       (while (pair "A")
          (lintDup (car "A") (cdr "A"))
-         (lintVar (pop '"A") T) )
+         (lintVar (++ "A") T) )
       (when "A"
          (lintVar "A") )
       (mapc lint1 (cdr "Lst")) ) )

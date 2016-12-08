@@ -1,4 +1,4 @@
-# 25jun16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -368,12 +368,12 @@
    (mapc
       '((L)
          (prin "Set-Cookie: "
-            (ht:Fmt (pop 'L)) "=" (ht:Fmt (pop 'L))
-            "; path=" (or (pop 'L) "/") )
-         (and (pop 'L) (prin "; expires=" @))
-         (and (pop 'L) (prin "; domain=" @))
-         (and (pop 'L) (prin "; secure"))
-         (and (pop 'L) (prin "; HttpOnly"))
+            (ht:Fmt (++ L)) "=" (ht:Fmt (++ L))
+            "; path=" (or (++ L) "/") )
+         (and (++ L) (prin "; expires=" @))
+         (and (++ L) (prin "; domain=" @))
+         (and (++ L) (prin "; secure"))
+         (and (++ L) (prin "; HttpOnly"))
          (prinl) )
       "*Cookies" ) )
 

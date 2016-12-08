@@ -1,4 +1,4 @@
-# 04oct15abu
+# 03nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -765,6 +765,22 @@
    drop
    ld X (Avail)  # Get avail list again
    ld (Avail) (X)  # Set new avail list
+   ret
+
+(code 'consE_Y 0)
+   ld Y (Avail)  # Get avail list
+   null Y  # Empty?
+   if ne  # No
+      ld (Avail) (Y)  # Set new avail list
+      ret
+   end
+   link  # Save E
+   push E
+   link
+   call gc  # Collect garbage
+   drop
+   ld Y (Avail)  # Get avail list again
+   ld (Avail) (Y)  # Set new avail list
    ret
 
 (code 'consY_X 0)

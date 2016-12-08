@@ -1,4 +1,4 @@
-# 23mar16abu
+# 05dec16abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -42,6 +42,7 @@ else
 endif
 
 SYS =
+PIE =
 FMT = .c
 ARCH = emu
 STRIP = :
@@ -58,6 +59,7 @@ ifeq ($(UNAME), Linux)
 			SYS = .linux
 			FMT = .s
 			ARCH = x86-64
+			## PIE = -no-pie
 			AS = as
 		else
 			ifeq ($(MACHINE), ppc64le)
@@ -128,7 +130,7 @@ picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
 
 ### Link ###
 $(bin)/picolisp: $(ARCH)$(SYS).base.o
-	$(CC) -o $(bin)/picolisp $(ARCH)$(SYS).base.o $(LD-MAIN)
+	$(CC) -o $(bin)/picolisp $(ARCH)$(SYS).base.o $(LD-MAIN) $(PIE)
 	$(STRIP) $(bin)/picolisp
 
 $(lib)/ext: $(ARCH)$(SYS).ext.o

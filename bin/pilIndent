@@ -1,5 +1,5 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 30nov13abu
+# 24nov16abu
 
 (let Lst
    (mapcar
@@ -7,7 +7,7 @@
          (let N 0
             (while (and L (sp? (car L)))
                (inc 'N)
-               (pop 'L) )
+               (++ L) )
             (cons N L) ) )
       (trim (split (in NIL (till)) "^J")) )
    (let (N (caar Lst)  Sup N  Str)
@@ -15,18 +15,19 @@
          (set L N)
          (while (setq L (cdr L))
             (case (car L)
-               ("\\" (pop 'L))
+               ("\\" (++ L))
                ("\"" (onOff Str))
-               ("#" (or Str (off L)))
+               ("#" (or Str (= "{" (cadr L)) (off L)))
+               ("}" (and (= "#" (cadr L)) (setq L (cddr L))))
                ("(" (or Str (inc 'N 3)))
                (")" (or Str (dec 'N 3)))
                ("["
                   (unless Str
                      (push 'Sup N)
                      (inc 'N 3) ) )
-               ("]" (or Str (setq N (pop 'Sup)))) ) ) ) )
+               ("]" (or Str (setq N (++ Sup)))) ) ) ) )
    (for L Lst
-      (space (pop 'L))
+      (space (++ L))
       (prinl L) ) )
 
 (bye)

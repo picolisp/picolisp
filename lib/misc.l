@@ -1,4 +1,4 @@
-# 06jul15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -69,15 +69,15 @@
       (make
          (while Lst
             (if (>= (length (car Lst)) Max)
-               (link (pop 'Lst) "^J")
+               (link (++ Lst) "^J")
                (chain
                   (make
-                     (link (pop 'Lst))
+                     (link (++ Lst))
                      (loop
                         (NIL Lst)
                         (T (>= (+ (length (car Lst)) (sum length (made))) Max)
                            (link "^J") )
-                        (link " " (pop 'Lst)) ) ) ) ) ) ) ) )
+                        (link " " (++ Lst)) ) ) ) ) ) ) ) )
 
 ### Number ###
 (de pad (N Val)
@@ -103,7 +103,7 @@
                (push 'L (& 1 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq N (| (format C) (>> -1 N))) )
             (if S (- N) N) ) ) ) )
@@ -118,7 +118,7 @@
                (push 'L (& 7 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq N (| (format C) (>> -3 N))) )
             (if S (- N) N) ) ) ) )
@@ -133,7 +133,7 @@
                (push 'L (hex1 X)) )
             (pack S L) ) )
       ((setq X (filter '((C) (not (sp? C))) (chop X)))
-         (let (S (and (= '- (car X)) (pop 'X))  N 0)
+         (let (S (and (= '- (car X)) (++ X))  N 0)
             (for C X
                (setq C (- (char C) `(char "0")))
                (and (> C 9) (dec 'C 7))
@@ -237,10 +237,10 @@
       (make
          (for (L (chop S) L)
             (ifn (sub? (car L) " -")
-               (link (pop 'L))
+               (link (++ L))
                (let F NIL
                   (loop
-                     (and (= '- (pop 'L)) (on F))
+                     (and (= '- (++ L)) (on F))
                      (NIL L)
                      (NIL (sub? (car L) " -")
                         (link (if F '- " ")) ) ) ) ) ) ) )

@@ -1,4 +1,4 @@
-# 26may15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
@@ -45,7 +45,7 @@
                      (hline 4 470 -8)
                      (loop
                         (down 4)
-                        (with (pop 'Lst)
+                        (with (++ Lst)
                            (table Fmt
                               (ps T (inc 'I)) NIL
                               (ps (: itm nm))

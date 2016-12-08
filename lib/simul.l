@@ -1,4 +1,4 @@
-# 16oct14abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (de permute (Lst)
@@ -27,7 +27,7 @@
 
 (de samples (Cnt Lst)
    (make
-      (for (N (length Lst) (n0 Cnt) (pop 'Lst) (dec N))
+      (for (N (length Lst) (n0 Cnt) (++ Lst) (dec N))
          (when (>= Cnt (rand 1 N))
             (link (car Lst))
             (dec 'Cnt) ) ) ) )
@@ -43,7 +43,7 @@
                   (for ("P" "Pop" "P")
                      (rot "P" (rand 1 (length "P")))
                      (link  # Recombination + Mutation
-                        ("Mu" ("Re" (pop '"P") (pop '"P"))) ) ) ) ) ) ) )
+                        ("Mu" ("Re" (++ "P") (++ "P"))) ) ) ) ) ) ) )
    (maxi "Se" "Pop") )
 
 
@@ -102,15 +102,15 @@
       (let West (and FX (last Grid))
          (for (Lst Grid  Lst)
             (let
-               (Col (pop 'Lst)
+               (Col (++ Lst)
                   East (or (car Lst) (and FX (car Grid)))
                   South (and FY (last Col)) )
                (for (L Col  L)
-                  (with (pop 'L)
-                     (set (: 0 1) (pop 'West))  # west
-                     (con (: 0 1) (pop 'East))  # east
-                     (set (: 0 -1) South)       # south
-                     (con (: 0 -1)              # north
+                  (with (++ L)
+                     (set (: 0 1) (++ West))  # west
+                     (con (: 0 1) (++ East))  # east
+                     (set (: 0 -1) South)     # south
+                     (con (: 0 -1)            # north
                         (or (car L) (and FY (car Col))) )
                      (setq South This) ) )
                (setq West Col) ) ) )

@@ -1,4 +1,4 @@
-# 19apr16abu
+# 25nov16abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -87,7 +87,7 @@
 
 # Check for delimiter
 (de delim? (C)
-   (member C '`(chop '" ^I^J^M\"'()[]`~")) )
+   (member C '`(chop " ^I^J^M\"'()[]`~")) )
 
 # Move left
 (de lMove ()
@@ -269,7 +269,7 @@
 (de expandTab ()
    (let ("L" (head (dec "LPos") "Line")  "S" "L")
       (while (find "skipFun" "S")
-         (pop '"S") )
+         (++ "S") )
       (ifn "S"
          (prog
             (off "Complete")
@@ -356,7 +356,7 @@
       ("k" (uMove))
       ("l" (rMove))
       ("n" (ledSearch "Line"))
-      ("N" (if "Found" (setHist (pop '"Found")) (beep)))
+      ("N" (if "Found" (setHist (++ "Found")) (beep)))
       ("p" (doUndo) ((if (= "LPos" (length "Line")) xMove rMove)) (doPaste))
       ("P" (doUndo) (doPaste))
       ("r" (ifn "Line" (beep) (doUndo) (rplChar (key))))
@@ -383,10 +383,7 @@
       (chgLine "L" (inc (length "L")))
       (on "Insert")
       (until (member (setq "C" (let *Dbg "*Dbg" (key))) '("^J" "^M"))
-         (case "C"
-            (NIL (bye))
-            ("^D" (prinl) (bye))
-            ("^X" (prin (cdr *Tsm)) (prinl) (quit)) )
+         (or "C" (bye))
          ((if "Insert" insMode cmdMode) "C") )
       (eMove) ) )
 
@@ -410,6 +407,8 @@
             (cons (cons Key Prg) (delete @ "FKey")) )
          (T (cons (cons Key Prg) "FKey")) ) ) )
 
+(fkey "^D" (prinl) (bye))
+(fkey "^X" (prin (cdr *Tsm)) (prinl) (quit))
 (when (sys "TERM")
    (fkey "^[[A" (uMove) (xMove))
    (fkey "^[[B" (dMove) (xMove))

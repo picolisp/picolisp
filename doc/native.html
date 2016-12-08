@@ -372,9 +372,9 @@ data, if the C function expects input values in the structure. It should be a
 list of <a href="refN.html#natItem">initialization items</a>, optionally with a
 fill-byte value in the CDR of the last cell.
 
-<p>If there are <i>no</i> initialization items and just the final fill-bye, then
-the whole buffer is filled with that byte. For example, to pass a buffer of 20
-bytes, initialized to zero:
+<p>If there are <i>no</i> initialization items and just the final fill-byte,
+then the whole buffer is filled with that byte. For example, to pass a buffer of
+20 bytes, initialized to zero:
 
 <pre><code>
 : (native "lib.so" "fun" NIL '(NIL (20) . 0))

@@ -653,9 +653,9 @@ href="refS.html#size">size</a></code>.
 </code></pre>
 
 <dt><a name="detach"><code>(detach) -> pid | NIL</code></a>
-<dd>Detach the current process from its PicoLisp parent. This causes the parent
-to "forget" this child process (freeing resources like buffers and pipes),
-effectively disabling family IPC via <code><a
+<dd>Detach the current process from its PicoLisp parent, and return the parent's
+process ID. This causes the parent to "forget" this child process (freeing
+resources like buffers and pipes), effectively disabling family IPC via <code><a
 href="refT.html#tell">tell</a></code>. See also <code><a
 href="refF.html#fork">fork</a></code> and <code><a
 href="refK.html#kids">kids</a></code>.
@@ -667,8 +667,9 @@ href="refK.html#kids">kids</a></code>.
    (bye) )
 </code></pre>
 
-<dt><a name="diff"><code>(diff 'lst 'lst) -> lst</code></a>
-<dd>Returns the difference of the <code>lst</code> arguments. See also <code><a
+<dt><a name="diff"><code>(diff 'lst1 'lst2) -> lst</code></a>
+<dd>Returns the difference of list arguments, all elements of <code>lst1</code>
+which are not in <code>lst2</code>. See also <code><a
 href="refS.html#sect">sect</a></code>.
 
 <pre><code>

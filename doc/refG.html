@@ -185,7 +185,7 @@ href="refU.html#uniq">uniq</a></code>.
 <pre><code>
 : (group '((1 . a) (1 . b) (1 . c) (2 . d) (2 . e) (2 . f)))
 -> ((1 a b c) (2 d e f))
-: (by name group '("x" "x" "y" "z" "x" "z")))
+: (by name group '("x" "x" "y" "z" "x" "z"))
 -> (("x" "x" "x") ("y") ("z" "z"))
 : (by length group '(123 (1 2) "abcd" "xyz" (1 2 3 4) "XY"))
 -> ((123 "xyz") ((1 2) "XY") ("abcd" (1 2 3 4))

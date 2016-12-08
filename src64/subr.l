@@ -1,4 +1,4 @@
-# 29may16abu
+# 24oct16abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1587,6 +1587,175 @@
       pop Z
       pop Y
    end
+   pop X
+   ret
+
+# (insert 'cnt 'lst 'any) -> lst
+(code 'doInsert 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   call evCntXY_FE  # Eval 'cnt'
+   ld Z E  # in Z
+   ld Y (Y CDR)  # Second arg
+   ld E (Y)
+   eval  # Eval 'lst'
+   link
+   push E  # Save 'lst'
+   link
+   ld Y (Y CDR)  # Point to third arg
+   atom E  # Second arg atomic?
+   jnz 10  # Yes
+   dec Z  # Count <= 1?
+   if sz  # Yes
+10    ld E (Y)  # Eval 'any'
+      eval
+      call consE_X  # Cons 'any'
+      ld (X) E
+      ld (X CDR) (L I)  # with arg
+      ld E X  # Return it
+   else
+      call consE_X  # Cons first cell
+      ld (X) (E)
+      ld (X CDR) Nil
+      tuck X  # <L I> Result
+      link
+      do
+         ld E (E CDR)  # More elements?
+         atom E
+      while z  # Yes
+         dec Z  # Count?
+      while nz  # Yes
+         call cons_A  # Copy next cell
+         ld (A) (E)
+         ld (A CDR) Nil
+         ld (X CDR) A  # Append to result
+         ld X (X CDR)
+      loop
+      ld Z E  # Rest in Z
+      ld E (Y)  # Eval 'any'
+      eval
+      call consE_A  # Last cell
+      ld (A) E  # Cons 'any'
+      ld (A CDR) Z  # with rest
+      ld (X CDR) A  # Append to result
+      ld E (L I)  # Get result
+   end
+   drop
+   pop Z
+   pop Y
+   pop X
+   ret
+
+# (remove 'cnt 'lst) -> lst
+(code 'doRemove 2)
+   push X
+   push Y
+   ld X E
+   ld Y (E CDR)  # Y on args
+   call evCntXY_FE  # Eval 'cnt'
+   xchg Y E  # in Y
+   ld E ((E CDR))  # Second arg
+   eval  # Eval 'lst'
+   atom E  # Atomic?
+   if z  # No
+      dec Y  # Count <= 0?
+      if ns  # No
+         if z  # Count = 1
+            ld E (E CDR)  # Return CDR
+         else
+            link
+            push E  # Save 'lst'
+            link
+            call consE_X  # Cons first cell
+            ld (X) (E)
+            ld (X CDR) Nil
+            tuck X  # <L I> Result
+            link
+            do
+               ld E (E CDR)  # More elements?
+               atom E
+            while z  # Yes
+               dec Y  # Count?
+            while nz  # Yes
+               call cons_A  # Copy next cell
+               ld (A) (E)
+               ld (A CDR) Nil
+               ld (X CDR) A  # Append to result
+               ld X (X CDR)
+            loop
+            ld (X CDR) (E CDR)  # Append rest
+            ld E (L I)  # Get result
+            drop
+         end
+      end
+   end
+   pop Y
+   pop X
+   ret
+
+# (place 'cnt 'lst 'any) -> lst
+(code 'doPlace 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   call evCntXY_FE  # Eval 'cnt'
+   ld Z E  # in Z
+   ld Y (Y CDR)  # Second arg
+   ld E (Y)
+   eval  # Eval 'lst'
+   ld Y (Y CDR)  # Point to third arg
+   atom E  # Atomic?
+   if nz  # Yes
+      ld E (Y)  # Return 'any'
+      eval
+   else
+      link
+      push E  # Save 'lst'
+      link
+      dec Z  # Count <= 1?
+      if sz  # Yes
+         ld E (Y)  # Eval 'any'
+         eval
+         call consE_X  # Cons 'any'
+         ld (X) E
+         ld (X CDR) ((L I) CDR)  # with CDR
+         ld E X  # Return it
+      else
+         call consE_X  # Cons first cell
+         ld (X) (E)
+         ld (X CDR) Nil
+         tuck X  # <L I> Result
+         link
+         do
+            ld E (E CDR)  # More elements?
+            atom E
+         while z  # Yes
+            dec Z  # Count?
+         while nz  # Yes
+            call cons_A  # Copy next cell
+            ld (A) (E)
+            ld (A CDR) Nil
+            ld (X CDR) A  # Append to result
+            ld X (X CDR)
+         loop
+         ld Z E  # Rest in Z
+         ld E (Y)  # Eval 'any'
+         eval
+         call consE_A  # Last cell
+         ld (A) E  # Cons 'any'
+         ld (A CDR) (Z CDR)  # with rest
+         ld (X CDR) A  # Append to result
+         ld E (L I)  # Get result
+      end
+      drop
+   end
+   pop Z
+   pop Y
    pop X
    ret
 
@@ -3950,6 +4119,80 @@
    end
    drop
    pop Z
+   pop Y
+   pop X
+   ret
+
+# (group 'lst) -> lst
+(code 'doGroup 2)
+   ld E ((E CDR))  # Get arg
+   eval  # Eval 'lst'
+   atom E  # Atomic?
+   jnz retNil  # Yes
+   push X
+   push Y
+   link
+   push E  # Save 'lst'
+   link
+   ld X E  # in X
+   call cons_A  # Build first tail cell
+   ld (A) ((X) CDR)  # First value
+   ld (A CDR) Nil
+   call consA_C  # Link to tail cell
+   ld (C) A
+   ld (C CDR) A
+   call consC_A  # Build first list
+   ld (A) ((X))  # from first key
+   ld (A CDR) C
+   call consA_C  # Initial list
+   ld (C) A
+   ld (C CDR) Nil
+   tuck C  # <L I> Result
+   link
+   do
+      ld X (X CDR)
+      atom X  # More cells?
+   while z  # Yes
+      call cons_C  # New cell
+      ld (C) ((X) CDR)  # Value
+      ld (C CDR) Nil
+      ld Y (L I)  # Result so far
+      do
+         ld A ((Y))  # Compare keys
+         ld E ((X))
+         call equalAE_F  # Same?
+         if eq  # Yes
+            ld Y ((Y) CDR)  # Get tail link
+            ld ((Y) CDR) C  # Concatenate new cell to tail
+            ld (Y) C  # New tail
+            break T
+         end
+         atom (Y CDR)  # Done?
+         if nz  # Yes
+            call consC_A  # Link to tail cell
+            ld (A) C
+            ld (A CDR) C
+            call consA_C  # Build list
+            ld (C) ((X))  # from key
+            ld (C CDR) A
+            call consC_A  # New list
+            ld (A) C
+            ld (A CDR) Nil
+            ld (Y CDR) A  # Concatenate to result
+            break T
+         end
+         ld Y (Y CDR)
+      loop
+   loop
+   ld E (L I)  # Get result
+   ld C E  # Remove tail links
+   do
+      ld A (C)
+      ld (A CDR) ((A CDR) CDR)
+      ld C (C CDR)  # Done?
+      atom C
+   until nz  # Yes
+   drop
    pop Y
    pop X
    ret

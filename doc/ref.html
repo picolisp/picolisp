@@ -83,7 +83,6 @@ href="faq.html">Frequently Asked Questions (FAQ)</a>.
    <li><a href="#pilog">Pilog (PicoLisp Prolog)</a>
    <li><a href="#conv">Naming Conventions</a>
    <li><a href="#trad">Breaking Traditions</a>
-   <li><a href="#bugs">Bugs</a>
    </ul>
 <li><a href="#fun">Function Reference</a>
 <li><a href="#down">Download</a>
@@ -197,7 +196,7 @@ additional buffers, string spaces or special memory areas, with two exceptions:
 and global variables of the interpreter itself, and
 
 <li>a standard push down stack for return addresses and temporary storage. Both
-are not directly accessible by the programmer).
+are not directly accessible by the programmer.
 
 </ul>
 
@@ -309,7 +308,9 @@ be:
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1000
 </code></pre>
 
-<p>Thus, a symbol is recognized by the interpreter when bit(3) is non-zero.
+<p>Thus, a symbol is recognized by the interpreter when bit(3) is non-zero. (It
+should also be understood that both bit(2) and bit(1) must be zero, thus
+avoiding confusion with the number types.)
 
 <p>A property is a key-value pair, represented by a cons pair in the symbol's
 tail. This is called a "property list". The property list may be terminated by a
@@ -338,7 +339,7 @@ KEY/VAL pair, a cell with only a KEY, and another KEY/VAL pair.
 </code></pre>
 
 <p>Each property in a symbol's tail is either a symbol (like the single KEY
-above, then it represents the boolean value <code>T</code>), or a cons pair with
+above, then it represents the boolean value <code>T</code>) or a cons pair with
 the property key in its CDR and the property value in its CAR. In both cases,
 the key should be a symbol, because searches in the property list are performed
 using pointer comparisons.
@@ -400,7 +401,7 @@ its CAR and for its CDR
 <p><hr>
 <h5><a name="internal">Internal Symbols</a></h5>
 
-<p>Internal Symbols are all those "normal" symbols, as they are used for
+<p>Internal symbols are all those "normal" symbols, as they are used for
 function definitions and variable names. They are "interned" into an index
 structure, so that it is possible to find an internal symbol by searching for
 its name.
@@ -739,13 +740,13 @@ syntactic form. A symbol name should - of course - not look like a legal number
 (see above).
 
 <p>In general, symbol names are case-sensitive. <code>car</code> is not the same
-as CAR.
+as <code>CAR</code>.
 
 
 <p><hr>
 <h5><a name="nilSym-io">NIL</a></h5>
 
-<p>Besides for standard normal form, <code>NIL</code> is also recognized as
+<p>Besides the standard form, <code>NIL</code> is also recognized as
 <code>()</code>, <code>[]</code> or <code>""</code>.
 
 <pre><code>
@@ -785,7 +786,7 @@ returned as an internal symbol.
 <h5><a name="transient-io">Transient Symbols</a></h5>
 
 <p>A transient symbol is anything surrounded by double quotes '<code>"</code>'.
-With that, it looks - and can be used - like a string constant in other
+With that, it looks like - and can be used as - a string constant in other
 languages. However, it is a real symbol, and may be assigned a value or a
 function definition, and properties.
 
@@ -1852,6 +1853,19 @@ href="refM.html#match">match</a> and <a href="refF.html#fill">fill</a>)
 underscore) is not really necessary, because true local scope can be enforced
 with transient symbols.
 
+<p>For historical reasons, the names of the symbols <code>T</code> and
+<code>NIL</code> violate these conventions. They are global symbols, and should
+therefore start with an asterisk "<code>*</code>". It is too easy to bind them
+to some other value by mistake:
+
+<pre><code>
+(de foo (R S T)
+   ...
+</code></pre>
+
+<p>However, <code><a href="refL.html#lint">lint</a></code> will issue a warning
+in such a case.
+
 
 <p><hr>
 <h3><a name="trad">Breaking Traditions</a></h3>
@@ -1887,23 +1901,6 @@ at the same time. Though this is a disadvantage at first sight, it allows a
 completely uniform handling of functional data.
 
 </dl>
-
-
-<p><hr>
-<h3><a name="bugs">Bugs</a></h3>
-
-<p>The names of the symbols <code>T</code> and <code>NIL</code> violate the <a
-href="#conv">naming conventions</a>. They are global symbols, and should
-therefore start with an asterisk "<code>*</code>". It is too easy to bind them
-to some other value by mistake:
-
-<pre><code>
-(de foo (R S T)
-   ...
-</code></pre>
-
-<p>However, <code><a href="refL.html#lint">lint</a></code> will issue a warning
-in such a case.
 
 
 <p><hr>
@@ -2054,6 +2051,7 @@ abbreviations:
    <a href="refP.html#push1">push1</a>
    <a href="refP.html#push1q">push1q</a>
    <a href="refP.html#pop">pop</a>
+   <a href="ref_.html#++">++</a>
    <a href="refC.html#cut">cut</a>
    <a href="refD.html#del">del</a>
    <a href="refQ.html#queue">queue</a>
@@ -2246,6 +2244,7 @@ abbreviations:
    <a href="refP.html#push1">push1</a>
    <a href="refP.html#push1q">push1q</a>
    <a href="refP.html#pop">pop</a>
+   <a href="ref_.html#++">++</a>
    <a href="refC.html#cut">cut</a>
    <a href="refQ.html#queue">queue</a>
    <a href="refF.html#fifo">fifo</a>

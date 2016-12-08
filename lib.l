@@ -1,4 +1,4 @@
-# 25jun16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -10,7 +10,7 @@
             (conc
                (make
                   (when (lt0 (link Key))
-                     (link (+ (eval (pop 'Prg) 1))) ) )
+                     (link (+ (eval (++ Prg) 1))) ) )
                (ifn (sym? (car Prg))
                   Prg
                   (cons
@@ -20,7 +20,7 @@
                               (make
                                  (while (atom (car Prg))
                                     (link
-                                       (cons (pop 'Prg) (eval (pop 'Prg) 1)) ) ) ) )
+                                       (cons (++ Prg) (eval (++ Prg) 1)) ) ) ) )
                            Prg ) ) ) ) ) ) )
       (NIL (quit "Key conflict" Key)) ) )
 
@@ -55,7 +55,7 @@
    (run (cdr recurse)) )
 
 (de curry "Z"
-   (let ("X" (pop '"Z")  "Y" (pop '"Z")  "P" (filter pat? "X"))
+   (let ("X" (++ "Z")  "Y" (++ "Z")  "P" (filter pat? "X"))
       (if2 "P" (diff "X" "P")
          (list "Y" (cons 'job (lit (env @)) (fill "Z" "P")))
          (cons "Y" (fill "Z" "P"))
@@ -188,36 +188,12 @@
    (pass pack *Tmp) )
 
 ### List ###
-(de insert (N Lst X)
-   (conc
-      (cut (dec N) 'Lst)
-      (cons X)
-      Lst ) )
-
-(de remove (N Lst)
-   (conc
-      (cut (dec N) 'Lst)
-      (cdr Lst) ) )
-
-(de place (N Lst X)
-   (conc
-      (cut (dec N) 'Lst)
-      (cons X)
-      (cdr Lst) ) )
-
 (de uniq (Lst)
    (let R NIL
       (filter
          '((X)
             (not (idx 'R (cons (hash X) X) T)) )
          Lst ) ) )
-
-(de group (Lst)
-   (make
-      (for X Lst
-         (if (assoc (car X) (made))
-            (conc @ (cons (cdr X)))
-            (link (list (car X) (cdr X))) ) ) ) )
 
 ### Symbol ###
 (de qsym "Sym"
@@ -313,29 +289,29 @@
    (setq N (abs (space (or N 0))))
    (while (and (pair X) (== 'quote (car X)))
       (prin "'")
-      (pop 'X) )
+      (++ X) )
    (cond
       ((atom X) (print X))
       ((memq (car X) '(de dm redef))
          (_pretty
-            (spPrt (pop 'X))
-            (spPrt (pop 'X))
+            (spPrt (++ X))
+            (spPrt (++ X))
             (prtty1 X N Z) ) )
       ((memq (car X) '(let let?))
          (_pretty
             (cond
                ((atom (car X))
-                  (spPrt (pop 'X))
-                  (prtty? (pop 'X) N) )
+                  (spPrt (++ X))
+                  (prtty? (++ X) N) )
                ((>= 12 (size (car X)))
                   (prin " (")
-                  (let Z (pop 'X)
+                  (let Z (++ X)
                      (prtty2 Z NIL Z) )
                   (prin ")") )
                (T
                   (nlPrt N)
                   (prin "(")
-                  (let Z (pop 'X)
+                  (let Z (++ X)
                      (prtty2 Z (+ N 3) Z) )
                   (prin " )") ) )
             (prtty1 X N Z) ) )
@@ -343,19 +319,19 @@
          (_pretty
             (cond
                ((or (atom (car X)) (atom (cdar X)))
-                  (spPrt (pop 'X))
-                  (prtty? (pop 'X) N) )
+                  (spPrt (++ X))
+                  (prtty? (++ X) N) )
                ((>= 12 (size (car X)))
-                  (spPrt (pop 'X)) )
+                  (spPrt (++ X)) )
                (T
                   (nlPrt N)
-                  (prtty0 (pop 'X) (+ 3 N)) ) )
+                  (prtty0 (++ X) (+ 3 N)) ) )
             (prtty1 X N Z) ) )
       ((== 'if2 (car X))
          (_pretty
             (when (>= 12 (size (head 2 X)))
-               (spPrt (pop 'X))
-               (spPrt (pop 'X)) )
+               (spPrt (++ X))
+               (spPrt (++ X)) )
             (prtty1 X N Z) ) )
       ((memq (car X) '(while until do state finally co))
          (prtty3 X N) )
@@ -364,13 +340,13 @@
             (print X)
             (prin "(")
             (let Z X
-               (printsp (pop 'X))
+               (printsp (++ X))
                (prtty2 X NIL Z) )
             (prin ")") ) )
       ((memq (car X) '(=: use later recur tab new))
          (_pretty
             (space)
-            (print (pop 'X))
+            (print (++ X))
             (prtty1 X N Z) ) )
       ((memq (car X) '(set setq default))
          (_pretty
@@ -378,8 +354,8 @@
                (prog
                   (nlPrt N)
                   (prtty2 X N Z) )
-               (spPrt (pop 'X))
-               (nlPrt1 (pop 'X) N) ) ) )
+               (spPrt (++ X))
+               (nlPrt1 (++ X) N) ) ) )
       ((memq (car X) '(T NIL ! if ifn when unless case casq with catch push bind job in out err ctl))
          (prtty3 X N) )
       (T (prtty0 X N)) ) )
@@ -387,14 +363,14 @@
 (de _pretty "Prg"
    (prin "(")
    (let Z X
-      (print (pop 'X))
+      (print (++ X))
       (run "Prg") )
    (prin " )") )
 
 (de prtty0 (X N)
    (prin "(")
    (let Z X
-      (pretty (pop 'X) (- -3 N))
+      (pretty (++ X) (- -3 N))
       (prtty1 X N Z) )
    (prin " )") )
 
@@ -403,18 +379,18 @@
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
-      (nlPrt1 (pop 'X) N) ) )
+      (nlPrt1 (++ X) N) ) )
 
 (de prtty2 (X N Z)
    (loop
-      (print (pop 'X))
+      (print (++ X))
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
       (if N
-         (prtty? (pop 'X) N)
+         (prtty? (++ X) N)
          (space)
-         (print (pop 'X)) )
+         (print (++ X)) )
       (NIL X)
       (T (== Z X) (prin " ."))
       (T (atom X) (prin " . ") (print X))
@@ -425,9 +401,9 @@
 (de prtty3 (X N)
    (prin "(")
    (let Z X
-      (print (pop 'X))
+      (print (++ X))
       (when (or (atom (car X)) (>= 12 (size (car X))))
-         (spPrt (pop 'X)) )
+         (spPrt (++ X)) )
       (when X
          (prtty1 X N Z)
          (space) ) )
@@ -491,10 +467,10 @@
             (loop
                (T (atom X) (println X))
                (if (atom (car X))
-                  (println '+-- (pop 'X))
+                  (println '+-- (++ X))
                   (print '+---)
                   (view
-                     (pop 'X)
+                     (++ X)
                      (append Y (cons (if X "|   " "    "))) ) )
                (NIL X)
                (mapc prin Y)
@@ -506,10 +482,10 @@
 # Assertions
 (de assert Prg
    (when *Dbg
-      (cons
-         (list 'unless
-            (if (cdr Prg) (cons 'and Prg) (car Prg))
-            (list 'quit "'assert' failed" (lit (car Prg))) ) ) ) )
+      (let A (if (cdr Prg) (cons 'and Prg) (car Prg))
+         (cons
+            (list 'unless A
+               (list 'quit "'assert' failed" (lit A)) ) ) ) ) )
 
 # Unit tests
 (de test (Pat . Prg)

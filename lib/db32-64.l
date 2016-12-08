@@ -1,4 +1,4 @@
-# 13jan16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 ## 1. On the 32-bit system:
@@ -47,7 +47,7 @@
                               Dbf
                               (when (cdr L)
                                  (pack
-                                    (hax (dec (fmt64 (pack (pop 'L)))))
+                                    (hax (dec (fmt64 (pack (++ L)))))
                                     "/" ) )
                               Id
                               (chop (oct (fmt64 (pack (car L)))))

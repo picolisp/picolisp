@@ -1,4 +1,4 @@
-# 26mar16abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -58,7 +58,7 @@
                (fetch Tree Val) )
             (let Key (cons (if (isa '+Fold This) (fold Val) Val))
                (let? A (: aux)
-                  (while (and (args) (== (pop 'A) (arg 1)))
+                  (while (and (args) (== (++ A) (arg 1)))
                      (next)
                      (queue 'Key (next)) )
                   (and (: ub) (setq Key (ubZval Key))) )
@@ -195,8 +195,8 @@
    (super Var) )
 
 (dm mis> (Val Obj)
-   (or
-      (ifn (lst? Val) "Not a Bag")
+   (ifn (lst? Val)
+      "Not a Bag"
       (pick
          '((This V)
             (mis> This V Obj
@@ -628,14 +628,14 @@
       (for S Olds
          (while (nth S (: min))
             (store Tree (cons (pack S) Aux2) NIL (: dbf))
-            (pop 'S) ) )
+            (++ S) ) )
       (unless (get Obj T)
          (and New (store Tree (cons @ Aux) Obj (: dbf)))
          (and New2 (store Tree (cons @ Aux2) Obj (: dbf)))
          (for S News
             (while (nth S (: min))
                (store Tree (cons (pack S) Aux2) Obj (: dbf))
-               (pop 'S) ) ) ) ) )
+               (++ S) ) ) ) ) )
 
 (de idxRel? (Obj Val Val2 Vals Hook)
    (let
@@ -651,7 +651,7 @@
                (loop
                   (NIL (nth S (: min)) T)
                   (NIL (== Obj (fetch Tree (cons (pack S) Aux2))))
-                  (pop 'S) ) )
+                  (++ S) ) )
             Vals ) ) ) )
 
 (dm rel> (Obj Old New Hook)
@@ -824,14 +824,15 @@
    (extra Var Lst) )
 
 (de ubZval (Lst X)
-   (let (Res 0  P 1)
-      (while (find n0 Lst)
-         (map
-            '((L)
-               (and (bit? 1 (car L)) (setq Res (| Res P)))
-               (setq P (>> -1 P))
-               (set L (>> 1 (car L))) )
-            Lst ) )
+   (let (Res 0  P 1  Q 1)
+      (while (find '((N) (>= N Q)) Lst)
+         (for N Lst
+            (and
+               N
+               (bit? Q N)
+               (setq Res (| Res P)) )
+            (setq P (>> -1 P)) )
+         (setq Q (>> -1 Q)) )
       (cons Res X) ) )
 
 (dm has> (Val X)
@@ -840,7 +841,7 @@
          (extra Val X)
          (extra
             (let (N (inc (length (: aux)))  M 1  V 0)
-               (until (=0 Val)
+               (while (gt0 Val)
                   (and (bit? 1 Val) (inc 'V M))
                   (setq M (>> -1 M)  Val (>> N Val)) )
                V )
@@ -867,8 +868,8 @@
 (class +List)
 
 (dm mis> (Val Obj)
-   (or
-      (ifn (lst? Val) "Not a List")
+   (ifn (lst? Val)
+      "Not a List"
       (pick '((V) (extra V Obj)) Val) ) )
 
 (dm ele> (Val)
@@ -1015,8 +1016,8 @@
 
 (de inc! (Obj Var Val)
    (when (num? (get Obj Var))
-      (dbSync)
-      (prog1
+      (prog2
+         (dbSync)
          (inc (prop Obj Var) (or Val 1))
          (commit 'upd) ) ) )
 
@@ -1028,9 +1029,13 @@
 (de blob+ (Obj Var)
    (when *Jnl
       (chdir *Blob
-         (call "ln" "-sf"
-            (pack (glue "/" (chop Obj)) "." Var)
-            (pack "=" (name Obj) "." Var) ) ) ) )
+         `(if (== 64 64)
+            '(native "@" "symlink" 'I
+               (pack (glue "/" (chop Obj)) "." Var)
+               (pack "=" (name Obj) "." Var) )
+            '(call "ln" "-sf"
+               (pack (glue "/" (chop Obj)) "." Var)
+               (pack "=" (name Obj) "." Var) ) ) ) ) )
 
 (de incECnt (Obj)
    (for Cls (type Obj)
@@ -1063,7 +1068,7 @@
 
 (dm zap> ()
    (for X (getl This)
-      (let V (or (atom X) (pop 'X))
+      (let V (or (atom X) (++ X))
          (and (meta This X) (zap> @ This V)) ) )
    (unless (: T) (decECnt This)) )
 
@@ -1072,6 +1077,11 @@
 (dm url2> () (url> This 2))
 (dm url3> () (url> This 3))
 (dm url4> () (url> This 4))
+(dm url5> () (url> This 5))
+(dm url6> () (url> This 6))
+(dm url7> () (url> This 7))
+(dm url8> () (url> This 8))
+(dm url9> () (url> This 9))
 
 (dm gui> ())
 
@@ -1188,7 +1198,7 @@
 (dm lose> (Lst)
    (unless (: T)
       (for X (getl This)
-         (let V (or (atom X) (pop 'X))
+         (let V (or (atom X) (++ X))
             (and
                (not (memq X Lst))
                (meta This X)
@@ -1217,7 +1227,7 @@
       (=: T)
       (incECnt This)
       (for X (getl This)
-         (let V (or (atom X) (pop 'X))
+         (let V (or (atom X) (++ X))
             (and
                (not (memq X Lst))
                (meta This X)
@@ -1377,13 +1387,13 @@
 
 (de obj Lst
    (let Obj
-      (let L (pop 'Lst)
+      (let L (++ Lst)
          (if (pair (car L))
             (apply request L)
-            (cache '*ObjIdx (pop 'Lst)
+            (cache '*ObjIdx (++ Lst)
                (new (or (meta L 'Dbf 1) 1) L) ) ) )
       (while Lst
-         (let (K (pop 'Lst)  V (pop 'Lst))
+         (let (K (++ Lst)  V (++ Lst))
             (if (=T K)
                (lose> Obj)
                (put> Obj K V) ) ) )

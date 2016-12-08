@@ -305,7 +305,7 @@
 (de expandTab ()
    (let ("L" (head (dec "LPos") "Line") "S" "L")
       (while (find "skipFun" "S")
-         (pop '"S") )
+         (++ "S") )
       (ifn "S"
          (prog
             (off "Complete")
@@ -395,7 +395,7 @@
                      ("s" (ledSearch "Line"))
                      # search for previous occurrence of pattern
                      # in history-search
-                     ("r" (if "Found" (setHist (pop '"Found")) (beep))) ) ) )
+                     ("r" (if "Found" (setHist (++ "Found")) (beep))) ) ) )
 
          # 'C-c' (Ctrl-c) keymap
          ("^c"  (and (key 1000)
@@ -593,7 +593,7 @@
 ## ("k" (when (< "HPos" (length *History)) (setHist (inc "HPos"))))
 ## ("l" (rMove T))
 ## ("n" (ledSearch "Line"))
-## ("N" (if "Found" (setHist (pop '"Found")) (beep)))
+## ("N" (if "Found" (setHist (++ "Found")) (beep)))
 ## ("p" (doUndo) ((if (= "LPos" (length "Line")) xMove rMove T)) (doPaste))
 ## ("P" (doUndo) (doPaste))
 ## ("r" (ifn "Line" (beep) (doUndo) (rplChar (key))))

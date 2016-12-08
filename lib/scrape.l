@@ -1,4 +1,4 @@
-# 02jul15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *ScrHost *ScrPort *ScrGate *Title *Expect *Found
@@ -31,21 +31,21 @@
                   (let L (split (line) ':)
                      (if (cdr L)
                         (scrape
-                           (pack (pop 'L))
+                           (pack (++ L))
                            (ifn (format (car (setq L (split (car L) '/))))
                               80
-                              (pop 'L)
+                              (++ L)
                               @ )
                            (glue '/ L) )
                         (setq L (split (car L) '/))
-                        (scrape (pack (pop 'L)) 80 (glue '/ L)) ) ) ) )
+                        (scrape (pack (++ L)) 80 (glue '/ L)) ) ) ) )
             ("<title>"
                (setq *Title (ht:Pack (till "<"))) )
             ("<base href=\"http://"
                (let L (split (till "\"") ':)
                   (if (cdr L)
                      (setq
-                        *ScrHost (pack (pop 'L))
+                        *ScrHost (pack (++ L))
                         *ScrPort (format (cdr (rot (car L)))) )
                      (setq *ScrGate (pack (cdr (member '/ (car L))))) ) ) )
             ("<a href=\""
@@ -112,8 +112,8 @@
       (when (pre? "http://" L)
          (setq
             L (split (nth (chop L) 8) '/ ':)
-            *ScrHost (pack (pop 'L))
-            *ScrPort (ifn (format (car L)) 80 (pop 'L) @)
+            *ScrHost (pack (++ L))
+            *ScrPort (ifn (format (car L)) 80 (++ L) @)
             L (glue '/ L) ) )
       (scrape *ScrHost *ScrPort L) ) )
 

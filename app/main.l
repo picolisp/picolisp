@@ -1,4 +1,4 @@
-# 22apr16abu
+# 29aug16abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -7,7 +7,7 @@
 (scl 2)
 (load
    "@lib/http.l" "@lib/xhtml.l" "@lib/form.l" "@lib/svg.l"
-   "@lib/adm.l" "@lib/boss.l" )
+   "@lib/adm.l" )  # "@lib/boss.l"
 
 (setq
    *Css '("@lib.css" "app/menu.css")
@@ -31,10 +31,11 @@
    ("English" NIL)
    ("English (US)" "US")
    ("English (UK)" "UK")
-   ("Español (AR)" "AR" . "ar")
-   ("Español (ES)" "ES" . "es")
    ("Deutsch (DE)" "DE" . "de")
    ("Deutsch (CH)" "CH" . "ch")
+   ("Español (AR)" "AR" . "ar")
+   ("Español (ES)" "ES" . "es")
+   ("λληνικά (GR)" "GR" . "gr")
    ("Norsk" "NO" . "no")
    ("Русский" "RU" . "ru")
    ("Svenska" "SE" . "sv")

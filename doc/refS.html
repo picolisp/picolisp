@@ -550,12 +550,13 @@ href="refP.html#prove">prove</a></code>.
 </code></pre>
 
 <dt><a name="sort"><code>(sort 'lst ['fun]) -> lst</code></a>
-<dd>Sorts <code>lst</code> by destructively exchanging its elements. If
-<code>fun</code> is given, it is used as a "less than" predicate for
-comparisons. Typically, <code>sort</code> is used in combination with <a
-href="refB.html#by">by</a>, giving shorter and often more efficient solutions
-than with the predicate function. See also <a href="ref.html#cmp">Comparing</a>,
-<code><a href="refG.html#group">group</a></code>, <code><a
+<dd>Returns a sorted list by destructively exchanging the elements of
+<code>lst</code>. If <code>fun</code> is given, it is used as a "less than"
+predicate for comparisons. Typically, <code>sort</code> is used in combination
+with <a href="refB.html#by">by</a>, giving shorter and often more efficient
+solutions than with the predicate function. See also <a
+href="ref.html#cmp">Comparing</a>, <code><a
+href="refG.html#group">group</a></code>, <code><a
 href="refM.html#maxi">maxi</a></code>, <code><a
 href="refM.html#mini">mini</a></code> and <code><a
 href="refU.html#uniq">uniq</a></code>.

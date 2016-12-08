@@ -1,4 +1,4 @@
-# 03jan15abu
+# 24nov16abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -59,10 +59,10 @@
                (let "Y" (cddr "X")
                   (use "*L"
                      (while (num? (car "Y"))
-                        (pop '"Y") )
+                        (++ "Y") )
                      (while (and (car "Y") (sym? @))
-                        (lintVar (pop '"Y"))
-                        (lint1 (pop '"Y")) )
+                        (lintVar (++ "Y"))
+                        (lint1 (++ "Y")) )
                      (mapc lint1 "Y") ) ) )
             (macro
                (lint2 (cdr "X")) )
@@ -148,10 +148,10 @@
                         (mapc lint1 (cdr "X"))
                         (when (local? (car "X"))
                            (lint2 (val (car "X"))) )
-                        (let "Y" (car (getd (pop '"X")))
+                        (let "Y" (car (getd (++ "X")))
                            (while (and (pair "X") (pair "Y"))
-                              (lint1 (pop '"X"))
-                              (pop '"Y") )
+                              (lint1 (++ "X"))
+                              (++ "Y") )
                            (if (or (== '@ "Y") (= "Prg" "Y") (= "*Prg" "Y"))
                               (mapc lint1 "X")
                               (lint2 "X") ) ) ) )
@@ -208,7 +208,7 @@
    (let "A" (and (pair "Lst") (car "Lst"))
       (while (pair "A")
          (lintDup (car "A") (cdr "A"))
-         (lintVar (pop '"A") T) )
+         (lintVar (++ "A") T) )
       (when "A"
          (lintVar "A") )
       (mapc lint1 (cdr "Lst")) ) )

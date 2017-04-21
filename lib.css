@@ -1,4 +1,4 @@
-/* 03sep16abu
+/* 24feb17abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -53,6 +53,7 @@ fieldset {
 }
 
 input, textarea, select {
+   border: 0;
    font-size: small;
    background-color: white;
 }
@@ -210,6 +211,7 @@ a:hover {
 /* Buttons */
 .submit {
    font-weight: bold;
+   font-size: smaller;
    background-color: #eee;
    background-image: -moz-linear-gradient(top, #eee, #ccc);
    background-image: -o-linear-gradient(top, #eee, #ccc);
@@ -258,8 +260,9 @@ a:hover {
 
 /* Fonts */
 .tiny {
-   font-size: smaller;
+   border: 0;
    padding: 0;
+   font-size: smaller;
 }
 
 .note, .ask {

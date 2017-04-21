@@ -1,4 +1,4 @@
-# 02dec16abu
+# 03mar17abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -88,18 +88,20 @@
    ld (StkLimit) 0  # Initially without stack limit
    ld L 0  # Init link register
    call heapAlloc  # Allocate initial heap
-   ld E Nil  # Init internal symbols
-   lea Z (E VI)  # Skip padding and 'pico' cell
-   do
+   ld E Nil  # Init NIL
+   ld X (E TAIL)  # Get name
+   ld Y Pico  # Use initial symbol namespace
+   ld Z E  # NIL: No more namespaces
+   call internEXYZ_FE  # Store NIL to internals
+   add E VI  # Skip padding and 'Pico' cell
+   do  # Init internal symbols
       ld X (E TAIL)  # Get name
-      ld Y Pico  # From initial symbol namespace
-      call internEXY_FE  # Store to internals
-      ld E Z
-      cnt (Z TAIL)  # Short name?
+      call internEXYZ_FE  # Store to internals
+      cnt (E TAIL)  # Short name?
       if nz  # Yes
-         add Z II  # Next symbol
+         add E II  # Next symbol
       else
-         add Z IV
+         add E IV
       end
       cmp E SymTabEnd
    until gt
@@ -1372,15 +1374,11 @@
    loop
    cmp Y Nil  # NIL-terminated parameter list?
    if eq  # Yes: Bind parameter symbols
-      ld Y S  # Y on bindings
+      ld Y L  # Y on bindings
       do
-         ld X (Y)  # Symbol in X
-         add Y I
-         ld A (X)  # Old value in A
-         ld (X) (Y)  # Set new value
-         ld (Y) A  # Save old value
-         add Y I
-         cmp Y L  # End?
+         sub Y II  # Next binding
+         xchg ((Y)) (Y I)  # Exchange symbol value
+         cmp Y S  # End?
       until eq  # Yes
       link
       ld (EnvBind) L  # Close bind frame
@@ -1407,15 +1405,12 @@
       push (Y)  # Save last parameter's old value
       push Y  # and the last parameter
       ld (Y) X  # Set to unevaluated argument list
-      lea Y (S II)  # Y on evaluated bindings
+      lea C (S II)  # End of bindings in C
+      ld Y L  # Y on bindings
       do
-         ld X (Y)  # Symbol in X
-         add Y I
-         ld A (X)  # Old value in A
-         ld (X) (Y)  # Set new value
-         ld (Y) A  # Save old value
-         add Y I
-         cmp Y L  # End?
+         sub Y II  # Next binding
+         xchg ((Y)) (Y I)  # Exchange symbol value
+         cmp Y C  # End?
       until eq  # Yes
       link
       ld (EnvBind) L  # Close bind frame
@@ -1461,16 +1456,12 @@
       ld (EnvNext) (L)  # Set new 'next'
    end
    ld (EnvBind) Y  # Close bind frame
-   ld C (Y)  # End of bindings in C
-   add Y I
+   lea C (Y I)  # End of bindings in C
+   ld X (Y)  # X on bindings
    do
-      ld X (Y)  # Symbol in X
-      add Y I
-      ld A (X)  # Old value in A
-      ld (X) (Y)  # Set new value
-      ld (Y) A  # Save old value
-      add Y I
-      cmp Y C  # End?
+      sub X II  # Next binding
+      xchg ((X)) (X I)  # Exchange symbol value
+      cmp X C  # End?
    until eq  # Yes
    prog Z  # Run body
    pop (EnvNext)   # Restore 'next'
@@ -3012,6 +3003,15 @@
 90 ld E Nil  # Can't convert time
    pop Y
    pop X
+   ret
+
+# (tzo) -> cnt
+(code 'doTzo 2)
+   cc localtime(Tv)  # (Any) time to local time
+   ld4 (A TM_GMTOFF)  # Time offset in seconds east of GMT
+   ld E A
+   shl E 4  # Make short number
+   or E CNT
    ret
 
 # (usec ['flg]) -> num

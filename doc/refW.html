@@ -59,7 +59,9 @@ href="refS.html#strDat">strDat</a></code>.
 <dd>Conditional execution: When the condition <code>any</code> evaluates to
 non-<code>NIL</code>, <code>prg</code> is executed and the result is returned.
 Otherwise <code>NIL</code> is returned. See also <code><a
-href="refU.html#unless">unless</a></code>.
+href="refU.html#unless">unless</a></code>, <code><a
+href="refI.html#if">if</a></code>, <code><a href="refA.html#and">and</a></code>
+and <code><a href="refC.html#cond">cond</a></code>.
 
 <pre><code>
 : (when (> 4 3) (println 'OK) (println 'Good))
@@ -73,7 +75,10 @@ Good
 non-<code>NIL</code>, <code>prg</code> is repeatedly executed. If
 <code>prg</code> is never executed, <code>NIL</code> is returned. Otherwise the
 result of <code>prg</code> is returned. See also <code><a
-href="refU.html#until">until</a></code>.
+href="refU.html#until">until</a></code>, <code><a
+href="refF.html#for">for</a></code>, <code><a
+href="refL.html#loop">loop</a></code> and <code><a
+href="refD.html#do">do</a></code>.
 
 <pre><code>
 : (while (read)

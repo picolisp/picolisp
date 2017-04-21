@@ -79,7 +79,7 @@
 </dl>
 
 <dl>
-    <dt><a name="+Chg"><code>+Chg</a></code>
+    <dt><a name="+Chg"><code>+Chg</code></a>
     <dd>A prefix taking a function argument, which is called when the user
     changes the value of a field. That function receives the modified value, and
     may modify it again or perform side-effects with it like setting other
@@ -117,12 +117,12 @@
     number of rows.
     <pre><code> . .
      (do (cho)
-        (<row> (alternating)
+        (&lt;row&gt; (alternating)
            (gui 1 '(+DstButton) Dst) (gui 2 '(+NumField)) (gui 3 '(+ObjView
            +TextField) '(: nm)) (gui 4 '(+TextField)) (gui 5 '(+MailField)) (gui
            6 '(+TextField)) (gui 7 '(+TextField)) (gui 8 '(+TelField)) (gui 9
            '(+TelField)) ) ) )
-  (<spread>
+  (&lt;spread&gt;
      (scroll (cho)) . .
     </code></pre> See also <a
      href="refD.html#diaform">diaform</a>.
@@ -245,11 +245,12 @@
     a number:
     
     <pre><code>
-    (gui (+Chart) 2) (&lt;table&gt; NIL NIL '((NIL "Text")
-    (NIL "Number"))
-       (do 4
+    (gui (+Chart) 2)
+    (&lt;table&gt; NIL NIL '((NIL "Text") (NIL "Number"))
+       (do 1
           (&lt;row&gt; NIL
-             (gui 1 '(+TextField) 20) (gui 2 '(+NumField) 10) ) ) )
+            (gui 1 '(+TextField) 20)
+            (gui 2 '(+NumField) 10) ) ) )
     </code></pre>
     
     This number tells the chart how many columns of data to
@@ -267,13 +268,15 @@
     
     <pre><code>
     (gui '(+E/R +Chart) '(bin : home obj) 3
-       '((This) (list (: nm))) # 'Put'- function '((L D) # 'Get'- function
+       '((This) (list (: nm)))                    # 'Put'- function
+       '((L D)                                    # 'Get'- function
           (and D (put!&gt; D 'nm (car L)))
-             D ) )
+          D ) )
     (&lt;table&gt; NIL "Binaries" '((NIL "Name"))
        (do 6
           (&lt;row&gt; NIL
-             (gui 1 '(+Able +TextField) '(curr) 30) (gui 2 '(+DelRowButton))
+             (gui 1 '(+Able +TextField) '(curr) 30)
+             (gui 2 '(+DelRowButton))
              (gui 3 '(+BubbleButton)) ) ) )
     </code></pre>
     
@@ -298,8 +301,8 @@
     (&lt;table&gt; 'chart NIL '((NIL "Media"))
        (do 3
           (&lt;row&gt; (alternating)
-             (gui 1 '(+ObjView +TextField) '(: nm)) # Binary name (gui 2
-             '(+DelRowButton)) (gui 3 '(+BubbleButton)) ) )
+             (gui 1 '(+ObjView +TextField) '(: nm)) # Binary name
+             (gui 2 '(+DelRowButton)) (gui 3 '(+BubbleButton)) ) )
        (&lt;row&gt; NIL (scroll 3 T)) )
     </code></pre>
     
@@ -311,8 +314,10 @@
     <pre><code>
     (=: mup
          (list
-            (and (: obj mup) (in (blob @ 'txt) (till NIL T))) # txt NIL # sum
-            NIL # min (: obj mup bin) ) )
+            (and (: obj mup) (in (blob @ 'txt) (till NIL T))) # txt
+            NIL # sum
+            NIL # min
+            (: obj mup bin) ) )
     </code></pre>
     
     'mup' is a list here, and <code>(: mup -3)</code> picks
@@ -405,7 +410,7 @@
     ...
     (&lt;table&gt; 'chart NIL
        '((NIL ,"File") (NIL ,"Delete")) (do 2
-          (<row> NIL
+          (&lt;row&gt; NIL
              (gui 1 '(+DocObj +TextField) (curr)) # (gui 2 '(+DelRowButton)) ) )
              )
     ...

@@ -669,15 +669,11 @@
    loop
    cmp Y Nil  # NIL-terminated parameter list?
    if eq  # Yes: Bind parameter symbols
-      ld Y S  # Y on bindings
+      ld Y L  # Y on bindings
       do
-         ld X (Y)  # Symbol in X
-         add Y I
-         ld A (X)  # Old value in A
-         ld (X) (Y)  # Set new value
-         ld (Y) A  # Save old value
-         add Y I
-         cmp Y L  # End?
+         sub Y II  # Next binding
+         xchg ((Y)) (Y I)  # Exchange symbol value
+         cmp Y S  # End?
       until eq  # Yes
       link
       ld (EnvBind) L  # Close bind frame
@@ -705,15 +701,12 @@
       push (Y)  # Save last parameter's old value
       push Y  # and the last parameter
       ld (Y) X  # Set to unevaluated argument list
-      lea Y (S II)  # Y on evaluated bindings
+      lea C (S II)  # End of bindings in C
+      ld Y L  # Y on bindings
       do
-         ld X (Y)  # Symbol in X
-         add Y I
-         ld A (X)  # Old value in A
-         ld (X) (Y)  # Set new value
-         ld (Y) A  # Save old value
-         add Y I
-         cmp Y L  # End?
+         sub Y II  # Next binding
+         xchg ((Y)) (Y I)  # Exchange symbol value
+         cmp Y C  # End?
       until eq  # Yes
       link
       ld (EnvBind) L  # Close bind frame
@@ -762,16 +755,12 @@
    ld (EnvBind) Y  # Close bind frame
    xchg (EnvCls) ((Y) IV)  # 'cls'
    xchg (EnvKey) ((Y) III)  # 'key'
-   ld C (Y)  # End of bindings in C
-   add Y I
+   lea C (Y I)  # End of bindings in C
+   ld X (Y)  # X on bindings
    do
-      ld X (Y)  # Symbol in X
-      add Y I
-      ld A (X)  # Old value in A
-      ld (X) (Y)  # Set new value
-      ld (Y) A  # Save old value
-      add Y I
-      cmp Y C  # End?
+      sub X II  # Next binding
+      xchg ((X)) (X I)  # Exchange symbol value
+      cmp X C  # End?
    until eq  # Yes
    prog Z  # Run body
    pop (EnvNext)   # Restore 'next'

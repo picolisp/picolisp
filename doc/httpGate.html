@@ -137,6 +137,16 @@ Optional tokens (e.g. log files) or empty arguments to the commands must be
 written as single caret (^) characters to denote empty strings. Double or single
 quotes are not parsed.
 
+<p>If the port is zero, then a single additional token is expected which should
+denote an URL to redirect the request to:
+
+<pre><code>
+   app 0 https://domain/foo/bar
+</code></pre>
+
+This will cause httpGate to respnd with "301 Moved Permanently" and "Location:
+https://domain/foo/bar".
+
 <h3><a name="balanced">Balanced names file</a></h3>
 
 <p>If the config file contains many (hundreds or thousands) entries, then it is

@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 17jul14abu
+# 19apr17abu
 # (c) Software Lab. Alexander Burger
 
 # Configuration
@@ -20,13 +20,13 @@
                (quit "Bad mbox file") )
             (char)
             (while (setq *From (lowc (till " " T)))
+               (line)  # Skip rest of line and "\r\n"
                (off
                   *Name *Subject *Date *MessageID *InReplyTo *MimeVersion
                   *ContentType *ContentTransferEncoding *ContentDisposition *UserAgent )
                (while (trim (split (line) " "))
                   (let L @
-                     (while (= ";" (last (last L)))
-                        (char)  # Skip TAB
+                     (while (and (sub? (peek) " \t") (char))  # Skip WSP
                         (conc L (trim (split (line) " "))) )
                      (setq *Line (glue " " (cdr L)))
                      (case (pack (car L))
@@ -87,7 +87,7 @@
                               (prinl "You are now unsubscribed^M")
                               (prinl "****^M^J^M") ) )
                         (echo "^JFrom ")
-                        (prinl "-- ^M")
+                        (prinl "^J-- ^M")
                         (prinl "UNSUBSCRIBE: mailto:" *MailingList "?subject=Unsubscribe^M")
                         (prinl ".^M")
                         (prinl "QUIT^M") ) )

@@ -1,4 +1,4 @@
-# 31jul16abu
+# 16mar17abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -1365,7 +1365,6 @@
                      ((pre? ".+" X)
                         (let N (+ (cadr D) (format (cddr (chop X))))
                            (for ((J . L) (cddr D)  (> I J)  (cdr L))
-                              (NIL (> I J))  # Temporary (only for 3.1.1 and older)
                               (inc 'N (if (num? (car L)) 1 8)) )
                            (prin
                               " {.p = (uint8_t*)"

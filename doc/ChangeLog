@@ -1,3 +1,332 @@
+21apr17
+   Pass hook to 'panel'
+      lib/form.l
+
+20apr17
+   Evaluate 'objHook' in '(hint> . +Obj)'
+      lib/form.l
+
+19apr17
+   Fixes for the mail header parser by Rowan Thorpe
+      misc/mailing
+
+18apr17
+   Add '@' to the '*Run' reference
+      doc/refR.html
+
+12apr17
+   Use "302 Found" instead of "301 Moved Permanently" in 'httpGate'
+      src/httpGate.c
+
+07apr17
+   Simplification of 'delete' etc.
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/sym.l
+
+05apr17
+   Optional 'flg' argument also for 'del'
+      {src64,pilos/src}/subr.l
+      {src64,pilos/src}/sym.l
+      {src,mini/src}/subr.c
+      {src,mini/src}/sym.c
+      doc/refD.html
+      test/src/sym.l
+   Revert httpGate (without SSL_shutdown())
+      src/httpGate.c
+
+04apr17
+   Minor fix in 'genKey', make 'ubZval' non-destructive
+      pilos/init/lib/db.l
+   Delete multiple list elements in '(del> . +List)'
+      {lib,mini/lib,pilos/init/lib}/db.l
+   Optional 'flg' argument for 'delete' and 'delq'
+      {src64,pilos/src}/subr.l
+      {src,mini/src}/subr.c
+      ersatz/fun.src
+      doc/refD.html
+      test/src/subr.l
+
+29mar17
+   Missing 'flood' function
+      doc/ref.html
+
+28mar17
+   Conditional "PIE = -no-pie" for x86_64 (Mike Pechkin)
+      src64/Makefile
+   Add SSL_shutdown() to httpGate
+      src/httpGate.c
+   Bug in 'ssl', needs SSL_clear()
+      src/ssl.c
+
+25mar17
+   Bug in case conversions ('fold', 'uppc' etc.) for TOP character
+      {src64,pilos/src}/sym.l
+
+24mar17
+   'repl' history as '+Hint1'
+      lib/form.l
+   'repl' eval with environment offset
+      lib/form.l
+
+23mar17
+   Unmark default namespace
+      {src64,pilos/src}/sym.l
+
+21mar17
+   Clear line with ^U
+      lib/led.l
+   Suppress unnecceary "?" in 'url'
+      lib/form.l
+
+18mar17
+   Handle "301 Moved Permanently" in 'httpGate'
+      src/httpGate.c
+   Default "PIE = -no-pie" for x86_64
+      src64/Makefile
+
+17mar17
+   Handle "301 Moved Permanently" in 'httpGate'
+      src/httpGate.c
+      doc/httpGate.html
+
+16mar17
+   Removed legacy version checks
+      src64/arch/emu.l
+      pilos/make.l
+
+15mar17
+   Fix ref example for 'struct' (03nov16: Terminate char arrays on null bytes)
+      doc/refS.html
+   Internal 'Intent' methods in addition to 'putExtra'
+      lib/android.l
+   'repl' '@@' and '@@@' handling
+   'file>' method for '+FileField'
+   "Edit" button in 'repl'
+      lib/form.l
+
+11mar17
+   Missing part in '+Joint' example
+      doc/refJ.html
+
+10mar17
+   Still bug in secondary namespace lookup
+      {src64,pilos/src}/sym.l
+   Pass either unit or zoom to <svg>
+      lib/svg.l
+   Local renames
+      lib/gis.l
+
+09mar17
+   Bug lookup of long names in secondary namespaces
+      {src64,pilos/src}/sym.l
+   New files
+      lib/gis.l
+      lib/android.l
+      lib/nodroid.l
+   'all' also for given namespace
+      {src64,pilos/src}/sym.l
+      doc/refA.html
+
+08mar17
+   Minor change (Danilo Kordic)
+      lib/eled.l
+   Bug in 'intern' for namespaces
+      {src64,pilos/src}/sym.l
+      doc/refI.html
+      doc/refN.html
+
+07mar17
+   Minor clean up in 'equ' definitions
+      pilos/src/defs.l
+
+06mar17
+   'symbols' optional 'prg' for local namespace list
+      {src64,pilos/src}/sym.l
+      lib.l
+      doc/refS.html
+      doc/refL.html
+   Omit 'local' and 'import' from pil32
+      lib.l
+   Bug in namespace chaining
+      {src64,pilos/src}/sym.l
+   Added 'url1>'
+      lib/db.l
+
+04mar17
+   Namespace chaining instead of merging
+      {src64,pilos/src}/glob.l
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/gc.l
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/err.l
+      src64/ht.l
+      lib.l
+      lib/debug.l
+      pilos/init/lib.l
+      pilos/init/lib/dbg.l
+      test/src/sym.l
+      doc/ref.html
+      doc/refI.html
+      doc/refL.html
+      doc/refP.html
+      doc/refS.html
+      doc/refZ.html
+
+03mar17
+   French localization
+      loc/FR.l
+      loc/fr
+      app/loc/fr
+      app/main.l
+
+24feb17
+   Input fields without border
+      lib.css
+
+17feb17
+   Minor ref fix
+      doc/ref.html
+
+08feb17
+   idFocus() function and disable '+Focus' on touch devices
+      lib/form.js
+      lib/form.l
+
+07feb17
+   More "See also" entries for flow functions
+      doc/refA.html
+      doc/refC.html
+      doc/refI.html
+      doc/refN.html
+      doc/refO.html
+      doc/refU.html
+      doc/refW.html
+
+05feb17
+   Minor fixes to some 'chk>' methods
+      lib/form.l
+
+30jan17
+   Note 'flush' in the 'out' reference
+      doc/refO.html
+
+27jan17
+   More tag fixes
+      doc/form/refC.html
+
+26jan17
+   More tag fixes
+      doc/form/refA.html
+      doc/form/refC.html
+      doc/form/refD.html
+      doc/form/refF.html
+      doc/form/refI.html
+      doc/form/refJ.html
+      doc/form/refO.html
+      doc/form/refQ.html
+
+25jan17
+   More tag fixes
+      doc/form/refF.html
+      doc/form/refO.html
+      doc/form/refQ.html
+      doc/form/refS.html
+      doc/form/refV.html
+      doc/form/form.html
+
+24jan17
+   Bug in indent script with closing comments '}#'
+      bin/pilIndent
+
+23jan17
+   More typos in docs
+      doc/app.html
+
+22jan17
+   Unmatched tags (Jon / Mattias)
+      doc/form/refC.html
+
+20jan17
+   Incorrect usage of 'ctl' in 'rc' and 'acquire'
+      lib.l
+
+17jan17
+   Bug in 'port', guarantee 16-bit value after ntohs()
+      src64/net.l
+   More ref fixes (Jon / Mattias)
+      doc/form/refQ.html
+
+13jan17
+   Missing '#' in link (Jon / Mattias)
+      doc/form/refP.html
+
+09jan17
+   Make 'tzo' Linux-only
+      src/main.c
+      doc/refT.html
+      test/src/main.l
+   Remove lib/dbase.l from distribution
+      lib/dbase.l
+   Avoid race condition in 'tzo' unit test
+      test/src/main.l
+
+07jan17
+   'tzo' function
+      src64/sys/arm64.linux.defs.l
+      src64/sys/x86-64.linux.defs.l
+      src64/sys/ppc64.linux.defs.l
+      src64/sys/x86-64.freeBsd.defs.l
+      src64/sys/x86-64.openBsd.defs.l
+      src64/sys/x86-64.sunOs.defs.l
+      src64/sysdefs.c
+      src64/main.l
+      src64/glob.l
+      src/pico.h
+      src/tab.c
+      src/main.c
+      doc/ref.html
+      doc/refT.html
+      test/src/main.l
+
+02jan17
+   One more example for 'fish'
+      doc/refF.html
+
+22dec16
+   Preserve "LayX" in <layout>
+      lib/xhtml.l
+
+19dec16
+   Add '+Rid' to 'resetButton'
+      lib/form.l
+
+18dec16
+   'expDat' accepts "." and "+/-<num>" for "today"
+      lib/misc.l
+      doc/refE.html
+      test/lib/misc.l
+
+16dec16
+   Base64-encode 'mail' subject if necessary
+      lib/misc.l
+   Wrong link to 'mail'
+      doc/refP.html
+
+14dec16
+   Better error diagnostics
+      src64/mkAsm
+
+12dec16
+   Minor typo, duplicated line
+      doc/refR.html
+
+09dec16
+   Reverse bind order (for (pathologically) duplicated symbols)
+      {src64,pilos/src}/main.l
+      {src64,pilos/src}/flow.l
+
+####### 16.12 #######
 05dec16
    Stub for 'PIE = -no-pie' in Linux/x86_64 (enable in Debian Sid)
       src64/Makefile
@@ -341,7 +670,7 @@
       java/Reflector.java
 
 20jun16
-   httpGate documentation (Mattias Sundblad)
+   'httpGate' documentation (Mattias Sundblad)
       doc/httpGate.html
 
 19jun16

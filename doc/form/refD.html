@@ -48,7 +48,7 @@
     <pre><code>
     (de choItem (Dst)
        (diaform '(Dst)
-          (<grid> "--.-."
+          (&lt;grid&gt; "--.-."
              ...
              ... )
           (gui 'query '(+QueryChart) (cho)
@@ -156,13 +156,13 @@
     field. Otherwise, <code>+DstButton</code> manifests itself as a plain link
     and clicking the link causes a jump to that object. Typical usage is in
     choice (search) dialogs, which are used both for jumping to objects and for
-    selecting objects in other forms.<br />
+    selecting objects in other forms.<br>
 
     The following example uses a <code>+DstButton</code> when presenting the
     search result in a <code>QueryChart</code>. Since we are not about to choose
     an object to be stored in a field of the calling form, this
     <code>+DstButton</code> will manifest as a link and cause a jump to an
-    object.<br /> Given the following 'put'- function:
+    object.<br> Given the following 'put'- function:
 
     <pre><code>
     '((This) (list This This (: pa) (: ma) (: mate) (: job) (: dat)))
@@ -172,7 +172,7 @@
       (&lt;table&gt; 'chart NIL
          '((btn) (NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
          (do (cho)
-            (<row> (alternating)
+            (&lt;row&gt; (alternating)
                (gui 1 '(+DstButton) Dst)
                (gui 2 '(+ObjView +TextField) '(: nm))
                (gui 3 '(+ObjView +TextField) '(: nm))

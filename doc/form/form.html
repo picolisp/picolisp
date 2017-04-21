@@ -11,7 +11,7 @@
 <i>Perfection is attained</i><br>
 <i>not when there is nothing left to add</i><br>
 <i>but when there is nothing left to take away</i><br>
-<i>(Antoine de Saint-ExupÃ©ry)</i><br>
+<i>(Antoine de Saint-Exupéry)</i><br>
 
 <h1>The PicoLisp Form Library</h1>
 
@@ -66,7 +66,7 @@ called 'diaForm'. An abbreviated version is shown below.
 ########################################################################
 (de choCuSu (Dst)
    (diaform '(Dst)
-      (<grid> "--.-.-."
+      (&lt;grid&gt; "--.-.-."
          # Form components
          ... )
       (gui 'query '(+QueryChart) (cho)
@@ -76,11 +76,11 @@ called 'diaForm'. An abbreviated version is shown below.
       (&lt;table&gt; 'chart (choTtl ,"Customers/Suppliers" 'nr '+CuSu)
          # Table headers
          (do (cho)
-            (<row> (alternating)
+            (&lt;row&gt; (alternating)
                (gui 1 '(+DstButton) Dst)
                ...
                (gui 9 '(+TelField)) ) ) )
-      (<spread>
+      (&lt;spread&gt;
          (scroll (cho))
          (newButton T Dst '(+CuSu) ...)
          (cancelButton) ) ) )

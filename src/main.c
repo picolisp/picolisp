@@ -1,4 +1,4 @@
-/* 11feb16abu
+/* 09jan17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1073,6 +1073,15 @@ any doTime(any ex) {
    h = xCnt(ex, z);
    m = evCnt(ex, x);
    return mkTime(h, m, isCell(cdr(x))? evCnt(ex, cdr(x)) : 0);
+}
+
+// (tzo) -> cnt
+any doTzo(any ex __attribute__((unused))) {
+#ifdef __linux__
+   return boxCnt(localtime(&Tv.tv_sec)->tm_gmtoff);
+#else
+   return Zero;
+#endif
 }
 
 // (usec ['flg]) -> num

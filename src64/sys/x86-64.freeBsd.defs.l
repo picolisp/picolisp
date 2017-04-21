@@ -1,4 +1,4 @@
-# 11feb16abu
+# 07jan17abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -123,6 +123,7 @@
 (equ TM_MDAY 12)
 (equ TM_MON 16)
 (equ TM_YEAR 20)
+(equ TM_GMTOFF 40)
 
 # dir
 (equ D_NAME 8)

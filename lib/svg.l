@@ -1,7 +1,7 @@
-# 24nov16abu
+# 10mar17abu
 # (c) Software Lab. Alexander Burger
 
-# *Unit *DX *DY *Pos *Page *StrokeWidth
+# *DX *DY *Pos *Page *StrokeWidth
 # *FontSize *FontFamily *FontStyle *FontWeight
 
 (de *A4-DX . 595)
@@ -15,11 +15,11 @@
    *FontWeight "normal" )
 
 # SVG Element
-(de <svg> (*DX *DY *Unit . "Prg")
+(de <svg> (*DX *DY Z . "Prg")
    (prin
       "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink"
-      "\" width=\"" *DX *Unit
-      "\" height=\"" *DY *Unit
+      "\" width=\"" (if (num? Z) (* @ *DX) (pack *DX Z))
+      "\" height=\"" (if (num? Z) (* @ *DY) (pack *DY Z))
       "\" viewBox=\"0 0 " *DX " " *DY "\"" )
    (dfltCss "svg")
    (prinl ">")

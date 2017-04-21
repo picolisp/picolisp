@@ -1,4 +1,4 @@
-# 24nov16abu
+# 07apr17abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -30,17 +30,30 @@
    pop X
    ret
 
+(code 'nextIsInternEXYZ_FE 0)  # Y
+   ld Y ((Z))  # Get next tree
+   ld Z (Z CDR)
+
 ### Is symbol interned? ###
 # E symbol
 # X name
-# Y tree
-(code 'isInternEXY_F 0)
+# Z more
+(code 'isInternEXYZ_FCE 0)  # Y
+   ld C 0  # Default current namespace
    cnt X  # Short name?
    if nz  # Yes
-      ld Y (Y)  # Y on first tree
+10    ld Y (Y)  # Y on first tree
       do
          atom Y  # Empty?
-         jnz ret  # Return NO
+         if nz  # Yes
+            atom Z  # More namespaces?
+            jnz ret  # Return NO
+            null C  # Found in current?
+            ldnz C (Z)  # Yes, keep next namespace
+            ld Y ((Z))  # Get next tree
+            ld Z (Z CDR)
+            jmp 10  # Try next
+         end
          ld A ((Y) TAIL)  # Next symbol
          call nameA_A  # Get name
          cmp A X  # Equal?
@@ -51,14 +64,33 @@
             ld Y ((Y CDR))  # Symbol is greater
          end
       loop
-      cmp E (Y)  # Same Symbol?
-      ret  # Return YES or NO
+      null E  # Given symbol?
+      if z  # No
+         ld E (Y)  # Found one
+      else
+         cmp E (Y)  # Same Symbol?
+         if nz  # No
+            ld C (Z)  # Try next namespace if any
+            ld Y (C)
+            ld Z (Z CDR)
+            jmp 10
+         end
+      end
+      ret  # Return YES
    end
    # Long name
-   ld Y (Y CDR)  # Y on second tree
+20 ld Y (Y CDR)  # Y on second tree
    do
       atom Y  # Empty?
-      jnz ret  # Return NO
+      if nz  # Yes
+         atom Z  # More namespaces?
+         jnz ret  # Return NO
+         null C  # Found in current?
+         ldnz C (Z)  # Yes, keep next namespace
+         ld Y ((Z))  # Get next tree
+         ld Z (Z CDR)
+         jmp 20  # Try next
+      end
       ld A ((Y) TAIL)  # Next symbol
       call nameA_A  # Get name
       call cmpLongAX_F  # Equal?
@@ -69,19 +101,38 @@
          ld Y ((Y CDR))  # Symbol is greater
       end
    loop
-   cmp E (Y)  # Same Symbol?
-   ret   # Return YES or NO
+   null E  # Given symbol?
+   if z  # No
+      ld E (Y)  # Found one
+   else
+      cmp E (Y)  # Same Symbol?
+      if nz  # No
+         ld C (Z)  # Try next namespace if any
+         ld Y (C)
+         ld Z (Z CDR)
+         jmp 20
+      end
+   end
+   ret   # Return YES
 
 ### Intern a symbol/name ###
 # E symbol
 # X name
 # Y tree
-(code 'internEXY_FE 0)
+# Z more
+(code 'internEXYZ_FE 0)
    cnt X  # Short name?
    if nz  # Yes
       ld C (Y)  # C on first tree
       atom C  # Empty?
       if nz  # Yes
+         atom Z  # More namespaces?
+         if z  # Yes
+            push Y
+            call nextIsInternEXYZ_FE    # Check
+            pop Y
+            jeq Ret  # Return if found
+         end
          null E  # New symbol?
          if z
             call consSymX_E  # Yes
@@ -104,6 +155,13 @@
          if lt  # Symbol is smaller
             atom (C CDR)  # Already has link?
             if nz  # No
+               atom Z  # More namespaces?
+               if z  # Yes
+                  push C
+                  call nextIsInternEXYZ_FE    # Check
+                  pop C
+                  jeq Ret  # Return if found
+               end
                null E  # New symbol?
                if z
                   call consSymX_E  # Yes
@@ -122,6 +180,13 @@
             atom (C CDR)  # CDR of link?
             ldz C (C CDR)  # Yes: Get CDR of link in C
             if nz  # No
+               atom Z  # More namespaces?
+               if z  # Yes
+                  push C
+                  call nextIsInternEXYZ_FE    # Check
+                  pop C
+                  jeq Ret  # Return if found
+               end
                null E  # New symbol?
                if z
                   call consSymX_E  # Yes
@@ -136,6 +201,13 @@
          else  # Symbol is greater
             atom (C CDR)  # Already has link?
             if nz  # No
+               atom Z  # More namespaces?
+               if z  # Yes
+                  push C
+                  call nextIsInternEXYZ_FE    # Check
+                  pop C
+                  jeq Ret  # Return if found
+               end
                null E  # New symbol?
                if z
                   call consSymX_E  # Yes
@@ -154,6 +226,13 @@
             atom (C)  # CAR of link?
             ldz C (C)  # Yes: Get CAR of link in C
             if nz  # No
+               atom Z  # More namespaces?
+               if z  # Yes
+                  push C
+                  call nextIsInternEXYZ_FE    # Check
+                  pop C
+                  jeq Ret  # Return if found
+               end
                null E  # New symbol?
                if z
                   call consSymX_E  # Yes
@@ -172,6 +251,13 @@
    ld C (Y CDR)  # C on second tree
    atom C  # Empty?
    if nz  # Yes
+      atom Z  # More namespaces?
+      if z  # Yes
+         push Y
+         call nextIsInternEXYZ_FE    # Check
+         pop Y
+         jeq Ret  # Return if found
+      end
       null E  # New symbol?
       if z
          call consSymX_E  # Yes
@@ -194,6 +280,13 @@
       if lt  # Symbol is smaller
          atom (C CDR)  # Already has link?
          if nz  # No
+            atom Z  # More namespaces?
+            if z  # Yes
+               push C
+               call nextIsInternEXYZ_FE    # Check
+               pop C
+               jeq Ret  # Return if found
+            end
             null E  # New symbol?
             if z
                call consSymX_E  # Yes
@@ -212,6 +305,13 @@
          atom (C CDR)  # CDR of link?
          ldz C (C CDR)  # Yes: Get CDR of link in C
          if nz  # No
+            atom Z  # More namespaces?
+            if z  # Yes
+               push C
+               call nextIsInternEXYZ_FE    # Check
+               pop C
+               jeq Ret  # Return if found
+            end
             null E  # New symbol?
             if z
                call consSymX_E  # Yes
@@ -226,6 +326,13 @@
       else  # Symbol is greater
          atom (C CDR)  # Already has link?
          if nz  # No
+            atom Z  # More namespaces?
+            if z  # Yes
+               push C
+               call nextIsInternEXYZ_FE    # Check
+               pop C
+               jeq Ret  # Return if found
+            end
             null E  # New symbol?
             if z
                call consSymX_E  # Yes
@@ -244,6 +351,13 @@
          atom (C)  # CAR of link?
          ldz C (C)  # Yes: Get CAR of link in C
          if nz  # No
+            atom Z  # More namespaces?
+            if z  # Yes
+               push C
+               call nextIsInternEXYZ_FE    # Check
+               pop C
+               jeq Ret  # Return if found
+            end
             null E  # New symbol?
             if z
                call consSymX_E  # Yes
@@ -260,10 +374,23 @@
 
 (code 'findSymX_E 0)  # Y
    ld E 0  # No symbol yet
-   ld Y ((EnvIntern))
-   call internEXY_FE  # New internal symbol?
+   ld A (EnvIntern)
+   ld Y ((A))  # First tree
+   push Z
+   ld Z (A CDR)  # More namespaces
+   call internEXYZ_FE  # New internal symbol?
+   pop Z
    jge Ret  # No
    ld (E) Nil  # Init to 'NIL'
+   ret
+
+(code 'isEnvInternEX_FCE 0)  # Y
+   ld A (EnvIntern)
+   ld Y ((A))  # First tree
+   push Z
+   ld Z (A CDR)  # More namespaces
+   call isInternEXYZ_FCE  # Internal symbol?
+   pop Z
    ret
 
 # X name
@@ -567,8 +694,7 @@
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
-      ld Y ((EnvIntern))  # Internal symbol?
-      call isInternEXY_F
+      call isEnvInternEX_FCE  # Internal symbol?
       pop Y
       pop X
       jz renErrEX  # Yes
@@ -817,18 +943,20 @@
    ld E Nil
    ret
 
-# (all ['NIL | 'T | '0 | '(NIL . flg) | '(T . flg) | '(0)]) -> lst
+# (all ['NIL | 'T | '0 | 'sym | '(NIL . flg) | '(T . flg) | '(0)]) -> lst
 (code 'doAll 2)
    push X
+   push Y
    ld E ((E CDR))  # Eval arg
    eval
    atom E  # Direct tree?
    if z  # Yes
       cmp (E) Nil  # Internal trees?
       if eq  # Yes
+         ld A (((EnvIntern)))
          cmp (E CDR) Nil  # Short names?
-         ldz E (((EnvIntern)))  # Yes
-         ldnz E (((EnvIntern)) I)
+         ldz E (A)  # Yes
+         ldnz E (A I)
       else
          cmp (E) TSym  # Transient trees?
          ldnz E (Extern)  # No: External symbols
@@ -841,9 +969,15 @@
    else
       cmp E Nil  # Nil?
       if eq  # Yes
-         ld X (((EnvIntern)) I)  # Internal symbols
-         call consTreeXE_E
-         ld X (((EnvIntern)))
+         ld Y (EnvIntern)  # Namespace list
+         do
+            ld X (((Y)) I)  # Internal symbols
+            call consTreeXE_E
+            ld X (((Y)))
+            call consTreeXE_E
+            ld Y (Y CDR)  # More?
+            atom Y
+         until nz  # No
       else
          cmp E TSym  # T?
          if eq  # Yes
@@ -852,12 +986,22 @@
             call consTreeXE_E
             ld X (Transient)
          else
-            ld E Nil
-            ld X (Extern)  # External symbols
+            cmp E ZERO  # Zero?
+            if eq  # Yes
+               ld E Nil
+               ld X (Extern)  # External symbols
+            else
+               ld Y (E)  # Given namespace
+               ld E Nil
+               ld X (Y I)
+               call consTreeXE_E
+               ld X (Y)
+            end
          end
+         call consTreeXE_E
       end
-      call consTreeXE_E
    end
+   pop Y
    pop X
    ret
 
@@ -921,127 +1065,95 @@
 90 drop  # Return E
    ret
 
-# Build balanced copy of a namespace
-(code 'balanceXY)  # ACE
-   ld E Nil  # Build list
-   call consTreeXE_E
-   link
-   push E  # <L I> Save list
-   link
-   ld A E  # Get list in A
-   ld C 0  # Calculate length
-   do
-      atom A  # More cells?
-   while z  # Yes
-      inc C  # Increment length
-      ld A (A CDR)  # Next cell
-   loop
-   call balanceCEY
-   drop
-   ret
-
-(code 'balanceCEY 0)
-   do
-      null C  # Length zero?
-      jz ret  # Yes
-      push C  # <S II> Save length
-      push E  # <S I> and list
-      inc C  # (length + 1) / 2
-      shr C 1
-      push C  # <S> Rest length
-      do
-         dec C  # nth
-      while nsz
-         ld E (E CDR)
-      loop
-      push (E CDR)  # Save rest
-      ld E (E)  # Next symbol
-      ld X (E TAIL)  # Get name
-      call nameX_X
-      call internEXY_FE  # Insert
-      pop E  # Retrieve rest
-      ld C (S II)  # Get length
-      sub C (S)  # minus rest length
-      call balanceCEY  # Recurse
-      pop C  # Retrieve rest length
-      dec C  # Decrement
-      pop E  # Retrieve list
-      add S I  # Drop length
-   loop  # Tail recurse
-
-# (symbols) -> sym
-# (symbols 'sym1) -> sym2
-# (symbols 'sym1 'sym ..) -> sym2
+# (symbols) -> lst
+# (symbols 'lst) -> lst
+# (symbols 'lst . prg) -> any
+# (symbols 'sym1 'sym2 ..) -> lst
 (code 'doSymbols 2)
    push X
    push Y
-   push Z
    ld X E
-   ld Z (E CDR)  # Z on args
-   atom Z  # Any?
+   ld Y (E CDR)  # Y on args
+   atom Y  # Any?
    if nz  # No
-      ld E (EnvIntern)  # Return current symbol namespace
+      ld E (EnvIntern)  # Return current namespaces
    else
-      ld E (Z)  # Eval first
+      ld E (Y)  # Eval first
       eval
-      num E  # Need symbol
-      jnz symErrEX
-      sym E
-      jz symErrEX
-      ld Z (Z CDR)  # Second arg
-      atom Z  # Any?
-      if nz  # No
-         atom (E)  # Value must be a pair
-         jnz symNsErrEX
+      atom E  # List?
+      if z  # Yes
+         ld Y (Y CDR)  # 'prg'?
+         atom Y
+         if z  # Yes
+            xchg (EnvIntern) E  # Set new namespaces
+            link
+            push E  # <L I> Save current
+            link
+            prog Y  # Run 'prog'
+            ld (EnvIntern) (L I)  # Restore namespaces
+            drop
+            pop Y
+            pop X
+            ret
+         end
       else
-         call checkVarEX
+         num E  # Need symbol
+         jnz symErrEX
+         sym E
+         jz symErrEX
+         cmp (E) Nil  # New namespace?
+         if ne  # No
+            atom (E)  # Value must be a pair
+            jnz symNsErrEX
+         else
+            call consE_C  # Create namespace cell
+            ld (C) Nil  # Initialize
+            ld (C CDR) Nil
+            ld (E) C
+         end
+         call consE_C  # Cons symbol with NIL
+         ld (C) E
+         ld (C CDR) Nil
          link
-         push E  # <L III> Save new symbol namespace
-         push Nil  # <L II> Space for value
-         push Nil  # <L I> and source
+         push C  # <L I> Save
          link
-         call cons_Y  # Create namespace cell
-         ld (Y) Nil  # Initialize
-         ld (Y CDR) Nil
-         ld (L II) Y  # New value
+         push Z
          do
-            ld E (Z)
-            eval  # Eval next source symbol namespace
-            ld (L I) E  # Save source
+            ld Z C  # Keey in Z
+            ld Y (Y CDR)  # More args?
+            atom Y
+         while z  # Yes
+            ld E (Y)
+            eval  # Eval next arg
             num E  # Need symbol
             jnz symErrEX
             sym E
             jz symErrEX
-            ld C (E)  # Get source value
-            atom C  # Must be a pair
+            atom (E)  # Value must be a pair
             jnz symNsErrEX
-            push X
-            ld X (C)  # Source short names
-            call balanceXY  # Balanced copy of short names
-            ld X (((L I)) CDR)  # Source long names
-            call balanceXY  # Balanced copy of long names
-            pop X
-            ld Z (Z CDR)  # Next arg
-            atom Z  # Any?
-         until nz  # No
-         ld C (L II)  # Get value
-         ld E (L III)  # And new symbol namespace
-         call redefineCE  # Redefine
+            call consE_C  # Cons with NIL
+            ld (C) E
+            ld (C CDR) Nil
+            ld (Z CDR) C  # Concatenate
+         loop
+         ld E (L I)  # Get new list
+         pop Z
          drop
       end
-      xchg (EnvIntern) E  # Set new symbol namespace, return old
+      xchg (EnvIntern) E  # Set new symbol namespaces, return old
    end
-   pop Z
    pop Y
    pop X
    ret
 
-# (intern 'sym) -> sym
+# (intern 'sym ['flg]) -> sym
 (code 'doIntern 2)
    push X
+   push Y
    ld X E
-   ld E ((E CDR))  # E on arg
-   eval  # Eval it
+   ld Y (E CDR)  # Y on args
+   ld E (Y)
+   eval  # Eval first
    num E  # Need symbol
    jnz symErrEX
    sym E
@@ -1050,14 +1162,31 @@
    call nameX_X  # Get name
    cmp X ZERO  # Any?
    if ne  # Yes
-      push Y
-      ld Y ((EnvIntern))  # Insert internal
-      call internEXY_FE
+      push Z
+      link
+      push E  # <L I> Save symbol
+      link
+      ld E ((Y CDR))  # Eval 'flg'
+      eval
+      ld A (EnvIntern)  # Internals
+      ld Y ((A))  # First tree
+      cmp E Nil  # 'flg'?
+      if eq  # No
+         ld E 0  # No symbol yet
+         ldz Z (A CDR)  # Search all namespaces
+      else
+         ld E (L I)  # Get symbol
+         ld Z Nil  # Search only current namespace
+      end
+      call internEXYZ_FE
+      drop
+      pop Z
       pop Y
       pop X
       ret
    end
    ld E Nil
+   pop Y
    pop X
    ret
 
@@ -1148,10 +1277,13 @@
       sym E
       jz symErrEX
       push X
+      push Z
       ld X (E TAIL)
       call nameX_X  # Get name
       ld Y Transient  # Insert transient
-      call internEXY_FE
+      ld Z Nil  # No more namespaces
+      call internEXYZ_FE
+      pop Z
       pop X
       ld Z (Z CDR)  # Z on rest
    loop
@@ -1188,8 +1320,7 @@
    push Y
    ld X (E TAIL)  # Get name
    call nameX_X
-   ld Y ((EnvIntern))  # Internal symbol?
-   call isInternEXY_F
+   call isEnvInternEX_FCE  # Internal symbol?
    ldz E Nil  # Return NIL
    pop Y
    pop X
@@ -1242,7 +1373,7 @@
       push Y
       ld X (E TAIL)
       call nameX_X  # Get name
-      ld Y ((EnvIntern))
+      ld Y (((EnvIntern)))
       call uninternEXY  # Unintern symbol
       pop Y
    end
@@ -2070,7 +2201,7 @@
    pop X
    ret
 
-# (del 'any 'var) -> lst
+# (del 'any 'var ['flg]) -> lst
 (code 'doDel 2)
    push X
    push Y
@@ -2080,11 +2211,11 @@
    ld E (Y)  # Eval first
    eval
    link
-   push E  # <L II/III> 'any'
+   push E  # <L II> 'any'
    ld Y (Y CDR)
    ld E (Y)  # Eval second
    eval+
-   push E  # <L I/II> 'var'
+   push E  # <L I> 'var'
    link
    call needVarEX  # Need variable
    sym E  # Symbol?
@@ -2094,45 +2225,38 @@
          call dbTouchEX  # Touch it
       end
    end
-   ld E ((L I))  # Get value of 'var'
-   atom E  # List?
-   if z  # Yes
-      ld Y E  # Keep value in Y
-      ld E (Y)  # First element
-      ld A (L II)  # 'any'
-      call equalAE_F  # Equal?
-      if eq  # Yes
-         ld E (Y CDR)  # Get value's CDR
-         ld ((L I)) E  # Set 'var'
-      else
-         call cons_Z  # Copy first cell
-         ld (Z) (Y)
-         ld (Z CDR) Nil
-         tuck Z  # <L I> Save it
-         link
-         do
-            ld Y (Y CDR)  # More cells?
-            atom Y
-         while z  # Yes
-            ld E (Y)  # Next element
-            ld A (L III)  # 'any'
-            call equalAE_F  # Equal?
-            if eq  # Yes
-               ld (Z CDR) (Y CDR)  # Skip found element
-               ld E (L I)  # Result
-               ld ((L II)) E  # Set 'var'
-               jmp 90
-            end
-            call cons_A  # Copy next cell
-            ld (A) (Y)
-            ld (A CDR) Nil
-            ld (Z CDR) A   # Append to result
-            ld Z (Z CDR)
-         loop
-         ld E ((L II))  # Not found: Return old value of 'var'
-      end
-   end
-90 drop
+   ld E ((Y CDR))  # Eval 'flg'
+   eval
+   ld X ((L I))  # Get value of 'var'
+   ld Y E  # 'flg' in Y
+   lea Z ((L I) -I)  # Point to "CAR" of dummy cell
+   do
+      ld C X  # Search in rest
+      do
+         atom C  # Done?
+         jnz 90  # Yes
+         ld A (L II)  # 'any'
+         ld E (C)  #  Equal to CAR?
+         call equalAE_F
+      while ne  # No
+         ld C (C CDR)  # Next
+      loop
+      do
+         cmp X C  # Reached found cell?
+      while ne  # No
+         call cons_A  # Copy traversed cells
+         ld (A) (X)
+         ld X (X CDR)
+         ld (A CDR) X
+         ld (Z CDR) A  # Append to result
+         ld Z A
+      loop
+      ld X (X CDR)  # Skip found cell
+      ld (Z CDR) X
+      cmp Y Nil  # 'flg'?
+   until eq  # Yes
+90 ld E ((L I))  # Get result
+   drop
    pop Z
    pop Y
    pop X
@@ -3501,6 +3625,8 @@
    sym E  # Symbol?
    jz retNil  # No
    call firstCharE_A  # Get first character
+   cmp A TOP  # Special "top" character?
+   jeq retNil  # Yes
    call caseDataA_AC  # Get case info
    and B (hex "1F")  # Character type
    cmp B CHAR_LOWERCASE  # Lower case?
@@ -3516,6 +3642,8 @@
    sym E  # Symbol?
    jz retNil  # No
    call firstCharE_A  # Get first character
+   cmp A TOP  # Special "top" character?
+   jeq retNil  # Yes
    call caseDataA_AC  # Get case info
    and B (hex "1F")  # Character type
    cmp B CHAR_UPPERCASE  # Lower case?
@@ -3550,13 +3678,16 @@
                   call symCharCX_FACX  # Next char?
                while nz
                   ld E C  # Save C
-                  call caseDataA_AC  # Get case info
-                  and A (hex "FFFF")
-                  shr A 6  # Make index
-                  off A 1
-                  ld2 (A CaseLower)  # Get lower case entry
-                  add A C  # plus character
-                  and A (hex "FFFF")
+                  cmp A TOP  # Special "top" character?
+                  if ne  # No
+                     call caseDataA_AC  # Get case info
+                     and A (hex "FFFF")
+                     shr A 6  # Make index
+                     off A 1
+                     ld2 (A CaseLower)  # Get lower case entry
+                     add A C  # plus character
+                     and A (hex "FFFF")
+                  end
                   ld C (S I)  # Swap status
                   xchg X (S)
                   call charSymACX_CX  # Pack char
@@ -3602,13 +3733,16 @@
                   call symCharCX_FACX  # Next char?
                while nz
                   ld E C  # Save C
-                  call caseDataA_AC  # Get case info
-                  and A (hex "FFFF")
-                  shr A 6  # Make index
-                  off A 1
-                  ld2 (A CaseUpper)  # Get upper case entry
-                  add A C  # plus character
-                  and A (hex "FFFF")
+                  cmp A TOP  # Special "top" character?
+                  if ne  # No
+                     call caseDataA_AC  # Get case info
+                     and A (hex "FFFF")
+                     shr A 6  # Make index
+                     off A 1
+                     ld2 (A CaseUpper)  # Get upper case entry
+                     add A C  # plus character
+                     and A (hex "FFFF")
+                  end
                   ld C (S I)  # Swap status
                   xchg X (S)
                   call charSymACX_CX  # Pack char
@@ -3664,6 +3798,8 @@
                do
                   call symCharCX_FACX  # Next char?
                while nz
+                  cmp A TOP  # Special "top" character?
+                  continue eq  # Yes
                   ld E C  # Save C
                   call isLetterOrDigitA_F  # Letter or digit?
                   if nz  # Yes

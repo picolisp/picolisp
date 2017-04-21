@@ -1,4 +1,4 @@
-# 29aug16abu
+# 02mar17abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -35,6 +35,7 @@
    ("Deutsch (CH)" "CH" . "ch")
    ("Español (AR)" "AR" . "ar")
    ("Español (ES)" "ES" . "es")
+   ("Français (FR)" "FR" . "fr")
    ("λληνικά (GR)" "GR" . "gr")
    ("Norsk" "NO" . "no")
    ("Русский" "RU" . "ru")

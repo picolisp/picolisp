@@ -1,4 +1,4 @@
-# 24oct16abu
+# 04apr17abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -132,13 +132,25 @@
 
 
 ### delete ###
-(test (1 3) (delete 2 (1 2 3)))
-(test '((1 2) (5 6) (3 4)) (delete (3 4) '((1 2) (3 4) (5 6) (3 4))))
+(test (1 3)
+   (delete 2 (1 2 3)) )
+(test '((1 2) (5 6) (3 4))
+   (delete (3 4) '((1 2) (3 4) (5 6) (3 4))) )
+(test (1 2 3 1 2 3)
+   (delete 1 (1 1 2 3 1 2 3)) )
+(test (2 3 2 3)
+   (delete 1 (1 1 2 3 1 2 3) T) )
 
 
 ### delq ###
-(test '(a c) (delq 'b '(a b c)))
-(test (1 (2) 3) (delq (2) (1 (2) 3)))
+(test '(a c)
+   (delq 'b '(a b c)) )
+(test (1 (2) 3)
+   (delq (2) (1 (2) 3)) )
+(test '(a b c a b c)
+   (delq 'a '(a a b c a b c)) )
+(test '(b c b c)
+   (delq 'a '(a a b c a b c) T) )
 
 
 ### replace ###

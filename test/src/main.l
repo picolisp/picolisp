@@ -1,4 +1,4 @@
-# 02feb16abu
+# 09jan17abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -191,5 +191,17 @@
 (test 40643 (time 11 17 23))
 (test 40643 (time (11 17 23)))
 (test NIL (time NIL))
+
+(when (= *OS "Linux")
+   (test
+      (use (A B C)
+         (loop
+            (setq
+               A (+ (* 86400 (date)) (time T))
+               B (+ (* 86400 (date T)) (time T))
+               C (+ (* 86400 (date)) (time T)) )
+            (T (= A C)) )
+         (- A B) )
+      (tzo) ) )
 
 # vi:et:ts=3:sw=3

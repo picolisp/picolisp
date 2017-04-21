@@ -1,4 +1,4 @@
-/* 29jul16abu
+/* 12apr17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -39,6 +39,12 @@ static name *Names;
 static char *Config;
 static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
+static char Head_302[] =
+   "HTTP/1.0 302 Found\r\n"
+   "Server: PicoLisp\r\n"
+   "Location: %s\r\n"
+   "\r\n";
+
 static char Head_410[] =
    "HTTP/1.0 410 Gone\r\n"
    "Server: PicoLisp\r\n"
@@ -68,34 +74,38 @@ static int readNames(void) {
          np = malloc(sizeof(name));
          np->key = strdup(strtok(p, delim));
          np->less = np->more = NULL;
-         p = np->ev[0] = malloc(5 + strlen(np->key) + 1);
-         strcpy(p, "NAME="), strcpy(p+5, np->key);
-         np->port = atoi(ps = strtok(NULL, delim));
-         if (!(pw = getpwnam(strtok(NULL, delim))) || pw->pw_uid == 0 || pw->pw_gid == 0) {
-            free(np);
-            continue;
-         }
-         np->uid = pw->pw_uid;
-         np->gid = pw->pw_gid;
-         p = np->ev[1] = malloc(5 + strlen(pw->pw_dir) + 1);
-         strcpy(p, "HOME="), strcpy(p+5, pw->pw_dir);
-         p = np->ev[2] = malloc(5 + strlen(ps) + 1);
-         strcpy(p, "PORT="), strcpy(p+5, ps);
-         np->ev[3] = NULL;
-         np->dir = strdup(strtok(NULL, delim));
-         np->log = *(p = strtok(NULL, delim)) == '^'? NULL : strdup(p);
-         cnt = 0;
-         while (p = strtok(NULL, delim)) {
-            if (*p == '^')
-               np->av[cnt] = strdup("");
-            else {
-               p = np->av[cnt] = strdup(p);
-               while (p = strchr(p, '^'))
-                  *p++ = ' ';
+         if ((np->port = atoi(ps = strtok(NULL, delim))) == 0)
+            np->dir = strdup(strtok(NULL, delim));
+         else {
+            if (!(pw = getpwnam(strtok(NULL, delim))) || pw->pw_uid == 0 || pw->pw_gid == 0) {
+               free(np->key);
+               free(np);
+               continue;
             }
-            np = realloc(np, sizeof(name) + ++cnt * sizeof(char*));
+            np->uid = pw->pw_uid;
+            np->gid = pw->pw_gid;
+            p = np->ev[0] = malloc(5 + strlen(np->key) + 1);
+            strcpy(p, "NAME="), strcpy(p+5, np->key);
+            p = np->ev[1] = malloc(5 + strlen(pw->pw_dir) + 1);
+            strcpy(p, "HOME="), strcpy(p+5, pw->pw_dir);
+            p = np->ev[2] = malloc(5 + strlen(ps) + 1);
+            strcpy(p, "PORT="), strcpy(p+5, ps);
+            np->ev[3] = NULL;
+            np->dir = strdup(strtok(NULL, delim));
+            np->log = *(p = strtok(NULL, delim)) == '^'? NULL : strdup(p);
+            cnt = 0;
+            while (p = strtok(NULL, delim)) {
+               if (*p == '^')
+                  np->av[cnt] = strdup("");
+               else {
+                  p = np->av[cnt] = strdup(p);
+                  while (p = strchr(p, '^'))
+                     *p++ = ' ';
+               }
+               np = realloc(np, sizeof(name) + ++cnt * sizeof(char*));
+            }
+            np->av[cnt] = NULL;
          }
-         np->av[cnt] = NULL;
          p = np->key;
          if (!Names  ||  p[0] == '@' && p[1] == '\0')
             port = np->port;
@@ -116,11 +126,13 @@ static void freeNames(name *np) {
    if (np->more)
       freeNames(np->more);
    free(np->dir);
-   free(np->log);
-   for (i = 0; i < 3; ++i)
-      free(np->ev[i]);
-   for (i = 0; np->av[i]; ++i)
-      free(np->av[i]);
+   if (np->port) {
+      free(np->log);
+      for (i = 0; i < 3; ++i)
+         free(np->ev[i]);
+      for (i = 0; np->av[i]; ++i)
+         free(np->av[i]);
+   }
    free(np);
 }
 
@@ -422,6 +434,14 @@ int main(int ac, char *av[]) {
                   if (port == ports[i])
                      return 1;
 
+            if (np && port == 0) {
+               i = sprintf(buf, Head_302, np->dir);
+               if (ssl)
+                  sslWrite(ssl, buf, i);
+               else
+                  wrBytes(cli, buf, i);
+               return 0;
+            }
             if ((srv = gateConnect(port, np)) < 0) {
                if (!memchr(q,'~', buf + n - q))
                   return 1;

@@ -1,4 +1,4 @@
-/* 11feb16abu
+/* 07jan17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -175,6 +175,7 @@ int main(void) {
    equ("TM_MDAY", (char*)&tm.tm_mday - (char*)&tm);
    equ("TM_MON", (char*)&tm.tm_mon - (char*)&tm);
    equ("TM_YEAR", (char*)&tm.tm_year - (char*)&tm);
+   equ("TM_GMTOFF", (char*)&tm.tm_gmtoff - (char*)&tm);
 
    comment("dir");
    equ("D_NAME", (char*)&dir.d_name - (char*)&dir);

@@ -1,4 +1,4 @@
-# 24nov16abu
+# 04mar17abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -205,6 +205,7 @@
    initFun NIL       "rest"      doRest
    initFun NIL       "date"      doDate
    initFun NIL       "time"      doTime
+   initFun NIL       "tzo"       doTzo
    initFun NIL       "usec"      doUsec
    initFun NIL       "pwd"       doPwd
    initFun NIL       "cd"        doCd
@@ -595,6 +596,16 @@
    word (short `(caddr *Version))
    word Nil
 
+# Initial namespace
+: Pico1
+   word pico
+   word Nil
+
+# Temporary cell
+: Cell1
+   word Nil
+   word Nil
+
 : ExtCnt       word  1           # External symbol count
 : ExtSkip      word  0           # External tree skip
 :: Extern      word  0           # External symbol tree
@@ -613,7 +624,7 @@
 : EnvOutFrames word  0           # Output frames
 : EnvErrFrames word  0           # Error frames
 : EnvCtlFrames word  0           # Control frames
-:: EnvIntern   word  pico        # Current namespace of internal symbols
+:: EnvIntern   word  Pico1       # Current namespaces of internal symbols
 : EnvArgs      word  0           # Varargs frame
 : EnvNext      word  0           # Next vararg
 : EnvCls       word  0           # Method class

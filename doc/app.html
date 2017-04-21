@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="doc.css" type="text/css">
 </head>
 <body>
-    <a href="mailto:abu@software-lab.de">abu@software-lab.de</a><br />
+    <a href="mailto:abu@software-lab.de">abu@software-lab.de</a><br>
 <a href="mailto:mattias.sun@gmail.com">mattias.sun@gmail.com</a>
 
 <h1>PicoLisp Application Development</h1>
@@ -2205,7 +2205,7 @@ charts.
 dialog popped up, it will fall back, and the form will be POSTed in the normal
 way.
 
-<p>Thus it makes no sense to use the <code<a
+<p>Thus it makes no sense to use the <code><a
 href="form/refJ.html#+JS">+JS</a></code> prefix for buttons that cause a change
 of the HTML code, open a dialog, or jump to another page. In such cases, overall
 performance will even be worse, because the XMLHttpRequest is tried first (but
@@ -2555,7 +2555,7 @@ shown below.
 ########################################################################
 (de choCuSu (Dst)
    (diaform '(Dst)
-      (<grid> "--.-.-."
+      (&lt;grid&gt; "--.-.-."
          # Form components
          ... )
       (gui 'query '(+QueryChart) (cho)
@@ -2565,11 +2565,11 @@ shown below.
       (&lt;table&gt; 'chart (choTtl ,"Customers/Suppliers" 'nr '+CuSu)
          # Table headers
          (do (cho)
-            (<row> (alternating)
+            (&lt;row&gt; (alternating)
                (gui 1 '(+DstButton) Dst)
                ...
                (gui 9 '(+TelField)) ) ) )
-      (<spread>
+      (&lt;spread&gt;
          (scroll (cho))
          (newButton T Dst '(+CuSu) ...)
          (cancelButton) ) ) )

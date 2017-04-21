@@ -1,4 +1,4 @@
-# 25nov16abu
+# 21mar17abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -298,6 +298,7 @@
             (if (> "LPos" 1)
                (chgLine (remove (dec "LPos") "Line") (dec "LPos"))
                (beep) ) )
+         ("^U" (chgLine NIL 1))
          ("^V" (insChar (key)))
          ("^E" (and edit (edit '*History)))
          ("^F" (saveHistory))

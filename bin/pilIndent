@@ -1,5 +1,5 @@
 #!/usr/bin/picolisp /usr/lib/picolisp/lib.l
-# 24nov16abu
+# 24jan17abu
 
 (let Lst
    (mapcar
@@ -18,7 +18,7 @@
                ("\\" (++ L))
                ("\"" (onOff Str))
                ("#" (or Str (= "{" (cadr L)) (off L)))
-               ("}" (and (= "#" (cadr L)) (setq L (cddr L))))
+               ("}" (and (= "#" (cadr L)) (++ L)))
                ("(" (or Str (inc 'N 3)))
                (")" (or Str (dec 'N 3)))
                ("["

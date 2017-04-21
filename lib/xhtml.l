@@ -1,4 +1,4 @@
-# 24nov16abu
+# 22dec16abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -360,7 +360,7 @@
 (de <layout> "Lst"
    (let P (and (=T (car "Lst")) (++ "Lst"))
       (recur ("Lst" "LayX")
-         (use "LayY"
+         (use ("LayX" "LayY")
             (for "L" "Lst"
                (let
                   ("Args" (mapcar eval (cddar "L"))

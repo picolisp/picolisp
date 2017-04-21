@@ -1,4 +1,4 @@
-# 24nov16abu
+# 04mar17abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -885,8 +885,7 @@
          ld B NIX  # Output NIX
          call (PutBinBZ)
       else
-         ld Y ((EnvIntern))
-         call isInternEXY_F  # Internal symbol?
+         call isEnvInternEX_FCE  # Internal symbol?
          ld C INTERN  # Yes
          ldnz C TRANSIENT  # No
          cnt X  # Short name?
@@ -2219,7 +2218,8 @@
          ld X 0  # Clear error context
          atom (E)  # Value must be a pair
          jnz symNsErrEX
-         ld (EnvIntern) E  # Switch symbol namespace
+         ld (Cell1) E
+         ld (EnvIntern) Cell1  # Switch symbol namespace
          ld C 4  # Build new name
          lea X (L I)  # Safe
          ld (X) ZERO
@@ -2509,9 +2509,12 @@
       loop
       call (Get_A)  # Skip '"'
       ld X (L I)  # Get name
-      ld Y Transient
+      push Z
       ld E 0  # No symbol yet
-      call internEXY_FE  # Check transient symbol
+      ld Y Transient
+      ld Z Nil  # No more namespaces
+      call internEXYZ_FE  # Check transient symbol
+      pop Z
       drop
       jmp 99
    end
@@ -4931,9 +4934,15 @@
          ret
       end
       push Y
-      ld Y ((EnvIntern))
-      call isInternEXY_F  # Internal symbol?
+      call isEnvInternEX_FCE  # Internal symbol?
       if eq  # Yes
+         null C  # Found in other namespace?
+         if nz  # Yes
+            ld E C  # Print it
+            call outNameE
+            ld B (char "~")
+            call (PutB)
+         end
          cmp X (hex "2E2")  # Dot?
          if eq  # Yes
             ld B (char "\\")  # Print backslash

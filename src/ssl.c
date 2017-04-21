@@ -1,4 +1,4 @@
-/* 19jul16abu
+/* 28mar17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -75,6 +75,7 @@ static int sslConnect(SSL *ssl, char *node, char *service) {
 
 static void sslClose(SSL *ssl, int sd) {
    SSL_shutdown(ssl);
+   SSL_clear(ssl);
    close(sd);
 }
 

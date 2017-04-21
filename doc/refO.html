@@ -238,7 +238,10 @@ opt "abc"
 <dt><a name="or"><code>(or 'any ..) -> any</code></a>
 <dd>Logical OR. The expressions <code>any</code> are evaluated from left to
 right. If a non-<code>NIL</code> value is encountered, it is returned
-immediately. Else the result of the last expression is returned.
+immediately. Else the result of the last expression is returned. See also
+<code><a href="refN.html#nor">nor</a></code>, <code><a
+href="refA.html#and">and</a></code> and <code><a
+href="refU.html#unless">unless</a></code>.
 
 <pre><code>
 : (or (= 3 3) (read))
@@ -270,7 +273,9 @@ the first character is "<code>+</code>"). If it is a positive number, it is used
 as the descriptor of an open file. If it is a negative number, the saved output
 channel such many levels above the current one is used. Otherwise (if it is a
 list), it is taken as a command with arguments, and a pipe is opened for output.
-See also <code><a href="refO.html#opid">opid</a></code>, <code> <a
+In all cases, <code><a href="refF.html#flush">flush</a></code> is called when
+<code>prg</code> is done. See also <code><a
+href="refO.html#opid">opid</a></code>, <code> <a
 href="refC.html#call">call</a></code>, <code><a
 href="refI.html#in">in</a></code>, <code> <a
 href="refE.html#err">err</a></code>, <code> <a

@@ -244,7 +244,11 @@ href="refM.html#member/2">member/2</a></code>.
 <dd>Conditional execution: When the condition <code>any</code> evaluates to
 non-<code>NIL</code>, <code>NIL</code> is returned. Otherwise <code>prg</code>
 is executed and the result returned. See also <code><a
-href="refW.html#when">when</a></code>.
+href="refW.html#when">when</a></code>, <code><a
+href="refI.html#ifn">ifn</a></code>, <code><a
+href="refN.html#nor">nor</a></code>, <code><a
+href="refN.html#nand">nand</a></code> and <code><a
+href="refN.html#nond">nond</a></code>.
 
 <pre><code>
 : (unless (= 3 3) (println 'Strange 'result))
@@ -259,7 +263,10 @@ Strange result
 <code>NIL</code>, <code>prg</code> is repeatedly executed. If <code>prg</code>
 is never executed, <code>NIL</code> is returned. Otherwise the result of
 <code>prg</code> is returned. See also <code><a
-href="refW.html#while">while</a></code>.
+href="refW.html#while">while</a></code>, <code><a
+href="refF.html#for">for</a></code>, <code><a
+href="refL.html#loop">loop</a></code> and <code><a
+href="refD.html#do">do</a></code>.
 
 <pre><code>
 : (until (=T (setq N (read)))

@@ -1,4 +1,4 @@
-# 05dec16abu
+# 28mar17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -59,7 +59,9 @@ ifeq ($(UNAME), Linux)
 			SYS = .linux
 			FMT = .s
 			ARCH = x86-64
-			## PIE = -no-pie
+			ifeq ($(shell gcc -dumpspecs | grep -q no-pie ; echo $$?), 0)
+				PIE = -no-pie
+			endif
 			AS = as
 		else
 			ifeq ($(MACHINE), ppc64le)

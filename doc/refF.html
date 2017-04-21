@@ -222,6 +222,8 @@ non-<code>NIL</code>. See also <code><a
 href="refF.html#filter">filter</a></code>.
 
 <pre><code>
+: (fish atom '((a b) c (d e)))
+-> (a b c d e)
 : (fish gt0 '(a -2 (1 b (-3 c 2)) 3 d -1))
 -> (1 2 3)
 : (fish sym? '(a -2 (1 b (-3 c 2)) 3 d -1))

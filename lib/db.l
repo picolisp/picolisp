@@ -1,4 +1,4 @@
-# 24nov16abu
+# 04apr17abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -892,7 +892,7 @@
 (dm del> (Obj Old Val)
    (and
       (<> Old Val)
-      (delete Val Old) ) )
+      (delete Val Old T) ) )
 
 (dm rel> (Obj Old New Hook)
    (if (or (ele> This Old) (ele> This New))
@@ -1074,6 +1074,7 @@
 
 (dm url> (Tab))
 
+(dm url1> () (url> This 1))
 (dm url2> () (url> This 2))
 (dm url3> () (url> This 3))
 (dm url4> () (url> This 4))

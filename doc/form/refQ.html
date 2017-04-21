@@ -17,10 +17,10 @@
     dialogs, as the following example from the demo app supplied with the
     PicoLisp distribution.
 
-    <pre></code>
+    <pre><code>
     (de choItem (Dst)
        (diaform '(Dst)
-          (<grid> "--.-."
+          (&lt;grid&gt; "--.-."
              ,"Number" (gui 'nr '(+Focus +Var +NumField) '*ItemNr 10)
              ,"Supplier" (gui 'sup '(+Var +TextField) '*ItemSup 20)
              (searchButton '(init&gt; (: home query)))
@@ -51,14 +51,14 @@
                    (NIL ,"City")
                    (align ,"Price") )
                 (do (cho)
-                   (<row> (alternating)
+                   (&lt;row&gt; (alternating)
                       (gui 1 '(+DstButton) Dst)
                       (gui 2 '(+NumField))
                       (gui 3 '(+ObjView +TextField) '(: nm))
                       (gui 4 '(+ObjView +TextField) '(: nm))
                       (gui 5 '(+TextField))
                       (gui 6 '(+FixField) 2) ) ) )
-             (<spread>
+             (&lt;spread&gt;
                 (scroll (cho))
                 (newButton T Dst '(+Item)
                 '(nr genKey 'nr '+Item)
@@ -117,7 +117,7 @@
 
     <pre><code>
     '((This) (list This (: nr) This (: sup) (: sup ort) (: pr)))
-    </code>
+    </code></pre>
 
     The 'put'- function is applied to each row and places the desired content
     into the GUI. Since this chart is readonly, i.e. contains no input fields,
@@ -158,9 +158,9 @@
     href="refD.html#diaform">diaform</a>, <a
     href="refO.html#+ObjView">+ObjView</a>, <a
     href="refT.html#+TextField">+TextField</a>, <a
-    href="refF.html#+FixField">+FixField</a>,<a
-    href="../app.html#charts">charts</a> and <a href="../select.html">the select
-    predicate</a>
+    href="refF.html#+FixField">+FixField</a>, <a
+    href="../app.html#charts">charts</a> and the <a href="../select.html">select
+    </a> predicate.
 </dl>
 
 </body>

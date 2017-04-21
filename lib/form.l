@@ -1,4 +1,4 @@
-# 24nov16abu
+# 21apr17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -284,7 +284,8 @@
    (when Url
       (off *PRG)
       (timeout `(* 3600 1000))
-      (redirect (baseHRef) *SesId Url "?"
+      (redirect (baseHRef) *SesId Url
+         (and (args) "?")
          (pack
             (make
                (loop
@@ -341,24 +342,39 @@
 (de repl (Attr DX DY)
    (default DX 80  DY 25)
    (form Attr
-      (gui 'view '(+FileField) '(tmp "repl") DX DY)
+      (=: repl (tmp "repl"))
+      (gui 'view '(+FileField) (: repl) DX DY)
       (--)
-      (gui 'line '(+Focus +TextField) (*/ DX 3 4) ":")
-      (gui '(+JS +Button) "eval"
+      (gui 'line '(+Focus +Able +Hint1 +TextField)
+         '(= (: home view file) (: home repl))
+         '(: home hint)
+         (*/ DX 3 4)
+         ":" )
+      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "?"
          '(let Str (val> (: home line))
-            (out (pack "+" (tmp "repl"))
+            (out (pack "+" (: home repl))
                (err NIL
                   (prinl ": " Str)
                   (flush)
+                  (setq @@@ "@@@"  @@ "@@"  @ "@"  "@@@" "@@" "@@" "@")
                   (catch '(NIL)
                      (in "/dev/null"
-                        (setq @ "Result"  "Result" (eval (any Str))) )
-                     (prin "-> ")
-                     (println "Result") ) )
+                        (setq "@" (eval (any Str) 99)) ) )
+                  (prin "-> ")
+                  (println (setq @ "@")) )
                (when *Msg (prinl @) (off *Msg)) )
+            (push1 (:: home hint) Str)
             (clr> (: home line)) ) )
-      (gui '(+JS +Button) "clear"
-         '(clr> (: home view)) ) ) )
+      (gui '(+JS +Button)
+         '(if (= (: home view file) (: home repl)) ,"Edit" ,"Done")
+         '(file> (: home view)
+            (if (= (: home view file) (: home repl))
+               (if (val> (: home line))
+                  (setq "file" @)
+                  (set> (: home line) "file")
+                  "file" )
+               (clr> (: home line))
+               (: home repl) ) ) ) ) )
 
 
 # Dialogs
@@ -976,10 +992,7 @@
    (extra "Var")
    (when (and (able) (not "*Foc"))
       (on "*Foc")
-      (javascript NIL
-         "window.setTimeout(\"document.getElementById(\\\""
-         "i" *Form "-" (: id)
-         "\\\").focus()\",420)" ) ) )
+      (javascript NIL "idFocus(\"" "i" *Form "-" (: id) "\")") ) )
 
 
 ### Styles ###
@@ -1557,7 +1570,7 @@
 (dm chk> ()
    (and
       (str> This)
-      (not (val> This))
+      (not (expDat @))
       ,"Bad date format" ) )
 
 
@@ -1575,7 +1588,7 @@
 (dm chk> ()
    (and
       (str> This)
-      (not (val> This))
+      (not ($tim @))
       ,"Bad time format" ) )
 
 
@@ -1654,6 +1667,10 @@
                (info F)
                (in F (ctl NIL (till NIL T))) ) ) ) ) )
 
+(dm file> (Exe)
+   (=: file Exe)
+   (upd> This) )
+
 
 (class +Url)
 # url
@@ -1714,7 +1731,7 @@
 (dm chk> ()
    (and
       (str> This)
-      (not (val> This))
+      (not (expTel @))
       ,"Bad phone number format" ) )
 
 
@@ -1990,7 +2007,7 @@
    (gui '(+Rid +JS +Tip +Button) ,"Start search" ,"Search" Exe) )
 
 (de resetButton (Lst)
-   (gui '(+Force +ClrButton) T ,"Reset" Lst) )
+   (gui '(+Rid +Force +ClrButton) T ,"Reset" Lst) )
 
 (de newButton (Able Dst . Args)
    (gui '(+Rid +Able +Close +Tip +Button) Able ,"Create new object" ',"New"
@@ -2198,7 +2215,7 @@
    (dbHint (extra Str)
       (: objVar)
       (last (: objTyp))
-      (: objHook) ) )
+      (eval (: objHook)) ) )
 
 (dm txt> (Obj)
    (if (ext? Obj)
@@ -2449,7 +2466,10 @@
             (or
                (pair "Cho")
                (list 'choDlg NIL (lit "Cho") (lit (list (fin "Var") "Cls"))) )
-            "Var" "Cls" )
+            "Var" "Cls"
+            (and
+               (or (get "Cls" "Var" 'hook) (meta "Cls" "Var" 'hook))
+               (get (: obj) @) ) )
          (run "Prg") ) ) )
 
 

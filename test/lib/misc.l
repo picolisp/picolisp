@@ -148,6 +148,11 @@
 (test 733133 (expDat "2007-05-31"))
 (test 733133 (expDat "7-5-31"))
 
+(let D (date)
+   (test D (expDat "."))
+   (test (inc D) (expDat "+1"))
+   (test (dec D) (expDat "-1")) )
+
 (locale "DE" "de")
 (test 733133 (expDat "31.5.7"))
 (locale)

@@ -122,6 +122,7 @@ href="refM.html#member">member</a></code>.
 <dd>Conditional execution: If the condition <code>any1</code> evaluates to
 non-<code>NIL</code>, <code>any2</code> is evaluated and returned. Otherwise,
 <code>prg</code> is executed and the result returned. See also <code><a
+href="refI.html#ifn">ifn</a></code>, <code><a
 href="refC.html#cond">cond</a></code>, <code><a
 href="refW.html#when">when</a></code> and <code><a
 href="refI.html#if2">if2</a></code>.
@@ -159,7 +160,12 @@ the result returned. See also <code><a href="refI.html#if">if</a></code> and
 <dt><a name="ifn"><code>(ifn 'any1 any2 . prg) -> any</code></a>
 <dd>Conditional execution ("If not"): If the condition <code>any1</code>
 evaluates to <code>NIL</code>, <code>any2</code> is evaluated and returned.
-Otherwise, <code>prg</code> is executed and the result returned.
+Otherwise, <code>prg</code> is executed and the result returned. See also
+<code><a href="refI.html#if">if</a></code>, <code><a
+href="refN.html#nor">nor</a></code>, <code><a
+href="refN.html#nand">nand</a></code>, <code><a
+href="refU.html#unless">unless</a></code> and <code><a
+href="refN.html#nond">nond</a></code>.
 
 <pre><code>
 : (ifn (= 3 4) (println 'OK) (println 'Bad))
@@ -167,18 +173,16 @@ OK
 -> OK
 </code></pre>
 
-<dt><a name="import"><code>(import . lst) -> NIL</code></a>
+<dt><a name="import"><code>(import . lst) -> lst</code></a>
 <dd>Wrapper function for <code><a href="refI.html#intern">intern</a></code>.
 Typically used to import symbols from other namespaces, as created by <code><a
 href="refS.html#symbols">symbols</a></code>. <code>lst</code> should be a list
-of symbols. An import conflict error is issued when a symbol with the same name
-already exists in the current namespace. See also <code><a
-href="refP.html#pico">pico</a></code> and <code><a
+of symbols. See also <code><a href="refP.html#pico">pico</a></code> and <code><a
 href="refL.html#local">local</a></code>.
 
 <pre><code>
 : (import libA~foo libB~bar)
--> NIL
+-> (foo bar)
 </code></pre>
 
 <dt><a name="in"><code>(in 'any . prg) -> any</code></a>
@@ -323,12 +327,15 @@ href="refR.html#replace">replace</a></code>.
 -> (a b c d e 777)
 </code></pre>
 
-<dt><a name="intern"><code>(intern 'sym) -> sym</code></a>
+<dt><a name="intern"><code>(intern 'sym ['flg]) -> sym</code></a>
 <dd>Creates or finds an internal symbol. If a symbol with the name
 <code>sym</code> is already intern, it is returned. Otherwise, <code>sym</code>
-is interned and returned. See also <code><a
+is interned in the current namespace and returned. If <code>flg</code> is
+non-<code>NIL</code>, <code>sym</code> is always interned in the current
+namespace even if it is found in other namespaces. See also <code><a
 href="refS.html#symbols">symbols</a></code>, <code><a
 href="refZ.html#zap">zap</a></code>, <code><a
+href="refI.html#import">import</a></code>, <code><a
 href="refE.html#extern">extern</a></code> and <code><a
 href="ref_.html#====">====</a></code>.
 

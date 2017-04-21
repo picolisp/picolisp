@@ -981,7 +981,7 @@ surrounding whitespace), the first is taken as a namespace to look up the second
 
 <pre><code>
 : 'libA~foo  # Look up 'foo' in namespace 'libA'
--> "foo"     # "foo" is not interned in the current namespace
+-> libA~foo  # "foo" is not interned in the current namespace
 </code></pre>
 
 <p>Reading <code>libA~foo</code> is equivalent to switching the current
@@ -1792,11 +1792,10 @@ href="ref_.html#->">-&gt</a></code> function.
 <h3><a name="conv">Naming Conventions</a></h3>
 
 <p>It was necessary to introduce - and adhere to - a set of conventions for
-PicoLisp symbol names. Because all (internal) symbols have a global scope (there
-are no packages or name spaces), and each symbol can only have either a value or
-function definition, it would otherwise be very easy to introduce name
-conflicts. Besides this, source code readability is increased when the scope of
-a symbol is indicated by its name.
+PicoLisp symbol names. Because all (internal) symbols have a global scope, and
+each symbol can only have either a value or function definition, it would
+otherwise be very easy to introduce name conflicts. Besides this, source code
+readability is increased when the scope of a symbol is indicated by its name.
 
 <p>These conventions are not hard-coded into the language, but should be so into
 the head of the programmer. Here are the most commonly used ones:
@@ -2230,6 +2229,7 @@ abbreviations:
    <a href="refA.html#assoc">assoc</a>
    <a href="refR.html#rassoc">rassoc</a>
    <a href="refA.html#asoq">asoq</a>
+   <a href="refF.html#flood">flood</a>
    <a href="refR.html#rank">rank</a>
    <a href="refS.html#sort">sort</a>
    <a href="refU.html#uniq">uniq</a>
@@ -2683,6 +2683,7 @@ abbreviations:
    <a href="refS.html#sys">sys</a>
    <a href="refD.html#date">date</a>
    <a href="refT.html#time">time</a>
+   <a href="refT.html#tzo">tzo</a>
    <a href="refU.html#usec">usec</a>
    <a href="refS.html#stamp">stamp</a>
    <a href="refD.html#dat$">dat$</a>

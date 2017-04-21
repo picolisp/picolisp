@@ -1,4 +1,4 @@
-# 20may16abu
+# 04mar17abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -157,8 +157,7 @@
                call prExtNmX  # Print external
             else
                push Y
-               ld Y ((EnvIntern))
-               call isInternEXY_F  # Internal symbol?
+               call isEnvInternEX_FCE  # Internal symbol?
                ld C 0
                if eq  # Yes
                   ld B (char "$")  # Prefix with "$"

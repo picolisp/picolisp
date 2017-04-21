@@ -1,3 +1,16 @@
+* XXjun17 picoLisp-17.6
+   Optional 'flg' argument for 'delete', 'delq' and 'del'
+   Bug in 'ssl', needs SSL_clear()
+   Bug in case conversions for TOP character
+   "Edit" button in 'repl'
+   Added "lib/gis.l" and "lib/android.l"
+   Namespace chaining instead of merging
+   Disable '+Focus' on touch devices
+   Incorrect usage of 'ctl' in 'rc' and 'acquire'
+   Bug in 'port' in pil64
+   'tzo' function
+   'expDat' accepts "." and "+/-<num>" for "today"
+
 * 08dec16 picoLisp-16.12
    'T' result specification for 'native'
    '++' function

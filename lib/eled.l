@@ -500,7 +500,7 @@
                           (prinl) (quit) )
                     # doc
                     ("f" (prin "(doc) ")
-                       (doc (line T)) (quit) )
+                       (doc (read)) (quit) )
                     # show
                     ("s" (prin "(show) ")
                        (pp (show (any (line T)))) (quit) )

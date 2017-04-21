@@ -1,5 +1,5 @@
 #!/bin/sh
-# 08jun11abu
+# 14dec16abu
 
 if test -x /usr/bin/picolisp
 then
@@ -7,8 +7,11 @@ then
 elif test -x ../bin/picolisp
 then
    ../pil mkAsm.l "$@"
-else
+elif which java >/dev/null
+then
    ../ersatz/pil mkAsm.l "$@"
+else
+   echo "No PicoLisp binary found for bootstrapping"
 fi
 
 # vi:et:ts=3:sw=3

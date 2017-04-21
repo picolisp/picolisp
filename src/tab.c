@@ -1,4 +1,4 @@
-/* 24nov16abu
+/* 07jan17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -348,6 +348,7 @@ static symInit Symbols[] = {
    {doTrim, "trim"},
    {doTry, "try"},
    {doType, "type"},
+   {doTzo, "tzo"},
    {doUdp, "udp"},
    {doUnify, "unify"},
    {doUnless, "unless"},

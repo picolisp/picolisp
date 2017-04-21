@@ -1,4 +1,4 @@
-# 11feb16abu
+# 07jan17abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -127,6 +127,7 @@
 (equ TM_MDAY 12)
 (equ TM_MON 16)
 (equ TM_YEAR 20)
+(equ TM_GMTOFF 40)
 
 # dir
 (equ D_NAME 19)

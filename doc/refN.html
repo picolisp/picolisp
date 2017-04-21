@@ -95,17 +95,17 @@ href="refI.html#intern">intern</a></code>.
 -> NIL
 : (de foo (Lst) (car Lst))  # 'foo' calls 'car'
 -> foo
-: (intern (name (zap 'car) "xxx"))  # Globally change the name of 'car'
+: (intern (name (zap 'car) "xxx") T)   # Globally change the name of 'car'
 -> xxx
 : (xxx (1 2 3))
 -> 1
 : (pp 'foo)
 (de foo (Lst)
-   (xxx Lst) )                      # Name changed
+   (xxx Lst) )                         # Name changed
 -> foo
-: (foo (1 2 3))                     # 'foo' still works
+: (foo (1 2 3))                        # 'foo' still works
 -> 1
-: (car (1 2 3))                     # Reader returns a new 'car' symbol
+: (car (1 2 3))                        # Reader returns a new 'car' symbol
 !? (car (1 2 3))
 car -- Undefined
 ?
@@ -115,7 +115,12 @@ car -- Undefined
 <dd>Logical NAND. The expressions <code>any</code> are evaluated from left to
 right. If <code>NIL</code> is encountered, <code>T</code> is returned
 immediately. Else <code>NIL</code> is returned. <code>(nand ..)</code> is
-equivalent to <code>(not (and ..))</code>.
+equivalent to <code>(not (and ..))</code>. See also <code><a
+href="refA.html#and">and</a></code>, <code><a
+href="refN.html#nor">nor</a></code>, <code><a
+href="refU.html#unless">unless</a></code>, <code><a
+href="refI.html#ifn">ifn</a></code> and <code><a
+href="refN.html#nond">nond</a></code>.
 
 <pre><code>
 : (nand (lt0 7) (read))
@@ -381,8 +386,10 @@ conditions evaluates to <code>NIL</code>, <code>prgN</code> is executed and the
 result returned. Otherwise (all conditions evaluate to non-<code>NIL</code>),
 <code>NIL</code> is returned. See also <code><a
 href="refC.html#cond">cond</a></code>, <code><a
-href="refI.html#ifn">ifn</a></code> and <code><a
-href="refU.html#unless">unless</a></code>.
+href="refI.html#ifn">ifn</a></code>, <code><a
+href="refU.html#unless">unless</a></code>, <code><a
+href="refN.html#nor">nor</a></code> and <code><a
+href="refN.html#nand">nand</a></code>.
 
 <pre><code>
 : (nond
@@ -397,7 +404,12 @@ href="refU.html#unless">unless</a></code>.
 <dd>Logical NOR. The expressions <code>any</code> are evaluated from left to
 right. If a non-<code>NIL</code> value is encountered, <code>NIL</code> is
 returned immediately. Else <code>T</code> is returned. <code>(nor ..)</code> is
-equivalent to <code>(not (or ..))</code>.
+equivalent to <code>(not (or ..))</code>. See also <code><a
+href="refO.html#or">or</a></code>, <code><a
+href="refN.html#nand">nand</a></code>, <code><a
+href="refU.html#unless">unless</a></code>, <code><a
+href="refI.html#ifn">ifn</a></code> and <code><a
+href="refN.html#nond">nond</a></code>.
 
 <pre><code>
 : (nor (lt0 7) (= 3 4))

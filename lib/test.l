@@ -1,4 +1,4 @@
-# 10nov15abu
+# 21dec16abu
 # (c) Software Lab. Alexander Burger
 
 ### Unit Tests ###
@@ -7,6 +7,9 @@
 
 # Global usage:
 # pil @lib/test.l -bye +
+
+(unless *Dbg
+   (quit "Needs debug mode '+'") )
 
 (setq
    *CMD (cmd)

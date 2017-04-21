@@ -27,7 +27,7 @@
     <pre><code>
     (menu ,"Item"
        (idForm ,"Item" '(choItem) 'nr '+Item T '(may Delete) '((: nr) " -- " (: nm))
-          (<grid> 4
+          (&lt;grid&gt; 4
              ,"Number" NIL (gui '(+E/R +NumField) '(nr : home obj) 10) NIL
              ,"Description" NIL (gui '(+E/R +Cue +TextField) '(nm : home obj) ,"Item" 30) NIL
              ,"Supplier" (choCuSu 0)
@@ -37,7 +37,7 @@
              (gui '(+View +NumField) '(cnt&gt; (: home obj)) 12)
              ,"Price" NIL (gui '(+E/R +FixField) '(pr : home obj) 2 12) )
           (--)
-          (<grid> 2
+          (&lt;grid&gt; 2
              ,"Memo" (gui '(+BlobField) '(txt : home obj) 60 8)
              ,"Picture"
              (prog
@@ -49,7 +49,7 @@
                          (ask ,"Uninstall Picture?"
                             (put!&gt; (: home top 1 obj) 'jpg NIL) ) )
                       ((: drop) (blob! (: home obj) 'jpg @)) ) ) ) )
-          (<spread> NIL (editButton T))
+          (&lt;spread&gt; NIL (editButton T))
           (gui '(+Upd +Img)
              '(and (: home obj jpg) (allow (blob (: home obj) 'jpg)))
              ,"Picture" ) ) )

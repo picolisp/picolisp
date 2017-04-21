@@ -471,19 +471,20 @@ href="ref.html#transient">transient</a></code> symbol with the same name as
 -> NIL
 </code></pre>
 
-<dt><a name="local"><code>(local . lst) -> sym</code></a>
-<dd>Wrapper function for <code><a href="refZ.html#zap">zap</a></code>. Typically
-used to create namespace-local symbols. <code>lst</code> should be a list of
-symbols. See also <code><a href="refP.html#pico">pico</a></code>, <code><a
-href="refS.html#symbols">symbols</a></code>, <code><a
+<dt><a name="local"><code>(local) sym|lst -> sym|lst</code></a>
+<dd>Intern symbols locally in the current namespace. <code>(local)</code>
+expects a single symbol or a list of symbols immediately following in the
+current input stream. See also <code><a href="refP.html#pico">pico</a></code>,
+<code><a href="refS.html#symbols">symbols</a></code>, <code><a
 href="refI.html#import">import</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
 
 <pre><code>
 : (symbols 'myLib 'pico)
--> pico
-myLib: (local bar foo)
--> "foo"
+-> (pico)
+myLib: (local)
+   [bar foo]
+-> (myLib pico)
 
 myLib: (de foo (A)  # 'foo' is local to 'myLib'
    ...

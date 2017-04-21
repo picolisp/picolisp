@@ -1,4 +1,4 @@
-# 24oct16abu
+# 07apr17abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1415,101 +1415,106 @@
    pop X
    ret
 
-# (delete 'any 'lst) -> lst
+# (delete 'any 'lst ['flg]) -> lst
 (code 'doDelete 2)
    push X
+   push Y
+   push Z
    ld X (E CDR)  # Args
    ld E (X)  # Eval 'any'
    eval
    link
-   push E  # <L II/III> 'any'
-   ld E ((X CDR))  # Eval 'lst'
+   push E  # <L II> 'any'
+   ld X (X CDR)
+   ld E (X)  # Eval 'lst'
    eval+
-   push E  # <L I/II> 'lst'
+   push E  # <L I> 'lst'
    link
-   atom E  # Atomic?
-   if z  # No
-      ld X E  # Keep in X
-      ld A (L II)  # 'any'
-      ld E (X)  #  Equal to CAR?
-      call equalAE_F
-      if eq  # Yes
-         ld E (X CDR)  # Return CDR
-      else
-         call cons_C  # Cons first item into C
-         ld (C) (X)
-         ld (C CDR) Nil
-         tuck C  # <L I> Result
-         link
-         do
-            ld X (X CDR)  # Next item
-            atom X  # More cells?
-         while z  # Yes
-            ld A (L III)  # 'any'
-            ld E (X)  #  Equal to CAR?
-            call equalAE_F
-            if eq  # Yes
-               ld X (X CDR)  # Skip this item
-               break T
-            end
-            call cons_A  # Cons next item
-            ld (A) (X)
-            ld (A CDR) Nil
-            ld (C CDR) A  # Append
-            ld C A
-         loop
-         ld (C CDR) X  # Set tail
-         ld E (L I)  # Get result
-      end
-   end
+   ld E ((X CDR))  # Eval 'flg'
+   eval
+   ld X (L I)  # 'lst' in X
+   ld Y E  # 'flg' in Y
+   ld Z L  # Point to "CAR" of dummy cell
+   do
+      ld C X  # Search in rest
+      do
+         atom C  # Done?
+         jnz 90  # Yes
+         ld A (L II)  # 'any'
+         ld E (C)  #  Equal to CAR?
+         call equalAE_F
+      while ne  # No
+         ld C (C CDR)  # Next
+      loop
+      do
+         cmp X C  # Reached found cell?
+      while ne  # No
+         call cons_A  # Copy traversed cells
+         ld (A) (X)
+         ld X (X CDR)
+         ld (A CDR) X
+         ld (Z CDR) A  # Append to result
+         ld Z A
+      loop
+      ld X (X CDR)  # Skip found cell
+      ld (Z CDR) X
+      cmp Y Nil  # 'flg'?
+   until eq  # Yes
+90 ld E (L I)  # Get result
    drop
+   pop Z
+   pop Y
    pop X
    ret
 
-# (delq 'any 'lst) -> lst
+# (delq 'any 'lst ['flg]) -> lst
 (code 'doDelq 2)
    push X
+   push Y
+   push Z
    ld X (E CDR)  # Args
    ld E (X)  # Eval 'any'
    eval
    link
-   push E  # <L II/III> 'any'
-   ld E ((X CDR))  # Eval 'lst'
+   push E  # <L II> 'any'
+   ld X (X CDR)
+   ld E (X)  # Eval 'lst'
    eval+
-   push E  # <L I/II> 'lst'
+   push E  # <L I> 'lst'
    link
-   atom E  # Atomic?
-   if z  # No
-      ld X (L II)  # 'any'
-      cmp X (E)  #  Equal to CAR?
-      if eq  # Yes
-         ld E (E CDR)  # Return CDR
-      else
-         call cons_C  # Cons first item into C
-         ld (C) (E)
-         ld (C CDR) Nil
-         tuck C  # <L I> Result
-         link
-         do
-            ld E (E CDR)  # Next item
-            atom E  # More cells?
-         while z  # Yes
-            cmp X (E)  #  'any' equal to CAR?
-            if eq  # Yes
-               ld E (E CDR)  # Skip this item
-               break T
-            end
-            call cons_A  # Cons next item
-            ld (A) (E)
-            ld (A CDR) Nil
-            ld (C CDR) A  # Append
-            ld C A
-         loop
-         ld (C CDR) E  # Set tail
-         ld E (L I)  # Get result
-      end
-   end
+   ld E ((X CDR))  # Eval 'flg'
+   eval
+   ld X (L II)  # 'any' in X
+   ld Y E  # 'flg' in Y
+   ld E (L I)  # 'lst' in E
+   ld Z L  # Point to "CAR" of dummy cell
+   do
+      ld C E  # Search in rest
+      do
+         atom C  # Done?
+         jnz 90  # Yes
+         cmp X (C)  #  'any' equal to CAR?
+      while ne  # No
+         ld C (C CDR)  # Next
+      loop
+      do
+         cmp E C  # Reached found cell?
+      while ne  # No
+         call cons_A  # Copy traversed cells
+         ld (A) (E)
+         ld E (E CDR)
+         ld (A CDR) E
+         ld (Z CDR) A  # Append to result
+         ld Z A
+      loop
+      ld E (E CDR)  # Skip found cell
+      ld (Z CDR) E
+      cmp Y Nil  # 'flg'?
+   until eq  # Yes
+90 ld E (L I)  # Get result
    drop
+   pop Z
+   pop Y
    pop X
    ret
 

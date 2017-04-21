@@ -1,4 +1,4 @@
-/* 24nov16abu
+/* 07jan17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -752,6 +752,7 @@ any doTrace(any);
 any doTrim(any);
 any doTry(any);
 any doType(any);
+any doTzo(any);
 any doUdp(any);
 any doUnify(any);
 any doUnless(any);

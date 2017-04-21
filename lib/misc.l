@@ -1,4 +1,4 @@
-# 24nov16abu
+# 16dec16abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -300,36 +300,40 @@
             (or (format @D) 0) ) ) ) )
 
 (de expDat (S)
-   (use (@Y @M @D X)
-      (unless (match *DateFmt (setq S (chop S)))
-         (if
-            (or
-               (cdr (setq S (split S ".")))
-               (>= 2 (length (car S))) )
-            (setq
-               @D (car S)
-               @M (cadr S)
-               @Y (caddr S) )
-            (setq
-               @D (head 2 (car S))
-               @M (head 2 (nth (car S) 3))
-               @Y (nth (car S) 5) ) ) )
-      (and
-         (setq @D (format @D))
-         (date
-            (nond
-               (@Y (car (date (date))))
-               ((setq X (format @Y)))
-               ((>= X 100)
-                  (+ X
-                     (* 100 (/ (car (date (date))) 100)) ) )
-               (NIL X) )
-            (nond
-               (@M (cadr (date (date))))
-               ((setq X (format @M)) 0)
-               ((n0 X) (cadr (date (date))))
-               (NIL X) )
-            @D ) ) ) )
+   (cond
+      ((= "." S) (date))
+      ((or (pre? "+" S) (pre? "-" S)) (+ (date) (format S)))
+      (T
+         (use (@Y @M @D X)
+            (unless (match *DateFmt (setq S (chop S)))
+               (if
+                  (or
+                     (cdr (setq S (split S ".")))
+                     (>= 2 (length (car S))) )
+                  (setq
+                     @D (car S)
+                     @M (cadr S)
+                     @Y (caddr S) )
+                  (setq
+                     @D (head 2 (car S))
+                     @M (head 2 (nth (car S) 3))
+                     @Y (nth (car S) 5) ) ) )
+            (and
+               (setq @D (format @D))
+               (date
+                  (nond
+                     (@Y (car (date (date))))
+                     ((setq X (format @Y)))
+                     ((>= X 100)
+                        (+ X
+                           (* 100 (/ (car (date (date))) 100)) ) )
+                     (NIL X) )
+                  (nond
+                     (@M (cadr (date (date))))
+                     ((setq X (format @M)) 0)
+                     ((n0 X) (cadr (date (date))))
+                     (NIL X) )
+                  @D ) ) ) ) ) )
 
 # Day of the week
 (de day (Dat Lst)
@@ -435,7 +439,13 @@
                (out S
                   (prinl "From: " From "^M")
                   (prinl "To: " (or (fin To) (glue "," To)) "^M")
-                  (prinl "Subject: " Sub "^M")
+                  (prin "Subject: ")
+                  (ifn (find > (chop Sub) '("~" .))
+                     (prinl Sub "^M")
+                     (prin "=?utf-8?B?")
+                     (pipe (prin Sub)
+                        (while (ext:Base64 (rd 1) (rd 1) (rd 1))) )
+                     (prinl "?=^M") )
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
                   (when Att

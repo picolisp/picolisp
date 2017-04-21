@@ -60,7 +60,7 @@
       (&lt;table&gt; 'chart NIL
          '((btn) (NIL "Name") (NIL "Father") (NIL "Mother") (NIL "Partner") (NIL "Occupation") (NIL "born"))
          (do (cho)
-            (<row> (alternating)
+            (&lt;row&gt; (alternating)
                (gui 1 '(+DstButton) Dst)
                (gui 2 '(+ObjView +TextField) '(: nm))
                (gui 3 '(+ObjView +TextField) '(: nm))
@@ -97,6 +97,7 @@
     href="http://picolisp.com/wiki/?OnClickButton">good article</a> that
     explains +OnClick in depth. See also <a href="refB.html#+Button">+Button</a>
     and <a href="refG.html#gui">gui</a>.
+</dl>
 
 <dl>
     <dt><a name="okButton"><code>(okButton 'Exe)</code></a>

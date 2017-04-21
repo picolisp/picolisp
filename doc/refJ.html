@@ -25,8 +25,8 @@ href="ref.html#dbase">Database</a>.
 (class +Ord +Entity)                   # Order class
 (rel pos (+List +Joint) ord (+Pos))    # List of positions in that order
 ...
-(class +Pos +Entity)    # Position class
-(rel ord (+Joint)       # Back-link to the parent order
+(class +Pos +Entity)                   # Position class
+(rel ord (+Joint) pos (+Ord))          # Back-link to the parent order
 </code></pre>
 
 <dt><a name="job"><code>(job 'lst . prg) -> any</code></a>

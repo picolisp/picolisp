@@ -873,13 +873,13 @@ Calls</a>.
 
 # Extract the structure
 : (struct P '((I . 2) (1.0 . 3) N (C . 4)))
--> ((7 4) (11 22 33) 7 ("A" "B" "C" NIL))
+-> ((7 4) (11 22 33) 7 ("A" "B" "C"))
 
 # Do both in a single call (allowing conversions of data types)
 : (struct P
    '((I . 2) (1.0 . 3) N (C . 4))
    -7 -4 (1.0 0.11 0.22 0.33) (7 . 8) 65 66 67 0 )
--> ((7 4) (11 22 33) 7 ("A" "B" "C" NIL))
+-> ((7 4) (11 22 33) 7 ("A" "B" "C"))
 
 # De-allocate structure
 : (native "@" "free" NIL P)
@@ -1007,32 +1007,32 @@ href="refE.html#ext?">ext?</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="symbols"><code>(symbols) -> sym</code></a>
-<dt><code>(symbols 'sym1) -> sym2</code>
-<dt><code>(symbols 'sym1 'sym ..) -> sym2</code>
+<dt><a name="symbols"><code>(symbols) -> lst</code></a>
+<dt><code>(symbols 'lst) -> lst</code>
+<dt><code>(symbols 'lst . prg) -> any</code>
+<dt><code>(symbols 'sym1 'sym2 ..) -> lst</code>
 <dd>(64-bit version only) Creates and manages namespaces of internal symbols: In
-the first form, the current namespace is returned. In the second form, the
-current namespace is set to <code>sym1</code>, and the previous namespace
-<code>sym2</code> is returned. In the third form, <code>sym1</code> is assigned
-a <code><a href="refB.html#balance">balance</a></code>d copy of the existing
-namespace(s) <code>sym</code>, and becomes the new current namespace, returning
-the previous namespace <code>sym2</code>. If in the third form more than one
-<code>sym</code> argument is given, possibly conflicting symbols in later
-namespaces are not interned into <code>sym2</code>. See also <code><a
-href="refP.html#pico">pico</a></code>, <code><a
-href="refL.html#local">local</a></code>, <code><a
+the first form, the current list of namespaces is returned. In the second form,
+the current namespace list is set to <code>lst</code>, and the previous
+namespace list is returned. In the third form, the current namespace list is set
+to <code>lst</code> during the execution of <code>prg</code>, and the result is
+returned. In the fourth form, <code>sym1</code> is initialized to a new
+namespace if its value is <code>NIL</code> and not modified otherwise, and
+<code>sym1</code>, <code>sym2</code> and all following arguments are set as the
+current namespace list. See also <code><a href="refP.html#pico">pico</a></code>,
+<code><a href="refL.html#local">local</a></code>, <code><a
 href="refI.html#import">import</a></code>, <code><a
 href="refI.html#intern">intern</a></code> and <code><a
 href="refL.html#load">load</a></code>.
 
 <pre><code>
 : (symbols 'myLib 'pico)
--> pico
+-> (pico)
 myLib: (de foo (X)
    (bar (inc X)) )
 -> foo
 myLib: (symbols 'pico)
--> myLib
+-> (myLib pico)
 : (pp 'foo)
 (de foo . NIL)
 -> foo
@@ -1040,8 +1040,8 @@ myLib: (symbols 'pico)
 (de "foo" (X)
    ("bar" (inc X)) )
 -> "foo"
-: (symbols 'myLib)
--> pico
+: (symbols '(myLib pico))
+-> (pico)
 myLib: (pp 'foo)
 (de foo (X)
    (bar (inc X)) )

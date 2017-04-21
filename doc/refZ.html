@@ -26,7 +26,7 @@ href="refC.html#commit">commit</a></code>. A (typically periodic) call to
 
 <dt><a name="zap"><code>(zap 'sym) -> sym</code></a>
 <dd>"Delete" the symbol <code>sym</code>. For internal symbols, that means to
-remove it from the internal index, effectively transforming it to a transient
+remove it from the current namespace, effectively transforming it to a transient
 symbol. For external symbols, it means to mark it as "deleted", so that upon a
 later <code><a href="refC.html#commit">commit</a></code> it will be removed from
 the database file. See also <code><a href="refI.html#intern">intern</a></code>.

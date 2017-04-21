@@ -1,4 +1,4 @@
-/* 24oct16abu
+/* 05apr17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -557,25 +557,34 @@ any doAppend(any x) {
    return EVAL(car(x));
 }
 
-// (delete 'any 'lst) -> lst
-any doDelete(any x) {
-   any y, z;
+// (delete 'any 'lst ['flg]) -> lst
+any doDelete(any ex) {
+   any x, y, z;
+   bool flg;
    cell c1, c2, c3;
 
-   x = cdr(x),  Push(c1, y = EVAL(car(x)));
-   x = cdr(x);
-   if (!isCell(x = EVAL(car(x)))) {
-      drop(c1);
-      return x;
-   }
-   if (equal(y, car(x))) {
-      drop(c1);
-      return cdr(x);
+   x = cdr(ex),  Push(c1, y = EVAL(car(x)));
+   x = cadr(x),  x = EVAL(x);
+   flg = !isNil(EVAL(cadddr(ex)));
+   for (;;) {
+      if (!isCell(x)) {
+         drop(c1);
+         return x;
+      }
+      if (!equal(y, car(x)))
+         break;
+      x = cdr(x);
+      if (!flg) {
+         drop(c1);
+         return x;
+      }
    }
    Push(c2, x);
    Push(c3, z = cons(car(x), Nil));
    while (isCell(x = cdr(x))) {
       if (equal(y, car(x))) {
+         if (flg)
+            continue;
          cdr(z) = cdr(x);
          drop(c1);
          return data(c3);
@@ -587,25 +596,34 @@ any doDelete(any x) {
    return data(c3);
 }
 
-// (delq 'any 'lst) -> lst
-any doDelq(any x) {
-   any y, z;
+// (delq 'any 'lst ['flg]) -> lst
+any doDelq(any ex) {
+   any x, y, z;
+   bool flg;
    cell c1, c2, c3;
 
-   x = cdr(x),  Push(c1, y = EVAL(car(x)));
-   x = cdr(x);
-   if (!isCell(x = EVAL(car(x)))) {
-      drop(c1);
-      return x;
-   }
-   if (y == car(x)) {
-      drop(c1);
-      return cdr(x);
+   x = cdr(ex),  Push(c1, y = EVAL(car(x)));
+   x = cadr(x),  x = EVAL(x);
+   flg = !isNil(EVAL(cadddr(ex)));
+   for (;;) {
+      if (!isCell(x)) {
+         drop(c1);
+         return x;
+      }
+      if (y != car(x))
+         break;
+      x = cdr(x);
+      if (!flg) {
+         drop(c1);
+         return x;
+      }
    }
    Push(c2, x);
    Push(c3, z = cons(car(x), Nil));
    while (isCell(x = cdr(x))) {
       if (y == car(x)) {
+         if (flg)
+            continue;
          cdr(z) = cdr(x);
          drop(c1);
          return data(c3);

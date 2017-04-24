@@ -1,3 +1,7 @@
+24apr17
+   Handle hook for '+ObjVal', and for 'Fld' in 'choDlg'
+      lib/form.l
+
 21apr17
    Pass hook to 'panel'
       lib/form.l

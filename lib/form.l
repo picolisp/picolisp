@@ -1,4 +1,4 @@
-# 21apr17abu
+# 24apr17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1903,7 +1903,11 @@
 (de choDlg (Dst Ttl Rel . @)
    (let
       (Hook (and (meta (cdr Rel) (car Rel) 'hook) (next))
-         Fld (or (next) (list '(+DbHint +TextField) Rel 40))
+         Fld
+         (or (next)
+            (if Hook
+               (list '(+DbHint +TextField) Rel (lit Hook) 40)
+               (list '(+DbHint +TextField) Rel 40) ) )
          Gui
          (if (next)
             (list '(+ObjView +TextField) @)
@@ -2299,14 +2303,14 @@
 
 
 (class +ObjVal +obj)
-# objVar objTyp objHook
+# objVar objTyp hook objHook
 
 # ([T|msg] (var . typ) [hook] ..)
 (dm T @
    (super)
    (=: objVar (car (arg)))
    (=: objTyp (cdr (arg)))
-   (when (meta (: objTyp) (: objVar) 'hook)
+   (when (=: hook (meta (: objTyp) (: objVar) 'hook))
       (=: objHook (next)) )
    (pass extra) )
 
@@ -2327,7 +2331,12 @@
             (and (: obj) (put!> @ (: objVar) NIL))
             (=: obj NIL) )
          ((: obj)
-            (=: obj (new! (: objTyp) (: objVar) Val)) )
+            (dbSync)
+            (=: obj (new! (: objTyp)))
+            (when (: hook)
+               (put> (: obj) (: hook) (eval (: objHook))) )
+            (put> (: obj) (: objVar) Val)
+            (commit 'upd) )
          (NIL (put!> @ (: objVar) Val)) ) )
    (: obj) )
 

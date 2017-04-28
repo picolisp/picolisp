@@ -1,4 +1,4 @@
-# 24apr17abu
+# 28apr17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2332,7 +2332,7 @@
             (=: obj NIL) )
          ((: obj)
             (dbSync)
-            (=: obj (new! (: objTyp)))
+            (=: obj (new (or (meta (: objTyp) 'Dbf 1) 1) (: objTyp)))
             (when (: hook)
                (put> (: obj) (: hook) (eval (: objHook))) )
             (put> (: obj) (: objVar) Val)

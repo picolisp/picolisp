@@ -1,3 +1,7 @@
+28apr17
+   Fix hook for '+ObjVal'
+      lib/form.l
+
 24apr17
    Handle hook for '+ObjVal', and for 'Fld' in 'choDlg'
       lib/form.l

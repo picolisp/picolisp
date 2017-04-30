@@ -1,4 +1,4 @@
-# 28apr17abu
+# 30apr17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -356,12 +356,13 @@
                (err NIL
                   (prinl ": " Str)
                   (flush)
-                  (setq @@@ "@@@"  @@ "@@"  @ "@"  "@@@" "@@" "@@" "@")
                   (catch '(NIL)
                      (in "/dev/null"
-                        (setq "@" (eval (any Str) 99)) ) )
-                  (prin "-> ")
-                  (println (setq @ "@")) )
+                        (up 99 @@@ "@3")
+                        (up 99 @@ "@2")
+                        (up 99 @ "@1")
+                        (setq  "@3" "@2"  "@2" "@1"  "@1" (eval (any Str) 99)) ) )
+                  (println '-> "@1") )
                (when *Msg (prinl @) (off *Msg)) )
             (push1 (:: home hint) Str)
             (clr> (: home line)) ) )

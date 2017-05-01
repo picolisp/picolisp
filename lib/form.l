@@ -1,4 +1,4 @@
-# 30apr17abu
+# 01may17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -371,7 +371,7 @@
          '(file> (: home view)
             (if (= (: home view file) (: home repl))
                (if (val> (: home line))
-                  (setq "file" @)
+                  (setq "file" (push1 (:: home hint) @))
                   (set> (: home line) "file")
                   "file" )
                (clr> (: home line))

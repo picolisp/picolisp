@@ -1,4 +1,4 @@
-# 01may17abu
+# 02may17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1763,7 +1763,7 @@
 
 ### GUI charts ###
 (class +Chart)
-# home gui rows cols ofs lock put get data clip
+# home gui rows cols ofs lock put get data
 
 # (cols [put [get]])
 (dm T (N Put Get)
@@ -1869,20 +1869,6 @@
 (dm upd> ())
 
 (dm chk> ())
-
-(dm cut> (N)
-   (get> This)
-   (=: clip (get (val> This) (: ofs)))
-   (set> This
-      (remove (or N (: ofs)) (val> This)) ) )
-
-(dm paste> (Flg N)
-   (get> This)
-   (set> This
-      (insert
-         (or N (: ofs))
-         (val> This)
-         (unless Flg (: clip)) ) ) )
 
 
 (class +Chart1 +Chart)

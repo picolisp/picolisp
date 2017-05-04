@@ -1,4 +1,4 @@
-# 30may16abu
+# 04may17abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -63,7 +63,9 @@
                (mapcar
                   '((This)
                      (cons
-                        (pack (: src 1) (: src 2))
+                        (pack
+                           (unless (= "./" (: src 1)) (: src 1))
+                           (: src 2) )
                         (: src -2)
                         This ) )
                   (idx '*Tags) ) )

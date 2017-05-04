@@ -1,3 +1,7 @@
+04may17
+   Omit "./" in "src64/tags"
+      src64/lib/asm.l
+
 02may17
    Removed 'cut>' and 'paste>' from '+Chart'
       lib/form.l

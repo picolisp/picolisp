@@ -1,5 +1,5 @@
 
-./defs.l,638
+defs.l,638
 HEAP5,63
 CELLS6,114
 STACK7,187
@@ -172,7 +172,7 @@ sys/arm64.linux.defs.l,2137
 AI_ADDR159,2714
 AI_NEXT160,2731
 
-./glob.l,4424
+glob.l,4424
 Data4,51
 AV7,77
 AV08,141
@@ -425,7 +425,7 @@ sys/arm64.linux.defs.l,2137
 UndefErr1273,86308
 DlErr1274,86337
 
-./main.l,2292
+main.l,2292
 Code4,51
 Ret8,106
 RetEq10,127
@@ -547,7 +547,7 @@ sys/arm64.linux.defs.l,2137
 doOpt3421,85442
 doVersion3435,85773
 
-./big.l,1019
+big.l,1019
 zapZeroA_A6,106
 twiceA_A47,1164
 twiceBigA_A57,1393
@@ -600,7 +600,7 @@ sys/arm64.linux.defs.l,2137
 doHash3128,75152
 doRand3154,75735
 
-./io.l,3004
+io.l,3004
 closeAX5,75
 unLockFileAC15,253
 wrLockFileC23,487
@@ -742,7 +742,7 @@ sys/arm64.linux.defs.l,2137
 doPr5376,135718
 doWr5393,136050
 
-./apply.l,465
+apply.l,465
 applyXYZ_E4,51
 applyVarXYZ_E363,11184
 doApply723,22403
@@ -768,7 +768,7 @@ sys/arm64.linux.defs.l,2137
 fishAXY1698,42597
 doBy1727,43151
 
-./err.l,1913
+err.l,1913
 dbg5,73
 errnoEXY26,545
 errEXYZ35,707
@@ -864,7 +864,7 @@ sys/arm64.linux.defs.l,2137
 retT762,15074
 retE_E765,15109
 
-./db.l,1134
+db.l,1134
 getAdrZ_A6,117
 setAdrAZ22,350
 dbfBuf_AF37,589
@@ -921,7 +921,7 @@ sys/arm64.linux.defs.l,2137
 doFree1980,54819
 doDbck2038,56285
 
-./gc.l,863
+gc.l,863
 markE5,63
 need354,1338
 gc67,1635
@@ -967,7 +967,7 @@ sys/arm64.linux.defs.l,2137
 consNumEA_E1073,24926
 consNumEC_E1091,25302
 
-./flow.l,1703
+flow.l,1703
 redefMsgEC4,51
 putSrcEC_E25,589
 redefineCE109,3406
@@ -1057,7 +1057,7 @@ sys/arm64.linux.defs.l,2137
 byeE3664,89232
 finishE3676,89543
 
-./sym.l,1880
+sym.l,1880
 cmpLongAX_F5,78
 nextIsInternEXYZ_FE33,621
 isInternEXYZ_FCE41,761
@@ -1152,7 +1152,7 @@ sys/arm64.linux.defs.l,2137
 doFold3764,87504
 isLetterOrDigitA_F3834,89630
 
-./subr.l,2269
+subr.l,2269
 doCar5,71
 doCdr17,247
 doCaar31,439
@@ -1273,7 +1273,7 @@ sys/arm64.linux.defs.l,2137
 cmpDfltA_F4362,94541
 cmpUserAX_F4367,94692
 
-./net.l,192
+net.l,192
 doPort5,96
 tcpAcceptA_FE112,2897
 doAccept151,4279

@@ -1,4 +1,4 @@
-# 05jan16abu
+# 06may17abu
 # Armadillo <tc.rucho@gmail.com>
 # Manuel Cano <manutalcual@gmail.com>
 
@@ -74,6 +74,7 @@
 "Scroll down one line" "Bajar una línea"
 "Scroll down one page" "Bajar una página"
 "Go to last line" "Ir a la última línea"
+"Insert empty row" "Insertar línea vacia"
 "Delete row" "Borrar línea"
 "Shift row up" "Mover línea arriba"
 "Clear all input fields" "Borrar todos los campos"

@@ -27,7 +27,7 @@
         should be pressed. </li>
         <li>An environment of variable bindings, to be pushed onto - and popped
         from - the stacks, and to be used during the un-/redo operations. </li>
-        <li>A single 'exe' for *un-doing* in that environment</li>
+        <li>A single 'exe' for *un-doing* in that environment.</li>
         <li>And one or several 'exe's (i.e. a 'prg') for *doing* in that
         environment.</li>
     </ul>
@@ -134,7 +134,7 @@
     title of a chart in a search dialog. The function combines a transient
     symbol, a text string, with the number of objects of a given type in the
     database. Here is an example from the demo app included in the PicoLisp
-    distribution, in gui.l
+    distribution, in gui.l.
 
     <pre><code>
     (choTtl ,"Customers/Suppliers" 'nr '+CuSu)
@@ -154,7 +154,7 @@
     <dd><code>choDlg</code>, "choose dialog" creates a dialog
     that lets the user select or create an object, to be either jumped to (when
     called as a form), or taken into the destination field (when called as a
-    dialog, see <a href="refD.html#+DstButton">+DstButton</a>) The following
+    dialog, see <a href="refD.html#+DstButton">+DstButton</a>). The following
     example comes from the demo app included with the PicoLisp distribution, in
     cusu.l. This file implements a form that handles objects of a class called
     <code>+CuSu</code>, "CustomerSupplier". <code>+CuSu</code> is connected to
@@ -363,7 +363,7 @@
 
 <dl>
     <dt><a name="cloneButton"><code>cloneButton</code></a>
-    <dd>This function creates a button used to clone, make a copy of, the object
+    <dd>This function creates a button used to clone, make a copy of the object
     in the current form. To customise the copy the form object, or it's class,
     may override the <code>clone&gt;</code>- method (inherited from <code>+Entity</code>).
     See also <a href="refR.html#+Rid">+Rid</a>, <a href="refA.html#+Able">+Able</a>,
@@ -397,7 +397,7 @@
    </code></pre>
    
    Causes an empty field to display "&lt;Please enter some text
-   here&gt;"
+   here&gt;".
 </dl>
 
 <dl>

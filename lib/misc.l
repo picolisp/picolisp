@@ -1,4 +1,4 @@
-# 16dec16abu
+# 26may17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -449,7 +449,10 @@
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
                   (when Att
-                     (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"^M")
+                     (prinl
+                        "Content-Type: multipart/"
+                        (if (cadr Att) "mixed" "alternative")
+                        "; boundary=\"" B "\"^M" )
                      (prinl "^M")
                      (prinl "--" B "^M") )
                   (prinl "Content-Type: text/plain; charset=utf-8^M")
@@ -460,16 +463,19 @@
                   (when Att
                      (loop
                         (prinl "--" B "^M")
-                        (prinl
-                           "Content-Type: "
-                           (or (caddr Att) "application/octet-stream")
-                           "; name=\""
-                           (cadr Att)
-                           "\"^M" )
-                        (prinl "Content-Transfer-Encoding: base64^M")
+                        (prin "Content-Type: " (or (caddr Att) "application/octet-stream"))
+                        (and (cadr Att) (prin "; name=\"" @ "\""))
                         (prinl "^M")
-                        (in (car Att) (prBase64 18))
-                        (prinl)
+                        (prinl
+                           "Content-Transfer-Encoding: "
+                           (if (cadr Att) "base64" "8bit")
+                           "^M" )
+                        (prinl "^M")
+                        (in (car Att)
+                           (ifn (cadr Att)
+                              (echo)
+                              (prBase64 18)
+                              (prinl) ) )
                         (prinl "^M")
                         (NIL (setq Att (cdddr Att))) )
                      (prinl "--" B "--^M") )

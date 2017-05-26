@@ -1,5 +1,9 @@
+26may17
+   "name=" optional in 'mail'
+      lib/misc.l
+
 16may17
-   Wrong charset in Saint-Exupéry
+   Wrong charset in "Saint-Exupéry"
       doc/form/form.html
 
 14may17

@@ -1,3 +1,7 @@
+30may17
+   Rename 'val' property in '+Radio' to 'rad'
+      lib/form.l
+
 26may17
    "name=" optional in 'mail'
       lib/misc.l

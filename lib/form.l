@@ -1,4 +1,4 @@
-# 02may17abu
+# 30may17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1356,26 +1356,26 @@
 
 
 (class +Radio +field)  # Inited by Tomas Hlavaty <kvietaag@seznam.cz>
-# grp val lbl
+# grp rad lbl
 
-# (grp val [lbl])
-(dm T (Grp Val Lbl)
+# (grp rad [lbl])
+(dm T (Grp Rad Lbl)
    (super)
    (=: grp (if Grp (field @) This))
-   (=: val Val)
+   (=: rad Rad)
    (=: lbl Lbl) )
 
 (dm show> ("Var")
    (showFld
       (<radio>
          (cons '*Gui (: grp id))
-         (: val)
+         (: rad)
          (not (able)) ) ) )
 
 (dm js> ()
    (pack
-      (ht:Fmt (: val))
-      "&" (= (: val) (str> (: grp)))
+      (ht:Fmt (: rad))
+      "&" (= (: rad) (str> (: grp)))
       (unless (able) "&=") ) )
 
 (dm set> (Val Dn)

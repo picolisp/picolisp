@@ -2357,8 +2357,8 @@
    (: obj) )
 
 
-### DB charts ###
-(class +dbChart +Chart)
+### Incremental charts ###
+(class +stepChart +Chart)
 # iniR iniQ query
 
 # (iniR iniQ cols [put [get]])
@@ -2387,7 +2387,7 @@
 
 
 # DB query chart
-(class +QueryChart +dbChart)
+(class +QueryChart +stepChart)
 
 (dm step> ()
    (; (prove (: query)) @@) )
@@ -2403,7 +2403,7 @@
 
 
 # Tree traversal chart
-(class +TreeChart +dbChart)
+(class +TreeChart +stepChart)
 
 (dm step> ()
    (and (step (: query)) (cons @@ @)) )

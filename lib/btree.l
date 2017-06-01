@@ -1,4 +1,4 @@
-# 24nov16abu
+# 31may17abu
 # (c) Software Lab. Alexander Burger
 
 # *Prune
@@ -298,8 +298,11 @@
                (for (V (cadr X) ((if F val revNode) V) (car @))
                   (con L (cons (cdr @) (cdr L))) )
                (unless (and Flg (flg? (fin (car X))))
-                  (throw NIL
-                     (or (cddr X) (fin (car X))) ) ) ) ) ) ) )
+                  (when (cddr X)
+                     (setq @@ (car X))
+                     (throw NIL @) )
+                  (setq @@ (caar X))
+                  (throw NIL (fin (car X))) ) ) ) ) ) )
 
 (====)
 

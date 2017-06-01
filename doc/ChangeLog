@@ -1,3 +1,12 @@
+01jun17
+   '+TreeChart' GUI class
+      lib/form.l
+
+31may17
+   'step' stores the key in '@@'
+      lib/btree.l
+      doc/refS.html
+
 30may17
    Rename 'val' property in '+Radio' to 'rad'
       lib/form.l

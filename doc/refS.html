@@ -735,8 +735,10 @@ href="refS.html#split">split</a></code>.
 <dt><a name="step"><code>(step 'lst ['flg]) -> any</code></a>
 <dd>Single-steps iteratively through a database tree. <code>lst</code> is a
 structure as received from <code><a href="refI.html#init">init</a></code>. If
-<code>flg</code> is non-<code>NIL</code>, partial keys are skipped. See also
-<code><a href="refT.html#tree">tree</a></code>, <code><a
+<code>flg</code> is non-<code>NIL</code>, partial keys are skipped. The key for
+each returned value is stored in the global variable <code><a
+href="ref_.html#@@">@@</a></code>. See also <code><a
+href="refT.html#tree">tree</a></code>, <code><a
 href="refS.html#scan">scan</a></code>, <code><a
 href="refI.html#iter">iter</a></code>, <code><a
 href="refL.html#leaf">leaf</a></code> and <code><a

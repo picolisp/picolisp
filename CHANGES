@@ -1,4 +1,6 @@
 * XXjun17 picoLisp-17.6
+   '+TreeChart' GUI class
+   'step' stores the key in '@@'
    Optional 'flg' argument for 'delete', 'delq' and 'del'
    Bug in 'ssl', needs SSL_clear()
    Bug in case conversions for TOP character

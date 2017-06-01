@@ -1,4 +1,4 @@
-# 30may17abu
+# 01jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1833,17 +1833,18 @@
             1 ) ) )
    (put> This) )
 
-(dm txt> (Flg)
+(dm txt1> (I Lst)
+   (map
+      '((G D)
+         (prin
+            (txt> (car G) (car D))
+            (if (cdr G) "\t" "\n") ) )
+      (: gui 1)
+      ((: put) Lst I) ) )
+
+(dm txt> ()
    (for (I . L) (: data)
-      (map
-         '((G D)
-            (prin (txt> (car G) (car D)))
-            (if
-               (cdr G)
-               (prin "^I")
-               (prinl (and Flg "^M")) ) )
-         (: gui 1)
-         ((: put) L I) ) ) )
+      (txt1> This I L) ) )
 
 (dm set> (Lst)
    (=: ofs
@@ -2356,8 +2357,8 @@
    (: obj) )
 
 
-# DB query chart
-(class +QueryChart +Chart)
+### DB charts ###
+(class +dbChart +Chart)
 # iniR iniQ query
 
 # (iniR iniQ cols [put [get]])
@@ -2366,6 +2367,10 @@
    (=: iniQ Q)
    (pass super) )
 
+(dm query> (Q)
+   (=: query Q)
+   (set> This) )
+
 (dm init> ()
    (query> This (eval (: iniQ))) )
 
@@ -2373,39 +2378,44 @@
    (while
       (and
          (> (: ofs) (- (length (: data)) (max (: rows) (: iniR))))
-         (; (prove (: query)) @@) )
+         (step> This) )
       (queue (:: data) @) )
    (super) )
 
-(dm txt> (Flg)
+(dm clr> ()
+   (query> This (fail)) )
+
+
+# DB query chart
+(class +QueryChart +dbChart)
+
+(dm step> ()
+   (; (prove (: query)) @@) )
+
+(dm txt> ()
    (for ((I . Q) (eval (: iniQ)) (prove Q))
-      (map
-         '((G D)
-            (prin (txt> (car G) (car D)))
-            (if (cdr G)
-               (prin "^I")
-               (prinl (and Flg "^M")) ) )
-         (: gui 1)
-         ((: put) (; @ @@) I) ) ) )
+      (txt1> This I (; @ @@)) ) )
 
 (dm all> ()
    (make
       (for (Q (eval (: iniQ)) (prove Q))
          (link (; @ @@)) ) ) )
 
-(dm query> (Q)
-   (=: query Q)
-   (set> This) )
 
-(dm sort> (Exe)
-   (set> This
-      (goal
-         (list
-            (list 'lst '@@
-               (by '((This) (eval Exe)) sort (val> This)) ) ) ) ) )
+# Tree traversal chart
+(class +TreeChart +dbChart)
 
-(dm clr> ()
-   (query> This (fail)) )
+(dm step> ()
+   (and (step (: query)) (cons @@ @)) )
+
+(dm txt> ()
+   (for ((I . Q) (eval (: iniQ)) (step Q))
+      (txt1> This I (cons @@ @)) ) )
+
+(dm all> ()
+   (make
+      (for (Q (eval (: iniQ)) (step Q))
+         (link (cons @@ @)) ) ) )
 
 
 (====)

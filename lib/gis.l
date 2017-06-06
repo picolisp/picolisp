@@ -1,4 +1,4 @@
-# 10mar17abu
+# 06jun17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -10,13 +10,16 @@
       ", "
       (round (- Lon 180.0)) ) )
 
-(local) fmt
+(local) [lat lon fmt]
+(de lat (Lat)
+   (format (- Lat 90.0) `*Scl) )
+
+(de lon (Lon)
+   (format (- Lon 180.0) `*Scl) )
+
 (de fmt (Lat Str Lon)
    (when (or Lat Lon)
-      (pack
-         (format (- Lat 90.0) `*Scl)
-         Str
-         (format (- Lon 180.0) `*Scl) ) ) )
+      (pack (lat Lat) Str (lon Lon)) ) )
 
 
 # Latitude Field

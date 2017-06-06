@@ -1,3 +1,9 @@
+06jun17
+   'lat' and 'lon' functions
+      lib/gis.l
+   Minor fix to 'idForm', needs (fin "Var")
+      lib/form.l
+
 03jun17
    "See also" link to 'swap'
       doc/refS.html

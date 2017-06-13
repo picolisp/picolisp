@@ -1,3 +1,8 @@
+13jun17
+   Added a note in the reference of 'later' about 'rd' and 'pr', in response to
+   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=857277
+      doc/refL.html
+
 06jun17
    'lat' and 'lon' functions
       lib/gis.l

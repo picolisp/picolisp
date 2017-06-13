@@ -60,7 +60,10 @@ href="refT.html#tail">tail</a></code>.
 <dt><a name="later"><code>(later 'var . prg) -> var</code></a>
 <dd>Executes <code>prg</code> in a <code><a
 href="refP.html#pipe">pipe</a></code>'ed child process. The return value of
-<code>prg</code> will later be available in <code>var</code>.
+<code>prg</code> will later be available in <code>var</code>. Note that
+<code>later</code> uses <code><a href="refP.html#pr">pr</a></code> and <code><a
+href="refR.html#rd">rd</a></code> to communicate the result, so <code>prg</code>
+should not write any data to standard output as a side effect.
 
 <pre><code>
 : (prog1  # Parallel background calculation of square numbers

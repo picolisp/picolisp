@@ -1,4 +1,4 @@
-# 15mar17abu
+# 15jun17abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Uuid (in "UUID" (line T)))
@@ -74,6 +74,21 @@
          (java CONTEXT 'getSystemService "power")  # PowerManager
          'newWakeLock 1 "PilWake" )                # New WakeLock
       (if Flg 'acquire 'release) ) )
+
+# Update APK
+(local) [update startActivity setData fromFile update? getInt]
+(de update (File)
+   (java (; CONTEXT GUI) 'startActivity
+      (prog1
+         (java "android.content.Intent" T "android.intent.action.INSTALL_PACKAGE")
+         (java @ 'setData
+            (java "android.net.Uri" 'fromFile
+               (java "java.io.File" T File) ) ) ) ) )
+
+(de update? ()
+   (gt0  # (java (java CONTEXT 'getPackageManager) 'canRequestPackageInstalls)
+      (java "android.provider.Settings$Secure" 'getInt
+         (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
 
 # Notification
 (local) [

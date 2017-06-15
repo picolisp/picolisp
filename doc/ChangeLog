@@ -1,3 +1,7 @@
+15jun17
+   Added 'update' and 'update?' functions
+      lib/android.l
+
 13jun17
    Added a note in the reference of 'later' about 'rd' and 'pr', in response to
    https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=857277

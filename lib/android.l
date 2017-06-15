@@ -76,7 +76,13 @@
       (if Flg 'acquire 'release) ) )
 
 # Update APK
-(local) [update startActivity setData fromFile update? getInt]
+(local) [update? getInt]
+(de update? ()
+   (gt0  # (java (java CONTEXT 'getPackageManager) 'canRequestPackageInstalls)
+      (java "android.provider.Settings$Secure" 'getInt
+         (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
+
+(local) [update startActivity setData fromFile]
 (de update (File)
    (java (; CONTEXT GUI) 'startActivity
       (prog1
@@ -84,11 +90,6 @@
          (java @ 'setData
             (java "android.net.Uri" 'fromFile
                (java "java.io.File" T File) ) ) ) ) )
-
-(de update? ()
-   (gt0  # (java (java CONTEXT 'getPackageManager) 'canRequestPackageInstalls)
-      (java "android.provider.Settings$Secure" 'getInt
-         (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
 
 # Notification
 (local) [
@@ -141,6 +142,12 @@
             (java (; CONTEXT GUI) 'startActivityForResult Intent Req) ) ) ) )
 
 # GPS access
+(local) [checkSelfPermission]
+(de location? ()
+   (=0
+      (java "android.support.v4.content.ContextCompat"
+         'checkSelfPermission CONTEXT "android.permission.ACCESS_FINE_LOCATION" ) ) )
+
 (local) [
    gps *LocMan *LocLsn onLocationChanged onProviderDisabled onProviderEnabled
    onStatusChanged requestLocationUpdates isProviderEnabled getLastKnownLocation
@@ -168,8 +175,8 @@
             (+ (java Loc 'getLongitude) 180000000) ) ) ) )
 
 # Camera access
-(local) [hasCamera hasSystemFeature]
-(de hasCamera ()
+(local) [camera? hasSystemFeature]
+(de camera? ()
    (java (java CONTEXT 'getPackageManager)  # PackageManager
       'hasSystemFeature "android.hardware.camera" ) )
 

@@ -1,5 +1,6 @@
 15jun17
-   Added 'update' and 'update?' functions
+   Added 'update', 'update?' and 'location?' functions
+   Renamed 'hasCamera' to 'camera?'
       lib/android.l
 
 13jun17

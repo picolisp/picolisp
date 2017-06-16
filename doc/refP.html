@@ -379,7 +379,8 @@ defaulting to (2) (for a single file with a 256 byte block size). If
 If <code>sym2</code> is non-<code>NIL</code>, it is opened in append-mode as an
 asynchronous replication journal. If <code>sym3</code> is non-<code>NIL</code>,
 it is opened for reading and appending, to be used as a synchronous transaction
-log during <code><a href="refC.html#commit">commit</a></code>s. See also
+log during <code><a href="refC.html#commit">commit</a></code>s. Calling
+<code>(pool)</code> without arguments just closes the current database. See also
 <code><a href="refD.html#dbs">dbs</a></code>, <code><a
 href="refD.html#*Dbs">*Dbs</a></code> and <code><a
 href="refJ.html#journal">journal</a></code>.

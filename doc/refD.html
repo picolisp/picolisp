@@ -337,14 +337,14 @@ href="refD.html#dbs">dbs</a></code>.
 -> 3
 </code></pre>
 
-<dt><a name="dbSync"><code>(dbSync) -> flg</code></a>
+<dt><a name="dbSync"><code>(dbSync 'obj) -> flg</code></a>
 <dd>Starts a database transaction, by trying to obtain a <code><a
 href="refL.html#lock">lock</a></code> on the database root object <code><a
-href="refD.html#*DB">*DB</a></code>, and then calling <code><a
-href="refS.html#sync">sync</a></code> to synchronize with possible changes from
-other processes. When all desired modifications to external symbols are done,
-<code>(<a href="refC.html#commit">commit</a> 'upd)</code> should be called. See
-also <a href="ref.html#dbase">Database</a>.
+href="refD.html#*DB">*DB</a></code> (or <code>obj</code> if given), and then
+calling <code><a href="refS.html#sync">sync</a></code> to synchronize with
+possible changes from other processes. When all desired modifications to
+external symbols are done, <code>(<a href="refC.html#commit">commit</a>
+'upd)</code> should be called. See also <a href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (let? Obj (rd)             # Get object?

@@ -521,10 +521,10 @@ href="refM.html#money">money</a></code>.
 the whole database root file if <code>sym</code> is <code>NIL</code>. Returns
 <code>NIL</code> if successful, or the ID of the process currently holding the
 lock. When <code>sym</code> is non-<code>NIL</code>, the lock is released at the
-next top level call to <code><a href="refC.html#commit">commit</a></code> or
-<code><a href="refR.html#rollback">rollback</a></code>, otherwise only when
-another database is opened with <code><a href="refP.html#pool">pool</a></code>,
-or when the process terminates. See also <code><a
+next call to <code><a href="refC.html#commit">commit</a></code> or <code><a
+href="refR.html#rollback">rollback</a></code>, otherwise only when another
+database is opened with <code><a href="refP.html#pool">pool</a></code>, or when
+the process terminates. See also <code><a
 href="refS.html#*Solo">*Solo</a></code>.
 
 <pre><code>

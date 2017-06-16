@@ -1,3 +1,9 @@
+16jun17
+   Minor ref fixes for 'pool', 'dbSync' and 'lock'
+      doc/refP.html
+      doc/refD.html
+      doc/refL.html
+
 15jun17
    Added 'update', 'update?' and 'location?' functions
    Renamed 'hasCamera' to 'camera?'

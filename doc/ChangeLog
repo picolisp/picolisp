@@ -1,3 +1,9 @@
+18jun17
+   'ssl' and 'download' functions
+      lib/misc.l
+      doc/refD.html
+      doc/refS.html
+
 16jun17
    Minor ref fixes for 'pool', 'dbSync' and 'lock'
       doc/refP.html
@@ -5,7 +11,7 @@
       doc/refL.html
 
 15jun17
-   Added 'update', 'update?' and 'location?' functions
+   'update', 'update?' and 'location?' functions
    Renamed 'hasCamera' to 'camera?'
       lib/android.l
 

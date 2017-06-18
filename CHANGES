@@ -1,4 +1,5 @@
 * XXjun17 picoLisp-17.6
+   'ssl' and 'download' functions
    '+TreeChart' GUI class
    'step' stores the key in '@@'
    Optional 'flg' argument for 'delete', 'delq' and 'del'

@@ -794,6 +794,18 @@ to <code><a href="refD.html#doc">doc</a></code>.
 -> NIL
 </code></pre>
 
+<dt><a name="download"><code>(download 'host 'src 'dst) -> any</code></a>
+<dd>Tries to download the file <code>src</code> from <code>host</code> with
+"@bin/ssl", and stores it in <code>dst</code>. Returns non-<code>NIL</code> if
+successful. See also <code><a href="refS.html#ssl">ssl</a></code>.
+
+<pre><code>
+: (download "de.wikipedia.org" "static/images/wikimedia-button.png" "button.png")
+-> 0
+: (info "button.png")
+-> (2426 736804 . 35589)
+</code></pre>
+
 </dl>
 
 </body>

@@ -1,4 +1,4 @@
-# 26may17abu
+# 18jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -398,6 +398,27 @@
 
 (de basename (F)
    (pack (stem (chop F) '/)) )
+
+(de ssl ("Host" "Path" . "Prg")
+   (in (list "@bin/ssl" "Host" 443 "Path")
+      (and
+         (tail '`(chop "200 OK") (line))
+         (from "\r\n\r\n")
+         (run "Prg") ) ) )
+
+(de download (Host Src Dst)
+   (let (F (tmp 'download)  Size)
+      (in (list "@bin/ssl" Host 443 Src)
+         (and
+            (tail '`(chop "200 OK") (line))
+            (from "Content-Length:")
+            (setq Size (read))
+            (from "\r\n\r\n")
+            (out F (echo))
+            (= Size (car (info F)))
+            `(if (== 64 64)
+               '(=0 (native "@" "rename" 'I F Dst))
+               '(call "mv" F Dst) ) ) ) ) )
 
 # Print or eval
 (de prEval (Prg Ofs)

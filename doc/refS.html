@@ -635,6 +635,16 @@ href="ref_.html#*/">*/</a></code>.
 -> 1414214
 </code></pre>
 
+<dt><a name="ssl"><code>(ssl 'host 'path . prg) -> any</code></a>
+<dd>Executes <code>prg</code> in an input stream (using <code><a
+href="refI.html#in">in</a></code>) from "@bin/ssl" requesting <code>path</code>
+from <code>host</code>.
+
+<pre><code>
+: (ssl "picolisp.com" "wiki/?home" (line T))
+-> "&lt;!DOCTYPE html&gt;"
+</code></pre>
+
 <dt><a name="stack"><code>(stack ['cnt]) -> cnt | (.. sym . cnt)</code></a>
 <dd>(64-bit version only) Maintains the stack segment size for <a
 href="ref.html#coroutines">coroutines</a> (the main stack segment is limited -

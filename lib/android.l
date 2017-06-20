@@ -1,4 +1,4 @@
-# 15jun17abu
+# 20jun17abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Uuid (in "UUID" (line T)))
@@ -142,7 +142,7 @@
             (java (; CONTEXT GUI) 'startActivityForResult Intent Req) ) ) ) )
 
 # GPS access
-(local) [checkSelfPermission]
+(local) checkSelfPermission
 (de location? ()
    (=0
       (java "android.support.v4.content.ContextCompat"
@@ -177,7 +177,7 @@
 # Camera access
 (local) [camera? hasSystemFeature]
 (de camera? ()
-   (java (java CONTEXT 'getPackageManager)  # PackageManager
+   (java (java CONTEXT 'getPackageManager)
       'hasSystemFeature "android.hardware.camera" ) )
 
 ## '((Intent)
@@ -190,6 +190,14 @@
       "output" (fileUri Dst) ) )
 
 # ZXing QR-Codes
+(local) zxing?
+(de zxing? ()
+   (with
+      (java (java CONTEXT 'getPackageManager) 'queryIntentActivities
+         (java "android.content.Intent" T "com.google.zxing.client.android.SCAN")
+         65536 )  # MATCH_DEFAULT_ONLY
+      (gt0 (: size)) ) )
+
 ## '((Intent)
 ##    (java Intent 'getStringExtra "SCAN_RESULT")
 ##    (java Intent 'getStringExtra "SCAN_RESULT_FORMAT") )

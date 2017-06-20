@@ -1,4 +1,6 @@
 20jun17
+   Added 'zxing?' checking for QR-Code scanner
+      lib/android.l
    Document volatile properties
       doc/ref.html
    "Call" button in 'repl'

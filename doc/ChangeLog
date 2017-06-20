@@ -1,3 +1,9 @@
+20jun17
+   Document volatile properties
+      doc/ref.html
+   "Call" button in 'repl'
+      lib/form.l
+
 18jun17
    'ssl' and 'download' functions
       lib/misc.l

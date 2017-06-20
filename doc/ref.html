@@ -370,6 +370,7 @@ system. It is used
 <li>to represent a string of length zero
 <li>to represent the value "Not a Number"
 <li>as the root of all class hierarchies
+<li>as volatile property key
 </ul>
 
 <p>For that, <code>NIL</code> has a special structure:
@@ -1597,6 +1598,11 @@ Modifications will be written to disk only when <code><a
 href="refC.html#commit">commit</a></code> is called. Alternatively, all
 modifications since the last call to <code>commit</code> can be discarded by
 calling <code><a href="refR.html#rollback">rollback</a></code>.
+
+<p>Note that a property with the key <code>NIL</code> is a <i>volatile
+property</i>, which is held only in memory and not written to disk on
+<code>commit</code>, and discarded by <code>rollback</code>. Volatile properties
+can be used by applications for any kind of temporary data.
 
 <p><hr>
 <h4><a name="trans">Transactions</a></h4>

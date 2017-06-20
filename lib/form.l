@@ -1,4 +1,4 @@
-# 06jun17abu
+# 20jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -348,8 +348,8 @@
       (gui 'line '(+Focus +Able +Hint1 +TextField)
          '(= (: home view file) (: home repl))
          '(: home hint)
-         (*/ DX 3 4)
-         ":" )
+         DX )
+      (----)
       (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "?"
          '(let Str (val> (: home line))
             (out (pack "+" (: home repl))
@@ -375,7 +375,17 @@
                   (set> (: home line) "file")
                   "file" )
                (clr> (: home line))
-               (: home repl) ) ) ) ) )
+               (: home repl) ) ) )
+      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Call"
+         '(let Str (val> (: home line))
+            (out (pack "+" (: home repl))
+               (err NIL
+                  (prinl "$ " Str)
+                  (flush)
+                  (in (filter bool (split (chop Str) " "))
+                     (echo) ) ) )
+            (push1 (:: home hint) Str)
+            (clr> (: home line)) ) ) ) )
 
 
 # Dialogs

@@ -1,3 +1,7 @@
+22jun17
+   Minor local declaration
+      lib/android.l
+
 20jun17
    Added 'zxing?' checking for QR-Code scanner
       lib/android.l

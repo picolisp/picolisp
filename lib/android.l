@@ -1,4 +1,4 @@
-# 20jun17abu
+# 22jun17abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Uuid (in "UUID" (line T)))
@@ -190,7 +190,7 @@
       "output" (fileUri Dst) ) )
 
 # ZXing QR-Codes
-(local) zxing?
+(local) [zxing? queryIntentActivities]
 (de zxing? ()
    (with
       (java (java CONTEXT 'getPackageManager) 'queryIntentActivities

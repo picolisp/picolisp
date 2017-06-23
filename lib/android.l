@@ -1,4 +1,4 @@
-# 22jun17abu
+# 23jun17abu
 # (c) Software Lab. Alexander Burger
 
 (setq *Uuid (in "UUID" (line T)))
@@ -6,6 +6,7 @@
 (symbols 'android 'pico)
 
 (for F '("JAVA" "LISP" "RQST" "RPLY")
+   (native "@" "unlink" 'I F)
    (native "@" "mkfifo" 'I F `(oct "600")) )
 
 (for D (dir ".pil/tmp/")

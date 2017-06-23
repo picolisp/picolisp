@@ -1,3 +1,7 @@
+23jun17
+   Unlink pipes before creation
+      lib/android.l
+
 22jun17
    Minor local declaration
       lib/android.l

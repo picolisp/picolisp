@@ -1,4 +1,4 @@
-# 20jun17abu
+# 24jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -350,7 +350,7 @@
          '(: home hint)
          DX )
       (----)
-      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "?"
+      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Lisp"
          '(let Str (val> (: home line))
             (out (pack "+" (: home repl))
                (err NIL
@@ -376,13 +376,13 @@
                   "file" )
                (clr> (: home line))
                (: home repl) ) ) )
-      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Call"
+      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Shell"
          '(let Str (val> (: home line))
             (out (pack "+" (: home repl))
                (err NIL
                   (prinl "$ " Str)
                   (flush)
-                  (in (filter bool (split (chop Str) " "))
+                  (in (list "sh" "-c" Str)
                      (echo) ) ) )
             (push1 (:: home hint) Str)
             (clr> (: home line)) ) ) ) )

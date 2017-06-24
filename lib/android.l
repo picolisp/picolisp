@@ -1,16 +1,14 @@
-# 23jun17abu
+# 24jun17abu
 # (c) Software Lab. Alexander Burger
 
-(setq *Uuid (in "UUID" (line T)))
+(ifn (info "UUID")
+   (off *Uuid)
+   (setq *Uuid (in "UUID" (line T)))
+   (for F '("JAVA" "LISP" "RQST" "RPLY")
+      (native "@" "unlink" 'I F)
+      (native "@" "mkfifo" 'I F `(oct "600")) ) )
 
 (symbols 'android 'pico)
-
-(for F '("JAVA" "LISP" "RQST" "RPLY")
-   (native "@" "unlink" 'I F)
-   (native "@" "mkfifo" 'I F `(oct "600")) )
-
-(for D (dir ".pil/tmp/")
-   (call "rm" "-rf" (pack ".pil/tmp/" D)) )
 
 # SSL
 (sys "LD_LIBRARY_PATH" "lib")

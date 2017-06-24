@@ -1,3 +1,9 @@
+24jun17
+   Call shell in 'repl'
+      lib/form.l
+   Minor initialization changes
+      lib/android.l
+
 23jun17
    Unlink pipes before creation
       lib/android.l

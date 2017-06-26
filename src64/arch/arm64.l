@@ -1,4 +1,4 @@
-# 22jul16abu
+# 26jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -1268,11 +1268,11 @@
    (prinst "b" "6f")                   # Done
    (prinl "4:")
    (prinst "cmp" "x17" "x24")          # Minus infinite?
-   (prinst "mov" "x17" "#0x7F800000")
+   (prinst "mov" "w17" "#0x7F800000")
    (prinst "b.ne" "5f")                # No: Jump
-   (prinst "mov" "x17" "#0xFF800000")
+   (prinst "mov" "w17" "#0xFF800000")
    (prinl "5:")
-   (prinst "fmov" "s0" "x17")
+   (prinst "fmov" "s0" "w17")
    (prinl "6:") )
 
 (asm std ()

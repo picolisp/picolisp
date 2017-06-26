@@ -1,3 +1,7 @@
+26jun17
+   Minor register size change
+      src64/arch/arm64.l
+
 24jun17
    Call shell in 'repl'
       lib/form.l

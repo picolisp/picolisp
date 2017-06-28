@@ -1,3 +1,8 @@
+28jun17
+   Avoid "push S"
+      src64/big.l
+      pilos/src/big.l
+
 26jun17
    Minor register size change
       src64/arch/arm64.l

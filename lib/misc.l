@@ -1,4 +1,4 @@
-# 18jun17abu
+# 29jun17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -444,7 +444,7 @@
 # Send mail
 (de mail (Host Port From To Sub Att . Prg)
    (let? S (connect Host Port)
-      (let B (pack "==" (date) "-" (time T) "==")
+      (let B (pack "==" (date) "-" (time T) "-" (usec) "==")
          (prog1
             (and
                (pre? "220 " (in S (line T)))
@@ -470,12 +470,13 @@
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
                   (when Att
-                     (prinl
-                        "Content-Type: multipart/"
-                        (if (cadr Att) "mixed" "alternative")
-                        "; boundary=\"" B "\"^M" )
+                     (prinl "Content-Type: multipart/mixed; boundary=\"" B "\"^M")
                      (prinl "^M")
-                     (prinl "--" B "^M") )
+                     (prinl "--" B "^M")
+                     (unless (cadr Att)
+                        (prinl "Content-Type: multipart/alternative; boundary=\"==" B "==\"^M")
+                        (prinl "^M")
+                        (prinl "--==" B "==^M") ) )
                   (prinl "Content-Type: text/plain; charset=utf-8^M")
                   (prinl "Content-Transfer-Encoding: 8bit^M")
                   (prinl "^M")
@@ -483,7 +484,9 @@
                   (prinl "^M")
                   (when Att
                      (loop
-                        (prinl "--" B "^M")
+                        (if (cadr Att)
+                           (prinl "--" B "^M")
+                           (prinl "--==" B "==^M") )
                         (prin "Content-Type: " (or (caddr Att) "application/octet-stream"))
                         (and (cadr Att) (prin "; name=\"" @ "\""))
                         (prinl "^M")
@@ -498,6 +501,9 @@
                               (prBase64 18)
                               (prinl) ) )
                         (prinl "^M")
+                        (unless (cadr Att)
+                           (prinl "--==" B "==--^M")
+                           (prinl "^M") )
                         (NIL (setq Att (cdddr Att))) )
                      (prinl "--" B "--^M") )
                   (prinl ".^M")

@@ -1,4 +1,6 @@
-* XXjun17 picoLisp-17.6
+* XXdec17 picoLisp-17.12
+
+* 29jun17 picoLisp-17.6
    'ssl' and 'download' functions
    '+TreeChart' GUI class
    'step' stores the key in '@@'

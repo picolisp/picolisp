@@ -1,4 +1,8 @@
 04jul17
+   Added 'wifi?' function
+      lib/android.l
+   Catalan localiztion (Arnau Figueras)
+      loc/ca
    Removed "ifdef __CYGWIN__" for fcntl()
       src/io.c
 

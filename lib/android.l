@@ -1,4 +1,4 @@
-# 24jun17abu
+# 04jul17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -73,6 +73,15 @@
          (java CONTEXT 'getSystemService "power")  # PowerManager
          'newWakeLock 1 "PilWake" )                # New WakeLock
       (if Flg 'acquire 'release) ) )
+
+# Check if WIFI is active
+(local) [getActiveNetworkInfo getType]
+(de wifi? ()
+   (and
+      (java
+         (java CONTEXT 'getSystemService "connectivity")  # ConnectivityManager
+         'getActiveNetworkInfo )  # NetworkInfo
+      (=1 (java @ 'getType)) ) )  # onnectivityManager.TYPE_WIFI
 
 # Update APK
 (local) [update? getInt]

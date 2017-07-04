@@ -1,3 +1,7 @@
+04jul17
+   Removed "ifdef __CYGWIN__" for fcntl()
+      src/io.c
+
 29jun17
    Mail multipart/alternative block
       lib/misc.l

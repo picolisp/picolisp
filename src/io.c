@@ -1,13 +1,8 @@
-/* 26aug16abu
+/* 04jul17abu
  * (c) Software Lab. Alexander Burger
  */
 
 #include "pico.h"
-
-#ifdef __CYGWIN__
-#include <sys/file.h>
-#define fcntl(fd,cmd,fl) 0
-#endif
 
 static any read0(bool);
 

@@ -1,4 +1,4 @@
-# 06jun17abu
+# 06jul17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -76,14 +76,31 @@
             (mkUrl @) )
          (super "Var") ) ) )
 
+# OpenStreetMap / OpenLayers
+(local) [OL-CSS <osm>]
+(de OL-CSS . "https://openlayers.org/en/v4.2.0/css/ol.css")
+
+(de <osm> (Zoom Lat Lon)
+   (<div> '(map (id . map)))
+   (javascript "https://openlayers.org/en/v4.2.0/build/ol.js" "
+      var map = new ol.Map( {
+         target: 'map',
+         layers: [
+            new ol.layer.Tile({source: new ol.source.OSM()})
+         ],
+         view: new ol.View( {
+            center: ol.proj.fromLonLat([" (lon Lon) ", " (lat Lat) "]),
+            zoom: " Zoom "
+         } )
+      } );" ) )
+
 # Google Maps
-(local) google
+(local) [google <google>]
 (de google (Ttl Lat Lon Zoom Tar)
    (<href> Ttl
       (pack "https://www.google.com/maps/@" (fmt Lat "," Lon) "," Zoom "z")
       Tar ) )
 
-(local) <google>
 (de <google> (Lat Lon DX DY)
    (prinl
       "<iframe width=\"" DX "\" height=\"" DY "\" frameborder=\"3\" \

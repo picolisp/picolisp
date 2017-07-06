@@ -1,4 +1,4 @@
-# 02feb16abu
+# 06jul17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -97,7 +97,7 @@ ifeq ($(shell uname), IRIX64)
     DYNAMIC-LIB-FLAGS = -shared
     STRIP = strip -f
 else
-ifeq ($(shell uname -o), Cygwin)
+ifeq ($(shell uname -o | egrep -q "Cygwin|Msys" ; echo $$?), 0)
 	OS = Cygwin
 	CFLAGS += -m32
 	DYNAMIC-LIB-FLAGS = -shared

@@ -1,3 +1,7 @@
+07jul17
+   Preserve namespaces in error handler
+      {src64,pilos/src}/err.l
+
 06jul17
    'OL-CSS' URL and '<osm>' function
       lib/gis.l

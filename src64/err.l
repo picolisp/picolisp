@@ -1,4 +1,4 @@
-# 02mar17abu
+# 07jul17abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -164,7 +164,6 @@
    ld C 0  # Top frame
    call unwindC_Z  # Unwind
    ld (EnvProtect) 0  # Reset environments
-   ld (EnvIntern) Pico1
    ld (EnvTask) Nil
    ld (EnvCo7) 0
    ld (EnvArgs) 0

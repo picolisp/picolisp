@@ -1,4 +1,4 @@
-# 22dec16abu
+# 08jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -113,7 +113,7 @@
                (prinl "<style type=\"text/css\">")
                (prinl @)
                (prinl "</style>") ) ) )
-      (and *SesId (javascript NIL "SesId=\"" @ "\""))
+      (and *SesId (javascript NIL "SesId='" @ "'"))
       (mapc javascript *JS)
       (when (=0 Upd)
          (javascript NIL

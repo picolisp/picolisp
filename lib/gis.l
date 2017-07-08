@@ -1,5 +1,7 @@
-# 06jul17abu
+# 08jul17abu
 # (c) Software Lab. Alexander Burger
+
+(push1 '*JS (allow "@lib/gis.js"))
 
 (symbols 'gis 'pico)
 
@@ -83,16 +85,7 @@
 (de <osm> (Zoom Lat Lon)
    (<div> '(map (id . map)))
    (javascript "https://openlayers.org/en/v4.2.0/build/ol.js" "
-      var map = new ol.Map( {
-         target: 'map',
-         layers: [
-            new ol.layer.Tile({source: new ol.source.OSM()})
-         ],
-         view: new ol.View( {
-            center: ol.proj.fromLonLat([" (lon Lon) ", " (lat Lat) "]),
-            zoom: " Zoom "
-         } )
-      } );" ) )
+      var map = newMap('map', " (lat Lat) ", " (lon Lon) ", " Zoom ")" ) )
 
 # Google Maps
 (local) [google <google>]

@@ -1,4 +1,4 @@
-# 24jun17abu
+# 08jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -990,9 +990,9 @@
       (atom "*Err")
       (eval (: clk))
       (javascript NIL
-         "window.setTimeout(\"document.getElementById(\\\""
+         "window.setTimeout(\"document.getElementById('"
          "i" *Form "-" (: id)
-         "\\\").click()\","
+         "').click()\","
          @
          ")" ) ) )
 
@@ -1003,7 +1003,7 @@
    (extra "Var")
    (when (and (able) (not "*Foc"))
       (on "*Foc")
-      (javascript NIL "idFocus(\"" "i" *Form "-" (: id) "\")") ) )
+      (javascript NIL "idFocus('" "i" *Form "-" (: id) "')") ) )
 
 
 ### Styles ###

@@ -1,3 +1,11 @@
+08jul17
+   New file
+      lib/gis.js
+   Minor 'javascript' cosmetics
+      lib/xhtml.l
+      lib/form.l
+      lib/gis.l
+
 07jul17
    Preserve namespaces in error handler
       {src64,pilos/src}/err.l

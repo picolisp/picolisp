@@ -1,4 +1,5 @@
 * XXdec17 picoLisp-17.12
+   '<osm>' and '<poi>' functions in "lib/gis.l"
    Preserve namespaces in error handler
 
 * 29jun17 picoLisp-17.6

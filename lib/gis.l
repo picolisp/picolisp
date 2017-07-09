@@ -84,13 +84,12 @@
 
 (de <osm> (Lat Lon Zoom)
    (<div> '(map (id . map)))
-   (javascript "https://openlayers.org/en/v4.2.0/build/ol.js" "
-      var map = osm('map', " (lat Lat) ", " (lon Lon) ", " Zoom ")" ) )
+   (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
+      "osm('map', " (lat Lat) ", " (lon Lon) ", " Zoom ")" ) )
 
 (de <poi> (Lat Lon Img X Y Txt DY Col)
-   (javascript NIL "
-      poi(map, "
-         (lat Lat) ", " (lon Lon) ", '"
+   (javascript NIL
+      "poi(" (lat Lat) ", " (lon Lon) ", '"
          (sesId Img) "', " X ", " Y ", '"
          Txt "', " DY ", '" Col "')" ) )
 

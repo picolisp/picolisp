@@ -1,4 +1,4 @@
-# 09jul17abu
+# 10jul17abu
 # (c) Software Lab. Alexander Burger
 
 (push1 '*JS (allow "@lib/gis.js"))
@@ -87,11 +87,12 @@
    (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
       "osm('map', " (lat Lat) ", " (lon Lon) ", " Zoom ")" ) )
 
-(de <poi> (Lat Lon Img X Y Txt DY Col)
+(de <poi> (Lat Lon Img X Y Txt DY Col Url)
    (javascript NIL
       "poi(" (lat Lat) ", " (lon Lon) ", '"
          (sesId Img) "', " X ", " Y ", '"
-         Txt "', " DY ", '" Col "')" ) )
+         Txt "', " DY ", '" Col "', '"
+         (sesId Url) "')" ) )
 
 # Google Maps
 (local) [google <google>]

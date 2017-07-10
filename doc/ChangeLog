@@ -1,3 +1,8 @@
+10jul17
+   Added '<poi>' URL support
+      lib/gis.l
+      lib/gis.js
+
 09jul17
    '<poi>' function
       lib/gis.l

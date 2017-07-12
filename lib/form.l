@@ -1,4 +1,4 @@
-# 08jul17abu
+# 12jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2095,6 +2095,19 @@
       (and
          (eval (: erObj))
          (mis> @ (: erVar) (val> This)) ) ) )
+
+
+# +Swap relations
+(class +Swap/R +E/R)
+
+(dm set> (Val Dn)
+   (super
+      (if (ext? Val) (val Val) Val)
+      Dn ) )
+
+(dm val> ()
+   (let Val (super)
+      (if (ext? Val) (val Val) Val) ) )
 
 
 # Subobject relation

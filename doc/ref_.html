@@ -177,6 +177,12 @@ href="ref_.html#+">+</a></code>, <code><a href="ref_.html#-">-</a></code> and
 -> 2
 : (format (*/ 3.0 1.5 1.0) *Scl)
 -> "4.50"
+
+: (scl 20)
+-> 20
+: (format (*/ 9.9 9.789 9.56789 `(* 1.0 1.0)) *Scl)
+-> "927.23474457900000000000"
+
 </code></pre>
 
 <dt><a name="+"><code>(+ 'num ..) -> num</code></a>

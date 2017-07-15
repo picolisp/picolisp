@@ -1,4 +1,4 @@
-# 28jun17abu
+# 15jul17abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2458,6 +2458,7 @@
          inc B
       end
       link
+      push ZERO  # <L III> Safe
       push ZERO  # <L II> Safe
       push E  # <L I> Result
       link
@@ -2486,8 +2487,8 @@
       jeq divErrX  # Yes
       ld A E  # Last argument
       call shruA_A  # / 2
-      ld E (L I)  # Get product
-      ld (L I) A  # Save halved argument
+      ld (L III) A  # Save halved argument
+      ld E (L I)  # Get product, keep in safe
       call adduAE_A  # Add for rounding
       ld (L I) A  # Save rounded product
       ld E (L II)  # Last argument

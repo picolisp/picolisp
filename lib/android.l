@@ -1,4 +1,4 @@
-# 04jul17abu
+# 16jul17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -83,6 +83,14 @@
          'getActiveNetworkInfo )  # NetworkInfo
       (=1 (java @ 'getType)) ) )  # onnectivityManager.TYPE_WIFI
 
+# Generate file content URI
+(local) [fileUri getUriForFile getPackageName]
+(de fileUri (File)
+   (java "android.support.v4.content.FileProvider" 'getUriForFile
+      CONTEXT
+      (pack (java CONTEXT 'getPackageName) ".fileprovider")
+      (java "java.io.File" T File) ) )
+
 # Update APK
 (local) [update? getInt]
 (de update? ()
@@ -95,9 +103,8 @@
    (java (; CONTEXT GUI) 'startActivity
       (prog1
          (java "android.content.Intent" T "android.intent.action.INSTALL_PACKAGE")
-         (java @ 'setData
-            (java "android.net.Uri" 'fromFile
-               (java "java.io.File" T File) ) ) ) ) )
+         (java @ 'setFlags 1)  # Intent.FLAG_GRANT_READ_URI_PERMISSION
+         (java @ 'setData (fileUri File)) ) ) )
 
 # Notification
 (local) [
@@ -112,15 +119,6 @@
       (java B 'setLights `(hex "FFFFFF") 500 500)
       (java (java CONTEXT 'getSystemService "notification")  # NotificationManager
          'notify (or Id 0) (java B 'build) ) ) )
-
-# Generate file content URI
-(local) [fileUri getUriForFile getPackageName]
-(de fileUri (File)
-   (out File)
-   (java "android.support.v4.content.FileProvider" 'getUriForFile
-      CONTEXT
-      (pack (java CONTEXT 'getPackageName) ".fileprovider")
-      (java "java.io.File" T File) ) )
 
 # Start Activity for a result
 (local) [
@@ -193,6 +191,7 @@
 ##    (loadUrl (baseHRef) *SesId "app/camera.l") )
 (local) takePicture
 (de takePicture (Dst Fun)
+   (out Dst)
    (startActivityForResult Fun
       "android.media.action.IMAGE_CAPTURE"
       "output" (fileUri Dst) ) )

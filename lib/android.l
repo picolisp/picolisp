@@ -1,4 +1,4 @@
-# 16jul17abu
+# 17jul17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -213,5 +213,10 @@
    (startActivityForResult Fun
       "com.google.zxing.client.android.SCAN"
       "SCAN_MODE" "QR_CODE_MODE" ) )
+
+# Terminate PilBox
+(local) [terminate finishAndRemoveTask]
+(de terminate ()
+   (java (; CONTEXT GUI) 'finishAndRemoveTask) )
 
 # vi:et:ts=3:sw=3

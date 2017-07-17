@@ -1,4 +1,6 @@
 * XXdec17 picoLisp-17.12
+   Bug in '*/' in pil64
+   '+Swap/R' GUI prefix class
    '<osm>' and '<poi>' functions in "lib/gis.l"
    Preserve namespaces in error handler
 

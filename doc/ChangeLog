@@ -1,4 +1,6 @@
 17jul17
+   Print PID if 8th argument is zero
+      src/ssl.c
    Added 'terminate' function
       lib/android.l
 

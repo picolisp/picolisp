@@ -1,4 +1,4 @@
-/* 28mar17abu
+/* 17jul17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -216,9 +216,15 @@ int main(int ac, char *av[]) {
    iSignal(SIGTERM, doSigTerm);
    signal(SIGPIPE, SIG_IGN);
    lim = 0;
-   if (ac > 8) {
-      iSignal(SIGALRM, doSigTerm);
-      alarm(lim = 60 * atoi(av[8]));
+   if (ac == 9) {
+      if ((lim = atoi(av[8])) == 0) {
+         printf("%d\n", getpid());
+         fflush(stdout);
+      }
+      else {
+         iSignal(SIGALRM, doSigTerm);
+         alarm(lim *= 60);
+      }
    }
    for (;;) {
       if (*File && (fd = open(File, O_RDWR)) >= 0) {

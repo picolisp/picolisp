@@ -1,3 +1,9 @@
+18jul17
+   Added 'help' function (Peter Nagy)
+      lib/debug.l
+   Enable 'paste' plugin
+      lib/tinymce.l
+
 17jul17
    Print PID if 8th argument is zero
       src/ssl.c

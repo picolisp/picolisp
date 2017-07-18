@@ -1,4 +1,4 @@
-# 24nov16abu
+# 18jul17abu
 # (c) Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
@@ -6,10 +6,11 @@
 
 (de <tinymce> ()
    (javascript "tinymce/tinymce.min.js" "
-      tinymce.init({
+      tinymce.init( {
          selector: 'textarea',
          plugins: 'textcolor colorpicker hr directionality paste',
          toolbar: 'forecolor bold italic superscript underline strikethrough | hr | removeformat',
+         paste_as_text: true,
          nowrap: true,
          menubar: false,
          statusbar: false,

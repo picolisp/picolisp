@@ -1,4 +1,4 @@
-# 03mar17abu
+# 18jul17abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -8,6 +8,22 @@
          (car (symbols)) ) ) )
 
 # Browsing
+(de help (Sym Ex)
+   (when (; Sym doc)
+      (prinl "========================================")
+      (in @
+         (from (pack "<dt><a name=\"" Sym "\">"))
+         (pipe
+            (out '(lynx "-dump" "-stdin")
+               (echo "<dd>")
+               (echo "\n<pre><code>")
+               (when Ex
+                  (prinl "\n<pre><code>")
+                  (echo "<dt>") ) )
+            (echo "\nReferences") ) )
+      (prinl "========================================") )
+   Sym )
+
 (de docs (Dir)
    (when (=T (car (info Dir)))
       (let All (all)

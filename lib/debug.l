@@ -14,8 +14,9 @@
       (in @
          (from (pack "<dt><a name=\"" Sym "\">"))
          (pipe
-            (out '(lynx "-dump" "-stdin")
+            (out '("lynx" "-dump" "-stdin")
                (echo "<dd>")
+               (prinl "<br>")
                (echo "\n<pre><code>")
                (when Ex
                   (prinl "\n<pre><code>")

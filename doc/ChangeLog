@@ -1,6 +1,8 @@
 18jul17
    Added 'help' function (Peter Nagy)
       lib/debug.l
+      doc/ref.html
+      doc/refH.html
    Enable 'paste' plugin
       lib/tinymce.l
 

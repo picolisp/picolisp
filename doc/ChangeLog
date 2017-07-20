@@ -1,3 +1,8 @@
+19jul17
+   Use 'w3m' instead of 'lynx' in 'help'
+      lib/debug.l
+      doc/refH.html
+
 18jul17
    Added 'help' function (Peter Nagy)
       lib/debug.l

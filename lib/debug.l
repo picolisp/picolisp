@@ -1,4 +1,4 @@
-# 18jul17abu
+# 19jul17abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -13,15 +13,15 @@
       (prinl "========================================")
       (in @
          (from (pack "<dt><a name=\"" Sym "\">"))
-         (pipe
-            (out '("lynx" "-dump" "-stdin")
-               (echo "<dd>")
-               (prinl "<br>")
-               (echo "\n<pre><code>")
-               (when Ex
-                  (prinl "\n<pre><code>")
-                  (echo "<dt>") ) )
-            (echo "\nReferences") ) )
+         (out '("w3m" "-T" "text/html" "-dump")
+            (echo "</a>")
+            (echo "<dd>")
+            (prinl "<br>")
+            (echo "\n<pre><code>")
+            (ifn Ex
+               (prinl "<br><br>")
+               (prin "<pre><code>")
+               (prinl (echo "\n</code></pre>")) ) ) )
       (prinl "========================================") )
    Sym )
 

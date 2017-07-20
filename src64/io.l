@@ -1,4 +1,4 @@
-# 04mar17abu
+# 20jul17abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -1507,6 +1507,7 @@
                   call closeAX
                end
                add S I  # Drop 'pipe' structure
+               cc signal(SIGPIPE SIG_DFL)  # Default SIGPIPE
                cc execvp((S) S)  # Execute program
                jmp execErrS  # Error if failed
             end

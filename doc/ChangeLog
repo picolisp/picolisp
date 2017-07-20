@@ -1,3 +1,8 @@
+20jul17
+   Changed 'rdOpen[EXY]' to set SIGPIPE to default
+      src64/io.l
+      src/io.c
+
 19jul17
    Use 'w3m' instead of 'lynx' in 'help'
       lib/debug.l

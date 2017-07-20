@@ -1,4 +1,4 @@
-/* 04jul17abu
+/* 20jul17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -706,6 +706,7 @@ void rdOpen(any ex, any x, inFrame *f) {
          close(pfd[0]);
          if (pfd[1] != STDOUT_FILENO)
             dup2(pfd[1], STDOUT_FILENO),  close(pfd[1]);
+         signal(SIGPIPE, SIG_DFL);
          execvp(av[0], av);
          execError(av[0]);
       }

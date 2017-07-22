@@ -1,3 +1,11 @@
+22jul17
+   Use home-relative path
+      lib/tinymce.l
+   Typos in documentation (Nehal Singhal)
+      doc/ref.html
+      doc/faq.html
+      doc/native.html
+
 20jul17
    Changed 'rdOpen[EXY]' to set SIGPIPE to default
       src64/io.l

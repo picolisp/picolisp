@@ -179,8 +179,8 @@ the definition of helper functions:
 
 <p>After any one of <code>fun1</code>, <code>fun2</code> or <code>fun3</code>
 was called, the symbol <code>"lib.so"</code> will hold the library handle. And
-each function function <code>"fun1"</code>, <code>"fun2"</code> and
-<code>"fun3"</code> will be searched only when called the first time.
+each function <code>"fun1"</code>, <code>"fun2"</code> and <code>"fun3"</code>
+will be searched only when called the first time.
 
 <p>Warning: It should be avoided to put more than one library into a single
 transient scope if there is a chance that two different functions with the same
@@ -692,7 +692,7 @@ the time the C library is compiled or loaded.
 than five arguments, to keep the C compiler happy.
 
 <p>This mechanism can generally be used for any type of argument and return
-value (not only <code>long</code>). On the C side, appropriate casts or a
+value (not only <code>long</code>). On the C side, appropriate casts or an
 adapted prototype should be used. It is then up to the called Lisp function to
 prepare and/or extract the proper data with <code><a
 href="refS.html#struct">struct</a></code> and memory management operations.

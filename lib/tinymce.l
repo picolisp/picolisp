@@ -1,11 +1,11 @@
-# 18jul17abu
+# 22jul17abu
 # (c) Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
-(allow "tinymce/" T)
+(allow "@tinymce/" T)
 
 (de <tinymce> ()
-   (javascript "tinymce/tinymce.min.js" "
+   (javascript "@tinymce/tinymce.min.js" "
       tinymce.init( {
          selector: 'textarea',
          plugins: 'textcolor colorpicker hr directionality paste',

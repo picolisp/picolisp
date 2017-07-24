@@ -1,4 +1,5 @@
 * XXdec17 picoLisp-17.12
+   '+Stop' GUI prefix class
    'help' function
    Bug in '*/' in pil64
    '+Swap/R' GUI prefix class

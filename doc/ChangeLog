@@ -1,4 +1,6 @@
 24jul17
+   '+Stop' GUI prefix class
+      lib/form.l
    Fix WakeLock release
       lib/android.l
 

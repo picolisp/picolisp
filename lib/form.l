@@ -1,4 +1,4 @@
-# 12jul17abu
+# 24jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1214,6 +1214,15 @@
             (eval (car (: auto)))
             (eval (cdr (: auto))) ) )
       (extra) ) )
+
+
+# Chart prefix
+(class +Stop)
+
+(dm scroll> (N)
+   (when (find '((F) (isa '+Auto F)) (: home gui))
+      (=: home auto (cons @)) )
+   (extra N) )
 
 
 (class +DnButton +Tiny +Rid +JS +Able +Button)

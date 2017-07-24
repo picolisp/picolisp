@@ -1,3 +1,7 @@
+24jul17
+   Fix WakeLock release
+      lib/android.l
+
 22jul17
    Use home-relative path
       lib/tinymce.l

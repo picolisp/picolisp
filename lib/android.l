@@ -1,4 +1,4 @@
-# 17jul17abu
+# 24jul17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -66,12 +66,13 @@
    (java CONTEXT 'loadUrl (pass pack)) )
 
 # Wake lock
-(local) [wake getSystemService newWakeLock]
+(local) [wake *Wake getSystemService newWakeLock]
 (de wake (Flg)
    (java
-      (java
-         (java CONTEXT 'getSystemService "power")  # PowerManager
-         'newWakeLock 1 "PilWake" )                # New WakeLock
+      (default *Wake
+         (java
+            (java CONTEXT 'getSystemService "power")  # PowerManager
+            'newWakeLock 1 "PilWake" ) )              # PowerManager.WakeLock
       (if Flg 'acquire 'release) ) )
 
 # Check if WIFI is active

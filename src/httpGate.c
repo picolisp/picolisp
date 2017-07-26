@@ -1,4 +1,4 @@
-/* 12apr17abu
+/* 26jul17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -37,6 +37,7 @@ typedef struct name {
 static bool Hup;
 static name *Names;
 static char *Config;
+static int CliSock, SrvSock;
 static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
 
 static char Head_302[] =
@@ -311,6 +312,8 @@ static pid_t Buddy;
 
 static void doSigAlarm(int n __attribute__((unused))) {
    kill(Buddy, SIGTERM);
+   shutdown(CliSock, SHUT_RDWR);
+   shutdown(SrvSock, SHUT_RDWR);
    exit(0);
 }
 
@@ -332,7 +335,7 @@ static void iSignal(int n, void (*foo)(int)) {
 }
 
 int main(int ac, char *av[]) {
-   int cnt = ac>4? ac-3 : 1, ports[cnt], n, sd, cli, srv;
+   int cnt = ac>4? ac-3 : 1, ports[cnt], n, sd;
    struct sockaddr_in6 addr;
    char s[INET6_ADDRSTRLEN];
    char *p, *q, *gate;
@@ -384,7 +387,7 @@ int main(int ac, char *av[]) {
          ports[0] = readNames();
       }
       socklen_t len = sizeof(addr);
-      if ((cli = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
+      if ((CliSock = accept(sd, (struct sockaddr*)&addr, &len)) >= 0 && (n = fork()) >= 0) {
          if (!n) {
             name *np;
             int fd, port, i;
@@ -394,11 +397,11 @@ int main(int ac, char *av[]) {
 
             alarm(420);
             if (ssl) {
-               SSL_set_fd(ssl, cli);
+               SSL_set_fd(ssl, CliSock);
                if (SSL_accept(ssl) < 0)
                   return 1;
             }
-            n = rdLine(ssl, cli, buf, sizeof(buf));
+            n = rdLine(ssl, CliSock, buf, sizeof(buf));
             alarm(0);
             if (n < 6)
                return 1;
@@ -439,10 +442,10 @@ int main(int ac, char *av[]) {
                if (ssl)
                   sslWrite(ssl, buf, i);
                else
-                  wrBytes(cli, buf, i);
+                  wrBytes(CliSock, buf, i);
                return 0;
             }
-            if ((srv = gateConnect(port, np)) < 0) {
+            if ((SrvSock = gateConnect(port, np)) < 0) {
                if (!memchr(q,'~', buf + n - q))
                   return 1;
                if ((fd = open("void", O_RDONLY)) < 0)
@@ -451,64 +454,64 @@ int main(int ac, char *av[]) {
                if (ssl)
                   sslWrite(ssl, Head_410, strlen(Head_410));
                else
-                  wrBytes(cli, Head_410, strlen(Head_410));
+                  wrBytes(CliSock, Head_410, strlen(Head_410));
                alarm(0);
                while ((n = read(fd, buf, sizeof(buf))) > 0) {
                   alarm(420);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else
-                     wrBytes(cli, buf, n);
+                     wrBytes(CliSock, buf, n);
                   alarm(0);
                }
                return 0;
             }
 
-            wrBytes(srv, buf, p - buf);
+            wrBytes(SrvSock, buf, p - buf);
             if (*q == '/')
                ++q;
             p = q;
             while (*p++ != '\n')
                if (p >= buf + n)
                   return 1;
-            wrBytes(srv, q, p - q);
+            wrBytes(SrvSock, q, p - q);
             inet_ntop(AF_INET6, &addr.sin6_addr, s, INET6_ADDRSTRLEN);
-            wrBytes(srv, buf2, sprintf(buf2, gate, s));
+            wrBytes(SrvSock, buf2, sprintf(buf2, gate, s));
             if (ssl)
-               wrBytes(srv, buf2, sprintf(buf2, "X-Pil: *Cipher=%s\r\n", SSL_get_cipher(ssl)));
-            wrBytes(srv, p, buf + n - p);
+               wrBytes(SrvSock, buf2, sprintf(buf2, "X-Pil: *Cipher=%s\r\n", SSL_get_cipher(ssl)));
+            wrBytes(SrvSock, p, buf + n - p);
 
             iSignal(SIGALRM, doSigAlarm);
             iSignal(SIGUSR1, doSigUsr1);
             if (Buddy = fork()) {
                for (;;) {
                   alarm(420);
-                  n = slow(ssl, cli, buf, sizeof(buf));
+                  n = slow(ssl, CliSock, buf, sizeof(buf));
                   alarm(0);
                   if (!n)
                      break;
-                  wrBytes(srv, buf, n);
+                  wrBytes(SrvSock, buf, n);
                }
-               shutdown(cli, SHUT_RD);
-               shutdown(srv, SHUT_WR);
+               shutdown(CliSock, SHUT_RD);
+               shutdown(SrvSock, SHUT_WR);
             }
             else {
                Buddy = getppid();
-               while ((n = read(srv, buf, sizeof(buf))) > 0) {
+               while ((n = read(SrvSock, buf, sizeof(buf))) > 0) {
                   kill(Buddy, SIGUSR1);
                   alarm(420);
                   if (ssl)
                      sslWrite(ssl, buf, n);
                   else
-                     wrBytes(cli, buf, n);
+                     wrBytes(CliSock, buf, n);
                   alarm(0);
                }
-               shutdown(srv, SHUT_RD);
-               shutdown(cli, SHUT_WR);
+               shutdown(SrvSock, SHUT_RD);
+               shutdown(CliSock, SHUT_WR);
             }
             return 0;
          }
-         close(cli);
+         close(CliSock);
       }
    }
 }

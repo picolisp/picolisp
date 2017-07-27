@@ -1,4 +1,4 @@
-# 04apr17abu
+# 27jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1038,24 +1038,30 @@
                (pack "=" (name Obj) "." Var) ) ) ) ) )
 
 (de incECnt (Obj)
-   (for Cls (type Obj)
-      (recur (Cls)
-         (or
-            (== '+Entity Cls)
-            (for C (type Cls)
-               (T (recurse C)
+   (let M NIL
+      (for Cls (type Obj)
+         (recur (Cls)
+            (or
+               (== '+Entity Cls)
+               (memq Cls M)
+               (when (isa '+Entity (push 'M Cls))
+                  (for C (type @)
+                     (recurse C) )
                   (if (get *DB Cls)
                      (inc @)
                      (put *DB Cls (new T 1)) ) ) ) ) ) ) )
 
 (de decECnt (Obj)
-   (for Cls (type Obj)
-      (recur (Cls)
-         (or
-            (== '+Entity Cls)
-            (for C (type Cls)
-               (T (recurse C)
-                  (and (get *DB Cls) (dec @)) ) ) ) ) ) )
+  (let M NIL
+     (for Cls (type Obj)
+        (recur (Cls)
+           (or
+              (== '+Entity Cls)
+              (memq Cls M)
+              (when (isa '+Entity (push 'M Cls))
+                 (for C (type @)
+                    (recurse C) )
+                 (and (get *DB Cls) (dec @)) ) ) ) ) ) )
 
 (dm T @
    (incECnt This)

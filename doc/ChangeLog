@@ -1,3 +1,10 @@
+27jul17
+   Fixes for 'incECnt', 'decECnt', 'badECnt' and 'fixECnt' (Andreas Rüegger)
+      lib/db.l
+      lib/too.l
+   Documentation fix about T/NIL naming conventions (Nehal Singhal)
+      doc/ref.html
+
 26jul17
    'httpGate' shutdown() on SIGALRM
       src/httpGate.c

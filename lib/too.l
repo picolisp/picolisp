@@ -1,4 +1,4 @@
-# 24nov16abu
+# 27jul17abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -212,9 +212,10 @@
                   (recur (Cls)
                      (or
                         (== '+Entity Cls)
-                        (for C (type Cls)
-                           (T (recurse C)
-                              (and (get *DB Cls) (accu 'Cnt Cls 1)) ) ) ) ) ) ) ) )
+                        (when (isa '+Entity Cls)
+                           (for C (type Cls)
+                              (recurse C) )
+                           (accu 'Cnt Cls 1) ) ) ) ) ) ) )
       (filter
          '((X)
             (<> (cdr X) (get *DB (car X) 0)) )
@@ -223,13 +224,13 @@
 (de fixECnt ()
    (for X (getl *DB)
       (and (pair X) (set (car X) 0)) )
-   (commit)
    (for (F . @) (or *Dbs (2))
       (for (This (seq F) This (seq This))
          (and
             (isa '+Entity This)
             (not (: T))
-            (incECnt This) ) ) )
+            (incECnt This) )
+         (at (0 . 10000) (commit)) ) )
    (commit) )
 
 ### Rebuild tree ###

@@ -1858,10 +1858,8 @@ href="refM.html#match">match</a> and <a href="refF.html#fill">fill</a>)
 underscore) is not really necessary, because true local scope can be enforced
 with transient symbols.
 
-<p>For historical reasons, the names of the symbols <code>T</code> and
-<code>NIL</code> violate these conventions. They are global symbols, and should
-therefore start with an asterisk "<code>*</code>". It is too easy to bind them
-to some other value by mistake:
+<p>The symbols <code>T</code> and <code>NIL</code> are global constants, so care
+should be taken not to bind them to some other value by mistake:
 
 <pre><code>
 (de foo (R S T)

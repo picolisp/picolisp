@@ -85,14 +85,12 @@
 (local) [OL-CSS <osm> <poi>]
 (de OL-CSS . "https://openlayers.org/en/v4.2.0/css/ol.css")
 
-(de <osm> (Lat Lon Zoom Click Drag)
+(de <osm> (Lat Lon Zoom Click)
    (<div> '(map (id . map)))
    (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
       "osm('map', " Lat ", " Lon ", " Zoom
-         ", " (if Click "true" "false")
-         ", " (if Drag "true" "false") ")" )
+         ", " (if Click "true" "false") ")" )
    (=: osmClick Click)
-   (=: osmDrag Drag)
    (=: osmLt1 (- Lat (*/ 600.0 (** 2 Zoom))))
    (=: osmLn1 (- Lon (*/ 800.0 (** 2 Zoom))))
    (=: osmLt2 (+ Lat (*/ 600.0 (** 2 Zoom))))
@@ -108,18 +106,21 @@
 (de osmClick (Lat Lon)
    (and (: osmClick) (@ Lat Lon)) )
 
-(de osmDrag (Lat Lon)
-   (and (: osmDrag) (@ Lat Lon)) )
+(de osmDrag (Txt Lat Lon)
+   (when (assoc Txt (: osmDrag))
+      ((cdr @) Txt Lat Lon) ) )
 
-(de <poi> (Lat Lon Img X Y Txt DY Col Url)
+(de <poi> (Lat Lon Img X Y Txt DY Col Url Drag)
    (and
       (>= (: osmLt2) Lat (: osmLt1))
-      (>= (: osmLn2) Lon (: osmLn1))
-      (javascript NIL
-         "poi('map', " Lat ", " Lon ", '"
-         (sesId Img) "', " X ", " Y ", '"
-         Txt "', " DY ", '" Col "', '"
-         (and Url (sesId @)) "')" ) ) )
+      (>= (: osmLn2) Lon (: osmLn1)) )
+   (javascript NIL
+      "poi('map', " Lat ", " Lon ", '"
+      (sesId Img) "', " X ", " Y ", '"
+      Txt "', " DY ", '" Col "', '"
+      (and Url (sesId @)) "', "
+      (if Drag "true" "false") ")" )
+   (and Drag (push (:: osmDrag) (cons Txt @))) )
 
 # Google Maps
 (local) [google <google>]

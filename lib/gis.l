@@ -1,9 +1,12 @@
-# 10jul17abu
+# 28jul17abu
 # (c) Software Lab. Alexander Burger
+
+(symbols 'gis 'pico)
 
 (push1 '*JS (allow "@lib/gis.js"))
 
-(symbols 'gis 'pico)
+(local) [osmView osmClick osmDrag]
+(mapc allow '(osmView osmClick osmDrag))
 
 (local) nm
 (de nm (Lat Lon)
@@ -82,17 +85,41 @@
 (local) [OL-CSS <osm> <poi>]
 (de OL-CSS . "https://openlayers.org/en/v4.2.0/css/ol.css")
 
-(de <osm> (Lat Lon Zoom)
+(de <osm> (Lat Lon Zoom Click Drag)
    (<div> '(map (id . map)))
    (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
-      "osm('map', " (lat Lat) ", " (lon Lon) ", " Zoom ")" ) )
+      "osm('map', " Lat ", " Lon ", " Zoom
+         ", " (if Click "true" "false")
+         ", " (if Drag "true" "false") ")" )
+   (=: osmClick Click)
+   (=: osmDrag Drag)
+   (=: osmLt1 (- Lat (*/ 600.0 (** 2 Zoom))))
+   (=: osmLn1 (- Lon (*/ 800.0 (** 2 Zoom))))
+   (=: osmLt2 (+ Lat (*/ 600.0 (** 2 Zoom))))
+   (=: osmLn2 (+ Lon (*/ 800.0 (** 2 Zoom)))) )
+
+(de osmView (Lat1 Lon1 Lat2 Lon2 Zoom)
+   (=: osmLt1 Lat1)
+   (=: osmLn1 Lon1)
+   (=: osmLt2 Lat2)
+   (=: osmLn2 Lon2)
+   (=: osmZoom Zoom) )
+
+(de osmClick (Lat Lon)
+   (and (: osmClick) (@ Lat Lon)) )
+
+(de osmDrag (Lat Lon)
+   (and (: osmDrag) (@ Lat Lon)) )
 
 (de <poi> (Lat Lon Img X Y Txt DY Col Url)
-   (javascript NIL
-      "poi(" (lat Lat) ", " (lon Lon) ", '"
+   (and
+      (>= (: osmLt2) Lat (: osmLt1))
+      (>= (: osmLn2) Lon (: osmLn1))
+      (javascript NIL
+         "poi('map', " Lat ", " Lon ", '"
          (sesId Img) "', " X ", " Y ", '"
          Txt "', " DY ", '" Col "', '"
-         (sesId Url) "')" ) )
+         (and Url (sesId @)) "')" ) ) )
 
 # Google Maps
 (local) [google <google>]

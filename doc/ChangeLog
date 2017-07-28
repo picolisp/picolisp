@@ -1,3 +1,10 @@
+28jul17
+   OSM view, click and drag events
+      lib/gis.l
+      lib/gis.js
+   'xxxECnt' for PilOS
+      pilos/init/lib/db.l
+
 27jul17
    Fixes for 'incECnt', 'decECnt', 'badECnt' and 'fixECnt' (Andreas Rüegger)
       lib/db.l

@@ -1,4 +1,4 @@
-# 24jul17abu
+# 29jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2011,7 +2011,7 @@
 
 
 (de editButton (Able Exe)
-   (<style> (and (: able) 'edit)
+   (<style> (and (: able) "edit")
       (gui '(+AO +Focus +Edit +Button) Able Exe) ) )
 
 (de searchButton (Exe)

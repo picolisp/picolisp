@@ -1,3 +1,9 @@
+29jul17
+   OSM continued
+      lib/gis.l
+   Change 'edit' style to transient
+      lib/form.l
+
 28jul17
    OSM view, click and drag events
       lib/gis.l

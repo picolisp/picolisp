@@ -1,4 +1,4 @@
-# 29jun17abu
+# 30jul17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -13,6 +13,7 @@
 (de *Sep0 . ".")
 (de *Sep3 . ",")
 (de *CtryCode)
+(de *NatTrunkPrf)
 (de *DateFmt @Y "-" @M "-" @D)
 (de *DayFmt "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
 (de *MonFmt "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")
@@ -227,9 +228,7 @@
    (cond
       ((not S))
       ((and *CtryCode (pre? (pack *CtryCode " ") S))
-         (pack
-            (unless (= 1 *CtryCode) 0)
-            (cdr (member " " (chop S))) ) )
+         (pack *NatTrunkPrf (cdr (member " " (chop S)))) )
       (T (pack "+" S)) ) )
 
 (de expTel (S)
@@ -247,10 +246,11 @@
    (cond
       ((= "+" (car S)) (pack (cdr S)))
       ((head '("0" "0") S) (pack (cddr S)))
-      ((and *CtryCode (= "0" (car S)))
-         (pack *CtryCode " " (cdr S)) )
-      ((= 1 *CtryCode)
-         (pack (and S (<> "1" (car S)) "1 ") S) ) ) )
+      (*CtryCode
+         (let L *NatTrunkPrf
+            (loop
+               (NIL L (pack *CtryCode " " S))
+               (NIL (= (++ L) (++ S))) ) ) ) ) )
 
 ### Date ###
 # ISO date

@@ -1,3 +1,13 @@
+30jul17
+   National trunk prefix in localization
+      lib/misc.l
+      pilos/init/lib/misc.l
+      loc/[A-Z]*.l
+      doc/refE.html
+      doc/refT.html
+   Minor reference additions to '+Entity'
+      doc/refE.html
+
 29jul17
    OSM continued
       lib/gis.l

@@ -191,8 +191,9 @@ href="refT.html#timeout">timeout</a></code>.
 <dt><a name="telStr"><code>(telStr 'sym) -> sym</code></a>
 <dd>Formats a telephone number according to the current <code><a
 href="refL.html#locale">locale</a></code>. If the string head matches the local
-country code, it is replaced with <code>0</code>, otherwise <code>+</code> is
-prepended. See also <code><a href="refE.html#expTel">expTel</a></code>, <code><a
+country code, it is replaced with the national trunk prefix, otherwise
+<code>+</code> is prepended. See also <code><a
+href="refE.html#expTel">expTel</a></code>, <code><a
 href="refD.html#datStr">datStr</a></code>, <code><a
 href="refM.html#money">money</a></code> and <code><a
 href="refF.html#format">format</a></code>.

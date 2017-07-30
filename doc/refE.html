@@ -88,8 +88,10 @@ href="ref.html#dbase">Database</a>.
 <pre><code>
 zap> ()              # Clean up relational structures, for removal from the DB
 url> (Tab)           # Call the GUI on that object (in optional Tab)
+gui> ()              # Generate object-specific GUI fragment
 upd> (X Old)         # Callback method when object is created/modified/deleted
 has> (Var Val)       # Check if value is present
+rel?> (Var Val)      # Check if relations for value are correctly maintained
 put> (Var Val)       # Put a new value
 put!> (Var Val)      # Put a new value, single transaction
 del> (Var Val)       # Delete value (also partial)
@@ -417,8 +419,8 @@ href="refC.html#call">call</a></code>.
 
 <dt><a name="expTel"><code>(expTel 'sym) -> sym</code></a>
 <dd>Expands a telephone number string. Multiple spaces or hyphens are coalesced.
-A leading <code>+</code> or <code>00</code> is removed, a leading <code>0</code>
-is replaced with the current country code. Otherwise, <code>NIL</code> is
+A leading <code>+</code> or <code>00</code> is removed, a leading national trunk
+prefix is replaced with the current country code. Otherwise, <code>NIL</code> is
 returned. See also <code><a href="refT.html#telStr">telStr</a></code>, <code><a
 href="refE.html#expDat">expDat</a></code> and <code><a
 href="refL.html#locale">locale</a></code>.

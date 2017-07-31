@@ -1,3 +1,7 @@
+31jul17
+   'notify' returns 'Notification' object
+      lib/android.l
+
 30jul17
    National trunk prefix in localization
       lib/misc.l

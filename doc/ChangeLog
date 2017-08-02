@@ -1,3 +1,8 @@
+02aug17
+   Revert 'genKey' change from 25mar16
+      lib/db.l
+      pilos/init/lib/db.l
+
 31jul17
    'notify' returns 'Notification' object
       lib/android.l

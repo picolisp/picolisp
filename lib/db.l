@@ -1,4 +1,4 @@
-# 27jul17abu
+# 02aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -124,7 +124,7 @@
 (de genKey (Var Cls Hook Min Max)
    (if (lt0 Max)
       (let K (minKey (tree Var Cls Hook) Min Max)
-         (if (lt0 K) (dec K) -1) )
+         (if (lt0 K) (dec K) (or Max -1)) )
       (let K (maxKey (tree Var Cls Hook) Min Max)
          (if (gt0 K) (inc K) (or Min 1)) ) ) )
 

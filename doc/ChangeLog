@@ -1,3 +1,7 @@
+04aug17
+   Keep 'repl' state in global variables
+      lib/form.l
+
 02aug17
    Revert 'genKey' change from 25mar16
       lib/db.l

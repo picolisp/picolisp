@@ -1,4 +1,4 @@
-# 29jul17abu
+# 04aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -347,7 +347,7 @@
       (--)
       (gui 'line '(+Focus +Able +Hint1 +TextField)
          '(= (: home view file) (: home repl))
-         '(: home hint)
+         '*ReplH
          DX )
       (----)
       (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Lisp"
@@ -364,16 +364,16 @@
                         (setq  "@3" "@2"  "@2" "@1"  "@1" (eval (any Str) 99)) ) )
                   (println '-> "@1") )
                (when *Msg (prinl @) (off *Msg)) )
-            (push1 (:: home hint) Str)
+            (push1 '*ReplH Str)
             (clr> (: home line)) ) )
       (gui '(+JS +Button)
          '(if (= (: home view file) (: home repl)) ,"Edit" ,"Done")
          '(file> (: home view)
             (if (= (: home view file) (: home repl))
                (if (val> (: home line))
-                  (setq "file" (push1 (:: home hint) @))
-                  (set> (: home line) "file")
-                  "file" )
+                  (setq *ReplF (push1 '*ReplH @))
+                  (set> (: home line) *ReplF)
+                  *ReplF )
                (clr> (: home line))
                (: home repl) ) ) )
       (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Shell"
@@ -384,7 +384,7 @@
                   (flush)
                   (in (list "sh" "-c" Str)
                      (echo) ) ) )
-            (push1 (:: home hint) Str)
+            (push1 '*ReplH Str)
             (clr> (: home line)) ) ) ) )
 
 

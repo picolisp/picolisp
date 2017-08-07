@@ -1,3 +1,7 @@
+07aug17
+   No namespace modification in 'java'
+      lib/android.l
+
 04aug17
    Keep 'repl' state in global variables
       lib/form.l

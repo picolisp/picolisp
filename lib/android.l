@@ -1,4 +1,4 @@
-# 31jul17abu
+# 07aug17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -35,23 +35,21 @@
          (in @
             (out R
                (ext 65535
-                  (symbols '(android pico)
-                     (pr
-                        (with (rd)  # Obj
-                           (if (get (rd) This)
-                              (apply @ (rd))
-                              (rd)
-                              NIL ) ) ) ) ) ) ) )
+                  (pr
+                     (with (rd)  # Obj
+                        (if (get (rd) This)
+                           (apply @ (rd))
+                           (rd)
+                           NIL ) ) ) ) ) ) )
       (forked)
       (queue '*Ext (cons 65535 java))
       (con java (cddr java)) )
    (ext 65535
-      (symbols '(android pico)
-         (out *Java (pr (rest)))
-         (let? Val (in *Lisp (rd))
-            (if (== 'err (car (pair Val)))
-               (nil (msg (cdr Val)))
-               Val ) ) ) ) )
+      (out *Java (pr (rest)))
+      (let? Val (in *Lisp (rd))
+         (if (== 'err (car (pair Val)))
+            (nil (msg (cdr Val)))
+            Val ) ) ) )
 
 # Android device ID
 (local) [dev getString getContentResolver]

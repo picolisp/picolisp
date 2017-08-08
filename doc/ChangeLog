@@ -1,4 +1,6 @@
 07aug17
+   Use 'run'/'str' instead of 'eval'/'any' in 'repl'
+      lib/form.l
    No namespace modification in 'java'
       lib/android.l
 

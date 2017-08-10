@@ -1,4 +1,4 @@
-# 30oct13abu
+# 09aug17abu
 # (c) Software Lab. Alexander Burger
 
 ### locale ###
@@ -26,6 +26,8 @@
    (wrap 20 (chop "The quick brown fox jumps over the lazy dog")) )
 (test "The^Jquick^Jbrown^Jfox^Jjumps^Jover the^Jlazy dog"
    (wrap 8 (chop "The quick brown fox jumps over the lazy dog")) )
+(test "The^Jquick^Jbrown^Jfox^Jjumps^Jover^Jthe^Jlazy^Jdog"
+   (wrap 2 (chop "The quick brown fox jumps over the lazy dog")) )
 
 
 ### pad ###

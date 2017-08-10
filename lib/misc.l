@@ -1,4 +1,4 @@
-# 30jul17abu
+# 09aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -65,20 +65,21 @@
             (need (>> 1 (+ X (length S))) S " ") ) ) ) )
 
 (de wrap (Max Lst)
-   (setq Lst (split Lst " " "^J"))
+   (setq Lst (split Lst " " "\n"))
    (pack
       (make
          (while Lst
-            (if (>= (length (car Lst)) Max)
-               (link (++ Lst) "^J")
+            (if (> Max (length (car Lst)))
                (chain
                   (make
                      (link (++ Lst))
                      (loop
                         (NIL Lst)
                         (T (>= (+ (length (car Lst)) (sum length (made))) Max)
-                           (link "^J") )
-                        (link " " (++ Lst)) ) ) ) ) ) ) ) )
+                           (link "\n") )
+                        (link " " (++ Lst)) ) ) )
+               (link (++ Lst))
+               (and Lst (link "\n")) ) ) ) ) )
 
 ### Number ###
 (de pad (N Val)

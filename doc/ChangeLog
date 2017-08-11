@@ -1,4 +1,7 @@
 11aug17
+   Typos in documentation (Nehal Singhal)
+      doc/ref.html
+      doc/refA.html
    Added 'startForeground' and 'stopForeground'
       lib/android.l
 

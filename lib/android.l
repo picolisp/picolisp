@@ -1,4 +1,4 @@
-# 07aug17abu
+# 11aug17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -119,6 +119,15 @@
       (prog1 (java B 'build)  # Notification
          (java (java CONTEXT 'getSystemService "notification")  # NotificationManager
             'notify Id @ ) ) ) )
+
+# Service foreground state
+(local) [startForeground stopForeground]
+(de startForeground (Ttl Msg)
+   (java CONTEXT 'startForeground 1
+      (notify Ttl Msg 1) ) )
+
+(de stopForeground ()
+   (java CONTEXT 'stopForeground T) )
 
 # Start Activity for a result
 (local) [

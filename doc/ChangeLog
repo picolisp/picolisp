@@ -1,8 +1,12 @@
+11aug17
+   Added 'startForeground' and 'stopForeground'
+      lib/android.l
+
 09aug17
    Omit linefeed in 'wrap' if last word is too long
       lib/misc.l
       test/lib/misc.l
-   
+
 07aug17
    Use 'run'/'str' instead of 'eval'/'any' in 'repl'
       lib/form.l

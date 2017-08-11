@@ -64,7 +64,7 @@
    (java CONTEXT 'loadUrl (pass pack)) )
 
 # Wake lock
-(local) [wake *Wake getSystemService newWakeLock]
+(local) [wake *Wake getSystemService newWakeLock acquire release)]
 (de wake (Flg)
    (java
       (default *Wake

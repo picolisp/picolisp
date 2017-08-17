@@ -1,4 +1,4 @@
-# 07aug17abu
+# 17aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -350,20 +350,26 @@
          '*ReplH
          DX )
       (----)
-      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Lisp"
+      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Eval"
          '(let Str (val> (: home line))
             (out (pack "+" (: home repl))
-               (err NIL
-                  (prinl ": " Str)
-                  (flush)
-                  (catch '(NIL)
-                     (in "/dev/null"
-                        (up 99 @@@ "@3")
-                        (up 99 @@ "@2")
-                        (up 99 @ "@1")
-                        (setq  "@3" "@2"  "@2" "@1"  "@1" (run (str Str) 99)) ) )
-                  (println '-> "@1") )
-               (when *Msg (prinl @) (off *Msg)) )
+               (if (pre? "$ " Str)
+                  (err NIL
+                     (prinl Str)
+                     (flush)
+                     (in (list "sh" "-c" (cddr (chop Str)))
+                        (echo) ) )
+                  (err NIL
+                     (prinl ": " Str)
+                     (flush)
+                     (catch '(NIL)
+                        (in "/dev/null"
+                           (up 99 @@@ "@3")
+                           (up 99 @@ "@2")
+                           (up 99 @ "@1")
+                           (setq  "@3" "@2"  "@2" "@1"  "@1" (run (str Str) 99)) ) )
+                     (println '-> "@1") )
+                  (when *Msg (prinl @) (off *Msg)) ) )
             (push1 '*ReplH Str)
             (clr> (: home line)) ) )
       (gui '(+JS +Button)
@@ -375,17 +381,7 @@
                   (set> (: home line) *ReplF)
                   *ReplF )
                (clr> (: home line))
-               (: home repl) ) ) )
-      (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Shell"
-         '(let Str (val> (: home line))
-            (out (pack "+" (: home repl))
-               (err NIL
-                  (prinl "$ " Str)
-                  (flush)
-                  (in (list "sh" "-c" Str)
-                     (echo) ) ) )
-            (push1 '*ReplH Str)
-            (clr> (: home line)) ) ) ) )
+               (: home repl) ) ) ) ) )
 
 
 # Dialogs

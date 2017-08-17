@@ -1,3 +1,7 @@
+17aug17
+   Use "$ " prefix in 'repl' instead of "Shell" button
+      lib/form.l
+
 11aug17
    Typos in documentation (Nehal Singhal)
       doc/ref.html

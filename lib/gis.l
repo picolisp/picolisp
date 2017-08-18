@@ -78,7 +78,7 @@
             (mkUrl @) )
          (super "Var") ) ) )
 
-# OpenStreetMap / OpenLayers
+# OpenLayers / OpenStreetMap
 # (val *Osm) -> ((lat1 . lat2) (lon1 . lon2) . zoom)
 (local) [*Osm <osm> osmStat osmClick osmDrag <poi>]
 
@@ -138,12 +138,25 @@
                (>= (cdadr V) Lon (caadr V)) ) )
          (with *Top
             (javascript NIL
-               "poi('map', " Lat ", " Lon ", '"
-               (sesId Img) "', " X ", " Y ", '"
-               Txt "', " DY ", '" Col "', '"
-               (and Url (sesId @)) "', "
+               "poi(" Lat ", " Lon ", '" (sesId Img) "', " X ", " Y ", '"
+               Txt "', " DY ", '" Col "', '" (and Url (sesId @)) "', "
                (if2 (and Drag (: able)) Upd 2 1 0 0) ")" )
             (and Drag (push (:: osmDrag) (cons Txt @))) ) ) ) )
+
+(de <line> (Col Lat1 Lon1 Lat2 Lon2)
+   (let V (val *Osm)
+      (when
+         (or
+            (not V)
+            (and
+               (>= (cdar V) Lat1 (caar V))
+               (>= (cdadr V) Lon1 (caadr V)) )
+            (and
+               (>= (cdar V) Lat2 (caar V))
+               (>= (cdadr V) Lon2 (caadr V)) ) )
+         (with *Top
+            (javascript NIL
+               "line('" Col "', " Lat1 ", " Lon1 ", " Lat2 ", " Lon2 ")" ) ) ) ) )
 
 # Google Maps
 (local) [google <google>]

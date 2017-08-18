@@ -1,3 +1,8 @@
+18aug17
+   Make 'css' function global
+      lib/xhtml.l
+      lib/gis.l
+
 17aug17
    Use "$ " prefix in 'repl' instead of "Shell" button
       lib/form.l

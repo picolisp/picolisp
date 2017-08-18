@@ -1,4 +1,4 @@
-# 29jul17abu
+# 18aug17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -80,8 +80,7 @@
 
 # OpenStreetMap / OpenLayers
 # (val *Osm) -> ((lat1 . lat2) (lon1 . lon2) . zoom)
-(local) [*Osm OL-CSS <osm> osmStat osmClick osmDrag <poi>]
-(de OL-CSS . "https://openlayers.org/en/v4.2.0/css/ol.css")
+(local) [*Osm <osm> osmStat osmClick osmDrag <poi>]
 
 (mapc allow '(osmStat osmClick osmDrag))
 
@@ -93,6 +92,7 @@
          Lon (*/ (+ (caadr @) (cdadr @)) 2)
          Zoom (cddr @) ) )
    (with *Top
+      (css "https://openlayers.org/en/v4.2.0/css/ol.css")
       (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
          "osm('map', " Lat ", " Lon ", " Zoom ", "
          (if2 Click (and Upd (: able)) 2 1 0 0) ")" )

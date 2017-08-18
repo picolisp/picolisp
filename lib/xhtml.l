@@ -1,4 +1,4 @@
-# 08jul17abu
+# 18aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -107,8 +107,8 @@
       (and *Host *Port (prinl "<base href=\"" (baseHRef) "\"/>"))
       (when Css
          (if (atom Css)
-            ("css" Css)
-            (mapc "css" Css)
+            (css Css)
+            (mapc css Css)
             (when (fin Css)
                (prinl "<style type=\"text/css\">")
                (prinl @)
@@ -122,7 +122,7 @@
       (tag 'body Attr 2 Prg)
       (prinl "</html>") ) )
 
-(de "css" (Css)
+(de css (Css)
    (prinl "<link rel=\"stylesheet\" type=\"text/css\" href=\"" (srcUrl Css) "\"/>") )
 
 (de javascript (JS . @)

@@ -1,4 +1,4 @@
-# 18aug17abu
+# 20aug17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -80,7 +80,7 @@
 
 # OpenLayers / OpenStreetMap
 # (val *Osm) -> ((lat1 . lat2) (lon1 . lon2) . zoom)
-(local) [*Osm <osm> osmStat osmClick osmDrag <poi>]
+(local) [*Osm <osm> osmStat osmClick osmDrag <poi> <line>]
 
 (mapc allow '(osmStat osmClick osmDrag))
 

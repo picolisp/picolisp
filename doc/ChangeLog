@@ -1,3 +1,7 @@
+20aug17
+   Set '<line>' local
+      lib/gis.l
+
 18aug17
    Added '<line>' function
       lib/gis.l

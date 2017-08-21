@@ -1,3 +1,7 @@
+21aug17
+   '*Osm' without implicit clipping
+      lib/gis.l
+
 20aug17
    Set '<line>' local
       lib/gis.l

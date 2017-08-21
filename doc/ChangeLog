@@ -1,4 +1,7 @@
 21aug17
+   Added 'toast' function
+   (wake) only initializes, (wake 'flg) acquires/releases
+      lib/android.l
    '*Osm' without implicit clipping
       lib/gis.l
 

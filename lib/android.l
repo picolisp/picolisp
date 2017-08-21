@@ -1,4 +1,4 @@
-# 11aug17abu
+# 21aug17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -65,13 +65,13 @@
 
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release)]
-(de wake (Flg)
-   (java
-      (default *Wake
-         (java
-            (java CONTEXT 'getSystemService "power")  # PowerManager
-            'newWakeLock 1 "PilWake" ) )              # PowerManager.WakeLock
-      (if Flg 'acquire 'release) ) )
+(de wake @
+   (default *Wake
+      (java
+         (java CONTEXT 'getSystemService "power")  # PowerManager
+         'newWakeLock 1 "PilWake" ) )              # PowerManager.WakeLock
+   (when (args)  # (wake 'flg)
+      (java *Wake (if (next) 'acquire 'release)) ) )
 
 # Check if WIFI is active
 (local) [getActiveNetworkInfo getType]
@@ -104,6 +104,11 @@
          (java "android.content.Intent" T "android.intent.action.INSTALL_PACKAGE")
          (java @ 'setFlags 1)  # Intent.FLAG_GRANT_READ_URI_PERMISSION
          (java @ 'setData (fileUri File)) ) ) )
+
+# Toast
+(local) toast
+(de toast (Str)
+   (java CONTEXT 'toast Str) )
 
 # Notification
 (local) [

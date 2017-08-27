@@ -1,3 +1,7 @@
+27aug17
+   Minor change: 'max-age' for 'css' from 1 h to 1 d
+      lib/http.l
+
 21aug17
    Added 'toast' function
    (wake) only initializes, (wake 'flg) acquires/releases

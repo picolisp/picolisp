@@ -1,4 +1,4 @@
-# 24nov16abu
+# 27aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -29,7 +29,7 @@
    (`(chop "jpeg") "image/jpeg" 3600)
    (`(chop "txt") "text/octet-stream" 1 T)
    (`(chop "csv") "text/csv; charset=utf-8" 1 T)
-   (`(chop "css") "text/css" 3600)
+   (`(chop "css") "text/css" 86400)
    (`(chop "js") "application/x-javascript" 86400)
    (`(chop "ps") "application/postscript" 1)
    (`(chop "pdf") "application/pdf" 1)

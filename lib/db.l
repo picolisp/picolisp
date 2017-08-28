@@ -1,4 +1,4 @@
-# 02aug17abu
+# 28aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -973,7 +973,11 @@
       Hook ) )
 
 (dm rel?> (Obj Val Hook)
-   (extra Obj (if (ext? Val) (val @) Val) Hook) )
+   (if (ext? Val)
+      (if (val @)
+         (extra Obj @ Hook)
+         T )
+      (extra Obj Val Hook) ) )
 
 (dm lose> (Obj Val Hook)
    (extra Obj (if (ext? Val) (val @) Val) Hook) )

@@ -1,4 +1,4 @@
-# 09aug17abu
+# 28aug17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -34,12 +34,13 @@
             (set (car (idx '*Uni S)) (val S)) ) ) ) )
 
 (de "loc" (F)
-   (in F
-      (use X
-         (while (setq X (read))
-            (if (=T X)
-               ("loc" (read))
-               (set (link @) (name (read))) ) ) ) ) )
+   (when (info F)
+      (in F
+         (use X
+            (while (setq X (read))
+               (if (=T X)
+                  ("loc" (read))
+                  (set (link @) (name (read))) ) ) ) ) ) )
 
 ### String ###
 (de align (X . @)

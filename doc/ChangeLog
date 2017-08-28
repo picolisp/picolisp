@@ -1,3 +1,19 @@
+28aug17
+   Added "Settings" to language files
+      loc/ca
+      loc/de
+      loc/es
+      loc/fr
+      loc/gr
+      loc/jp
+      loc/no
+      loc/ru
+      loc/sv
+   Ignore missing language files in 'locale'
+      {lib,pilos/init/lib}/misc.l
+   Check for empty value in '(rel?> . +Swap)'
+      {lib,pilos/init/lib}/db.l
+
 27aug17
    Minor change: 'max-age' for 'css' from 1 h to 1 d
       lib/http.l
@@ -48,8 +64,7 @@
 
 02aug17
    Revert 'genKey' change from 25mar16
-      lib/db.l
-      pilos/init/lib/db.l
+      {lib,pilos/init/lib}/db.l
 
 31jul17
    'notify' returns 'Notification' object

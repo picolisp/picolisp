@@ -1,4 +1,4 @@
-/* 05sep16abu
+/* 30aug17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,4 +31,9 @@ caption {
 /* Charts */
 .chart {
    font-size: smaller;
+}
+
+/* Fonts */
+.tiny {
+   padding: 0 1ex;
 }

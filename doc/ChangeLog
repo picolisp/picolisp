@@ -1,3 +1,9 @@
+30aug17
+   Added padding to 'tiny' class
+      lib/phone.css
+   Note about the higher bits in 'rand'
+      doc/refR.html
+
 28aug17
    Added "Settings" to language files
       loc/ca

@@ -1,4 +1,4 @@
-# 21aug17abu
+# 31aug17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -63,6 +63,11 @@
 (de loadUrl @
    (java CONTEXT 'loadUrl (pass pack)) )
 
+# Clear WebView cache
+(local) clearCache
+(de clearCache ()
+   (java CONTEXT 'clearCache) )
+
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release)]
 (de wake @
@@ -108,7 +113,8 @@
 # Toast
 (local) toast
 (de toast (Str)
-   (java CONTEXT 'toast Str) )
+   (java CONTEXT 'toast Str)
+   Str )
 
 # Notification
 (local) [

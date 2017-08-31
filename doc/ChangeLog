@@ -1,4 +1,11 @@
+31aug17
+   Added 'clearCache' function
+   'toast' returns argument string
+      lib/android.l
+
 30aug17
+   Added 'distance' function
+      lib/gis.l
    Added padding to 'tiny' class
       lib/phone.css
    Note about the higher bits in 'rand'

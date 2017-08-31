@@ -63,8 +63,11 @@
 (de loadUrl @
    (java CONTEXT 'loadUrl (pass pack)) )
 
-# Clear WebView cache
-(local) clearCache
+# Clear WebView history and cache
+(local) [clearHistory clearCache]
+(de clearHistory ()
+   (java CONTEXT 'clearHistory) )
+
 (de clearCache ()
    (java CONTEXT 'clearCache) )
 

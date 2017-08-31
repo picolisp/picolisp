@@ -1,5 +1,5 @@
 31aug17
-   Added 'clearCache' function
+   Added 'clearHistory' and 'clearCache' functions
    'toast' returns argument string
       lib/android.l
 

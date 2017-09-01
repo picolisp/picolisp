@@ -1,4 +1,4 @@
-# 27aug17abu
+# 01sep17abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -100,7 +100,7 @@
    (http *Sock)
    (or *SesId (bye))
    (task *Sock
-      (when (accept *Sock)
+      (when (accept @)
          (task @ (http @)) ) ) )
 
 (de retire (Min . Prg)

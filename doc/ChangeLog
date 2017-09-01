@@ -1,3 +1,7 @@
+01sep17
+   Minor cosmetics
+      lib/http.l
+
 31aug17
    Added 'clearHistory' and 'clearCache' functions
    'toast' returns argument string

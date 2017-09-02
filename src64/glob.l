@@ -1,4 +1,4 @@
-# 04mar17abu
+# 02sep17abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -535,6 +535,7 @@
    initFun NIL       "in"        doIn
    initFun NIL       "out"       doOut
    initFun NIL       "err"       doErr
+   initFun NIL       "fd"        doFd
    initFun NIL       "ctl"       doCtl
    initFun NIL       "pipe"      doPipe
    initFun NIL       "open"      doOpen

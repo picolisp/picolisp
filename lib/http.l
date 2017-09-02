@@ -1,4 +1,4 @@
-# 01sep17abu
+# 02sep17abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -156,11 +156,11 @@
       (push '"*Cookies" (cons (arg) (rest))) ) )
 
 # Handle HTTP-Transaction
-(de http (S)
+(de http (*HtSock)
    (use (*Post U L @X)
       (off *Post *Port% *ContL *ContLen *Cookies "*Cookies" "*HtSet")
       (catch 'http
-         (in S
+         (in *HtSock
             (case (till " " T)
                ("GET" (_htHead))
                ("POST"
@@ -181,12 +181,12 @@
                                        (call "rm" "-f" (tmp S)) ) ) ) ) ) )
                      (T (throw 'http)) ) )
                (T
-                  (and @ (out S (httpStat 400 "Bad Request")))
-                  (task (close S))
-                  (off S)
+                  (and @ (out *HtSock (httpStat 400 "Bad Request")))
+                  (task (close *HtSock))
+                  (off *HtSock)
                   (throw 'http) ) )
             (if (or (<> *ConId *SesId) (and *SesAdr (<> @ *Adr)))
-               (prog (task (close S)) (off S))
+               (prog (task (close *HtSock)) (off *HtSock))
                (setq
                   L (split U "?")
                   U (car L)
@@ -201,7 +201,7 @@
                      (split (cadr L) "&") ) )
                (unless (setq *Url (ht:Pack U T))
                   (setq  *Url (car *Home)  U (cdr *Home)) )
-               (out S
+               (out *HtSock
                   (cond
                      ((match '("-" @X "." "h" "t" "m" "l") U)
                         (and *SesId (timeout *Timeout))
@@ -222,7 +222,7 @@
                      ((assoc (stem U ".") *Mimes)
                         (apply httpEcho (cdr @) *Url) )
                      (T (httpEcho *Url "application/octet-stream" 1 T)) ) ) ) ) )
-      (and S (=0 *Http1) (task (close S))) ) )
+      (and *HtSock (=0 *Http1) (task (close *HtSock))) ) )
 
 (de _htHead ()
    (unless

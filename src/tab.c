@@ -1,4 +1,4 @@
-/* 07jan17abu
+/* 02sep17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -126,6 +126,7 @@ static symInit Symbols[] = {
    {doExtQ, "ext?"},
    {doExtra, "extra"},
    {doExtract, "extract"},
+   {doFd, "fd"},
    {doFifo, "fifo"},
    {doFile, "file"},
    {doFill, "fill"},

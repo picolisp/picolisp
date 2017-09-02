@@ -1,4 +1,4 @@
-/* 20jul17abu
+/* 02sep17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2154,6 +2154,11 @@ any doOut(any ex) {
    x = prog(cddr(ex));
    popOutFiles();
    return x;
+}
+
+// (fd) -> cnt
+any doFd(any ex) {
+   return boxCnt(currFd(ex, (char*)&ex));
 }
 
 // (err 'sym . prg) -> any

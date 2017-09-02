@@ -1,4 +1,4 @@
-# 20jul17abu
+# 02sep17abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -4346,6 +4346,17 @@
    call popOutFiles
    add S IV  # Drop InFrame
    pop Y
+   pop X
+   ret
+
+# (fd) -> cnt
+(code 'doFd 2)
+   push X
+   ld X E  # Expression in X
+   call currFdX_C  # Get current fd
+   ld E C  # Into E
+   shl E 4  # Return 'fd'
+   or E CNT
    pop X
    ret
 

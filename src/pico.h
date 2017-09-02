@@ -1,4 +1,4 @@
-/* 07jan17abu
+/* 02sep17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -528,6 +528,7 @@ any doExtern(any);
 any doExtQ(any);
 any doExtra(any);
 any doExtract(any);
+any doFd(any);
 any doFifo(any);
 any doFile(any);
 any doFill(any);

@@ -1,3 +1,15 @@
+02sep17
+   Make '*HtSock' global
+      lib/http.l
+   Added 'fd' function
+      src64/glob.l
+      src64/io.l
+      src/pico.h
+      src/tab.c
+      src/io.c
+      doc/ref.html
+      doc/refF.html
+
 01sep17
    Minor cosmetics
       lib/http.l

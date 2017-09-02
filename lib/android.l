@@ -1,18 +1,23 @@
-# 31aug17abu
+# 02sep17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
    (setq *Uuid (in "UUID" (line T)))
-   (for F '("JAVA" "LISP" "RQST" "RPLY")
-      (native "@" "unlink" 'I F)
-      (native "@" "mkfifo" 'I F `(oct "600")) ) )
+   (for F '("JAVA" "LISP" "RQST" "RPLY" "BOSS")
+      (native "@" "mkfifo" 'I F `(oct "600")) )
+   (hear (open "BOSS")) )
 
 (symbols 'android 'pico)
 
 # SSL
 (sys "LD_LIBRARY_PATH" "lib")
 (sys "SSL_CERT_FILE" "tls/cert.pem")
+
+# (boss 'sym ['any ..])
+(local) boss
+(de boss @
+   (out "BOSS" (pr (rest))) )
 
 # Android Context
 (local) CONTEXT

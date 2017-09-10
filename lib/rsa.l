@@ -1,16 +1,14 @@
-# 24nov16abu
+# 10sep17abu
 # (c) Software Lab. Alexander Burger
 
 # *InND
 
 # Generate long random number
 (de longRand (N)
-   (use (R D)
-      (while (=0 (setq R (abs (rand)))))
-      (until (> R N)
-         (unless (=0 (setq D (abs (rand))))
-            (setq R (* R D)) ) )
-      (% R N) ) )
+   (let B 1
+      (for (M N  (n0 (setq M (>> 8 M))))
+         (inc 'B) )
+      (% (in "/dev/urandom" (rd B)) N) ) )
 
 # X power Y modulus N
 (de **Mod (X Y N)
@@ -105,5 +103,4 @@
 
 # Init crypt
 (de rsa (N)
-   (seed (in "/dev/urandom" (rd 20)))
    (setq *InND (rsaKey N)) )

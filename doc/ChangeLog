@@ -1,3 +1,7 @@
+10sep17
+   Use "/dev/urandom" in 'longRand'
+      lib/rsa.l
+
 02sep17
    'boss' function
       lib/android.l

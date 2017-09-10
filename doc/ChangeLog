@@ -1,4 +1,6 @@
 10sep17
+   'notify' brings current task to front
+      lib/android.l
    Use "/dev/urandom" in 'longRand'
       lib/rsa.l
 

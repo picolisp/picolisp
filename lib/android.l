@@ -1,4 +1,4 @@
-# 02sep17abu
+# 10sep17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -110,7 +110,7 @@
       (java "android.provider.Settings$Secure" 'getInt
          (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
 
-(local) [update startActivity setData fromFile]
+(local) [update startActivity setFlags setData fromFile]
 (de update (File)
    (java (; CONTEXT GUI) 'startActivity
       (prog1
@@ -127,7 +127,7 @@
 # Notification
 (local) [
    notify setSmallIcon setContentTitle setContentText setAutoCancel setLights
-   getSystemService build ]
+   setContentIntent getActivity build ]
 (de notify (Ttl Msg Id)
    (let B (java "android.support.v4.app.NotificationCompat$Builder" T CONTEXT)
       (java B 'setSmallIcon (java "de.software_lab.pilbox.R$drawable" "notify"))
@@ -135,6 +135,10 @@
       (java B 'setContentText Msg)
       (java B 'setAutoCancel T)
       (java B 'setLights `(hex "FFFFFF") 500 500)
+      (let Intent (java "android.content.Intent" T CONTEXT (; CONTEXT GUI 0 1))  # Activity class
+         (java Intent 'setFlags `(hex "24000000"))  # FLAG_ACTIVITY_SINGLE_TOP | FLAG_ACTIVITY_NEW_TASK
+         (java B 'setContentIntent
+            (java "android.app.PendingIntent" 'getActivity CONTEXT 0 Intent `(hex "10000000")) ) )  # FLAG_ACTIVITY_NEW_TASK
       (prog1 (java B 'build)  # Notification
          (java (java CONTEXT 'getSystemService "notification")  # NotificationManager
             'notify Id @ ) ) ) )

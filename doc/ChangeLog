@@ -1,3 +1,7 @@
+11sep17
+   Clear named pipes initially
+      lib/android.l
+
 10sep17
    'notify' brings current task to front
       lib/android.l

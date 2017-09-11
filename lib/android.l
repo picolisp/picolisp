@@ -1,10 +1,11 @@
-# 10sep17abu
+# 11sep17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
    (setq *Uuid (in "UUID" (line T)))
    (for F '("JAVA" "LISP" "RQST" "RPLY" "BOSS")
+      (native "@" "unlink" 'I F)
       (native "@" "mkfifo" 'I F `(oct "600")) )
    (hear (open "BOSS")) )
 

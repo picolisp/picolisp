@@ -1,4 +1,4 @@
-# 02sep17abu
+# 14sep17abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -233,8 +233,8 @@
          (= "HTTP/1" (till "." T))
          (char)
          (setq *Http1 (format (line T))) )
-      (task (close S))
-      (off S)
+      (task (close *HtSock))
+      (off *HtSock)
       (throw 'http) )
    (setq *Chunked (gt0 *Http1))
    (if (index "~" U)

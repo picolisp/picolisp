@@ -1,3 +1,7 @@
+14sep17
+   Make '*HtSock' global cont.
+      lib/http.l
+
 11sep17
    Clear named pipes initially
       lib/android.l

@@ -1,4 +1,4 @@
-# 06jul17abu
+# 27sep17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -10,6 +10,12 @@ CC = gcc
 # CCLD is the cc (compiler frontend) to use for the link step.
 CCLD = gcc
 
+ifeq ($(shell getconf LONG_BIT), 64)
+  M32=-m32
+else
+  M32=
+endif
+
 CFLAGS = -c -O2 -pipe \
 	-falign-functions=32 -fomit-frame-pointer -fno-strict-aliasing \
 	-W -Wimplicit -Wreturn-type -Wunused -Wformat \
@@ -19,17 +25,17 @@ CFLAGS = -c -O2 -pipe \
 
 ifeq ($(shell uname), Linux)
 	OS = Linux
-	CFLAGS += -m32
-	PICOLISP-FLAGS = -m32 -rdynamic
+	CFLAGS += ${M32}
+	PICOLISP-FLAGS = ${M32} -rdynamic
 	LIB-FLAGS = -lm -ldl
-	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	DYNAMIC-LIB-FLAGS = ${M32} -shared -export-dynamic
 	LCRYPT = -lcrypt
 	STRIP = strip
 else
 ifeq ($(shell uname), OpenBSD)
 	OS = OpenBSD
-	CFLAGS += -m32
-	PICOLISP-FLAGS = -m32 -rdynamic -Wl,-E
+	CFLAGS += ${M32}
+	PICOLISP-FLAGS = ${M32} -rdynamic -Wl,-E
 	LIB-FLAGS = -lm
 	DYNAMIC-LIB-FLAGS = -Wl,-E -Wl,-shared
 	LCRYPT = -lcrypto
@@ -39,34 +45,34 @@ ifeq ($(shell uname), FreeBSD)
 	OS = FreeBSD
 	CC = gcc
 	CCLD = clang
-	CFLAGS += -m32
-	PICOLISP-FLAGS = -m32 -rdynamic
+	CFLAGS += ${M32}
+	PICOLISP-FLAGS = ${M32} -rdynamic
 	LIB-FLAGS = -lm
-	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	DYNAMIC-LIB-FLAGS = ${M32} -shared -export-dynamic
 	LCRYPT = -lcrypt
 	STRIP = strip
 else
 ifeq ($(shell uname), NetBSD)
 	OS = NetBSD
-	CFLAGS += -m32
-	PICOLISP-FLAGS = -m32 -rdynamic
+	CFLAGS += ${M32}
+	PICOLISP-FLAGS = ${M32} -rdynamic
 	LIB-FLAGS = -lm
-	DYNAMIC-LIB-FLAGS = -m32 -shared -export-dynamic
+	DYNAMIC-LIB-FLAGS = ${M32} -shared -export-dynamic
 	LCRYPT = -lcrypto
 	STRIP = strip
 else
 ifeq ($(shell uname), Darwin)
 	OS = Darwin
-	CFLAGS += -m32
-	PICOLISP-FLAGS = -m32
+	CFLAGS += ${M32}
+	PICOLISP-FLAGS = ${M32}
 	LIB-FLAGS = -lc -lm -ldl
-	DYNAMIC-LIB-FLAGS = -m32 -dynamiclib -undefined dynamic_lookup
+	DYNAMIC-LIB-FLAGS = ${M32} -dynamiclib -undefined dynamic_lookup
 	LCRYPT = -lcrypto
 	STRIP = strip -x
 else
 ifeq ($(shell uname), SunOS)
 	OS = SunOS
-	CFLAGS += -m32
+	CFLAGS += ${M32}
 	PICOLISP-FLAGS =
 	LIB-FLAGS = -lm -lnsl -lsocket
 	DYNAMIC-LIB-FLAGS = -G
@@ -85,9 +91,9 @@ else
 ifeq ($(shell uname), HP-UX)
 	OS = HP-UX
 	CFLAGS +=
-	PICOLISP-FLAGS = -m32 -rdynamic
+	PICOLISP-FLAGS = ${M32} -rdynamic
 	LIB-FLAGS = -lm -ldl
-	DYNAMIC-LIB-FLAGS = -m32 -shared
+	DYNAMIC-LIB-FLAGS = ${M32} -shared
 	LCRYPT =
 	STRIP = strip
 else
@@ -99,7 +105,7 @@ ifeq ($(shell uname), IRIX64)
 else
 ifeq ($(shell uname -o | egrep -q "Cygwin|Msys" ; echo $$?), 0)
 	OS = Cygwin
-	CFLAGS += -m32
+	CFLAGS += ${M32}
 	DYNAMIC-LIB-FLAGS = -shared
 	PICOLISP-FLAGS =
 	DLL-DEFS = $(bin)/picolisp.dll

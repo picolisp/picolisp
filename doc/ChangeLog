@@ -1,3 +1,7 @@
+27sep17
+   Fix for -m32 (Mickie Byrd)
+      src/Makefile
+
 14sep17
    Make '*HtSock' global cont.
       lib/http.l

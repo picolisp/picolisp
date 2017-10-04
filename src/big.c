@@ -7,6 +7,12 @@
 #define MAX    MASK           // Max digit size    0xFFFF....
 #define OVFL   ((1<<BITS-1))  // Carry/Overflow    0x8000....
 
+// For Solaris 10
+#ifdef __SVR4
+#include <ieeefp.h>
+static int isinf(double x) {return !finite(x) && x==x;}
+#endif
+
 
 static void divErr(any ex) {err(ex,NULL,"Div/0");}
 

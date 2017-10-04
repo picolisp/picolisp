@@ -1,3 +1,11 @@
+04oct17
+   Continued (Mickie Byrd)
+      src/Makefile
+
+03oct17
+   Define isinf() for Solaris 10
+      src/big.c
+
 27sep17
    Fix for -m32 (Mickie Byrd)
       src/Makefile

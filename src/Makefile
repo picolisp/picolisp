@@ -1,4 +1,4 @@
-# 27sep17abu
+# 04oct17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -10,11 +10,7 @@ CC = gcc
 # CCLD is the cc (compiler frontend) to use for the link step.
 CCLD = gcc
 
-ifeq ($(shell getconf LONG_BIT), 64)
-  M32=-m32
-else
-  M32=
-endif
+M32=-m32
 
 CFLAGS = -c -O2 -pipe \
 	-falign-functions=32 -fomit-frame-pointer -fno-strict-aliasing \
@@ -22,6 +18,7 @@ CFLAGS = -c -O2 -pipe \
 	-Wuninitialized -Wstrict-prototypes \
 	-D_GNU_SOURCE  -D_FILE_OFFSET_BITS=64
 
+DYNAMIC-CC-FLAGS=
 
 ifeq ($(shell uname), Linux)
 	OS = Linux
@@ -98,10 +95,10 @@ ifeq ($(shell uname), HP-UX)
 	STRIP = strip
 else
 ifeq ($(shell uname), IRIX64)
-    OS = IRIX64
-    CFLAGS += -std=gnu99
-    DYNAMIC-LIB-FLAGS = -shared
-    STRIP = strip -f
+	OS = IRIX64
+	CFLAGS += -std=gnu99
+	DYNAMIC-LIB-FLAGS = -shared
+	STRIP = strip -f
 else
 ifeq ($(shell uname -o | egrep -q "Cygwin|Msys" ; echo $$?), 0)
 	OS = Cygwin
@@ -134,6 +131,8 @@ all: picolisp tools gate
 .c.o:
 	$(CC) $(CFLAGS) -D_OS='"$(OS)"' $*.c
 
+ext.o ht.o: pico.h
+	$(CC) $(CFLAGS) -D_OS='"$(OS)"' $*.c $(DYNAMIC-CC-FLAGS)
 
 $(picoFiles:.c=.o) ext.o ht.o: pico.h
 main.o: vers.h

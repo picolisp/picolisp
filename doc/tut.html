@@ -1088,6 +1088,14 @@ href="refT.html#till">till</a></code>:
 -> "fact"
 </code></pre>
 
+<p> To read the contents of a whole file (or the rest of it starting from the
+current position):
+
+<pre><code>
+: (in "f.l" (till NIL T))
+-> "... file contents ..."
+</code></pre>
+
 
 <p>With <code><a href="refL.html#line">line</a></code>, a line of characters is
 read, either into a single <a href="ref.html#transient-io">transient</a> symbol

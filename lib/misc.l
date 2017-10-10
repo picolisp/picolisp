@@ -1,4 +1,4 @@
-# 28aug17abu
+# 10oct17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -450,9 +450,9 @@
          (prog1
             (and
                (pre? "220 " (in S (line T)))
-               (out S (prinl "HELO " (cdr (member "@" (chop From))) "^M"))
+               (out S (prinl "HELO " (cdr (member "@" (chop (fin From)))) "^M"))
                (pre? "250 " (in S (line T)))
-               (out S (prinl "MAIL FROM:" From "^M"))
+               (out S (prinl "MAIL FROM:" (fin From) "^M"))
                (pre? "250 " (in S (line T)))
                (if (atom To)
                   (_rcpt To)
@@ -460,7 +460,7 @@
                (out S (prinl "DATA^M"))
                (pre? "354 " (in S (line T)))
                (out S
-                  (prinl "From: " From "^M")
+                  (prinl "From: " (fin From) "^M")
                   (prinl "To: " (or (fin To) (glue "," To)) "^M")
                   (prin "Subject: ")
                   (ifn (find > (chop Sub) '("~" .))
@@ -469,6 +469,8 @@
                      (pipe (prin Sub)
                         (while (ext:Base64 (rd 1) (rd 1) (rd 1))) )
                      (prinl "?=^M") )
+                  (when (pair From)
+                     (prinl "Reply-To: " (car From) "^M") )
                   (prinl "User-Agent: PicoLisp^M")
                   (prinl "MIME-Version: 1.0^M")
                   (when Att

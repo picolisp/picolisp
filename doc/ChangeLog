@@ -1,3 +1,7 @@
+10oct17
+   Optional "Reply-To:" header in 'mail' (Andreas Rüegger)
+      lib/misc.l
+
 07oct17
    Simple example for reading whole file contents
       doc/tut.html

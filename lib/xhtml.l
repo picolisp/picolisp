@@ -1,4 +1,4 @@
-# 18aug17abu
+# 12oct17abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -115,9 +115,9 @@
                (prinl "</style>") ) ) )
       (and *SesId (javascript NIL "SesId='" @ "'"))
       (mapc javascript *JS)
-      (when (=0 Upd)
-         (javascript NIL
-            "document.addEventListener('visibilitychange', function() {if (!document.hidden) window.location.replace(location.href)})" ) )
+      ## (when (=0 Upd)
+      ##    (javascript NIL
+      ##       "document.addEventListener('visibilitychange', function() {if (!document.hidden) window.location.replace(location.href)})" ) )
       (prinl "</head>")
       (tag 'body Attr 2 Prg)
       (prinl "</html>") ) )

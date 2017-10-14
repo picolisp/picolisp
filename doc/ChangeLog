@@ -1,3 +1,7 @@
+11oct17
+   Don't read same input channel in child processes
+      misc/reverse.l
+
 10oct17
    Optional "Reply-To:" header in 'mail' (Andreas Rüegger)
       lib/misc.l
@@ -2114,7 +2118,7 @@
       lib/lint.l
 
 02jan15
-   Use NIL instead of '@' for "don't care in destructuring 'let'
+   Use NIL instead of '@' for "don't care in destructuring 'let'"
       src64/flow.l
       pilMCU/src/flow.l
 

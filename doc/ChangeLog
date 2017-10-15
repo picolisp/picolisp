@@ -1,3 +1,7 @@
+12oct17
+   Revert auto-reload on visibilitychange event
+      lib/xhtml.l
+
 11oct17
    Don't read same input channel in child processes
       misc/reverse.l

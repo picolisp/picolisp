@@ -1,0 +1,1208 @@
+# 18oct17abu
+# (c) Software Lab. Alexander Burger
+
+(symbols 'vip 'pico)
+(local) [
+   *CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip
+   *Lines *Columns *TagStack ]
+
+### Curses library interface ###
+(local) curses
+(de curses @
+   (pass native "libncurses.so") )
+
+### VIP Editor ###
+(local) [*Buffers +Buffer rdLines delim? markup status]
+(class +Buffer)
+# text file key undo redo dirt pos lastX lastY <c>
+
+(dm T (File Y)
+   (and (=: file File) (queue '*Buffers This))
+   (=: pos (or Y 1))
+   (=: lastX (=: lastY 1)) )
+
+(de rdLines ()
+   (make (until (eof) (link (line)))) )
+
+(de delim? (C)
+   (member C '`(cons NIL (chop " ^I^J^M\"'(),[]`~{}"))) )
+
+(de markup (Lst)
+   (let (S 'text  N 1)
+      (for L Lst
+         (let P NIL
+            (while L
+               (let C (++ L)
+                  (state 'S
+                     (text (and (= "\"" C) 'string)
+                        (set C 0) )
+                     (text (and L (= "#" C) (delim? P) 'comment)
+                        (set C N)
+                        (when (= "{" (car L))
+                           (set (++ L) (inc 'N)) ) )
+                     (text 'text
+                        (set (setq P C))
+                        (and (= "\\" C) L (set (++ L))) )
+                     (string (and (= "\"" C) 'text)
+                        (set (setq P C) 0) )
+                     (string 'string
+                        (set C T)
+                        (and (= "\\" C) L (set (++ L) T)) )
+                     (comment
+                        (cond
+                           ((=1 (set (setq P C) N))
+                              (if L 'comment 'text) )
+                           ((and
+                                 (= "}" C)
+                                 (= "#" (car L))
+                                 (=1 (set (++ L) (dec 'N))) )
+                              'text )
+                           (T
+                              (and
+                                 (= "#" C)
+                                 (= "{" (car L))
+                                 (set (++ L) (inc 'N)) )
+                              'comment ) ) ) ) ) ) ) ) ) )
+
+(dm load> ()
+   (markup
+      (=: text
+         (when (info (: file))
+            (gc (inc (*/ (car @) 32768)))  # 2 cells / char
+            (if (sys "CCRYPT" (: key))
+               (pipe
+                  (in (: file)
+                     (out '("ccrypt" "-d" "-ECCRYPT") (echo)) )
+                  (rdLines) )
+               (in (: file) (rdLines)) ) ) ) )
+   (=: undo (=: redo (=: dirt)))
+   (=: pos (min1 (: pos) (length (: text)))) )
+
+(dm save> ()
+   (when (: file)
+      (if (sys "CCRYPT" (: key))
+         (pipe
+            (out '("ccrypt" "-e" "-ECCRYPT")
+               (mapc prinl (: text)) )
+            (out (: file) (echo)) )
+         (out (: file) (mapc prinl (: text))) )
+      (=: dirt (: undo))
+      (for (This *CmdWin (setq This (: next)))
+         (status) ) ) )
+
+
+(local) [*Window +Window]
+(class +Window)
+# buffer top lines status ptr winX winY posX posY prev next last
+
+(dm T (Buffer Top Height WinX WinY PosX PosY Prev)
+   (=: buffer Buffer)
+   (=: top Top)
+   (when (=: prev Prev)
+      (when (=: next (: prev next))
+         (=: next prev This) )
+      (=: prev next This)
+      (curses "wattr_on" NIL
+         (=: status (curses "newwin" 'N 1 *Columns (+ Top (dec 'Height)) 0))
+         262144 ) )  # A_REVERSE
+   (=: ptr (curses "newwin" 'N (=: lines Height) *Columns Top 0))
+   (curses "keypad" NIL (: ptr) 1)
+   (=: winX WinX)
+   (=: winY WinY)
+   (=: posX PosX)
+   (=: posY PosY) )
+
+
+(local) [
+   min1 delwin cursor addLine chgLine redraw repaint scroll goto chgwin eqwin
+   getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft goRight goUp
+   goDown goAbs goFind word lword end lend getWord _forward goForward _backward
+   goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
+   insChar overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight jmpMark
+   wordFun moveSearch patMatch parMatch pipeN nextBuf shell shFile reset command
+   vi ]
+
+(de min1 (A B)
+   (max 1 (min A B)) )
+
+(de delwin ()
+   (when (=: prev next (: next))
+      (=: next prev (: prev)) )
+   (curses "delwin" NIL (: ptr))
+   (curses "delwin" NIL (: status)) )
+
+(de cursor ()
+   (curses "wmove" NIL (: ptr)
+      (- (: posY) (: winY))
+      (- (: posX) (: winX)) ) )
+
+(de addLine (Y L N)
+   (curses "wmove" NIL (: ptr) Y 0)
+   (for C (nth L (: winX))
+      (T (lt0 (dec 'N)))
+      (curses "wattrset" NIL (: ptr)
+         (cond
+            (*Flat 0)
+            ((=T (val C))  # A_UNDERLINE
+               (ifn (>= "^_" C "^A")
+                  131072
+                  (setq C (char (+ 64 (char C))))
+                  `(+ 131072 512) ) )  # COLOR_PAIR(2)
+            ((>= "^_" C "^A")  # COLOR_PAIR(2)
+               (setq C (char (+ 64 (char C))))
+               512 )
+            ((gt0 (val C)) 256)  # COLOR_PAIR(1)
+            (T 0) ) )
+      (curses "waddnstr" NIL (: ptr) C  -1) ) )
+
+(de chgLine (L)
+   (cursor)
+   (curses "wclrtoeol" NIL (: ptr))
+   (addLine (- (: posY) (: winY)) L *Columns)
+   (cursor) )
+
+(de status ()
+   (when (: status)
+      (curses "mvwaddstr" NIL @ 0 0
+         (let
+            (N (length (: buffer text))
+               A (pack
+                  (: buffer file)
+                  (unless (= (: buffer undo) (: buffer dirt)) " [+]") )
+               Z (pack
+                  (: posY) "," (: posX) "/" N " "
+                  (if (gt0 (dec N))
+                     (*/ 100 (dec (: posY)) @)
+                     0 )
+                  "%" ) )
+            (pack A (need (- *Columns (length A) (length Z)) " ") Z) ) )
+      (curses "wrefresh" NIL (: status)) ) )
+
+(de redraw (Flg)
+   (curses "werase" NIL (: ptr))
+   (for (Y . L) (nth (: buffer text) (: winY))
+      (addLine (dec Y) L *Columns)
+      (T (= Y (: lines))) )
+   (or Flg (status)) )
+
+(de repaint ()
+   (for (This *CmdWin This (: next))
+      (redraw)
+      (curses "wrefresh" NIL (: ptr)) ) )
+
+(de scroll (N)
+   (curses "scrollok" NIL (: ptr) 1)
+   (curses "wscrl" NIL (: ptr) N)
+   (curses "scrollok" NIL (: ptr) 0) )
+
+(de goto (X Y Flg)
+   (if
+      (and
+         (not Flg)
+         (>= (inc (: posY)) Y (dec (: posY)))
+         (let W (+ (: winX) *Columns -1)
+            (>= W (: posX) (: winX))
+            (>= W X (: winX)) ) )
+      (cond
+         ((= Y (inc (: posY)))
+            (when
+               (and
+                  (>= (- (: posY) (: winY)) (/ (: lines) 2))
+                  (nth (: buffer text) (+ (: lines) (: winY))) )
+               (scroll 1)
+               (addLine (dec (: lines)) (car @) *Columns)
+               (inc (:: winY)) ) )
+         ((= Y (dec (: posY)))
+            (when
+               (and
+                  (> (: winY) 1)
+                  (>= (/ (: lines) 2) (- (: posY) (: winY))) )
+               (scroll -1)
+               (addLine 0 (get (: buffer text) (dec (:: winY))) *Columns) ) ) )
+      (=: winX
+         (if (>= *Columns X)
+            1
+            (- X (/ *Columns 4)) ) )
+      (=: winY
+         (min1
+            (- Y (/ (: lines) 2))
+            (- (length (: buffer text)) (: lines) -1) ) )
+      (unless Flg (redraw T)) )
+   (when Flg (redraw T))
+   (unless (== This *Window)
+      (curses "wrefresh" NIL (: ptr)) )
+   (=: posX X)
+   (=: buffer pos (=: posY Y))
+   (status) )
+
+(de chgwin (Lines Top)
+   (curses "wresize" NIL (: ptr) (=: lines Lines) *Columns)
+   (when Top
+      (curses "mvwin" NIL (: ptr) (=: top @) 0) )
+   (when (: status)
+      (curses "mvwin" NIL @ (+ (: top) Lines) 0) )
+   (goto (: posX) (: posY) T) )
+
+(de eqwin ()
+   (let
+      (H (dec *Lines)
+         D (*/ H
+            (let N 0
+               (for (This *CmdWin (: next) @)
+                  (inc 'N) ) ) ) )
+      (with *CmdWin (chgwin 1 H))
+      (when (>= D 3)
+         (for (This *CmdWin (setq This (: next)))
+            (if (: next)
+               (chgwin (dec D) (dec 'H D))
+               (chgwin (dec H) 0) ) ) )
+      (cursor) ) )
+
+(de getch ()
+   (loop
+      (curses "wget_wch" NIL (: ptr) '(*Chr (4 . I)))
+      (NIL (= 410 *Chr)  # KEY_RESIZE
+         (unless (= 27 *Chr) (setq *Chr (char *Chr))) )
+      (setq
+         *Lines (car (struct "LINES" '(I)))
+         *Columns (car (struct "COLS" '(I))) )
+      (eqwin) ) )
+
+(de getch2 (C)
+   (when C
+      (if (= "^V" C)
+         (prog2
+            (mapc curses '("nocbreak" "raw"))
+            (or (getch) "^[")
+            (mapc curses '("noraw" "cbreak")) )
+         C ) ) )
+
+(de reload (File N)
+   (unless (== This *CmdWin)
+      (when File
+         (=: last (: buffer))
+         (=: buffer
+            (or
+               (find '((This) (= File (: file))) *Buffers)
+               (new '(+Buffer) File) ) ) )
+      (load> (: buffer))
+      (goto 1 (or N (: buffer pos)) T)
+      (repaint) ) )
+
+(de done ()
+   (nond
+      ((; *CmdWin next next) (throw 'done))
+      ((n== This *CmdWin))
+      ((== This (; *CmdWin next))
+         (delwin)
+         (let (N (: lines)  Top (: top))
+            (with (setq *Window (: prev))
+               (chgwin (+ 1 N (: lines)) Top) ) ) )
+      (NIL
+         (delwin)
+         (let N (: lines)
+            (with (setq *Window (: next))
+               (chgwin (+ 1 N (: lines))) ) ) ) ) )
+
+(de change Prg
+   (let
+      (Pos (nth (: buffer text) (: posY))
+         Env
+         (env
+            'PosX1 (: posX)  'PosY1 (: posY)
+            'OldA (car Pos)  'OldD (cdr Pos)
+            'NewD (: buffer text)
+            '(Pos PosX2 PosY2 NewA) ) )
+      (let? Res
+         (job Env
+            (prog1
+               (run Prg)
+               (setq
+                  PosX2 (: posX)  PosY2 (: posY)
+                  NewA (if Pos (car @) (: buffer text)) )
+               (and Pos (setq NewD (cdr @))) ) )
+         (=: buffer redo NIL)
+         (push (:: buffer undo)
+            (cons Env
+               '(ifn Pos
+                  (=: buffer text NewD)
+                  (set Pos OldA)
+                  (con Pos OldD) )
+               '(ifn Pos
+                  (=: buffer text NewA)
+                  (set Pos NewA)
+                  (con Pos NewD) ) ) )
+         (markup (: buffer text))
+         (goto (: posX) (: posY) T)
+         (repaint)
+         Res ) ) )
+
+(de undo ()
+   (let? U (pop (:: buffer undo))
+      (push (:: buffer redo) U)
+      (bind (car U)
+         (eval (cadr U))
+         (markup (: buffer text))
+         (goto PosX1 PosY1 T)
+         (repaint) ) ) )
+
+(de redo ()
+   (let? R (pop (:: buffer redo))
+      (push (:: buffer undo) R)
+      (bind (car R)
+         (eval (cddr R))
+         (markup (: buffer text))
+         (goto PosX2 PosY2 T)
+         (repaint) ) ) )
+
+(de jmp@@ (Y)
+   (=: buffer lastX (: posX))
+   (=: buffer lastY (: posY))
+   (setq @@ Y) )
+
+(de cnt@@ ()
+   (- @@ (: posY) -1) )
+
+(de goLeft (N)
+   (setq @@ (: posY))
+   (max 1 (- (: posX) N)) )
+
+(de goRight (N I)
+   (setq @@ (: posY))
+   (min1
+      (or (=T N) (+ (: posX) N))
+      (+
+         (or I 0)
+         (length (get (: buffer text) (: posY))) ) ) )
+
+(de goUp (N)
+   (setq @@ (max 1 (- (: posY) N)))
+   (min1 (: posX) (length (get (: buffer text) @@))) )
+
+(de goDown (N I)
+   (setq @@
+      (min1
+         (or (=T N) (+ (: posY) N))
+         (+ (or I 0) (length (: buffer text))) ) )
+   (min1 (: posX) (length (get (: buffer text) @@))) )
+
+(de goAbs (X Y I)
+   (jmp@@
+      (min1 Y
+         (+ (or I 0) (length (: buffer text))) ) )
+   (min1 X (length (get (: buffer text) @@))) )
+
+(de goFind (C D N I)
+   (setq @@ (: posY))
+   (let (Lst (get (: buffer text) (: posY))  L (nth Lst (: posX)))
+      (do N (setq L (member C (cdr L))))
+      (+ D (or I 0) (offset L Lst)) ) )
+
+(de word (L C)
+   (and (delim? C) (not (delim? (car L))) ) )
+
+(de lword (L C)
+   (and (sp? C) (not (sp? (car L))) ) )
+
+(de end (L)
+   (and (not (delim? (car L))) (delim? (cadr L))) )
+
+(de lend (L)
+   (and (not (sp? (car L))) (sp? (cadr L))) )
+
+(de getWord (Flg)
+   (make
+      (let (Lst (get (: buffer text) (: posY))  L (nth Lst (: posX)))
+         (when Flg
+            (for C L
+               (T (delim? C))
+               (link C) ) )
+         (until (delim? (car (setq L (prior L Lst))))
+            (yoke (car L)) ) ) ) )
+
+(de _forward (Lst C 1st)
+   (for ((X . L) Lst  L  (cdr L))
+      (T (and (Fun L C 1st) (=0 (dec 'N)))
+         (jmp@@ Y)
+         (+ (or I 0) X) )
+      (setq C (car L))
+      (off 1st) ) )
+
+(de goForward (Fun N I)
+   (let (Y (: posY)  Pos (nth (: buffer text) Y)  L (nth (++ Pos) (: posX)))
+      (if (_forward (cdr L) (car L) T)
+         (+ (: posX) @)
+         (loop
+            (NIL Pos)
+            (inc 'Y)
+            (T (_forward (++ Pos)) @) ) ) ) )
+
+(de _backward (Lst L 1st)
+   (use P
+      (loop
+         (NIL L)
+         (setq P (prior L Lst))
+         (T (and (Fun L (car P) 1st) (=0 (dec 'N)))
+            (jmp@@ Y)
+            (offset L Lst) )
+         (setq L P)
+         (off 1st) ) ) )
+
+(de goBackward (Fun N)
+   (let (Y (: posY)  Pos (nth (: buffer text) Y))
+      (or
+         (_backward
+            (car Pos)
+            (nth (car Pos) (dec (: posX)))
+            T )
+         (loop
+            (NIL (setq Pos (prior Pos (: buffer text))))
+            (dec 'Y)
+            (T (_backward (car Pos) (tail 1 (car Pos))) @ ) ) ) ) )
+
+(de goPFore (Cnt D I)
+   (let (Y (: posY)  Pos (nth (: buffer text) Y))
+      (loop
+         (NIL (cdr Pos)
+            (jmp@@ Y)
+            (max 1 (+ (or I 0) (length (car Pos)))) )
+         (inc 'Y)
+         (T
+            (and
+               (car Pos)
+               (not (cadr Pos))
+               (=0 (dec 'Cnt)) )
+            (jmp@@ (+ Y D))
+            1 )
+         (++ Pos) ) ) )
+
+(de goPBack (Cnt)
+   (let (Y (: posY)  Pos (nth (: buffer text) Y))
+      (loop
+         (NIL (setq Pos (prior Pos (: buffer text))))
+         (dec 'Y)
+         (T
+            (and
+               (not (car Pos))
+               (cadr Pos)
+               (=0 (dec 'Cnt)) ) ) )
+      (jmp@@ Y)
+      1 ) )
+
+(de shift (N Flg)
+   (change
+      (let? P Pos
+         (do N
+            (when (car P)
+               (if Flg
+                  (do 3 (push P (char 32)))
+                  (do 3
+                     (NIL (sp? (caar P)))
+                     (pop P) ) ) )
+            (NIL (cdr P))
+            (setq P (con P (cons (car @) (cdr @)))) )
+         (=: posX 1) ) ) )
+
+(de shiftY (X Flg)
+   (shift (cnt@@) Flg) )
+
+(de indent ()
+   (change
+      (let? P Pos
+         (when (clip (car P))
+            (let (N (*/ (offset @ (trim (car P))) 3)  Sup N)
+               (set P @)
+               (loop
+                  (do (* N 3) (push P (char 32)))
+                  (for C (car P)
+                     (unless (val C)
+                        (case C
+                           ("(" (inc 'N))
+                           (")" (dec 'N))
+                           ("[" (push 'Sup N) (inc 'N))
+                           ("]" (setq N (++ Sup))) ) ) )
+                  (NIL (clip (cadr P)) T)
+                  (setq P (con P (cons @ (cddr P)))) ) ) ) ) ) )
+
+(de cutX (X Flg)
+   (when X
+      (let Y @@
+         (unless (> (list Y X) (list (: posY) (: posX)))
+            (xchg 'X (:: posX)  'Y (:: posY)) )
+         (change
+            (when Pos
+               (let (L (car Pos)  DX (: posX))
+                  (and
+                     (set *Clip
+                        (make
+                           (if Flg
+                              (set Pos (cut (dec DX) 'L))
+                              (setq L (nth L DX)) )
+                           (while (>= (dec 'Y) (: posY))
+                              (link L)
+                              (setq L (cadr Pos))
+                              (if Flg
+                                 (con Pos (cddr Pos))
+                                 (++ Pos) )
+                              (one DX) )
+                           (link (cut (- X DX) 'L))
+                           (when Flg
+                              (set Pos (conc (car Pos) L))
+                              (=: posX (min1 (: posX) (length (car Pos)))) )
+                           (setq @@ (unless L 1)) ) )
+                     Flg ) ) ) ) ) ) )
+
+(de cutN (N)
+   (change
+      (when Pos
+         (off @@)
+         (set *Clip
+            (cons T
+               (if (setq Pos (prior Pos (: buffer text)))
+                  (make
+                     (setq OldA (car @)  OldD (cdr @))
+                     (do N
+                        (link (cadr Pos))
+                        (NIL (con Pos (cddr Pos))
+                           (one @@)
+                           (dec (:: posY)) ) )
+                     (=: posX 1) )
+                  (cut N (:: buffer text)) ) ) ) ) ) )
+
+(de paste (Lst Flg)
+   (change
+      (let P (or Pos (=: buffer text (cons)))
+         (ifn (=T (car Lst))
+            (let L (car P)
+               (cond
+                  ((=0 Flg) (setq PosX1 (=: posX 1)))
+                  ((=1 Flg)
+                     (and
+                        (get (: buffer text) (: posY) 1)
+                        (get (: buffer text) (: posY) (inc (:: posX)))
+                        (inc 'PosX1) ) )
+                  (Flg
+                     (=: posX
+                        (max 1
+                           (inc (length (get (: buffer text) (: posY)))) ) ) ) )
+               (set P
+                  (conc (cut (dec (: posX)) 'L) (mapcar name (++ Lst))) )
+               (for S Lst
+                  (setq P (con P (cons (mapcar name S) (cdr P))))
+                  (inc (:: posY)) )
+               (=: posX (max 1 (length (car P))))
+               (set P (append (car P) L)) )
+            (=: posX 1)
+            (ifn Flg
+               (for L (cdr Lst)
+                  (con P (cons (car P) (cdr P)))
+                  (set P (mapcar name L))
+                  (setq P (cdr P)) )
+               (inc (:: posY))
+               (for L (cdr Lst)
+                  (setq P (con P (cons (mapcar name L) (cdr P)))) ) ) )
+         T ) ) )
+
+(de join (Cnt)
+   (change
+      (do Cnt
+         (NIL (cdr Pos))
+         (set Pos
+            (append
+               (car Pos)
+               (cons (char 32) (clip (cadr Pos))) ) )
+         (con Pos (cddr Pos)) )
+      T ) )
+
+(de tglCase (Cnt)
+   (change
+      (let? C (get Pos 1 (: posX))
+         (do Cnt
+            (set Pos
+               (place (: posX) (car Pos)
+                  ((if (upp? C) lowc uppc) C) ) )
+            (NIL (setq C (get Pos 1 (inc (: posX)))))
+            (inc (:: posX)) )
+         T ) ) )
+
+(de insChar (C Cnt)
+   (change
+      (when (car Pos)
+         (do Cnt
+            (set Pos (place (: posX) (car Pos) (name C)))
+            (NIL (get Pos 1 (inc (:: posX)))) )
+         (dec (:: posX)) ) ) )
+
+(de incChar (Cnt)
+   (change
+      (set Pos
+         (place (: posX) (car Pos)
+            (char (+ Cnt (char (get Pos 1 (: posX))))) ) ) ) )
+
+(de overwrite (Lst)
+   (change
+      (let
+         (P (or Pos (=: buffer text (cons)))
+            L (conc (cut (dec (: posX)) P) (car Lst)) )
+         (set P
+            (append L
+               (cdr (nth (car P) (length (++ Lst)))) ) )
+         (=: posX (max 1 (length L))) ) ) )
+
+(de _bs ()
+   (++ Chg)
+   (dec (:: posX))
+   (unless Rpl
+      (set P (remove (: posX) (car P))) ) )
+
+(de insMode (Flg Win Rpl . @)
+   (change
+      (let (P (or Pos (=: buffer text (cons)))  Chg)
+         (cond
+            ((=0 Flg)
+               (con P (cons (car P) (cdr P)))
+               (set P)
+               (goto 1 (: posY) T) )
+            ((=1 Flg))
+            (Flg
+               (setq P (con P (cons NIL (cdr P))))
+               (goto 1 (inc (: posY)) T)
+               (setq Chg (0)) ) )
+         (cursor)
+         (while
+            (case (or (next) (getch))
+               (NIL)
+               (("^M" "^J")
+                  (cond
+                     (Rpl (curses "beep") T)
+                     ((== This *CmdWin) (nil (command Win (car P))))
+                     (T
+                        (push 'Chg 0)
+                        (con P
+                           (cons (nth (car P) (: posX)) (cdr P)) )
+                        (set P (head (dec (: posX)) (car P)))
+                        (setq P (cdr P))
+                        (goto 1 (inc (: posY)) T)
+                        (cursor)
+                        T ) ) )
+               (("^H" "^?" `(char 263))  # [BACKSPACE]
+                  (when (> (: posX) (if (> (: posY) PosY1) 1 PosX1))
+                     (_bs)
+                     (chgLine (car P)) )
+                  T )
+               (T
+                  (let S (list @)
+                     (nond
+                        ((= @ "^I") (off *Complete))
+                        ((unless Rpl (setq S (pack (getWord))))
+                           (setq S
+                              (make
+                                 (do (- 3 (% (dec (: posX)) 3))
+                                    (link (char 32)) ) ) ) )
+                        (NIL
+                           (default *Complete
+                              (conc
+                                 (list S)
+                                 (filter '((P) (pre? S P)) (all))
+                                 (let P (rot (split (chop S) "/"))
+                                    (setq
+                                       S (pack (car P))
+                                       P (and (cdr P) (pack (glue "/" @) "/")) )
+                                    (extract
+                                       '((X)
+                                          (let? F (and (pre? S X) (pack P X))
+                                             (if (=T (car (info F))) (pack F "/") F) ) )
+                                       (dir P T) ) ) ) )
+                           (do (length (car *Complete)) (_bs))
+                           (setq S (chop (car (rot *Complete)))) ) )
+                     (when (= "^V" (car S))
+                        (set S (or (next) (getch2 "^V"))) )
+                     (for C S
+                        (push 'Chg C)
+                        (set P
+                           ((if (and Rpl (car P)) place insert)
+                              (: posX)
+                              (car P)
+                              C ) )
+                        (inc (:: posX)) )
+                     (goto (: posX) (: posY)) )
+                  (chgLine (car P))
+                  T ) ) )
+         (=: posX (max 1 (dec (: posX))))
+         (cond
+            ((=0 Flg) (push 'Chg 0))
+            ((=1 Flg) (and (> PosX1 1) (dec 'PosX1))) )
+         (split (flip Chg) 0) ) ) )
+
+(de cmdMode @
+   (let Win (if (== This *CmdWin) (: next) This)
+      (with *CmdWin
+         (pass insMode (: buffer text) Win NIL) ) ) )
+
+(de cmdPipe (N)
+   (apply cmdMode (chop (pack ":" N "!"))) )
+
+(de evRpt (Exe)
+   (eval (setq *Repeat Exe) 1) )
+
+(de move @
+   (let M (conc (rest) (1))
+      (case *Change
+         (NIL (and (eval (rest)) (goto @ @@)))
+         ("!" (eval (rest)) (cmdPipe (cnt@@)))  # External filter
+         (">" (evRpt (list 'shiftY M T)))  # Shift right
+         ("<" (evRpt (list 'shiftY M)))  # Shift left
+         ("c"  # Change
+            (when (cutX (eval M) T)
+               (and @@
+                  (get (: buffer text) (: posY) 1)
+                  (inc (:: posX)) )
+               (let L (insMode @@)
+                  (setq *Repeat
+                     (list 'prog
+                        (list 'cutX M T)
+                        (list 'paste (lit L) '@@)) ) ) ) )
+         ("d" (evRpt (list 'cutX M T)))  # Delete
+         ("y" (cutX (eval M)))  # Yank
+         (T (curses "beep")) ) ) )
+
+(de chgRight (X)
+   (setq *Change "c")
+   (move 'goRight X) )
+
+(de jmpMark (C D X)
+   (cond
+      ((= C D)
+         (move 'goAbs
+            (or X (: buffer lastX))
+            (: buffer lastY) ) )
+      ((get (: buffer) (intern C))
+         (move 'goAbs (default X (car @)) (cdr @)) ) ) )
+
+(de wordFun (@W)
+   (let @N (length @W)
+      (setq *Search
+         (curry (@W @N) (L C)
+            (and
+               (delim? C)
+               (= '@W (cut @N 'L))
+               (delim? (car L) ) ) ) ) ) )
+
+(de moveSearch (Fun1 Fun2)
+   (move Fun1 (lit Fun2) *Cnt) )
+
+(de patMatch (Fun Pat)
+   (moveSearch Fun
+      (setq *Search
+         (let @Pat
+            (if (= "$" (last Pat))
+               (head -1 Pat)
+               (append Pat '(@)) )
+            (curry (@Pat) (L) (match '@Pat L)) ) ) ) )
+
+(de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
+   (moveSearch Fun1
+      (curry (@Par1 @Sup1 @ParO @ParC @SupO @SupC Par Sup) (L C 1st)
+         (and 1st (setq Par @Par1 Sup @Sup1))
+         (unless (caar L)
+            (case (car L)
+               (@ParO (nil (inc 'Par)))
+               (@ParC (or (not C) (= 0 (dec 'Par) Sup)))
+               (@SupO (nil (push 'Sup Par) (zero Par)))
+               (@SupC
+                  (or
+                     (not C)
+                     (= 0 (setq Par (++ Sup)) Sup) ) ) ) ) ) ) )
+
+(de pipeN (Cnt Line)
+   (evRpt
+      (fill
+         '(when (cdr (cutN Cnt))
+            (pipe (out (list "sh" "-c" Line) (mapc prinl @))
+               (paste (cons T (rdLines)) @@) ) )
+         '(Line Cnt) ) ) )
+
+(de nextBuf (B)
+   (let? M (member (: buffer) *Buffers)
+      (=: last (: buffer))
+      (=: buffer
+         (nond
+            (B (car (or (cdr M) *Buffers)))
+            ((=T B) B)
+            (NIL
+               (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
+      (unless (: buffer text)
+         (load> (: buffer)) )
+      (goto 1 (: buffer pos) T) ) )
+
+(de shell (S)
+   (curses "endwin")
+   (do *Columns (prin "#"))
+   (call "sh" "-c" S)
+   (prin "[====] ")
+   (flush)
+   (getch) )
+
+(de shFile (S)
+   (when (: buffer file)
+      (shell (text S (path @) *Cnt)) ) )
+
+(de reset ()
+   (off *Count *Change)
+   (setq *Clip '\"\") )
+
+### Commands ###
+(de command (This Line)
+   (case (++ Line)
+      ("(" (run (str (pack (cons "(" Line)))))  # Evaluate list
+      ("/" (patMatch 'goForward Line))  # Search forward
+      ("?" (patMatch 'goBackward Line))  # Search backward
+      (":"
+         (let Cnt 0
+            (while (format (car Line))
+               (setq Cnt (+ @ (* 10 Cnt)))
+               (++ Line) )
+            (let C (++ Line)
+               (when (>= "z" C "a")
+                  (until (sp? (car Line))
+                     (setq C (pack C (++ Line))) ) )
+               (setq Line (pack (clip Line)))
+               (case C
+                  ("!"  # External filter
+                     (when Line
+                        (if (=0 Cnt)
+                           (shell Line)
+                           (pipeN Cnt Line) ) ) )
+                  ("bak" (shFile "mv @1 @1- && cp -p @1- @1"))  # Backup to <file>-
+                  ("kab" (shFile "mv @1- @1 && cp -p @1 @1-"))  # Restore from <file>-
+                  ("ls"  # List buffers
+                     (let L
+                        (make
+                           (for (I . This) *Buffers
+                              (link (chop (pack ":" I " " (: file)))) ) )
+                        (with *CmdWin
+                           (paste (cons T L) T)
+                           (inc (:: posY) (dec (length L))) ) ) )
+                  ("key" (=: buffer key Line))
+                  ("n" (nextBuf))  # Next buffer
+                  ("N" (nextBuf T))  # Previous buffer
+                  ("e" (reload Line))  # (Edit) Reload buffer
+                  ("r" (in Line (paste (cons T (rdLines)) 1)))  # Read file contents
+                  ("w" (save> (: buffer)))  # (Write) Save buffer
+                  ("x"  # (Exit) Save buffer and close window
+                     (unless (= (: buffer undo) (: buffer dirt))
+                        (save> (: buffer)) )
+                     (done) )
+                  ("q" (done))  # (Quit) Close window
+                  ("bd"  # Buffer delete
+                     (when (cdr *Buffers)
+                        (let Buf (: buffer)
+                           (for (This *CmdWin (setq This (: next)))
+                              (when (== Buf (: buffer))
+                                 (if (; *CmdWin next next) (done) (nextBuf)) ) )
+                           (del Buf '*Buffers) ) ) )
+                  (T
+                     (if (get *Buffers Cnt)
+                        (nextBuf @)
+                        (curses "beep")) ) ) ) )
+         (with *CmdWin
+            (redraw)
+            (curses "wrefresh" NIL (: ptr)) ) )
+      (T (curses "beep")) ) )
+
+### VIP Entry Point ###
+(de vi (Lst)  # ("file.l" (pat) (99 . "file.l") (T . "file.l"))
+   (off *Buffers)
+   (for X Lst
+      (cond
+         ((not X))
+         ((atom X) (new '(+Buffer) X))
+         ((not (cdr X)) (wordFun (car X)))
+         (T
+            (new '(+Buffer)
+               (cdr X)
+               (or (num? (car X)) T) ) ) ) )
+   (when *Buffers
+      (native "@" "setlocale" NIL 0 "")  # LC_CTYPE: UTF-8
+      (sys "ESCDELAY" "60")
+      (curses "initscr" 'N)
+      (curses "start_color")
+      (curses "use_default_colors")
+      (curses "init_pair" NIL 1 6 0)  # COLOR_CYAN COLOR_BLACK
+      (curses "init_pair" NIL 2 1 0)  # COLOR_RED COLOR_BLACK
+      (curses "cbreak")
+      (curses "noecho")
+      (native "@" "LINES" T)
+      (native "@" "COLS" T)
+      (setq
+         *Lines (car (struct "LINES" '(I)))
+         *Columns (car (struct "COLS" '(I))) )
+      (reset)
+      (setq *CmdWin
+         (new '(+Window) (new '(+Buffer)) (dec *Lines) 1 1 1 1 1) )
+      (with (car *Buffers)
+         (load> This)
+         (new '(+Window) This
+            0 (dec *Lines)
+            1
+            (min1
+               (- (: pos) (/ (- *Lines 2) 2))
+               (- (length (: text)) *Lines -3) )
+            1 (: pos)
+            *CmdWin ) )
+      (with (setq *Window (; *CmdWin next)) (redraw))
+      (catch 'done
+         (loop
+            (setq *Cnt (max 1 (format *Count)))
+            (with *Window
+               (=: posX
+                  (min1 (: posX)
+                     (length
+                        (get (: buffer text)
+                           (=: posY
+                              (min1 (: posY) (length (: buffer text))) ) ) ) ) )
+               (cursor)
+               (case (getch)
+                  ("0"
+                     (if *Count
+                        (queue '*Count "0")
+                        (move 'goAbs 1 (: posY))  # Go to beginning of line
+                        (off *Change) ) )
+                  (("1" "2" "3" "4" "5" "6" "7" "8" "9")  # ["Count" prefix]
+                     (queue '*Count *Chr) )
+                  ("\"" (setq *Clip (intern (pack '"\"" (getch)))))  # "Register" prefix
+                  (("!" "<" ">" "c" "d" "y")  # ["Change" prefix]
+                     (cond
+                        ((= *Chr *Change)
+                           (case *Chr
+                              ("!" (cmdPipe *Cnt))  # [!!] External filter
+                              (">" (evRpt (list 'shift *Cnt T)))  # [>>] Shift line(s) right
+                              ("<" (evRpt (list 'shift *Cnt)))  # [<<] Shift line(s) left
+                              ("c" (=: posX 1) (chgRight T))  # [cc] Change whole line
+                              ("d" (evRpt (list 'cutN *Cnt)))  # [dd] Delete line(s)
+                              ("y"  # [yy] Yank line(s)
+                                 (set *Clip
+                                    (cons T
+                                       (head *Cnt (nth (: buffer text) (: posY))) ) ) ) )
+                           (reset) )
+                        (*Change (off *Change))
+                        (T (setq *Change *Chr)) ) )
+                  (T
+                     (case *Chr
+                        (NIL)
+                        (("^M" "^J")
+                           (if (== This *CmdWin)
+                              (command (: next) (get (: buffer text) (: posY)))
+                              (cmdMode) ) )
+                        ("." (eval *Repeat))  # Repeat last change
+                        (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
+                        (("^F" `(char 338)) (move 'goDown *Lines))  # [NPAGE] Page down
+                        (("k" `(char 259)) (move 'goUp *Cnt))  # [UP] Move up
+                        (("^B" `(char 339)) (move 'goUp *Lines))  # [PPAGE] Page up
+                        ("h" (move 'goLeft *Cnt))  # Move left
+                        ("l" (move 'goRight *Cnt))  # Move right
+                        (`(char 260)  # [LEFT] Scroll left
+                           (when (> (: winX) 1)
+                              (when (>= (- (: posX) (dec (:: winX))) *Columns)
+                                 (dec (:: posX)) ) )
+                           (redraw) )
+                        (`(char 261)  # [RIGHT] Scroll right
+                           (cond
+                              ((> (: posX) (: winX)) (inc (:: winX)))
+                              ((cdr (nth (: buffer text) (: posY) (: posX)))
+                                 (inc (:: posX))
+                                 (inc (:: winX)) ) )
+                           (redraw) )
+                        ("$" (move 'goRight T))  # Go to end of line
+                        ("G" (move 'goAbs 1 (or (format *Count) T)))  # Go to end of text
+                        ("f" (and (getch2 (getch)) (move 'goFind @ 0 *Cnt)))  # Find character
+                        ("t" (and (getch2 (getch)) (move 'goFind @ -1 *Cnt)))  # Till character
+                        ("w" (move 'goForward 'word *Cnt))  # Word forward
+                        ("W" (move 'goForward 'lword *Cnt))  # Long word forward
+                        ("b" (move 'goBackward 'word *Cnt))  # Word backward
+                        ("B" (move 'goBackward 'lword *Cnt))  # Long word backward
+                        ("e" (move 'goForward 'end *Cnt))  # End of word
+                        ("E" (move 'goForward 'lend *Cnt))  # End of long word
+                        ("{" (move 'goPBack *Cnt))  # Paragraph(s) backward
+                        ("}" (move 'goPFore *Cnt 0))  # Paragraph(s) forward
+                        ("'" (jmpMark (getch) "'" 1))  # Jump to mark line
+                        ("`" (jmpMark (getch) "`")) # Jump to mark position
+                        ("~" (evRpt (list 'tglCase *Cnt)))  # Toggle case
+                        (":" (cmdMode (name ":")))  # Command
+                        ("/" (cmdMode (name "/")))  # Search forward
+                        ("?" (cmdMode (name "?")))  # Search backward
+                        ("n" (and *Search (move 'goForward (lit @) *Cnt)))  # Search next
+                        ("N" (and *Search (move 'goBackward (lit @) *Cnt)))  # Search previous
+                        ("*"  # Search word under cursor
+                           (and (getWord T) (moveSearch 'goForward (wordFun @))) )
+                        ("%"  # Matching parenthesis
+                           (case (get (: buffer text) (: posY) (: posX))
+                              ("(" (parMatch 'goForward 1 0 "(" ")" "[" "]"))
+                              ("[" (parMatch 'goForward 0 (0 . 0) "(" ")" "[" "]"))
+                              (")" (parMatch 'goBackward 1 0 ")" "(" "]" "["))
+                              ("]" (parMatch 'goBackward 0 (0 . 0) ")" "(" "]" "[")) ) )
+                        ("i"  # Insert
+                           (when (insMode)
+                              (setq *Repeat (list 'paste (lit @))) ) )
+                        ("I"  # Insert at beginning of line
+                           (=: posX 1)
+                           (when (insMode)
+                              (setq *Repeat (list 'paste (lit @) 0)) ) )
+                        ("a"  # Append
+                           (when (get (: buffer text) (: posY) 1)
+                              (inc (:: posX)) )
+                           (when (insMode 1)
+                              (setq *Repeat (list 'paste (lit @) 1)) ) )
+                        ("A"  # Append to end of line
+                           (goto
+                              (inc (length (get (: buffer text) (: posY))))
+                              (: posY) )
+                           (when (insMode 1)
+                              (setq *Repeat (list 'paste (lit @) T)) ) )
+                        ("o"  # Open new line below current line
+                           (setq *Repeat (list 'paste (lit (insMode T)) T)) )
+                        ("O"  # Open new line above current line
+                           (setq *Repeat (list 'paste (lit (insMode 0)) 0)) )
+                        ("x" (setq *Change "d") (move 'goRight *Cnt))  # Delete characters
+                        ("X" (setq *Change "d") (move 'goLeft *Cnt))  # Delete characters left
+                        ("D" (setq *Change "d") (move 'goRight T))  # Delete rest of line
+                        ("p" (evRpt (list 'paste (lit (val *Clip)) 1)))  # Paste after current position
+                        ("P" (evRpt (list 'paste (lit (val *Clip)))))  # Paste before current position
+                        ("J" (evRpt (list 'join *Cnt)))  # Join lines
+                        ("m"  # Set mark
+                           (put (: buffer) (intern (getch))
+                              (cons (: posX) (: posY)) ) )
+                        ("r"  # Replace character(s)
+                           (and (getch2 (getch)) (evRpt (list 'insChar @ *Cnt))) )
+                        ("R"  # Replace
+                           (when (insMode NIL NIL T)
+                              (setq *Repeat (list 'overwrite (lit @))) ) )
+                        ("s" (chgRight 1))  # Substitute character
+                        ("C" (chgRight T))  # Change rest of line
+                        ("S" (=: posX 1) (chgRight T))  # Change whole line
+                        ("," (evRpt '(indent)))  # Fix indentation
+                        ("^A" (evRpt (list 'incChar *Cnt)))
+                        ("^X" (evRpt (list 'incChar (- *Cnt))))
+                        ("u" (undo))  # Undo
+                        ("^R" (redo))  # Redo
+                        ("g"  # ["Go" prefix]
+                           (case (getch)
+                              ("f" (reload (pack (getWord T))))  # [gf] Edit file under cursor
+                              ("g" (move 'goAbs 1 1))  # [gg] Go to beginning of text
+                              (T (curses "beep")) ) )
+                        ("+"  # Increase window size
+                           (loop
+                              (NIL (setq This (: prev))
+                                 (for (This (; *Window next) This (: next))
+                                    (T (> (: lines) 1)
+                                       (with *Window
+                                          (chgwin (inc (: lines)) (dec (: top)))
+                                          (for (This (: next) (=1 (: lines)) (: next))
+                                             (chgwin 1 (dec (: top))) ) )
+                                       (chgwin (dec (: lines))) ) ) )
+                              (T (> (: lines) 1)
+                                 (with *Window
+                                    (chgwin (inc (: lines)))
+                                    (for (This (: prev) (=1 (: lines)) (: prev))
+                                       (chgwin 1 (inc (: top))) ) )
+                                 (chgwin (dec (: lines)) (inc (: top))) ) ) )
+                        ("-"  # Decrease window size
+                           (cond
+                              ((=1 ( : lines)))
+                              ((: prev)
+                                 (chgwin (dec (: lines)))
+                                 (with (: prev)
+                                    (chgwin (inc (: lines)) (dec (: top))) ) )
+                              (T
+                                 (chgwin (dec (: lines)) (inc (: top)))
+                                 (with (: next)
+                                    (chgwin (inc (: lines))) ) ) ) )
+                        ("=" (eqwin))  # Set all windows to equal size
+                        ("^]"  # Edit symbol
+                           (when (get (intern (pack (getWord T))) '*Dbg 1)
+                              (push '*TagStack (: posY) (: buffer file))
+                              (reload (cdr @) (car @)) ) )
+                        ("^T"  # Pop tag stack
+                           (reload (pop '*TagStack) (pop '*TagStack)) )
+                        (`(char (+ 264 1)) (onOff *Flat) (repaint))  # [F1] Highlight on/off
+                        (`(char (+ 264 2)) (shFile "diff -Bb @1- @1"))  # [F2] Show chages to <file>-
+                        (`(char (+ 264 3)) (shFile "dif @1 @2"))  # [F3] Custom dif
+                        (`(char (+ 264 4)) (goPFore 1 -1) (pipeN (cnt@@) "fmt"))  # [F4] Format paragraph
+                        (`(char (+ 264 5)) (nextBuf T))  # [F5] Previous buffer
+                        (`(char (+ 264 6)) (nextBuf))  # [F6] Next buffer
+                        (`(char (+ 264 7))  # [F7] Load file
+                           (when (info (: buffer file))
+                              (symbols '(pico)
+                                 (catch '(NIL) (load (: buffer file))) ) ) )
+                        ## (`(char (+ 264 8)) ())  # [F8]
+                        ## (`(char (+ 264 9)) ())  # [F9]
+                        ## (`(char (+ 264 10)) ())  # [F10]
+                        ## (`(char (+ 264 11)) ())  # [F11]
+                        ## (`(char (+ 264 12)) ())  # [F12]
+                        ("\\"  # Select or toggle buffer
+                           (nextBuf
+                              (if *Count
+                                 (get *Buffers (format @))
+                                 (or (: last) (car *Buffers)) ) ) )
+                        (("q" "^W")  # ["Window" prefix]
+                           (case (getch)
+                              ("s"  # [qs] Split window
+                                 (unless (== This *CmdWin)
+                                    (let (Old (inc (: lines))  New (/ Old 2))
+                                       (with
+                                          (new '(+Window) (: buffer)
+                                             (+ (: top) New) (- Old New)
+                                             (: winX) (: winY)
+                                             (: posX) (: posY)
+                                             (: prev) )
+                                          (goto (: posX) (: posY) T) )
+                                       (chgwin (dec New)) ) ) )
+                              ("x"  # [qx] Exchange windows
+                                 (and
+                                    (; *CmdWin next next)
+                                    (n== This *CmdWin)
+                                    (let W (if (== (: prev) *CmdWin) (: next) (: prev))
+                                       (for P '(buffer winX winY posX posY)
+                                          (xchg (prop This P) (prop W P)) )
+                                       (goto (: posX) (: posY) T)
+                                       (with W
+                                          (goto (: posX) (: posY) T) ) ) ) )
+                              ("k" (and (: next) (setq *Window @)))  # [qk] Above window
+                              ("j" (and (: prev) (setq *Window @)))  # [qj] Below window
+                              ("q" (done))  # [qq] (Quit) Close window
+                              (T (curses "beep")) ) )
+                        (T (curses "beep")) )
+                     (reset) ) ) ) ) )
+      (curses "endwin") ) )
+
+(when (info (pil "viprc"))
+   (load (pil "viprc")) )
+
+`*Dbg
+
+(symbols '(pico)
+   (let Src (path "@src64/")
+      (in "@src64/tags"
+         (use (L F)
+            (while (setq L (line))
+               (if (= L '("^L"))
+                  (setq F (pack Src (car (split (line) ","))))
+                  (put
+                     (intern
+                        (pack (car (setq L (split (cdr L) "^A" ",")))) )
+                     '*Dbg
+                     (list (cons (format (cadr L)) F)) ) ) ) ) ) ) )
+
+(undef 'pico~vi)
+(de pico~vi ("X" C)
+   (vi
+      (list
+         (cond
+            ((pair "X")
+               (get (cdr "X") '*Dbg -1 (car "X")) )
+            (C (get C '*Dbg -1 "X"))
+            ((str? "X") "X")
+            (T (get "X" '*Dbg 1)) ) ) )
+   "X" )
+
+# vi:et:ts=3:sw=3

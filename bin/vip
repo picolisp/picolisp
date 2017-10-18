@@ -1,0 +1,23 @@
+#!/usr/bin/picolisp /usr/lib/picolisp/lib.l
+# 15oct17abu
+
+(load "@lib/misc.l" "@lib/vip.l")
+
+(vip~vi  ## [+<pat>] [+[<num>]] <file1>  [+[<num>]] <file2> ..
+   (or
+      (make
+         (for (L (argv)  L)
+            (let S (++ L)
+               (link
+                  (nond
+                     ((pre? "+" S) S)
+                     ((= "+" S)
+                        (if (format S)
+                           (cons @ (++ L))
+                           (cons (cdr (chop S))) ) )
+                     (NIL (cons T (++ L))) ) ) ) ) )
+      (list (tmp "vip")) ) )
+
+(bye)
+
+# vi:et:ts=3:sw=3

@@ -1,0 +1,72 @@
+Keywords
+   (+Key +String)                head
+      "Regen Axer" {2}
+
+   (+Ref +String)                head
+      ("Regen Axer" . {2}) {2}
+
+Phone numbers
+   (+Fold +Ref +String)          fold
+      ("regenaxer" . {2}) {2}
+
+Personal Names
+   (+Sn +IdxFold +String)        tolr
+      ("RSNSR" {C4} . T) {C4}
+      ("Regen Axer" . {C4}) {C4}
+      ("axer" {C4}) {C4}
+      ("egen" {C4}) {C4}
+      ("gen" {C4}) {C4}
+      ("regenaxer" {C4}) {C4}
+      ("xer" {C4}) {C4}
+
+   (+Sn +Idx +String)            tolr
+      ("Axer" {2}) {2}
+      ("RSNSR" {2} . T) {2}
+      ("Regen Axer" . {2}) {2}
+      ("egen" {2}) {2}
+      ("gen" {2}) {2}
+      ("xer" {2}) {2}
+
+Item Names
+   (+IdxFold +String)            part
+      ("Regen Axer" . {2}) {2}
+      ("axer" {2}) {2}
+      ("egen" {2}) {2}
+      ("gen" {2}) {2}
+      ("regenaxer" {2}) {2}
+      ("xer" {2}) {2}
+
+   (+Fold +Idx +String)          part
+      ("axer" {2}) {2}
+      ("egenaxer" {2}) {2}
+      ("enaxer" {2}) {2}
+      ("genaxer" {2}) {2}
+      ("naxer" {2}) {2}
+      ("regenaxer" . {2}) {2}
+      ("xer" {2}) {2}
+
+   (+List +Fold +Idx +String)    part
+      ("axer" . {2}) {2}
+      ("egen" {2}) {2}
+      ("gen" {2}) {2}
+      ("regen" . {2}) {2}
+      ("xer" {2}) {2}
+
+   (+List +Fold +Ref +String)    fold
+      ("axer" . {2}) {2}
+      ("regen" . {2}) {2}
+
+Identifiers
+   (+Idx +String)                hold
+      ("Axer" {2}) {2}
+      ("Regen Axer" . {2}) {2}
+      ("egen" {2}) {2}
+      ("gen" {2}) {2}
+      ("xer" {2}) {2}
+
+Number, Date, Time
+   (+Key +Number)                range
+   (+Ref +Number)                range
+
+Objects
+   (+Ref +Link)                  same

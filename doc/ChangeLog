@@ -1,3 +1,9 @@
+18oct17
+   New files
+      doc/search
+      lib/vip.l
+      bin/vip
+
 12oct17
    Revert auto-reload on visibilitychange event
       lib/xhtml.l

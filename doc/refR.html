@@ -52,13 +52,13 @@ href="ref.html#dbase">Database</a>.
 href="refR.html#+relation">+relation</a></code>s. Can only be used as a prefix
 class to <code><a href="refK.html#+Key">+Key</a></code> or <code><a
 href="refR.html#+Ref">+Ref</a></code>. It maintains an index in the current
-(sub)class, in addition to that in one of the superclasses, to allow
-(sub)class-specific queries. See also <a
+(sub)class, in addition to that in one of the superclasses (must be a
+<code>+Ref</code>), to allow (sub)class-specific queries. See also <a
 href="ref.html#dbase">Database</a>.
 
 <pre><code>
 (class +Ord +Entity)             # Order class
-(rel nr (+Need +Key +Number))    # Order number
+(rel nr (+Need +Ref +Number))    # Order number
 ...
 (class +EuOrd +Ord)              # EU-specific order subclass
 (rel nr (+Ref2 +Key +Number))    # Order number with backing index

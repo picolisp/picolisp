@@ -1,3 +1,7 @@
+25oct17
+   Avoid "unpredictable register load" warning in 'drop/pop'
+      src64/arch/arm64.l
+
 24oct17
    Fixed example and text for '+Ref2'
       doc/refR.html

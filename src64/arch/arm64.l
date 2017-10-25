@@ -1,4 +1,4 @@
-# 26jun17abu
+# 25oct17abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -1458,7 +1458,7 @@
 (asm drop/pop (Reg)
    (comment 'drop/pop)
    (prinst "ldr" "x28" "[x29]")
-   (prinst "ldp" "x29" Reg "[x28],16") )
+   (prinst "ldp" (if (= "x29" Reg) "xzr" "x29") Reg "[x28],16") )
 
 # Evaluation
 (asm TOS eval ()

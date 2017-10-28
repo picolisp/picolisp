@@ -14,19 +14,19 @@
    ret
 
 (code 'wifstoppedS_F 0)  # WIFSTOPPED
-   ld A (S I)  # Get status
+   ld4 (S)  # Get status
    cmp B `(hex "7F")  # (((status) & 0xff) == 0x7f)
    ret
 
 (code 'wifsignaledS_F 0)  # WIFSIGNALED
-   ld A (S I)  # Get status
+   ld4 (S)  # Get status
    and B `(hex "7F")  # (((status) & 0x7f) + 1) >> 1) > 0)
    inc B
    shr B 1
    ret
 
 (code 'wtermsigS_A 0)  # WTERMSIG
-   ld A (S I)  # Get status
+   ld4 (S)  # Get status
    and B `(hex "7F")  # ((status) & 0x7f)
    zxt
    ret

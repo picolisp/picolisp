@@ -1287,5 +1287,5 @@ sys/arm64.linux.code.l,94
 errno_A5,67
 errnoC10,169
 wifstoppedS_F16,287
-wifsignaledS_F21,413
-wtermsigS_A28,568
+wifsignaledS_F21,410
+wtermsigS_A28,562

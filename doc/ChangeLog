@@ -1,4 +1,6 @@
 28oct17
+   Refer to "picoLisp.tgz" instead of "picoLisp-XXX.tgz"
+      INSTALL
    "sys/arm64.linux.*.l" renamed to "sys/arm64.android.*.l"
    New files
       src64/sys/arm64.linux.code.l

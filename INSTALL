@@ -1,4 +1,4 @@
-15apr16abu
+28oct17abu
 (c) Software Lab. Alexander Burger
 
 
@@ -31,11 +31,12 @@ installation, and invoke them explicitly as desired.
 
 1. Unpack the distribution
 
-      $ tar xfz picoLisp-XXX.tgz
+      $ wget http://software-lab.de/picoLisp.tgz
+      $ tar xfz picoLisp.tgz
 
 2. Change the directory
 
-      $ cd picoLisp-XXX
+      $ cd picoLisp
 
 3. Compile the PicoLisp interpreter
 

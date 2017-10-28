@@ -1,38 +1,43 @@
-# 28mar17abu
+# 28oct17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
 lib = ../lib
 
-ifeq ($(MAKECMDGOALS), arm64.linux)
-	UNAME = Linux
-	MACHINE = arm64
+ifeq ($(MAKECMDGOALS), arm64.android)
+	UNAME = Android
+	MACHINE = aarch64
 else
-	ifeq ($(MAKECMDGOALS), x86-64.linux)
+	ifeq ($(MAKECMDGOALS), arm64.linux)
 		UNAME = Linux
-		MACHINE = x86_64
+		MACHINE = aarch64
 	else
-		ifeq ($(MAKECMDGOALS), ppc64.linux)
+		ifeq ($(MAKECMDGOALS), x86-64.linux)
 			UNAME = Linux
-			MACHINE = ppc64le
+			MACHINE = x86_64
 		else
-			ifeq ($(MAKECMDGOALS), x86-64.freeBsd)
-				UNAME = FreeBSD
-				MACHINE = x86_64
+			ifeq ($(MAKECMDGOALS), ppc64.linux)
+				UNAME = Linux
+				MACHINE = ppc64le
 			else
-				ifeq ($(MAKECMDGOALS), x86-64.openBsd)
-					UNAME = OpenBSD
+				ifeq ($(MAKECMDGOALS), x86-64.freeBsd)
+					UNAME = FreeBSD
 					MACHINE = x86_64
 				else
-					ifeq ($(MAKECMDGOALS), x86-64.sunOs)
-						UNAME = SunOS
+					ifeq ($(MAKECMDGOALS), x86-64.openBsd)
+						UNAME = OpenBSD
 						MACHINE = x86_64
 					else
-						UNAME = $(shell uname)
-						ifeq ($(MAKECMDGOALS), emu)
-							MACHINE = emu
+						ifeq ($(MAKECMDGOALS), x86-64.sunOs)
+							UNAME = SunOS
+							MACHINE = x86_64
 						else
-							MACHINE = $(shell uname -m)
+							UNAME = $(shell uname)
+							ifeq ($(MAKECMDGOALS), emu)
+								MACHINE = emu
+							else
+								MACHINE = $(shell uname -m)
+							endif
 						endif
 					endif
 				endif
@@ -47,64 +52,72 @@ FMT = .c
 ARCH = emu
 STRIP = :
 
-ifeq ($(UNAME), Linux)
-	OS = Linux
-	ifeq ($(MACHINE), arm64)
-		SYS = .linux
+ifeq ($(UNAME), Android)
+	OS = Android
+	SYS = .android
+	ifeq ($(MACHINE), aarch64)
 		FMT = .s
 		ARCH = arm64
 		AS = as
-	else
-		ifeq ($(MACHINE), x86_64)
-			SYS = .linux
+	endif
+else
+	ifeq ($(UNAME), Linux)
+		OS = Linux
+		SYS = .linux
+		ifeq ($(MACHINE), aarch64)
 			FMT = .s
-			ARCH = x86-64
-			ifeq ($(shell gcc -dumpspecs | grep -q no-pie ; echo $$?), 0)
-				PIE = -no-pie
-			endif
+			ARCH = arm64
 			AS = as
 		else
-			ifeq ($(MACHINE), ppc64le)
-				SYS = .linux
+			ifeq ($(MACHINE), x86_64)
 				FMT = .s
-				ARCH = ppc64
-				AS = as -mppc64 -a64 -mlittle
+				ARCH = x86-64
+				ifeq ($(shell gcc -dumpspecs | grep -q no-pie ; echo $$?), 0)
+					PIE = -no-pie
+				endif
+				AS = as
+			else
+				ifeq ($(MACHINE), ppc64le)
+					FMT = .s
+					ARCH = ppc64
+					AS = as -mppc64 -a64 -mlittle
+				endif
 			endif
 		endif
-	endif
-	LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm -ldl
-	LD-SHARED = -shared -export-dynamic
-	STRIP = strip
-else
-	ifeq ($(UNAME), FreeBSD)
-		OS = FreeBSD
-		SYS = .freeBsd
-		FMT = .s
-		ARCH = x86-64
-		AS = as
-		LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm
-		LD-SHARED = -shared -rdynamic
+		LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm -ldl
+		LD-SHARED = -shared -export-dynamic
 		STRIP = strip
 	else
-		ifeq ($(UNAME), OpenBSD)
-			OS = OpenBSD
-			SYS = .openBsd
+		ifeq ($(UNAME), FreeBSD)
+			OS = FreeBSD
+			SYS = .freeBsd
 			FMT = .s
 			ARCH = x86-64
 			AS = as
-			LD-MAIN = -Wl,-nopie -rdynamic -lc -lm
+			LD-MAIN = -Wl,--no-as-needed -rdynamic -lc -lm
 			LD-SHARED = -shared -rdynamic
 			STRIP = strip
 		else
-			ifeq ($(UNAME), SunOS)
-				OS = SunOS
-				SYS = .sunOs
+			ifeq ($(UNAME), OpenBSD)
+				OS = OpenBSD
+				SYS = .openBsd
 				FMT = .s
 				ARCH = x86-64
-				AS = gas --64
-				LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
-				LD-SHARED = -m64 -shared
+				AS = as
+				LD-MAIN = -Wl,-nopie -rdynamic -lc -lm
+				LD-SHARED = -shared -rdynamic
 				STRIP = strip
+			else
+				ifeq ($(UNAME), SunOS)
+					OS = SunOS
+					SYS = .sunOs
+					FMT = .s
+					ARCH = x86-64
+					AS = gas --64
+					LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
+					LD-SHARED = -m64 -shared
+					STRIP = strip
+				endif
 			endif
 		endif
 	endif
@@ -120,6 +133,7 @@ sFiles = \
 
 all: picolisp
 
+arm64.android: $(sFiles)
 arm64.linux: $(sFiles)
 x86-64.linux: $(sFiles)
 ppc64.linux: $(sFiles)

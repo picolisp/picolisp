@@ -1,4 +1,4 @@
-# 28oct17abu
+# 07jan17abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -23,12 +23,13 @@
 (equ FD_CLOEXEC 1)
 
 # stdio
-(equ BUFSIZ 8192)
+(equ BUFSIZ 1024)
 (equ PIPE_BUF 4096)
 
-(push '*Globals 'stdin)
-(push '*Globals 'stdout)
-(push '*Globals 'stderr)
+(push '*Globals '__sF)
+(equ stdin  '__sF)
+(equ stdout '(& (__sF 152)))
+(equ stderr '(& (__sF 304)))
 
 (equ GETCWDLEN 0)
 
@@ -72,7 +73,7 @@
 (equ TMS_STIME 8)
 
 # termios
-(equ TERMIOS 60)  # Terminal I/O structure
+(equ TERMIOS 36)  # Terminal I/O structure
 (equ C_IFLAG 0)
 (equ C_OFLAG 4)
 (equ C_CFLAG 8)
@@ -86,11 +87,11 @@
 (equ TCSADRAIN 1)
 
 # signal
-(equ SIGACTION 152)  # Sigaction structure
-(equ SIGSET_T 128)
-(equ SA_HANDLER 0)
-(equ SA_MASK 8)
-(equ SA_FLAGS 136)
+(equ SIGACTION 32)  # Sigaction structure
+(equ SIGSET_T 8)
+(equ SA_HANDLER 8)
+(equ SA_MASK 16)
+(equ SA_FLAGS 0)
 
 (equ SIG_DFL 0)
 (equ SIG_IGN 1)
@@ -144,7 +145,7 @@
 (equ INET6_ADDRSTRLEN 46)
 
 (equ NI_MAXHOST 1025)
-(equ NI_NAMEREQD 8)
+(equ NI_NAMEREQD 4)
 
 (equ SOCKADDR_IN6 28)
 (equ SIN6_FAMILY 0)
@@ -155,7 +156,7 @@
 (equ AI_FAMILY 4)
 (equ AI_SOCKTYPE 8)
 (equ AI_ADDRLEN 16)
-(equ AI_ADDR 24)
+(equ AI_ADDR 32)
 (equ AI_NEXT 40)
 
 # vi:et:ts=3:sw=3

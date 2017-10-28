@@ -1,3 +1,10 @@
+28oct17
+   "sys/arm64.linux.*.l" renamed to "sys/arm64.android.*.l"
+   New files
+      src64/sys/arm64.linux.code.l
+      src64/sys/arm64.linux.defs.l
+      src64/Makefile
+
 25oct17
    Avoid "unpredictable register load" warning in 'drop/pop'
       src64/arch/arm64.l

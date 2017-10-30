@@ -2,10 +2,12 @@
    Refer to "picoLisp.tgz" instead of "picoLisp-XXX.tgz"
       INSTALL
    "sys/arm64.linux.*.l" renamed to "sys/arm64.android.*.l"
-   New files
+      src64/Makefile
       src64/sys/arm64.linux.code.l
       src64/sys/arm64.linux.defs.l
-      src64/Makefile
+      New files
+         src64/sys/arm64.android.code.l
+         src64/sys/arm64.android.defs.l
 
 25oct17
    Avoid "unpredictable register load" warning in 'drop/pop'

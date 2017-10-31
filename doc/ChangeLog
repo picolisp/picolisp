@@ -1,3 +1,7 @@
+31oct17
+   Bug in setting SYS = .linux
+      src64/Makefile
+
 28oct17
    Refer to "picoLisp.tgz" instead of "picoLisp-XXX.tgz"
       INSTALL

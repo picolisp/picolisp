@@ -1,4 +1,4 @@
-# 28oct17abu
+# 31oct17abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -63,13 +63,14 @@ ifeq ($(UNAME), Android)
 else
 	ifeq ($(UNAME), Linux)
 		OS = Linux
-		SYS = .linux
 		ifeq ($(MACHINE), aarch64)
+			SYS = .linux
 			FMT = .s
 			ARCH = arm64
 			AS = as
 		else
 			ifeq ($(MACHINE), x86_64)
+				SYS = .linux
 				FMT = .s
 				ARCH = x86-64
 				ifeq ($(shell gcc -dumpspecs | grep -q no-pie ; echo $$?), 0)
@@ -78,6 +79,7 @@ else
 				AS = as
 			else
 				ifeq ($(MACHINE), ppc64le)
+					SYS = .linux
 					FMT = .s
 					ARCH = ppc64
 					AS = as -mppc64 -a64 -mlittle

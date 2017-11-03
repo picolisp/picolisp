@@ -1,4 +1,6 @@
 03nov17
+   Bidirectional mode without GET when empty 'url' argument
+      src/ssl.c
    Keep port open
       bin/replica
 

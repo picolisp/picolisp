@@ -146,8 +146,7 @@ static void iSignal(int n, void (*foo)(int)) {
    sigaction(n, &act, NULL);
 }
 
-// ssl host port url
-// ssl host port url [key [file]]
+// ssl host port [url key file]
 // ssl host port url key file dir sec [min]
 int main(int ac, char *av[]) {
    bool dbg;
@@ -161,13 +160,17 @@ int main(int ac, char *av[]) {
 
    if (dbg = strcmp(av[ac-1], "+") == 0)
       --ac;
-   if (!(ac >= 4 && ac <= 6  ||  ac >= 8 && ac <= 9))
-      giveup("host port url [[key] file] | host port url key file dir sec [min]");
+   if (!(ac >= 3 && ac <= 6  ||  ac >= 8 && ac <= 9))
+      giveup("host port [url key file] | host port url key file dir sec [min]");
    if (*av[2] == '-')
       ++av[2],  Safe = YES;
-   if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
-      giveup("Names too long");
-   getLen = sprintf(get, Get, av[3], av[1], av[2]);
+   if (ac <= 3  ||  *av[3] == '\0')
+      getLen = 0;
+   else {
+      if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
+         giveup("Names too long");
+      getLen = sprintf(get, Get, av[3], av[1], av[2]);
+   }
 
    SSL_library_init();
    SSL_load_error_strings();
@@ -180,12 +183,13 @@ int main(int ac, char *av[]) {
    SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
 
+   signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
    if (ac <= 6) {
       if (sslConnect(ssl, av[1], av[2]) < 0) {
          ERR_print_errors_fp(stderr);
          giveup("Can't connect");
       }
-      if (SSL_write(ssl, get, getLen) < 0) {
+      if (getLen  &&  SSL_write(ssl, get, getLen) < 0) {
          ERR_print_errors_fp(stderr);
          giveup("SSL GET");
       }
@@ -195,6 +199,11 @@ int main(int ac, char *av[]) {
          if (ac > 5  &&  *av[5]  &&  !sslFile(ssl,av[5]))
             giveup(av[5]);
       }
+      if (!getLen  &&  !fork()) {
+         while ((n = read(STDIN_FILENO, buf, sizeof(buf))) > 0)
+            SSL_write(ssl, buf, n);
+         return 0;
+      }
       while ((n = SSL_read(ssl, buf, sizeof(buf))) > 0)
          write(STDOUT_FILENO, buf, n);
       if (dbg)
@@ -202,7 +211,6 @@ int main(int ac, char *av[]) {
       return 0;
    }
    if (!dbg) {
-      signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
       if ((n = fork()) < 0)
          giveup("detach");
       if (n)

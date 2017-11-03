@@ -1,4 +1,6 @@
 03nov17
+   Add 'throw' to pretty-printer
+      lib.l
    Bidirectional mode without GET when empty 'url' argument
       src/ssl.c
    Keep port open

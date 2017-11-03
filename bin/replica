@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 16jun16abu
+# 03nov17abu
 # Use: bin/replica <port|num> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
 #    : bin/ssl <host> 443 '<port|name>/!replica' <keyFile> <journal> <blob/app/> 20 [60]
 
@@ -46,8 +46,8 @@
 (retire *Arg1)
 
 # Non-forking server
-(loop
-   (let (P (port *Port)  S (listen P))
-      (close P)
-      (http S)
-      (close S) ) )
+(let P (port *Port)
+   (loop
+      (let S (listen P)
+         (http S)
+         (close S) ) ) )

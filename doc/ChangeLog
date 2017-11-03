@@ -1,3 +1,11 @@
+03nov17
+   Keep port open
+      bin/replica
+
+02nov17
+   Added (illumos) to SunOS
+      README
+
 31oct17
    Bug in setting SYS = .linux
       src64/Makefile

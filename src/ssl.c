@@ -1,4 +1,4 @@
-/* 17jul17abu
+/* 05nov17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -126,6 +126,7 @@ static void doSigTerm(int n __attribute__((unused))) {
             giveup("Can't final alloc");
          if (read(fd, data, st.st_size) != st.st_size)
             giveup("Can't final read");
+         lseek(fd, 0L, SEEK_SET);
          if (ftruncate(fd,0) < 0)
             giveup("Can't final truncate");
       }

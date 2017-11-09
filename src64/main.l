@@ -1,4 +1,4 @@
-# 03mar17abu
+# 09nov17abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -633,6 +633,46 @@
       ret
    end
    or E CNT  # Make 'num'
+   ret
+
+# (byte 'num ['cnt]) -> cnt
+(code 'doByte 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld E (Y)  # Eval first
+   eval
+   num E  # Number?
+   jz numErrEX  # No
+   cnt E  # Short?
+   if nz  # Yes
+      shr E 4  # Normalize
+      ld Z E  # Pointer in Z
+   else
+      ld Z (E DIG)  # Pointer in Z
+   end
+   ld Y (Y CDR)  # Next arg?
+   atom Y
+   if nz  # No
+      ld B (Z)  # Get byte
+      zxt
+      ld E A
+      shl E 4  # Make short number
+      or E CNT
+   else
+      ld E (Y)
+      eval  # Eval new byte
+      cnt E  #  # Short number?
+      jz cntErrEX  # No
+      ld A E  # Normalize into A 
+      shr A 4
+      ld (Z) B  # Store new byte
+   end
+   pop Z
+   pop Y
+   pop X
    ret
 
 # (env ['lst] | ['sym 'val] ..) -> lst

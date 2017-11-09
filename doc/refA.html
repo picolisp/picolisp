@@ -28,7 +28,8 @@ pair) into <code>num</code> (actually an encoded pointer). A symbol will result
 in a negative number, and a cons pair in a positive number. The second form
 converts a pointer back into the original <code>var</code>. Note that this
 original <code>var</code> may be garbage collected if it is not referred from
-other data, giving unpredictable results.
+other data, giving unpredictable results. See also <code><a
+href="refB.html#byte">byte</a></code>.
 
 <pre><code>
 : (setq X (box 7))

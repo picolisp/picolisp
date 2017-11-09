@@ -1,4 +1,4 @@
-# 02sep17abu
+# 09nov17abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -190,6 +190,7 @@
    initFun NIL       "heap"      doHeap
    initFun NIL       "stack"     doStack
    initFun NIL       "adr"       doAdr
+   initFun NIL       "byte"      doByte
    initFun NIL       "env"       doEnv
    initFun NIL       "trail"     doTrail
    initFun NIL       "up"        doUp

@@ -1,3 +1,12 @@
+09nov17
+   Added 'byte' function
+      {src64,pilos/src}/glob.l
+      {src64,pilos/src}/main.l
+      doc/ref.html
+      doc/refA.html
+      doc/refB.html
+      test/src/main.l
+
 05nov17
    Need to seek before truncate
       src/ssl.c

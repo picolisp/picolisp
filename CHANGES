@@ -1,7 +1,8 @@
 * XXdec17 picoLisp-17.12
+   'byte' function
    Linux/arm64 port
    Added "lib/vip.l" and "bin/vip"
-   Added 'fd' function
+   'fd' function
    National trunk prefix in localization
    'httpGate' shutdown() on SIGALRM
    '+Stop' GUI prefix class

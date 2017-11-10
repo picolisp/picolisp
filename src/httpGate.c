@@ -1,4 +1,4 @@
-/* 26jul17abu
+/* 10nov17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,7 +31,7 @@ typedef struct name {
    int port;
    uid_t uid;
    gid_t gid;
-   char *dir, *log, *ev[4], *av[1];
+   char *dir, *log, *ev[5], *av[1];
 } name;
 
 static bool Hup;
@@ -62,7 +62,7 @@ static int readNames(void) {
    name *np, **t;
    int port, cnt;
    struct passwd *pw;
-   char *p, *ps, line[4096];
+   char *p, *q, *ps, line[4096];
    static char delim[] = " \n";
 
    if (!(fp = fopen(Config, "r")))     // Lines ordered by
@@ -91,7 +91,9 @@ static int readNames(void) {
             strcpy(p, "HOME="), strcpy(p+5, pw->pw_dir);
             p = np->ev[2] = malloc(5 + strlen(ps) + 1);
             strcpy(p, "PORT="), strcpy(p+5, ps);
-            np->ev[3] = NULL;
+            p = np->ev[3] = malloc(5 + strlen(q = getenv("LANG")) + 1);
+            strcpy(p, "LANG="), strcpy(p+5, q);
+            np->ev[4] = NULL;
             np->dir = strdup(strtok(NULL, delim));
             np->log = *(p = strtok(NULL, delim)) == '^'? NULL : strdup(p);
             cnt = 0;
@@ -129,7 +131,7 @@ static void freeNames(name *np) {
    free(np->dir);
    if (np->port) {
       free(np->log);
-      for (i = 0; i < 3; ++i)
+      for (i = 0; i < 4; ++i)
          free(np->ev[i]);
       for (i = 0; np->av[i]; ++i)
          free(np->av[i]);

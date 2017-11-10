@@ -1,3 +1,7 @@
+10nov17
+   Inherit LANG to application processes
+      src/httpGate.c
+
 09nov17
    Added 'byte' function
       {src64,pilos/src}/glob.l

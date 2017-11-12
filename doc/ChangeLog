@@ -1,3 +1,7 @@
+12nov17
+   Expand "~/" before file names as $HOME
+      lib/vip.l
+
 10nov17
    Inherit LANG to application processes
       src/httpGate.c

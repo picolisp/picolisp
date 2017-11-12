@@ -1,4 +1,4 @@
-# 18oct17abu
+# 12nov17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -12,7 +12,7 @@
    (pass native "libncurses.so") )
 
 ### VIP Editor ###
-(local) [*Buffers +Buffer rdLines delim? markup status]
+(local) [*Buffers +Buffer fName rdLines delim? markup status]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -20,6 +20,11 @@
    (and (=: file File) (queue '*Buffers This))
    (=: pos (or Y 1))
    (=: lastX (=: lastY 1)) )
+
+(de fName (File)
+   (if (pre? "~/" File)
+      (pack (sys "HOME") "/" (cddr (chop File)))
+      File ) )
 
 (de rdLines ()
    (make (until (eof) (link (line)))) )
@@ -67,14 +72,14 @@
 (dm load> ()
    (markup
       (=: text
-         (when (info (: file))
-            (gc (inc (*/ (car @) 32768)))  # 2 cells / char
-            (if (sys "CCRYPT" (: key))
-               (pipe
-                  (in (: file)
-                     (out '("ccrypt" "-d" "-ECCRYPT") (echo)) )
-                  (rdLines) )
-               (in (: file) (rdLines)) ) ) ) )
+         (let? F (fName (: file))
+            (when (info F)
+               (gc (inc (*/ (car @) 32768)))  # 2 cells / char
+               (if (sys "CCRYPT" (: key))
+                  (pipe
+                     (in F (out '("ccrypt" "-d" "-ECCRYPT") (echo)))
+                     (rdLines) )
+                  (in F (rdLines)) ) ) ) ) )
    (=: undo (=: redo (=: dirt)))
    (=: pos (min1 (: pos) (length (: text)))) )
 
@@ -84,8 +89,8 @@
          (pipe
             (out '("ccrypt" "-e" "-ECCRYPT")
                (mapc prinl (: text)) )
-            (out (: file) (echo)) )
-         (out (: file) (mapc prinl (: text))) )
+            (out (fName (: file)) (echo)) )
+         (out (fName (: file)) (mapc prinl (: text))) )
       (=: dirt (: undo))
       (for (This *CmdWin (setq This (: next)))
          (status) ) ) )
@@ -845,7 +850,7 @@
 
 (de shFile (S)
    (when (: buffer file)
-      (shell (text S (path @) *Cnt)) ) )
+      (shell (text S (path (fName @)) *Cnt)) ) )
 
 (de reset ()
    (off *Count *Change)
@@ -887,7 +892,9 @@
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer
                   ("e" (reload Line))  # (Edit) Reload buffer
-                  ("r" (in Line (paste (cons T (rdLines)) 1)))  # Read file contents
+                  ("r"  # Read file contents
+                     (in (fName Line)
+                        (paste (cons T (rdLines)) 1) ) )
                   ("w" (save> (: buffer)))  # (Write) Save buffer
                   ("x"  # (Exit) Save buffer and close window
                      (unless (= (: buffer undo) (: buffer dirt))
@@ -1131,9 +1138,10 @@
                         (`(char (+ 264 5)) (nextBuf T))  # [F5] Previous buffer
                         (`(char (+ 264 6)) (nextBuf))  # [F6] Next buffer
                         (`(char (+ 264 7))  # [F7] Load file
-                           (when (info (: buffer file))
-                              (symbols '(pico)
-                                 (catch '(NIL) (load (: buffer file))) ) ) )
+                           (let? F (fName (: buffer file))
+                              (when (info F)
+                                 (symbols '(pico)
+                                    (catch '(NIL) (load F)) ) ) ) )
                         ## (`(char (+ 264 8)) ())  # [F8]
                         ## (`(char (+ 264 9)) ())  # [F9]
                         ## (`(char (+ 264 10)) ())  # [F10]

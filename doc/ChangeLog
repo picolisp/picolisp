@@ -1,4 +1,5 @@
 12nov17
+   Plain (non-pattern) search
    Expand "~/" before file names as $HOME
       lib/vip.l
 

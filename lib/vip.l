@@ -799,11 +799,14 @@
 (de patMatch (Fun Pat)
    (moveSearch Fun
       (setq *Search
-         (let @Pat
-            (if (= "$" (last Pat))
-               (head -1 Pat)
-               (append Pat '(@)) )
-            (curry (@Pat) (L) (match '@Pat L)) ) ) ) )
+         (if (= "\\" (car Pat))
+            (let @Pat (cdr Pat)
+               (curry (@Pat) (L) (head '@Pat L)) )
+            (let @Pat
+               (if (= "$" (last Pat))
+                  (head -1 Pat)
+                  (append Pat '(@)) )
+               (curry (@Pat) (L) (match '@Pat L)) ) ) ) ) )
 
 (de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
    (moveSearch Fun1

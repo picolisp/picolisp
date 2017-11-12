@@ -30,7 +30,7 @@
    (make (until (eof) (link (line)))) )
 
 (de delim? (C)
-   (member C '`(cons NIL (chop " ^I^J^M\"'(),[]`~{}"))) )
+   (member C '`(cons NIL (chop " \t\n\r\"'(),[]"))) )
 
 (de markup (Lst)
    (let (S 'text  N 1)
@@ -677,7 +677,7 @@
          (while
             (case (or (next) (getch))
                (NIL)
-               (("^M" "^J")
+               (("\n" "\r")
                   (cond
                      (Rpl (curses "beep") T)
                      ((== This *CmdWin) (nil (command Win (car P))))
@@ -698,7 +698,7 @@
                (T
                   (let S (list @)
                      (nond
-                        ((= @ "^I") (off *Complete))
+                        ((= @ "\t") (off *Complete))
                         ((unless Rpl (setq S (pack (getWord))))
                            (setq S
                               (make
@@ -717,7 +717,7 @@
                                        '((X)
                                           (let? F (and (pre? S X) (pack P X))
                                              (if (=T (car (info F))) (pack F "/") F) ) )
-                                       (dir P T) ) ) ) )
+                                       (dir (fName P) T) ) ) ) )
                            (do (length (car *Complete)) (_bs))
                            (setq S (chop (car (rot *Complete)))) ) )
                      (when (= "^V" (car S))
@@ -997,7 +997,7 @@
                   (T
                      (case *Chr
                         (NIL)
-                        (("^M" "^J")
+                        (("\n" "\r")
                            (if (== This *CmdWin)
                               (command (: next) (get (: buffer text) (: posY)))
                               (cmdMode) ) )
@@ -1139,9 +1139,7 @@
                         (`(char (+ 264 6)) (nextBuf))  # [F6] Next buffer
                         (`(char (+ 264 7))  # [F7] Load file
                            (let? F (fName (: buffer file))
-                              (when (info F)
-                                 (symbols '(pico)
-                                    (catch '(NIL) (load F)) ) ) ) )
+                              (and (info F) (catch '(NIL) (load F))) ) )
                         ## (`(char (+ 264 8)) ())  # [F8]
                         ## (`(char (+ 264 9)) ())  # [F9]
                         ## (`(char (+ 264 10)) ())  # [F10]

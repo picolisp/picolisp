@@ -660,6 +660,11 @@ $ pil -em +
 representation in human-readable format. All kinds of data can be written to a
 file, and restored later to their original form by reading that file.
 
+<p>For all input functions besides <code><a href="refW.html#wr">wr</a></code>,
+<code><a href="refR.html#rd">rd</a></code> and <code><a
+href="refE.html#echo">echo</a></code> the input is assumed to be valid UTF-8,
+consisting only of characters allowed in picolisp symbol names.
+
 <p>In normal operation, the PicoLisp interpreter continually executes an
 infinite "read-eval-print loop". It reads one expression at a time, evaluates
 it, and prints the result to the console. Any input into the system, like data

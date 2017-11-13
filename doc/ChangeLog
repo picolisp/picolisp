@@ -1,3 +1,9 @@
+13nov17
+   Added note about valid UTF-8 to "Input/Output"
+      doc/ref.html
+   Start-of-line search with "^"
+      lib/vip.l
+
 12nov17
    Plain (non-pattern) search
    Expand "~/" before file names as $HOME

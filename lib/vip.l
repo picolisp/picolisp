@@ -1,4 +1,4 @@
-# 12nov17abu
+# 13nov17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -806,7 +806,11 @@
                (if (= "$" (last Pat))
                   (head -1 Pat)
                   (append Pat '(@)) )
-               (curry (@Pat) (L) (match '@Pat L)) ) ) ) ) )
+               (ifn (= "\^" (car @Pat))
+                  (curry (@Pat) (L) (match '@Pat L))
+                  (++ @Pat)
+                  (curry (@Pat) (L C)
+                     (unless C (match '@Pat L)) ) ) ) ) ) ) )
 
 (de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
    (moveSearch Fun1

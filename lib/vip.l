@@ -1,4 +1,4 @@
-# 13nov17abu
+# 14nov17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -72,25 +72,37 @@
 (dm load> ()
    (markup
       (=: text
-         (let? F (fName (: file))
-            (when (info F)
-               (gc (inc (*/ (car @) 32768)))  # 2 cells / char
-               (if (sys "CCRYPT" (: key))
-                  (pipe
-                     (in F (out '("ccrypt" "-d" "-ECCRYPT") (echo)))
-                     (rdLines) )
-                  (in F (rdLines)) ) ) ) ) )
+         (let? File (fName (: file))
+            (let? I (info File)
+               (if (=T (car I))
+                  (let D (chop File)
+                     (unless (= "/" (last D))
+                        (conc D (list (char `(char "/")))) )
+                     (mapcar
+                        '((F)
+                           (conc
+                              (chop (setq F (pack D F)))
+                              (when (=T (car (info F)))
+                                 (list (char `(char "/"))) ) ) )
+                        (dir File) ) )
+                  (gc (inc (*/ (car I) 32768)))  # 2 cells / char
+                  (if (sys "CCRYPT" (: key))
+                     (pipe
+                        (in File (out '("ccrypt" "-d" "-ECCRYPT") (echo)))
+                        (rdLines) )
+                     (in File (rdLines)) ) ) ) ) ) )
    (=: undo (=: redo (=: dirt)))
    (=: pos (min1 (: pos) (length (: text)))) )
 
 (dm save> ()
    (when (: file)
-      (if (sys "CCRYPT" (: key))
-         (pipe
-            (out '("ccrypt" "-e" "-ECCRYPT")
-               (mapc prinl (: text)) )
-            (out (fName (: file)) (echo)) )
-         (out (fName (: file)) (mapc prinl (: text))) )
+      (unless (=T (car (info @)))
+         (if (sys "CCRYPT" (: key))
+            (pipe
+               (out '("ccrypt" "-e" "-ECCRYPT")
+                  (mapc prinl (: text)) )
+               (out (fName (: file)) (echo)) )
+            (out (fName (: file)) (mapc prinl (: text))) ) )
       (=: dirt (: undo))
       (for (This *CmdWin (setq This (: next)))
          (status) ) ) )
@@ -680,7 +692,8 @@
                (("\n" "\r")
                   (cond
                      (Rpl (curses "beep") T)
-                     ((== This *CmdWin) (nil (command Win (car P))))
+                     ((== This *CmdWin)
+                        (nil (command (or Win This) (car P))) )
                      (T
                         (push 'Chg 0)
                         (con P

@@ -87,13 +87,16 @@ current list is returned.
 -> (1 2 3 4)
 </code></pre>
 
-<dt><a name="mail"><code>(mail 'any 'cnt 'sym1 'sym2|lst1 'sym3 'lst2 . prg)'</code></a>
+<dt><a name="mail"><code>(mail 'any 'cnt|lst 'sym1|lst2 'sym2|lst3 'sym3 'lst4 . prg)'</code></a>
 <dd>Sends an eMail via SMTP to a mail server at host <code>any</code>, port
-<code>cnt</code>. <code>sym1</code> should be the "from" address,
-<code>sym2|lst1</code> the "to" address(es), and <code>sym3</code> the subject.
-<code>lst2</code> is a list of attachments, each one specified by three elements
-for path, name and mime type. <code>prg</code> generates the mail body with
-<code><a href="refP.html#prEval">prEval</a></code>. See also <code><a
+<code>cnt</code>. If the second argument is a list, it should be a structure
+<code>(user password . port)</code>, and "@bin/ssl" will be called to establish
+an encrypted connection. <code>sym1|lst2</code> should be the "from" address (or
+a cons pair of "reply-to" and "from"), <code>sym2|lst3</code> the "to"
+address(es), and <code>sym3</code> the subject. <code>lst4</code> is a list of
+attachments, each one specified by three elements for path, name and mime type.
+<code>prg</code> generates the mail body with <code><a
+href="refP.html#prEval">prEval</a></code>. See also <code><a
 href="refC.html#connect">connect</a></code>.
 
 <pre><code>

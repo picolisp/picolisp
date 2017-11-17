@@ -1,6 +1,7 @@
 17nov17
    Support SSL and AUTH in 'mail'
       lib/misc.l
+      doc/refM.html
 
 14nov17
    Edit directories

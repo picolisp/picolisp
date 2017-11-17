@@ -1,4 +1,6 @@
 17nov17
+   Ignore SIGPIPE earlier
+      src/ssl.c
    Support SSL and AUTH in 'mail'
       lib/misc.l
       doc/refM.html

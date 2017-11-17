@@ -1,4 +1,4 @@
-/* 05nov17abu
+/* 17nov17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -185,6 +185,7 @@ int main(int ac, char *av[]) {
    ssl = SSL_new(ctx);
 
    signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
+   signal(SIGPIPE, SIG_IGN);
    if (ac <= 6) {
       if (sslConnect(ssl, av[1], av[2]) < 0) {
          ERR_print_errors_fp(stderr);
@@ -223,7 +224,6 @@ int main(int ac, char *av[]) {
    sec = atoi(av[7]);
    iSignal(SIGINT, doSigTerm);
    iSignal(SIGTERM, doSigTerm);
-   signal(SIGPIPE, SIG_IGN);
    lim = 0;
    if (ac == 9) {
       if ((lim = atoi(av[8])) == 0) {

@@ -1,3 +1,7 @@
+17nov17
+   Support SSL and AUTH in 'mail'
+      lib/misc.l
+
 14nov17
    Edit directories
       lib/vip.l

@@ -1,4 +1,4 @@
-# 10oct17abu
+# 17nov17abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -445,13 +445,31 @@
 
 # Send mail
 (de mail (Host Port From To Sub Att . Prg)
-   (let? S (connect Host Port)
+   (let? S
+      (if (pair Port)
+         (pipe (exec "@bin/ssl" Host (fin Port)))
+         (connect Host Port) )
       (let B (pack "==" (date) "-" (time T) "-" (usec) "==")
          (prog1
             (and
                (pre? "220 " (in S (line T)))
                (out S (prinl "HELO " (cdr (member "@" (chop (fin From)))) "^M"))
                (pre? "250 " (in S (line T)))
+               (or
+                  (atom Port)
+                  (and
+                     (out S
+                        (prin "AUTH PLAIN ")
+                        (pipe
+                           (prog
+                              (prin (car Port))
+                              (wr 0)
+                              (prin (car Port))
+                              (wr 0)
+                              (prin (cadr Port)) )
+                           (prBase64 T) )
+                        (prinl "^M") )
+                     (pre? "235 " (in S (line T))) ) )
                (out S (prinl "MAIL FROM:" (fin From) "^M"))
                (pre? "250 " (in S (line T)))
                (if (atom To)
@@ -466,8 +484,7 @@
                   (ifn (find > (chop Sub) '("~" .))
                      (prinl Sub "^M")
                      (prin "=?utf-8?B?")
-                     (pipe (prin Sub)
-                        (while (ext:Base64 (rd 1) (rd 1) (rd 1))) )
+                     (pipe (prin Sub) (prBase64 T))
                      (prinl "?=^M") )
                   (when (pair From)
                      (prinl "Reply-To: " (car From) "^M") )

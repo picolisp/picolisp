@@ -1,4 +1,4 @@
-# 11sep17abu
+# 19nov17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -65,7 +65,10 @@
       "android_id" ) )
 
 # Push-Load
-(local) loadUrl
+(local) loadTxt loadUrl
+(de loadTxt @
+   (java CONTEXT 'loadTxt (pass pack)) )
+
 (de loadUrl @
    (java CONTEXT 'loadUrl (pass pack)) )
 

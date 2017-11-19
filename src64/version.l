@@ -1,6 +1,6 @@
-# 17nov17abu
+# 19nov17abu
 # (c) Software Lab. Alexander Burger
 
-(de *Version 17 11 17)
+(de *Version 17 11 19)
 
 # vi:et:ts=3:sw=3

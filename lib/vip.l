@@ -1,4 +1,4 @@
-# 14nov17abu
+# 29nov17abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -50,9 +50,17 @@
                         (and (= "\\" C) L (set (++ L))) )
                      (string (and (= "\"" C) 'text)
                         (set (setq P C) 0) )
+                     (string (and (= "\\" C) (not L) 'skip)
+                        (set C T) )
                      (string 'string
                         (set C T)
                         (and (= "\\" C) L (set (++ L) T)) )
+                     (skip (and (sp? C) 'skip)
+                        (set C) )
+                     (skip (and (= "\"" C) 'text)
+                        (set (setq P C) 0) )
+                     (skip 'string
+                        (set C T) )
                      (comment
                         (cond
                            ((=1 (set (setq P C) N))

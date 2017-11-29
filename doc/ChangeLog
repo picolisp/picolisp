@@ -1,3 +1,7 @@
+29nov17
+   Handle '\' at EOL in strings
+      lib/vip.l
+
 19nov17
    'loadTxt' function
       lib/android.l

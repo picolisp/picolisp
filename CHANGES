@@ -1,4 +1,4 @@
-* XXdec17 picoLisp-17.12
+* 26dec17 picoLisp-17.12
    'byte' function
    Linux/arm64 port
    Added "lib/vip.l" and "bin/vip"

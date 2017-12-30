@@ -1,3 +1,8 @@
+30dec17
+   (java "cls") returns the class
+      lib/android.l
+
+####### 17.12 #######
 29nov17
    Handle '\' at EOL in strings
       lib/vip.l

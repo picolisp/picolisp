@@ -1,4 +1,4 @@
-# 19nov17abu
+# 30dec17abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -32,7 +32,7 @@
 # (java "cls" "fld" ["fld" ..]) -> any   Value of class field
 # (java T "cls" ["cls" ..]) -> obj       Define interface
 # (java 'obj) -> [lst ..]                Reflect object
-# (java "cls") -> [lst lst ..]           Reflect class
+# (java "cls") -> cls                    Get class
 (local) [java *Java *Lisp]
 (de java @
    (unless *Java
@@ -139,7 +139,7 @@
       (java B 'setContentText Msg)
       (java B 'setAutoCancel T)
       (java B 'setLights `(hex "FFFFFF") 500 500)
-      (let Intent (java "android.content.Intent" T CONTEXT (; CONTEXT GUI 0 1))  # Activity class
+      (let Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.PilBoxActivity"))  # Activity class
          (java Intent 'setFlags `(hex "24000000"))  # FLAG_ACTIVITY_SINGLE_TOP | FLAG_ACTIVITY_NEW_TASK
          (java B 'setContentIntent
             (java "android.app.PendingIntent" 'getActivity CONTEXT 0 Intent `(hex "10000000")) ) )  # FLAG_ACTIVITY_NEW_TASK

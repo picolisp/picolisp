@@ -1,5 +1,6 @@
 30dec17
    (java "cls") returns the class
+   'android~alarm' function
       lib/android.l
 
 ####### 17.12 #######

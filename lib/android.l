@@ -250,6 +250,20 @@
       "com.google.zxing.client.android.SCAN"
       "SCAN_MODE" "QR_CODE_MODE" ) )
 
+# Alarm
+(local) [alarm RPC elapsedRealtime getBroadcast]
+(de alarm (Sec File)
+   (java (; CONTEXT RPC) 'putExtra "LOAD" File)
+   (java (java CONTEXT 'getSystemService "alarm")  # AlarmManager
+      'set
+      2  # ELAPSED_REALTIME_WAKEUP
+      (cons 'L
+         (+
+            `(* 1000 9)
+            (java "android.os.SystemClock" 'elapsedRealtime) ) )
+      (java "android.app.PendingIntent" 'getBroadcast
+         CONTEXT (inc (0)) (; CONTEXT RPC) 0 ) ) )
+
 # Terminate PilBox
 (local) [terminate finishAndRemoveTask]
 (de terminate ()

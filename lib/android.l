@@ -37,17 +37,21 @@
 (de java1 ()
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))
-      (task (open "RQST")  R (open "RPLY")
-         (in @
-            (out R
-               (ext 65535
-                  (pr
-                     (with (rd)  # Obj
-                        (if (get (rd) This)
-                           (apply @ (rd))
-                           (rd)
-                           NIL ) ) ) ) ) ) )
-      (forked)
+      (let R (open "RPLY")
+         (task (open "RQST")  R R
+            (in @
+               (out R
+                  (ext 65535
+                     (pr
+                        (with (rd)  # Obj
+                           (if (get (rd) This)
+                              (apply @ (rd))
+                              (rd)
+                              NIL ) ) ) ) ) ) )
+         (push '*Fork
+            '(off *Java *Lisp)
+            (list 'mapc 'close (list R *Java *Lisp)) )
+         (forked) )
       (queue '*Ext (cons 65535 java)) ) )
 
 (de java @

@@ -1,4 +1,4 @@
-# 30dec17abu
+# 02jan18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -33,8 +33,8 @@
 # (java T "cls" ["cls" ..]) -> obj       Define interface
 # (java 'obj) -> [lst ..]                Reflect object
 # (java "cls") -> cls                    Get class
-(local) [java *Java *Lisp]
-(de java @
+(local) [java1 java *Java *Lisp]
+(de java1 ()
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))
       (task (open "RQST")  R (open "RPLY")
@@ -48,8 +48,9 @@
                            (rd)
                            NIL ) ) ) ) ) ) )
       (forked)
-      (queue '*Ext (cons 65535 java))
-      (con java (cddr java)) )
+      (queue '*Ext (cons 65535 java)) ) )
+
+(de java @
    (ext 65535
       (out *Java (pr (rest)))
       (let? Val (in *Lisp (rd))
@@ -252,7 +253,7 @@
 
 # Alarm
 (local) [alarm RPC elapsedRealtime getBroadcast]
-(de alarm (Sec File)
+(de alarm (N Sec File)
    (java (; CONTEXT RPC) 'putExtra "LOAD" File)
    (java (java CONTEXT 'getSystemService "alarm")  # AlarmManager
       'set
@@ -262,7 +263,15 @@
             `(* 1000 9)
             (java "android.os.SystemClock" 'elapsedRealtime) ) )
       (java "android.app.PendingIntent" 'getBroadcast
-         CONTEXT (inc (0)) (; CONTEXT RPC) 0 ) ) )
+         CONTEXT N (; CONTEXT RPC) 0 ) ) )
+
+(local) cancel
+(de cancel (N)
+   (java
+      (java CONTEXT 'getSystemService "alarm")
+      'cancel
+      (java "android.app.PendingIntent" 'getBroadcast
+         CONTEXT N (; CONTEXT RPC) 0 ) ) )
 
 # Terminate PilBox
 (local) [terminate finishAndRemoveTask]

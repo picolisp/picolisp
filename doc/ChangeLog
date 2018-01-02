@@ -1,3 +1,11 @@
+02jan18
+   'android~cancel' function
+      lib/android.l
+
+01jan18
+   Separate 'java1' function
+      lib/android.l
+
 30dec17
    (java "cls") returns the class
    'android~alarm' function

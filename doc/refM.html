@@ -70,8 +70,9 @@ Timer 12000
 <dt><a name="made"><code>(made ['lst1 ['lst2]]) -> lst</code></a>
 <dd>Initializes a new list value for the current <code><a
 href="refM.html#make">make</a></code> environment. All list elements already
-produced with <code><a href="refC.html#chain">chain</a></code> and <code><a
-href="refL.html#link">link</a></code> are discarded, and <code>lst1</code> is
+produced with <code><a href="refC.html#chain">chain</a></code>, <code><a
+href="refL.html#link">link</a></code> and <code><a
+href="refY.html#yoke">yoke</a></code> are discarded, and <code>lst1</code> is
 used instead. Optionally, <code>lst2</code> can be specified as the new linkage
 cell, otherwise the last cell of <code>lst1</code> is used. When called without
 arguments, <code>made</code> does not modify the environment. In any case, the

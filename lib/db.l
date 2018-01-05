@@ -1,4 +1,4 @@
-# 28aug17abu
+# 05jan18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1218,9 +1218,9 @@
       (=: T T)
       (upd> This) ) )
 
-(dm lose!> ()
+(dm lose!> (Lst)
    (dbSync)
-   (lose> This)
+   (lose> This Lst)
    (commit 'upd) )
 
 (de lose "Prg"
@@ -1255,9 +1255,9 @@
                (cons (car X) ,"Not unique") ) ) )
       (getl This) ) )
 
-(dm keep!> ()
+(dm keep!> (Lst)
    (dbSync)
-   (keep> This)
+   (keep> This Lst)
    (commit 'upd) )
 
 (de keep "Prg"

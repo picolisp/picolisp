@@ -1,3 +1,8 @@
+08jan18
+   'byte' is 64-bit-only
+      doc/refB.html
+      test/src/main.l
+
 05jan18
    Pedantics
       lib/db.l

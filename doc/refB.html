@@ -399,10 +399,10 @@ $
 </code></pre>
 
 <dt><a name="byte"><code>(byte 'num ['cnt]) -> cnt</code></a>
-<dd>Returns - if the second argument is not given - a byte value (0 .. 255) from
-the memory location pointed to by <code>num</code>. Otherwise <code>cnt</code>
-is stored in the memory location and returned. See also <code><a
-href="refA.html#adr">adr</a></code>.
+<dd>(64-bit version only) Returns - if the second argument is not given - a byte
+value (0 .. 255) from the memory location pointed to by <code>num</code>.
+Otherwise <code>cnt</code> is stored in the memory location and returned. See
+also <code><a href="refA.html#adr">adr</a></code>.
 
 <pre><code>
 : (hex (byte (>> -4 (adr (1)))))

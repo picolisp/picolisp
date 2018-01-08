@@ -1,4 +1,4 @@
-# 09nov17abu
+# 08jan18abu
 # (c) Software Lab. Alexander Burger
 
 ### Evaluation ###
@@ -43,18 +43,19 @@
 
 
 ### byte ###
-(test (hex "12")
-   (byte (>> -4 (adr (1)))) )
+(when (== 64 64)
+   (test (hex "12")
+      (byte (>> -4 (adr (1)))) )
 
-(test "ABC"
-   (let P (native "@" "malloc" 'N 8)
-      (byte P (char "A"))
-      (byte (inc P) (char "B"))
-      (byte (+ P 2) (char "C"))
-      (byte (+ P 3) 0)
-      (prog1
-         (native "@" "strdup" 'S P)
-         (native "@" "free" NIL P) ) ) )
+   (test "ABC"
+      (let P (native "@" "malloc" 'N 8)
+         (byte P (char "A"))
+         (byte (inc P) (char "B"))
+         (byte (+ P 2) (char "C"))
+         (byte (+ P 3) 0)
+         (prog1
+            (native "@" "strdup" 'S P)
+            (native "@" "free" NIL P) ) ) ) )
 
 
 ### adr ###

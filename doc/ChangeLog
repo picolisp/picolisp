@@ -1,3 +1,7 @@
+09jan18
+   Cosmetic 'prog1' -> 'swap'
+      misc/fibo.l
+
 08jan18
    'byte' is 64-bit-only
       doc/refB.html

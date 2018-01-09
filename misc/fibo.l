@@ -1,4 +1,4 @@
-# 25mar15abu
+# 09jan18abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
@@ -11,7 +11,7 @@
 (de fib (N)
    (let (A 0  B 1)
       (do N
-         (prog1 B (setq B (+ A B) A @)) ) ) )
+         (swap 'B (+ (swap 'A B) B)) ) ) )
 
 # Parallelized version
 (de fibo+ (D N)  # Uses 2**D processes

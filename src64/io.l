@@ -1,4 +1,4 @@
-# 02sep17abu
+# 09jan18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2655,7 +2655,9 @@
          drop
          ld (Sep3) 0  # Thousand separator
          ld (Sep0) (char ".")  # Decimal separator
-         jmp symToNumXA_FE  # Convert to number
+         call symToNumXA_FE  # Convert to number
+         jge retNull  # Failed
+         ret
       end
    end
    push Y

@@ -1,4 +1,4 @@
-// 27may15abu
+// 09jan18abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -1690,7 +1690,7 @@ public class PicoLisp {
             while (get() >= '0' && Chr <= '9' || Chr == '.')
                sb.append((char)Chr);
             try {return strToNum(sb.toString(), ((Number)Scl.Car).Cnt);}
-            catch (NumberFormatException e) {}
+            catch (NumberFormatException e) {return null;}
          }
          if (Chr != '+' && Chr != '-') {
             String s = x.name();

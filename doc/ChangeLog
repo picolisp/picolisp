@@ -1,4 +1,7 @@
 09jan18
+   Let 'co' and 'yield' preserve '@'
+      {src64,pilos/src}/flow.l
+      doc64/structures
    Cosmetic 'prog1' -> 'swap'
       misc/fibo.l
 

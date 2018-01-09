@@ -1,4 +1,4 @@
-# 24nov16abu
+# 09jan18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -2698,7 +2698,10 @@
    if z  # Yes
       push Y
       push Z
-      push L
+      link
+      push (At)  # Save '@'
+      link
+      push L  # Save L
       sub S "EnvMid-EnvCo"  # Space for env
       ld Y (Stack1)  # Search through stack segments
       ld C (Stacks)  # Segment count
@@ -2796,8 +2799,10 @@
                      ld Y (A)  # Next frame
                   loop
                   ld (Y) (Z (pack III "+(EnvMid-EnvCo)"))  # Link to main stack
-                  ld L X
                end
+               add S I
+               pop (At)  # Restore '@'
+               pop L  # Restore link
                pop Z
                pop Y
                pop X
@@ -2852,8 +2857,9 @@
       if z  # Yes
          ld (StkLimit) 0  # Clear stack limit
       end
-      add S (pack I "+(EnvMid-EnvCo)")  # Clean up
-      pop L
+      add S (pack III "+(EnvMid-EnvCo)")  # Clean up
+      pop (At)  # Restore '@'
+      pop L  # Restore link
       pop Z
       pop Y
       pop X
@@ -2929,7 +2935,7 @@
       jz reentErrEX  # Yes
    end
    ld E (L I)  # Get result
-   drop
+   ld (L I) (At)  # Save '@'
    ld Z (EnvCo7)  # Get main
    null Z  # Any?
    if z  # No
@@ -2945,23 +2951,20 @@
       save (EnvCo) (EnvMid) (Z III)  # Save environment
       jmp resumeCoroutine  # Resume
    end
-   null L  # Stack?
-   if nz  # Yes
-      ld C (Z (pack III "+(EnvMid-EnvCo)"))  # Main routine's link
-      cmp L C  # Local stack?
-      ldz L 0
-      if ne  # Yes
-         ld X (L)  # Pointer to link
-         do
-            ld A (X)  # Get link
-            null A  # Any?
-            jz 10  # No
-            cmp A C  # Reached main routine's link?
-         while ne  # No
-            ld X (A)  # Follow link
-         loop
-         ld (X) 0  # Clear link
-      end
+   ld C (Z (pack III "+(EnvMid-EnvCo)"))  # Main routine's link
+   cmp L C  # Local stack?
+   ldz L 0
+   if ne  # Yes
+      ld X (L)  # Pointer to link
+      do
+         ld A (X)  # Get link
+         null A  # Any?
+         jz 10  # No
+         cmp A C  # Reached main routine's link?
+      while ne  # No
+         ld X (A)  # Follow link
+      loop
+      ld (X) 0  # Clear link
    end
 10 push L  # End of segment
    push Y  # Save taget coroutine
@@ -3039,8 +3042,9 @@
       load (Env) (EnvMid) (Z (pack III "+(Env-EnvCo)"))  # Restore environment
       pop (EnvCo7)  # Restore coroutine link
       pop (StkLimit)  # 'lim'
-      add S (pack I "+(EnvMid-EnvCo)")  # Clean up
-      pop L
+      add S (pack III "+(EnvMid-EnvCo)")  # Clean up
+      pop (At)  # Restore '@'
+      pop L  # Restore link
       pop Z
       pop Y
       pop X

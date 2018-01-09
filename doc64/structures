@@ -1,4 +1,4 @@
-# 19dec14abu
+# 09jan18abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -218,6 +218,7 @@
                X        |
                Y        |
                Z        |
+               [@]      |
                L        |
          <III> [env]    |
          <II>  seg -----|-----------------+
@@ -233,6 +234,7 @@
                X                          |
                Y                          |
                Z                          |
+               [@]                        |
                L  <-----------------------+
 
 

@@ -1,4 +1,4 @@
-# 09jan18abu
+# 10jan18abu
 # (c) Software Lab. Alexander Burger
 
 # Standard version
@@ -28,7 +28,6 @@
             (fibo+ D N)
             (fibo+ D (dec N)) ) ) ) )
 
-
 # Using a cache (fastest)
 (de cachedFibo (N)
    (cache '(NIL) N
@@ -37,9 +36,17 @@
          (+ (cachedFibo (dec N)) (cachedFibo (- N 2))) ) ) )
 
 
-# Coded in 'C'
 `(== 64 64)  # Only in the 64-bit version
 
+# Coroutine
+(de coFibo ()
+   (co 'fibo
+      (let (A 0  B 1)
+         (loop
+            (yield
+               (swap 'B (+ (swap 'A B) B)) ) ) ) ) )
+
+# Coded in 'C'
 (load "@lib/native.l")
 
 (gcc "fibo" NIL

@@ -1,3 +1,7 @@
+10jan18
+   Added coroutine producer function
+      misc/fibo.l
+
 09jan18
    Bug in token parser
       {src64,pilos/src}/io.l

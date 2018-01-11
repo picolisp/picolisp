@@ -1,4 +1,4 @@
-# 29nov17abu
+# 11jan18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -758,7 +758,7 @@
          (cond
             ((=0 Flg) (push 'Chg 0))
             ((=1 Flg) (and (> PosX1 1) (dec 'PosX1))) )
-         (split (flip Chg) 0) ) ) )
+         (split (reverse Chg) 0) ) ) )
 
 (de cmdMode @
    (let Win (if (== This *CmdWin) (: next) This)

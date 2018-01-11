@@ -1,3 +1,7 @@
+11jan18
+   Destructive side-effect in 'insMode'
+      lib/vip.l
+
 10jan18
    Added coroutine producer function
       misc/fibo.l

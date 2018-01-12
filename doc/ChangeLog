@@ -1,3 +1,7 @@
+12jan18
+   Missing delimiter characters "`~{}"
+      lib/vip.l
+
 11jan18
    Destructive side-effect in 'insMode'
       lib/vip.l

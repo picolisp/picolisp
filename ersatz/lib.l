@@ -1,4 +1,4 @@
-# 24nov16abu
+# 12jan18abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -1753,7 +1753,7 @@
 (de proc @
    (apply call
       (make (while (args) (link "-C" (next))))
-      "ps" "-H" "-o" "pid,ppid,start,size,pcpu,time,cmd" ) )
+      "ps" "-H" "-o" "pid,ppid,start,size,pcpu,cmd" ) )
 
 # Benchmarking
 (de bench Prg

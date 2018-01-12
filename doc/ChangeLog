@@ -1,4 +1,7 @@
 12jan18
+   Remove "time" from 'proc', and enable for Android
+      lib/debug.l
+      ersatz/lib.l
    Missing delimiter characters "`~{}"
       lib/vip.l
 

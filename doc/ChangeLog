@@ -1,3 +1,7 @@
+13jan18
+   'reload' after "kab"
+      lib/vip.l
+
 12jan18
    Remove "time" from 'proc', and enable for Android
       lib/debug.l

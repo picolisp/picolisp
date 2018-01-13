@@ -30,7 +30,7 @@
    (make (until (eof) (link (line)))) )
 
 (de delim? (C)
-   (member C '`(cons NIL (chop " \t\n\r\"'(),[]`~{}"))) )
+   (member C '`(cons NIL (chop " \t\n\r\"'(),[]`{}"))) )
 
 (de markup (Lst)
    (let (S 'text  N 1)

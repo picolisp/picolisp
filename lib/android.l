@@ -1,4 +1,4 @@
-# 02jan18abu
+# 15jan18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -256,16 +256,25 @@
       "SCAN_MODE" "QR_CODE_MODE" ) )
 
 # Alarm
-(local) [alarm RPC elapsedRealtime getBroadcast]
-(de alarm (N Sec File)
+(local) [alarm RPC elapsedRealtime getInstance getTimeInMillis getBroadcast]
+(de alarm (N When File)
    (java (; CONTEXT RPC) 'putExtra "LOAD" File)
    (java (java CONTEXT 'getSystemService "alarm")  # AlarmManager
       'set
-      2  # ELAPSED_REALTIME_WAKEUP
+      (if (atom When) 2 0)  # ELAPSED_REALTIME_WAKEUP RTC_WAKEUP
       (cons 'L
-         (+
-            `(* 1000 9)
-            (java "android.os.SystemClock" 'elapsedRealtime) ) )
+         (if (atom When)
+            (+
+               (* 1000 When)
+               (java "android.os.SystemClock" 'elapsedRealtime) )
+            (let
+               (Dat (date (car When))
+                  Tim (time (cdr When))
+                  C (java "android.icu.util.Calendar" 'getInstance) )
+               (java C 'set
+                  (car Dat) (dec (cadr Dat)) (caddr Dat)
+                  (car Tim) (cadr Tim) (caddr Tim) )
+               (java C 'getTimeInMillis) ) ) )
       (java "android.app.PendingIntent" 'getBroadcast
          CONTEXT N (; CONTEXT RPC) 0 ) ) )
 

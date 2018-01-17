@@ -1,7 +1,6 @@
 # Bash completion for picolisp + pil
 # Alexander Burger <abu@software-lab.de>
 
-have pil &&
 _pil()
 {
     local -a ARGS

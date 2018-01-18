@@ -1,5 +1,7 @@
-# 21jan13abu
+# 18jan18abu
 # (c) Software Lab. Alexander Burger
+
+`(not (seq *DB))
 
 ### Role ###
 (obj ((+Role) nm "Administration") perm `*Perms)

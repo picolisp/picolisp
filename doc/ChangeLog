@@ -1,3 +1,7 @@
+20jan18
+   Remove 'cancel', change syntax of 'notify' and 'alarm'
+      lib/android.l
+
 18jan18
    Initial 'seq' check moved to "init.l"
       app/main.l

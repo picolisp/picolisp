@@ -1,4 +1,4 @@
-# 20jan18abu
+# 21jan18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -136,8 +136,8 @@
 # Notification
 (local) [
    notify cancel setSmallIcon setContentTitle setContentText setAutoCancel
-   setLights setContentIntent getActivity build ]
-(de notify (Id Ttl Msg)
+   setLights setAction putExtra setContentIntent getActivity build ]
+(de notify (Id Ttl Msg File)
    (let N (java CONTEXT 'getSystemService "notification")  # NotificationManager
       (ifn Ttl
          (java N 'cancel Id)
@@ -149,8 +149,12 @@
             (java B 'setLights `(hex "FFFFFF") 500 500)
             (let Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.PilBoxActivity"))  # Activity class
                (java Intent 'setFlags `(hex "24000000"))  # FLAG_ACTIVITY_SINGLE_TOP | FLAG_ACTIVITY_NEW_TASK
+               (when File
+                  (java Intent 'setAction "RPC")
+                  (java Intent 'putExtra "LOAD" File) )
                (java B 'setContentIntent
-                  (java "android.app.PendingIntent" 'getActivity CONTEXT 0 Intent `(hex "10000000")) ) )  # FLAG_ACTIVITY_NEW_TASK
+                  (java "android.app.PendingIntent" 'getActivity
+                     CONTEXT 0 Intent `(hex "18000000") ) ) )  # FLAG_ACTIVITY_NEW_TASK | FLAG_UPDATE_CURRENT
             (prog1 (java B 'build)  # Notification
                (java N 'notify Id @) ) ) ) ) )
 
@@ -166,7 +170,7 @@
 # Start Activity for a result
 (local) [
    startActivityForResult *ResultProxy *ProxyResults resolveActivity
-   getPackageManager putExtra setResultProxy good bad ]
+   getPackageManager setResultProxy good bad ]
 (de startActivityForResult (Fun Action . @)
    (let Intent (java "android.content.Intent" T Action)
       (when (java Intent 'resolveActivity (java CONTEXT 'getPackageManager))
@@ -258,15 +262,16 @@
       "SCAN_MODE" "QR_CODE_MODE" ) )
 
 # Alarm
-(local) [alarm RPC elapsedRealtime getInstance getTimeInMillis getBroadcast]
+(local) [alarm elapsedRealtime getInstance getTimeInMillis getBroadcast]
 (de alarm (N When File)
-   (let A (java CONTEXT 'getSystemService "alarm")  # AlarmManager
+   (let
+      (Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.Receiver"))
+         Alarm (java CONTEXT 'getSystemService "alarm") )  # AlarmManager
       (ifn When
-         (java A 'cancel
-            (java "android.app.PendingIntent" 'getBroadcast
-               CONTEXT N (; CONTEXT RPC) 0 ) )
-         (java (; CONTEXT RPC) 'putExtra "LOAD" File)
-         (java A 'set
+         (java Alarm 'cancel
+            (java "android.app.PendingIntent" 'getBroadcast CONTEXT N Intent 0) )
+         (java Intent 'putExtra "LOAD" File)
+         (java Alarm 'set
             (if (atom When) 2 0)  # ELAPSED_REALTIME_WAKEUP RTC_WAKEUP
             (cons 'L
                (if (atom When)
@@ -282,7 +287,7 @@
                         (car Tim) (cadr Tim) (caddr Tim) )
                      (java C 'getTimeInMillis) ) ) )
             (java "android.app.PendingIntent" 'getBroadcast
-               CONTEXT N (; CONTEXT RPC) 0 ) ) ) ) )
+               CONTEXT N Intent 0 ) ) ) ) )
 
 # Terminate PilBox
 (local) [terminate finishAndRemoveTask]

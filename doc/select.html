@@ -331,10 +331,7 @@ replaces the standard generators for item number and supplier name
 
 <pre><code>
 (select (@Item)
-   (
-      (nr +Item @Nr)
-      (nm +CuSu @Sup (sup +Item))
-   )
+   ((nr +Item @Nr) (nm +CuSu @Sup (sup +Item)))
    ...
 </code></pre>
 
@@ -342,10 +339,8 @@ replaces the standard generators for item number and supplier name
 
 <pre><code>
 (select (@Item)
-   (
-      (@A (@Nr) ((db nr +Item @Nr @A)))
-      (@B (@Sup) ((db nm +CuSu @Sup @B)) (sup +Item))
-   )
+   ((@A (@Nr) ((db nr +Item @Nr @A)))
+      (@B (@Sup) ((db nm +CuSu @Sup @B)) (sup +Item)) )
 </code></pre>
 
 <p>That is, a query with the <code><a href="refD.html#db/3">db/3</a></code> tree

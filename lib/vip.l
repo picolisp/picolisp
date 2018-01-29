@@ -1,4 +1,4 @@
-# 13jan18abu
+# 29jan18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -920,7 +920,7 @@
                         (with *CmdWin
                            (paste (cons T L) T)
                            (inc (:: posY) (dec (length L))) ) ) )
-                  ("key" (=: buffer key Line))
+                  ("key" (=: buffer key Line) (reload))
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer
                   ("e" (reload Line))  # (Edit) Reload buffer

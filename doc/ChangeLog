@@ -1,3 +1,7 @@
+02feb18
+   Remove '*SesAdr' global
+      lib/http.l
+
 01feb18
    Optional Session ID for 'psh'
       lib/http.l

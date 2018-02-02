@@ -1,9 +1,9 @@
-# 01feb18abu
+# 02feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
 # *Sock *Agent *ContL *ContLen *MPartLim *MPartEnd "*HtSet"
-# *Post *Url *Timeout *SesAdr *SesId *ConId
+# *Post *Url *Timeout *SesId *ConId
 # *Referer *Cookies "*Cookies"
 
 (default
@@ -144,7 +144,6 @@
    (unless *SesId
       (setq
          *Port% (not *Gate)
-         *SesAdr *Adr
          *SesId (pack (in "/dev/urandom" (rd 7)) "~")
          *Sock (port *HPorts '*Port) )
       (out 2 (prinl *Pid " = " *Port " " *SesId))
@@ -186,7 +185,7 @@
                   (task (close *HtSock))
                   (off *HtSock)
                   (throw 'http) ) )
-            (if (or (<> *ConId *SesId) (and *SesAdr (<> @ *Adr) (<> *Adr "::1")))
+            (if (<> *ConId *SesId)
                (prog (task (close *HtSock)) (off *HtSock))
                (setq
                   L (split U "?")

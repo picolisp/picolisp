@@ -1,3 +1,7 @@
+03feb18
+   Pedantics
+      lib/vip.l
+
 02feb18
    Remove '*SesAdr' global
       lib/http.l

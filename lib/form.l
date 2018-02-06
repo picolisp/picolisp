@@ -1,4 +1,4 @@
-# 17aug17abu
+# 06feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -124,7 +124,7 @@
 (de action "Prg"
    (off "*Chart" "*Foc")
    (or *PRG "*Post2" (off "*Err"))
-   (catch "stop"
+   (catch 'stop
       (nond
          (*Post
             (unless (and *PRG (= *Form (car *Got)) (= *Get (cadr *Got)))
@@ -171,7 +171,7 @@
          '(Prg
             (off "*Err")
             (with (postForm)
-               (catch "stop"
+               (catch 'stop
                   (postGui)
                   (httpHead "text/plain; charset=utf-8")
                   (if
@@ -256,7 +256,7 @@
                   (when "Fun"
                      (when (and *Allow (not (idx *Allow "Fun")))
                         (notAllowed "Fun")
-                        (throw "stop") )
+                        (throw 'stop) )
                      (apply (intern "Fun")
                         (mapcar
                            '((X)
@@ -297,7 +297,7 @@
                   (link (ht:Fmt (arg)))
                   (NIL (args))
                   (link "&") ) ) ) )
-      (throw "stop") ) )
+      (throw 'stop) ) )
 
 # Active <span> elements
 (de span Args

@@ -1,3 +1,7 @@
+07feb18
+   Omit 'stepBtn' in 'panel' if 'Cls' is NIL
+      lib/form.l
+
 06feb18
    Change "stop" catch tag to 'stop'
       lib/form.l

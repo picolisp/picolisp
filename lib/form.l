@@ -1,4 +1,4 @@
-# 06feb18abu
+# 07feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2482,7 +2482,8 @@
                (list 'with '(: home obj) (car Var))
                (list ': 'home 'obj Var) ) ) )
       (choButton Dlg)
-      (stepBtn (fin Var) Cls Hook Msg) )
+      (when Cls
+         (stepBtn (fin Var) Cls Hook Msg) ) )
    (--) )
 
 # Standard ID form

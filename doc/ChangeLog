@@ -1,3 +1,7 @@
+09feb18
+   Large font for 'input' fields
+      lib/phone.css
+
 07feb18
    Omit 'stepBtn' in 'panel' if 'Cls' is NIL
       lib/form.l

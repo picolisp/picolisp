@@ -1,4 +1,4 @@
-/* 09feb18abu
+/* 10feb18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -40,4 +40,5 @@ caption {
 /* Fonts */
 .tiny {
    padding: 0 1ex;
+   font-size: large;
 }

@@ -1,4 +1,4 @@
-# 27jul17abu
+# 12feb18abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -294,153 +294,6 @@
                (not (; @ dbf))
                (println 'dbfCheck (cdr Rel) "Cls") ) ) ) ) )
 
-(de dbfMigrate (Pool Dbs)
-   (let
-      (scan
-         '(("Tree" "Fun")
-            (let "Node" (cdr (root "Tree"))
-               (if (ext? (fin (val "Node")))
-                  (recur ("Node")
-                     (let? "X" (val "Node")
-                        (recurse (cadr "X"))
-                        ("Fun" (car "X") (cdddr "X"))
-                        (recurse (caddr "X"))
-                        (wipe "Node") ) )
-                  (recur ("Node")
-                     (let? "X" (val "Node")
-                        (recurse (car "X"))
-                        (for "Y" (cdr "X")
-                           ("Fun" (car "Y") (or (cddr "Y") (fin (car "Y"))))
-                           (recurse (cadr "Y")) )
-                        (wipe "Node") ) ) ) ) )
-         iter
-         '(("Tree" "Bar")
-            (scan "Tree" '(("K" "V") ("Bar" "V"))) )
-         zapTree
-         '((Node)
-            (let? X (val Node)
-               (zapTree (cadr X))
-               (zapTree (caddr X))
-               (zap Node) ) ) )
-      (dbfUpdate) )
-   (let Lst
-      (make
-         (for (S *DB S (seq S))
-            (link (cons S (val S) (getl S))) ) )
-      (pool)
-      (call "rm" (pack Pool 1))
-      (pool Pool Dbs)
-      (set *DB (cadar Lst))
-      (putl *DB (cddr (++ Lst)))
-      (for L Lst
-         (let New (new T)
-            (set New (cadr L))
-            (putl New (cddr L))
-            (con L New) ) )
-      (set *DB (dbfReloc0 (val *DB) Lst))
-      (for X Lst
-         (set (cdr X) (dbfReloc0 (val (cdr X)) Lst))
-         (putl (cdr X) (dbfReloc0 (getl (cdr X)) Lst)) )
-      (commit)
-      (dbMap  # Relocate base symbols
-         '((Obj)
-            (putl Obj (dbfReloc0 (getl Obj) Lst))
-            (commit) )
-         '((Base Root Var Cls Hook)
-            (when (asoq (cdr Root) Lst)
-               (con Root (cdr @))
-               (touch Base)
-               (commit) ) ) ) ) )
-
-(de dbfUpdate ()
-   (dbMap  # Move
-      '((Obj)
-         (let N (or (meta Obj 'Dbf 1) 1)
-            (unless (= N (car (id Obj T)))
-               (let New (new N)
-                  (set New (val Obj))
-                  (putl New (getl Obj))
-                  (set Obj (cons T New)) )
-               (commit) ) ) ) )
-   (when *Blob
-      (for X
-         (make
-            (use (@S @R F S)
-               (let Pat (conc (chop *Blob) '(@S "." @R))
-                  (in (list 'find *Blob "-type" "f")
-                     (while (setq F (line))
-                        (and
-                           (match Pat F)
-                           (setq S (extern (pack (replace @S '/))))
-                           (=T (car (pair (val S))))
-                           (link
-                              (cons (pack F) (blob (cdr (val S)) @R)) ) ) ) ) ) ) )
-         (and (dirname (cdr X)) (call "mkdir" "-p" @))
-         (call "mv" (car X) (cdr X)) ) )
-   (dbMap  # Relocate
-      '((Obj)
-         (when (=T (car (pair (val Obj))))
-            (setq Obj (cdr (val Obj))) )
-         (when (isa '+Entity Obj)
-            (putl Obj (dbfReloc (getl Obj)))
-            (commit) ) )
-      '((Base Root Var Cls Hook)
-         (if Var
-            (dbfRelocTree Base Root
-               (tree Var Cls Hook)
-               (or
-                  (get Cls Var 'dbf)
-                  (and
-                     (find
-                        '((B)
-                           (or
-                              (isa '+index B)
-                              (isa '+Swap B) ) )
-                        (get Cls Var 'bag) )
-                     (get @ 'dbf) ) ) )
-            (dbfRelocTree Base Root Base) ) ) )
-   (dbgc) )
-
-(de dbfReloc (X)
-   (cond
-      ((pair X)
-         (cons (dbfReloc (car X)) (dbfReloc (cdr X))) )
-      ((and (ext? X) (=T (car (pair (val X)))))
-         (cdr (val X)) )
-      (T X) ) )
-
-(de dbfReloc0 (X Lst)
-   (cond
-      ((pair X)
-         (cons (dbfReloc0 (car X) Lst) (dbfReloc0 (cdr X) Lst)) )
-      ((asoq X Lst) (cdr @))
-      (T X) ) )
-
-(de dbfRelocTree (Base Root Tree Dbf)
-   (let? Lst (make (scan Tree '((K V) (link (cons K V)))))
-      (zapTree (cdr Root))
-      (touch Base)
-      (set Root 0)
-      (con Root)
-      (commit)
-      (for X
-         (make
-            (for
-               (Lst (cons Lst) Lst
-                  (mapcan
-                     '((L)
-                        (let (N (/ (inc (length L)) 2)  X (nth L N))
-                           (link (car X))
-                           (make
-                              (and (>= N 2) (link (head (dec N) L)))
-                              (and (cdr X) (link @)) ) ) )
-                     Lst ) ) ) )
-         (store Tree
-            (dbfReloc (car X))
-            (dbfReloc (cdr X))
-            Dbf ) )
-      (commit) ) )
-
 ### Dump Objects ###
 (zero *DumpBlob)
 
@@ -536,10 +389,5 @@
             (chdir (tmp)
                (out '("tar" "xfz" "-") (echo)) ) ) ) )
    (load (pack "Name" ".l") ) )
-
-### Debug ###
-`*Dbg
-
-(noLint 'dbfMigrate 'iter)
 
 # vi:et:ts=3:sw=3

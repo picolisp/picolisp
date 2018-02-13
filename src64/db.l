@@ -1,4 +1,4 @@
-# 27may16abu
+# 13feb18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1082,6 +1082,82 @@
       ld (E) A
       ld (E CDR) C
    end
+   pop Y
+   pop X
+   ret
+
+# (blk 'fd 'cnt ['siz]) -> lst
+(code 'doBlk 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   sub S VIII  # Allocate dbFile structure
+   call evCntXY_FE  # Eval 'fd'
+   ld (S) E  # into dbFile
+   ld (S I) 0  # File number
+   ld Y (Y CDR)  # Next arg
+   call evCntXY_FE  # Eval 'blk' number
+   shl E 6  # Block index
+   ld (BlkIndex) E  # Set block index
+   ld E 2  # Default shift size 2
+   ld Y (Y CDR)  # Next arg
+   atom Y  # Any?
+   if z  # Yes
+      call evCntXY_FE  # Eval 'sh'
+   end
+   ld (S II) E  # Block shift
+   ld C BLKSIZE  # Calculate block size
+   shl C E
+   ld (S III) C  # Block size (64 << sh)
+   ld (S IV) 0  # Clear 'flgs'
+   ld (S V) 0  # mark vector size
+   ld (S VI) 0  # and mark bit vector
+   ld (S VII) -1  # Init 'fluse'
+   ld (DbFile) S  # Set DB file
+   ld (BufEnd) S  # Same as data end
+   sub S (S III)  # Allocate buffer (block size)
+   ld (DbBlock) S
+   ld Z S  # Get block buffer in Z
+   call rdBlockZ_Z  # Read first block
+   ld B (Z (- BLK))  # Get tag byte
+   and B BLKTAG  # Block tag
+   cmp B 1  # One?
+   jne idErrXL  # Bad ID
+   ld (GetBinZ_FB) getBlockZ_FB  # Set binary read function
+   ld (Extn) (ExtN)  # Set external symbol offset
+   call binReadZ_FE  # Read value
+   call consE_A  # Cons with NIL
+   ld (A) E
+   ld (A CDR) Nil
+   link
+   push A  # <L I> Safe
+   link
+   ld Y A  # Keep in Y
+   do
+      call binReadZ_FE  # Read property key
+      cmp E Nil  # Any?
+   while ne  # Yes
+      call consE_A  # Build next property cell
+      ld (A) E  # Cons key
+      ld (A CDR) Nil
+      ld (Y CDR) A  # Append to result
+      ld Y A  # Point Y to new cell
+      call binReadZ_FE  # Read property value
+      cmp E TSym  # T?
+      if ne  # No
+         call consE_A  # Cons property value
+         ld (A) E
+         ld (A CDR) (Y)  # With key
+         ld (Y) A  # Save in property cell
+      end
+   loop
+   ld E (L I)  # Return list
+   drop
+   add S ((DbFile) III)  # Drop buffer
+   add S VIII  # Drop file structure
+   pop Z
    pop Y
    pop X
    ret

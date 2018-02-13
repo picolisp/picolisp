@@ -1,3 +1,15 @@
+13feb18
+   'blk' function (64-bit)
+      src64/glob.l
+      src64/db.l
+      doc/ref.html
+      doc/refB.html
+      doc/refE.html
+
+12feb18
+   Remove obsolete 'dbfMigrate' function(s)
+      lib/too.l
+
 10feb18
    Large font for 'tiny' components
       lib/phone.css

@@ -907,19 +907,19 @@ db.l,1152
 bufAoAC_C962,26564
 doJournal977,26876
 doId1034,28481
-doBlk1090,29807
-doSeq1165,31817
-doLieu1238,33693
-doLock1270,34361
-dbFetchEX1309,35311
-dbAEX1320,35528
-dbTouchEX1436,38887
-dbZapE1469,39487
-doCommit1490,39922
-doRollback1890,52773
-doMark1973,54783
-doFree2055,56829
-doDbck2113,58295
+doBlk1090,29812
+doSeq1177,32136
+doLieu1250,34012
+doLock1282,34680
+dbFetchEX1321,35630
+dbAEX1332,35847
+dbTouchEX1448,39206
+dbZapE1481,39806
+doCommit1502,40241
+doRollback1902,53092
+doMark1985,55102
+doFree2067,57148
+doDbck2125,58614
 
 gc.l,863
 markE5,63

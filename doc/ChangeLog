@@ -1,4 +1,5 @@
 14feb18
+   Optional 'fd2' for locking
    No need to set 'DbBlock'
    Minor comment fix
       src64/db.l

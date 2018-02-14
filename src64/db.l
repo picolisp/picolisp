@@ -1086,7 +1086,7 @@
    pop X
    ret
 
-# (blk 'fd 'cnt ['siz]) -> lst
+# (blk 'fd 'cnt 'siz ['fd2]) -> lst
 (code 'doBlk 2)
    push X
    push Y
@@ -1101,12 +1101,8 @@
    call evCntXY_FE  # Eval 'cnt' block number
    shl E 6  # Block index
    ld (BlkIndex) E  # Set block index
-   ld E 2  # Default shift size 2
    ld Y (Y CDR)  # Next arg
-   atom Y  # Any?
-   if z  # Yes
-      call evCntXY_FE  # Eval 'siz'
-   end
+   call evCntXY_FE  # Eval 'siz'
    ld (S II) E  # Block shift
    ld C BLKSIZE  # Calculate block size
    shl C E
@@ -1119,6 +1115,16 @@
    ld (BufEnd) S  # Same as data end
    sub S (S III)  # Allocate buffer (block size)
    ld Z S  # Get block buffer in Z
+   ld Y (Y CDR)  # Next arg
+   atom Y  # Any?
+   if nz  # No
+      ld Y -1  # No locking
+   else
+      call evCntXY_FE  # Eval 'fd2'
+      ld Y E  # Keep in Y
+      ld C E  # File descriptor
+      call rdLockFileC  # Read lock
+   end
    call rdBlockZ_Z  # Read first block
    ld B (Z (- BLK))  # Get tag byte
    and B BLKTAG  # Block tag
@@ -1133,7 +1139,7 @@
    link
    push A  # <L I> Safe
    link
-   ld Y A  # Keep in Y
+   ld X A  # Keep in X
    do
       call binReadZ_FE  # Read property key
       cmp E Nil  # Any?
@@ -1141,17 +1147,23 @@
       call consE_A  # Build next property cell
       ld (A) E  # Cons key
       ld (A CDR) Nil
-      ld (Y CDR) A  # Append to result
-      ld Y A  # Point Y to new cell
+      ld (X CDR) A  # Append to result
+      ld X A  # Point X to new cell
       call binReadZ_FE  # Read property value
       cmp E TSym  # T?
       if ne  # No
          call consE_A  # Cons property value
          ld (A) E
-         ld (A CDR) (Y)  # With key
-         ld (Y) A  # Save in property cell
+         ld (A CDR) (X)  # With key
+         ld (X) A  # Save in property cell
       end
    loop
+   null Y  # Locked?
+   if ns  # Yes
+      ld A (| F_UNLCK (hex "00000"))  # Unlock, length 0
+      ld C Y  # File descriptor
+      call unLockFileAC
+   end
    ld E (L I)  # Return list
    drop
    add S ((DbFile) III)  # Drop buffer

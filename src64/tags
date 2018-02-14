@@ -908,18 +908,18 @@ db.l,1152
 doJournal977,26876
 doId1034,28481
 doBlk1090,29807
-doSeq1166,31828
-doLieu1239,33704
-doLock1271,34372
-dbFetchEX1310,35322
-dbAEX1321,35539
-dbTouchEX1437,38898
-dbZapE1470,39498
-doCommit1491,39933
-doRollback1891,52784
-doMark1974,54794
-doFree2056,56840
-doDbck2114,58306
+doSeq1165,31817
+doLieu1238,33693
+doLock1270,34361
+dbFetchEX1309,35311
+dbAEX1320,35528
+dbTouchEX1436,38887
+dbZapE1469,39487
+doCommit1490,39922
+doRollback1890,52773
+doMark1973,54783
+doFree2055,56829
+doDbck2113,58295
 
 gc.l,863
 markE5,63

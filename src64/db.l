@@ -1,4 +1,4 @@
-# 13feb18abu
+# 14feb18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1098,14 +1098,14 @@
    ld (S) E  # into dbFile
    ld (S I) 0  # File number
    ld Y (Y CDR)  # Next arg
-   call evCntXY_FE  # Eval 'blk' number
+   call evCntXY_FE  # Eval 'cnt' block number
    shl E 6  # Block index
    ld (BlkIndex) E  # Set block index
    ld E 2  # Default shift size 2
    ld Y (Y CDR)  # Next arg
    atom Y  # Any?
    if z  # Yes
-      call evCntXY_FE  # Eval 'sh'
+      call evCntXY_FE  # Eval 'siz'
    end
    ld (S II) E  # Block shift
    ld C BLKSIZE  # Calculate block size
@@ -1118,7 +1118,6 @@
    ld (DbFile) S  # Set DB file
    ld (BufEnd) S  # Same as data end
    sub S (S III)  # Allocate buffer (block size)
-   ld (DbBlock) S
    ld Z S  # Get block buffer in Z
    call rdBlockZ_Z  # Read first block
    ld B (Z (- BLK))  # Get tag byte

@@ -1,4 +1,4 @@
-# 14feb18abu
+# 15feb18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -2019,7 +2019,7 @@
    call fileObjE_AC  # Get file and ID
    shl A 6  # 'dbFile' index
    cmp A (DBs)  # Local file?
-   jge dbfErrX  # No
+   jge 90  # No
    add A (DbFiles)  # Get DB file
    ld X A  # into X
    ld E C  # Object ID in E
@@ -2056,7 +2056,7 @@
          not B
          and (E) B  # Clear mark
       end
-      ld E TSym  # Return T
+90    ld E TSym  # Return T
    end
    add S I  # Drop second arg
    pop Y

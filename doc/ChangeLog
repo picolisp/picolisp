@@ -1,3 +1,7 @@
+15feb18
+   Return 'T' from 'mark' for non-local symbols (instead of error)
+      src64/db.l
+
 14feb18
    Optional 'fd2' for locking
    No need to set 'DbBlock'

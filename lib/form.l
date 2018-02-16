@@ -1,4 +1,4 @@
-# 07feb18abu
+# 16feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -367,8 +367,8 @@
                            (up 99 @@@ "@3")
                            (up 99 @@ "@2")
                            (up 99 @ "@1")
-                           (setq  "@3" "@2"  "@2" "@1"  "@1" (run (str Str) 99)) ) )
-                     (println '-> "@1") )
+                           (setq  "@3" "@2"  "@2" "@1"  "@1" (run (str Str) 99)) )
+                        (println '-> "@1") ) )
                   (when *Msg (prinl @) (off *Msg)) ) )
             (push1 '*ReplH Str)
             (clr> (: home line)) ) )

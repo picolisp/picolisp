@@ -1,3 +1,7 @@
+16feb18
+   Print results in 'repl' inside 'catch' body
+      lib/form.l
+
 15feb18
    Return 'T' from 'mark' for non-local symbols (instead of error)
       src64/db.l

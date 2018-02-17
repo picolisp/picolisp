@@ -1,3 +1,8 @@
+17feb18
+   Relocation errors for 'adrp' in Debian Sid
+      src64/arch/arm64.l
+      src64/ht.l
+
 16feb18
    Print results in 'repl' inside 'catch' body
       lib/form.l

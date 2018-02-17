@@ -1,4 +1,4 @@
-# 04mar17abu
+# 17feb18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -605,6 +605,22 @@ skip CHUNK  # <Y III> Chunk buffer
    add B (char "0")  # Make ASCII digit
    jmp (PutB)
 
+(code 'putChunkedB 0)
+   push X
+   push Y
+   ld Y Chunk  # Get Chunk
+   lea X (Y III)  # X on chunk buffer
+   add X (Y)  # Count index
+   ld (X) B  # Store byte
+   inc (Y)  # Increment count
+   cmp (Y) CHUNK   # Max reached?
+   if eq  # Yes
+      call wrChunkY  # Write buffer
+   end
+   pop Y
+   pop X
+   ret
+
 (code 'wrChunkY 0)  # X
    ld (PutB) (Y II)  # Restore 'put'
    ld A (Y)  # Get count
@@ -626,22 +642,6 @@ skip CHUNK  # <Y III> Chunk buffer
    call (PutB)
    ld (Y II) (PutB)  # Save 'put'
    ld (PutB) putChunkedB  # Set new
-   ret
-
-(code 'putChunkedB 0)
-   push X
-   push Y
-   ld Y Chunk  # Get Chunk
-   lea X (Y III)  # X on chunk buffer
-   add X (Y)  # Count index
-   ld (X) B  # Store byte
-   inc (Y)  # Increment count
-   cmp (Y) CHUNK   # Max reached?
-   if eq  # Yes
-      call wrChunkY  # Write buffer
-   end
-   pop Y
-   pop X
    ret
 
 # (ht:Out 'flg . prg) -> any

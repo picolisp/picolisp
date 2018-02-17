@@ -1,4 +1,4 @@
-# 25oct17abu
+# 17feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -35,7 +35,7 @@
 # NULL               xzr (x31)
 
 (redef label (Lbl Flg)
-   (and Flg (not *FPic) (push '*Globals Lbl))
+   (and Flg (push '*Globals Lbl))
    (label Lbl Flg) )
 
 (redef code (Lbl Align)
@@ -163,13 +163,13 @@
             (prinst "ldr" "x10" Val)
             (prinst "str" "x10" Dst) ) ) ) )
 
-(de adrp (Sym Reg)
+(de adrp (Sym Reg Reg2)
    (if (memq Sym *Globals)
       (prog
          (prinst "adrp" Reg (pack ":got:" Sym))
-         (prinst "ldr" Reg (pack "[" Reg ", #:got_lo12:" Sym "]")) )
+         (prinst "ldr" (or Reg2 Reg) (pack "[" Reg ", #:got_lo12:" Sym "]")) )
       (prinst "adrp" Reg Sym)
-      (prinst "add" Reg Reg (pack ":lo12:" Sym)) ) )
+      (prinst "add" (or Reg2 Reg) Reg (pack ":lo12:" Sym)) ) )
 
 (de src (Src S Imm? Reg C)  #> Immediate or register
    (cond
@@ -201,8 +201,7 @@
                               (pack "[" (car Src) ",x12]") ) )
                         C ) )
                   ((sub? "-" Src)  # Label difference
-                     (prinst "adrp" Reg (cdr Src))
-                     (prinst "add" Reg Reg (pack ":lo12:" (cdr Src)))
+                     (adrp (cdr Src) Reg)
                      (mov Reg
                         (pack "[" (car Src) "," Reg "]")
                         C ) )
@@ -220,8 +219,7 @@
                         (pack "[x11" (and (cdr Src) ",") (cdr Src) "]")
                         C ) )
                   ((sub? "-" Src)  # Label difference
-                     (prinst "adrp" "x12" (cdr Src))
-                     (prinst "add" "x12" "x12" (pack ":lo12:" (cdr Src)))
+                     (adrp (cdr Src) "x12")
                      (mov Reg "[x12,x11]" C) )
                   (NIL (mov Reg (pack "[x11," (cdr Src) "]"))) ) ) )
          Reg ) ) )
@@ -243,8 +241,7 @@
                      (cdr Src)
                      (immReg "x11" (cdr Src)) ) ) )
             ((sub? "-" (cdr Src))  # Label difference
-               (prinst "adrp" "x11" (cdr Src))
-               (prinst "add" Reg "x11" (pack ":lo12:" (cdr Src))) )
+               (adrp (cdr Src) "x11" Reg) )
             (NIL (prinst "add" Reg (car Src) (cdr Src))) ) )
       ((=T (car S))  # Indirect
          (adrp (car Src) Reg)
@@ -254,8 +251,7 @@
          (when (cdr S)
             (ifn (=T @)
                (prinst "add" Reg Reg (cdr Src))
-               (prinst "adrp" "x12" (cdr Src))
-               (prinst "add" Reg "x12" (pack ":lo12:" (cdr Src))) ) ) ) ) )
+               (adrp (cdr Src) "x12" Reg) ) ) ) ) )
 
 (de dst (Dst D Reg1 Reg2)  #> Register or memory
    (default Reg1 "x13"  Reg2 "x14")
@@ -276,8 +272,7 @@
                      (prinst "mov" Reg1 (cdr Dst))
                      (pack "[" (car Dst) "," Reg1 "]") ) ) )
             ((sub? "-" Dst)  # Label difference
-               (prinst "adrp" Reg1 (cdr Dst))
-               (prinst "add" Reg1 Reg1 (pack ":lo12:" (cdr Dst)))
+               (adrp (cdr Dst) Reg1)
                (pack "[" (car Dst) "," Reg1 "]") )
             (NIL (pack "[" (car Dst) ",#" (cdr Dst) "]")) ) )
       ((=T (car D))  # Indirect
@@ -287,8 +282,7 @@
          (src (car Dst) (car D) NIL Reg1)
          (ifn (=T (cdr D))
             (pack "[" Reg1 (and (cdr Dst) ",") (cdr Dst) "]")
-            (prinst "adrp" Reg2 (cdr Dst))
-            (prinst "add" Reg2 Reg1 (pack ":lo12:" (cdr Dst)))
+            (adrp (cdr Dst) Reg1 Reg2)
             (pack "[" Reg2 "," Reg1 "]") ) ) ) )
 
 ### Instruction set ###

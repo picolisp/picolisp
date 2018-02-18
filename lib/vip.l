@@ -1,4 +1,4 @@
-# 03feb18abu
+# 18feb18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -192,10 +192,14 @@
          (let
             (N (length (: buffer text))
                A (pack
+                  (index (: buffer) *Buffers)
+                  "/"
+                  (length *Buffers)
+                  " "
                   (: buffer file)
                   (unless (= (: buffer undo) (: buffer dirt)) " [+]") )
                Z (pack
-                  (: posY) "," (: posX) "/" N " "
+                  (: posX) "," (: posY) "/" N " "
                   (if (gt0 (dec N))
                      (*/ 100 (dec (: posY)) @)
                      0 )

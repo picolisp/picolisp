@@ -92,7 +92,7 @@
                               (chop (setq F (pack D F)))
                               (when (=T (car (info F)))
                                  (list (char `(char "/"))) ) ) )
-                        (dir File) ) )
+                        (sort (dir File)) ) )
                   (gc (inc (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe

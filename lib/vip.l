@@ -17,7 +17,18 @@
 # text file key undo redo dirt pos lastX lastY <c>
 
 (dm T (File Y)
-   (and (=: file File) (queue '*Buffers This))
+   (when File
+      (use (R @P)
+         (=: file
+            (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
+               (pack
+                  (cond
+                     ((match (conc (chop (pwd)) '(@P)) R)
+                        (cdr @P) )
+                     ((match (conc (chop (sys "HOME")) '(@P)) R)
+                        (cons "~/" (cdr @P)) )
+                     (T R) ) ) ) ) )
+      (queue '*Buffers This) )
    (=: pos (or Y 1))
    (=: lastX (=: lastY 1)) )
 
@@ -309,16 +320,6 @@
 (de reload (File N)
    (unless (== This *CmdWin)
       (when File
-         (use (R @P)
-            (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
-               (setq File
-                  (pack
-                     (cond
-                        ((match (conc (chop (pwd)) '(@P)) R)
-                           (cdr @P) )
-                        ((match (conc (chop (sys "HOME")) '(@P)) R)
-                           (cons "~/" (cdr @P)) )
-                        (T R) ) ) ) ) )
          (=: last (: buffer))
          (=: buffer
             (or

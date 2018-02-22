@@ -1,4 +1,4 @@
-# 18feb18abu
+# 22feb18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -103,7 +103,7 @@
    (=: pos (min1 (: pos) (length (: text)))) )
 
 (dm save> ()
-   (when (: file)
+   (when (fName (: file))
       (unless (=T (car (info @)))
          (if (sys "CCRYPT" (: key))
             (pipe
@@ -309,6 +309,16 @@
 (de reload (File N)
    (unless (== This *CmdWin)
       (when File
+         (use (R @P)
+            (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
+               (setq File
+                  (pack
+                     (cond
+                        ((match (conc (chop (pwd)) '(@P)) R)
+                           (cdr @P) )
+                        ((match (conc (chop (sys "HOME")) '(@P)) R)
+                           (cons "~/" (cdr @P)) )
+                        (T R) ) ) ) ) )
          (=: last (: buffer))
          (=: buffer
             (or
@@ -741,7 +751,7 @@
                                     (extract
                                        '((X)
                                           (let? F (and (pre? S X) (pack P X))
-                                             (if (=T (car (info F)))
+                                             (if (=T (car (info (fName F))))
                                                 (pack F "/")
                                                 F ) ) )
                                        (dir (fName P) T) ) ) ) )

@@ -1,3 +1,7 @@
+22feb18
+   Resolve symbolic links
+      lib/vip.l
+
 18feb18
    Show buffer and number of buffers in status line
       lib/vip.l

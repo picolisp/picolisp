@@ -12,23 +12,12 @@
    (pass native "libncurses.so") )
 
 ### VIP Editor ###
-(local) [*Buffers +Buffer fName rdLines delim? markup status]
+(local) [*Buffers +Buffer fName fileBuffer rdLines delim? markup status]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
 (dm T (File Y)
-   (when File
-      (use (R @P)
-         (=: file
-            (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
-               (pack
-                  (cond
-                     ((match (conc (chop (pwd)) '(@P)) R)
-                        (cdr @P) )
-                     ((match (conc (chop (sys "HOME")) '(@P)) R)
-                        (cons "~/" (cdr @P)) )
-                     (T R) ) ) ) ) )
-      (queue '*Buffers This) )
+   (and (=: file File) (queue '*Buffers This))
    (=: pos (or Y 1))
    (=: lastX (=: lastY 1)) )
 
@@ -36,6 +25,22 @@
    (if (pre? "~/" File)
       (pack (sys "HOME") "/" (cddr (chop File)))
       File ) )
+
+(de fileBuffer (File Y)
+   (when File
+      (use (R @P)
+         (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
+            (setq File
+               (pack
+                  (cond
+                     ((match (conc (chop (pwd)) '(@P)) R)
+                        (cdr @P) )
+                     ((match (conc (chop (sys "HOME")) '(@P)) R)
+                        (cons "~/" (cdr @P)) )
+                     (T R) ) ) ) ) ) )
+   (or
+      (find '((This) (= File (: file))) *Buffers)
+      (new '(+Buffer) File Y) ) )
 
 (de rdLines ()
    (make (until (eof) (link (line)))) )
@@ -321,10 +326,7 @@
    (unless (== This *CmdWin)
       (when File
          (=: last (: buffer))
-         (=: buffer
-            (or
-               (find '((This) (= File (: file))) *Buffers)
-               (new '(+Buffer) File) ) ) )
+         (=: buffer (fileBuffer File)) )
       (load> (: buffer))
       (goto 1 (or N (: buffer pos)) T)
       (repaint) ) )
@@ -970,10 +972,10 @@
    (for X Lst
       (cond
          ((not X))
-         ((atom X) (new '(+Buffer) X))
+         ((atom X) (fileBuffer X))
          ((not (cdr X)) (wordFun (car X)))
          (T
-            (new '(+Buffer)
+            (fileBuffer
                (cdr X)
                (or (num? (car X)) T) ) ) ) )
    (when *Buffers

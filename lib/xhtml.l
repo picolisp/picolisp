@@ -135,6 +135,11 @@
 (de serverSentEvent (Sym Id)
    (javascript NIL "serverSentEvent('" Sym "','" Id "');") )
 
+(de serverSend @
+   (ht:Out (bool *Chunked)
+      (pass prinl "data: ")
+      (prinl) ) )
+
 (de ping (Min)
    (timeout (setq *Timeout (* Min `(* 60 1000))))
    (respond) )

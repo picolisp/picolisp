@@ -1,4 +1,4 @@
-# 12oct17abu
+# 26feb18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -131,6 +131,9 @@
          (prinl "<script type=\"text/javascript\" src=\"" (srcUrl JS) "\"></script>") )
       (when (rest)
          (prinl "<script type=\"text/javascript\">" @ "</script>") ) ) )
+
+(de serverSentEvent (Sym Id)
+   (javascript NIL "serverSentEvent('" Sym "','" Id "');") )
 
 (de ping (Min)
    (timeout (setq *Timeout (* Min `(* 60 1000))))

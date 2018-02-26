@@ -1,3 +1,13 @@
+26feb18
+   Server-Sent Events
+      lib/xhtml.l
+      lib/form.js
+
+25feb18
+   Allow partial chunks in 'ht:Out'
+      src64/ht.l
+      src/ht.c
+
 22feb18
    Resolve symbolic links
    Sort directory listing

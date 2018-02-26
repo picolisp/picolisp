@@ -1,4 +1,4 @@
-# 17feb18abu
+# 25feb18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -656,6 +656,7 @@ skip CHUNK  # <Y III> Chunk buffer
       prog X  # Run 'prg'
    else
       push Y
+      push E  # Save 'flg'
       ld Y Chunk  # Get Chunk
       ld (Y) 0  # Clear count
       ld (Y II) (PutB)  # Save current 'put'
@@ -666,8 +667,12 @@ skip CHUNK  # <Y III> Chunk buffer
          call wrChunkY  # Write rest
       end
       ld (PutB) (Y II)  # Restore 'put'
-      ld C Newlines  # Output termination string
-      call outStringC
+      pop A  # Get 'flg'
+      cmp A TSym  # T?
+      if ne  # no
+         ld C Newlines  # Output termination string
+         call outStringC
+      end
       pop Y
    end
    ld A (OutFile)  # Flush OutFile

@@ -1,4 +1,4 @@
-/* 13feb15abu
+/* 25feb18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -324,8 +324,10 @@ static void putChunked(int c) {
 
 // (ht:Out 'flg . prg) -> any
 any Out(any x) {
+   any y;
+
    x = cdr(x);
-   if (isNil(EVAL(car(x))))
+   if (isNil(y = EVAL(car(x))))
       x = prog(cdr(x));
    else {
       Cnt = 0;
@@ -334,7 +336,8 @@ any Out(any x) {
       if (Cnt)
          wrChunk();
       Env.put = Put;
-      outString("0\r\n\r\n");
+      if (y != T)
+         outString("0\r\n\r\n");
    }
    flush(OutFile);
    return x;

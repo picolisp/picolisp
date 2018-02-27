@@ -1,3 +1,8 @@
+27feb18
+   Prepend "LSD" command tokens to server messages
+      lib/xhtml.l
+      lib/form.js
+
 26feb18
    Server-Sent Events
       lib/xhtml.l

@@ -1,4 +1,4 @@
-# 22feb18abu
+# 28feb18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -57,7 +57,7 @@
                   (state 'S
                      (text (and (= "\"" C) 'string)
                         (set C 0) )
-                     (text (and L (= "#" C) (delim? P) 'comment)
+                     (text (and (= "#" C) (delim? P) 'comment)
                         (set C N)
                         (when (= "{" (car L))
                            (set (++ L) (inc 'N)) ) )

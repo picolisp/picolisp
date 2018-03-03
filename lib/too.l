@@ -1,4 +1,4 @@
-# 12feb18abu
+# 03mar18abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -22,7 +22,7 @@
       (for (L (flip (sort (extract format (dir Dst))))  L)
          (let N (++ L)
             (call "mv" (pack Dst '/ N) (pack Dst '/ (inc N)))
-            (when (> (car L) (*/ N 9 10))
+            (when (> (car L) (*/ N 59 60))
                (call "rm" "-rf" (pack Dst '/ (++ L))) ) ) ) )
    (when (call "mkdir" (pack Dst "/1"))
       (while (args)

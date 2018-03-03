@@ -1,4 +1,5 @@
 * XXjun18 picoLisp-18.6
+   Increase 'snapshot' range
    Server-Sent Events
    'blk' function (64-bit)
 

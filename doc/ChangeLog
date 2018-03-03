@@ -1,3 +1,7 @@
+03mar18
+   Increase 'snapshot' range from 9/10 to 59/60
+      lib/too.l
+
 28feb18
    Fix markup for '#' at end of line
       lib/vip.l

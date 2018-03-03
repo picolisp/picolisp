@@ -1,4 +1,6 @@
 03mar18
+   Fix markup for '#' continued
+      lib/vip.l
    Increase 'snapshot' range from 9/10 to 59/60
       lib/too.l
 
@@ -299,7 +301,7 @@
       src/Makefile
 
 14sep17
-   Make '*HtSock' global cont.
+   Make '*HtSock' global continued
       lib/http.l
 
 11sep17

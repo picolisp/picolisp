@@ -1,3 +1,7 @@
+04mar18
+   '*F10', '*F11' and  '*F12' (configurable in ~/.pil/viprc)
+      lib/vip.l
+
 03mar18
    Fix markup for '#' continued
       lib/vip.l

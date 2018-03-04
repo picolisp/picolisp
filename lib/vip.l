@@ -1,10 +1,10 @@
-# 03mar18abu
+# 04mar18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 (local) [
    *CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip
-   *Lines *Columns *TagStack ]
+   *Lines *Columns *TagStack *F10 *F11 *F12 ]
 
 ### Curses library interface ###
 (local) curses
@@ -1195,9 +1195,9 @@
                               (and (info F) (catch '(NIL) (load F))) ) )
                         ## (`(char (+ 264 8)) ())  # [F8]
                         ## (`(char (+ 264 9)) ())  # [F9]
-                        ## (`(char (+ 264 10)) ())  # [F10]
-                        ## (`(char (+ 264 11)) ())  # [F11]
-                        ## (`(char (+ 264 12)) ())  # [F12]
+                        (`(char (+ 264 10)) (run *F10))  # [F10] Custom key
+                        (`(char (+ 264 11)) (run *F11))  # [F11] Custom key
+                        (`(char (+ 264 12)) (run *F12))  # [F12] Custom key
                         ("\\"  # Select or toggle buffer
                            (nextBuf
                               (if *Count

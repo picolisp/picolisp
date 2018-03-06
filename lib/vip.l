@@ -1,4 +1,4 @@
-# 04mar18abu
+# 06mar18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -874,7 +874,7 @@
    (evRpt
       (fill
          '(when (cdr (cutN Cnt))
-            (pipe (out (list "sh" "-c" Line) (mapc prinl @))
+            (pipe (out (list "bash" "-c" Line) (mapc prinl @))
                (paste (cons T (rdLines)) @@) ) )
          '(Line Cnt) ) ) )
 
@@ -894,7 +894,7 @@
 (de shell (S)
    (curses "endwin")
    (do *Columns (prin "#"))
-   (call "sh" "-c" S)
+   (call "bash" "-c" S)
    (prin "[====] ")
    (flush)
    (getch) )
@@ -1184,12 +1184,23 @@
                               (reload (cdr @) (car @)) ) )
                         ("^T"  # Pop tag stack
                            (reload (pop '*TagStack) (pop '*TagStack)) )
-                        (`(char (+ 264 1)) (onOff *Flat) (repaint))  # [F1] Highlight on/off
-                        (`(char (+ 264 2)) (shFile "diff -Bb @1- @1"))  # [F2] Show chages to <file>-
-                        (`(char (+ 264 3)) (shFile "dif @1 @2"))  # [F3] Custom dif
-                        (`(char (+ 264 4)) (goPFore 1 -1) (pipeN (cnt@@) "fmt"))  # [F4] Format paragraph
-                        (`(char (+ 264 5)) (nextBuf T))  # [F5] Previous buffer
-                        (`(char (+ 264 6)) (nextBuf))  # [F6] Next buffer
+                        (`(char (+ 264 1))  # [F1] Highlight on/off
+                           (onOff *Flat)
+                           (repaint) )
+                        (`(char (+ 264 2))  # [F2] Show chages to <file>-
+                           (shFile
+                              (if (sys "CCRYPT" (: buffer key))
+                                 "diff -Bb <(ccrypt -c -ECCRYPT @1-) <(ccrypt -c -ECCRYPT @1)"
+                                 "diff -Bb @1- @1" ) ) )
+                        (`(char (+ 264 3))  # [F3] Custom dif
+                           (shFile "dif @1 @2") )
+                        (`(char (+ 264 4))  # [F4] Format paragraph
+                           (goPFore 1 -1)
+                           (pipeN (cnt@@) "fmt") )
+                        (`(char (+ 264 5))  # [F5] Previous buffer
+                           (nextBuf T) )
+                        (`(char (+ 264 6))  # [F6] Next buffer
+                           (nextBuf) )
                         (`(char (+ 264 7))  # [F7] Load file
                            (let? F (fName (: buffer file))
                               (and (info F) (catch '(NIL) (load F))) ) )

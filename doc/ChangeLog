@@ -1,3 +1,8 @@
+06mar18
+   'diff' with F2 also on encrypted files
+   Use 'bash' instead of 'sh' in shell commands
+      lib/vip.l
+
 04mar18
    '*F10', '*F11' and  '*F12' (configurable in ~/.pil/viprc)
       lib/vip.l

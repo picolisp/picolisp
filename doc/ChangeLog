@@ -1,3 +1,10 @@
+11mar18
+   Fix trailing slash in 'dirname' and 'basename' arguments
+      lib/misc.l
+      ersatz/lib.l
+      pilos/init/lib/misc.l
+      test/lib/misc.l
+
 06mar18
    'diff' with F2 also on encrypted files
    Use 'bash' instead of 'sh' in shell commands

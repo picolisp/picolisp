@@ -1,4 +1,4 @@
-# 17nov17abu
+# 11mar18abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -396,10 +396,16 @@
          (run "Prg") ) ) )
 
 (de dirname (F)
-   (pack (flip (member '/ (flip (chop F))))) )
+   (let L (flip (chop F))
+      (while (= "/" (car L))
+         (++ L) )
+      (pack (flip (member "/" L))) ) )
 
 (de basename (F)
-   (pack (stem (chop F) '/)) )
+   (let L (flip (chop F))
+      (while (= "/" (car L))
+         (++ L) )
+      (pack (stem (flip L) "/")) ) )
 
 (de ssl ("Host" "Path" . "Prg")
    (in (list "@bin/ssl" "Host" 443 "Path")

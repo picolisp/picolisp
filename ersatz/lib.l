@@ -1,4 +1,4 @@
-# 12jan18abu
+# 11mar18abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -835,10 +835,16 @@
 
 
 (de dirname (F)
-   (pack (flip (member '/ (flip (chop F))))) )
+   (let L (flip (chop F))
+      (while (= "/" (car L))
+         (++ L) )
+      (pack (flip (member "/" L))) ) )
 
 (de basename (F)
-   (pack (stem (chop F) '/)) )
+   (let L (flip (chop F))
+      (while (= "/" (car L))
+         (++ L) )
+      (pack (stem (flip L) "/")) ) )
 
 # Print or eval
 (de prEval (Prg Ofs)

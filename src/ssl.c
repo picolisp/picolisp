@@ -1,4 +1,4 @@
-/* 17nov17abu
+/* 13mar18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -148,12 +148,12 @@ static void iSignal(int n, void (*foo)(int)) {
 }
 
 // ssl host port [url key file]
-// ssl host port url key file dir sec [min]
+// ssl host port url key file dir sec [min] [dir ..]
 int main(int ac, char *av[]) {
    bool dbg;
    SSL_CTX *ctx;
    SSL *ssl;
-   int n, sec, lim, getLen, lenLen, fd, sd;
+   int i, n, sec, lim, getLen, lenLen, fd, sd;
    DIR *dp;
    struct dirent *p;
    struct stat st;
@@ -161,8 +161,8 @@ int main(int ac, char *av[]) {
 
    if (dbg = strcmp(av[ac-1], "+") == 0)
       --ac;
-   if (!(ac >= 3 && ac <= 6  ||  ac >= 8 && ac <= 9))
-      giveup("host port [url key file] | host port url key file dir sec [min]");
+   if (!(ac >= 3 && ac <= 6  ||  ac >= 8))
+      giveup("host port [url key file] | host port url key file dir sec [min] [dir ..]");
    if (*av[2] == '-')
       ++av[2],  Safe = YES;
    if (ac <= 3  ||  *av[3] == '\0')
@@ -225,7 +225,7 @@ int main(int ac, char *av[]) {
    iSignal(SIGINT, doSigTerm);
    iSignal(SIGTERM, doSigTerm);
    lim = 0;
-   if (ac == 9) {
+   if (ac >= 9 && *av[8]) {
       if ((lim = atoi(av[8])) == 0) {
          printf("%d\n", getpid());
          fflush(stdout);
@@ -253,6 +253,22 @@ int main(int ac, char *av[]) {
             if (ftruncate(fd,0) < 0)
                giveup("Can't truncate");
             close(fd);
+            for (i = 9; i < ac; ++i) {
+               if (dp = opendir(av[i])) {
+                  int max = -1;
+                  while (p = readdir(dp))
+                     if ((n = atoi(p->d_name)) > max)
+                        max = n;
+                  if (max >= 0) {
+                     snprintf(nm, sizeof(nm), "%s/%d", av[i], max + 1);
+                     if ((fd = open(nm, O_CREAT|O_EXCL|O_WRONLY, 0666)) >= 0) {
+                        write(fd, Data, Size);
+                        close(fd);
+                     }
+                  }
+                  closedir(dp);
+               }
+            }
             for (;;) {
                if ((sd = sslConnect(ssl, av[1], av[2])) >= 0) {
                   if (SSL_write(ssl, get, getLen) == getLen  &&

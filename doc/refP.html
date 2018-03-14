@@ -410,6 +410,28 @@ abu:~/pico  ls -l dbFile*
 -> T
 </code></pre>
 
+<dt><a name="pool2"><code></code>(pool2 'sym . prg) -> any</a>
+<dd>(64-bit version only) Temporary switches to another database specified by
+<code>sym</code>. This database must be a multi-file DB with exactly the same
+<code><a href="refD.html#*Dbs">*Dbs</a></code> structure as the currently open
+one. The current database is not closed - I/O is just redirected to the new one.
+All files are opened before <code>prg</code> runs, and are closed thereafter.
+The result of <code>prg</code> is returned. No replication journal or
+transaction log is written. Also, possibly cached objects of the current DB
+remain in the heap, so an explicit call to <code><a
+href="refR.html#rollback">rollback</a></code> may be necessary. See also
+<code><a href="refB.html#blk">blk</a></code>.
+
+<pre><code>
+(pool2 "db2/"  # Update a read-only DB
+   (journal "file.jnl") )
+
+(rollback)
+(pool2 "db2/"  # Access object(s)
+   (show *DB) )
+(rollback)
+</code></pre>
+
 <dt><a name="pop"><code>(pop 'var) -> any</code></a>
 <dd>Pops the first element (CAR) from the stack in <code>var</code>. See also
 <code><a href="refP.html#push">push</a></code>, <code><a

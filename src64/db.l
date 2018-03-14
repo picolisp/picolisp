@@ -1,4 +1,4 @@
-# 15feb18abu
+# 14mar18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -971,6 +971,66 @@
    add B (char "@")  # Make ASCII letter
    ld (C) B  # Store in buffer
    inc C
+   ret
+
+# (pool2 'sym . prg) -> any
+(code 'doPool2 2)
+   push X
+   push Y
+   push Z
+   ld X E
+   ld Y (E CDR)  # Y on args
+   ld Z (DbFiles)  # Iterate DB files
+   ld C (DBs)  # Count
+   do
+      push (Z)  # Save file descriptor
+      add Z VIII  # Increment by sizeof(dbFile)
+      sub C VIII  # Done?
+   until z  # Yes
+   push Z  # Save DB files end
+   push (DbJnl)  # Journal
+   push (DbLog)  # Transaction log
+   call evSymY_E  # Eval database name
+   link
+   push E  # <L I> DB name
+   link
+   push A  # 8 bytes additional buffer space
+   call pathStringE_SZ  # <S I> DB name
+   slen C S  # String length in C
+   add C S  # Add to buffer
+   push C  # <S> DB name end pointer
+   ld Z (DbFiles)  # Iterate DB files
+   ld E (DBs)  # Count
+   do
+      ld C (S)  # Get DB name end pointer
+      ld A (Z I)  # Get file number
+      call bufAoAC_C  # Append AO encoding to DB base name
+      set (C) 0  # Null-byte string terminator
+      cc open(&(S I) O_RDWR)  # Try to open
+      nul4  # OK?
+      if s  # No
+         ld E (L I)  # Database name
+         jmp openErrEX
+      end
+      ld (Z) A  # Set new file descriptor
+      call closeOnExecAX
+      add Z VIII  # Increment by sizeof(dbFile)
+      sub E VIII  # Done?
+   until z  # Yes
+   ld Y (Y CDR)  # Get 'prg'
+   prog Y
+   drop
+   pop (DbLog)  # Transaction log
+   pop (DbJnl)  # Journal
+   pop Z  # Get DB files end
+   do
+      sub Z VIII  # Decrement by sizeof(dbFile)
+      pop (Z)  # Restore file descriptor
+      cmp Z (DbFiles)  # Done?
+   until eq  # Yes
+   pop Z
+   pop Y
+   pop X
    ret
 
 # (journal 'any ..) -> T

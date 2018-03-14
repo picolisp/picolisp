@@ -1,4 +1,4 @@
-# 13feb18abu
+# 14mar18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -557,6 +557,7 @@
 
    # Database
    initFun NIL       "pool"      doPool
+   initFun NIL       "pool2"     doPool2
    initFun NIL       "journal"   doJournal
    initFun NIL       "id"        doId
    initFun NIL       "blk"       doBlk

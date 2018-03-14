@@ -1,4 +1,10 @@
 14mar18
+   'pool2' function (64-bit)
+      src64/glob.l
+      src64/db.l
+      doc/ref.html
+      doc/refB.html
+      doc/refP.html
    'blk' and 'struct' are 64-bit-only
       doc/refB.html
       doc/refS.html

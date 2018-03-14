@@ -1,6 +1,7 @@
 14mar18
-   'blk' is 64-bit-only
+   'blk' and 'struct' are 64-bit-only
       doc/refB.html
+      doc/refS.html
 
 13mar18
    Optional mirror destination directory arguments

@@ -854,11 +854,11 @@ href="refD.html#datStr">datStr</a></code>.
 </code></pre>
 
 <dt><a name="struct"><code>(struct 'num 'any 'any ..) -> any</code></a>
-<dd>Creates or extracts data structures, suitable to be passed to or returned
-from <code><a href="refN.html#native">native</a></code> C functions. The first
-<code>num</code> argument should be a native value, either a scalar, or a
-pointer obtained by calling functions like <code>malloc()</code>. The second
-argument <code>any</code> is a <a href="refN.html#natResult">result
+<dd>(64-bit version only) Creates or extracts data structures, suitable to be
+passed to or returned from <code><a href="refN.html#native">native</a></code> C
+functions. The first <code>num</code> argument should be a native value, either
+a scalar, or a pointer obtained by calling functions like <code>malloc()</code>.
+The second argument <code>any</code> is a <a href="refN.html#natResult">result
 specification</a>, while all following <a
 href="refN.html#natItem">initialization items</a> are stored in the structure
 pointed to by the first argument. See also <a href="native.html">Native C

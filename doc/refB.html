@@ -234,14 +234,14 @@ href="refX.html#x|">x|</a></code>.
 </code></pre>
 
 <dt><a name="blk"><code>(blk 'fd 'cnt 'siz ['fd2]) -> lst</code></a>
-<dd>Reads raw object data from the <code>cnt</code>'th block in the file opened
-on descriptor <code>fd</code>. Returns a cons pair of the value and property
-list of that database object. <code>siz</code> is the block size scale factor.
-If <code>fd2</code> is given, a read (shared) lock is set on that file during
-the read operation. See also <code><a href="refP.html#pool">pool</a></code>,
-<code><a href="refI.html#id">id</a></code>, <code><a
-href="refC.html#ctl">ctl</a></code> and <code><a
-href="refQ.html#qsym">qsym</a></code>.
+<dd>(64-bit version only) Reads raw object data from the <code>cnt</code>'th
+block in the file opened on descriptor <code>fd</code>. Returns a cons pair of
+the value and property list of that database object. <code>siz</code> is the
+block size scale factor. If <code>fd2</code> is given, a read (shared) lock is
+set on that file during the read operation. See also <code><a
+href="refP.html#pool">pool</a></code>, <code><a
+href="refI.html#id">id</a></code>, <code><a href="refC.html#ctl">ctl</a></code>
+and <code><a href="refQ.html#qsym">qsym</a></code>.
 
 <pre><code>
 : (show '{4})

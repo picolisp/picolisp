@@ -1,3 +1,7 @@
+14mar18
+   'blk' is 64-bit-only
+      doc/refB.html
+
 13mar18
    Optional mirror destination directory arguments
       src/ssl.c

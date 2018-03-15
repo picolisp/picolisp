@@ -1,4 +1,4 @@
-/* 02sep17abu
+/* 15mar18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2270,9 +2270,9 @@ any doEcho(any ex) {
    long cnt;
 
    x = cdr(ex),  y = EVAL(car(x));
-   if (!Chr)
-      Env.get();
    if (isNil(y) && !isCell(cdr(x))) {
+      if (!Chr)
+         Env.get();
       while (Chr >= 0)
          Env.put(Chr),  Env.get();
       return T;
@@ -2291,6 +2291,8 @@ any doEcho(any ex) {
          y = evSym(x = cdr(x));
       }
       m = -1;
+      if (!Chr)
+         Env.get();
       while (Chr >= 0) {
          if ((om = m) >= 0)
             op = p[m];
@@ -2340,18 +2342,18 @@ any doEcho(any ex) {
       return x;
    }
    if (isCell(x = cdr(x))) {
-      for (cnt = xCnt(ex,y), y = EVAL(car(x)); --cnt >= 0; Env.get())
+      for (cnt = xCnt(ex,y), y = EVAL(car(x)); --cnt >= 0;) {
+         Env.get();
          if (Chr < 0)
             return Nil;
+      }
    }
    if ((cnt = xCnt(ex,y)) > 0) {
-      for (;;) {
+      while (--cnt >= 0) {
+         Env.get();
          if (Chr < 0)
             return Nil;
          Env.put(Chr);
-         if (!--cnt)
-            break;
-         Env.get();
       }
    }
    Chr = 0;

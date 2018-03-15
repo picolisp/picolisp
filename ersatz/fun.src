@@ -1,4 +1,4 @@
-# 04apr17abu
+# 15mar18abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -3602,9 +3602,9 @@ close (i x)
 # (echo ['cnt ['cnt]] | ['sym ..]) -> sym
 echo (i j k n x y v)
    y = (x = ex.Cdr).Car.eval();
-   if (InFile.Chr == 0)
-      InFile.get();
    if (y == Nil && !(x.Cdr instanceof Cell)) {
+      if (InFile.Chr == 0)
+         InFile.get();
       while (InFile.Chr >= 0) {
          OutFile.Wr.print((char)InFile.Chr);
          InFile.get();
@@ -3618,6 +3618,8 @@ echo (i j k n x y v)
       for (v = new Any[k], i = 0; i < k; ++i, y = (x = x.Cdr).Car.eval())
          av[i] = (v[i] = y).name();
       int m = -1, d, om, op = 0;  /* Brain-dead Java: 'op' _is_ initialized */
+      if (InFile.Chr == 0)
+         InFile.get();
       while (InFile.Chr >= 0) {
          if ((om = m) >= 0)
             op = p[m];
@@ -3660,18 +3662,18 @@ echo (i j k n x y v)
       return Nil;
    }
    if ((x = x.Cdr) instanceof Cell) {
-      for (n = xLong(y), y = x.Car.eval(); --n >= 0; InFile.get())
+      for (n = xLong(y), y = x.Car.eval(); --n >= 0;) {
+         InFile.get();
          if (InFile.Chr < 0)
             return Nil;
+      }
    }
    if ((n = xLong(y)) > 0) {
-      for (;;) {
+      while (--n >= 0) {
+         InFile.get();
          if (InFile.Chr < 0)
             return Nil;
          OutFile.Wr.print((char)InFile.Chr);
-         if (--n == 0)
-            break;
-         InFile.get();
       }
    }
    InFile.Chr = 0;

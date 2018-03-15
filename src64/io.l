@@ -1,4 +1,4 @@
-# 09jan18abu
+# 15mar18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -4558,15 +4558,15 @@
    ld E (Y)  # Eval first
    eval
    ld Y (Y CDR)  # Next arg
-   ld A (Chr)  # Look ahead char?
-   null A
-   if z  # No
-      call (Get_A)  # Get next
-   end
    cmp E Nil  # Empty arg?
    if eq  # Yes
       atom Y  # No further args?
       if nz  # Yes
+         ld A (Chr)  # Look ahead char?
+         null A
+         if z  # No
+            call (Get_A)  # Get next
+         end
          do
             null A  # EOF?
          while ns  # No
@@ -4587,10 +4587,10 @@
          ld Y (Y)  # Get second 'cnt'
          xchg Y E  # First 'cnt' in Y
          call evCntEX_FE  # Evaluate second
-         ld A (Chr)  # Get Chr again
          do
             dec Y  # Decrement first 'cnt'
          while ns
+            call (Get_A)  # Get next
             null A  # EOF?
             if s  # Yes
                ld E Nil  # Return NIL
@@ -4598,25 +4598,21 @@
                pop X
                ret
             end
-            call (Get_A)  # Get next
          loop
       end
-      null E  # 'cnt'?
-      if nsz  # Yes
-         do
-            null A  # EOF?
-            if s  # Yes
-               ld E Nil  # Return NIL
-               pop Y
-               pop X
-               ret
-            end
-            call (PutB)  # Output byte
-            dec E  # Decrement 'cnt'
-         while nz
-            call (Get_A)  # Get next
-         loop
-      end
+      do
+         dec E  # Decrement 'cnt'
+      while ns
+         call (Get_A)  # Get next
+         null A  # EOF?
+         if s  # Yes
+            ld E Nil  # Return NIL
+            pop Y
+            pop X
+            ret
+         end
+         call (PutB)  # Output byte
+      loop
       ld (Chr) 0  # Clear look ahead
       ld E TSym  # Return T
       pop Y
@@ -4640,7 +4636,11 @@
       ld Y (Y CDR)
    loop
    ld X 0  # Clear current max
-   ld A (Chr)  # Look ahead char
+   ld A (Chr)  # Look ahead char?
+   null A
+   if z  # No
+      call (Get_A)  # Get next
+   end
    do
       null A  # EOF?
    while ns  # No

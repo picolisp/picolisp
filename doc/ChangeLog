@@ -1,4 +1,8 @@
 15mar18
+   Bug in 'echo' for zero 'cnt' arguments
+      {src64,pilos/src}/io.l
+      src/io.c
+      ersatz/fun.src
    Bug in 'pool2' function
       src64/db.l
 

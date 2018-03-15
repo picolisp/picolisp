@@ -1,4 +1,4 @@
-# 14mar18abu
+# 15mar18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1025,6 +1025,8 @@
    pop Z  # Get DB files end
    do
       sub Z VIII  # Decrement by sizeof(dbFile)
+      ld A (Z)  # File descriptor
+      call closeAX  # Close it
       pop (Z)  # Restore file descriptor
       cmp Z (DbFiles)  # Done?
    until eq  # Yes

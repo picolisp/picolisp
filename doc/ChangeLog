@@ -1,3 +1,7 @@
+15mar18
+   Bug in 'pool2' function
+      src64/db.l
+
 14mar18
    'pool2' function (64-bit)
       src64/glob.l

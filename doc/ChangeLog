@@ -1,3 +1,7 @@
+17mar18
+   Replace "%" in 'reload' with current filename
+      lib/vip.l
+
 15mar18
    Bug in 'echo' for zero 'cnt' arguments
       {src64,pilos/src}/io.l

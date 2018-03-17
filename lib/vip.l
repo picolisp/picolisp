@@ -1,4 +1,4 @@
-# 06mar18abu
+# 17mar18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -944,7 +944,9 @@
                   ("key" (=: buffer key Line) (reload))
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer
-                  ("e" (reload Line))  # (Edit) Reload buffer
+                  ("e"  # (Edit) Reload buffer
+                     (reload
+                        (pack (replace (chop Line) "%" (: buffer file))) ) )
                   ("r"  # Read file contents
                      (in (fName Line)
                         (paste (cons T (rdLines)) 1) ) )

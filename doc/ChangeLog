@@ -1,5 +1,9 @@
+18mar18
+   Same for "!", "r" and "w" commands
+      lib/vip.l
+
 17mar18
-   Replace "%" in 'reload' with current filename
+   Replace "%" in "e" command with current filename
       lib/vip.l
 
 15mar18

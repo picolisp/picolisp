@@ -1,5 +1,6 @@
 18mar18
-   Same for "!", "r" and "w" commands
+   Persistent marks with "m" command
+   "%" replacement for "!", "r" and "w" commands
       lib/vip.l
 
 17mar18

@@ -141,7 +141,7 @@
 
 (local) [*Window +Window]
 (class +Window)
-# buffer top lines status ptr winX winY posX posY prev next last
+# buffer top lines status ptr winX winY posX posY prev next last mark
 
 (dm T (Buffer Top Height WinX WinY PosX PosY Prev)
    (=: buffer Buffer)
@@ -945,6 +945,12 @@
                            (paste (cons T L) T)
                            (inc (:: posY) (dec (length L))) ) ) )
                   ("key" (=: buffer key Line) (reload))
+                  ("m"
+                     (push1 '*Bye
+                        '(for (This *CmdWin (setq This (: next)))
+                           (and (: mark) (out @ (println (: posY)))) ) )
+                     (when (info (=: mark (rplFile Line)))
+                        (move 'goAbs 1 (in (: mark) (read))) ) )
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer
                   ("e" (reload (rplFile Line)))  # (Edit) Reload buffer

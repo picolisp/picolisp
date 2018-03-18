@@ -222,6 +222,8 @@
                   (: buffer file)
                   (unless (= (: buffer undo) (: buffer dirt)) " [+]") )
                Z (pack
+                  (: mark)
+                  " "
                   (: posX) "," (: posY) "/" N " "
                   (if (gt0 (dec N))
                      (*/ 100 (dec (: posY)) @)
@@ -339,6 +341,8 @@
       (repaint) ) )
 
 (de done ()
+   (when (: mark)
+      (out @ (println (: posX) (: posY))) )
    (nond
       ((; *CmdWin next next) (throw 'done))
       ((n== This *CmdWin))
@@ -946,11 +950,8 @@
                            (inc (:: posY) (dec (length L))) ) ) )
                   ("key" (=: buffer key Line) (reload))
                   ("m"
-                     (push1 '*Bye
-                        '(for (This *CmdWin (setq This (: next)))
-                           (and (: mark) (out @ (println (: posY)))) ) )
                      (when (info (=: mark (rplFile Line)))
-                        (move 'goAbs 1 (in (: mark) (read))) ) )
+                        (in (: mark) (move 'goAbs (read) (read))) ) )
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer
                   ("e" (reload (rplFile Line)))  # (Edit) Reload buffer

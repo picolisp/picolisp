@@ -163,13 +163,13 @@
 
 
 (local) [
-   min1 delwin cursor addLine chgLine redraw repaint scroll goto chgwin eqwin
-   getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft goRight goUp
-   goDown goAbs goFind word lword end lend getWord _forward goForward _backward
-   goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
-   insChar overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight jmpMark
-   wordFun moveSearch patMatch parMatch pipeN nextBuf shell shFile reset command
-   vi ]
+   min1 delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin
+   eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft goRight
+   goUp goDown goAbs goFind word lword end lend getWord _forward goForward
+   _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
+   tglCase insChar overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight
+   jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell shFile reset
+   command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -209,6 +209,11 @@
    (curses "wclrtoeol" NIL (: ptr))
    (addLine (- (: posY) (: winY)) L *Columns)
    (cursor) )
+
+(de unmark ()
+   (when (: mark)
+      (out @ (println (: posX) (: posY)))
+      (=: mark) ) )
 
 (de status ()
    (when (: status)
@@ -338,15 +343,14 @@
          (unless
             (==
                (=: last (: buffer))
-               (=: buffer (fileBuffer File)) ) )
-         (=: mark) )
+               (=: buffer (fileBuffer File)) )
+            (unmark) ) )
       (load> (: buffer))
       (goto 1 (or N (: buffer pos)) T)
       (repaint) ) )
 
 (de done ()
-   (when (: mark)
-      (out @ (println (: posX) (: posY))) )
+   (unmark)
    (nond
       ((; *CmdWin next next) (throw 'done))
       ((n== This *CmdWin))
@@ -898,7 +902,7 @@
             ((=T B) B)
             (NIL
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
-      (=: mark)
+      (unmark)
       (unless (: buffer text)
          (load> (: buffer)) )
       (goto 1 (: buffer pos) T) ) )

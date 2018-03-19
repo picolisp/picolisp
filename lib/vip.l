@@ -335,8 +335,11 @@
 (de reload (File N)
    (unless (== This *CmdWin)
       (when File
-         (=: last (: buffer))
-         (=: buffer (fileBuffer File)) )
+         (unless
+            (==
+               (=: last (: buffer))
+               (=: buffer (fileBuffer File)) ) )
+         (=: mark) )
       (load> (: buffer))
       (goto 1 (or N (: buffer pos)) T)
       (repaint) ) )
@@ -895,6 +898,7 @@
             ((=T B) B)
             (NIL
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
+      (=: mark)
       (unless (: buffer text)
          (load> (: buffer)) )
       (goto 1 (: buffer pos) T) ) )
@@ -1242,6 +1246,7 @@
                                              (: prev)
                                              (: mark) )
                                           (goto (: posX) (: posY) T) )
+                                       (=: mark)
                                        (chgwin (dec New)) ) ) )
                               ("x"  # [qx] Exchange windows
                                  (and

@@ -1,4 +1,4 @@
-/* 13mar18abu
+/* 19mar18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -253,17 +253,25 @@ int main(int ac, char *av[]) {
             if (ftruncate(fd,0) < 0)
                giveup("Can't truncate");
             close(fd);
-            for (i = 9; i < ac; ++i) {
+            for (nm[0] = '\0', i = 9;  i < ac;  ++i) {
                if (dp = opendir(av[i])) {
                   int max = -1;
                   while (p = readdir(dp))
                      if ((n = atoi(p->d_name)) > max)
                         max = n;
                   if (max >= 0) {
-                     snprintf(nm, sizeof(nm), "%s/%d", av[i], max + 1);
-                     if ((fd = open(nm, O_CREAT|O_EXCL|O_WRONLY, 0666)) >= 0) {
-                        write(fd, Data, Size);
-                        close(fd);
+                     if (nm[0]) {
+                        snprintf(buf, sizeof(buf), "%s/%d", av[i], max + 1);
+                        link(nm, buf);
+                     }
+                     else {
+                        snprintf(nm, sizeof(nm), "%s/%d", av[i], max + 1);
+                        if ((fd = open(nm, O_CREAT|O_EXCL|O_WRONLY, 0666)) < 0)
+                           nm[0] = '\0';
+                        else {
+                           write(fd, Data, Size);
+                           close(fd);
+                        }
                      }
                   }
                   closedir(dp);

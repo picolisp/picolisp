@@ -1,4 +1,4 @@
-# 18mar18abu
+# 19mar18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -143,7 +143,7 @@
 (class +Window)
 # buffer top lines status ptr winX winY posX posY prev next last mark
 
-(dm T (Buffer Top Height WinX WinY PosX PosY Prev)
+(dm T (Buffer Top Height WinX WinY PosX PosY Prev Mark)
    (=: buffer Buffer)
    (=: top Top)
    (when (=: prev Prev)
@@ -158,7 +158,8 @@
    (=: winX WinX)
    (=: winY WinY)
    (=: posX PosX)
-   (=: posY PosY) )
+   (=: posY PosY)
+   (=: mark Mark) )
 
 
 (local) [
@@ -1238,7 +1239,8 @@
                                              (+ (: top) New) (- Old New)
                                              (: winX) (: winY)
                                              (: posX) (: posY)
-                                             (: prev) )
+                                             (: prev)
+                                             (: mark) )
                                           (goto (: posX) (: posY) T) )
                                        (chgwin (dec New)) ) ) )
                               ("x"  # [qx] Exchange windows

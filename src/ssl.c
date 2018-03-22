@@ -1,4 +1,4 @@
-/* 19mar18abu
+/* 22mar18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -256,8 +256,10 @@ int main(int ac, char *av[]) {
             for (nm[0] = '\0', i = 9;  i < ac;  ++i) {
                if (dp = opendir(av[i])) {
                   int max = -1;
+                  char *q;
+
                   while (p = readdir(dp))
-                     if ((n = atoi(p->d_name)) > max)
+                     if ((n = (int)strtol(p->d_name, &q, 10)) > max  &&  !*q)
                         max = n;
                   if (max >= 0) {
                      if (nm[0]) {

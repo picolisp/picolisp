@@ -1,3 +1,7 @@
+22mar18
+   Bug in mirror number parsing
+      src/ssl.c
+
 19mar18
    Use hard links if more than one mirror directory
       src/ssl.c

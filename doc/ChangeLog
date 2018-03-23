@@ -1,3 +1,9 @@
+23mar18
+   'tasks' function
+      lib.l
+      doc/ref.html
+      doc/refT.html
+
 22mar18
    Bug in mirror number parsing
       src/ssl.c

@@ -1,4 +1,4 @@
-# 03nov17abu
+# 23mar18abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -35,6 +35,33 @@
       (set (cdr @) (+ N))
       (push '*Run (list -1 (+ N) '(bye)))
       (del @ '*Run) ) )
+
+(de tasks Prg
+   (task -2 (run Prg)  "Prg" Prg
+      (let (L (assoc @ *Run)  P (run "Prg"))
+         (if2 (lt0 (car L)) (lt0 P)
+            (set (cdr L) (abs P))            # (-2 111 ..) -> (-2 999 ..)
+            (prog                            # (-2 999 ..) -> (7 ..)
+               (del '(task -2) '*Fork)
+               (ifn P
+                  (task -2)
+                  (set L P)
+                  (con L (cddr L))
+                  (push '*Fork (list 'close P) (list 'task P)) ) )
+            (let N (car L)                   # (7 ..) -> (-2 999 ...)
+               (del (list 'task N) '*Fork)
+               (del (list 'close N) '*Fork)
+               (set L -2)
+               (con L (cons (abs P) (cdr L)))
+               (push '*Fork '(task -2)) )
+            (let N (car L)                   # (3 ..) -> (7 ..)
+               (del (list 'task N) '*Fork)
+               (del (list 'close N) '*Fork)
+               (ifn P
+                  (task N)
+                  (set L P)
+                  (push '*Fork (list 'close P) (list 'task P)) ) ) ) ) )
+   (forked) )
 
 (de abort ("N" . "Prg")
    (catch 'abort

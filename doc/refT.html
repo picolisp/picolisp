@@ -168,6 +168,7 @@ If an entry with that key already exists, an error is issued. For negative
 numbers, a second number must be supplied. If <code>sym</code>/<code>any</code>
 arguments are given, a <code><a href="refJ.html#job">job</a></code> environment
 is built for the <code>*Run</code> entry. See also <code><a
+href="refT.html#tasks">tasks</a></code>, <code><a
 href="refF.html#forked">forked</a></code> and <code><a
 href="refT.html#timeout">timeout</a></code>.
 
@@ -186,6 +187,35 @@ href="refT.html#timeout">timeout</a></code>.
 # Another session (on the same machine)
 : (udp "localhost" 4444 '(println *Pid))  # Send RPC message
 -> (println *Pid)
+</code></pre>
+
+<dt><a name="tasks"><code>(tasks . prg)</code></a>
+<dd>Runs a <code><a href="refT.html#task">task</a></code> with variable event
+specification in a single <code><a href="refR.html#*Run">*Run</a></code> entry.
+The task body <code>prg</code> should return either a positive number (a file
+descriptor) or a negative number (a timeout value) to be used in the next
+iteration. The first value must be a timeout. A value of <code>NIL</code>
+removes the task. Uses <code>-2</code> as implicit key. See also <code><a
+href="refF.html#forked">forked</a></code> and <code><a
+href="refT.html#timeout">timeout</a></code>.
+
+<pre><code>
+(tasks  # Three iterations with varying timeout
+   (let X (pop '(((-1000 . a) (-4000 . b) (-1000 . c))))
+      (msg (cdr X))
+      (car X) ) )
+
+(tasks
+   (co 'echoes  # Coroutine
+      (use S
+         (loop  # Loop infinitely
+            (yield -4000)  # First wait 1 seconds
+            (msg 'OK)
+            (yield  # Then wait for remote data
+               (setq S
+                  (pipe (exec "sh" "-c" "sleep 2; echo 7")) ) )
+            (msg (in S (read)))
+            (close S) ) ) ) )
 </code></pre>
 
 <dt><a name="telStr"><code>(telStr 'sym) -> sym</code></a>
@@ -376,8 +406,8 @@ href="ref_.html#$tim">$tim</a></code>.
 <dd>Sets or refreshes a timeout value in the <code><a
 href="refR.html#*Run">*Run</a></code> global, so that the current process
 executes <code><a href="refB.html#bye">bye</a></code> after the given period. If
-called without arguments, the timeout is removed. See also <code><a
-href="refT.html#task">task</a></code>.
+called without arguments, the timeout is removed. Uses <code>-1</code> as
+implicit key. See also <code><a href="refT.html#task">task</a></code>.
 
 <pre><code>
 : (timeout 3600000)           # Timeout after one hour

@@ -1,3 +1,7 @@
+31mar18
+   Enable hostname validation
+      src/ssl.c
+
 23mar18
    'tasks' function
       lib.l

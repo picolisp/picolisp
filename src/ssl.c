@@ -1,4 +1,4 @@
-/* 22mar18abu
+/* 31mar18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -19,6 +19,7 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/x509v3.h>
 
 typedef enum {NO,YES} bool;
 
@@ -153,6 +154,7 @@ int main(int ac, char *av[]) {
    bool dbg;
    SSL_CTX *ctx;
    SSL *ssl;
+   X509_VERIFY_PARAM *par;
    int i, n, sec, lim, getLen, lenLen, fd, sd;
    DIR *dp;
    struct dirent *p;
@@ -183,6 +185,10 @@ int main(int ac, char *av[]) {
       SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
    SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
+   par = SSL_get0_param(ssl);
+   X509_VERIFY_PARAM_set_hostflags(par, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+   X509_VERIFY_PARAM_set1_host(par, av[1], strlen(av[1]));
+   SSL_set_verify(ssl, SSL_VERIFY_PEER, NULL);
 
    signal(SIGCHLD,SIG_IGN);  /* Prevent zombies */
    signal(SIGPIPE, SIG_IGN);

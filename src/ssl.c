@@ -1,4 +1,4 @@
-/* 31mar18abu
+/* 01apr18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -187,7 +187,7 @@ int main(int ac, char *av[]) {
    if (!Safe) {
       X509_VERIFY_PARAM *par = SSL_get0_param(ssl);
       X509_VERIFY_PARAM_set_hostflags(par, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
-      X509_VERIFY_PARAM_set1_host(par, av[1], strlen(av[1]));
+      X509_VERIFY_PARAM_set1_host(par, av[1], 0);
       SSL_set_verify(ssl, SSL_VERIFY_PEER, NULL);
    }
 

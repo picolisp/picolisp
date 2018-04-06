@@ -1,4 +1,4 @@
-# 15mar18abu
+# 06apr18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1169,14 +1169,22 @@
    ld C BLKSIZE  # Calculate block size
    shl C E
    ld (S III) C  # Block size (64 << sh)
+   ld A (DbBlock)  # Block buffer
+   cmp C (MaxBlkSize)  # Calculate maximum
+   if gt
+      ld (MaxBlkSize) C
+      ld E C  # (Re)allocate buffer
+      call allocAE_A
+      ld (DbBlock) A
+   end
+   ld Z A  # Get block buffer in Z
+   add A C  # Calculate buffer end
+   ld (BufEnd) A
    ld (S IV) 0  # Clear 'flgs'
    ld (S V) 0  # mark vector size
    ld (S VI) 0  # and mark bit vector
    ld (S VII) -1  # Init 'fluse'
    ld (DbFile) S  # Set DB file
-   ld (BufEnd) S  # Same as data end
-   sub S (S III)  # Allocate buffer (block size)
-   ld Z S  # Get block buffer in Z
    ld Y (Y CDR)  # Next arg
    atom Y  # Any?
    if nz  # No
@@ -1195,13 +1203,12 @@
    ld (GetBinZ_FB) getBlockZ_FB  # Set binary read function
    ld (Extn) (ExtN)  # Set external symbol offset
    call binReadZ_FE  # Read value
-   call consE_A  # Cons with NIL
-   ld (A) E
-   ld (A CDR) Nil
+   call consE_X  # Cons with NIL
+   ld (X) E  # Keep in X
+   ld (X CDR) Nil
    link
-   push A  # <L I> Safe
+   push X  # <L I> Safe
    link
-   ld X A  # Keep in X
    do
       call binReadZ_FE  # Read property key
       cmp E Nil  # Any?
@@ -1228,7 +1235,6 @@
    end
    ld E (L I)  # Return list
    drop
-   add S ((DbFile) III)  # Drop buffer
    add S VIII  # Drop file structure
    pop Z
    pop Y

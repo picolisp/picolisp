@@ -1,3 +1,7 @@
+06apr18
+   Bug in 'blk' buffer handling
+      src64/db.l
+
 01apr18
    Enable hostname validation
       src/ssl.c

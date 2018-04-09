@@ -1,3 +1,7 @@
+09apr18
+   Minor typo
+      doc/refV.html
+
 06apr18
    Bug in 'blk' buffer handling
       src64/db.l

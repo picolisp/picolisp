@@ -1,4 +1,4 @@
-# 05jan18abu
+# 10apr18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -169,6 +169,14 @@
 (dm rel?> (Obj Val)
    T )
 
+(dm rel-> (Obj Val New Hook)
+   (unless (member Val New)
+      (rel> This Obj Val NIL Hook) ) )
+
+(dm rel+> (Obj Val Old Hook)
+   (unless (member Val Old)
+      (rel> This Obj NIL Val Hook) ) )
+
 (dm lose> (Obj Val))
 
 (dm keep> (Obj Val))
@@ -255,6 +263,22 @@
                   (get (if (sym? @) Obj Val) (: hook)) ) ) ) )
       (: bag)
       Val ) )
+
+(dm rel-> (Obj Val New Hook)
+   (for (I . This) (: bag)
+      (let V (get Val I)
+         (unless (find '((L) (= V (get L I))) New)
+            (rel> This Obj V NIL
+               (when (: hook)
+                  (get (if (sym? @) Obj Val) (: hook)) ) ) ) ) ) )
+
+(dm rel+> (Obj Val Old Hook)
+   (for (I . This) (: bag)
+      (let V (get Val I)
+         (unless (find '((L) (= V (get L I))) Old)
+            (rel> This Obj NIL V
+               (when (: hook)
+                  (get (if (sym? @) Obj Val) (: hook)) ) ) ) ) ) )
 
 (dm lose> (Obj Val)
    (mapc
@@ -897,10 +921,10 @@
 (dm rel> (Obj Old New Hook)
    (if (or (ele> This Old) (ele> This New))
       (extra Obj Old New Hook)
-      (for O (diff Old New)
-         (extra Obj O NIL Hook) )
-      (for N (diff New Old)
-         (extra Obj NIL N Hook) ) ) )
+      (for O Old
+         (rel-> This Obj O New Hook) )
+      (for N New
+         (rel+> This Obj N Old Hook) ) ) )
 
 (dm rel?> (Obj Val Hook)
    (for V Val

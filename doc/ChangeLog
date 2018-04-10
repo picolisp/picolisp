@@ -1,4 +1,8 @@
 10apr18
+   Avoid dangling indexes in duplicate (+List +Bag) items
+      lib/db.l
+      mini/lib/db.l
+      pilos/init/lib/db.l
    Word-search also with '@' wildcards
       lib/vip.l
 

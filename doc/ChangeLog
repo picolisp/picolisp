@@ -1,3 +1,7 @@
+10apr18
+   Word-search also with '@' wildcards
+      lib/vip.l
+
 09apr18
    Minor typo
       doc/refV.html

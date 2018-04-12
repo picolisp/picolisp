@@ -1,3 +1,7 @@
+12apr18
+   Ignore non-existing file in ":r" command
+      lib/vip.l
+
 10apr18
    Avoid dangling indexes in duplicate (+List +Bag) items
       lib/db.l

@@ -1,4 +1,4 @@
-# 10apr18abu
+# 12apr18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -965,8 +965,9 @@
                   ("N" (nextBuf T))  # Previous buffer
                   ("e" (reload (rplFile Line)))  # (Edit) Reload buffer
                   ("r"  # Read file contents
-                     (in (fName (rplFile Line))
-                        (paste (cons T (rdLines)) 1) ) )
+                     (let F (fName (rplFile Line))
+                        (when (info F)
+                           (in F (paste (cons T (rdLines)) 1)) ) ) )
                   ("w"  # (Write) Save buffer
                      (if Line
                         (out (fName (rplFile @))

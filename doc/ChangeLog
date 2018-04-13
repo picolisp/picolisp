@@ -1,3 +1,9 @@
+13apr18
+   Dangling indexes in duplicate (+List +Bag) items revisited
+      lib/db.l
+      mini/lib/db.l
+      pilos/init/lib/db.l
+
 12apr18
    Ignore non-existing file in ":r" command
       lib/vip.l

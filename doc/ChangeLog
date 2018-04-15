@@ -1,3 +1,8 @@
+15apr18
+   Return true from ':x' command
+      bin/vip
+      lib/vip.l
+
 13apr18
    Dangling indexes in duplicate (+List +Bag) items revisited
       lib/db.l

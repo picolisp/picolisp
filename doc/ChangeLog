@@ -1,4 +1,6 @@
 16apr18
+   Fix increment (^A) and decrement (^X)
+      lib/vip.l
    Nested block comments
       {src64,pilos/src}/io.l
       {src,mini/src}/io.c

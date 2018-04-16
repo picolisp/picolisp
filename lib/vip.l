@@ -1,4 +1,4 @@
-# 15apr18abu
+# 16apr18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -167,9 +167,9 @@
    eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft goRight
    goUp goDown goAbs goFind word lword end lend getWord _forward goForward
    _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
-   tglCase insChar overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight
-   jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell shFile reset
-   command vi ]
+   tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move
+   chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell
+   shFile reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -694,11 +694,26 @@
             (NIL (get Pos 1 (inc (:: posX)))) )
          (dec (:: posX)) ) ) )
 
-(de incChar (Cnt)
+(de incNum (Cnt)
    (change
-      (set Pos
-         (place (: posX) (car Pos)
-            (char (+ Cnt (char (get Pos 1 (: posX))))) ) ) ) )
+      (let (I (: posX)  L (car Pos)  S (get L I))
+         (ifn (format S)
+            (set Pos
+               (place (: posX) L (char (+ Cnt (char S)))) )
+            (while
+               (and
+                  (gt0 (dec 'I))
+                  (format (get L @)) )
+               (setq S (pack @ S)) )
+            (inc (:: posX)
+               (-
+                  (length
+                     (set Pos
+                        (conc
+                           (head I L)
+                           (chop (max 0 (+ Cnt (format S))))
+                           (tail (- (: posX)) L) ) ) )
+                  (length L) ) ) ) ) ) )
 
 (de overwrite (Lst)
    (change
@@ -1166,8 +1181,8 @@
                            ("C" (chgRight T))  # Change rest of line
                            ("S" (=: posX 1) (chgRight T))  # Change whole line
                            ("," (evRpt '(indent)))  # Fix indentation
-                           ("^A" (evRpt (list 'incChar *Cnt)))
-                           ("^X" (evRpt (list 'incChar (- *Cnt))))
+                           ("^A" (evRpt (list 'incNum *Cnt)))
+                           ("^X" (evRpt (list 'incNum (- *Cnt))))
                            ("u" (undo))  # Undo
                            ("^R" (redo))  # Redo
                            ("g"  # ["Go" prefix]

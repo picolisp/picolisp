@@ -711,7 +711,10 @@
                      (set Pos
                         (conc
                            (head I L)
-                           (chop (max 0 (+ Cnt (format S))))
+                           (need
+                              (if (= `(char "0") (char S)) (length S) 1)
+                              (chop (max 0 (+ Cnt (format S))))
+                              (char `(char "0")) )
                            (tail (- (: posX)) L) ) ) )
                   (length L) ) ) ) ) ) )
 

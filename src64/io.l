@@ -1,4 +1,4 @@
-# 15mar18abu
+# 16apr18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2047,26 +2047,40 @@
    if ne  # No
       do
          cmp B 10  # Linefeed?
-      while ne  #No
+      while ne  # No
          null A  # EOF?
-         js 90  # Yes
+         js ret  # Yes
          call (Get_A)
       loop
-   else  # Block comment
-      do
+      ret
+   end
+   push 0  # Block comment
+   do
+      call (Get_A)
+      null A  # EOF?
+      js 90  # Yes
+      cmp B (char "#")  # Start of block comment?
+      if eq
          call (Get_A)
-         null A  # EOF?
-         js 90  # Yes
+         cmp B (char "{")
+         if eq  # Yes
+            inc (S)  # Next level
+         end
+      else
          cmp B (char "}")  # End of block comment?
          if eq
             call (Get_A)
             cmp B (char "#")
-            break eq  # Yes
+            if eq  # Yes
+               dec (S)  # Top level?
+               break s  # Yes
+            end
          end
-      loop
-      call (Get_A)
-   end
-90 ret
+      end
+   loop
+   call (Get_A)
+90 add S I  # Drop nest level
+   ret
 
 (code 'skip_A 0)
    ld A (Chr)

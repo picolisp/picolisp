@@ -1,4 +1,4 @@
-// 09jan18abu
+// 16apr18abu
 // (c) Software Lab. Alexander Burger
 
 import java.util.*;
@@ -1443,11 +1443,15 @@ public class PicoLisp {
             }
          }
          else {
+            int n = 0;
+
             for (;;) {
                get();
                if (Chr < 0)
                   return;
-               if (Chr == '}' && (get() == '#'))
+               if (Chr == '#'  &&  (get() == '{'))
+                  ++n;
+               else if (Chr == '}'  &&  (get() == '#')  &&  --n < 0)
                   break;
             }
             get();

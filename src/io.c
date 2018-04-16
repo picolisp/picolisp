@@ -1,4 +1,4 @@
-/* 15mar18abu
+/* 16apr18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1024,11 +1024,15 @@ static void comment(void) {
       }
    }
    else {
+      int n = 0;
+
       for (;;) {  // #{block-comment}# from Kriangkrai Soatthiyanont
          Env.get();
          if (Chr < 0)
             return;
-         if (Chr == '}' && (Env.get(), Chr == '#'))
+         if (Chr == '#'  &&  (Env.get(), Chr == '{'))
+            ++n;
+         else if (Chr == '}'  &&  (Env.get(), Chr == '#')  &&  --n < 0)
             break;
       }
       Env.get();

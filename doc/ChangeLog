@@ -1,3 +1,10 @@
+16apr18
+   Nested block comments
+      {src64,pilos/src}/io.l
+      {src,mini/src}/io.c
+      ersatz/sys.src
+      doc/ref.html
+
 15apr18
    Return true from ':x' command
       bin/vip

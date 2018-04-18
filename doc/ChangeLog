@@ -1,3 +1,7 @@
+18apr18
+   Add "<" and ">" to 'mail' addresses (Mansur Mamkin)
+      lib/misc.l
+
 16apr18
    Fix increment (^A) and decrement (^X)
       lib/vip.l

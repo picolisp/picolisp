@@ -1,4 +1,4 @@
-# 11mar18abu
+# 18apr18abu
 # (c) Software Lab. Alexander Burger
 
 # *Allow
@@ -476,7 +476,7 @@
                            (prBase64 T) )
                         (prinl "^M") )
                      (pre? "235 " (in S (line T))) ) )
-               (out S (prinl "MAIL FROM:" (fin From) "^M"))
+               (out S (prinl "MAIL FROM:<" (fin From) ">^M"))
                (pre? "250 " (in S (line T)))
                (if (atom To)
                   (_rcpt To)
@@ -539,7 +539,7 @@
             (close S) ) ) ) )
 
 (de _rcpt (To)
-   (out S (prinl "RCPT TO:" To "^M"))
+   (out S (prinl "RCPT TO:<" To ">^M"))
    (pre? "250 " (in S (line T))) )
 
 ### Debug ###

@@ -1,3 +1,7 @@
+20apr18
+   Restore "~" as delimiter
+      lib/vip.l
+
 18apr18
    Add "<" and ">" to 'mail' addresses (Mansur Mamkin)
       lib/misc.l

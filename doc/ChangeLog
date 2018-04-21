@@ -1,3 +1,7 @@
+21apr18
+   Minor cosmetics
+      {src64,pilos/src}/sym.l
+
 20apr18
    Restore "~" as delimiter
       lib/vip.l

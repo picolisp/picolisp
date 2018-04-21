@@ -1,4 +1,4 @@
-# 07apr17abu
+# 21apr18abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1173,7 +1173,7 @@
       cmp E Nil  # 'flg'?
       if eq  # No
          ld E 0  # No symbol yet
-         ldz Z (A CDR)  # Search all namespaces
+         ld Z (A CDR)  # Search all namespaces
       else
          ld E (L I)  # Get symbol
          ld Z Nil  # Search only current namespace

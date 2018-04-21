@@ -1,4 +1,6 @@
 21apr18
+   Handle namespaces in "^]" command
+      lib/vip.l
    Minor cosmetics
       {src64,pilos/src}/sym.l
 

@@ -1,4 +1,4 @@
-# 20apr18abu
+# 21apr18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1224,7 +1224,7 @@
                                        (chgwin (inc (: lines))) ) ) ) )
                            ("=" (eqwin))  # Set all windows to equal size
                            ("^]"  # Edit symbol
-                              (when (get (intern (pack (getWord T))) '*Dbg 1)
+                              (when (get (any (pack (getWord T))) '*Dbg 1)
                                  (push '*TagStack (: posY) (: buffer file))
                                  (reload (cdr @) (car @)) ) )
                            ("^T"  # Pop tag stack

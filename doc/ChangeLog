@@ -1,4 +1,6 @@
 22apr18
+   Return true from ':x' command continued
+      lib/vip.l
    'nsp' function
       {src64,pilos/src}/sym.l
       {src64,pilos/src}/glob.l

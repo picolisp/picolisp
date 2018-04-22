@@ -1,4 +1,4 @@
-# 21apr18abu
+# 22apr18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1311,14 +1311,15 @@
 
 (undef 'pico~vi)
 (de pico~vi ("X" C)
-   (vi
-      (list
-         (cond
-            ((pair "X")
-               (get (cdr "X") '*Dbg -1 (car "X")) )
-            (C (get C '*Dbg -1 "X"))
-            ((str? "X") "X")
-            (T (get "X" '*Dbg 1)) ) ) )
-   "X" )
+   (and
+      (vi
+         (list
+            (cond
+               ((pair "X")
+                  (get (cdr "X") '*Dbg -1 (car "X")) )
+               (C (get C '*Dbg -1 "X"))
+               ((str? "X") "X")
+               (T (get "X" '*Dbg 1)) ) ) )
+      "X" ) )
 
 # vi:et:ts=3:sw=3

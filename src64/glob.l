@@ -1,4 +1,4 @@
-# 14mar18abu
+# 22apr18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -316,6 +316,7 @@
 
    # Symbol functions
    initFun NIL       "name"      doName
+   initFun NIL       "nsp"       doNsp
    initFun NIL       "sp?"       doSpQ
    initFun NIL       "pat?"      doPatQ
    initFun NIL       "fun?"      doFunQ

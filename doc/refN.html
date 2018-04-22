@@ -441,6 +441,25 @@ href="refF.html#fail/0">fail/0</a></code>.
 -> T
 </code></pre>
 
+<dt><a name="nsp"><code>(nsp 'sym) -> sym</code></a>
+<dd>(64-bit version only) Returns the (first) namespace where <code>sym</code>
+is found in, according to the current <code><a
+href="refS.html#symbols">symbols</a></code> search order. See also <code><a
+href="refP.html#pico">pico</a></code>.
+
+<pre><code>
+(load "@lib/gis.l")
+
+: (symbols '(pico gis))
+-> (pico)
+: (nsp 'gis)
+-> pico
+: (nsp 'Zoom)
+-> gis
+: (nsp 'osmStat)
+-> gis
+</code></pre>
+
 <dt><a name="nth"><code>(nth 'lst 'cnt ..) -> lst</code></a>
 <dd>Returns the tail of <code>lst</code> starting from the <code>cnt</code>'th
 element of <code>lst</code>. Successive <code>cnt</code> arguments operate on

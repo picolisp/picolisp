@@ -1,4 +1,5 @@
 * XXjun18 picoLisp-18.6
+   'nsp' function
    Nested block comments
    'tasks' function
    'pool2' function (64-bit)

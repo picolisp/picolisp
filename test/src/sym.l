@@ -1,4 +1,4 @@
-# 05apr17abu
+# 22apr18abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -44,17 +44,20 @@
    (filter '((S) (= S "test")) (all)) )
 
 
-### symbols ###
+### symbols nsp ###
 (when symbols
    (test T (bool (pair pico)))
    (test '(pico) (symbols 'myLib 'pico)) )
 
 (when symbols
    (one Foo)
+   (test 'pico (nsp 'symbols))
+   (test 'myLib (nsp 'Foo))
    (test '(myLib pico) (symbols 'pico)) )
 
 (when symbols
-   (test 1 myLib~Foo) )
+   (test 1 myLib~Foo)
+   (test NIL (nsp 'myLib~Foo)) )
 
 ### intern ###
 (test car (val (intern (pack "c" "a" "r"))))

@@ -1,3 +1,13 @@
+22apr18
+   'nsp' function
+      {src64,pilos/src}/sym.l
+      {src64,pilos/src}/glob.l
+      doc/ref.html
+      doc/refN.html
+      doc/refP.html
+      doc/refS.html
+      test/src/sym.l
+
 21apr18
    Handle namespaces in "^]" command
       lib/vip.l

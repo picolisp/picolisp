@@ -1,3 +1,7 @@
+23apr18
+   Minor cosmetics
+      doc/refL.html
+
 22apr18
    Return true from ':x' command continued
       lib/vip.l

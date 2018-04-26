@@ -1,4 +1,4 @@
-# 16feb18abu
+# 26apr18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -343,7 +343,10 @@
    (default DX 80  DY 25)
    (form Attr
       (=: repl (tmp "repl"))
-      (gui 'view '(+FileField) (: repl) DX DY)
+      (gui 'view '(+Able +FileField)
+         '(<> (: file) (: home repl))
+         (: repl)
+         DX DY )
       (--)
       (gui 'line '(+Focus +Able +Hint1 +TextField)
          '(= (: home view file) (: home repl))

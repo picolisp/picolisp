@@ -1,4 +1,4 @@
-# 21jan18abu
+# 26apr18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -155,7 +155,8 @@
                (java B 'setContentIntent
                   (java "android.app.PendingIntent" 'getActivity
                      CONTEXT 0 Intent `(hex "18000000") ) ) )  # FLAG_ACTIVITY_NEW_TASK | FLAG_UPDATE_CURRENT
-            (prog1 (java B 'build)  # Notification
+            (prog1
+               (java B 'build)  # Notification
                (java N 'notify Id @) ) ) ) ) )
 
 # Service foreground state

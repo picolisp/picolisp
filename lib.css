@@ -1,4 +1,4 @@
-/* 24feb17abu
+/* 26apr18abu
  * 17nov12jk
  * (c) Software Lab. Alexander Burger
  */
@@ -262,7 +262,7 @@ a:hover {
 .tiny {
    border: 0;
    padding: 0;
-   font-size: smaller;
+   font-size: small;
 }
 
 .note, .ask {

@@ -1,3 +1,8 @@
+01may18
+   Allow empty (vi) calls
+      bin/vip
+      lib/vip.l
+
 26apr18
    Disable 'repl' text area unless in edit mode
       lib/form.l

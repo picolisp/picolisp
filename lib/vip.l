@@ -1,4 +1,4 @@
-# 01may18abu
+# 02may18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1029,10 +1029,13 @@
                (cdr X)
                (or (num? (car X)) T) ) ) ) )
    (unless *Buffers
-      (fileBuffer (tmp "vip")) )
+      (with (fileBuffer (tmp "vip"))
+         (when (=0 (native "@" "isatty" 'I 0))
+            (out (: file) (in 0 (echo))) ) ) )
    (native "@" "setlocale" NIL 0 "")  # LC_CTYPE: UTF-8
    (sys "ESCDELAY" "60")
-   (curses "initscr" 'N)
+   (let F (native "@" "fopen" 'N "/dev/tty" "r+")
+      (curses "set_term" NIL (curses "newterm" 'N 0 F F)) )
    (finally (curses "endwin")
       (curses "start_color")
       (curses "use_default_colors")

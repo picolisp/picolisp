@@ -1,3 +1,7 @@
+02may18
+   Accept text from stdin
+      lib/vip.l
+
 01may18
    Allow empty (vi) calls
       bin/vip

@@ -1,4 +1,4 @@
-# 02feb18abu
+# 02may18abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -146,8 +146,8 @@
          *Port% (not *Gate)
          *SesId (pack (in "/dev/urandom" (rd 7)) "~")
          *Sock (port *HPorts '*Port) )
-      (out 2 (prinl *Pid " = " *Port " " *SesId))
-      (timeout *Timeout) ) )
+      (timeout *Timeout)
+      (out 2 (prinl *Pid " = " *Port " " *SesId)) ) )
 
 # Set a cookie
 (de cookie @

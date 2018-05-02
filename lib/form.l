@@ -1,4 +1,4 @@
-# 26apr18abu
+# 02may18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -283,7 +283,8 @@
 (de url (Url . @)
    (when Url
       (off *PRG)
-      (timeout `(* 3600 1000))
+      (when *Timeout
+         (timeout `(* 3600 1000)) )
       (redirect (baseHRef) *SesId Url
          (and (args) "?")
          (pack

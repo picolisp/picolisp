@@ -1,4 +1,4 @@
-# 24nov16abu
+# 02may18abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -42,7 +42,8 @@
       (tell 'hi *Pid Nm *Adr)
       (push1 '*Bye '(logout))
       (push1 '*Fork '(del '(logout) '*Bye))
-      (timeout (setq *Timeout `(* 3600 1000))) )
+      (when *Timeout
+         (timeout (setq *Timeout `(* 3600 1000))) ) )
    *Login )
 
 (de logout ()
@@ -51,7 +52,8 @@
       (off *Login)
       (tell 'hi *Pid)
       (msg *Pid " / " (stamp))
-      (timeout (setq *Timeout `(* 300 1000))) ) )
+      (when *Timeout
+         (timeout (setq *Timeout `(* 300 1000))) ) ) )
 
 (de hi (Pid Nm Adr)
    (if (and Nm (= Nm (; *Login nm)) (= Adr *Adr))

@@ -1,4 +1,8 @@
 02may18
+   No timeouts when '*Timeout' is NIL
+      lib/http.l
+      lib/form.l
+      lib/adm.l
    Accept text from stdin
       lib/vip.l
 
@@ -325,7 +329,7 @@
       doc/refM.html
 
 02jan18
-   Clean up *Java, *Lisp etc. in '*Fork'
+   Clean up '*Java', '*Lisp' etc. in '*Fork'
    'android~cancel' function
       lib/android.l
 

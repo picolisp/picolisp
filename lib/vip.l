@@ -1019,6 +1019,9 @@
 ### VIP Entry Point ###
 (de vi (Lst)  # ("file.l" (pat) (99 . "file.l") (T . "file.l"))
    (off *Buffers)
+   (when (=0 (native "@" "isatty" 'I 0))
+      (with (fileBuffer (tmp "stdin"))
+         (out (: file) (in 0 (echo))) ) )
    (for X Lst
       (cond
          ((not X))
@@ -1029,9 +1032,7 @@
                (cdr X)
                (or (num? (car X)) T) ) ) ) )
    (unless *Buffers
-      (with (fileBuffer (tmp "vip"))
-         (when (=0 (native "@" "isatty" 'I 0))
-            (out (: file) (in 0 (echo))) ) ) )
+      (fileBuffer (tmp "empty")) )
    (native "@" "setlocale" NIL 0 "")  # LC_CTYPE: UTF-8
    (sys "ESCDELAY" "60")
    (let F (native "@" "fopen" 'N "/dev/tty" "r+")

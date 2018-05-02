@@ -1,4 +1,6 @@
 02may18
+   Minor typo
+      doc/refT.html
    No timeouts when '*Timeout' is NIL
       lib/http.l
       lib/form.l

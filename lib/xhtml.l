@@ -1,4 +1,4 @@
-# 27feb18abu
+# 05may18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -135,10 +135,12 @@
 (de serverSentEvent (Sym Id)
    (javascript NIL "serverSentEvent('" Sym "','" Id "');") )
 
-(de serverSend (Cmd . @)
-   (ht:Out (bool *Chunked)
-      (pass prinl "data: " Cmd)
-      (prinl) ) )
+(de serverSend (Sock . Prg)
+   (out Sock
+      (ht:Out (bool *Chunked)
+         (prin "data: ")
+         (htPrin Prg 2)
+         (prinl "^J") ) ) )
 
 (de ping (Min)
    (timeout (setq *Timeout (* Min `(* 60 1000))))

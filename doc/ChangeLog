@@ -1,3 +1,8 @@
+05may18
+   Generalize and simplify 'serverSentEvent' + 'serverSend'
+      lib/xhtml.l
+      lib/form.js
+
 02may18
    Minor typo
       doc/refT.html

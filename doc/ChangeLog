@@ -1,4 +1,6 @@
 05may18
+   Minor extension
+      ersatz/README
    Generalize and simplify 'serverSentEvent' + 'serverSend'
       lib/xhtml.l
       lib/form.js

@@ -1,4 +1,4 @@
-# 02may18abu
+# 08may18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1932,7 +1932,12 @@
                (list
                   (list 'db (car Rel) (last Rel) Hook (val> (: home gui 1)) '@@) ) )
             2 '((Obj) (list Obj Obj)) )
-         (<table> 'chart (choTtl Ttl (last Rel)) '((btn) NIL)
+         (<table> 'chart
+            (pack
+               (or (get (or Hook *DB) (last Rel) 0) 0)
+               " "
+               Ttl )
+            '((btn) NIL)
             (do (cho)
                (<row> (alternating)
                   (gui 1 '(+DstButton) Dst)

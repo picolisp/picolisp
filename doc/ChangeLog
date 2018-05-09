@@ -1,3 +1,7 @@
+09may18
+   Check for bad EOL in '_htHead'
+      lib/http.l
+
 08may18
    Consider 'Hook' for entity count in 'choDlg'
       lib/form.l

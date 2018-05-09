@@ -1,4 +1,4 @@
-# 02may18abu
+# 09may18abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -257,14 +257,14 @@
          ("user-agent:" (setq *Agent (cdr (line))))
          ("content-length:" (setq *ContLen (format (cdr (line)))))
          ("content-type:"
-            (if (= " multipart/form-data; boundary" (lowc (till "=" T)))
+            (if (= " multipart/form-data; boundary" (lowc (till "=^M^J" T)))
                (setq
                   *MPartLim (append '(- -) (cdr (line)))
                   *MPartEnd (append *MPartLim '(- -)) )
                (line) ) )
          ("x-pil:"
             (char)
-            (when (till "=")
+            (when (till "=^M^J")
                (_htSet @ (ht:Pack (cdr (line)) T))
                T ) )
          (T (if (eol) (char) (line T))) ) )

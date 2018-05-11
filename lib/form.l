@@ -1,4 +1,4 @@
-# 08may18abu
+# 11may18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1676,7 +1676,7 @@
    (and
       (<> Val (: org))
       (eval (: file))
-      (out @ (ctl T (prin (=: org Val)))) )
+      (ctl @ (out @ (prin (=: org Val)))) )
    (super Val Dn) )
 
 (dm upd> ()

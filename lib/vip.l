@@ -1,4 +1,4 @@
-# 02may18abu
+# 14may18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -264,9 +264,7 @@
       (and
          (not Flg)
          (>= (inc (: posY)) Y (dec (: posY)))
-         (let W (+ (: winX) *Columns -1)
-            (>= W (: posX) (: winX))
-            (>= W X (: winX)) ) )
+         (>= (+ (: winX) *Columns -1) X (: winX)) )
       (cond
          ((= Y (inc (: posY)))
             (when

@@ -1,3 +1,7 @@
+14may18
+   Minor fix in 'goto'
+      lib/vip.l
+
 11may18
    Fix 'ctl' policy
       lib/form.l

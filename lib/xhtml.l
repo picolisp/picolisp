@@ -1,4 +1,4 @@
-# 05may18abu
+# 17may18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *Menu *Tab *ID
@@ -311,6 +311,12 @@
 
 (de <td> (Attr . Prg)
    (tag 'td Attr 2 Prg) )
+
+(de <thead> (Attr . Prg)
+   (tag 'thead Attr 2 Prg) )
+
+(de <tbody> (Attr . Prg)
+   (tag 'tbody Attr 2 Prg) )
 
 (de <grid> (X . Lst)
    (tag 'table 'grid 1

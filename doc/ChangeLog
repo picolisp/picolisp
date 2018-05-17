@@ -1,4 +1,6 @@
 17may18
+   '<thead>' and '<tbody>' functions
+      lib/xhtml.l
    'local' fix for 'distance'
       lib/gis.l
    Minor reference fixes

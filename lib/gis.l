@@ -1,4 +1,4 @@
-# 30aug17abu
+# 17may18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -24,6 +24,7 @@
       (pack (lat Lat) Str (lon Lon)) ) )
 
 # Short distance, assuming flat earth
+(local) distance
 (de distance (Lat1 Lon1 Lat2 Lon2)  # [m]
    (let
       (DX (*/ (- Lon2 Lon1) 6378000 pi 180.0)

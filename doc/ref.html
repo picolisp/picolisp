@@ -991,9 +991,9 @@ surrounding whitespace), the first is taken as a namespace to look up the second
 </code></pre>
 
 <p>Reading <code>libA~foo</code> is equivalent to switching the current
-namespace to <code>libA</code> (with <code><a
+namespace search order to <code>libA</code> only (with <code><a
 href="refS.html#symbols">symbols</a></code>), reading the symbol
-<code>foo</code>, and then switching back to the original namespace.
+<code>foo</code>, and then switching back to the original search order.
 
 <p>Brackets ('<code>[</code>' and '<code>]</code>') can be used as super
 parentheses. A closing bracket will match the innermost opening bracket, or all

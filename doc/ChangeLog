@@ -1,3 +1,9 @@
+17may18
+   'local' fix for 'distance'
+      lib/gis.l
+   Minor reference fixes
+      doc/ref.html
+
 14may18
    Minor fix in 'goto'
       lib/vip.l

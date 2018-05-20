@@ -1,3 +1,9 @@
+20may18
+   Variable size for 'less', default 3
+      lib/debug.l
+      pilos/init/lib/dbg.l
+      doc/refL.html
+
 17may18
    '<thead>' and '<tbody>' functions
       lib/xhtml.l

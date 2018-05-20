@@ -1,4 +1,4 @@
-# 12jan18abu
+# 20may18abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -67,16 +67,12 @@
          (T (line) T)
          ("Fun" (++ "M")) ) ) )
 
-(de less (X)
-   (if (atom X)
-      X
-      (cons
-         (less (++ X))
-         (if (atom X)
-            X
-            (cons
-               (less (++ X))
-               (and X '(..)) ) ) ) ) )
+(de less (X N)
+   (default N 4)
+   (cond
+      ((atom X) X)
+      ((=0 N) '(..))
+      (T (cons (less (++ X) N) (less X (dec N)))) ) )
 
 (de what (S)
    (let *Dbg NIL

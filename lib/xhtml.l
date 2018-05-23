@@ -1,7 +1,7 @@
-# 17may18abu
+# 23may18abu
 # (c) Software Lab. Alexander Burger
 
-# *JS "*JS" *Style *Menu *Tab *ID
+# *JS "*JS" *Style *SsEvts *Menu *Tab *ID
 
 (mapc allow '(*JS *Menu *Tab *ID "!ping"))
 (setq *Menu 0  *Tab 1)
@@ -113,7 +113,8 @@
                (prinl "<style type=\"text/css\">")
                (prinl @)
                (prinl "</style>") ) ) )
-      (and *SesId (javascript NIL "SesId='" @ "'"))
+      (when *SesId
+         (prinl "<script type=\"text/javascript\">SesId='" @ "'</script>") )
       (mapc javascript *JS)
       ## (when (=0 Upd)
       ##    (javascript NIL
@@ -132,8 +133,32 @@
       (when (rest)
          (prinl "<script type=\"text/javascript\">" @ "</script>") ) ) )
 
-(de serverSentEvent (Sym Id)
-   (javascript NIL "serverSentEvent('" Sym "','" Id "');") )
+(de serverSentEvent (Id Var . Prg)
+   (allow "!ssEvt")
+   (prinl
+      "<script type=\"text/javascript\">"
+      "(new EventSource(SesId+'!ssEvt?'+'"
+      Id
+      "')).onmessage = function(ev) {document.getElementById('"
+      Id
+      "').innerHTML = ev.data}"
+      "</script>" )
+   (if (assoc Id *SsEvts)
+      (con @ (cons Var (unless (val Var) Prg)))
+      (push '*SsEvts (cons Id Var Prg)) ) )
+
+(de ssEvt (Id)
+   (when (cdr (assoc Id *SsEvts))
+      (let ((@Var . Prg) @)
+         (task *HtSock)
+         (macro
+            (task (setq @Var *HtSock)
+               (in @
+                  (unless (char)
+                     (task (close @Var))
+                     (off @Var) ) ) ) )
+         (httpHead "text/event-stream" 0)
+         (run Prg) ) ) )
 
 (de serverSend (Sock . Prg)
    (out Sock

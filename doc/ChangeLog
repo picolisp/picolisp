@@ -1,3 +1,10 @@
+23may18
+   Better abstraction for server-sent events
+      lib/xhtml.l
+   Server-sent events independent of 'form' GUI
+      lib/xhtml.l
+      lib/form.js
+
 20may18
    HTML markup mismatch
       doc/refP.html

@@ -1,4 +1,4 @@
-# 14may18abu
+# 24may18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -9,7 +9,12 @@
 ### Curses library interface ###
 (local) curses
 (de curses @
-   (pass native "libncurses.so") )
+   (pass native
+      `(or
+         (find
+            '((S) (n0 (native "@" "dlopen" 'N S 257)))
+            '("libncursesw.so" "libncursesw.so.6" "libncursesw.so.5") )
+         (quit "No CURSES found") ) ) )
 
 ### VIP Editor ###
 (local) [

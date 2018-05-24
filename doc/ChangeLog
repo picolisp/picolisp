@@ -1,3 +1,7 @@
+24may18
+   Dynamic search for CURSES library
+      lib/vip.l
+
 23may18
    Better abstraction for server-sent events
       lib/xhtml.l

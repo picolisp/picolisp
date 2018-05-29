@@ -1,4 +1,4 @@
-# 24may18abu
+# 29may18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -125,7 +125,7 @@
                               (when (=T (car (info F)))
                                  (list (char `(char "/"))) ) ) )
                         (sort (dir File)) ) )
-                  (gc (inc (*/ (car I) 32768)))  # 2 cells / char
+                  (gc (+ 4 (*/ (car I) 65536)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe
                         (in File (out '("ccrypt" "-d" "-ECCRYPT") (echo)))

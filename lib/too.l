@@ -1,4 +1,4 @@
-# 03mar18abu
+# 05jun18abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -25,37 +25,41 @@
             (when (> (car L) (*/ N 59 60))
                (call "rm" "-rf" (pack Dst '/ (++ L))) ) ) ) )
    (when (call "mkdir" (pack Dst "/1"))
-      (while (args)
-         (let
-            (Lst (filter bool (split (chop (next)) '/))
-               Src (car Lst)
-               Old (pack Dst "/2/" Src)
-               New (pack Dst "/1/" Src) )
-            (recur (Lst Src Old New)
-               (ifn (cdr Lst)
-                  (recur (Src Old New)
-                     (cond
-                        ((=T (car (info Src T)))  # Directory
-                           (call "mkdir" "-p" New)
-                           (for F (dir Src T)
-                              (unless (member F '("." ".."))
-                                 (recurse
-                                    (pack Src '/ F)
-                                    (pack Old '/ F)
-                                    (pack New '/ F) ) ) )
-                           (call "touch" "-r" Src New) )
-                        ((= (info Src T) (info Old T))  # Same
-                           `(if (== 64 64)
-                              '(native "@" "link" 'I Old New)
-                              '(call "ln" Old New) ) )
-                        (T (call "cp" "-a" Src New)) ) )  # Changed or new
-                  (call "mkdir" "-p" New)
-                  (recurse
-                     (cdr Lst)
-                     (pack Src '/ (cadr Lst))
-                     (pack Old '/ (cadr Lst))
-                     (pack New '/ (cadr Lst)) )
-                  (call "touch" "-r" Src New) ) ) ) ) ) )
+      (let Ign NIL
+         (while (args)
+            (if (pre? "-" (next))
+               (push 'Ign (pack (cdr (chop (arg)))))
+               (let
+                  (Lst (filter bool (split (chop (arg)) '/))
+                     Src (car Lst)
+                     Old (pack Dst "/2/" Src)
+                     New (pack Dst "/1/" Src) )
+                  (recur (Lst Src Old New)
+                     (ifn (cdr Lst)
+                        (recur (Src Old New)
+                           (unless (member Src Ign)
+                              (cond
+                                 ((=T (car (info Src T)))  # Directory
+                                    (call "mkdir" "-p" New)
+                                    (for F (dir Src T)
+                                       (unless (member F '("." ".."))
+                                          (recurse
+                                             (pack Src '/ F)
+                                             (pack Old '/ F)
+                                             (pack New '/ F) ) ) )
+                                    (call "touch" "-r" Src New) )
+                                 ((= (info Src T) (info Old T))  # Same
+                                    `(if (== 64 64)
+                                       '(native "@" "link" 'I Old New)
+                                       '(call "ln" Old New) ) )
+                                 (T (call "cp" "-a" Src New)) ) ) )  # Changed or new
+                        (call "mkdir" "-p" New)
+                        (recurse
+                           (cdr Lst)
+                           (pack Src '/ (cadr Lst))
+                           (pack Old '/ (cadr Lst))
+                           (pack New '/ (cadr Lst)) )
+                        (call "touch" "-r" Src New) ) ) ) ) ) ) ) )
 
 (de purge (Dst N)
    (for D (dir Dst)

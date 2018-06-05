@@ -1,3 +1,7 @@
+05jun18
+   Handle excludes in 'snapshot's with "-path"
+      lib/too.l
+
 01jun18
    Add 'ext' to function index
       doc/ref.html

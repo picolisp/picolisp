@@ -1,8 +1,8 @@
-# 24nov16abu
+# 07jun18abu
 # (c) Software Lab. Alexander Burger
 
 ### PDF-Print ###
-(dm (ps> . +Ord) ()
+(dm (pdf> . +Ord) ()
    (pdf *A4-DX *A4-DY (tmp ,"Order" (: nr) ".pdf")
       (font (11 . "serif"))
       (width "0.5")

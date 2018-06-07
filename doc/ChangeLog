@@ -1,3 +1,8 @@
+07jun18
+   Minor cosmetics
+      app/lib.l
+      app/ord.l
+
 05jun18
    Handle excludes in 'snapshot's with "-path"
       lib/too.l

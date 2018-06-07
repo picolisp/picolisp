@@ -1,4 +1,4 @@
-# 25may15abu
+# 07jun18abu
 # (c) Software Lab. Alexander Burger
 
 (must "Order" Order)
@@ -45,7 +45,7 @@
          (gui '(+Rid +Button) ,"PDF-Print"
             '(if (check> (: home obj))
                (note ,"Can't print order" (uniq @))
-               (url (ps> (: home obj))) ) )
+               (url (pdf> (: home obj))) ) )
          (editButton T) ) ) )
 
 # vi:et:ts=3:sw=3

@@ -7,7 +7,7 @@
       (font (11 . "serif"))
       (width "0.5")
       (let (I 0  Fmt (14 6 200 80 80 80) Lst (: pos))
-         (while Lst
+         (while
             (page
                (image "@img/7fachLogo.png" "image/png" 420 0 120)
                (ifn (=1 *Page)
@@ -44,6 +44,12 @@
                   (hline 4 470 -8)
                   (loop
                      (down 4)
+                     (NIL Lst
+                        (hline 4 470 -8)
+                        (down 4)
+                        (table Fmt NIL NIL NIL NIL NIL (ps T (money (sum> This))))
+                        (hline 4 470 -8)
+                        NIL )
                      (with (++ Lst)
                         (table Fmt
                            (ps T (inc 'I)) NIL
@@ -51,12 +57,6 @@
                            (ps T (money (: pr)))
                            (ps T (: cnt))
                            (ps T (money (sum> This))) ) )
-                     (NIL Lst
-                        (hline 4 470 -8)
-                        (down 4)
-                        (table Fmt NIL NIL NIL NIL NIL (ps T (money (sum> This))))
-                        (hline 4 470 -8)
-                        NIL )
                      (T (>= *Pos 720)
                         (hline 4 470 -8)
                         (down 12)

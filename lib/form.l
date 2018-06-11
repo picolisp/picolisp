@@ -1,4 +1,4 @@
-# 11may18abu
+# 11jun18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1685,7 +1685,8 @@
          (let? F (eval (: file))
             (and
                (info F)
-               (in F (ctl NIL (till NIL T))) ) ) ) ) )
+               (ctl (pack "+" F)
+                  (in F (till NIL T)) ) ) ) ) ) )
 
 (dm file> (Exe)
    (=: file Exe)

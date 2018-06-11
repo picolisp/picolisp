@@ -1,4 +1,4 @@
-# 29may18abu
+# 11jun18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -172,16 +172,19 @@
 
 
 (local) [
-   min1 delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin
-   eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft goRight
-   goUp goDown goAbs goFind word lword end lend getWord _forward goForward
-   _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
-   tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move
-   chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell
-   shFile reset command vi ]
+   min1 beep delwin cursor addLine chgLine unmark redraw repaint scroll goto
+   chgwin eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft
+   goRight goUp goDown goAbs goFind word lword end lend getWord _forward
+   goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
+   paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
+   move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
+   shell shFile reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
+
+(de beep ()
+   (curses "beep") )
 
 (de delwin ()
    (when (=: prev next (: next))
@@ -406,22 +409,26 @@
          Res ) ) )
 
 (de undo ()
-   (let? U (pop (:: buffer undo))
-      (push (:: buffer redo) U)
-      (bind (car U)
-         (eval (cadr U))
-         (markup (: buffer text))
-         (goto PosX1 PosY1 T)
-         (repaint) ) ) )
+   (ifn (pop (:: buffer undo))
+      (beep)
+      (let U @
+         (push (:: buffer redo) U)
+         (bind (car U)
+            (eval (cadr U))
+            (markup (: buffer text))
+            (goto PosX1 PosY1 T)
+            (repaint) ) ) ) )
 
 (de redo ()
-   (let? R (pop (:: buffer redo))
-      (push (:: buffer undo) R)
-      (bind (car R)
-         (eval (cddr R))
-         (markup (: buffer text))
-         (goto PosX2 PosY2 T)
-         (repaint) ) ) )
+   (ifn (pop (:: buffer redo))
+      (beep)
+      (let R @
+         (push (:: buffer undo) R)
+         (bind (car R)
+            (eval (cddr R))
+            (markup (: buffer text))
+            (goto PosX2 PosY2 T)
+            (repaint) ) ) ) )
 
 (de jmp@@ (Y)
    (=: buffer lastX (: posX))
@@ -464,7 +471,9 @@
    (setq @@ (: posY))
    (let (Lst (get (: buffer text) (: posY))  L (nth Lst (: posX)))
       (do N (setq L (member C (cdr L))))
-      (+ D (or I 0) (offset L Lst)) ) )
+      (if L
+         (+ D (or I 0) (offset L Lst))
+         (beep) ) ) )
 
 (de word (L C)
    (and (delim? C) (not (delim? (car L))) ) )
@@ -501,7 +510,7 @@
       (if (_forward (cdr L) (car L) T)
          (+ (: posX) @)
          (loop
-            (NIL Pos)
+            (NIL Pos (beep))
             (inc 'Y)
             (T (_forward (++ Pos)) @) ) ) ) )
 
@@ -524,7 +533,8 @@
             (nth (car Pos) (dec (: posX)))
             T )
          (loop
-            (NIL (setq Pos (prior Pos (: buffer text))))
+            (NIL (setq Pos (prior Pos (: buffer text)))
+               (beep) )
             (dec 'Y)
             (T (_backward (car Pos) (tail 1 (car Pos))) @ ) ) ) ) )
 
@@ -760,7 +770,7 @@
                (NIL)
                (("\n" "\r")
                   (cond
-                     (Rpl (curses "beep") T)
+                     (Rpl (beep) T)
                      ((== This *CmdWin)
                         (nil (command (or Win This) (car P))) )
                      (T
@@ -853,7 +863,7 @@
                         (list 'paste (lit L) '@@)) ) ) ) )
          ("d" (evRpt (list 'cutX M T)))  # Delete
          ("y" (cutX (eval M)))  # Yank
-         (T (curses "beep")) ) ) )
+         (T (beep)) ) ) )
 
 (de chgRight (X)
    (setq *Change "c")
@@ -1013,11 +1023,11 @@
                   (T
                      (if (get *Buffers Cnt)
                         (nextBuf @)
-                        (curses "beep")) ) ) ) )
+                        (beep)) ) ) ) )
          (with *CmdWin
             (redraw)
             (curses "wrefresh" NIL (: ptr)) ) )
-      (T (curses "beep")) ) )
+      (T (beep)) ) )
 
 ### VIP Entry Point ###
 (de vi (Lst)  # ("file.l" (pat) (99 . "file.l") (T . "file.l"))
@@ -1109,7 +1119,7 @@
                            (if (== This *CmdWin)
                               (command (: next) (get (: buffer text) (: posY)))
                               (cmdMode) ) )
-                        ("." (eval *Repeat))  # Repeat last change
+                        ("." (if *Repeat (eval @) (beep)))  # Repeat last change
                         (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
                         (("^F" `(char 338)) (move 'goDown *Lines))  # [NPAGE] Page down
                         (("k" `(char 259)) (move 'goUp *Cnt))  # [UP] Move up
@@ -1146,8 +1156,14 @@
                         (":" (cmdMode (name ":")))  # Command
                         ("/" (cmdMode (name "/")))  # Search forward
                         ("?" (cmdMode (name "?")))  # Search backward
-                        ("n" (and *Search (move 'goForward (lit @) *Cnt)))  # Search next
-                        ("N" (and *Search (move 'goBackward (lit @) *Cnt)))  # Search previous
+                        ("n"  # Search next
+                           (if *Search
+                              (move 'goForward (lit @) *Cnt)
+                              (beep) ) )
+                        ("N"  # Search previous
+                           (if *Search
+                              (move 'goBackward (lit @) *Cnt)
+                              (beep) ) )
                         ("*"  # Search word under cursor
                            (and (getWord T "~") (moveSearch 'goForward (wordFun @))) )
                         ("%"  # Matching parenthesis
@@ -1155,7 +1171,8 @@
                               ("(" (parMatch 'goForward 1 0 "(" ")" "[" "]"))
                               ("[" (parMatch 'goForward 0 (0 . 0) "(" ")" "[" "]"))
                               (")" (parMatch 'goBackward 1 0 ")" "(" "]" "["))
-                              ("]" (parMatch 'goBackward 0 (0 . 0) ")" "(" "]" "[")) ) )
+                              ("]" (parMatch 'goBackward 0 (0 . 0) ")" "(" "]" "["))
+                              (T (beep)) ) )
                         ("i"  # Insert
                            (when (insMode)
                               (setq *Repeat (list 'paste (lit @))) ) )
@@ -1204,7 +1221,7 @@
                            (case (getch)
                               ("f" (reload (pack (getWord T))))  # [gf] Edit file under cursor
                               ("g" (move 'goAbs 1 1))  # [gg] Go to beginning of text
-                              (T (curses "beep")) ) )
+                              (T (beep)) ) )
                         ("+"  # Increase window size
                            (loop
                               (NIL (setq This (: prev))
@@ -1234,11 +1251,14 @@
                                     (chgwin (inc (: lines))) ) ) ) )
                         ("=" (eqwin))  # Set all windows to equal size
                         ("^]"  # Edit symbol
-                           (when (get (any (pack (getWord T))) '*Dbg 1)
+                           (ifn (get (any (pack (getWord T))) '*Dbg 1)
+                              (beep)
                               (push '*TagStack (: posY) (: buffer file))
                               (reload (cdr @) (car @)) ) )
                         ("^T"  # Pop tag stack
-                           (reload (pop '*TagStack) (pop '*TagStack)) )
+                           (if *TagStack
+                              (reload (pop '*TagStack) (pop '*TagStack))
+                              (beep) ) )
                         (`(char (+ 264 1))  # [F1] Highlight on/off
                            (onOff *Flat)
                            (repaint) )
@@ -1297,8 +1317,8 @@
                               ("k" (and (: next) (setq *Window @)))  # [qk] Above window
                               ("j" (and (: prev) (setq *Window @)))  # [qj] Below window
                               ("q" (done))  # [qq] (Quit) Close window
-                              (T (curses "beep")) ) )
-                        (T (curses "beep")) )
+                              (T (beep)) ) )
+                        (T (beep)) )
                      (reset) ) ) ) ) ) ) )
 
 (when (info (pil "viprc"))

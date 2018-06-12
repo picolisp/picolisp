@@ -1,3 +1,12 @@
+12jun18
+   Don't use modified timeout after select() in Linux
+      src64/main.l
+      src64/io.l
+   Check also for Android in *TargetOS
+      src64/net.l
+   Wrong ESC handling
+      app/lib.l
+
 11jun18
    'ctl' policy revisited
       lib/form.l

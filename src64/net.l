@@ -1,4 +1,4 @@
-# 17jan17abu
+# 12jun18abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -122,7 +122,7 @@
       if ns  # Yes
          xchg A (S)  # Save new socket, retrieve flags
          cc fcntl(E F_SETFL A)  # Restore socket status flags
-         ? (<> *TargetOS "Linux")  # Non-Linux (BSD sockets)?
+         ? (not (member *TargetOS '("Linux" "Android")))  # Non-Linux (BSD sockets)?
             cc fcntl((S) F_SETFL 0)  # Yes: Set new socket to non-blocking
          =
          sub S (%% INET6_ADDRSTRLEN)  # Allocate name buffer

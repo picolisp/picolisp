@@ -1,4 +1,4 @@
-# 11jun18abu
+# 12jun18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -332,7 +332,7 @@
    (loop
       (curses "wget_wch" NIL (: ptr) '(*Chr (4 . I)))
       (NIL (= 410 *Chr)  # KEY_RESIZE
-         (unless (= 27 *Chr) (setq *Chr (char *Chr))) )
+         (setq *Chr (unless (= 27 *Chr) (char *Chr))) )
       (setq
          *Lines (car (struct "LINES" '(I)))
          *Columns (car (struct "COLS" '(I))) )

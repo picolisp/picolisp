@@ -1,4 +1,4 @@
-# 12jun18abu
+# 13jun18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -906,6 +906,25 @@
                   (curry (@Pat) (L C)
                      (unless C (match '@Pat L)) ) ) ) ) ) ) )
 
+(de spell ()
+   (moveSearch 'goForward
+      (setq *Search
+         (let @W
+            (pipe
+               (out '("hunspell" "-l")
+                  (let Pos (nth (: buffer text) (: posY))
+                     (prinl
+                        (seek
+                           '((L) (not (fold (car L))))
+                           (nth (++ Pos) (: posX)) ) )
+                     (mapc prinl Pos) ) )
+               (conc (line) '("@Z")) )
+            (curry (@W) (L C)
+               (and
+                  (not (fold C))
+                  (match '@W L)
+                  (not (fold (car "@Z"))) ) ) ) ) ) )
+
 (de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
    (moveSearch Fun1
       (curry (@Par1 @Sup1 @ParO @ParC @SupO @SupC Par Sup) (L C 1st)
@@ -1289,6 +1308,7 @@
                               (if *Count
                                  (get *Buffers (format @))
                                  (or (: last) (car *Buffers)) ) ) )
+                        ("z" (spell))
                         (("q" "^W")  # ["Window" prefix]
                            (case (getch)
                               ("s"  # [qs] Split window

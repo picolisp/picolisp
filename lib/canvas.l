@@ -1,4 +1,4 @@
-# 07apr16abu
+# 13jun18abu
 # (c) Software Lab. Alexander Burger
 
 (allow "!jsDraw" )
@@ -19,6 +19,7 @@
 (for (Opc . L)
    (quote  # In sync with "@lib/canvas.js"
       ### Functions ###
+      (csFont Str)
       (csFillText Str X Y)
       (csStrokeLine X1 Y1 X2 Y2)
       (csClearRect X Y DX DY)
@@ -29,6 +30,7 @@
       (csMoveTo X Y)
       (csLineTo X Y)
       (csBezierCurveTo X1 Y1 X2 Y2 X Y)
+      (csQuadraticCurveTo X1 Y1 X2 Y2)
       (csLine X1 Y1 X2 Y2)
       (csRect X Y DX DY)
       (csArc X Y R A B F)

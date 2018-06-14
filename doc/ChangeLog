@@ -1,3 +1,9 @@
+14jun18
+   Restore modified timeout, round milliseconds not slept
+      src64/main.l
+      src64/io.l
+      src/io.c
+
 13jun18
    Use 'hunspell' spell checker ("z" command)
       lib/vip.l
@@ -11,6 +17,7 @@
    Don't use modified timeout after select() in Linux
       src64/main.l
       src64/io.l
+      src/io.c
    Check also for Android in *TargetOS
       src64/net.l
    Wrong ESC handling

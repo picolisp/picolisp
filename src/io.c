@@ -1,4 +1,4 @@
-/* 12jun18abu
+/* 14jun18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1413,7 +1413,9 @@ long waitFd(any ex, int fd, long ms) {
    long t;
    fd_set rdSet, wrSet;
    struct timeval *tp, tv;
+#ifndef __linux__
    struct timeval tt;
+#endif
 
    taskSave = Env.task;
    Push(c1, val(At));
@@ -1478,8 +1480,10 @@ long waitFd(any ex, int fd, long ms) {
       if (tp) {
          tv.tv_sec = t / 1000;
          tv.tv_usec = t % 1000 * 1000;
+#ifndef __linux__
          gettimeofday(&tt,NULL);
-         t = tt.tv_sec*1000 + tt.tv_usec/1000;
+         t = tt.tv_sec*1000 + (tt.tv_usec + 500) / 1000;
+#endif
       }
       while (select(m+1, &rdSet, &wrSet, NULL, tp) < 0) {
          if (errno != EINTR) {
@@ -1490,8 +1494,12 @@ long waitFd(any ex, int fd, long ms) {
             sighandler(ex);
       }
       if (tp) {
+#ifdef __linux__
+         t -= tv.tv_sec*1000 + (tv.tv_usec + 500) / 1000;
+#else
          gettimeofday(&tt,NULL);
-         t = tt.tv_sec*1000 + tt.tv_usec/1000 - t;
+         t = tt.tv_sec*1000 + (tt.tv_usec + 500) / 1000 - t;
+#endif
          if (ms > 0  &&  (ms -= t) < 0)
             ms = 0;
       }

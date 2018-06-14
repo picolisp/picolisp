@@ -1,4 +1,4 @@
-# 12jun18abu
+# 14jun18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -2630,17 +2630,20 @@
    drop
    jmp (A)  # Return
 
-(code 'msec_A)
-   push C
-   cc gettimeofday(Buf 0)  # Get time
-   ld A (Buf)  # tv_sec
-   mul 1000  # Convert to milliseconds
-   ld (Buf) A  # Save
-   ld A (Buf I)  # tv_usec
-   div 1000  # Convert to milliseconds (C is zero)
-   add A (Buf)
-   pop C
-   ret
+? (not (member *TargetOS '("Linux" "Android")))
+   (code 'msec_A)
+      push C
+      cc gettimeofday(Buf 0)  # Get time
+      ld A (Buf)  # tv_sec
+      mul 1000  # Convert to milliseconds
+      ld (Buf) A  # Save
+      ld A (Buf I)  # tv_usec
+      add A 500  # Round
+      div 1000  # Convert to milliseconds (C is zero)
+      add A (Buf)
+      pop C
+      ret
+=
 
 # (args) -> flg
 (code 'doArgs 2)

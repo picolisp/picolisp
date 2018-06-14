@@ -1,4 +1,4 @@
-# 12jun18abu
+# 14jun18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2992,8 +2992,10 @@
          mul 1000
          ld (L -IV) A
          lea C (L -V)  # Set timeval structure pointer
-         call msec_A  # Get milliseconds
-         ld E A  # into E
+         ? (not (member *TargetOS '("Linux" "Android")))  # Non-Linux?
+            call msec_A  # Get milliseconds
+            ld E A  # into E
+         =
       end
       do
          cc select(Z &(S FD_SET) S 0 C)  # Wait for event or timeout
@@ -3012,9 +3014,21 @@
       loop
       null C  # Timeval structure pointer?
       if nz  # Yes
-         call msec_A  # Get milliseconds
-         sub A E  # Time difference
-         ld (L -III) A  # Save it
+         ? (member *TargetOS '("Linux" "Android"))  # Linux?
+            ld A (L -V)  # Seconds not slept
+            mul 1000  # Calculate milliseconds
+            ld E A
+            ld A (L -IV)  # Microseconds not slept
+            add A 500  # Round
+            div 1000  # Calculate milliseconds
+            add A E  # Milliseconds not slept
+            sub (L -III) A  # Time difference
+         =
+         ? (not (member *TargetOS '("Linux" "Android")))  # Else
+            call msec_A  # Get milliseconds
+            sub A E  # Time difference
+            ld (L -III) A  # Save it
+         =
       end
       push X  # Save context again
       null (Spkr)  # Speaker open?

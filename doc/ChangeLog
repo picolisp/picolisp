@@ -1,3 +1,8 @@
+15jun18
+   'blk' returns meta-information from block zero, and NIL for invalid blocks
+      src64/db.l
+      doc/refB.html
+
 14jun18
    Restore modified timeout, round milliseconds not slept
       src64/main.l

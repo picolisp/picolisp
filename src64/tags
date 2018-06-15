@@ -908,19 +908,19 @@ db.l,1172
 doPool2977,26879
 doJournal1039,28488
 doId1096,30093
-doBlk1152,31424
-doSeq1245,33860
-doLieu1318,35736
-doLock1350,36404
-dbFetchEX1389,37354
-dbAEX1400,37571
-dbTouchEX1516,40930
-dbZapE1549,41530
-doCommit1570,41965
-doRollback1970,54816
-doMark2053,56826
-doFree2135,58867
-doDbck2193,60333
+doBlk1153,31453
+doSeq1266,34688
+doLieu1339,36564
+doLock1371,37232
+dbFetchEX1410,38182
+dbAEX1421,38399
+dbTouchEX1537,41758
+dbZapE1570,42358
+doCommit1591,42793
+doRollback1991,55644
+doMark2074,57654
+doFree2156,59695
+doDbck2214,61161
 
 gc.l,863
 markE5,63

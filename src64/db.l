@@ -1,4 +1,4 @@
-# 06apr18abu
+# 15jun18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1149,6 +1149,7 @@
    ret
 
 # (blk 'fd 'cnt 'siz ['fd2]) -> lst
+# (blk 'fd 0) -> (cnt . siz)
 (code 'doBlk 2)
    push X
    push Y
@@ -1158,83 +1159,103 @@
    sub S VIII  # Allocate dbFile structure
    call evCntXY_FE  # Eval 'fd'
    ld (S) E  # into dbFile
-   ld (S I) 0  # File number
    ld Y (Y CDR)  # Next arg
    call evCntXY_FE  # Eval 'cnt' block number
-   shl E 6  # Block index
-   ld (BlkIndex) E  # Set block index
-   ld Y (Y CDR)  # Next arg
-   call evCntXY_FE  # Eval 'siz'
-   ld (S II) E  # Block shift
-   ld C BLKSIZE  # Calculate block size
-   shl C E
-   ld (S III) C  # Block size (64 << sh)
-   ld A (DbBlock)  # Block buffer
-   cmp C (MaxBlkSize)  # Calculate maximum
-   if gt
-      ld (MaxBlkSize) C
-      ld E C  # (Re)allocate buffer
-      call allocAE_A
-      ld (DbBlock) A
-   end
-   ld Z A  # Get block buffer in Z
-   add A C  # Calculate buffer end
-   ld (BufEnd) A
-   ld (S IV) 0  # Clear 'flgs'
-   ld (S V) 0  # mark vector size
-   ld (S VI) 0  # and mark bit vector
-   ld (S VII) -1  # Init 'fluse'
-   ld (DbFile) S  # Set DB file
-   ld Y (Y CDR)  # Next arg
-   atom Y  # Any?
-   if nz  # No
-      ld Y -1  # No locking
+   if z  # Zero
+      cc pread((S) &(Buf) (+ BLK 1) BLK)  # Read next and block shift
+      cmp A (+ BLK 1)  # OK?
+      jne dbRdErr  # No
+      ld Z Buf  # Get buffer
+      call cons_E  # Cons result
+      call getAdrZ_A  # Block count
+      shr A 2  # Normalize
+      or A CNT
+      ld (E) A  # in CAR
+      ld B (Buf BLK)  # Block shift
+      zxt
+      shl A 4  # Make short number
+      or A CNT
+      ld (E CDR) A  # in CDR
    else
-      call evCntXY_FE  # Eval 'fd2'
-      ld Y E  # Keep in Y
-      ld C E  # File descriptor
-      call rdLockFileC  # Read lock
-   end
-   call rdBlockZ_Z  # Read first block
-   ld B (Z (- BLK))  # Get tag byte
-   and B BLKTAG  # Block tag
-   cmp B 1  # One?
-   jne idErrXL  # Bad ID
-   ld (GetBinZ_FB) getBlockZ_FB  # Set binary read function
-   ld (Extn) (ExtN)  # Set external symbol offset
-   call binReadZ_FE  # Read value
-   call consE_X  # Cons with NIL
-   ld (X) E  # Keep in X
-   ld (X CDR) Nil
-   link
-   push X  # <L I> Safe
-   link
-   do
-      call binReadZ_FE  # Read property key
-      cmp E Nil  # Any?
-   while ne  # Yes
-      call consE_A  # Build next property cell
-      ld (A) E  # Cons key
-      ld (A CDR) Nil
-      ld (X CDR) A  # Append to result
-      ld X A  # Point X to new cell
-      call binReadZ_FE  # Read property value
-      cmp E TSym  # T?
-      if ne  # No
-         call consE_A  # Cons property value
-         ld (A) E
-         ld (A CDR) (X)  # With key
-         ld (X) A  # Save in property cell
+      shl E 6  # Block index
+      ld (BlkIndex) E  # Set block index
+      ld Y (Y CDR)  # Next arg
+      call evCntXY_FE  # Eval 'siz'
+      ld (S I) 0  # File number
+      ld (S II) E  # Block shift
+      ld C BLKSIZE  # Calculate block size
+      shl C E
+      ld (S III) C  # Block size (64 << sh)
+      ld A (DbBlock)  # Block buffer
+      cmp C (MaxBlkSize)  # Calculate maximum
+      if gt
+         ld (MaxBlkSize) C
+         ld E C  # (Re)allocate buffer
+         call allocAE_A
+         ld (DbBlock) A
       end
-   loop
-   null Y  # Locked?
-   if ns  # Yes
-      ld A (| F_UNLCK (hex "00000"))  # Unlock, length 0
-      ld C Y  # File descriptor
-      call unLockFileAC
+      ld Z A  # Get block buffer in Z
+      add A C  # Calculate buffer end
+      ld (BufEnd) A
+      ld (S IV) 0  # Clear 'flgs'
+      ld (S V) 0  # mark vector size
+      ld (S VI) 0  # and mark bit vector
+      ld (S VII) -1  # Init 'fluse'
+      ld (DbFile) S  # Set DB file
+      ld Y (Y CDR)  # Next arg
+      atom Y  # Any?
+      if nz  # No
+         ld Y -1  # No locking
+      else
+         call evCntXY_FE  # Eval 'fd2'
+         ld Y E  # Keep in Y
+         ld C E  # File descriptor
+         call rdLockFileC  # Read lock
+      end
+      call rdBlockZ_Z  # Read first block
+      ld B (Z (- BLK))  # Get tag byte
+      and B BLKTAG  # Block tag
+      cmp B 1  # One?
+      if ne  # No
+         ld E Nil  # Return NIL
+      else
+         ld (GetBinZ_FB) getBlockZ_FB  # Set binary read function
+         ld (Extn) (ExtN)  # Set external symbol offset
+         call binReadZ_FE  # Read value
+         call consE_X  # Cons with NIL
+         ld (X) E  # Keep in X
+         ld (X CDR) Nil
+         link
+         push X  # <L I> Safe
+         link
+         do
+            call binReadZ_FE  # Read property key
+            cmp E Nil  # Any?
+         while ne  # Yes
+            call consE_A  # Build next property cell
+            ld (A) E  # Cons key
+            ld (A CDR) Nil
+            ld (X CDR) A  # Append to result
+            ld X A  # Point X to new cell
+            call binReadZ_FE  # Read property value
+            cmp E TSym  # T?
+            if ne  # No
+               call consE_A  # Cons property value
+               ld (A) E
+               ld (A CDR) (X)  # With key
+               ld (X) A  # Save in property cell
+            end
+         loop
+         ld E (L I)  # Return list
+         drop
+      end
+      null Y  # Locked?
+      if ns  # Yes
+         ld A (| F_UNLCK (hex "00000"))  # Unlock, length 0
+         ld C Y  # File descriptor
+         call unLockFileAC
+      end
    end
-   ld E (L I)  # Return list
-   drop
    add S VIII  # Drop file structure
    pop Z
    pop Y

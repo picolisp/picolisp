@@ -1,4 +1,6 @@
 16jun18
+   Extend 'dbgc' for distributed DBs via '*ExtDBs' global
+      lib/too.l
    Improved REPL
       lib/vip.l
 

@@ -1,4 +1,4 @@
-# 05jun18abu
+# 16jun18abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
@@ -69,6 +69,15 @@
 ### DB Garbage Collection ###
 (de dbgc ()
    (markExt *DB)
+   (for L *ExtDBs  # ("path/" <cnt> <ofs>)
+      (let ((P N E) L  Lck)
+         (for I N
+            (let (Fd (open (pack P (hax (dec I))))  (Cnt . Siz) (blk Fd 0))
+               (and (=1 I) (setq Lck Fd))
+               (for Blk (dec Cnt)
+                  (mapc markExt
+                     (fish ext? (ext E (blk Fd Blk Siz Lck))) ) )
+               (close Fd) ) ) ) )
    (let Cnt 0
       (finally (mark 0)
          (for (F . @) (or *Dbs (2))

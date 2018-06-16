@@ -4,7 +4,7 @@
 (symbols 'vip 'pico)
 (local) [
    *CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip *Lines
-   *Columns *TagStack *F10 *F11 *F12 ]
+   *Columns *TagStack *Spell *F10 *F11 *F12 ]
 
 ### Curses library interface ###
 (local) curses
@@ -906,12 +906,15 @@
                   (curry (@Pat) (L C)
                      (unless C (match '@Pat L)) ) ) ) ) ) ) )
 
+(de *Spell
+   "hunspell" "-l" "-d" "en_US,de_DE" )
+
 (de spell ()
    (moveSearch 'goForward
       (setq *Search
          (let @W
             (pipe
-               (out '("hunspell" "-l")
+               (out *Spell
                   (let Pos (nth (: buffer text) (: posY))
                      (prinl
                         (seek

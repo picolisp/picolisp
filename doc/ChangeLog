@@ -1,4 +1,6 @@
 16jun18
+   '*Spell' global
+      lib/vip.l
    Extend 'dbgc' for distributed DBs via '*ExtDBs' global
       lib/too.l
    Improved REPL

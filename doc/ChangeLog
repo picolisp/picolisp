@@ -1,3 +1,7 @@
+16jun18
+   Improved REPL
+      lib/vip.l
+
 15jun18
    'blk' returns meta-information from block zero, and NIL for invalid blocks
       src64/db.l

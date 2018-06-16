@@ -1,4 +1,4 @@
-# 13jun18abu
+# 16jun18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -178,7 +178,7 @@
    goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
    paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
    move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
-   shell shFile reset command vi ]
+   shell shFile prCmd reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -973,6 +973,11 @@
    (when (: buffer file)
       (shell (text S (path (fName @)) *Cnt)) ) )
 
+(de prCmd (L)
+   (with *CmdWin
+      (paste (cons T L) T)
+      (inc (:: posY) (dec (length L))) ) )
+
 (de reset ()
    (off *Count *Change)
    (setq *Clip '\"\") )
@@ -980,7 +985,6 @@
 ### Commands ###
 (de command (This Line)
    (case (++ Line)
-      ("(" (run (str (pack (cons "(" Line)))))  # Evaluate list
       ("/" (patMatch 'goForward Line))  # Search forward
       ("?" (patMatch 'goBackward Line))  # Search backward
       (":"
@@ -994,6 +998,11 @@
                      (setq C (pack C (++ Line))) ) )
                (setq Line (pack (clip Line)))
                (case C
+                  (" "  # Eval
+                     (out (tmp "repl")
+                        (println '-> (run (str (pack Line)))) )
+                     (in (tmp "repl")
+                        (prCmd (rdLines)) ) )
                   ("!"  # External filter
                      (when Line
                         (if (=0 Cnt)
@@ -1004,13 +1013,10 @@
                      (shFile "mv @1- @1 && cp -p @1 @1-")
                      (reload) )
                   ("ls"  # List buffers
-                     (let L
+                     (prCmd
                         (make
                            (for (I . This) *Buffers
-                              (link (chop (pack ":" I " " (: file)))) ) )
-                        (with *CmdWin
-                           (paste (cons T L) T)
-                           (inc (:: posY) (dec (length L))) ) ) )
+                              (link (chop (pack ":" I " " (: file)))) ) ) ) )
                   ("key" (=: buffer key Line) (reload))
                   ("m"
                      (when (info (=: mark (rplFile Line)))
@@ -1042,7 +1048,7 @@
                   (T
                      (if (get *Buffers Cnt)
                         (nextBuf @)
-                        (beep)) ) ) ) )
+                        (beep) ) ) ) ) )
          (with *CmdWin
             (redraw)
             (curses "wrefresh" NIL (: ptr)) ) )
@@ -1368,8 +1374,7 @@
                ((pair "X")
                   (get (cdr "X") '*Dbg -1 (car "X")) )
                (C (get C '*Dbg -1 "X"))
-               ((str? "X") "X")
-               (T (get "X" '*Dbg 1)) ) ) )
+               (T (or (get "X" '*Dbg 1) "X")) ) ) )
       "X" ) )
 
 # vi:et:ts=3:sw=3

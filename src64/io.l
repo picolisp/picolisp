@@ -1,4 +1,4 @@
-# 14jun18abu
+# 17jun18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -2878,7 +2878,7 @@
    push ZERO  # <L I> '*Run'
    link
    push C  # <L -I> File descriptor
-   push E  # <L -II> Milliseconds
+   push E  # <L -II> Microseconds
    push E  # <L -III> Timeout
    sub S (+ II FD_SET FD_SET)  # <L -IV> Microseconds
                                # <L -V> Seconds
@@ -2920,7 +2920,10 @@
          shr C 4  # Negative?
          if x  # Yes
             ld A ((E CDR))  # Get CADR
-            shr A 4  # Normalize
+            shr A 4  # Negative?
+            if nx  # No
+               mul 1000  # Make microseconds
+            end
             cmp A (L -III)  # Less than current timeout?
             if lt  # Yes
                ld (L -III) A  # Set new timeout
@@ -2986,16 +2989,17 @@
       ld A (L -III)  # Timeout value?
       null A
       if ns  # Yes
-         div 1000  # Calculate seconds (C is zero)
+         div 1000000  # Calculate seconds (C is zero)
          ld (L -V) A
-         ld A C  # and microseconds
-         mul 1000
-         ld (L -IV) A
-         lea C (L -V)  # Set timeval structure pointer
+         ld (L -IV) C  # and microseconds
          ? (not (member *TargetOS '("Linux" "Android")))  # Non-Linux?
-            call msec_A  # Get milliseconds
+            cc gettimeofday(Buf 0)  # Get time
+            ld A (Buf)  # tv_sec
+            mul 1000000  # Convert to microseconds
+            add A (Buf I)  # tv_usec
             ld E A  # into E
          =
+         lea C (L -V)  # Set timeval structure pointer
       end
       do
          cc select(Z &(S FD_SET) S 0 C)  # Wait for event or timeout
@@ -3016,16 +3020,15 @@
       if nz  # Yes
          ? (member *TargetOS '("Linux" "Android"))  # Linux?
             ld A (L -V)  # Seconds not slept
-            mul 1000  # Calculate milliseconds
-            ld E A
-            ld A (L -IV)  # Microseconds not slept
-            add A 500  # Round
-            div 1000  # Calculate milliseconds
-            add A E  # Milliseconds not slept
+            mul 1000000  # Calculate microseconds
+            add A (L -IV)  # Microseconds not slept
             sub (L -III) A  # Time difference
          =
          ? (not (member *TargetOS '("Linux" "Android")))  # Else
-            call msec_A  # Get milliseconds
+            cc gettimeofday(Buf 0)  # Get time
+            ld A (Buf)  # tv_sec
+            mul 1000000  # Convert to microseconds
+            add A (Buf I)  # tv_usec
             sub A E  # Time difference
             ld (L -III) A  # Save it
          =
@@ -3216,14 +3219,19 @@
          if x  # Yes
             ld C (E CDR)  # Get CDR
             ld A (C)  # and CADR
-            shr A 4  # Normalize
+            shr A 4  # Negative?
+            if nx  # No
+               mul 1000  # Make microseconds
+               ld C (E CDR)  # Get CDR again
+            end
             sub A (L -III)  # Subtract time difference
             if gt  # Not yet timed out
-               shl A 4  # Make short number
-               or A CNT
+               shl A 4  # Make short negative number (microseconds)
+               or A (| SIGN CNT)
                ld (C) A  # Store in '*Run'
             else  # Timed out
                ld A (E)  # Timeout value
+               off A SIGN  # Make positive
                ld (C) A  # Store in '*Run'
                ld (At) (E)  # Set to CAR
                ld Z (C CDR)  # Run body
@@ -3247,7 +3255,7 @@
       if nz  # Yes
          call sighandlerX
       end
-      ld A (L -II)  # Milliseconds
+      ld A (L -II)  # Microseconds
       null A
       if nsz  # Greater zero
          sub A (L -III)  # Subtract time difference
@@ -3256,7 +3264,7 @@
          end
          ld (L -II) A
       end
-   while nz  # Milliseconds non-zero
+   while nz  # Microseconds non-zero
       ld (L -III) A  # Set timeout
       ld C (L -I)  # File descriptor
       null C  # Positive?
@@ -3266,7 +3274,7 @@
       pop X
    until nz  # Yes
    ld (At) (L II)  # Restore '@'
-   ld A (L -II)  # Return milliseconds
+   ld A (L -II)  # Return microseconds
    drop
    pop (EnvTask)
    pop Z
@@ -3287,7 +3295,9 @@
       push -1  # Wait infinite
    else
       call xCntEX_FE  # Get 'cnt'
-      push E  # <S> Milliseconds
+      ld A E  # Convert to microseconds
+      mul 1000
+      push A  # <S> Microseconds
    end
    ld Y (Y CDR)  # Y on 'prg'
    do
@@ -3296,16 +3306,16 @@
       cmp E Nil  # NIL?
    while eq  # Yes
       ld C -1  # No file descriptor
-      ld E (S)  # Milliseconds
+      ld E (S)  # Microseconds
       call waitFdCEX_A  # Wait for events
       null A  # Timeout?
       if z  # Yes
          prog Y  # Run 'prg'
          break T
       end
-      ld (S) A  # New milliseconds
+      ld (S) A  # New microseconds
    loop
-   add S I  # Drop milliseconds
+   add S I  # Drop microseconds
    pop Z
    pop Y
    pop X
@@ -3510,6 +3520,9 @@
       ld E -1  # Wait infinite
    else
       call xCntEX_FE  # Get milliseconds
+      ld A E
+      mul 1000  # Convert to microseconds
+      ld E A
    end
    call flushAll  # Flush all output channels
    call setRaw  # Set terminal to raw mode

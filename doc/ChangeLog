@@ -1,3 +1,9 @@
+17jun18
+   Use microseconds instead of milliseconds internally in '*Run' (64-bit)
+      src64/main.l
+      src64/io.l
+      src64/net.l
+
 16jun18
    '*Spell' global
       lib/vip.l

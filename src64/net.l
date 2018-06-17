@@ -1,4 +1,4 @@
-# 12jun18abu
+# 17jun18abu
 # (c) Software Lab. Alexander Burger
 
 # (port ['T] 'cnt|(cnt . cnt) ['var]) -> cnt
@@ -175,11 +175,13 @@
    ldz Y -1  # No timeout
    if ne  # Yes
       call xCntEX_FE  # Milliseconds
-      ld Y E
+      ld A E
+      mul 1000  # Convert to microseconds
+      ld Y A
    end
    do
       ld C Z  # Socket descriptor
-      ld E Y  # Milliseconds
+      ld E Y  # Microseconds
       call waitFdCEX_A  # Wait for events
       ld E Nil  # Preload NIL
       null A  # Timeout?

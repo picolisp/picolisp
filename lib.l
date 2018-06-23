@@ -1,4 +1,4 @@
-# 23mar18abu
+# 23jun18abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -244,7 +244,8 @@
 
 (de import Lst
    (for Sym Lst
-      (intern Sym T) )
+      (unless (== Sym (intern Sym T))
+         (quit "Import conflict" Sym) ) )
    Lst )
 ####
 

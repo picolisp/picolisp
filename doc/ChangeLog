@@ -1,3 +1,8 @@
+23jun18
+   Check for 'import' conflict
+      lib.l
+      pilos/init/lib.l
+
 17jun18
    Use microseconds instead of milliseconds internally in '*Run' (64-bit)
       src64/main.l

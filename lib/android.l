@@ -1,4 +1,4 @@
-# 26apr18abu
+# 02jul18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -256,7 +256,7 @@
 ## '((Intent)
 ##    (java Intent 'getStringExtra "SCAN_RESULT")
 ##    (java Intent 'getStringExtra "SCAN_RESULT_FORMAT") )
-(local) scanQR
+(local) [scanQR getStringExtra]
 (de scanQR (Fun)
    (startActivityForResult Fun
       "com.google.zxing.client.android.SCAN"

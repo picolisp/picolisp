@@ -1,4 +1,4 @@
-# 23may18abu
+# 03jul18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -94,6 +94,11 @@
 (de nonblank (Str)
    (or Str `(pack (char 160) (char 160))) )
 
+(de <javascript> @
+   (prin "<script type=\"text/javascript\">")
+   (pass prin)
+   (prinl "</script>") )
+
 ### XHTML output ###
 (de html (Upd Ttl Css Attr . Prg)
    (httpHead NIL Upd)
@@ -113,8 +118,7 @@
                (prinl "<style type=\"text/css\">")
                (prinl @)
                (prinl "</style>") ) ) )
-      (when *SesId
-         (prinl "<script type=\"text/javascript\">SesId='" @ "'</script>") )
+      (and *SesId (<javascript> "SesId='" @ "'"))
       (mapc javascript *JS)
       ## (when (=0 Upd)
       ##    (javascript NIL
@@ -130,19 +134,16 @@
    (when *JS
       (when JS
          (prinl "<script type=\"text/javascript\" src=\"" (srcUrl JS) "\"></script>") )
-      (when (rest)
-         (prinl "<script type=\"text/javascript\">" @ "</script>") ) ) )
+      (and (rest) (<javascript> @)) ) )
 
 (de serverSentEvent (Id Var . Prg)
    (allow "!ssEvt")
-   (prinl
-      "<script type=\"text/javascript\">"
+   (<javascript>
       "(new EventSource(SesId+'!ssEvt?'+'"
       Id
       "')).onmessage = function(ev) {document.getElementById('"
       Id
-      "').innerHTML = ev.data}"
-      "</script>" )
+      "').innerHTML = ev.data}" )
    (if (assoc Id *SsEvts)
       (con @ (cons Var (unless (val Var) Prg)))
       (push '*SsEvts (cons Id Var Prg)) ) )

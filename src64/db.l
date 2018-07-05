@@ -1,4 +1,4 @@
-# 15jun18abu
+# 05jul18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -241,15 +241,17 @@
 (code 'rdLockDb)
    cmp (Solo) TSym  # Already locked whole DB?
    jeq ret  # Yes
-   ld A (| F_RDLCK (hex "10000"))  # Read lock, length 1
    ld C ((DbFiles))  # Descriptor of first file
+(code 'rdLockDbC)
+   ld A (| F_RDLCK (hex "10000"))  # Read lock, length 1
    jmp lockFileAC
 
 (code 'wrLockDb)
    cmp (Solo) TSym  # Already locked whole DB?
    jeq ret  # Yes
-   ld A (| F_WRLCK (hex "10000"))  # Write lock, length 1
    ld C ((DbFiles))  # Descriptor of first file
+(code 'wrLockDbC)
+   ld A (| F_WRLCK (hex "10000"))  # Write lock, length 1
    jmp lockFileAC
 
 (code 'rwUnlockDbA)
@@ -1210,7 +1212,7 @@
          call evCntXY_FE  # Eval 'fd2'
          ld Y E  # Keep in Y
          ld C E  # File descriptor
-         call rdLockFileC  # Read lock
+         call rdLockDbC  # Read lock
       end
       call rdBlockZ_Z  # Read first block
       ld B (Z (- BLK))  # Get tag byte

@@ -1,3 +1,7 @@
+05jul18
+   Lock only first byte in 'blk'
+      src64/db.l
+
 03jul18
    Factoring inline <javascript>
       lib/xhtml.l

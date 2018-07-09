@@ -1,3 +1,7 @@
+09jul18
+   "copy" command sends clip(s) to system clipboard
+      lib/vip.l
+
 05jul18
    Lock only first byte in 'blk'
       src64/db.l

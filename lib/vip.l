@@ -1011,9 +1011,12 @@
                         (if (=0 Cnt)
                            (shell (rplFile Line))
                            (pipeN Cnt Line) ) ) )
-                  ("copy"  # Copy clip to system clipboard
-                     (out '("termux-clipboard-set")  # System dependent
-                        (prin (val *Clip)) ) )
+                  ("copy"  # Copy to system clipboard
+                     (out '("copy")  # System dependent script
+                        (let V (val *Clip)
+                           (if (=T (car V))
+                              (mapc prinl (cdr V))
+                              (prin V) ) ) ) )
                   ("bak" (shFile "mv @1 @1- && cp -p @1- @1"))  # Backup to <file>-
                   ("kab"  # Restore from <file>-
                      (shFile "mv @1- @1 && cp -p @1 @1-")

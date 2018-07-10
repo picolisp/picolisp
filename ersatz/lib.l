@@ -1,4 +1,4 @@
-# 11mar18abu
+# 10jul18abu
 # (c) Software Lab. Alexander Burger
 
 (setq
@@ -56,8 +56,7 @@
       (list '@ (list 'pass (box (getd "F")))) ) )
 
 (de subr ("F")
-   (set "F"
-      (getd (cadr (cadr (getd "F")))) ) )
+   (set "F" (getd (cadadr (getd "F")))) )
 
 (de undef ("X" "C")
    (when (pair "X")

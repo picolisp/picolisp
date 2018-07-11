@@ -1,4 +1,4 @@
-# 17may18abu
+# 11jul18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -52,7 +52,7 @@
       `*Scl ) )
 
 # Clickable position field
-(local) [+LatLonField msg obj lt ln]
+(local) +LatLonField
 (class +LatLonField +TextField)
 
 (dm T (Msg . @)

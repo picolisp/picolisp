@@ -1,4 +1,6 @@
 11jul18
+   'local' only defined symbols
+      lib/gis.l
    Minor reference fix
       doc/refA.html
 

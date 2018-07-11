@@ -79,6 +79,7 @@ typedef struct bindFrame {
    int i, cnt;
    struct {any sym; any val;} bnd[1];
 } bindFrame;
+#define bindFrameSize(n) (sizeof(bindFrame) + sizeof(any)*2*( (n) - 1 ))
 
 typedef struct inFile {
    int fd, ix, cnt, next;

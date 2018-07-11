@@ -209,7 +209,7 @@ href="refT.html#timeout">timeout</a></code>.
    (co 'echoes  # Coroutine
       (use S
          (loop  # Loop infinitely
-            (yield -4000)  # First wait 1 seconds
+            (yield -4000)  # First wait 4 seconds
             (msg 'OK)
             (yield  # Then wait for remote data
                (setq S
@@ -524,7 +524,7 @@ href="refD.html#*Dbg">*Dbg</a></code>.
 
 <dt><a name="trail"><code>(trail ['flg]) -> lst</code></a>
 <dd>(64-bit version only) Returns a stack backtrace for the current point of
-program execution. The list elements are either lisp expressions (denoting
+program execution. The list elements are either list expressions (denoting
 function or method calls), or symbols followed by their corresponding values. If
 <code>flg</code> is <code>NIL</code>, the symbols and their values are omitted,
 and only the expressions are returned. See also <code><a

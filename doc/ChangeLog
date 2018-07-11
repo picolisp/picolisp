@@ -1,4 +1,7 @@
 11jul18
+   Undo fix from 02may18 ("list" was correct)
+   Typo in 'tasks' comment
+      doc/refT.html
    'local' only defined symbols
       lib/gis.l
    Minor reference fix

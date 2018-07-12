@@ -1,4 +1,4 @@
-# 09jul18abu
+# 12jul18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -360,6 +360,9 @@
       (repaint) ) )
 
 (de done (Flg)
+   (when Flg
+      (unless (= (: buffer undo) (: buffer dirt))
+         (save> (: buffer)) ) )
    (unmark)
    (nond
       ((; *CmdWin next next) (throw 'done Flg))
@@ -1017,6 +1020,11 @@
                            (if (=T (car V))
                               (mapc prinl (cdr V))
                               (prin V) ) ) ) )
+                  ("ix.io"  # Paste to http://ix.io
+                     (pipe
+                        (out '("curl" "-sF" "f:1=<-" "ix.io")
+                           (mapc prinl (: buffer text)) )
+                        (prCmd (rdLines)) ) )
                   ("bak" (shFile "mv @1 @1- && cp -p @1- @1"))  # Backup to <file>-
                   ("kab"  # Restore from <file>-
                      (shFile "mv @1- @1 && cp -p @1 @1-")
@@ -1042,10 +1050,7 @@
                         (out (fName (rplFile @))
                            (mapc prinl (: buffer text)) )
                         (save> (: buffer)) ) )
-                  ("x"  # (Exit) Save buffer and close window
-                     (unless (= (: buffer undo) (: buffer dirt))
-                        (save> (: buffer)) )
-                     (done T) )
+                  ("x" (done T))  # (Exit) Save buffer and close window
                   ("q" (done))  # (Quit) Close window
                   ("bd"  # Buffer delete
                      (when (cdr *Buffers)
@@ -1353,6 +1358,7 @@
                               ("j" (and (: prev) (setq *Window @)))  # [qj] Below window
                               ("q" (done))  # [qq] (Quit) Close window
                               (T (beep)) ) )
+                        ("Z" (done T))
                         (T (beep)) )
                      (reset) ) ) ) ) ) ) )
 

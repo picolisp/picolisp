@@ -1,4 +1,4 @@
-# 09jan18abu
+# 18jul18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -2754,6 +2754,7 @@
                   null (X)  # More locals?
                while nz  # Yes
                   ld X (X)  # Next frame pointer
+                  ld (X (pack III "+(EnvCo7-Env)")) (EnvCo7)  # Set Co7
                loop
                ld (X) (Z (pack III "+(Catch-EnvCo)"))  # Join
                ld X EnvInFrames  # Pointer to input frames

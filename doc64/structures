@@ -1,4 +1,4 @@
-# 09jan18abu
+# 17jul18abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -210,7 +210,7 @@
          <III> put/get  |
          <II>  pid      |
          <I>   fd       |
-               LINK ----+  <-- inFrames, outFrames, errFrames, ctlFrames
+               LINK ----+  <-- InFrames, OutFrames, ErrFrames, CtlFrames
 
 
       Coroutine frame:
@@ -223,7 +223,7 @@
          <III> [env]    |
          <II>  seg -----|-----------------+
          <I>   lim      |                 |
-               LINK ----+  <-- co7        |
+               LINK ----+  <-- Co7        |
                                           |
                                           |
       Stack segment:       <--------------+

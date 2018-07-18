@@ -1,3 +1,15 @@
+18jul18
+   Catch frame bug in coroutines (64-bit)
+      {src64,pilos/src}/flow.l
+
+17jul18
+   Minor cosmetics
+      doc64/structures
+
+16jul18
+   Suppress output of 'L' in trail error log
+      lib/app.l
+
 14jul18
    Added "Android" to '*OS'
       doc/refO.html

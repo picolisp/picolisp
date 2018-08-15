@@ -1,4 +1,4 @@
-# 12jul18abu
+# 15aug18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -173,8 +173,8 @@
 
 (local) [
    min1 beep delwin cursor addLine chgLine unmark redraw repaint scroll goto
-   chgwin eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goLeft
-   goRight goUp goDown goAbs goFind word lword end lend getWord _forward
+   chgwin eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goCol
+   goLeft goRight goUp goDown goAbs goFind word lword end lend getWord _forward
    goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
    paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
    move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
@@ -441,17 +441,20 @@
 (de cnt@@ ()
    (- @@ (: posY) -1) )
 
-(de goLeft (N)
+(de goCol (N)
    (setq @@ (: posY))
-   (max 1 (- (: posX) N)) )
+   N )
+
+(de goLeft (N)
+   (goCol (max 1 (- (: posX) N))) )
 
 (de goRight (N I)
-   (setq @@ (: posY))
-   (min1
-      (or (=T N) (+ (: posX) N))
-      (+
-         (or I 0)
-         (length (get (: buffer text) (: posY))) ) ) )
+   (goCol
+      (min1
+         (or (=T N) (+ (: posX) N))
+         (+
+            (or I 0)
+            (length (get (: buffer text) (: posY))) ) ) ) )
 
 (de goUp (N)
    (setq @@ (max 1 (- (: posY) N)))
@@ -882,13 +885,18 @@
          (move 'goAbs (default X (car @)) (cdr @)) ) ) )
 
 (de wordFun (@W)
-   (conc @W '("@Z"))
+   (setq @W (append @W '("@Z")))
    (setq *Search
       (curry (@W) (L C)
          (and
             (delim? C "~")
             (match '@W L)
-            (delim? (car "@Z") "~") ) ) ) )
+            (delim? (car "@Z") "~")
+            (not
+               (find
+                  '((C)
+                     (and (= C `(char 64)) (find delim? (val C))) )
+                  '@W ) ) ) ) ) )
 
 (de moveSearch (Fun1 Fun2)
    (move Fun1 (lit Fun2) *Cnt) )
@@ -993,6 +1001,7 @@
    (case (++ Line)
       ("/" (patMatch 'goForward Line))  # Search forward
       ("?" (patMatch 'goBackward Line))  # Search backward
+      ("&" (moveSearch 'goForward (wordFun Line)))  # Search word
       (":"
          (let Cnt 0
             (while (format (car Line))
@@ -1177,6 +1186,7 @@
                                  (inc (:: posX))
                                  (inc (:: winX)) ) )
                            (redraw) )
+                        ("|" (move 'goCol *Cnt))  # Go to column
                         ("$" (move 'goRight T))  # Go to end of line
                         ("G" (move 'goAbs 1 (or (format *Count) T)))  # Go to end of text
                         ("f" (and (getch2 (getch)) (move 'goFind @ 0 *Cnt)))  # Find character
@@ -1192,9 +1202,10 @@
                         ("'" (jmpMark (getch) "'" 1))  # Jump to mark line
                         ("`" (jmpMark (getch) "`")) # Jump to mark position
                         ("~" (evRpt (list 'tglCase *Cnt)))  # Toggle case
-                        (":" (cmdMode (name ":")))  # Command
-                        ("/" (cmdMode (name "/")))  # Search forward
-                        ("?" (cmdMode (name "?")))  # Search backward
+                        (":" (cmdMode (char `(char ":"))))  # Command
+                        ("/" (cmdMode (char `(char "/"))))  # Search forward
+                        ("?" (cmdMode (char `(char "?"))))  # Search backward
+                        ("&" (cmdMode (char `(char "&"))))  # Search word
                         ("n"  # Search next
                            (if *Search
                               (move 'goForward (lit @) *Cnt)
@@ -1205,6 +1216,8 @@
                               (beep) ) )
                         ("*"  # Search word under cursor
                            (and (getWord T "~") (moveSearch 'goForward (wordFun @))) )
+                        ("#"  # Search word under cursor backward
+                           (and (getWord T "~") (moveSearch 'goBackward (wordFun @))) )
                         ("%"  # Matching parenthesis
                            (case (get (: buffer text) (: posY) (: posX))
                               ("(" (parMatch 'goForward 1 0 "(" ")" "[" "]"))

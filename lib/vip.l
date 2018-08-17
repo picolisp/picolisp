@@ -1,4 +1,4 @@
-# 15aug18abu
+# 17aug18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1169,7 +1169,7 @@
                               (cmdMode) ) )
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
                         (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
-                        (("^F" `(char 338)) (move 'goDown *Lines))  # [NPAGE] Page down
+                        ((" " "^F" `(char 338)) (move 'goDown *Lines))  # [NPAGE] Page down
                         (("k" `(char 259)) (move 'goUp *Cnt))  # [UP] Move up
                         (("^B" `(char 339)) (move 'goUp *Lines))  # [PPAGE] Page up
                         ("h" (move 'goLeft *Cnt))  # Move left

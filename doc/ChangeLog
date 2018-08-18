@@ -1,3 +1,7 @@
+18aug18
+   Mask overflow in external symbol offsets
+      {src64,pilos/src}/io.l
+
 17aug18
    <space> scrolls down
       lib/vip.l

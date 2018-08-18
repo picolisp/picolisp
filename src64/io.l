@@ -1,4 +1,4 @@
-# 17jun18abu
+# 18aug18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -695,6 +695,7 @@
                and A (hex "FF00")
                or A C
                add A (Extn)  # Add external symbol offset
+               and A (hex "FFFF")  # Mask overflow
                shl A 24
                ld C A  # Lower result bits
                shl A 12
@@ -863,6 +864,7 @@
             and A (hex "FF00")
             or A C
             sub A (Extn)  # Subtract external symbol offset
+            and A (hex "FFFF")  # Mask overflow
             shl A 24
             ld C A  # Lower result bits
             shl A 12

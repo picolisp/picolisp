@@ -1,4 +1,4 @@
-# 24nov16abu
+# 22aug18abu
 # (c) Software Lab. Alexander Burger
 
 # *Rule
@@ -499,7 +499,7 @@
          (cons
             (for (L NIL Lst)
                (push 'L (++ Lst) NIL)
-                L )
+               L )
             X ) ) ) )
 
 (de "initSel" ()
@@ -620,8 +620,36 @@
       (let (Box (-> @Sockets 2)  Lst (val Box))
          (rot Lst)
          (loop
-            (T ((cdar Lst)) @)
-            (NIL (set Box (setq Lst (cdr Lst)))) ) ) ) )
+            (T ((cdr (++ Lst))) @)
+            (NIL (set Box Lst)) ) ) ) )
+
+(repeat)
+
+(be revolve ("@Lst" . "@CL")
+   (^ @Gen
+      (let L (-> "@Lst")
+         (prog1 (box)
+            (for X (cddr L)
+               (push @
+                  (goal
+                     (cons (cadr L) (lit X) (-> "@CL")) ) ) )
+            (push @ (car L)) ) ) )
+   (^ @ (unify (car (-> "@Lst"))))
+   (_revolve "@Lst") )
+
+(be _revolve ((@Val . @))
+   (^ @ (not (cdar (-> @Gen 2))))
+   T
+   (fail) )
+
+(be _revolve ((@Val . @))
+   (^ @Val
+      (let L (val (-> @Gen 2))
+         (rot (cdr L))
+         (loop
+            (T (prove (cadr L))
+               (get @ (car L)) )
+            (NIL (con L (cddr L))) ) ) ) )
 
 (repeat)
 

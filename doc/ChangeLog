@@ -1,4 +1,6 @@
 22aug18
+   'revolve/2' predicate
+      {lib,pilos/init/lib}/pilog.l
    Fix and simplify 'parMatch'
       lib/vip.l
 

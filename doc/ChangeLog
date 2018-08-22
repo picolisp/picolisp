@@ -1,3 +1,7 @@
+22aug18
+   Fix and simplify 'parMatch'
+      lib/vip.l
+
 18aug18
    Mask overflow in external symbol offsets
       {src64,pilos/src}/io.l

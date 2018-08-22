@@ -1,4 +1,4 @@
-# 17aug18abu
+# 22aug18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -503,41 +503,40 @@
          (until (delim? (car (setq L (prior L Lst))) Str)
             (yoke (car L)) ) ) ) )
 
-(de _forward (Lst C 1st)
+(de _forward (Lst C)
    (for ((X . L) Lst  L  (cdr L))
-      (T (and (Fun L C 1st) (=0 (dec 'N)))
+      (T (and (Fun L C) (=0 (dec 'N)))
          (jmp@@ Y)
          (+ (or I 0) X) )
       (setq C (car L))
-      (off 1st) ) )
+      NIL ) )
 
 (de goForward (Fun N I)
    (let (Y (: posY)  Pos (nth (: buffer text) Y)  L (nth (++ Pos) (: posX)))
-      (if (_forward (cdr L) (car L) T)
+      (if (_forward (cdr L) (car L))
          (+ (: posX) @)
          (loop
             (NIL Pos (beep))
             (inc 'Y)
             (T (_forward (++ Pos)) @) ) ) ) )
 
-(de _backward (Lst L 1st)
+(de _backward (Lst L)
    (use P
       (loop
          (NIL L)
          (setq P (prior L Lst))
-         (T (and (Fun L (car P) 1st) (=0 (dec 'N)))
+         (T (and (Fun L (car P)) (=0 (dec 'N)))
             (jmp@@ Y)
             (offset L Lst) )
          (setq L P)
-         (off 1st) ) ) )
+         NIL ) ) )
 
 (de goBackward (Fun N)
    (let (Y (: posY)  Pos (nth (: buffer text) Y))
       (or
          (_backward
             (car Pos)
-            (nth (car Pos) (dec (: posX)))
-            T )
+            (nth (car Pos) (dec (: posX))) )
          (loop
             (NIL (setq Pos (prior Pos (: buffer text)))
                (beep) )
@@ -939,10 +938,9 @@
                   (match '@W L)
                   (not (fold (car "@Z"))) ) ) ) ) ) )
 
-(de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
+(de parMatch (Fun1 Par Sup @ParO @ParC @SupO @SupC)
    (moveSearch Fun1
-      (curry (@Par1 @Sup1 @ParO @ParC @SupO @SupC Par Sup) (L C 1st)
-         (and 1st (setq Par @Par1 Sup @Sup1))
+      (curry (Par Sup @ParO @ParC @SupO @SupC) (L C)
          (unless (caar L)
             (case (car L)
                (@ParO (nil (inc 'Par)))

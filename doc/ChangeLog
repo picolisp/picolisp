@@ -1,4 +1,6 @@
 23aug18
+   Force reload of 'loginForm'
+      lib/adm.l
    'revolve/2' reference
       doc/ref.html
       doc/refR.html

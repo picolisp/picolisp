@@ -1,4 +1,4 @@
-# 02may18abu
+# 23aug18abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -136,9 +136,12 @@
       (--)
       (gui '(+Button) '(if *Login ,"logout" ,"login")
          '(cond
-            (*Login (logout))
+            (*Login
+               (logout)
+               (url *Url) )
             ((login (val> (: home nm)) (val> (: home pw)))
-               (clr> (: home pw)) )
+               (clr> (: home pw))
+               (url *Url) )
             (T (error ,"Permission denied")) ) )
       (when *Login
          (<nbsp> 4)

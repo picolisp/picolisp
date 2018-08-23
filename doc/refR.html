@@ -427,6 +427,7 @@ clauses will be evaluated on remote machines according to these resources. Each
 resource must be a cons pair of two functions, an "out" function in the CAR, and
 an "in" function in the CDR. See also <code><a
 href="refE.html#*Ext">*Ext</a></code>, <code><a
+href="refR.html#revolve/2">revolve/2</a></code>, <code><a
 href="refS.html#select/3">select/3</a></code> and <code><a
 href="refD.html#db/3">db/3</a></code>.
 
@@ -669,6 +670,24 @@ Hello world
 -> T
 : (info "a")
 -> (0 733216 . 53922)
+</code></pre>
+
+<dt><a name="revolve/2"><code>revolve/2</code></a>
+<dd><a href="ref.html#pilog">Pilog</a> predicate for quasi-parallel evaluation
+of clauses. It takes a list and an arbitrary number of clauses. The list should
+contain a Pilog variable for the result in the CAR, another Pilog variable for
+passing the values in the CADR, and a list of values in the CDDR. The clauses
+will be evaluated in a round-robin fashion. See also <code><a
+href="refR.html#remote/2">remote/2</a></code>.
+
+<pre><code>
+: (solve
+   (quote
+      @Rsrc '((1 2 3 4) (5 6 7 8) (a b c))
+      (revolve (@Res @Lst . @Rsrc)
+         (lst @Res @Lst) ) )
+   @Res )
+-> (1 5 a 2 6 b 3 7 c 4 8)
 </code></pre>
 
 <dt><a name="rollback"><code>(rollback) -> flg</code></a>

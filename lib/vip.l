@@ -1,4 +1,4 @@
-# 22aug18abu
+# 25aug18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1059,6 +1059,11 @@
                         (save> (: buffer)) ) )
                   ("x" (done T))  # (Exit) Save buffer and close window
                   ("q" (done))  # (Quit) Close window
+                  ("bx"  # Buffer exchange
+                     (let X (memq (: buffer) *Buffers)
+                        (if (cdr X)
+                           (xchg X @)
+                           (beep) ) ) )
                   ("bd"  # Buffer delete
                      (when (cdr *Buffers)
                         (let Buf (: buffer)

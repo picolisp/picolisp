@@ -1,3 +1,7 @@
+25aug18
+   ":bx" buffer exchange command
+      lib/vip.l
+
 23aug18
    Force reload of 'loginForm'
       lib/adm.l

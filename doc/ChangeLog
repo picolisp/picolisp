@@ -1,4 +1,6 @@
 25aug18
+   Minor fix
+      doc/ref.html
    ":bx" buffer exchange command
       lib/vip.l
 

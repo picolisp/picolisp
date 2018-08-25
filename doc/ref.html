@@ -1053,8 +1053,10 @@ it is:
 -> (1 2 3 4 5 6)
 </code></pre>
 
-<p>This is not really a function call but just a convenience to avoid having to
-quote simple data lists.
+<p>This is not really a function call, but just a convenience to avoid having to
+quote simple data lists. The interpreter needs to check it anyway, and returning
+the list (instead of throwing an error) is a lot faster than calling the
+<code>quote</code> function.
 
 <p>Otherwise, if the CAR is a symbol or a list, PicoLisp tries to obtain an
 executable function from that, by either using the symbol's value, or by
@@ -1098,7 +1100,7 @@ like the <code>*</code> in:
 </code></pre>
 
 <p>The VAL of <code>*</code> is a number. In fact, it is the numeric
-representation of a C-function pointer, i.e. a pointer to executable code. This
+representation of a function pointer, i.e. a pointer to executable code. This
 is the case for all built-in functions of PicoLisp.
 
 <p>Other functions in turn are written as Lisp expressions:

@@ -1,7 +1,3 @@
-28aug18
-   Create logfile for logging
-      src/httpGate.c
-
 25aug18
    Minor fix
       doc/ref.html

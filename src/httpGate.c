@@ -1,4 +1,4 @@
-/* 28aug18abu
+/* 10nov17abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -268,7 +268,7 @@ static int gateConnect(int port, name *np) {
             strcat(log, np->log);
          else
             sprintf(log, "%s/%s", np->dir, np->log);
-         if ((fd = open(log, O_CREAT|O_RDWR, 0666)) >= 0) {
+         if ((fd = open(log, O_RDWR)) >= 0) {
             fl.l_type = F_WRLCK;
             fl.l_whence = SEEK_SET;
             fl.l_start = 0;

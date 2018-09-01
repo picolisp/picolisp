@@ -908,21 +908,21 @@ db.l,1212
 truncLog955,26395
 bufAoAC_C964,26600
 doPool2979,26915
-doJournal1041,28524
-doId1098,30129
-doBlk1155,31489
-doSeq1268,34722
-doLieu1341,36598
-doLock1373,37266
-dbFetchEX1412,38216
-dbAEX1423,38433
-dbTouchEX1539,41792
-dbZapE1572,42392
-doCommit1593,42827
-doRollback1993,55678
-doMark2076,57688
-doFree2158,59729
-doDbck2216,61195
+doJournal1043,28572
+doId1100,30177
+doBlk1157,31537
+doSeq1270,34770
+doLieu1343,36646
+doLock1375,37314
+dbFetchEX1414,38264
+dbAEX1425,38481
+dbTouchEX1541,41840
+dbZapE1574,42440
+doCommit1595,42875
+doRollback1995,55726
+doMark2078,57736
+doFree2160,59777
+doDbck2218,61243
 
 gc.l,863
 markE5,63

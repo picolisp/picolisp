@@ -1,4 +1,4 @@
-# 05jul18abu
+# 01sep18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -991,7 +991,9 @@
    until z  # Yes
    push Z  # Save DB files end
    push (DbJnl)  # Journal
+   ld (DbJnl) 0  # Stop
    push (DbLog)  # Transaction log
+   ld (DbLog) 0  # Stop
    call evSymY_E  # Eval database name
    link
    push E  # <L I> DB name

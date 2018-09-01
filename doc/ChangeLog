@@ -1,3 +1,7 @@
+01sep18
+   Clear 'DbJnl' and 'DbLog' in 'pool2'
+      src64/db.l
+
 25aug18
    Minor fix
       doc/ref.html

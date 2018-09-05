@@ -1,4 +1,7 @@
 * XXdec18 picoLisp-18.12
+   Bug in initial 'tasks' timeout
+   'revolve/2' predicate
+   Catch frame bug in coroutines (64-bit)
 
 * 28jun18 picoLisp-18.6
    '<thead>' and '<tbody>' functions

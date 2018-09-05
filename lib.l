@@ -1,4 +1,4 @@
-# 10jul18abu
+# 05sep18abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -37,7 +37,7 @@
       (del @ '*Run) ) )
 
 (de tasks Prg
-   (task -2 (run Prg)  "Prg" Prg
+   (task -2 (abs (run Prg))  "Prg" Prg
       (let (L (assoc @ *Run)  P (run "Prg"))
          (if2 (lt0 (car L)) (lt0 P)
             (set (cdr L) (abs P))            # (-2 111 ..) -> (-2 999 ..)

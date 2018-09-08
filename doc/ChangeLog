@@ -1,3 +1,7 @@
+08sep18
+   Mark saved namespaces in catch/coroutine frames
+      {src64,pilos/src}/gc.l
+
 05sep18
    Bug in initial 'tasks' timeout
       lib.l

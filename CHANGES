@@ -1,4 +1,5 @@
 * XXdec18 picoLisp-18.12
+   Bug in gc for namespaces
    Bug in initial 'tasks' timeout
    'revolve/2' predicate
    Catch frame bug in coroutines (64-bit)

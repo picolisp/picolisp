@@ -1,4 +1,4 @@
-# 23mar17abu
+# 08sep18abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -102,7 +102,7 @@
       cmp Y GcMarkEnd  # Done?
    until eq  # Yes
    ### Mark Env ###
-   ld E (EnvIntern)  # Mark current namespace
+   ld E (EnvIntern)  # Mark current namespaces
    call markE
    ### Mark stack(s) ###
    ld Y L
@@ -129,6 +129,16 @@
          call markE  # Yes
       end
       ld E (Y II)  # Mark 'fin'
+      call markE
+      ld E (Y (pack III "+(EnvIntern-Env)"))  # Mark saved namespaces
+      call markE
+      ld Y (Y)  # Next frame
+   loop
+   ld Y (EnvCo7)  # Coroutine frames
+   do
+      null Y  # Any?
+   while ne  # Yes
+      ld E (Y (pack III "+(EnvIntern-EnvCo)"))  # Mark saved namespaces
       call markE
       ld Y (Y)  # Next frame
    loop
@@ -173,6 +183,8 @@
                ld Y (Y)  # Next frame
             loop
             pop Y
+            ld E (Y (pack -II "-(EnvMid-EnvIntern)"))  # Mark saved namespaces
+            call markE
          end
          pop C
          dec C  # Decrement count

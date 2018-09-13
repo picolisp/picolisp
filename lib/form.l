@@ -1,4 +1,4 @@
-# 11jun18abu
+# 13sep18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -352,7 +352,7 @@
       (gui 'line '(+Focus +Able +Hint1 +TextField)
          '(= (: home view file) (: home repl))
          '*ReplH
-         DX )
+         (*/ DX 4 5) )
       (----)
       (gui '(+JS +Able +Button) '(= (: home view file) (: home repl)) "Eval"
          '(let Str (val> (: home line))

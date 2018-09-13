@@ -1,4 +1,6 @@
 13sep18
+   Input field in 'repl' shorter
+      lib/form.l
    Large font also for 'textarea' and 'select'
       lib/phone.css
 

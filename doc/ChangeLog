@@ -1,3 +1,7 @@
+13sep18
+   Large font also for 'textarea' and 'select'
+      lib/phone.css
+
 08sep18
    Mark saved namespaces in catch/coroutine frames
       {src64,pilos/src}/gc.l

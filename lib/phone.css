@@ -1,4 +1,4 @@
-/* 10feb18abu
+/* 13sep18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -14,7 +14,7 @@ body {
    font-size: 3.0vw;
 }
 
-input {
+input, textarea, select {
    font-size: large;
 }
 

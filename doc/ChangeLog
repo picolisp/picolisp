@@ -1,3 +1,9 @@
+18sep18
+   Disable TLSv1
+      src/httpGate.c
+   Disable TLSv1, use 'SSL_set_tlsext_host_name' (Mike Pechkin)
+      src/ssl.c
+
 16sep18
    Minor typo
       doc/refD.html

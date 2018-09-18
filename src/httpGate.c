@@ -1,4 +1,4 @@
-/* 10nov17abu
+/* 18sep18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -367,8 +367,8 @@ int main(int ac, char *av[]) {
          giveup("SSL init");
       }
       SSL_CTX_set_options(ctx,
-         SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_ALL |
-         SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_NO_COMPRESSION );
+         SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 |
+         SSL_OP_ALL | SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_NO_COMPRESSION );
       ssl = SSL_new(ctx),  gate = "X-Pil: *Gate=https\r\nX-Pil: *Adr=%s\r\n";
    }
    for (n = 1; n < cnt; ++n)

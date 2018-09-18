@@ -1,4 +1,4 @@
-/* 01apr18abu
+/* 18sep18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -181,9 +181,11 @@ int main(int ac, char *av[]) {
       giveup("SSL init");
    }
    SSL_CTX_set_options(ctx,
-      SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
+      SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 |
+      SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
    SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
+   SSL_set_tlsext_host_name(ssl, av[1]);
    if (!Safe) {
       X509_VERIFY_PARAM *par = SSL_get0_param(ssl);
       X509_VERIFY_PARAM_set_hostflags(par, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);

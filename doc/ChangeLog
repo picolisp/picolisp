@@ -1,4 +1,6 @@
 22sep18
+   Minor translation change
+      loc/de
    Accept all-uppercase as global constants
       lib/lint.l
 

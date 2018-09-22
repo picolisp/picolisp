@@ -1,4 +1,4 @@
-# 28aug17abu
+# 22sep18abu
 # (c) Software Lab. Alexander Burger
 
 "Language" "Sprache"
@@ -36,7 +36,7 @@
 "Restore @1?" "@1 wiederherstellen?"
 "Delete" "Löschen"
 "Delete @1?" "@1 löschen?"
-"Data not found" "Datensatz nicht gefunden"
+"Data not found" "Daten nicht gefunden"
 "Undo" "Rückgängig"
 "Undo: '@1'" "Rückgängig: '@1'"
 "Redo" "Wiederherstellen"

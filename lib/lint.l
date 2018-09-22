@@ -1,4 +1,4 @@
-# 24nov16abu
+# 22sep18abu
 # (c) Software Lab. Alexander Burger
 
 # *NoLint
@@ -11,7 +11,10 @@
 (de global? (S)
    (or
       (memq S '(NIL ^ @ @@ @@@ This T))
-      (member (char S) '(`(char '*) `(char '+))) ) )
+      (member (char S) '(`(char '*) `(char '+)))
+      (and
+         (>= (length S) 4)
+         (fully upp? (chop S)) ) ) )
 
 (de local? (S)
    (or

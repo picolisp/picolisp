@@ -1,3 +1,7 @@
+21sep18
+   Bug in setting checkbox values
+      lib/form.js
+
 18sep18
    Disable TLSv1
       src/httpGate.c

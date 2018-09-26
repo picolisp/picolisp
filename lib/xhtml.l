@@ -1,4 +1,4 @@
-# 03jul18abu
+# 26sep18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -647,7 +647,11 @@
       "<form enctype=\"multipart/form-data\" action=\""
       (sesId Url)
       (and *JS "\" onkeydown=\"return formKey(event)\" onkeypress=\"return formKey(event)\" onsubmit=\"return doPost(this)")
-      "\" method=\"post\">" )
+      "\" method=\"post\""
+      (when (=T Attr)
+         (off Attr)
+         " target=\"_blank\"" )
+      ">" )
    (prin "<noscript><input type=\"hidden\" name=\"*JS\" value=\"\"/></noscript>")
    (tag 'fieldset Attr 2 Prg)
    (prinl "</form>") )

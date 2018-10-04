@@ -1,4 +1,4 @@
-# 25aug18abu
+# 04oct18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -944,12 +944,12 @@
          (unless (caar L)
             (case (car L)
                (@ParO (nil (inc 'Par)))
-               (@ParC (or (not C) (=0 (dec 'Par) Sup)))
+               (@ParC (or (not C) (= (dec 'Par) 0 Sup)))
                (@SupO (nil (push 'Sup Par) (zero Par)))
                (@SupC
                   (or
                      (not C)
-                     (=0 (setq Par (++ Sup)) Sup) ) ) ) ) ) ) )
+                     (= (setq Par (++ Sup)) 0 Sup) ) ) ) ) ) ) )
 
 (de pipeN (Cnt Line)
    (evRpt

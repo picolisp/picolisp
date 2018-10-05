@@ -1,3 +1,7 @@
+05oct18
+   Treat parentheses as "word" tokens
+      lib/vip.l
+
 04oct18
    Revisit 'parMatch'
       lib/vip.l

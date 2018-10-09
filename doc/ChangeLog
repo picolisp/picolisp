@@ -1,3 +1,7 @@
+09oct18
+   Minor fix ("302" instead of "301", 12apr17)
+      doc/httpGate.html
+
 05oct18
    Treat parentheses as "word" tokens
       lib/vip.l

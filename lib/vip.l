@@ -1,4 +1,4 @@
-# 05oct18abu
+# 11oct18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -457,11 +457,11 @@
             (length (get (: buffer text) (: posY))) ) ) ) )
 
 (de goUp (N)
-   (setq @@ (max 1 (- (: posY) N)))
+   (jmp@@ (max 1 (- (: posY) N)))
    (min1 (: posX) (length (get (: buffer text) @@))) )
 
 (de goDown (N I)
-   (setq @@
+   (jmp@@
       (min1
          (or (=T N) (+ (: posY) N))
          (+ (or I 0) (length (: buffer text))) ) )

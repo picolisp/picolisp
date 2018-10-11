@@ -1,3 +1,7 @@
+11oct18
+   Save last position in 'goUp' and 'goDown'
+      lib/vip.l
+
 09oct18
    Minor fix ("302" instead of "301", 12apr17)
       doc/httpGate.html

@@ -1,4 +1,5 @@
 11oct18
+   Revisit 'parMatch'
    Save last position in 'goUp' and 'goDown'
       lib/vip.l
 

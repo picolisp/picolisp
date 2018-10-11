@@ -942,18 +942,21 @@
                   (match '@W L)
                   (not (fold (car "@Z"))) ) ) ) ) ) )
 
-(de parMatch (Fun1 Par Sup @ParO @ParC @SupO @SupC)
+(de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
    (moveSearch Fun1
-      (curry (Par Sup @ParO @ParC @SupO @SupC) (L C)
-         (unless (caar L)
-            (case (car L)
-               (@ParO (nil (inc 'Par)))
-               (@ParC (or (not C) (= (dec 'Par) 0 Sup)))
-               (@SupO (nil (push 'Sup Par) (zero Par)))
-               (@SupC
-                  (or
-                     (not C)
-                     (= (setq Par (++ Sup)) 0 Sup) ) ) ) ) ) ) )
+      (let (Par @Par1  Sup @Sup1)
+         (curry (Par Sup @Par1 @Sup1 @ParO @ParC @SupO @SupC) (L C)
+            (unless (caar L)
+               (and
+                  (case (car L)
+                     (@ParO (nil (inc 'Par)))
+                     (@ParC (or (not C) (= (dec 'Par) 0 Sup)))
+                     (@SupO (nil (push 'Sup Par) (zero Par)))
+                     (@SupC
+                        (or
+                           (not C)
+                           (= (setq Par (++ Sup)) 0 Sup) ) ) )
+                  (setq Par @Par1  Sup @Sup1) ) ) ) ) ) )
 
 (de pipeN (Cnt Line)
    (evRpt

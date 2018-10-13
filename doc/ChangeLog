@@ -1,3 +1,8 @@
+13oct18
+   Optionally disable 'DbJnl' and 'DbLog' in 'journal'
+      src64/db.l
+      doc/refJ.html
+
 11oct18
    Revisit 'parMatch'
    Save last position in 'goUp' and 'goDown'

@@ -1,3 +1,7 @@
+15oct18
+   Add stack check to 'doJournal'
+      src64/db.l
+
 13oct18
    Optionally disable 'DbJnl' and 'DbLog' in 'journal'
       src64/db.l

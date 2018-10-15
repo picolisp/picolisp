@@ -1,4 +1,4 @@
-# 13oct18abu
+# 15oct18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1057,6 +1057,8 @@
       call evSymY_E  # as file name
    end
    sub S (MaxBlkSize)  # <S /I> Buffer
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    do
       call pathStringE_SZ  # Write to stack buffer
       cc fopen(S _r_)  # Open file

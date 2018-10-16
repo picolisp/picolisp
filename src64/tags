@@ -909,20 +909,20 @@ db.l,1212
 bufAoAC_C964,26600
 doPool2979,26915
 doJournal1043,28577
-doId1114,30591
-doBlk1171,31951
-doSeq1284,35184
-doLieu1357,37060
-doLock1389,37728
-dbFetchEX1428,38678
-dbAEX1439,38895
-dbTouchEX1555,42254
-dbZapE1588,42854
-doCommit1609,43289
-doRollback2009,56140
-doMark2092,58150
-doFree2174,60191
-doDbck2232,61657
+doId1116,30640
+doBlk1173,32000
+doSeq1286,35233
+doLieu1359,37109
+doLock1391,37777
+dbFetchEX1430,38727
+dbAEX1441,38944
+dbTouchEX1557,42303
+dbZapE1590,42903
+doCommit1611,43338
+doRollback2011,56189
+doMark2094,58199
+doFree2176,60240
+doDbck2234,61706
 
 gc.l,863
 markE5,63

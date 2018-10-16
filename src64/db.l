@@ -1,4 +1,4 @@
-# 15oct18abu
+# 16oct18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1070,6 +1070,8 @@
          cc getc_unlocked(E)  # Next char
          nul4  # EOF?
       while ns  # No
+         cmp A (MaxBlkSize)
+         jgt jnlErrX
          ld C A  # Size in C
          cc fread(Buf 2 1 E)  # Read file number
          cmp A 1  # OK?

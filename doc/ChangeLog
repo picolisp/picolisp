@@ -1,3 +1,7 @@
+16oct18
+   Add size check to 'doJournal'
+      src64/db.l
+
 15oct18
    Add stack check to 'doJournal'
       src64/db.l

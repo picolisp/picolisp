@@ -1,4 +1,4 @@
-# 13sep18abu
+# 23oct18abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2478,7 +2478,7 @@
          ((== *Lock (: obj)) T)
          (*Lock (rollback) (off *Lock)) ) ) )
 
-(de panel (Able Txt Del Dlg Var Cls Hook Msg Exe . Prg)
+(de panel (Able Txt Del Dlg Var X Hook Msg Exe . Prg)
    (<spread>
       (editButton Able Exe)
       (run Prg 1)
@@ -2492,28 +2492,31 @@
                (list 'with '(: home obj) (car Var))
                (list ': 'home 'obj Var) ) ) )
       (choButton Dlg)
-      (when Cls
-         (stepBtn (fin Var) Cls Hook Msg) ) )
+      (when X
+         (if (pair X)
+            (stepBtn X Msg)
+            (stepBtn (fin Var) X Hook Msg) ) ) )
    (--) )
 
 # Standard ID form
-(de idForm ("Entity" "Cho" "Var" "Cls" "Able" "Del" "Lst" . "Prg")
+(de idForm ("Entity" "Cho" "Var" "X" "Able" "Del" "Lst" . "Prg")
    (ifn *ID
       (prog
          (<h3> NIL ,"Select" " " "Entity")
          (form 'dialog
             (if (pair "Cho")
                (eval @)
-               (choDlg NIL "Cho" (list (fin "Var") "Cls")) ) ) )
+               (choDlg NIL "Cho" (list (fin "Var") "X")) ) ) )
       (form NIL
          (<h3> NIL "Entity" ": " (idObj "Lst"))
          (panel "Able" (pack "Entity" " '@1'") "Del"
             (or
                (pair "Cho")
-               (list 'choDlg NIL (lit "Cho") (lit (list (fin "Var") "Cls"))) )
-            "Var" "Cls"
+               (list 'choDlg NIL (lit "Cho") (lit (list (fin "Var") "X"))) )
+            "Var" "X"
             (and
-               (or (get "Cls" (fin "Var") 'hook) (meta "Cls" (fin "Var") 'hook))
+               (atom X)
+               (or (get "X" (fin "Var") 'hook) (meta "X" (fin "Var") 'hook))
                (get (: obj) @) ) )
          (run "Prg") ) ) )
 

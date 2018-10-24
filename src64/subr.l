@@ -1,4 +1,4 @@
-# 07apr17abu
+# 24oct18abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -2918,16 +2918,19 @@
    ld C (L I)  # Get 'lst1'
    drop
    pop X
-   cmp C E  # First cell?
-   if ne  # No
-      do
-         atom E  # More?
-      while z  # Yes
-         ld A (E CDR)
-         cmp A C  # Found prior cell?
-         jeq ret  # Yes
-         ld E A
-      loop
+   atom C  # Atomic?
+   if z
+      cmp C E  # First cell?
+      if ne  # No
+         do
+            atom E  # More?
+         while z  # Yes
+            ld A (E CDR)
+            cmp A C  # Found prior cell?
+            jeq ret  # Yes
+            ld E A
+         loop
+      end
    end
    ld E Nil
    ret

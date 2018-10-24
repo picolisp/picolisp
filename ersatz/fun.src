@@ -1,4 +1,4 @@
-# 15mar18abu
+# 24oct18abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -2979,8 +2979,7 @@ offset (i x y)
 # (prior 'lst1 'lst2) -> lst | NIL
 prior (x y)
    y = (x = ex.Cdr).Car.eval();
-   x = x.Cdr.Car.eval();
-   if (x != y)
+   if (!((x = x.Cdr.Car.eval()) instanceof Cell) && x != y)
       while (x instanceof Cell) {
          if (y == x.Cdr)
             return x;

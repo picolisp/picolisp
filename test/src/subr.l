@@ -1,4 +1,4 @@
-# 04apr17abu
+# 24oct18abu
 # (c) Software Lab. Alexander Burger
 
 ### c[ad]*r ###
@@ -426,6 +426,7 @@
 ### prior ###
 (let (L (1 2 3 4 5 6)  X (cdddr L))
    (test NIL (prior L L))
+   (test NIL (prior NIL L))
    (test (3 4 5 6) (prior X L)) )
 
 

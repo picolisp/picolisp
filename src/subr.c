@@ -1,4 +1,4 @@
-/* 05apr17abu
+/* 24oct18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1278,7 +1278,7 @@ any doPrior(any x) {
 
    x = cdr(x),  Push(c1, EVAL(car(x)));
    x = cdr(x),  y = EVAL(car(x));
-   if ((x = Pop(c1)) != y)
+   if (!isCell(x = Pop(c1)) && x != y)
       while (isCell(y)) {
          if (x == cdr(y))
             return y;

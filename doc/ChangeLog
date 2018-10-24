@@ -1,3 +1,16 @@
+24oct18
+   Check for atomic first argument in 'prior'
+      {src64,pilos/src}/subr.l
+      {src,mini/src}/subr.c
+      ersatz/fun.src
+      test/src/subr.l
+
+23oct18
+   Accept direct list in 'stepBtn'
+      lib/xhtml.l
+   Adjust 'panel' and 'idForm' for that
+      lib/form.l
+
 16oct18
    Add size check to 'doJournal'
       src64/db.l

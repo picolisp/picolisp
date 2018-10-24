@@ -1,4 +1,5 @@
 * XXdec18 picoLisp-18.12
+   Bug in 'prior'
    Bug in setting checkbox values
    Bug in gc for namespaces
    Bug in initial 'tasks' timeout

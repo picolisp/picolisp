@@ -2979,7 +2979,8 @@ offset (i x y)
 # (prior 'lst1 'lst2) -> lst | NIL
 prior (x y)
    y = (x = ex.Cdr).Car.eval();
-   if (!((x = x.Cdr.Car.eval()) instanceof Cell) && x != y)
+   x = x.Cdr.Car.eval();
+   if ((y instanceof Cell) && x != y)
       while (x instanceof Cell) {
          if (y == x.Cdr)
             return x;

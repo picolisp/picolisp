@@ -1,3 +1,9 @@
+25oct18
+   Minor optimization in 'stepBtn'
+      lib/xhtml.l
+   Bug in 'getWord' due to 'prior'
+      lib/vip.l
+
 24oct18
    Check for atomic first argument in 'prior'
       {src64,pilos/src}/subr.l

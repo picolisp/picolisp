@@ -1,4 +1,4 @@
-# 11oct18abu
+# 25oct18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -499,12 +499,15 @@
 
 (de getWord (Flg Str)
    (make
-      (let (Lst (get (: buffer text) (: posY))  L (nth Lst (: posX)))
+      (let Lst (get (: buffer text) (: posY))
          (when Flg
-            (for C L
+            (for C (nth Lst (: posX))
                (T (delim? C))
                (link C) ) )
-         (until (delim? (car (setq L (prior L Lst))) Str)
+         (for
+            (L (nth Lst (dec (: posX)))
+               (not (delim? (car L)))
+               (prior L Lst) )
             (yoke (car L)) ) ) ) )
 
 (de _forward (Lst C)

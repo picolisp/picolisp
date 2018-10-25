@@ -1,4 +1,4 @@
-# 23oct18abu
+# 25oct18abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -558,9 +558,8 @@
    (<span> 'step
       (use (S1 S2)
          (if (pair X)
-            (setq
-               S1 (lit (car (prior (memq *ID X) X)))
-               S2 (lit (cadr (memq *ID X))) )
+            (let L (memq *ID X)
+               (setq S1 (car (prior L X))  S2 (cadr L)) )
             (let
                (Rel (meta *ID X)
                   K
@@ -583,15 +582,15 @@
                   (step Q1 T)
                   (step Q2 T) )
                (setq
-                  S1 (list 'step (lit Q1) T)
-                  S2 (list 'step (lit Q2) T) ) ) )
+                  S1 (step Q1 T)
+                  S2 (step Q2 T) ) ) )
          (let Msg (or (next) 'url>)
-            (if (and (eval S1) (send Msg @ *Tab))
+            (if (and S1 (send Msg @ *Tab))
                (<tip> ,"Next object of the same type"
                   (<href> "<<<" (mkUrl @)) )
                (prin "&lt;&lt;&lt;") )
             (prin "&nbsp;--&nbsp;")
-            (if (and (eval S2) (send Msg @ *Tab))
+            (if (and S2 (send Msg @ *Tab))
                (<tip> ,"Next object of the same type"
                   (<href> ">>>" (mkUrl @)) )
                (prin "&gt;&gt;&gt;") ) ) ) ) )

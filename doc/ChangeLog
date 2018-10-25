@@ -1,4 +1,6 @@
 25oct18
+   Minor optimization '=1'
+      games/chess.l
    Minor optimization in 'stepBtn'
       lib/xhtml.l
    Bug in 'getWord' due to 'prior'

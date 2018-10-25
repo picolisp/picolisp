@@ -1,4 +1,4 @@
-# 24nov16abu
+# 25oct18abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -327,7 +327,7 @@
       (let? Pce (get Fld2 'piece)
          (and
             (== Pce (car *Moved))
-            (= 1 (get Pce 'cnt))
+            (=1 (get Pce 'cnt))
             (isa '+Pawn Pce)
             (n== (: color) (get Pce 'color))
             (link (list This (cons Pce) (cons This Fld1))) ) ) ) )

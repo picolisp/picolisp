@@ -1,4 +1,4 @@
-# 02jul18abu
+# 29oct18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -59,7 +59,7 @@
       (out *Java (pr (rest)))
       (let? Val (in *Lisp (rd))
          (if (== 'err (car (pair Val)))
-            (nil (msg (cdr Val)))
+            (quit (cdr Val))
             Val ) ) ) )
 
 # Android device ID

@@ -1,3 +1,9 @@
+29oct18
+   Propagate 'java' exceptions via 'quit'
+      lib/android.l
+   Clear '*Msg' in 'repl'
+      lib/form.l
+
 25oct18
    Minor optimization '=1'
       games/chess.l

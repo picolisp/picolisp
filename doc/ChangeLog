@@ -1,3 +1,7 @@
+30oct18
+   Add 'null' to local
+      lib/android.l
+
 29oct18
    Propagate 'java' exceptions via 'quit'
       lib/android.l
@@ -295,7 +299,7 @@
 20may18
    HTML markup mismatch
       doc/refP.html
-   Variable size for 'less', default 3
+   Variable size for 'less', default 4
       lib/debug.l
       pilos/init/lib/dbg.l
       doc/refL.html

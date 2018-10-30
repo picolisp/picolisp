@@ -1,4 +1,4 @@
-# 29oct18abu
+# 30oct18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -33,7 +33,7 @@
 # (java T "cls" ["cls" ..]) -> obj       Define interface
 # (java 'obj) -> [lst ..]                Reflect object
 # (java "cls") -> cls                    Get class
-(local) [java1 java *Java *Lisp]
+(local) [java1 java *Java *Lisp null]
 (de java1 ()
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))

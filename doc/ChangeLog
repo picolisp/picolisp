@@ -1,3 +1,13 @@
+01nov18
+   Simplified RQST (only one-way)
+      Removed LocationListener
+      lib/android.l
+
+31oct18
+   'toast' variable number of arguments
+   '*ResultProxy' tuning
+      lib/android.l
+
 30oct18
    Add 'null' to local
       lib/android.l

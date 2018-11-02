@@ -1,4 +1,6 @@
 02nov18
+   Large font also for '.hints'
+      lib/phone.css
    File descriptor argument for 'wait'
       {src64,pilos/src}/io.l
       src/io.c

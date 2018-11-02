@@ -47,7 +47,8 @@
                   (pr
                      (if (get (rd) (rd))
                         (apply @ (rd))
-                        (rd) ) ) ) ) ) )
+                        (rd)
+                        NIL ) ) ) ) ) )
       (push '*Fork
          '(off *Java *Lisp)
          '(close *Rply)

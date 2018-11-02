@@ -1596,22 +1596,18 @@ long waitFd(any ex, int fd, long ms) {
 }
 
 // (wait 'cnt|NIL . prg) -> any
-// (wait 'cnt|NIL 'fd) -> fd|NIL
+// (wait 'cnt|NIL . sym) -> cnt|NIL
 any doWait(any ex) {
    any x, y;
    long ms;
 
    x = cdr(ex);
    ms = isNil(y = EVAL(car(x)))? -1 : xCnt(ex,y);
-   x = cdr(x);
-   if (isNum(y = EVAL(car(x))))
+   if (isSym(x = cdr(x)) && isNum(y = val(x)))
       return waitFd(ex, xCnt(ex,y), ms)? y : Nil;
-   if (!isNil(isCell(cdr(x))? y = prog(cdr(x)) : y))
-      return y;
-   do
+   while (isNil(y = prog(x)))
       if (!(ms = waitFd(ex, -1, ms)))
          return prog(x);
-   while (isNil(y = prog(x)));
    return y;
 }
 

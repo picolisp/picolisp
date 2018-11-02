@@ -3382,18 +3382,14 @@ read (x y)
    return x;
 
 # (wait 'cnt|NIL . prg) -> any
-# (wait 'cnt|NIL 'fd) -> fd|NIL
+# (wait 'cnt|NIL . sym) -> cnt|NIL
 wait (i x y)
    i = (y = (x = ex.Cdr).Car.eval()) == Nil? -1 : xInt(y);
-   x = x.Cdr;
-   if ((y = x.Car.eval()) instanceof Number)
+   if ((x = x.Cdr) instanceof Symbol  &&  (y = x.Car) instanceof Number)
       return waitFd(ex, ((Number)y).Cnt, i) == 0? y : Nil;
-   if ((x.Cdr instanceof Cell? y = x.Cdr.prog() : y) != Nil)
-      return y;
-   do
+   while ((y = x.prog()) == Nil)
       if ((i = waitFd(ex, -1, i)) == 0)
          return x.prog();
-   while ((y = x.prog()) == Nil);
    return y;
 
 # (poll 'cnt) -> cnt | NIL

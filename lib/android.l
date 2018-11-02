@@ -1,10 +1,10 @@
-# 01nov18abu
+# 02nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
    (setq *Uuid (in "UUID" (line T)))
-   (for F '("JAVA" "LISP" "RQST" "BOSS")
+   (for F '("JAVA" "LISP" "RQST" "RPLY" "BOSS")
       (native "@" "unlink" 'I F)
       (native "@" "mkfifo" 'I F `(oct "600")) )
    (hear (open "BOSS")) )
@@ -36,15 +36,21 @@
 (local) [java1 java *Java *Lisp null]
 (de java1 ()
    (unless *Java
-      (setq *Java (open "JAVA")  *Lisp (open "LISP"))
+      (setq
+         *Java (open "JAVA")
+         *Lisp (open "LISP")
+         *Rply (open "RPLY") )
       (task (open "RQST")
          (in @
-            (ext 65535
-               (if (get (rd) (rd))
-                  (apply @ (rd))
-                  (rd) ) ) ) )
+            (out *Rply
+               (ext 65535
+                  (pr
+                     (if (get (rd) (rd))
+                        (apply @ (rd))
+                        (rd) ) ) ) ) ) )
       (push '*Fork
          '(off *Java *Lisp)
+         '(close *Rply)
          '(close *Lisp)
          '(close *Java) )
       (forked)

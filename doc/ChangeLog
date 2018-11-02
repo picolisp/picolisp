@@ -1,4 +1,9 @@
 02nov18
+   File descriptor argument for 'wait'
+      {src64,pilos/src}/io.l
+      src/io.c
+      ersatz/fun.src
+      doc/refW.html
    '*Rply' global
       lib/android.l
    Minor typo

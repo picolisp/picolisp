@@ -1,4 +1,4 @@
-/* 14jun18abu
+/* 02nov18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1596,6 +1596,7 @@ long waitFd(any ex, int fd, long ms) {
 }
 
 // (wait 'cnt|NIL . prg) -> any
+// (wait 'cnt|NIL 'fd) -> fd|NIL
 any doWait(any ex) {
    any x, y;
    long ms;
@@ -1603,9 +1604,14 @@ any doWait(any ex) {
    x = cdr(ex);
    ms = isNil(y = EVAL(car(x)))? -1 : xCnt(ex,y);
    x = cdr(x);
-   while (isNil(y = prog(x)))
+   if (isNum(y = EVAL(car(x))))
+      return waitFd(ex, xCnt(ex,y), ms)? y : Nil;
+   if (!isNil(isCell(cdr(x))? y = prog(cdr(x)) : y))
+      return y;
+   do
       if (!(ms = waitFd(ex, -1, ms)))
          return prog(x);
+   while (isNil(y = prog(x)));
    return y;
 }
 

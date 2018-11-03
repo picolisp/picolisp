@@ -1,4 +1,4 @@
-# 02nov18abu
+# 03nov18abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -3382,11 +3382,13 @@ read (x y)
    return x;
 
 # (wait 'cnt|NIL . prg) -> any
-# (wait 'cnt|NIL . sym) -> cnt|NIL
+# (wait 'cnt|NIL T 'fd) -> fd|NIL
 wait (i x y)
    i = (y = (x = ex.Cdr).Car.eval()) == Nil? -1 : xInt(y);
-   if ((x = x.Cdr) instanceof Symbol  &&  (y = x.Car) instanceof Number)
+   if ((x = x.Cdr).Car == T) {
+      y = x.Cdr.Car.eval();
       return waitFd(ex, ((Number)y).Cnt, i) == 0? y : Nil;
+   }
    while ((y = x.prog()) == Nil)
       if ((i = waitFd(ex, -1, i)) == 0)
          return x.prog();

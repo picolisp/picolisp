@@ -1,3 +1,10 @@
+03nov18
+   Change 'wait' to T syntax
+      {src64,pilos/src}/io.l
+      src/io.c
+      ersatz/fun.src
+      doc/refW.html
+
 02nov18
    Large font also for '.hints'
       lib/phone.css

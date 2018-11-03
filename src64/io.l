@@ -1,4 +1,4 @@
-# 02nov18abu
+# 03nov18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -3284,7 +3284,7 @@
    ret
 
 # (wait 'cnt|NIL . prg) -> any
-# (wait 'cnt|NIL . sym) -> cnt|NIL
+# (wait 'cnt|NIL T 'fd) -> fd|NIL
 (code 'doWait 2)
    push X
    push Y
@@ -3303,20 +3303,20 @@
       push A  # <S> Microseconds
    end
    ld Y (Y CDR)  # Y on 'prg'
-   sym Y  # File descriptor?
-   jz 10  # No
-   ld Z (Y)  # Value in Z
-   cnt Z
-   if nz  # Yes
-      ld C Z  # File descriptor
-      shr C 4  # Normalize
+   cmp (Y) TSym  # T?
+   if eq  # Yes
+      ld E ((Y CDR))  # Eval 'fd'
+      eval
+      ld Y E  # Keep in Y
+      call xCntEX_FE  # Get 'fd'
+      ld C E  # File descriptor
       ld E (S)  # Microseconds
       call waitFdCEX_A  # Wait for events
       null A  # Timeout?
       ldz E Nil  # Yes: Return NIL
-      ldnz E Z  # Else return 'fd'
+      ldnz E Y  # Else return 'fd'
    else
-10    do
+      do
          ld Z Y  # Run 'prg'
          prog Z
          cmp E Nil  # NIL?

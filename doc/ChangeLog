@@ -1,3 +1,8 @@
+05nov18
+   Simplified RPC protocol
+   Reentrant 'java' calls
+      lib/android.l
+
 03nov18
    Change 'wait' to T syntax
       {src64,pilos/src}/io.l

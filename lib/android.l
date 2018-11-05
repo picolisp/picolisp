@@ -1,10 +1,10 @@
-# 02nov18abu
+# 05nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
    (setq *Uuid (in "UUID" (line T)))
-   (for F '("JAVA" "LISP" "RQST" "RPLY" "BOSS")
+   (for F '("JAVA" "LISP" "BOSS")
       (native "@" "unlink" 'I F)
       (native "@" "mkfifo" 'I F `(oct "600")) )
    (hear (open "BOSS")) )
@@ -36,34 +36,34 @@
 (local) [java1 java *Java *Lisp null]
 (de java1 ()
    (unless *Java
-      (setq
-         *Java (open "JAVA")
-         *Lisp (open "LISP")
-         *Rply (open "RPLY") )
-      (task (open "RQST")
-         (in @
-            (out *Rply
-               (ext 65535
-                  (pr
+      (setq *Java (open "JAVA")  *Lisp (open "LISP"))
+      (task *Lisp
+         (ext 65535
+            (in *Lisp
+               (if (=T (rd))
+                  (prog1
                      (if (get (rd) (rd))
                         (apply @ (rd))
                         (rd)
-                        NIL ) ) ) ) ) )
-      (push '*Fork
-         '(off *Java *Lisp)
-         '(close *Rply)
-         '(close *Lisp)
-         '(close *Java) )
+                        NIL )
+                     (out *Java (pr T @)) )
+                  (rd) ) ) ) )
       (forked)
       (queue '*Ext (cons 65535 java)) ) )
 
 (de java @
    (ext 65535
-      (out *Java (pr (rest)))
-      (let? Val (in *Lisp (rd))
-         (if (== 'err (car (pair Val)))
-            (quit (cdr Val))
-            Val ) ) ) )
+      (out *Java (pr NIL (rest)))
+      (in *Lisp
+         (for (Flg (rd) Flg (rd))
+            (and (=0 Flg) (quit (rd)))  # 0: Exception
+            (prog1                      # T: Callback
+               (if (get (rd) (rd))
+                  (apply @ (rd))
+                  (rd)
+                  NIL )
+               (out *Java (pr T @)) ) )
+         (rd) ) ) )
 
 # Android device ID
 (local) [dev getString getContentResolver]

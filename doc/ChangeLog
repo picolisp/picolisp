@@ -1,4 +1,6 @@
 05nov18
+   Wrong page-down size
+      lib/vip.l
    Simplified RPC protocol
    Reentrant 'java' calls
       lib/android.l

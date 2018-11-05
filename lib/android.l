@@ -40,14 +40,14 @@
       (task *Lisp
          (ext 65535
             (in *Lisp
-               (if (=T (rd))
+               (ifn (=T (rd))
+                  (quit (rd))
                   (prog1
                      (if (get (rd) (rd))
                         (apply @ (rd))
                         (rd)
                         NIL )
-                     (out *Java (pr T @)) )
-                  (rd) ) ) ) )
+                     (out *Java (pr T @)) ) ) ) ) )
       (forked)
       (queue '*Ext (cons 65535 java)) ) )
 

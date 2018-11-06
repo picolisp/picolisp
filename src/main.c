@@ -1,4 +1,4 @@
-/* 09jan17abu
+/* 06nov18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1118,7 +1118,7 @@ any doCd(any x) {
    }
 }
 
-// (ctty 'sym|pid) -> flg
+// (ctty 'sym|NIL|pid) -> flg
 any doCtty(any ex) {
    any x;
 
@@ -1127,7 +1127,7 @@ any doCtty(any ex) {
    else {
       if (!isSym(x))
          argError(ex,x);
-      {
+      if (!isNil(x)) {
          char tty[bufSize(x)];
 
          bufString(x, tty);
@@ -1135,9 +1135,10 @@ any doCtty(any ex) {
             return Nil;
          InFiles[STDIN_FILENO]->ix = InFiles[STDIN_FILENO]->cnt = InFiles[STDIN_FILENO]->next = 0;
          Tio = tcgetattr(STDIN_FILENO, &OrgTermio) == 0;
-         OutFiles[STDOUT_FILENO]->tty = YES;
          OutFiles[STDOUT_FILENO]->ix = 0;
       }
+      OutFiles[STDOUT_FILENO]->tty = YES;
+      OutFiles[STDERR_FILENO]->tty = YES;
    }
    return T;
 }

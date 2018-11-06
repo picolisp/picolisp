@@ -536,14 +536,14 @@ main.l,2310
 doUsec3044,75984
 doPwd3062,76401
 doCd3073,76655
-doCtty3098,77270
-doInfo3144,78584
-doFile3203,79979
-doDir3256,81215
-doCmd3326,82833
-doArgv3344,83292
-doOpt3447,85838
-doVersion3461,86169
+doCtty3098,77274
+doInfo3152,78988
+doFile3211,80383
+doDir3264,81619
+doCmd3334,83237
+doArgv3352,83696
+doOpt3455,86242
+doVersion3469,86573
 
 big.l,1019
 zapZeroA_A6,106

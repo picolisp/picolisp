@@ -1,4 +1,4 @@
-# 17jun18abu
+# 06nov18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -3094,7 +3094,7 @@
    pop Z
    ret
 
-# (ctty 'sym|pid) -> flg
+# (ctty 'sym|NIL|pid) -> flg
 (code 'doCtty 2)
    push X
    ld X E
@@ -3106,36 +3106,44 @@
       ld (TtyPid) E  # Keep in global
       ld E TSym  # Return T
    else
-      sym E  # Need symbol
-      jz argErrEX
-      push Z
-      call bufStringE_SZ  # Write to stack buffer
-      ld E Nil  # Preload return value
-      cc freopen(S _r_ (stdin))  # Re-open standard input
-      null A  # OK?
-      if nz  # Yes
-         cc freopen(S _w_ (stdout))  # Re-open standard output
+      cmp E Nil  # NIL?
+      if eq  # Yes
+         ld (((OutFiles) I) II) 1  # Set 'tty' of OutFiles[1] (stdout)
+         ld (((OutFiles) II) II) 1  # and OutFiles[2] (stderr)
+         ld E TSym  # Return T
+      else
+         sym E  # Need symbol
+         jz argErrEX
+         push Z
+         call bufStringE_SZ  # Write to stack buffer
+         ld E Nil  # Preload return value
+         cc freopen(S _r_ (stdin))  # Re-open standard input
          null A  # OK?
          if nz  # Yes
-            cc freopen(S _w_ (stderr))  # Re-open standard error
+            cc freopen(S _w_ (stdout))  # Re-open standard output
             null A  # OK?
             if nz  # Yes
-               ld A ((InFiles))  # InFiles[0] (stdin)
-               ld (A I) 0  # Clear 'ix'
-               ld (A II) 0  # Clear 'cnt'
-               ld (A III) 0  # Clear 'next'
-               cc tcgetattr(0 OrgTermio)  # Save terminal I/O
-               not B
-               ld (Tio) B  # and flag
-               ld A ((OutFiles) I)  # OutFiles[1] (stdout)
-               ld (A II) 1  # Set 'tty'
-               ld (A I) 0  # Clear 'ix'
-               ld E TSym  # Return T
+               cc freopen(S _w_ (stderr))  # Re-open standard error
+               null A  # OK?
+               if nz  # Yes
+                  ld A ((InFiles))  # InFiles[0] (stdin)
+                  ld (A I) 0  # Clear 'ix'
+                  ld (A II) 0  # Clear 'cnt'
+                  ld (A III) 0  # Clear 'next'
+                  cc tcgetattr(0 OrgTermio)  # Save terminal I/O
+                  not B
+                  ld (Tio) B  # and flag
+                  ld A ((OutFiles) I)  # OutFiles[1] (stdout)
+                  ld (A II) 1  # Set 'tty'
+                  ld (A I) 0  # Clear 'ix'
+                  ld (((OutFiles) II) II) 1  # Set 'tty' of OutFiles[2] (stderr)
+                  ld E TSym  # Return T
+               end
             end
          end
+         ld S Z  # Drop buffer
+         pop Z
       end
-      ld S Z  # Drop buffer
-      pop Z
    end
    pop X
    ret

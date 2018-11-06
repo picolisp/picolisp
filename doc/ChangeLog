@@ -1,4 +1,8 @@
 06nov18
+   'ctty' sets TTY flag with NIL argument
+      src64/main.l
+      src/main.c
+      doc/refC.html
    Restore LocationListener
       lib/android.l
 

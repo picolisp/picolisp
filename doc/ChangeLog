@@ -1,3 +1,7 @@
+06nov18
+   Restore LocationListener
+      lib/android.l
+
 05nov18
    Wrong page-down size
       lib/vip.l
@@ -26,7 +30,7 @@
       doc/refF.html
 
 01nov18
-   Removed LocationListener
+   Remove LocationListener
       lib/android.l
 
 31oct18

@@ -1,4 +1,4 @@
-# 05nov18abu
+# 06nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -206,11 +206,23 @@
          'checkSelfPermission CONTEXT "android.permission.ACCESS_FINE_LOCATION" ) ) )
 
 (local) [
-   gps *LocMan onLocationChanged onProviderDisabled onProviderEnabled
+   gps *LocMan *LocLsn onLocationChanged onProviderDisabled onProviderEnabled
    onStatusChanged requestLocationUpdates isProviderEnabled getLastKnownLocation
    getLatitude getLongitude ]
 (de gps ()
-   (default *LocMan (java CONTEXT 'getSystemService "location"))
+   (unless *LocMan
+      (setq
+         *LocMan (java CONTEXT 'getSystemService "location")
+         *LocLsn (java T "android.location.LocationListener") )
+      (def 'onLocationChanged *LocLsn
+         '((Loc)) )
+      (def 'onProviderDisabled *LocLsn
+         '((Prov)) )
+      (def 'onProviderEnabled *LocLsn
+         '((Prov)) )
+      (def 'onStatusChanged *LocLsn
+         '((Prov Stat Extras)) )
+      (java *LocMan 'requestLocationUpdates "gps" '(L . 20000) (-3 . 100) *LocLsn) )
    (when (java *LocMan 'isProviderEnabled "gps")
       (let? Loc (java *LocMan 'getLastKnownLocation "gps")
          (cons

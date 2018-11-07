@@ -1,3 +1,8 @@
+07nov18
+   Minor cosmetics
+      doc/refN.html
+      doc/refS.html
+
 06nov18
    'ctty' sets TTY flag with NIL argument
       src64/main.l

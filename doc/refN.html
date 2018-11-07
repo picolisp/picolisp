@@ -463,8 +463,9 @@ href="refP.html#pico">pico</a></code>.
 <dt><a name="nth"><code>(nth 'lst 'cnt ..) -> lst</code></a>
 <dd>Returns the tail of <code>lst</code> starting from the <code>cnt</code>'th
 element of <code>lst</code>. Successive <code>cnt</code> arguments operate on
-the results in the same way. <code>(nth 'lst 2)</code> is equivalent to
-<code>(cdr 'lst)</code>. See also <code><a href="refG.html#get">get</a></code>.
+the CARs of the results in the same way. <code>(nth 'lst 2)</code> is equivalent
+to <code>(cdr 'lst)</code>. See also <code><a
+href="refG.html#get">get</a></code>.
 
 <pre><code>
 : (nth '(a b c d) 2)

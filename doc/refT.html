@@ -491,9 +491,10 @@ modified.
 <dd>(Debug mode only) Inserts a <code><a href="ref_.html#$">$</a></code> trace
 function call at the beginning of the function or method body of
 <code>sym</code>, so that trace information will be printed before and after
-execution. Built-in functions (C-function pointer) are automatically converted
-to Lisp expressions (see <code><a href="refE.html#expr">expr</a></code>). See
-also <code><a href="refD.html#*Dbg">*Dbg</a></code>, <code><a
+execution. Can only be used with EXPRs and SUBRs. Built-in functions (SUBRs) are
+automatically converted to Lisp expressions (see <code><a
+href="refE.html#expr">expr</a></code>). See also <code><a
+href="refD.html#*Dbg">*Dbg</a></code>, <code><a
 href="refT.html#traceAll">traceAll</a></code> and <code><a
 href="refU.html#untrace">untrace</a></code>, <code><a
 href="refD.html#debug">debug</a></code> and <code><a

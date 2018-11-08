@@ -1,4 +1,6 @@
 08nov18
+   Explain 'trace' limitation
+      doc/refT.html
    Use also network provider for location
       lib/android.l
 

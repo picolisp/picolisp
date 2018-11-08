@@ -1,3 +1,7 @@
+08nov18
+   Use also network provider for location
+      lib/android.l
+
 07nov18
    Minor cosmetics
       doc/refN.html

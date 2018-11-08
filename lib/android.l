@@ -1,4 +1,4 @@
-# 06nov18abu
+# 08nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -214,20 +214,27 @@
       (setq
          *LocMan (java CONTEXT 'getSystemService "location")
          *LocLsn (java T "android.location.LocationListener") )
-      (def 'onLocationChanged *LocLsn
-         '((Loc)) )
-      (def 'onProviderDisabled *LocLsn
-         '((Prov)) )
-      (def 'onProviderEnabled *LocLsn
-         '((Prov)) )
-      (def 'onStatusChanged *LocLsn
-         '((Prov Stat Extras)) )
+      ## (def 'onLocationChanged *LocLsn
+      ##    '((Loc)) )
+      ## (def 'onProviderDisabled *LocLsn
+      ##    '((Prov)) )
+      ## (def 'onProviderEnabled *LocLsn
+      ##    '((Prov)) )
+      ## (def 'onStatusChanged *LocLsn
+      ##    '((Prov Stat Extras)) )
+      (java *LocMan 'requestLocationUpdates "network" '(L . 10000) (-3 . 100) *LocLsn)
       (java *LocMan 'requestLocationUpdates "gps" '(L . 20000) (-3 . 100) *LocLsn) )
-   (when (java *LocMan 'isProviderEnabled "gps")
-      (let? Loc (java *LocMan 'getLastKnownLocation "gps")
-         (cons
-            (+ (java Loc 'getLatitude) 90000000)
-            (+ (java Loc 'getLongitude) 180000000) ) ) ) )
+   (and
+      (or
+         (and
+            (java *LocMan 'isProviderEnabled "gps")
+            (java *LocMan 'getLastKnownLocation "gps") )
+         (and
+            (java *LocMan 'isProviderEnabled "network")
+            (java *LocMan 'getLastKnownLocation "network") ) )
+      (cons
+         (+ (java @ 'getLatitude) 90000000)
+         (+ (java @ 'getLongitude) 180000000) ) ) )
 
 # Camera access
 (local) [camera? hasSystemFeature]

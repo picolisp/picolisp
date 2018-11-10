@@ -1,4 +1,4 @@
-# 08nov18abu
+# 10nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -73,12 +73,15 @@
       "android_id" ) )
 
 # Push-Load
-(local) loadTxt loadUrl
+(local) loadTxt loadData loadUrl
 (de loadTxt @
-   (java CONTEXT 'loadTxt (pass pack)) )
+   (java (; CONTEXT GUI PilView) 'loadData
+      (pack "<html><body>" (pass pack) "</body></html>")
+      "text/html; charset=utf-8"
+      'null ) )
 
 (de loadUrl @
-   (java CONTEXT 'loadUrl (pass pack)) )
+   (java (; CONTEXT GUI PilView) 'loadUrl (pass pack)) )
 
 # Clear WebView history and cache
 (local) [clearHistory clearCache]
@@ -86,7 +89,7 @@
    (java CONTEXT 'clearHistory) )
 
 (de clearCache ()
-   (java CONTEXT 'clearCache) )
+   (java (; CONTEXT GUI PilView) 'clearCache T) )
 
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release)]

@@ -1,3 +1,7 @@
+10nov18
+   Replace runOnUiThread() with direct PilView calls
+      lib/android.l
+
 09nov18
    Add NIL as "end of file"
       doc/ref.html

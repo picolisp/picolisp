@@ -1,4 +1,4 @@
-# 10nov18abu
+# 11nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -25,14 +25,14 @@
 (de CONTEXT . {OOOO40000000000})
 
 # Java I/O
-# (java "cls" 'T ['any ..]) -> obj       New object
-# (java 'obj 'msg ['any ..]) -> any      Send message to object
-# (java 'obj "fld" ["fld" ..]) -> any    Value of object field
-# (java "cls" 'msg ['any ..]) -> any     Call method in class
-# (java "cls" "fld" ["fld" ..]) -> any   Value of class field
-# (java T "cls" ["cls" ..]) -> obj       Define interface
-# (java 'obj) -> [lst ..]                Reflect object
-# (java "cls") -> cls                    Get class
+# (java "cls" 'T ['any ..]) -> obj          New object
+# (java 'obj ['n] 'msg ['any ..]) -> any    Send message to object
+# (java 'obj "fld" ["fld" ..]) -> any       Value of object field
+# (java "cls" ['n] 'msg ['any ..]) -> any   Call method in class
+# (java "cls" "fld" ["fld" ..]) -> any      Value of class field
+# (java T "cls" ["cls" ..]) -> obj          Define interface
+# (java 'obj) -> [lst ..]                   Reflect object
+# (java "cls") -> cls                       Get class
 (local) [java1 java *Java *Lisp null]
 (de java1 ()
    (unless *Java
@@ -75,13 +75,13 @@
 # Push-Load
 (local) loadTxt loadData loadUrl
 (de loadTxt @
-   (java (; CONTEXT GUI PilView) 'loadData
+   (java (; CONTEXT GUI PilView) 1 'loadData
       (pack "<html><body>" (pass pack) "</body></html>")
       "text/html; charset=utf-8"
       'null ) )
 
 (de loadUrl @
-   (java (; CONTEXT GUI PilView) 'loadUrl (pass pack)) )
+   (java (; CONTEXT GUI PilView) 1 'loadUrl (pass pack)) )
 
 # Clear WebView history and cache
 (local) [clearHistory clearCache]
@@ -89,7 +89,7 @@
    (java CONTEXT 'clearHistory) )
 
 (de clearCache ()
-   (java (; CONTEXT GUI PilView) 'clearCache T) )
+   (java (; CONTEXT GUI PilView) 1 'clearCache T) )
 
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release)]

@@ -214,15 +214,11 @@
                      (setq Max (max *Pos Max)) ) ) )
             Fmt
             Prg )
-         (co 'table
-            (yield)
-            (run Prg 1)
-            (yield) )
-         (for (N (yield T 'table)  N)
+         (for (N (co 'table (run Prg 1) (yield))  N)
             (window PosX *Pos N Max
                (setq N
                   (prog1
-                     (yield PosX 'table)
+                     (co 'table T)
                      (inc 'PosX N)
                      (setq Max (max *Pos Max)) ) ) ) )
          (co 'table) )

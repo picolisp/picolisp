@@ -197,22 +197,35 @@
 (de down (N)
    (inc '*Pos (or N *FontSize)) )
 
-(de table (Lst . Prg)
+(de table (Fmt . Prg)
    (let (PosX 0  Max *FontSize)
-      (mapc
-         '((N Exe)
-            (when
-               (or
-                  (nT (car (pair Exe)))
-                  (setq Exe (run (cdr Exe) 2)) )
-               (window PosX *Pos N Max
-                  (if (atom Exe)
-                     (ps NIL (eval Exe 2))
-                     (eval Exe 2 '(*Pos *DX *DY)) )
-                  (inc 'PosX N)
-                  (setq Max (max *Pos Max)) ) ) )
-         Lst
-         Prg )
+      (ifn (=T Fmt)
+         (mapc
+            '((N Exe)
+               (when
+                  (or
+                     (nT (car (pair Exe)))
+                     (setq Exe (run (cdr Exe) 2)) )
+                  (window PosX *Pos N Max
+                     (if (atom Exe)
+                        (ps NIL (eval Exe 3))
+                        (eval Exe 3 '(*Pos *DX *DY)) )
+                     (inc 'PosX N)
+                     (setq Max (max *Pos Max)) ) ) )
+            Fmt
+            Prg )
+         (co 'table
+            (yield)
+            (run Prg 1)
+            (yield) )
+         (for (N (yield T 'table)  N)
+            (window PosX *Pos N Max
+               (setq N
+                  (prog1
+                     (yield PosX 'table)
+                     (inc 'PosX N)
+                     (setq Max (max *Pos Max)) ) ) ) )
+         (co 'table) )
       (inc '*Pos Max) ) )
 
 (de hline (Y X2 X1)
@@ -234,7 +247,7 @@
    (window 60 102 220 10
       (font Font (ps 0 Abs)) )
    (window 65 125 210 90
-      (run Prg 1) ) )
+      (run Prg 2) ) )
 
 # Direct SVG display
 (de svg "Prg"

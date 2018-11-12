@@ -1,4 +1,6 @@
 12nov18
+   Coroutine-version of 'table'
+      lib/svg.l
    'svg' direct SVG display
       lib/svg.l
       lib/pdfPage.l

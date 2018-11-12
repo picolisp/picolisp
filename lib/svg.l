@@ -255,7 +255,7 @@
    (apply call
       (make
          (for I *Page
-            (link (tmp "pdf" I ".svg")) ) )
+            (link (tmp "page" I ".svg")) ) )
       "rsvg-convert"
       "--dpi-x" 72
       "--dpi-y" 72
@@ -264,7 +264,7 @@
    "Dst" )
 
 (de page "Prg2"
-   (out (tmp "pdf" (inc '*Page) ".svg")
+   (out (tmp "page" (inc '*Page) ".svg")
       (<svg> *DX *DY "pt"
          (run "Prg2") ) ) )
 

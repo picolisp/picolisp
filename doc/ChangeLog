@@ -1,3 +1,8 @@
+12nov18
+   'svg' direct SVG display
+      lib/svg.l
+      lib/pdfPage.l
+
 11nov18
    Replace runOnUiThread() with direct PilView calls
       lib/android.l

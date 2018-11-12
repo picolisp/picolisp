@@ -1,4 +1,4 @@
-# 10mar17abu
+# 12nov18abu
 # (c) Software Lab. Alexander Burger
 
 # *DX *DY *Pos *Page *StrokeWidth
@@ -15,11 +15,11 @@
    *FontWeight "normal" )
 
 # SVG Element
-(de <svg> (*DX *DY Z . "Prg")
+(de <svg> (*DX *DY "Z" . "Prg")
    (prin
       "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink"
-      "\" width=\"" (if (num? Z) (* @ *DX) (pack *DX Z))
-      "\" height=\"" (if (num? Z) (* @ *DY) (pack *DY Z))
+      "\" width=\"" (if (num? "Z") (* @ *DX) (pack *DX "Z"))
+      "\" height=\"" (if (num? "Z") (* @ *DY) (pack *DY "Z"))
       "\" viewBox=\"0 0 " *DX " " *DY "\"" )
    (dfltCss "svg")
    (prinl ">")
@@ -79,9 +79,9 @@
    (and *Style (htStyle @))
    (prinl "/>") )
 
-(de xlink (Url . Prg)
-   (prinl "<a xlink:href=\"" Url "\">")
-   (run Prg 1)
+(de xlink ("Url" . "Prg")
+   (prinl "<a xlink:href=\"" "Url" "\">")
+   (run "Prg")
    (prinl "</a>") )
 
 # Text
@@ -235,6 +235,11 @@
       (font Font (ps 0 Abs)) )
    (window 65 125 210 90
       (run Prg 1) ) )
+
+# Direct SVG display
+(de svg "Prg"
+   (httpHead "image/svg+xml" 0)
+   (ht:Out *Chunked (run "Prg")) )
 
 # Convert to PDF
 (de svgPdf ("Dst" . "Prg")

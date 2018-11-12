@@ -1,4 +1,4 @@
-# 10mar17abu
+# 12nov18abu
 # (c) Software Lab. Alexander Burger
 
 (allow "fonts/" T)
@@ -219,8 +219,7 @@
          (csStroke) ) ) )
 
 (de mk.svg (Page)
-   (httpHead "image/svg+xml" 0)
-   (ht:Out *Chunked (svg> Page (; Page zoom))) )
+   (svg (svg> Page (; Page zoom))) )
 
 (de drawPage ()
    (inc (:: cnt))

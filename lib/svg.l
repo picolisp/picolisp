@@ -155,8 +155,8 @@
    (prinl "<g transform=\"translate(" "X" "," "Y" ")\">")
    (let *Pos 0
       (prog1
-         (run "Prg") )
-         (prinl "</g>") ) )
+         (run "Prg")
+         (prinl "</g>") ) ) )
 
 (de ps @
    (let A (arg 1)
@@ -214,9 +214,10 @@
                      (setq Max (max *Pos Max)) ) ) )
             Fmt
             Prg )
-         (for (N (co 'table (run Prg 1) (yield))  N)
-            (window PosX *Pos N Max
-               (setq N
+         (for
+            (N (co 'table (run Prg 1) (yield))
+               N
+               (window PosX *Pos N Max
                   (prog1
                      (co 'table T)
                      (inc 'PosX N)

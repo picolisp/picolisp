@@ -1,4 +1,4 @@
-# 17jul18abu
+# 13nov18abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -131,6 +131,8 @@
               [exe]     |
                Bind     |
          +---> LINK ----+
+         |     [@]
+         |      @
          |     val1
          |     sym1
          |     ...
@@ -145,6 +147,8 @@
               [exe]     |
                Bind     |
          +---> LINK ----+
+         |     [@]
+         |      @
          |     val1
          |     sym1
          |     ...

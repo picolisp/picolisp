@@ -1,4 +1,4 @@
-# 12nov18abu
+# 13nov18abu
 # (c) Software Lab. Alexander Burger
 
 # *DX *DY *Pos *Page *StrokeWidth
@@ -139,7 +139,7 @@
       (run "Prg") ) )
 
 (de indent ("X" . "Prg")
-   (prinl "<g transform=\"translate(" "X" "," 0 ")\">")
+   (prinl "<g transform=\"translate(" "X" ",0)\">")
    (dec '*DX "X")
    (prog1
       (run "Prg")
@@ -215,7 +215,7 @@
             Fmt
             Prg )
          (for
-            (N (co 'table (run Prg 1) (yield))
+            (N (co 'table (run Prg) (yield))
                N
                (window PosX *Pos N Max
                   (prog1

@@ -1,3 +1,9 @@
+13nov18
+   Show '@' in bind frames
+      doc64/structures
+   Cosmetics
+      lib/svg.l
+
 12nov18
    Coroutine-version of 'table'
       lib/svg.l

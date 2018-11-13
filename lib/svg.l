@@ -28,6 +28,11 @@
          (run "Prg")
          (prinl "</svg>") ) ) )
 
+(de page "Prg2"
+   (out (tmp "page" (inc '*Page) ".svg")
+      (<svg> *DX *DY "pt"
+         (run "Prg2") ) ) )
+
 # Graphics
 (de rect (X Y DX DY Fill Stroke)
    (prin
@@ -272,11 +277,6 @@
       "-f" "pdf"
       "-o" "Dst" )
    "Dst" )
-
-(de page "Prg2"
-   (out (tmp "page" (inc '*Page) ".svg")
-      (<svg> *DX *DY "pt"
-         (run "Prg2") ) ) )
 
 (de httpPdf (File)
    (httpEcho File "application/pdf" 1) )

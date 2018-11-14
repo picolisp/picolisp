@@ -1,3 +1,7 @@
+14nov18
+   Typos in 'local' calls
+      lib/android.l
+
 13nov18
    Show '@' in bind frames
       doc64/structures

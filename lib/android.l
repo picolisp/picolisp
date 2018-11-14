@@ -1,4 +1,4 @@
-# 11nov18abu
+# 14nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -73,7 +73,7 @@
       "android_id" ) )
 
 # Push-Load
-(local) loadTxt loadData loadUrl
+(local) [loadTxt loadData loadUrl]
 (de loadTxt @
    (java (; CONTEXT GUI PilView) 1 'loadData
       (pack "<html><body>" (pass pack) "</body></html>")
@@ -92,7 +92,7 @@
    (java (; CONTEXT GUI PilView) 1 'clearCache T) )
 
 # Wake lock
-(local) [wake *Wake getSystemService newWakeLock acquire release)]
+(local) [wake *Wake getSystemService newWakeLock acquire release]
 (de wake @
    (default *Wake
       (java

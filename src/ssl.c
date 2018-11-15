@@ -1,4 +1,4 @@
-/* 18sep18abu
+/* 15nov18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -35,8 +35,11 @@ static char Get[] =
    "Host: %s:%s\r\n"
    "Accept-Charset: utf-8\r\n\r\n";
 
-static void giveup(char *msg) {
-   fprintf(stderr, "ssl: %s\n", msg);
+static void giveup(char *msg, char *arg) {
+   fprintf(stderr, "ssl: %s", msg);
+   if (arg)
+      fprintf(stderr, " %s", arg);
+   putc('\n',stderr);
    exit(1);
 }
 
@@ -108,7 +111,7 @@ static void lockFile(int fd) {
    fl.l_start = 0;
    fl.l_len = 0;
    if (fcntl(fd, F_SETLKW, &fl) < 0)
-      giveup("Can't lock");
+      giveup("Can't lock", NULL);
 }
 
 static void doSigTerm(int n __attribute__((unused))) {
@@ -118,23 +121,23 @@ static void doSigTerm(int n __attribute__((unused))) {
 
    if (Hot) {
       if ((fd = open(File, O_RDWR)) < 0)
-         giveup("Can't final open");
+         giveup("Can't final open", File);
       lockFile(fd);
       if (fstat(fd,&st) < 0)
-         giveup("Can't final access");
+         giveup("Can't final access", File);
       if (st.st_size != 0) {
          if ((data = malloc(st.st_size)) == NULL)
-            giveup("Can't final alloc");
+            giveup("Can't final alloc", NULL);
          if (read(fd, data, st.st_size) != st.st_size)
-            giveup("Can't final read");
+            giveup("Can't final read", NULL);
          lseek(fd, 0L, SEEK_SET);
          if (ftruncate(fd,0) < 0)
-            giveup("Can't final truncate");
+            giveup("Can't final truncate", NULL);
       }
       if (write(fd, Data, Size) != Size)
-         giveup("Can't final write (1)");
+         giveup("Can't final write (1)", NULL);
       if (st.st_size != 0  &&  write(fd, data, st.st_size) != st.st_size)
-         giveup("Can't final write (2)");
+         giveup("Can't final write (2)", NULL);
    }
    exit(0);
 }
@@ -163,14 +166,14 @@ int main(int ac, char *av[]) {
    if (dbg = strcmp(av[ac-1], "+") == 0)
       --ac;
    if (!(ac >= 3 && ac <= 6  ||  ac >= 8))
-      giveup("host port [url key file] | host port url key file dir sec [min] [dir ..]");
+      giveup("host port [url key file] | host port url key file dir sec [min] [dir ..]", NULL);
    if (*av[2] == '-')
       ++av[2],  Safe = YES;
    if (ac <= 3  ||  *av[3] == '\0')
       getLen = 0;
    else {
       if (strlen(Get)+strlen(av[1])+strlen(av[2])+strlen(av[3]) >= sizeof(get))
-         giveup("Names too long");
+         giveup("Names too long", NULL);
       getLen = sprintf(get, Get, av[3], av[1], av[2]);
    }
 
@@ -178,7 +181,7 @@ int main(int ac, char *av[]) {
    SSL_load_error_strings();
    if (!(ctx = SSL_CTX_new(SSLv23_client_method())) || !SSL_CTX_set_default_verify_paths(ctx)) {
       ERR_print_errors_fp(stderr);
-      giveup("SSL init");
+      giveup("SSL init", NULL);
    }
    SSL_CTX_set_options(ctx,
       SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 |
@@ -198,17 +201,17 @@ int main(int ac, char *av[]) {
    if (ac <= 6) {
       if (sslConnect(ssl, av[1], av[2]) < 0) {
          ERR_print_errors_fp(stderr);
-         giveup("Can't connect");
+         giveup("Can't connect to", av[1]);
       }
       if (getLen  &&  SSL_write(ssl, get, getLen) < 0) {
          ERR_print_errors_fp(stderr);
-         giveup("SSL GET");
+         giveup("SSL GET", NULL);
       }
       if (ac > 4) {
          if (*av[4]  &&  !sslFile(ssl,av[4]))
-            giveup(av[4]);
+            giveup("Can't send", av[4]);
          if (ac > 5  &&  *av[5]  &&  !sslFile(ssl,av[5]))
-            giveup(av[5]);
+            giveup("Can't send", av[5]);
       }
       if (!getLen  &&  !fork()) {
          while ((n = read(STDIN_FILENO, buf, sizeof(buf))) > 0)
@@ -223,7 +226,7 @@ int main(int ac, char *av[]) {
    }
    if (!dbg) {
       if ((n = fork()) < 0)
-         giveup("detach");
+         giveup("detach", NULL);
       if (n)
          return 0;
       setsid();
@@ -252,15 +255,15 @@ int main(int ac, char *av[]) {
             alarm(lim);
             lockFile(fd);
             if (fstat(fd,&st) < 0  ||  (Size = st.st_size) == 0)
-               giveup("Can't access");
+               giveup("Can't access", File);
             lenLen = sprintf(len, "%ld\n", Size);
             if ((Data = malloc(Size)) == NULL)
-               giveup("Can't alloc");
+               giveup("Can't alloc", NULL);
             if (read(fd, Data, Size) != Size)
-               giveup("Can't read");
+               giveup("Can't read", File);
             Hot = YES;
             if (ftruncate(fd,0) < 0)
-               giveup("Can't truncate");
+               giveup("Can't truncate", File);
             close(fd);
             for (nm[0] = '\0', i = 9;  i < ac;  ++i) {
                if (dp = opendir(av[i])) {

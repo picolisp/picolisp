@@ -1,4 +1,4 @@
-# 13nov18abu
+# 16nov18abu
 # (c) Software Lab. Alexander Burger
 
 # *DX *DY *Pos *Page *StrokeWidth
@@ -27,11 +27,6 @@
       (prog1
          (run "Prg")
          (prinl "</svg>") ) ) )
-
-(de page "Prg2"
-   (out (tmp "page" (inc '*Page) ".svg")
-      (<svg> *DX *DY "pt"
-         (run "Prg2") ) ) )
 
 # Graphics
 (de rect (X Y DX DY Fill Stroke)
@@ -252,9 +247,26 @@
       (run Prg 2) ) )
 
 # Direct SVG display
-(de svg "Prg"
+(de svgOut "Prg"
    (httpHead "image/svg+xml" 0)
    (ht:Out *Chunked (run "Prg")) )
+
+# Multipage SVG
+(de svg (*DX *DY "Dst" . "Prg")
+   (zero *Page)
+   (out "Dst"
+      (let page
+         '("Prg2"
+            (prin "<" (inc '*Page) ">")
+            (<svg> *DX *DY "pt"
+               (run "Prg2") ) )
+         (run "Prg") ) )
+   "Dst" )
+
+(de page.svg (File N)
+   (in File
+      (from (pack "<" N ">"))
+      (echo (pack "<" (inc N) ">")) ) )
 
 # Convert to PDF
 (de svgPdf ("Dst" . "Prg")
@@ -266,19 +278,21 @@
 # Multipage PDF
 (de pdf (*DX *DY "Dst" . "Prg")
    (zero *Page)
-   (run "Prg")
-   (apply call
-      (make
-         (for I *Page
-            (link (tmp "page" I ".svg")) ) )
-      "rsvg-convert"
-      "--dpi-x" 72
-      "--dpi-y" 72
-      "-f" "pdf"
-      "-o" "Dst" )
+   (let page
+      '("Prg2"
+         (out (tmp "page" (inc '*Page) ".svg")
+            (<svg> *DX *DY "pt"
+               (run "Prg2") ) ) )
+      (run "Prg")
+      (apply call
+         (make
+            (for I *Page
+               (link (tmp "page" I ".svg")) ) )
+         "rsvg-convert"
+         "--dpi-x" 72
+         "--dpi-y" 72
+         "-f" "pdf"
+         "-o" "Dst" ) )
    "Dst" )
-
-(de httpPdf (File)
-   (httpEcho File "application/pdf" 1) )
 
 # vi:et:ts=3:sw=3

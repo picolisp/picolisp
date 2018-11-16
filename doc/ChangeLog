@@ -1,3 +1,10 @@
+16nov18
+   'svg' and 'page.svg' multipage SVG
+      lib/svg.l
+   'svg' -> 'svgOut'
+      lib/svg.l
+      lib/pdfPage.l
+
 15nov18
    Extended error messages
       src/ssl.c

@@ -1,3 +1,7 @@
+18nov18
+   'pdf' accepts also multipage SVG file
+      lib/svg.l
+
 16nov18
    'svg' and 'page.svg' multipage SVG
       lib/svg.l

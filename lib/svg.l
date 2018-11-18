@@ -1,4 +1,4 @@
-# 16nov18abu
+# 18nov18abu
 # (c) Software Lab. Alexander Burger
 
 # *DX *DY *Pos *Page *StrokeWidth
@@ -276,23 +276,33 @@
    "Dst" )
 
 # Multipage PDF
+# (pdf "src" "dst")
+# (pdf 'dx 'dy "dst" . prg)
 (de pdf (*DX *DY "Dst" . "Prg")
-   (zero *Page)
-   (let page
-      '("Prg2"
-         (out (tmp "page" (inc '*Page) ".svg")
-            (<svg> *DX *DY "pt"
-               (run "Prg2") ) ) )
-      (run "Prg")
-      (apply call
-         (make
-            (for I *Page
-               (link (tmp "page" I ".svg")) ) )
-         "rsvg-convert"
-         "--dpi-x" 72
-         "--dpi-y" 72
-         "-f" "pdf"
-         "-o" "Dst" ) )
+   (if "Dst"
+      (let page  # Generate SVG files
+         '("Prg2"
+            (out (tmp "page" (inc '*Page) ".svg")
+               (<svg> *DX *DY "pt"
+                  (run "Prg2") ) ) )
+         (zero *Page)
+         (run "Prg") )
+      (in *DX  # Multipage SVG file
+         (when (echo (pack "<" (one *Page) ">"))
+            (while
+               (out (tmp "page" *Page ".svg")
+                  (when (echo (pack "<" (inc *Page) ">"))
+                     (inc '*Page) ) ) ) ) )
+      (setq "Dst" *DY) )
+   (apply call
+      (make
+         (for I *Page
+            (link (tmp "page" I ".svg")) ) )
+      "rsvg-convert"
+      "--dpi-x" 72
+      "--dpi-y" 72
+      "-f" "pdf"
+      "-o" "Dst" )
    "Dst" )
 
 # vi:et:ts=3:sw=3

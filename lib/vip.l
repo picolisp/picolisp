@@ -1,4 +1,4 @@
-# 05nov18abu
+# 18nov18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -485,7 +485,7 @@
    (and
       (delim? C)
       (or
-         (sub? (car L) "()[]")
+         (sub? (car L) "\"()[]")
          (not (delim? (car L))) ) ) )
 
 (de lword (L C)

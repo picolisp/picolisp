@@ -1,4 +1,6 @@
 18nov18
+   Treat double quotes as 'word' tokens
+      lib/vip.l
    'pdf' accepts also multipage SVG file
       lib/svg.l
 
@@ -153,7 +155,7 @@
       doc/httpGate.html
 
 05oct18
-   Treat parentheses as "word" tokens
+   Treat parentheses as 'word' tokens
       lib/vip.l
 
 04oct18

@@ -1,3 +1,7 @@
+20nov18
+   GUI thread function callbacks
+      lib/android.l
+
 18nov18
    Treat double quotes as 'word' tokens
       lib/vip.l

@@ -1,4 +1,4 @@
-# 14nov18abu
+# 20nov18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -25,14 +25,14 @@
 (de CONTEXT . {OOOO40000000000})
 
 # Java I/O
-# (java "cls" 'T ['any ..]) -> obj          New object
-# (java 'obj ['n] 'msg ['any ..]) -> any    Send message to object
-# (java 'obj "fld" ["fld" ..]) -> any       Value of object field
-# (java "cls" ['n] 'msg ['any ..]) -> any   Call method in class
-# (java "cls" "fld" ["fld" ..]) -> any      Value of class field
-# (java T "cls" ["cls" ..]) -> obj          Define interface
-# (java 'obj) -> [lst ..]                   Reflect object
-# (java "cls") -> cls                       Get class
+# (java "cls" 'T ['any ..]) -> obj         New object
+# (java 'obj ['n] 'msg ['any ..]) -> any   Send message to object
+# (java 'obj "fld" ["fld" ..]) -> any      Value of object field
+# (java "cls" ['n] 'msg ['any ..]) -> any  Call method in class
+# (java "cls" "fld" ["fld" ..]) -> any     Value of class field
+# (java T "cls" ["cls" ..]) -> obj         Define interface
+# (java 'obj) -> [lst ..]                  Reflect object
+# (java "cls") -> cls                      Get class
 (local) [java1 java *Java *Lisp null]
 (de java1 ()
    (unless *Java
@@ -40,14 +40,12 @@
       (task *Lisp
          (ext 65535
             (in *Lisp
-               (ifn (=T (rd))
-                  (quit (rd))
-                  (prog1
-                     (if (get (rd) (rd))
-                        (apply @ (rd))
-                        (rd)
-                        NIL )
-                     (out *Java (pr T @)) ) ) ) ) )
+               (prog1
+                  (if (get (rd) (rd))
+                     (apply @ (rd))
+                     (rd)
+                     NIL )
+                  (out *Java (pr T @)) ) ) ) )
       (forked)
       (queue '*Ext (cons 65535 java)) ) )
 
@@ -55,10 +53,10 @@
    (ext 65535
       (out *Java (pr NIL (rest)))
       (in *Lisp
-         (for (Flg (rd) Flg (rd))
-            (and (=0 Flg) (quit (rd)))  # 0: Exception
-            (prog1                      # T: Callback
-               (if (get (rd) (rd))
+         (for (X (rd) X (rd))
+            (and (=0 X) (quit (rd)))  # 0: Exception
+            (prog1                    # Callback
+               (if (get X (rd))
                   (apply @ (rd))
                   (rd)
                   NIL )
@@ -75,13 +73,13 @@
 # Push-Load
 (local) [loadTxt loadData loadUrl]
 (de loadTxt @
-   (java (; CONTEXT GUI PilView) 1 'loadData
+   (java (; CONTEXT GUI PilView) 0 'loadData
       (pack "<html><body>" (pass pack) "</body></html>")
       "text/html; charset=utf-8"
       'null ) )
 
 (de loadUrl @
-   (java (; CONTEXT GUI PilView) 1 'loadUrl (pass pack)) )
+   (java (; CONTEXT GUI PilView) 0 'loadUrl (pass pack)) )
 
 # Clear WebView history and cache
 (local) [clearHistory clearCache]
@@ -89,7 +87,7 @@
    (java CONTEXT 'clearHistory) )
 
 (de clearCache ()
-   (java (; CONTEXT GUI PilView) 1 'clearCache T) )
+   (java (; CONTEXT GUI PilView) 0 'clearCache T) )
 
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release]

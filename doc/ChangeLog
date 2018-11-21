@@ -1,3 +1,8 @@
+21nov18
+   Explicit runOnUiThread() on general threads
+      lib/android.l
+   Removed java/ (see PilBox instead)
+
 20nov18
    GUI thread function callbacks
       lib/android.l

@@ -1,3 +1,7 @@
+25nov18
+   Backspace bug in "O" insert mode
+      lib/vip.l
+
 21nov18
    Explicit runOnUiThread() on general threads
       lib/android.l

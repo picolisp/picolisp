@@ -1,4 +1,4 @@
-# 18nov18abu
+# 25nov18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -795,7 +795,10 @@
                         (cursor)
                         T ) ) )
                (("^H" "^?" `(char 263))  # [BACKSPACE]
-                  (when (> (: posX) (if (> (: posY) PosY1) 1 PosX1))
+                  (when
+                     (>
+                        (: posX)
+                        (if (= (: posY) PosY1) PosX1 1) )
                      (_bs)
                      (chgLine (car P)) )
                   T )

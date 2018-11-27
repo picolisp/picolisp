@@ -1,4 +1,4 @@
-# 25nov18abu
+# 27nov18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -204,14 +204,14 @@
       (curses "wattrset" NIL (: ptr)
          (cond
             (*Flat 0)
-            ((=T (val C))  # A_UNDERLINE
+            ((=T (val C))
                (ifn (>= "^_" C "^A")
-                  131072
+                  131072  # A_UNDERLINE
                   (setq C (char (+ 64 (char C))))
-                  `(+ 131072 512) ) )  # COLOR_PAIR(2)
-            ((>= "^_" C "^A")  # COLOR_PAIR(2)
+                  `(+ 131072 512) ) )  # A_UNDERLINE + COLOR_PAIR(2)
+            ((>= "^_" C "^A")
                (setq C (char (+ 64 (char C))))
-               512 )
+               512 )  # COLOR_PAIR(2)
             ((gt0 (val C)) 256)  # COLOR_PAIR(1)
             (T 0) ) )
       (curses "waddnstr" NIL (: ptr) C  -1) ) )

@@ -1,4 +1,4 @@
-# 18jan18abu
+# 29nov18abu
 # (c) Software Lab. Alexander Burger
 
 (allowed ("app/")
@@ -44,7 +44,7 @@
 
 # Entry point
 (de main ()
-   (call "mkdir" "-p" "db/app/" *Blob)
+   (call "mkdir" "-p" *Blob)
    (pool *Pool *Dbs)
    (load "app/init.l") )
 

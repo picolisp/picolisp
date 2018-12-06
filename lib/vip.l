@@ -1,4 +1,4 @@
-# 27nov18abu
+# 06dec18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -770,11 +770,11 @@
             ((=0 Flg)
                (con P (cons (car P) (cdr P)))
                (set P)
-               (goto 1 (: posY) T) )
+               (goto (one PosX1) (: posY) T) )
             ((=1 Flg))
             (Flg
                (setq P (con P (cons NIL (cdr P))))
-               (goto 1 (inc (: posY)) T)
+               (goto (one PosX1) (inc (: posY)) T)
                (setq Chg (0)) ) )
          (cursor)
          (while
@@ -795,10 +795,7 @@
                         (cursor)
                         T ) ) )
                (("^H" "^?" `(char 263))  # [BACKSPACE]
-                  (when
-                     (>
-                        (: posX)
-                        (if (= (: posY) PosY1) PosX1 1) )
+                  (when (> (: posX) PosX1)
                      (_bs)
                      (chgLine (car P)) )
                   T )

@@ -1,3 +1,7 @@
+06dec18
+   Backspace bug in "O" revisited
+      lib/vip.l
+
 29nov18
    Correct 'prune' reference and example
       doc/refT.html

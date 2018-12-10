@@ -711,6 +711,71 @@ href="refR.html#root">root</a></code>.
 -> 7
 </code></pre>
 
+<dt><a name="create"><code>(create 'typ 'sym 'lst . prg)</code></a>
+<dd>Creates <code><a href="ref.html#dbase">database</a></code> objects of the
+type <code>typ</code> with the properties in <code>sym</code> and
+<code>lst</code>. It handles large amounts of data, by sorting and traversing
+each database index separately. <code>prg</code> is executed repeatedly - and
+should return a list of values for the properties in <code>sym</code> and
+<code>lst</code> - until it returns <code>NIL</code>. If <code>sym</code> is
+non-<code>NIL</code>, the first column of the input data is assigned to the
+<code>sym</code> property and should already be sorted. The rest of the input
+data is assigned to the properties in <code>lst</code>. <code>create</code>
+allocates heap memory, and builds temporary files which increase disk
+requirements while it runs. Note also that each index in <code>lst</code> must
+reside in a different database file. See also <code><a
+href="refD.html#dbs">dbs</a></code>, <code><a
+href="refN.html#new">new</a></code>, <code><a
+href="refC.html#commit">commit</a></code> and <code><a
+href="refP.html#prune">prune</a></code>.
+
+<pre><code>
+# Minimal E/R model
+(class +Cls +Entity)          # Class
+(rel key (+Key +Number))      # with a unique numeric key,
+(rel num (+Ref +Number))      # an indexed number,
+(rel str (+Ref +String))      # and an indexed string
+
+(dbs
+   (0 +Cls)
+   (4 (+Cls key))             # Each index in a different file
+   (4 (+Cls num))
+   (4 (+Cls str)) )
+
+# Generating random data
+(create '(+Cls) 'key '(num str)
+   (co 'go                 # Use a coroutine as generator
+      (for Key 100000000   # Key is sorted in input
+         (yield            # Return keys, numbers and single-char strings
+            (list Key (rand) (char (rand 97 122))) ) ) ) )
+
+# Reading from a file in PLIO format
+(create '(+Cls) 'key '(num str)
+   (rd) )
+
+# Reading from a TAB-separated CSV file
+(create '(+Cls) 'key '(num str)
+   (when (split (line) "\t")
+      (list
+         (format (car @))
+         (format (cadr @))
+         (pack (caddr @)) ) ) )
+
+# Direct, naive approach (without using 'create')
+# Don't try this at home! Takes forever due to disk trashing
+(prune 0)
+(gc 400 200)
+(for Key 100000000
+   (new `(db: +Cls) '(+Cls)
+      'key Key
+      'num (rand)
+      'str (char (rand 97 122)) )
+   (at (0 . 10000) (commit) (prune 7) (gc)) )
+(commit)
+(prune)
+(gc 0)
+</code></pre>
+
 <dt><a name="ctl"><code>(ctl 'sym . prg) -> any</code></a>
 <dd>Waits until a write (exclusive) lock (or a read (shared) lock if the first
 character of <code>sym</code> is "<code>+</code>") can be set on the file

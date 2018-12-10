@@ -1,3 +1,9 @@
+10dec18
+   'create' function
+      lib/db.l
+      doc/ref.html
+      doc/refC.html
+
 06dec18
    Backspace bug in "O" revisited
       lib/vip.l

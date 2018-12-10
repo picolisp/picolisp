@@ -1,4 +1,4 @@
-# 13apr18abu
+# 10dec18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1425,5 +1425,83 @@
                (lose> Obj)
                (put> Obj K V) ) ) )
       Obj ) )
+
+# Create lots of objects
+(de create (Typ Key Vars . Prg)
+   (prune 0)
+   (gc 400 200)
+   (setq Vars  # ((var fd lst cnt . cnt) ..)
+      (mapcar
+         '((Var)
+            (if (isa '+index (meta Typ Var))
+               (cons Var
+                  (open (tmp (pack "create-" Var)))
+                  (list T)
+                  0 1000000 )
+               Var ) )
+         Vars ) )
+   (while (run Prg 1)  # (val ..)
+      (let (Lst @  Obj (new (meta Typ 'Dbf 1) Typ))
+         (and Key (++ Lst) (put> Obj Key @))
+         (let store '((Tree Key Val Dbf) (link Key))
+            (mapc
+               '((V Val)
+                  (when Val
+                     (if (atom V)
+                        (put> Obj V Val)
+                        (out (cadr V)
+                           (for Key (make (put> Obj (car V) Val))
+                              (at (cdddr V) (push (cddr V) Key))
+                              (pr Key Obj) ) ) ) ) )
+               Vars
+               Lst ) ) )
+      (at (0 . 1000000) (commit) (prune 2) (gc)) )
+   (commit)
+   (prune 0)
+   (let Lst
+      (mapcan
+         '((V)
+            (unless (atom V)
+               (close (cadr V))
+               (let (Var (car V)  File (tmp (pack "create-" Var)))
+                  (later (cons)
+                     (let
+                        (Dbf (meta Typ Var 'dbf)
+                           Tree (cons Var (new T))
+                           Lo )
+                        (for Hi (sort (caddr V))
+                           (gc)
+                           (for X
+                              (sort
+                                 (make
+                                    (in File
+                                       (while (setq Key (rd))
+                                          (if (and (> Hi Key) (>= Key Lo))
+                                             (link (cons Key (rd)))
+                                             (rd) ) ) ) ) )
+                              (store Tree (car X) (cdr X) Dbf)
+                              (at (0 . 1000) (prune 2)) )
+                           (commit)
+                           (prune 2)
+                           (setq Lo Hi) )
+                        (native "@" "unlink" 'I File)
+                        (commit)
+                        Tree ) ) ) ) )
+         Vars )
+      (prune)
+      (gc 0)
+      (wait NIL (full Lst))
+      (for Tree Lst
+         (let
+            (Base (get *DB (meta Typ (car Tree) 'cls))
+               Root (get (cdr Tree) (car Tree)) )
+            (ifn (get Base (car Tree))
+               (put Base (car Tree) Root)
+               (touch Base)
+               (inc @ (car Root)) ) )
+         (zap (cdr Tree)) )
+      (commit) ) )
+
+(noLint 'create 'store)
 
 # vi:et:ts=3:sw=3

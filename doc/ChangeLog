@@ -1,4 +1,6 @@
 10dec18
+   Backspace bug revisited
+      lib/vip.l
    'create' function
       lib/db.l
       doc/ref.html

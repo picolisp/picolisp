@@ -1502,6 +1502,9 @@
          (zap (cdr Tree)) )
       (commit) ) )
 
+### Debug ###
+`*Dbg
+
 (noLint 'create 'store)
 
 # vi:et:ts=3:sw=3

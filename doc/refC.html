@@ -712,19 +712,21 @@ href="refR.html#root">root</a></code>.
 </code></pre>
 
 <dt><a name="create"><code>(create 'typ 'sym 'lst . prg)</code></a>
-<dd>Creates <code><a href="ref.html#dbase">database</a></code> objects of the
-type <code>typ</code> with the properties in <code>sym</code> and
+<dd>Creates or updates <code><a href="ref.html#dbase">database</a></code>
+objects of the type <code>typ</code> with the properties in <code>sym</code> and
 <code>lst</code>. It handles large amounts of data, by sorting and traversing
 each database index separately. <code>prg</code> is executed repeatedly - and
 should return a list of values for the properties in <code>sym</code> and
-<code>lst</code> - until it returns <code>NIL</code>. If <code>sym</code> is
-non-<code>NIL</code>, the first column of the input data is assigned to the
-<code>sym</code> property and should already be sorted. The rest of the input
-data is assigned to the properties in <code>lst</code>. <code>create</code>
-allocates heap memory, and builds temporary files which increase disk
-requirements while it runs. Note also that each index in <code>lst</code> must
-reside in a different database file. See also <code><a
-href="refD.html#dbs">dbs</a></code>, <code><a
+<code>lst</code> - until it returns <code>NIL</code>. If the <code><a
+href="refF.html#fin">fin</a></code> of the list is <code>NIL</code>, a new
+object of type <code>typ</code> is created, otherwise it should be an existing
+object to be updated. If <code>sym</code> is non-<code>NIL</code>, the first
+column of the input data is assigned to the <code>sym</code> property and should
+already be sorted. The rest of the input data is assigned to the properties in
+<code>lst</code>. <code>create</code> allocates heap memory, and builds
+temporary files which increase disk requirements while it runs. Note also that
+each index in <code>lst</code> must reside in a different database file. See
+also <code><a href="refD.html#dbs">dbs</a></code>, <code><a
 href="refN.html#new">new</a></code>, <code><a
 href="refC.html#commit">commit</a></code> and <code><a
 href="refP.html#prune">prune</a></code>.

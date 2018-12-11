@@ -1444,7 +1444,7 @@
                Var ) )
          Vars ) )
    (while (run Prg 1)  # (val ..)
-      (let (Lst @  Obj (new (meta Typ 'Dbf 1) Typ))
+      (let (Lst @  Obj (or (fin Lst) (new (meta Typ 'Dbf 1) Typ)))
          (and Key (++ Lst) (put> Obj Key @))
          (let store '((Tree Key Val Dbf) (link Key))
             (mapc

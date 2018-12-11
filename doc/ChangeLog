@@ -1,4 +1,7 @@
 11dec18
+   Update also existing objects in 'create'
+      lib/db.l
+      doc/refC.html
    Locking
       lib/db.l
       lib/too.l

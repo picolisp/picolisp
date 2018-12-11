@@ -1426,7 +1426,7 @@
                (put> Obj K V) ) ) )
       Obj ) )
 
-# Create lots of objects
+# Create or update lots of objects
 (de create (Typ Key Vars . Prg)
    (while (lock)
       (tell 'bye 2)

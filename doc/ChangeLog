@@ -1,3 +1,9 @@
+11dec18
+   Locking
+      lib/db.l
+      lib/too.l
+      bin/replica
+
 10dec18
    Backspace bug revisited
       lib/vip.l

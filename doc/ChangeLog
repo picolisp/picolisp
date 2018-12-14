@@ -1,3 +1,8 @@
+14dec18
+   'create' more memory-conservative
+      lib/db.l
+      doc/refC.html
+
 11dec18
    Update also existing objects in 'create'
       lib/db.l

@@ -1,4 +1,4 @@
-# 11dec18abu
+# 14dec18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1432,7 +1432,7 @@
       (tell 'bye 2)
       (wait 200) )
    (prune 0)
-   (gc 400 200)
+   (gc 200 200)
    (setq Vars  # ((var fd lst cnt . cnt) ..)
       (mapcar
          '((Var)
@@ -1458,7 +1458,7 @@
                               (pr Key Obj) ) ) ) ) )
                Vars
                Lst ) ) )
-      (at (0 . 1000000) (commit) (prune 2) (gc)) )
+      (at (0 . 1000000) (commit) (prune 2)) )
    (commit)
    (prune 0)
    (let Lst
@@ -1468,12 +1468,13 @@
                (close (cadr V))
                (let (Var (car V)  File (tmp (pack "create-" Var)))
                   (later (cons)
+                     (off Vars)
+                     (gc 0 100)
                      (let
                         (Dbf (meta Typ Var 'dbf)
                            Tree (cons Var (new T))
                            Lo )
                         (for Hi (sort (caddr V))
-                           (gc)
                            (for X
                               (sort
                                  (make
@@ -1491,6 +1492,7 @@
                         (commit)
                         Tree ) ) ) ) )
          Vars )
+      (off Vars)
       (prune)
       (gc 0)
       (wait NIL (full Lst))

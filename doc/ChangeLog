@@ -1,6 +1,7 @@
 15dec18
    Separate temp files in 'create'
       lib/db.l
+      doc/refC.html
    Locking revisited
       lib/too.l
       bin/replica

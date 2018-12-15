@@ -1,11 +1,12 @@
-# 11dec18abu
+# 15dec18abu
 # (c) Software Lab. Alexander Burger
 
 (de admin "Prg"
    (out 2
       (prinl *Pid " + Admin " (stamp))
-      (while (lock)
+      (loop
          (tell 'bye 2)
+         (NIL (lock))
          (wait 200) )
       (for (F . @) (or *Dbs (2))
          (when (dbck F)
@@ -165,8 +166,9 @@
 
 ### DB Check ###
 (de dbCheck ()
-   (while (lock)  # Lock whole database
+   (loop
       (tell 'bye 2)
+      (NIL (lock))
       (wait 200) )
    (for (F . N) (or *Dbs (2))  # Low-level integrity check
       (unless (pair (println F N (dbck F T)))

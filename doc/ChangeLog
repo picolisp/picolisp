@@ -1,3 +1,10 @@
+15dec18
+   Separate temp files in 'create'
+      lib/db.l
+   Locking revisited
+      lib/too.l
+      bin/replica
+
 14dec18
    'create' more memory-conservative
       lib/db.l

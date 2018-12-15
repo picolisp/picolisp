@@ -1,4 +1,4 @@
-# 14dec18abu
+# 15dec18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1428,8 +1428,9 @@
 
 # Create or update lots of objects
 (de create (Typ Key Vars . Prg)
-   (while (lock)
+   (loop
       (tell 'bye 2)
+      (NIL (lock))
       (wait 200) )
    (prune 0)
    (gc 200 200)
@@ -1439,8 +1440,7 @@
             (if (isa '+index (meta Typ Var))
                (cons Var
                   (open (tmp (pack "create-" Var)))
-                  (list T)
-                  0 1000000 )
+                  NIL 0 1000000 )
                Var ) )
          Vars ) )
    (while (run Prg 1)  # (val ..)
@@ -1470,25 +1470,32 @@
                   (later (cons)
                      (off Vars)
                      (gc 0 100)
-                     (let
-                        (Dbf (meta Typ Var 'dbf)
-                           Tree (cons Var (new T))
-                           Lo )
-                        (for Hi (sort (caddr V))
+                     (setq V
+                        (mapcar
+                           '((Key)
+                              (let F (tmp (pack "create-" (inc (0))))
+                                 (cons Key F
+                                    (or (open F) (quit "Too many files")) ) ) )
+                           (cons NIL (sort (caddr V))) ) )
+                     (in File
+                        (while (setq Key (rd))
+                           (out (cddr (rank Key V))
+                              (pr Key (rd)) ) ) )
+                     (native "@" "unlink" 'I File)
+                     (let (Dbf (meta Typ Var 'dbf)  Tree (cons Var (new T)))
+                        (for R V
+                           (close (cddr R))
                            (for X
                               (sort
                                  (make
-                                    (in File
-                                       (while (setq Key (rd))
-                                          (if (and (> Hi Key) (>= Key Lo))
-                                             (link (cons Key (rd)))
-                                             (rd) ) ) ) ) )
+                                    (in (cadr R)
+                                       (while (rd)
+                                          (link (cons @ (rd))) ) ) ) )
                               (store Tree (car X) (cdr X) Dbf)
                               (at (0 . 1000) (prune 2)) )
                            (commit)
                            (prune 2)
-                           (setq Lo Hi) )
-                        (native "@" "unlink" 'I File)
+                           (native "@" "unlink" 'I (cadr R)) )
                         (commit)
                         Tree ) ) ) ) )
          Vars )

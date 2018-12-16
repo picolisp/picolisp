@@ -1,3 +1,7 @@
+16dec18
+   Clear 'last' after "bd" command
+      lib/vip.l
+
 15dec18
    Separate temp files in 'create'
       lib/db.l

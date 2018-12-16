@@ -1,4 +1,4 @@
-# 10dec18abu
+# 16dec18abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1080,7 +1080,8 @@
                            (for (This *CmdWin (setq This (: next)))
                               (when (== Buf (: buffer))
                                  (if (; *CmdWin next next) (done) (nextBuf)) ) )
-                           (del Buf '*Buffers) ) ) )
+                           (del Buf '*Buffers)
+                           (=: last) ) ) )
                   (T
                      (if (get *Buffers Cnt)
                         (nextBuf @)

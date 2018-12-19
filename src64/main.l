@@ -1,4 +1,4 @@
-# 06nov18abu
+# 18dec18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -2178,25 +2178,37 @@
    null A  # Any?
    if nz  # Yes
       inc C
-      cmp B 128  # Single byte?
-      if ge  # No
+      test B (hex "80")  # Single byte?
+      if nz  # No
          test B (hex "20")  # Two bytes?
          if z  # Yes
             and B (hex "1F")  # First byte 110xxxxx
-            shl A 6  # xxxxx000000
-            push A
-         else  # Three bytes
-            and B (hex "F")  # First byte 1110xxxx
-            shl A 6  # xxxx000000
+         else
+            test B (hex "10")  # Three bytes?
+            if z  # Yes
+               and B (hex "F")  # First byte 1110xxxx
+            else  # Four bytes
+               and B (hex "7")  # First byte 11110xxx
+               shl A 6
+               push A
+               ld B (C)  # Fetch second byte
+               zxt
+               inc C
+               and B (hex "3F")  # 10xxxxxx
+               or (S) A  # Combine
+               pop A
+            end
+            shl A 6
             push A
             ld B (C)  # Fetch second byte
             zxt
             inc C
             and B (hex "3F")  # 10xxxxxx
-            or A (S)  # Combine
-            shl A 6  # xxxxxxxxxx000000
-            ld (S) A
+            or (S) A  # Combine
+            pop A
          end
+         shl A 6
+         push A
          ld B (C)  # Fetch last byte
          zxt
          inc C

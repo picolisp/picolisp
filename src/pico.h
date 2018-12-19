@@ -1,4 +1,4 @@
-/* 02sep17abu
+/* 18dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -44,7 +44,7 @@
 #define CELLS (1024*1024/sizeof(cell)) // Heap allocation unit 1MB
 #define IHASH 4999                     // Internal hash table size (should be prime)
 #define EHASH 49999                    // External hash table size (should be prime)
-#define TOP 0x10000                    // Character Top
+#define TOP 0x110000                   // Character Top
 
 typedef unsigned long word;
 typedef unsigned char byte;

@@ -1,4 +1,4 @@
-/* 25feb18abu
+/* 18dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -31,7 +31,8 @@ any Prin(any x) {
                outString("&quot;");
                break;
             case 0xFF:
-               Env.put(0xEF);
+               Env.put(0xF7);
+               Env.put(0xBF);
                Env.put(0xBF);
                Env.put(0xBF);
                break;
@@ -39,8 +40,11 @@ any Prin(any x) {
                Env.put(c = *p);
                if ((c & 0x80) != 0) {
                   Env.put(*++p);
-                  if ((c & 0x20) != 0)
+                  if ((c & 0x20) != 0) {
                      Env.put(*++p);
+                     if ((c & 0x10) != 0)
+                        Env.put(*++p);
+                  }
                }
             }
             ++p;
@@ -72,8 +76,11 @@ static void htEncode(char *p) {
          Env.put(c);
          if ((c & 0x80) != 0) {
             Env.put(*p++);
-            if ((c & 0x20) != 0)
+            if ((c & 0x20) != 0) {
                Env.put(*p++);
+               if ((c & 0x10) != 0)
+                  Env.put(*p++);
+            }
          }
       }
    }

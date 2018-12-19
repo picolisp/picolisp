@@ -1,4 +1,4 @@
-/* 05apr17abu
+/* 18dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -105,12 +105,20 @@ any doName(any ex) {
 /* Find or create single-char symbol */
 any mkChar(int c) {
    if (c >= 0x80) {
-      if (c < 0x800)
-         c = 0xC0 | c>>6 & 0x1F  |  (0x80 | c & 0x3F) << 8;
-      else if (c == TOP)
+      if (c == TOP)
          c = 0xFF;
+      else if (c < 0x800)
+         c = 0xC0 | c>>6 & 0x1F  |
+            (0x80 | c & 0x3F) << 8;
+      else if (c < 0x10000)
+         c = 0xE0 | c>>12 & 0x0F  |
+            (0x80 | c>>6 & 0x3F) << 8  |
+            (0x80 | c & 0x3F) << 16;
       else
-         c = 0xE0 | c>>12 & 0x0F  |  (0x80 | c>>6 & 0x3F) << 8  |  (0x80 | c & 0x3F) << 16;
+         c = 0xF0 | c>>18 & 0x07  |
+            (0x80 | c>>12 & 0x3F) << 8  |
+            (0x80 | c>>6 & 0x3F) << 16  |
+            (0x80 | c & 0x3F) << 24;
    }
    return consStr(box(c));
 }

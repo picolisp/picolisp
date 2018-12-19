@@ -1,4 +1,4 @@
-# 03nov18abu
+# 18dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -1147,23 +1147,33 @@
    jz ret  # Return 'z' if none
    cmp B (hex "FF")  # Special?
    if ne  # No
-      cmp B 128  # Single byte?
+      cmp B (hex "80")  # Single byte?
       if ge  # No
          test B (hex "20")  # Two bytes?
          if z  # Yes
             and B (hex "1F")  # First byte 110xxxxx
-            shl A 6  # xxxxx000000
+         else
+            test B (hex "10")  # Three bytes?
+            if z  # Yes
+               and B (hex "F")  # First byte 1110xxxx
+            else  # Four bytes
+               and B (hex "7")  # First byte 11110xxx
+               shl A 6
+               push A
+               call symByteCX_FACX  # Second byte
+               and B (hex "3F")  # 10xxxxxx
+               or (S) A  # Combine
+               pop A
+            end
+            shl A 6
             push A
-         else  # Three bytes
-            and B (hex "F")  # First byte 1110xxxx
-            shl A 6  # xxxx000000
-            push A
-            call symByteCX_FACX  # Second byte
-            and B (hex "3F")  # 10xxxxxx
-            or A (S)  # Combine
-            shl A 6  # xxxxxxxxxx000000
-            ld (S) A
+            call symByteCX_FACX  # Next byte
+            and B (hex "3F")
+            or (S) A  # Combine
+            pop A
          end
+         shl A 6
+         push A
          call symByteCX_FACX  # Last byte
          and B (hex "3F")  # 10xxxxxx
          or (S) A  # Combine
@@ -1293,38 +1303,53 @@
 
 # Add next char to symbol name
 (code 'charSymACX_CX 0)
-   cmp A (hex "80")  # ASCII??
-   jlt byteSymBCX_CX  # Yes: 0xxxxxxx
-   cmp A (hex "800")  # Double-byte?
-   if lt  # Yes
-      push A  # 110xxxxx 10xxxxxx
-      shr A 6  # Upper five bits
-      and B (hex "1F")
-      or B (hex "C0")
-      call byteSymBCX_CX  # Add first byte
-      pop A
-      and B (hex "3F")  # Lower 6 bits
-      or B (hex "80")
-      jmp byteSymBCX_CX  # Add second byte
+   cmp A (hex "80")  # ASCII? 0xxxxxxx?
+   if ge  # No
+      cmp A TOP  # Special "top" character?
+      if eq  # Yes
+         ld B (hex "FF")
+      else
+         push A
+         cmp A (hex "800")  # Double-byte?
+         if lt  # 10xxxxx 10xxxxxx
+            shr A 6  # Upper five bits
+            and B (hex "1F")
+            or B (hex "C0")
+            call byteSymBCX_CX  # Add first byte
+         else
+            cmp A (hex "10000")  # Three bytes?
+            if lt  # 1110xxxx 10xxxxxx 10xxxxxx
+               shr A 12  # Upper four bits
+               and B (hex "F")
+               or B (hex "E0")
+               call byteSymBCX_CX  # Add first byte
+               ld A (S)
+               shr A 6  # Middle six bits
+               and B (hex "3F")
+               or B (hex "80")
+               call byteSymBCX_CX  # Add second byte
+            else  # 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+               shr A 18  # Hightest three bits
+               and B (hex "7")
+               or B (hex "F0")
+               call byteSymBCX_CX  # Add first byte
+               ld A (S)
+               shr A 12  # Upper six bits
+               and B (hex "3F")
+               or B (hex "80")
+               call byteSymBCX_CX  # Add second byte
+               ld A (S)
+               shr A 6  # Lower six bits
+               and B (hex "3F")
+               or B (hex "80")
+               call byteSymBCX_CX  # Add second byte
+            end
+         end
+         pop A
+         and B (hex "3F")  # Lowest 6 bits
+         or B (hex "80")  # Add third byte
+      end
    end
-   cmp A TOP  # Special "top" character?
-   if eq  # Yes
-      ld B (hex "FF")
-      jmp byteSymBCX_CX
-   end
-   push A  # 1110xxxx 10xxxxxx 10xxxxxx
-   shr A 12  # Hightest four bits
-   and B (hex "0F")
-   or B (hex "E0")
-   call byteSymBCX_CX  # Add first byte
-   ld A (S)
-   shr A 6  # Middle six bits
-   and B (hex "3F")
-   or B (hex "80")
-   call byteSymBCX_CX  # Add second byte
-   pop A
-   and B (hex "3F")  # Lowest 6 bits
-   or B (hex "80")  # Add third byte
 
 # Add next byte to symbol name
 (code 'byteSymBCX_CX 0)
@@ -1987,25 +2012,35 @@
 (code 'getChar_A 0)
    ld A (Chr)  # Get look ahead
 : getCharA_A
-   cmp B (hex "FF")  # Special "top" character?
+   cmp B (hex "FF")  # Special?
    if ne  # No
-      cmp B 128  # Single byte?
-      if ge  # No
+      test B (hex "80")  # Single byte?
+      if nz  # No
          test B (hex "20")  # Two bytes?
          if z  # Yes
             and B (hex "1F")  # First byte 110xxxxx
-            shl A 6  # xxxxx000000
-            push A
-         else  # Three bytes
-            and B (hex "F")  # First byte 1110xxxx
-            shl A 6  # xxxx000000
+         else
+            test B (hex "10")  # Three bytes?
+            if z  # Yes
+               and B (hex "F")  # First byte 1110xxxx
+            else  # Four bytes
+               and B (hex "7")  # First byte 11110xxx
+               shl A 6
+               push A
+               call (Get_A)  # Get second byte
+               and B (hex "3F")  # 10xxxxxx
+               or (S) A  # Combine
+               pop A
+            end
+            shl A 6
             push A
             call (Get_A)  # Get second byte
             and B (hex "3F")  # 10xxxxxx
-            or A (S)  # Combine
-            shl A 6  # xxxxxxxxxx000000
-            ld (S) A
+            or (S) A  # Combine
+            pop A
          end
+         shl A 6
+         push A
          call (Get_A)  # Get last byte
          and B (hex "3F")  # 10xxxxxx
          or (S) A  # Combine
@@ -3548,25 +3583,35 @@
    null A  # Timeout?
    if nz  # No
       call stdinByte_A  # Read first byte
-      cmp B (hex "FF")  # Special "top" character?
+      cmp B (hex "FF")  # Special?
       if ne  # No
-         cmp B 128  # Single byte?
-         if ge  # No
+         test B (hex "80")  # Single byte?
+         if nz  # No
             test B (hex "20")  # Two bytes?
             if z  # Yes
                and B (hex "1F")  # First byte 110xxxxx
-               shl A 6  # xxxxx000000
-               push A
-            else  # Three bytes
-               and B (hex "F")  # First byte 1110xxxx
-               shl A 6  # xxxx000000
+            else
+               test B (hex "10")  # Three bytes?
+               if z  # Yes
+                  and B (hex "F")  # First byte 1110xxxx
+               else  # Four bytes
+                  and B (hex "7")  # First byte 11110xxx
+                  shl A 6
+                  push A
+                  call stdinByte_A  # Read second byte
+                  and B (hex "3F")  # 10xxxxxx
+                  or (S) A  # Combine
+                  pop A
+               end
+               shl A 6
                push A
                call stdinByte_A  # Read second byte
-               and B (hex "3F")  # 10xxxxxx
-               or A (S)  # Combine
-               shl A 6  # xxxxxxxxxx000000
-               ld (S) A
+               and B (hex "3F")
+               or (S) A  # Combine
+               pop A
             end
+            shl A 6
+            push A
             call stdinByte_A  # Read last byte
             and B (hex "3F")  # 10xxxxxx
             or (S) A  # Combine

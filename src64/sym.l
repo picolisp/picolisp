@@ -1,4 +1,4 @@
-# 22apr18abu
+# 18dec18abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -770,40 +770,68 @@
 (code 'mkCharA_A 0)
    cmp A (hex "80")  # ASCII?
    if ge  # No
-      cmp A (hex "800")  # Double-byte?
-      if lt  # Yes
-         ld (Buf) B  # 110xxxxx 10xxxxxx
-         shr A 6  # Upper five bits
-         and B (hex "1F")
-         or B (hex "C0")
-         xchg B (Buf)  # Save first byte
-         and A (hex "3F")  # Lower 6 bits
-         or B (hex "80")
-         shl A 8  # into second byte
-         ld B (Buf)  # Get first byte
+      cmp A TOP  # Special "top" character?
+      if eq  # Yes
+         ld B (hex "FF")  # Above legal UTF-8
+         zxt
       else
-         cmp A TOP  # Special "top" character?
-         if eq  # Yes
-            ld B (hex "FF")  # Above legal UTF-8
-            zxt
-         else
-            push C
-            ld C A  # 1110xxxx 10xxxxxx 10xxxxxx
-            shr A 12  # Hightest four bits
-            and B (hex "0F")
-            or B (hex "E0")
-            ld (Buf) B  # Save first byte
-            ld A C
-            shr A 6  # Middle six bits
-            and A (hex "3F")
+         cmp A (hex "800")  # Double-byte?
+         if lt  # Yes
+            ld (Buf) B  # 110xxxxx 10xxxxxx
+            shr A 6  # Upper five bits
+            and B (hex "1F")
+            or B (hex "C0")
+            xchg B (Buf)  # Save first byte
+            and A (hex "3F")  # Lower 6 bits
             or B (hex "80")
             shl A 8  # into second byte
-            xchg A C
-            and A (hex "3F")  # Lowest 6 bits
-            or B (hex "80")  # Add third byte
-            shl A 16  # into third byte
-            or A C  # Combine with second byte
-            ld B (Buf)  # and first byte
+            ld B (Buf)  # Get first byte
+         else
+            push C
+            ld C A  # Keep value
+            cmp A (hex "10000")  # Three bytes?
+            if lt  # 1110xxxx 10xxxxxx 10xxxxxx
+               shr A 12  # Hightest four bits
+               and B (hex "0F")
+               or B (hex "E0")
+               ld (Buf) B  # Save first byte
+               ld A C
+               shr A 6  # Middle six bits
+               and A (hex "3F")
+               or B (hex "80")
+               shl A 8  # into second byte
+               xchg A C
+               and A (hex "3F")  # Lowest 6 bits
+               or B (hex "80")
+               shl A 16  # into third byte
+               or A C  # Combine with second byte
+               ld B (Buf)  # and first byte
+            else  # 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+               push E
+               ld E A
+               shr A 18  # Hightest three bits
+               and B (hex "07")
+               or B (hex "F0")
+               ld (Buf) B  # Save first byte
+               ld A C
+               shr A 12  # Higher six bits
+               and A (hex "3F")
+               or B (hex "80")
+               shl A 8  # into second byte
+               xchg A C
+               shr A 6  # Lower six bits
+               and A (hex "3F")
+               or B (hex "80")
+               shl A 16  # into third byte
+               xchg A E
+               and A (hex "3F")  # Lowest 6 bits
+               or B (hex "80")
+               shl A 24  # into fourth byte
+               or A E  # Combine with third byte
+               or A C  # and second byte
+               ld B (Buf)  # and first byte
+               pop E
+            end
             pop C
          end
       end
@@ -3663,8 +3691,8 @@
    sym E  # Symbol?
    jz retNil  # No
    call firstCharE_A  # Get first character
-   cmp A TOP  # Special "top" character?
-   jeq retNil  # Yes
+   cmp A (hex "FFFF")  # Too big?
+   jgt retNil  # Yes
    call caseDataA_AC  # Get case info
    and B (hex "1F")  # Character type
    cmp B CHAR_LOWERCASE  # Lower case?
@@ -3680,8 +3708,8 @@
    sym E  # Symbol?
    jz retNil  # No
    call firstCharE_A  # Get first character
-   cmp A TOP  # Special "top" character?
-   jeq retNil  # Yes
+   cmp A (hex "FFFF")  # Too big?
+   jgt retNil  # Yes
    call caseDataA_AC  # Get case info
    and B (hex "1F")  # Character type
    cmp B CHAR_UPPERCASE  # Lower case?
@@ -3716,8 +3744,8 @@
                   call symCharCX_FACX  # Next char?
                while nz
                   ld E C  # Save C
-                  cmp A TOP  # Special "top" character?
-                  if ne  # No
+                  cmp A (hex "FFFF")  # Too big?
+                  if le  # No
                      call caseDataA_AC  # Get case info
                      and A (hex "FFFF")
                      shr A 6  # Make index
@@ -3771,8 +3799,8 @@
                   call symCharCX_FACX  # Next char?
                while nz
                   ld E C  # Save C
-                  cmp A TOP  # Special "top" character?
-                  if ne  # No
+                  cmp A (hex "FFFF")  # Too big?
+                  if le  # No
                      call caseDataA_AC  # Get case info
                      and A (hex "FFFF")
                      shr A 6  # Make index
@@ -3836,8 +3864,8 @@
                do
                   call symCharCX_FACX  # Next char?
                while nz
-                  cmp A TOP  # Special "top" character?
-                  continue eq  # Yes
+                  cmp A (hex "FFFF")  # Too big?
+                  continue gt  # Yes
                   ld E C  # Save C
                   call isLetterOrDigitA_F  # Letter or digit?
                   if nz  # Yes

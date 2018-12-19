@@ -1,4 +1,4 @@
-/* 03nov18abu
+/* 18dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -521,8 +521,13 @@ int symChar(any s) {
    if (c & 0x80) {
       if ((c & 0x20) == 0)
          c &= 0x1F;
-      else
-         c = (c & 0xF) << 6 | symByte(NULL) & 0x3F;
+      else {
+         if ((c & 0x10) == 0)
+            c &= 0xF;
+         else
+            c = (c & 0x7) << 6 | symByte(NULL) & 0x3F;
+         c = c << 6 | symByte(NULL) & 0x3F;
+      }
       c = c << 6 | symByte(NULL) & 0x3F;
    }
    return c;
@@ -600,15 +605,20 @@ any boxChar(int c, int *i, any *p) {
    *i = 0;
    if (c < 0x80)
       *p = box(c);
-   else if (c < 0x800) {
-      *p = box(0xC0 | c>>6 & 0x1F);
-      byteSym(0x80 | c & 0x3F, i, p);
-   }
    else if (c == TOP)
       *p = box(0xFF);
    else {
-      *p = box(0xE0 | c>>12 & 0x0F);
-      byteSym(0x80 | c>>6 & 0x3F, i, p);
+      if (c < 0x800)
+         *p = box(0xC0 | c>>6 & 0x1F);
+      else if (c < 0x10000) {
+         *p = box(0xE0 | c>>12 & 0x0F);
+         byteSym(0x80 | c>>6 & 0x3F, i, p);
+      }
+      else {
+         *p = box(0xF0 | c>>18 & 0x07);
+         byteSym(0x80 | c>>12 & 0x3F, i, p);
+         byteSym(0x80 | c>>6 & 0x3F, i, p);
+      }
       byteSym(0x80 | c & 0x3F, i, p);
    }
    return *p;
@@ -618,15 +628,20 @@ any boxChar(int c, int *i, any *p) {
 void charSym(int c, int *i, any *p) {
    if (c < 0x80)
       byteSym(c, i, p);
-   else if (c < 0x800) {
-      byteSym(0xC0 | c>>6 & 0x1F, i, p);
-      byteSym(0x80 | c & 0x3F, i, p);
-   }
    else if (c == TOP)
       byteSym(0xFF, i, p);
    else {
-      byteSym(0xE0 | c>>12 & 0x0F, i, p);
-      byteSym(0x80 | c>>6 & 0x3F, i, p);
+      if (c < 0x800)
+         byteSym(0xC0 | c>>6 & 0x1F, i, p);
+      else if (c < 0x10000) {
+         byteSym(0xE0 | c>>12 & 0x0F, i, p);
+         byteSym(0x80 | c>>6 & 0x3F, i, p);
+      }
+      else {
+         byteSym(0xF0 | c>>18 & 0x07, i, p);
+         byteSym(0x80 | c>>12 & 0x3F, i, p);
+         byteSym(0x80 | c>>6 & 0x3F, i, p);
+      }
       byteSym(0x80 | c & 0x3F, i, p);
    }
 }
@@ -981,11 +996,17 @@ int getChar(void) {
    if ((c = Chr) == 0xFF)
       return TOP;
    if (c & 0x80) {
-      Env.get();
       if ((c & 0x20) == 0)
          c &= 0x1F;
-      else
-         c = (c & 0xF) << 6 | Chr & 0x3F,  Env.get();
+      else {
+         if ((c & 0x10) == 0)
+            c &= 0xF;
+         else
+            Env.get(),  c = (c & 0x7) << 6 | Chr & 0x3F;
+         Env.get();
+         c = c << 6 | Chr & 0x3F;
+      }
+      Env.get();
       if (Chr < 0)
          eofErr();
       c = c << 6 | Chr & 0x3F;
@@ -1714,7 +1735,7 @@ any doPoll(any ex) {
 // (key ['cnt]) -> sym
 any doKey(any ex) {
    any x;
-   int c, d;
+   int c;
 
    flushAll();
    setRaw();
@@ -1724,11 +1745,16 @@ any doKey(any ex) {
    if ((c = stdinByte()) == 0xFF)
       c = TOP;
    else if (c & 0x80) {
-      d = stdinByte();
       if ((c & 0x20) == 0)
-         c = (c & 0x1F) << 6 | d & 0x3F;
-      else
-         c = ((c & 0xF) << 6 | d & 0x3F) << 6 | stdinByte() & 0x3F;
+         c &= 0x1F;
+      else {
+         if ((c & 0x10) == 0)
+            c &= 0xF;
+         else
+            c = (c & 0x7) << 6 | stdinByte() & 0x3F;
+         c = c << 6 | stdinByte() & 0x3F;
+      }
+      c = c << 6 | stdinByte() & 0x3F;
    }
    return mkChar(c);
 }

@@ -1,4 +1,4 @@
-# 29oct15abu
+# 18dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Constants
@@ -7,7 +7,7 @@
 (equ STACK (* 64 1024))       # Default coroutine stack segment size (64 kB)
 (equ ZERO (short 0))          # Short number '0'
 (equ ONE (short 1))           # Short number '1'
-(equ TOP (hex "10000"))       # Character top
+(equ TOP (hex "110000"))      # Character top
 (equ DB1 (hex "1A"))          # Name of '{1}'
 
 # Pointer offsets

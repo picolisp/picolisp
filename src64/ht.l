@@ -1,4 +1,4 @@
-# 25feb18abu
+# 18dec18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'HtData)
@@ -63,7 +63,9 @@
                      else
                         cmp B (hex "FF")
                         if eq
-                           ld B (hex "EF")
+                           ld B (hex "F7")
+                           call (PutB)
+                           ld B (hex "BF")
                            call (PutB)
                            ld B (hex "BF")
                            call (PutB)
@@ -82,6 +84,12 @@
                                  inc Y  # Next
                                  ld B (Y)  # Output third byte
                                  call (PutB)
+                                 test C (hex "10")  # Four bytes?
+                                 if nz  # Yes
+                                    inc Y  # Next
+                                    ld B (Y)  # Output third byte
+                                    call (PutB)
+                                 end
                               end
                            end
                         end
@@ -189,6 +197,11 @@
                         if nz  # Yes
                            call symByteCX_FACX  # Next byte
                            call (PutB)  # Output third byte
+                           test E (hex "10")  # Four bytes?
+                           if nz  # Yes
+                              call symByteCX_FACX  # Next byte
+                              call (PutB)  # Output fourth byte
+                           end
                         end
                      end
                   end
@@ -405,12 +418,16 @@
       null A  # EOF?
       if ns  # No
          call getChar_A  # Read first char
-         cmp A 128  # Double byte?
-         if ge  # Yes
+         cmp A (hex "80")  # Single byte?
+         if ge  # No
             dec E  # Decrement count
-            cmp A 2048  # Triple byte?
+            cmp A (hex "800")  # Three bytes?
             if ge  # Yes
                dec E  # Decrement count
+               cmp A (hex "10000")  # Four bytes?
+               if ge  # Yes
+                  dec E  # Decrement count
+               end
             end
          end
          dec E  # Less than zero?
@@ -435,12 +452,16 @@
                   break T
                end
                call getChar_A
-               cmp A 128  # Double byte?
-               if ge  # Yes
+               cmp A (hex "80")  # Single byte?
+               if ge  # No
                   dec E  # Decrement count
-                  cmp A 2048  # Triple byte?
+                  cmp A (hex "800")  # Three bytes?
                   if ge  # Yes
                      dec E  # Decrement count
+                     cmp A (hex "10000")  # Four bytes?
+                     if ge  # Yes
+                        dec E  # Decrement count
+                     end
                   end
                end
                dec E  # Less than zero?

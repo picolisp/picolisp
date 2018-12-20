@@ -1,3 +1,7 @@
+20dec18
+   "Different file" restriction not necessary
+      doc/refC.html
+
 18dec18
    Support 4th UTF-8 byte
       {src64,pilos/src}/defs.l

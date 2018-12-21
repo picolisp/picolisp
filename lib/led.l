@@ -1,4 +1,4 @@
-# 21mar17abu
+# 21dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -34,56 +34,19 @@
 
 # Basic editing routine
 (de chgLine (L N)
-   (let (D (length "Line")  Tsm)
-      (for (P (dec "LPos") (gt0 P) (dec P))  # To start of old line
-         (unless
-            (and
-               *Tsm
-               (= "\"" (get "Line" P))
-               (skipQ "LPos" P "Line") )
-            (prin "^H") ) )
-      (for (P . C) (setq "Line" L)  # Output new line
-         (cond
-            ((> " " C)
-               (dec 'D)
-               (prin "_") )
-            ((or (not *Tsm) (<> "\"" C) (escQ P L))
-               (dec 'D)
-               (prin C) )
-            (T
-               (prin
-                  (and Tsm (cdr *Tsm))
-                  (unless (skipQ N P L)
-                     (dec 'D)
-                     C )
-                  (and (onOff Tsm) (car *Tsm)) ) ) ) )
-      (and Tsm (prin (cdr *Tsm)))
+   (let D (length "Line")
+      (do (dec "LPos")  # To start of old line
+         (prin "^H") )
+      (for C (setq "Line" L)  # Output new line
+         (prin (if (> " " C) "_" C))
+         (dec 'D) )
       (space D)  # Clear rest of old line
       (do D (prin "^H"))
       (setq "LPos" (inc (length L)))
       (until (= N "LPos")  # To new position
-         (unless
-            (and
-               *Tsm
-               (= "\"" (get "Line" "LPos"))
-               (skipQ N "LPos" "Line") )
-            (prin "^H") )
+         (prin "^H")
          (dec '"LPos") ) )
    (flush) )
-
-# Skipped double quote
-(de skipQ (N P L)
-   (nor
-      (>= (inc N) P (dec N))
-      (= "\""  (get L (dec P)))
-      (= "\"" (get L (inc P)))
-      (escQ P L) ) )
-
-# Escaped double quote
-(de escQ ()
-   (let Esc NIL
-      (for I (dec P)
-         ((if (= "\\" (get L I)) onOff off) Esc) ) ) )
 
 # Check for delimiter
 (de delim? (C)
@@ -409,7 +372,7 @@
          (T (cons (cons Key Prg) "FKey")) ) ) )
 
 (fkey "^D" (prinl) (bye))
-(fkey "^X" (prin (cdr *Tsm)) (prinl) (quit))
+(fkey "^X" (prinl) (quit))
 (when (sys "TERM")
    (fkey "^[[A" (uMove) (xMove))
    (fkey "^[[B" (dMove) (xMove))
@@ -430,7 +393,7 @@
                   (dir P T) ) ) ) ) )
    (zero "HPos")
    (_getLine "Line1" (or "skipFun" delim?))
-   (prinl (cdr *Tsm)) )
+   (prinl) )
 
 (de revise ("X" "tabFun" "skipFun")
    (let (*History "Revisions"  "*Dbg" *Dbg  *Dbg)
@@ -466,7 +429,7 @@
 
 (mapc zap
    (quote
-      chgLine skipQ escQ delim? lMove bMove rMove eMove xMove uMove dMove lWord
+      chgLine delim? lMove bMove rMove eMove xMove uMove dMove lWord
       _right rWord rEnd lPar rPar clrEol insChar del1 delChar delWord rplChar
       doUndo doPaste setHist ledSearch expandTab insMode cmdMode _getLine _led
       saveHistory ) )

@@ -41,15 +41,11 @@ terminate the interpreter and return to the shell at any time, by either hitting
 the <code>Ctrl-D</code> key, or by executing the function <code><a
 href="refB.html#bye">(bye)</a></code>.
 
-<p>Please note that special handling is done during character input. This one
-is incompatible with <code>rlwrap</code> for example but is more powerful.
-<p><ul>
-<li><code>vi</code>-like command-line editing (typos fixes and history with ESC,
-<code>h</code>, <code>j</code>, <code>k</code> and <code>l</code>, or the
-arrow keys if supported by the terminal),</li>
-<li>auto-formatting (underlined) of double-quoted strings (don't try and struggle
-to make <code>&quot;</code> appear).</li>
-</ul>
+<p>Please note that special handling is done during character input. This one is
+incompatible with <code>rlwrap</code> for example but is more powerful. It
+supports <code>vi</code>-style command-line editing (typos fixes and history
+with ESC, <code>h</code>, <code>j</code>, <code>k</code> and <code>l</code>, or
+the arrow keys if supported by the terminal).
 
 <p>If you prefer to use Emacs, please use the picolisp-mode bundled in the "el/"
 directory (that is "@lib/el" for a local installation, or some system dependent

@@ -1,4 +1,4 @@
-/* 02sep17abu
+/* 21dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -425,7 +425,6 @@ void initSymbols(void) {
    Msg    = initSym(Nil, "*Msg");
    Uni    = initSym(Nil, "*Uni");
    Led    = initSym(Nil, "*Led");
-   Tsm    = initSym(Nil, "*Tsm");
    Adr    = initSym(Nil, "*Adr");
    Fork   = initSym(Nil, "*Fork");
    Bye    = initSym(Nil, "*Bye");  // Last unremovable symbol

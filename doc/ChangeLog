@@ -1,4 +1,24 @@
 21dec18
+   Fixed e-mail addresses
+      doc/app.html
+      doc/httpGate.html
+      doc/form/form.html
+   Remove *Tsm functionality
+      {src64,pilos/glob.l
+      {src64,pilos/io.l
+      src/pico.h
+      src/tab.c
+      src/main.c
+      src/io.c
+      lib/led.l
+      lib/eled.l
+      lib/debug.l
+      lib/el/README
+      lib/el/picolisp.el
+      doc/ref.html
+      doc/refT.html
+      doc/tut.html
+      Removed lib/tsm.l, doc/vim-tsm and lib/el/tsm.el
    No explicit 'lock' during 'create'
       lib/db.l
       doc/refC.html
@@ -74,7 +94,7 @@
 21nov18
    Explicit runOnUiThread() on general threads
       lib/android.l
-   Removed java/ (see PilBox instead)
+   Remove java/ (see PilBox instead)
 
 20nov18
    GUI thread function callbacks

@@ -743,10 +743,4 @@ The main differences are:
     (vector (buffer-substring-no-properties p1 p2) p1 p2 )
     ) )
 
-
-;; tsm-mode
-(when (and (require 'tsm nil t) tsm-lock)
-  (font-lock-add-keywords 'picolisp-mode tsm-lock)
-  (font-lock-add-keywords 'inferior-picolisp-mode tsm-lock) )
-
 (provide 'picolisp)

@@ -1,4 +1,4 @@
-/* 18dec18abu
+/* 21dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2493,16 +2493,9 @@ void print1(any x) {
          }
       }
       else {
-         bool tsm = isCell(val(Tsm)) && Env.put == putStdout && OutFile->tty;
-
-         if (!tsm)
-            Env.put('"');
-         else {
-            outName(car(val(Tsm)));
-            c = symByte(y);
-         }
+         Env.put('"');
          do {
-            if (c == '\\'  ||  c == '^'  ||  !tsm && c == '"')
+            if (c == '\\'  ||  c == '^')
                Env.put('\\');
             else if (c == 127)
                Env.put('^'),  c = '?';
@@ -2510,10 +2503,7 @@ void print1(any x) {
                Env.put('^'),  c |= 0x40;
             Env.put(c);
          } while (c = symByte(NULL));
-         if (!tsm)
-            Env.put('"');
-         else
-            outName(cdr(val(Tsm)));
+         Env.put('"');
       }
    }
    else if (car(x) == Quote  &&  x != cdr(x))

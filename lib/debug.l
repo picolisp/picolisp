@@ -1,4 +1,4 @@
-# 20may18abu
+# 21dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
@@ -252,7 +252,7 @@
 # Emacs interface (Thorsten Jolitz)
 # Note:
 #   As 'tags-table-list' is set here, do not also set `tags-file-name'
-#   make sure, tsm.el and picolisp.el are loaded (in that order) and put
+#   make sure picolisp.el is loaded and put
 #   the edited .l file in picolisp mode (M-x picolisp-mode)
 (de em ("X" C)
    (_ed

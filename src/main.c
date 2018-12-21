@@ -1,4 +1,4 @@
-/* 06nov18abu
+/* 21dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -36,7 +36,7 @@ any Intern[IHASH], Transient[IHASH], Extern[EHASH];
 any ApplyArgs, ApplyBody, DbVal, DbTail;
 any Nil, DB, Meth, Quote, T;
 any Solo, PPid, Pid, At, At2, At3, This, Prompt, Dbg, Zap, Ext, Scl, Class;
-any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Tsm, Adr, Fork, Bye;
+any Run, Hup, Sig1, Sig2, Up, Err, Msg, Uni, Led, Adr, Fork, Bye;
 bool Break;
 sig_atomic_t Signal[NSIG];
 

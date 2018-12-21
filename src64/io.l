@@ -1,4 +1,4 @@
-# 18dec18abu
+# 21dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -5037,7 +5037,6 @@
          pop X
          ret
       end
-      push Y
       call isEnvInternEX_FCE  # Internal symbol?
       if eq  # Yes
          null C  # Found in other namespace?
@@ -5077,39 +5076,21 @@
             until z  # Done
          end
       else  # Else transient symbol
-         ld Y 0  # 'tsm' flag in Y
-         atom (Tsm)  # Transient symbol markup?
-         if z  # Yes
-            cmp (PutB) putStdoutB  # to stdout?
-            if eq  # Yes
-               ld Y ((OutFile) II)  # and 'tty'? -> Y
-            end
-         end
-         null Y  # Transient symbol markup?
-         if z  # No
-            ld B (char "\"")
-            call (PutB)
-         else
-            ld E ((Tsm))  # Get CAR
-            call outNameE  # Write transient symbol markup
-         end
+         ld B (char "\"")
+         call (PutB)
          ld C 0
          call symByteCX_FACX  # Get first byte
          do
             cmp B (char "\\")  # Backslash?
             jeq 20
             cmp B (char "\^")  # Caret?
-            jeq 20
-            null Y  # Transient symbol markup?
-            jnz 30  # Yes
-            cmp B (char "\"")  # Double quote?
             if eq  # Yes
 20             push A  # Save char
                ld B (char "\\")  # Escape with backslash
                call (PutB)
                pop A
             else
-30             cmp B 127  # DEL?
+               cmp B 127  # DEL?
                if eq  # Yes
                   ld B (char "\^")  # Print ^?
                   call (PutB)
@@ -5128,16 +5109,9 @@
             call (PutB)  # Put byte
             call symByteCX_FACX  # Next byte
          until z  # Done
-         null Y  # Transient symbol markup?
-         if z  # No
-            ld B (char "\"")  # Final double quote
-            call (PutB)
-         else
-            ld E ((Tsm) CDR)  # Get CDR
-            call outNameE  # Write transient symbol markup
-         end
+         ld B (char "\"")  # Final double quote
+         call (PutB)
       end
-      pop Y
       pop X
       ret
    end

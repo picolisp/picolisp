@@ -1,4 +1,4 @@
-# 22apr18abu
+# 21dec18abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -175,7 +175,6 @@
    initSym Msg       "*Msg"      Nil
    initSym Uni       "*Uni"      Nil
    initSym Led       "*Led"      Nil
-   initSym Tsm       "*Tsm"      Nil
    initSym Adr       "*Adr"      Nil
    initSym Fork      "*Fork"     Nil
    initSym Bye       "*Bye"      Nil

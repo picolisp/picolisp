@@ -1,7 +1,6 @@
 In order to get the picolisp-mode working correctly you have to add the following expressions to your .emacs and adapt them according to your set-up:
 
 (add-to-list 'load-path "<path-to>/picoLisp/lib/el")
-(load "tsm.el") ;; Picolisp TransientSymbolsMarkup (*Tsm)
 (autoload 'run-picolisp "inferior-picolisp")
 (autoload 'picolisp-mode "picolisp" "Major mode for editing Picolisp." t)
 
@@ -14,7 +13,6 @@ If you want, you can add a few hooks for convenience:
 (add-hook 'picolisp-mode-hook
    (lambda ()
       (paredit-mode +1) ;; Loads paredit mode automatically
-      (tsm-mode) ;; Enables TSM
       (define-key picolisp-mode-map (kbd "RET") 'newline-and-indent)
       (define-key picolisp-mode-map (kbd "C-h") 'paredit-backward-delete) ) )
 

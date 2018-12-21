@@ -1,4 +1,4 @@
-# 15dec18abu
+# 21dec18abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1428,10 +1428,6 @@
 
 # Create or update lots of objects
 (de create (Typ Key Vars . Prg)
-   (loop
-      (tell 'bye 2)
-      (NIL (lock))
-      (wait 200) )
    (prune 0)
    (gc 200 200)
    (setq Vars  # ((var fd lst cnt . cnt) ..)

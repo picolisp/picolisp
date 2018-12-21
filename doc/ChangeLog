@@ -1,3 +1,8 @@
+21dec18
+   No explicit 'lock' during 'create'
+      lib/db.l
+      doc/refC.html
+
 20dec18
    "Different file" restriction not necessary
       doc/refC.html

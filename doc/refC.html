@@ -724,10 +724,12 @@ object to be updated. If <code>sym</code> is non-<code>NIL</code>, the first
 column of the input data is assigned to the <code>sym</code> property and should
 already be sorted. The rest of the input data is assigned to the properties in
 <code>lst</code>. <code>create</code> allocates heap memory, and builds
-temporary files which increase disk requirements while it runs. When creating
-more than a few hundred million index entries per file, it might be necessary to
-increase the number of open files with e.g. <code>ulimit -n 10000</code>. See
-also <code><a href="refD.html#dbs">dbs</a></code>, <code><a
+temporary files which increase disk requirements while it runs. No explicit
+<code><a href="refL.html#lock">lock</a></code> should be established on the
+database, and no other processes should operate on this database while it runs.
+When creating more than a few hundred million index entries per file, it might
+be necessary to increase the number of open files with e.g. <code>ulimit -n
+10000</code>. See also <code><a href="refD.html#dbs">dbs</a></code>, <code><a
 href="refN.html#new">new</a></code>, <code><a
 href="refC.html#commit">commit</a></code> and <code><a
 href="refP.html#prune">prune</a></code>.

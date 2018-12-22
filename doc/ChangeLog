@@ -1,3 +1,10 @@
+22dec18
+   Wide character support
+      lib/led.l
+      lib/eled.l
+   New file
+      lib/wide.l
+
 21dec18
    Fixed e-mail addresses
       doc/app.html

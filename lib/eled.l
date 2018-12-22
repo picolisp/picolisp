@@ -1,9 +1,11 @@
-# 21dec18tj
+# 22dec18tj
 # Authors Thorsten Jolitz, Alexander Burger
 # (c) Software Lab. Alexander Burger
 
 # Line editor
 # emacs-mode
+
+(load "@lib/wide.l")
 
 (mapc undef
    '(*Led msg fkey revise) )
@@ -53,18 +55,25 @@
 
 # Basic editing routine
 (de chgLine (L N)
-   (let D (length "Line")
-      (do (dec "LPos")  # To start of old line
+   (while (gt0 (dec '"LPos"))  # To start of old line
+      (when (wide? (char (get "Line" "LPos")))
          (prin "^H") )
+      (prin "^H") )
+   (let D
+      (sum
+         '((C) (if (wide? (char C)) 2 1))
+         "Line" )
       (for C (setq "Line" L)  # Output new line
          (prin (if (> " " C) "_" C))
+         (and (wide? (char C)) (dec 'D))
          (dec 'D) )
       (space D)  # Clear rest of old line
       (do D (prin "^H"))
       (setq "LPos" (inc (length L)))
       (until (= N "LPos")  # To new position
-         (prin "^H")
-         (dec '"LPos") ) )
+         (when (wide? (char (get L (dec '"LPos"))))
+            (prin "^H") )
+         (prin "^H") ) )
    (flush) )
 
 # Check for delimiter

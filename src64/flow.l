@@ -1,4 +1,4 @@
-# 18jul18abu
+# 24dec18abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -2611,6 +2611,8 @@
    ld E (X)  # Eval tag
    eval
    sub S "EnvEnd-Env"  # Build catch frame
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    save (Env) (EnvEnd) (S)  # Save environment
    push ZERO  # 'fin'
    push E  # 'tag'
@@ -2667,6 +2669,8 @@
 (code 'doFinally 2)
    push X
    sub S "EnvEnd-Env"  # Build catch frame
+   cmp S (StkLimit)  # Stack check
+   jlt stkErr
    save (Env) (EnvEnd) (S)  # Save environment
    ld X (E CDR)
    push (X)  # 'exe' -> 'fin'
@@ -2703,6 +2707,8 @@
       link
       push L  # Save L
       sub S "EnvMid-EnvCo"  # Space for env
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       ld Y (Stack1)  # Search through stack segments
       ld C (Stacks)  # Segment count
       do
@@ -2944,6 +2950,8 @@
       jz yieldErrX  # No
       push L  # Else resume with argument
       sub S "EnvMid-EnvCo"  # Space for env
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       push Y  # Save 'seg'
       push (StkLimit)  # and 'lim'
       push Z  # Link (NULL)

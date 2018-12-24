@@ -1,3 +1,9 @@
+24dec18
+   More 'StkLimit' checks
+      {src64,pilos/io.l
+      {src64,pilos/flow.l
+      src64/db.l
+
 22dec18
    Wide character support
       lib/led.l

@@ -1,4 +1,4 @@
-# 21dec18abu
+# 24dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -1202,9 +1202,9 @@
          inc Z
          test Z 7  # Buffer full?
          if z  # Yes
+            sub S 8  # Extend buffer
             cmp S (StkLimit)  # Stack check
             jlt stkErr
-            sub S 8  # Extend buffer
             save (S 8) (Z) (S)
             sub Z 8  # Reset buffer pointer
          end
@@ -1243,6 +1243,8 @@
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErr
                   save (S 8) (Z) (S)
                   sub Z 8  # Reset buffer pointer
                end
@@ -1260,6 +1262,8 @@
                   test Z 7  # Buffer full?
                   if z  # Yes
                      sub S 8  # Extend buffer
+                     cmp S (StkLimit)  # Stack check
+                     jlt stkErr
                      save (S 8) (Z) (S)
                      sub Z 8  # Reset buffer pointer
                   end
@@ -1276,6 +1280,8 @@
                test Z 7  # Buffer full?
                if z  # Yes
                   sub S 8  # Extend buffer
+                  cmp S (StkLimit)  # Stack check
+                  jlt stkErr
                   save (S 8) (Z) (S)
                   sub Z 8  # Reset buffer pointer
                end
@@ -3103,6 +3109,8 @@
                         end
                      else
                         sub S PIPE_BUF  # <S I> Pipe buffer
+                        cmp S (StkLimit)  # Stack check
+                        jlt stkErr
                         push Y  # <S> Outer child index
                         ld C (Y I)  # Get 'hear' fd again
                         ld4 (Buf 4)  # Get size
@@ -3461,6 +3469,8 @@
    else
       push (TellBuf)  # Save current 'tell' env
       sub S PIPE_BUF  # New 'tell' buffer
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       ld Z S  # Buffer pointer
       ld E (X)  # Eval first argument
       eval
@@ -3529,6 +3539,8 @@
    if nz
       push Y
       sub S (+ II FD_SET)  # <S FD_SET> Timeval, <S> RdSet
+      cmp S (StkLimit)  # Stack check
+      jlt stkErrX
       do
          cmp (C I) (C II)  # Data in buffer ('ix' < 'cnt')?
       while z  # No

@@ -1,4 +1,4 @@
-# 16oct18abu
+# 24dec18abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1758,6 +1758,8 @@
          push A  # <L -II> Tell's buffer pointer
          push (TellBuf)  # <L -III> Save current 'tell' env
          sub S PIPE_BUF  # <L - III - PIPE_BUF> New 'tell' buffer
+         cmp S (StkLimit)  # Stack check
+         jlt stkErr
          ld Z S  # Buffer pointer
          call tellBegZ_Z  # Start 'tell' message
          ld E (L I)  # Get 'any'

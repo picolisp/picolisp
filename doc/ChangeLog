@@ -1,6 +1,7 @@
 25dec18
    Bug in *Tsm removal
       {src64,pilos/src}/io.l
+      src/io.c
 
 24dec18
    More 'StkLimit' checks

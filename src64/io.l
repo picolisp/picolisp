@@ -1,4 +1,4 @@
-# 24dec18abu
+# 25dec18abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -5096,6 +5096,8 @@
             cmp B (char "\\")  # Backslash?
             jeq 20
             cmp B (char "\^")  # Caret?
+            jeq 20
+            cmp B (char "\"")  # Double quote?
             if eq  # Yes
 20             push A  # Save char
                ld B (char "\\")  # Escape with backslash

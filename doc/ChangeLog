@@ -1,7 +1,11 @@
+25dec18
+   Bug in *Tsm removal
+      {src64,pilos/src}/io.l
+
 24dec18
    More 'StkLimit' checks
-      {src64,pilos/io.l
-      {src64,pilos/flow.l
+      {src64,pilos/src}/io.l
+      {src64,pilos/src}/flow.l
       src64/db.l
 
 22dec18
@@ -17,8 +21,8 @@
       doc/httpGate.html
       doc/form/form.html
    Remove *Tsm functionality
-      {src64,pilos/glob.l
-      {src64,pilos/io.l
+      {src64,pilos/src}/glob.l
+      {src64,pilos/src}/io.l
       src/pico.h
       src/tab.c
       src/main.c

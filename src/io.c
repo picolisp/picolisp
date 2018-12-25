@@ -1,4 +1,4 @@
-/* 21dec18abu
+/* 25dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -2495,7 +2495,7 @@ void print1(any x) {
       else {
          Env.put('"');
          do {
-            if (c == '\\'  ||  c == '^')
+            if (c == '\\'  ||  c == '^'  ||  c == '"')
                Env.put('\\');
             else if (c == 127)
                Env.put('^'),  c = '?';

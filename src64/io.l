@@ -5049,6 +5049,7 @@
          pop X
          ret
       end
+      push Y
       call isEnvInternEX_FCE  # Internal symbol?
       if eq  # Yes
          null C  # Found in other namespace?
@@ -5126,6 +5127,7 @@
          ld B (char "\"")  # Final double quote
          call (PutB)
       end
+      pop Y
       pop X
       ret
    end

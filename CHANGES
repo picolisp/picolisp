@@ -1,6 +1,7 @@
-* XXdec18 picoLisp-18.12
+* 27dec18 picoLisp-18.12
    Wide character support
    Removed *Tsm functionality
+   Support 4th UTF-8 byte
    'create' function
    Removed java/ (use PilBox instead)
    File descriptor argument for 'wait'

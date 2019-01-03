@@ -1,4 +1,4 @@
-# 11jul18abu
+# 03jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -99,8 +99,8 @@
          Lon (*/ (+ (caadr @) (cdadr @)) 2)
          Zoom (cddr @) ) )
    (with *Top
-      (css "https://openlayers.org/en/v4.2.0/css/ol.css")
-      (javascript "https://openlayers.org/en/v4.2.0/build/ol.js"
+      (css "https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css")
+      (javascript "https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"
          "osm('map', " Lat ", " Lon ", " Zoom ", "
          (if2 Click (and Upd (: able)) 2 1 0 0) ")" )
       (=: osmClick Click) ) )

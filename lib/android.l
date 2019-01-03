@@ -1,4 +1,4 @@
-# 21nov18abu
+# 28dec18abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -95,10 +95,10 @@
 # Wake lock
 (local) [wake *Wake getSystemService newWakeLock acquire release]
 (de wake @
-   (default *Wake
+   (default *Wake  # PowerManager.WakeLock
       (java
          (java CONTEXT 'getSystemService "power")  # PowerManager
-         'newWakeLock 1 "PilWake" ) )              # PowerManager.WakeLock
+         'newWakeLock 1 "PilWake" ) )              # PARTIAL_WAKE_LOCK = 1
    (when (args)  # (wake 'flg)
       (java *Wake (if (next) 'acquire 'release)) ) )
 

@@ -1,4 +1,4 @@
-# 22dec18abu
+# 04jan19abu
 # (c) Software Lab. Alexander Burger
 
 # Line editor
@@ -273,7 +273,6 @@
          ("^U" (chgLine NIL 1))
          ("^V" (insChar (key)))
          ("^E" (and edit (edit '*History)))
-         ("^F" (saveHistory))
          ("^["
             (loop
                (NIL

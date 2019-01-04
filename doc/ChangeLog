@@ -1,3 +1,7 @@
+04jan19
+   Removed ^F "write history" command
+      lib/led.l
+
 03jan19
    OpenLayers update
       lib/gis.l

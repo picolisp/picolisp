@@ -1,5 +1,5 @@
 #!bin/picolisp lib.l
-# 15dec18abu
+# 03nov17abu
 # Use: bin/replica <port|num> <keyFile> <journal> <dbFile> <blob/app/> [dbs1 ..]
 #    : bin/ssl <host> 443 '<port|name>/!replica' <keyFile> <journal> <blob/app/> 20 [60]
 
@@ -8,10 +8,8 @@
    (bye) )
 
 (pool *Pool (mapcar format *Dbs) *Journal)
-(loop
-   (tell 'bye 2)
-   (NIL (lock))
-   (wait 200) )
+(when (lock)
+   (bye) )
 
 (load "@lib/misc.l" "@lib/http.l")
 

@@ -1,4 +1,4 @@
-# 08may16abu
+# 08jan19abu
 # (c) Software Lab. Alexander Burger
 
 (must "User Administration" UserAdmin (== *Login *ID))
@@ -23,7 +23,7 @@
          ,"Full Name" (gui '(+E/R +TextField) '(nam : home obj) 40)
          ,"Phone" (gui '(+E/R +TelField) '(tel : home obj) 40)
          ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) )
-      (gui> (: obj))
+      (gui> (: obj) This)
       (<spread> NIL (editButton T)) ) )
 
 # vi:et:ts=3:sw=3

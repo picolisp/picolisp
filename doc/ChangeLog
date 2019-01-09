@@ -1,3 +1,7 @@
+09jan19
+   Fixed 'wordFun'
+      lib/vip.l
+
 08jan19
    Pass form into 'gui>'
       lib/user.l

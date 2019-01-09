@@ -1,4 +1,4 @@
-# 16dec18abu
+# 09jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -890,19 +890,14 @@
       ((get (: buffer) (intern C))
          (move 'goAbs (default X (car @)) (cdr @)) ) ) )
 
-(de wordFun (@W)
-   (setq @W (append @W '("@Z")))
+(de wordFun (W)
+   (setq W (append W '("@Z")))
    (setq *Search
-      (curry (@W) (L C)
+      (curry (W) (L C)
          (and
             (delim? C "~")
-            (match '@W L)
-            (delim? (car "@Z") "~")
-            (not
-               (find
-                  '((C)
-                     (and (= C `(char 64)) (find delim? (val C))) )
-                  '@W ) ) ) ) ) )
+            (match W L)
+            (delim? (car "@Z") "~") ) ) ) )
 
 (de moveSearch (Fun1 Fun2)
    (move Fun1 (lit Fun2) *Cnt) )

@@ -1,9 +1,9 @@
-# 09may18abu
+# 10jan19abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
 # *Sock *Agent *ContL *ContLen *MPartLim *MPartEnd "*HtSet"
-# *Post *Url *Timeout *SesId *ConId
+# *Post *Url *Timeout *SesId *ConId *Retire
 # *Referer *Cookies "*Cookies"
 
 (default
@@ -108,7 +108,7 @@
       (task -60000 60000  X (cons Min Min Prg)
          (cond
             (*Adr (off *Adr) (set X (cadr X)))
-            ((kids) (set X (cadr X)))
+            ((diff (kids) *Retire) (set X (cadr X)))
             ((=0 (dec X)) (run (cddr X)) (bye)) ) )
       (forked) ) )
 

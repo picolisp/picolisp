@@ -1,3 +1,7 @@
+10jan19
+   '*Retire' global
+      lib/http.l
+
 09jan19
    Fixed 'wordFun'
       lib/vip.l

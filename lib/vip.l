@@ -1,4 +1,4 @@
-# 09jan19abu
+# 18jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1178,7 +1178,7 @@
                               (cmdMode) ) )
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
                         (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
-                        ((" " "^F" `(char 338)) (move 'goDown (: lines)))  # [NPAGE] Page down
+                        (("^F" `(char 338)) (move 'goDown (: lines)))  # [NPAGE] Page down
                         (("k" `(char 259)) (move 'goUp *Cnt))  # [UP] Move up
                         (("^B" `(char 339)) (move 'goUp (: lines)))  # [PPAGE] Page up
                         ("h" (move 'goLeft *Cnt))  # Move left
@@ -1211,7 +1211,7 @@
                         ("'" (jmpMark (getch) "'" 1))  # Jump to mark line
                         ("`" (jmpMark (getch) "`")) # Jump to mark position
                         ("~" (evRpt (list 'tglCase *Cnt)))  # Toggle case
-                        (":" (cmdMode (char `(char ":"))))  # Command
+                        ((":" " ") (cmdMode (char `(char ":"))))  # Command
                         ("/" (cmdMode (char `(char "/"))))  # Search forward
                         ("?" (cmdMode (char `(char "?"))))  # Search backward
                         ("&" (cmdMode (char `(char "&"))))  # Search word

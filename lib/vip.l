@@ -1,10 +1,10 @@
-# 18jan19abu
+# 19jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 (local) [
    *CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip *Lines
-   *Columns *TagStack *Spell *F10 *F11 *F12 ]
+   *Columns *TagStack *Spell *F10 *F11 *F12 *@ ]
 
 ### Curses library interface ###
 (local) curses
@@ -178,7 +178,7 @@
    goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
    paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
    move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
-   shell shFile prCmd reset command vi ]
+   shell shFile prCmd evCmd reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -995,6 +995,16 @@
       (paste (cons T L) T)
       (inc (:: posY) (dec (length L))) ) )
 
+(de evCmd Prg
+   (out (tmp "repl")
+      (err NIL
+         (catch '(NIL)
+            (setq @ *@  *@ (run Prg) *Msg)
+            (println '-> *@) ) )
+      (and *Msg (prinl @)) )
+   (in (tmp "repl")
+      (prCmd (rdLines)) ) )
+
 (de reset ()
    (off *Count *Change)
    (setq *Clip '\"\") )
@@ -1017,10 +1027,7 @@
                (setq Line (pack (clip Line)))
                (case C
                   (" "  # Eval
-                     (out (tmp "repl")
-                        (println '-> (run (str (pack Line)))) )
-                     (in (tmp "repl")
-                        (prCmd (rdLines)) ) )
+                     (evCmd (run (str (pack Line)))) )
                   ("!"  # External filter
                      (when Line
                         (if (=0 Cnt)
@@ -1339,7 +1346,7 @@
                            (nextBuf) )
                         (`(char (+ 264 7))  # [F7] Load file
                            (let? F (fName (: buffer file))
-                              (and (info F) (catch '(NIL) (load F))) ) )
+                              (evCmd (load F)) ) )
                         ## (`(char (+ 264 8)) ())  # [F8]
                         ## (`(char (+ 264 9)) ())  # [F9]
                         (`(char (+ 264 10)) (run *F10))  # [F10] Custom key

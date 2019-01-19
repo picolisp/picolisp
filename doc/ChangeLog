@@ -1,3 +1,7 @@
+19jan19
+   Redirect 'err' in 'command' eval and F7
+      lib/vip.l
+
 18jan19
    <space> does ":" (instead of scroll down)
       lib/vip.l

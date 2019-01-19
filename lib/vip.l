@@ -109,7 +109,7 @@
                                  (set (++ L) (inc 'N)) )
                               'comment ) ) ) ) ) ) ) ) ) )
 
-(dm load> ()
+(dm load> (Win)
    (markup
       (=: text
          (let? File (fName (: file))
@@ -134,7 +134,7 @@
    (=: undo (=: redo (=: dirt)))
    (=: pos (min1 (: pos) (length (: text)))) )
 
-(dm save> ()
+(dm save> (Win)
    (when (fName (: file))
       (unless (=T (car (info @)))
          (if (sys "CCRYPT" (: key))
@@ -355,14 +355,14 @@
                (=: last (: buffer))
                (=: buffer (fileBuffer File)) )
             (unmark) ) )
-      (load> (: buffer))
+      (load> (: buffer) This)
       (goto 1 (or N (: buffer pos)) T)
       (repaint) ) )
 
 (de done (Flg)
    (when Flg
       (unless (= (: buffer undo) (: buffer dirt))
-         (save> (: buffer)) ) )
+         (save> (: buffer) This) ) )
    (unmark)
    (nond
       ((; *CmdWin next next) (throw 'done Flg))
@@ -975,7 +975,7 @@
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
       (unmark)
       (unless (: buffer text)
-         (load> (: buffer)) )
+         (load> (: buffer) This) )
       (goto 1 (: buffer pos) T) ) )
 
 (de shell (S)
@@ -1068,7 +1068,7 @@
                      (if Line
                         (out (fName (rplFile @))
                            (mapc prinl (: buffer text)) )
-                        (save> (: buffer)) ) )
+                        (save> (: buffer) This) ) )
                   ("x" (done T))  # (Exit) Save buffer and close window
                   ("q" (done))  # (Quit) Close window
                   ("bx"  # Buffer exchange
@@ -1130,15 +1130,15 @@
       (setq *CmdWin
          (new '(+Window) (new '(+Buffer)) (dec *Lines) 1 1 1 1 1) )
       (with (car *Buffers)
-         (load> This)
-         (new '(+Window) This
-            0 (dec *Lines)
-            1
-            (min1
-               (- (: pos) (/ (- *Lines 2) 2))
-               (- (length (: text)) *Lines -3) )
-            1 (: pos)
-            *CmdWin ) )
+         (load> This
+            (new '(+Window) This
+               0 (dec *Lines)
+               1
+               (min1
+                  (- (: pos) (/ (- *Lines 2) 2))
+                  (- (length (: text)) *Lines -3) )
+               1 (: pos)
+               *CmdWin ) ) )
       (with (setq *Window (; *CmdWin next)) (redraw))
       (catch 'done
          (loop

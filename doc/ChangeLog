@@ -1,3 +1,7 @@
+20jan19
+   Fix pass window to 'load>'
+      lib/vip.l
+
 19jan19
    Pass window to 'load>' and 'save>'
    Redirect 'err' in 'command' eval and F7

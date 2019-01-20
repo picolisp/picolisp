@@ -1,4 +1,4 @@
-# 19jan19abu
+# 20jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1130,15 +1130,15 @@
       (setq *CmdWin
          (new '(+Window) (new '(+Buffer)) (dec *Lines) 1 1 1 1 1) )
       (with (car *Buffers)
-         (load> This
-            (new '(+Window) This
-               0 (dec *Lines)
-               1
-               (min1
-                  (- (: pos) (/ (- *Lines 2) 2))
-                  (- (length (: text)) *Lines -3) )
-               1 (: pos)
-               *CmdWin ) ) )
+         (load> This)
+         (new '(+Window) This
+            0 (dec *Lines)
+            1
+            (min1
+               (- (: pos) (/ (- *Lines 2) 2))
+               (- (length (: text)) *Lines -3) )
+            1 (: pos)
+            *CmdWin ) )
       (with (setq *Window (; *CmdWin next)) (redraw))
       (catch 'done
          (loop

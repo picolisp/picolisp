@@ -1,4 +1,5 @@
 20jan19
+   'dirty>' buffer method
    Fix pass window to 'load>'
       lib/vip.l
 

@@ -18,8 +18,8 @@
 
 ### VIP Editor ###
 (local) [
-   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup load> save>
-   status ]
+   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup
+   dirty> load> save> status ]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -108,6 +108,9 @@
                                  (= "{" (car L))
                                  (set (++ L) (inc 'N)) )
                               'comment ) ) ) ) ) ) ) ) ) )
+
+(dm dirty> (Win)
+   (<> (: undo) (: dirt)) )
 
 (dm load> (Win)
    (markup
@@ -238,7 +241,7 @@
                   (length *Buffers)
                   " "
                   (: buffer file)
-                  (unless (= (: buffer undo) (: buffer dirt)) " [+]") )
+                  (and (dirty> (: buffer) This) " [+]") )
                Z (pack
                   (: mark)
                   " "
@@ -360,9 +363,9 @@
       (repaint) ) )
 
 (de done (Flg)
-   (when Flg
-      (unless (= (: buffer undo) (: buffer dirt))
-         (save> (: buffer) This) ) )
+   (and Flg
+      (dirty> (: buffer) This)
+      (save> (: buffer) This) )
    (unmark)
    (nond
       ((; *CmdWin next next) (throw 'done Flg))

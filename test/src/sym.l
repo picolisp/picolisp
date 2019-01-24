@@ -1,4 +1,4 @@
-# 22apr18abu
+# 24jan19abu
 # (c) Software Lab. Alexander Burger
 
 ### name ###
@@ -164,7 +164,7 @@
 ### set ###
 (use L
    (test '(a b c) (set 'L '(a b c)))
-   (test 999 (set (cdr L) '999))
+   (test 999 (set (cdr L) 999))
    (test '(a 999 c) L) )
 
 

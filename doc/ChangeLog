@@ -1,3 +1,7 @@
+24jan19
+   Minor fix (Mike Pechkin)
+      test/src/sym.l
+
 20jan19
    'dirty>' buffer method
    Fix pass window to 'load>'

@@ -1,4 +1,4 @@
-# 20jan19abu
+# 24jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -135,7 +135,11 @@
                         (rdLines) )
                      (in File (rdLines)) ) ) ) ) ) )
    (=: undo (=: redo (=: dirt)))
-   (=: pos (min1 (: pos) (length (: text)))) )
+   (=: pos (min1 (: pos) (length (: text))))
+   (and
+      (head '`(chop "# VIP ") (: text 1))
+      (clip (: text 1 -6))
+      (load (pack @)) ) )
 
 (dm save> (Win)
    (when (fName (: file))

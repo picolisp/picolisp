@@ -1,4 +1,6 @@
 24jan19
+   Auto-load "# VIP " in first line
+      lib/vip.l
    Minor fixes (Mike Pechkin)
       doc/faq.html
       test/src/sym.l

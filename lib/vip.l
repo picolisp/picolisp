@@ -19,7 +19,7 @@
 ### VIP Editor ###
 (local) [
    *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup
-   evCmd dirty> load> save> status ]
+   undo redo evCmd dirty> load> save> status ]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -120,13 +120,13 @@
                (if (=T (car I))
                   (let D (chop File)
                      (unless (= "/" (last D))
-                        (conc D (list (char `(char "/")))) )
+                        (conc D (list (name "/"))) )
                      (mapcar
                         '((F)
                            (conc
                               (chop (setq F (pack D F)))
                               (when (=T (car (info F)))
-                                 (list (char `(char "/"))) ) ) )
+                                 (list (name "/")) ) ) )
                         (sort (dir File)) ) )
                   (gc (+ 4 (*/ (car I) 65536)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
@@ -180,12 +180,12 @@
 
 (local) [
    min1 beep delwin cursor addLine chgLine unmark redraw repaint scroll goto
-   chgwin eqwin getch getch2 reload done change undo redo jmp@@ cnt@@ goCol
-   goLeft goRight goUp goDown goAbs goFind word lword end lend getWord _forward
-   goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
-   paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
-   move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
-   shell shFile prCmd reset command vi ]
+   chgwin eqwin getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight
+   goUp goDown goAbs goFind word lword end lend getWord _forward goForward
+   _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
+   tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move
+   chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell
+   shFile prCmd reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -592,7 +592,7 @@
          (do N
             (when (car P)
                (if Flg
-                  (do 3 (push P (char 32)))
+                  (do 3 (push P (name " ")))
                   (do 3
                      (NIL (sp? (caar P)))
                      (pop P) ) ) )
@@ -610,7 +610,7 @@
             (let (N (*/ (offset @ (trim (car P))) 3)  Sup N)
                (set P @)
                (loop
-                  (do (* N 3) (push P (char 32)))
+                  (do (* N 3) (push P (name " ")))
                   (for C (car P)
                      (unless (val C)
                         (case C
@@ -707,7 +707,7 @@
          (set Pos
             (append
                (car Pos)
-               (cons (char 32) (clip (cadr Pos))) ) )
+               (cons (name " ") (clip (cadr Pos))) ) )
          (con Pos (cddr Pos)) )
       T ) )
 
@@ -750,7 +750,7 @@
                            (need
                               (if (= `(char "0") (char S)) (length S) 1)
                               (chop (max 0 (+ Cnt (format S))))
-                              (char `(char "0")) )
+                              (name "0") )
                            (tail (- (: posX)) L) ) ) )
                   (length L) ) ) ) ) ) )
 
@@ -814,7 +814,7 @@
                            (setq S
                               (make
                                  (do (- 3 (% (dec (: posX)) 3))
-                                    (link (char 32)) ) ) ) )
+                                    (link (name " ")) ) ) ) )
                         (NIL
                            (default *Complete
                               (conc
@@ -1225,10 +1225,10 @@
                         ("'" (jmpMark (getch) "'" 1))  # Jump to mark line
                         ("`" (jmpMark (getch) "`")) # Jump to mark position
                         ("~" (evRpt (list 'tglCase *Cnt)))  # Toggle case
-                        ((":" " ") (cmdMode (char `(char ":"))))  # Command
-                        ("/" (cmdMode (char `(char "/"))))  # Search forward
-                        ("?" (cmdMode (char `(char "?"))))  # Search backward
-                        ("&" (cmdMode (char `(char "&"))))  # Search word
+                        ((":" " ") (cmdMode (name ":")))  # Command
+                        ("/" (cmdMode (name "/")))  # Search forward
+                        ("?" (cmdMode (name "?")))  # Search backward
+                        ("&" (cmdMode (name "&")))  # Search word
                         ("n"  # Search next
                            (if *Search
                               (move 'goForward (lit @) *Cnt)

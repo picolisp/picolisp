@@ -1,4 +1,5 @@
 25jan19
+   Minor tuning
    Auto-load "# VIP " in first line
       lib/vip.l
 

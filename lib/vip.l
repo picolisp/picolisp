@@ -1,4 +1,4 @@
-# 24jan19abu
+# 25jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -19,7 +19,7 @@
 ### VIP Editor ###
 (local) [
    *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup
-   dirty> load> save> status ]
+   evCmd dirty> load> save> status ]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -139,7 +139,7 @@
    (and
       (head '`(chop "# VIP ") (: text 1))
       (clip (: text 1 -6))
-      (load (pack @)) ) )
+      (evCmd (load (pack @))) ) )
 
 (dm save> (Win)
    (when (fName (: file))
@@ -185,7 +185,7 @@
    goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
    paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
    move chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf
-   shell shFile prCmd evCmd reset command vi ]
+   shell shFile prCmd reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
@@ -999,14 +999,14 @@
 
 (de prCmd (L)
    (with *CmdWin
-      (paste (cons T L) T)
+      (paste (cons T L) (: buffer text))
       (inc (:: posY) (dec (length L))) ) )
 
 (de evCmd Prg
    (out (tmp "repl")
       (err NIL
          (catch '(NIL)
-            (setq @ *@  *@ (run Prg) *Msg)
+            (setq @ *@  *@ (run Prg 1) *Msg)
             (println '-> *@) ) )
       (and *Msg (prinl @)) )
    (in (tmp "repl")

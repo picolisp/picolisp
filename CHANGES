@@ -1,4 +1,6 @@
 * NNjun19 picoLisp-19.6
+   Bug in 'tzo'
+   '*Retire' global variable
 
 * 27dec18 picoLisp-18.12
    Wide character support

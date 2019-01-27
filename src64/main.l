@@ -1,4 +1,4 @@
-# 18dec18abu
+# 27jan19abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -666,7 +666,7 @@
       eval  # Eval new byte
       cnt E  #  # Short number?
       jz cntErrEX  # No
-      ld A E  # Normalize into A 
+      ld A E  # Normalize into A
       shr A 4
       ld (Z) B  # Store new byte
    end
@@ -3047,9 +3047,17 @@
 (code 'doTzo 2)
    cc localtime(Tv)  # (Any) time to local time
    ld4 (A TM_GMTOFF)  # Time offset in seconds east of GMT
-   ld E A
-   shl E 4  # Make short number
-   or E CNT
+   nul4  # Positive?
+   if ns  # Yes
+      ld E A
+      shl E 4  # Make short number
+      or E CNT
+   else
+      ld E (hex "80000000")
+      sub E A  # Negate
+      shl E 4  # Make negative short number
+      or E (| SIGN CNT)
+   end
    ret
 
 # (usec ['flg]) -> num

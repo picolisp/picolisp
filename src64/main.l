@@ -1992,17 +1992,7 @@
             end
             ld E (hex "FFFFFFFF")  # Sign-extend integer
             and E A  # into E
-            ld A (hex "80000000")
-            xor E A
-            sub E A  # Negative?
-            if ns  # No
-               shl E 4  # Make short number
-               or E CNT
-            else
-               neg E  # Negate
-               shl E 4  # Make negative short number
-               or E (| SIGN CNT)
-            end
+            call box4_E  # Sign-extend
          else
             cmp E NSym  # 'N'?
             if eq  # Yes
@@ -2605,6 +2595,20 @@
    or E SIGN  # Set negative
    ret
 
+(code 'box4_E 0)
+   ld A (hex "80000000")
+   xor E A
+   sub E A  # Negative?
+   if ns  # No
+      shl E 4  # Make short number
+      or E CNT
+      ret
+   end
+   neg E  # Negate
+   shl E 4  # Make negative short number
+   or E (| SIGN CNT)
+   ret
+
 (code 'putStringB 0)
    push X
    push C
@@ -3047,18 +3051,8 @@
 (code 'doTzo 2)
    cc localtime(Tv)  # (Any) time to local time
    ld4 (A TM_GMTOFF)  # Time offset in seconds east of GMT
-   nul4  # Positive?
-   if ns  # Yes
-      ld E A
-      shl E 4  # Make short number
-      or E CNT
-   else
-      ld E (hex "80000000")
-      sub E A  # Negate
-      shl E 4  # Make negative short number
-      or E (| SIGN CNT)
-   end
-   ret
+   ld E A  # into E
+   jmp box4_E  # Sign-extend
 
 # (usec ['flg]) -> num
 (code 'doUsec 2)

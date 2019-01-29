@@ -1,4 +1,4 @@
-# 15jul05abu
+# 29jan19abu
 # (c) Software Lab. Alexander Burger
 
 ### Import Parsing ###
@@ -18,10 +18,10 @@
       (split (clip (get Lst N)) " ") ) )
 
 (de getNum (N Lst)
-   (format (getStr N Lst)) )
+   (format (trim (get Lst N))) )
 
 (de getFlt (P N Lst)
-   (format (getStr N Lst) P *Sep0 *Sep3) )
+   (format (trim (get Lst N)) P *Sep0 *Sep3) )
 
 (de getDat (L Lst)
    (date

@@ -1,7 +1,11 @@
+29jan19
+   Minor tuning
+      lib/import.l
+
 27jan19
    Bug in 'tzo' for negative offsets (Rick Hanson)
       src64/main.l
-   
+
 26jan19
    "See also" link to 'set'
       doc/refC.html

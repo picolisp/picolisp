@@ -1,3 +1,9 @@
+30jan19
+   Change to ld4/st4 in errno_A/errnoC
+      src64/sys/x86-64.freeBsd.code.l
+      src64/sys/x86-64.openBsd.code.l
+      src64/sys/x86-64.sunOs.code.l
+
 29jan19
    Minor tuning
       lib/import.l

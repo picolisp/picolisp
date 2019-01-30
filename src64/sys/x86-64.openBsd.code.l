@@ -1,16 +1,17 @@
-# 23mar16abu
+# 30jan19abu
 # Mansur Mamkin <mmamkin@mail.ru>
 # Modified by Alexander Shendi <Alexander.Shendi@web.de>
 
 # System macros
 (code 'errno_A 0)
    call __errno  # Get address of 'errno'
-   ld A (A)  # Load value
+   ld4 (A)  # Load value
    ret
 
 (code 'errnoC 0)
    call __errno  # Get address of 'errno'
-   ld (A) C  # Store new value
+   xchg A C
+   st4 (C)  # Store new value
    ret
 
 #define>_WSTATUS(x)<--->(_W_INT(x) & 0177)

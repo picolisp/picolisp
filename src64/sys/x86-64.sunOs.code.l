@@ -1,16 +1,17 @@
-# 19may10
+# 30jan19
 # zonick <nikolai@zobnin.ru>
 # (c) Software Lab. Alexander Burger
 
 # System macros
 (code 'errno_A 0)
    call ___errno  # Get address of 'errno'
-   ld A (A)  # Load value
+   ld4 (A)  # Load value
    ret
 
 (code 'errnoC 0)
    call ___errno  # Get address of 'errno'
-   ld (A) C  # Store new value
+   xchg A C
+   st4 (C)  # Store new value
    ret
 
 (code 'wifstoppedS_F 0)  # WIFSTOPPED

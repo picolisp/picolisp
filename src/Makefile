@@ -1,4 +1,4 @@
-# 04oct17abu
+# 30jan19abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -42,10 +42,10 @@ ifeq ($(shell uname), FreeBSD)
 	OS = FreeBSD
 	CC = gcc
 	CCLD = clang
-	CFLAGS += ${M32}
+	CFLAGS += ${M32} -fPIC
 	PICOLISP-FLAGS = ${M32} -rdynamic
 	LIB-FLAGS = -lm
-	DYNAMIC-LIB-FLAGS = ${M32} -shared -export-dynamic
+	DYNAMIC-LIB-FLAGS = ${M32} -shared
 	LCRYPT = -lcrypt
 	STRIP = strip
 else

@@ -1,4 +1,4 @@
-# 07jan17abu
+# 30jan19abu
 # Mansur Mamkin <mmamkin@mail.ru>
 
 # errno
@@ -57,10 +57,10 @@
 (equ O_ASYNC 64)
 
 # stat
-(equ STAT 120)
-(equ ST_MODE 8)
-(equ ST_SIZE 72)
-(equ ST_MTIME 40)
+(equ STAT 224)
+(equ ST_MODE 24)
+(equ ST_SIZE 112)
+(equ ST_MTIME 64)
 (equ S_IFMT  (oct "170000"))
 (equ S_IFREG (oct "100000"))
 (equ S_IFDIR (oct "40000"))
@@ -126,7 +126,7 @@
 (equ TM_GMTOFF 40)
 
 # dir
-(equ D_NAME 8)
+(equ D_NAME 24)
 
 # Sockets
 (equ SOCK_STREAM 1)

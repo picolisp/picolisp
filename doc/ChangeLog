@@ -1,4 +1,7 @@
 30jan19
+   Fixes for F12
+      src/Makefile
+      src64/sys/x86-64.freeBsd.defs.l
    Change to ld4/st4 in errno_A/errnoC
       src64/sys/x86-64.freeBsd.code.l
       src64/sys/x86-64.openBsd.code.l

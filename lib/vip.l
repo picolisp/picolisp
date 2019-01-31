@@ -1,4 +1,4 @@
-# 25jan19abu
+# 31jan19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -78,8 +78,10 @@
                         (when (= "{" (car L))
                            (set (++ L) (inc 'N)) ) )
                      (text 'text
-                        (set (setq P C))
-                        (and (= "\\" C) L (set (++ L))) )
+                        (or
+                           (set (setq P C)
+                              (and (= " " C) (not L)) )
+                           (and (= "\\" C) L (set (++ L))) ) )
                      (string (and (= "\"" C) 'text)
                         (set (setq P C) 0) )
                      (string (and (= "\\" C) (not L) 'skip)

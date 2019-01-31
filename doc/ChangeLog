@@ -1,3 +1,7 @@
+31jan19
+   Mark trailing space
+      lib/vip.l
+
 30jan19
    Fixes for F12
       src/Makefile

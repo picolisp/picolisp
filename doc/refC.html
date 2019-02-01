@@ -827,7 +827,9 @@ href="refR.html#raw">raw</a></code>.
 <code>lst</code> that is a <code><a href="refP.html#pat?">pat?</a></code> symbol
 is substituted inside <code>fun</code> by its value. All other symbols in
 <code>lst</code> are collected into a <code><a
-href="refJ.html#job">job</a></code> environment.
+href="refJ.html#job">job</a></code> environment. <code>curry</code> is a general
+higher-order function, not limited to strict currying (which generates only
+single-argument functions).
 
 <pre><code>
 : (de multiplier (@X)

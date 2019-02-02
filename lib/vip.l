@@ -1,4 +1,4 @@
-# 01feb19abu
+# 02feb19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -18,7 +18,7 @@
 
 ### VIP Editor ###
 (local) [
-   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup beep
+   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup min1 beep
    undo redo evCmd dirty> load> save> view> status ]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
@@ -111,6 +111,9 @@
                                  (set (++ L) (inc 'N)) )
                               'comment ) ) ) ) ) ) ) ) ) )
 
+(de min1 (A B)
+   (max 1 (min A B)) )
+
 (de beep ()
    (curses "beep") )
 
@@ -190,16 +193,13 @@
 
 
 (local) [
-   min1 delwin cursor addLine chgLine unmark redraw repaint scroll goto
-   chgwin eqwin getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight
-   goUp goDown goAbs goFind word lword end lend getWord _forward goForward
-   _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
-   tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move
-   chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf
-   shell shFile prCmd reset command vi ]
-
-(de min1 (A B)
-   (max 1 (min A B)) )
+   delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin eqwin
+   getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight goUp goDown
+   goAbs goFind word lword end lend getWord _forward goForward _backward
+   goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
+   insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight
+   jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf shell shFile
+   prCmd reset command vi ]
 
 (de delwin ()
    (when (=: prev next (: next))

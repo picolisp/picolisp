@@ -1,4 +1,4 @@
-# 31jan19abu
+# 01feb19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -18,8 +18,8 @@
 
 ### VIP Editor ###
 (local) [
-   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup
-   undo redo evCmd dirty> load> save> status ]
+   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup beep
+   undo redo evCmd dirty> load> save> view> status ]
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -111,6 +111,9 @@
                                  (set (++ L) (inc 'N)) )
                               'comment ) ) ) ) ) ) ) ) ) )
 
+(de beep ()
+   (curses "beep") )
+
 (dm dirty> (Win)
    (<> (: undo) (: dirt)) )
 
@@ -156,6 +159,9 @@
       (for (This *CmdWin (setq This (: next)))
          (status) ) ) )
 
+(dm view> (Win)
+   (beep) )
+
 
 (local) [*Window +Window]
 (class +Window)
@@ -179,21 +185,21 @@
    (=: posY PosY)
    (=: mark Mark) )
 
+(dm view> ()
+   (view> (: buffer) This) )
+
 
 (local) [
-   min1 beep delwin cursor addLine chgLine unmark redraw repaint scroll goto
+   min1 delwin cursor addLine chgLine unmark redraw repaint scroll goto
    chgwin eqwin getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight
    goUp goDown goAbs goFind word lword end lend getWord _forward goForward
    _backward goBackward goPFore goPBack shift shiftY indent cutX cutN paste join
    tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move
-   chgRight jmpMark wordFun moveSearch patMatch parMatch pipeN nextBuf shell
-   shFile prCmd reset command vi ]
+   chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf
+   shell shFile prCmd reset command vi ]
 
 (de min1 (A B)
    (max 1 (min A B)) )
-
-(de beep ()
-   (curses "beep") )
 
 (de delwin ()
    (when (=: prev next (: next))
@@ -927,6 +933,22 @@
                   (curry (@Pat) (L C)
                      (unless C (match '@Pat L)) ) ) ) ) ) ) )
 
+(de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
+   (moveSearch Fun1
+      (let (Par @Par1  Sup @Sup1)
+         (curry (Par Sup @Par1 @Sup1 @ParO @ParC @SupO @SupC) (L C)
+            (unless (caar L)
+               (and
+                  (case (car L)
+                     (@ParO (nil (inc 'Par)))
+                     (@ParC (or (not C) (= (dec 'Par) 0 Sup)))
+                     (@SupO (nil (push 'Sup Par) (zero Par)))
+                     (@SupC
+                        (or
+                           (not C)
+                           (= (setq Par (++ Sup)) 0 Sup) ) ) )
+                  (setq Par @Par1  Sup @Sup1) ) ) ) ) ) )
+
 (de *Spell
    "hunspell" "-l" "-d" "en_US,de_DE" )
 
@@ -948,22 +970,6 @@
                   (not (fold C))
                   (match '@W L)
                   (not (fold (car "@Z"))) ) ) ) ) ) )
-
-(de parMatch (Fun1 @Par1 @Sup1 @ParO @ParC @SupO @SupC)
-   (moveSearch Fun1
-      (let (Par @Par1  Sup @Sup1)
-         (curry (Par Sup @Par1 @Sup1 @ParO @ParC @SupO @SupC) (L C)
-            (unless (caar L)
-               (and
-                  (case (car L)
-                     (@ParO (nil (inc 'Par)))
-                     (@ParC (or (not C) (= (dec 'Par) 0 Sup)))
-                     (@SupO (nil (push 'Sup Par) (zero Par)))
-                     (@SupC
-                        (or
-                           (not C)
-                           (= (setq Par (++ Sup)) 0 Sup) ) ) )
-                  (setq Par @Par1  Sup @Sup1) ) ) ) ) ) )
 
 (de pipeN (Cnt Line)
    (evRpt
@@ -1366,7 +1372,6 @@
                               (if *Count
                                  (get *Buffers (format @))
                                  (or (: last) (car *Buffers)) ) ) )
-                        ("z" (spell))
                         (("q" "^W")  # ["Window" prefix]
                            (case (getch)
                               ("s"  # [qs] Split window
@@ -1396,6 +1401,8 @@
                               ("j" (and (: prev) (setq *Window @)))  # [qj] Below window
                               ("q" (done))  # [qq] (Quit) Close window
                               (T (beep)) ) )
+                        ("v" (view> This))  # View hook
+                        ("z" (spell))
                         ("Z" (done T))
                         (T (beep)) )
                      (reset) ) ) ) ) ) ) )

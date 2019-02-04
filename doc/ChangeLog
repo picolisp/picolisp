@@ -1,3 +1,7 @@
+04feb19
+   Set document.title in 'serverSentEvent'
+      lib/xhtml.l
+
 02feb19
    "v" view hook
       lib/vip.l

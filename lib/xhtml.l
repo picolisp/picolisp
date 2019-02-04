@@ -1,4 +1,4 @@
-# 25oct18abu
+# 04feb19abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -141,9 +141,9 @@
    (<javascript>
       "(new EventSource(SesId+'!ssEvt?'+'"
       Id
-      "')).onmessage = function(ev) {document.getElementById('"
+      "')).onmessage = function(ev) {if (ev.data.charAt(0) == '&') document.title = ev.data.substr(1); else document.getElementById('"
       Id
-      "').innerHTML = ev.data}" )
+      "').innerHTML = ev.data;}" )
    (if (assoc Id *SsEvts)
       (con @ (cons Var (unless (val Var) Prg)))
       (push '*SsEvts (cons Id Var Prg)) ) )

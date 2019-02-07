@@ -312,9 +312,7 @@ thereafter). In the first form, <code>pipe</code> just returns a file descriptor
 to write to the standard input and read from the standard output of that
 process. In the second form, it opens the standard output of that process as
 input channel during the execution of <code>prg</code>. The current input
-channel will be saved and restored appropriately, and the (system dependent)
-exit status code of the child process is stored in the global variable <code><a
-href="ref_.html#@@">@@</a></code>. See also <code><a
+channel will be saved and restored appropriately. See also <code><a
 href="refL.html#later">later</a></code>, <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a
 href="refI.html#in">in</a></code> and <code><a

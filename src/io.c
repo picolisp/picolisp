@@ -1,4 +1,4 @@
-/* 07feb19abu
+/* 25dec18abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -943,17 +943,13 @@ void pushCtlFiles(ctlFrame *f) {
 void popInFiles(void) {
    if (Env.inFrames->pid) {
       close(Env.inFrames->fd),  closeInFile(Env.inFrames->fd);
-      if (Env.inFrames->pid > 1) {
-         int res;
-
-         while (waitpid(Env.inFrames->pid, &res, 0) < 0) {
+      if (Env.inFrames->pid > 1)
+         while (waitpid(Env.inFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr();
             if (*Signal)
                sighandler(NULL);
          }
-         val(At2) = box(res+res);
-      }
    }
    else if (InFile)
       InFile->next = Chr;
@@ -967,17 +963,13 @@ void popOutFiles(void) {
    flush(OutFile);
    if (Env.outFrames->pid) {
       close(Env.outFrames->fd),  closeOutFile(Env.outFrames->fd);
-      if (Env.outFrames->pid > 1) {
-         int res;
-
-         while (waitpid(Env.outFrames->pid, &res, 0) < 0) {
+      if (Env.outFrames->pid > 1)
+         while (waitpid(Env.outFrames->pid, NULL, 0) < 0) {
             if (errno != EINTR)
                closeErr();
             if (*Signal)
                sighandler(NULL);
          }
-         val(At2) = box(res+res);
-      }
    }
    Env.put = Env.outFrames->put;
    OutFile = OutFiles[(Env.outFrames = Env.outFrames->link)? Env.outFrames->fd : STDOUT_FILENO];

@@ -1,11 +1,3 @@
-07feb19
-   'in', 'out', 'pipe' and 'load' pipe exit status code in '@@'
-      src64/io.l
-      src/io.c
-      doc/refI.html
-      doc/refO.html
-      doc/refP.html
-
 04feb19
    Set document.title in 'serverSentEvent'
       lib/xhtml.l

@@ -1,4 +1,5 @@
 * NNjun19 picoLisp-19.6
+   'in', 'out', 'pipe' and 'load' pipe exit status code in '@@'
    Bug in 'tzo'
    '*Retire' global variable
 

@@ -1,4 +1,4 @@
-# 25dec18abu
+# 07feb19abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -185,8 +185,9 @@
 (code 'waitFileC 0)
    cmp (C II) 1  # 'pid' > 1?
    if gt  # Yes
+      sub S I  # Result buffer
       do
-         cc waitpid((C II) 0 0)  # Wait for pipe process
+         cc waitpid((C II) S 0)  # Wait for pipe process
          nul4  # OK?
       while s  # No
          call errno_A
@@ -197,6 +198,11 @@
             call sighandler0
          end
       loop
+      ld4 (S)  # Result?
+      shl A 4  # Make short number
+      or A CNT
+      ld (At2) A  # Exit status in '@@'
+      add S I  # Drop result
    end
    ret
 

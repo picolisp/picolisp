@@ -194,7 +194,9 @@ the argument is a symbol, it is used as a file name (opened for reading
 positive number, it is used as the descriptor of an open file. If it is a
 negative number, the saved input channel such many levels above the current one
 is used. Otherwise (if it is a list), it is taken as a command with arguments,
-and a pipe is opened for input. See also <code><a
+and a pipe is opened for input. The (system dependent) exit status code of the
+child process is stored in the global variable <code><a
+href="ref_.html#@@">@@</a></code>. See also <code><a
 href="refI.html#ipid">ipid</a></code>, <code><a
 href="refC.html#call">call</a></code>, <code><a
 href="refL.html#load">load</a></code>, <code><a

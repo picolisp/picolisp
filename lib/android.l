@@ -1,4 +1,4 @@
-# 28dec18abu
+# 11feb19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -17,11 +17,13 @@
 
 # (boss 'sym ['any ..])
 (local) boss
+
 (de boss @
    (out "BOSS" (pr (rest))) )
 
 # Android Context
 (local) CONTEXT
+
 (de CONTEXT . {OOOO40000000000})
 
 # Java I/O
@@ -33,7 +35,8 @@
 # (java T "cls" ["cls" ..]) -> obj         Define interface
 # (java 'obj) -> [lst ..]                  Reflect object
 # (java "cls") -> cls                      Get class
-(local) [java1 java *Java *Lisp null]
+(local) (java1 java *Java *Lisp null)
+
 (de java1 ()
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))
@@ -64,14 +67,16 @@
          (rd) ) ) )
 
 # Android device ID
-(local) [dev getString getContentResolver]
+(local) (dev getString getContentResolver)
+
 (de dev ()
    (java "android.provider.Settings$Secure" 'getString
       (java CONTEXT 'getContentResolver)
       "android_id" ) )
 
 # Push-Load
-(local) [loadTxt loadData loadUrl]
+(local) (runOnUiThread loadTxt loadData loadUrl)
+
 (de loadTxt @
    (java (; CONTEXT GUI) 'runOnUiThread
       (java (; CONTEXT GUI PilView) 0 'loadData
@@ -84,7 +89,8 @@
       (java (; CONTEXT GUI PilView) 0 'loadUrl (pass pack)) ) )
 
 # Clear WebView history and cache
-(local) [clearHistory clearCache]
+(local) (clearHistory clearCache)
+
 (de clearHistory ()
    (java CONTEXT 'clearHistory) )
 
@@ -93,7 +99,8 @@
       (java (; CONTEXT GUI PilView) 0 'clearCache T) ) )
 
 # Wake lock
-(local) [wake *Wake getSystemService newWakeLock acquire release]
+(local) (wake *Wake getSystemService newWakeLock acquire release)
+
 (de wake @
    (default *Wake  # PowerManager.WakeLock
       (java
@@ -103,7 +110,8 @@
       (java *Wake (if (next) 'acquire 'release)) ) )
 
 # Check if WIFI is active
-(local) [getActiveNetworkInfo getType]
+(local) (getActiveNetworkInfo getType)
+
 (de wifi? ()
    (and
       (java
@@ -112,7 +120,8 @@
       (=1 (java @ 'getType)) ) )  # onnectivityManager.TYPE_WIFI
 
 # Generate file content URI
-(local) [fileUri getUriForFile getPackageName]
+(local) (fileUri getUriForFile getPackageName)
+
 (de fileUri (File)
    (java "android.support.v4.content.FileProvider" 'getUriForFile
       CONTEXT
@@ -120,13 +129,15 @@
       (java "java.io.File" T File) ) )
 
 # Update APK
-(local) [update? getInt]
+(local) (update? getInt)
+
 (de update? ()
    (gt0  # (java (java CONTEXT 'getPackageManager) 'canRequestPackageInstalls)
       (java "android.provider.Settings$Secure" 'getInt
          (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
 
-(local) [update startActivity setFlags setData fromFile]
+(local) (update startActivity setFlags setData fromFile)
+
 (de update (File)
    (java (; CONTEXT GUI) 'startActivity
       (prog1
@@ -136,14 +147,15 @@
 
 # Toast
 (local) toast
+
 (de toast (X . @)
    (java CONTEXT 'toast (pass pack X))
    X )
 
 # Notification
-(local) [
-   notify cancel setSmallIcon setContentTitle setContentText setAutoCancel
-   setLights setAction putExtra setContentIntent getActivity build ]
+(local) (notify cancel setSmallIcon setContentTitle setContentText setAutoCancel
+setLights setAction putExtra setContentIntent getActivity build)
+
 (de notify (Id Ttl Msg File)
    (let N (java CONTEXT 'getSystemService "notification")  # NotificationManager
       (ifn Ttl
@@ -167,7 +179,8 @@
                (java N 'notify Id @) ) ) ) ) )
 
 # Service foreground state
-(local) [startForeground stopForeground]
+(local) (startForeground stopForeground)
+
 (de startForeground (Ttl Msg)
    (java CONTEXT 'startForeground 1
       (notify 1 Ttl Msg) ) )
@@ -176,9 +189,9 @@
    (java CONTEXT 'stopForeground T) )
 
 # Start Activity for a result
-(local) [
-   startActivityForResult *ResultProxy *ProxyResults resolveActivity
-   getPackageManager setResultProxy good bad ]
+(local) (startActivityForResult *ResultProxy *ProxyResults resolveActivity
+getPackageManager setResultProxy good bad)
+
 (de startActivityForResult (Fun Action . @)
    (let Intent (java "android.content.Intent" T Action)
       (when (java Intent 'resolveActivity (java CONTEXT 'getPackageManager))
@@ -204,15 +217,16 @@
 
 # GPS access
 (local) checkSelfPermission
+
 (de location? ()
    (=0
       (java "android.support.v4.content.ContextCompat"
          'checkSelfPermission CONTEXT "android.permission.ACCESS_FINE_LOCATION" ) ) )
 
-(local) [
-   gps *LocMan *LocLsn onLocationChanged onProviderDisabled onProviderEnabled
-   onStatusChanged requestLocationUpdates isProviderEnabled getLastKnownLocation
-   getLatitude getLongitude ]
+(local) (gps *LocMan *LocLsn onLocationChanged onProviderDisabled
+onProviderEnabled onStatusChanged requestLocationUpdates isProviderEnabled
+getLastKnownLocation getLatitude getLongitude)
+
 (de gps ()
    (unless *LocMan
       (setq
@@ -241,7 +255,8 @@
          (+ (java @ 'getLongitude) 180000000) ) ) )
 
 # Camera access
-(local) [camera? hasSystemFeature]
+(local) (camera? hasSystemFeature)
+
 (de camera? ()
    (java (java CONTEXT 'getPackageManager)
       'hasSystemFeature "android.hardware.camera" ) )
@@ -250,6 +265,7 @@
 ##    (setq *Picture (tmp "img"))
 ##    (loadUrl (baseHRef) *SesId "app/camera.l") )
 (local) takePicture
+
 (de takePicture (Dst Fun)
    (out Dst)
    (startActivityForResult Fun
@@ -257,7 +273,8 @@
       "output" (fileUri Dst) ) )
 
 # ZXing QR-Codes
-(local) [zxing? queryIntentActivities]
+(local) (zxing? queryIntentActivities)
+
 (de zxing? ()
    (with
       (java (java CONTEXT 'getPackageManager) 'queryIntentActivities
@@ -268,14 +285,16 @@
 ## '((Intent)
 ##    (java Intent 'getStringExtra "SCAN_RESULT")
 ##    (java Intent 'getStringExtra "SCAN_RESULT_FORMAT") )
-(local) [scanQR getStringExtra]
+(local) (scanQR getStringExtra)
+
 (de scanQR (Fun)
    (startActivityForResult Fun
       "com.google.zxing.client.android.SCAN"
       "SCAN_MODE" "QR_CODE_MODE" ) )
 
 # Alarm
-(local) [alarm elapsedRealtime getInstance getTimeInMillis getBroadcast]
+(local) (alarm elapsedRealtime getInstance getTimeInMillis getBroadcast)
+
 (de alarm (N When File)
    (let
       (Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.Receiver"))
@@ -303,7 +322,8 @@
                CONTEXT N Intent 0 ) ) ) ) )
 
 # Terminate PilBox
-(local) [terminate finishAndRemoveTask]
+(local) (terminate finishAndRemoveTask)
+
 (de terminate ()
    (java (; CONTEXT GUI) 'finishAndRemoveTask) )
 

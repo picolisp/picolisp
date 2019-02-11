@@ -1,13 +1,14 @@
-# 02feb19abu
+# 11feb19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
-(local) [
-   *CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip *Lines
-   *Columns *TagStack *Spell *F10 *F11 *F12 *@ ]
+
+(local) (*CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip
+*Lines *Columns *TagStack *Spell *F10 *F11 *F12 *@)
 
 ### Curses library interface ###
 (local) curses
+
 (de curses @
    (pass native
       `(or
@@ -17,9 +18,9 @@
          (quit "No CURSES found") ) ) )
 
 ### VIP Editor ###
-(local) [
-   *Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup min1 beep
-   undo redo evCmd dirty> load> save> view> status ]
+(local) (*Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup min1
+beep undo redo evCmd dirty> load> save> view> status)
+
 (class +Buffer)
 # text file key undo redo dirt pos lastX lastY <c>
 
@@ -166,7 +167,8 @@
    (beep) )
 
 
-(local) [*Window +Window]
+(local) (*Window +Window)
+
 (class +Window)
 # buffer top lines status ptr winX winY posX posY prev next last mark
 
@@ -192,14 +194,13 @@
    (view> (: buffer) This) )
 
 
-(local) [
-   delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin eqwin
-   getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight goUp goDown
-   goAbs goFind word lword end lend getWord _forward goForward _backward
-   goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
-   insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight
-   jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf shell shFile
-   prCmd reset command vi ]
+(local) (delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin
+eqwin getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight goUp
+goDown goAbs goFind word lword end lend getWord _forward goForward _backward
+goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
+insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight jmpMark
+wordFun moveSearch patMatch parMatch spell pipeN nextBuf shell shFile prCmd
+reset command vi)
 
 (de delwin ()
    (when (=: prev next (: next))

@@ -1,4 +1,4 @@
-# 03jan19abu
+# 11feb19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -6,13 +6,15 @@
 (push1 '*JS (allow "@lib/gis.js"))
 
 (local) nm
+
 (de nm (Lat Lon)
    (pack
       (round (- Lat 90.0))
       ", "
       (round (- Lon 180.0)) ) )
 
-(local) [lat lon fmt]
+(local) (lat lon fmt)
+
 (de lat (Lat)
    (format (- Lat 90.0) `*Scl) )
 
@@ -25,6 +27,7 @@
 
 # Short distance, assuming flat earth
 (local) distance
+
 (de distance (Lat1 Lon1 Lat2 Lon2)  # [m]
    (let
       (DX (*/ (- Lon2 Lon1) 6378000 pi 180.0)
@@ -33,6 +36,7 @@
 
 # Latitude Field
 (local) +LatField
+
 (class +LatField +Fmt +FixField)
 
 (dm T @
@@ -43,6 +47,7 @@
 
 # Longitude Field
 (local) +LonField
+
 (class +LonField +Fmt +FixField)
 
 (dm T @
@@ -53,6 +58,7 @@
 
 # Clickable position field
 (local) +LatLonField
+
 (class +LatLonField +TextField)
 
 (dm T (Msg . @)
@@ -87,7 +93,7 @@
 
 # OpenLayers / OpenStreetMap
 # (val *Osm) -> ((lat1 . lat2) (lon1 . lon2) . zoom)
-(local) [*Osm <osm> osmStat osmClick osmDrag <poi> <line>]
+(local) (*Osm <osm> osmStat osmClick osmDrag <poi> <line>)
 
 (mapc allow '(osmStat osmClick osmDrag))
 
@@ -138,7 +144,8 @@
          "line('" Col "', " Lat1 ", " Lon1 ", " Lat2 ", " Lon2 ")" ) ) )
 
 # Google Maps
-(local) [google <google>]
+(local) (google <google>)
+
 (de google (Ttl Lat Lon Zoom Tar)
    (<href> Ttl
       (pack "https://www.google.com/maps/@" (fmt Lat "," Lon) "," Zoom "z")

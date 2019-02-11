@@ -1,3 +1,12 @@
+11feb19
+   Abandon the habit of super parentheses for (local) lists
+      lib/android.l
+      lib/gis.l
+      lib/vip.l
+      doc/refL.html
+   Add 'runOnUiThread' to local
+      lib/android.l
+
 07feb19
    'in', 'out', 'pipe' and 'load' pipe exit status code in '@@'
       src64/io.l

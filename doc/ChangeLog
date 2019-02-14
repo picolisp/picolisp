@@ -1,3 +1,10 @@
+14feb19
+   Transient "Var" in 'accu'
+      lib.l
+      mini/lib/misc.l
+      ersatz/lib.l
+      pilos/init/lib.l
+
 11feb19
    Abandon the habit of super parentheses for (local) lists
       lib/android.l

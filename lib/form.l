@@ -1,4 +1,4 @@
-# 29oct18abu
+# 16feb19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1727,7 +1727,7 @@
 
 (dm T @
    (pass super
-      '((S) (or (sub? "://" S) (pack "http://" S))) ) )
+      '((S) (or (sub? "://" S) (pack "https://" S))) ) )
 
 
 (class +MailField +Url +TextField)

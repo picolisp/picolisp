@@ -1,3 +1,7 @@
+16feb19
+   Default "https://" in '+HttpField'
+      lib/form.l
+
 14feb19
    Transient "Var" in 'accu'
       lib.l

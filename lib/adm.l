@@ -1,4 +1,4 @@
-# 23aug18abu
+# 18feb19abu
 # (c) Software Lab. Alexander Burger
 
 # *Salt *Login *Users *Perms
@@ -98,6 +98,8 @@
       (or (may UserAdmin) (== *Login This))
       (list "@lib/user.l" '*ID This) ) )
 
+(dm login> ())
+
 
 ### Permission management ###
 (de permission Lst
@@ -141,6 +143,7 @@
                (url *Url) )
             ((login (val> (: home nm)) (val> (: home pw)))
                (clr> (: home pw))
+               (login> *Login)
                (url *Url) )
             (T (error ,"Permission denied")) ) )
       (when *Login

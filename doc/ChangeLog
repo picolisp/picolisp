@@ -1,3 +1,8 @@
+23feb19
+   Move .relNN classes to @lib.css
+      lib.css
+      lib/phone.css
+
 21feb19
    More .relNN classes
       lib/phone.css

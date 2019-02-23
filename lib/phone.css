@@ -1,19 +1,6 @@
-/* 21feb19abu
+/* 23feb19abu
  * (c) Software Lab. Alexander Burger
  */
-
-.rel10 {width: 10%}
-.rel20 {width: 20%}
-.rel25 {width: 25%}
-.rel30 {width: 30%}
-.rel40 {width: 40%}
-.rel50 {width: 50%}
-.rel60 {width: 60%}
-.rel70 {width: 70%}
-.rel75 {width: 75%}
-.rel80 {width: 80%}
-.rel90 {width: 90%}
-.rel100 {width: 100%}
 
 body {
    font-size: 3.0vw;

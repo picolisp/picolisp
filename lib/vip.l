@@ -1,4 +1,4 @@
-# 11feb19abu
+# 25feb19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -627,6 +627,8 @@ reset command vi)
                            (")" (dec 'N))
                            ("[" (push 'Sup N) (inc 'N))
                            ("]" (setq N (++ Sup))) ) ) )
+                  (while (val (caadr P))
+                     (++ P) )
                   (NIL (clip (cadr P)) T)
                   (setq P (con P (cons @ (cddr P)))) ) ) ) ) ) )
 

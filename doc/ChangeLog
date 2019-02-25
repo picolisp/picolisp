@@ -1,3 +1,7 @@
+25feb19
+   Skip block comments in 'indent'
+      lib/vip.l
+
 23feb19
    Move .relNN classes to @lib.css
       lib.css

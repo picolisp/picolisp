@@ -31,7 +31,7 @@ installation, and invoke them explicitly as desired.
 
 1. Unpack the distribution
 
-      $ wget http://software-lab.de/picoLisp.tgz
+      $ wget https://software-lab.de/picoLisp.tgz
       $ tar xfz picoLisp.tgz
 
 2. Change the directory
@@ -67,12 +67,12 @@ installation, and invoke them explicitly as desired.
 
    - Otherwise, download one of the pre-generated "*.s" file packages
 
-     - http://software-lab.de/arm64.linux.tgz
-     - http://software-lab.de/x86-64.linux.tgz
-     - http://software-lab.de/ppc64.linux.tgz
-     - http://software-lab.de/x86-64.freeBsd.tgz
-     - http://software-lab.de/x86-64.openBsd.tgz
-     - http://software-lab.de/x86-64.sunOs.tgz
+     - https://software-lab.de/arm64.linux.tgz
+     - https://software-lab.de/x86-64.linux.tgz
+     - https://software-lab.de/ppc64.linux.tgz
+     - https://software-lab.de/x86-64.freeBsd.tgz
+     - https://software-lab.de/x86-64.openBsd.tgz
+     - https://software-lab.de/x86-64.sunOs.tgz
 
    - Else, build a 32-bit version first, and use the resulting bin/picolisp to
      generate the "*.s" files:
@@ -187,4 +187,4 @@ Hope you enjoy :-)
    Alexander Burger
    Software Lab. / 7fach GmbH
    Bahnhofstr. 24a, D-86462 Langweid
-   abu@software-lab.de, http://www.software-lab.de, +49 8230 5060
+   abu@software-lab.de, https://www.software-lab.de, +49 8230 5060

@@ -1,4 +1,6 @@
 25feb19
+   Fix http:// to https://
+      INSTALL
    Skip block comments in 'indent'
       lib/vip.l
 

@@ -1,4 +1,8 @@
 25feb19
+   Single-pass 'dbgc' in new file
+      lib/dbgc.l
+   'dbgc' stub function
+      lib/too.l
    Fix http:// to https://
       INSTALL
    Skip block comments in 'indent'

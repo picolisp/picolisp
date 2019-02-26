@@ -1,5 +1,5 @@
 #!./pil
-# 17jul12abu
+# 26feb19abu
 # (c) Software Lab. Alexander Burger
 
 (load "../src64/version.l")
@@ -25,7 +25,7 @@
                      (inc 'Cnt)
                      "\"), \""
                      Name
-                     "\", Pico);" ) )
+                     "\", Intern);" ) )
                (while (line))
                (prin "      ")
                (NIL (skip "#")) ) )

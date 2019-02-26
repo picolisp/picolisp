@@ -1,4 +1,4 @@
-# 03nov18abu
+# 26feb19abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -1713,7 +1713,7 @@ name (x y s)
    y = (x = ex.Cdr).Car.eval();
    if (!((x = x.Cdr) instanceof Cell))
       return mkStr(y.name());
-   if ((s = ((Symbol)y)).Name != null && Env.intern().get(s.Name) == s)
+   if ((s = ((Symbol)y)).Name != null && Intern.get(s.Name) == s)
       err(ex, s, "Can't rename");
    if (Transient.get(((Symbol)y).Name) == y)
       Transient.remove(((Symbol)y).Name);
@@ -1740,39 +1740,16 @@ getd (x)
 
 # (all ['T]) -> lst
 all ()
-   return all(ex.Cdr.Car.eval() == Nil? Env.intern() : Transient);
-
-# (symbols) -> sym
-# (symbols 'sym1) -> sym2
-# (symbols 'sym1 'sym ..) -> sym2
-symbols (x s t)
-   if (ex.Cdr instanceof Cell) {
-      s = (Symbol)ex.Cdr.Car.eval();
-      if ((x = ex.Cdr.Cdr) instanceof Cell) {
-         s.Car = new Symbol(new Namespace());
-         do {
-            t = (Symbol)x.Car.eval();
-            if (!(t.Car instanceof Symbol) || !(((Symbol)t.Car).Obj instanceof Namespace))
-               symNsError(ex, t);
-            ((Namespace)(((Symbol)t.Car).Obj)).copy((Namespace)(((Symbol)s.Car).Obj));
-         } while ((x = x.Cdr) instanceof Cell);
-      }
-      else if (!(s.Car instanceof Symbol) || !(((Symbol)s.Car).Obj instanceof Namespace))
-         symNsError(ex, s);
-      t = Env.Intern;
-      Env.Intern = s;
-      return t;
-   }
-   return Env.Intern;
+   return all(ex.Cdr.Car.eval() == Nil? Intern : Transient);
 
 # (intern 'sym) -> sym
 intern (s t str)
    s = (Symbol)ex.Cdr.Car.eval();
    if ((str = s.name()).length() == 0 || str.equals("NIL"))
       return Nil;
-   if ((t = Env.intern().get(str)) != null)
+   if ((t = Intern.get(str)) != null)
       return t;
-   Env.intern().put(str, s);
+   Intern.put(str, s);
    return s;
 
 # (==== ['sym ..]) -> NIL
@@ -1790,7 +1767,7 @@ box? (x)
 
 # (str? 'any) -> sym | NIL
 str? (x)
-   return ((x = ex.Cdr.Car.eval()) instanceof Symbol) && Env.intern().get(x.name()) != x? x : Nil;
+   return ((x = ex.Cdr.Car.eval()) instanceof Symbol) && Intern.get(x.name()) != x? x : Nil;
 
 # (ext? 'any) -> sym | NIL
 ext? T
@@ -1799,8 +1776,8 @@ ext? T
 # (zap 'sym) -> sym
 zap (s)
    s = (Symbol)ex.Cdr.Car.eval();
-   if (Env.intern().get(s.Name) == s)
-      Env.intern().remove(s.Name);
+   if (Intern.get(s.Name) == s)
+      Intern.remove(s.Name);
    return s;
 
 # (chop 'any) -> lst

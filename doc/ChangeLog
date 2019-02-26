@@ -1,3 +1,10 @@
+26feb19
+   Remove (incompatible) namespace support
+      ersatz/sys.src
+      ersatz/fun.src
+      ersatz/mkJar
+      ersatz/lib.l
+
 25feb19
    Single-pass 'dbgc' in new file
       lib/dbgc.l

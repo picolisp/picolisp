@@ -1,3 +1,8 @@
+02mar19
+   Avoid full (lock) in 'admin' and 'dbCheck'
+      lib/too.l
+      lib/dbgc.l
+
 26feb19
    Remove (incompatible) namespace support
       ersatz/sys.src

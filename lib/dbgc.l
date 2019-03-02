@@ -1,4 +1,4 @@
-# 25feb19abu
+# 02mar19abu
 # (c) Software Lab. Alexander Burger
 
 ### DB Garbage Collection ###
@@ -14,19 +14,18 @@
       ("markData" (++ X)) )
    (and (ext? X) ("markExt" X)) )
 
-("markExt" *DB)
-
-(for L *ExtDBs  # ("path/" <cnt> <ofs>)
-   (let ((P N E) L  Lck)
-      (for I N
-         (let (Fd (open (pack P (hax (dec I))))  (Cnt . Siz) (blk Fd 0))
-            (and (=1 I) (setq Lck Fd))
-            (for Blk (dec Cnt)
-               (mapc "markExt"
-                  (fish ext? (ext E (blk Fd Blk Siz Lck))) ) )
-            (close Fd) ) ) ) )
-
 (let Cnt 0
+   (dbSync)
+   ("markExt" *DB)
+   (for L *ExtDBs  # ("path/" <cnt> <ofs>)
+      (let ((P N E) L  Lck)
+         (for I N
+            (let (Fd (open (pack P (hax (dec I))))  (Cnt . Siz) (blk Fd 0))
+               (and (=1 I) (setq Lck Fd))
+               (for Blk (dec Cnt)
+                  (mapc "markExt"
+                     (fish ext? (ext E (blk Fd Blk Siz Lck))) ) )
+               (close Fd) ) ) ) )
    (finally (mark 0)
       (for (F . @) (or *Dbs (2))
          (for (S (seq F)  S  (seq S))
@@ -34,7 +33,6 @@
                (inc 'Cnt)
                (and (isa '+Entity S) (zap> S))
                (zap S) ) ) ) )
-   (commit)
    (when *Blob
       (use (@S @R F S)
          (let Pat (conc (chop *Blob) '(@S "." @R))
@@ -50,6 +48,7 @@
                            '(native "@" "unlink" NIL (pack F))
                            '(call "rm" (pack F)) ) )
                      (wipe S) ) ) ) ) ) )
+   (commit)
    (gt0 Cnt) )
 
 # vi:et:ts=3:sw=3

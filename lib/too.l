@@ -123,6 +123,7 @@
    (for (F . N) (or *Dbs (2))  # Low-level integrity check
       (unless (pair (println F N (dbck F T)))
          (quit 'dbck @) ) )
+   (dbSync)
    (dbMap  # Check tree structures
       NIL
       '((Base Root Var Cls Hook)
@@ -142,7 +143,7 @@
    (and *Dbs (dbfCheck))  # Check DB file assignments
    (and (dangling) (println 'dangling @))  # Show dangling index references
    (and (badECnt) (println 'badECnt @))  # Show entity count mismatches
-   T )
+   (rollback) )
 
 # Check Index References
 (de dangling ()

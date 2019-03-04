@@ -1,4 +1,4 @@
-# 23jun15abu
+# 04mar19abu
 # (c) Software Lab. Alexander Burger
 
 # Easter date algorithm from J.M. Oudin (1940)
@@ -62,15 +62,15 @@
                      ((12 26) . "2. Weihnachtstag") ) )
                (assoc (- X (easter (car L)))
                   (quote
-                     (-48 . Rosenmontag)
-                     (-46 . Aschermittwoch)
+                     #{(-48 . Rosenmontag)}#
+                     #{(-46 . Aschermittwoch)}#
                      (-2 . Karfreitag)
                      (0 . Ostern)
                      (1 . Ostermontag)
                      (39 . Himmelfahrt)
                      (49 . Pfingsten)
                      (50 . Pfingstsmontag)
-                     (60 . Fronleichnam) ) ) ) ) ) ) )
+                     #{(60 . Fronleichnam)}# ) ) ) ) ) ) )
 
 # Werktag
 (de werktag (Dat)

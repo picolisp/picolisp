@@ -1,4 +1,4 @@
-# 25feb19abu
+# 04mar19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -81,7 +81,7 @@ beep undo redo evCmd dirty> load> save> view> status)
                      (text 'text
                         (or
                            (set (setq P C)
-                              (and (= " " C) (not L)) )
+                              (and (sp? C) (not L)) )
                            (and (= "\\" C) L (set (++ L))) ) )
                      (string (and (= "\"" C) 'text)
                         (set (setq P C) 0) )
@@ -99,7 +99,10 @@ beep undo redo evCmd dirty> load> save> view> status)
                      (comment
                         (cond
                            ((=1 (set (setq P C) N))
-                              (if L 'comment 'text) )
+                              (if L
+                                 'comment
+                                 (and (sp? C) (not L) (set P T))
+                                 'text ) )
                            ((and
                                  (= "}" C)
                                  (= "#" (car L))

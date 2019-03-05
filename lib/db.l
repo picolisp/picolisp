@@ -1,4 +1,4 @@
-# 21dec18abu
+# 05mar19abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1322,7 +1322,7 @@
       (commit 'upd) )
    (val This) )
 
-(dm clone> ()
+(dm clone> (Lst)
    (let Obj (new (or (var: Dbf 1) 1) (val This))
       (for X
          (by
@@ -1332,38 +1332,39 @@
                   (isa '+Hook (meta This (cdr X))) ) )
             sort
             (getl This) )
-         (if (atom X)
-            (ifn (meta This X)
-               (put Obj X T)
-               (let Rel @
-                  (put> Obj X T)
-                  (when (isa '+Blob Rel)
-                     (in (blob This X)
-                        (out (blob Obj X) (echo)) ) ) ) )
-            (ifn (meta This (cdr X))
-               (put Obj (cdr X) (car X))
-               (let Rel @
-                  (cond
-                     ((find '((B) (isa '+Key B)) (get Rel 'bag))
-                        (let (K @  H (get K 'hook))
+         (unless (memq (fin X) Lst)
+            (if (atom X)
+               (ifn (meta This X)
+                  (put Obj X T)
+                  (let Rel @
+                     (put> Obj X T)
+                     (when (isa '+Blob Rel)
+                        (in (blob This X)
+                           (out (blob Obj X) (echo)) ) ) ) )
+               (ifn (meta This (cdr X))
+                  (put Obj (cdr X) (car X))
+                  (let Rel @
+                     (cond
+                        ((find '((B) (isa '+Key B)) (get Rel 'bag))
+                           (let (K @  H (get K 'hook))
+                              (put> Obj (cdr X)
+                                 (mapcar
+                                    '((Lst)
+                                       (mapcar
+                                          '((B Val)
+                                             (if (== B K)
+                                                (cloneKey B (cdr X) Val
+                                                   (and H (get (if (sym? H) This Lst) H)) )
+                                                Val ) )
+                                          (get Rel 'bag)
+                                          Lst ) )
+                                    (car X) ) ) ) )
+                        ((isa '+Key Rel)
                            (put> Obj (cdr X)
-                              (mapcar
-                                 '((Lst)
-                                    (mapcar
-                                       '((B Val)
-                                          (if (== B K)
-                                             (cloneKey B (cdr X) Val
-                                                (and H (get (if (sym? H) This Lst) H)) )
-                                             Val ) )
-                                       (get Rel 'bag)
-                                       Lst ) )
-                                 (car X) ) ) ) )
-                     ((isa '+Key Rel)
-                        (put> Obj (cdr X)
-                           (cloneKey Rel (cdr X) (car X)
-                              (and (get Rel 'hook) (get This @)) ) ) )
-                     ((or (not (isa '+Joint Rel)) (isa '+List (meta Obj (cdr X))))
-                        (put> Obj (cdr X) (car X)) ) ) ) ) ) )
+                              (cloneKey Rel (cdr X) (car X)
+                                 (and (get Rel 'hook) (get This @)) ) ) )
+                        ((or (not (isa '+Joint Rel)) (isa '+List (meta Obj (cdr X))))
+                           (put> Obj (cdr X) (car X)) ) ) ) ) ) ) )
       Obj ) )
 
 (de cloneKey (Rel Var Val Hook)

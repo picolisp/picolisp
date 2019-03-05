@@ -1,3 +1,7 @@
+05mar19
+   Optional exclude-list argument to 'clone>'
+      lib/db.l
+
 04mar19
    Mark trailing space also in comments
       lib/vip.l

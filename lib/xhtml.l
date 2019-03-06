@@ -1,4 +1,4 @@
-# 04feb19abu
+# 06mar19abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -558,8 +558,7 @@
    (<span> 'step
       (use (S1 S2)
          (if (pair X)
-            (let L (memq *ID X)
-               (setq S1 (car (prior L X))  S2 (cadr L)) )
+            (setq S1 (car X)  S2 (cdr X))
             (let
                (Rel (meta *ID X)
                   K

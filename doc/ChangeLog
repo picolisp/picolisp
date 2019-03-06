@@ -1,3 +1,7 @@
+06mar19
+   Change 'stepBtn' list argument to direct cons pair
+      lib/xhtml.l
+
 05mar19
    Optional exclude-list argument to 'clone>'
       lib/db.l

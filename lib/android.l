@@ -33,9 +33,8 @@
          (make
             (link (cons 32768 java))
             (while (next)
-               (let Fun @
-                  (for N (next)
-                     (link (cons N Fun)) ) ) ) ) ) ) )
+               (for N (next)
+                  (link (cons N @)) ) ) ) ) ) )
 
 # Java I/O
 # (java "cls" 'T ['any ..]) -> obj         New object

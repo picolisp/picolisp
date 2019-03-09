@@ -1,4 +1,4 @@
-# 11feb19abu
+# 09mar19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -22,9 +22,20 @@
    (out "BOSS" (pr (rest))) )
 
 # Android Context
-(local) CONTEXT
+(local) (CONTEXT javaExt)
 
-(de CONTEXT . {OOOO40000000000})
+(de CONTEXT . {H@@@40000000000})  # file 32768, obj (hex "100000000")
+
+# (javaExt 'fun 'lst ..)
+(de javaExt @
+   (setq *Ext
+      (sort
+         (make
+            (link (cons 32768 java))
+            (while (next)
+               (let Fun @
+                  (for N (next)
+                     (link (cons N Fun)) ) ) ) ) ) ) )
 
 # Java I/O
 # (java "cls" 'T ['any ..]) -> obj         New object
@@ -41,7 +52,7 @@
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))
       (task *Lisp
-         (ext 65535
+         (ext 32768
             (in *Lisp
                (prog1
                   (if (get (rd) (rd))
@@ -50,10 +61,10 @@
                      NIL )
                   (out *Java (pr T @)) ) ) ) )
       (forked)
-      (queue '*Ext (cons 65535 java)) ) )
+      (javaExt) ) )
 
 (de java @
-   (ext 65535
+   (ext 32768
       (out *Java (pr NIL (rest)))
       (in *Lisp
          (for (X (rd) X (rd))

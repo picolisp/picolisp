@@ -1,3 +1,8 @@
+09mar19
+   Change CONTEXT offset to "H@@@"
+   Add 'javaExt' function
+      lib/android.l
+
 06mar19
    Change 'stepBtn' list argument to direct cons pair
       lib/xhtml.l

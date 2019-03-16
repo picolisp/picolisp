@@ -1,4 +1,4 @@
-# 09mar19abu
+# 16mar19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -130,12 +130,11 @@
       (=1 (java @ 'getType)) ) )  # onnectivityManager.TYPE_WIFI
 
 # Generate file content URI
-(local) (fileUri getUriForFile getPackageName)
+(local) (fileUri getUriForFile)
 
 (de fileUri (File)
    (java "android.support.v4.content.FileProvider" 'getUriForFile
-      CONTEXT
-      (pack (java CONTEXT 'getPackageName) ".fileprovider")
+      CONTEXT "de.software_lab.pilbox.fileprovider"
       (java "java.io.File" T File) ) )
 
 # Update APK

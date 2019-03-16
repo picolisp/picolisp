@@ -1,3 +1,7 @@
+16mar19abu
+   Replace 'getPackageName' with direct value
+      lib/android.l
+
 09mar19
    Change CONTEXT offset to "H@@@"
    Add 'javaExt' function

@@ -1,4 +1,4 @@
-# 16mar19abu
+# 22mar19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -172,7 +172,7 @@ setLights setAction putExtra setContentIntent getActivity build)
          (let B (java "android.support.v4.app.NotificationCompat$Builder" T CONTEXT)
             (java B 'setSmallIcon (java "de.software_lab.pilbox.R$drawable" "notify"))
             (java B 'setContentTitle Ttl)
-            (java B 'setContentText Msg)
+            (java B 'setContentText (or Msg 'null))
             (java B 'setAutoCancel T)
             (java B 'setLights `(hex "FFFFFF") 500 500)
             (let Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.PilBoxActivity"))  # Activity class

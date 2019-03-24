@@ -1,4 +1,4 @@
-# 22mar19abu
+# 24mar19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -162,19 +162,27 @@
    X )
 
 # Notification
-(local) (notify cancel setSmallIcon setContentTitle setContentText setAutoCancel
-setLights setAction putExtra setContentIntent getActivity build)
+(local) (notify cancel *Notify createNotificationChannel setSmallIcon
+setContentTitle setContentText setAutoCancel setAction putExtra setContentIntent
+getActivity build)
 
 (de notify (Id Ttl Msg File)
    (let N (java CONTEXT 'getSystemService "notification")  # NotificationManager
       (ifn Ttl
          (java N 'cancel Id)
-         (let B (java "android.support.v4.app.NotificationCompat$Builder" T CONTEXT)
+         ~(as (>= (format (sys "SDK_INT")) 26)
+            (unless *Notify
+               (java N 'createNotificationChannel
+                  (java "android.app.NotificationChannel" T "pil" "PilBox" 2) )  # IMPORTANCE_LOW = 2
+               (on *Notify) ) )
+         (let B
+            `(if (>= (format (sys "SDK_INT")) 26)
+               '(java "android.app.Notification$Builder" T CONTEXT "pil")
+               '(java "android.support.v4.app.NotificationCompat$Builder" T CONTEXT) )
             (java B 'setSmallIcon (java "de.software_lab.pilbox.R$drawable" "notify"))
             (java B 'setContentTitle Ttl)
             (java B 'setContentText (or Msg 'null))
             (java B 'setAutoCancel T)
-            (java B 'setLights `(hex "FFFFFF") 500 500)
             (let Intent (java "android.content.Intent" T CONTEXT (java "de.software_lab.pilbox.PilBoxActivity"))  # Activity class
                (java Intent 'setFlags `(hex "24000000"))  # FLAG_ACTIVITY_SINGLE_TOP | FLAG_ACTIVITY_NEW_TASK
                (when File

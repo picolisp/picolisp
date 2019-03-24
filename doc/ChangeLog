@@ -1,8 +1,12 @@
-22mar19abu
+24mar19
+   Changes in 'notify' for SDK >= 26
+      lib/android.l
+
+22mar19
    Default argument 'null' for 'notify'
       lib/android.l
 
-16mar19abu
+16mar19
    Replace 'getPackageName' with direct value
       lib/android.l
 

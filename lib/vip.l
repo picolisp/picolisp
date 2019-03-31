@@ -1,4 +1,4 @@
-# 04mar19abu
+# 31mar19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -197,13 +197,13 @@ beep undo redo evCmd dirty> load> save> view> status)
    (view> (: buffer) This) )
 
 
-(local) (delwin cursor addLine chgLine unmark redraw repaint scroll goto chgwin
-eqwin getch getch2 reload done change jmp@@ cnt@@ goCol goLeft goRight goUp
-goDown goAbs goFind word lword end lend getWord _forward goForward _backward
-goBackward goPFore goPBack shift shiftY indent cutX cutN paste join tglCase
-insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt move chgRight jmpMark
-wordFun moveSearch patMatch parMatch spell pipeN nextBuf shell shFile prCmd
-reset command vi)
+(local) (delwin cursor addLine chgLine unmark redraw repaint scroll scLeft
+scRight goto chgwin eqwin getch getch2 reload done change jmp@@ cnt@@ goCol
+goLeft goRight goUp goDown goAbs goFind word lword end lend getWord _forward
+goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
+paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
+move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf
+shell shFile prCmd reset command vi)
 
 (de delwin ()
    (when (=: prev next (: next))
@@ -285,6 +285,20 @@ reset command vi)
    (curses "scrollok" NIL (: ptr) 1)
    (curses "wscrl" NIL (: ptr) N)
    (curses "scrollok" NIL (: ptr) 0) )
+
+(de scLeft (N)
+   (and
+      (> (: winX) 1)
+      (>= (- (: posX) (dec (:: winX))) *Columns)
+      (dec (:: posX)) ) )
+
+(de scRight (N)
+   (cond
+      ((> (: posX) (: winX))
+         (inc (:: winX)) )
+      ((cdr (nth (: buffer text) (: posY) (: posX)))
+         (inc (:: posX))
+         (inc (:: winX)) ) ) )
 
 (de goto (X Y Flg)
    (if
@@ -1212,16 +1226,10 @@ reset command vi)
                         ("h" (move 'goLeft *Cnt))  # Move left
                         ("l" (move 'goRight *Cnt))  # Move right
                         (`(char 260)  # [LEFT] Scroll left
-                           (when (> (: winX) 1)
-                              (when (>= (- (: posX) (dec (:: winX))) *Columns)
-                                 (dec (:: posX)) ) )
+                           (do 3 (scLeft))
                            (redraw) )
                         (`(char 261)  # [RIGHT] Scroll right
-                           (cond
-                              ((> (: posX) (: winX)) (inc (:: winX)))
-                              ((cdr (nth (: buffer text) (: posY) (: posX)))
-                                 (inc (:: posX))
-                                 (inc (:: winX)) ) )
+                           (do 3 (scRight))
                            (redraw) )
                         ("|" (move 'goCol *Cnt))  # Go to column
                         ("$" (move 'goRight T))  # Go to end of line

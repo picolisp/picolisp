@@ -1,3 +1,7 @@
+02apr19
+   '<dl>', '<dt>' and '<dd>' tags
+      lib/xhtml.l
+
 31mar19
    Scroll left/right by 3 instead of 1
       lib/vip.l

@@ -1,4 +1,4 @@
-# 06mar19abu
+# 02apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -252,6 +252,18 @@
 
 (de <li> (Attr . Prg)
    (tag 'li Attr 2 Prg)
+   (prinl) )
+
+(de <dl> (Attr . Prg)
+   (tag 'dl Attr 2 Prg)
+   (prinl) )
+
+(de <dt> (Attr . Prg)
+   (tag 'dt Attr 2 Prg)
+   (prinl) )
+
+(de <dd> (Attr . Prg)
+   (tag 'dd Attr 2 Prg)
    (prinl) )
 
 (de <href> (Str Url Tar)

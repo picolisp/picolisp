@@ -1,4 +1,6 @@
 02apr19
+   Wrong size calculation
+      lib/vip.l
    '<dl>', '<dt>' and '<dd>' tags
       lib/xhtml.l
 

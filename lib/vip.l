@@ -1,4 +1,4 @@
-# 31mar19abu
+# 02apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -140,7 +140,7 @@ beep undo redo evCmd dirty> load> save> view> status)
                               (when (=T (car (info F)))
                                  (list (name "/")) ) ) )
                         (sort (dir File)) ) )
-                  (gc (+ 4 (*/ (car I) 65536)))  # 2 cells / char
+                  (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe
                         (in File (out '("ccrypt" "-d" "-ECCRYPT") (echo)))

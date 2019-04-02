@@ -1,5 +1,6 @@
 02apr19
-   Wrong size calculation
+   Bug for empty 'spell' result
+   Wrong 'gc' size calculation
       lib/vip.l
    '<dl>', '<dt>' and '<dd>' tags
       lib/xhtml.l

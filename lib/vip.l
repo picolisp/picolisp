@@ -973,23 +973,24 @@ shell shFile prCmd reset command vi)
    "hunspell" "-l" "-d" "en_US,de_DE" )
 
 (de spell ()
-   (moveSearch 'goForward
-      (setq *Search
-         (let @W
-            (pipe
-               (out *Spell
-                  (let Pos (nth (: buffer text) (: posY))
-                     (prinl
-                        (seek
-                           '((L) (not (fold (car L))))
-                           (nth (++ Pos) (: posX)) ) )
-                     (mapc prinl Pos) ) )
-               (conc (line) '("@Z")) )
-            (curry (@W) (L C)
-               (and
-                  (not (fold C))
-                  (match '@W L)
-                  (not (fold (car "@Z"))) ) ) ) ) ) )
+   (when
+      (pipe
+         (out *Spell
+            (let Pos (nth (: buffer text) (: posY))
+               (prinl
+                  (seek
+                     '((L) (not (fold (car L))))
+                     (nth (++ Pos) (: posX)) ) )
+               (mapc prinl Pos) ) )
+         (line) )
+      (let @W (conc @ '("@Z"))
+         (moveSearch 'goForward
+            (setq *Search
+               (curry (@W) (L C)
+                  (and
+                     (not (fold C))
+                     (match '@W L)
+                     (not (fold (car "@Z"))) ) ) ) ) ) ) )
 
 (de pipeN (Cnt Line)
    (evRpt

@@ -1,4 +1,4 @@
-# 02apr19abu
+# 03apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -926,13 +926,19 @@ shell shFile prCmd reset command vi)
          (move 'goAbs (default X (car @)) (cdr @)) ) ) )
 
 (de wordFun (W)
-   (setq W (append W '("@Z")))
    (setq *Search
-      (curry (W) (L C)
-         (and
-            (delim? C "~")
-            (match W L)
-            (delim? (car "@Z") "~") ) ) ) )
+      (ifn (= '"@" (car (setq W (append W '("@Z")))))
+         (curry (W) (L C)
+            (and
+               (delim? C "~")
+               (match W L)
+               (delim? (car "@Z") "~") ) )
+         (++ W)
+         (curry (W) (L C)
+            (and
+               (delim? C "~")
+               (and (= '"@" (car L)) (match W (cdr L)))
+               (delim? (car "@Z") "~") ) ) ) ) )
 
 (de moveSearch (Fun1 Fun2)
    (move Fun1 (lit Fun2) *Cnt) )

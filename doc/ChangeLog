@@ -1,3 +1,7 @@
+03apr19
+   Handle leading '@' in 'wordFun'
+      lib/vip.l
+
 02apr19
    Bug for empty 'spell' result
    Wrong 'gc' size calculation

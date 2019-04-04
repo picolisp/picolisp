@@ -1,3 +1,7 @@
+04apr19
+   'fName' in auto-load
+      lib/vip.l
+
 03apr19
    Handle leading '@' in 'wordFun'
       lib/vip.l

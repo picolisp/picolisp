@@ -1,4 +1,4 @@
-# 03apr19abu
+# 04apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -151,7 +151,7 @@ beep undo redo evCmd dirty> load> save> view> status)
    (and
       (head '`(chop "# VIP ") (: text 1))
       (clip (: text 1 -6))
-      (evCmd (load (pack @))) ) )
+      (evCmd (load (fName (pack @)))) ) )
 
 (dm save> (Win)
    (when (fName (: file))

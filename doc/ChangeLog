@@ -1,3 +1,7 @@
+07apr19
+   Mark trailing space also after backslash
+      lib/vip.l
+
 04apr19
    'fName' in auto-load
       lib/vip.l

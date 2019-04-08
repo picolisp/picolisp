@@ -1,4 +1,4 @@
-# 25oct18abu
+# 08apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *Board a1 .. h8
@@ -374,11 +374,11 @@
 
 
 ### Moves ###
-# Move      ((p1 (p1 . f2))        . ((p1 . f1)))
-# Capture   ((p1 (p2) (p1 . f2))   . ((p1 . f1) (p2 . f2)))
+# Move      ((p1 (p1 . f2))            . ((p1 . f1)))
+# Capture   ((p1 (p2) (p1 . f2))       . ((p1 . f1) (p2 . f2)))
 # Castle    ((K (K) (C . f2) (R . f4)) . ((R . f3) (K . f1)))
-# Promote   ((P (P) (Q . f2))      . ((Q) (P . f1)))
-# Capt/Prom ((P (p1) (P) (Q . f2)) . ((Q) (P . f1) (p1 . f2)))
+# Promote   ((P (P) (Q . f2))          . ((Q) (P . f1)))
+# Capt/Prom ((P (p1) (P) (Q . f2))     . ((Q) (P . f1) (p1 . f2)))
 (de moves (Color)
    (filter
       '((Lst)

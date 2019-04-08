@@ -1,3 +1,7 @@
+08apr19
+   Minor comment formatting
+      games/chess.l
+
 07apr19
    Mark trailing space also after backslash
       lib/vip.l

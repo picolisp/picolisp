@@ -1,3 +1,7 @@
+09apr19
+   Close stale task in 'serverSentEvent'
+      lib/xhtml.l
+
 08apr19
    Minor comment formatting
       games/chess.l

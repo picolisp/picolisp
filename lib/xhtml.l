@@ -1,4 +1,4 @@
-# 02apr19abu
+# 09apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -149,10 +149,11 @@
       (push '*SsEvts (cons Id Var Prg)) ) )
 
 (de ssEvt (Id)
-   (when (cdr (assoc Id *SsEvts))
-      (let ((@Var . Prg) @)
+   (when (assoc Id *SsEvts)
+      (let ((@Var . Prg) (cdr @))
          (task *HtSock)
          (macro
+            (and @Var (task (close @Var)))
             (task (setq @Var *HtSock)
                (in @
                   (unless (char)

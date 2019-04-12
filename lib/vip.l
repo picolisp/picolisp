@@ -1,10 +1,10 @@
-# 07apr19abu
+# 12apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 
 (local) (*CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip
-*Lines *Columns *TagStack *Spell *F10 *F11 *F12 *@)
+*Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
 
 ### Curses library interface ###
 (local) curses
@@ -1385,8 +1385,8 @@ shell shFile prCmd reset command vi)
                         (`(char (+ 264 7))  # [F7] Load file
                            (let? F (fName (: buffer file))
                               (evCmd (load F)) ) )
-                        ## (`(char (+ 264 8)) ())  # [F8]
-                        ## (`(char (+ 264 9)) ())  # [F9]
+                        (`(char (+ 264 8)) (run *F8))  # [F8] Custom key
+                        (`(char (+ 264 9)) (run *F9))  # [F9] Custom key
                         (`(char (+ 264 10)) (run *F10))  # [F10] Custom key
                         (`(char (+ 264 11)) (run *F11))  # [F11] Custom key
                         (`(char (+ 264 12)) (run *F12))  # [F12] Custom key

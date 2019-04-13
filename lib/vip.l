@@ -1,4 +1,4 @@
-# 12apr19abu
+# 13apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -30,25 +30,29 @@ beep undo redo evCmd dirty> load> save> view> status)
    (=: lastX (=: lastY 1)) )
 
 (de fName (File)
-   (if (pre? "~/" File)
-      (pack (sys "HOME") "/" (cddr (chop File)))
+   (when
+      (setq File
+         (if (pre? "~/" File)
+            (pack (sys "HOME") "/" (cddr (chop File)))
+            (path File) ) )
+      (use R
+         (when (=0 (native "@" "realpath" 'N File '(R (4096 C . 4096))))
+            (setq R (chop File)) )
+         (pack
+            (if (head (chop (pwd)) R)
+               (cddr (nth R (length (pwd))))
+               R ) ) ) ) )
+
+(de prName (File)
+   (if (pre? (sys "HOME") File)
+      (pack "~/" (cddr (nth (chop File) (length (sys "HOME")))))
       File ) )
 
 (de rplFile (File)
    (pack (replace (chop File) "%" (: buffer file))) )
 
 (de fileBuffer (File Y)
-   (when File
-      (use (R @P)
-         (unless (=0 (native "@" "realpath" 'N (fName File) '(R (4096 C . 4096))))
-            (setq File
-               (pack
-                  (cond
-                     ((match (conc (chop (pwd)) '(@P)) R)
-                        (cdr @P) )
-                     ((match (conc (chop (sys "HOME")) '(@P)) R)
-                        (cons "~/" (cdr @P)) )
-                     (T R) ) ) ) ) ) )
+   (setq File (fName File))
    (or
       (find '((This) (= File (: file))) *Buffers)
       (new '(+Buffer) File Y) ) )
@@ -129,7 +133,7 @@ beep undo redo evCmd dirty> load> save> view> status)
 (dm load> (Win)
    (markup
       (=: text
-         (let? File (fName (: file))
+         (let? File (: file)
             (let? I (info File)
                (if (=T (car I))
                   (let D (chop File)
@@ -156,14 +160,14 @@ beep undo redo evCmd dirty> load> save> view> status)
       (evCmd (load (fName (pack @)))) ) )
 
 (dm save> (Win)
-   (when (fName (: file))
+   (when (: file)
       (unless (=T (car (info @)))
          (if (sys "CCRYPT" (: key))
             (pipe
                (out '("ccrypt" "-e" "-ECCRYPT")
                   (mapc prinl (: text)) )
-               (out (fName (: file)) (echo)) )
-            (out (fName (: file)) (mapc prinl (: text))) ) )
+               (out (: file) (echo)) )
+            (out (: file) (mapc prinl (: text))) ) )
       (=: dirt (: undo))
       (for (This *CmdWin (setq This (: next)))
          (status) ) ) )
@@ -200,12 +204,12 @@ beep undo redo evCmd dirty> load> save> view> status)
 
 
 (local) (delwin cursor addLine chgLine unmark redraw repaint scroll scLeft
-scRight goto chgwin eqwin getch getch2 reload done change jmp@@ cnt@@ goCol
-goLeft goRight goUp goDown goAbs goFind word lword end lend getWord _forward
-goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
-paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
-move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf
-shell shFile prCmd reset command vi)
+scRight goto chgwin eqwin getch getch2 reload scratch done change jmp@@ cnt@@
+goCol goLeft goRight goUp goDown goAbs goFind word lword end lend getWord
+_forward goForward _backward goBackward goPFore goPBack shift shiftY indent cutX
+cutN paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe
+evRpt move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN
+nextBuf shell shFile prCmd reset command vi)
 
 (de delwin ()
    (when (=: prev next (: next))
@@ -258,7 +262,7 @@ shell shFile prCmd reset command vi)
                   "/"
                   (length *Buffers)
                   " "
-                  (: buffer file)
+                  (prName (: buffer file))
                   (and (dirty> (: buffer) This) " [+]") )
                Z (pack
                   (: mark)
@@ -382,7 +386,7 @@ shell shFile prCmd reset command vi)
             (mapc curses '("noraw" "cbreak")) )
          C ) ) )
 
-(de reload (File N)
+(de reload (File Y)
    (unless (== This *CmdWin)
       (when File
          (unless
@@ -391,8 +395,21 @@ shell shFile prCmd reset command vi)
                (=: buffer (fileBuffer File)) )
             (unmark) ) )
       (load> (: buffer) This)
-      (goto 1 (or N (: buffer pos)) T)
+      (goto 1 (or Y (: buffer pos)) T)
       (repaint) ) )
+
+(de scratch (File Lst Y)
+   (setq File (fName File))
+   (if (find '((This) (= File (: file))) *Buffers)
+      (put @ 'text Lst)
+      (=: last (: buffer))
+      (unmark)
+      (put
+         (=: buffer (new '(+Buffer) File Y))
+         'text
+         Lst )
+      (goto 1 (: buffer pos) T) )
+   (repaint) )
 
 (de done (Flg)
    (and Flg
@@ -857,7 +874,7 @@ shell shFile prCmd reset command vi)
                                     (extract
                                        '((X)
                                           (let? F (and (pre? S X) (pack P X))
-                                             (if (=T (car (info (fName F))))
+                                             (if (=T (car (info F)))
                                                 (pack F "/")
                                                 F ) ) )
                                        (dir (fName P) T) ) ) ) )
@@ -1011,13 +1028,13 @@ shell shFile prCmd reset command vi)
 (de nextBuf (B)
    (let? M (member (: buffer) *Buffers)
       (=: last (: buffer))
+      (unmark)
       (=: buffer
          (nond
             (B (car (or (cdr M) *Buffers)))
             ((=T B) B)
             (NIL
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
-      (unmark)
       (unless (: buffer text)
          (load> (: buffer) This) )
       (goto 1 (: buffer pos) T) ) )
@@ -1032,7 +1049,7 @@ shell shFile prCmd reset command vi)
 
 (de shFile (S)
    (when (: buffer file)
-      (shell (text S (path (fName @)) *Cnt)) ) )
+      (shell (text S @ *Cnt)) ) )
 
 (de prCmd (L)
    (with *CmdWin
@@ -1096,7 +1113,8 @@ shell shFile prCmd reset command vi)
                      (prCmd
                         (make
                            (for (I . This) *Buffers
-                              (link (chop (pack ":" I " " (: file)))) ) ) ) )
+                              (link
+                                 (chop (pack ":" I " " (prName (: file)))) ) ) ) ) )
                   ("key" (=: buffer key Line) (reload))
                   ("m"
                      (when (info (=: mark (rplFile Line)))
@@ -1383,8 +1401,8 @@ shell shFile prCmd reset command vi)
                         (`(char (+ 264 6))  # [F6] Next buffer
                            (nextBuf) )
                         (`(char (+ 264 7))  # [F7] Load file
-                           (let? F (fName (: buffer file))
-                              (evCmd (load F)) ) )
+                           (when (: buffer file)
+                              (evCmd (load @)) ) )
                         (`(char (+ 264 8)) (run *F8))  # [F8] Custom key
                         (`(char (+ 264 9)) (run *F9))  # [F9] Custom key
                         (`(char (+ 264 10)) (run *F10))  # [F10] Custom key

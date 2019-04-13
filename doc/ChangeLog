@@ -1,3 +1,8 @@
+13apr19
+   Clean up file name handling
+   'scratch' function
+      lib/vip.l
+
 12apr19
    Add '*F8' and  '*F9'
       lib/vip.l

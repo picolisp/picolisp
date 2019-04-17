@@ -1051,14 +1051,14 @@ flow.l,1703
 doCall3314,80464
 doTick3384,82219
 doIpid3416,83216
-doOpid3432,83504
-doKill3448,83799
-doFork3471,84234
-doDetach3485,84480
-forkLispX_FE3505,84958
-doBye3666,89512
-byeE3677,89675
-finishE3689,89986
+doOpid3432,83503
+doKill3448,83798
+doFork3471,84233
+doDetach3485,84479
+forkLispX_FE3505,84957
+doBye3666,89511
+byeE3677,89674
+finishE3689,89985
 
 sym.l,1898
 cmpLongAX_F5,78

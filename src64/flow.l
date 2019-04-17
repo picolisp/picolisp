@@ -1,4 +1,4 @@
-# 24dec18abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -3414,7 +3414,7 @@
 
 # (ipid) -> pid | NIL
 (code 'doIpid 2)
-   ld C (EnvInFrames)  # OutFrames?
+   ld C (EnvInFrames)  # InFrames?
    null C
    if nz
       ld E (C II)  # 'pid'

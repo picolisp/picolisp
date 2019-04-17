@@ -1,4 +1,4 @@
-# 16mar17abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -522,10 +522,6 @@
 (asm null (Src S)
    (genCode (Src S) (list 'null Src) ((op.n Src S))
       "Carry = 0,  Result = @1;" ) )
-
-(asm nulp (Src S)
-   (genCode (Src S) (list 'nulp Src) ((op.i Src S))
-      "Result = @1;" ) )
 
 (asm nul4 ()
    (genCode NIL '(nul4) NIL

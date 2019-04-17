@@ -1,4 +1,4 @@
-# 17feb18abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -863,6 +863,10 @@
    (comment 'null Src)
    (prinst "cmp" (src Src S) 0) )
 
+(asm null/jz (Src S Adr A)  # optimize
+   (comment 'null Src "--" "jz" Adr)
+   (prinst "cbz" (src Src S) Adr) )
+
 (asm null/ldz (Src S Dst D Src2 S2)  # optimize
    (comment 'null Src "--" "ldz" Dst Src2)
    (prinst "cbnz" (src Src S) "1f")
@@ -870,35 +874,12 @@
    (mov Dst (src Src2 S2 imm16 Dst))
    (prinl "1:") )
 
-(asm null/ldnz (Src S Dst D Src2 S2)  # optimize
-   (comment 'null Src "--" "ldnz" Dst Src2)
-   (prinst "cbz" (src Src S) "1f")
-   (setq Dst (dst Dst D))
-   (mov Dst (src Src2 S2 imm16 Dst))
-   (prinl "1:") )
-
-
-(asm nulp (Src S)
-   (comment 'nulp Src)
-   (prinst "cmp" (src Src S) 0) )
-
-(asm nulp/jz (Src S Adr A)  # optimize
-   (comment 'nulp Src "--" "jz" Adr)
-   (prinst "cbz" (src Src S) Adr) )
-
-(asm nulp/ldz (Src S Dst D Src2 S2)  # optimize
-   (comment 'nulp Src "--" "ldz" Dst Src2)
-   (prinst "cbnz" (src Src S) "1f")
-   (setq Dst (dst Dst D))
-   (mov Dst (src Src2 S2 imm16 Dst))
-   (prinl "1:") )
-
-(asm nulp/jnz (Src S Adr A)
-   (comment 'nulp Src "--" "jnz" Adr)
+(asm null/jnz (Src S Adr A)
+   (comment 'null Src "--" "jnz" Adr)
    (prinst "cbnz" (src Src S) Adr) )
 
-(asm nulp/ldnz (Src S Dst D Src2 S2)  # optimize
-   (comment 'nulp Src "--" "ldnz" Dst Src2)
+(asm null/ldnz (Src S Dst D Src2 S2)  # optimize
+   (comment 'null Src "--" "ldnz" Dst Src2)
    (prinst "cbz" (src Src S) "1f")
    (setq Dst (dst Dst D))
    (mov Dst (src Src2 S2 imm16 Dst))
@@ -1754,7 +1735,7 @@
                (let? L (cadr Lst)
                   (unless (and (reg? (cadr L)) (reg? (cadddr L)))
                      (optimBranch Lst) ) ) ) ) )
-      ((memq (caar Lst) '(nulp nul4 nul))
+      ((memq (caar Lst) '(null nul4 nul))
          (cond
             ((memq (caadr Lst) '(jz jnz))
                (and

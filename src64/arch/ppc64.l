@@ -1,4 +1,4 @@
-# 27may16abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -813,9 +813,6 @@
 
 (asm null (Src S)
    (prinst "li" 31 -2)  # Clear carry
-   (prinst "cmpdi" (srcReg Src S) 0) )
-
-(asm nulp (Src S)
    (prinst "cmpdi" (srcReg Src S) 0) )
 
 (asm nul4 ()

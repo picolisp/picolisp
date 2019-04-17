@@ -1,4 +1,4 @@
-# 28may16abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 
@@ -135,7 +135,6 @@
       slen dst src      # Set 'dst' to the string length of 'src' [...]
       memb src cnt      # Find B in 'cnt' bytes of 'src' memory [z..]
       null src          # Compare 'src' with 0 [zs_]
-      nulp src          # Check 'src' for null-pointer [z..]
       nul4              # Compare four bytes in 'A' with 0 [zs_]
 
    Byte addressing:

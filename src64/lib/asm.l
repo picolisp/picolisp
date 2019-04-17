@@ -1,4 +1,4 @@
-# 04may17abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *LittleEndian *AlignedCode *Registers optimize
@@ -634,7 +634,6 @@
       (nul (source) "*Mode")
       (nul4)
       (null (source) "*Mode")
-      (nulp (source) "*Mode")
       (num (source) "*Mode")
       (off (destination) "*Mode" (source T) "*Mode")
       (or (destination) "*Mode" (source) "*Mode")

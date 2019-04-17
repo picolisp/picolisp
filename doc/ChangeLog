@@ -1,4 +1,12 @@
 17apr19
+   Remove 'nulp' instruction
+      doc64/asm
+      src64/arch/arm64.l
+      src64/arch/x86-64.l
+      src64/arch/ppc64.l
+      src64/arch/emu.l
+      src64/lib/asm.l
+      src64/net.l
    Minor comment
       src64/flow.l
    File name handling

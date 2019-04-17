@@ -1,4 +1,4 @@
-# 01jun16abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 # Architecture
@@ -460,9 +460,6 @@
    (unless C (prinst "cmovzq" "%rcx" Cnt)) )
 
 (asm null (Src S)
-   (prinst "cmp" "%r12" (src Src S)) )
-
-(asm nulp (Src S)
    (prinst "cmp" "%r12" (src Src S)) )
 
 (asm nul4 ()

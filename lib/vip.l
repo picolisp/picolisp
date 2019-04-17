@@ -1,4 +1,4 @@
-# 13apr19abu
+# 17apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -874,7 +874,7 @@ nextBuf shell shFile prCmd reset command vi)
                                     (extract
                                        '((X)
                                           (let? F (and (pre? S X) (pack P X))
-                                             (if (=T (car (info F)))
+                                             (if (=T (car (info (fName F))))
                                                 (pack F "/")
                                                 F ) ) )
                                        (dir (fName P) T) ) ) ) )
@@ -1117,7 +1117,7 @@ nextBuf shell shFile prCmd reset command vi)
                                  (chop (pack ":" I " " (prName (: file)))) ) ) ) ) )
                   ("key" (=: buffer key Line) (reload))
                   ("m"
-                     (when (info (=: mark (rplFile Line)))
+                     (when (info (=: mark (fName (rplFile Line))))
                         (in (: mark) (move 'goAbs (read) (read))) ) )
                   ("n" (nextBuf))  # Next buffer
                   ("N" (nextBuf T))  # Previous buffer

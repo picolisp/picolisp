@@ -1,4 +1,4 @@
-# 09apr19abu
+# 19apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *JS "*JS" *Style *SsEvts *Menu *Tab *ID
@@ -163,11 +163,12 @@
          (run Prg) ) ) )
 
 (de serverSend (Sock . Prg)
-   (out Sock
-      (ht:Out (bool *Chunked)
-         (prin "data: ")
-         (htPrin Prg 2)
-         (prinl "^J") ) ) )
+   (when Sock
+      (out @
+         (ht:Out (bool *Chunked)
+            (prin "data: ")
+            (htPrin Prg 2)
+            (prinl "^J") ) ) ) )
 
 (de ping (Min)
    (timeout (setq *Timeout (* Min `(* 60 1000))))

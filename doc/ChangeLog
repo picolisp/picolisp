@@ -1,3 +1,7 @@
+19apr19
+   Check socket in 'serverSend'
+      lib/xhtml.l
+
 17apr19
    Remove 'nulp' instruction
       doc64/asm

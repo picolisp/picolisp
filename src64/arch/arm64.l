@@ -1,4 +1,4 @@
-# 17apr19abu
+# 19apr19abu
 # (c) Software Lab. Alexander Burger
 
 # *Globals
@@ -1739,7 +1739,11 @@
          (cond
             ((memq (caadr Lst) '(jz jnz))
                (and
-                  (not (needCC (cons (cons 'jmp (cdadr Lst)) (cddr Lst))))
+                  (let Opc (caadr Lst)
+                     (set (cadr Lst) 'jmp)
+                     (prog1
+                        (not (needCC (cdr Lst)))
+                        (set (cadr Lst) Opc) ) )
                   (nor (pre? "ret" (get Lst 2 2)) (pre? "Ret" (get Lst 2 2)))
                   (optimBranch Lst) ) )
             ((and (memq (caadr Lst) '(ldz ldnz)) (not (needCC (cddr Lst))))

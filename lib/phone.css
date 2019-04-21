@@ -1,4 +1,4 @@
-/* 23feb19abu
+/* 21apr19abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -33,4 +33,9 @@ caption {
 .tiny {
    padding: 0 1ex;
    font-size: large;
+}
+
+/* REPL */
+.repl {
+   font-size: 2.0vw;
 }

@@ -419,12 +419,21 @@ OK
 <dt><a name="as"><code>(as 'any1 . any2) -> any2 | NIL</code></a>
 <dd>Returns <code>any2</code> unevaluated when <code>any1</code> evaluates to
 non-<code>NIL</code>. Otherwise <code>NIL</code> is returned. <code>(as Flg A B
-C)</code> is equivalent to <code>(and Flg '(A B C))</code>. See also <code><a
+C)</code> is equivalent to <code>(and Flg '(A B C))</code>. <code>as</code> is
+typically used in <a href="ref.html#macro-io">read-macros</a> to conditionally
+exclude sub-expressions. See also <code><a
 href="refQ.html#quote">quote</a></code>.
 
 <pre><code>
 : (as (= 3 3) A B C)
 -> (A B C)
+
+(de foo ()
+   (doSomething)
+   ~(as (someConditio)
+      (doThis)
+      (doThat) )
+   (doMore) )
 </code></pre>
 
 <dt><a name="asoq"><code>(asoq 'any 'lst) -> lst</code></a>

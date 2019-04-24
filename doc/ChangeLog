@@ -1,3 +1,7 @@
+24apr19
+   Added hint to read-macros to 'as'
+      doc/refA.html
+
 21apr19
    'repl' CSS class
       lib/phone.css

@@ -1,3 +1,7 @@
+26apr19
+   Handle 'T' hook in '+ObjVal'
+      lib/form.l
+
 24apr19
    Added hint to read-macros to 'as'
       doc/refA.html

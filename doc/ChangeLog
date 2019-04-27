@@ -1,3 +1,8 @@
+27apr19
+   Change 'hunspell' spell checker fron "z" to "gs" command
+   Use "z" to scroll right in addition to right arrow
+      lib/vip.l
+
 26apr19
    Handle 'T' hook in '+ObjVal'
       lib/form.l

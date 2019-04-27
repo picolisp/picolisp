@@ -1,4 +1,4 @@
-# 17apr19abu
+# 27apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1255,7 +1255,7 @@ nextBuf shell shFile prCmd reset command vi)
                         (`(char 260)  # [LEFT] Scroll left
                            (do 3 (scLeft))
                            (redraw) )
-                        (`(char 261)  # [RIGHT] Scroll right
+                        (("z" `(char 261))  # [RIGHT] Scroll right
                            (do 3 (scRight))
                            (redraw) )
                         ("|" (move 'goCol *Cnt))  # Go to column
@@ -1345,6 +1345,7 @@ nextBuf shell shFile prCmd reset command vi)
                            (case (getch)
                               ("f" (reload (pack (getWord T))))  # [gf] Edit file under cursor
                               ("g" (move 'goAbs 1 1))  # [gg] Go to beginning of text
+                              ("s" (spell))
                               (T (beep)) ) )
                         ("+"  # Increase window size
                            (loop
@@ -1443,7 +1444,6 @@ nextBuf shell shFile prCmd reset command vi)
                               ("q" (done))  # [qq] (Quit) Close window
                               (T (beep)) ) )
                         ("v" (view> This))  # View hook
-                        ("z" (spell))
                         ("Z" (done T))
                         (T (beep)) )
                      (reset) ) ) ) ) ) ) )

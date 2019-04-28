@@ -1,3 +1,7 @@
+28apr19
+   Scroll right continued in longer line
+      lib/vip.l
+
 27apr19
    Change 'hunspell' spell checker fron "z" to "gs" command
    Use "z" to scroll right in addition to right arrow

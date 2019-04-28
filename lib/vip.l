@@ -1,4 +1,4 @@
-# 27apr19abu
+# 28apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -304,7 +304,13 @@ nextBuf shell shFile prCmd reset command vi)
          (inc (:: winX)) )
       ((cdr (nth (: buffer text) (: posY) (: posX)))
          (inc (:: posX))
-         (inc (:: winX)) ) ) )
+         (inc (:: winX)) )
+      (T
+         (for (Y . L) (nth (: buffer text) (: winY))
+            (T (cdr (nth L (: posX)))
+               (inc (:: posY)
+                  (- Y (- (: posY) (: winY)) 1) ) )
+            (T (= Y (: lines))) ) ) ) )
 
 (de goto (X Y Flg)
    (if

@@ -239,7 +239,7 @@ nextBuf shell shFile prCmd reset command vi)
                512 )  # COLOR_PAIR(2)
             ((gt0 (val C)) 256)  # COLOR_PAIR(1)
             (T 0) ) )
-      (curses "waddnstr" NIL (: ptr) C  -1) ) )
+      (curses "waddnstr" NIL (: ptr) C -1) ) )
 
 (de chgLine (L)
    (cursor)

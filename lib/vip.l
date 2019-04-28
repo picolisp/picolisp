@@ -261,9 +261,8 @@ nextBuf shell shFile prCmd reset command vi)
                   (index (: buffer) *Buffers)
                   "/"
                   (length *Buffers)
-                  " "
-                  (prName (: buffer file))
-                  (and (dirty> (: buffer) This) " [+]") )
+                  (if (dirty> (: buffer) This) "*" " ")
+                  (prName (: buffer file)) )
                Z (pack
                   (: mark)
                   " "

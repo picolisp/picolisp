@@ -1,4 +1,5 @@
 28apr19
+   "Dirty" indicator "*" instead of "[+]"
    Scroll right continued in longer line
       lib/vip.l
 

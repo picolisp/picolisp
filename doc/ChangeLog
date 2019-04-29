@@ -1,4 +1,5 @@
 29apr19
+   Optional count argument to 'fmt' in F4
    Scroll right to longer line below current line
    <enter> goes to beginning of next line
    "Dirty" indicator " * "

@@ -1400,7 +1400,9 @@ nextBuf shell shFile prCmd reset command vi)
                            (shFile "dif @1 @2") )
                         (`(char (+ 264 4))  # [F4] Format paragraph
                            (goPFore 1 -1)
-                           (pipeN (cnt@@) "fmt") )
+                           (if *Count
+                              (pipeN (cnt@@) (pack "fmt -" *Count))
+                              (pipeN (cnt@@) "fmt") ) )
                         (`(char (+ 264 5))  # [F5] Previous buffer
                            (nextBuf T) )
                         (`(char (+ 264 6))  # [F6] Next buffer

@@ -1,4 +1,6 @@
 29apr19
+   Scroll right to longer line below current line
+   <enter> goes to beginning of next line
    "Dirty" indicator " * "
       lib/vip.l
 

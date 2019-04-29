@@ -305,10 +305,9 @@ nextBuf shell shFile prCmd reset command vi)
          (inc (:: posX))
          (inc (:: winX)) )
       (T
-         (for (Y . L) (nth (: buffer text) (: winY))
+         (for (Y . L) (cdr (nth (: buffer text) (: posY)))
             (T (cdr (nth L (: posX)))
-               (inc (:: posY)
-                  (- Y (- (: posY) (: winY)) 1) ) )
+               (inc (:: posY) Y) )
             (T (= Y (: lines))) ) ) ) )
 
 (de goto (X Y Flg)
@@ -1249,7 +1248,7 @@ nextBuf shell shFile prCmd reset command vi)
                         (("\n" "\r")
                            (if (== This *CmdWin)
                               (command (: next) (get (: buffer text) (: posY)))
-                              (cmdMode) ) )
+                              (move 'goAbs 1 (+ (: posY) *Cnt)) ) )  # Go to beginning of next line
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
                         (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
                         (("^F" `(char 338)) (move 'goDown (: lines)))  # [NPAGE] Page down

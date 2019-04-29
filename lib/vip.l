@@ -1,4 +1,4 @@
-# 28apr19abu
+# 29apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -261,7 +261,7 @@ nextBuf shell shFile prCmd reset command vi)
                   (index (: buffer) *Buffers)
                   "/"
                   (length *Buffers)
-                  (if (dirty> (: buffer) This) "*" " ")
+                  (if (dirty> (: buffer) This) " * " " ")
                   (prName (: buffer file)) )
                Z (pack
                   (: mark)

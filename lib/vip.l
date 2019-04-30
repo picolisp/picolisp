@@ -1,4 +1,4 @@
-# 29apr19abu
+# 30apr19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -22,12 +22,13 @@
 beep undo redo evCmd dirty> load> save> view> status)
 
 (class +Buffer)
-# text file key undo redo dirt pos lastX lastY <c>
+# text file key undo redo dirt pos lastX lastY fmt <c>
 
 (dm T (File Y)
    (and (=: file File) (queue '*Buffers This))
    (=: pos (or Y 1))
-   (=: lastX (=: lastY 1)) )
+   (=: lastX (=: lastY 1))
+   (=: fmt 80) )
 
 (de fName (File)
    (when
@@ -1399,10 +1400,9 @@ nextBuf shell shFile prCmd reset command vi)
                         (`(char (+ 264 3))  # [F3] Custom dif
                            (shFile "dif @1 @2") )
                         (`(char (+ 264 4))  # [F4] Format paragraph
+                           (and *Count (=: buffer fmt @))
                            (goPFore 1 -1)
-                           (if *Count
-                              (pipeN (cnt@@) (pack "fmt -" *Count))
-                              (pipeN (cnt@@) "fmt") ) )
+                           (pipeN (cnt@@) (pack "fmt -" (: buffer fmt))) )
                         (`(char (+ 264 5))  # [F5] Previous buffer
                            (nextBuf T) )
                         (`(char (+ 264 6))  # [F6] Next buffer

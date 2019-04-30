@@ -1,3 +1,7 @@
+30apr19
+   Keep count argument to 'fmt' in buffer
+      lib/vip.l
+
 29apr19
    Optional count argument to 'fmt' in F4
    Scroll right to longer line below current line

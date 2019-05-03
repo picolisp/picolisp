@@ -1,4 +1,4 @@
-# 30apr19abu
+# 03may19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1257,10 +1257,9 @@ nextBuf shell shFile prCmd reset command vi)
                         (("^B" `(char 339)) (move 'goUp (: lines)))  # [PPAGE] Page up
                         ("h" (move 'goLeft *Cnt))  # Move left
                         ("l" (move 'goRight *Cnt))  # Move right
-                        (`(char 260)  # [LEFT] Scroll left
-                           (do 3 (scLeft))
-                           (redraw) )
-                        (("z" `(char 261))  # [RIGHT] Scroll right
+                        (`(char 260) (scLeft) (redraw))  # [LEFT] Scroll left
+                        (`(char 261) (scRight) (redraw))  # [RIGHT] Scroll right
+                        ("z"  # Scroll right 3 columns
                            (do 3 (scRight))
                            (redraw) )
                         ("|" (move 'goCol *Cnt))  # Go to column

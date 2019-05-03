@@ -1,3 +1,10 @@
+03may19
+   Pass flags to PendingIntent
+   Prevent 'wake' under-lock
+      lib/android.l
+   Arrows scroll only by single column
+      lib/vip.l
+
 30apr19
    Keep count argument to 'fmt' in buffer
       lib/vip.l

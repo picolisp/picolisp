@@ -1,4 +1,4 @@
-# 24mar19abu
+# 03may19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -117,7 +117,9 @@
          (java CONTEXT 'getSystemService "power")  # PowerManager
          'newWakeLock 1 "PilWake" ) )              # PARTIAL_WAKE_LOCK = 1
    (when (args)  # (wake 'flg)
-      (java *Wake (if (next) 'acquire 'release)) ) )
+      (cond
+         ((next) (java *Wake 'acquire))
+         ((java *Wake 'isHeld) (java *Wake 'release)) ) ) )
 
 # Check if WIFI is active
 (local) (getActiveNetworkInfo getType)
@@ -336,7 +338,7 @@ getLastKnownLocation getLatitude getLongitude)
                         (car Tim) (cadr Tim) (caddr Tim) )
                      (java C 'getTimeInMillis) ) ) )
             (java "android.app.PendingIntent" 'getBroadcast
-               CONTEXT N Intent 0 ) ) ) ) )
+               CONTEXT N Intent `(hex "18000000") ) ) ) ) )  # FLAG_ACTIVITY_NEW_TASK | FLAG_UPDATE_CURRENT
 
 # Terminate PilBox
 (local) (terminate finishAndRemoveTask)

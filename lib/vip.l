@@ -1259,9 +1259,7 @@ nextBuf shell shFile prCmd reset command vi)
                         ("l" (move 'goRight *Cnt))  # Move right
                         (`(char 260) (scLeft) (redraw))  # [LEFT] Scroll left
                         (`(char 261) (scRight) (redraw))  # [RIGHT] Scroll right
-                        ("z"  # Scroll right 3 columns
-                           (do 3 (scRight))
-                           (redraw) )
+                        ("z" (do 3 (scRight)) (redraw))  # Scroll right 3 columns
                         ("|" (move 'goCol *Cnt))  # Go to column
                         ("$" (move 'goRight T))  # Go to end of line
                         ("G" (move 'goAbs 1 (or (format *Count) T)))  # Go to end of text

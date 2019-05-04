@@ -1,5 +1,5 @@
 04may19
-   Removed 'terminate' function
+   Removed 'terminate', added 'restart' function
       lib/android.l
 
 03may19

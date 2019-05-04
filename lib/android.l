@@ -340,4 +340,10 @@ getLastKnownLocation getLatitude getLongitude)
             (java "android.app.PendingIntent" 'getBroadcast
                CONTEXT N Intent `(hex "18000000") ) ) ) ) )  # FLAG_ACTIVITY_NEW_TASK | FLAG_UPDATE_CURRENT
 
+# Restart PilBox
+(local) restart
+
+(de restart ()
+   (java (; CONTEXT GUI) 'restart) )
+
 # vi:et:ts=3:sw=3

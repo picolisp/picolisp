@@ -1,4 +1,4 @@
-# 03may19abu
+# 04may19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -339,11 +339,5 @@ getLastKnownLocation getLatitude getLongitude)
                      (java C 'getTimeInMillis) ) ) )
             (java "android.app.PendingIntent" 'getBroadcast
                CONTEXT N Intent `(hex "18000000") ) ) ) ) )  # FLAG_ACTIVITY_NEW_TASK | FLAG_UPDATE_CURRENT
-
-# Terminate PilBox
-(local) (terminate finishAndRemoveTask)
-
-(de terminate ()
-   (java (; CONTEXT GUI) 'finishAndRemoveTask) )
 
 # vi:et:ts=3:sw=3

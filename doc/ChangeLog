@@ -1,3 +1,7 @@
+04may19
+   Removed 'terminate' function
+      lib/android.l
+
 03may19
    Pass flags to PendingIntent
    Prevent 'wake' under-lock

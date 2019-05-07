@@ -1,4 +1,6 @@
 07may19
+   Handle long path names in 'status'
+      lib/vip.l
    'onDone' function
       lib/form.l
 

@@ -1,4 +1,4 @@
-# 03may19abu
+# 07may19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -262,8 +262,8 @@ nextBuf shell shFile prCmd reset command vi)
                   (index (: buffer) *Buffers)
                   "/"
                   (length *Buffers)
-                  (if (dirty> (: buffer) This) " * " " ")
-                  (prName (: buffer file)) )
+                  (if (dirty> (: buffer) This) " * " " ") )
+               F (prName (: buffer file))
                Z (pack
                   (: mark)
                   " "
@@ -272,7 +272,17 @@ nextBuf shell shFile prCmd reset command vi)
                      (*/ 100 (dec (: posY)) @)
                      0 )
                   "%" ) )
-            (pack A (need (- *Columns (length A) (length Z)) " ") Z) ) )
+            (cond
+               ((ge0
+                     (setq N
+                        (- *Columns (length A) (length F) (length Z)) ) )
+                  (pack A F (need N " ") Z) )
+               ((onOff (NIL))
+                  (pack
+                     A
+                     (need (- *Columns (length A) (length Z)) " ")
+                     Z ) )
+               (T (align (- *Columns) (tail *Columns (chop F)))) ) ) )
       (curses "wrefresh" NIL (: status)) ) )
 
 (de redraw (Flg)

@@ -1,4 +1,4 @@
-# 26apr19abu
+# 07may19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2005,9 +2005,7 @@
                (rollback)
                (off *Lock) ) )
          (tryLock (: home obj)) ) )
-   (when (=: save Exe)
-      (for This (: home gui)
-         (and (isa '+Edit This) (=: save Exe)) ) ) )
+   (=: save Exe) )
 
 (de tryLock (Obj)
    (if (lock Obj)
@@ -2016,6 +2014,9 @@
       (tell)
       (setq *Lock Obj) ) )
 
+(de onDone (Exe)
+   (for This (: gui)
+      (and (isa '+Edit This) (=: save Exe)) ) )
 
 (de editButton (Able Exe)
    (<style> (and (: able) "edit")

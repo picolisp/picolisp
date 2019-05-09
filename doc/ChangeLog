@@ -1,3 +1,7 @@
+09may19
+   Tune horizontal positioning in 'goto'
+      lib/vip.l
+
 07may19
    Handle long path names in 'status'
       lib/vip.l

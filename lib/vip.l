@@ -1,4 +1,4 @@
-# 07may19abu
+# 09may19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -344,9 +344,9 @@ nextBuf shell shFile prCmd reset command vi)
                (scroll -1)
                (addLine 0 (get (: buffer text) (dec (:: winY))) *Columns) ) ) )
       (=: winX
-         (if (>= *Columns X)
+         (if (>= (*/ *Columns 3 4) X)
             1
-            (- X (/ *Columns 4)) ) )
+            (- X (/ *Columns 2)) ) )
       (=: winY
          (min1
             (- Y (/ (: lines) 2))

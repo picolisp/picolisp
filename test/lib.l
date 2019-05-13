@@ -1,4 +1,4 @@
-# 24oct16abu
+# 13may19abu
 # (c) Software Lab. Alexander Burger
 
 ### task ###
@@ -133,8 +133,7 @@
 ### rc ###
 (let F (tmp "rc")
    (rc F 'a 123)
-   (rc F 'b "test")
-   (rc F 'c (1 2 3))
+   (rc F 'b "test"  'c (1 2 3))
    (test '((c 1 2 3) (b . "test") (a . 123))
       (in F (read)) )
    (test 123 (rc F 'a))

@@ -226,10 +226,11 @@ $ pil +
 -> T
 </code></pre>
 
-<dt><a name="rc"><code>(rc 'sym 'any1 ['any2]) -> any</code></a>
-<dd>Fetches a value from a resource file <code>sym</code>, or stores a value
-<code>any2</code> in that file, using a key <code>any1</code>. All values are
-stored in a list in the file, using <code><a
+<dt><a name="rc"><code>(rc 'sym 'any1 ['any2 ['any3 'any4..]]) -> any</code></a>
+<dd>Fetches a value from a resource file <code>sym</code>, or stores one or more
+key-value pairs <code>(any1 . any2)</code> in that file, using the key
+<code>any1</code> (and optionally <code>any3</code> etc. for multiple stores).
+All values are stored in a list in the file, using <code><a
 href="refA.html#assoc">assoc</a></code>. During the whole operation, the file is
 exclusively locked with <code><a href="refC.html#ctl">ctl</a></code>.
 

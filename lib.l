@@ -1,4 +1,4 @@
-# 14feb19abu
+# 13may19abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -188,9 +188,12 @@
             (ifn (args)
                (cdr (assoc Key Lst))
                (let Val (next)
-                  (if (assoc Key Lst)
-                     (con @ Val)
-                     (push 'Lst (cons Key Val)) )
+                  (loop
+                     (if (assoc Key Lst)
+                        (con @ Val)
+                        (push 'Lst (cons Key Val)) )
+                     (NIL (args))
+                     (setq Key (next)  Val (next)) )
                   (protect
                      (out File (println Lst)) )
                   Val ) ) ) ) ) )

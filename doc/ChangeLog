@@ -1,3 +1,11 @@
+13may19
+   'rc' stores multiple key/value pairs
+      lib.l
+      doc/refR.html
+      test/lib.l
+   Minor fix
+      doc/refD.html
+
 09may19
    Tune horizontal positioning in 'goto'
       lib/vip.l

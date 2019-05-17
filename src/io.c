@@ -1,4 +1,4 @@
-/* 07feb19abu
+/* 17may19abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -1992,16 +1992,22 @@ any doLines(any x) {
 }
 
 static any parse(any x, bool skp, any s) {
-   int c;
    parseFrame *save, parser;
-   void (*getSave)(void);
+   inFrame f;
    cell c1;
 
    save = Env.parser;
    Env.parser = &parser;
    parser.dig = unDig(parser.name = name(x));
    parser.eof = s? 0xFF : 0xFF5D0A;
-   getSave = Env.get,  Env.get = getParse,  c = Chr,  Chr = 0;
+   f.pid = 0,  f.fd = STDIN_FILENO;
+   if (InFile) {
+      InFile->next = Chr;
+      InFile = NULL;
+   }
+   Chr = 0;
+   f.get = Env.get,  Env.get = getParse;
+   f.link = Env.inFrames,  Env.inFrames = &f;
    Push(c1, Env.parser->name);
    if (skp)
       getParse();
@@ -2021,7 +2027,8 @@ static any parse(any x, bool skp, any s) {
       }
    }
    drop(c1);
-   Chr = c,  Env.get = getSave,  Env.parser = save;
+   popInFiles();
+   Env.parser = save;
    return x;
 }
 
@@ -2051,21 +2058,28 @@ any doAny(any ex) {
    x = cdr(ex),  x = EVAL(car(x));
    NeedSym(ex,x);
    if (!isNil(x)) {
-      int c;
       parseFrame *save, parser;
-      void (*getSave)(void);
+      inFrame f;
       cell c1;
 
       save = Env.parser;
       Env.parser = &parser;
       parser.dig = unDig(parser.name = name(x));
       parser.eof = 0xFF20;
-      getSave = Env.get,  Env.get = getParse,  c = Chr,  Chr = 0;
+      f.pid = 0,  f.fd = STDIN_FILENO;
+      if (InFile) {
+         InFile->next = Chr;
+         InFile = NULL;
+      }
+      Chr = 0;
+      f.get = Env.get,  Env.get = getParse;
+      f.link = Env.inFrames,  Env.inFrames = &f;
       Push(c1, Env.parser->name);
       getParse();
       x = read0(YES);
       drop(c1);
-      Chr = c,  Env.get = getSave,  Env.parser = save;
+      popInFiles();
+      Env.parser = save;
    }
    return x;
 }

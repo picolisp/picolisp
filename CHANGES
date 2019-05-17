@@ -1,4 +1,7 @@
 * NNjun19 picoLisp-19.6
+   Bug in catching parse errors
+   'rc' stores multiple key/value pairs
+   'onDone' function
    '<dl>', '<dt>' and '<dd>' tags
    'in', 'out', 'pipe' and 'load' pipe exit status code in '@@'
    Bug in 'tzo'

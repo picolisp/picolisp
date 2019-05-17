@@ -1,3 +1,8 @@
+17may19
+   Set up 'InFrame' in parser functions
+      {src64,pilos/src}/io.l
+      src/io.c
+
 13may19
    'rc' stores multiple key/value pairs
       lib.l

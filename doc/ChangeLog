@@ -1,3 +1,7 @@
+20may19
+   Typo in 'idForm'
+      lib/form.l
+
 17may19
    Set up 'InFrame' in parser functions
       {src64,pilos/src}/io.l

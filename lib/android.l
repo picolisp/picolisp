@@ -1,10 +1,10 @@
-# 04may19abu
+# 21may19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
    (setq *Uuid (in "UUID" (line T)))
-   (for F '("JAVA" "LISP" "BOSS")
+   (for F '("JAVA" "LISP" "RQST" "RPLY" "BOSS")
       (native "@" "unlink" 'I F)
       (native "@" "mkfifo" 'I F `(oct "600")) )
    (hear (open "BOSS")) )
@@ -50,30 +50,35 @@
 (de java1 ()
    (unless *Java
       (setq *Java (open "JAVA")  *Lisp (open "LISP"))
-      (task *Lisp
-         (ext 32768
-            (in *Lisp
-               (prog1
-                  (if (get (rd) (rd))
-                     (apply @ (rd))
-                     (rd)
-                     NIL )
-                  (out *Java (pr T @)) ) ) ) )
+      (let Rply (open "RPLY")
+         (task (open "RQST")  Rply Rply
+            (ext 32768
+               (in @
+                  (out Rply
+                     (pr
+                        (if (get (rd) (rd))
+                           (apply @ (rd))
+                           (rd)
+                           NIL ) ) ) ) ) )
+         (push '*Fork
+            '(off *Java *Lisp)
+            (list 'mapc 'close (list Rply *Java *Lisp)) )
+         (forked) )
       (forked)
       (javaExt) ) )
 
 (de java @
    (ext 32768
-      (out *Java (pr NIL (rest)))
+      (out *Java (pr (rest)))
       (in *Lisp
          (for (X (rd) X (rd))
             (and (=0 X) (quit (rd)))  # 0: Exception
-            (prog1                    # Callback
-               (if (get X (rd))
-                  (apply @ (rd))
-                  (rd)
-                  NIL )
-               (out *Java (pr T @)) ) )
+            (out *Java                # Callback
+               (pr
+                  (if (get X (rd))
+                     (apply @ (rd))
+                     (rd)
+                     NIL ) ) ) )
          (rd) ) ) )
 
 # Android device ID

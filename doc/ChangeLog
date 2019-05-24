@@ -1,3 +1,7 @@
+24may19
+   Zero 'ext' in callbacks
+      lib/android.l
+
 21may19
    Return to 4 pipes in Java RPC protocol
       lib/android.l

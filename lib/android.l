@@ -1,4 +1,4 @@
-# 21may19abu
+# 24may19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -54,12 +54,10 @@
          (task (open "RQST")  Rply Rply
             (ext 32768
                (in @
-                  (out Rply
-                     (pr
-                        (if (get (rd) (rd))
-                           (apply @ (rd))
-                           (rd)
-                           NIL ) ) ) ) ) )
+                  (let (X (rd)  Obj (rd)  Lst (rd))
+                     (out Rply
+                        (pr
+                           (and (get X Obj) (ext 0 (apply @ Lst))) ) ) ) ) ) )
          (push '*Fork
             '(off *Java *Lisp)
             (list 'mapc 'close (list Rply *Java *Lisp)) )
@@ -73,12 +71,10 @@
       (in *Lisp
          (for (X (rd) X (rd))
             (and (=0 X) (quit (rd)))  # 0: Exception
-            (out *Java                # Callback
-               (pr
-                  (if (get X (rd))
-                     (apply @ (rd))
-                     (rd)
-                     NIL ) ) ) )
+            (let (Obj (rd)  Lst (rd))  # Callback
+               (out *Java
+                  (pr
+                     (and (get X Obj) (ext 0 (apply @ Lst))) ) ) ) )
          (rd) ) ) )
 
 # Android device ID

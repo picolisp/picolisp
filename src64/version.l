@@ -1,6 +1,6 @@
-# 24may19abu
+# 25may19abu
 # (c) Software Lab. Alexander Burger
 
-(de *Version 19 5 24)
+(de *Version 19 5 25)
 
 # vi:et:ts=3:sw=3

@@ -1,3 +1,7 @@
+25may19
+   Handle long path names in 'status'
+      lib/vip.l
+
 24may19
    Zero 'ext' in callbacks
       lib/android.l

@@ -1,10 +1,10 @@
-# 09may19abu
+# 25may19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 
-(local) (*CmdWin *Flat *Chr *Complete *Repeat *Change *Count *Cnt *Search *Clip
-*Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
+(local) (*CmdWin *StatNm *Flat *Chr *Complete *Repeat *Change *Count *Cnt
+*Search *Clip *Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
 
 ### Curses library interface ###
 (local) curses
@@ -277,12 +277,13 @@ nextBuf shell shFile prCmd reset command vi)
                      (setq N
                         (- *Columns (length A) (length F) (length Z)) ) )
                   (pack A F (need N " ") Z) )
-               ((onOff (NIL))
+               ((onOff *StatNm)
+                  (align (- *Columns) (tail *Columns (chop F))) )
+               (T
                   (pack
                      A
                      (need (- *Columns (length A) (length Z)) " ")
-                     Z ) )
-               (T (align (- *Columns) (tail *Columns (chop F)))) ) ) )
+                     Z ) ) ) ) )
       (curses "wrefresh" NIL (: status)) ) )
 
 (de redraw (Flg)
@@ -411,6 +412,7 @@ nextBuf shell shFile prCmd reset command vi)
             (unmark) ) )
       (load> (: buffer) This)
       (goto 1 (or Y (: buffer pos)) T)
+      (off *StatNm)
       (repaint) ) )
 
 (de scratch (File Lst Y)
@@ -1052,6 +1054,7 @@ nextBuf shell shFile prCmd reset command vi)
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
       (unless (: buffer text)
          (load> (: buffer) This) )
+      (off *StatNm)
       (goto 1 (: buffer pos) T) ) )
 
 (de shell (S)

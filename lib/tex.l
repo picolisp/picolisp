@@ -1,4 +1,4 @@
-# 24nov16abu
+# 27may19abu
 # (c) Software Lab. Alexander Burger
 
 # Convert to PDF document
@@ -70,7 +70,7 @@
       (prEval Prg 2)
       (prinl "\\end{document}") )
    (call "sh" "-c"
-      (pack "latex -interaction=batchmode " Doc ".tex >/dev/null") )
+      (list "latex -interaction=batchmode " Doc ".tex >/dev/null") )
    (call "rm" (pack Doc ".aux") (pack Doc ".log")) )
 
 (de \\block (S . Prg)

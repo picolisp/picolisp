@@ -1,4 +1,4 @@
-# 24may19abu
+# 30may19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -22,7 +22,7 @@
    (out "BOSS" (pr (rest))) )
 
 # Android Context
-(local) (CONTEXT javaExt)
+(local) (CONTEXT GUI Config javaExt)
 
 (de CONTEXT . {H@@@40000000000})  # file 32768, obj (hex "100000000")
 

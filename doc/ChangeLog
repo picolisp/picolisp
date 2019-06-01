@@ -1,3 +1,7 @@
+01jun19
+   Keep horizontal position in buffer switches
+      lib/vip.l
+
 30may19
    Add 'GUI' and 'Config' to locals
       lib/android.l

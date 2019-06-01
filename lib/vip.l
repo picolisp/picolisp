@@ -1,4 +1,4 @@
-# 25may19abu
+# 01jun19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -22,11 +22,12 @@
 beep undo redo evCmd dirty> load> save> view> status)
 
 (class +Buffer)
-# text file key undo redo dirt pos lastX lastY fmt <c>
+# text file key undo redo dirt posX posY lastX lastY fmt <c>
 
 (dm T (File Y)
    (and (=: file File) (queue '*Buffers This))
-   (=: pos (or Y 1))
+   (=: posX 1)
+   (=: posY (or Y 1))
    (=: lastX (=: lastY 1))
    (=: fmt 80) )
 
@@ -154,7 +155,8 @@ beep undo redo evCmd dirty> load> save> view> status)
                         (rdLines) )
                      (in File (rdLines)) ) ) ) ) ) )
    (=: undo (=: redo (=: dirt)))
-   (=: pos (min1 (: pos) (length (: text))))
+   (=: posX 1)
+   (=: posY (min1 (: posY) (length (: text))))
    (and
       (head '`(chop "# VIP ") (: text 1))
       (clip (: text 1 -6))
@@ -356,8 +358,8 @@ nextBuf shell shFile prCmd reset command vi)
    (when Flg (redraw T))
    (unless (== This *Window)
       (curses "wrefresh" NIL (: ptr)) )
-   (=: posX X)
-   (=: buffer pos (=: posY Y))
+   (=: buffer posX (=: posX X))
+   (=: buffer posY (=: posY Y))
    (status) )
 
 (de chgwin (Lines Top)
@@ -411,7 +413,7 @@ nextBuf shell shFile prCmd reset command vi)
                (=: buffer (fileBuffer File)) )
             (unmark) ) )
       (load> (: buffer) This)
-      (goto 1 (or Y (: buffer pos)) T)
+      (goto 1 (or Y (: buffer posY)) T)
       (off *StatNm)
       (repaint) ) )
 
@@ -425,7 +427,7 @@ nextBuf shell shFile prCmd reset command vi)
          (=: buffer (new '(+Buffer) File Y))
          'text
          Lst )
-      (goto 1 (: buffer pos) T) )
+      (goto 1 (: buffer posY) T) )
    (repaint) )
 
 (de done (Flg)
@@ -1055,7 +1057,7 @@ nextBuf shell shFile prCmd reset command vi)
       (unless (: buffer text)
          (load> (: buffer) This) )
       (off *StatNm)
-      (goto 1 (: buffer pos) T) ) )
+      (goto (: buffer posX) (: buffer posY) T) ) )
 
 (de shell (S)
    (curses "endwin")
@@ -1215,9 +1217,9 @@ nextBuf shell shFile prCmd reset command vi)
             0 (dec *Lines)
             1
             (min1
-               (- (: pos) (/ (- *Lines 2) 2))
+               (- (: posY) (/ (- *Lines 2) 2))
                (- (length (: text)) *Lines -3) )
-            1 (: pos)
+            1 (: posY)
             *CmdWin ) )
       (with (setq *Window (; *CmdWin next)) (redraw))
       (catch 'done

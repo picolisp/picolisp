@@ -1,3 +1,7 @@
+03jun19
+   Mark horizontal scroll position with "M", use in <enter> for next line
+      lib/vip.l
+
 01jun19
    Keep horizontal position in buffer switches
       lib/vip.l

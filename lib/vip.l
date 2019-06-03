@@ -1,4 +1,4 @@
-# 01jun19abu
+# 03jun19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -182,7 +182,7 @@ beep undo redo evCmd dirty> load> save> view> status)
 (local) (*Window +Window)
 
 (class +Window)
-# buffer top lines status ptr winX winY posX posY prev next last mark
+# buffer top lines status ptr winX winY posX posY prev next last mark sc
 
 (dm T (Buffer Top Height WinX WinY PosX PosY Prev Mark)
    (=: buffer Buffer)
@@ -200,7 +200,8 @@ beep undo redo evCmd dirty> load> save> view> status)
    (=: winY WinY)
    (=: posX PosX)
    (=: posY PosY)
-   (=: mark Mark) )
+   (=: mark Mark)
+   (=: sc 0) )
 
 (dm view> ()
    (view> (: buffer) This) )
@@ -1264,7 +1265,9 @@ nextBuf shell shFile prCmd reset command vi)
                         (("\n" "\r")
                            (if (== This *CmdWin)
                               (command (: next) (get (: buffer text) (: posY)))
-                              (move 'goAbs 1 (+ (: posY) *Cnt)) ) )  # Go to beginning of next line
+                              (goto 1 (inc (: posY)))  # Go to next line
+                              (do (: sc) (scRight))
+                              (redraw) ) )
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
                         (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
                         (("^F" `(char 338)) (move 'goDown (: lines)))  # [NPAGE] Page down
@@ -1345,6 +1348,7 @@ nextBuf shell shFile prCmd reset command vi)
                         ("m"  # Set mark
                            (put (: buffer) (intern (getch))
                               (cons (: posX) (: posY)) ) )
+                        ("M" (=: sc (dec (: winX))))  # Mark horizontal scroll position
                         ("r"  # Replace character(s)
                            (and (getch2 (getch)) (evRpt (list 'insChar @ *Cnt))) )
                         ("R"  # Replace

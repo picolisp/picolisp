@@ -1,4 +1,4 @@
-# 20may19abu
+# 04jun19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -538,7 +538,7 @@
 (dm js> ()
    (cond
       ((: act) (super))
-      ((try (: msg) (: obj) 1)
+      ((try (: msg) (: obj) 1 This)
          (pack "@&+" (ht:Fmt (sesId (mkUrl @)))) )
       (T "@") ) )
 
@@ -546,7 +546,7 @@
    (if (: act)
       (super "Var")
       (<style> (cons 'id (pack "i" *Form "-" (: id)))
-         (if (try (: msg) (: obj) 1)
+         (if (try (: msg) (: obj) 1 This)
             (<tip> "-->" (<href> "@" (mkUrl @)))
             (<span> *Style "@") ) ) ) )
 
@@ -2203,7 +2203,7 @@
 (dm js> ()
    (if (=T (: msg))
       (extra)
-      (if2 (or (: dx) (: lst)) (try (: msg) (: obj) 1)
+      (if2 (or (: dx) (: lst)) (try (: msg) (: obj) 1 This)
          (pack (extra) "&*" (ht:Fmt (sesId "@img/go.png")) "&" (ht:Fmt (sesId (mkUrl @))))
          (pack (extra) "&*" (ht:Fmt (sesId "@img/no.png")) "&")
          (pack (ht:Fmt (nonblank (str> This))) "&+" (ht:Fmt (sesId (mkUrl @))))
@@ -2216,11 +2216,11 @@
          (prin "<table cellspacing=\"0\" cellpadding=\"0\"><td>")
          (extra "Var")
          (prin "</td><td title=\"-->\">")
-         (if (try (: msg) (: obj) 1)
+         (if (try (: msg) (: obj) 1 This)
             (<img> "@img/go.png" 'obj (mkUrl @))
             (<img> "@img/no.png") )
          (prinl "</td></table>") )
-      ((try (: msg) (: obj) 1)
+      ((try (: msg) (: obj) 1 This)
          (showFld (<href> (nonblank (str> This)) (mkUrl @))) )
       (T (extra "Var")) ) )
 

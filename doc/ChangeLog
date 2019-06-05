@@ -1,4 +1,6 @@
 05jun19
+   Remove request-'Queue' (Chrome race condition?)
+      lib/form.js
    'Hover' function for '<poi>'
       lib/gis.l
       lib/gis.js

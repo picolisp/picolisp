@@ -1,4 +1,4 @@
-# 11feb19abu
+# 05jun19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'gis 'pico)
@@ -95,7 +95,7 @@
 # (val *Osm) -> ((lat1 . lat2) (lon1 . lon2) . zoom)
 (local) (*Osm <osm> osmStat osmClick osmDrag <poi> <line>)
 
-(mapc allow '(osmStat osmClick osmDrag))
+(mapc allow '(osmStat osmClick osmDrag osmHover))
 
 (de <osm> (Lat Lon Zoom Click Upd)
    (<div> '(map (id . map)))
@@ -130,13 +130,20 @@
          (assoc Txt (: osmDrag))
          ((cdr @) Txt Lat Lon) ) ) )
 
-(de <poi> (Lat Lon Img X Y Txt DY Col Url Drag Upd)
+(de osmHover (Txt)
+   (with *Top
+      (and
+         (assoc Txt (: osmHover))
+         ((cdr @) Txt) ) ) )
+
+(de <poi> (Lat Lon Img X Y Txt DY Col Url Drag Upd Hover)
    (with *Top
       (javascript NIL
          "poi(" Lat ", " Lon ", '" (sesId Img) "', " X ", " Y ", '"
          Txt "', " DY ", '" Col "', '" (and Url (sesId @)) "', "
          (if2 (and Drag (: able)) Upd 2 1 0 0) ")" )
-      (and Drag (push (:: osmDrag) (cons Txt @))) ) )
+      (and Drag (push (:: osmDrag) (cons Txt @)))
+      (and Hover (push (:: osmHover) (cons Txt @))) ) )
 
 (de <line> (Col Lat1 Lon1 Lat2 Lon2)
    (with *Top

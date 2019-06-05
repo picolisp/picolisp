@@ -1,3 +1,8 @@
+05jun19
+   'Hover' function for '<poi>'
+      lib/gis.l
+      lib/gis.js
+
 04jun19
    Pass current field to 'msg' in '+DstButton' and '+obj'
       lib/db.l

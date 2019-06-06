@@ -1,4 +1,6 @@
 06jun19
+   Minor tuning
+      lib/gis.js
    Use 'setExactAndAllowWhileIdle' in 'android~alarm'
       lib/android.l
 

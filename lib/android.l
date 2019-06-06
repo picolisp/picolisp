@@ -1,4 +1,4 @@
-# 30may19abu
+# 06jun19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -323,7 +323,7 @@ getLastKnownLocation getLatitude getLongitude)
          (java Alarm 'cancel
             (java "android.app.PendingIntent" 'getBroadcast CONTEXT N Intent 0) )
          (java Intent 'putExtra "LOAD" File)
-         (java Alarm 'set
+         (java Alarm 'setExactAndAllowWhileIdle
             (if (atom When) 2 0)  # ELAPSED_REALTIME_WAKEUP RTC_WAKEUP
             (cons 'L
                (if (atom When)

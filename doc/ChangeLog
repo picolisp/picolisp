@@ -1,3 +1,7 @@
+06jun19
+   Use 'setExactAndAllowWhileIdle' in 'android~alarm'
+      lib/android.l
+
 05jun19
    Remove request-'Queue' (Chrome race condition?)
       lib/form.js

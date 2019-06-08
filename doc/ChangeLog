@@ -1,3 +1,9 @@
+08jun19
+   Global 'Busy' flag (Chrome race condition?)
+      lib/form.js
+   Fix OpenSSL library to "libssl-dev"
+      doc/httpGate.html
+
 06jun19
    Minor tuning
       lib/gis.js

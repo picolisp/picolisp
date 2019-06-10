@@ -1,3 +1,7 @@
+10jun19
+   Tag stack also with "K" and "Q" (compatible @lib/edit.l)
+      lib/vip.l
+
 08jun19
    Global 'Busy' flag (Chrome race condition?)
       lib/form.js

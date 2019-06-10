@@ -1,4 +1,4 @@
-# 03jun19abu
+# 10jun19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -1396,12 +1396,12 @@ nextBuf shell shFile prCmd reset command vi)
                                  (with (: next)
                                     (chgwin (inc (: lines))) ) ) ) )
                         ("=" (eqwin))  # Set all windows to equal size
-                        ("^]"  # Edit symbol
+                        (("K" "^]")  # Edit symbol
                            (ifn (get (any (pack (getWord T))) '*Dbg 1)
                               (beep)
                               (push '*TagStack (: posY) (: buffer file))
                               (reload (cdr @) (car @)) ) )
-                        ("^T"  # Pop tag stack
+                        (("Q" "^T")  # Pop tag stack
                            (if *TagStack
                               (reload (pop '*TagStack) (pop '*TagStack))
                               (beep) ) )

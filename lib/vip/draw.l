@@ -1,5 +1,4 @@
-# 13apr19abu
-# (c) Software Lab. Alexander Burger
+# 17jun19 Software Lab. Alexander Burger
 
 (symbols 'draw 'vip 'pico)
 
@@ -78,7 +77,6 @@
          (NIL L)
          (apply hline (++ L))
          (NIL L) ) ) )
-
 
 
 # Draw box

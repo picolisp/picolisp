@@ -1,3 +1,7 @@
+18jun19
+   Update changes from unicode.org (Mike Pechkin)
+      lib/wide.l
+
 13jun19
    Reset 'Busy' flag in ping()
       lib/form.js

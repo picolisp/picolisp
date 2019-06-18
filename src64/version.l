@@ -1,5 +1,5 @@
-# 17jun19 Software Lab. Alexander Burger
+# 18jun19 Software Lab. Alexander Burger
 
-(de *Version 19 6 17)
+(de *Version 19 6 18)
 
 # vi:et:ts=3:sw=3

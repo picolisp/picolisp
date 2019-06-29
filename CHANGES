@@ -1,4 +1,5 @@
-* NNjun19 picoLisp-19.6
+* 29jun19 picoLisp-19.6
+   ASCII drawing library lib/vip/draw.l
    Bug in catching parse errors
    'rc' stores multiple key/value pairs
    'onDone' function

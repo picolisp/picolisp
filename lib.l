@@ -1,4 +1,4 @@
-# 13may19abu
+# 02jul19abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -383,7 +383,7 @@
             (space)
             (print (++ X))
             (prtty1 X N Z) ) )
-      ((memq (car X) '(set setq default))
+      ((memq (car X) '(setq default))
          (_pretty
             (if (cdddr X)
                (prog

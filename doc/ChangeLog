@@ -1,4 +1,6 @@
 02jul19
+   Don't force same line for 'set' in 'pretty'
+      lib.l
    Try to auto-start "@" default app
       src/httpGate.c
 

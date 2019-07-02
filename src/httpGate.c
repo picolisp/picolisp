@@ -1,4 +1,4 @@
-/* 18sep18abu
+/* 02jul19abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -426,7 +426,7 @@ int main(int ac, char *av[]) {
                if ((q = strpbrk(p, " /?")) && (np = findName(p, q)))
                   port = np->port;
                else
-                  port = ports[0],  q = p;
+                  q = p,  port = (np = findName(p, q))? np->port : ports[0];  // "@"?
             }
             else if (port < 1024) {
                if (np = findName(p, q))

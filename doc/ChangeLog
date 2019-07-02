@@ -1,3 +1,7 @@
+02jul19
+   Try to auto-start "@" default app
+      src/httpGate.c
+
 ####### 19.6 #######
 18jun19
    Optional arguments to "# VIP " auto-load

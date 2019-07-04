@@ -1,5 +1,4 @@
-# 24nov16abu
-# (c) Software Lab. Alexander Burger
+# 04jul19 Software Lab. Alexander Burger
 
 (de permute (Lst)
    (ifn (cdr Lst)
@@ -95,9 +94,13 @@
                   (for Y DY
                      (set
                         (link
-                           (if (> DX 26)
-                              (box)
-                              (intern (pack (char (+ X 96)) Y)) ) )
+                           (intern
+                              (pack
+                                 (flip
+                                    (make
+                                       (for (N X (n0 N) (/ (dec N) 26))
+                                          (link (char (+ 97 (% (dec N) 26)))) ) ) )
+                                 Y ) ) )
                         (cons (cons) (cons)) ) ) ) ) ) )
       (let West (and FX (last Grid))
          (for (Lst Grid  Lst)

@@ -1,3 +1,7 @@
+04jul19
+   Intern *all* cells in 'grid' (Wojciech Gac)
+      lib/simul.l
+
 02jul19
    Don't force same line for 'set' in 'pretty'
       lib.l

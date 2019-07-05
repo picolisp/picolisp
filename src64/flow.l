@@ -1,4 +1,4 @@
-# 17apr19abu
+# 05jul19abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -1221,8 +1221,11 @@
    ld X (EnvCls)  # 'cls'
    ld Y (EnvKey)  # 'key'
    null X  # Any?
-   ldnz X (X)  # Yes: First class
-   ldz X (This)  # No: 'This'
+   if nz
+      ld X (X)  # Yes: First class
+   else
+      ld X (This)  # No: 'This'
+   end
    ld X (X)  # Get class definition
    do
       atom (X)  # Method?

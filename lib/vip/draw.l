@@ -1,4 +1,4 @@
-# 17jun19 Software Lab. Alexander Burger
+# 05jul19 Software Lab. Alexander Burger
 
 (symbols 'draw 'vip 'pico)
 
@@ -220,11 +220,13 @@
 
 
 # Override +Buffer methods in object
-(dm (save> 0 . This) (Win)
-   (super)
+(extend `This)
+
+(dm save> (Win)
+   (super Win)
    (view> This Win) )
 
-(dm (view> 0 . This) (Win)
+(dm view> (Win)
    (off *Draw *Boxes)
    (symbols '(draw vip pico)
       (evCmd (load (fName (: file)))) )

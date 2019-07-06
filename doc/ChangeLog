@@ -1,3 +1,11 @@
+06jul19
+   TAB word movement to last delimiter
+      lib/vip.l
+
+05jul19
+   Another (unrelated) bug in 'super'
+      ersatz/fun.src
+
 ####### 19.6 #######
 05jul19
    Bug in 'super'

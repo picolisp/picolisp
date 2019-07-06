@@ -1,4 +1,4 @@
-# 18jun19abu
+# 06jul19abu
 # (c) Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
@@ -210,7 +210,7 @@ beep undo redo evCmd dirty> load> save> view> status)
 
 (local) (delwin cursor addLine chgLine unmark redraw repaint scroll scLeft
 scRight goto chgwin eqwin getch getch2 reload scratch done change jmp@@ cnt@@
-goCol goLeft goRight goUp goDown goAbs goFind word lword end lend getWord
+goCol goLeft goRight goUp goDown goAbs goFind tword word lword end lend getWord
 _forward goForward _backward goBackward goPFore goPBack shift shiftY indent cutX
 cutN paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe
 evRpt move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN
@@ -553,6 +553,13 @@ nextBuf shell shFile prCmd reset command vi)
       (if L
          (+ D (or I 0) (offset L Lst))
          (beep) ) ) )
+
+(de tword (L)
+   (and
+      (delim? (car L))
+      (or
+         (sub? (cadr L) "\"()[]")
+         (not (delim? (cadr L))) ) ) )
 
 (de word (L C)
    (and
@@ -1284,6 +1291,7 @@ nextBuf shell shFile prCmd reset command vi)
                         ("G" (move 'goAbs 1 (or (format *Count) T)))  # Go to end of text
                         ("f" (and (getch2 (getch)) (move 'goFind @ 0 *Cnt)))  # Find character
                         ("t" (and (getch2 (getch)) (move 'goFind @ -1 *Cnt)))  # Till character
+                        ("\t" (move 'goForward 'tword *Cnt))  # TAB word forward
                         ("w" (move 'goForward 'word *Cnt))  # Word forward
                         ("W" (move 'goForward 'lword *Cnt))  # Long word forward
                         ("b" (move 'goBackward 'word *Cnt))  # Word backward

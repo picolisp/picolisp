@@ -1,4 +1,4 @@
-# 26feb19abu
+# 05jul19abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -1060,7 +1060,7 @@ try (x y)
 # (super ['any ..]) -> any
 super (w x y z)
    TheKey = Env.Key;
-   x = Env.Cls == null? This.Car : Env.Cls.Car.Car;
+   x = Env.Cls == null? This.Car.Car : Env.Cls.Car.Car;
    while (x.Car instanceof Cell)
       x = x.Cdr;
    for (;;) {

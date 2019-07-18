@@ -1,3 +1,8 @@
+18jul19
+   Remove second 'editButton'
+      lib/user.l
+      lib/role.l
+
 06jul19
    TAB word movement to last delimiter
       lib/vip.l

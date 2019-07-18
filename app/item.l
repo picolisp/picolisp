@@ -1,5 +1,4 @@
-# 03oct16abu
-# (c) Software Lab. Alexander Burger
+# 18jul19 Software Lab. Alexander Burger
 
 (must "Item" Item)
 
@@ -27,9 +26,6 @@
                      (ask ,"Uninstall Picture?"
                         (put!> (: home top 1 obj) 'jpg NIL) ) )
                   ((: drop) (blob! (: home obj) 'jpg @)) ) ) ) )
-      (<spread> NIL (editButton T))
       (gui '(+Upd +Img)
          '(and (: home obj jpg) (allow (blob (: home obj) 'jpg)))
          ,"Picture" ) ) )
-
-# vi:et:ts=3:sw=3

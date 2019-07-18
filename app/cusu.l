@@ -1,5 +1,4 @@
-# 15apr16abu
-# (c) Software Lab. Alexander Burger
+# 18jul19 Software Lab. Alexander Burger
 
 (must "Customer/Supplier" Customer)
 
@@ -29,7 +28,4 @@
                ,"EMail" (gui '(+E/R +MailField) '(em : home obj) 40) ) )
          ((pack (and (: obj txt) "@ ") ,"Memo")
             (gui '(+BlobField) '(txt : home obj) 60 8) ) )
-      (<hr>)
-      (<spread> NIL (editButton T)) ) )
-
-# vi:et:ts=3:sw=3
+      (<hr>) ) )

@@ -2,6 +2,10 @@
    Remove second 'editButton'
       lib/user.l
       lib/role.l
+      app/sal.l
+      app/ord.l
+      app/item.l
+      app/cusu.l
 
 06jul19
    TAB word movement to last delimiter

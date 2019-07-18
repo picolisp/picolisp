@@ -1,5 +1,4 @@
-# 07jun18abu
-# (c) Software Lab. Alexander Burger
+# 18jul19 Software Lab. Alexander Burger
 
 (must "Order" Order)
 
@@ -41,11 +40,8 @@
                (gui 8 '(+BubbleButton)) ) )
          (<row> NIL NIL NIL (scroll 8 T) NIL NIL
             (gui '(+Sgn +View +FixField) '(sum> (: home obj)) 2 12) ) )
-      (<spread>
-         (gui '(+Rid +Button) ,"PDF-Print"
-            '(if (check> (: home obj))
-               (note ,"Can't print order" (uniq @))
-               (url (pdf> (: home obj))) ) )
-         (editButton T) ) ) )
-
-# vi:et:ts=3:sw=3
+      (--)
+      (gui '(+Rid +Button) ,"PDF-Print"
+         '(if (check> (: home obj))
+            (note ,"Can't print order" (uniq @))
+            (url (pdf> (: home obj))) ) ) ) )

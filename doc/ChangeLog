@@ -1,3 +1,7 @@
+23jul19
+   Revert interning of all cells in 'grid'
+      lib/simul.l
+
 18jul19
    Remove second 'editButton'
       lib/user.l

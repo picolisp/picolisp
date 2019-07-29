@@ -1,21 +1,55 @@
-# 06jul19abu
-# (c) Software Lab. Alexander Burger
+# 29jul19 Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 
 (local) (*CmdWin *StatNm *Flat *Chr *Complete *Repeat *Change *Count *Cnt
 *Search *Clip *Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
 
-### Curses library interface ###
-(local) curses
+### ANSI Terminal ###
+(local) (xterm ULINE U-OFF REVERS CYAN RED *AttrA *AttrU attr cup clreol hideCsr
+showCsr screen1 screen2)
 
-(de curses @
-   (pass native
-      `(or
-         (find
-            '((S) (n0 (native "@" "dlopen" 'N S 257)))
-            '("libncursesw.so" "libncursesw.so.6" "libncursesw.so.5") )
-         (quit "No CURSES found") ) ) )
+(de xterm ()
+   (member (sys "TERM") '("xterm" "screen")) )
+
+(de ULINE . 4)
+(de U-OFF . 24)
+(de REVERS . 7)
+(de CYAN . 36)
+(de RED . 31)
+
+(off *AttrA *AttrU)
+
+(de attr (A U)
+   (if2 (<> A *AttrA) (<> U *AttrU)
+      (prin "^[["
+         (or (setq *AttrA A) 0)
+         ";"
+         (if (setq *AttrU U) ULINE U-OFF)
+         "m" )
+      (prin "^[[" (or (setq *AttrA A) 0) "m")
+      (prin "^[[" (if (setq *AttrU U) ULINE U-OFF) "m") ) )
+
+(de cup (Y X)
+   (prin "^[[" Y ";" X "H") )
+
+(de clreol ()
+   (prin "^[[0K") )
+
+(de hideCsr ()
+   (prin "^[[?25l") )
+
+(de showCsr ()
+   (prin "^[[?25h") )
+
+(de screen1 ()
+   (if (xterm)
+      (prin "^[[?1049l")
+      (cup *Lines 1) ) )
+
+(de screen2 ()
+   (and (xterm) (prin "^[[?1049h"))
+   (repaint) )
 
 ### VIP Editor ###
 (local) (*Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup min1
@@ -127,7 +161,8 @@ beep undo redo evCmd dirty> load> save> view> status)
    (max 1 (min A B)) )
 
 (de beep ()
-   (curses "beep") )
+   (pico~beep)
+   NIL )
 
 (dm dirty> (Win)
    (<> (: undo) (: dirt)) )
@@ -183,20 +218,16 @@ beep undo redo evCmd dirty> load> save> view> status)
 (local) (*Window +Window)
 
 (class +Window)
-# buffer top lines status ptr winX winY posX posY prev next last mark sc
+# buffer top lines winX winY posX posY prev next last mark sc
 
-(dm T (Buffer Top Height WinX WinY PosX PosY Prev Mark)
+(dm T (Buffer Top Lines WinX WinY PosX PosY Prev Mark)
    (=: buffer Buffer)
    (=: top Top)
+   (=: lines Lines)
    (when (=: prev Prev)
       (when (=: next (: prev next))
          (=: next prev This) )
-      (=: prev next This)
-      (curses "wattr_on" NIL
-         (=: status (curses "newwin" 'N 1 *Columns (+ Top (dec 'Height)) 0))
-         262144 ) )  # A_REVERSE
-   (=: ptr (curses "newwin" 'N (=: lines Height) *Columns Top 0))
-   (curses "keypad" NIL (: ptr) 1)
+      (=: prev next This) )
    (=: winX WinX)
    (=: winY WinY)
    (=: posX PosX)
@@ -208,48 +239,47 @@ beep undo redo evCmd dirty> load> save> view> status)
    (view> (: buffer) This) )
 
 
-(local) (delwin cursor addLine chgLine unmark redraw repaint scroll scLeft
-scRight goto chgwin eqwin getch getch2 reload scratch done change jmp@@ cnt@@
-goCol goLeft goRight goUp goDown goAbs goFind tword word lword end lend getWord
-_forward goForward _backward goBackward goPFore goPBack shift shiftY indent cutX
-cutN paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe
-evRpt move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN
-nextBuf shell shFile prCmd reset command vi)
+(local) (delwin cursor addLine chgLine unmark redraw repaint scLeft scRight goto
+chgwin eqwin getch getch2 reload scratch done change jmp@@ cnt@@ goCol goLeft
+goRight goUp goDown goAbs goFind tword word lword end lend getWord _forward
+goForward _backward goBackward goPFore goPBack shift shiftY indent cutX cutN
+paste join tglCase insChar incNum overwrite _bs insMode cmdMode cmdPipe evRpt
+move chgRight jmpMark wordFun moveSearch patMatch parMatch spell pipeN nextBuf
+shell shFile prCmd reset command vi)
 
 (de delwin ()
    (when (=: prev next (: next))
-      (=: next prev (: prev)) )
-   (curses "delwin" NIL (: ptr))
-   (curses "delwin" NIL (: status)) )
+      (=: next prev (: prev)) ) )
 
 (de cursor ()
-   (curses "wmove" NIL (: ptr)
-      (- (: posY) (: winY))
-      (- (: posX) (: winX)) ) )
+   (cup
+      (+ (: top) (- (: posY) (: winY) -1))
+      (- (: posX) (: winX) -1) ) )
 
 (de addLine (Y L N)
-   (curses "wmove" NIL (: ptr) Y 0)
+   (cup (+ (: top) Y) 1)
+   (clreol)
    (for C (nth L (: winX))
       (T (lt0 (dec 'N)))
-      (curses "wattrset" NIL (: ptr)
-         (cond
-            (*Flat 0)
-            ((=T (val C))
-               (ifn (>= "^_" C "^A")
-                  131072  # A_UNDERLINE
-                  (setq C (char (+ 64 (char C))))
-                  `(+ 131072 512) ) )  # A_UNDERLINE + COLOR_PAIR(2)
-            ((>= "^_" C "^A")
+      (cond
+         (*Flat)
+         ((=T (val C))
+            (ifn (>= "^_" C "^A")
+               (attr NIL T)
                (setq C (char (+ 64 (char C))))
-               512 )  # COLOR_PAIR(2)
-            ((gt0 (val C)) 256)  # COLOR_PAIR(1)
-            (T 0) ) )
-      (curses "waddnstr" NIL (: ptr) C -1) ) )
+               (attr RED T) ) )
+         ((>= "^_" C "^A")
+            (setq C (char (+ 64 (char C))))
+            (attr RED) )
+         ((gt0 (val C))
+            (attr CYAN) )
+         (T (attr)) )
+      (prin C) )
+   (attr) )
 
 (de chgLine (L)
    (cursor)
-   (curses "wclrtoeol" NIL (: ptr))
-   (addLine (- (: posY) (: winY)) L *Columns)
+   (addLine (- (: posY) (: winY) -1) L *Columns)
    (cursor) )
 
 (de unmark ()
@@ -258,54 +288,51 @@ nextBuf shell shFile prCmd reset command vi)
       (=: mark) ) )
 
 (de status ()
-   (when (: status)
-      (curses "mvwaddstr" NIL @ 0 0
-         (let
-            (N (length (: buffer text))
-               A (pack
-                  (index (: buffer) *Buffers)
-                  "/"
-                  (length *Buffers)
-                  (if (dirty> (: buffer) This) " * " " ") )
-               F (prName (: buffer file))
-               Z (pack
-                  (: mark)
-                  " "
-                  (: posX) "," (: posY) "/" N " "
-                  (if (gt0 (dec N))
-                     (*/ 100 (dec (: posY)) @)
-                     0 )
-                  "%" ) )
-            (cond
-               ((ge0
-                     (setq N
-                        (- *Columns (length A) (length F) (length Z)) ) )
-                  (pack A F (need N " ") Z) )
-               ((onOff *StatNm)
-                  (align (- *Columns) (tail *Columns (chop F))) )
-               (T
-                  (pack
-                     A
-                     (need (- *Columns (length A) (length Z)) " ")
-                     Z ) ) ) ) )
-      (curses "wrefresh" NIL (: status)) ) )
+   (unless (== This *CmdWin)
+      (cup (+ (: top) (: lines) 1) 1)
+      (let
+         (N (length (: buffer text))
+            A (pack
+               (index (: buffer) *Buffers)
+               "/"
+               (length *Buffers)
+               (if (dirty> (: buffer) This) " * " " ") )
+            F (prName (: buffer file))
+            Z (pack
+               (: mark)
+               " "
+               (: posX) "," (: posY) "/" N " "
+               (if (gt0 (dec N))
+                  (*/ 100 (dec (: posY)) @)
+                  0 )
+               "%" ) )
+         (attr REVERS)
+         (cond
+            ((ge0
+                  (setq N
+                     (- *Columns (length A) (length F) (length Z)) ) )
+               (prin A F (need N " ") Z) )
+            ((onOff *StatNm)
+               (prin (align (- *Columns) (tail *Columns (chop F)))) )
+            (T
+               (prin
+                  A
+                  (need (- *Columns (length A) (length Z)) " ")
+                  Z ) ) )
+         (attr)
+         (flush) ) ) )
 
-(de redraw (Flg)
-   (curses "werase" NIL (: ptr))
-   (for (Y . L) (nth (: buffer text) (: winY))
-      (addLine (dec Y) L *Columns)
-      (T (= Y (: lines))) )
-   (or Flg (status)) )
+(de redraw ()
+   (hideCsr)
+   (let L (nth (: buffer text) (: winY))
+      (for Y (: lines)
+         (addLine Y (++ L) *Columns) ) )
+   (showCsr)
+   (status) )
 
 (de repaint ()
    (for (This *CmdWin This (: next))
-      (redraw)
-      (curses "wrefresh" NIL (: ptr)) ) )
-
-(de scroll (N)
-   (curses "scrollok" NIL (: ptr) 1)
-   (curses "wscrl" NIL (: ptr) N)
-   (curses "scrollok" NIL (: ptr) 0) )
+      (redraw) ) )
 
 (de scLeft (N)
    (and
@@ -326,51 +353,23 @@ nextBuf shell shFile prCmd reset command vi)
                (inc (:: posY) Y) )
             (T (= Y (: lines))) ) ) ) )
 
-(de goto (X Y Flg)
-   (if
-      (and
-         (not Flg)
-         (>= (inc (: posY)) Y (dec (: posY)))
-         (>= (+ (: winX) *Columns -1) X (: winX)) )
-      (cond
-         ((= Y (inc (: posY)))
-            (when
-               (and
-                  (>= (- (: posY) (: winY)) (/ (: lines) 2))
-                  (nth (: buffer text) (+ (: lines) (: winY))) )
-               (scroll 1)
-               (addLine (dec (: lines)) (car @) *Columns)
-               (inc (:: winY)) ) )
-         ((= Y (dec (: posY)))
-            (when
-               (and
-                  (> (: winY) 1)
-                  (>= (/ (: lines) 2) (- (: posY) (: winY))) )
-               (scroll -1)
-               (addLine 0 (get (: buffer text) (dec (:: winY))) *Columns) ) ) )
-      (=: winX
-         (if (>= (*/ *Columns 3 4) X)
-            1
-            (- X (/ *Columns 2)) ) )
-      (=: winY
-         (min1
-            (- Y (/ (: lines) 2))
-            (- (length (: buffer text)) (: lines) -1) ) )
-      (unless Flg (redraw T)) )
-   (when Flg (redraw T))
-   (unless (== This *Window)
-      (curses "wrefresh" NIL (: ptr)) )
+(de goto (X Y)
+   (=: winX
+      (if (>= (*/ *Columns 3 4) X)
+         1
+         (- X (/ *Columns 2)) ) )
+   (=: winY
+      (min1
+         (- Y (/ (: lines) 2))
+         (- (length (: buffer text)) (: lines) -1) ) )
    (=: buffer posX (=: posX X))
    (=: buffer posY (=: posY Y))
-   (status) )
+   (redraw) )
 
 (de chgwin (Lines Top)
-   (curses "wresize" NIL (: ptr) (=: lines Lines) *Columns)
-   (when Top
-      (curses "mvwin" NIL (: ptr) (=: top @) 0) )
-   (when (: status)
-      (curses "mvwin" NIL @ (+ (: top) Lines) 0) )
-   (goto (: posX) (: posY) T) )
+   (=: lines Lines)
+   (and Top (=: top @))
+   (goto (: posX) (: posY)) )
 
 (de eqwin ()
    (let
@@ -388,23 +387,15 @@ nextBuf shell shFile prCmd reset command vi)
       (cursor) ) )
 
 (de getch ()
-   (loop
-      (curses "wget_wch" NIL (: ptr) '(*Chr (4 . I)))
-      (NIL (= 410 *Chr)  # KEY_RESIZE
-         (setq *Chr (unless (= 27 *Chr) (char *Chr))) )
-      (setq
-         *Lines (car (struct "LINES" '(I)))
-         *Columns (car (struct "COLS" '(I))) )
-      (eqwin) ) )
+   (if (= "^[" (setq *Chr (key)))
+      (when (key 60)
+         (loop
+            (setq *Chr (pack *Chr @))
+            (NIL (key 40) *Chr) ) )
+      *Chr ) )
 
 (de getch2 (C)
-   (when C
-      (if (= "^V" C)
-         (prog2
-            (mapc curses '("nocbreak" "raw"))
-            (or (getch) "^[")
-            (mapc curses '("noraw" "cbreak")) )
-         C ) ) )
+   (if (= "^V" C) (key) C) )
 
 (de reload (File Y)
    (unless (== This *CmdWin)
@@ -415,7 +406,7 @@ nextBuf shell shFile prCmd reset command vi)
                (=: buffer (fileBuffer File)) )
             (unmark) ) )
       (load> (: buffer) This)
-      (goto 1 (or Y (: buffer posY)) T)
+      (goto 1 (or Y (: buffer posY)))
       (off *StatNm)
       (repaint) ) )
 
@@ -429,7 +420,7 @@ nextBuf shell shFile prCmd reset command vi)
          (=: buffer (new '(+Buffer) File Y))
          'text
          Lst )
-      (goto 1 (: buffer posY) T) )
+      (goto 1 (: buffer posY)) )
    (repaint) )
 
 (de done (Flg)
@@ -480,7 +471,7 @@ nextBuf shell shFile prCmd reset command vi)
                   (set Pos NewA)
                   (con Pos NewD) ) ) )
          (markup (: buffer text))
-         (goto (: posX) (: posY) T)
+         (goto (: posX) (: posY))
          (repaint)
          Res ) ) )
 
@@ -492,7 +483,7 @@ nextBuf shell shFile prCmd reset command vi)
          (bind (car U)
             (eval (cadr U))
             (markup (: buffer text))
-            (goto PosX1 PosY1 T)
+            (goto PosX1 PosY1)
             (repaint) ) ) ) )
 
 (de redo ()
@@ -503,7 +494,7 @@ nextBuf shell shFile prCmd reset command vi)
          (bind (car R)
             (eval (cddr R))
             (markup (: buffer text))
-            (goto PosX2 PosY2 T)
+            (goto PosX2 PosY2)
             (repaint) ) ) ) )
 
 (de jmp@@ (Y)
@@ -852,11 +843,11 @@ nextBuf shell shFile prCmd reset command vi)
             ((=0 Flg)
                (con P (cons (car P) (cdr P)))
                (set P)
-               (goto 1 (: posY) T) )
+               (goto 1 (: posY)) )
             ((=1 Flg))
             (Flg
                (setq P (con P (cons NIL (cdr P))))
-               (goto 1 (inc (: posY)) T)
+               (goto 1 (inc (: posY)))
                (setq Chg (0)) ) )
          (cursor)
          (while
@@ -873,10 +864,10 @@ nextBuf shell shFile prCmd reset command vi)
                            (cons (nth (car P) (: posX)) (cdr P)) )
                         (set P (head (dec (: posX)) (car P)))
                         (setq P (cdr P))
-                        (goto 1 (inc (: posY)) T)
+                        (goto 1 (inc (: posY)))
                         (cursor)
                         T ) ) )
-               (("^H" "^?" `(char 263))  # [BACKSPACE]
+               (("^H" "^?")  # [BACKSPACE]
                   (when (and Chg (n0 (car Chg)))
                      (_bs)
                      (chgLine (car P)) )
@@ -1066,15 +1057,17 @@ nextBuf shell shFile prCmd reset command vi)
       (unless (: buffer text)
          (load> (: buffer) This) )
       (off *StatNm)
-      (goto (: buffer posX) (: buffer posY) T) ) )
+      (goto (: buffer posX) (: buffer posY)) ) )
 
 (de shell (S)
-   (curses "endwin")
+   (screen1)
    (do *Columns (prin "#"))
    (call "bash" "-c" S)
    (prin "[====] ")
    (flush)
-   (getch) )
+   (getch)
+   (prinl)
+   (screen2) )
 
 (de shFile (S)
    (when (: buffer file)
@@ -1180,8 +1173,7 @@ nextBuf shell shFile prCmd reset command vi)
                         (nextBuf @)
                         (beep) ) ) ) ) )
          (with *CmdWin
-            (redraw)
-            (curses "wrefresh" NIL (: ptr)) ) )
+            (redraw) ) )
       (T (beep)) ) )
 
 ### VIP Entry Point ###
@@ -1189,7 +1181,8 @@ nextBuf shell shFile prCmd reset command vi)
    (off *Buffers)
    (when (=0 (native "@" "isatty" 'I 0))
       (with (fileBuffer (tmp "stdin"))
-         (out (: file) (in 0 (echo))) ) )
+         (out (: file) (in 0 (echo))) )
+      (ctty "/dev/tty") )
    (for X Lst
       (cond
          ((not X))
@@ -1201,29 +1194,18 @@ nextBuf shell shFile prCmd reset command vi)
                (or (num? (car X)) T) ) ) ) )
    (unless *Buffers
       (fileBuffer (tmp "empty")) )
-   (native "@" "setlocale" NIL 0 "")  # LC_CTYPE: UTF-8
-   (sys "ESCDELAY" "60")
-   (let F (native "@" "fopen" 'N "/dev/tty" "r+")
-      (curses "set_term" NIL (curses "newterm" 'N 0 F F)) )
-   (finally (curses "endwin")
-      (curses "start_color")
-      (curses "use_default_colors")
-      (curses "init_pair" NIL 1 6 0)  # COLOR_CYAN COLOR_BLACK
-      (curses "init_pair" NIL 2 1 0)  # COLOR_RED COLOR_BLACK
-      (curses "cbreak")
-      (curses "noecho")
-      (native "@" "LINES" T)
-      (native "@" "COLS" T)
+   (finally (screen1)
+      (screen2)
       (setq
-         *Lines (car (struct "LINES" '(I)))
-         *Columns (car (struct "COLS" '(I))) )
+         *Columns (format (sys "COLUMNS"))
+         *Lines (format (sys "LINES")) )
       (reset)
       (setq *CmdWin
          (new '(+Window) (new '(+Buffer)) (dec *Lines) 1 1 1 1 1) )
       (with (car *Buffers)
          (load> This)
          (new '(+Window) This
-            0 (dec *Lines)
+            0 (- *Lines 2)
             1
             (min1
                (- (: posY) (/ (- *Lines 2) 2))
@@ -1277,14 +1259,14 @@ nextBuf shell shFile prCmd reset command vi)
                               (do (: sc) (scRight))
                               (redraw) ) )
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
-                        (("j" `(char 258)) (move 'goDown *Cnt))  # [DOWN] Move down
-                        (("^F" `(char 338)) (move 'goDown (: lines)))  # [NPAGE] Page down
-                        (("k" `(char 259)) (move 'goUp *Cnt))  # [UP] Move up
-                        (("^B" `(char 339)) (move 'goUp (: lines)))  # [PPAGE] Page up
+                        (("j" "^[[B") (move 'goDown *Cnt))  # [DOWN] Move down
+                        (("^F" "^[[6~") (move 'goDown (: lines)))  # [PGDOWN] Page down
+                        (("k" "^[[A") (move 'goUp *Cnt))  # [UP] Move up
+                        (("^B" "^[[5~") (move 'goUp (: lines)))  # [PGUP] Page up
                         ("h" (move 'goLeft *Cnt))  # Move left
                         ("l" (move 'goRight *Cnt))  # Move right
-                        (`(char 260) (scLeft) (redraw))  # [LEFT] Scroll left
-                        (`(char 261) (scRight) (redraw))  # [RIGHT] Scroll right
+                        ("^[[D" (scLeft) (redraw))  # [LEFT] Scroll left
+                        ("^[[C" (scRight) (redraw))  # [RIGHT] Scroll right
                         ("z" (do 3 (scRight)) (redraw))  # Scroll right 3 columns
                         ("|" (move 'goCol *Cnt))  # Go to column
                         ("$" (move 'goRight T))  # Go to end of line
@@ -1414,32 +1396,32 @@ nextBuf shell shFile prCmd reset command vi)
                            (if *TagStack
                               (reload (pop '*TagStack) (pop '*TagStack))
                               (beep) ) )
-                        (`(char (+ 264 1))  # [F1] Highlight on/off
+                        (("^[OP" "^[[[A")  # [F1] Highlight on/off
                            (onOff *Flat)
                            (repaint) )
-                        (`(char (+ 264 2))  # [F2] Show chages to <file>-
+                        (("^[OQ" "^[[[B")  # [F2] Show chages to <file>-
                            (shFile
                               (if (sys "CCRYPT" (: buffer key))
                                  "diff -Bb <(ccrypt -c -ECCRYPT @1-) <(ccrypt -c -ECCRYPT @1)"
                                  "diff -Bb @1- @1" ) ) )
-                        (`(char (+ 264 3))  # [F3] Custom dif
+                        (("^[OR" "^[[[C")  # [F3] Custom dif
                            (shFile "dif @1 @2") )
-                        (`(char (+ 264 4))  # [F4] Format paragraph
+                        (("^[OS" "^[[[D")  # [F4] Format paragraph
                            (and *Count (=: buffer fmt @))
                            (goPFore 1 -1)
                            (pipeN (cnt@@) (pack "fmt -" (: buffer fmt))) )
-                        (`(char (+ 264 5))  # [F5] Previous buffer
+                        (("^[[15~" "^[[[E")  # [F5] Previous buffer
                            (nextBuf T) )
-                        (`(char (+ 264 6))  # [F6] Next buffer
+                        ("^[[17~"  # [F6] Next buffer
                            (nextBuf) )
-                        (`(char (+ 264 7))  # [F7] Load file
+                        ("^[[18~"  # [F7] Load file
                            (when (: buffer file)
                               (evCmd (load @)) ) )
-                        (`(char (+ 264 8)) (run *F8))  # [F8] Custom key
-                        (`(char (+ 264 9)) (run *F9))  # [F9] Custom key
-                        (`(char (+ 264 10)) (run *F10))  # [F10] Custom key
-                        (`(char (+ 264 11)) (run *F11))  # [F11] Custom key
-                        (`(char (+ 264 12)) (run *F12))  # [F12] Custom key
+                        ("^[[19~" (run *F8))  # [F8] Custom key
+                        ("^[[20~" (run *F9))  # [F9] Custom key
+                        ("^[[21~" (run *F10))  # [F10] Custom key
+                        ("^[[23~" (run *F11))  # [F11] Custom key
+                        ("^[[24~" (run *F12))  # [F12] Custom key
                         ("\\"  # Select or toggle buffer
                            (nextBuf
                               (if *Count
@@ -1452,12 +1434,12 @@ nextBuf shell shFile prCmd reset command vi)
                                     (let (Old (inc (: lines))  New (/ Old 2))
                                        (with
                                           (new '(+Window) (: buffer)
-                                             (+ (: top) New) (- Old New)
+                                             (+ (: top) New) (- Old New 1)
                                              (: winX) (: winY)
                                              (: posX) (: posY)
                                              (: prev)
                                              (: mark) )
-                                          (goto (: posX) (: posY) T) )
+                                          (goto (: posX) (: posY)) )
                                        (=: mark)
                                        (chgwin (dec New)) ) ) )
                               ("x"  # [qx] Exchange windows
@@ -1467,9 +1449,9 @@ nextBuf shell shFile prCmd reset command vi)
                                     (let W (if (== (: prev) *CmdWin) (: next) (: prev))
                                        (for P '(buffer winX winY posX posY)
                                           (xchg (prop This P) (prop W P)) )
-                                       (goto (: posX) (: posY) T)
+                                       (goto (: posX) (: posY))
                                        (with W
-                                          (goto (: posX) (: posY) T) ) ) ) )
+                                          (goto (: posX) (: posY)) ) ) ) )
                               ("k" (and (: next) (setq *Window @)))  # [qk] Above window
                               ("j" (and (: prev) (setq *Window @)))  # [qj] Below window
                               ("q" (done))  # [qq] (Quit) Close window
@@ -1508,5 +1490,3 @@ nextBuf shell shFile prCmd reset command vi)
                (C (get C '*Dbg -1 "X"))
                (T (or (get "X" '*Dbg 1) "X")) ) ) )
       "X" ) )
-
-# vi:et:ts=3:sw=3

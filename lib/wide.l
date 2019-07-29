@@ -1,11 +1,13 @@
-# 18jun19abu
+# 29jul19abu
 # (c) Software Lab. Alexander Burger
 
 # Wide characters (http://www.unicode.org/reports/tr11)
 (de wide? (N)
    (and
       (rank N
-         (quote  # http://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
+         (quote
+            (1 . 31)  # ^X
+            # http://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
             (4352 . 4447)  # 1100..115F
             (8986 . 8987)  # 231A..231B
             (9001 . 9002)  # 2329..232A

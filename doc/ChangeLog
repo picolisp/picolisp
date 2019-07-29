@@ -1,3 +1,9 @@
+29jul19
+   Treat control chars as "wide"
+      lib/wide.l
+   Print control chars as "^X" instead of "_"
+      lib/led.l
+
 23jul19
    Revert interning of all cells in 'grid'
       lib/simul.l

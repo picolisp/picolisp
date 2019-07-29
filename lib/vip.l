@@ -353,18 +353,25 @@ shell shFile prCmd reset command vi)
                (inc (:: posY) Y) )
             (T (= Y (: lines))) ) ) ) )
 
-(de goto (X Y)
-   (=: winX
-      (if (>= (*/ *Columns 3 4) X)
-         1
-         (- X (/ *Columns 2)) ) )
-   (=: winY
+(de goto (X Y F)
+   (=: buffer posX (=: posX X))
+   (setq X
+      (cond
+         ((and F
+               (>= (inc (: posY)) Y (dec (: posY)))
+               (>= (+ (: winX) *Columns -1) X (: winX)) )
+            (: winX) )
+         ((>= (*/ *Columns 3 4) X) 1)
+         (T (- X (/ *Columns 2)))  ) )
+   (=: buffer posY (=: posY Y))
+   (setq Y
       (min1
          (- Y (/ (: lines) 2))
          (- (length (: buffer text)) (: lines) -1) ) )
-   (=: buffer posX (=: posX X))
-   (=: buffer posY (=: posY Y))
-   (redraw) )
+   (unless (and F (= X (: winX)) (= Y (: winY)))
+      (=: winX X)
+      (=: winY Y)
+      (redraw) ) )
 
 (de chgwin (Lines Top)
    (=: lines Lines)
@@ -909,7 +916,7 @@ shell shFile prCmd reset command vi)
                               (car P)
                               C ) )
                         (inc (:: posX)) )
-                     (goto (: posX) (: posY)) )
+                     (goto (: posX) (: posY) T) )
                   (chgLine (car P))
                   T ) ) )
          (=: posX (max 1 (dec (: posX))))
@@ -932,7 +939,7 @@ shell shFile prCmd reset command vi)
 (de move @
    (let M (conc (rest) (1))
       (case *Change
-         (NIL (and (eval (rest)) (goto @ @@)))
+         (NIL (and (eval (rest)) (goto @ @@ T)))
          ("!" (eval (rest)) (cmdPipe (cnt@@)))  # External filter
          (">" (evRpt (list 'shiftY M T)))  # Shift right
          ("<" (evRpt (list 'shiftY M)))  # Shift left
@@ -1255,7 +1262,7 @@ shell shFile prCmd reset command vi)
                         (("\n" "\r")
                            (if (== This *CmdWin)
                               (command (: next) (get (: buffer text) (: posY)))
-                              (goto 1 (inc (: posY)))  # Go to next line
+                              (goto 1 (inc (: posY)) T)  # Go to next line
                               (do (: sc) (scRight))
                               (redraw) ) )
                         ("." (if *Repeat (eval @) (beep)))  # Repeat last change
@@ -1323,7 +1330,8 @@ shell shFile prCmd reset command vi)
                         ("A"  # Append to end of line
                            (goto
                               (inc (length (get (: buffer text) (: posY))))
-                              (: posY) )
+                              (: posY)
+                              T )
                            (when (insMode 1)
                               (setq *Repeat (list 'paste (lit @) T)) ) )
                         ("o"  # Open new line below current line

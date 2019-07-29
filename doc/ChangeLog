@@ -1,4 +1,6 @@
 29jul19
+   Same stdin, stdout and stderr as in arm64.linux.defs.l
+      src64/sys/arm64.android.defs.l
    Treat control chars as "wide"
       lib/wide.l
    Print control chars as "^X" instead of "_"

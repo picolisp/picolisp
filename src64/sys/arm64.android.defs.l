@@ -1,4 +1,4 @@
-# 07jan17abu
+# 29jul19abu
 # (c) Software Lab. Alexander Burger
 
 # errno
@@ -26,10 +26,9 @@
 (equ BUFSIZ 1024)
 (equ PIPE_BUF 4096)
 
-(push '*Globals '__sF)
-(equ stdin  '__sF)
-(equ stdout '(& (__sF 152)))
-(equ stderr '(& (__sF 304)))
+(push '*Globals 'stdin)
+(push '*Globals 'stdout)
+(push '*Globals 'stderr)
 
 (equ GETCWDLEN 0)
 

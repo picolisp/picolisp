@@ -1,4 +1,4 @@
-# 21dec18abu
+# 30jul19abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -170,6 +170,8 @@
    initSym Hup       "*Hup"      Nil
    initSym Sig1      "*Sig1"     Nil
    initSym Sig2      "*Sig2"     Nil
+   initSym TStp1     "*TStp1"    Nil
+   initSym TStp2     "*TStp2"    Nil
    initSym Up        "\^"        Nil
    initSym Err       "*Err"      Nil
    initSym Msg       "*Msg"      Nil

@@ -1,4 +1,4 @@
-# 27jan19abu
+# 30jul19abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -310,31 +310,55 @@
                            ld E (Hup)  # Run 'Hup'
                            call execE
                         else
-                           null (Signal (* I SIGTERM))
+                           null (Signal (* I SIGTSTP))
                            if nz
-                              push X
-                              ld X (Child)  # Iterate children
-                              ld C (Children)  # Count
-                              ld E 0  # Flag
-                              do
-                                 sub C VI  # More?
-                              while ge  # Yes
-                                 null (X)  # 'pid'?
-                                 if nz  # Yes
-                                    cc kill((X) SIGTERM)  # Try to terminate
-                                    nul4  # OK?
-                                    ldz E 1  # Yes: Set flag
+                              dec (Signal)
+                              dec (Signal (* I SIGTSTP))
+                              ld C OrgTermio  # Set original terminal I/O
+                              call tcSetC
+                              sub S (%% SIGSET_T)  # Create mask structure
+                              cc sigemptyset(S)  # Init to empty signal set
+                              cc sigaddset(S SIGTSTP)  # Add stop signal
+                              cc sigprocmask(SIG_UNBLOCK S 0)  # Remove blocked signals
+                              add S (%% SIGSET_T)  # Drop mask structure
+                              cc signal(SIGTSTP SIG_DFL)
+                              ld E (TStp1)  # Run 'TStp1'
+                              call execE
+                              cc raise(SIGTSTP)
+                              ld E (TStp2)  # Run 'TStp2'
+                              call execE
+                              ld C (Termio)
+                              call tcSetC
+                              ld E sig  # Set signal again
+                              ld C SIGTSTP
+                              call iSignalCE
+                           else
+                              null (Signal (* I SIGTERM))
+                              if nz
+                                 push X
+                                 ld X (Child)  # Iterate children
+                                 ld C (Children)  # Count
+                                 ld E 0  # Flag
+                                 do
+                                    sub C VI  # More?
+                                 while ge  # Yes
+                                    null (X)  # 'pid'?
+                                    if nz  # Yes
+                                       cc kill((X) SIGTERM)  # Try to terminate
+                                       nul4  # OK?
+                                       ldz E 1  # Yes: Set flag
+                                    end
+                                    add X VI  # Increment by sizeof(child)
+                                 loop
+                                 pop X
+                                 null E  # Still terminated any child?
+                                 if z  # No
+                                    ld (Signal) 0
+                                    ld E 0  # Exit OK
+                                    jmp byeE
                                  end
-                                 add X VI  # Increment by sizeof(child)
-                              loop
-                              pop X
-                              null E  # Still terminated any child?
-                              if z  # No
-                                 ld (Signal) 0
-                                 ld E 0  # Exit OK
-                                 jmp byeE
+                                 break T
                               end
-                              break T
                            end
                         end
                      end
@@ -407,22 +431,6 @@
    end
    ret
 
-(code 'sigTermStop)
-   begin  # Ignore signal number
-   ld C OrgTermio  # Set original terminal I/O
-   call tcSetC
-   sub S (%% SIGSET_T)  # Create mask structure
-   cc sigemptyset(S)  # Init to empty signal set
-   cc sigaddset(S SIGTSTP)  # Add stop signal
-   cc sigprocmask(SIG_UNBLOCK S 0)  # Remove blocked signals
-   add S (%% SIGSET_T)  # Drop mask structure
-   cc signal(SIGTSTP SIG_DFL)
-   cc raise(SIGTSTP)
-   cc signal(SIGTSTP sigTermStop)
-   ld C (Termio)
-   call tcSetC
-   return
-
 (code 'setRaw 0)
    nul (Tio)  # Terminal I/O?
    if nz  # Yes
@@ -445,7 +453,11 @@
          cc signal(SIGTSTP SIG_IGN)  # Ignore stop signals
          cmp A SIG_DFL  # Not set yet?
          if eq  # Yes
-            cc signal(SIGTSTP sigTermStop)  # Handle stop signals
+            push E
+            ld E sig  # Handle stop signals
+            ld C SIGTSTP
+            call iSignalCE
+            pop E
          end
       end
    end

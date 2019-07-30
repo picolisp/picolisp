@@ -1,4 +1,11 @@
 30jul19
+   '*TStp1', '*TStp2' global variables
+      src64/glob.l
+      src64/main.l
+      doc/ref.html
+      doc/refH.html
+      doc/refS.html
+      doc/refT.html
    Check for COLUMNS and LINES
    Fast scroll key events
       lib/vip.l

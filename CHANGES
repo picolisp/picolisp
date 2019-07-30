@@ -1,4 +1,6 @@
 * NNdec19 picoLisp-19.12
+   '*TStp1', '*TStp2' global variables
+   Vip without [n]curses
 
 * 05jul19 picoLisp-19.6
    Bug in 'super'

@@ -1,3 +1,7 @@
+30jul19
+   Fast scroll key events
+      lib/vip.l
+
 29jul19
    Avoid [n]curses, use ANSI escape sequences
       lib/vip.l

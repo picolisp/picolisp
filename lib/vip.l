@@ -1,4 +1,4 @@
-# 29jul19 Software Lab. Alexander Burger
+# 30jul19 Software Lab. Alexander Burger
 
 (symbols 'vip 'pico)
 
@@ -398,6 +398,7 @@ shell shFile prCmd reset command vi)
       (when (key 60)
          (loop
             (setq *Chr (pack *Chr @))
+            (T (member *Chr '("^[[A" "^[[B" "^[[C" "^[[D")) *Chr)
             (NIL (key 40) *Chr) ) )
       *Chr ) )
 

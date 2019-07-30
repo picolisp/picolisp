@@ -314,6 +314,8 @@
                            if nz
                               dec (Signal)
                               dec (Signal (* I SIGTSTP))
+                              ld E (TStp1)  # Run 'TStp1'
+                              call execE
                               ld C OrgTermio  # Set original terminal I/O
                               call tcSetC
                               sub S (%% SIGSET_T)  # Create mask structure
@@ -322,16 +324,14 @@
                               cc sigprocmask(SIG_UNBLOCK S 0)  # Remove blocked signals
                               add S (%% SIGSET_T)  # Drop mask structure
                               cc signal(SIGTSTP SIG_DFL)
-                              ld E (TStp1)  # Run 'TStp1'
-                              call execE
                               cc raise(SIGTSTP)
-                              ld E (TStp2)  # Run 'TStp2'
-                              call execE
                               ld C (Termio)
                               call tcSetC
                               ld E sig  # Set signal again
                               ld C SIGTSTP
                               call iSignalCE
+                              ld E (TStp2)  # Run 'TStp2'
+                              call execE
                            else
                               null (Signal (* I SIGTERM))
                               if nz

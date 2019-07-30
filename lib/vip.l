@@ -1186,6 +1186,11 @@ shell shFile prCmd reset command vi)
 
 ### VIP Entry Point ###
 (de vi (Lst)  # ("file.l" (pat) (99 . "file.l") (T . "file.l"))
+   (unless
+      (and
+         (setq *Columns (format (sys "COLUMNS")))
+         (setq *Lines (format (sys "LINES"))) )
+      (quit "COLUMNS or LINES not set") )
    (off *Buffers)
    (when (=0 (native "@" "isatty" 'I 0))
       (with (fileBuffer (tmp "stdin"))
@@ -1204,9 +1209,6 @@ shell shFile prCmd reset command vi)
       (fileBuffer (tmp "empty")) )
    (finally (screen1)
       (screen2)
-      (setq
-         *Columns (format (sys "COLUMNS"))
-         *Lines (format (sys "LINES")) )
       (reset)
       (setq *CmdWin
          (new '(+Window) (new '(+Buffer)) (dec *Lines) 1 1 1 1 1) )

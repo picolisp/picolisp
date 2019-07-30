@@ -1,4 +1,5 @@
 30jul19
+   Check for COLUMNS and LINES
    Fast scroll key events
       lib/vip.l
 

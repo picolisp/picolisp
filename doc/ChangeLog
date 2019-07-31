@@ -1,4 +1,6 @@
 31jul19
+   Run '*TStp1' and '*TStp2' also in non-raw mode
+      src64/main.l
    Use "Z" to scroll left (reverse of "z")
    Handle SIGTSTP (*TStp1) and SIGCONT (*TStp2)
       lib/vip.l

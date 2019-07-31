@@ -1,4 +1,4 @@
-# 30jul19abu
+# 31jul19abu
 # (c) Software Lab. Alexander Burger
 
 (code 'Code)
@@ -139,6 +139,12 @@
    call iSignalCE  # for SIGTERM
    ld C SIGIO
    call iSignalCE  # for SIGIO
+   cc signal(SIGTSTP SIG_IGN)  # Ignore stop signals
+   cmp A SIG_DFL  # Not set yet?
+   if eq  # Yes
+      ld C SIGTSTP
+      call iSignalCE  # Install SIGTSTP
+   end
    ld E sigTerm  # Install terminating signal handler for SIGINT
    ld C SIGINT
    call iSignalCE
@@ -450,15 +456,6 @@
          set (C (+ C_CC VMIN)) 1
          set (C (+ C_CC VTIME)) 0
          call tcSetC  # Set terminal I/O
-         cc signal(SIGTSTP SIG_IGN)  # Ignore stop signals
-         cmp A SIG_DFL  # Not set yet?
-         if eq  # Yes
-            push E
-            ld E sig  # Handle stop signals
-            ld C SIGTSTP
-            call iSignalCE
-            pop E
-         end
       end
    end
    ret

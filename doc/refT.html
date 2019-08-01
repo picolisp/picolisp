@@ -14,10 +14,10 @@
 <dt><a name="*TStp1"><code>*TStp1</code></a>
 <dt><a name="*TStp2"><code>*TStp2</code></a>
 <dd>(64-bit version only) Global variables holding (possibly empty)
-<code>prg</code> bodies, which will be executed before (<code>*TStp1</code>) and
-after (<code>*TStp2</code>) a SIGTSTP signal is sent to the current process. See
-also <code><a href="refA.html#alarm">alarm</a></code>, <code><a
-href="refS.html#sigio">sigio</a></code>, <code><a
+<code>prg</code> bodies, which will be executed when a SIGTSTP signal
+(<code>*TStp1</code>) or a SIGCONT signal (<code>*TStp2</code>) is sent to the
+current process. See also <code><a href="refA.html#alarm">alarm</a></code>,
+<code><a href="refS.html#sigio">sigio</a></code>, <code><a
 href="refH.html#*Hup">*Hup</a></code>, and <code><a
 href="refS.html#*Sig1">*Sig[12]</a></code>.
 

@@ -1,3 +1,7 @@
+01aug19
+   Minor fix for '*TStp[12]'
+      doc/refT.html
+
 31jul19
    Run '*TStp1' and '*TStp2' also in non-raw mode
       src64/main.l

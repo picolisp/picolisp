@@ -1,4 +1,5 @@
-# 31jul19 Software Lab. Alexander Burger
+# 02aug19 Software Lab. Alexander Burger
+# https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
 

@@ -1,3 +1,7 @@
+09aug19
+   Allow '+Link' in '+Joint' back-relation
+      lib/db.l
+
 02aug19
    Include link to Wiki article
       lib/vip.l

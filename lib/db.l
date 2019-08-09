@@ -1,4 +1,4 @@
-# 04jun19abu
+# 09aug19abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -370,9 +370,9 @@
             (isa (: type) Val)
             (with (meta Val (: slot))
                (or
-                  (isa '+Joint This)
+                  (isa '+Link This)
                   (find
-                     '((B) (isa '+Joint B))
+                     '((B) (isa '+Link B))
                      (: bag) ) ) ) ) )
       ,"Type error" ) )
 

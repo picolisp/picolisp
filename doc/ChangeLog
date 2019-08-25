@@ -1,3 +1,10 @@
+25aug19
+   Support list as destination in 'put' and '=:' (64-bit)
+      {src64,pilos/src}/sym.l
+      doc/refP.html
+      doc/ref_.html
+      doc/refG.html
+
 09aug19
    Allow '+Link' in '+Joint' back-relation
       lib/db.l

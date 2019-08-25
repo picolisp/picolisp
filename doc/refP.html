@@ -905,13 +905,15 @@ href="refQ.html#queue">queue</a></code>.
 ->  (d (1) c (2) b (1) a)     # (1) is twice in the list
 </code></pre>
 
-<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) ->
-any</code></a> <dd>Stores a new value <code>any</code> for a property key
-<code>sym</code> (or in the symbol value for zero) in a symbol. That symbol is
-<code>sym1</code> (if no other arguments are given), or a symbol found by
-applying the <code><a href="refG.html#get">get</a></code> algorithm to
-<code>sym1|lst</code> and the following arguments. See also <code><a
-href="ref_.html#=:">=:</a></code>.
+<dt><a name="put"><code>(put 'sym1|lst ['sym2|cnt ..] 'any) -> any</code></a>
+<dd>Stores a new value <code>any</code> for a property key (or in the symbol
+value for zero) in a symbol, or in a list. That symbol is <code>sym1</code> (if
+no other arguments are given), or a symbol found by applying the <code><a
+href="refG.html#get">get</a></code> algorithm to <code>sym1|lst</code> and the
+following arguments. If the final destination is a list, the value is stored in
+the CDR of an <code><a href="refA.html#asoq">asoq</a></code>ed element (if the
+key argument is a symbol), or the n'th element (if the key is a number). See
+also <code><a href="ref_.html#=:">=:</a></code>.
 
 <pre><code>
 : (put 'X 'a 1)

@@ -1061,7 +1061,7 @@ flow.l,1703
 byeE3680,89701
 finishE3692,90012
 
-sym.l,1898
+sym.l,1918
 cmpLongAX_F5,78
 nextIsInternEXYZ_FE33,621
 isInternEXYZ_FCE41,761
@@ -1135,27 +1135,28 @@ sym.l,1898
 putACE2781,64626
 getnECX_E2924,68624
 getEC_E2965,69533
-propEC_E3035,71362
-doPut3125,73811
-doGet3186,75045
-doProp3217,75615
-doSemicol3267,76596
-doSetCol3296,77123
-doCol3350,78266
-doPropCol3374,78700
-doPutl3417,79597
-doGetl3499,81298
-doWipe3557,82406
-wipeEX3582,82871
-doMeta3606,83414
-metaCX_E3648,84190
-caseDataA_AC3674,84789
-doLowQ3686,85092
-doUppQ3703,85506
-doLowc3720,85914
-doUppc3775,87544
-doFold3830,89181
-isLetterOrDigitA_F3900,91300
+putnECX3035,71362
+propEC_E3068,72044
+doPut3158,74486
+doGet3223,75872
+doProp3254,76442
+doSemicol3304,77423
+doSetCol3333,77943
+doCol3390,79204
+doPropCol3414,79638
+doPutl3457,80535
+doGetl3539,82236
+doWipe3597,83344
+wipeEX3622,83809
+doMeta3646,84352
+metaCX_E3688,85128
+caseDataA_AC3714,85727
+doLowQ3726,86030
+doUppQ3743,86444
+doLowc3760,86852
+doUppc3815,88482
+doFold3870,90119
+isLetterOrDigitA_F3940,92238
 
 subr.l,2269
 doCar5,71

@@ -1,4 +1,4 @@
-# 18dec18abu
+# 25aug19abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -3032,6 +3032,39 @@
    pop X
    ret
 
+(code 'putnECX 0)
+   num C  # Numeric?
+   if nz  # Yes
+      shr C 4  # Index
+      do
+         dec C  # nth
+      while nz
+         ld E (E CDR)
+         atom E  # Need pair
+         jnz pairErrEX
+      loop
+      ld X E  # Destination cell
+      ld E (Y)  # Eval 'any'
+      eval
+      ld (X) E  # Store value
+   else
+      do  # asoq
+         atom (E)  # CAR atomic?
+         if z  # No
+            cmp C ((E))  # Found?
+            break eq  # Yes
+         end
+         ld E (E CDR)  # Next
+         atom E  # Need pair
+         jnz pairErrEX
+      loop
+      ld X (E)  # Destination cell
+      ld E (Y)  # Eval 'any'
+      eval
+      ld (X CDR) E  # Store value
+   end
+   ret
+
 (code 'propEC_E 0)
    push X
    ld A (E TAIL)  # Get tail
@@ -3121,7 +3154,7 @@
    pop X
    ret
 
-# (put 'sym1|lst ['sym2|cnt ..] 'sym|0 'any) -> any
+# (put 'sym1|lst ['sym2|cnt ..] 'any) -> any
 (code 'doPut 2)
    push X
    push Y
@@ -3149,33 +3182,37 @@
       ld (L I) E  # Save it
    loop
    ld E (L II)  # Get item
-   num E  # Need symbol
-   jnz symErrEX
-   sym E
-   jz symErrEX
-   ld E (Y)  # Eval 'any'
-   eval
-   ld A (L II)  # Get symbol
-   ld C (L I)  # Get key
-   sym (A TAIL)  # External symbol?
-   if nz  # Yes
-      push E  # Save 'any'
-      ld E A  # Get symbol
-      cmp C Nil  # Volatile property?
-      if ne  # No
-         call dbTouchEX  # Touch it
-      else
-         call dbFetchEX  # else fetch
-      end
-      ld A E
-      pop E
-   end
-   cmp C ZERO  # Key is zero?
-   if eq  # Yes
-      call checkVarAX  # Check variable
-      ld (A) E  # Set value
+   num E  # Need symbol or list
+   jnz argErrEX
+   atom E  # List?
+   if z  # Yes
+      ld C (L I)  # Get key
+      call putnECX
    else
-      call putACE  # Put value or propery
+      ld E (Y)  # Eval 'any'
+      eval
+      ld A (L II)  # Get symbol
+      ld C (L I)  # Get key
+      sym (A TAIL)  # External symbol?
+      if nz  # Yes
+         push E  # Save 'any'
+         ld E A  # Get symbol
+         cmp C Nil  # Volatile property?
+         if ne  # No
+            call dbTouchEX  # Touch it
+         else
+            call dbFetchEX  # else fetch
+         end
+         ld A E
+         pop E
+      end
+      cmp C ZERO  # Key is zero?
+      if eq  # Yes
+         call checkVarAX  # Check variable
+         ld (A) E  # Set value
+      else
+         call putACE  # Put value or propery
+      end
    end
    drop
    pop Y
@@ -3292,7 +3329,7 @@
    pop X
    ret
 
-# (=: sym|0 [sym1|cnt .. sym2|0] 'any) -> any
+# (=: sym|0 [sym1|cnt ..] 'any) -> any
 (code 'doSetCol 2)
    push X
    push Y
@@ -3316,31 +3353,34 @@
          call getnECX_E
       loop
    end
-   num E  # Need symbol
-   jnz symErrEX
-   sym E
-   jz symErrEX
-   sym (E TAIL)  # External symbol?
-   if nz  # Yes
-      cmp C Nil  # Volatile property?
-      if ne  # No
-         call dbTouchEX  # Touch symbol
-      else
-         call dbFetchEX  # else fetch
-      end
-   end
-   push C  # Save key
-   push E  # Save symbol
-   ld E (Y)  # Eval 'any'
-   eval
-   pop A  # Retrieve symbol
-   pop C  # and key
-   cmp C ZERO  # Key is zero?
-   if eq  # Yes
-      call checkVarAX  # Check variable
-      ld (A) E  # Set value
+   num E  # Need symbol or list
+   jnz argErrEX
+   atom E  # List?
+   if z  # Yes
+      call putnECX
    else
-      call putACE  # Put value or propery
+      sym (E TAIL)  # External symbol?
+      if nz  # Yes
+         cmp C Nil  # Volatile property?
+         if ne  # No
+            call dbTouchEX  # Touch symbol
+         else
+            call dbFetchEX  # else fetch
+         end
+      end
+      push C  # Save key
+      push E  # Save symbol
+      ld E (Y)  # Eval 'any'
+      eval
+      pop A  # Retrieve symbol
+      pop C  # and key
+      cmp C ZERO  # Key is zero?
+      if eq  # Yes
+         call checkVarAX  # Check variable
+         ld (A) E  # Set value
+      else
+         call putACE  # Put value or propery
+      end
    end
    pop Y
    pop X

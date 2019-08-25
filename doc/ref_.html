@@ -386,15 +386,17 @@ See also <code><a href="ref_.html#=0">=0</a></code>.
 -> NIL
 </code></pre>
 
-<dt><a name="=:"><code>(=: sym|0 [sym1|cnt .. sym2|0] 'any)</code></a>
-<dd>Stores a new value <code>any</code> for a property key <code>sym</code> or
-<code>sym2</code> (or in the symbol value for zero) in a symbol. That symbol is
-<code>This</code> (if no other arguments are given), or a symbol found by
-applying the <code><a href="refG.html#get">get</a></code> algorithm to
-<code>This</code> and the following arguments. Used typically in methods or
-<code><a href="refW.html#with">with</a></code> bodies. See also <code><a
-href="refP.html#put">put</a></code>, <code><a href="ref_.html#:">:</a></code>
-and <code><a href="ref_.html#::">::</a></code>.
+<dt><a name="=:"><code>(=: sym|0 [sym1|cnt ..] 'any) -> any</code></a>
+<dd>Stores a new value <code>any</code> for a property key (or in the symbol
+value for zero) in a symbol, or in a list. That symbol is <code>This</code> (if
+no other arguments are given), or a symbol found by applying the <code><a
+href="refG.html#get">get</a></code> algorithm to <code>This</code> and the
+following arguments. If the final destination is a list, the value is stored in
+the CDR of an <code><a href="refA.html#asoq">asoq</a></code>ed element (if the
+key argument is a symbol), or the n'th element (if the key is a number). Used
+typically in methods or <code><a href="refW.html#with">with</a></code> bodies.
+See also <code><a href="refP.html#put">put</a></code>, <code><a
+href="ref_.html#:">:</a></code> and <code><a href="ref_.html#::">::</a></code>.
 
 <pre><code>
 : (with 'X (=: a 1) (=: b 2))

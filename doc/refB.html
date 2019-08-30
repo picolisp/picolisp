@@ -319,10 +319,10 @@ href="refP.html#part/3">part/3</a></code> and <code><a
 href="refT.html#tolr/3">tolr/3</a></code>.
 
 <pre><code>
-: (? @OK NIL         # Find orders where the 'ok' flag is not set
+: (? @OK T           # Find orders where the 'ok' flag is set
    (db nr +Ord @Ord)
    (bool @OK @Ord ok) )
- @OK=NIL @Ord={3-7}
+ @OK=T @Ord={3-7}
 -> NIL
 </code></pre>
 

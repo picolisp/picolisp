@@ -1,3 +1,7 @@
+30aug19
+   Wrong example in 'bool/3'
+      doc/refB.html
+
 25aug19
    Support list as destination in 'put' and '=:' (64-bit)
       {src64,pilos/src}/sym.l

@@ -430,8 +430,8 @@ shell shFile prCmd reset command vi)
       (put
          (=: buffer (new '(+Buffer) File Y))
          'text
-         Lst )
-      (goto 1 (: buffer posY)) )
+         Lst ) )
+   (goto 1 (: buffer posY))
    (repaint) )
 
 (de done (Flg)

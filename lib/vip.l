@@ -1,9 +1,9 @@
-# 02aug19 Software Lab. Alexander Burger
+# 02sep19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
 
-(local) (*CmdWin *StatNm *Flat *Chr *Complete *Repeat *Change *Count *Cnt
+(local) (*Shell *CmdWin *StatNm *Flat *Chr *Complete *Repeat *Change *Count *Cnt
 *Search *Clip *Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
 
 ### ANSI Terminal ###
@@ -12,6 +12,8 @@ showCsr screen1 screen2)
 
 (de xterm ()
    (member (sys "TERM") '("xterm" "screen")) )
+
+(de *Shell "bash")
 
 (de ULINE . 4)
 (de U-OFF . 24)
@@ -1049,7 +1051,7 @@ shell shFile prCmd reset command vi)
    (evRpt
       (fill
          '(when (cdr (cutN Cnt))
-            (pipe (out (list "bash" "-c" Line) (mapc prinl @))
+            (pipe (out (list *Shell "-c" Line) (mapc prinl @))
                (paste (cons T (rdLines)) @@) ) )
          '(Line Cnt) ) ) )
 
@@ -1071,7 +1073,7 @@ shell shFile prCmd reset command vi)
 (de shell (S)
    (screen1)
    (do *Columns (prin "#"))
-   (call "bash" "-c" S)
+   (call *Shell "-c" S)
    (prin "[====] ")
    (flush)
    (getch)
@@ -1121,6 +1123,10 @@ shell shFile prCmd reset command vi)
                (case C
                   (" "  # Eval
                      (evCmd (run (str (pack Line)))) )
+                  ("$"  # Shell command
+                     (scratch (tmp "cmd")
+                        (in (list *Shell "-c" (rplFile Line))
+                           (make (until (eof) (link (line)))) ) ) )
                   ("!"  # External filter
                      (when Line
                         (if (=0 Cnt)

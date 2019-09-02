@@ -1,3 +1,8 @@
+02sep19
+   "$" command
+   '*Shell' global
+      lib/vip.l
+
 30aug19
    Wrong example in 'bool/3'
       doc/refB.html

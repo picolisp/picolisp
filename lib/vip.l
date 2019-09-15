@@ -221,9 +221,9 @@ beep undo redo evCmd dirty> load> save> view> status)
 (local) (*Window +Window)
 
 (class +Window)
-# buffer top lines winX winY posX posY prev next last mark sc
+# buffer top lines winX winY posX posY prev next last flat mark sc
 
-(dm T (Buffer Top Lines WinX WinY PosX PosY Prev Mark)
+(dm T (Buffer Top Lines WinX WinY PosX PosY Prev Flat Mark)
    (=: buffer Buffer)
    (=: top Top)
    (=: lines Lines)
@@ -235,6 +235,7 @@ beep undo redo evCmd dirty> load> save> view> status)
    (=: winY WinY)
    (=: posX PosX)
    (=: posY PosY)
+   (=: flat Flat)
    (=: mark Mark)
    (=: sc 0) )
 
@@ -1459,6 +1460,7 @@ shell shFile prCmd reset command vi)
                                                 (: winX) (: winY)
                                                 (: posX) (: posY)
                                                 (: prev)
+                                                (: flat)
                                                 (: mark) )
                                              (goto (: posX) (: posY)) )
                                           (=: mark)

@@ -1,9 +1,9 @@
-# 02sep19 Software Lab. Alexander Burger
+# 15sep19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
 
-(local) (*Shell *CmdWin *StatNm *Flat *Chr *Complete *Repeat *Change *Count *Cnt
+(local) (*Shell *CmdWin *StatNm *Chr *Complete *Repeat *Change *Count *Cnt
 *Search *Clip *Lines *Columns *TagStack *Spell *F8 *F9 *F10 *F11 *F12 *@)
 
 ### ANSI Terminal ###
@@ -265,7 +265,7 @@ shell shFile prCmd reset command vi)
    (for C (nth L (: winX))
       (T (lt0 (dec 'N)))
       (cond
-         (*Flat)
+         ((: flat))
          ((=T (val C))
             (ifn (>= "^_" C "^A")
                (attr NIL T)
@@ -1418,7 +1418,7 @@ shell shFile prCmd reset command vi)
                                  (reload (pop '*TagStack) (pop '*TagStack))
                                  (beep) ) )
                            (("^[OP" "^[[[A")  # [F1] Highlight on/off
-                              (onOff *Flat)
+                              (=: flat (not (: flat)))
                               (repaint) )
                            (("^[OQ" "^[[[B")  # [F2] Show chages to <file>-
                               (shFile

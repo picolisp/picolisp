@@ -1,4 +1,4 @@
-# 15sep19 Software Lab. Alexander Burger
+# 20sep19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -59,7 +59,7 @@ showCsr screen1 screen2)
 beep undo redo evCmd dirty> load> save> view> status)
 
 (class +Buffer)
-# text file key undo redo dirt posX posY lastX lastY fmt <c>
+# text file key undo redo dirt posX posY lastX lastY flat fmt <c>
 
 (dm T (File Y)
    (and (=: file File) (queue '*Buffers This))
@@ -221,9 +221,9 @@ beep undo redo evCmd dirty> load> save> view> status)
 (local) (*Window +Window)
 
 (class +Window)
-# buffer top lines winX winY posX posY prev next last flat mark sc
+# buffer top lines winX winY posX posY prev next last mark sc
 
-(dm T (Buffer Top Lines WinX WinY PosX PosY Prev Flat Mark)
+(dm T (Buffer Top Lines WinX WinY PosX PosY Prev Mark)
    (=: buffer Buffer)
    (=: top Top)
    (=: lines Lines)
@@ -235,7 +235,6 @@ beep undo redo evCmd dirty> load> save> view> status)
    (=: winY WinY)
    (=: posX PosX)
    (=: posY PosY)
-   (=: flat Flat)
    (=: mark Mark)
    (=: sc 0) )
 
@@ -266,7 +265,7 @@ shell shFile prCmd reset command vi)
    (for C (nth L (: winX))
       (T (lt0 (dec 'N)))
       (cond
-         ((: flat))
+         ((: buffer flat))
          ((=T (val C))
             (ifn (>= "^_" C "^A")
                (attr NIL T)
@@ -1419,7 +1418,7 @@ shell shFile prCmd reset command vi)
                                  (reload (pop '*TagStack) (pop '*TagStack))
                                  (beep) ) )
                            (("^[OP" "^[[[A")  # [F1] Highlight on/off
-                              (=: flat (not (: flat)))
+                              (=: buffer flat (not (: buffer flat)))
                               (repaint) )
                            (("^[OQ" "^[[[B")  # [F2] Show chages to <file>-
                               (shFile
@@ -1460,7 +1459,6 @@ shell shFile prCmd reset command vi)
                                                 (: winX) (: winY)
                                                 (: posX) (: posY)
                                                 (: prev)
-                                                (: flat)
                                                 (: mark) )
                                              (goto (: posX) (: posY)) )
                                           (=: mark)

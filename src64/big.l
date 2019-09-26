@@ -1,4 +1,4 @@
-# 15jul17abu
+# 26sep19abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2151,6 +2151,7 @@
          call packECX_CX
          ld X (L I)  # Get result
          drop
+         ld (L I) X  # Save it
       end
       pop A  # Get scale
       call symToNumXA_FE  # Convert to number

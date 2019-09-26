@@ -1,3 +1,7 @@
+26sep19
+   Bug in 'format' (Mike Pechkin)
+      {src64,pilos/src}/big.l
+
 20sep19
    "flat" must be per buffer
       lib/vip.l

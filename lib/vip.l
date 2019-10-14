@@ -1,4 +1,4 @@
-# 20sep19 Software Lab. Alexander Burger
+# 14oct19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -78,7 +78,7 @@ beep undo redo evCmd dirty> load> save> view> status)
          (when (=0 (native "@" "realpath" 'N File '(R (4096 C . 4096))))
             (setq R (chop File)) )
          (pack
-            (if (head (chop (pwd)) R)
+            (if (head (conc (chop (pwd)) '("/")) R)
                (cddr (nth R (length (pwd))))
                R ) ) ) ) )
 

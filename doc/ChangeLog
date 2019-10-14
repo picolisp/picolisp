@@ -1,3 +1,7 @@
+14oct19
+   Minor bug in file name expansion
+      lib/vip.l
+
 13oct19
    Support 4th UTF-8 byte
       doc/refN.html

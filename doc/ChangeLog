@@ -1,3 +1,11 @@
+13oct19
+   Support 4th UTF-8 byte
+      doc/refN.html
+
+11oct19
+   Minor comment
+      {src64,pilos/src}/sym.l
+
 26sep19
    Bug in 'format' (Mike Pechkin)
       {src64,pilos/src}/big.l

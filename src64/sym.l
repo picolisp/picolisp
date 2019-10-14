@@ -1,4 +1,4 @@
-# 25aug19abu
+# 11oct19abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -37,6 +37,7 @@
 ### Is symbol interned? ###
 # E symbol
 # X name
+# Y tree
 # Z more
 (code 'isInternEXYZ_FCE 0)  # Y
    ld C 0  # Default current namespace

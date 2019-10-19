@@ -1,4 +1,4 @@
-# 14oct19 Software Lab. Alexander Burger
+# 19oct19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -183,8 +183,14 @@ beep undo redo evCmd dirty> load> save> view> status)
                         '((F)
                            (conc
                               (chop (setq F (pack D F)))
-                              (when (=T (car (info F)))
-                                 (list (name "/")) ) ) )
+                              (let S (car (info F T))
+                                 (cond
+                                    ((=T S) (list (name "/")))
+                                    ((not S)
+                                       (conc
+                                          (chop " -> ")
+                                          (in (list "readlink" F)
+                                             (line) ) ) ) ) ) ) )
                         (sort (dir File)) ) )
                   (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))

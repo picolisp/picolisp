@@ -1,4 +1,4 @@
-# 06jun19abu
+# 19oct19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -39,9 +39,9 @@
 # Java I/O
 # (java "cls" 'T ['any ..]) -> obj         New object
 # (java 'obj ['n] 'msg ['any ..]) -> any   Send message to object
-# (java 'obj "fld" ["fld" ..]) -> any      Value of object field
+# (java 'obj "fld" ['any]) -> any          Value of object field
 # (java "cls" ['n] 'msg ['any ..]) -> any  Call method in class
-# (java "cls" "fld" ["fld" ..]) -> any     Value of class field
+# (java "cls" "fld" ['any]) -> any         Value of class field
 # (java T "cls" ["cls" ..]) -> obj         Define interface
 # (java 'obj) -> [lst ..]                  Reflect object
 # (java "cls") -> cls                      Get class

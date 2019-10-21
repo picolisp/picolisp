@@ -1,4 +1,4 @@
-# 19oct19abu
+# 21oct19abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -236,16 +236,12 @@ getPackageManager setResultProxy good bad)
             (java (; CONTEXT GUI) 'startActivityForResult Intent Req) ) ) ) )
 
 # GPS access
-(local) checkSelfPermission
+(local) (permit location? gps *LocMan *LocLsn onLocationChanged
+onProviderDisabled onProviderEnabled onStatusChanged requestLocationUpdates
+isProviderEnabled getLastKnownLocation getLatitude getLongitude)
 
 (de location? ()
-   (=0
-      (java "android.support.v4.content.ContextCompat"
-         'checkSelfPermission CONTEXT "android.permission.ACCESS_FINE_LOCATION" ) ) )
-
-(local) (gps *LocMan *LocLsn onLocationChanged onProviderDisabled
-onProviderEnabled onStatusChanged requestLocationUpdates isProviderEnabled
-getLastKnownLocation getLatitude getLongitude)
+   (java (; CONTEXT GUI) 'permit "android.permission.ACCESS_FINE_LOCATION") )
 
 (de gps ()
    (unless *LocMan
@@ -278,8 +274,9 @@ getLastKnownLocation getLatitude getLongitude)
 (local) (camera? hasSystemFeature)
 
 (de camera? ()
-   (java (java CONTEXT 'getPackageManager)
-      'hasSystemFeature "android.hardware.camera" ) )
+   (and
+      (java (java CONTEXT 'getPackageManager) 'hasSystemFeature "android.hardware.camera")
+      (java (; CONTEXT GUI) 'permit "android.permission.CAMERA") ) )
 
 ## '((Intent)
 ##    (setq *Picture (tmp "img"))

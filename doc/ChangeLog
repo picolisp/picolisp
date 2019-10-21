@@ -1,3 +1,7 @@
+21oct19
+   Request camera permission in 'location?' and 'camera?'
+      lib/android.l
+
 19oct19
    Show symbolic links in directories
       lib/vip.l

@@ -1,4 +1,4 @@
-# 19oct19 Software Lab. Alexander Burger
+# 06nov19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -191,7 +191,7 @@ beep undo redo evCmd dirty> load> save> view> status)
                                           (chop " -> ")
                                           (in (list "readlink" F)
                                              (line) ) ) ) ) ) ) )
-                        (sort (dir File)) ) )
+                        (sort (dir File T)) ) )
                   (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe
@@ -370,7 +370,7 @@ shell shFile prCmd reset command vi)
                (>= (+ (: winX) *Columns -1) X (: winX)) )
             (: winX) )
          ((>= (*/ *Columns 3 4) X) 1)
-         (T (- X (/ *Columns 2)))  ) )
+         (T (- X (/ *Columns 2))) ) )
    (=: buffer posY (=: posY Y))
    (setq Y
       (min1

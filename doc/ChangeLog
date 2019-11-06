@@ -1,3 +1,7 @@
+06nov19
+   Include dot-files in directories
+      lib/vip.l
+
 21oct19
    Request camera permission in 'location?' and 'camera?'
       lib/android.l

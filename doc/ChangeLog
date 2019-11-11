@@ -1,3 +1,12 @@
+10nov19
+   Set '*StatNm' also on 'save>'
+      lib/vip.l
+
+09nov19
+   Show "$" for anonymous namespaces in '*Prompt'
+      lib/debug.l
+      pilos/init/lib/dbg.l
+
 06nov19
    Include dot-files in directories
       lib/vip.l

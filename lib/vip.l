@@ -1,4 +1,4 @@
-# 06nov19 Software Lab. Alexander Burger
+# 10nov19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -205,7 +205,8 @@ beep undo redo evCmd dirty> load> save> view> status)
       (head '`(chop "# VIP ") (: text 1))
       (split (clip (: text 1 -6)) " ")
       (evCmd
-         (apply script (cdr @) (fName (pack (car @)))) ) ) )
+         (apply script (cdr @) (fName (pack (car @)))) ) )
+   (off *StatNm) )
 
 (dm save> (Win)
    (when (: file)
@@ -218,7 +219,8 @@ beep undo redo evCmd dirty> load> save> view> status)
             (out (: file) (mapc prinl (: text))) ) )
       (=: dirt (: undo))
       (for (This *CmdWin (setq This (: next)))
-         (status) ) ) )
+         (status) ) )
+   (on *StatNm) )
 
 (dm view> (Win)
    (beep) )
@@ -424,7 +426,6 @@ shell shFile prCmd reset command vi)
             (unmark) ) )
       (load> (: buffer) This)
       (goto 1 (or Y (: buffer posY)))
-      (off *StatNm)
       (repaint) ) )
 
 (de scratch (File Lst Y)
@@ -1073,7 +1074,6 @@ shell shFile prCmd reset command vi)
                (car (or (prior M *Buffers) (tail 1 *Buffers))) ) ) )
       (unless (: buffer text)
          (load> (: buffer) This) )
-      (off *StatNm)
       (goto (: buffer posX) (: buffer posY)) ) )
 
 (de shell (S)

@@ -1,11 +1,11 @@
-# 21dec18abu
+# 09nov19abu
 # (c) Software Lab. Alexander Burger
 
 # Prompt
 (when symbols
    (de *Prompt
       (unless (== 'pico (car (symbols)))
-         (car (symbols)) ) ) )
+         (or (name (car (symbols))) "$") ) ) )
 
 # Browsing
 (de help (Sym Ex)

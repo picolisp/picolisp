@@ -1,3 +1,7 @@
+11nov19
+   Don't modify last position  in relative movements
+      lib/vip.l
+
 10nov19
    Set '*StatNm' also on 'save>'
       lib/vip.l

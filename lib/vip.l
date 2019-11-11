@@ -1,4 +1,4 @@
-# 10nov19 Software Lab. Alexander Burger
+# 11nov19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -539,11 +539,11 @@ shell shFile prCmd reset command vi)
             (length (get (: buffer text) (: posY))) ) ) ) )
 
 (de goUp (N)
-   (jmp@@ (max 1 (- (: posY) N)))
+   (setq @@ (max 1 (- (: posY) N)))
    (min1 (: posX) (length (get (: buffer text) @@))) )
 
 (de goDown (N I)
-   (jmp@@
+   (setq @@
       (min1
          (or (=T N) (+ (: posY) N))
          (+ (or I 0) (length (: buffer text))) ) )

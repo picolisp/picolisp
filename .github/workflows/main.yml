@@ -1,0 +1,31 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [src, src64]
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Update Ubuntu environment
+      run: sudo apt-get update
+
+    - name: Install PicoLisp and its dependencies
+      run: sudo apt-get install picolisp libc6-dev-i386 libc6-i386 linux-libc-dev gcc-multilib
+
+    - name: Build PicoLisp
+      run: |
+        cd ${GITHUB_WORKSPACE}/${{matrix.arch}} && make
+
+    - name: Test PicoLisp ${{matrix.arch}}
+      run: |
+        export PATH=$PATH:${GITHUB_WORKSPACE}
+        cd ${GITHUB_WORKSPACE} && ./pil lib/test.l -bye +
+

@@ -1,4 +1,4 @@
-# 26sep19abu
+# 25nov19abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -1810,7 +1810,7 @@
    push A  # <L -III> Sign flag
    off E SIGN
    # Calculate buffer size
-   ld A 19  # Decimal length of 'cnt' (60 bit)
+   ld A (+ 19 17)  # Decimal length of 'cnt' (60 bit) plus round up div/19
    ld C E  # Get number
    do
       cnt C  # Last digit?
@@ -1818,7 +1818,6 @@
       add A 20  # Add decimal length of 'digit' (64 bit)
       ld C (C BIG)
    loop
-   add A 17  # Round up
    ld C 0  # Divide by 18
    div 18
    shl A 3  # Word count

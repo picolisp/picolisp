@@ -1,4 +1,4 @@
-# 17may19abu
+# 14nov19abu
 # (c) Software Lab. Alexander Burger
 
 # Close file descriptor
@@ -5318,6 +5318,7 @@
    call doPrin  # Print arguments
    jmp newline
 
+# (space ['cnt]) -> cnt
 (code 'doSpace 2)
    push X
    ld X E

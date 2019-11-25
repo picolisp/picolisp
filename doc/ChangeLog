@@ -1,3 +1,11 @@
+25nov19
+   Minor optimization (+ 19 17)
+      {src64,pilos/src}/big.l
+
+14nov19
+   Minor comment
+      {src64,pilos/src}/io.l
+
 11nov19
    Don't modify last position  in relative movements
       lib/vip.l

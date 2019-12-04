@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   build:
+    env:
+      PIL_ARCH: /tmp/pil.arch
+      PIL_VER: /tmp/pil.version
 
     runs-on: ubuntu-latest
 
@@ -22,10 +25,40 @@ jobs:
 
     - name: Build PicoLisp
       run: |
-        cd ${GITHUB_WORKSPACE}/${{matrix.arch}} && make
+        cd ${GITHUB_WORKSPACE}/${{matrix.arch}}
+        make
+
+    - name: Save architecture (x86)
+      if: matrix.arch == 'src'
+      run: echo 'x86' > $PIL_ARCH
+
+    - name: Save architecture (x86-64)
+      if: matrix.arch == 'src64'
+      run: echo 'x86-64' > $PIL_ARCH
 
     - name: Test PicoLisp ${{matrix.arch}}
       run: |
-        export PATH=$PATH:${GITHUB_WORKSPACE}
-        cd ${GITHUB_WORKSPACE} && ./pil lib/test.l -bye +
+        PATH=$PATH:${GITHUB_WORKSPACE}
+        ./pil lib/test.l -bye +
+        ./pil -"prinl (glue '. (version T))" -bye > $PIL_VER
+        mkdir -p ${HOME}/artifacts/picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)
 
+    - name: Create PicoLisp install dir
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        PIL_DEST="${HOME}/artifacts/picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+        mkdir -p ${PIL_DEST}/usr/{lib/picolisp,bin,share/man/man1}
+        mv * ${PIL_DEST}/usr/lib/picolisp
+        ln -s ../lib/picolisp/bin/picolisp ${PIL_DEST}/usr/bin
+        ln -s ../lib/picolisp/bin/pil ${PIL_DEST}/usr/bin
+        ln -s ../../../lib/picolisp/man/man1/picolisp.1 ${PIL_DEST}/usr/share/man/man1
+        ln -s ../../../lib/picolisp/man/man1/pil.1 ${PIL_DEST}/usr/share/man/man1
+        ln -s ../lib/picolisp ${PIL_DEST}/usr/share
+
+    - name: Define PicoLisp zip archive name
+      run: echo "::set-env name=picolisp_zip::picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: ${{env.picolisp_zip}}
+        path: /home/runner/artifacts/${{env.picolisp_zip}}

@@ -1,4 +1,4 @@
-# 11nov19 Software Lab. Alexander Burger
+# 05dec19 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -1138,7 +1138,7 @@ shell shFile prCmd reset command vi)
                         (if (=0 Cnt)
                            (shell (rplFile Line))
                            (pipeN Cnt Line) ) ) )
-                  ("copy"  # Copy to system clipboard
+                  ("cp"  # Copy to system clipboard
                      (out '("copy")  # System dependent script
                         (let V (val *Clip)
                            (if (=T (car V))
@@ -1338,7 +1338,7 @@ shell shFile prCmd reset command vi)
                               (when (insMode)
                                  (setq *Repeat (list 'paste (lit @))) ) )
                            ("I"  # Insert at beginning of line
-                              (=: posX 1)
+                              (goto 1 (: posY))
                               (when (insMode)
                                  (setq *Repeat (list 'paste (lit @) 0)) ) )
                            ("a"  # Append

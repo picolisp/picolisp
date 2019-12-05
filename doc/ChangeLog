@@ -1,3 +1,11 @@
+05dec19
+   Renamed ":copy" command to ":cp"
+      lib/vip.l
+
+01dec19
+   Scroll to column 1 for 'I' in long lines
+      lib/vip.l
+
 25nov19
    Minor optimization (+ 19 17)
       {src64,pilos/src}/big.l

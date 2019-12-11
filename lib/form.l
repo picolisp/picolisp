@@ -1,4 +1,4 @@
-# 04jun19abu
+# 10dec19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2459,6 +2459,72 @@
       (for (Q (eval (: iniQ)) (step Q))
          (link (cons @@ @)) ) ) )
 
+
+# 3D-Chart (list of bags with list of bags)
+(de bagBag (Attr Var H1 Rows Gui Sep H2 Cols Put Get . Prg)
+   (let Len (length Gui)
+      (<grid> 3
+         (<table> Attr NIL H1
+            (put
+               (gui '(+E/R +Chart) (cons Var '(: home obj)) (+ 2 Len)
+                  '((L I)
+                     (when (= I (+ (format (: home radio)) (: ofs)))
+                        (unless (= I (: radio))
+                           (=: radio I)
+                           (set> (cadr (memq This (: home chart)))
+                              (get L (dec (: cols))) ) ) )
+                     (mapcar
+                        '((F) (and F (++ L)))
+                        (: gf) ) )
+                  '((L D)
+                     (conc
+                        (mapcan
+                           '((F V)
+                              (when F
+                                 (++ D)
+                                 (list V) ) )
+                           (: gf)
+                           L )
+                        D ) ) )
+               'gf (mapcar car Gui) )
+            (macro
+               (for R (range 0 (dec Rows))
+                  (<row> NIL
+                     ^ (mapcar cdr Gui)
+                     (gui (inc Len) '(+Able +DelRowButton)
+                        '(nor
+                           (= (row) (: chart 1 radio))
+                           (>= (: chart 1 radio) (length (: chart 1 data))) )
+                        '(=: chart 1 radio NIL) )
+                     (gui (+ 2 Len) '(+BubbleButton) '(=: chart 1 radio NIL))
+                     (if (=0 R)
+                        (gui '(+Rid +Init +Var +Radio) "0" (:: radio) NIL "0")
+                        (gui '(+Rid +Radio) (* R (- -3 Len)) (format R)) ) ) ) )
+            (<row> NIL (scroll Rows T) - -) )
+         (run Sep)
+         (<table> Attr NIL H2
+            (gui '(+Init +Set +Chart) (last (get (: obj) Var 1))
+               '((Lst)
+                  (when (: home able)
+                     (let C (car (prior (memq This (: home chart)) (: home chart)))
+                        (when (+ (format (: home radio)) (; C ofs))
+                           (put!> (: home obj) (; C erVar)
+                              (let L (get (: home obj) (; C erVar))
+                                 (conc
+                                    (cut (dec @) 'L)
+                                    (cons
+                                       (conc
+                                          (mapcan
+                                             '((F V) (and F (list V)))
+                                             (; C gf)
+                                             (car L) )
+                                          (list Lst) ) )
+                                    (cdr L) ) ) ) ) ) )
+                  Lst )
+               Cols
+               Put
+               Get )
+            (run Prg) ) ) ) )
 
 (====)
 

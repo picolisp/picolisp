@@ -1,3 +1,7 @@
+10dec19
+   'bagBag' GUI function for a list of bags with list of bags relation
+      lib/form.l
+
 05dec19
    Renamed ":copy" command to ":cp"
       lib/vip.l

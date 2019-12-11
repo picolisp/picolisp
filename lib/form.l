@@ -1,4 +1,4 @@
-# 10dec19abu
+# 11dec19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2472,21 +2472,15 @@
                         (unless (= I (: radio))
                            (=: radio I)
                            (set> (cadr (memq This (: home chart)))
-                              (get L (dec (: cols))) ) ) )
+                              (get L (inc (: gf 1))) ) ) )
                      (mapcar
                         '((F) (and F (++ L)))
-                        (: gf) ) )
+                        (: gf -1) ) )
                   '((L D)
                      (conc
-                        (mapcan
-                           '((F V)
-                              (when F
-                                 (++ D)
-                                 (list V) ) )
-                           (: gf)
-                           L )
-                        D ) ) )
-               'gf (mapcar car Gui) )
+                        (filter prog2 L (: gf -1))
+                        (nth D (inc (: gf 1))) ) ) )
+               'gf (cons (cnt car Gui) (mapcar car Gui)) )
             (macro
                (for R (range 0 (dec Rows))
                   (<row> NIL
@@ -2514,10 +2508,9 @@
                                     (cut (dec @) 'L)
                                     (cons
                                        (conc
-                                          (mapcan
-                                             '((F V) (and F (list V)))
-                                             (; C gf)
-                                             (car L) )
+                                          (make
+                                             (do (; C gf 1)
+                                                (link (and L (pop L))) ) )
                                           (list Lst) ) )
                                     (cdr L) ) ) ) ) ) )
                   Lst )

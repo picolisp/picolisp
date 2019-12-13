@@ -1,4 +1,4 @@
-# 11dec19abu
+# 13dec19abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -1481,7 +1481,8 @@
    (super (glue (car (: split)) Val) Dn) )
 
 (dm val> ()
-   (mapcar pack
+   (extract
+      '((L) (pack (clip L)))
       (apply split (: split) (chop (super))) ) )
 
 

@@ -1,3 +1,8 @@
+####### 19.12 #######
+24dec19
+   Add 'less', move 'depth'
+      doc/ref.html
+
 13dec19
    Automatic 'clip' in '+ListTextField'
       lib/form.l
@@ -3689,5 +3694,3 @@
       pilMCU/src/flow.l
 
 ####### 3.1.9.1 #######
-
-# vi:et:ts=3:sw=3

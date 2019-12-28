@@ -1,4 +1,5 @@
-* NNdec19 picoLisp-19.12
+* 28dec19 picoLisp-19.12
+   Bug in 'format'
    Support list as destination in 'put' and '=:' (64-bit)
    Allow '+Link' in '+Joint' back-relation
    '*TStp1', '*TStp2' global variables

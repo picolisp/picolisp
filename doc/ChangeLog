@@ -1,3 +1,16 @@
+03jan20
+   Minor diagram fix
+      doc64/structures
+
+02jan20
+   Disable TLS 1.1 and update cipher list (Mike Pechkin)
+      src/httpGate.c
+      src/ssl.c
+
+31dec19
+   Set '*StatNm' also in 'nextBuf'
+      lib/vip.l
+
 ####### 19.12 #######
 24dec19
    Add 'less', move 'depth'

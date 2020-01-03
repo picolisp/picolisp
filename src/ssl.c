@@ -1,4 +1,4 @@
-/* 15nov18abu
+/* 02jan20abu
  * (c) Software Lab. Alexander Burger
  */
 
@@ -27,7 +27,7 @@ static char *File, *Dir, *Data;
 static off_t Size;
 static bool Safe, Hot;
 
-static char Ciphers[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:DES-CBC3-SHA";
+static char Ciphers[] = "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
 
 static char Get[] =
    "GET /%s HTTP/1.0\r\n"
@@ -185,7 +185,7 @@ int main(int ac, char *av[]) {
    }
    SSL_CTX_set_options(ctx,
       SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 |
-      SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
+      SSL_OP_NO_TLSv1_1 | SSL_OP_ALL | SSL_OP_NO_COMPRESSION );
    SSL_CTX_set_cipher_list(ctx, Ciphers);
    ssl = SSL_new(ctx);
    SSL_set_tlsext_host_name(ssl, av[1]);

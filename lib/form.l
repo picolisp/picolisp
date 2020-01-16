@@ -1,4 +1,4 @@
-# 13dec19abu
+# 16jan20abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2500,20 +2500,24 @@
          (<table> Attr NIL H2
             (gui '(+Init +Set +Chart) (last (get (: obj) Var 1))
                '((Lst)
+                  (=: ctl
+                     (car (prior (memq This (: home chart)) (: home chart))) )
+                  (=: pos
+                     (or
+                        (+ (format (: home radio)) (: ctl ofs))
+                        1 ) )
                   (when (: home able)
-                     (let C (car (prior (memq This (: home chart)) (: home chart)))
-                        (when (+ (format (: home radio)) (; C ofs))
-                           (put!> (: home obj) (; C erVar)
-                              (let L (get (: home obj) (; C erVar))
+                     (put!> (: home obj) (: ctl erVar)
+                        (let L (get (: home obj) (: ctl erVar))
+                           (conc
+                              (cut (dec (: pos)) 'L)
+                              (cons
                                  (conc
-                                    (cut (dec @) 'L)
-                                    (cons
-                                       (conc
-                                          (make
-                                             (do (; C gf 1)
-                                                (link (and L (pop L))) ) )
-                                          (list Lst) ) )
-                                    (cdr L) ) ) ) ) ) )
+                                    (make
+                                       (do (: ctl gf 1)
+                                          (link (and L (pop L))) ) )
+                                    (list Lst) ) )
+                              (cdr L) ) ) ) )
                   Lst )
                Cols
                Put

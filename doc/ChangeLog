@@ -1,3 +1,8 @@
+08feb20
+   Note about the destination for 32-bit 'put' and '=:'
+      doc/ref_.html
+      doc/refP.html
+
 16jan20
    'ctl' and 'pos' chart properties in 'bagBag'
       lib/form.l

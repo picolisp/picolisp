@@ -1,3 +1,7 @@
+09feb20
+   Minor optimization in 'muluAE_A'
+      {src64,pilos/src}/big.l
+
 08feb20
    Note about the destination for 32-bit 'put' and '=:'
       doc/ref_.html

@@ -1,4 +1,4 @@
-# 25nov19abu
+# 09feb20abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -984,7 +984,6 @@
          cnt A  # End of safe?
          if nz  # Yes
             call boxNum_A  # Extend safe
-            ld (A DIG) 0
             ld (X BIG) A
          end
          ld (A DIG) C  # Store uppper word
@@ -1030,7 +1029,6 @@
       cnt A  # End of safe?
       if nz  # Yes
          call boxNum_A  # Extend safe
-         ld (A DIG) 0
          ld (X BIG) A
       end
       ld (A DIG) C  # Store uppper word

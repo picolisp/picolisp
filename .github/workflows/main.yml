@@ -55,10 +55,39 @@ jobs:
         ln -s ../../../lib/picolisp/man/man1/pil.1 ${PIL_DEST}/usr/share/man/man1
         ln -s ../lib/picolisp ${PIL_DEST}/usr/share
 
-    - name: Define PicoLisp zip archive name
-      run: echo "::set-env name=picolisp_zip::picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+    - name: Define PicoLisp tgz archive name
+      run: echo "::set-env name=picolisp_tgz::picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
 
-    - uses: actions/upload-artifact@v1
-      with:
-        name: ${{env.picolisp_zip}}
-        path: /home/runner/artifacts/${{env.picolisp_zip}}
+    - name: Compress the PicoLisp install
+      run: |
+        cd "${HOME}/artifacts"
+        tar -zcf "${{env.picolisp_tgz}}.tgz" "${{env.picolisp_tgz}}"
+        rm -rf "${{env.picolisp_tgz}}"
+
+    - name: Download and setup JFrog CLI
+      run: |
+        curl -L -o jfrog 'https://api.bintray.com/content/jfrog/jfrog-cli-go/$latest/jfrog-cli-linux-amd64/jfrog?bt_package=jfrog-cli-linux-amd64'
+        chmod +x jfrog
+        sudo mv jfrog /usr/bin/jfrog
+
+    - name: Upload the artifact to Bintray
+      env:
+        JFROG_CLI_LOG_LEVEL: DEBUG
+        JFROG_CLI_OFFER_CONFIG: false
+      run: |
+        version=$(cat $PIL_VER)
+        arch=$(cat $PIL_ARCH)
+        license=MIT
+        jfrog bt config \
+          --user ${{ secrets.BINTRAY_API_USER }} --key ${{ secrets.BINTRAY_API_KEY }}
+        jfrog bt package-show picolisp/picolisp/picolisp || \
+        jfrog bt package-create \
+          --vcs-url "https://github.com/${{ github.repository }}" \
+          --licenses "${license}" \
+          picolisp/picolisp/picolisp
+        jfrog bt upload \
+          "${HOME}/artifacts/" \
+          picolisp/picolisp/picolisp/${version} \
+          ${arch}/ || true
+        jfrog bt version-publish \
+          picolisp/picolisp/picolisp/${version} || true

@@ -1,4 +1,4 @@
-# 31dec19 Software Lab. Alexander Burger
+# 10feb20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -1422,7 +1422,7 @@ shell shFile prCmd reset command vi)
                                  (reload (cdr @) (car @)) ) )
                            (("Q" "^T")  # Pop tag stack
                               (if *TagStack
-                                 (reload (pop '*TagStack) (pop '*TagStack))
+                                 (reload (++ *TagStack) (++ *TagStack))
                                  (beep) ) )
                            (("^[OP" "^[[[A")  # [F1] Highlight on/off
                               (=: buffer flat (not (: buffer flat)))

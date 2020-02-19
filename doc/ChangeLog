@@ -1,3 +1,11 @@
+19feb20
+   Minor example mismatch for 'hash'
+      doc/refH.html
+
+10feb20
+   Cosmetics
+      lib/vip.l
+
 09feb20
    Minor optimization in 'muluAE_A'
       {src64,pilos/src}/big.l

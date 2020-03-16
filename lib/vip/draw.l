@@ -1,4 +1,4 @@
-# 05jul19 Software Lab. Alexander Burger
+# 26feb20 Software Lab. Alexander Burger
 
 (symbols 'draw 'vip 'pico)
 
@@ -6,9 +6,9 @@
 
 (zero *DX *DY)
 
-(local) (point hline vline rect label +Box mx> my> hv> box arrow cell cells)
-
 # Drawing primitives
+(local) (point hline vline rect label)
+
 (de point (X Y C)
    (inc 'X *DX)
    (inc 'Y *DY)
@@ -55,6 +55,8 @@
 
 
 # Box
+(local) (+Box mx> my> hv>)
+
 (class +Box)
 # id x y x2 y2 dx dy h v
 
@@ -80,31 +82,41 @@
 
 
 # Draw box
-(de box ("X" "Y" "DX" "DY" "Txt" . "Prg")
+(local) (box X Y DX DY Txt Prg)
+
+(de box (X Y DX DY Txt . Prg)
    (with
       (new '(+Box)
-         'id (if (atom "Txt") "Txt" (car "Txt"))
-         'x (inc '"X" *DX)
-         'y (inc '"Y" *DY)
-         'x2 (+ "X" "DX")
-         'y2 (+ "Y" "DY")
-         'dx "DX"
-         'dy "DY" )
-      (push '*Boxes This)
+         'id (if (atom Txt) Txt (car Txt))
+         'x (inc 'X *DX)
+         'y (inc 'Y *DY)
+         'x2 (+ X DX)
+         'y2 (+ Y DY)
+         'dx DX
+         'dy DY )
+      (queue '*Boxes This)
       (let (*DX 0  *DY 0)
          (rect (: x) (: y) (: x2) (: y2))
-         (when (fin "Txt")
+         (when (fin Txt)
             (label
                (+ (: x) (*/ (- (: dx) (length @)) 2))
                (+ (: y) (*/ (: dy) 2))
                @ ) ) )
-      (let (*DX "X"  *DY "Y")
-         (run "Prg") ) ) )
+      (let (*DX X  *DY Y)
+         (run Prg) ) ) )
 
 # Draw arrow
+(local) arrow
+
 (de arrow (Id1 Id2)
-   (with (find '((This) (= Id1 (: id))) *Boxes)
-      (let? B (find '((This) (= Id2 (: id))) *Boxes)
+   (with
+      (if (num? Id1)
+         (get *Boxes Id1)
+         (find '((This) (= Id1 (: id))) *Boxes) )
+      (let? B
+         (if (num? Id2)
+            (get *Boxes Id2)
+            (find '((This) (= Id2 (: id))) *Boxes) )
          (let (X (mx> This)  Y (my> This)  X2 (mx> B)  Y2 (my> B))
             (cond
                ((> (; B y) (: y2))  # Above
@@ -177,6 +189,8 @@
                                     (list "+" M Y2 (inc (; B x2)) "<") ) ) ) ) ]
 
 # Draw cell structures
+(local) (cell cells)
+
 (de cell (X Y Car Cdr)
    (let A (max 6 (+ 3 (length (setq Car (sym Car)))))
       (box X Y A 2
@@ -233,5 +247,3 @@
    (mapc 'hv> *Boxes)
    (with Win
       (scratch (tmp "draw") *Draw) ) )
-
-# vi:et:ts=3:sw=3

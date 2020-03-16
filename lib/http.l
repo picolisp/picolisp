@@ -1,4 +1,4 @@
-# 10jan19abu
+# 29feb20abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -398,12 +398,16 @@
          (tim$ Tim T) " GMT^M" ) ) )
 
 # Http Echo
-(de httpEcho (File Typ Upd Att)
+(de httpEcho (File Typ Upd Att Name)
    (and *Tmp (pre? *Tmp File) (one Upd))
    (ifn (info File)
       (http404)
       (let I @
-         (http1 (or Typ (mimetype File)) Upd (stem (chop File) "/") Att)
+         (http1
+            (or Typ (mimetype File))
+            Upd
+            (or Name (stem (chop File) "/"))
+            Att )
          (prinl "Content-Length: " (car I) "^M")
          (prin "Last-Modified: ")
          (httpDate (cadr I) (cddr I))

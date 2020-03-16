@@ -1,4 +1,4 @@
-# 09feb20abu
+# 15mar20abu
 # (c) Software Lab. Alexander Burger
 
 ### Destructive primitives ###
@@ -2580,7 +2580,7 @@
       test E SIGN
       if nz
          off E SIGN
-         ld B 1
+         inc B
       end
       link
       push ZERO  # <L II> Safe
@@ -2662,8 +2662,8 @@
                   dec (L -I)  # Shift count?
                while nz
                   call halfA_A  # Shift right (destructive)
-                  ld (L I) A
                loop
+               ld (L I) A
             else
                do
                   cmp (L -I) -64  # Large shift count?
@@ -3019,8 +3019,8 @@
             ld E (L III)  # Number
             call cmpuAE_F  # Mask <= number?
          while le  # Yes
-            call twiceA_A  # Times 4
-            call twiceA_A
+            call twiceBigA_A  # Times 4
+            call twiceBigA_A
          loop
          do
             ld A (L I)  # result += mask
@@ -3201,6 +3201,8 @@
    add E C
    pop Y
    pop X
-   jmp boxE_E  # Return short number
+   shl E 4  # Return short number
+   or E CNT
+   ret
 
 # vi:et:ts=3:sw=3

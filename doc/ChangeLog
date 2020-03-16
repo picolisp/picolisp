@@ -1,3 +1,22 @@
+16mar20
+   Broken links
+      doc/form/refA.html
+      doc/form/refD.html
+
+15mar20
+   Minor optimizations
+      {src64,pilos/src}/big.l
+   Broken link
+      doc/form/refN.html
+
+29feb20
+   Optional 'Name' argument to 'httpEcho'
+      lib/http.l
+
+26feb20
+   Cosmetics
+      lib/vip/draw.l
+
 19feb20
    Minor example mismatch for 'hash'
       doc/refH.html

@@ -1,4 +1,4 @@
-# 16jan20abu
+# 23mar20abu
 # (c) Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
@@ -2498,7 +2498,9 @@
             (<row> NIL (scroll Rows T) - -) )
          (run Sep)
          (<table> Attr NIL H2
-            (gui '(+Init +Set +Chart) (last (get (: obj) Var 1))
+            (gui '(+Init +Set +Chart)
+               (get (: obj) Var 1
+                  (length (meta (: obj) Var 'bag)) )
                '((Lst)
                   (=: ctl
                      (car (prior (memq This (: home chart)) (: home chart))) )

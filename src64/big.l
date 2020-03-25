@@ -1,5 +1,4 @@
-# 15mar20abu
-# (c) Software Lab. Alexander Burger
+# 25mar20 Software Lab. Alexander Burger
 
 ### Destructive primitives ###
 # Remove leading zeroes
@@ -3201,8 +3200,4 @@
    add E C
    pop Y
    pop X
-   shl E 4  # Return short number
-   or E CNT
-   ret
-
-# vi:et:ts=3:sw=3
+   jmp boxE_E  # Return short number

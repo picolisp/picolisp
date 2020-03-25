@@ -1,3 +1,11 @@
+25mar20
+   Broken optimization for 'rand'
+      {src64,pilos/src}/big.l
+
+23mar20
+   Bug in 'bagBag' for partial init
+      lib/form.l
+
 16mar20
    Broken links
       doc/form/refA.html

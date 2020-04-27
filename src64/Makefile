@@ -1,4 +1,4 @@
-# 31oct17abu
+# 27apr20abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -28,15 +28,20 @@ else
 						UNAME = OpenBSD
 						MACHINE = x86_64
 					else
-						ifeq ($(MAKECMDGOALS), x86-64.sunOs)
-							UNAME = SunOS
-							MACHINE = x86_64
-						else
-							UNAME = $(shell uname)
-							ifeq ($(MAKECMDGOALS), emu)
-								MACHINE = emu
+					ifeq ($(MAKECMDGOALS), arm64.openBsd)
+						UNAME = OpenBSD
+						MACHINE = aarch64
 							else
-								MACHINE = $(shell uname -m)
+							ifeq ($(MAKECMDGOALS), x86-64.sunOs)
+								UNAME = SunOS
+								MACHINE = x86_64
+							else
+								UNAME = $(shell uname)
+								ifeq ($(MAKECMDGOALS), emu)
+									MACHINE = emu
+								else
+									MACHINE = $(shell uname -m)
+								endif
 							endif
 						endif
 					endif
@@ -104,11 +109,18 @@ else
 				OS = OpenBSD
 				SYS = .openBsd
 				FMT = .s
-				ARCH = x86-64
-				AS = as
 				LD-MAIN = -Wl,-nopie -rdynamic -lc -lm
 				LD-SHARED = -shared -rdynamic
 				STRIP = strip
+				ifeq ($(MACHINE), aarch64)
+					ARCH = arm64
+					AS = gas
+					CC = clang
+				else
+					ARCH = x86-64
+					AS = as
+					CC = clang
+				endif
 			else
 				ifeq ($(UNAME), SunOS)
 					OS = SunOS
@@ -137,6 +149,7 @@ all: picolisp
 
 arm64.android: $(sFiles)
 arm64.linux: $(sFiles)
+arm64.openBsd: $(sFiles)
 x86-64.linux: $(sFiles)
 ppc64.linux: $(sFiles)
 x86-64.freeBsd: $(sFiles)
@@ -187,5 +200,3 @@ $(ARCH)$(SYS).ht$(FMT): arch/$(ARCH).l defs.l ht.l $(ARCH)$(SYS).base$(FMT)
 ### Clean up ###
 clean:
 	rm -f emu.*.c *.s *.o *.symtab sysdefs
-
-# vi:noet:ts=4:sw=4

@@ -1,3 +1,22 @@
+27apr20
+   Alexander Shendi added OpenBSD/Arm64 support
+      src64/Makefile
+      src64/sys/arm64.openBsd.defs.l
+      src64/sys/arm64.android.code.l
+
+18apr20
+   Note about 'T' (= disable) in '*Uni' reference
+      refU.html
+
+17apr20
+   Revert set up 'InFrame' in parser functions (17may19)
+      pilos/src/io.l
+
+09apr20
+   Form doc updates (Mattias Sundblad)
+      refC.html
+      refR.html
+
 25mar20
    Broken optimization for 'rand'
       {src64,pilos/src}/big.l

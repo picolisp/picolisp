@@ -1,3 +1,7 @@
+03may20
+   Remove 'requestLocationUpdates' in 'gps'
+      lib/android.l
+
 27apr20
    Alexander Shendi added OpenBSD/Arm64 support
       src64/Makefile
@@ -125,7 +129,7 @@
       lib/vip.l
 
 21oct19
-   Request camera permission in 'location?' and 'camera?'
+   Request permission in 'location?' and 'camera?'
       lib/android.l
 
 19oct19

@@ -1,3 +1,7 @@
+06may20
+   'requestLocationUpdates' revisited
+      lib/android.l
+
 03may20
    Remove 'requestLocationUpdates' in 'gps'
       lib/android.l

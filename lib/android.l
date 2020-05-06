@@ -1,4 +1,4 @@
-# 03may20abu
+# 06may20abu
 # (c) Software Lab. Alexander Burger
 
 (ifn (info "UUID")
@@ -248,16 +248,16 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
       (setq
          *LocMan (java CONTEXT 'getSystemService "location")
          *LocLsn (java T "android.location.LocationListener") )
-      #{(def 'onLocationChanged *LocLsn
-         '((Loc)) )
-      (def 'onProviderDisabled *LocLsn
-         '((Prov)) )
-      (def 'onProviderEnabled *LocLsn
-         '((Prov)) )
-      (def 'onStatusChanged *LocLsn
-         '((Prov Stat Extras)) )
-      (java *LocMan 'requestLocationUpdates "network" '(L . 10000) (-3 . 100) *LocLsn)
-      (java *LocMan 'requestLocationUpdates "gps" '(L . 20000) (-3 . 100) *LocLsn)}# )
+      ## (def 'onLocationChanged *LocLsn
+      ##    '((Loc)) )
+      ## (def 'onProviderDisabled *LocLsn
+      ##    '((Prov)) )
+      ## (def 'onProviderEnabled *LocLsn
+      ##    '((Prov)) )
+      ## (def 'onStatusChanged *LocLsn
+      ##    '((Prov Stat Extras)) )
+      #? (java *LocMan 'requestLocationUpdates "network" '(L . 10000) (-3 . 100) *LocLsn)
+      (java *LocMan 'requestLocationUpdates "gps" '(L . 20000) (-3 . 100) *LocLsn) )
    (and
       (or
          (and

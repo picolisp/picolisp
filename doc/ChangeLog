@@ -1,3 +1,10 @@
+13may20
+   'EnvApply' obsolete
+      {src64,pilos/src}/glob.l
+      {src64,pilos/src}/apply.l
+      {src64,pilos/src}/flow.l
+      {src64,pilos/src}/gc.l
+
 06may20
    'requestLocationUpdates' revisited
       lib/android.l

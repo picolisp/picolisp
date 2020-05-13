@@ -1,4 +1,4 @@
-# 30jul19abu
+# 13may20abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -635,7 +635,6 @@
 : EnvNext      word  0           # Next vararg
 : EnvCls       word  0           # Method class
 : EnvKey       word  0           # Method key
-: EnvApply     word  0           # Apply frames
 : EnvMake      word  0           # 'make' env
 : EnvYoke      word  0
 : CLink        word  0           # Saved C link register

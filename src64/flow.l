@@ -1,4 +1,4 @@
-# 05jul19abu
+# 13may20abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -2791,13 +2791,6 @@
                   until z  # No
                end
                ld (X) (Z (pack III "+(EnvOutFrames-EnvCo)"))  # Join
-               ld X EnvApply  # Local apply stack
-               do
-                  null (X)  # Any?
-               while nz  # Yes
-                  ld X ((X))  # Follow link
-               loop
-               ld (X) (Z (pack III "+(EnvApply-EnvCo)"))  # Join
                pop X  # Get saved L
                null X  # Any?
                if nz  # Yes
@@ -2979,15 +2972,7 @@
       ld (X) 0  # Clear link
    end
 10 push L  # End of segment
-   push Y  # Save taget coroutine
-   ld X EnvApply  # Pointer to apply stack
-   do
-      ld A (X)
-      cmp A (Z (pack III "+(EnvApply-EnvCo)"))  # Local apply stack?
-   while ne  # Yes
-      lea X ((A) I)  # Get link
-   loop
-   ld (X) 0  # Cut off
+   push Y  # Save target coroutine
    ld X EnvOutFrames  # Pointer to output frames
    do
       cmp (X) (Z (pack III "+(EnvOutFrames-EnvCo)"))  # More locals?
@@ -3033,7 +3018,7 @@
       loop
    end
    ld (EnvBind) C  # Store back link in coroutine's env
-   pop Y  # Restore taget coroutine
+   pop Y  # Restore target coroutine
    ld X (Z II)  # Get 'seg'
    ld (X -II) S  # Save stack pointer
    save (EnvCo) (EnvMid) (X (pack -II "-(EnvMid-EnvCo)"))  # Save environment

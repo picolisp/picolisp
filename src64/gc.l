@@ -1,4 +1,4 @@
-# 08sep18abu
+# 13may20abu
 # (c) Software Lab. Alexander Burger
 
 # Mark data
@@ -364,40 +364,10 @@
             if z  # Yes
                ld (StkLimit) 0  # Clear stack limit
             end
-         else
-            null (Y -II)  # Active?
-            if nz  # No
-               ld X (Y (pack -II "-(EnvMid-EnvApply)"))  # Saved apply stack
-               do
-                  null X  # End of stack?
-               while ne  # No
-                  ld Z (X)  # Keep end of frame in Z
-                  add X II
-                  do
-                     off (X) 1  # Clear
-                     add X II  # Next gc mark
-                     cmp X Z  # End of frame?
-                  until ge  # Yes
-                  ld X (Z I)  # Next frame
-               loop
-            end
          end
          dec C  # Decrement count
       end
       sub Y (StkSize)  # Next segment
-   loop
-   ld Y (EnvApply)  # Apply stack
-   do
-      null Y  # End of stack?
-   while ne  # No
-      ld Z (Y)  # Keep end of frame in Z
-      add Y II
-      do
-         off (Y) 1  # Clear
-         add Y II  # Next gc mark
-         cmp Y Z  # End of frame?
-      until ge  # Yes
-      ld Y (Z I)  # Next frame
    loop
    off (Pico1 CDR) 1  # Unmark default namespace
    ### Sweep ###

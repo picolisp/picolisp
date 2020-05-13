@@ -1,4 +1,4 @@
-# 31jul16abu
+# 13may20abu
 # (c) Software Lab. Alexander Burger
 
 (code 'applyXYZ_E 0)
@@ -6,7 +6,6 @@
    do
       cnt C  # Short number?
       if nz  # Yes
-         push (EnvApply)  # Build apply frame
          link
          sym S  # Align stack to cell boundary
          if nz
@@ -30,10 +29,8 @@
          push C  # 'fun'
          ld E S  # Set 'exe'
          link
-         ld (EnvApply) L  # Close apply frame
          call (C T)  # Eval SUBR
          drop
-         pop (EnvApply)
          ret
       end
       big C  # Undefined if bignum
@@ -97,7 +94,6 @@
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
             else
-               push (EnvApply)  # Build apply frame
                link
                sym S  # Align stack to cell boundary
                if nz
@@ -118,11 +114,9 @@
                until eq  # No
                ld (X) E  # Set new value to 'args' list
                link
-               ld (EnvApply) L  # Close apply frame
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
                drop
-               pop (EnvApply)
             end
             add S I  # Drop env swap
             pop L  # Get link
@@ -262,7 +256,6 @@
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
             else
-               push (EnvApply)  # Build apply frame
                link
                sym S  # Align stack to cell boundary
                if nz
@@ -283,11 +276,9 @@
                until eq  # No
                ld (X) E  # Set new value to 'args' list
                link
-               ld (EnvApply) L  # Close apply frame
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
                drop
-               pop (EnvApply)
             end
             add S I  # Drop env swap
             pop L  # Get link
@@ -365,7 +356,6 @@
    do
       cnt C  # Short number?
       if nz  # Yes
-         push (EnvApply)  # Build apply frame
          link
          sym S  # Align stack to cell boundary
          if nz
@@ -389,10 +379,8 @@
          push C  # 'fun'
          ld E S  # Set 'exe'
          link
-         ld (EnvApply) L  # Close apply frame
          call (C T)  # Eval SUBR
          drop
-         pop (EnvApply)
          ret
       end
       big C  # Undefined if bignum
@@ -456,7 +444,6 @@
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
             else
-               push (EnvApply)  # Build apply frame
                link
                sym S  # Align stack to cell boundary
                if nz
@@ -477,11 +464,9 @@
                until eq  # No
                ld (X) E  # Set new value to 'args' list
                link
-               ld (EnvApply) L  # Close apply frame
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
                drop
-               pop (EnvApply)
             end
             add S I  # Drop env swap
             pop L  # Get link
@@ -621,7 +606,6 @@
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
             else
-               push (EnvApply)  # Build apply frame
                link
                sym S  # Align stack to cell boundary
                if nz
@@ -642,11 +626,9 @@
                until eq  # No
                ld (X) E  # Set new value to 'args' list
                link
-               ld (EnvApply) L  # Close apply frame
                ld Z (C CDR)  # Body in Z
                prog Z  # Run body
                drop
-               pop (EnvApply)
             end
             add S I  # Drop env swap
             pop L  # Get link

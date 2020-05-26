@@ -1,4 +1,5 @@
 * NNjun20 picoLisp-20.6
+   OpenBSD/Arm64 support
    Disable TLS 1.1 and update cipher list
 
 * 28dec19 picoLisp-19.12

@@ -1,5 +1,4 @@
-# 18nov18abu
-# (c) Software Lab. Alexander Burger
+# 26may20 Software Lab. Alexander Burger
 
 # *DX *DY *Pos *Page *StrokeWidth
 # *FontSize *FontFamily *FontStyle *FontWeight
@@ -190,7 +189,7 @@
                   (prin (if X "<tspan text-decoration=\"line-through\">" "</tspan>")) )
                (C  # Color
                   (if X
-                     (prin "<tspan fill=\"#" X "\">")
+                     (prin "<tspan fill=\"" X "\">")
                      (prin "</tspan>") ) ) ) ) ) )
    (prinl "</text>") )
 
@@ -304,5 +303,3 @@
       "-f" "pdf"
       "-o" "Dst" )
    "Dst" )
-
-# vi:et:ts=3:sw=3

@@ -1,4 +1,4 @@
-# 10feb20 Software Lab. Alexander Burger
+# 08jun20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -180,18 +180,32 @@ beep undo redo evCmd dirty> load> save> view> status)
                      (unless (= "/" (last D))
                         (conc D (list (name "/"))) )
                      (mapcar
-                        '((F)
-                           (conc
-                              (chop (setq F (pack D F)))
-                              (let S (car (info F T))
+                        '((X)
+                           (let (S (caar X)  F (cdr X))
+                              (conc
+                                 (chop (stamp (cadar X) (cddar X)))
+                                 (list (name " "))
+                                 (chop F)
                                  (cond
                                     ((=T S) (list (name "/")))
                                     ((not S)
                                        (conc
                                           (chop " -> ")
                                           (in (list "readlink" F)
-                                             (line) ) ) ) ) ) ) )
-                        (sort (dir File T)) ) )
+                                             (line) ) ) )
+                                    (T
+                                       (conc
+                                          (chop " (")
+                                          (chop (/ (+ S 1023) 1024))
+                                          (chop ")") ) ) ) ) ) )
+                        (flip
+                           (by cdar sort
+                              (extract
+                                 '((F)
+                                    (unless (= "." F)
+                                       (setq F (pack D F))
+                                       (cons (info F T) F) ) )
+                                 (dir File T) ) ) ) ) )
                   (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe

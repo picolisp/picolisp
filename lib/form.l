@@ -1,5 +1,4 @@
-# 23mar20abu
-# (c) Software Lab. Alexander Burger
+# 16jun20 Software Lab. Alexander Burger
 
 # *PRG *Top *Gui *Btn *Get *Got *Form *Evt *Lock *Spans
 # "*Cnt" "*Lst" "*App" "*Err" "*Foc" "*Post2" "*Stat" "*Ix" "*Chart" "*Cho"
@@ -1016,7 +1015,7 @@
    (pass extra) )
 
 (dm show> ("Var")
-   (<style> (eval (: style)) (extra "Var")) )
+   (<style> (pack (eval (: style)) " ") (extra "Var")) )
 
 (dm js> ()
    (pack (extra) "&#" (eval (: style))) )
@@ -2475,7 +2474,7 @@
                            (set> (cadr (memq This (: home chart)))
                               (get L (inc (: gf 1))) ) ) )
                      (mapcar
-                        '((F) (and F (++ L)))
+                        '((F) (if F (++ L) (car L)))
                         (: gf -1) ) )
                   '((L D)
                      (conc
@@ -2655,5 +2654,3 @@
 (noLint 'jsForm 'action)
 
 (docs "@doc/form/")
-
-# vi:et:ts=3:sw=3

@@ -1,3 +1,15 @@
+16jun20
+   Bug in '+Style'
+      lib/form.l
+
+08jun20
+   Sort directories by date, and show times, sizes and symlinks
+      lib/vip.l
+
+28may20
+   Pass list to optional fields in 'bagBag's first chart
+      lib/form.l
+
 26may20
    Remove default "#" from fill argument in 'ps'
       lib/svg.l

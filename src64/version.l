@@ -1,3 +1,3 @@
-# 16jun20 Software Lab. Alexander Burger
+# 19jun20 Software Lab. Alexander Burger
 
-(de *Version 20 6 16)
+(de *Version 20 6 19)

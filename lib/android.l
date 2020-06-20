@@ -1,5 +1,4 @@
-# 06may20abu
-# (c) Software Lab. Alexander Burger
+# 19jun20 Software Lab. Alexander Burger
 
 (ifn (info "UUID")
    (off *Uuid)
@@ -45,7 +44,7 @@
 # (java T "cls" ["cls" ..]) -> obj         Define interface
 # (java 'obj) -> [lst ..]                  Reflect object
 # (java "cls") -> cls                      Get class
-(local) (java1 java *Java *Lisp null)
+(local) (*Java *Lisp java1 java null)
 
 (de java1 ()
    (unless *Java
@@ -78,7 +77,7 @@
          (rd) ) ) )
 
 # Android device ID
-(local) (dev getString getContentResolver)
+(local) dev
 
 (de dev ()
    (java "android.provider.Settings$Secure" 'getString
@@ -86,7 +85,7 @@
       "android_id" ) )
 
 # Push-Load
-(local) (runOnUiThread loadTxt loadData loadUrl)
+(local) (loadTxt loadUrl)
 
 (de loadTxt @
    (java (; CONTEXT GUI) 'runOnUiThread
@@ -110,7 +109,7 @@
       (java (; CONTEXT GUI PilView) 0 'clearCache T) ) )
 
 # Wake lock
-(local) (wake *Wake getSystemService newWakeLock acquire release)
+(local) (*Wake wake)
 
 (de wake @
    (default *Wake  # PowerManager.WakeLock
@@ -123,7 +122,7 @@
          ((java *Wake 'isHeld) (java *Wake 'release)) ) ) )
 
 # Check if WIFI is active
-(local) (getActiveNetworkInfo getType)
+(local) wifi?
 
 (de wifi? ()
    (and
@@ -133,7 +132,7 @@
       (=1 (java @ 'getType)) ) )  # onnectivityManager.TYPE_WIFI
 
 # Generate file content URI
-(local) (fileUri getUriForFile)
+(local) fileUri
 
 (de fileUri (File)
    (java "android.support.v4.content.FileProvider" 'getUriForFile
@@ -141,14 +140,14 @@
       (java "java.io.File" T File) ) )
 
 # Update APK
-(local) (update? getInt)
+(local) update?
 
 (de update? ()
    (gt0  # (java (java CONTEXT 'getPackageManager) 'canRequestPackageInstalls)
       (java "android.provider.Settings$Secure" 'getInt
          (java CONTEXT 'getContentResolver) "install_non_market_apps" ) ) )
 
-(local) (update startActivity setFlags setData fromFile)
+(local) update
 
 (de update (File)
    (java (; CONTEXT GUI) 'startActivity
@@ -165,9 +164,7 @@
    X )
 
 # Notification
-(local) (notify cancel *Notify createNotificationChannel setSmallIcon
-setContentTitle setContentText setAutoCancel setAction putExtra setContentIntent
-getActivity build)
+(local) (*Notify notify)
 
 (de notify (Id Ttl Msg File)
    (let N (java CONTEXT 'getSystemService "notification")  # NotificationManager
@@ -209,8 +206,7 @@ getActivity build)
    (java CONTEXT 'stopForeground T) )
 
 # Start Activity for a result
-(local) (startActivityForResult *ResultProxy *ProxyResults resolveActivity
-getPackageManager setResultProxy good bad)
+(local) (*ResultProxy *ProxyResults startActivityForResult good bad)
 
 (de startActivityForResult (Fun Action . @)
    (let Intent (java "android.content.Intent" T Action)
@@ -236,9 +232,7 @@ getPackageManager setResultProxy good bad)
             (java (; CONTEXT GUI) 'startActivityForResult Intent Req) ) ) ) )
 
 # GPS access
-(local) (permit location? gps *LocMan *LocLsn onLocationChanged
-onProviderDisabled onProviderEnabled onStatusChanged requestLocationUpdates
-isProviderEnabled getLastKnownLocation getLatitude getLongitude)
+(local) (*LocMan *LocLsn location? gps)
 
 (de location? ()
    (java (; CONTEXT GUI) 'permit "android.permission.ACCESS_FINE_LOCATION") )
@@ -271,7 +265,7 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
          (+ (java @ 'getLongitude) 180000000) ) ) )
 
 # Camera access
-(local) (camera? hasSystemFeature)
+(local) camera?
 
 (de camera? ()
    (and
@@ -290,7 +284,7 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
       "output" (fileUri Dst) ) )
 
 # ZXing QR-Codes
-(local) (zxing? queryIntentActivities)
+(local) zxing?
 
 (de zxing? ()
    (with
@@ -302,7 +296,7 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
 ## '((Intent)
 ##    (java Intent 'getStringExtra "SCAN_RESULT")
 ##    (java Intent 'getStringExtra "SCAN_RESULT_FORMAT") )
-(local) (scanQR getStringExtra)
+(local) scanQR
 
 (de scanQR (Fun)
    (startActivityForResult Fun
@@ -310,7 +304,7 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
       "SCAN_MODE" "QR_CODE_MODE" ) )
 
 # Alarm
-(local) (alarm elapsedRealtime getInstance getTimeInMillis getBroadcast)
+(local) alarm
 
 (de alarm (N When File)
    (let
@@ -343,5 +337,3 @@ isProviderEnabled getLastKnownLocation getLatitude getLongitude)
 
 (de restart ()
    (java (; CONTEXT GUI) 'restart) )
-
-# vi:et:ts=3:sw=3

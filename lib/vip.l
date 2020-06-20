@@ -1,4 +1,4 @@
-# 08jun20 Software Lab. Alexander Burger
+# 18jun20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -181,9 +181,9 @@ beep undo redo evCmd dirty> load> save> view> status)
                         (conc D (list (name "/"))) )
                      (mapcar
                         '((X)
-                           (let (S (caar X)  F (cdr X))
+                           (let (S (cdddr X)  F (caddr X))
                               (conc
-                                 (chop (stamp (cadar X) (cddar X)))
+                                 (chop (stamp (- (car X)) (- (cadr X))))
                                  (list (name " "))
                                  (chop F)
                                  (cond
@@ -198,14 +198,18 @@ beep undo redo evCmd dirty> load> save> view> status)
                                           (chop " (")
                                           (chop (/ (+ S 1023) 1024))
                                           (chop ")") ) ) ) ) ) )
-                        (flip
-                           (by cdar sort
-                              (extract
-                                 '((F)
-                                    (unless (= "." F)
-                                       (setq F (pack D F))
-                                       (cons (info F T) F) ) )
-                                 (dir File T) ) ) ) ) )
+                        (sort
+                           (extract
+                              '((F)
+                                 (unless (= "." F)
+                                    (setq F (pack D F))
+                                    (when (info F T)
+                                       (cons
+                                          (- (cadr @))
+                                          (- (cddr @))
+                                          F
+                                          (car @) ) ) ) )
+                              (dir File T) ) ) ) )
                   (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char
                   (if (sys "CCRYPT" (: key))
                      (pipe

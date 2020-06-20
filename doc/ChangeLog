@@ -1,3 +1,11 @@
+19jun20
+   Propery symbols not (local)
+      lib/android.l
+
+18jun20
+   Sort directories by date and name
+      lib/vip.l
+
 16jun20
    Bug in '+Style'
       lib/form.l

@@ -1,3 +1,14 @@
+21jun20
+   Accept auto-symbols for namespaces
+      src64/sym.l
+   'export' function
+      lib.l
+      doc/ref.html
+      doc/refE.html
+      doc/refI.html
+      doc/refL.html
+      doc/refS.html
+
 20jun20
    Propery symbols not (local)
       lib/android.l

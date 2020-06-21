@@ -360,6 +360,24 @@ href="refU.html#up">up</a></code>.
 -> (3 2 1)
 </code></pre>
 
+<dt><a name="exec"><code>(exec 'any ..)</code></a>
+<dd>Executes an external system command. The <code>any</code> arguments specify
+the command and its arguments. Does not return to the caller; the current
+process is replaced with a new process image. See also <code><a
+href="refF.html#fork">fork</a></code> and <code><a
+href="refC.html#call">call</a></code>.
+
+<pre><code>
+: (pipe (exec 'echo 123 "abc")
+   (list (read) (read)) )
+-> (123 abc)
+
+(unless (fork)
+   (exec "@bin/ssl"  # Start replication process
+      "10.11.12.13" 443
+      "app/!replica" "key/app" "fifo/app" "db/app/blob/" 20 ) )
+</code></pre>
+
 <dt><a name="expDat"><code>(expDat 'sym) -> dat</code></a>
 <dd>Expands a <code><a href="refD.html#date">date</a></code> string according to
 the current <code><a href="refL.html#locale">locale</a></code> (delimiter, and
@@ -399,24 +417,6 @@ href="refE.html#expTel">expTel</a></code>.
 -> 733133
 </code></pre>
 
-<dt><a name="exec"><code>(exec 'any ..)</code></a>
-<dd>Executes an external system command. The <code>any</code> arguments specify
-the command and its arguments. Does not return to the caller; the current
-process is replaced with a new process image. See also <code><a
-href="refF.html#fork">fork</a></code> and <code><a
-href="refC.html#call">call</a></code>.
-
-<pre><code>
-: (pipe (exec 'echo 123 "abc")
-   (list (read) (read)) )
--> (123 abc)
-
-(unless (fork)
-   (exec "@bin/ssl"  # Start replication process
-      "10.11.12.13" 443
-      "app/!replica" "key/app" "fifo/app" "db/app/blob/" 20 ) )
-</code></pre>
-
 <dt><a name="expTel"><code>(expTel 'sym) -> sym</code></a>
 <dd>Expands a telephone number string. Multiple spaces or hyphens are coalesced.
 A leading <code>+</code> or <code>00</code> is removed, a leading national trunk
@@ -436,6 +436,23 @@ href="refL.html#locale">locale</a></code>.
 -> NIL
 : (expTel "01234 5678-0")
 -> "49 1234 5678-0"
+</code></pre>
+
+<dt><a name="export"><code>(export ['sym]) sym|lst</code></a>
+<dd>Intern symbols explicitly in the second namespace in the current search
+order, or in the given namespace if <code>sym</code> is given.
+<code>(export)</code> expects a single symbol or a list of symbols immediately
+following in the current input stream. See also <code><a
+href="refP.html#pico">pico</a></code>, <code><a
+href="refS.html#symbols">symbols</a></code>, <code><a
+href="refL.html#local">local</a></code>, <code><a
+href="refI.html#import">import</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<pre><code>
+: (symbols 'myLib 'pico)
+-> (pico)
+myLib: (export) (bar foo)  # Intern 'bar' and 'foo' in 'pico'
 </code></pre>
 
 <dt><a name="expr"><code>(expr 'sym) -> fun</code></a>

@@ -1,4 +1,4 @@
-# 02jul19abu
+# 21jun20abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -242,6 +242,10 @@
 (unless (== 64 64) (from "####"))
 (de local ()
    (symbols (list (car (symbols)))
+      (read) ) )
+
+(de export (Sym)
+   (symbols (list (or Sym (cadr (symbols))))
       (read) ) )
 
 (de import Lst

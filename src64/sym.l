@@ -1,4 +1,4 @@
-# 11oct19abu
+# 21jun20abu
 # (c) Software Lab. Alexander Burger
 
 ### Compare long names ###
@@ -1169,11 +1169,13 @@
          sym E
          jz symErrEX
          cmp (E) Nil  # New namespace?
+         jeq 10  # Yes
+         cmp E (E)  # Auto-symbol?
          if ne  # No
             atom (E)  # Value must be a pair
             jnz symNsErrEX
          else
-            call consE_C  # Create namespace cell
+10          call consE_C  # Create namespace cell
             ld (C) Nil  # Initialize
             ld (C CDR) Nil
             ld (E) C

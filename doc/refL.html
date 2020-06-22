@@ -481,6 +481,7 @@ href="ref.html#transient">transient</a></code> symbol with the same name as
 expects a single symbol or a list of symbols immediately following in the
 current input stream. See also <code><a href="refP.html#pico">pico</a></code>,
 <code><a href="refS.html#symbols">symbols</a></code>, <code><a
+href="refP.html#private">private</a></code>, <code><a
 href="refE.html#export">export</a></code>, <code><a
 href="refI.html#import">import</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
@@ -488,7 +489,7 @@ href="refI.html#intern">intern</a></code>.
 <pre><code>
 : (symbols 'myLib 'pico)
 -> (pico)
-myLib: (local) (bar foo)
+myLib: (local) (foo bar)
 
 myLib: (de foo (A)  # 'foo' is local to 'myLib'
    ...

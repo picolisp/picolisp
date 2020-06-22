@@ -707,6 +707,28 @@ href="refM.html#memq">memq</a></code>.
 -> (3 4 5 6)
 </code></pre>
 
+<dt><a name="private"><code>(private) sym|lst</code></a>
+<dd>Intern symbols locally into an automatically created local namespace named
+'<code>priv</code>'. This namespace is inserted into the second position in the
+search order, behind the current namespace. <code>(private)</code> expects a
+single symbol or a list of symbols immediately following in the current input
+stream. See also <code><a href="refP.html#pico">pico</a></code>, <code><a
+href="refS.html#symbols">symbols</a></code>, <code><a
+href="refL.html#local">local</a></code>, <code><a
+href="refE.html#export">export</a></code>, <code><a
+href="refI.html#import">import</a></code> and <code><a
+href="refI.html#intern">intern</a></code>.
+
+<pre><code>
+: (symbols 'myLib 'pico)
+-> (pico)
+myLib: (symbols)
+-> (myLib pico)
+myLib: (private) (foo bar)  # Intern 'foo' and 'bar' in 'priv'
+myLib: (symbols)
+-> (myLib priv pico)
+</code></pre>
+
 <dt><a name="proc"><code>(proc 'sym ..) -> T</code></a>
 <dd>(Debug mode on Linux only) Shows a list of processes with command names
 given by the <code>sym</code> arguments, using the system <code>ps</code>

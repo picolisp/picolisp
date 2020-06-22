@@ -1,5 +1,5 @@
 * NNjun20 picoLisp-20.6
-   'export' function
+   'private' and 'export' functions
    OpenBSD/Arm64 support
    Disable TLS 1.1 and update cipher list
 

@@ -445,6 +445,7 @@ order, or in the given namespace if <code>sym</code> is given.
 following in the current input stream. See also <code><a
 href="refP.html#pico">pico</a></code>, <code><a
 href="refS.html#symbols">symbols</a></code>, <code><a
+href="refP.html#private">private</a></code>, <code><a
 href="refL.html#local">local</a></code>, <code><a
 href="refI.html#import">import</a></code> and <code><a
 href="refI.html#intern">intern</a></code>.
@@ -452,7 +453,7 @@ href="refI.html#intern">intern</a></code>.
 <pre><code>
 : (symbols 'myLib 'pico)
 -> (pico)
-myLib: (export) (bar foo)  # Intern 'bar' and 'foo' in 'pico'
+myLib: (export) (foo bar)  # Intern 'foo' and 'bar' in 'pico'
 </code></pre>
 
 <dt><a name="expr"><code>(expr 'sym) -> fun</code></a>

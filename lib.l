@@ -1,4 +1,4 @@
-# 21jun20abu
+# 22jun20abu
 # (c) Software Lab. Alexander Burger
 
 (de task (Key . Prg)
@@ -240,12 +240,22 @@
             (loc S (cdr X)) ) ) ) )
 
 (unless (== 64 64) (from "####"))
+(de private ()
+   (let (S (intern (name "priv") T)  L (symbols S))
+      (read)
+      (symbols (cons (car L) S (cdr L))) ) )
+
 (de local ()
    (symbols (list (car (symbols)))
       (read) ) )
 
 (de export (Sym)
-   (symbols (list (or Sym (cadr (symbols))))
+   (symbols
+      (list
+         (or
+            Sym
+            (let L (symbols)
+               ((if (= "priv" (cadr L)) caddr cadr) L) ) ) )
       (read) ) )
 
 (de import Lst

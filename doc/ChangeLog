@@ -1,3 +1,11 @@
+03jul20
+   Use 'fName' in directory listings
+      lib/vip.l
+
+30jun20
+   CORS header in 'http1' for *Port1
+      lib/http.l
+
 ####### 20.6 #######
 22jun20
    'private' function

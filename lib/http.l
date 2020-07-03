@@ -1,4 +1,4 @@
-# 29feb20abu
+# 30jun20abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -357,6 +357,10 @@
       (prinl "Cache-Control: max-age=" Upd "^M")
       (when (=0 Upd)
          (prinl "Cache-Control: private, no-store, no-cache^M") ) )
+   (prin "Access-Control-Allow-Origin: ")
+   (if *Gate
+      (prinl *Gate "://" *Host)
+      (prinl "http://" *Host ":" *Port1) )
    (prinl "Content-Type: " (or Typ "text/html; charset=utf-8") "^M")
    (when File
       (prinl

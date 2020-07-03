@@ -1,4 +1,4 @@
-# 18jun20 Software Lab. Alexander Burger
+# 03jul20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -207,7 +207,7 @@ beep undo redo evCmd dirty> load> save> view> status)
                                        (cons
                                           (- (cadr @))
                                           (- (cddr @))
-                                          F
+                                          (fName F)
                                           (car @) ) ) ) )
                               (dir File T) ) ) ) )
                   (gc (+ 4 (*/ (car I) 32768)))  # 2 cells / char

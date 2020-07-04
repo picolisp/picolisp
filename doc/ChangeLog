@@ -1,3 +1,7 @@
+04jul20
+   fName' in directory listings, minor fix
+      lib/vip.l
+
 03jul20
    Use 'fName' in directory listings
       lib/vip.l

@@ -1,4 +1,4 @@
-# 09aug19abu
+# 08jul20abu
 # (c) Software Lab. Alexander Burger
 
 # *Dbs *Jnl *Blob upd
@@ -1364,7 +1364,10 @@
                               (cloneKey Rel (cdr X) (car X)
                                  (and (get Rel 'hook) (get This @)) ) ) )
                         ((or (not (isa '+Joint Rel)) (isa '+List (meta Obj (cdr X))))
-                           (put> Obj (cdr X) (car X)) ) ) ) ) ) ) )
+                           (put> Obj (cdr X)
+                              (if (isa '+Swap Rel)
+                                 (val (car X))
+                                 (car X) ) ) ) ) ) ) ) ) )
       Obj ) )
 
 (de cloneKey (Rel Var Val Hook)

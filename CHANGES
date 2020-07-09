@@ -1,3 +1,7 @@
+* NNdec20 picoLisp-20.12
+   Bug in 'clone>' for '+Swap' relations
+   CORS header in 'http1' for *Port1
+
 * 29jun20 picoLisp-20.6
    'private' and 'export' functions
    OpenBSD/Arm64 support

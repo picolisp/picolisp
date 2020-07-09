@@ -1,3 +1,7 @@
+08jul20
+   Bug in 'clone>' for '+Swap' relations
+      lib/db.l
+
 04jul20
    fName' in directory listings, minor fix
       lib/vip.l

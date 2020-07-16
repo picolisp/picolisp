@@ -1,3 +1,11 @@
+16jul20
+   Add default "#" to color argument in 'htmlText'
+      lib/tinymce.l
+
+12jul20
+   Allocate buffer in example suitable for 64 bits
+      doc/refS.html
+
 08jul20
    Bug in 'clone>' for '+Swap' relations
       lib/db.l
@@ -57,7 +65,7 @@
       lib/form.l
 
 26may20
-   Remove default "#" from fill argument in 'ps'
+   Remove default "#" from color argument in 'ps'
       lib/svg.l
 
 13may20

@@ -1,5 +1,4 @@
-# 22jul17abu
-# (c) Software Lab. Alexander Burger
+# 16jul20 Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
 (allow "@tinymce/" T)
@@ -82,7 +81,7 @@
                         (link '(L)) )
                      ((head '`(chop "span style=\"color: ") S)
                         (setq S (nth S 21))
-                        (link (cons 'C (pack (head 6 S))))
+                        (link (cons 'C (pack "#" (head 6 S))))
                         (recurse '("s" "p" "a" "n"))
                         (link '(C)) )
                      (T (recurse (car (split S " ")))) ) ) ) ) ) ) )
@@ -156,5 +155,3 @@ Using the TinyMCE 4.x Javascript/HTML WYSIWYG editor in PicoLisp applications
             (<tinymce>)
             (gui '(+Var +TextField) '*Text 60 8)  # Textarea
             ..
-
-# vi:et:ts=3:sw=3

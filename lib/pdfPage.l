@@ -1,5 +1,4 @@
-# 16nov18abu
-# (c) Software Lab. Alexander Burger
+# 22jul20 Software Lab. Alexander Burger
 
 (allow "fonts/" T)
 (allow "!mk.svg")
@@ -623,7 +622,8 @@
 
 (de pdfTextField (DX DY)
    (<tinymce>)
-   (gui '(+Able +Chg +Upd +TextField) '(: home page sel)
+   (gui '(+Style +Able +Chg +Upd +TextField) "tinymce"
+      '(: home page sel)
       '((Txt)
          (with (: home page)
             (change ,"Text"
@@ -701,5 +701,3 @@
    (pdfAlignRadio)
    (pdfTextField 48 12)
    (<spread> (gui '(+Rid +Button) ,"Apply") (pdfFrontButton) (pdfDelButton)) )
-
-# vi:et:ts=3:sw=3

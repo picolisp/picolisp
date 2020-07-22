@@ -1,4 +1,4 @@
-# 16jul20 Software Lab. Alexander Burger
+# 22jul20 Software Lab. Alexander Burger
 
 ### TinyMCE Interface ###
 (allow "@tinymce/" T)
@@ -6,7 +6,8 @@
 (de <tinymce> ()
    (javascript "@tinymce/tinymce.min.js" "
       tinymce.init( {
-         selector: 'textarea',
+         mode: 'specific_textareas',
+         editor_selector: 'tinymce',
          plugins: 'textcolor colorpicker hr directionality paste',
          toolbar: 'forecolor bold italic superscript underline strikethrough | hr | removeformat',
          paste_as_text: true,
@@ -145,13 +146,17 @@ Using the TinyMCE 4.x Javascript/HTML WYSIWYG editor in PicoLisp applications
 
    (load .. "@lib/tinymce.l" ..)
 
-4. On each page where you want to use tinymce in textareas, call (<tinymce>)
-   before the first textarea, e.g.:
+4. On each page where you want to use tinymce in text areas, call (<tinymce>)
 
    (action
       (html 0 "Title" "lib.css" NIL
          (form NIL
             ..
             (<tinymce>)
-            (gui '(+Var +TextField) '*Text 60 8)  # Textarea
+            ...
+
+5. and give each desired text area a style "tinymce":
+
+            ...
+            (gui '(+Style +Var +TextField) "tinymce" '*Text 60 8)  # Textarea
             ..

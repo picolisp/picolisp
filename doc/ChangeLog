@@ -1,3 +1,12 @@
+22jul20
+   Select only specific text areas
+      lib/tinymce.l
+      lib/pdfPage.l
+
+17jul20
+   Return 501 "Not Implemented" instead of 400 "Bad Request"
+      lib/http.l
+
 16jul20
    Add default "#" to color argument in 'htmlText'
       lib/tinymce.l

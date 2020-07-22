@@ -1,4 +1,4 @@
-# 30jun20abu
+# 17jul20abu
 # (c) Software Lab. Alexander Burger
 
 # *HPorts *Home *Gate *Host *Port *Port1 *Port% *Http1 *Chunked
@@ -181,7 +181,7 @@
                                        (call "rm" "-f" (tmp S)) ) ) ) ) ) )
                      (T (throw 'http)) ) )
                (T
-                  (and @ (out *HtSock (httpStat 400 "Bad Request")))
+                  (and @ (out *HtSock (httpStat 501 "Not Implemented")))
                   (task (close *HtSock))
                   (off *HtSock)
                   (throw 'http) ) )

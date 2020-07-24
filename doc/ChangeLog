@@ -1,5 +1,5 @@
 24jul20
-   Bug in 'remove'
+   Bug in 'remove' and 'place'
       {src64,pilos/src}/subr.l
       {src,mini/src}/subr.c
    "See also" entries for 'lit' and 'strip'

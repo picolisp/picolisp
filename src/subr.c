@@ -731,9 +731,17 @@ any doPlace(any x) {
       return x;
    }
    Push(c2, y = cons(car(data(c1)), Nil));
-   while (isCell(data(c1) = cdr(data(c1))) && --n)
+   for (;;) {
+      if (!isCell(data(c1) = cdr(data(c1)))) {
+         cdr(y) = cons(EVAL(car(x)), data(c1));
+         break;
+      }
+      if (!--n) {
+         cdr(y) = cons(EVAL(car(x)), cdr(data(c1)));
+         break;
+      }
       y = cdr(y) = cons(car(data(c1)), Nil);
-   cdr(y) = cons(EVAL(car(x)), cdr(data(c1)));
+   }
    drop(c1);
    return data(c2);
 }

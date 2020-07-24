@@ -1744,22 +1744,33 @@
          do
             ld E (E CDR)  # More elements?
             atom E
-         while z  # Yes
+            if nz  # No
+               ld Z E  # Rest in Z
+               ld E (Y)  # Eval 'any'
+               eval
+               call consE_A  # Last cell
+               ld (A) E  # Cons 'any'
+               ld (A CDR) Z  # with rest
+               ld (X CDR) A  # Append to result
+               break T
+            end
             dec Z  # Count?
-         while nz  # Yes
+            if z  # No
+               ld Z E  # Rest in Z
+               ld E (Y)  # Eval 'any'
+               eval
+               call consE_A  # Last cell
+               ld (A) E  # Cons 'any'
+               ld (A CDR) (Z CDR)  # with rest
+               ld (X CDR) A  # Append to result
+               break T
+            end
             call cons_A  # Copy next cell
             ld (A) (E)
             ld (A CDR) Nil
             ld (X CDR) A  # Append to result
             ld X (X CDR)
          loop
-         ld Z E  # Rest in Z
-         ld E (Y)  # Eval 'any'
-         eval
-         call consE_A  # Last cell
-         ld (A) E  # Cons 'any'
-         ld (A CDR) (Z CDR)  # with rest
-         ld (X CDR) A  # Append to result
          ld E (L I)  # Get result
       end
       drop

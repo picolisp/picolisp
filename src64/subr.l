@@ -1,4 +1,4 @@
-# 24oct18abu
+# 24jul20abu
 # (c) Software Lab. Alexander Burger
 
 # (car 'var) -> any
@@ -1682,16 +1682,21 @@
             do
                ld E (E CDR)  # More elements?
                atom E
-            while z  # Yes
+               if nz  # No
+                  ld (X CDR) E  # Append it
+                  break T
+               end
                dec Y  # Count?
-            while nz  # Yes
+               if z  # No
+                  ld (X CDR) (E CDR)  # Append rest
+                  break T
+               end
                call cons_A  # Copy next cell
                ld (A) (E)
                ld (A CDR) Nil
                ld (X CDR) A  # Append to result
                ld X (X CDR)
             loop
-            ld (X CDR) (E CDR)  # Append rest
             ld E (L I)  # Get result
             drop
          end

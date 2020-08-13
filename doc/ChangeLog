@@ -1,4 +1,15 @@
+13aug20
+   Accept zero for default size in 'journal' (from pil21)
+   Remove size check (16oct18)
+      src64/db.l
+
+11aug20
+   Keep horizontal position upon resize
+      lib/vip.l
+
 24jul20
+   'mkLoc' function
+      lib/vip.l
    Bug in 'remove' and 'place'
       {src64,pilos/src}/subr.l
       {src,mini/src}/subr.c
@@ -28,7 +39,7 @@
       lib/db.l
 
 04jul20
-   fName' in directory listings, minor fix
+   'fName' in directory listings, minor fix
       lib/vip.l
 
 03jul20

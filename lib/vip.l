@@ -1,4 +1,4 @@
-# 04jul20 Software Lab. Alexander Burger
+# 11aug20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -55,8 +55,8 @@ showCsr screen1 screen2)
    (and (xterm) (prin "^[[?1049h")) )
 
 ### VIP Editor ###
-(local) (*Buffers +Buffer fName rplFile fileBuffer rdLines delim? markup min1
-beep undo redo evCmd dirty> load> save> view> status)
+(local) (*Buffers +Buffer mkLoc fName prName rplFile fileBuffer rdLines delim?
+markup min1 beep undo redo evCmd dirty> load> save> view> status)
 
 (class +Buffer)
 # text file key undo redo dirt posX posY lastX lastY flat fmt <c>
@@ -68,6 +68,12 @@ beep undo redo evCmd dirty> load> save> view> status)
    (=: lastX (=: lastY 1))
    (=: fmt 80) )
 
+(de mkLoc (File)
+   (let P (pwd)
+      (if (head (conc (chop P) '("/")) File)
+         (cddr (nth File (length P)))
+         File ) ) )
+
 (de fName (File)
    (when
       (setq File
@@ -77,10 +83,7 @@ beep undo redo evCmd dirty> load> save> view> status)
       (use R
          (when (=0 (native "@" "realpath" 'N File '(R (4096 C . 4096))))
             (setq R (chop File)) )
-         (pack
-            (if (head (conc (chop (pwd)) '("/")) R)
-               (cddr (nth R (length (pwd))))
-               R ) ) ) ) )
+         (pack (mkLoc R)) ) ) )
 
 (de prName (File)
    (if (pre? (sys "HOME") File)
@@ -185,7 +188,7 @@ beep undo redo evCmd dirty> load> save> view> status)
                               (conc
                                  (chop (stamp (- (car X)) (- (cadr X))))
                                  (list (name " "))
-                                 (chop (fName F))
+                                 (mkLoc (chop F))
                                  (cond
                                     ((=T S) (list (name "/")))
                                     ((not S)
@@ -404,7 +407,11 @@ shell shFile prCmd reset command vi)
 (de chgwin (Lines Top)
    (=: lines Lines)
    (and Top (=: top @))
-   (goto (: posX) (: posY)) )
+   (=: winY
+      (min1
+         (- (: posY) (/ (: lines) 2))
+         (- (length (: buffer text)) (: lines) -1) ) )
+   (redraw) )
 
 (de eqwin ()
    (let

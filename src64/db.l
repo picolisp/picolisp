@@ -1,4 +1,4 @@
-# 24dec18abu
+# 13aug20abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1070,16 +1070,18 @@
          cc getc_unlocked(E)  # Next char
          nul4  # EOF?
       while ns  # No
-         cmp A (MaxBlkSize)
-         jgt jnlErrX
          ld C A  # Size in C
          cc fread(Buf 2 1 E)  # Read file number
          cmp A 1  # OK?
          jne jnlErrX  # No
          call dbfBuf_AF  # Read file number from 'Buf' to 'DbFile'
          jz dbfErrX  # No local file
+         null C  # Whole block? (from pil21)
+         ldz C (A III)  # Yes: Take file's block size
+         #! Deprecated
          cmp C BLKSIZE  # Whole block?
          ldz C (A III)  # Yes: Take file's block size
+         #!
          cc fread(Buf BLK 1 E)  # Read object ID
          cmp A 1  # OK?
          jne jnlErrX  # No

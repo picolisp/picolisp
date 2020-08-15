@@ -1,4 +1,4 @@
-# 11aug20 Software Lab. Alexander Burger
+# 15aug20 Software Lab. Alexander Burger
 # https://picolisp.com/wiki/?vip
 
 (symbols 'vip 'pico)
@@ -1213,7 +1213,7 @@ shell shFile prCmd reset command vi)
                         (let Buf (: buffer)
                            (for (This *CmdWin (setq This (: next)))
                               (when (== Buf (: buffer))
-                                 (if (; *CmdWin next next) (done) (nextBuf)) ) )
+                                 (nextBuf) ) )
                            (del Buf '*Buffers)
                            (=: last) ) ) )
                   (T

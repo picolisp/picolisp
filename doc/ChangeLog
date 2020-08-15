@@ -1,3 +1,7 @@
+15aug20
+   Do not close current window upon ":bd"
+      lib/vip.l
+
 13aug20
    Accept zero for default size in 'journal' (from pil21)
    Remove size check (16oct18)

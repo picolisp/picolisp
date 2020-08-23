@@ -1,4 +1,4 @@
-# 05jul19abu
+# 23aug20abu
 # (c) Software Lab. Alexander Burger
 
 # Ersatz PicoLisp Functions
@@ -150,7 +150,7 @@ java (num i j k x y z s v o)
       else if (v[i] instanceof Number) {
          if ((num = (Number)v[i]).Big != null)
             cntError(ex, num);
-         arg[i] = new Integer(num.Cnt);
+         arg[i] = Integer.valueOf(num.Cnt);
          par[i] = Integer.TYPE;
       }
       else if (v[i] instanceof Cell) {
@@ -274,34 +274,34 @@ interface (i x y)
 # (byte: 'num|sym) -> obj
 byte: (x)
    x = ex.Cdr.Car.eval();
-   return new Symbol(new Byte(x instanceof Number? (byte)((Number)x).Cnt : (byte)x.name().charAt(0)));
+   return new Symbol(Byte.valueOf(x instanceof Number? (byte)((Number)x).Cnt : (byte)x.name().charAt(0)));
 
 # (char: 'num|sym) -> obj
 char: (x)
    x = ex.Cdr.Car.eval();
-   return new Symbol(new Character(x instanceof Number? (char)((Number)x).Cnt : x.name().charAt(0)));
+   return new Symbol(Character.valueOf(x instanceof Number? (char)((Number)x).Cnt : x.name().charAt(0)));
 
 # (int: 'num) -> obj
 int: ()
-   return new Symbol(new Integer(evInt(ex.Cdr)));
+   return new Symbol(Integer.valueOf(evInt(ex.Cdr)));
 
 # (long: 'num) -> obj
 long: ()
-   return new Symbol(new Long(evLong(ex.Cdr)));
+   return new Symbol(Long.valueOf(evLong(ex.Cdr)));
 
 # (float: 'str 'cnt) -> obj
 # (float: 'num 'cnt) -> obj
 float: (x)
    if ((x = (ex = ex.Cdr).Car.eval()) instanceof Number)
-      return new Symbol(new Float(((Number)x).toString(evInt(ex.Cdr), '.', '\0')));
-   return new Symbol(new Float(x.name()));
+      return new Symbol(Float.valueOf(((Number)x).toString(evInt(ex.Cdr), '.', '\0')));
+   return new Symbol(Float.valueOf(x.name()));
 
 # (double: 'str 'cnt) -> obj
 # (double: 'num 'cnt) -> obj
 double: (x)
    if ((x = (ex = ex.Cdr).Car.eval()) instanceof Number)
-      return new Symbol(new Double(((Number)x).toString(evInt(ex.Cdr), '.', '\0')));
-   return new Symbol(new Double(x.name()));
+      return new Symbol(Double.valueOf(((Number)x).toString(evInt(ex.Cdr), '.', '\0')));
+   return new Symbol(Double.valueOf(x.name()));
 
 # (big: 'num) -> obj
 big: (num)

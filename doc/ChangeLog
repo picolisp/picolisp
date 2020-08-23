@@ -1,3 +1,7 @@
+23aug20
+   Fixes for Java 11 deprecations by rcs
+      ersatz/fun.src
+
 15aug20
    Do not close current window upon ":bd"
       lib/vip.l

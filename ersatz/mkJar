@@ -1,5 +1,5 @@
 #!./pil
-# 22jul20 Software Lab. Alexander Burger
+# 15aug20 Software Lab. Alexander Burger
 
 (load "../src64/version.l")
 
@@ -86,11 +86,9 @@
       (skip)
       (echo) ) )
 
-#{
 (when (call "javac" "-O" "-g:none" "PicoLisp.java")
    (let Lst (filter '((F) (tail '`(chop ".class") (chop F))) (dir))
       (apply call Lst "jar" "cmf" "Manifest" "picolisp.jar")
       (apply call Lst "rm") ) )
-}#
 
 (bye)

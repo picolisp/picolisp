@@ -60,8 +60,13 @@ function searchKeyup(searchField) {
 	<ul>
 		<li>
 			<a href="ref.html" target="lower">Reference</a> lookup<br>
-			<input type="text" size="13" onkeyup="searchKeyup(this)">
+			<input id="search" type="text" size="13" onkeyup="searchKeyup(this)">
 		</li>
 	</ul>
+	<script type="text/javascript" language="javascript">
+	<!--
+		window.document.getElementById('search').focus();
+	//-->
+	</script>
 </body>
 </html>

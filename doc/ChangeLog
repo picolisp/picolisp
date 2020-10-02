@@ -1,3 +1,13 @@
+01oct20
+   Global '*Go.png' and '*No.png' variables
+      lib/form.l
+   Typo
+      doc/refF.html
+
+22sep20
+   Reference lookup search input autofocus (dexen)
+      doc/rlook.html
+
 23aug20
    Fixes for Java 11 deprecations by rcs
       ersatz/fun.src

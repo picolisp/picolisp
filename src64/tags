@@ -919,10 +919,10 @@ db.l,1212
 dbTouchEX1559,42388
 dbZapE1592,42988
 doCommit1613,43423
-doRollback2015,56335
-doMark2098,58345
-doFree2180,60386
-doDbck2238,61852
+doRollback2015,56337
+doMark2098,58347
+doFree2180,60388
+doDbck2238,61854
 
 gc.l,862
 markE5,63

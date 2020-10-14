@@ -1,4 +1,4 @@
-# 13aug20abu
+# 14oct20abu
 # (c) Software Lab. Alexander Burger
 
 # 6 bytes in little endian format
@@ -1979,7 +1979,7 @@
       loop
       ld A S  # Flush file
       call flushA_F
-      ld A S  # Close file
+      ld A (S)  # Close file
       call closeAX
       ld ((Zap)) Nil  # Clear zap list
       add S (+ III BUFSIZ)  # Drop buffer

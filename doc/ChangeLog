@@ -1,3 +1,13 @@
+14oct20
+   Bug in 'commit' of '*Zap' values
+      src64/db.l
+   Wrong return value in '*Zap' example
+      doc/refZ.html
+
+02oct20
+   Typo
+      doc/refP.html
+
 01oct20
    Global '*Go.png' and '*No.png' variables
       lib/form.l

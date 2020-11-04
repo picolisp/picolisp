@@ -56,7 +56,7 @@ jobs:
         ln -s ../lib/picolisp ${PIL_DEST}/usr/share
 
     - name: Define PicoLisp tgz archive name
-      run: echo "::set-env name=picolisp_tgz::picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+      run: echo "picolisp_tgz:picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)" >> $GITHUB_ENV
 
     - name: Compress the PicoLisp install
       run: |

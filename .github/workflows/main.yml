@@ -4,10 +4,6 @@ on: [push]
 
 jobs:
   build:
-    env:
-      PIL_ARCH: /tmp/pil.arch
-      PIL_VER: /tmp/pil.version
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -30,23 +26,23 @@ jobs:
 
     - name: Save architecture (x86)
       if: matrix.arch == 'src'
-      run: echo 'x86' > $PIL_ARCH
+      run: echo "pil_arch=x86" >> $GITHUB_ENV
 
     - name: Save architecture (x86-64)
       if: matrix.arch == 'src64'
-      run: echo 'x86-64' > $PIL_ARCH
+      run: echo "pil_arch=x86-64" >> $GITHUB_ENV
 
     - name: Test PicoLisp ${{matrix.arch}}
       run: |
         PATH=$PATH:${GITHUB_WORKSPACE}
         ./pil lib/test.l -bye +
-        ./pil -"prinl (glue '. (version T))" -bye > $PIL_VER
-        mkdir -p ${HOME}/artifacts/picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)
+        ./pil -"prinl \"pil_ver=\"(glue '. (version T))" -bye >> $GITHUB_ENV
+        mkdir -p ${HOME}/artifacts/picoLisp-v${{env.pil_ver}}-linux-${{env.pil_arch}}
 
     - name: Create PicoLisp install dir
       run: |
         cd ${GITHUB_WORKSPACE}
-        PIL_DEST="${HOME}/artifacts/picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+        PIL_DEST="${HOME}/artifacts/picoLisp-v${{env.pil_ver}}-linux-${{env.pil_arch}}"
         mkdir -p ${PIL_DEST}/usr/{lib/picolisp,bin,share/man/man1}
         mv * ${PIL_DEST}/usr/lib/picolisp
         ln -s ../lib/picolisp/bin/picolisp ${PIL_DEST}/usr/bin
@@ -56,7 +52,7 @@ jobs:
         ln -s ../lib/picolisp ${PIL_DEST}/usr/share
 
     - name: Define PicoLisp tgz archive name
-      run: echo "::set-env name=picolisp_tgz::picoLisp-v$(cat $PIL_VER)-linux-$(cat $PIL_ARCH)"
+      run: echo "picolisp_tgz=picoLisp-v${{env.pil_ver}}-linux-${{env.pil_arch}}" >> $GITHUB_ENV
 
     - name: Compress the PicoLisp install
       run: |
@@ -75,8 +71,6 @@ jobs:
         JFROG_CLI_LOG_LEVEL: DEBUG
         JFROG_CLI_OFFER_CONFIG: false
       run: |
-        version=$(cat $PIL_VER)
-        arch=$(cat $PIL_ARCH)
         license=MIT
         jfrog bt config \
           --user ${{ secrets.BINTRAY_API_USER }} --key ${{ secrets.BINTRAY_API_KEY }}
@@ -87,7 +81,7 @@ jobs:
           picolisp/picolisp/picolisp
         jfrog bt upload \
           "${HOME}/artifacts/" \
-          picolisp/picolisp/picolisp/${version} \
-          ${arch}/ || true
+          picolisp/picolisp/picolisp/${{env.pil_ver}} \
+          ${{env.pil_arch}}/ || true
         jfrog bt version-publish \
-          picolisp/picolisp/picolisp/${version} || true
+          picolisp/picolisp/picolisp/${{env.pil_ver}} || true
